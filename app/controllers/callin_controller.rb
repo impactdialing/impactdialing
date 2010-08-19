@@ -15,11 +15,11 @@ class CallinController < ApplicationController
 
 
   def index
+    cookies[:session]=nil
     
     if params[:CallStatus]=="completed"
       #remove this caller
       @session = CallerSession.find(cookies[:session])
-      cookies[:session]=nil
       @session.endtime=Time.now
       @session.available_for_call=false
       @session.save
