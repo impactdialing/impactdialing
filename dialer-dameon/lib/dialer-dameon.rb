@@ -41,8 +41,6 @@ end
 class Dialer
   TWILIO_ACCOUNT="AC422d17e57a30598f8120ee67feae29cd"
   TWILIO_AUTH="897298ab9f34357f651895a7011e1631"
-  APP_NUMBER="5104048117"
-  APP_URL="http://www.hinodae.com:5555"
   
   def self.startcall(voter, campaign)
     require "hpricot"
