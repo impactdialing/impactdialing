@@ -1,7 +1,6 @@
 # Be sure to restart your server when you modify this file
 TWILIO_ACCOUNT="AC422d17e57a30598f8120ee67feae29cd"
 TWILIO_AUTH="897298ab9f34357f651895a7011e1631"
-APP_NUMBER="5104048117"
 APP_URL="http://www.hinodae.com:5555"
 # Specifies gem version of Rails to use when vendor/rails is not present
 RAILS_GEM_VERSION = '2.3.5' unless defined? RAILS_GEM_VERSION

@@ -6,6 +6,7 @@ class CreateCallers < ActiveRecord::Migration
       t.string :pin
       t.integer :user_id
       t.boolean :multi_user, :default=>true
+      t.boolean :active, :default=>true
       t.timestamps
     end
   end
