@@ -1,0 +1,25 @@
+
+<div class="box" >
+	<%= render :partial => 'boxtop', :locals=>{:title=>"Welcome"} %>
+	<div class="copybox">
+	<%= cms "welcome_text" %>
+	</div>
+</div>
+
+
+<% content_for :sidebarx do %>
+<!-- Box -->
+<div class="box">
+  <!-- Box Head -->
+  <div class="box-head">
+    <h2>Management</h2>
+  </div>
+  <!-- End Box Head-->
+  <div class="box-content"> <a href="/client/caller_add" class="add-button"><span>Add new Caller</span></a><div class="cl">&nbsp;</div></div>
+  <div class="box-content"> <a href="#" class="add-button"><span>Add new List</span></a><div class="cl">&nbsp;</div></div>
+  <div class="box-content"> <a href="#" class="add-button"><span>Add new Group</span></a><div class="cl">&nbsp;</div></div>
+</div>
+<!-- End Box -->
+
+<% end %>
+

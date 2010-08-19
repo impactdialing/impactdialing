@@ -1,0 +1,96 @@
+<%= error_messages_for :script %>
+<% lastone=0 %>
+<table>
+	<tr>
+		<td valign="top">
+			<div class="box" style="width:400px;">
+				<%= render :partial => 'boxtop', :locals=>{:title=>@label} %>
+
+				<% form_for :script do |f| -%>
+			    <div class="form">
+			      <p>
+			        <label>Name <span>(Required Field)</span></label>
+					<%= f.text_field :name, {:class=>"field"} %>
+			      </p>
+					<label>Call Results</label><br/>
+					<table border=0>
+						<tr>
+							<td>Result</td>
+							<td align="left">Keypad</td>
+						</tr>
+					<% for i in 1..99 do %>
+						<tr id="result<%= i %>" <% if eval("@script.keypad_" + i.to_s).blank? %>style="display:none;" <% else %> <% lastone=i %> <% end %>>
+							<td><input  type="text" name="text<%= i %>"  id="text<%= i %>" size="20" class="field" value="<%= eval("@script.keypad_" + i.to_s) %>" ></td>
+							<td><input type="text" name="keypad<%= i %>" id="keypad<%= i %>" size="3" class="field" value="<%= i %>"></td>
+							<td> &nbsp; <a href="javascript:var x=$('text<%= i %>').value='';var x=$('keypad<%= i %>').value='';" class="ico del">&nbsp</a></td>
+						</tr>
+					<% end %>
+					</table><br/>
+					&nbsp;<input type="button" value="Add new result" onclick="dlastone();" class="button">
+				</div>
+			    <div class="buttons">
+			      <input type="button" class="button" value="cancel" onclick="document.location.href='/client/scripts';"/>
+				<%= f.submit "submit", :disable_with => 'submiting...', :class=>"button" %>
+			    </div>
+			    <!-- End Form Buttons -->
+			</div>
+			<!-- End Box -->
+		</td>
+		<td> &nbsp; </td>
+		<td valign="top">
+			<div class="box" style="width:400px;">
+				<%= render :partial => 'boxtop', :locals=>{:title=>"Script"} %>
+
+			    <div class="form">
+			      <p>
+			        <label>Script</label>
+					<%= f.text_area :script %>
+			      </p>
+				</div>
+			    <div class="buttons">
+			      <input type="button" class="button" value="cancel" onclick="document.location.href='/client/scripts';"/>
+				<%= f.submit "submit", :disable_with => 'submiting...', :class=>"button" %>
+			    </div>
+			    <!-- End Form Buttons -->
+				<% end -%>
+			</div>
+			<!-- End Box -->
+		</td>
+	</tr>
+</table>
+
+<script>
+	var lastone=<%= lastone %>;
+	function dlastone() {
+		lastone++;
+		idiv = $('result' + lastone);
+		idiv.style.display='';
+	}
+	/*
+	for (x=1; x<100; x++){
+		idiv = $('result' +x);
+		ifrm = $('script_keypad_' + x);
+		
+		if (ifrm.value!='' || x < 10)
+			idiv.style.display='block';
+	}
+	
+	function newVal(){
+		maxN=0;
+		for (x=1; x<100; x++){
+			idiv = $('result' +x);
+			ifrm = $('script_keypad_' + x);
+
+			if (ifrm.value!='' || x < 10)
+				maxN=x;
+		}
+		sfrm = $('script_keypad_' + (maxN));
+		sdiv = $('result' + (maxN+1));
+		if (sfrm.value=='')
+			alert('Enter a value for keypad ' + maxN );
+		else
+			sdiv.style.display='block';
+	}
+	$('content').style.float='left';
+	*/
+</script>

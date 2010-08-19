@@ -1,0 +1,6 @@
+<!--<input type="button" value="Clear" onclick="document.location.href='/client/reports?clear=1';">-->
+
+<div id="status">Loading...</div>
+<%= periodically_call_remote(:url => { :action => 'update_report' }, :update => 'status',  :frequency => '5')  %>
+<%# debug CallerSession %>
+

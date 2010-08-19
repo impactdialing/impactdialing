@@ -1,0 +1,57 @@
+<div class="box">
+	<%= render :partial => 'boxtop', :locals=>{:title=>"Callers"} %>
+	<% if @callers.length==0 %>
+		<div class="form">
+	      <label>No callers entered.</label>
+		</div>
+  		<div class="box-content"> <a href="/client/caller_add" class="add-button"><span>Add new Caller</span></a><div class="cl">&nbsp;</div></div>
+	<% else %>
+  <div class="table">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>PIN</th>
+        <th>Multi-Caller</th>
+        <th>Date Added</th>
+        <th width="55" class="ac"></th>
+      </tr>
+	<% @callers.each do |c| %>
+      <tr class="<%= cycle("odd","even") %>">
+        <td><h3><a href="/client/caller_add/<%= c.id %>"><%= c.name %></a></h3></td>
+        <td><%= c.email %></td>
+        <td><%= c.pin %></td>
+		<td><% if c.multi_user==1 %>Yes<% else %>No<% end %></td>
+        <td><%= c.created_at.strftime("%m/%d/%Y") %></td>
+        <td><a href="javascript:if(confirm('Are you sure you want to delete this caller?')) document.location.href='/client/caller_delete/<%= c.id %>';" class="ico del">Delete</a>
+	<!--<a href="/client/caller_add/<%= c.id %>" class="ico edit">Edit</a>--></td>
+      </tr>
+	<% end %>
+
+    </table>
+
+    <!-- Pagging -->
+    <div class="pagging">
+   <div class="left"><%= page_entries_info @callers %></div>
+      <div class="right"> <%= will_paginate @callers %>
+	</div>
+    </div>
+    <!-- End Pagging -->
+  </div>
+  <!-- Table -->	<% end %>
+ <div class="box-content"> <a href="/client/caller_add" class="add-button"><span>Add new Caller</span></a><div class="cl">&nbsp;</div></div></div>
+
+
+<% content_for :sidebarx do %>
+<!-- Box -->
+<div class="box">
+  <!-- Box Head -->
+  <div class="box-head">
+    <h2>Management</h2>
+  </div>
+  <!-- End Box Head-->
+  <div class="box-content"> <a href="/client/caller_add" class="add-button"><span>Add new Caller</span></a><div class="cl">&nbsp;</div></div>
+</div>
+<!-- End Box -->
+
+<% end %>

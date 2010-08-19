@@ -1,0 +1,11 @@
+Add a new user:
+<%= error_messages_for :user %>
+
+<% form_for :user do |f| -%>
+  <%= f.label :fname, "First Name" %>:	<%= f.text_field :fname %><br/>
+  <%= f.label :lname, "Last Name" %>:	<%= f.text_field :lname %><br/>
+  <%= f.label :orgname, "Org name" %>:	<%= f.text_field :orgname %><br/>
+  <%= f.label :email, "Email" %>:	<%= f.text_field :email %><br/>
+  <%= f.label :password, "Password" %>:	<%= f.text_field :password %><br/>
+<%= f.submit "Submit", :disable_with => 'Submiting...' %>
+<% end -%>
