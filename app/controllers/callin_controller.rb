@@ -226,10 +226,10 @@ class CallinController < ApplicationController
       attempt.call_end=Time.now
       attempt.save
       @voter.save
-      @sessions = CallerSession.find_all_by_voter_in_progress_and_campaign_id(@voter.id, @campaign.id)
-      @sessions.each do |session|
-        session.available_for_call=true
-        session.save
+      @session = CallerSession.find_by_voter_in_progress_and_campaign_id(@voter.id, @campaign.id, :order=>"id desc")
+      if @session!=nil
+        @session.available_for_call=true
+        @session.save
       end
       avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
       if avail_campaign_hash.has_key?(attempt.campaign_id)
