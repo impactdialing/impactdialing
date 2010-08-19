@@ -1,4 +1,5 @@
 APP_NUMBER="5104048117"
+APP_URL="http://www.hinodae.com:5555"
 
 # Settings specified here will take precedence over those in config/environment.rb
 
