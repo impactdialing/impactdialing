@@ -15,7 +15,6 @@ class CallinController < ApplicationController
 
 
   def index
-    cookies[:session]=nil
     
     if params[:CallStatus]=="completed"
       #remove this caller
@@ -34,6 +33,8 @@ class CallinController < ApplicationController
       render :template => 'callin/index.xml.builder', :layout => false
       return
     end
+
+    cookies[:session]=nil
     
     # initial call-in
     @repeatRedirect="#{APP_URL}/callin"

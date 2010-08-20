@@ -86,7 +86,6 @@ ActiveRecord::Base.connection.execute("update caller_sessions set available_for_
 
 #here be the main loop
 DaemonKit.logger.info "Starting up..."
-
 loop do
   begin
     @avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
