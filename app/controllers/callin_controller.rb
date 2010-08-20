@@ -232,14 +232,13 @@ class CallinController < ApplicationController
       attempt.save
       @voter.save
       #clear old sessions
-      @sessions = CallerSession.find_all_by_voter_in_progress_and_campaign_id(@voter.id, @campaign.id)
-      @sessions.each do |session|
-        session.available_for_call=false
-        session.save
-      end
-
-      @session = CallerSession.find_by_voter_in_progress_and_campaign_id(@voter.id, @campaign.id, :order=>"id desc")
-      if @session!=nil
+      # @sessions = CallerSession.find_all_by_voter_in_progress_and_campaign_id(@voter.id, @campaign.id)
+      # @sessions.each do |session|
+      #   session.available_for_call=false
+      #   session.save
+      # end
+      if @voter.caller_session_id!=nil
+        @session = CallerSession.find(@voter.caller_session_id)
         @session.available_for_call=true
         @session.save
       end
@@ -285,6 +284,8 @@ class CallinController < ApplicationController
     @campaign = @session.campaign
     @voter = Voter.find(params[:voter])
     @voter.status = "Connected to caller #{@caller.pin} #{@caller.email}"
+    @voter.caller_session_id=@session.id
+    @voter.save
     render :template => 'callin/voter_start_conference.xml.builder', :layout => false
     return
   end

@@ -5,6 +5,7 @@ class CreateVoters < ActiveRecord::Migration
       all_headers.each do |h|
         t.string h
       end
+      t.integer :caller_session_id
       t.integer :campaign_id
       t.integer :user_id
       t.boolean :active, :default=>true
