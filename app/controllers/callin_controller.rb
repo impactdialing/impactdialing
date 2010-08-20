@@ -30,11 +30,11 @@ class CallinController < ApplicationController
           cache_set("avail_campaign_hash") {avail_campaign_hash}
         end
       end
+      cookies[:session]=nil
       render :template => 'callin/index.xml.builder', :layout => false
       return
     end
 
-    cookies[:session]=nil
     
     # initial call-in
     @repeatRedirect="#{APP_URL}/callin"
