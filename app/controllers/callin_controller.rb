@@ -30,7 +30,6 @@ class CallinController < ApplicationController
           cache_set("avail_campaign_hash") {avail_campaign_hash}
         end
       end
-      cookies[:session]=nil
       render :template => 'callin/index.xml.builder', :layout => false
       return
     end
@@ -41,6 +40,7 @@ class CallinController < ApplicationController
     if params[:Digits].blank?
       # initial call-in
       @say="Welcome.  Please enter your Pin now."
+      cookies[:session]=nil
     else
       # response with PIN
       c = Caller.find_by_pin_and_active(params[:Digits], true)
