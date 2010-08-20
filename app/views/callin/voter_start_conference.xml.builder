@@ -5,3 +5,7 @@ xml.Response("version"=>"1.0") do |response|
     d.Conference("session#{@session.id}", "waitUrl"=>"","beep"=>false, "hangupOnStar"=>"false")
   end
 end
+@attempt = CallAttempt.find(params[:attempt])
+@attempt.connecttime=Time.now
+@attempt.status = "Connected to caller #{@caller.pin} #{@caller.email}"
+@attempt.save

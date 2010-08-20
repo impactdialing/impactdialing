@@ -291,10 +291,6 @@ class CallinController < ApplicationController
     @voter.status = "Connected to caller #{@caller.pin} #{@caller.email}"
     @voter.caller_session_id=@session.id
     @voter.save
-    @attempt = CallAttempt.find(params[:attempt])
-    @attempt.connecttime=Time.now
-    @attempt.status = "Connected to caller #{@caller.pin} #{@caller.email}"
-    @attempt.save
     render :template => 'callin/voter_start_conference.xml.builder', :layout => false
     return
   end
