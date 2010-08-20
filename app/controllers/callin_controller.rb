@@ -184,9 +184,12 @@ class CallinController < ApplicationController
           voter.result=eval("@campaign.script.keypad_" + params[:Digits])
         end
         voter.save
-        @session.available_for_call=true
-        @session.voter_in_progress=nil
-        @session.save
+        @session = CallerSession.find(params[:session]) 
+        if @session.endtime=nil
+          @session.available_for_call=true
+          @session.voter_in_progress=nil
+          @session.save
+        end
         
         #send to conference room
         render :template => 'callin/start_conference.xml.builder', :layout => false
