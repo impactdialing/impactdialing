@@ -50,6 +50,7 @@ class CallinController < ApplicationController
         # redirect to group ID
         s = CallerSession.new
         s.caller_id=c.id
+        s.guid = params[:CallSid]
         s.save
         @redirect="#{APP_URL}/callin/enter_group?session=#{s.id}"
       end
