@@ -279,6 +279,7 @@ class CallinController < ApplicationController
     # params session, voter
     @session = CallerSession.find(params[:session]) 
     @session.available_for_call=false
+    @session.connecttime=Time.now
     @session.save
     @caller = @session.caller
     @campaign = @session.campaign
