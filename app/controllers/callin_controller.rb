@@ -217,7 +217,7 @@ class CallinController < ApplicationController
     attempt = CallAttempt.find_by_voter_id(params[:voter], :order=>"id desc", :limit=>1)
 
     if params[:CallStatus]=="completed" || params[:CallStatus]=="no-answer"
-
+      #clean up voter hangup
       if params[:DialStatus]=="hangup-machine"
         @voter.status="Hangup or answering machine"
         attempt.status="Hangup or answering machine"
@@ -239,8 +239,10 @@ class CallinController < ApplicationController
       # end
       if @voter.caller_session_id!=nil
         @session = CallerSession.find(@voter.caller_session_id)
-        @session.available_for_call=true
-        @session.save
+        if @session.endtime==nil
+          @session.available_for_call=true
+          @session.save
+        end
       end
       avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
       if avail_campaign_hash.has_key?(attempt.campaign_id)
@@ -250,6 +252,8 @@ class CallinController < ApplicationController
           cache_set("avail_campaign_hash") {avail_campaign_hash}
         end
       end
+      render :template => 'callin/index.xml.builder', :layout => false
+      return
     end
 
 #    @session = CallerSession.find(params[:session]) 
