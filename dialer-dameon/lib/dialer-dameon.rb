@@ -12,9 +12,9 @@ class Campaign < ActiveRecord::Base
     self.voter_lists.each do |list|
       list.voters.each do |voter|
         if status==nil
-          voters << voter if voter.active==1 && voters.index(voter)==nil
+          voters << voter if voter.active==true && voters.index(voter)==nil
         else
-          voters << voter if voter.active==1 && voter.status==status && voters.index(voter)==nil
+          voters << voter if voter.active==true && voter.status==status && voters.index(voter)==nil
         end
       end
     end
