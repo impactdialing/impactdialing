@@ -23,8 +23,9 @@
 						
 							<% unanswerCalls+=1 if attempt.status.index("Hangup") %>
 							
-							
-							<%=  number_to_phone(attempt.voter.Phone, :area_code => true) %> 
+							<% if attempt.voter!=nil %>
+								<%=  number_to_phone(attempt.voter.Phone, :area_code => true) %> 
+							<% end %>
 							<% if attempt.call_start!= nil && attempt.call_end !=nil %>
 								<% duration = attempt.call_end-attempt.call_start %>
 								<% if duration > 0 %>
