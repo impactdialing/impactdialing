@@ -238,7 +238,7 @@ class CallinController < ApplicationController
       #   session.save
       # end
       if @voter.caller_session_id!=nil
-        @session = CallerSession.find(@voter.caller_session_id)
+        @session = CallerSession.find(@voter.caller_session_id)
         @session.available_for_call=true
         @session.save
       end
