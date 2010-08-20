@@ -8,6 +8,7 @@ class CreateCallAttempts < ActiveRecord::Migration
       t.datetime :call_start
       t.datetime :call_end
       t.integer :caller_id
+      t.datetime :connecttime
       t.integer :caller_session_id
       t.timestamps
     end

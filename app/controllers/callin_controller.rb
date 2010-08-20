@@ -267,7 +267,7 @@ class CallinController < ApplicationController
       attempt.caller_id=@availableCaller.caller.id
       attempt.call_start=Time.now
       attempt.save
-      @redirect="#{APP_URL}/callin/voterStart?session=#{@availableCaller.id}&voter=#{@voter.id}"
+      @redirect="#{APP_URL}/callin/voterStart?session=#{@availableCaller.id}&voter=#{@voter.id}&attempt=#{attempt.id}"
     end
 
     render :template => 'callin/index.xml.builder', :layout => false
@@ -276,17 +276,21 @@ class CallinController < ApplicationController
   end
 
   def voterStart
-    # params session, voter
+    # params session, voter, attempt
     @session = CallerSession.find(params[:session]) 
     @session.available_for_call=false
-    @session.connecttime=Time.now
+#    @session.connecttime=Time.now
     @session.save
-    @caller = @session.caller
-    @campaign = @session.campaign
+ #   @caller = @session.caller
+#    @campaign = @session.campaign
     @voter = Voter.find(params[:voter])
     @voter.status = "Connected to caller #{@caller.pin} #{@caller.email}"
     @voter.caller_session_id=@session.id
     @voter.save
+    @attempt = CallAttempt.find(params[:attempt])
+    @attempt.connecttime=Time.now
+    @attempt.status = "Connected to caller #{@caller.pin} #{@caller.email}"
+    @attempt.save
     render :template => 'callin/voter_start_conference.xml.builder', :layout => false
     return
   end

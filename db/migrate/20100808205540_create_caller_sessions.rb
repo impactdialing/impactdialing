@@ -8,7 +8,6 @@ class CreateCallerSessions < ActiveRecord::Migration
       t.integer :num_calls
       t.integer :avg_wait
       t.string :guid
-      t.datetime :connecttime
       t.boolean :available_for_call, :default=>false
       t.integer :voter_in_progress
       t.timestamps
