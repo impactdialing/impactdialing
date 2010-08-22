@@ -9,6 +9,8 @@
 		<div class="box" style="width:350px; float:right;">
 			<%= render :partial => 'boxtop', :locals=>{:title=>"#{campaign.name}: Recent Calls"} %>
 			<div class="box-content">
+				
+				<% if attempts.length==0 %>None in last 10 minutes<% end %>
 				<table class="statTable">
 				<% attempts.each do |attempt| %>
 					<tr class="<%= cycle('odd', 'even') %>">
