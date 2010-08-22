@@ -1,6 +1,19 @@
-<!--<input type="button" value="Clear" onclick="document.location.href='/client/reports?clear=1';">-->
+<% if params[:id].blank? %>
 
+<div class="box" style="width:600px;">
+	<%= render :partial => 'boxtop', :locals=>{:title=>"Choose a campaign"} %>
+	<div class="box-content">
+		<% @user.campaigns.each do |c| %>
+		<a href="/client/reports/<%= c.id %>"><%= c.name %></a><br/>
+		<% end %>
+	</div>
+</div>
+
+<% else %>
 <div id="status">Loading...</div>
-<%= periodically_call_remote(:url => { :action => 'update_report' }, :update => 'status',  :frequency => '5')  %>
-<%# debug CallerSession %>
+<%= periodically_call_remote(:url => { :action => 'update_report', :id=>params[:id] }, :update => 'status',  :frequency => '5')  %>
+<script>
+<%= remote_function(:url => { :action => 'update_report', :id=>params[:id] }, :update => 'status',  :frequency => '5')  %>
+</script>
+<% end %>
 

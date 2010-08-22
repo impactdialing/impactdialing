@@ -1,42 +1,13 @@
 # Your starting point for daemon specific classes. This directory is
 # already included in your load path, so no need to specify it.
-class Caller < ActiveRecord::Base
-end
 
-class Campaign < ActiveRecord::Base
-  has_and_belongs_to_many :voter_lists
+Dir[File.join(File.dirname(__FILE__), '../../', 'app/models') + "**/*.rb"].each {|file| 
+      require file
+      DaemonKit.logger.info "#{file}"
+#      include self.class.const_get(File.basename(file).gsub('.rb','').split("_").map{|ea| ea.capitalize}.to_s)
+}
 
 
-  def voters(status=nil)
-    voters=[]
-    self.voter_lists.each do |list|
-      list.voters.each do |voter|
-        if status==nil
-          voters << voter if voter.active==true && voters.index(voter)==nil
-        else
-          voters << voter if voter.active==true && voter.status==status && voters.index(voter)==nil
-        end
-      end
-    end
-    voters
-  end
-  
-end
-
-class CallAttempt < ActiveRecord::Base
-end
-
-class CallerSession < ActiveRecord::Base
-  belongs_to :caller, :class_name => "Caller", :foreign_key => "caller_id"
-end
-
-class Voter < ActiveRecord::Base
-end
-
-class VoterList < ActiveRecord::Base
-  has_and_belongs_to_many :campaigns
-  has_many :voters
-end
 
 class Dialer
   TWILIO_ACCOUNT="AC422d17e57a30598f8120ee67feae29cd"
@@ -47,6 +18,15 @@ class Dialer
   else
     APP_NUMBER="5104707749"
     APP_URL="http://ec2-204-236-196-225.compute-1.amazonaws.com"
+  end
+  def self.account
+    TWILIO_ACCOUNT
+  end
+  def self.auth
+    TWILIO_AUTH
+  end
+  def self.appurl
+    APP_URL
   end
   def self.startcall(voter, campaign)
     require "hpricot"

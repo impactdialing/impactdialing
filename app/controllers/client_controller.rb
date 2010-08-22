@@ -131,6 +131,13 @@ class ClientController < ApplicationController
     @voters = Voter.paginate :page => params[:page], :conditions =>"active=1 and campaign_id=#{@campaign.id}", :order => 'LastName,FirstName,Phone'
   end
   
+  def campaign_hash_delete
+    cache_delete("avail_campaign_hash")
+    flash[:notice]="Dialer Reset.  Callers must call back in."
+    redirect_to :action=>"campaign_view", :id=>params[:id]
+    return
+  end
+  
   def voter_upload
     @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id) 
     @breadcrumb=[{"Campaigns"=>"/client/campaigns"},{@campaign.name=>"/client/campaign_view/#{@campaign.id}"}, "Add Voters"]
@@ -295,13 +302,22 @@ class ClientController < ApplicationController
   end
   
   def reports
-    @breadcrumb="Reports"
+    if params[:id].blank?
+      @breadcrumb="Reports"
+    else
+      @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
+      if @campaign.blank?
+        render :text=>"Unauthorized"
+        return
+      end
+      @breadcrumb=[{"Reports"=>"/client/reports"},@campaign.name]
+    end
 #    require "#{RAILS_ROOT}/app/models/caller_session.rb"
 #    require "#{RAILS_ROOT}/app/models/caller.rb"
   end
   
   def update_report
-    Rails.logger.silence do
+#    Rails.logger.silence do
       CallerSession
       Caller
     
@@ -310,7 +326,7 @@ class ClientController < ApplicationController
       end
       @avail_campaign_hash = cache_get("avail_campaign_hash") {{}} 
       render :layout=>false
-    end
+#    end
   end
 
 end

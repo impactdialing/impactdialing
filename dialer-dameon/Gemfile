@@ -13,5 +13,6 @@ gem 'rails'
 gem 'activerecord'
 gem 'mysql'
 gem 'hpricot'
+gem 'fastercsv'
 
 # For more information on bundler, please visit http://gembundler.com

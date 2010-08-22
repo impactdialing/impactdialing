@@ -8,9 +8,9 @@ class CallinController < ApplicationController
     @gather=false
     @redirect=false
     @hangup=false
-    @finishOnKey="#"
     @pause=0
     @repeatRedirect=false
+    @finishOnKey="#"
   end
 
 
@@ -47,12 +47,31 @@ class CallinController < ApplicationController
       if c.blank?
         @say="We could not find that pin, try again."
       else
-        # redirect to group ID
-        s = CallerSession.new
-        s.caller_id=c.id
-        s.guid = params[:CallSid]
-        s.save
-        @redirect="#{APP_URL}/callin/enter_group?session=#{s.id}"
+        multi="ok"
+        if c.multi_user==0
+          #check if user logged in already
+          avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
+          avail_campaign_hash.keys.each do |k|
+            callerSessions = avail_campaign_hash[k]["callers"]
+            callerSessions.each do |sess|
+              if sess.caller_id==c.id
+                multi="bad"
+              end
+            end
+          end
+        end
+
+        
+        if multi=="ok"
+          # redirect to group ID
+          s = CallerSession.new
+          s.caller_id=c.id
+          s.guid = params[:CallSid]
+          s.save
+          @redirect="#{APP_URL}/callin/enter_group?session=#{s.id}"
+        else
+          @say="That caller is already logged in.  Try again. Please enter your Pin now."
+        end
       end
     end
 
@@ -136,7 +155,6 @@ class CallinController < ApplicationController
     end
 
     @gather=true
-    @finishOnKey=""
     @numDigits=1
 
     render :template => 'callin/index.xml.builder', :layout => false
@@ -150,6 +168,7 @@ class CallinController < ApplicationController
   
   def leaveConf
     # reached after call ends
+    @repeatRedirect="#{APP_URL}/callin/leaveConf?session=#{params[:session]}&campaign=#{params[:campaign]}"
     @session = CallerSession.find(params[:session]) 
     @caller = @session.caller
     @campaign = @session.campaign
@@ -163,10 +182,9 @@ class CallinController < ApplicationController
         a=t.call("POST", "Calls/#{attempt.sid}", {'CurrentUrl'=>"#{APP_URL}/callin/voterEndCall?attempt=#{attempt.id}"})
       end
       # initial call-in
-      @say="Input your result code or star to hangup"
+      @say="Input your result code and press star to confirm"
     else
-
-      # response with PIN
+      # digits entered, response given
       if params[:Digits]=="*"
         @say="Goodbye"
         @hangup=true
@@ -178,6 +196,9 @@ class CallinController < ApplicationController
         results.campaign_id=@campaign.id
         results.status=params[:Digits]
         results.save
+        #results.attempt
+        #voter.attempt
+        #Get Rid of VoterResult, put in attempt
         voter = Voter.find(@session.voter_in_progress)
         voter.status='Call finished'
         if @campaign.script!=nil
@@ -185,7 +206,7 @@ class CallinController < ApplicationController
         end
         voter.save
         @session = CallerSession.find(params[:session]) 
-        if @session.endtime=nil
+        if @session.endtime==nil
           @session.available_for_call=true
           @session.voter_in_progress=nil
           @session.save
@@ -198,15 +219,16 @@ class CallinController < ApplicationController
     end
 
     @gather=true
-    @numDigits=1
+    @numDigits=3
+    @finishOnKey="*"
 
     render :template => 'callin/index.xml.builder', :layout => false
   end
   
-  def voterleaveConf
-     @hangup=true
-     render :template => 'callin/index.xml.builder', :layout => false
-  end
+  # def voterleaveConf
+  #    @hangup=true
+  #    render :template => 'callin/index.xml.builder', :layout => false
+  # end
   
   def voterFindSession
     # params session, voter
@@ -225,22 +247,22 @@ class CallinController < ApplicationController
         @voter.status="No answer"
         attempt.status="No answer"
       else
-        @voter.status="Call completed with success."
-        attempt.status="Call completed with success."
+        if attempt.caller_id==nil
+          #abandon
+#          @voter.status="Call completed with success."
+          attempt.status="Call abandoned"
+        else
+          @voter.status="Call completed with success."
+          attempt.status="Call completed with success."
+        end
       end
       attempt.call_end=Time.now
       attempt.save
       @voter.save
-      #clear old sessions
-      # @sessions = CallerSession.find_all_by_voter_in_progress_and_campaign_id(@voter.id, @campaign.id)
-      # @sessions.each do |session|
-      #   session.available_for_call=false
-      #   session.save
-      # end
       if @voter.caller_session_id!=nil
         @session = CallerSession.find(@voter.caller_session_id)
         if @session.endtime==nil
-          @session.available_for_call=true
+#          @session.available_for_call=true
           @session.save
         end
       end
@@ -256,9 +278,6 @@ class CallinController < ApplicationController
       return
     end
 
-#    @session = CallerSession.find(params[:session]) 
-#    @caller = @session.caller
-#    @campaign = @session.campaign
     
     @availableCaller = CallerSession.find_by_campaign_id_and_available_for_call(@campaign.id, true)
     if @availableCaller.blank?
@@ -276,6 +295,10 @@ class CallinController < ApplicationController
       @attempt=attempt
       @session = @availableCaller
       @session.available_for_call=false
+      # end caller hold time
+      @attempt.caller_hold_time = (Time.now - @session.hold_time_start).to_i if @session.hold_time_start!=nil
+      @attempt.save
+      @session.hold_time_start=nil
       @session.save
       @caller = @session.caller
       @voter.status = "Connected to caller #{@caller.pin} #{@caller.email}"
@@ -290,20 +313,18 @@ class CallinController < ApplicationController
       
   end
 
-  def voterStart
-    # params session, voter, attempt
-    @session = CallerSession.find(params[:session]) 
-    @session.available_for_call=false
-#    @session.connecttime=Time.now
-    @session.save
-    @caller = @session.caller
-#    @campaign = @session.campaign
-    @voter = Voter.find(params[:voter])
-    @voter.status = "Connected to caller #{@caller.pin} #{@caller.email}"
-    @voter.caller_session_id=@session.id
-    @voter.save
-    render :template => 'callin/voter_start_conference.xml.builder', :layout => false
-    return
-  end
+  # def voterStart
+  #   # params session, voter, attempt
+  #   @session = CallerSession.find(params[:session]) 
+  #   @session.available_for_call=false
+  #   @session.save
+  #   @caller = @session.caller
+  #   @voter = Voter.find(params[:voter])
+  #   @voter.status = "Connected to caller #{@caller.pin} #{@caller.email}"
+  #   @voter.caller_session_id=@session.id
+  #   @voter.save
+  #   render :template => 'callin/voter_start_conference.xml.builder', :layout => false
+  #   return
+  # end
 
 end

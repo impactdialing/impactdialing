@@ -4,6 +4,7 @@ class Campaign < ActiveRecord::Base
   has_and_belongs_to_many :voter_lists
   has_and_belongs_to_many :callers
   belongs_to :script
+  belongs_to :user
   cattr_reader :per_page
   @@per_page = 25
   
@@ -15,6 +16,89 @@ class Campaign < ActiveRecord::Base
       uniq_pin=pin if check.blank?
     end
     self.group_id = uniq_pin
+  end
+
+  def recent_attempts(mins=10)
+    attempts = CallAttempt.find_all_by_campaign_id(self.id, :conditions=>"call_start > DATE_SUB(now(),INTERVAL #{mins} MINUTE)", :order=>"id desc")
+  end
+
+  def end_all_calls(account,auth,appurl)
+    in_progress = CallAttempt.find_all_by_campaign_id(self.id, :conditions=>"sid is not null and call_end is null and id > 45")
+    in_progress.each do |attempt|
+      t = Twilio.new(account,auth)
+      a=t.call("POST", "Calls/#{attempt.sid}", {'CurrentUrl'=>"#{appurl}/callin/voterEndCall?attempt=#{attempt.id}"})
+      attempt.call_end=Time.now
+      attempt.save
+    end
+  end
+
+  def calls_in_ending_window(period=10,predective_type="longest")
+    #calls predicted to end soon
+    stats = self.call_stats(period)
+    if predective_type=="longest"
+      window = stats[:biggest_long]
+    else
+      window = stats[:avg_long]
+    end
+#    RAILS_DEFAULT_LOGGER.debug("window: #{window}")
+    ending = CallAttempt.all (:conditions=>"
+    campaign_id=#{self.id}
+    and status like'Connected to caller%'
+    and timediff(now(),call_start) >SEC_TO_TIME(#{window})
+    ")
+    ending
+  end
+  
+  def call_stats(mins=nil)
+    stats={:attempts=>[], :abandon=>0, :answer=>0, :no_answer=>0, :total=>0, :answer_pct=>0, :avg_duration=>0, :abandon_pct=>0, :avg_hold_time=>0, :total_long=>0, :total_short=>0, :avg_long=>0, :biggest_long=>0}
+    totduration=0
+    tothold=0
+    totholddata=0
+    totlongduration=0
+
+    if mins.blank?
+      attempts = CallAttempt.find_all_by_campaign_id(self.id, :order=>"id desc")
+    else
+      attempts = CallAttempt.find_all_by_campaign_id(self.id, :conditions=>"call_start > DATE_SUB(now(),INTERVAL #{mins} MINUTE) or call_end > DATE_SUB(now(),INTERVAL #{mins} MINUTE)", :order=>"id desc")
+    end
+
+    stats[:attempts]=attempts
+
+    attempts.each do |attempt|
+
+      if attempt.status=="No answer"
+        stats[:no_answer] = stats[:no_answer]+1
+      elsif attempt.status=="Call abandoned"
+        stats[:abandon] = stats[:abandon]+1
+      else
+        stats[:answer] = stats[:answer]+1
+      end
+
+      stats[:total] = stats[:total]+1
+
+      if attempt.duration!=nil && attempt.duration>0
+        totduration = totduration + attempt.duration 
+        if attempt.duration <= 15
+          stats[:total_short]  = stats[:total_short]+1
+        else
+          stats[:total_long] = stats[:total_long]+1
+          stats[:biggest_long] = attempt.duration if attempt.duration > stats[:biggest_long]
+          totlongduration = totlongduration + attempt.duration
+        end
+      end
+
+      if !attempt.caller_hold_time.blank?
+        tothold = tothold + attempt.caller_hold_time 
+        totholddata+=1
+      end
+    end
+#    avg_hold_time
+    stats[:answer_pct] = stats[:answer].to_f/ stats[:total].to_f if stats[:total] > 0
+    stats[:abandon_pct] = stats[:abandon].to_f / stats[:answer].to_f if stats[:answer] > 0
+    stats[:avg_duration] = totduration / stats[:answer].to_f  if stats[:answer] > 0
+    stats[:avg_hold_time] = tothold/ totholddata  if totholddata> 0
+    stats[:avg_long] = totlongduration / stats[:total_long] if stats[:total_long] > 0
+    stats
   end
 
   def voters(status=nil)
@@ -144,8 +228,6 @@ class Campaign < ActiveRecord::Base
    rescue
      number
    end
-
-
  end
  
 end

@@ -42,22 +42,44 @@ DaemonKit::Application.running! do |config|
     DaemonKit.logger.info "Working on campaign #{k}"
     avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
     campaign_hash = avail_campaign_hash[k]
-
     campaign = Campaign.find(k)
+    stats = campaign.call_stats(10)
+    answer_pct = (stats[:answer_pct] * 100).to_i
     callers = campaign_hash["callers"]
     calls = campaign_hash["calls"]
     voters = campaign.voters("not called")
-    DaemonKit.logger.info "Callers logged in: #{callers.length}"
-    DaemonKit.logger.info "Voters to call: #{voters.length}"
-    DaemonKit.logger.info "Calls in progress: #{calls.length}"
+    DaemonKit.logger.info "Callers logged in: #{callers.length}, Voters to call: #{voters.length}, Calls in progress: #{calls.length}, Answer pct: #{answer_pct}"
     
-    maxCalls=callers.length
+    campaign.end_all_calls(Dialer.account, Dialer.auth, Dialer.appurl) if callers.length==0
+    
+    if answer_pct <= campaign.ratio_4
+      ratio_dial=4
+    elsif answer_pct <= campaign.ratio_3
+      ratio_dial=3
+    elsif answer_pct <= campaign.ratio_2
+      ratio_dial=2
+    else
+      ratio_dial=1
+    end
+    ratio_dial=campaign.ratio_override if campaign.ratio_override > 0
+    
+    maxCalls=callers.length * ratio_dial
     newCalls=calls.length
+    
+    #predecitve
+    if campaign.ending_window_method!="Not used"
+      if campaign.ending_window_method=="Average"
+        newCalls = newCalls - campaign.calls_in_ending_window(10,"average").length
+      elsif campaign.ending_window_method=="Longest"
+        newCalls = newCalls - campaign.calls_in_ending_window(10,"longest").length
+      end
+    end
+    newCalls=0 if newCalls<0
     
     voters.each do |voter|
       #do we need to make another call?
       if newCalls < maxCalls
-        DaemonKit.logger.info "#{newCalls} < #{maxCalls}, calling #{voter.Phone}"
+        DaemonKit.logger.info "#{newCalls} newcalls < #{maxCalls} maxcalls, calling #{voter.Phone}"
         newCalls+=1
         callNewVoter(voter,campaign)
       end
@@ -79,8 +101,8 @@ end
 
 # todo - remove all callers in progress
 # delete cache for now
-cache_delete("avail_campaign_hash") 
-ActiveRecord::Base.connection.execute("update caller_sessions set available_for_call=0")
+#cache_delete("avail_campaign_hash")
+#ActiveRecord::Base.connection.execute("update caller_sessions set available_for_call=0")
 
 #ActiveRecord::Base.connection.execute("update voters set status='not called'")
 

@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20100817115742) do
+ActiveRecord::Schema.define(:version => 20100822210728) do
 
   create_table "call_attempts", :force => true do |t|
     t.integer  "voter_id"
@@ -18,6 +18,11 @@ ActiveRecord::Schema.define(:version => 20100817115742) do
     t.integer  "campaign_id"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.datetime "call_start"
+    t.datetime "call_end"
+    t.integer  "caller_id"
+    t.integer  "caller_session_id"
+    t.datetime "connecttime"
   end
 
   create_table "caller_sessions", :force => true do |t|
@@ -54,21 +59,15 @@ ActiveRecord::Schema.define(:version => 20100817115742) do
     t.string   "campaign_id"
     t.string   "group_id"
     t.string   "name"
-    t.string   "keypad_1"
-    t.string   "keypad_2"
-    t.string   "keypad_3"
-    t.string   "keypad_4"
-    t.string   "keypad_5"
-    t.string   "keypad_6"
-    t.string   "keypad_7"
-    t.string   "keypad_8"
-    t.string   "keypad_9"
     t.string   "keypad_0"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "user_id"
     t.integer  "active",      :limit => 1, :default => 1
     t.integer  "script_id"
+    t.integer  "ratio_2",                  :default => 33
+    t.integer  "ratio_3",                  :default => 20
+    t.integer  "ratio_4",                  :default => 12
   end
 
   create_table "campaigns_voter_lists", :id => false, :force => true do |t|
@@ -247,13 +246,14 @@ ActiveRecord::Schema.define(:version => 20100817115742) do
     t.string   "Suffix"
     t.string   "Email"
     t.integer  "campaign_id"
-    t.boolean  "active",        :default => true
+    t.boolean  "active",            :default => true
     t.datetime "created_at"
     t.integer  "voter_list_id"
     t.datetime "updated_at"
     t.integer  "user_id"
-    t.string   "status",        :default => "not called"
+    t.string   "status",            :default => "not called"
     t.string   "result"
+    t.integer  "caller_session_id"
   end
 
 end

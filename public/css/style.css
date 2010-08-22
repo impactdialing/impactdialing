@@ -233,3 +233,14 @@ ol li {margin-left:10px;}
 h1 {color:#000;}
 div.campaignlinks a {color:#656565; line-height:30px; font-size:16px; text-decoration:none;}
 div.campaignlinks a:hover {text-decoration:underline;}
+
+
+tr.even td{
+	background-color:#fff;
+}
+
+tr.odd td{
+	background-color:#EEE;
+}
+
+.statTable tr td {font-size:12px; padding:2px;}

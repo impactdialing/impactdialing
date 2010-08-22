@@ -8,6 +8,32 @@
         <label>Name <span>(Required Field)</span></label>
 		<%= f.text_field :name, {:class=>"field"} %>
       </p>
+      <p>
+        <label>Ratio 2 </label>
+		<%= f.text_field :ratio_2, {:class=>"field"} %>
+      </p>
+
+      <p>
+        <label>Ratio 3 </label>
+		<%= f.text_field :ratio_3, {:class=>"field"} %>
+      </p>
+
+      <p>
+        <label>Ratio 4 </label>
+		<%= f.text_field :ratio_4, {:class=>"field"} %>
+      </p>
+      <p>
+        <label>Ratio Override </label>
+		<%= f.text_field :ratio_override, {:class=>"field"} %>
+      </p>
+      <p>
+        <label>Ending Prediction </label>
+			<select class="field" id="campaign_ending_window_method" name="campaign[ending_window_method]"> 
+				<option value="Not Used"  <% if @campaign.ending_window_method=="Not Used" %>selected<% end %>>Not Used</option>
+				<option value="Longest" <% if @campaign.ending_window_method=="Longest" %>selected<% end %>>Longest</option>
+				<option value="Average" <% if @campaign.ending_window_method=="Average" %>selected<% end %>>Average</option>
+			</select>
+      </p>
 
 	</div>
     <div class="buttons">

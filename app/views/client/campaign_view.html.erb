@@ -2,25 +2,6 @@
 <table width="100%">
 	<tr>
 		<td width="50%" valign="top">
-			<!--
-			<%= error_messages_for :campaign %>
-			<div class="box" >
-				<%= render :partial => 'boxtop', :locals=>{:title=>"Call results"} %>
-    			<% form_for :campaign, @campaign, :url => { :action => "campaign_add", :id=>@campaign.id } do |f| %>
-			    <div class="form">
-					<% n=0 %>
-					<% for i in 1..9 do %>
-						<% n=n+1 %>
-				        <label>Keypad <%= i %>: </label>
-						<%= f.text_field eval(":keypad_" + i.to_s), {:class=>"field"} %><br/>
-					<% end %>
-					<%= f.submit "update", :disable_with => 'updating...', :class=>"button" %>
-			    </div>
-				<% end -%>
-			</div>
- 		-->
-			
-
 		
 		<div class="box">
 			<%= render :partial => 'boxtop', :locals=>{:title=>"Available Lists"} %>
@@ -148,9 +129,12 @@
 <!-- End Box -->
 
 
-		<a href="/client/campaign_clear_calls/<%=  @campaign.id%>" class="button"><span>Clear Campaign Calls</span></a>
-		<div class="cl">&nbsp;</div>
-
+<a href="/client/campaign_clear_calls/<%=  @campaign.id%>" class="button"><span>Clear Campaign Calls</span></a>
+<div class="cl">&nbsp;</div><br/>
+<a href="/client/campaign_add/<%=  @campaign.id%>" class="button"><span>Edit Predective Properties</span></a>
+<div class="cl">&nbsp;</div><br/>
+<a href="/client/campaign_hash_delete/<%=  @campaign.id%>" class="button"><span>Reset Dialer</span></a>
+<div class="cl">&nbsp;</div>
 <!--
 <div class="box">
   <div class="box-head">

@@ -1,97 +1,81 @@
-<table border=0>
-<tr>
-<% if @avail_campaign_hash.keys.length==0 %>
-	Call into a campaign to enable reports
-<% end %>
+<% foundit=0 %>
 <% @avail_campaign_hash.keys.each do |k| %>
-	<% campaign = Campaign.find(k) %>
-	<% info = @avail_campaign_hash[k] %>
-		<td>
-			<% attempts = CallAttempt.find_all_by_campaign_id (k, :limit=>10, :order=>"id desc") %>
-			<% answerCalls=0 %>
-			<% unanswerCalls=0 %>
-			<% totduration=0 %>
-			<div class="box" style="width:600px;">
-				<%= render :partial => 'boxtop', :locals=>{:title=>campaign.name} %>
-			    <% callers = info["callers"]  %>
-			    <% calls = info["calls"] %>
-			    <% voters = campaign.voters("not called") %>
-				<div style="float:right;">
-					<div class="box-content">
-						Recent calls:<br/>
-						<% attempts.each do |attempt| %>
-						
-							<% unanswerCalls+=1 if attempt.status.index("Hangup") %>
-							
-							<% if attempt.voter!=nil %>
-								<%=  number_to_phone(attempt.voter.Phone, :area_code => true) %> 
-							<% end %>
-							<% if attempt.call_start!= nil && attempt.call_end !=nil %>
-								<% duration = attempt.call_end-attempt.call_start %>
-								<% if duration > 0 %>
-									<%= duration.to_i %>s
-									<% totduration = totduration + duration.to_i %>
-									<% 
-										if attempt.status.index("success") 
-											answerCalls+=1
-										else
-											unanswerCalls+=1
-										end
-									%>
-								<% end %>
-							<% end %>
-							<%= attempt.status %><br/>
-						<% end %>
-					</div>
-				</div>
-			
-				<div class="box-content">
-					Callers logged in: <b><%= callers.length %></b><br/>
-				    Calls in progress: <b><%= calls.length %></b><br/>
-				    Voters to call: <b><%= voters.length %></b><br/>
-				</div>
-
-				<div class="box-content">
-					Answered Calls: <b><%= answerCalls %></b><br/>
-				    Unanswered Calls: <b><%= unanswerCalls %></b><br/>
-					<% if unanswerCalls > 0 %>
-					Picked up call ratio:<b><%= ((answerCalls.to_f/unanswerCalls.to_f) * 100).to_i %>%</b><br/>
-					<% elsif answerCalls > 0%>
-					Picked up call ratio: <b>100%</b><br/>
-					<% end %>
-					<% if answerCalls > 0 %>
-				    Avg call length: <b><%= totduration/answerCalls %>s</b><br/>
-					<% end %>
-				</div>
-
-				<% if callers.length > 0 %>
-				<div class="box-content">
-					Callers logged in:<br/>
-					<% info["callers"].each do |callerSession| %>
-						PIN <%=  callerSession.caller.pin %> <%= callerSession.caller.email %> <br/>
-					<% end %>
-				</div>
+	<% if k.to_s==params[:id] && @user.campaigns.index(Campaign.find(k))%>
+		<% foundit=1 %>
+		<% campaign = Campaign.find(k) %>
+		<% info = @avail_campaign_hash[k] %>
+		<% stats = campaign.call_stats(10) %>
+		<% attempts = stats[:attempts] %>
+		<div class="box" style="width:350px; float:right;">
+			<%= render :partial => 'boxtop', :locals=>{:title=>"#{campaign.name}: Recent Calls"} %>
+			<div class="box-content">
+				<table class="statTable">
+				<% attempts.each do |attempt| %>
+					<tr class="<%= cycle('odd', 'even') %>">
+						<td nowrap><% if attempt.voter!=nil %><%=  number_to_phone(attempt.voter.Phone, :area_code => true) %> <% end %></td>
+						<td><%= attempt.status %></td>
+						<td><% if attempt.duration!=nil %> <%= attempt.duration %>s <% end %></td>
+					</tr>
 				<% end %>
-				<% if calls.length > 0 %>
-				<div class="box-content">
-					Calls in progress:<br/>
-					<% info["calls"].each do |call| %>
-						<%=  number_to_phone(call.voter.Phone, :area_code => true)   %>
-						<%= call.voter.status %>
-						<%= call.voter.FirstName %>
-						<%= call.voter.LastName %> <br/>
-					<% end %>
-				</div>
-				<% end %>
-				<div class="box-content">
-					Results:<br/>
-					<% v = Voter.find_all_by_campaign_id(k, :joins=>"join voter_results on voter_results.voter_id=voters.id") %>
-					<% v.each do |voter| %>
-						<li><%= voter.result %> <%=  number_to_phone(voter.Phone, :area_code => true)   %> <%= voter.FirstName %> <%= voter.LastName %>
-					<% end %>
-				</div>
+				</table>
 			</div>
-		</td>
+		</div>
+		<div class="box" style="width:370px;">
+			<%= render :partial => 'boxtop', :locals=>{:title=>"#{campaign.name}: Recent Call Stats"} %>
+		    <% callers = info["callers"]  %>
+		    <% calls = info["calls"] %>
+		    <% voters = campaign.voters("not called") %>
+		
+			<div class="box-content">
+				Callers logged in: <b><%= callers.length %></b><br/>
+			    Calls in progress: <b><%= calls.length %></b><br/>
+			    Voters to call: <b><%= voters.length %></b><br/>
+				Avg caller hold time: <b><%= stats[:avg_hold_time].to_i %>s</b>
+			
+			</div>
+
+			<div class="box-content">
+				Answered Calls: <b><%= stats[:answer] %></b><br/>
+			    Unanswered Calls: <b><%= stats[:no_answer] %></b><br/>
+				Answered call ratio: <b><%= (stats[:answer_pct] * 100).to_i %>%</b><br/><br/>
+			    Abandoned Calls: <b><%= stats[:abandon] %></b><br/>
+				Abandoned call ratio: <b><%= (stats[:abandon_pct] * 100).to_i %>%</b><br/><br/>
+			    Avg call length: <b><%= (stats[:avg_duration]).to_i %>s</b><br/>
+				Short calls: <b><%= stats[:total_short] %></b><br/>
+				Long calls: <b><%= stats[:total_long] %></b><br/>
+				Average long: <b><%= stats[:avg_long] %>s</b><br/>
+				Longest long: <b><%= stats[:biggest_long] %>s</b>
+			</div>
+
+			<% if callers.length > 0 %>
+			<div class="box-content">
+				Callers logged in:<br/>
+				<% info["callers"].each do |callerSession| %>
+					PIN <%=  callerSession.caller.pin %> <%= callerSession.caller.email %> <br/>
+				<% end %>
+			</div>
+			<% end %>
+			<% if calls.length > 0 %>
+			<div class="box-content">
+				Calls in progress:<br/>
+				<% info["calls"].each do |call| %>
+					<%=  number_to_phone(call.voter.Phone, :area_code => true)   %>
+					<%= call.voter.status %>
+					<%= call.voter.FirstName %>
+					<%= call.voter.LastName %> <br/>
+				<% end %>
+			</div>
+			<% end %>
+			<div class="box-content">
+				Results:<br/>
+				<% v = Voter.find_all_by_campaign_id(k, :joins=>"join voter_results on voter_results.voter_id=voters.id") %>
+				<% v.each do |voter| %>
+					<li><%= voter.result %> <%=  number_to_phone(voter.Phone, :area_code => true)   %> <%= voter.FirstName %> <%= voter.LastName %>
+				<% end %>
+			</div>
+		</div>
+	<% end %>
 <% end %>
-</tr>
-</table>
+<% if @avail_campaign_hash.keys.length==0 || foundit==0 %>
+	Call into the campaign to enable reports
+<% end %>
