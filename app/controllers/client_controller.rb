@@ -133,6 +133,7 @@ class ClientController < ApplicationController
   
   def campaign_hash_delete
     cache_delete("avail_campaign_hash")
+    ActiveRecord::Base.connection.execute("update caller_sessions set available_for_call=0")
     flash[:notice]="Dialer Reset.  Callers must call back in."
     redirect_to :action=>"campaign_view", :id=>params[:id]
     return
