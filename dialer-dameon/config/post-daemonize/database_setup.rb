@@ -24,7 +24,8 @@ memcache_options = {
 }
  
 CACHE = MemCache.new memcache_options
-CACHE.servers = '127.0.0.1:11211'
+#CACHE.servers = '127.0.0.1:11211'
+CACHE.servers = 'domU-12-31-39-10-89-26.compute-1.internal:11211'
 begin
    PhusionPassenger.on_event(:starting_worker_process) do |forked|
      if forked
