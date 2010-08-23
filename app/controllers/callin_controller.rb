@@ -268,11 +268,20 @@ class CallinController < ApplicationController
       end
       avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
       if avail_campaign_hash.has_key?(attempt.campaign_id)
-        thisAttempt = avail_campaign_hash[attempt.campaign_id]["calls"].index(attempt)
-        if thisAttempt!=nil
-          avail_campaign_hash[attempt.campaign_id]["calls"].delete_at(thisAttempt)
-          cache_set("avail_campaign_hash") {avail_campaign_hash}
+        all_attempts = avail_campaign_hash[attempt.campaign_id]["calls"]
+        n=0
+        all_attempts.each do |mem_attempt|
+          if mem_attempt.id == attempt.id
+            avail_campaign_hash[attempt.campaign_id]["calls"].delete_at(n)
+            cache_set("avail_campaign_hash") {avail_campaign_hash}
+          end
+          n+=1
         end
+        # thisAttempt = avail_campaign_hash[attempt.campaign_id]["calls"].index(attempt)
+        # if thisAttempt!=nil
+        #   avail_campaign_hash[attempt.campaign_id]["calls"].delete_at(thisAttempt)
+        #   cache_set("avail_campaign_hash") {avail_campaign_hash}
+        # end
       end
       render :template => 'callin/index.xml.builder', :layout => false
       return
