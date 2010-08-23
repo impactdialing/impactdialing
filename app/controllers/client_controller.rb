@@ -329,5 +329,9 @@ class ClientController < ApplicationController
       render :layout=>false
 #    end
   end
+  
+  def show_memcached
+    @avail_campaign_hash = cache_get("avail_campaign_hash") {{}} 
+  end
 
 end
