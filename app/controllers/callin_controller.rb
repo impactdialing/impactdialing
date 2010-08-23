@@ -199,12 +199,14 @@ class CallinController < ApplicationController
         #results.attempt
         #voter.attempt
         #Get Rid of VoterResult, put in attempt
-        voter = Voter.find(@session.voter_in_progress)
-        voter.status='Call finished'
-        if @campaign.script!=nil
-          voter.result=eval("@campaign.script.keypad_" + params[:Digits])
+        if @session.voter_in_progress!=nil
+          voter = Voter.find(@session.voter_in_progress)
+          voter.status='Call finished'
+          if @campaign.script!=nil
+            voter.result=eval("@campaign.script.keypad_" + params[:Digits])
+          end
+          voter.save
         end
-        voter.save
         @session = CallerSession.find(params[:session]) 
         if @session.endtime==nil
           @session.available_for_call=true
