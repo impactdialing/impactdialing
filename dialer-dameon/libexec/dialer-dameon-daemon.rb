@@ -50,7 +50,19 @@ DaemonKit::Application.running! do |config|
     voters = campaign.voters("not called")
     DaemonKit.logger.info "Callers logged in: #{callers.length}, Voters to call: #{voters.length}, Calls in progress: #{calls.length}, Answer pct: #{answer_pct}"
     
-    campaign.end_all_calls(Dialer.account, Dialer.auth, Dialer.appurl) if callers.length==0
+    if callers.length==0
+      in_progress = campaign.end_all_calls(Dialer.account, Dialer.auth, Dialer.appurl) 
+      in_progress.each do |attempt|
+        avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
+        if avail_campaign_hash.has_key?(attempt.campaign_id)
+          thisAttempt = avail_campaign_hash[attempt.campaign_id]["calls"].index(attempt)
+          if thisAttempt!=nil
+            avail_campaign_hash[attempt.campaign_id]["calls"].delete_at(thisAttempt)
+            cache_set("avail_campaign_hash") {avail_campaign_hash}
+          end
+        end
+      end
+    end
     
     if answer_pct <= campaign.ratio_4
       ratio_dial=4

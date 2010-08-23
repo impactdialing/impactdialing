@@ -30,6 +30,7 @@ class Campaign < ActiveRecord::Base
       attempt.call_end=Time.now
       attempt.save
     end
+    in_progress
   end
 
   def calls_in_ending_window(period=10,predective_type="longest")
