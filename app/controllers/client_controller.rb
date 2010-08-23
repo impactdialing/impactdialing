@@ -321,6 +321,11 @@ class ClientController < ApplicationController
 #    Rails.logger.silence do
       CallerSession
       Caller
+      if params[:timeframe].blank?
+        @timeframe = 10
+      else
+        @timeframe = params[:timeframe].to_i
+      end
     
       if !params[:clear].blank?
         cache_delete("avail_campaign_hash")
