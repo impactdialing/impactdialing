@@ -40,7 +40,8 @@ class Campaign < ActiveRecord::Base
     else
       window = stats[:avg_long]
     end
-#    RAILS_DEFAULT_LOGGER.debug("window: #{window}")
+    window = window - 10 if window > 10
+#   RAILS_DEFAULT_LOGGER.debug("window: #{window}")
     ending = CallAttempt.all (:conditions=>"
     campaign_id=#{self.id}
     and status like'Connected to caller%'
