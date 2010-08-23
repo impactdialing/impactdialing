@@ -12,4 +12,27 @@ else
 end
 
 #memcached
-CACHE = MemCache.new 'localhost:11211'
+#CACHE = MemCache.new 'localhost:11211'
+
+memcache_options = {
+  :c_threshold => 10000,
+  :compression => true,
+  :debug => false,
+  :namespace => 'some_ns',
+  :readonly => false,
+  :urlencode => false
+}
+ 
+CACHE = MemCache.new memcache_options
+CACHE.servers = '127.0.0.1:11211'
+begin
+   PhusionPassenger.on_event(:starting_worker_process) do |forked|
+     if forked
+       # We're in smart spawning mode, so...
+       # Close duplicated memcached connections - they will open themselves
+       CACHE.reset
+     end
+   end
+# In case you're not running under Passenger (i.e. devmode with mongrel)
+rescue NameError => error
+end
