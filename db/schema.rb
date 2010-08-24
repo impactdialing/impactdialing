@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20100822210728) do
+ActiveRecord::Schema.define(:version => 20100824110442) do
 
   create_table "call_attempts", :force => true do |t|
     t.integer  "voter_id"
@@ -23,6 +23,7 @@ ActiveRecord::Schema.define(:version => 20100822210728) do
     t.integer  "caller_id"
     t.integer  "caller_session_id"
     t.datetime "connecttime"
+    t.integer  "caller_hold_time"
   end
 
   create_table "caller_sessions", :force => true do |t|
@@ -37,6 +38,8 @@ ActiveRecord::Schema.define(:version => 20100822210728) do
     t.integer  "available_for_call", :limit => 1, :default => 1
     t.datetime "starttime"
     t.integer  "voter_in_progress"
+    t.datetime "hold_time_start"
+    t.boolean  "on_call",                         :default => false
   end
 
   create_table "callers", :force => true do |t|
@@ -63,11 +66,13 @@ ActiveRecord::Schema.define(:version => 20100822210728) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "user_id"
-    t.integer  "active",      :limit => 1, :default => 1
+    t.integer  "active",               :limit => 1, :default => 1
     t.integer  "script_id"
-    t.integer  "ratio_2",                  :default => 33
-    t.integer  "ratio_3",                  :default => 20
-    t.integer  "ratio_4",                  :default => 12
+    t.integer  "ratio_2",                           :default => 33
+    t.integer  "ratio_3",                           :default => 20
+    t.integer  "ratio_4",                           :default => 12
+    t.integer  "ratio_override",                    :default => 0
+    t.string   "ending_window_method",              :default => "Not Used"
   end
 
   create_table "campaigns_voter_lists", :id => false, :force => true do |t|

@@ -21,15 +21,16 @@ class CallinController < ApplicationController
       @session = CallerSession.find(cookies[:session])
       @session.endtime=Time.now
       @session.available_for_call=false
+      @session.on_call=false
       @session.save
-      avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
-      if avail_campaign_hash.has_key?(@session.campaign_id)
-        thisSession = avail_campaign_hash[@session.campaign_id]["callers"].index(@session)
-        if thisSession!=nil
-          avail_campaign_hash[@session.campaign_id]["callers"].delete_at(thisSession)
-          cache_set("avail_campaign_hash") {avail_campaign_hash}
-        end
-      end
+      # avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
+      # if avail_campaign_hash.has_key?(@session.campaign_id)
+      #   thisSession = avail_campaign_hash[@session.campaign_id]["callers"].index(@session)
+      #   if thisSession!=nil
+      #     avail_campaign_hash[@session.campaign_id]["callers"].delete_at(thisSession)
+      #     cache_set("avail_campaign_hash") {avail_campaign_hash}
+      #   end
+      # end
       render :template => 'callin/index.xml.builder', :layout => false
       return
     end
@@ -49,16 +50,20 @@ class CallinController < ApplicationController
       else
         multi="ok"
         if c.multi_user==0
-          #check if user logged in already
-          avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
-          avail_campaign_hash.keys.each do |k|
-            callerSessions = avail_campaign_hash[k]["callers"]
-            callerSessions.each do |sess|
-              if sess.caller_id==c.id
-                multi="bad"
-              end
-            end
+          logged_in = CallerSession.find_all_by_caller_id_and_on_call(c.id, true)
+          if logged_in.length > 0
+            multi="bad"
           end
+          #check if user logged in already
+          # avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
+          # avail_campaign_hash.keys.each do |k|
+          #   callerSessions = avail_campaign_hash[k]["callers"]
+          #   callerSessions.each do |sess|
+          #     if sess.caller_id==c.id
+          #       multi="bad"
+          #     end
+          #   end
+          # end
         end
 
         
@@ -131,20 +136,17 @@ class CallinController < ApplicationController
         #send to conference room
         @session.starttime=Time.now
         @session.available_for_call=true
+        @session.on_call=true
         @session.save
-        avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
-#        avail_callers_hash = cache_get("avail_callers_hash") {{}}
-        #if !avail_callers_hash.has_key?(@session.id)
-        if !avail_campaign_hash.has_key?(@campaign.id)
-          avail_campaign_hash[@campaign.id] = {"callers"=>[@session], "calls"=>[]}
-#          avail_callers_hash[@session.id] = @session
-#          cache_set("avail_callers_hash") {avail_callers_hash}
-        else
-          if !avail_campaign_hash[@campaign.id]["callers"].index(@session)
-            avail_campaign_hash[@campaign.id]["callers"] << @session
-          end
-        end
-        cache_set("avail_campaign_hash") {avail_campaign_hash}
+        #avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
+        # if !avail_campaign_hash.has_key?(@campaign.id)
+        #   avail_campaign_hash[@campaign.id] = {"callers"=>[@session], "calls"=>[]}
+        # else
+        #   if !avail_campaign_hash[@campaign.id]["callers"].index(@session)
+        #     avail_campaign_hash[@campaign.id]["callers"] << @session
+        #   end
+        # end
+        # cache_set("avail_campaign_hash") {avail_campaign_hash}
         render :template => 'callin/start_conference.xml.builder', :layout => false
         return
       elsif params[:Digits]=="#"
@@ -268,23 +270,23 @@ class CallinController < ApplicationController
           @session.save
         end
       end
-      avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
-      if avail_campaign_hash.has_key?(attempt.campaign_id)
-        all_attempts = avail_campaign_hash[attempt.campaign_id]["calls"]
-        n=0
-        all_attempts.each do |mem_attempt|
-          if mem_attempt.id == attempt.id
-            avail_campaign_hash[attempt.campaign_id]["calls"].delete_at(n)
-            cache_set("avail_campaign_hash") {avail_campaign_hash}
-          end
-          n+=1
-        end
+      # avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
+      # if avail_campaign_hash.has_key?(attempt.campaign_id)
+      #   all_attempts = avail_campaign_hash[attempt.campaign_id]["calls"]
+      #   n=0
+      #   all_attempts.each do |mem_attempt|
+      #     if mem_attempt.id == attempt.id
+      #       avail_campaign_hash[attempt.campaign_id]["calls"].delete_at(n)
+      #       cache_set("avail_campaign_hash") {avail_campaign_hash}
+      #     end
+      #     n+=1
+      #   end
         # thisAttempt = avail_campaign_hash[attempt.campaign_id]["calls"].index(attempt)
         # if thisAttempt!=nil
         #   avail_campaign_hash[attempt.campaign_id]["calls"].delete_at(thisAttempt)
         #   cache_set("avail_campaign_hash") {avail_campaign_hash}
         # end
-      end
+      #end
       render :template => 'callin/index.xml.builder', :layout => false
       return
     end

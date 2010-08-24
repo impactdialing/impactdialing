@@ -1,9 +1,4 @@
-<% foundit=0 %>
-<% @avail_campaign_hash.keys.each do |k| %>
-	<% if k.to_s==params[:id] && @user.campaigns.index(Campaign.find(k))%>
-		<% foundit=1 %>
-		<% campaign = Campaign.find(k) %>
-		<% info = @avail_campaign_hash[k] %>
+		<% campaign = @campaign %>
 		<% stats = campaign.call_stats(@timeframe) %>
 		<% attempts = stats[:attempts] %>
 		<div class="box" style="width:350px; float:right;">
@@ -29,8 +24,11 @@
 		</div>
 		<div class="box" style="width:370px;">
 			<%= render :partial => 'boxtop', :locals=>{:title=>"#{campaign.name}: Recent Call Stats"} %>
-		    <% callers = info["callers"]  %>
-		    <% calls = info["calls"] %>
+		    <%# callers = info["callers"]  %>
+		    <%# calls = info["calls"] %>
+		    <% callers = CallerSession.find_all_by_campaign_id_and_on_call(campaign.id, 1) %>
+		    <% calls = CallAttempt.find_all_by_campaign_id(campaign.id, :conditions=>"call_end is  NULL") %>
+		
 		    <% voters = campaign.voters("not called") %>
 		
 			<div class="box-content">
@@ -57,7 +55,7 @@
 			<% if callers.length > 0 %>
 			<div class="box-content">
 				Callers logged in:<br/>
-				<% info["callers"].each do |callerSession| %>
+				<% callers.each do |callerSession| %>
 					PIN <%=  callerSession.caller.pin %> <%= callerSession.caller.email %> <br/>
 				<% end %>
 			</div>
@@ -65,11 +63,11 @@
 			<% if calls.length > 0 %>
 			<div class="box-content">
 				Calls in progress:<br/>
-				<% info["calls"].each do |call| %>
-					<%=  number_to_phone(call.voter.Phone, :area_code => true)   %>
-					<%= call.voter.status %>
-					<%= call.voter.FirstName %>
-					<%= call.voter.LastName %> <br/>
+				<% calls.each do |call| %>
+					<%=  number_to_phone(call.voter.Phone, :area_code => true)  if call.voter!=nil %>
+					<%= call.voter.status  if call.voter!=nil %>
+					<%= call.voter.FirstName   if call.voter!=nil %>
+					<%= call.voter.LastName  if call.voter!=nil %> <br/>
 				<% end %>
 			</div>
 			<% end %>
@@ -78,14 +76,9 @@
 			<%= render :partial => 'boxtop', :locals=>{:title=>"#{campaign.name}: Call Results"} %>
 			<div class="box-content">
 				Results:<br/>
-				<% v = Voter.find_all_by_campaign_id(k, :joins=>"join voter_results on voter_results.voter_id=voters.id") %>
+				<% v = Voter.find_all_by_campaign_id(campaign.id, :joins=>"join voter_results on voter_results.voter_id=voters.id") %>
 				<% v.each do |voter| %>
 					<li><%= voter.result %> <%=  number_to_phone(voter.Phone, :area_code => true)   %> <%= voter.FirstName %> <%= voter.LastName %>
 				<% end %>
 			</div>
 		</div>
-	<% end %>
-<% end %>
-<% if @avail_campaign_hash.keys.length==0 || foundit==0 %>
-	Call into the campaign to enable reports
-<% end %>

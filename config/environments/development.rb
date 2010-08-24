@@ -22,14 +22,14 @@ config.action_mailer.raise_delivery_errors = false
 #require 'memcached_fix.rb'
 
 
-memcache_options = {
-  :c_threshold => 10000,
-  :compression => true,
-  :debug => false,
-  :namespace => 'some_ns',
-  :readonly => false,
-  :urlencode => false
-}
- 
-CACHE = MemCache.new memcache_options
-CACHE.servers = '127.0.0.1:11211'
+# memcache_options = {
+#   :c_threshold => 10000,
+#   :compression => true,
+#   :debug => false,
+#   :namespace => 'some_ns',
+#   :readonly => false,
+#   :urlencode => false
+# }
+#  
+# CACHE = MemCache.new memcache_options
+# CACHE.servers = '127.0.0.1:11211'

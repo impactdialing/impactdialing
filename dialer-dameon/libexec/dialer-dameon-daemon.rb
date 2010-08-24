@@ -40,27 +40,29 @@ DaemonKit::Application.running! do |config|
 
   def handleCampaign(k)
     DaemonKit.logger.info "Working on campaign #{k}"
-    avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
-    campaign_hash = avail_campaign_hash[k]
+    # avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
+    # campaign_hash = avail_campaign_hash[k]
     campaign = Campaign.find(k)
     stats = campaign.call_stats(10)
     answer_pct = (stats[:answer_pct] * 100).to_i
-    callers = campaign_hash["callers"]
-    calls = campaign_hash["calls"]
+    callers = CallerSession.find_all_by_campaign_id_and_on_call(k,1)
+    calls = CallAttempt.find_all_by_campaign_id(k, :conditions=>"call_end is NULL")
+    # callers = campaign_hash["callers"]
+    # calls = campaign_hash["calls"]
     voters = campaign.voters("not called")
     DaemonKit.logger.info "Callers logged in: #{callers.length}, Voters to call: #{voters.length}, Calls in progress: #{calls.length}, Answer pct: #{answer_pct}"
     
     if callers.length==0
       in_progress = campaign.end_all_calls(Dialer.account, Dialer.auth, Dialer.appurl) 
       in_progress.each do |attempt|
-        avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
-        if avail_campaign_hash.has_key?(attempt.campaign_id)
-          thisAttempt = avail_campaign_hash[attempt.campaign_id]["calls"].index(attempt)
-          if thisAttempt!=nil
-            avail_campaign_hash[attempt.campaign_id]["calls"].delete_at(thisAttempt)
-            cache_set("avail_campaign_hash") {avail_campaign_hash}
-          end
-        end
+        # avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
+        # if avail_campaign_hash.has_key?(attempt.campaign_id)
+        #   thisAttempt = avail_campaign_hash[attempt.campaign_id]["calls"].index(attempt)
+        #   if thisAttempt!=nil
+        #     avail_campaign_hash[attempt.campaign_id]["calls"].delete_at(thisAttempt)
+        #     cache_set("avail_campaign_hash") {avail_campaign_hash}
+        #   end
+        # end
       end
     end
     
@@ -122,11 +124,26 @@ end
 DaemonKit.logger.info "Starting up..."
 loop do
   begin
-    @avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
-    DaemonKit.logger.info "avail_campaign_hash: #{@avail_campaign_hash.keys}"
-    @avail_campaign_hash.keys.each do |k|
-      handleCampaign(k)
+    # @avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
+    # DaemonKit.logger.info "avail_campaign_hash: #{@avail_campaign_hash.keys}"
+    logged_in_campaigns = ActiveRecord::Base.connection.execute("select distinct campaign_id from caller_sessions where on_call=1")
+    DaemonKit.logger.info "logged_in_campaigns: #{logged_in_campaigns.num_rows}"
+
+    if logged_in_campaigns.num_rows>0
+      logged_in_campaigns.each do |k|
+        handleCampaign(k[0])
+      end
+    else
+      #cleanup
+      if rand(10)==2
+        logged_out_campaigns = ActiveRecord::Base.connection.execute("select distinct campaign_id from caller_sessions where campaign_id not in (select distinct campaign_id from caller_sessions where on_call=1) and campaign_id is not null")
+        logged_out_campaigns.each do |k|
+          DaemonKit.logger.info "Cleaning up campaign #{k[0]}"
+          in_progress = Campaign.find(k[0]).end_all_calls(Dialer.account, Dialer.auth, Dialer.appurl) 
+        end
+      end
     end
+
     sleep 5
 #    puts "ActiveRecord::Base.verify_active_connections!: " + ActiveRecord::Base.verify_active_connections!.inspect
   rescue Exception => e

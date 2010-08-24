@@ -132,8 +132,16 @@ class ClientController < ApplicationController
   end
   
   def campaign_hash_delete
-    cache_delete("avail_campaign_hash")
+#    cache_delete("avail_campaign_hash")
     ActiveRecord::Base.connection.execute("update caller_sessions set available_for_call=0")
+    @campaign = Campaign.find_all_by_user_id_and_id(@user.id,params[:id])
+    @campaign.end_all_calls(TWILIO_ACCOUNT,TWILIO_AUTH,APP_URL)
+    @sessions = CallerSession.find_all_by_campaign_id_and_on_call(params[:id],1)
+    @sessions.each do |sess|
+      sess.on_call=false
+      sess.endtime = Time.now if sess.endtime==nil
+      sess.save
+    end
     flash[:notice]="Dialer Reset.  Callers must call back in."
     redirect_to :action=>"campaign_view", :id=>params[:id]
     return
@@ -319,24 +327,25 @@ class ClientController < ApplicationController
   
   def update_report
 #    Rails.logger.silence do
-      CallerSession
-      Caller
+      # CallerSession
+      # Caller
       if params[:timeframe].blank?
         @timeframe = 10
       else
         @timeframe = params[:timeframe].to_i
       end
     
-      if !params[:clear].blank?
-        cache_delete("avail_campaign_hash")
-      end
-      @avail_campaign_hash = cache_get("avail_campaign_hash") {{}} 
+      # if !params[:clear].blank?
+      #   cache_delete("avail_campaign_hash")
+      # end
+      # @avail_campaign_hash = cache_get("avail_campaign_hash") {{}} 
+      @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id)
       render :layout=>false
 #    end
   end
   
-  def show_memcached
-    @avail_campaign_hash = cache_get("avail_campaign_hash") {{}} 
-  end
+  # def show_memcached
+  #   @avail_campaign_hash = cache_get("avail_campaign_hash") {{}} 
+  # end
 
 end

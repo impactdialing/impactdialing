@@ -46,13 +46,13 @@ class Dialer
     c.status="Call in progress"
     c.save
 
-    avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
-    if !avail_campaign_hash.has_key?(campaign.id)
-      avail_campaign_hash[campaign.id] = {"callers"=>[],"calls"=>[c]}
-    else
-      avail_campaign_hash[campaign.id]["calls"] << c
-    end
-    cache_set("avail_campaign_hash") {avail_campaign_hash}
+    # avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
+    # if !avail_campaign_hash.has_key?(campaign.id)
+    #   avail_campaign_hash[campaign.id] = {"callers"=>[],"calls"=>[c]}
+    # else
+    #   avail_campaign_hash[campaign.id]["calls"] << c
+    # end
+    # cache_set("avail_campaign_hash") {avail_campaign_hash}
 
   end
 end
