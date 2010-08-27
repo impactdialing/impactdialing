@@ -27,8 +27,8 @@
       <ul>
         <li><a href="/client" <% if @actionName=="index" %>class="active"<% end %>><span>Welcome</span></a></li>
         <li><a href="/client/callers" <% if @actionName.index("caller") %>class="active"<% end %>><span>Callers</span></a></li>
-        <li><a href="/client/scripts" <% if @actionName.index("script") %>class="active"<% end %>><span>Results</span></a></li>
-        <li><a href="/client/campaigns" <% if @actionName.index("campaign") %>class="active"<% end %>><span>Campaigns</span></a></li>
+        <li><a href="/client/scripts" <% if @actionName.index("script") %>class="active"<% end %>><span>Scripts</span></a></li>
+        <li><a href="/client/campaigns" <% if @actionName.index("upload") || @actionName.index("campaign") %>class="active"<% end %>><span>Campaigns</span></a></li>
         <li><a href="/client/reports" <% if @actionName=="report" %>class="active"<% end %>><span>Reports</span></a></li>
       </ul>
     </div>
@@ -40,7 +40,7 @@
 <div id="container">
   <div class="shell">
     <!-- Small Nav -->
-    <div class="small-nav"> <a href="/client">Dashboard</a> 
+    <div class="small-nav"> <a href="/client">Welcome</a> 
 	<% if @breadcrumb.class.to_s=="String" %>
 		<span>&gt;</span> <%= @breadcrumb %> 
 	<% elsif @breadcrumb!=nil %>
