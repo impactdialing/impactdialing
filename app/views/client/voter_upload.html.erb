@@ -47,6 +47,11 @@
 			<label>Select Upload File <span>(Required Field)</span></label> 
 			<%= file_field 'upload', 'datafile' %>
 		</p>	
+	   <p>
+	        <label>Voter List Name <span>(Required Field)</span></label>
+			<%= text_field_tag "list_name" %>
+	      </p>
+<!--
 		<p> 
 			<label>Select Voter List <span>(Required Field)</span></label> 
 			<select name="voterList" id="voterList" onchange="checklist();"> 
@@ -56,13 +61,13 @@
 				<option value="0">New List...</option>
 			</select>
 			 <div id="newListDiv" style="display:none;"> Enter new list name: <input type="text" name="new_list_name"></div>
-		</p>	
+		</p>	-->
 		<p class="inline-field"> 
 			<div style="float:right;">
 				<label>Required Upload File Header: Phone</label>
 				<label><span>Optional File Headers: "VAN ID"	LastName FirstName	MiddleName	Suffix		Email</span></label>
 				</div>
-			<label>File Delimter</label> 
+			<label>File Type</label> 
 			<select class="field size3" name="seperator"> 
 				<option value="tab">Tab (txt)</option> 
 				<option value="comma">Comma (csv)</option> 
@@ -78,7 +83,7 @@
 	</div> 
 	<!-- End Form Buttons --> 
 	<% end %>
-
+<!---
 
 	<script>
 	function checklist(){
@@ -89,7 +94,7 @@
 	}
 	checklist();
 	</script>
-
+--->
 </div>
 <% end %>
 
@@ -102,8 +107,14 @@
     <h2>Upload Help</h2>
   </div>
   <!-- End Box Head-->
-	<div class="box-content">Some help text here</div>
+	<div class="box-content">
+		Your list must be either a "comma-separated value" spreadsheet (these files usually have the extension .csv) or a "tab-separated text" spreadsheet (usually with extension .txt). Any spreadsheet can be saved in one of these formats in a spreadsheet editor like Microsoft Excel. 
+	</div>
+	<div class="box-content">
+		In the spreadsheet, the column containing the phone numbers must have the header "Phone". The other optional headers that Impact Dialing can process are ID, FirstName, MiddleName, LastName, Suffix, and Email.
+	</div>
 </div>
 <!-- End Box -->
 
 <% end %>
+<%= float_sidebar %>

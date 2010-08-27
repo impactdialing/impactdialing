@@ -55,14 +55,6 @@ DaemonKit::Application.running! do |config|
     if callers.length==0
       in_progress = campaign.end_all_calls(Dialer.account, Dialer.auth, Dialer.appurl) 
       in_progress.each do |attempt|
-        # avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
-        # if avail_campaign_hash.has_key?(attempt.campaign_id)
-        #   thisAttempt = avail_campaign_hash[attempt.campaign_id]["calls"].index(attempt)
-        #   if thisAttempt!=nil
-        #     avail_campaign_hash[attempt.campaign_id]["calls"].delete_at(thisAttempt)
-        #     cache_set("avail_campaign_hash") {avail_campaign_hash}
-        #   end
-        # end
       end
     end
     

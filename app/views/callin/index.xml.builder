@@ -7,10 +7,17 @@ xml.Response("version"=>"1.0") do |response|
     xml.Redirect(@redirect)
   end
 	if @gather
-		xml.Gather("timeout"=>"15","numDigits"=>"#{@numDigits}", "finishOnKey"=>@finishOnKey, "method"=>"POST"){
-      xml.Play("#{@play}") if @play
-    	xml.Say("#{@say}") if @say
-		}
+	  if @gatherPost.blank?
+  		xml.Gather("timeout"=>"15","numDigits"=>"#{@numDigits}", "finishOnKey"=>@finishOnKey, "method"=>"POST"){
+        xml.Play("#{@play}") if @play
+      	xml.Say("#{@say}") if @say
+  		}
+    else
+  		xml.Gather("timeout"=>"15","numDigits"=>"#{@numDigits}", "finishOnKey"=>@finishOnKey, "method"=>"POST", "action"=>@gatherPost){
+        xml.Play("#{@play}") if @play
+      	xml.Say("#{@say}") if @say
+  		}
+    end
 	else
     xml.Play("#{@play}") if @play
   	xml.Say("#{@say}") if @say

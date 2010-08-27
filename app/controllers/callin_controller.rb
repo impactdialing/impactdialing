@@ -11,6 +11,7 @@ class CallinController < ApplicationController
     @pause=0
     @repeatRedirect=false
     @finishOnKey="#"
+    @gatherPost=""
   end
 
 
@@ -35,12 +36,22 @@ class CallinController < ApplicationController
       return
     end
 
+
     
     # initial call-in
-    @repeatRedirect="#{APP_URL}/callin"
+    att = params[:att] || 0
+    if params[:att]=="3"
+      @say="If you don't have a PIN, please ask your campaign manager for one and call back. Good-bye."
+      @hangup=true
+      render :template => 'callin/index.xml.builder', :layout => false
+      return
+    end
+
+    @repeatRedirect="#{APP_URL}/callin?att=#{att.to_i+1}"
+    @gatherPost = @repeatRedirect
     if params[:Digits].blank?
       # initial call-in
-      @say="Welcome.  Please enter your Pin now."
+      @say="Welcome to Impact Dialing.  Please enter your pin."
       cookies[:session]=nil
     else
       # response with PIN
@@ -75,7 +86,7 @@ class CallinController < ApplicationController
           s.save
           @redirect="#{APP_URL}/callin/enter_group?session=#{s.id}"
         else
-          @say="That caller is already logged in.  Try again. Please enter your Pin now."
+          @say="That PIN is already in use. Please enter another PIN."
         end
       end
     end
@@ -91,7 +102,17 @@ class CallinController < ApplicationController
   
   def enter_group
     # params - session
-    @repeatRedirect="#{APP_URL}/callin/enter_group?session=#{params[:session]}"
+
+    att = params[:att] || 0
+    if params[:att]=="3"
+      @say="If you don't have a campaign ID, please ask your campaign manager for one and call back. Good-bye."
+      @hangup=true
+      render :template => 'callin/index.xml.builder', :layout => false
+      return
+    end
+
+    @repeatRedirect="#{APP_URL}/callin/enter_group?session=#{params[:session]}&att=#{att.to_i+1}"
+    @gatherPost = @repeatRedirect
     @session = CallerSession.find(params[:session]) 
     cookies[:session] = @session.id
     @caller = @session.caller
@@ -124,13 +145,14 @@ class CallinController < ApplicationController
   
   def get_ready
     # params - session, campaign
+    @finishOnKey=""
     @repeatRedirect="#{APP_URL}/callin/enter_group?session=#{params[:session]}&campaign=#{params[:campaign]}"
     @session = CallerSession.find(params[:session]) 
     @caller = @session.caller
     @campaign = Campaign.find(params[:campaign])
 
     if params[:Digits].blank?
-      @say="Press star to begin taking calls.  Press pound for instructions."
+      @say="Press star to begin taking calls, or press pound for instructions."
     else
       if params[:Digits]=="*"
         #send to conference room
@@ -150,7 +172,7 @@ class CallinController < ApplicationController
         render :template => 'callin/start_conference.xml.builder', :layout => false
         return
       elsif params[:Digits]=="#"
-        @say="Help Text here. Press star to begin taking calls.  Press pound for instructions."
+        @say= "Impact Dialing eliminates unanswered phone calls, allowing you to spend your time talking to people instead of waiting for someone to pick up. When you're ready to start taking calls, press the star key. You'll hear a brief period of silence while Impact Dialing finds a someone who answers the phone. When you've been connected to someone, you'll hear this sound: bee-doop. You usually won't hear the person say hello, so start talking immediately. At the end of the conversation, do not hang up the phone. Instead, press star to end the call, and then enter the call result on your phone's keypad. Then press star to submit the result and keep taking calls, or press pound to submit the result and hang up. You will now be connected to the system. In a moment Impact Dialing will deliver you a call. Begin taking calls.  After a call: say Please enter your call result. Then press star to submit and keep taking calls, or press pound to submit and hang up."
       else
         @say="Press star to begin taking calls.  Press pound for instructions."
       end
@@ -175,7 +197,6 @@ class CallinController < ApplicationController
     @caller = @session.caller
     @campaign = @session.campaign
 
-
     if params[:Digits].blank?
       #hangup on voter
       attempt = CallAttempt.find_by_voter_id(@session.voter_in_progress, :order=>"id desc", :limit=>1)
@@ -184,7 +205,7 @@ class CallinController < ApplicationController
         a=t.call("POST", "Calls/#{attempt.sid}", {'CurrentUrl'=>"#{APP_URL}/callin/voterEndCall?attempt=#{attempt.id}"})
       end
       # initial call-in
-      @say="Input your result code and press star to confirm"
+      @say="Please enter your call result. Then press star to submit and keep taking calls."
     else
       # digits entered, response given
       if params[:Digits]=="*"
@@ -192,20 +213,22 @@ class CallinController < ApplicationController
         @hangup=true
       else
         @say="Thank you."
-        results = VoterResult.new
-        results.caller_id=@caller.id
-        results.voter_id=@session.voter_in_progress
-        results.campaign_id=@campaign.id
-        results.status=params[:Digits]
-        results.save
-        #results.attempt
-        #voter.attempt
-        #Get Rid of VoterResult, put in attempt
         if @session.voter_in_progress!=nil
           voter = Voter.find(@session.voter_in_progress)
           voter.status='Call finished'
+          voter.result_digit=params[:Digits]
+          voter.caller_id=@caller.id
+          voter.attempt_id=attempt.id if attempt!=nil
           if @campaign.script!=nil
             voter.result=eval("@campaign.script.keypad_" + params[:Digits])
+            begin
+              if @campaign.incompletes!=nil
+                if eval(@campaign.incompletes).index(params[:Digits])
+                  voter.call_back=true
+                end
+              end
+            rescue
+            end
           end
           voter.save
         end
@@ -249,6 +272,7 @@ class CallinController < ApplicationController
         attempt.status="Hangup or answering machine"
       elsif params[:DialStatus]=="no-answer"
         @voter.status="No answer"
+        @voter.call_back=true
         attempt.status="No answer"
       else
         if attempt.caller_id==nil

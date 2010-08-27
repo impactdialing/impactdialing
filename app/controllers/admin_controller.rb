@@ -25,6 +25,7 @@ class AdminController < ApplicationController
         @script.keypad_7="Not home/call back"
         @script.keypad_8="Language barrier"
         @script.keypad_9="Wrong number"
+        @script.incompletes=["7"].to_json
         @script.script="Hi, I'm a volunteer with the such-and-such campaign.
 
 I'm voting for such-and-such because...
@@ -44,6 +45,7 @@ Can we count on you to vote for such-and-such?"
         @script.keypad_7="Not home/call back"
         @script.keypad_8="Language barrier"
         @script.keypad_9="Wrong number"
+        @script.incompletes=["7"].to_json
         @script.script="Hi, I'm a volunteer with the such-and-such campaign.
         
 I'm voting for such-and-such because...

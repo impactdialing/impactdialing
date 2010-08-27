@@ -16,7 +16,7 @@ class ClientController < ApplicationController
   end
 
   def index
-    @breadcrumb="Welcome"
+    @breadcrumb=nil
     
   end
 
@@ -125,7 +125,8 @@ class ClientController < ApplicationController
   def campaign_view
     @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id) 
     @callers = Caller.find_all_by_user_id_and_active(@user.id,true)
-    @lists = VoterList.find_all_by_user_id_and_active(@user.id,true)
+    @lists = @campaign.voter_lists
+#    @lists = VoterList.find_all_by_user_id_and_active(@user.id,true)
     @breadcrumb=[{"Campaigns"=>"/client/campaigns"},@campaign.name]
 #    @voters=Voter.find_all_by_campaign_id_and_active(@campaign.id,true)
     @voters = Voter.paginate :page => params[:page], :conditions =>"active=1 and campaign_id=#{@campaign.id}", :order => 'LastName,FirstName,Phone'
@@ -149,27 +150,45 @@ class ClientController < ApplicationController
   
   def voter_upload
     @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id) 
-    @breadcrumb=[{"Campaigns"=>"/client/campaigns"},{@campaign.name=>"/client/campaign_view/#{@campaign.id}"}, "Add Voters"]
+    @breadcrumb=[{"Campaigns"=>"/client/campaigns"},{@campaign.name=>"/client/campaign_view/#{@campaign.id}"}, "Upload voters"]
     @lists=VoterList.find_all_by_user_id_and_active(@user.id,true, :order=>"name")
     if (request.post?)
-      if params[:voterList]=="0" && params[:new_list_name].blank?
+      if params[:upload].blank?
+        flash.now[:error]="You must select a file to upload"
+        return
+      end
+      if params[:list_name].blank?
         flash.now[:error]="List name cannot be blank"
         return
-      elseif params[:voterList]=="0" 
-        l = VoterList.find_by_name_and_user_id(params[:new_list_name], @user.id)
-        if !l.blank?
-          flash.now[:error]="List name cannot be blank"
-          return
-        end
+      elsif VoterList.find_by_user_id_and_name_and_active(@user.id,params[:list_name],1)!=nil
+        flash.now[:error]="List name is aleady in use in this campaign"
+        return
       end
-      if params[:voterList]=="0"
-        list = VoterList.new
-        list.name=params[:new_list_name]
-        list.user_id=@user.id
-        list.save
-      else
-        list = VoterList.find(params[:voterList])
-      end
+      list = VoterList.new
+      list.campaign_id=@campaign.id
+      list.name=params[:list_name]
+      list.user_id=@user.id
+      list.save
+
+      # if params[:voterList]=="0" && params[:new_list_name].blank?
+      #   flash.now[:error]="List name cannot be blank"
+      #   return
+      # elseif params[:voterList]=="0" 
+      #   l = VoterList.find_by_name_and_user_id(params[:new_list_name], @user.id)
+      #   if !l.blank?
+      #     flash.now[:error]="List name cannot be blank"
+      #     return
+      #   end
+      # end
+      # if params[:voterList]=="0"
+      #   list = VoterList.new
+      #   list.campaign_id=@campaign.id
+      #   list.name=params[:new_list_name]
+      #   list.user_id=@user.id
+      #   list.save
+      # else
+      #   list = VoterList.find(params[:voterList])
+      # end
       if params[:seperator]=="tab"
         sep="\t"
       else
@@ -213,6 +232,7 @@ class ClientController < ApplicationController
       end
       if params[:voterList]=="0"
         list = VoterList.new
+        list.campaign_id=@campaign.id
         list.name=params[:new_list_name]
         list.user_id=@user.id
         list.save
@@ -248,7 +268,11 @@ class ClientController < ApplicationController
   end
   
   def script_add
-    @breadcrumb=[{"Script/Results"=>"/client/scripts"},"Add Script/Result"]
+    if params[:id].blank?
+      @breadcrumb=[{"Scripts"=>"/client/scripts"},"Add Script"]
+    else
+      @breadcrumb=[{"Scripts"=>"/client/scripts"},"Edit Script"]
+    end
     @script = Script.find_by_id_and_user_id(params[:id],@user.id)
     if @script==nil
       @script = Script.new
@@ -261,12 +285,23 @@ class ClientController < ApplicationController
       @script.keypad_7="Not home/call back"
       @script.keypad_8="Language barrier"
       @script.keypad_9="Wrong number"
+      @script.incompletes=["7"].to_json
     end
     if @script.new_record?
       @label="Add Result"
     else
       @label="Edit Result"
     end
+    if @script.incompletes!=nil
+      begin
+        @incompletes = eval(@script.incompletes)
+      rescue
+        @incompletes=[]
+      end
+    else
+      @incompletes=[]
+    end
+    
     if request.post?
       @script.update_attributes(params[:script])
 
@@ -294,6 +329,11 @@ class ClientController < ApplicationController
         end
       end
       if @script.valid?
+        if params[:incomplete]
+          @script.incompletes=params[:incomplete].to_json
+        else
+          @script.incompletes=nil
+        end
         @script.user_id=@user.id
         @script.save
         flash[:notice]="Script saved"
@@ -314,15 +354,24 @@ class ClientController < ApplicationController
     if params[:id].blank?
       @breadcrumb="Reports"
     else
-      @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
-      if @campaign.blank?
-        render :text=>"Unauthorized"
-        return
-      end
+      @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id)
       @breadcrumb=[{"Reports"=>"/client/reports"},@campaign.name]
     end
-#    require "#{RAILS_ROOT}/app/models/caller_session.rb"
-#    require "#{RAILS_ROOT}/app/models/caller.rb"
+  end
+  
+  def report_realtime
+        if params[:id].blank?
+          @breadcrumb="Reports"
+        else
+          @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
+          if @campaign.blank?
+            render :text=>"Unauthorized"
+            return
+          end
+          @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Realtime Report"]
+        end
+    #    require "#{RAILS_ROOT}/app/models/caller_session.rb"
+    #    require "#{RAILS_ROOT}/app/models/caller.rb"
   end
   
   def update_report
@@ -342,6 +391,30 @@ class ClientController < ApplicationController
       @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id)
       render :layout=>false
 #    end
+  end
+  
+  def report_overview
+    @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
+    if @campaign.blank?
+      render :text=>"Unauthorized"
+      return
+    end
+    if params[:type]=="1"
+      extra="and result is not null"
+    end
+    
+    @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Realtime Report"]
+    @records = ActiveRecord::Base.connection.execute(" SELECT count(*) as cnt, result FROM call_attempts where campaign_id=#{@campaign.id} #{extra}
+    group by result order by count(*) desc")
+    @total=0
+    @records.each do |r|
+      @total = @total + r[0].to_i
+    end
+    @records.data_seek(0)
+    
+    @voters_to_call = @campaign.voters("not called",false)
+    @voters_called = @campaign.voters_called
+    @totalvoters = @voters_to_call.length + @voters_called.length
   end
   
   # def show_memcached

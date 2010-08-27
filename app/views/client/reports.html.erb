@@ -1,37 +1,21 @@
 <% if params[:id].blank? %>
+	<div class="box" style="width:600px;">
+		<%= render :partial => 'boxtop', :locals=>{:title=>"Choose a campaign"} %>
+		<div class="box-content">
+			<% @user.campaigns.each do |c| %>
+			<a href="/client/reports/<%= c.id %>"><%= c.name %></a><br/>
+			<% end %>
+		</div>
+	</div>
 
+<% else %>
 <div class="box" style="width:600px;">
-	<%= render :partial => 'boxtop', :locals=>{:title=>"Choose a campaign"} %>
+	<%= render :partial => 'boxtop', :locals=>{:title=>"Choose a report for #{@campaign.name}"} %>
 	<div class="box-content">
-		<% @user.campaigns.each do |c| %>
-		<a href="/client/reports/<%= c.id %>"><%= c.name %></a><br/>
-		<% end %>
+		<a href="/client/report_overview?id=<%=  params[:id]%>">Overview Report</a><br/>
+		<a href="/client/report_overview?id=<%=  params[:id]%>&type=1">Answered Call Report</a><br/>
+		<a href="/client/report_realtime?id=<%=  params[:id]%>">Realtime Report</a>
 	</div>
 </div>
 
-<% else %>
-<% form_tag do %>
-  
-<form method="post" style="padding:0; margin:0;">
-Recent timeframe:	<select name="timeframe" style="padding:0; margin:0;" onchange="document.forms[0].submit();">
-		<% 
-		count = 0
-		10.times do
-		  count += 10
-		%>
-		  <option value="<%= count.to_s %>" <% if params[:timeframe]==count.to_s %>selected<% end %>><%= count.to_s %></option>
-		<%
-		end
-		 %>
-		  <option value="1000000" <% if params[:timeframe]=="1000000" %>selected<% end %>>All time</option>
-	</select> minutes
-</form><br/>
-<% end -%>
-
-<div id="status">Loading...</div>
-<%= periodically_call_remote(:url => { :action => 'update_report', :id=>params[:id], :timeframe=>params[:timeframe] }, :update => 'status',  :frequency => '5')  %>
-<script>
-<%= remote_function(:url => { :action => 'update_report', :id=>params[:id] , :timeframe=>params[:timeframe]}, :update => 'status',  :frequency => '5')  %>
-</script>
 <% end %>
-

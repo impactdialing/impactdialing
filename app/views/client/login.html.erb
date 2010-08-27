@@ -24,3 +24,8 @@
 <% end %>
 <!-- End Box -->
 
+<% javascript_tag do %>
+
+Event.observe(document, 'keypress', function(event) { if(event.keyCode== Event.KEY_RETURN) document.getElementById('loginForm').submit();});
+
+<% end %>

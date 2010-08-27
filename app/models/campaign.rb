@@ -1,7 +1,9 @@
 class Campaign < ActiveRecord::Base
   require "fastercsv"
   validates_presence_of :name, :on => :create, :message => "can't be blank"
-  has_and_belongs_to_many :voter_lists
+#  has_and_belongs_to_many :voter_lists
+#  has_many :voter_lists
+  has_many :voter_lists, :conditions => {:active => true}  
   has_and_belongs_to_many :callers
   belongs_to :script
   belongs_to :user
@@ -102,18 +104,51 @@ class Campaign < ActiveRecord::Base
     stats[:avg_long] = totlongduration / stats[:total_long] if stats[:total_long] > 0
     stats
   end
-
-  def voters(status=nil)
+  
+  def voters_called
+    voters=[]
+    self.voter_lists.each do |list|
+      list.voters.each do |voter|
+        if voter.status!='not called'
+          voters << voter
+        end
+      end
+    end
+    voters
+  end
+  
+  def voters(status=nil,include_call_retries=true)
     voters=[]
     self.voter_lists.each do |list|
       list.voters.each do |voter|
         if status==nil
           voters << voter if voter.active==true && voters.index(voter)==nil
         else
-          voters << voter if voter.active==true && voter.status==status && voters.index(voter)==nil
+          if voter.active==true && voters.index(voter)==nil
+            if voter.status==status 
+              voters << voter
+            elsif include_call_retries && voter.call_back=true 
+              attempt = CallAttempt.find_by_voter_id(voter.id, :order=>"id desc", :limit=>1).call_end
+              if attempt != nil && attempt< (Time.now - 3.hours)
+                voters << voter
+              end
+            end
+          end
         end
       end
     end
+
+    if voters.length==0 && include_call_retries
+      # no one left, so call everyone we missed over 10 minutes
+      uncalled = Voter.find_all_by_campaign_id_and_active_and_call_back(self.id, 1, 1)
+      uncalled.each do |voter|
+        attempt = CallAttempt.find_by_voter_id(voter.id, :order=>"id desc", :limit=>1).call_end
+        if  attempt!=nil && attempt < Time.now - 90.minutes
+          voters << voter
+        end
+      end
+    end
+
     voters
   end
   
