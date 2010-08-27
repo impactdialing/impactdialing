@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20100824110442) do
+ActiveRecord::Schema.define(:version => 20100827140414) do
 
   create_table "call_attempts", :force => true do |t|
     t.integer  "voter_id"
@@ -24,6 +24,8 @@ ActiveRecord::Schema.define(:version => 20100824110442) do
     t.integer  "caller_session_id"
     t.datetime "connecttime"
     t.integer  "caller_hold_time"
+    t.string   "result"
+    t.string   "result_digit"
   end
 
   create_table "caller_sessions", :force => true do |t|
@@ -75,11 +77,6 @@ ActiveRecord::Schema.define(:version => 20100824110442) do
     t.string   "ending_window_method",              :default => "Not Used"
   end
 
-  create_table "campaigns_voter_lists", :id => false, :force => true do |t|
-    t.integer "campaign_id"
-    t.integer "voter_list_id"
-  end
-
   create_table "lists", :force => true do |t|
     t.string   "name"
     t.integer  "group_id"
@@ -88,10 +85,15 @@ ActiveRecord::Schema.define(:version => 20100824110442) do
     t.datetime "updated_at"
   end
 
+  create_table "old_campaigns_voter_lists", :id => false, :force => true do |t|
+    t.integer "campaign_id"
+    t.integer "voter_list_id"
+  end
+
   create_table "scripts", :force => true do |t|
     t.string   "name"
     t.integer  "user_id"
-    t.integer  "active",     :limit => 1, :default => 1
+    t.integer  "active",      :limit => 1, :default => 1
     t.text     "script"
     t.string   "keypad_1"
     t.string   "keypad_2"
@@ -191,6 +193,7 @@ ActiveRecord::Schema.define(:version => 20100824110442) do
     t.string   "keypad_96"
     t.string   "keypad_97"
     t.string   "keypad_98"
+    t.string   "incompletes"
     t.string   "keypad_99"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -223,23 +226,10 @@ ActiveRecord::Schema.define(:version => 20100824110442) do
   create_table "voter_lists", :force => true do |t|
     t.string   "name"
     t.string   "user_id"
-    t.boolean  "active",     :default => true
+    t.boolean  "active",      :default => true
     t.datetime "created_at"
     t.datetime "updated_at"
-  end
-
-  create_table "voter_results", :force => true do |t|
-    t.integer  "caller_id"
-    t.integer  "voter_id"
     t.integer  "campaign_id"
-    t.string   "status",      :default => "not called"
-    t.string   "result"
-    t.integer  "duration"
-    t.datetime "start_time"
-    t.datetime "end_time"
-    t.string   "guid"
-    t.datetime "created_at"
-    t.datetime "updated_at"
   end
 
   create_table "voters", :force => true do |t|
@@ -251,14 +241,18 @@ ActiveRecord::Schema.define(:version => 20100824110442) do
     t.string   "Suffix"
     t.string   "Email"
     t.integer  "campaign_id"
-    t.boolean  "active",            :default => true
+    t.boolean  "active",                         :default => true
     t.datetime "created_at"
     t.integer  "voter_list_id"
     t.datetime "updated_at"
     t.integer  "user_id"
-    t.string   "status",            :default => "not called"
+    t.string   "status",                         :default => "not called"
     t.string   "result"
     t.integer  "caller_session_id"
+    t.integer  "call_back",         :limit => 1, :default => 0
+    t.integer  "caller_id"
+    t.string   "result_digit"
+    t.integer  "attempt_id"
   end
 
 end
