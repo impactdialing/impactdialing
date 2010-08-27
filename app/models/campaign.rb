@@ -129,7 +129,7 @@ class Campaign < ActiveRecord::Base
               voters << voter
             elsif include_call_retries && voter.call_back=true 
               attempt = CallAttempt.find_by_voter_id(voter.id, :order=>"id desc", :limit=>1)
-              if attempt != nil && attempt.call_end< (Time.now - 3.hours)
+              if attempt != nil && attempt.call_end!=nil && attempt.call_end < (Time.now - 3.hours)
                 voters << voter
               end
             end
@@ -143,7 +143,7 @@ class Campaign < ActiveRecord::Base
       uncalled = Voter.find_all_by_campaign_id_and_active_and_call_back(self.id, 1, 1)
       uncalled.each do |voter|
         attempt = CallAttempt.find_by_voter_id(voter.id, :order=>"id desc", :limit=>1)
-        if  attempt!=nil && attempt.call_end < Time.now - 9.minutes
+        if  attempt!=nil && attempt.call_end!=nil && attempt.call_end < Time.now - 9.minutes
           voters << voter
         end
       end
