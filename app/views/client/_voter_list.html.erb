@@ -14,6 +14,7 @@
 	  <div class="table">
 	    <table width="100%" border="0" cellspacing="0" cellpadding="0">
 	      <tr>
+			<th>List</th>
 	        <th>Phone</th>
 	        <th>Last</th>
 	        <th>First</th>
@@ -25,6 +26,7 @@
 	      </tr>
 		<% @voters.each do |v| %>
 	      <tr class="<%= cycle("odd","even") %>">
+	        <td><%= v.voter_list.name %></td>
 	        <td nowrap><h3><%= number_to_phone(v.Phone, :area_code => true) %></h3></td>
 	        <td><%= v.LastName %></td>
 	        <td><%= v.FirstName %></td>

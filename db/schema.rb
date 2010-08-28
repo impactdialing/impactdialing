@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20100827140414) do
+ActiveRecord::Schema.define(:version => 20100828164145) do
 
   create_table "call_attempts", :force => true do |t|
     t.integer  "voter_id"
@@ -42,6 +42,7 @@ ActiveRecord::Schema.define(:version => 20100827140414) do
     t.integer  "voter_in_progress"
     t.datetime "hold_time_start"
     t.boolean  "on_call",                         :default => false
+    t.string   "caller_number"
   end
 
   create_table "callers", :force => true do |t|
@@ -75,6 +76,8 @@ ActiveRecord::Schema.define(:version => 20100827140414) do
     t.integer  "ratio_4",                           :default => 12
     t.integer  "ratio_override",                    :default => 0
     t.string   "ending_window_method",              :default => "Not Used"
+    t.string   "caller_id"
+    t.boolean  "caller_id_verified",                :default => false
   end
 
   create_table "lists", :force => true do |t|

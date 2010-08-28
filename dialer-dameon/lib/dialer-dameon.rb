@@ -16,7 +16,7 @@ class Dialer
     APP_NUMBER="5104048117"
     APP_URL="http://www.hinodae.com:5555"
   else
-    APP_NUMBER="5104707749"
+    APP_NUMBER="4157020991"
     APP_URL="http://ec2-204-236-196-225.compute-1.amazonaws.com"
   end
   def self.account
@@ -35,7 +35,12 @@ class Dialer
     voter.save
     t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
 #    a=t.call("POST", "Calls", {'IfMachine'=>"Hangup", 'Caller' => APP_NUMBER, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}"})
-    a=t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => APP_NUMBER, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}"})
+    if !campaign.caller_id.blank? && campaign.caller_id_verified
+      caller_num=campaign.caller_id
+    else
+      caller_num=APP_NUMBER
+    end
+    a=t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}"})
     require 'rubygems'
     require 'hpricot'
     @doc = Hpricot::XML(a)

@@ -81,6 +81,7 @@ class CallinController < ApplicationController
         if multi=="ok"
           # redirect to group ID
           s = CallerSession.new
+          s.caller_number = params[:Caller]
           s.caller_id=c.id
           s.guid = params[:CallSid]
           s.save

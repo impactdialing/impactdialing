@@ -103,8 +103,19 @@ class ClientController < ApplicationController
       @label="Edit Campaign"
     end
     if request.post?
+      last_caller_id = @campaign.caller_id
       @campaign.update_attributes(params[:campaign])
+      code=""
       if @campaign.valid?
+        if !@campaign.caller_id_verified || (!@campaign.caller_id.blank? && last_caller_id != @campaign.caller_id)
+          #verify this callerid
+          t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+          a=t.call("POST", "OutgoingCallerIds", {'PhoneNumber'=>@campaign.caller_id, 'FriendlyName' => "Campaign #{@campaign.id}"})
+          require 'rubygems'
+          require 'hpricot'
+          @doc = Hpricot::XML(a)
+          code= (@doc/"ValidationCode").inner_html
+        end
         @campaign.user_id=@user.id
         if @campaign.script_id.blank?
           s = Script.find_by_user_id_and_active(@user.id,1)
@@ -115,7 +126,11 @@ class ClientController < ApplicationController
         callers.each do |caller|
           @campaign.callers << caller
         end
-        flash[:notice]="Campaign saved"
+        if code.blank?
+          flash[:notice]="Campaign saved"
+        else
+          flash[:notice]="Campaign saved.  <font color=red>Enter code #{code} when called.</font>"
+        end
         redirect_to :action=>"campaign_view", :id=>@campaign.id
         return
       end
@@ -130,6 +145,10 @@ class ClientController < ApplicationController
     @breadcrumb=[{"Campaigns"=>"/client/campaigns"},@campaign.name]
 #    @voters=Voter.find_all_by_campaign_id_and_active(@campaign.id,true)
     @voters = Voter.paginate :page => params[:page], :conditions =>"active=1 and campaign_id=#{@campaign.id}", :order => 'LastName,FirstName,Phone'
+    @campaign.check_valid_caller_id_and_save
+    if !@campaign.caller_id.blank? && !@campaign.caller_id_verified
+      flash.now[:error]="Your Campaign Caller ID is not verified." 
+    end
   end
   
   def campaign_hash_delete
@@ -256,7 +275,7 @@ class ClientController < ApplicationController
   
   def campaign_clear_calls
     ActiveRecord::Base.connection.execute("update voters set result=NULL, status='not called' where campaign_id=#{params[:id]}")
-    ActiveRecord::Base.connection.execute("delete from voter_results where campaign_id=#{params[:id]}")
+#    ActiveRecord::Base.connection.execute("delete from voter_results where campaign_id=#{params[:id]}")
     flash[:notice]="Calls cleared"
     redirect_to :action=>"campaign_view", :id=>params[:id]
     return
@@ -346,8 +365,10 @@ class ClientController < ApplicationController
   
   def voter_view
     @campaign = Campaign.find_by_id_and_user_id(params[:campaign_id],@user.id)
+    @breadcrumb=[{"Campaigns"=>"/client/campaigns"},{"#{@campaign.name}"=>"/client/campaign_view/#{@campaign.id}"},"View Voters"]
     #@voters = Voter.find_all_by_campaign_id_and_active_and_user_id(params[:campaign_id],1,@user.id)
-    @voters = Voter.paginate :page => params[:page], :conditions =>"active=1 and campaign_id=#{@campaign.id}", :order => 'LastName,FirstName,Phone'
+#    @voters = Voter.paginate :page => params[:page], :conditions =>"active=1 and campaign_id=#{@campaign.id}", :order => 'LastName,FirstName,Phone'
+    @voters = Voter.paginate :page => params[:page], :conditions =>"active=1 and campaign_id=#{@campaign.id} and voter_list_id in (#{@campaign.voter_lists.collect{|c| c.id.to_s + ","}}0)", :order => 'LastName,FirstName,Phone'
   end
   
   def reports

@@ -9,6 +9,34 @@ class Campaign < ActiveRecord::Base
   belongs_to :user
   cattr_reader :per_page
   @@per_page = 25
+
+  def check_valid_caller_id_and_save
+    check_valid_caller_id
+    self.save
+  end
+  
+  def check_valid_caller_id
+    #verify caller_Id
+    self.caller_id_verified=false
+    if !self.caller_id.blank?
+      #verify
+      t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+      a=t.call("GET", "OutgoingCallerIds", {'PhoneNumber'=>self.caller_id})
+      require 'rubygems'
+      require 'hpricot'
+      begin
+        @doc = Hpricot::XML(a)
+        code= (@doc/"Sid").inner_html
+        if code.blank?
+          self.caller_id_verified=false
+        else
+          self.caller_id_verified=true
+        end
+      rescue
+      end
+    end
+    true  
+  end
   
   def before_create
     uniq_pin=0
@@ -18,6 +46,10 @@ class Campaign < ActiveRecord::Base
       uniq_pin=pin if check.blank?
     end
     self.group_id = uniq_pin
+  end
+  
+  def before_save
+    check_valid_caller_id
   end
 
   def recent_attempts(mins=10)

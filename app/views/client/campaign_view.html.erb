@@ -1,3 +1,4 @@
+
 <%# render :partial => 'voter_list' %>
 <table width="100%">
 	<tr>
@@ -103,20 +104,28 @@
   </div>
   <!-- End Box Head-->
   	<div class="box-content"> 
-	  	<% form_for :campaign, :url => { :action => "campaign_add" } do |f| %>
+		<% form_for :campaign, :url => { :action => "campaign_add" , :id=>@campaign.id} do |f| %>
         <label>Name:</label><br/>
 		<%= f.text_field :name, {:class=>"field size3"} %>
 		<%= f.submit "update", :disable_with => 'update', :class=>"button" %>
-		<% end -%>
 		<br/>
+		<br/>
+
+        <label>Caller ID:</label><br/>
+		<%= f.text_field :caller_id, {:class=>"field size3"} %>
+		<%= f.submit "update", :disable_with => 'update', :class=>"button" %>
+		<% end -%>
+			<br/>
 		Call-in number:
 		<br/><div style="font-size:18px; padding-top:6px; "> <%= number_to_phone(APP_NUMBER, :area_code => true) %></div>
 		<br/>
 		Campaign ID:
 		<br/><div style="font-size:18px; padding-top:6px; "> <%= @campaign.group_id %></div>
 		<br/>
-		Results:
-		<br/><div style="font-size:18px; padding-top:6px; ">
+
+			Results:
+			<br/><div style="font-size:18px; padding-top:6px; ">
+
 		<% form_for :campaign, :url => { :action => "campaign_add" , :id=>@campaign.id} do |f| %>
 			
 			<%= f.collection_select(:script_id, Script.find_all_by_user_id_and_active(@user.id,1), :id, :name, { :prompt => true},  {:class=>"field", :onchange=>"this.form.submit();"} 
