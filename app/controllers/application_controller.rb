@@ -4,10 +4,43 @@
 class ApplicationController < ActionController::Base
   helper :all # include all helpers, all the time
   protect_from_forgery # See ActionController::RequestForgeryProtection for details
-  before_filter :controllerName, :preload_models
+  before_filter :controllerName#, :preload_models
   # Scrub sensitive parameters from your log
   filter_parameter_logging :password
   helper_method :phone_format, :phone_number_valid  
+  
+  def warning_text
+    return "" if @user==nil
+    warning=""
+    @user.campaigns.each do |campaign|
+      c = CallerSession.find_all_by_campaign_id_and_on_call(campaign.id,1)
+      if c.length > 0
+        voters = campaign.voters("not called")
+        if voters.length < c.length * 10
+            warning+="
+            Oh no! You are running low on numbers to dial for the #{campaign.name} campaign.
+            Unless you act quickly, you'll have called through all your lists in
+            about 30 minutes. You have three choices.<br/><br/>
+            1: Load up some more numbers! This is the best option, if you have
+            another list ready to go. If it's already loaded up, just add it to
+            this dialing group.<br/><br/>
+            2. Cycle back through the list another time. Generally, it's a good
+            idea not to call through the same list twice in one session, because
+            if someone didn't pick up before, chances are they won't pick up now,
+            and the people who said to call back might be pissed that you called
+            back so quickly. We'll dial really aggressively to try to find numbers
+            that will answer, but this will also cause more calls to be dropped.<br/><br/>
+            3. Do nothing and end the calling for this shift. If you don't have
+            more numbers and the calling shift is almost over anyways, this is
+            your best option.<br/><br/>
+
+            If you don't choose one of these options, we'll choose number 2 for
+            you when your numbers run out.<br/><br/>"
+          end
+        end
+      end
+    warning
+  end
 
   def preload_models
     CallAttempt

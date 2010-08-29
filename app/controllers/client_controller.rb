@@ -1,5 +1,6 @@
 class ClientController < ApplicationController
   before_filter :check_login, :except=>"login"
+  before_filter :check_warning
   layout "client"
   in_place_edit_for :campaign, :name
 
@@ -12,6 +13,13 @@ class ClientController < ApplicationController
       @user = User.find(session[:user])
     rescue
       logout
+    end
+  end
+  
+  def check_warning
+    text=warning_text
+    if !text.blank?
+      flash.now[:warning]=text
     end
   end
 
@@ -93,6 +101,23 @@ class ClientController < ApplicationController
     @breadcrumb="Campaigns"
     @campaigns = Campaign.paginate :page => params[:page], :conditions =>"active=1 and user_id=#{@user.id}", :order => 'name'
   end
+  
+  def campaign_new
+    c = Campaign.new
+    c.user_id=@user.id
+    count = Campaign.find_all_by_user_id(@user.id)
+    c.name="Untitled #{count.length+1}"
+    script = Script.find_by_user_id(@user.id)
+    c.script_id=script.id if script!=nil
+    c.save
+    callers = Caller.find_all_by_user_id_and_active(@user.id,1)
+    callers.each do |caller|
+      c.callers << caller
+    end
+    flash[:notice]="Campaign created."
+    redirect_to :action=>"campaign_view", :id=>c.id
+    return
+  end
 
   def campaign_add
     @breadcrumb=[{"Campaigns"=>"/client/campaigns"},"Add Campaign"]
@@ -102,6 +127,7 @@ class ClientController < ApplicationController
     else
       @label="Edit Campaign"
     end
+    newrecord = @campaign.new_record?
     if request.post?
       last_caller_id = @campaign.caller_id
       @campaign.update_attributes(params[:campaign])
@@ -122,9 +148,24 @@ class ClientController < ApplicationController
           @campaign.script_id=s.id if s!=nil
         end
         @campaign.save
-        callers = Caller.find_all_by_user_id_and_active(@user.id,1)
-        callers.each do |caller|
-          @campaign.callers << caller
+        if params[:listsSent]
+          @campaign.voter_lists.each do |l|
+            l.enabled=false
+            l.save
+          end
+          if !params[:voter_list_ids].blank?
+            params[:voter_list_ids].each do |lid|
+              l = VoterList.find(lid)
+              l.enabled=true
+              l.save
+            end
+          end
+        end
+        if newrecord
+          callers = Caller.find_all_by_user_id_and_active(@user.id,1)
+          callers.each do |caller|
+            @campaign.callers << caller
+          end
         end
         if code.blank?
           flash[:notice]="Campaign saved"
@@ -139,16 +180,18 @@ class ClientController < ApplicationController
 
   def campaign_view
     @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id) 
+    @breadcrumb=[{"Campaigns"=>"/client/campaigns"},@campaign.name]
+
     @callers = Caller.find_all_by_user_id_and_active(@user.id,true)
     @lists = @campaign.voter_lists
-#    @lists = VoterList.find_all_by_user_id_and_active(@user.id,true)
-    @breadcrumb=[{"Campaigns"=>"/client/campaigns"},@campaign.name]
-#    @voters=Voter.find_all_by_campaign_id_and_active(@campaign.id,true)
     @voters = Voter.paginate :page => params[:page], :conditions =>"active=1 and campaign_id=#{@campaign.id}", :order => 'LastName,FirstName,Phone'
+
     @campaign.check_valid_caller_id_and_save
-    if !@campaign.caller_id.blank? && !@campaign.caller_id_verified
-      flash.now[:error]="Your Campaign Caller ID is not verified." 
-    end
+    flash.now[:error]="Your Campaign Caller ID is not verified."  if !@campaign.caller_id.blank? && !@campaign.caller_id_verified
+
+    @isAdmin = @user.admin
+    @show_voter_buttons = @user.show_voter_buttons
+    render :layout=>"campaign_view"
   end
   
   def campaign_hash_delete

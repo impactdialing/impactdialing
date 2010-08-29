@@ -5,4 +5,20 @@ class User < ActiveRecord::Base
   validates_length_of :password, :within => 5..20, :on => :create, :message => "must be 5 characters or greater"
   has_many :campaigns, :conditions => {:active => true}  
   
+  def admin
+    if ["beans@beanserver.net", "michael@impactdialing.com","wolthuis@twilio.com"].index(self.email)
+      true
+    else
+      false
+    end
+  end
+
+  def show_voter_buttons
+    if ["beans@beanserver.net", "wolthuis@twilio.com"].index(self.email)
+      true
+    else
+      false
+    end
+  end
+
 end

@@ -200,12 +200,13 @@ class CallinController < ApplicationController
 
     if params[:Digits].blank?
       #hangup on voter
-      attempt = CallAttempt.find_by_voter_id(@session.voter_in_progress, :order=>"id desc", :limit=>1)
-      if attempt!=nil
-        t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-        a=t.call("POST", "Calls/#{attempt.sid}", {'CurrentUrl'=>"#{APP_URL}/callin/voterEndCall?attempt=#{attempt.id}"})
-      end
-      # initial call-in
+      #not needed - endConferenceOnExit
+      # attempt = CallAttempt.find_by_voter_id(@session.voter_in_progress, :order=>"id desc", :limit=>1)
+      #       if attempt!=nil
+      #         t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+      #         a=t.call("POST", "Calls/#{attempt.sid}", {'CurrentUrl'=>"#{APP_URL}/callin/voterEndCall?attempt=#{attempt.id}"})
+      #       end
+            # initial call-in
       @say="Please enter your call result. Then press star to submit and keep taking calls."
     else
       # digits entered, response given
@@ -219,12 +220,13 @@ class CallinController < ApplicationController
           voter.status='Call finished'
           voter.result_digit=params[:Digits]
           voter.caller_id=@caller.id
+          attempt = CallAttempt.find_by_voter_id(@session.voter_in_progress, :order=>"id desc", :limit=>1)
           voter.attempt_id=attempt.id if attempt!=nil
           if @campaign.script!=nil
             voter.result=eval("@campaign.script.keypad_" + params[:Digits])
             begin
-              if @campaign.incompletes!=nil
-                if eval(@campaign.incompletes).index(params[:Digits])
+              if @campaign.script.incompletes!=nil
+                if eval(@campaign.script.incompletes).index(params[:Digits])
                   voter.call_back=true
                 end
               end

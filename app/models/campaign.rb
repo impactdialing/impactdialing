@@ -139,7 +139,8 @@ class Campaign < ActiveRecord::Base
   
   def voters_called
     voters=[]
-    self.voter_lists.each do |list|
+#    self.voter_lists.each do |list|
+    VoterList.find_all_by_campaign_id_and_active_and_enabled(self.id, 1, 1).each do |list|
       list.voters.each do |voter|
         if voter.status!='not called'
           voters << voter
@@ -151,7 +152,8 @@ class Campaign < ActiveRecord::Base
   
   def voters(status=nil,include_call_retries=true)
     voters=[]
-    self.voter_lists.each do |list|
+#    self.voter_lists.each do |list|
+    VoterList.find_all_by_campaign_id_and_active_and_enabled(self.id, 1, 1).each do |list|
       list.voters.each do |voter|
         if status==nil
           voters << voter if voter.active==true && voters.index(voter)==nil
@@ -172,10 +174,10 @@ class Campaign < ActiveRecord::Base
 
     if voters.length==0 && include_call_retries
       # no one left, so call everyone we missed over 10 minutes
-      uncalled = Voter.find_all_by_campaign_id_and_active_and_call_back(self.id, 1, 1)
+      uncalled = Voter.find_all_by_campaign_id_and_active_and_call_back(self.id, 1, 1, :conditions=>"voter_list_id in (select id from voter_lists where campaign_id=#{self.id} and active=1 and enabled=1)")
       uncalled.each do |voter|
         attempt = CallAttempt.find_by_voter_id(voter.id, :order=>"id desc", :limit=>1)
-        if  attempt!=nil && attempt.call_end!=nil && attempt.call_end < Time.now - 9.minutes
+        if  attempt!=nil && attempt.call_end!=nil && attempt.call_end < Time.now - 10.minutes
           voters << voter
         end
       end
