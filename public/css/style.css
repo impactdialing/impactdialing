@@ -149,7 +149,7 @@ textarea.size1 { height:180px; }
 .add-button:hover { color:#333;}
 
 
-#footer { height:44px; background:url(/css/images/footer.gif); line-height:44px; color:#fff;}
+#footer { height:44px; background:url(/css/images/footer.gif); line-height:44px; color:#fff; margin-top:10px;}
 #footer a{ color:#000; }
 
 
