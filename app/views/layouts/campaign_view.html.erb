@@ -72,16 +72,7 @@
     <!-- Main -->
     <div id="main" <% if @actionName=="campaign_view" %>style="background-color:white; -moz-border-radius: 20px;  	    -webkit-border-radius: 20px;  padding:14px;	border:1px solid #b0722f;<% end %>   "> 
       <div class="cl">&nbsp;</div>
-      <!-- Content -->
-      <div id="content">
-		<%= yield %>
-      </div>
-      <!-- End Content -->
-      <!-- Sidebar -->
-      <div id="sidebar" <% if @actionName=="campaign_view" %>style="width:190px; margin-top:2px; margin-right:6px;"<% end %>>
-	 <%= yield :sidebar %>
-      </div>
-      <!-- End Sidebar -->
+	 <%= yield :campaign_view %>
       <div class="cl">&nbsp;</div>
 <% if @actionName=="campaign_view" %>
 	<div class="buttons2" align="center">
@@ -90,13 +81,22 @@
 <% end %>
     <!-- Main -->
   </div>
+
+<br/>
 <% if flash[:warning] -%>
 <div class="msg msg-error"> 
 			<p><strong><%= flash[:warning] %></strong></p> 
 		</div>
 <% end -%>
+<% if @isAdmin %>
+<a href="/client/campaign_clear_calls/<%=  @campaign.id%>" class="button"><span>Clear Campaign Calls</span></a>
+<div class="cl">&nbsp;</div><br/>
+<a href="/client/campaign_add/<%=  @campaign.id%>" class="button"><span>Edit Predective Properties</span></a>
+<div class="cl">&nbsp;</div><br/>
+<a href="/client/campaign_hash_delete/<%=  @campaign.id%>" class="button"><span>Reset Dialer</span></a>
+<div class="cl">&nbsp;</div>
+<% end %>
 </div>
-
 <!-- End Container -->
 <!-- Footer -->
 <div id="footer">
