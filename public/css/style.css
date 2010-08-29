@@ -23,7 +23,7 @@ textarea { overflow:hidden; }
 
 a img { border:0; }
 
-a { color:#b0722f; text-decoration: underline; cursor:pointer; }
+a { color:#794f23; text-decoration: underline; cursor:pointer; }
 a:hover { color:#8d341f; text-decoration: none;}
 
 .left, .alignleft { float:left; display:inline; }
@@ -35,21 +35,21 @@ a:hover { color:#8d341f; text-decoration: none;}
 .ar { text-align: right; }
 .ac { text-align: center !important; }
 
-h1{ font-size:29px; line-height:24px; color:#fff; font-weight: normal;}
-h1 a{ color:#fff; text-decoration: none; }
-h1 a:hover { color:#fff; text-decoration: underline; }
+h1{ font-size:29px; line-height:24px; color:#000; font-weight: normal;}
+h1 a{ color:#000; text-decoration: none; }
+h1 a:hover { color:#000; text-decoration: underline; }
 h2 { font-size:15px; font-weight: normal; }
 h3 { font-size:12px; line-height:14px; font-weight: normal; }
 h3 a{ text-decoration: none; }
 
 
 
-.shell { width:988px; margin:0 auto; }
+.shell { width:988px; margin:0 auto; color:#000;}
 
 #header { height:89px; background:url(/css/images/header.gif); white-space:nowrap; }
 #header h1{ float:left; display:inline; padding-top:12px; }
-#top-navigation { float:right; white-space:nowrap; color:#fff; padding-top:15px; }
-#top-navigation a{ color:#fff; }
+#top-navigation { float:right; white-space:nowrap; color:#000; padding-top:15px; }
+#top-navigation a{ color:#000; }
 #top-navigation span{ color:#dca598; }
 #top { height:53px; }
 
@@ -59,21 +59,21 @@ h3 a{ text-decoration: none; }
 #navigation ul li a,
 #navigation ul li a span { float:left; height:36px; background:url(/css/images/tab.gif) no-repeat 0 0; padding:0 0 0 15px;}
 #navigation ul li a span { background-position:right 0; padding:0 15px 0 0;}
-#navigation ul li a { line-height:36px; color:#907525; text-decoration: none; }
+#navigation ul li a { line-height:36px; color:#fff; text-decoration: none; }
 
 #navigation ul li a.active,
-#navigation ul li a:hover { background-position:0 bottom;}
+#navigation ul li a:hover { background-position:0 bottom; color:#000;}
 
 #navigation ul li a.active span,
 #navigation ul li a:hover span{ background-position:right bottom;}
 
-#navigation ul li a.active { font-size:12px; font-weight: bold; color:#887e42; }
+#navigation ul li a.active { font-size:12px; font-weight: bold; color:#000; }
 
 
 #container { padding:20px 0;}
 
-.small-nav { color:#978b48; padding-bottom:20px; }
-.small-nav a{ color:#6f6636; }
+.small-nav { color:#4f4927; padding-bottom:10px; }
+.small-nav a{ color:#4f4927; }
 
 
 #main {}
@@ -91,14 +91,14 @@ h3 a{ text-decoration: none; }
 .not tr:hover td{ background:#fbfcfc; }
 
 .box { background:#fbfcfc; height:100%; padding:1px; margin-bottom:20px; }
-.box-head { background:#b0722f; height:32px; color:#fff; padding: 0 10px; line-height:32px; white-space:nowrap; border-bottom:solid 1px #fff; }
+.box-head { background:#efca4b; height:32px; color:#000; padding: 0 10px; line-height:32px; white-space:nowrap; border-bottom:solid 1px #fff; }
 .box-head .right{ padding-top:5px; line-height:13px;}
 .box-head .right label,
 .box-head .right input { float:left; }
 .box-head .right label { padding:4px 0 0 0;}
 .box-head .right input { margin-left:5px;}
 
-.pagging { height:20px; padding:8px 10px; line-height:19px; color:#949494; }
+.pagging { height:20px; padding:8px 10px; line-height:19px; color:#6a6a6a; }
 .pagging a{ background:url(/css/images/pagging.gif) repeat-x 0 0; height:20px; float:left; padding:0 8px; border:solid 1px #d5d5d5; text-decoration: none; color:#949494; margin-left:5px;  }
 .pagging a:hover { border-color:#8c3521; background:#b0722f; color:#fff; }
 .pagging span{ float:left; margin-left:5px; padding-top:2px; }
@@ -150,7 +150,7 @@ textarea.size1 { height:180px; }
 
 
 #footer { height:44px; background:url(/css/images/footer.gif); line-height:44px; color:#fff;}
-#footer a{ color:#fff; }
+#footer a{ color:#000; }
 
 
 .msg { position:relative; padding-right:35px; margin-bottom:10px; }
@@ -234,7 +234,7 @@ div.fieldWithErrors {margin-top:-15px;margin-bottom:15px; }
 
 ul li {margin-left:5px;}
 ol li {margin-left:10px;}
-#navigation ul li {margin-left:0px;}
+#navigation ul li {margin-left:0px; }
 h1 {color:#000;}
 div.campaignlinks a {color:#656565; line-height:30px; font-size:16px; text-decoration:none;}
 div.campaignlinks a:hover {text-decoration:underline;}
