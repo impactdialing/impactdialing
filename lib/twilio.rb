@@ -48,20 +48,24 @@ class Twilio
       '
     else
       if http_method=="POST"
-        req = Net::HTTP::Post.new("#{@root}#{service_method}")    
+        req = Net::HTTP::Post.new("#{@root}#{service_method}?#{params}")    
       elsif http_method=="DELETE"
-        req = Net::HTTP::Delete.new("#{@root}#{service_method}")    
+        req = Net::HTTP::Delete.new("#{@root}#{service_method}?#{params}")    
       else
-        req = Net::HTTP::Get.new("#{@root}#{service_method}")    
+        if params.nil?
+          req = Net::HTTP::Get.new("#{@root}#{service_method}")    
+         else
+           req = Net::HTTP::Get.new("#{@root}#{service_method}?".concat(params.collect { |k,v| "#{k}=#{CGI::escape(v.to_s)}" }.join('&'))) 
+        end
       end
       req.basic_auth @http_user, @http_password
     end
-    #RAILS_DEFAULT_LOGGER.debug "#{@root}#{service_method}"
+    RAILS_DEFAULT_LOGGER.debug "#{DEFAULT_SERVER}#{@root}#{service_method}?#{params}" if ENV["RAILS_ENV"]=="development"
 
     req.set_form_data(params)
 #    RAILS_DEFAULT_LOGGER.info  params
     response = http.start{http.request(req)}  
-    #RAILS_DEFAULT_LOGGER.info  response.body if ENV["RAILS_ENV"]=="development"
+    RAILS_DEFAULT_LOGGER.info  response.body if ENV["RAILS_ENV"]=="development"
 #    RAILS_DEFAULT_LOGGER.info  response.body
     response.body
   end

@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20100828164145) do
+ActiveRecord::Schema.define(:version => 20100829093259) do
 
   create_table "call_attempts", :force => true do |t|
     t.integer  "voter_id"
@@ -233,6 +233,7 @@ ActiveRecord::Schema.define(:version => 20100828164145) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "campaign_id"
+    t.boolean  "enabled",     :default => true
   end
 
   create_table "voters", :force => true do |t|
