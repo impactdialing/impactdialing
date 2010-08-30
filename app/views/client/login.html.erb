@@ -1,26 +1,43 @@
-<div class="box" style="width:400px;">
-	<%= render :partial => 'boxtop', :locals=>{:title=>"Login"} %>
-	<% form_tag("/client/login", :id=>"loginForm") do |f| %>
+<table>
+	<tr>
+		<td>
+			<div class="box" style="width:400px;">
+				<%= render :partial => 'boxtop', :locals=>{:title=>"Login"} %>
+				<% form_tag("/client/login", :id=>"loginForm") do |f| %>
 	  
-  <div class="table not">
-    <table  border="0" cellspacing="0" cellpadding="0">
-      <tr>
-        <td><h3>Email:</h3></td>
-        <td><input type="text" name="email" class="field" value="<%= params[:email] %>" />
-        </td>
-      </tr>
-      <tr >
-        <td><h3>Password:</h3></td>
-        <td><input type="password" class="field" name="password"/>
-        </td>
-      </tr>
-      <tr>
-        <td><a href="javascript:$('loginForm').submit();" class="button"><span>Login</span></a></td>
-        <td></td>
-      </tr>
-	</table>
-</div>
-</div>
+			  <div class="table not">
+			    <table  border="0" cellspacing="0" cellpadding="0">
+			      <tr>
+			        <td><h3>Email:</h3></td>
+			        <td><input type="text" name="email" class="field" value="<%= params[:email] %>" />
+			        </td>
+			      </tr>
+			      <tr >
+			        <td><h3>Password:</h3></td>
+			        <td><input type="password" class="field" name="password"/>
+			        </td>
+			      </tr>
+			      <tr>
+			        <td><a href="javascript:$('loginForm').submit();" class="button"><span>Login</span></a></td>
+			        <td></td>
+			      </tr>
+				</table>
+			</div>
+			</div>
+		</td>
+		<td width="40">&nbsp;</td>
+		<td valign="top">
+			
+				<div class="box" style="width:400px; margin-left:20px;">
+					<%= render :partial => 'boxtop', :locals=>{:title=>"New Users"} %>
+					<div class="box-content">
+					<a href="/client/user_add">Click here to join</a>
+					</div>
+				</div>			
+			
+		</td>
+	</tr>
+</table>
 <% end %>
 <!-- End Box -->
 
@@ -29,3 +46,6 @@
 Event.observe(document, 'keypress', function(event) { if(event.keyCode== Event.KEY_RETURN) document.getElementById('loginForm').submit();});
 
 <% end %>
+
+
+

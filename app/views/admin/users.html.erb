@@ -1,0 +1,21 @@
+<table border="1">
+	<tr>
+		<td>id</td>
+		<td>fname</td>
+		<td>lname</td>
+		<td>email</td>
+		<td>created_at</td>
+		<td>paid</td>
+		<td></td>
+	</tr>
+	<% @users.each do |u| %>
+	<tr>
+		<td><%= u.id %></td>
+		<td><%= u.fname %></td>
+		<td><%= u.lname %></td>
+		<td><%= u.email %></td>
+		<td><%= u.created_at %></td>
+		<td><%= u.paid %> </td>
+		<td><a href="/admin/toggle_paid/<%= u.id %>">toggle paid</a></td>
+	</tr>
+	<% end %>

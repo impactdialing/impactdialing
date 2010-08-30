@@ -3,6 +3,21 @@ class AdminController < ApplicationController
   USER_NAME, PASSWORD = "impact", "dial123"
   before_filter :authenticate
   
+  def users
+    @users = User.all
+  end
+  
+  def toggle_paid
+    user = User.find(params[:id])
+    if user.paid==true
+      user.paid=false
+    else
+      user.paid=true
+    end
+    user.save
+    redirect_to :action=>"users"
+  end
+  
   def user
     @user = User.new
     if request.post?

@@ -1,0 +1,43 @@
+
+<%= error_messages_for :user %>
+
+	<div class="box" style="width:400px;">
+		<%= render :partial => 'boxtop', :locals=>{:title=>"Join Impact Dialing"} %>
+		<% form_for :user do |f| -%>
+	    <div class="form">
+
+	      <p>
+	        <label>First Name <span>(Required Field)</span></label>
+			<%= f.text_field :fname, {:class=>"field"} %>
+	      </p>
+	      <p>
+	        <label>Last Name <span>(Required Field)</span></label>
+			<%= f.text_field :lname, {:class=>"field"} %>
+	      </p>
+	      <p>
+	        <label>Org Name </label>
+			<%= f.text_field :orgname, {:class=>"field"} %>
+	      </p>
+	      <p>
+	        <label>Email <span>(Required Field)</span></label>
+			<%= f.text_field :email, {:class=>"field"} %>
+	      </p>
+	      <p>
+	        <label>Password <span>(Required Field)</span></label>
+			<%= f.password_field :password, {:class=>"field"} %>
+	      </p>
+	      <p>
+	        <label>Password <span>(Required Field)</span></label>
+			<%= f.password_field :password_confirmation, {:class=>"field"} %>
+	      </p>
+			<p>	
+				<label>	<input type="checkbox" name="tos" value="1"/> I agree to the <a href="/home/tos" target="_blank">Terms of Service</a></label>
+				
+			</p>
+			<%= f.submit "submit", :disable_with => 'submiting...', :class=>"button" %>
+
+
+	</div>
+</div>
+
+<% end -%>

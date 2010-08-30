@@ -1,5 +1,5 @@
 class ClientController < ApplicationController
-  before_filter :check_login, :except=>"login"
+  before_filter :check_login, :except=>[:login,:user_add]
   before_filter :check_warning
   layout "client"
   in_place_edit_for :campaign, :name
@@ -16,6 +16,74 @@ class ClientController < ApplicationController
     end
   end
   
+  def user_add
+    @breadcrumb="Join"
+    
+    @user = User.new
+    
+    if request.post?
+      @user.attributes =  params[:user]
+      if params[:tos].blank?
+        flash.now[:error]="You must agree to the terms of service."
+        return
+      end
+      
+      if @user.valid? &&  !params[:tos].blank?
+        @user.save
+        @caller = Caller.new
+        @caller.name="Default Caller"
+        @caller.multi_user=true
+        @caller.user_id=@user.id
+        @caller.save
+        @script = Script.new
+        @script.name="Voter ID Example"
+        @script.keypad_1="Strong supportive"
+        @script.keypad_2="Lean supportive"
+        @script.keypad_3="Undecided"
+        @script.keypad_4="Lean opposed"
+        @script.keypad_5="Strong opposed"
+        @script.keypad_6="Refused"
+        @script.keypad_7="Not home/call back"
+        @script.keypad_8="Language barrier"
+        @script.keypad_9="Wrong number"
+        @script.incompletes=["7"].to_json
+        @script.script="Hi, I'm a volunteer with the such-and-such campaign.
+
+I'm voting for such-and-such because...
+
+Can we count on you to vote for such-and-such?"
+        @script.active=1
+        @script.user_id=@user.id
+        @script.save
+        @script = Script.new
+        @script.name="GOTV Example"
+        @script.keypad_1="Will vote early"
+        @script.keypad_2="Will vote on election day"
+        @script.keypad_3="Already voted"
+        @script.keypad_4="Will not vote"
+        @script.keypad_5="Not a supporter"
+        @script.keypad_6="Refused"
+        @script.keypad_7="Not home/call back"
+        @script.keypad_8="Language barrier"
+        @script.keypad_9="Wrong number"
+        @script.incompletes=["7"].to_json
+        @script.script="Hi, I'm a volunteer with the such-and-such campaign.
+
+I'm voting for such-and-such because...
+
+Can we count on you to vote for such-and-such?"
+        @script.active=1
+        @script.user_id=@user.id
+        @script.save
+        session[:user]=@user.id
+        redirect_to :action=>"index"
+        flash[:notice]="Your user has been created"
+      end
+    end
+    
+    
+  end
+
   def check_warning
     text=warning_text
     if !text.blank?
