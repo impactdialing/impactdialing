@@ -186,12 +186,24 @@ class ClientController < ApplicationController
     @lists = @campaign.voter_lists
     @voters = Voter.paginate :page => params[:page], :conditions =>"active=1 and campaign_id=#{@campaign.id}", :order => 'LastName,FirstName,Phone'
 
-    @campaign.check_valid_caller_id_and_save
-    flash.now[:error]="Your Campaign Caller ID is not verified."  if !@campaign.caller_id.blank? && !@campaign.caller_id_verified
+#    @campaign.check_valid_caller_id_and_save
+#    flash.now[:error]="Your Campaign Caller ID is not verified."  if !@campaign.caller_id.blank? && !@campaign.caller_id_verified
 
     @isAdmin = @user.admin
     @show_voter_buttons = @user.show_voter_buttons
     render :layout=>"campaign_view"
+  end
+  
+  def campaign_caller_id_verified
+    @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id) 
+    @campaign.check_valid_caller_id_and_save
+    ret=""
+    if !@campaign.caller_id.blank? && !@campaign.caller_id_verified
+      ret = "<div class='msg msg-error'> <p><strong>Your Campaign Caller ID is not verified.</strong></p> </div>"  
+    else
+      ret = ""  
+    end
+    render :text=>ret
   end
   
   def campaign_hash_delete
@@ -484,5 +496,15 @@ class ClientController < ApplicationController
   # def show_memcached
   #   @avail_campaign_hash = cache_get("avail_campaign_hash") {{}} 
   # end
+  def script_delete
+    @script = Script.find_by_id_and_user_id(params[:id],@user.id)
+    if !@script.blank?
+      @script.active=false
+      @script.save
+    end
+    flash[:notice]="Script deleted"
+    redirect_to :action=>"scripts"
+    return
+  end
 
 end

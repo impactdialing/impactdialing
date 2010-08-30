@@ -18,7 +18,7 @@ class ApplicationController < ActionController::Base
         voters = campaign.voters("not called")
         if voters.length < c.length * 10
             warning+="
-            Oh no! You are running low on numbers to dial for the #{campaign.name} campaign.
+            You are running low on numbers to dial for the #{campaign.name} campaign.
             Unless you act quickly, you'll have called through all your lists in
             about 30 minutes. You have three choices.<br/><br/>
             1: Load up some more numbers! This is the best option, if you have

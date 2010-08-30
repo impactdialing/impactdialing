@@ -1,6 +1,6 @@
 
 <% content_for :campaign_view do %>
-
+<div id="callerid"></div>
 <% form_for :campaign, :url => { :action => "campaign_add" , :id=>@campaign.id}, :html => {:name => 'callerForm', :id => 'callerForm'}   do |f| %>
 <div id="content">
 	<table width="100%">
@@ -148,7 +148,12 @@ function isAll(){
 
 		}
 }
+<% if @callers.length!=0 %>
 isAll();
+<% end %>
+<%= remote_function(:update => "callerid",
+      :url => { :action => "campaign_caller_id_verified", :id=>@campaign.id }) %>
+
 </script>
 
 <% end %>
