@@ -7,4 +7,9 @@ class CallAttempt < ActiveRecord::Base
       nil
     end
   end
+  
+  def minutes_used
+    return 0 if self.tDuration.blank?
+    self.tDuration/60.ceil
+  end
 end

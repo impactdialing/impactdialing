@@ -77,7 +77,7 @@ Can we count on you to vote for such-and-such?"
         @script.save
         session[:user]=@user.id
         redirect_to :action=>"index"
-        flash[:notice]="Your user has been created"
+        flash[:notice]="Your account has been created"
       end
     end
     
@@ -98,6 +98,10 @@ Can we count on you to vote for such-and-such?"
 
   def login
     @breadcrumb="Login"
+    
+    if !params[:user].blank?
+      user_add
+    end
     
     if !params[:email].blank?
       @user = User.find_by_email_and_password(params[:email],params[:password])
@@ -134,6 +138,15 @@ Can we count on you to vote for such-and-such?"
       if @caller.valid?
         @caller.user_id=@user.id
         @caller.save
+        
+        # add to campaigns with all callers
+        all_callers = Caller.find_all_by_user_id_and_active(@user.id,1)
+        all_campaings = Campaign.find_all_by_user_id_and_active(@user.id,1)
+        all_campaings.each do |campaign|
+          if campaign.callers.length >= (all_callers.length)-1
+            campaign.callers << @caller
+          end
+        end
         flash[:notice]="Caller saved"
         redirect_to :action=>"callers"
         return
@@ -256,7 +269,7 @@ Can we count on you to vote for such-and-such?"
 
 #    @campaign.check_valid_caller_id_and_save
 #    flash.now[:error]="Your Campaign Caller ID is not verified."  if !@campaign.caller_id.blank? && !@campaign.caller_id_verified
-
+    flash.now[:error]="You must enter a campaign Caller ID before you can take calls"  if @campaign.caller_id.blank?
     @isAdmin = @user.admin
     @show_voter_buttons = @user.show_voter_buttons
     render :layout=>"campaign_view"
@@ -536,8 +549,62 @@ Can we count on you to vote for such-and-such?"
       render :layout=>false
 #    end
   end
-  
   def report_overview
+    @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
+     if @campaign.blank?
+       render :text=>"Unauthorized"
+       return
+     end
+
+
+     @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Realtime Report"]
+     sql="#select distinct status from call_attempts  
+
+     select 
+     count(*) as cnt,
+     case WHEN ca.status='Call abandoned'  THEN 'Call abandoned'
+     WHEN ca.status='Hangup or answering machine' THEN 'Hangup or answering machine'
+     WHEN ca.status='No answer' THEN 'No answer'
+     ELSE 'Call completed with success.' 
+     END AS result
+
+      from 
+     voters v join call_attempts ca on ca.id = v.attempt_id
+     where ca.campaign_id=#{@campaign.id}
+     group by 
+     case WHEN ca.status='Call abandoned'  THEN 'Call abandoned'
+     WHEN ca.status='Hangup or answering machine' THEN 'Hangup or answering machine'
+     WHEN ca.status='No answer' THEN 'No answer'
+     ELSE 'Call completed with success.' 
+     END 
+
+     order by count(*) desc"
+     @records = ActiveRecord::Base.connection.execute(sql)
+     @total=0
+     @records.each do |r|
+       @total = @total + r[0].to_i
+     end
+     @records.data_seek(0)
+
+     @voters_to_call = @campaign.voters("not called",false)
+     @voters_called = @campaign.voters_called
+     @totalvoters = @voters_to_call.length + @voters_called.length
+     
+     @call_attempts = CallAttempt.find_all_by_campaign_id(@campaign.id)
+     @caller_sessions = CallerSession.find_all_by_campaign_id(@campaign.id)
+
+     @talkmins=0
+     @call_attempts.each do |attempt|
+       @talkmins += attempt.minutes_used
+     end
+     @callerMins=0
+     @caller_sessions.each do |session|
+       @callerMins += session.minutes_used
+     end
+
+  end
+
+  def report_overview_old
     @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
     if @campaign.blank?
       render :text=>"Unauthorized"
@@ -547,8 +614,24 @@ Can we count on you to vote for such-and-such?"
       extra="and result is not null"
     end
     
-    @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Realtime Report"]
-    @records = ActiveRecord::Base.connection.execute(" SELECT count(*) as cnt, result FROM call_attempts where campaign_id=#{@campaign.id} #{extra}
+    @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Answered Call Report"]
+
+    if params[:from_date]
+      @from_date=Date.parse params[:from_date]
+      @to_date = Date.parse params[:to_date]
+    else
+      firstCall = CallerSession.first(:order=>"id asc", :limit=>"1")
+      lastCall = CallerSession.first(:order=>"id desc", :limit=>"1")
+      if !firstCall.blank?
+        @from_date  = firstCall.created_at
+      end
+      if !lastCall.blank?
+        @to_date  = lastCall.created_at
+      end
+    end
+
+
+    @records = ActiveRecord::Base.connection.execute("SELECT count(*) as cnt, result FROM call_attempts where campaign_id=#{@campaign.id} and created_at > '#{@from_date.strftime("%Y-%m-%d")}' and created_at < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'  #{extra}
     group by result order by count(*) desc")
     @total=0
     @records.each do |r|
@@ -559,6 +642,8 @@ Can we count on you to vote for such-and-such?"
     @voters_to_call = @campaign.voters("not called",false)
     @voters_called = @campaign.voters_called
     @totalvoters = @voters_to_call.length + @voters_called.length
+    
+     
   end
   
   # def show_memcached
@@ -574,5 +659,118 @@ Can we count on you to vote for such-and-such?"
     redirect_to :action=>"scripts"
     return
   end
+  
+  def report_caller
+    @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
+    if @campaign.blank?
+      render :text=>"Unauthorized"
+      return
+    end
+    if params[:type]=="1"
+      extra="and result is not null"
+    end
+    
+    @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Caller Report"]
 
+    if params[:from_date]
+      @from_date=Date.parse params[:from_date]
+      @to_date = Date.parse params[:to_date]
+    else
+      firstCall = CallerSession.first(:order=>"id asc", :limit=>"1")
+      lastCall = CallerSession.first(:order=>"id desc", :limit=>"1")
+      if !firstCall.blank?
+        @from_date  = firstCall.created_at
+      end
+      if !lastCall.blank?
+        @to_date  = lastCall.created_at
+      end
+    end
+    caller_ids=CallerSession.all(:select=>"distinct caller_id", :conditions=>"campaign_id=#{@campaign.id}")
+    @callers=[]
+    caller_ids.each do |caller_session|
+      @callers<< Caller.find(caller_session.caller_id)
+    end
+    
+    #{}find_all_by_user_id(@user.id)
+    @responses = Voter.all(:select=>"distinct result", :conditions=>"campaign_id = #{@campaign.id} and result is not null and result_date > '#{@from_date.strftime("%Y-%m-%d")}' and result_date < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'")
+    @num_responses = Voter.all(:conditions=>"campaign_id = #{@campaign.id} and result is not null and result_date > '#{@from_date.strftime("%Y-%m-%d")}' and result_date < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'").length
+
+  end
+  
+  def report_caller_overview
+    @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
+    if @campaign.blank?
+      render :text=>"Unauthorized"
+      return
+    end
+    if params[:type]=="1"
+      extra="and result is not null"
+    end
+    
+    @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Caller Report"]
+
+    if params[:from_date]
+      @from_date=Date.parse params[:from_date]
+      @to_date = Date.parse params[:to_date]
+    else
+      firstCall = CallerSession.first(:order=>"id asc", :limit=>"1")
+      lastCall = CallerSession.first(:order=>"id desc", :limit=>"1")
+      if !firstCall.blank?
+        @from_date  = firstCall.created_at
+      end
+      if !lastCall.blank?
+        @to_date  = lastCall.created_at
+      end
+    end
+    caller_ids=CallerSession.all(:select=>"distinct caller_id", :conditions=>"campaign_id=#{@campaign.id}")
+    @callers=[]
+    caller_ids.each do |caller_session|
+      @callers<< Caller.find(caller_session.caller_id)
+    end
+    
+  end
+
+  def report_login
+
+      @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
+      if @campaign.blank?
+        render :text=>"Unauthorized"
+        return
+      end
+      if params[:type]=="1"
+        extra="and result is not null"
+      end
+
+      @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Caller Report"]
+#      @logins = CallerSession.find_all_by_campagin_id(@campagin.id, :order=>"id desc")
+       @logins = CallerSession.find_all_by_campaign_id(@campaign.id, :order=>"id desc")
+  end
+  
+  def report_real
+    if params[:id].blank?
+      @breadcrumb="Reports"
+    else
+      @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
+      if @campaign.blank?
+        render :text=>"Unauthorized"
+        return
+      end
+      @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Realtime Report"]
+    end
+    
+  end
+  def update_report_real
+    if params[:timeframe].blank?
+      @timeframe = 10
+    else
+      @timeframe = params[:timeframe].to_i
+    end
+  
+    # if !params[:clear].blank?
+    #   cache_delete("avail_campaign_hash")
+    # end
+    # @avail_campaign_hash = cache_get("avail_campaign_hash") {{}} 
+    @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id)
+    render :layout=>false
+  end
 end

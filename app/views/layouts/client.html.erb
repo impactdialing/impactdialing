@@ -5,6 +5,7 @@
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
 <link rel="stylesheet" href="/css/style.css" type="text/css" media="all" />
 <%= javascript_include_tag :defaults %>
+<%= unobtrusive_datepicker_includes %>
 </head>
 <body>
 <!-- Header -->
@@ -29,7 +30,7 @@
         <li><a href="/client/callers" <% if @actionName.index("caller") %>class="active"<% end %>><span>Callers</span></a></li>
         <li><a href="/client/scripts" <% if @actionName.index("script") %>class="active"<% end %>><span>Scripts</span></a></li>
         <li><a href="/client/campaigns" <% if @actionName.index("upload") || @actionName.index("campaign") %>class="active"<% end %>><span>Campaigns</span></a></li>
-        <li><a href="/client/reports" <% if @actionName=="report" %>class="active"<% end %>><span>Reports</span></a></li>
+        <li><a href="/client/reports" <% if @actionName.index("report") %>class="active"<% end %>><span>Reports</span></a></li>
       </ul>
     </div>
     <!-- End Main Nav -->

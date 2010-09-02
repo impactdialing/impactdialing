@@ -1,0 +1,73 @@
+<% campaign = @campaign %>
+<% stats = campaign.call_stats(@timeframe) %>
+<% attempts = stats[:attempts] %>
+<div class="box" style="width:350px; float:right;">
+	<%= render :partial => 'boxtop', :locals=>{:title=>"#{campaign.name}: Recent Calls"} %>
+	<div class="box-content">
+		
+		<% if attempts.length==0 %>None 
+			<% if @timeframe==1000000 %>
+			<% else %>
+				in last <%= @timeframe %> minutes
+			<% end %>
+		<% end %>
+		<table class="statTable">
+		<% attempts.each do |attempt| %>
+			<tr class="<%= cycle('odd', 'even') %>">
+				<td nowrap><% if attempt.voter!=nil %><%=  number_to_phone(attempt.voter.Phone, :area_code => true) %> <% end %></td>
+				<td><%= attempt.status %></td>
+				<td><% if attempt.duration!=nil %> <%= attempt.duration %>s <% end %></td>
+			</tr>
+		<% end %>
+		</table>
+	</div>
+</div>
+<div class="box" style="width:370px;">
+	<%= render :partial => 'boxtop', :locals=>{:title=>"#{campaign.name}: Recent Call Stats"} %>
+    <%# callers = info["callers"]  %>
+    <%# calls = info["calls"] %>
+    <% callers = CallerSession.find_all_by_campaign_id_and_on_call(campaign.id, 1) %>
+    <% calls = CallAttempt.find_all_by_campaign_id(campaign.id, :conditions=>"call_end is  NULL") %>
+
+    <% voters = campaign.voters("not called") %>
+
+	<div class="box-content">
+		Callers logged in: <b><%= callers.length %></b><br/>
+	    Calls in progress: <b><%= calls.length %></b><br/>
+	    Voters to call: <b><%= voters.length %></b><br/>
+		Avg caller hold time: <b><%= stats[:avg_hold_time].to_i %>s</b>
+	
+	</div>
+
+
+	<% if callers.length > 0 %>
+	<div class="box-content">
+		Callers logged in:<br/>
+		<% callers.each do |callerSession| %>
+			PIN <%=  callerSession.caller.pin %> <%= callerSession.caller.email %> <br/>
+		<% end %>
+	</div>
+	<% end %>
+	<% if calls.length > 0 %>
+	<div class="box-content">
+		Calls in progress:<br/>
+		<% calls.each do |call| %>
+			<%=  number_to_phone(call.voter.Phone, :area_code => true)  if call.voter!=nil %>
+			<%= call.voter.status  if call.voter!=nil %>
+			<%= call.voter.FirstName   if call.voter!=nil %>
+			<%= call.voter.LastName  if call.voter!=nil %> <br/>
+		<% end %>
+	</div>
+	<% end %>
+</div>
+<div class="box" style="width:370px;">
+	<%= render :partial => 'boxtop', :locals=>{:title=>"#{campaign.name}: Recent Call Results"} %>
+	<div class="box-content">
+		Results:<br/>
+		<%# v = Voter.find_all_by_campaign_id(campaign.id, :joins=>"join voter_results on voter_results.voter_id=voters.id") %>
+		<% v = Voter.find_all_by_campaign_id(campaign.id, :conditions=>"result_digit is not null") %>
+		<% v.each do |voter| %>
+			<li><%= voter.result %> <%=  number_to_phone(voter.Phone, :area_code => true)   %> <%= voter.FirstName %> <%= voter.LastName %>
+		<% end %>
+	</div>
+</div>

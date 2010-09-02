@@ -70,4 +70,46 @@ class Twilio
     response.body
   end
 
+  def update_twilio_stats_by_model model_instance
+    require 'rubygems'
+    require 'hpricot'
+    return if model_instance.sid.blank?
+    t = Twilio.new(TWILIO_ACCOUNT,TWILIO_AUTH)
+    @a=t.call("GET", "Calls/" + model_instance.sid, {})
+    @doc = Hpricot::XML(@a)
+    puts @doc
+    call = twilio_xml_parse(@doc, model_instance)
+  end
+  
+  def twilio_xml_parse(doc,model_instance)
+    (doc/:Call).each do |status|
+        model_instance.tCallSegmentSid = status.at("CallSegmentSid").innerHTML
+        model_instance.tAccountSid = status.at("AccountSid").innerHTML
+        model_instance.tCalled = status.at("Called").innerHTML
+        model_instance.tCaller = status.at("Caller").innerHTML
+        model_instance.tPhoneNumberSid = status.at("PhoneNumberSid").innerHTML
+        model_instance.tStatus = status.at("Status").innerHTML
+        model_instance.tStartTime = status.at("StartTime").innerHTML
+        model_instance.tEndTime = status.at("EndTime").innerHTML
+        model_instance.tDuration = status.at("Duration").innerHTML
+        model_instance.tPrice = status.at("Price").innerHTML
+        model_instance.tFlags = status.at("Flags").innerHTML
+        model_instance.save
+      end
+  end
+
+
+  def twilio_status_lookup(code)
+    
+    case code
+      when 0 then "Not Yet Dialed"
+      when 1 then "In Progress"
+      when 2 then "Complete"
+      when 3 then "Failed - Busy"
+      when 4 then "Failed - Application Error"
+      when 5 then "Failed - No Answer"
+    end 
+    
+  end
+  
 end

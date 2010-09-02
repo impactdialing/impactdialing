@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20100830103006) do
+ActiveRecord::Schema.define(:version => 20100902093304) do
 
   create_table "call_attempts", :force => true do |t|
     t.integer  "voter_id"
@@ -26,6 +26,17 @@ ActiveRecord::Schema.define(:version => 20100830103006) do
     t.integer  "caller_hold_time"
     t.string   "result"
     t.string   "result_digit"
+    t.string   "tCallSegmentSid"
+    t.string   "tAccountSid"
+    t.string   "tCalled"
+    t.string   "tCaller"
+    t.string   "tPhoneNumberSid"
+    t.integer  "tStatus"
+    t.integer  "tDuration"
+    t.integer  "tFlags"
+    t.datetime "tStartTime"
+    t.datetime "tEndTime"
+    t.float    "tPrice"
   end
 
   create_table "caller_sessions", :force => true do |t|
@@ -34,7 +45,7 @@ ActiveRecord::Schema.define(:version => 20100830103006) do
     t.datetime "endtime"
     t.integer  "num_calls"
     t.integer  "avg_wait"
-    t.string   "guid"
+    t.string   "sid"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "available_for_call", :limit => 1, :default => 1
@@ -43,6 +54,17 @@ ActiveRecord::Schema.define(:version => 20100830103006) do
     t.datetime "hold_time_start"
     t.boolean  "on_call",                         :default => false
     t.string   "caller_number"
+    t.string   "tCallSegmentSid"
+    t.string   "tAccountSid"
+    t.string   "tCalled"
+    t.string   "tCaller"
+    t.string   "tPhoneNumberSid"
+    t.integer  "tStatus"
+    t.integer  "tDuration"
+    t.integer  "tFlags"
+    t.datetime "tStartTime"
+    t.datetime "tEndTime"
+    t.float    "tPrice"
   end
 
   create_table "callers", :force => true do |t|
@@ -258,6 +280,7 @@ ActiveRecord::Schema.define(:version => 20100830103006) do
     t.integer  "caller_id"
     t.string   "result_digit"
     t.integer  "attempt_id"
+    t.datetime "result_date"
   end
 
 end

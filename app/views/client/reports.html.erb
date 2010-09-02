@@ -13,8 +13,15 @@
 	<%= render :partial => 'boxtop', :locals=>{:title=>"Choose a report for #{@campaign.name}"} %>
 	<div class="box-content">
 		<a href="/client/report_overview?id=<%=  params[:id]%>">Overview Report</a><br/>
-		<a href="/client/report_overview?id=<%=  params[:id]%>&type=1">Answered Call Report</a><br/>
-		<a href="/client/report_realtime?id=<%=  params[:id]%>">Realtime Report</a>
+		<a href="/client/report_overview_old?id=<%= params[:id]%>&type=1">Answered Call Report</a><br/>
+		<a href="/client/report_caller?id=<%=  params[:id]%>">Caller Results Report</a><br/>
+		<a href="/client/report_caller_overview?id=<%=  params[:id]%>">Caller Overview Report</a><br/>
+		<a href="/client/report_login?id=<%=  params[:id]%>">Login Report</a><br/>
+		<a href="/client/report_real?id=<%=  params[:id]%>">Realtime Report</a><br/>
+		<% if @user.admin %>
+		<br/>
+		<a href="/client/report_realtime?id=<%=  params[:id]%>">Admin Realtime Report</a>
+		<% end %>
 	</div>
 </div>
 

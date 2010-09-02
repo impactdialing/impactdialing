@@ -152,6 +152,7 @@ class Campaign < ActiveRecord::Base
   
   def voters(status=nil,include_call_retries=true)
     return [] if  !self.user.paid
+    return [] if self.caller_id.blank? || !self.caller_id_verified
     voters=[]
 #    self.voter_lists.each do |list|
     VoterList.find_all_by_campaign_id_and_active_and_enabled(self.id, 1, 1).each do |list|

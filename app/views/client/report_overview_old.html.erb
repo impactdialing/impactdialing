@@ -6,7 +6,7 @@
 		<div class="table">
 		    <table width="100%" border="0" cellspacing="0" cellpadding="0">
 		      <tr>
-		        <th width="300">Status</th>
+		        <th>Status</th>
 		        <th>Number</th>
 		        <th>Percentage</th>
 		      </tr>
@@ -18,7 +18,7 @@
 					<%= r[1] %></td>
 					<td><%= r[0] %></td>
 					<td><%= ((r[0].to_f/@total)*100).to_i %>%</td>
-			</tr>
+				</tr>
 				<% end %>
 		    </table>
 
@@ -30,11 +30,12 @@
 		
 		<br/>
 		
+		<% if params[:type]!="1" %>
 			<% if @totalvoters>0 %>
 			<div class="table">
 			    <table width="100%" border="0" cellspacing="0" cellpadding="0">
 			      <tr>
-			        <th width="300">Type</th>
+			        <th>Type</th>
 			        <th>Numbers</th>
 			        <th>Percentage</th>
 			      </tr>
@@ -52,31 +53,32 @@
 			    </table>
 			
 			</div>
-			<br/>
 			<% end %>
+		<% end %>
 
-			<div class="table">
-			    <table width="100%" border="0" cellspacing="0" cellpadding="0">
-			      <tr>
-			        <th width="300">Type</th>
-			        <th>Minutes</th>
-			      </tr>
-					<tr class="odd">
-						<td>Minutes Used</td>
-						<td><%= @callerMins + @talkmins  %></td>
-					</tr>
-					<tr class="event">
-						<td>Talk Time</td>
-						<td><%= @talkmins %></td>
-					</tr>
-			    </table>
-			
-			</div>
-						 
-			
-			
 		
 	</div>
+	<div class="box-content">
+	Report Date Range:
+	<% form_tag ("/client/report_overview_old?id=#{ params[:id]}&type=#{params[:type]}") do %> 
+	  
+	<table>
+		<tr>
+			<td>From:</td>
+			<td> <%= unobtrusive_date_text_picker_tag :from_date,@from_date %> </td>
+		</tr>
+		<tr>
+			<td>
+				To:</td>
+			<td>  <%= unobtrusive_date_text_picker_tag :to_date,@to_date %> 
+				<input type="submit" class="button" value="update" size="4">
+				</td>
+		</tr>
+	</table>
+	<% end %>
+	
+	</div>
 </div>
+
 
 

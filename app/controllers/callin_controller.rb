@@ -83,7 +83,7 @@ class CallinController < ApplicationController
           s = CallerSession.new
           s.caller_number = params[:Caller]
           s.caller_id=c.id
-          s.guid = params[:CallSid]
+          s.sid = params[:CallSid]
           s.save
           @redirect="#{APP_URL}/callin/enter_group?session=#{s.id}"
         else
@@ -219,6 +219,7 @@ class CallinController < ApplicationController
           voter = Voter.find(@session.voter_in_progress)
           voter.status='Call finished'
           voter.result_digit=params[:Digits]
+          voter.result_date=Time.now
           voter.caller_id=@caller.id
           attempt = CallAttempt.find_by_voter_id(@session.voter_in_progress, :order=>"id desc", :limit=>1)
           voter.attempt_id=attempt.id if attempt!=nil
