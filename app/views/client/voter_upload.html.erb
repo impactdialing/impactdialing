@@ -8,7 +8,7 @@
 						<p><strong>Successfully imported <%= @result[:successCount] %> records</strong></p> 
 			</div>
 			<% end %>
-			<% if @result.has_key?(:failedCount) %>
+			<% if @result.has_key?(:failedCount) && @result[:failedCount] > 0 %>
 			<div class="msg msg-error"> 
 						<p><strong>Unable to import <%= @result[:failedCount] %> records</strong></p> 
 			</div>

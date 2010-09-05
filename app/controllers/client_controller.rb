@@ -462,7 +462,7 @@ Can we count on you to vote for such-and-such?"
 
       for i in 1..99 do
          thisKeypadval=eval("params[:keypad#{i}]" )
-         if !isnumber(thisKeypadval)
+         if !thisKeypadval.blank? && !isnumber(thisKeypadval)
            flash.now[:error]= "Keypad value entered '#{thisKeypadval}' must be numeric"
            return
          end
@@ -557,7 +557,7 @@ Can we count on you to vote for such-and-such?"
      end
 
 
-     @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Realtime Report"]
+     @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Overview Report"]
      sql="#select distinct status from call_attempts  
 
      select 
@@ -614,7 +614,7 @@ Can we count on you to vote for such-and-such?"
       extra="and result is not null"
     end
     
-    @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Answered Call Report"]
+    @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Answereds Call Report"]
 
     if params[:from_date]
       @from_date=Date.parse params[:from_date]

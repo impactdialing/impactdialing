@@ -21,7 +21,7 @@ class ApplicationController < ActionController::Base
             You are running low on numbers to dial for the #{campaign.name} campaign.
             Unless you act quickly, you'll have called through all your lists in
             about 30 minutes. You have three choices.<br/><br/>
-            1: Load up some more numbers! This is the best option, if you have
+            1: Load up some more numbers. This is the best option, if you have
             another list ready to go. If it's already loaded up, just add it to
             this dialing group.<br/><br/>
             2. Cycle back through the list another time. Generally, it's a good

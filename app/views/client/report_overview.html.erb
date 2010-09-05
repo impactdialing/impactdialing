@@ -6,7 +6,7 @@
 		<div class="table">
 		    <table width="100%" border="0" cellspacing="0" cellpadding="0">
 		      <tr>
-		        <th width="300">Status</th>
+		        <th width="300">Calls</th>
 		        <th>Number</th>
 		        <th>Percentage</th>
 		      </tr>
@@ -34,7 +34,7 @@
 			<div class="table">
 			    <table width="100%" border="0" cellspacing="0" cellpadding="0">
 			      <tr>
-			        <th width="300">Type</th>
+			        <th width="300">Penetration</th>
 			        <th>Numbers</th>
 			        <th>Percentage</th>
 			      </tr>
@@ -42,7 +42,7 @@
 					<tr class="odd">
 						<td>Remaining Numbers</td>
 						<td><%= @voters_to_call.length %></td>
-						<td><%=@voters_to_call.length/@totalvoters*100  %></td>
+						<td><%=@voters_to_call.length/@totalvoters*100  %>%</td>
 					</tr>
 					<tr class="event">
 						<td>Finished Numbers</td>
@@ -58,7 +58,7 @@
 			<div class="table">
 			    <table width="100%" border="0" cellspacing="0" cellpadding="0">
 			      <tr>
-			        <th width="300">Type</th>
+			        <th width="300">Minutes</th>
 			        <th>Minutes</th>
 			      </tr>
 					<tr class="odd">

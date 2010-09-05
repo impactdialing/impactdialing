@@ -62,11 +62,26 @@
 							<a href="/client/caller_add" class="add-button"><span>Add Caller</span></a>
 							<div class="cl">&nbsp;</div><br/>
 						</div>
-					  	<div class="box-content">
-							<input type="checkbox" value="0" id="listUse" onclick="allCallers();"> All Callers<br/>
-				    	<% @callers.each do |l| %>
-				         	<%= check_box_tag "campaign[caller_ids][]", "#{l.id}", callerInCampaign(l), :onclick=>"someCallers();" -%> <%= l.name %><br/>
+					  	<div class="box-content tt">
+							<table>
+								<tr>
+									<td>Name</td>
+									<td>&nbsp;</td>
+									<td>PIN</td>
+								</tr>
+								<tr>
+									<td><input type="checkbox" value="0" id="listUse" onclick="allCallers();"> All Callers</td>
+									<td></td>
+									<td></td>
+								</tr>
+				    			<% @callers.each do |l| %>
+									<tr>
+										<td><%= check_box_tag "campaign[caller_ids][]", "#{l.id}", callerInCampaign(l), :onclick=>"someCallers();" -%> <%= l.name %></td>
+										<td></td>
+										<td><%= l.pin %></td>
+									</tr>
 						<% end %>
+						</table>
 						<br/>
 					  </div>
 					  <!-- Table -->

@@ -1,27 +1,40 @@
 <% if params[:id].blank? %>
 	<div class="box" style="width:600px;">
 		<%= render :partial => 'boxtop', :locals=>{:title=>"Choose a campaign"} %>
-		<div class="box-content">
-			<% @user.campaigns.each do |c| %>
-			<a href="/client/reports/<%= c.id %>"><%= c.name %></a><br/>
+		<div class="table" width="100%">
+		    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+			<% if @user.campaigns.length==0 %>
+				<tr><td>You haven't created any campaigns yet.</td></tr>
+			<% else %>
+			  <tr>
+		        <th>Name</th>
+			</tr>
+		    
 			<% end %>
+			<% @user.campaigns.each do |c| %>
+			<tr><td><a href="/client/reports/<%= c.id %>"><%= c.name %></a></td></tr>
+			<% end %>
+			</table>
 		</div>
 	</div>
 
 <% else %>
 <div class="box" style="width:600px;">
 	<%= render :partial => 'boxtop', :locals=>{:title=>"Choose a report for #{@campaign.name}"} %>
-	<div class="box-content">
-		<a href="/client/report_overview?id=<%=  params[:id]%>">Overview Report</a><br/>
-		<a href="/client/report_overview_old?id=<%= params[:id]%>&type=1">Answered Call Report</a><br/>
-		<a href="/client/report_caller?id=<%=  params[:id]%>">Caller Results Report</a><br/>
-		<a href="/client/report_caller_overview?id=<%=  params[:id]%>">Caller Overview Report</a><br/>
-		<a href="/client/report_login?id=<%=  params[:id]%>">Login Report</a><br/>
-		<a href="/client/report_real?id=<%=  params[:id]%>">Realtime Report</a><br/>
-		<% if @user.admin %>
-		<br/>
-		<a href="/client/report_realtime?id=<%=  params[:id]%>">Admin Realtime Report</a>
-		<% end %>
+	<div class="table">
+		<table>
+			<tr><td><a href="/client/report_overview?id=<%=  params[:id]%>">Overview Report</a></td></tr>
+			<tr><td><a href="/client/report_overview_old?id=<%= params[:id]%>&type=1">Answered Calls Report</a><br/></td></tr>
+			<tr><td><a href="/client/report_caller?id=<%=  params[:id]%>">Caller Results Report</a><br/></td></tr>
+			<tr><td><a href="/client/report_caller_overview?id=<%=  params[:id]%>">Caller Overview Report</a><br/></td></tr>
+			<tr><td><a href="/client/report_login?id=<%=  params[:id]%>">Login Report</a><br/></td></tr>
+			<tr><td><a href="/client/report_real?id=<%=  params[:id]%>">Realtime Report</a><br/></td></tr>
+				<% if @user.admin %>
+			<tr><td><a href="/client/report_realtime?id=<%=  params[:id]%>">Admin Realtime Report</a></td></tr>
+			<% end %>
+		
+		
+		</table>
 	</div>
 </div>
 
