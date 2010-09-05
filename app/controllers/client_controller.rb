@@ -630,9 +630,16 @@ Can we count on you to vote for such-and-such?"
       end
     end
 
-
-    @records = ActiveRecord::Base.connection.execute("SELECT count(*) as cnt, result FROM call_attempts where campaign_id=#{@campaign.id} and created_at > '#{@from_date.strftime("%Y-%m-%d")}' and created_at < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'  #{extra}
-    group by result order by count(*) desc")
+    sql="
+    SELECT count(*) as cnt, result 
+    FROM call_attempts 
+    where campaign_id=#{@campaign.id} 
+    and created_at > '#{@from_date.strftime("%Y-%m-%d")}' 
+    and created_at < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'  #{extra}
+    group by result order by count(*) desc"
+    logger.info sql
+    
+    @records = ActiveRecord::Base.connection.execute(sql)
     @total=0
     @records.each do |r|
       @total = @total + r[0].to_i

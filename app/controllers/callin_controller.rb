@@ -208,7 +208,16 @@ class CallinController < ApplicationController
       #       end
             # initial call-in
       @say="Please enter your call result. Then press star to submit and keep taking calls."
-    else
+      if @session.voter_in_progress!=nil
+       voter = Voter.find(@session.voter_in_progress)
+       voter.status='Call finished'
+       voter.result="No Disposition"
+       attempt = CallAttempt.find_by_voter_id(@session.voter_in_progress, :order=>"id desc", :limit=>1)
+       attempt.result="No Disposition"
+       attempt.save
+       voter.save
+     end
+     else
       # digits entered, response given
       if params[:Digits]=="*"
         @say="Goodbye"
@@ -222,9 +231,12 @@ class CallinController < ApplicationController
           voter.result_date=Time.now
           voter.caller_id=@caller.id
           attempt = CallAttempt.find_by_voter_id(@session.voter_in_progress, :order=>"id desc", :limit=>1)
+          attempt.result_digit=params[:Digits]
+
           voter.attempt_id=attempt.id if attempt!=nil
           if @campaign.script!=nil
             voter.result=eval("@campaign.script.keypad_" + params[:Digits])
+            attempt.result=eval("@campaign.script.keypad_" + params[:Digits])
             begin
               if @campaign.script.incompletes!=nil
                 if eval(@campaign.script.incompletes).index(params[:Digits])
@@ -234,6 +246,7 @@ class CallinController < ApplicationController
             rescue
             end
           end
+          attempt.save
           voter.save
         end
         @session = CallerSession.find(params[:session]) 
