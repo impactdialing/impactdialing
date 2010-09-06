@@ -216,7 +216,7 @@ class CallinController < ApplicationController
        attempt.result="No Disposition"
        attempt.save
        voter.save
-     end
+      end
      else
       # digits entered, response given
       if params[:Digits]=="*"
@@ -282,15 +282,28 @@ class CallinController < ApplicationController
     @voter = Voter.find(params[:voter])
     attempt = CallAttempt.find_by_voter_id(params[:voter], :order=>"id desc", :limit=>1)
 
-    if params[:CallStatus]=="completed" || params[:CallStatus]=="no-answer"
+    if params[:CallStatus]=="completed" || params[:CallStatus]=="no-answer" || params[:CallStatus]=="busy" || params[:CallStatus]=="failed" || params[:CallStatus]=="canceled"
       #clean up voter hangup
       if params[:DialStatus]=="hangup-machine"
         @voter.status="Hangup or answering machine"
         attempt.status="Hangup or answering machine"
+        @voter.call_back=true
       elsif params[:DialStatus]=="no-answer"
         @voter.status="No answer"
-        @voter.call_back=true
         attempt.status="No answer"
+        @voter.call_back=true
+      elsif params[:CallStatus]=="busy"
+        @voter.status="No answer busy signal"
+        attempt.status="No answer busy signal"
+        @voter.call_back=true
+      elsif params[:CallStatus]=="canceled"
+        @voter.status="Call cancelled"
+        attempt.status="Call cancelled"
+        @voter.call_back=false
+      elsif params[:CallStatus]=="failed"
+        @voter.status="Call failed"
+        attempt.status="Call failed"
+        @voter.call_back=false
       else
         if attempt.caller_id==nil
           #abandon

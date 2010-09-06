@@ -19,7 +19,11 @@ class ClientController < ApplicationController
   def user_add
     @breadcrumb="Join"
     
-    @user = User.new
+    if session[:user].blank?
+      @user = User.new
+    else
+      @user = User.find(session[:user])
+    end
     
     if request.post?
       @user.attributes =  params[:user]
@@ -75,9 +79,14 @@ Can we count on you to vote for such-and-such?"
         @script.active=1
         @script.user_id=@user.id
         @script.save
+        if session[:user].blank?
+          message = "Your account has been created"
+        else
+          message="Your account has been updated"
+        end
         session[:user]=@user.id
         redirect_to :action=>"index"
-        flash[:notice]="Your account has been created"
+        flash[:notice]=message
       end
     end
     
