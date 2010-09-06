@@ -185,7 +185,7 @@ class Campaign < ActiveRecord::Base
       end
     end
 
-    voters
+    voters.sort_by{rand}
   end
   
   def voter_upload(upload,uid,seperator,voter_list_id)
