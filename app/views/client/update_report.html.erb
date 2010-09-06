@@ -77,9 +77,10 @@
 			<div class="box-content">
 				Results:<br/>
 				<%# v = Voter.find_all_by_campaign_id(campaign.id, :joins=>"join voter_results on voter_results.voter_id=voters.id") %>
-				<% v = Voter.find_all_by_campaign_id(campaign.id, :conditions=>"result_digit is not null", :order=>"id desc") %>
+				<%# v = Voter.find_all_by_campaign_id(campaign.id, :conditions=>"result_digit is not null", :order=>"id desc") %>
+				<% v = CallAttempt.find_all_by_campaign_id(campaign.id, :conditions=>"result_digit is not null", :order=>"id desc") %>
 				<% v.each do |voter| %>
-					<li><%= voter.result %> <%=  number_to_phone(voter.Phone, :area_code => true)   %> <%= voter.FirstName %> <%= voter.LastName %>
+					<li><%= voter.result %> <%=  number_to_phone(voter.voter.Phone, :area_code => true)   %> <%= voter.voter.FirstName %> <%= voter.voter.LastName %>
 				<% end %>
 			</div>
 		</div>
