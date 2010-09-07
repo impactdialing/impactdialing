@@ -67,7 +67,8 @@ DaemonKit::Application.running! do |config|
     else
       ratio_dial=1
     end
-    ratio_dial=campaign.ratio_override if campaign.ratio_override > 0
+
+    ratio_dial=campaign.ratio_override if campaign.ratio_override!=nil && campaign.ratio_override > 0
 
     if answer_pct==0
       ratio_dial=2
