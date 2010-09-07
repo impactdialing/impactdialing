@@ -60,7 +60,7 @@ class CallinController < ApplicationController
         @say="We could not find that pin, try again."
       else
         multi="ok"
-        if c.multi_user?
+        if !c.multi_user?
           logged_in = CallerSession.find_all_by_caller_id_and_on_call(c.id, true)
           if logged_in.length > 0
             multi="bad"
