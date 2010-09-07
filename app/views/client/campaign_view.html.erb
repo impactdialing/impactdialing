@@ -1,11 +1,60 @@
 
-<% content_for :campaign_view do %>
 <div id="callerid"></div>
 <% form_for :campaign, :url => { :action => "campaign_add" , :id=>@campaign.id}, :html => {:name => 'callerForm', :id => 'callerForm'}   do |f| %>
-<div id="content">
-	<table width="100%">
+<div id="content" style="width:100%;">
+
+
+	<table width="100%" style="padding:10px;"> 
 		<tr>
-			<td width="50%" valign="top">
+			<td valign="top" width="32%">
+
+				<!--<div id="sidebar" style="width:250; margin-top:2px; margin-right:6px;">-->
+
+					<!-- Box -->
+					<div class="box">
+					  <!-- Box Head -->
+					  <div class="box-head">
+					    <h2>Campaign Info</h2>
+					  </div>
+					  <!-- End Box Head-->
+					  	<div class="box-content"> 
+					        <label>Name:</label><br/>
+							<%= f.text_field :name, {:class=>"field size3"} %>
+							<br/>
+							<br/>
+
+					        <label>Caller ID:</label><br/>
+							<%= f.text_field :caller_id, {:class=>"field size3"} %>
+							<br/>
+							<br/>
+							Call-in number:
+							<br/><div style="font-size:18px; padding-top:6px; "> <%= number_to_phone(APP_NUMBER, :area_code => true) %></div>
+							<br/>
+							Campaign ID:
+							<br/><div style="font-size:18px; padding-top:6px; "> <%= @campaign.group_id %></div>
+							<br/>
+
+								Results:
+								<br/><div style="font-size:18px; padding-top:6px; ">
+
+
+								<%= f.collection_select(:script_id, Script.find_all_by_user_id_and_active(@user.id,1), :id, :name, { :prompt => true},  {:class=>"field"} 
+					)  %>
+							</div>
+
+						</div>
+					</div>
+					<!-- End Box -->
+				    <!-- End Sidebar -->
+				    <div class="cl">&nbsp;</div>
+
+
+
+				<!--</div>-->
+
+			</td>
+			<td> &nbsp; </td>
+			<td width="32%" valign="top">
 				<div class="box">
 					<%= render :partial => 'boxtop', :locals=>{:title=>"Available Lists"} %>
 					<% if @lists.length==0 %>
@@ -46,7 +95,7 @@
 			  	</div>
 			</td>
 			<td> &nbsp; </td>
-			<td width="50%" valign="top">
+			<td width="32%" valign="top">
 				<div class="box">
 					<%= render :partial => 'boxtop', :locals=>{:title=>"Callers With Access"} %>
 					<% if @callers.length==0 %>
@@ -58,16 +107,18 @@
 							<div class="cl">&nbsp;</div>
 						</div>
 					<% else %>
+					<!--
 				  		<div class="box-content" style="float:right;"> 
 							<a href="/client/caller_add" class="add-button"><span>Add Caller</span></a>
 							<div class="cl">&nbsp;</div><br/>
 						</div>
-					  	<div class="box-content tt">
-							<table>
+					-->
+					  	<div class="table2">
+									    <table width="100%" border="0" cellspacing="0" cellpadding="0">
 								<tr>
-									<td>Name</td>
-									<td>&nbsp;</td>
-									<td>PIN</td>
+									<th>Name</th>
+									<th>&nbsp;</th>
+									<th>PIN</th>
 								</tr>
 								<tr>
 									<td><input type="checkbox" value="0" id="listUse" onclick="allCallers();"> All Callers</td>
@@ -90,52 +141,10 @@
 			</td>
 		</tr>
 	</table>
-</div>
-<div id="sidebar" style="width:197px; margin-top:2px; margin-right:6px;">
-
-	<!-- Box -->
-	<div class="box">
-	  <!-- Box Head -->
-	  <div class="box-head">
-	    <h2>Campaign Info</h2>
-	  </div>
-	  <!-- End Box Head-->
-	  	<div class="box-content"> 
-	        <label>Name:</label><br/>
-			<%= f.text_field :name, {:class=>"field size3"} %>
-			<br/>
-			<br/>
-
-	        <label>Caller ID:</label><br/>
-			<%= f.text_field :caller_id, {:class=>"field size3"} %>
-			<br/>
-			<br/>
-			Call-in number:
-			<br/><div style="font-size:18px; padding-top:6px; "> <%= number_to_phone(APP_NUMBER, :area_code => true) %></div>
-			<br/>
-			Campaign ID:
-			<br/><div style="font-size:18px; padding-top:6px; "> <%= @campaign.group_id %></div>
-			<br/>
-
-				Results:
-				<br/><div style="font-size:18px; padding-top:6px; ">
-
-			
-				<%= f.collection_select(:script_id, Script.find_all_by_user_id_and_active(@user.id,1), :id, :name, { :prompt => true},  {:class=>"field"} 
-	)  %>
-			</div>
-
-		</div>
-	</div>
-	<!-- End Box -->
-    <!-- End Sidebar -->
-    <div class="cl">&nbsp;</div>
-
 
 
 </div>
-
-<%= float_sidebar %>
+<%# float_sidebar %>
 
 <script>
 function allCallers() {
@@ -174,6 +183,5 @@ isAll();
 <% end %>
 <div>&nbsp;</div>
 
-<% end %>
 
 

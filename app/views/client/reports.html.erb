@@ -20,6 +20,7 @@
 				<td><a href="/client/report_overview_old?id=<%= c.id %>&type=1">Answered</a><br/></td>
 				<td><a href="/client/report_caller?id=<%= c.id %>">By Caller</a><br/></td>
 				<td><a href="/client/report_caller_overview?id=<%= c.id %>">Caller</a><br/></td>
+				<td><a href="/client/report_download?id=<%= c.id %>">Download</a><br/></td>
 
 			</tr>
 			<% end %>
@@ -38,6 +39,7 @@
 			<tr><td><a href="/client/report_caller_overview?id=<%=  params[:id]%>">Caller Overview Report</a><br/></td></tr>
 			<tr><td><a href="/client/report_login?id=<%=  params[:id]%>">Login Report</a><br/></td></tr>
 			<tr><td><a href="/client/report_real?id=<%=  params[:id]%>">Realtime Report</a><br/></td></tr>
+			<tr><td><a href="/client/report_download?id=<%=  params[:id]%>">Download Report</a><br/></td></tr>
 				<% if @user.admin %>
 			<tr><td><a href="/client/report_realtime?id=<%=  params[:id]%>">Admin Realtime Report</a></td></tr>
 			<% end %>

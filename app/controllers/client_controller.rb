@@ -189,7 +189,7 @@ Can we count on you to vote for such-and-such?"
   
   def campaigns
     @breadcrumb="Campaigns"
-    @campaigns = Campaign.paginate :page => params[:page], :conditions =>"active=1 and user_id=#{@user.id}", :order => 'name'
+    @campaigns = Campaign.paginate :page => params[:page], :conditions =>"active=1 and user_id=#{@user.id}", :order => 'id desc'
   end
   
   def campaign_new
@@ -454,7 +454,7 @@ Can we count on you to vote for such-and-such?"
     if @script.new_record?
       @label="Add Result"
     else
-      @label="Edit Result"
+      @label="Results"
     end
     if @script.incompletes!=nil
       begin
@@ -762,6 +762,48 @@ Can we count on you to vote for such-and-such?"
        @logins = CallerSession.find_all_by_campaign_id(@campaign.id, :order=>"id desc")
   end
   
+  def report_download
+    @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
+    if @campaign.blank?
+      render :text=>"Unauthorized"
+      return
+    end
+
+    @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Download Report"]
+    set_report_date_range
+    
+    if params[:download]=="1"
+#      attempts = CallAttempt.find_all_by_campaign_id(@campaign.id)
+      sql="select
+      ca.result, ca.result_digit , v.Phone, v.CustomID, v.LastName, v.FirstName, v.MiddleName, v.Suffix, v.Email, 
+      c.pin, c.name,  c.email,
+      ca.status, ca.connecttime, ca.call_end from 
+      call_attempts ca
+      join voters v on v.id=ca.voter_id
+      join callers c on c.id=ca.caller_id
+      where 
+      ca.campaign_id=25
+      order by ca.id desc
+      "
+      attempts = ActiveRecord::Base.connection.execute(sql)
+      
+      csv_string = FasterCSV.generate do |csv| 
+        csv << [
+          "result", "result digit" , "voter phone", "voter id", "voter last", "voter first", "voter middle", "voter suffix", "voter email", 
+          "caller pin", "caller name",  "caller email", 
+          "status", "call start", "call end"
+          
+          ]
+        attempts.each do |a|
+          csv << [a[0],a[1],a[2],a[3],a[4],a[5],a[6],a[7],a[8],a[9],a[10],a[11],a[12],a[13],a[14],a[15]]
+        end
+      end
+      send_data csv_string, :type => "text/plain",  :filename=>"report.csv", :disposition => 'attachment'
+      return
+    end
+    
+  end
+  
   def report_real
     if params[:id].blank?
       @breadcrumb="Reports"
@@ -789,4 +831,44 @@ Can we count on you to vote for such-and-such?"
     @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id)
     render :layout=>false
   end
+  
+  def set_report_date_range
+
+    if params[:from_date]
+      @from_date=Date.parse params[:from_date]
+      @to_date = Date.parse params[:to_date]
+    else
+      firstCall = CallerSession.find_by_campaign_id(@campaign.id,:order=>"id asc", :limit=>"1")
+      lastCall = CallerSession.find_by_campaign_id(@campaign.id,:order=>"id desc", :limit=>"1")
+      if !firstCall.blank?
+        @from_date  = firstCall.created_at
+      end
+      if !lastCall.blank?
+        @to_date  = lastCall.created_at
+      end
+    end
+  
+  end
+
+  private
+      def stream_csv
+         filename = params[:action] + ".csv"    
+
+         #this is required if you want this to work with IE		
+         if request.env['HTTP_USER_AGENT'] =~ /msie/i
+           headers['Pragma'] = 'public'
+           headers["Content-type"] = "text/plain"
+           headers['Cache-Control'] = 'no-cache, must-revalidate, post-check=0, pre-check=0'
+           headers['Content-Disposition'] = "attachment; filename=\"#{filename}\""
+           headers['Expires'] = "0"
+         else
+           headers["Content-Type"] ||= 'text/csv'
+           headers["Content-Disposition"] = "attachment; filename=\"#{filename}\"" 
+         end
+
+        render :text => Proc.new { |response, output|
+          csv = FasterCSV.new(output, :row_sep => "\r\n") 
+          yield csv
+        }
+      end
 end

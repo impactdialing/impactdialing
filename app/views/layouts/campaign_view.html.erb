@@ -16,7 +16,7 @@
       <div id="top-navigation"> 
 	<% if !@user.blank? %>
 	Welcome <strong><%= @user.fname %></strong>
-	<!-- <span>|</span> <a href="#">Help</a> <span>|</span> <a href="#"> Settings</a> --> <span>|</span> <a href="/client/logout">Log out</a> 
+	<!-- <span>|</span> <a href="#">Help</a> <span>|</span> <a href="#"> Settings</a> --> <span>|</span> <a href="/client/user_add">My Account</a>  <span>|</span> <a href="/client/logout">Log out</a> 
 	<% end %> 
 	</div>
 
@@ -72,7 +72,7 @@
     <!-- Main -->
     <div id="main" <% if @actionName=="campaign_view" %>style="background-color:white; -moz-border-radius: 20px;  	    -webkit-border-radius: 20px;  padding:14px;	border:1px solid #b0722f;<% end %>   "> 
       <div class="cl">&nbsp;</div>
-	 <%= yield :campaign_view %>
+	 <%= yield  %>
       <div class="cl">&nbsp;</div>
 <% if @actionName=="campaign_view" %>
 	<div class="buttons2" align="center">
@@ -100,7 +100,7 @@
 <!-- End Container -->
 <!-- Footer -->
 <div id="footer">
-  <div class="shell"> <span class="left">&copy; 2010 - Impact Dialing</span> 
+  <div class="shell"> <span class="left">&copy; 2010 Impact Dialing</span> 
 	 </div>
 </div>
 <%= @floatSidebar %>

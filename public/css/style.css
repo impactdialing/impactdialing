@@ -81,6 +81,11 @@ h3 a{ text-decoration: none; }
 #sidebar { float:right; width:225px; margin-top:2px; margin-right:6px;}
 .sidebar2 {  width:100px; margin-top:2px; margin-right:6px;}
 
+.table2 {}
+.table2 th{ background:#fffdfa url(/css/images/th.gif) repeat-x 0 0; color:#818181; text-align: left; padding:7px 10px; border-bottom:solid 1px #d2d1cb;}
+.table2 td{ background:#fbfcfc;   padding:2px 8px; }
+
+
 .table {}
 .table th{ background:#fffdfa url(/css/images/th.gif) repeat-x 0 0; color:#818181; text-align: left; padding:7px 10px; border-bottom:solid 1px #d2d1cb;}
 .table td{ background:#fbfcfc;  border-bottom:solid 1px #e0e0e0; padding:8px 10px; }
