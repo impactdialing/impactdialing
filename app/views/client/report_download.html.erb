@@ -1,5 +1,5 @@
 <div class="box" >
-	<%= render :partial => 'boxtop', :locals=>{:title=>"Download Report #{@campaign.name}"} %>
+	<%= render :partial => 'boxtop', :locals=>{:title=>"#{@campaign.name} Download Report"} %>
 	<div class="box-content">
 		<% form_tag ("/client/report_download?id=#{ params[:id]}") do %> 
 		<input type="hidden" name="from_date" value="<%= @from_date %>">

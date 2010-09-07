@@ -625,20 +625,8 @@ Can we count on you to vote for such-and-such?"
     
     @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Answereds Call Report"]
 
-    if params[:from_date]
-      @from_date=Date.parse params[:from_date]
-      @to_date = Date.parse params[:to_date]
-    else
-      firstCall = CallerSession.first(:order=>"id asc", :limit=>"1")
-      lastCall = CallerSession.first(:order=>"id desc", :limit=>"1")
-      if !firstCall.blank?
-        @from_date  = firstCall.created_at
-      end
-      if !lastCall.blank?
-        @to_date  = lastCall.created_at
-      end
-    end
-
+    set_report_date_range
+  
     sql="
     SELECT count(*) as cnt, result 
     FROM call_attempts 
@@ -688,19 +676,7 @@ Can we count on you to vote for such-and-such?"
     
     @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Caller Report"]
 
-    if params[:from_date]
-      @from_date=Date.parse params[:from_date]
-      @to_date = Date.parse params[:to_date]
-    else
-      firstCall = CallerSession.first(:order=>"id asc", :limit=>"1")
-      lastCall = CallerSession.first(:order=>"id desc", :limit=>"1")
-      if !firstCall.blank?
-        @from_date  = firstCall.created_at
-      end
-      if !lastCall.blank?
-        @to_date  = lastCall.created_at
-      end
-    end
+    set_report_date_range
     caller_ids=CallerSession.all(:select=>"distinct caller_id", :conditions=>"campaign_id=#{@campaign.id}")
     @callers=[]
     caller_ids.each do |caller_session|
@@ -725,19 +701,7 @@ Can we count on you to vote for such-and-such?"
     
     @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Caller Report"]
 
-    if params[:from_date]
-      @from_date=Date.parse params[:from_date]
-      @to_date = Date.parse params[:to_date]
-    else
-      firstCall = CallerSession.first(:order=>"id asc", :limit=>"1")
-      lastCall = CallerSession.first(:order=>"id desc", :limit=>"1")
-      if !firstCall.blank?
-        @from_date  = firstCall.created_at
-      end
-      if !lastCall.blank?
-        @to_date  = lastCall.created_at
-      end
-    end
+    set_report_date_range
     caller_ids=CallerSession.all(:select=>"distinct caller_id", :conditions=>"campaign_id=#{@campaign.id}")
     @callers=[]
     caller_ids.each do |caller_session|
