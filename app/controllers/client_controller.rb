@@ -779,7 +779,7 @@ Can we count on you to vote for such-and-such?"
       c.pin, c.name,  c.email,
       ca.status, ca.connecttime, ca.call_end from 
       call_attempts ca
-      join voters v on v.id=ca.voter_id
+      left outer join voters v on v.id=ca.voter_id
       join callers c on c.id=ca.caller_id
       where 
       ca.campaign_id=25
