@@ -6,4 +6,9 @@ class HomeController < ApplicationController
   def tos
     render :layout=>"client"
   end
+
+  def monitor
+    render :text=>"OK"
+    return
+  end
 end
