@@ -20,9 +20,9 @@ test:
 
 production:
     adapter: mysql
-    host: localhost
+    host: domU-12-31-39-10-89-E4.compute-1.internal
     database: impactdialing_prod
     username: root
-    password: 
+    password: p4mjo!
     timeout: 5000
     reconnect: true
