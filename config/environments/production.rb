@@ -1,5 +1,5 @@
 APP_NUMBER="4157020991"
-APP_URL="http://ec2-204-236-196-225.compute-1.amazonaws.com"
+APP_URL="http://impact-app-balancer-912849015.us-east-1.elb.amazonaws.com"
 
 # Settings specified here will take precedence over those in config/environment.rb
 
