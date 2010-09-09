@@ -40,6 +40,7 @@ class Dialer
     else
       caller_num=APP_NUMBER
     end
+    DaemonKit.logger.info "APP_URL: #{APP_URL}"
     a=t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}"})
     require 'rubygems'
     require 'hpricot'
