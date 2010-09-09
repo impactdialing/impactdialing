@@ -18,6 +18,11 @@ class AdminController < ApplicationController
     redirect_to :action=>"users"
   end
   
+  def login
+    session[:user]=params[:id]
+    redirect_to :controller=>"client", :action=>"index"
+  end
+  
   def user
     @user = User.new
     if request.post?
