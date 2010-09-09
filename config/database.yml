@@ -20,7 +20,7 @@ test:
 
 production:
     adapter: mysql
-    host: domU-12-31-39-10-89-E4.compute-1.internal
+    host: domU-12-31-39-0F-A8-72.compute-1.internal
     database: impactdialing_prod
     username: root
     password: p4mjo!
