@@ -31,7 +31,7 @@ Recent timeframe:	<select name="timeframe" style="padding:0; margin:0;" onchange
 <div id="status">Loading...</div>
 <%= periodically_call_remote(:url => { :action => 'update_report', :id=>params[:id], :timeframe=>params[:timeframe] }, :update => 'status',  :frequency => '5')  %>
 <script>
-<%= remote_function(:url => { :action => 'update_report', :id=>params[:id] , :timeframe=>params[:timeframe]}, :update => 'status',  :frequency => '5')  %>
+<%= remote_function(:url => { :action => 'update_report', :id=>params[:id] , :timeframe=>params[:timeframe]}, :update => 'status',  :frequency => '30')  %>
 </script>
 <% end %>
 
