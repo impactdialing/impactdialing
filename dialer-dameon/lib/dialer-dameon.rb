@@ -51,7 +51,7 @@ class Dialer
     c.campaign_id=campaign.id
     c.status="Call in progress"
     c.save
-    v = Voter.infd(voter.id)
+    v = Voter.find(voter.id)
     v.last_call_attempt_id=c.id
     v.last_call_attempt_time=Time.now
     v.save

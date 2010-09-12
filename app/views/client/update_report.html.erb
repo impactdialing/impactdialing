@@ -81,7 +81,7 @@
 			<div class="box-content">
 				Results:<br/>
 				<% v.each do |voter| %>
-					<li><%= voter.result %> <%=  number_to_phone(voter.voter.Phone, :area_code => true)   %> <%= voter.voter.FirstName %> <%= voter.voter.LastName %>
+					<li><%= voter.result %> <%=  number_to_phone(voter.Phone, :area_code => true)   %> <%= voter.FirstName %> <%= voter.LastName %>
 				<% end %>
 			</div>
 		</div>

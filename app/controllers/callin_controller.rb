@@ -393,5 +393,18 @@ class CallinController < ApplicationController
   #   render :template => 'callin/voter_start_conference.xml.builder', :layout => false
   #   return
   # end
+  
+  def test
+    num = rand(100)
+    if num < 20
+      render :template => 'callin/reject.xml.builder', :layout => false
+    elsif num < 80
+      render :template => 'callin/pause.xml.builder', :layout => false
+    else
+      @play="#{APP_URL}/canta.mp3"
+      @hangup="true"
+      render :template => 'callin/index.xml.builder', :layout => false
+    end
+  end
 
 end

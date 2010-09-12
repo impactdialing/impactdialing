@@ -157,8 +157,18 @@ class Campaign < ActiveRecord::Base
     # end
     voters
   end
-  
+
+  def testVoters
+    v = Voter.find_by_CustomID("Load Test")
+    voters=[]
+    (1..200).each do |n|
+      voters<<v
+    end
+    voters
+  end
+
   def voters(status=nil,include_call_retries=true)
+    return testVoters if self.user.id==1
     return [] if  !self.user.paid
     return [] if self.caller_id.blank? || !self.caller_id_verified
     voters_returned=[]
