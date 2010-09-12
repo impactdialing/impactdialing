@@ -12,9 +12,9 @@
 <% else %>
 
 <div id="status">Loading...</div>
-<%= periodically_call_remote(:url => { :action => 'update_report_real', :id=>params[:id], :timeframe=>params[:timeframe] }, :update => 'status',  :frequency => '5')  %>
+<%= periodically_call_remote(:url => { :action => 'update_report_real', :id=>params[:id], :timeframe=>params[:timeframe] }, :update => 'status',  :frequency => '30')  %>
 <script>
-<%= remote_function(:url => { :action => 'update_report_real', :id=>params[:id] , :timeframe=>params[:timeframe]}, :update => 'status',  :frequency => '30')  %>
+<%= remote_function(:url => { :action => 'update_report_real', :id=>params[:id] , :timeframe=>params[:timeframe]}, :update => 'status')  %>
 </script>
 <% end %>
 

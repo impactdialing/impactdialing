@@ -49,7 +49,9 @@ class Campaign < ActiveRecord::Base
   end
   
   def before_save
+    #check_valid_caller_id if self.caller_id_changed?
     check_valid_caller_id
+    
   end
 
   def recent_attempts(mins=10)
@@ -159,39 +161,37 @@ class Campaign < ActiveRecord::Base
   def voters(status=nil,include_call_retries=true)
     return [] if  !self.user.paid
     return [] if self.caller_id.blank? || !self.caller_id_verified
-    voters=[]
-#    self.voter_lists.each do |list|
-    VoterList.find_all_by_campaign_id_and_active_and_enabled(self.id, 1, 1).each do |list|
-      list.voters.each do |voter|
-        if status==nil
-          voters << voter if voter.active==true && voters.index(voter)==nil
-        else
-          if voter.active==true && voters.index(voter)==nil
-            if voter.status==status 
-              voters << voter
-            elsif include_call_retries && voter.call_back=true 
-              attempt = CallAttempt.find_by_voter_id(voter.id, :order=>"id desc", :limit=>1)
-              if attempt != nil && attempt.call_end!=nil && attempt.call_end < (Time.now - 3.hours)
-                voters << voter
-              end
-            end
-          end
-        end
+    voters_returned=[]
+    voter_ids=[]
+
+    active_lists = VoterList.find_all_by_campaign_id_and_active_and_enabled(self.id, 1, 1)
+    return [] if active_lists.length==0
+    active_list_ids = active_lists.collect {|x| x.id}
+    #voters = Voter.find_all_by_voter_list_id(active_list_ids)
+
+    voters = Voter.find_all_by_campaign_id_and_active(self.id, 1, :conditions=>"voter_list_id in (#{active_list_ids.join(",")})")
+    
+    voters.each do |voter|
+      if !voter_ids.index(voter.id) && (status==nil || voter.status==status )
+        voters_returned << voter
+        voter_ids  << voter.id
+      elsif !voter_ids.index(voter.id) && include_call_retries && voter.call_back? && voter.last_call_attempt_time!=nil && voter.last_call_attempt_time < (Time.now - 3.hours)
+        voters_returned << voter
+        voter_ids  << voter.id
       end
     end
-
+    
     if voters.length==0 && include_call_retries
       # no one left, so call everyone we missed over 10 minutes
       uncalled = Voter.find_all_by_campaign_id_and_active_and_call_back(self.id, 1, 1, :conditions=>"voter_list_id in (select id from voter_lists where campaign_id=#{self.id} and active=1 and enabled=1)")
       uncalled.each do |voter|
-        attempt = CallAttempt.find_by_voter_id(voter.id, :order=>"id desc", :limit=>1)
-        if  attempt!=nil && attempt.call_end!=nil && attempt.call_end < Time.now - 10.minutes
-          voters << voter
+        if  voter.last_call_attempt_time!=nil && voter.last_call_attempt_time < Time.now - 10.minutes
+          voters_returned << voter
         end
       end
     end
 
-    voters.sort_by{rand}
+    voters_returned.sort_by{rand}
   end
   
   def voter_upload(upload,uid,seperator,voter_list_id)

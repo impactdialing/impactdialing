@@ -51,6 +51,10 @@ class Dialer
     c.campaign_id=campaign.id
     c.status="Call in progress"
     c.save
+    v = Voter.infd(voter.id)
+    v.last_call_attempt_id=c.id
+    v.last_call_attempt_time=Time.now
+    v.save
 
     # avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
     # if !avail_campaign_hash.has_key?(campaign.id)

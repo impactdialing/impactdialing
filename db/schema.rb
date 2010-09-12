@@ -9,19 +9,19 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20100911183110) do
+ActiveRecord::Schema.define(:version => 20100912112156) do
 
   create_table "call_attempts", :force => true do |t|
     t.integer  "voter_id"
     t.string   "sid"
     t.string   "status"
     t.integer  "campaign_id"
-    t.datetime "created_at"
-    t.datetime "updated_at"
     t.datetime "call_start"
     t.datetime "call_end"
     t.integer  "caller_id"
     t.integer  "caller_session_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
     t.datetime "connecttime"
     t.integer  "caller_hold_time"
     t.string   "result"
@@ -46,16 +46,16 @@ ActiveRecord::Schema.define(:version => 20100911183110) do
     t.integer  "caller_id"
     t.integer  "campaign_id"
     t.datetime "endtime"
+    t.datetime "starttime"
     t.integer  "num_calls"
     t.integer  "avg_wait"
     t.string   "sid"
+    t.boolean  "available_for_call", :default => false
+    t.integer  "voter_in_progress"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.integer  "available_for_call", :limit => 1, :default => 1
-    t.datetime "starttime"
-    t.integer  "voter_in_progress"
     t.datetime "hold_time_start"
-    t.boolean  "on_call",                         :default => false
+    t.boolean  "on_call",            :default => false
     t.string   "caller_number"
     t.string   "tCallSegmentSid"
     t.string   "tAccountSid"
@@ -77,11 +77,11 @@ ActiveRecord::Schema.define(:version => 20100911183110) do
     t.string   "name"
     t.string   "email"
     t.string   "pin"
+    t.integer  "user_id"
+    t.integer  "multi_user", :limit => 1, :default => 1
+    t.integer  "active",     :limit => 1, :default => 1
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.integer  "user_id"
-    t.integer  "active",     :limit => 1, :default => 1
-    t.integer  "multi_user", :limit => 1, :default => 1
   end
 
   create_table "callers_campaigns", :id => false, :force => true do |t|
@@ -94,18 +94,23 @@ ActiveRecord::Schema.define(:version => 20100911183110) do
     t.string   "group_id"
     t.string   "name"
     t.string   "keypad_0"
+    t.integer  "user_id"
+    t.integer  "script_id"
+    t.boolean  "active",               :default => true
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.integer  "user_id"
-    t.integer  "active",               :limit => 1, :default => 1
-    t.integer  "script_id"
-    t.integer  "ratio_2",                           :default => 33
-    t.integer  "ratio_3",                           :default => 20
-    t.integer  "ratio_4",                           :default => 12
-    t.integer  "ratio_override",                    :default => 0
-    t.string   "ending_window_method",              :default => "Not Used"
+    t.integer  "ratio_2",              :default => 33
+    t.integer  "ratio_3",              :default => 20
+    t.integer  "ratio_4",              :default => 12
+    t.integer  "ratio_override",       :default => 0
+    t.string   "ending_window_method", :default => "Not used"
     t.string   "caller_id"
-    t.boolean  "caller_id_verified",                :default => false
+    t.boolean  "caller_id_verified",   :default => false
+  end
+
+  create_table "campaigns_voter_lists", :id => false, :force => true do |t|
+    t.integer "campaign_id"
+    t.integer "voter_list_id"
   end
 
   create_table "lists", :force => true do |t|
@@ -116,16 +121,13 @@ ActiveRecord::Schema.define(:version => 20100911183110) do
     t.datetime "updated_at"
   end
 
-  create_table "old_campaigns_voter_lists", :id => false, :force => true do |t|
-    t.integer "campaign_id"
-    t.integer "voter_list_id"
-  end
-
   create_table "scripts", :force => true do |t|
     t.string   "name"
-    t.integer  "user_id"
-    t.integer  "active",      :limit => 1, :default => 1
     t.text     "script"
+    t.boolean  "active",      :default => true
+    t.integer  "user_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
     t.string   "keypad_1"
     t.string   "keypad_2"
     t.string   "keypad_3"
@@ -224,10 +226,8 @@ ActiveRecord::Schema.define(:version => 20100911183110) do
     t.string   "keypad_96"
     t.string   "keypad_97"
     t.string   "keypad_98"
-    t.string   "incompletes"
     t.string   "keypad_99"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.string   "incompletes"
   end
 
   create_table "seos", :force => true do |t|
@@ -250,6 +250,7 @@ ActiveRecord::Schema.define(:version => 20100911183110) do
     t.string   "orgname"
     t.string   "email"
     t.string   "password"
+    t.boolean  "active",     :default => true
     t.datetime "created_at"
     t.datetime "updated_at"
     t.boolean  "paid",       :default => false
@@ -273,23 +274,26 @@ ActiveRecord::Schema.define(:version => 20100911183110) do
     t.string   "MiddleName"
     t.string   "Suffix"
     t.string   "Email"
-    t.integer  "campaign_id"
-    t.boolean  "active",                         :default => true
-    t.datetime "created_at"
-    t.integer  "voter_list_id"
-    t.datetime "updated_at"
-    t.integer  "user_id"
-    t.string   "status",                         :default => "not called"
     t.string   "result"
+    t.integer  "campaign_id"
+    t.integer  "user_id"
+    t.boolean  "active",                 :default => true
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string   "status",                 :default => "not called"
+    t.integer  "voter_list_id"
     t.integer  "caller_session_id"
-    t.integer  "call_back",         :limit => 1, :default => 0
+    t.boolean  "call_back",              :default => false
     t.integer  "caller_id"
     t.string   "result_digit"
     t.integer  "attempt_id"
     t.datetime "result_date"
+    t.integer  "last_call_attempt_id"
+    t.datetime "last_call_attempt_time"
   end
 
   add_index "voters", ["campaign_id"], :name => "index_voters_on_campaign_id"
   add_index "voters", ["status"], :name => "index_voters_on_status"
+  add_index "voters", ["voter_list_id"], :name => "index_voters_on_voter_list_id"
 
 end

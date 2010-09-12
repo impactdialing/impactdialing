@@ -60,14 +60,16 @@
 	</div>
 	<% end %>
 </div>
-<div class="box" style="width:370px;">
-	<%= render :partial => 'boxtop', :locals=>{:title=>"#{campaign.name}: Recent Call Results"} %>
-	<div class="box-content">
-		Results:<br/>
-		<%# v = Voter.find_all_by_campaign_id(campaign.id, :joins=>"join voter_results on voter_results.voter_id=voters.id") %>
-		<% v = Voter.find_all_by_campaign_id(campaign.id, :conditions=>"result_digit is not null") %>
-		<% v.each do |voter| %>
-			<li><%= voter.result %> <%=  number_to_phone(voter.Phone, :area_code => true)   %> <%= voter.FirstName %> <%= voter.LastName %>
-		<% end %>
+<% v = Voter.find_all_by_campaign_id(campaign.id, :conditions=>"result_digit is not null and result_date > DATE_SUB(now(),INTERVAL #{@timeframe} MINUTE)", :order=>"id desc") %>
+<% if v.length > 0 %>
+	<div class="box" style="width:370px;">
+		<%= render :partial => 'boxtop', :locals=>{:title=>"#{campaign.name}: Recent Call Results"} %>
+		<div class="box-content">
+			Recent Results:<br/>
+
+			<% v.each do |voter| %>
+				<li><%= voter.result %> <%=  number_to_phone(voter.Phone, :area_code => true)   %> <%= voter.FirstName %> <%= voter.LastName %>
+			<% end %>
+		</div>
 	</div>
-</div>
+<% end %>

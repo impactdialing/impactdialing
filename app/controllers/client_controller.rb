@@ -558,6 +558,7 @@ Can we count on you to vote for such-and-such?"
       render :layout=>false
 #    end
   end
+  
   def report_overview
     @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
      if @campaign.blank?
