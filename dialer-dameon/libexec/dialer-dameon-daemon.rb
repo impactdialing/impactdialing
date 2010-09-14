@@ -128,7 +128,8 @@ loop do
     
     if Time.now.hour < 7   || Time.now.hour > 10
       # too late, clear all logged in callers
-        ActiveRecord::Base.connection.execute("update caller_sessions set on_call=0")      
+      DaemonKit.logger.info "Off hours, don't make any calls"
+      ActiveRecord::Base.connection.execute("update caller_sessions set on_call=0")      
     elsif logged_in_campaigns.num_rows>0
       logged_in_campaigns.each do |k|
         handleCampaign(k[0])
