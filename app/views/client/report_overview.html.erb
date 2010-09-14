@@ -61,16 +61,20 @@
 			        <th width="300">Minutes</th>
 			        <th>Minutes</th>
 			      </tr>
-					<tr class="odd">
-						<td>Minutes Used</td>
-						<td><%= @callerMins + @talkmins  %></td>
-					</tr>
 					<tr class="event">
-						<td>Talk Time</td>
+						<td>Voter Talk Time</td>
 						<td><%= @talkmins %></td>
+					</tr>
+					<tr class="odd">
+						<td>Caller Talk Tim</td>
+						<td><%= @callerMins  %></td>
 					</tr>
 			    </table>
 			
+
+			    <div class="pagging">
+			   		<div class="left"><%= @callerMins + @talkmins%> total minutes</div>
+			    </div>
 			</div>
 						 
 			

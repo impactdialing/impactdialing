@@ -140,22 +140,7 @@ class Campaign < ActiveRecord::Base
   end
   
   def voters_called
-    voters=[]
-#    self.voter_lists.each do |list|
-    votersq = Voter.find_all_by_campaign_id (self.id)
-    votersq.each do |voter|
-      if voter.status!='not called'
-        voters << voter
-      end
-    end
-    # VoterList.find_all_by_campaign_id_and_active_and_enabled(self.id, 1, 1).each do |list|
-    #   list.voters.each do |voter|
-    #     if voter.status!='not called'
-    #       voters << voter
-    #     end
-    #   end
-    # end
-    voters
+    Voter.find_all_by_campaign_id(self.id, :conditions=>"status <> 'not called'")
   end
 
   def testVoters
@@ -199,8 +184,9 @@ class Campaign < ActiveRecord::Base
           voters_returned << voter
         end
       end
+      return voters #no randomize
     end
-
+    
     voters_returned.sort_by{rand}
   end
   

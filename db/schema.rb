@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20100912112156) do
+ActiveRecord::Schema.define(:version => 20100914083947) do
 
   create_table "call_attempts", :force => true do |t|
     t.integer  "voter_id"
@@ -288,10 +288,12 @@ ActiveRecord::Schema.define(:version => 20100912112156) do
     t.string   "result_digit"
     t.integer  "attempt_id"
     t.datetime "result_date"
-    t.integer  "last_call_attempt_id"
     t.datetime "last_call_attempt_time"
+    t.integer  "last_call_attempt_id"
   end
 
+  add_index "voters", ["Phone"], :name => "index_voters_on_Phone"
+  add_index "voters", ["attempt_id"], :name => "index_voters_on_attempt_id"
   add_index "voters", ["campaign_id"], :name => "index_voters_on_campaign_id"
   add_index "voters", ["status"], :name => "index_voters_on_status"
   add_index "voters", ["voter_list_id"], :name => "index_voters_on_voter_list_id"

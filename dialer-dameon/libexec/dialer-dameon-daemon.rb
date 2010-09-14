@@ -125,8 +125,11 @@ loop do
     # DaemonKit.logger.info "avail_campaign_hash: #{@avail_campaign_hash.keys}"
     logged_in_campaigns = ActiveRecord::Base.connection.execute("select distinct campaign_id from caller_sessions where on_call=1")
     DaemonKit.logger.info "logged_in_campaigns: #{logged_in_campaigns.num_rows}"
-
-    if logged_in_campaigns.num_rows>0
+    
+    if Time.now.hour < 7   || Time.now.hour > 10
+      # too late, clear all logged in callers
+        ActiveRecord::Base.connection.execute("update caller_sessions set on_call=0")      
+    elsif logged_in_campaigns.num_rows>0
       logged_in_campaigns.each do |k|
         handleCampaign(k[0])
       end

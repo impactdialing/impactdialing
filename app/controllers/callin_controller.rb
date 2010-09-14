@@ -296,6 +296,8 @@ class CallinController < ApplicationController
         @voter.status="No answer busy signal"
         attempt.status="No answer busy signal"
         @voter.call_back=true
+        t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+        a=t.call("POST", "Calls/#{attempt.sid}", {'CurrentUrl'=>"#{APP_URL}/callin/voterEndCall?attempt=#{attempt.id}"})
       elsif params[:CallStatus]=="canceled"
         @voter.status="Call cancelled"
         attempt.status="Call cancelled"

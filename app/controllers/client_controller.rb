@@ -579,7 +579,7 @@ Can we count on you to vote for such-and-such?"
      END AS result
 
       from 
-     voters v join call_attempts ca on ca.id = v.attempt_id
+     call_attempts ca
      where ca.campaign_id=#{@campaign.id}
      group by 
      case WHEN ca.status='Call abandoned'  THEN 'Call abandoned'
