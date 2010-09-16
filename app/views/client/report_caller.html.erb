@@ -24,15 +24,15 @@
 			<% @responses.each do |voter| %>
 			<% overall_total=0 %>
 			<tr>
-				<td><%= voter.result %></td>
+				<td><% if voter.result=="No Disposition" %>[No Result Entered]<% else  %><%= voter.result %><% end %></td>
 				<% @callers.each do |caller| %>
 					<% thisTotal = Voter.find_all_by_campaign_id_and_caller_id_and_result(@campaign.id, caller.id, voter.result, :conditions=>"result_date > '#{@from_date.strftime("%Y-%m-%d")}' and result_date < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'").length %>
 					<% overall_total=overall_total+ thisTotal %>
 		        	<td><%= thisTotal %></td>
-		        	<td><%= (thisTotal/@num_responses).to_f*100 %>%</td>
+		        	<td><%=  sprintf('%.2f', (thisTotal.to_f/@num_responses.to_f)*100)%>%</td>
 				<% end %>
 	        	<td><%= overall_total %></td>
-	        	<td><%= (overall_total/@num_responses).to_f*100 %>%</td>
+	        	<td><%=  sprintf('%.2f',(overall_total.to_f/@num_responses)*100) %>%</td>
 			</tr>
 			<% end %>
 
