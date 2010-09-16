@@ -10,12 +10,14 @@ Dir[File.join(File.dirname(__FILE__), '../../', 'app/models') + "**/*.rb"].each 
 
 
 class Dialer
-  TWILIO_ACCOUNT="AC422d17e57a30598f8120ee67feae29cd"
-  TWILIO_AUTH="897298ab9f34357f651895a7011e1631"
   if DaemonKit.env=="development"
     APP_NUMBER="5104048117"
     APP_URL="http://www.hinodae.com:5555"
+    TWILIO_ACCOUNT="ACc0208d4be3e204d5812af2813683243a"
+    TWILIO_AUTH="897298ab9f34357f651895a7011e1631"
   else
+    TWILIO_ACCOUNT="AC422d17e57a30598f8120ee67feae29cd"
+    TWILIO_AUTH="897298ab9f34357f651895a7011e1631"
     APP_NUMBER="4157020991"
     APP_URL="http://impact-app-balancer-912849015.us-east-1.elb.amazonaws.com"
   end
@@ -41,7 +43,11 @@ class Dialer
       caller_num=APP_NUMBER
     end
     #DaemonKit.logger.info "APP_URL: #{APP_URL}"
-    a=t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}"})
+    if DaemonKit.env=="development"
+      a=t.call("POST", "Calls", {'IfMachine'=>"Hangup", 'Timeout'=>"15", 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}"})
+    else
+      a=t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}"})
+    end
     require 'rubygems'
     require 'hpricot'
     @doc = Hpricot::XML(a)

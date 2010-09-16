@@ -207,6 +207,7 @@ class CallinController < ApplicationController
       #         a=t.call("POST", "Calls/#{attempt.sid}", {'CurrentUrl'=>"#{APP_URL}/callin/voterEndCall?attempt=#{attempt.id}"})
       #       end
             # initial call-in
+      @play="#{APP_URL}/exitBeep.wav"
       @say="Please enter your call result. Then press star to submit and keep taking calls."
       if @session.voter_in_progress!=nil
        voter = Voter.find(@session.voter_in_progress)

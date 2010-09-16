@@ -15,7 +15,7 @@
     <div id="top">
       <h1><a href="/client">Impact Dialing</a></h1>
       <div id="top-navigation"> 
-	<% if !@user.blank? %>
+	<% if !session[:user].blank? %>
 	Welcome <strong><%= @user.fname %></strong>
 	<!-- <span>|</span> <a href="#">Help</a> <span>|</span> <a href="#"> Settings</a> --> <span>|</span> <a href="/client/user_add">My Account</a>  <span>|</span> <a href="/client/logout">Log out</a> 
 	<% end %> 

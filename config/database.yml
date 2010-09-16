@@ -3,7 +3,8 @@
 development:
     adapter: mysql
     host: 192.168.1.79
-    database: impactdialing_dev
+#    database: impactdialing_dev
+    database: impactdialing_prod
     username: root
     password: p4mjo!
     timeout: 5000

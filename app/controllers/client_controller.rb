@@ -1,5 +1,5 @@
 class ClientController < ApplicationController
-  before_filter :check_login, :except=>[:login,:user_add]
+  before_filter :check_login, :except=>[:login,:user_add, :forgot]
   before_filter :check_warning
   layout "client"
   in_place_edit_for :campaign, :name
@@ -16,8 +16,22 @@ class ClientController < ApplicationController
     end
   end
   
+  def forgot
+    @breadcrumb="Password Recovery"
+    if request.post?
+      u = User.find_by_email(params[:email])
+      if u.blank?
+        flash.now[:error]="We could not find an account with that email address"
+      else
+        Postoffice.deliver_password_recovery(u)
+        flash[:notice]="Check your email for your account password"
+        redirect_to :action=>"login"
+      end
+    end
+  end
   def user_add
-    @breadcrumb="Join"
+    @breadcrumb="My Account"
+    @title="My Account"
     
     if session[:user].blank?
       @user = User.new
@@ -27,12 +41,15 @@ class ClientController < ApplicationController
     
     if request.post?
       @user.attributes =  params[:user]
-      if params[:tos].blank?
+      if @user.new_record? && params[:tos].blank?
         flash.now[:error]="You must agree to the terms of service."
+        return
+      elsif !@user.new_record? && params[:exist_pw]!=@user.password
+        flash.now[:error]="Current password incorrect"
         return
       end
       
-      if @user.valid? &&  !params[:tos].blank?
+      if @user.valid? 
         @user.save
         @caller = Caller.new
         @caller.name="Default Caller"
@@ -107,7 +124,8 @@ Can we count on you to vote for such-and-such?"
 
   def login
     @breadcrumb="Login"
-    
+    @title="Join Impact Dialing"
+    @user = User.new {params[:user]}
     if !params[:user].blank?
       user_add
     end

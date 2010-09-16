@@ -1,6 +1,4 @@
 # Be sure to restart your server when you modify this file
-TWILIO_ACCOUNT="AC422d17e57a30598f8120ee67feae29cd"
-TWILIO_AUTH="897298ab9f34357f651895a7011e1631"
 APP_URL="http://www.hinodae.com:5555"
 # Specifies gem version of Rails to use when vendor/rails is not present
 RAILS_GEM_VERSION = '2.3.5' unless defined? RAILS_GEM_VERSION
@@ -53,3 +51,6 @@ Rails::Initializer.run do |config|
   # config.i18n.default_locale = :de
 end
 #CACHE = MemCache.new 'localhost:11211'
+ActionMailer::Base.delivery_method = :sendmail
+ActionMailer::Base.default_content_type = "text/html"
+
