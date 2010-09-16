@@ -14,7 +14,7 @@ class Dialer
     APP_NUMBER="5104048117"
     APP_URL="http://www.hinodae.com:5555"
     TWILIO_ACCOUNT="ACc0208d4be3e204d5812af2813683243a"
-    TWILIO_AUTH="897298ab9f34357f651895a7011e1631"
+    TWILIO_AUTH="4e179c64daa7c9f5108bd6623c98aea6"
   else
     TWILIO_ACCOUNT="AC422d17e57a30598f8120ee67feae29cd"
     TWILIO_AUTH="897298ab9f34357f651895a7011e1631"
@@ -44,13 +44,15 @@ class Dialer
     end
     #DaemonKit.logger.info "APP_URL: #{APP_URL}"
     if DaemonKit.env=="development"
-      a=t.call("POST", "Calls", {'IfMachine'=>"Hangup", 'Timeout'=>"15", 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}"})
+      a=t.call("POST", "Calls", {'Timeout'=>"30", 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}", 'IfMachine'=>'Hangup'})
+#      a=t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}"})
     else
       a=t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}"})
     end
     require 'rubygems'
     require 'hpricot'
     @doc = Hpricot::XML(a)
+    puts @doc if DaemonKit.env=="development"
     c = CallAttempt.new
     c.sid=(@doc/"Sid").inner_html
     c.voter_id=voter.id

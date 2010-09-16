@@ -126,7 +126,7 @@ loop do
     logged_in_campaigns = ActiveRecord::Base.connection.execute("select distinct campaign_id from caller_sessions where on_call=1")
     DaemonKit.logger.info "logged_in_campaigns: #{logged_in_campaigns.num_rows}"
     
-    if Time.now.hour < 7 # ends 10pm EST 
+    if Time.now.hour < 7 && DaemonKit.env!="development" # ends 10pm EST 
       # too late, clear all logged in callers
       DaemonKit.logger.info "Off hours, don't make any calls"
       ActiveRecord::Base.connection.execute("update caller_sessions set on_call=0")      
