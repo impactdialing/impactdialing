@@ -248,6 +248,7 @@ Can we count on you to vote for such-and-such?"
           require 'rubygems'
           require 'hpricot'
           @doc = Hpricot::XML(a)
+          puts @doc
           code= (@doc/"ValidationCode").inner_html
         end
         @campaign.user_id=@user.id

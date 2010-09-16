@@ -14,8 +14,13 @@
 				<% @records.each do |r| %>
 				<tr class="<%= cycle("odd","even") %>">
 					<td>
-					<% if r[1].blank? %>Unanswered<% end %>
-					<%= r[1] %></td>
+					<% if r[1].blank? %>Unanswered
+					<% elsif r[1]=="Call completed with success."%>
+					Answered
+					<% else %>
+					<%= r[1] %>
+					<% end %>
+					</td>
 					<td><%= r[0] %></td>
 					<td><%= ((r[0].to_f/@total)*100).to_i %>%</td>
 			</tr>
@@ -66,7 +71,7 @@
 						<td><%= @talkmins %></td>
 					</tr>
 					<tr class="odd">
-						<td>Caller Talk Tim</td>
+						<td>Caller Talk Time</td>
 						<td><%= @callerMins  %></td>
 					</tr>
 			    </table>
@@ -82,5 +87,3 @@
 		
 	</div>
 </div>
-
-
