@@ -816,20 +816,26 @@ Can we count on you to vote for such-and-such?"
   end
   
   def set_report_date_range
-
-    if params[:from_date]
-      @from_date=Date.parse params[:from_date]
-      @to_date = Date.parse params[:to_date]
-    else
-      firstCall = CallerSession.find_by_campaign_id(@campaign.id,:order=>"id asc", :limit=>"1")
-      lastCall = CallerSession.find_by_campaign_id(@campaign.id,:order=>"id desc", :limit=>"1")
-      if !firstCall.blank?
-        @from_date  = firstCall.created_at
+    begin
+      if params[:from_date]
+        @from_date=Date.parse params[:from_date]
+        @to_date = Date.parse params[:to_date]
+      else
+        firstCall = CallerSession.find_by_campaign_id(@campaign.id,:order=>"id asc", :limit=>"1")
+        lastCall = CallerSession.find_by_campaign_id(@campaign.id,:order=>"id desc", :limit=>"1")
+        if !firstCall.blank?
+          @from_date  = firstCall.created_at
+        end
+        if !lastCall.blank?
+          @to_date  = lastCall.created_at
+        end
       end
-      if !lastCall.blank?
-        @to_date  = lastCall.created_at
-      end
+    rescue
+      #just use the defaults below
     end
+    
+    @from_date = Date.parse("2010/01/01") if @from_date==nil
+    @to_date = DateTime.now if @to_date==nil
   
   end
 

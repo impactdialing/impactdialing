@@ -43,9 +43,8 @@ class Dialer
       caller_num=APP_NUMBER
     end
     #DaemonKit.logger.info "APP_URL: #{APP_URL}"
-    if DaemonKit.env=="development"
-      a=t.call("POST", "Calls", {'Timeout'=>"30", 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}", 'IfMachine'=>'Hangup'})
-#      a=t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}"})
+    if campaign.use_answering
+      a=t.call("POST", "Calls", {'Timeout'=>"25", 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}", 'IfMachine'=>'Hangup'})
     else
       a=t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}"})
     end

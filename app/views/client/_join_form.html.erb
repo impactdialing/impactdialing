@@ -22,7 +22,7 @@
 	        <label>Email <span>(Required Field)</span></label>
 			<%= f.text_field :email, {:class=>"field"} %>
 	      </p>
-		<% if !@user.new_record? %>
+		<% if @user==nil || !@user.new_record? %>
 	    <p>
 	      <label>Current Password <span>(Required Field)</span></label>
 			<input type="password" class="field" name="exist_pw" value="<%= params[:exist_pw] %>">
