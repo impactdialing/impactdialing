@@ -170,7 +170,8 @@ class Campaign < ActiveRecord::Base
       if !voter_ids.index(voter.id) && (status==nil || voter.status==status )
         voters_returned << voter
         voter_ids  << voter.id
-      elsif !voter_ids.index(voter.id) && include_call_retries && voter.call_back? && voter.last_call_attempt_time!=nil && voter.last_call_attempt_time < (Time.now - 3.hours)
+#      elsif !voter_ids.index(voter.id) && include_call_retries && voter.call_back? && voter.last_call_attempt_time!=nil && voter.last_call_attempt_time < (Time.now - 3.hours)
+      elsif !voter_ids.index(voter.id) && include_call_retries && voter.call_back? && voter.last_call_attempt_time!=nil && voter.last_call_attempt_time < (Time.now - 1.minutes)
         voters_returned << voter
         voter_ids  << voter.id
       end
