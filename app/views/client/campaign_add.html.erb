@@ -44,6 +44,12 @@
     <!-- End Form Buttons -->
 	<% end -%>
 </div>
+
+<% form_tag("/client/call_now?id=#{params[:id]}") do %>
+  Call me now:
+	<input type="text" name="num">
+	<input type="submit" class="button">
+<% end -%>
 <!-- End Box -->
 
 <!--

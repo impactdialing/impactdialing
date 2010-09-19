@@ -227,6 +227,60 @@ Can we count on you to vote for such-and-such?"
     return
   end
 
+  def call_now
+    campaign = Campaign.find(params[:id])
+    if !phone_number_valid(params[:num])
+      flash[:error]="Phone number entered is invalid!"
+    elsif list = VoterList.find_all_by_campaign_id(params[:id]).length==0 
+      flash[:error]="No voter list available"
+    else
+      list = VoterList.find_all_by_campaign_id(params[:id]).first
+      num = params[:num].gsub(/[^0-9]/, "")
+      voter = Voter.find_by_campaign_id_and_Phone(params[:id], num)
+      
+      if voter.blank?
+        voter = Voter.new 
+        voter.Phone=num
+        voter.campaign_id=params[:id].to_i
+        voter.voter_list_id=list.id
+        voter.user_id=campaign.user_id
+        voter.save
+      end
+      require "hpricot"
+      require "open-uri"
+      voter.status="Call in progress"
+      voter.save
+      t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+      if !campaign.caller_id.blank? && campaign.caller_id_verified
+        caller_num=campaign.caller_id
+      else
+        caller_num=APP_NUMBER
+      end
+      if campaign.use_answering
+        a=t.call("POST", "Calls", {'Timeout'=>"25", 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}", 'IfMachine'=>'Hangup'})
+      else
+        a=t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}"})
+      end
+      require 'rubygems'
+      require 'hpricot'
+      @doc = Hpricot::XML(a)
+      c = CallAttempt.new
+      c.sid=(@doc/"Sid").inner_html
+      c.voter_id=voter.id
+      c.campaign_id=campaign.id
+      c.status="Call in progress"
+      c.save
+      voter.last_call_attempt_id=c.id
+      voter.last_call_attempt_time=Time.now
+      voter.save
+
+      flash[:notice]="Calling you now!"
+    end
+
+    redirect_to :action=>"campaign_view", :id=>params[:id]
+    return
+  end
+  
   def campaign_add
     @breadcrumb=[{"Campaigns"=>"/client/campaigns"},"Add Campaign"]
     @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id) || Campaign.new
@@ -241,7 +295,7 @@ Can we count on you to vote for such-and-such?"
       @campaign.update_attributes(params[:campaign])
       code=""
       if @campaign.valid?
-        if !@campaign.caller_id_verified || (!@campaign.caller_id.blank? && last_caller_id != @campaign.caller_id)
+        if !@campaign.caller_id_verifiedied || (!@campaign.caller_id.blank? && last_caller_id != @campaign.caller_id)
           #verify this callerid
           t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
           a=t.call("POST", "OutgoingCallerIds", {'PhoneNumber'=>@campaign.caller_id, 'FriendlyName' => "Campaign #{@campaign.id}"})
