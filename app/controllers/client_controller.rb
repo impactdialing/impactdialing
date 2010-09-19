@@ -295,7 +295,7 @@ Can we count on you to vote for such-and-such?"
       @campaign.update_attributes(params[:campaign])
       code=""
       if @campaign.valid?
-        if !@campaign.caller_id_verifiedied || (!@campaign.caller_id.blank? && last_caller_id != @campaign.caller_id)
+        if !@campaign.caller_id_verified || (!@campaign.caller_id.blank? && last_caller_id != @campaign.caller_id)
           #verify this callerid
           t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
           a=t.call("POST", "OutgoingCallerIds", {'PhoneNumber'=>@campaign.caller_id, 'FriendlyName' => "Campaign #{@campaign.id}"})
