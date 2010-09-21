@@ -140,7 +140,7 @@ class Campaign < ActiveRecord::Base
   end
   
   def voters_called
-    Voter.find_all_by_campaign_id(self.id, :conditions=>"status <> 'not called'")
+    Voter.find_all_by_campaign_id(self.id, :select=>"id", :conditions=>"status <> 'not called'")
   end
 
   def testVoters
@@ -151,8 +151,19 @@ class Campaign < ActiveRecord::Base
     end
     voters
   end
+  
+  def voters_count(status=nil,include_call_retries=true)
+    active_lists = VoterList.find_all_by_campaign_id_and_active_and_enabled(self.id, 1, 1)
+    return [] if active_lists.length==0
+    active_list_ids = active_lists.collect {|x| x.id}
+    #voters = Voter.find_all_by_voter_list_id(active_list_ids)
 
-  def voters(status=nil,include_call_retries=true)
+    Voter.find_all_by_active(1, :select=>"id", :conditions=>"voter_list_id in (#{active_list_ids.join(",")})  and (status='#{status}' OR (call_back=1 and last_call_attempt_time < (Now() - INTERVAL 180 MINUTE)) )")
+#    Voter.find_by_sql("select count(*) as count from voters where voter_list_id in (#{active_list_ids.join(",")})  and (status='#{status}' OR (call_back=1 and last_call_attempt_time < (Now() - INTERVAL 180 MINUTE)) )")
+    
+  end
+
+  def voters(status=nil,include_call_retries=true,limit=300)
     #return testVoters if self.user.id==1
     return [] if  !self.user.paid
     return [] if self.caller_id.blank? || !self.caller_id_verified
@@ -164,8 +175,7 @@ class Campaign < ActiveRecord::Base
     active_list_ids = active_lists.collect {|x| x.id}
     #voters = Voter.find_all_by_voter_list_id(active_list_ids)
 
-    voters = Voter.find_all_by_campaign_id_and_active(self.id, 1, :conditions=>"voter_list_id in (#{active_list_ids.join(",")})")
-    
+    voters = Voter.find_all_by_campaign_id_and_active(self.id, 1, :conditions=>"voter_list_id in (#{active_list_ids.join(",")})", :limit=>limit, :order=>"rand()")
     voters.each do |voter|
       if !voter_ids.index(voter.id) && (status==nil || voter.status==status )
         voters_returned << voter

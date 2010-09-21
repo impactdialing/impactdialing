@@ -1,6 +1,6 @@
 class ClientController < ApplicationController
   before_filter :check_login, :except=>[:login,:user_add, :forgot]
-  before_filter :check_warning
+#  before_filter :check_warning
   layout "client"
   in_place_edit_for :campaign, :name
 
@@ -342,6 +342,7 @@ Can we count on you to vote for such-and-such?"
   end  
 
   def campaign_view
+    check_warning
     @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id) 
     @breadcrumb=[{"Campaigns"=>"/client/campaigns"},@campaign.name]
 
@@ -599,6 +600,7 @@ Can we count on you to vote for such-and-such?"
   end
   
   def report_realtime
+    check_warning
         if params[:id].blank?
           @breadcrumb="Reports"
         else
@@ -669,7 +671,7 @@ Can we count on you to vote for such-and-such?"
      end
      @records.data_seek(0)
 
-     @voters_to_call = @campaign.voters("not called",false)
+     @voters_to_call = @campaign.voters_count("not called",false)
      @voters_called = @campaign.voters_called
      @totalvoters = @voters_to_call.length + @voters_called.length
      
@@ -717,7 +719,7 @@ Can we count on you to vote for such-and-such?"
     end
     @records.data_seek(0)
     
-    @voters_to_call = @campaign.voters("not called",false)
+    @voters_to_call = @campaign.voters_count("not called",false)
     @voters_called = @campaign.voters_called
     @totalvoters = @voters_to_call.length + @voters_called.length
     
@@ -842,6 +844,7 @@ Can we count on you to vote for such-and-such?"
   end
   
   def report_real
+    check_warning
     if params[:id].blank?
       @breadcrumb="Reports"
     else

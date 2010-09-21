@@ -47,12 +47,12 @@
 					<tr class="odd">
 						<td>Remaining Numbers</td>
 						<td><%= @voters_to_call.length %></td>
-						<td><%=@voters_to_call.length/@totalvoters*100  %>%</td>
+						<td><%=((@voters_to_call.length.to_f/@totalvoters.to_f)*100).to_i  %>%</td>
 					</tr>
 					<tr class="event">
 						<td>Finished Numbers</td>
 						<td><%= @voters_called.length %></td>
-						<td><%=@voters_called.length/@totalvoters*100  %>%</td>
+						<td><%=((@voters_called.length.to_f/@totalvoters.to_f)*100).to_i  %>%</td>
 					</tr>
 			    </table>
 			

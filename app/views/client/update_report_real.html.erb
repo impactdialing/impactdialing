@@ -29,7 +29,7 @@
     <% callers = CallerSession.find_all_by_campaign_id_and_on_call(campaign.id, 1) %>
     <% calls = CallAttempt.find_all_by_campaign_id(campaign.id, :conditions=>"call_end is  NULL") %>
 
-    <% voters = campaign.voters("not called") %>
+    <% voters = campaign.voters_count("not called") %>
 
 	<div class="box-content">
 		Callers logged in: <b><%= callers.length %></b><br/>

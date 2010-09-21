@@ -15,7 +15,7 @@ class ApplicationController < ActionController::Base
     @user.campaigns.each do |campaign|
       c = CallerSession.find_all_by_campaign_id_and_on_call(campaign.id,1)
       if c.length > 0
-        voters = campaign.voters("not called")
+        voters = campaign.voters_count("not called")
         if voters.length < c.length * 10
             warning+="
             You are running low on numbers to dial for the #{campaign.name} campaign.
