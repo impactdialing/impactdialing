@@ -614,7 +614,23 @@ Can we count on you to vote for such-and-such?"
     #    require "#{RAILS_ROOT}/app/models/caller_session.rb"
     #    require "#{RAILS_ROOT}/app/models/caller.rb"
   end
+
   
+  def report_realtime_new
+    check_warning
+    if params[:timeframe].blank?
+      @timeframe = 10
+    else
+      @timeframe = params[:timeframe].to_i
+    end
+    @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
+    if @campaign.blank?
+        render :text=>"Unauthorized"
+        return
+    end
+    @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"New Realtime Report"]
+  end
+
   def update_report
 #    Rails.logger.silence do
       # CallerSession
@@ -647,20 +663,22 @@ Can we count on you to vote for such-and-such?"
 
      select 
      count(*) as cnt,
-     case WHEN ca.status='Call abandoned'  THEN 'Call abandoned'
+     case WHEN ca.status='Call abandoned' THEN 'Call abandoned'
      WHEN ca.status='Hangup or answering machine' THEN 'Hangup or answering machine'
      WHEN ca.status='No answer' THEN 'No answer'
-     ELSE 'Call completed with success.' 
+     WHEN ca.status='No answer busy signal' THEN 'Busy signal'
+     ELSE ca.status
      END AS result
 
       from 
      call_attempts ca
      where ca.campaign_id=#{@campaign.id}
      group by 
-     case WHEN ca.status='Call abandoned'  THEN 'Call abandoned'
+     case WHEN ca.status='Call abandoned' THEN 'Call abandoned'
      WHEN ca.status='Hangup or answering machine' THEN 'Hangup or answering machine'
      WHEN ca.status='No answer' THEN 'No answer'
-     ELSE 'Call completed with success.' 
+     WHEN ca.status='No answer busy signal' THEN 'Busy signal'
+     ELSE ca.status
      END 
 
      order by count(*) desc"
