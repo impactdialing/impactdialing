@@ -241,6 +241,7 @@ class Campaign < ActiveRecord::Base
     rescue
       RAILS_DEFAULT_LOGGER.debug("deviation error: #{values.inspect}")
       puts "deviation error: #{values.inspect}"
+      return 0
     end
   end
 
