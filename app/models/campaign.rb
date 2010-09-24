@@ -170,7 +170,7 @@ class Campaign < ActiveRecord::Base
     
     #new algo stuff
     if stats[:answer_plus_abandon_ct] ==nil
-  		stats[:dials_needed]  = 3
+  		stats[:dials_needed]  = 2
     else
       dials = 1 / stats[:answer_plus_abandon_ct]
       dials = 2 if dials.infinite? 
