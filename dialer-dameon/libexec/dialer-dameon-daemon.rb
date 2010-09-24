@@ -91,7 +91,7 @@ DaemonKit::Application.running! do |config|
     else
       maxCalls=callers.length * stats[:dials_needed]
 #      newCalls=calls.length
-      newCalls=calls.length
+      newCalls=calls.length * stats[:dials_needed]
       #for each caller thats not on a call, make stats[:dials_needed] calls
       newCalls= newCalls  - (not_on_call * stats[:dials_needed]) 
       #for each caller on a call
