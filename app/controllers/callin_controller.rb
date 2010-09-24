@@ -453,6 +453,7 @@ class CallinController < ApplicationController
       render :template => 'callin/pause.xml.builder', :layout => false
     else
       @play="#{APP_URL}/canta.mp3"
+      @play2="#{APP_URL}/canta.mp3"
       @hangup="true"
       render :template => 'callin/index.xml.builder', :layout => false
     end

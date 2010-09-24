@@ -20,6 +20,7 @@ xml.Response("version"=>"1.0") do |response|
     end
 	else
     xml.Play("#{@play}") if @play
+    xml.Play("#{@play2}") if @play2
   	xml.Say("#{@say}") if @say
 	end
 	xml.Hangup if @hangup

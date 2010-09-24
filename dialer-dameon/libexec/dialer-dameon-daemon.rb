@@ -89,15 +89,21 @@ DaemonKit::Application.running! do |config|
         end
       end
     else
-      maxCalls=callers.length * stats[:dials_needed]
-#      newCalls=calls.length
-      newCalls=calls.length * stats[:dials_needed]
-      #for each caller thats not on a call, make stats[:dials_needed] calls
-      newCalls= newCalls  - (not_on_call * stats[:dials_needed]) 
+      #new mode
       #for each caller on a call
       # bimodal pacing algorithm:
       # when stats[:short_new_call_caller_threshold] callers are on calls of length less than stats[:short_time]s, dial  stats[:dials_needed] lines at stats[:short_new_call_time_threshold]) seconds after the last call began.
       # if a call passes length 15s, dial stats[:dials_needed] lines at stats[:short_new_long_time_threshold]sinto the call.        
+
+
+      maxCalls=callers.length * stats[:dials_needed]
+#      newCalls=calls.length
+      newCalls=maxCalls-calls.length
+      #newCalls= callers_on_call.length * stats[:dials_needed]
+      #for each caller thats not on a call, make stats[:dials_needed] calls
+      #newCalls= newCalls  - (not_on_call * stats[:dials_needed]) 
+      
+      pool_size=0
       
       short_counter=0
       callers_on_call.each do |session|
@@ -120,29 +126,41 @@ DaemonKit::Application.running! do |config|
       done_short=0
       DaemonKit.logger.info "#{short_to_dial} short_to_dial, #{short_counter} short_counter, ratio short #{stats[:ratio_short]}, max_short: #{max_short}"
       
-      callers_on_call.each do |session|
+      callers.each do |session|
         if session.attempt_in_progress.blank?
-          #hmm just finished?  better dial out
-          newCalls= newCalls  - stats[:dials_needed]
+          pool_size = pool_size + stats[:dials_needed]
+          DaemonKit.logger.info "empty to pool, session #{session.id} attempt_in_progress is blank"
+          #idle
+          #newCalls= newCalls  - stats[:dials_needed]
         else
           attempt = CallAttempt.find(session.attempt_in_progress)
+          DaemonKit.logger.info "session #{session.id} attempt_in_progress is #{attempt.id}"
           if attempt.duration!=nil
             if attempt.duration < stats[:short_time] && done_short<short_to_dial
               if attempt.duration > stats[:short_new_call_time_threshold]
                 done_short+=1
                 #when stats[:short_new_call_caller_threshold] callers are on calls of length less than stats[:short_time]s, dial  stats[:dials_needed] lines at stats[:short_new_call_time_threshold]) seconds after the last call began.
-                newCalls= newCalls  - stats[:dials_needed] 
-                DaemonKit.logger.info "Dialed a short, done_short=#{done_short}, short_to_dial=#{short_to_dial}"
+                #newCalls= newCalls  - stats[:dials_needed] 
+                pool_size = pool_size + stats[:dials_needed]
+                DaemonKit.logger.info "short to pool, duration #{attempt.duration}, done_short=#{done_short}, short_to_dial=#{short_to_dial}"
               end
             else
               # if a call passes length 15s, dial stats[:dials_needed] lines at stats[:short_new_long_time_threshold]sinto the call.        
-              newCalls= newCalls  - stats[:dials_needed] if attempt.duration > stats[:long_new_call_time_threshold]
+            #  newCalls= newCalls  - stats[:dials_needed] if attempt.duration > stats[:long_new_call_time_threshold]
+              DaemonKit.logger.info "looking at long to pool, session #{session.id}, attempt.duration #{attempt.duration}, thresh #{stats[:long_new_call_time_threshold]}"
+              if attempt.duration > stats[:long_new_call_time_threshold]
+                DaemonKit.logger.info "LONG TO POOL, session #{session.id}, attempt.duration #{attempt.duration}, thresh #{stats[:long_new_call_time_threshold]}"
+                pool_size = pool_size + stats[:dials_needed]
+              end
             end
           end
         end
       end
 
     end
+
+    maxCalls = pool_size
+    newCalls = calls.length
 
     newCalls=0 if newCalls<0
     DaemonKit.logger.info "#{newCalls} newcalls #{maxCalls} maxcalls"

@@ -43,9 +43,9 @@
 				Short threshold: <b><%= sprintf( "%0.02f",stats[:short_new_call_time_threshold]) %></b><br/>
 				Long threshold:  <b><%= sprintf( "%0.02f",stats[:long_new_call_time_threshold]) %></b><br/>
 <!--
-				Answered Calls: <b><%= stats[:answer] %></b><br/>
 			    Unanswered Calls: <b><%= stats[:no_answer] %></b><br/>
 				Answered call ratio: <b><%= (stats[:answer_pct] * 100).to_i %>%</b><br/><br/>-->
+				Answered Calls: <b><%= stats[:answer] %></b><br/>
 			    Abandoned Calls: <b><%= stats[:abandon] %></b><br/>
 				Abandoned call ratio: <b><%= (stats[:abandon_pct] * 100).to_i %>%</b><br/>
 				Short ratio: <b><%= sprintf( "%0.02f", stats[:ratio_short]) %></b><br/>
