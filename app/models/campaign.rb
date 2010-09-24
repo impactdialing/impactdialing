@@ -234,9 +234,14 @@ class Campaign < ActiveRecord::Base
   
   def std_deviation(values)
     return 0 if values==nil || values.size==0
-    count = values.size
-    mean = values.inject(:+) / count.to_f
-    stddev = Math.sqrt( values.inject(0) { |sum, e| sum + (e - mean) ** 2 } / count.to_f )
+    begin
+      count = values.size
+      mean = values.inject(:+) / count.to_f
+      stddev = Math.sqrt( values.inject(0) { |sum, e| sum + (e - mean) ** 2 } / count.to_f )
+    rescue
+      RAILS_DEFAULT_LOGGER.debug("deviation error: #{values.inspect}")
+      puts "deviation error: #{values.inspect}"
+    end
   end
 
   def voters(status=nil,include_call_retries=true,limit=300)
