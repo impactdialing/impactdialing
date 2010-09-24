@@ -110,7 +110,7 @@ DaemonKit::Application.running! do |config|
       end
       DaemonKit.logger.info "short_counter #{short_counter}"
       
-      if stats[:ratio_short]>0  && short_counter >0 && !stats[:ratio_short].infinite? 
+      if stats[:ratio_short]>0  && short_counter >0
         max_short=(1/stats[:ratio_short]).round
         short_to_dial = (short_counter/max_short).to_f.ceil
       else
