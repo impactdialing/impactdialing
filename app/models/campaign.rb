@@ -88,12 +88,19 @@ class Campaign < ActiveRecord::Base
   end
   
   def call_stats(mins=nil)
-    stats={:attempts=>[], :abandon=>0, :answer=>0, :no_answer=>0, :total=>0, :answer_pct=>0, :avg_duration=>0, :abandon_pct=>0, :avg_hold_time=>0, :total_long=>0, :total_short=>0, :avg_long=>0, :biggest_long=>0}
+    stats={:attempts=>[], :abandon=>0, :answer=>0, :no_answer=>0, :total=>0, :answer_pct=>0, :avg_duration=>0, :abandon_pct=>0, :avg_hold_time=>0, :total_long=>0, :total_short=>0, :avg_long=>0, :biggest_long=>0, :avg_ring_time=>0, :avg_ring_time_devation=>0, :current_short=>0, :current_long=>0, :short_deviation=>0, :avg_short=>0}
     totduration=0
     tothold=0
     totholddata=0
     totlongduration=0
-
+    totshortduration=0
+    totringtime=0
+    totringattempts=0
+    ringattempts=[]
+    longattempts=[]
+    shortattempts=[]
+		stats[:short_time] = 15
+    
     if mins.blank?
       attempts = CallAttempt.find_all_by_campaign_id(self.id, :order=>"id desc")
     else
@@ -104,24 +111,41 @@ class Campaign < ActiveRecord::Base
 
     attempts.each do |attempt|
 
-      if attempt.status=="No answer"
-        stats[:no_answer] = stats[:no_answer]+1
+      if attempt.status=="Call completed with success." || attempt.status.index("Connected to") #  || attempt.status=="Call in progress"
+        stats[:answer] = stats[:answer]+1
+        if attempt.ring_time!=nil
+          totringtime=totringtime+attempt.ring_time
+          totringattempts+=1
+          ringattempts << attempt.ring_time
+        end
       elsif attempt.status=="Call abandoned"
         stats[:abandon] = stats[:abandon]+1
       else
-        stats[:answer] = stats[:answer]+1
+        stats[:no_answer] = stats[:no_answer]+1
       end
 
       stats[:total] = stats[:total]+1
 
+      if attempt.status.index("Connected to") && attempt.duration!=nil
+        if attempt.duration > stats[:short_time]
+           stats[:current_long]=stats[:current_long]+1
+        else
+          stats[:current_short]=stats[:current_short]+1
+        end
+      end
+      
+
       if attempt.duration!=nil && attempt.duration>0
         totduration = totduration + attempt.duration 
-        if attempt.duration <= 15
+        if attempt.duration <= stats[:short_time]
           stats[:total_short]  = stats[:total_short]+1
+          totshortduration = totshortduration + attempt.duration
+          shortattempts<<attempt.duration.to_i
         else
           stats[:total_long] = stats[:total_long]+1
-          stats[:biggest_long] = attempt.duration if attempt.duration > stats[:biggest_long]
           totlongduration = totlongduration + attempt.duration
+          longattempts<<attempt.duration.to_i
+          stats[:biggest_long] = attempt.duration if attempt.duration > stats[:biggest_long]
         end
       end
 
@@ -131,12 +155,56 @@ class Campaign < ActiveRecord::Base
       end
     end
 #    avg_hold_time
-    stats[:answer_pct] = stats[:answer].to_f/ stats[:total].to_f if stats[:total] > 0
-    stats[:abandon_pct] = stats[:abandon].to_f / stats[:answer].to_f if stats[:answer] > 0
+    stats[:answer_pct] = (stats[:answer].to_f + stats[:abandon].to_f)/ stats[:total].to_f if stats[:total] > 0
+    stats[:abandon_pct] = stats[:abandon].to_f / (stats[:answer].to_f + stats[:abandon].to_f ) if stats[:answer] > 0
     stats[:avg_duration] = totduration / stats[:answer].to_f  if stats[:answer] > 0
     stats[:avg_hold_time] = tothold/ totholddata  if totholddata> 0
     stats[:avg_long] = totlongduration / stats[:total_long] if stats[:total_long] > 0
-    stats
+    stats[:avg_short] = totshortduration / stats[:total_short] if stats[:total_short] > 0
+    stats[:avg_ring_time] = totringtime/totringattempts if totringattempts >0
+    stats[:avg_ring_time_deviation] = self.std_deviation(ringattempts)
+    stats[:long_deviation] = self.std_deviation(longattempts)
+    stats[:short_deviation] = self.std_deviation(shortattempts)
+    stats[:answer_plus_abandon_ct] = (stats[:abandon].to_f + stats[:answer].to_f) / stats[:total].to_f if stats[:total] > 0
+    
+    
+    #new algo stuff
+    if stats[:answer_plus_abandon_ct] ==nil
+  		stats[:dials_needed]  = 3
+    else
+      dials = 1 / stats[:answer_plus_abandon_ct]
+      dials = 2 if dials.infinite? 
+      dials = dials.to_f.round
+      dials = 12 if dials > 12
+      dials = 2 if attempts.length < 50
+#      dials=1
+  		stats[:dials_needed]  = dials
+    end
+		stats[:avg_ring_time_adjusted] =  stats[:avg_ring_time] - (2*stats[:avg_ring_time_deviation]) 
+		stats[:call_length_long] = stats[:avg_long] + (2*stats[:long_deviation])
+		stats[:call_length_short] = stats[:avg_short] + (2*stats[:short_deviation])
+
+		if stats[:total_long]==0 && stats[:total_short]==0
+		  stats[:ratio_short]=0
+		elsif stats[:total_long]==0
+		  stats[:ratio_short]=1
+	  elsif stats[:total_short]==0
+		  stats[:ratio_short]=0
+	  else
+		  stats[:ratio_short] = stats[:total_short].to_f / (stats[:total_long] + stats[:total_short]).to_f
+	  end
+		stats[:short_callers]= 1/(stats[:total_short].to_f / stats[:total_long].to_f).to_f 
+		#final calcs
+		stats[:short_new_call_caller_threshold] = 1/(stats[:total_short].to_f / stats[:total_long].to_f).to_f
+		stats[:short_new_call_time_threshold] = ( stats[:avg_short] + (2*stats[:short_deviation]) ) - ( stats[:avg_ring_time] - (2*stats[:avg_ring_time_deviation]) )
+		stats[:long_new_call_time_threshold] = ( stats[:avg_long] + (2*stats[:long_deviation]))- ( stats[:avg_ring_time] - (2*stats[:avg_ring_time_deviation]))
+    
+    # bimodal pacing algorithm:
+    # when stats[:short_new_call_caller_threshold] callers are on calls of length less than stats[:short_time]s, dial  stats[:dials_needed] lines at stats[:short_new_call_time_threshold]) seconds after the last call began.
+    # if a call passes length 15s, dial stats[:dials_needed] lines at stats[:short_new_long_time_threshold]sinto the call.        
+        
+    
+		stats
   end
   
   def voters_called
@@ -162,9 +230,17 @@ class Campaign < ActiveRecord::Base
 #    Voter.find_by_sql("select count(*) as count from voters where voter_list_id in (#{active_list_ids.join(",")})  and (status='#{status}' OR (call_back=1 and last_call_attempt_time < (Now() - INTERVAL 180 MINUTE)) )")
     
   end
+  
+  
+  def std_deviation(values)
+    return 0 if values==nil || values.size==0
+    count = values.size
+    mean = values.inject(:+) / count.to_f
+    stddev = Math.sqrt( values.inject(0) { |sum, e| sum + (e - mean) ** 2 } / count.to_f )
+  end
 
   def voters(status=nil,include_call_retries=true,limit=300)
-    #return testVoters if self.user.id==1
+    return testVoters if self.name=="Load Test"
     return [] if  !self.user.paid
     return [] if self.caller_id.blank? || !self.caller_id_verified
     voters_returned=[]

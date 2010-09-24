@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20100918051242) do
+ActiveRecord::Schema.define(:version => 20100924142335) do
 
   create_table "call_attempts", :force => true do |t|
     t.integer  "voter_id"
@@ -37,6 +37,7 @@ ActiveRecord::Schema.define(:version => 20100918051242) do
     t.datetime "tStartTime"
     t.datetime "tEndTime"
     t.float    "tPrice"
+    t.datetime "answertime"
   end
 
   add_index "call_attempts", ["campaign_id"], :name => "index_call_attempts_on_campaign_id"
@@ -107,6 +108,7 @@ ActiveRecord::Schema.define(:version => 20100918051242) do
     t.string   "caller_id"
     t.boolean  "caller_id_verified",   :default => false
     t.boolean  "use_answering",        :default => true
+    t.string   "predective_type"
   end
 
   create_table "campaigns_voter_lists", :id => false, :force => true do |t|
@@ -289,8 +291,8 @@ ActiveRecord::Schema.define(:version => 20100918051242) do
     t.string   "result_digit"
     t.integer  "attempt_id"
     t.datetime "result_date"
-    t.datetime "last_call_attempt_time"
     t.integer  "last_call_attempt_id"
+    t.datetime "last_call_attempt_time"
   end
 
   add_index "voters", ["Phone"], :name => "index_voters_on_Phone"

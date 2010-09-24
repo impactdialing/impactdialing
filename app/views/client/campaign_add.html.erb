@@ -9,6 +9,14 @@
 		<%= f.text_field :name, {:class=>"field"} %>
       </p>
       <p>
+        <label>Predictive Algorithm</label>
+		<select class="field" id="campaign_predective_type" name="campaign[predective_type]"> 
+			<option value=""  <% if @campaign.predective_type=="" %>selected<% end %>>Original</option>
+			<option value="algorithm1" <% if @campaign.predective_type=="algorithm1" %>selected<% end %>> michael's algorithm</option>
+		</select>
+      </p>
+		<p><label>Original Algorithm Settings:</label></p>
+      <p>
         <label>Answer % for Dial Ratio 2x</label>
 		<%= f.text_field :ratio_2, {:class=>"field"} %>
       </p>

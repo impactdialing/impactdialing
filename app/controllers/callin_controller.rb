@@ -236,7 +236,8 @@ class CallinController < ApplicationController
        voter = Voter.find(@session.voter_in_progress)
        voter.status='Call finished'
        voter.result="No Disposition"
-       attempt = CallAttempt.find_by_voter_id(@session.voter_in_progress, :order=>"id desc", :limit=>1)
+       #attempt = CallAttempt.find_by_voter_id(@session.voter_in_progress, :order=>"id desc", :limit=>1)
+       attempt = CallAttempt.find(@session.attempt_in_progress)
        attempt.result="No Disposition"
        attempt.save
        voter.save
@@ -255,7 +256,8 @@ class CallinController < ApplicationController
           voter.result_digit=clean_digit
           voter.result_date=Time.now
           voter.caller_id=@caller.id
-          attempt = CallAttempt.find_by_voter_id(@session.voter_in_progress, :order=>"id desc", :limit=>1)
+          attempt = CallAttempt.find(@session.attempt_in_progress)
+          #attempt = CallAttempt.find_by_voter_id(@session.voter_in_progress, :order=>"id desc", :limit=>1)
           attempt.result_digit=clean_digit
 
           voter.attempt_id=attempt.id if attempt!=nil
@@ -278,6 +280,7 @@ class CallinController < ApplicationController
         if @session.endtime==nil
           @session.available_for_call=true
           @session.voter_in_progress=nil
+          @session.attempt_in_progress=nil
           @session.save
         end
         
@@ -300,15 +303,29 @@ class CallinController < ApplicationController
   # end
   
   def voterFindSession
-    # params session, voter
+    # params session, voter, attempt
     # first callback for voters
 
     @campaign  = Campaign.find(params[:campaign])
     @voter = Voter.find(params[:voter])
-    attempt = CallAttempt.find_by_voter_id(params[:voter], :order=>"id desc", :limit=>1)
+#    attempt = CallAttempt.find_by_voter_id(params[:voter], :order=>"id desc", :limit=>1)
+    attempt = CallAttempt.find(params[:attempt])
+    if attempt.answertime==nil
+      attempt.answertime=Time.now
+      attempt.save
+    end
 
     if params[:CallStatus]=="completed" || params[:CallStatus]=="no-answer" || params[:CallStatus]=="busy" || params[:CallStatus]=="failed" || params[:CallStatus]=="canceled"
       #clean up voter hangup
+      
+      # if params[:CallStatus]!="completed" 
+      #   t = Twilio.new(TWILIO_ACCOUNT,TWILIO_AUTH)
+      #   a=t.call("POST", "Calls/#{attempt.sid}", {'CurrentUrl'=>"#{APP_URL}/callin/voterEndCall?attempt=#{attempt.id}"})
+      #   attempt.call_end=Time.now
+      #   attempt.save
+      # end
+      
+      
       if params[:DialStatus]=="hangup-machine"
         @voter.status="Hangup or answering machine"
         attempt.status="Hangup or answering machine"
@@ -379,6 +396,7 @@ class CallinController < ApplicationController
       @redirect="#{APP_URL}/callin/voterFindSession?campaign=#{@campaign.id}&voter=#{@voter.id}"
     else
       @availableCaller.voter_in_progress = @voter.id
+      @availableCaller.attempt_in_progress = attempt.id
       @availableCaller.save
       attempt.caller_session_id=@availableCaller.id
       attempt.caller_id=@availableCaller.caller.id
@@ -422,10 +440,16 @@ class CallinController < ApplicationController
   # end
   
   def test
+    # response.headers["Pragma"] = "no-cache"
+    # response.headers["Cache-Control"] = "no-cache"
+    # @play="#{APP_URL}/canta.mp3"
+    # @hangup="true"
+    # render :template => 'callin/index.xml.builder', :layout => false
+    # return
     num = rand(100)
-    if num < 20
+    if num < 10
       render :template => 'callin/reject.xml.builder', :layout => false
-    elsif num < 80
+    elsif num < 60
       render :template => 'callin/pause.xml.builder', :layout => false
     else
       @play="#{APP_URL}/canta.mp3"
