@@ -10,6 +10,7 @@ class User < ActiveRecord::Base
   validates_presence_of :password, :on => :create, :message => "can't be blank"
   validates_length_of :password, :within => 5..50, :on => :create, :message => "must be 5 characters or greater"
   has_many :campaigns, :conditions => {:active => true}  
+  has_many :recordings
   
   def admin
     if ["beans@beanserver.net", "michael@impactdialing.com","wolthuis@twilio.com"].index(self.email)

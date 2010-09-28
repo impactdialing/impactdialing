@@ -38,10 +38,23 @@
 								<br/><div style="font-size:18px; padding-top:6px; ">
 
 
-								<%= f.collection_select(:script_id, Script.find_all_by_user_id_and_active(@user.id,1), :id, :name, { :prompt => true},  {:class=>"field"} 
-					)  %>
+								<%= f.collection_select(:script_id, Script.find_all_by_user_id_and_active(@user.id,1), :id, :name, { :prompt => true},  {:class=>"field"} 	)  %>
 							</div>
-
+							
+							<% if !@campaign.user.recordings.blank? %>
+								<br/>
+								<label> <%= f.check_box :use_recordings, :onclick=>"doRecord();"%> &nbsp; Leave message</label>
+								<br/><br/>
+								<div id="recordingsdiv" <% if  !@campaign.use_recordings?%> style="display:none;" <% end %>> 
+								Recording:
+								<br/><div style="font-size:18px; padding-top:6px; ">
+								
+								<%= f.collection_select(:recording_id, Recording.find_all_by_user_id_and_active(@user.id,1), :id, :name, { :prompt => false},  {:class=>"field", :onchange=>"updatePreview();"}  )  %></div>
+								<div id="sndPreview"></div>
+								</div>
+							<% end %>
+							<p>
+							      <input type="button" class="button" value="Manage Recordings" onclick="document.location.href='/client/recording_add?campaign_id=<%= @campaign.id %>';"/></p>
 						</div>
 					</div>
 					<!-- End Box -->
@@ -186,6 +199,34 @@ isAll();
 <%= remote_function(:update => "callerid",
       :url => { :action => "campaign_caller_id_verified", :id=>@campaign.id }) %>
 
+function doRecord(){
+	if($('campaign_use_recordings').checked){
+		$('recordingsdiv').style.display='block';
+	} else {
+		$('recordingsdiv').style.display='none';		
+	}
+}
+
+	<% if !@campaign.user.recordings.blank? %>
+function updatePreview(){
+	recording_id = $('campaign_recording_id').value;
+	<%@user.recordings.each do |recording| %>
+		if (recording_id==<%= recording.id %>){
+			path='<%= recording.recording_url %>';
+			name='<%= escape_javascript recording.name %>';
+		}
+	<% end %>
+
+	var o = 'Preview: ' + name + '<br/>';
+
+	if (path.indexOf('mp3')>-1)
+		o = o + '<object type="application/x-shockwave-flash" width="200" height="14" data="/xspf_player_slim.swf?player_title=' + name + '&song_title=' + name + '&song_url=' + escape(path) +'"><param name="movie" value="/xspf_player_slim.swf?player_title=' + name + '&song_title=' + name + '&song_url=' + escape(path) +'" /></object>';
+	else
+		o = o + '<EMBED SRC="' +  path + '" WIDTH="240" HEIGHT = "25" AUTOPLAY="false" CONTROLLER="true" LOOP="false" PLUGINSPAGE="http://www.apple.com/quicktime/">';
+	$('sndPreview').innerHTML=o;
+}
+<% end %>
+updatePreview();
 </script>
 
 <% end %>

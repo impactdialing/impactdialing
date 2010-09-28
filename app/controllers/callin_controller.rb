@@ -314,6 +314,20 @@ class CallinController < ApplicationController
       attempt.answertime=Time.now
       attempt.save
     end
+    
+    logger.info "params[:DialStatus]: #{params[:DialStatus]}"
+    if params[:DialStatus]=="answered-machine"
+      # play the answering machine message
+      logger.info "answered machine!"
+      @play=@campaign.recording.recording_url
+      @hangup="true"
+      @voter.status="Message delivered"
+      attempt.status="Message delivered"
+      @voter.save
+      attempt.save
+      render :template => 'callin/index.xml.builder', :layout => false
+      return
+    end
 
     if params[:CallStatus]=="completed" || params[:CallStatus]=="no-answer" || params[:CallStatus]=="busy" || params[:CallStatus]=="failed" || params[:CallStatus]=="canceled"
       #clean up voter hangup
@@ -349,13 +363,13 @@ class CallinController < ApplicationController
         attempt.status="Call failed"
         @voter.call_back=false
       else
-        if attempt.caller_id==nil
+        if attempt.caller_id==nil &&  attempt.status!="Message delivered"
           #abandon
 #          @voter.status="Call completed with success."
           attempt.status="Call abandoned"
         else
-          @voter.status="Call completed with success."
-          attempt.status="Call completed with success."
+          @voter.status="Call completed with success." unless  @voter.status=="Message delivered"
+          attempt.status="Call completed with success." unless  attempt.status=="Message delivered"
         end
       end
       attempt.call_end=Time.now
@@ -423,6 +437,11 @@ class CallinController < ApplicationController
     render :template => 'callin/index.xml.builder', :layout => false
     return
       
+  end
+  
+  def hold
+    render :template => 'callin/hold.xml.builder', :layout => false
+    return
   end
 
   # def voterStart

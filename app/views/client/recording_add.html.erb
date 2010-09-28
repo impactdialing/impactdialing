@@ -1,0 +1,16 @@
+<div class="box">
+	<%= render :partial => 'boxtop', :locals=>{:title=>"New Recording"} %>
+	<div class="box-content">
+		<% form_tag ({},  :multipart => true) do %>
+			<p><label for="upload_file">Select a file: </label> 
+			<%= file_field 'upload', 'datafile' %></p>
+			<p><label for="upload_file">Name: </label> 
+			<input type="text" name="filename" value="<%= params[:filename] %>"></p>
+			<br/>
+			<input type="hidden" name="campaign_id" value="<%= params[:campaign_id] %>">
+			<%= submit_tag "Upload", :class=>"button", :onclick=>"this.value='uploading...';this.disabled = true;this.form.submit();" %>
+
+	
+		<% end %>
+	</div>
+</div>

@@ -7,6 +7,7 @@ class Campaign < ActiveRecord::Base
   has_and_belongs_to_many :callers
   belongs_to :script
   belongs_to :user
+  belongs_to :recording
   cattr_reader :per_page
   @@per_page = 25
 
@@ -259,7 +260,7 @@ class Campaign < ActiveRecord::Base
 
     voters = Voter.find_all_by_campaign_id_and_active(self.id, 1, :conditions=>"voter_list_id in (#{active_list_ids.join(",")})", :limit=>limit, :order=>"rand()")
     voters.each do |voter|
-      if !voter_ids.index(voter.id) && (status==nil || voter.status==status )
+      if !voter_ids.index(voter.id) && (voter.status==nil || voter.status==status )
         voters_returned << voter
         voter_ids  << voter.id
 #      elsif !voter_ids.index(voter.id) && include_call_retries && voter.call_back? && voter.last_call_attempt_time!=nil && voter.last_call_attempt_time < (Time.now - 3.hours)
@@ -273,7 +274,7 @@ class Campaign < ActiveRecord::Base
       # no one left, so call everyone we missed over 10 minutes
       uncalled = Voter.find_all_by_campaign_id_and_active_and_call_back(self.id, 1, 1, :conditions=>"voter_list_id in (select id from voter_lists where campaign_id=#{self.id} and active=1 and enabled=1)")
       uncalled.each do |voter|
-        if  voter.last_call_attempt_time!=nil && voter.last_call_attempt_time < Time.now - 10.minutes
+        if  voter.last_call_attempt_time!=nil && voter.last_call_attempt_time < Time.now - 10.minutes && (voter.status==nil || voter.status==status )
           voters_returned << voter
         end
       end
