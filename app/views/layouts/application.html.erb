@@ -14,7 +14,7 @@
     <!-- Logo + Top Nav -->
     <div id="top">
 		<img src="/images/logo.png" style="position:relative; left:-375px;">
-      <h1><a href="/"><img src="/images/logo_text.png" style=""></a></h1>
+      <h1><a href="/"><img src="/images/logo_text.png" style="position:absolute;"></a></h1>
       <div id="top-navigation"> 
 	<% if !session[:user].blank? && @user!=nil %>
 	Welcome <strong><%= @user.fname %></strong>
