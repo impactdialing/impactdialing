@@ -119,7 +119,6 @@ class ClientController < ApplicationController
 
   def index
     @breadcrumb=nil
-
   end
 
   def login
@@ -134,6 +133,7 @@ class ClientController < ApplicationController
       @user = User.find_by_email_and_password(params[:email],params[:password])
       if @user.blank?
         flash.now[:error]="Invalid Login"
+        @user = User.new {params[:user]}
       else
         session[:user]=@user.id
         redirect_to :action=>"index"
@@ -383,7 +383,7 @@ class ClientController < ApplicationController
     @config = YAML::load(File.open("#{RAILS_ROOT}/config/amazon_s3.yml"))
     s3 = RightAws::S3.new(@config["access_key_id"], @config["secret_access_key"])
     bucket = s3.bucket("impactdialingapp")
-    s3path="#{ENV["RAILS_ENV"]}/uploads/#{@user.id}/#{recording.id}#{extension}"
+    s3path="#{ENV["RAILS_ENV"]}/uploads/#{@user.id}/#{recording.id}.#{extension}"
     key = bucket.key(s3path)
     key.data = File.open(filepath)
     key = bucket.key(s3path)

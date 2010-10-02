@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20100924142335) do
+ActiveRecord::Schema.define(:version => 20100928072136) do
 
   create_table "call_attempts", :force => true do |t|
     t.integer  "voter_id"
@@ -51,12 +51,12 @@ ActiveRecord::Schema.define(:version => 20100924142335) do
     t.integer  "num_calls"
     t.integer  "avg_wait"
     t.string   "sid"
-    t.boolean  "available_for_call", :default => false
+    t.boolean  "available_for_call",  :default => false
     t.integer  "voter_in_progress"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.datetime "hold_time_start"
-    t.boolean  "on_call",            :default => false
+    t.boolean  "on_call",             :default => false
     t.string   "caller_number"
     t.string   "tCallSegmentSid"
     t.string   "tAccountSid"
@@ -69,6 +69,7 @@ ActiveRecord::Schema.define(:version => 20100924142335) do
     t.datetime "tStartTime"
     t.datetime "tEndTime"
     t.float    "tPrice"
+    t.integer  "attempt_in_progress"
   end
 
   add_index "caller_sessions", ["caller_id"], :name => "index_caller_sessions_on_caller_id"
@@ -109,6 +110,8 @@ ActiveRecord::Schema.define(:version => 20100924142335) do
     t.boolean  "caller_id_verified",   :default => false
     t.boolean  "use_answering",        :default => true
     t.string   "predective_type"
+    t.integer  "recording_id"
+    t.boolean  "use_recordings",       :default => false
   end
 
   create_table "campaigns_voter_lists", :id => false, :force => true do |t|
@@ -120,6 +123,15 @@ ActiveRecord::Schema.define(:version => 20100924142335) do
     t.string   "name"
     t.integer  "group_id"
     t.integer  "user_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "recordings", :force => true do |t|
+    t.integer  "user_id"
+    t.string   "recording_url"
+    t.integer  "active",        :default => 1
+    t.string   "name"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

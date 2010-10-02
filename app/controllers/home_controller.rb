@@ -1,6 +1,19 @@
 class HomeController < ApplicationController
   def index
-    redirect_to :controller=>"client"
+    @user = User.new
+  #  redirect_to :controller=>"client"
+  end
+  
+  def how_were_different
+    
+  end
+  
+  def pricing
+    
+  end
+
+  def contact
+    
   end
   
   def tos
