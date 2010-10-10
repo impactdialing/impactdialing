@@ -176,7 +176,7 @@ class Campaign < ActiveRecord::Base
       dials = 1 / stats[:answer_plus_abandon_ct]
       dials = 2 if dials.infinite? 
       dials = dials.to_f.round
-      dials = 12 if dials > 12
+      dials = self.max_calls_per_caller if dials > self.max_calls_per_caller
       dials = 2 if attempts.length < 50
 #      dials=1
   		stats[:dials_needed]  = dials

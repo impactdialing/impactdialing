@@ -13,26 +13,29 @@
   <div class="shell">
     <!-- Logo + Top Nav -->
     <div id="top">
-		<img src="/images/logo.png" style="position:relative; left:-67px;">
-      <h1><a href="/"><img src="/images/logo_text.png" style="position:absolute;"></a></h1>
+      <h1><a href="/client">Impact Dialing</a></h1>
       <div id="top-navigation"> 
+	<!--
 	<% if !session[:user].blank? && @user!=nil %>
 	Welcome <strong><%= @user.fname %></strong>
 	<!-- <span>|</span> <a href="#">Help</a> <span>|</span> <a href="#"> Settings</a> --> <span>|</span> <a href="/client/user_add">My Account</a>  <span>|</span> <a href="/client/logout">Log out</a> 
 	<% end %> 
+	-->
 	</div>
 
     </div>
     <!-- End Logo + Top Nav -->
     <!-- Main Nav -->
     <div id="navigation">
+	<!--
       <ul>
-        <li><a href="/" <% if @actionName=="index" %>class="active"<% end %>><span>Home</span></a></li>
-        <li><a href="/how_were_different" <% if @actionName.index("how_were_different") %>class="active"<% end %>><span>How We're Different</span></a></li>
-        <li><a href="/pricing" <% if @actionName.index("pricing") %>class="active"<% end %>><span>Pricing</span></a></li>
-        <li><a href="/contact" <% if @actionName.index("contact") %>class="active"<% end %>><span>Contact</span></a></li>
-        <li><a href="/client" <% if @actionName.index("client") %>class="active"<% end %>><span>Try it Out</span></a></li>
+        <li><a href="/client" <% if @actionName=="index" %>class="active"<% end %>><span>Welcome</span></a></li>
+        <li><a href="/client/callers" <% if @actionName.index("caller") %>class="active"<% end %>><span>Callers</span></a></li>
+        <li><a href="/client/scripts" <% if @actionName.index("script") %>class="active"<% end %>><span>Scripts</span></a></li>
+        <li><a href="/client/campaigns" <% if @actionName.index("upload") || @actionName.index("campaign") %>class="active"<% end %>><span>Campaigns</span></a></li>
+        <li><a href="/client/reports" <% if @actionName.index("report") %>class="active"<% end %>><span>Reports</span></a></li>
       </ul>
+-->
     </div>
     <!-- End Main Nav -->
   </div>
@@ -41,6 +44,22 @@
 <!-- Container -->
 <div id="container">
   <div class="shell">
+    <!-- Small Nav -->
+<!--    <div class="small-nav"> <a href="/client">Welcome</a
+	<% if @breadcrumb.class.to_s=="String" %>
+		<span>&gt;</span> <%= @breadcrumb %> 
+	<% elsif @breadcrumb!=nil %>
+		<% @breadcrumb.each do |b| %>
+			<% if b.class.to_s=="Hash" %>
+				<span>&gt;</span>
+				<a href="<%= b[b.keys.first] %>"><%= b.keys.first %></a>
+			<% else %>
+				<span>&gt;</span> <%= b %> 
+			<% end %>
+		<% end %>
+	<% end %>
+	</div>>  -->
+    <!-- End Small Nav -->
 
 	<% if flash[:notice] -%>
 
@@ -60,55 +79,7 @@
       <div class="cl">&nbsp;</div>
       <!-- Content -->
       <div id="content">
-
-		<table>
-			<tr>
-				<td valign="top">
-					<div class="box" style="width:600px;">
-
-
 		<%= yield %>
-
-			</td>
-			<td width="40">&nbsp;</td>
-			<td valign="top">
-					<%= render :partial => 'client/boxtop', :locals=>{:title=>"Login"} %>
-					<% form_tag("/client/login", :id=>"loginForm") do |f| %>
-
-				  <div class="table not">
-				    <table  border="0" cellspacing="0" cellpadding="0">
-				      <tr>
-				        <td><h3>Email:</h3></td>
-				        <td><input type="text" name="email" class="field" value="<%= params[:email] %>" />
-				        </td>
-				      </tr>
-				      <tr >
-				        <td><h3>Password:</h3></td>
-				        <td><input type="password" class="field" name="password"/>
-				        </td>
-				      </tr>
-				      <tr>
-				        <td>
-							<input type="submit" value="Login" class="button">
-							<!--<a href="javascript:$('loginForm').submit();" class="button"><span>Login</span></a>-->
-
-						</td>
-				        <td><a href="/client/forgot">Forgot Password?</a></td>
-				      </tr>
-					</table>
-					<% end %>
-				</div>			
-				<br/>
-				<%= render :partial => 'client/boxtop', :locals=>{:title=>"Join"} %>
-				<div style="background-color:#fff">
-					<div class="box-content">
-						<a href="/client/join">Click here to join Impact Dialing</a>
-					</div>
-				</div>
-			</td>
-		</tr>
-	</table>
-
       </div>
       <!-- End Content -->
       <!-- Sidebar -->

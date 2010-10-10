@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20100928072136) do
+ActiveRecord::Schema.define(:version => 20101010012230) do
 
   create_table "call_attempts", :force => true do |t|
     t.integer  "voter_id"
@@ -70,6 +70,7 @@ ActiveRecord::Schema.define(:version => 20100928072136) do
     t.datetime "tEndTime"
     t.float    "tPrice"
     t.integer  "attempt_in_progress"
+    t.string   "session_key"
   end
 
   add_index "caller_sessions", ["caller_id"], :name => "index_caller_sessions_on_caller_id"
@@ -84,6 +85,7 @@ ActiveRecord::Schema.define(:version => 20100928072136) do
     t.integer  "active",     :limit => 1, :default => 1
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "password"
   end
 
   create_table "callers_campaigns", :id => false, :force => true do |t|
@@ -112,6 +114,7 @@ ActiveRecord::Schema.define(:version => 20100928072136) do
     t.string   "predective_type"
     t.integer  "recording_id"
     t.boolean  "use_recordings",       :default => false
+    t.integer  "max_calls_per_caller", :default => 20
   end
 
   create_table "campaigns_voter_lists", :id => false, :force => true do |t|
