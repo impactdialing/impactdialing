@@ -86,6 +86,11 @@ class CallerController < ApplicationController
 
       end
     end
+    if @campaign.user_id=="31"
+      render :layout=>"prop19"
+    else
+      return
+    end
   end
 
   def session_ready

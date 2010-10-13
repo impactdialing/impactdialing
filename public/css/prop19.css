@@ -1,0 +1,864 @@
+
+/* $Id: style.css,v 1.38.2.4 2009/09/14 13:10:47 goba Exp $ */
+
+/**
+ * Yes on 19 v1.0, for Drupal 6.x
+ * Theme created by Michael J. Buehler
+ * based on CSS from Ivan Kanevski
+ *
+ */
+ 
+/* Note: content class renamed to outer_content to prevent collision with auto-generated drupal class named content */
+
+/* Global Reset */
+html{color:#000;background:#FFF;}body,div,dl,dt,dd,ul,li,h1,h2,h3,h4,h5,h6,pre,code,form,input,button,textarea,p,blockquote,th,td{margin:0;padding:0;}table{border-collapse:collapse;border-spacing:0;}img{border:0;}address,caption,cite,code,dfn,em,strong,th,var,optgroup{font-style:inherit;font-weight:inherit;}del,ins{text-decoration:none;}ul li{list-style:none;}caption,th{text-align:left;}h1,h2,h3,h4,h5,h6{font-size:100%;font-weight:normal;}q:before,q:after{content:'';}abbr,acronym{border:0;font-variant:normal;}sup{vertical-align:baseline;}sub{vertical-align:baseline;}legend{color:#000;}input,button,textarea,select,optgroup,option{font-family:inherit;font-size:inherit;font-style:inherit;font-weight:inherit;}input,button,textarea,select{*font-size:100%;}
+
+fieldset p {
+	margin-top: 0px;
+	margin-bottom: 0px;
+	line-height:.1em;
+	padding-top: 0px;
+	padding-bottom: 0px;
+}
+
+html, body {
+  font-family: Helvetica,Arial,sans-serif;
+  background-color: #fff;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+a, a:link, a:visited {
+  color: #369;
+}
+
+a:hover {
+  color: #000;
+}
+
+/* Header */
+
+.header-container {
+  width: 100%;
+  height: 143px;
+  background: #3c62a3 url('http://yeson19.com/themes/Yeson19/images/header-back.gif') 0 0 repeat-x;
+  border-bottom: 1px solid #e5af4b;
+}
+
+.header {
+  width: 960px;
+  margin: 0 auto;
+  padding: 0 10px;
+  background: transparent url('http://yeson19.com/themes/Yeson19/images/header-sun-back.jpg') 170px bottom no-repeat;
+}
+
+.header h1 {
+  width: 344px;
+  float: left;
+}
+
+.header h1 a {
+  width: 344px;
+  height: 141px;
+  display: block;
+  background: transparent url('http://yeson19.com/themes/Yeson19/images/yes-prop-19-tax-control-cannabis_2.gif') 0 0 no-repeat;
+  text-indent: -9999px;
+  outline: none;
+  float: left;
+}
+
+
+.header-social {
+  float: right;
+  height: 143px;
+  width: 220px;
+  padding-left: 225px;
+  bottom: 0;
+}
+
+.header-social h3 {
+  font-size: 14px;
+  color: #e2f2f9;
+  /* margin-top: 32px; /* -- social icons match baseline of tax and control line -- MB didn't like */
+  /* margin-top: 62px; /* -- social icons match baseline of election date */
+  margin-top: 50px; /* original social icon position */
+}
+
+.header-social ul {
+  padding-top: 10px;
+  clear: both;
+  float: left;
+}
+
+.header-social li {
+  float: left;
+  padding-right: 10px;
+}
+
+.header-social .twitter {
+  display: none;
+  padding-top: 10px;
+  padding-left: 20px;
+}
+
+
+/* Navigation */
+
+.navigation-container {
+  width: 100%;
+  background: #f3c765 url('http://yeson19.com/themes/Yeson19/images/navigation-back.gif') 0 0 repeat-x;
+  border-bottom: 1px solid #e5af4b;
+}
+
+.navigation {
+  padding: 0 0 0 20px;
+  width: 100%;
+  width: 960px;
+  margin: 0 auto;
+}
+
+.navigation ul {
+  background: transparent url('http://yeson19.com/themes/Yeson19/images/navigation-link-back.gif') left -10px no-repeat;
+  float: left;
+}
+
+.navigation li {
+  float: left;
+  font-size: 16px;
+  line-height: 18px;
+}
+
+.navigation li a {
+  background: transparent url('http://yeson19.com/themes/Yeson19/images/navigation-link-back.gif') right -10px no-repeat;
+  text-shadow: #ffe696 1px 1px 0px;
+  text-decoration: none;
+  color: #9b400c;
+  padding: 15px 36px;
+  display: block;
+  float: left;
+}
+
+.navigation li:hover {
+  background: transparent url('http://yeson19.com/themes/Yeson19/images/navigation-link-selected-back.gif') center top no-repeat;
+}
+
+.navigation li:hover a {
+  color: #000;
+} 
+
+
+/* Content */
+
+.content-container {
+  width: 960px;
+  margin: 0 auto;
+  background: transparent url('http://yeson19.com/themes/Yeson19/images/content-back.gif') 710px 0 repeat-y;
+}
+
+.content_outer strong {
+  font-weight: bold;
+}
+
+.content-container .item-list  ul {
+  margin: 0;
+  padding: 0;
+}
+
+.content-container .item-list li {
+  list-style: none;
+  margin: 0;
+}
+
+.content_outer {
+  line-height: 24px;
+  margin: 27px 0;
+  margin: 0 10px;
+  width: 500px;
+  float: left;
+  color: #333;
+  font-size: 14px;
+  color: #666;
+}
+
+.content-wide {
+  width: 640px;
+}
+
+.content_outer h2 {
+  color: #333;
+  font-weight: bold;
+  margin: 27px 0;
+  font-size: 24px;
+}
+
+.content_outer h3 {
+  font-size: 18px;
+  margin: 18px 0;
+  color: #333;
+}
+
+.content_outer h4 {
+  font-size: 16px;
+  margin: 27px 0;
+  color: #333;
+}
+
+.content_outer p {
+  color: #666;
+  margin: 24px 0;
+}
+
+.content_outer .big-list {
+  margin: 27px 0;
+}
+
+/*MB added list-style:none to below to prevent conflict with page body lists */
+.content_outer .big-list li {
+  padding-left: 50px;
+  background: transparent url('http://yeson19.com/themes/Yeson19/images/icon-check.gif') 0 -5px no-repeat;
+  border-bottom: 1px solid #e0e0e0;
+  list-style: none;
+}
+
+.content_outer .big-list p {
+  margin: 18px 0;
+}
+
+.content_outer .big-list li h3 {
+  margin: 18px 0;
+
+}
+
+.content_outer .section {
+  clear: both;
+}
+
+/* News Section */
+
+.section-headlines {
+ margin-top: 27px;
+}
+
+.section-headlines .block {
+  width: 140px;
+  float: left;
+  position: relative;
+  padding: 0 10px;
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+.section-headlines .block h4 {
+  line-height: 1.6;
+  position: absolute;
+  background-color: #333;
+  left: 10px;
+  top: 0px;
+  margin: 0;
+  padding: 0;
+  padding: 0 5px;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.section-headlines .block img {
+  border: 1px solid #e0e0e0;
+  background-color:#FFDE00;
+  padding: 4px;
+}
+
+.section-headlines .blocky-hover img {
+  background-color: #E5EFFF;
+}
+
+.section-headlines .blocky-hover h4 {
+  background-color: #3C62A3;
+}
+
+.section-headlines .block a {
+  text-decoration: none;
+}
+
+.section-headlines .block p {
+  margin: 0;
+  padding: 0;
+  line-height: 1.5;
+}
+
+
+/* Homepage: Videos */
+
+ul.videos a img {
+  background-color: #f9d88b;
+  border: 1px solid #e5af4b;
+  padding: 5px;
+}
+
+ul.videos a:hover img {
+  background-color: #d1f3ff;
+  border: 1px solid #aecbf3;
+}
+
+ul.videos a img {
+  float: left;
+}
+
+ul.videos p {
+  width: 140px;
+  padding: 10px;
+  float: left;
+  font-size: 12px;
+  line-height: 18px;
+  margin-top: 0;
+}
+
+
+/* Homepage: Posts */
+
+.content_outer .post {
+  padding-bottom: 18px;
+}
+
+
+.content_outer .post .post-date {
+  float: left;
+  color: #666;
+  width: 110px;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.content_outer .post-full .post-date {
+  width: auto;
+  float: none;
+}
+
+.content_outer .post-headline {
+  margin-left: 130px;  
+}
+
+.content_outer .post-headline h3 {
+  font-size: 15px;
+  margin-bottom: 0;
+}
+
+.content_outer .post-headline h4 {
+  font-family: Georgia,"Times New Roman", serif;
+  font-style: italic;
+  font-size: 13px;
+  color: #555;
+  margin-top: 0;
+  line-height: 18px;
+  margin-bottom: 24px;
+}
+
+
+.content_outer .post-body {
+  margin-left: 130px;
+}
+
+.content_outer .post-full .post-body {
+  clear: both;
+  margin-left: 0;
+}
+
+.content_outer .post-meta {
+  display: block;
+  border-top: 1px solid #e0e0e0;
+  color: #333;
+}
+
+.content_outer .post-meta-block {
+  width: 110px;
+  border-left: 1px solid #e0e0e0;
+  padding: 0 10px;
+  float: left;
+  height: 72px;
+}
+
+/* Always first, remove left border */
+.content_outer .post-meta-block-date {
+  border-left: none;
+}
+
+.content_outer .post-meta-block-share {
+  width: 220px;
+}
+
+.content_outer .post-meta-block-share-widget {
+  float: left;
+}
+
+.content_outer .post-meta-block h4 {
+  font-size: 11px;
+  color: #666;
+  letter-spacing: 1px;
+  padding-top: 5px;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+/* Facts */
+
+.fact {
+  margin-bottom: 36px;
+}
+
+.fact .fact-large {
+  color: #333;
+  font-size: 18px;
+  border: 1px solid #e0e0e0;
+  padding: 17px 18px;
+}
+
+.fact .fact-body {
+  padding-left: 20px;
+}
+
+.fact .fact-footnotes {
+  padding-left: 20px;
+}
+
+.fact .fact-video {
+  padding-left: 20px;
+}
+
+.fact-full .fact-body,
+.fact-full .fact-footnotes,
+.fact-full .fact-video {
+  padding-left: 0;
+}
+
+.fact .fact-footnotes h3{
+  margin: 0;
+  font-size: 11px;
+  line-height: 18px;
+  text-transform: uppercase;
+  font-family: Verdana,Arial,sans-serif;
+  letter-spacing: 2px;
+  color: #666;
+}
+
+.fact .footnotes {
+  font-size: 12px;
+}
+
+.fact  .footnotes li {
+  padding: 10px 10px 10px 25px;
+  position: relative;
+}
+
+.fact  .footnotes li .number {
+  display: block;
+  position: absolute;
+  font-size: 18px;
+  color: #999;
+  left: 0px;
+  top: 8px;
+}
+
+/* Quotes */
+
+.quote {
+  margin-bottom: 36px;
+}
+
+.quote blockquote {
+  font-size: 16px;
+  line-height: 24px;
+  font-family: Georgia,"Times New Roman",serif;
+  background: transparent url('http://yeson19.com/themes/Yeson19/images/icon-quote.gif') 0 0 no-repeat;
+  padding-left: 40px;
+}
+
+.quote-image {
+  float: left;
+  margin-right: 20px;
+  padding: 5px;
+  border: 1px solid #e0e0e0;
+}
+
+.quote-image img {
+  float: left;
+}
+
+.quote cite {
+  margin-left: 150px;
+  display: block;
+  color: #006600;
+  font-size: 12px;
+  letter-spacing: 1px;
+  line-height: 18px;
+  text-transform: uppercase;
+  font-family: Georgia,"Times New Roman",serif;
+}
+
+.quote .quote-quotee {
+  padding-left: 40px;
+}
+
+.quote cite span {
+  font-size: 12px;
+  color: #666;  
+  display: block;
+  font-family: Arial,Helvetica;
+  font-size: 12px;
+  text-transform: none;
+  letter-spacing: 0px;
+}
+
+/* Videos */
+
+.video {
+  clear: both;
+  padding-bottom: 24px;
+  margin: 24px 0;
+}
+
+.video-embed {
+  width: 425px;
+  padding: 5px;
+  height: 350px;
+  border: 1px solid #e0e0e0;
+  float: left;
+}
+
+.video-description {
+  float: left;
+  width: 180px;
+  padding-left: 10px;
+  font-size: 11px;
+  line-height: 18px;
+}
+
+/* Navigation Sidebar */
+
+.navigation-sidebar {
+  margin-top: 27px;
+  margin: 27px 10px;
+  width: 140px;
+  float: left;
+}
+
+.navigation-sidebar h3 {
+  color: #666;
+  font-size: 16px;
+  padding: 10px;
+}
+
+.navigation-sidebar li a {
+  text-decoration: none;
+  display: block;
+  width: 130px;
+  padding: 10px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.navigation-sidebar li.selected a {
+  font-weight: bold;
+  color: #000;
+  background-color: #D2EFFF;
+  border-bottom: 1px solid #369;
+}
+
+/* Pagination */
+
+.content-container .item-list .pager {
+  float: left;
+  display: block;
+  padding-bottom: 10px;
+}
+
+.item-list .pager li {
+  margin-right: 10px;
+  line-height: 18px;
+  float: left;
+  padding: 0;
+}
+
+.item-list .pager li a {
+  display: block;
+  float: left;
+}
+
+.item-list li.pager-current {
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+  background-color: #FFDE00;
+  color: #333;
+  border: 1px solid #ebcf10;
+  padding: 7px 10px;
+}
+
+.item-list .pager li a {
+  color: #369;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+  padding: 7px 10px;
+  background-color: #E5EFFF;
+  border: 1px solid #E5EFFF;
+}
+
+.item-list .pager li a:hover {
+ background-color: #369;
+ color: #fff;
+}
+
+/* Sidebar */
+
+.sidebar {
+  float: right;
+  padding-top: 18px;
+  margin: 0 10px;
+  width: 240px;
+}
+
+.sidebar .ez-form .input-text,
+.sidebar .ez-form label {
+  width: 180px;
+}
+
+.sidebar .block {
+  padding-left: 30px;
+  border-bottom: 1px solid #e0e0e0;
+  color: #666;
+  margin: 18px 0;
+  padding-bottom: 18px;
+}
+
+.sidebar .blocky {
+  cursor: pointer;
+}
+
+.sidebar .blocky-hover h3 a {
+  color: #000;
+}
+
+.sidebar .blocky-hover p {
+  color: #333;
+}
+
+
+.sidebar .block h3 {
+  position: relative;
+}
+
+.sidebar .block .bullet {
+  display: block;
+  width: 29px;
+  height: 30px;
+  position: absolute;
+  left: -44px;
+  top: -7px;
+}
+
+.sidebar .block .donate {
+  background: transparent url('http://yeson19.com/themes/Yeson19/images/sidebar-icon-donate.gif') 0 0 no-repeat;
+}
+
+.sidebar .block .join {
+  background: transparent url('http://yeson19.com/themes/Yeson19/images/sidebar-icon-join.gif') 0 0 no-repeat;
+}
+
+.sidebar .block .volunteer {
+  background: transparent url('http://yeson19.com/themes/Yeson19/images/sidebar-icon-volunteer.gif') 0 0 no-repeat;
+}
+
+.sidebar .block .register {
+  background: transparent url('http://yeson19.com/themes/Yeson19/images/sidebar-icon-register.png') 0 0 no-repeat;
+}
+
+.sidebar p {
+  margin: 18px 0;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.sidebar h3 {
+  margin: 18px 0;
+  font-size: 16px;
+}
+
+.sidebar blockquote, .sidebar .content .block-quote p {
+  font-family: Georgia,"Times New Roman", serif;
+  font-size: 14px;
+  line-height: 22px;
+  margin: 27px 0;
+}
+
+.sidebar cite, sidebar, .sidebar .content .block-quote p cite {
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-size: 12px;
+  display: block;
+  margin: 18px 0;
+  color: #006600;
+}
+
+.sidebar cite .whois {
+  letter-spacing: 0px;
+  text-transform: none;
+  display: block;
+  color: #666;
+  font-size: 11px;
+  font-family: Arial,Helvetica,sans-serif;
+}
+
+/* Footer */
+.footer {
+  width: 940px;
+  margin: 0 auto;
+  color: #666;
+  border-top: 1px solid #e0e0e0;
+}
+
+.footer-navigation {
+  margin: 18px 10px;
+}
+
+.footer-navigation a, .footer-navigation a:link {
+  margin-right: 20px;
+  color: #000;
+  text-decoration: none;
+}
+
+.footer-navigation .text {
+  color: #777;
+  padding-left: 5px;
+  text-decoration: underline;
+}
+
+.footer .copyright {
+  margin: 18px 10px;
+}
+
+
+/* Utilities */
+.clear {
+  clear: both;
+}
+
+/* Forms */
+.ez-form {
+  
+}
+
+.ez-form .ez-field {
+  margin: 18px 0;
+}
+
+.ez-form input,
+.ez-form .input-text,
+.ez-form .input-password,
+.ez-form select,
+.ez-form textarea {
+  padding: 3px;
+  border: 1px solid #ccc;
+  width: 240px;
+}
+
+.ez-form input,
+.ez-form .input-text {
+  padding: 5px 3px;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+}
+
+.ez-form label {
+  padding: 3px;
+  display: block;
+  width: 240px;
+}
+
+.ez-form .input-submit {
+  width: auto;
+  font-size: 14px;
+  color: #369;
+  padding: 6px 10px;
+  background-color: #e5efff;
+  border: 1px solid #c4d6f3;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+}
+
+.ez-form .required {
+  color: #c00;
+  padding-left: 3px;
+  font-size: 120%;
+}
+
+.ez-form .input-submit:hover {
+  background-color: #b5f7ff;
+  cursor: pointer;
+}
+
+.ez-form .errors {
+  margin: 5px 0;
+  font-size: 11px;
+  color: #c00;
+}
+
+/* Function Tabs (View, Edit, etc.) */
+
+.function_tabs {
+	background-color: #f3c765;
+	padding-left: 10px;
+	padding-right: 10px;
+	height: 30px;
+	margin-bottom: -30px;
+}
+
+.function_tabs li {
+	display: inline;
+	padding-left: 10px;
+}
+
+/* Content Body Styles -- MB */
+.post .post-body em, .page-body em {
+  font-style:italic;
+}
+
+.post .post-body sup, .page-body sup {
+  vertical-align:super;
+}
+
+.post .post-body strong, .page-body strong {
+  font-weight: bold;
+}
+
+.post .post-body ul li, .page-body ul li  {
+
+  padding-left: 10px;
+  list-style: disc;
+  list-style-type: disc;
+  list-style-position: inside;
+}
+
+/* Link Button reusable class */
+
+.linkbutton {
+  width: auto;
+  font-size: 14px;
+  color: #369;
+  padding: 7px 11px;
+  background-color: #e5efff;
+  border: 1px solid #c4d6f3;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+  text-decoration: none;
+}
+
+.linkbutton:hover {
+  background-color: #b5f7ff;
+  cursor: pointer;
+}
+#container{padding-top:0;}
+.box-head{background-color: #2662a7;}
+#footerx { background-color: #2662a7;color:white;}
+#footerx a {background-color: #2662a7;color:white;}
+.rt{ border-color: #2662a7;}
