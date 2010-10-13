@@ -86,7 +86,7 @@ class CallerController < ApplicationController
 
       end
     end
-    if @campaign.user_id=="31"
+    if @campaign.user_id==31
       render :layout=>"prop19"
     else
       return
