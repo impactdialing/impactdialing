@@ -129,6 +129,7 @@ a.edit { background-image:url(/css/images/edit.gif); margin-left:14px;}
 textarea.size1 { height:180px; }
 
 .buttons { text-align: right; padding:10px; background:#eee; border-top:solid 1px #e0e0e0; }
+.caller_buttons { padding:10px; background:#eee; border-top:solid 1px #e0e0e0; }
 .buttons2 {  background:#eee; border-top:solid 1px #e0e0e0; padding:8px;
 	-moz-border-radius: 12px;  	    -webkit-border-radius: 12px;  
 	}
@@ -254,3 +255,5 @@ tr.odd td{
 }
 
 .statTable tr td {font-size:12px; padding:2px;}
+
+.rt{padding:10px; border:1px solid #b0722f; -moz-border-radius: 15px; border-radius: 15px; font-size:1.3em; line-height:1.2em;}
