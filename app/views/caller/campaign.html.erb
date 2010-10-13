@@ -1,0 +1,37 @@
+<% form_tag("/caller/campaign/#{params[:id]}", {:class => "form"}) do %>
+	<div class="box" style="width:800px;">
+		<%= render :partial => 'client/boxtop', :locals=>{:title=>"#{@campaign.name}"} %>
+		<div class="box-content">
+			<div id="voter_info" class="rt" style="display:none;">When connected, voter information will appear here</div>
+			<br/>
+			<div class="rt"><%= @campaign.script.script.gsub("\n", "<br/>") %></div>
+			<br/>
+			<div id="response" class="rt" style="display:none;">
+				<%= @script.name %>: 
+				<select class="field" id="disposition" style="display:inline;">
+					<%  for i in 1..99 do %>
+						<% thisKeypadval=eval("@script.keypad_#{i}") %>
+						<% if !thisKeypadval.blank? %><option value="<%= i %>"><%= thisKeypadval %></option><% end %>
+					<% end %>
+				</select>
+			</div>
+		</div>
+		<div class="caller_buttons" id="caller_buttons">
+			<div id="statusdiv" style="float:right; padding-bottom:10px;">Status: Not connected.</div>
+	      	<div id="actiondiv">Enter your phone number: <input type="text" name="numtocall"> <input type="submit" class="button" value="Start Taking Calls"></div>
+	    </div>
+    
+	</div>
+
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.5/jquery-ui.min.js"></script>
+	<script type="text/javascript" src="http://www.twiliort.com/v1/realtime-client.js"></script>
+	<script>
+
+	</script>
+	<% if !@session.blank? %>
+	<script type="text/javascript" src="/caller/js/<%= @session.session_key %>"></script>
+	<% end %>
+<% end -%>
+
+<%# @session.session_key if @session!=nil %>

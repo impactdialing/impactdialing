@@ -97,6 +97,7 @@ DaemonKit::Application.running! do |config|
 
 
       maxCalls=callers.length * stats[:dials_needed]
+#      DaemonKit.logger.info "maxCalls: #{maxCalls}"
 #      newCalls=calls.length
       newCalls=maxCalls-calls.length
       #newCalls= callers_on_call.length * stats[:dials_needed]

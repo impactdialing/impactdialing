@@ -28,7 +28,13 @@
 							<br/>
 							<br/>
 							Call-in number:
-							<br/><div style="font-size:18px; padding-top:6px; "> <%= number_to_phone(APP_NUMBER, :area_code => true) %></div>
+							<br/><div style="font-size:18px; padding-top:6px; "> 
+							<% if ENV["RAILS_ENV"]=="development"%>
+								<%= number_to_phone(APP_NUMBER, :area_code => true) %>
+							<% else %>
+								<%= number_to_phone(@campaign.callin_number, :area_code => true) %>
+							<% end %>
+							</div>
 							<br/>
 							Campaign ID:
 							<br/><div style="font-size:18px; padding-top:6px; "> <%= @campaign.group_id %></div>
@@ -40,6 +46,9 @@
 
 								<%= f.collection_select(:script_id, Script.find_all_by_user_id_and_active(@user.id,1), :id, :name, { :prompt => true},  {:class=>"field"} 	)  %>
 							</div>
+							<br/>
+							<label> <%= f.check_box :use_web_ui %> &nbsp; Allow Web Interface</label>
+							<br/>
 							
 							<% if !@campaign.user.recordings.blank? %>
 								<br/>

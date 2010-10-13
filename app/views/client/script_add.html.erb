@@ -45,7 +45,6 @@
 			<!-- End Box -->
 		</td>
 		<td> &nbsp; </td>
-		<!--
 		<td valign="top">
 			<div class="box" style="width:400px;">
 				<%= render :partial => 'boxtop', :locals=>{:title=>"Script"} %>
@@ -53,7 +52,25 @@
 			    <div class="form">
 			      <p>
 			        <label>Script</label>
-					<%= f.text_area :script %>
+					<%= f.text_area :script, {:cols=>50, :rows=>10} %>
+			      </p>
+				</div>
+			    <div class="buttons">
+			      <input type="button" class="button" value="cancel" onclick="document.location.href='/client/scripts';"/>
+				<%= f.submit "submit", :disable_with => 'submiting...', :class=>"button" %>
+			    </div>
+			</div>
+
+			<div class="box" style="width:400px;">
+				<%= render :partial => 'boxtop', :locals=>{:title=>"Additional Info"} %>
+
+			    <div class="form">
+			      <p>
+			        <label>Display this information above the script:</label>
+					
+					<% @fields.each do |field| %>
+						<input  type="checkbox" name="voter_field[]" value="<%= field %>"  <% if @voter_fields.index(field) %>checked<% end %>> <%= field %><br/>
+					<% end %>
 			      </p>
 				</div>
 			    <div class="buttons">
@@ -62,8 +79,8 @@
 			    </div>
 				<% end -%>
 			</div>
+
 		</td>
-		-->
 	</tr>
 </table>
 

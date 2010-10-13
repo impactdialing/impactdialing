@@ -1,1 +1,27 @@
-Caller login
+<div class="box" style="width:600px;">
+	<%= render :partial => 'client/boxtop', :locals=>{:title=>"Welcome to Impact Dialing"} %>
+	<div class="box-content">
+		Impact Dialing eliminates unanswered phone calls, allowing you to
+		spend your time talking to people instead of waiting for someone to
+		pick up. You'll hear hold music while Impact Dialing finds someone who
+		answers the phone. When you've been connected, the hold music will
+		stop. You usually won't hear the person say hello, so start talking
+		immediately. At the end of the conversation, do not hang up your
+		phone. Instead, enter the call result at the bottom of the screen.
+		Then click "Submit and Keep Calling" to keep taking calls or "Submit
+		and Stop Calling" to take a break or log off.
+		<br/><br/>
+		<% form_tag("/caller", :id=>"loginForm") do |f| %>
+		<select name="campaign_id" class="field">
+			<option value="">-- Choose your campaign --</option>
+			<% @caller.campaigns.uniq.each do |c| %>
+				<% if c.use_web_ui? %>
+				<option value="<%= c.id %>"><%= c.name %></option>
+				<% end %>
+			<% end %>
+		</select>
+		<input class="button" value="Go!" type="submit"> (You can preview the script before taking calls)
+		<% end %>
+	</div>
+	
+</div>

@@ -92,6 +92,16 @@ class ApplicationController < ActionController::Base
   def isnumber(string)
      string.to_i.to_s == string ? true : false
   end  
+  
+   def generate_session_key
+      secure_digest(Time.now, (1..10).map{ rand.to_s })
+   end
+
+
+  def secure_digest(*args)
+    Digest::SHA1.hexdigest(args.flatten.join('--'))
+  end
+  
 
   def format_number_to_phone(number, options = {})
      number       = number.to_s.strip unless number.nil?
@@ -116,4 +126,57 @@ class ApplicationController < ActionController::Base
       number
     end
   end
+
+  def send_rt(key, post_data)
+    # msg_url="https://#{TWILIO_AUTH}:x@#{TWILIO_ACCOUNT}.twiliort.com/#{key}"
+      http = Net::HTTP.new("#{TWILIO_ACCOUNT}.twiliort.com", 443)
+      req = Net::HTTP::Post.new("/#{key}")
+      http.use_ssl = true
+      req.basic_auth TWILIO_AUTH, "x"
+      req.set_form_data(post_data, ';')
+      response = http.request(req)
+      logger.info "SENT RT #{key} #{post_data}: #{response.body}"
+      return response.body
+  end
+  
+  
+  def handle_disposition_submit
+    #@session @clean_digit @caller @campaign
+    if @session.voter_in_progress!=nil
+      voter = Voter.find(@session.voter_in_progress)
+      voter.status='Call finished'
+      voter.result_digit=@clean_digit
+      voter.result_date=Time.now
+      voter.caller_id=@caller.id
+      attempt = CallAttempt.find(@session.attempt_in_progress)
+      #attempt = CallAttempt.find_by_voter_id(@session.voter_in_progress, :order=>"id desc", :limit=>1)
+      attempt.result_digit=@clean_digit
+
+      voter.attempt_id=attempt.id if attempt!=nil
+      if @campaign.script!=nil
+        voter.result=eval("@campaign.script.keypad_" + @clean_digit)
+        attempt.result=eval("@campaign.script.keypad_" + @clean_digit)
+        begin
+          if @campaign.script.incompletes!=nil
+            if eval(@campaign.script.incompletes).index(@clean_digit)
+              voter.call_back=true
+            end
+          end
+        rescue
+        end
+      end
+      attempt.save
+      voter.save
+    end
+
+#    @session = CallerSession.find(params[:session]) 
+    if @session.endtime==nil
+      @session.available_for_call=true
+      @session.voter_in_progress=nil
+      @session.attempt_in_progress=nil
+      @session.save
+    end
+  end
+
+
 end

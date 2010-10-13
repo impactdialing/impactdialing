@@ -1,5 +1,12 @@
 xml.instruct! :xml, :version=>"1.0" 
 xml.Response("version"=>"1.0") do |response|
+
+  if @publish_channel
+    xml.Publish("channel"=>"#{@publish_channel}") {
+      xml.Data("name"=>"#{@publish_key}", "value"=>"#{@publish_value}")
+    }
+  end
+
  xml.Play("#{@play}") if @play
  xml.Dial("hangupOnStar"=>"true","action"=>"#{APP_URL}/callin/leaveConf?session=#{@session.id}&campaign=#{@campaign.id}") do |d|
 #    d.Conference("session#{@session.id}", "maxParticipants"=>"2")

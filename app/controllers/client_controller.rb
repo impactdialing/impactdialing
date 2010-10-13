@@ -564,6 +564,7 @@ class ClientController < ApplicationController
   end
 
   def script_add
+    @fields = ["FirstName","MiddleName","LastName","Phone","CustomID","Suffix","Email"]
     if params[:id].blank?
       @breadcrumb=[{"Scripts"=>"/client/scripts"},"Add Script"]
     else
@@ -598,6 +599,16 @@ class ClientController < ApplicationController
       @incompletes=[]
     end
 
+    if @script.voter_fields!=nil
+      begin
+        @voter_fields = eval(@script.voter_fields)
+      rescue
+        @voter_fields=[]
+      end
+    else
+      @voter_fields=[]
+    end
+
     if request.post?
       @script.update_attributes(params[:script])
 
@@ -624,12 +635,20 @@ class ClientController < ApplicationController
           #          eval("@script.keypad_" + thisKeypadval) = nil
         end
       end
+        
       if @script.valid?
         if params[:incomplete]
           @script.incompletes=params[:incomplete].to_json
         else
           @script.incompletes=nil
         end
+
+        if params[:voter_field]
+          @script.voter_fields=params[:voter_field].to_json
+        else
+          @script.voter_fields=nil
+        end
+        
         @script.user_id=@user.id
         @script.save
         flash[:notice]="Script saved"

@@ -1,0 +1,136 @@
+		/*
+		var d='{\"x\":\"123\",\"u\":\"xxz\"}';
+		alert(d);
+		alert(JSON.parse(d));
+		*/
+		$.ajaxSetup ({   cache: false  });
+
+		function dialTimedOut(){
+			$('#statusdiv').html("Status: Not Connected");
+			$('#actiondiv').html('Enter your phone number: <input type="text" name="numtocall"> <input type="submit" class="button" value="Start Taking Calls">');
+		 	$('#voter_info').hide();
+		 	$('#response').hide();
+		 	$('#caller_buttons').effect("highlight", {"color":"#bc833c"}, 2000);
+		}
+
+
+		var ajax_load = "<img src='/images/ajax-loader.gif' alt='loading...' />";  
+		  $(document).ready(function() {
+
+
+			t=setTimeout("dialTimedOut()",60000);
+			
+			<% if !@session.blank? %>
+			$('#statusdiv').html("Status: Dialing your phone");
+			$("#actiondiv").html(ajax_load);
+			<%end %>
+			
+		 	$('#caller_buttons').effect("highlight", {"color":"#bc833c"}, 2000);
+		    Realtime.init("<%= TWILIO_ACCOUNT %>");
+		    Realtime.listen("/<%= @session.session_key %>", {
+			onmessage:  function(msg) {
+		     // $("body").append("<pre>"+JSON.stringify(msg)+"</pre>");
+				for (var command in msg) {
+					
+					if (command=="voter_start"){
+
+						voter_data = JSON.parse(msg[command]);
+						var voter_out="";
+						var attempt_id='';
+						for (var info in voter_data){
+							if (info=='attempt_id')
+								attempt_id = voter_data[info];
+							else
+								voter_out+= info + ": " + voter_data[info] + "<br/>";
+						}
+
+
+						$('#statusdiv').html("Status: In call");
+						$('#actiondiv').html('<input type="button" class="button" value="Submit and Keep Calling" onclick="processresult(' + attempt_id+ ',0);"> <input type="button" class="button" value="Submit and Stop Calling" onclick="processresult(' + attempt_id + ',1);"> <input type="button" class="button" value="End Call" onclick="dropcall(' + attempt_id + ');">');
+					 	$('#caller_buttons').effect("highlight", {"color":"#bc833c"}, 2000);
+						
+						$('#voter_info').html('<div style="font-size:.7em;">Connected to:</div> ' + voter_out );
+					 	$('#voter_info').effect("highlight", {"color":"#bc833c"}, 2000);
+					 	$('#response').effect("highlight", {"color":"#bc833c"}, 2000);
+					}
+					
+					if (command=="hangup"){
+					 	$('#voter_info').hide();
+					 	$('#response').hide();
+						$('#statusdiv').html("Status: Not Connected");
+						$('#actiondiv').html('Enter your phone number: <input type="text" name="numtocall"> <input type="submit" class="button" value="Start Taking Calls">');
+					 	$('#caller_buttons').effect("highlight", {"color":"#bc833c"}, 2000);
+					}
+					if (command=="waiting"){
+					 	$('#voter_info').hide();
+					 	$('#response').hide();
+						$('#statusdiv').html("Status: In call queue");
+						$('#actiondiv').html('<input type="button" class="button" value="Stop taking calls" onclick="imdone();">');
+					 	$('#caller_buttons').effect("highlight", {"color":"#bc833c"}, 2000);
+					}
+					
+					if(command=="confirm") {// + "'s value is " + msg[command]);
+						clearTimeout(t);
+						$('#statusdiv').html("Status: Confirm to start taking calls");
+						$('#actiondiv').html('<input type="button" class="button" value="Click here to start taking calls" onclick="imready();">');
+					 	$('#caller_buttons').effect("highlight", {"color":"#bc833c"}, 2000);
+					}
+				}
+			} ,
+			ondisconnect: function() { 
+					$('#voter_info').hide();
+				 	$('#response').hide();
+					$('#statusdiv').html("Status: Not Connected");
+					$('#actiondiv').html('Enter your phone number: <input type="text" name="numtocall"> <input type="submit" class="button" value="Start Taking Calls">');
+				 	$('#caller_buttons').effect("highlight", {"color":"#bc833c"}, 2000);
+				 },
+			onconnect: function() { }
+
+		}
+			);
+            
+		  });
+		
+		function processresult(attempt_id, hangup){
+			var disposition = $("#disposition").val();
+			var jsonUrl = "/caller/submit_result/?key=<%= @session.session_key %>&attempt=" + attempt_id + "&disposition=" + disposition + "&hangup=" + hangup;
+			$("#actiondiv").html(ajax_load);
+			$.getJSON(jsonUrl,{}, 
+				function(json) {
+					//var result = "Language code is \"<strong>" + json.responseData.language + "\"";
+					//$("#result").html(result);
+				}
+			);
+			
+		}
+		
+		function imdone(){
+			var jsonUrl = "/caller/session_end/<%= @session.session_key %>";
+			$("#actiondiv").html(ajax_load);
+			$.getJSON(jsonUrl,{}, 
+				function(json) {
+				//	var result = "Language code is \"<strong>" + json.responseData.language + "\"";
+				//	$("#result").html(result);
+				}
+			);
+		}
+		
+		function imready(){
+			var jsonUrl = "/caller/session_ready/<%= @session.session_key %>";
+			$("#actiondiv").html(ajax_load);
+			$.getJSON(jsonUrl,{}, 
+				function(json) {
+				//	var result = "Language code is \"<strong>" + json.responseData.language + "\"";
+				//	$("#result").html(result);
+				}
+			);
+		}
+		
+		function dropcall(attempt_id){
+			var jsonUrl = "/caller/drop_call?session=<%= @session.session_key %>&attempt=" + attempt_id;
+//			$("#actiondiv").html(ajax_load);
+			$.getJSON(jsonUrl,{}, 
+				function(json) {}
+			);
+			
+		}

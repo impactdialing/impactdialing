@@ -6,41 +6,40 @@ class CallinController < ApplicationController
     @say=false
     @play=false
     @gather=false
+    @gathertimeout=15
     @redirect=false
     @hangup=false
     @pause=0
+    @endpause=0
     @repeatRedirect=false
     @finishOnKey="#"
     @gatherPost=""
   end
 
 
+  def session_complete
+    logger.info "NO SESSION COOKIE"  if (cookies[:session]==nil || cookies[:session]=="0") && params[:session].blank?
+    return if (cookies[:session]==nil || cookies[:session]=="0") && params[:session].blank?
+    #remove this caller
+    if !params[:session].blank?
+      @session = CallerSession.find(params[:session])
+    else
+      @session = CallerSession.find(cookies[:session])
+    end
+    @session.endtime=Time.now
+    @session.available_for_call=false
+    @session.on_call=false
+    @session.save
+    logger.info "SESSION COOKIE #{@session.id} complete"
+  end
+
   def index
     
     if params[:CallStatus]=="completed"
-      if cookies[:session]==nil || cookies[:session]=="0"
-        render :template => 'callin/index.xml.builder', :layout => false
-        return
-      end
-      #remove this caller
-      @session = CallerSession.find(cookies[:session])
-      @session.endtime=Time.now
-      @session.available_for_call=false
-      @session.on_call=false
-      @session.save
-      # avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
-      # if avail_campaign_hash.has_key?(@session.campaign_id)
-      #   thisSession = avail_campaign_hash[@session.campaign_id]["callers"].index(@session)
-      #   if thisSession!=nil
-      #     avail_campaign_hash[@session.campaign_id]["callers"].delete_at(thisSession)
-      #     cache_set("avail_campaign_hash") {avail_campaign_hash}
-      #   end
-      # end
+      session_complete
       render :template => 'callin/index.xml.builder', :layout => false
       return
     end
-
-
     
     # initial call-in
     att = params[:att] || 0
@@ -160,7 +159,6 @@ class CallinController < ApplicationController
     render :template => 'callin/index.xml.builder', :layout => false
   end
 
-  
   def get_ready
     # params - session, campaign
     @finishOnKey=""
@@ -169,10 +167,38 @@ class CallinController < ApplicationController
     @caller = @session.caller
     @campaign = Campaign.find(params[:campaign])
 
+    if @campaign.use_web_ui
+      @gathertimeout=60
+      if params[:CallStatus]=="completed"
+        @publish_channel="/#{@session.session_key}"
+        @publish_key="hangup"
+        @publish_value="ok"
+        session_complete
+        render :template => 'callin/index.xml.builder', :layout => false
+        return
+      else
+        @publish_channel="/#{@session.session_key}"
+        @publish_key="confirm"
+        @publish_value="go"
+        cookies[:session] = @session.id
+      end
+
+
+#      send_rt (@publish_channel,{@publish_key=>@publish_value})
+
+    end
+    
     if params[:Digits].blank?
 #      @say="Press star to begin taking calls, or press pound for instructions."
       @play="#{APP_URL}/wav/star_or_pound.wav"    
     else
+      
+      if @campaign.use_web_ui
+        @publish_channel="/#{@session.session_key}"
+        @publish_key="waiting"
+        @publish_value="ok"
+      end
+      
       if params[:Digits]=="*"
         #send to conference room
         @session.starttime=Time.now
@@ -212,13 +238,34 @@ class CallinController < ApplicationController
     @hangup=true
     render :template => 'callin/index.xml.builder', :layout => false
   end
+
+  def callerEndCall
+    #session
+    @hangup=true
+    @publish_channel="/#{params[:session]}"
+    @publish_key="hangup"
+    @publish_value="ok"
+    session_complete
+
+    render :template => 'callin/index.xml.builder', :layout => false
+  end
+
   
   def leaveConf
     # reached after call ends
+    #session #campaign
+    
     @repeatRedirect="#{APP_URL}/callin/leaveConf?session=#{params[:session]}&campaign=#{params[:campaign]}"
     @session = CallerSession.find(params[:session]) 
     @caller = @session.caller
     @campaign = @session.campaign
+
+    #check for web response
+    if @session.attempt_in_progress==nil
+      #aleady entered result on web
+      render :template => 'callin/start_conference.xml.builder', :layout => false
+      return
+    end
 
     if params[:Digits].blank?
       #hangup on voter
@@ -248,43 +295,17 @@ class CallinController < ApplicationController
         @say="Goodbye"
         @hangup=true
       else
-        clean_digit = params[:Digits].gsub("#","").gsub("*","").slice(0..1)
-#        @say="Thank you."
-        if @session.voter_in_progress!=nil
-          voter = Voter.find(@session.voter_in_progress)
-          voter.status='Call finished'
-          voter.result_digit=clean_digit
-          voter.result_date=Time.now
-          voter.caller_id=@caller.id
-          attempt = CallAttempt.find(@session.attempt_in_progress)
-          #attempt = CallAttempt.find_by_voter_id(@session.voter_in_progress, :order=>"id desc", :limit=>1)
-          attempt.result_digit=clean_digit
-
-          voter.attempt_id=attempt.id if attempt!=nil
-          if @campaign.script!=nil
-            voter.result=eval("@campaign.script.keypad_" + clean_digit)
-            attempt.result=eval("@campaign.script.keypad_" + clean_digit)
-            begin
-              if @campaign.script.incompletes!=nil
-                if eval(@campaign.script.incompletes).index(clean_digit)
-                  voter.call_back=true
-                end
-              end
-            rescue
-            end
-          end
-          attempt.save
-          voter.save
-        end
-        @session = CallerSession.find(params[:session]) 
-        if @session.endtime==nil
-          @session.available_for_call=true
-          @session.voter_in_progress=nil
-          @session.attempt_in_progress=nil
-          @session.save
-        end
+        @clean_digit = params[:Digits].gsub("#","").gsub("*","").slice(0..1)
         
-        #send to conference room
+        handle_disposition_submit 
+
+        if @campaign.use_web_ui
+          @publish_channel="/#{@session.session_key}"
+          @publish_key="waiting"
+          @publish_value="ok"
+        end
+
+
         render :template => 'callin/start_conference.xml.builder', :layout => false
         return
       end
@@ -295,6 +316,14 @@ class CallinController < ApplicationController
     @finishOnKey="*"
 
     render :template => 'callin/index.xml.builder', :layout => false
+  end
+  
+  def start_conference
+    # params - session, campaign
+    @session = CallerSession.find(params[:session]) 
+    @caller = @session.caller
+    @campaign = Campaign.find(params[:campaign])
+    render :template => 'callin/start_conference.xml.builder', :layout => false
   end
   
   # def voterleaveConf
@@ -315,7 +344,7 @@ class CallinController < ApplicationController
       attempt.save
     end
     
-    logger.info "params[:DialStatus]: #{params[:DialStatus]}"
+    #logger.info "params[:DialStatus]: #{params[:DialStatus]}"
     if params[:DialStatus]=="answered-machine"
       # play the answering machine message
       logger.info "answered machine!"
@@ -404,7 +433,7 @@ class CallinController < ApplicationController
     end
 
     
-    @availableCaller = CallerSession.find_by_campaign_id_and_available_for_call(@campaign.id, true)
+    @availableCaller = CallerSession.find_by_campaign_id_and_available_for_call_and_on_call(@campaign.id, true, true)
     if @availableCaller.blank?
       @pause=2
       @redirect="#{APP_URL}/callin/voterFindSession?campaign=#{@campaign.id}&voter=#{@voter.id}"
@@ -430,6 +459,22 @@ class CallinController < ApplicationController
       @voter.status = "Connected to caller #{@caller.pin} #{@caller.email}"
       @voter.caller_session_id=@session.id
       @voter.save
+
+      if @campaign.use_web_ui
+        @publish_channel="/#{@session.session_key}"
+        @publish_key="voter_start"
+        publish_hash = {"attempt_id"=>@attempt.id}
+        script = @campaign.script
+        if !script.voter_fields.nil?
+          fields = JSON.parse(script.voter_fields)
+          fields.each do |field|
+            publish_hash[field] = eval("@voter.#{field}")
+          end
+        end
+        @publish_value=publish_hash.to_json
+      end
+
+
       render :template => 'callin/voter_start_conference.xml.builder', :layout => false
       return
     end

@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20101010012230) do
+ActiveRecord::Schema.define(:version => 20101011040031) do
 
   create_table "call_attempts", :force => true do |t|
     t.integer  "voter_id"
@@ -115,6 +115,8 @@ ActiveRecord::Schema.define(:version => 20101010012230) do
     t.integer  "recording_id"
     t.boolean  "use_recordings",       :default => false
     t.integer  "max_calls_per_caller", :default => 20
+    t.string   "callin_number",        :default => "4157020991"
+    t.boolean  "use_web_ui",           :default => false
   end
 
   create_table "campaigns_voter_lists", :id => false, :force => true do |t|
@@ -142,7 +144,7 @@ ActiveRecord::Schema.define(:version => 20101010012230) do
   create_table "scripts", :force => true do |t|
     t.string   "name"
     t.text     "script"
-    t.boolean  "active",      :default => true
+    t.boolean  "active",       :default => true
     t.integer  "user_id"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -246,6 +248,7 @@ ActiveRecord::Schema.define(:version => 20101010012230) do
     t.string   "keypad_98"
     t.string   "keypad_99"
     t.string   "incompletes"
+    t.string   "voter_fields"
   end
 
   create_table "seos", :force => true do |t|

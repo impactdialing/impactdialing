@@ -10,7 +10,7 @@ class Campaign < ActiveRecord::Base
   belongs_to :recording
   cattr_reader :per_page
   @@per_page = 25
-
+  
   def check_valid_caller_id_and_save
     check_valid_caller_id
     self.save
