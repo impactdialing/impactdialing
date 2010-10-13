@@ -4,7 +4,7 @@
 		<div class="box-content">
 			<div id="voter_info" class="rt" style="display:none;">When connected, voter information will appear here</div>
 			<br/>
-			<div class="rt"><% if !@campaign.script.nil? %> <%= @campaign.script.script.gsub("\n", "<br/>") %> <% end %></div>
+			<div class="rt"><% if !@campaign.script.script.nil? %> <%= @campaign.script.script.gsub("\n", "<br/>") %> <% end %></div>
 			<br/>
 			<div id="response" class="rt" style="display:none;">
 				<%= @script.name %>: 
