@@ -1,6 +1,10 @@
 class HomeController < ApplicationController
   def index
-    redirect_to :controller=>"client"
+    if request.subdomains.first=="caller"
+      redirect_to :controller=>"caller"
+    else
+      redirect_to :controller=>"client"
+    end
     @user = User.new
   end
   
