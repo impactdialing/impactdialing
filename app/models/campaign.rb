@@ -274,11 +274,11 @@ class Campaign < ActiveRecord::Base
       # no one left, so call everyone we missed over 10 minutes
       uncalled = Voter.find_all_by_campaign_id_and_active_and_call_back(self.id, 1, 1, :conditions=>"voter_list_id in (select id from voter_lists where campaign_id=#{self.id} and active=1 and enabled=1)")
       uncalled.each do |voter|
-        if  voter.last_call_attempt_time!=nil && voter.last_call_attempt_time < Time.now - 10.minutes # && (voter.status==nil || voter.status==status )
+        if voter.last_call_attempt_time!=nil && voter.last_call_attempt_time < Time.now - 10.minutes # && (voter.status==nil || voter.status==status )
           voters_returned << voter
         end
       end
-      return voters #no randomize
+      #return voters_returned #no randomize
     end
     
     voters_returned.sort_by{rand}
