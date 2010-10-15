@@ -278,7 +278,7 @@ class Campaign < ActiveRecord::Base
           voters_returned << voter
         end
       end
-      #return voters_returned #no randomize
+      return voters_returned.sort_by{rand}
     end
     
     voters_returned.sort_by{rand}
