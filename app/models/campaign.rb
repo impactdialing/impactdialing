@@ -270,7 +270,7 @@ class Campaign < ActiveRecord::Base
       end
     end
     
-    if voters.length==0 && include_call_retries
+    if voters_returned.length==0 && include_call_retries
       # no one left, so call everyone we missed over 10 minutes
       uncalled = Voter.find_all_by_campaign_id_and_active_and_call_back(self.id, 1, 1, :conditions=>"voter_list_id in (select id from voter_lists where campaign_id=#{self.id} and active=1 and enabled=1)")
       uncalled.each do |voter|
