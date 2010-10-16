@@ -41,6 +41,17 @@ class ApplicationController < ActionController::Base
       end
     warning
   end
+  
+  def unpaid_text
+    return "" if @user==nil
+    warning=""
+    if !@user.paid?
+      warning= "Your account is not funded and cannot make calls. For a free
+      trial or to fund your account, email <a href=\"mailto:info@impactdialing.com\">info@impactdialing.com</a> or call
+      (415) 347-5723."
+    end
+    warning
+  end  
 
   def preload_models
     CallAttempt

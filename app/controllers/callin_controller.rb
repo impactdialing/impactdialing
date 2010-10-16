@@ -294,6 +294,8 @@ class CallinController < ApplicationController
       if params[:Digits]=="*"
         @say="Goodbye"
         @hangup=true
+      elsif params[:Digits].chars.first=="0"
+        @say="Invalid result.  Please try again."
       else
         @clean_digit = params[:Digits].gsub("#","").gsub("*","").slice(0..1)
         
@@ -433,7 +435,7 @@ class CallinController < ApplicationController
     end
 
     
-    @availableCaller = CallerSession.find_by_campaign_id_and_available_for_call_and_on_call(@campaign.id, true, true)
+    @availableCaller = CallerSession.find_by_campaign_id_and_available_for_call_and_on_call(@campaign.id, true, true, :order=>"rand()")
     if @availableCaller.blank?
       @pause=2
       @redirect="#{APP_URL}/callin/voterFindSession?campaign=#{@campaign.id}&voter=#{@voter.id}"

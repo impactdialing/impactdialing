@@ -39,6 +39,10 @@
 		<%= f.text_field :max_calls_per_caller, {:class=>"field"} %>
       </p>
       <p>
+        <label>Answering machine timeout (sec) </label>
+		<%= f.text_field :answer_detection_timeout, {:class=>"field"} %>
+      </p>
+      <p>
         <label>Pacing Prediction Method</label>
 			<select class="field" id="campaign_ending_window_method" name="campaign[ending_window_method]"> 
 				<option value="Not Used"  <% if @campaign.ending_window_method=="Not Used" %>selected<% end %>>Not Used</option>

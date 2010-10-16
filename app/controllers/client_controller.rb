@@ -1,6 +1,6 @@
 class ClientController < ApplicationController
   before_filter :check_login, :except=>[:login,:user_add, :forgot]
-  #  before_filter :check_warning
+  before_filter :check_paid
   layout "client"
   in_place_edit_for :campaign, :name
 
@@ -112,6 +112,13 @@ class ClientController < ApplicationController
 
   def check_warning
     text=warning_text
+    if !text.blank?
+      flash.now[:warning]=text
+    end
+  end
+
+  def check_paid
+    text=unpaid_text
     if !text.blank?
       flash.now[:warning]=text
     end
