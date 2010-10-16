@@ -40,11 +40,12 @@ class ClientController < ApplicationController
     end
 
     if request.post?
+      old_existing_password=@user.password 
       @user.attributes =  params[:user]
       if @user.new_record? && params[:tos].blank?
         flash.now[:error]="You must agree to the terms of service."
         return
-      elsif !@user.new_record? && params[:exist_pw]!=@user.password
+      elsif !@user.new_record? && params[:exist_pw]!=old_existing_password
         flash.now[:error]="Current password incorrect"
         return
       end

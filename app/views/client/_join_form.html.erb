@@ -7,15 +7,15 @@
 	    <div class="form">
 
 	      <p>
-	        <label>First Name <span>(Required Field)</span></label>
+	        <label>First Name <span>(Required)</span></label>
 			<%= f.text_field :fname, {:class=>"field"} %>
 	      </p>
 	      <p>
-	        <label>Last Name <span>(Required Field)</span></label>
+	        <label>Last Name <span>(Required)</span></label>
 			<%= f.text_field :lname, {:class=>"field"} %>
 	      </p>
 	      <p>
-	        <label>Organization Name <span>(Required Field)</span></label>
+	        <label>Organization Name <span>(Required)</span></label>
 			<%= f.text_field :orgname, {:class=>"field"} %>
 	      </p>
 	      <p>
@@ -29,11 +29,13 @@
 	    </p>
 		<% end %>
 	      <p>
-	        <label><% if !@user.new_record? %>New <% end %>Password <span>(Required Field)</span></label>
-			<%= f.password_field :password, {:class=>"field"} %>
+	        <label><% if !@user.new_record? %>New <% end %>Password <span>(Required)</span></label>
+			<%# f.password_field :password, {:class=>"field"} %>
+			<input class="field" id="user_password" name="user[password]" size="30" type="password" value="" /> 
+
 	      </p>
 	      <p>
-	        <label><% if !@user.new_record? %>New <% end %>Password Confirmation<span>(Required Field)</span></label>
+	        <label><% if !@user.new_record? %>New <% end %>Password Confirmation <span>(Required)</span></label>
 			<%= f.password_field :password_confirmation, {:class=>"field"} %>
 	      </p>
 	<% if @user.new_record? %>
