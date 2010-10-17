@@ -7,7 +7,7 @@ task :update_twilio_stats => :environment do
   attempts.each do |attempt|
     Twilio.new.update_twilio_stats_by_model attempt
     if !attempt.tEndTime.nil? && attempt.call_end.blank?
-      attempt.call_end=tEndTime
+      attempt.call_end=attempt.tEndTime
       attempt.save
     end
     if attempt.sid.blank? && attempt.call_end.blank?
