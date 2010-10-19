@@ -27,6 +27,28 @@
 							<%= f.text_field :caller_id, {:class=>"field size3"} %>
 							<br/>
 							<br/>
+
+							Script:
+							<br/><div style="font-size:18px; padding-top:6px; ">
+
+
+							<%= f.collection_select(:script_id, Script.find_all_by_user_id_and_active(@user.id,1), :id, :name, { :prompt => true},  {:class=>"field"} 	)  %>
+						</div>
+						<br/>
+						<% if !@campaign.user.recordings.blank? %>
+							<br/>
+							<label> <%= f.check_box :use_recordings, :onclick=>"doRecord();"%> &nbsp; Leave message</label>
+							<br/><br/>
+							<div id="recordingsdiv" <% if  !@campaign.use_recordings?%> style="display:none;" <% end %>> 
+							Recording:
+							<br/><div style="font-size:18px; padding-top:6px; ">
+							
+							<%= f.collection_select(:recording_id, Recording.find_all_by_user_id_and_active(@user.id,1), :id, :name, { :prompt => false},  {:class=>"field", :onchange=>"updatePreview();"}  )  %></div>
+							<div id="sndPreview"></div>
+							</div>
+						<% end %>
+						<p><input type="button" class="button" value="Manage Recordings" onclick="document.location.href='/client/recording_add?campaign_id=<%= @campaign.id %>';"/></p>
+							<br/>
 							Call-in number:
 							<br/><div style="font-size:18px; padding-top:6px; "> 
 							<% if ENV["RAILS_ENV"]=="development"%>
@@ -38,32 +60,10 @@
 							<br/>
 							Campaign ID:
 							<br/><div style="font-size:18px; padding-top:6px; "> <%= @campaign.group_id %></div>
-							<br/>
-
-								Results:
-								<br/><div style="font-size:18px; padding-top:6px; ">
-
-
-								<%= f.collection_select(:script_id, Script.find_all_by_user_id_and_active(@user.id,1), :id, :name, { :prompt => true},  {:class=>"field"} 	)  %>
-							</div>
+							<!--
 							<br/>
 							<label> <%= f.check_box :use_web_ui %> &nbsp; Allow Web Interface</label>
-							<br/>
-							
-							<% if !@campaign.user.recordings.blank? %>
-								<br/>
-								<label> <%= f.check_box :use_recordings, :onclick=>"doRecord();"%> &nbsp; Leave message</label>
-								<br/><br/>
-								<div id="recordingsdiv" <% if  !@campaign.use_recordings?%> style="display:none;" <% end %>> 
-								Recording:
-								<br/><div style="font-size:18px; padding-top:6px; ">
-								
-								<%= f.collection_select(:recording_id, Recording.find_all_by_user_id_and_active(@user.id,1), :id, :name, { :prompt => false},  {:class=>"field", :onchange=>"updatePreview();"}  )  %></div>
-								<div id="sndPreview"></div>
-								</div>
-							<% end %>
-							<p>
-							      <input type="button" class="button" value="Manage Recordings" onclick="document.location.href='/client/recording_add?campaign_id=<%= @campaign.id %>';"/></p>
+							<br/>-->
 						</div>
 					</div>
 					<!-- End Box -->
@@ -92,27 +92,21 @@
 							<% end %>
 						</div>
 					<% else %>
-			  			<div class="box-content" style="float:right;"> 
-							<a href="/client/voter_upload/<%= @campaign.id %>" class="add-button"><span>Upload Voters</span></a>
-							<div class="cl">&nbsp;</div><br/>
-							<% if @show_voter_buttons %>
-							<a href="/client/voter_add?campaign_id=<%= @campaign.id %>" class="add-button"><span>Enter Voter</span></a>
-							<div class="cl">&nbsp;</div><br/>
-							<a href="/client/voter_view?campaign_id=<%= @campaign.id %>" class="button"><span>View Voters</span></a>
-							<div class="cl">&nbsp;</div>
-							<% end %>
-						</div>
 				  		<div class="box-content">
 							<div class="table2">
 								<table border="0" cellspacing="0" cellpadding="0">
 									<tr>
 										<th>&nbsp;</th>
 										<th>Name</th>
+										<th nowrap>Phone #s</th>
+										<th>Remaining</th>
 									</tr>
 				    				<% @lists.each do |l| %>
 										<tr>
-											<td><%= check_box_tag "voter_list_ids[]", "#{l.id}", l.enabled -%></td>
-											<td><%= l.name %></td>
+											<td valign="top"><%= check_box_tag "voter_list_ids[]", "#{l.id}", l.enabled -%></td>
+											<td valign="top"><%= l.name %></td>
+											<td valign="top"><%= l.voters.size %> <%# Voter.find_all_by_voter_list_id(l.id).length %></td>
+											<td valign="top"><%# l.voters.collect{|v| v.id if v.result_digit.blank?}.reject(&:blank?).length %> <%= Voter.find_all_by_voter_list_id_and_result_digit_and_active(l.id, nil,1).size %></td>
 										</t>
 									<% end %>
 								</table>
@@ -120,6 +114,18 @@
 								<% if @show_voter_buttons %><br/><br/><% end %>
 								(uncheck to stop calling)<br/><br/>
 							</div>
+
+				  			<div class="box-content" > 
+								<a href="/client/voter_upload/<%= @campaign.id %>" class="add-button"><span>Upload New List</span></a>
+								<div class="cl">&nbsp;</div>
+								<% if false && @show_voter_buttons %>
+								<a href="/client/voter_add?campaign_id=<%= @campaign.id %>" class="add-button"><span>Enter Voter</span></a>
+								<div class="cl">&nbsp;</div><br/>
+								<a href="/client/voter_view?campaign_id=<%= @campaign.id %>" class="button"><span>View Voters</span></a>
+								<div class="cl">&nbsp;</div>
+								<% end %>
+							</div>
+
 						</div>
 					<% end %>
 			  	</div>
@@ -128,45 +134,47 @@
 			<td width="32%" valign="top">
 				<div class="box">
 					<%= render :partial => 'boxtop', :locals=>{:title=>"Callers With Access"} %>
-					<% if @callers.length==0 %>
-						<div class="form">
-					      <label>No callers entered.</label>
-						</div>
-				  		<div class="box-content"> 
-							<a href="/client/callers" class="add-button"><span>Add callers</span></a>
-							<div class="cl">&nbsp;</div>
-						</div>
-					<% else %>
-					<!--
-				  		<div class="box-content" style="float:right;"> 
-							<a href="/client/caller_add" class="add-button"><span>Add Caller</span></a>
-							<div class="cl">&nbsp;</div><br/>
-						</div>
-					-->
-					  	<div class="table2">
-									    <table width="100%" border="0" cellspacing="0" cellpadding="0">
-								<tr>
-									<th>Name</th>
-									<th>&nbsp;</th>
-									<th>PIN</th>
-								</tr>
-								<tr>
-									<td><input type="checkbox" value="0" id="listUse" onclick="allCallers();"> All Callers</td>
-									<td></td>
-									<td></td>
-								</tr>
-				    			<% @callers.each do |l| %>
+					<div class="box-content">
+						<% if @callers.length==0 %>
+							<div class="form">
+						      <label>No callers entered.</label>
+							</div>
+					  		<div class="box-content"> 
+								<a href="/client/callers" class="add-button"><span>Add callers</span></a>
+								<div class="cl">&nbsp;</div>
+							</div>
+						<% else %>
+						<!--
+					  		<div class="box-content" style="float:right;"> 
+								<a href="/client/caller_add" class="add-button"><span>Add Caller</span></a>
+								<div class="cl">&nbsp;</div><br/>
+							</div>
+						-->
+						  	<div class="table2">
+										    <table width="100%" border="0" cellspacing="0" cellpadding="0">
 									<tr>
-										<td><%= check_box_tag "campaign[caller_ids][]", "#{l.id}", callerInCampaign(l), :onclick=>"someCallers();" -%> <%= l.name %></td>
-										<td></td>
-										<td><%= l.pin %></td>
+										<th>Name</th>
+										<th>&nbsp;</th>
+										<th>PIN</th>
 									</tr>
+									<tr>
+										<td><input type="checkbox" value="0" id="listUse" onclick="allCallers();"> All Callers</td>
+										<td></td>
+										<td></td>
+									</tr>
+					    			<% @callers.each do |l| %>
+										<tr>
+											<td><%= check_box_tag "campaign[caller_ids][]", "#{l.id}", callerInCampaign(l), :onclick=>"someCallers();" -%> <%= l.name %></td>
+											<td></td>
+											<td><%= l.pin %></td>
+										</tr>
+							<% end %>
+							</table>
+							<br/>
+						  </div>
+						  <!-- Table -->
 						<% end %>
-						</table>
-						<br/>
-					  </div>
-					  <!-- Table -->
-					<% end %>
+					</div>
 				</div>
 			</td>
 		</tr>

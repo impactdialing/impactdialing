@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20101016052133) do
+ActiveRecord::Schema.define(:version => 20101019180413) do
 
   create_table "call_attempts", :force => true do |t|
     t.integer  "voter_id"
@@ -116,7 +116,7 @@ ActiveRecord::Schema.define(:version => 20101016052133) do
     t.boolean  "use_recordings",           :default => false
     t.integer  "max_calls_per_caller",     :default => 20
     t.string   "callin_number",            :default => "4157020991"
-    t.boolean  "use_web_ui",               :default => false
+    t.boolean  "use_web_ui",               :default => true
     t.integer  "answer_detection_timeout", :default => 20
   end
 

@@ -19,23 +19,23 @@
 			<%= f.text_field :orgname, {:class=>"field"} %>
 	      </p>
 	      <p>
-	        <label>Email <span>(Required Field)</span></label>
+	        <label>Email <span>(Required)</span></label>
 			<%= f.text_field :email, {:class=>"field"} %>
 	      </p>
 		<% if @user==nil || !@user.new_record? %>
 	    <p>
-	      <label>Current Password <span>(Required Field)</span></label>
+	      <label>Current Password <span>(Required)</span></label>
 			<input type="password" class="field" name="exist_pw" value="<%= params[:exist_pw] %>">
 	    </p>
 		<% end %>
 	      <p>
-	        <label><% if !@user.new_record? %>New <% end %>Password <span>(Required)</span></label>
+	        <label><% if !@user.new_record? %>New <% end %>Password <% if @user.new_record? %><span>(Required)</span><% end %></label>
 			<%# f.password_field :password, {:class=>"field"} %>
 			<input class="field" id="user_password" name="user[password]" size="30" type="password" value="" /> 
 
 	      </p>
 	      <p>
-	        <label><% if !@user.new_record? %>New <% end %>Password Confirmation <span>(Required)</span></label>
+	        <label><% if !@user.new_record? %>New <% end %>Password Confirmation <% if @user.new_record? %><span>(Required)</span><% end %></label>
 			<%= f.password_field :password_confirmation, {:class=>"field"} %>
 	      </p>
 	<% if @user.new_record? %>
