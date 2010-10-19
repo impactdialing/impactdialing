@@ -104,7 +104,7 @@
 										<tr>
 											<td valign="top"><%= check_box_tag "voter_list_ids[]", "#{l.id}", l.enabled -%> <%= l.name %></td>
 											<td valign="top"><%= l.voters.size %> <%# Voter.find_all_by_voter_list_id(l.id).length %></td>
-											<td valign="top"><%# l.voters.collect{|v| v.id if v.result_digit.blank?}.reject(&:blank?).length %> <%= Voter.find_all_by_voter_list_id_and_result_digit_and_active(l.id, nil,1).size %></td>
+											<td valign="top"><%# l.voters.collect{|v| v.id if v.result_digit.blank?}.reject(&:blank?).length %> <%= Voter.find_all_by_voter_list_id_and_active(l.id,1, :conditions=>"status= 'Not Called' or call_back=1").size %></td>
 										</t>
 									<% end %>
 								</table>
