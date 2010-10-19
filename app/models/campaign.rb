@@ -290,7 +290,7 @@ class Campaign < ActiveRecord::Base
     path = File.join(directory, name)
     File.open(path, "wb") { |f| f.write(upload['datafile'].read) }
     
-    all_headers=["Phone","VAN ID","LastName","FirstName","MiddleName","Suffix","Email"]
+    all_headers=["Phone","VAN ID","LastName","FirstName","MiddleName","Suffix","Email","DWID"]
     headers_present={}
     num = 0
     pos=0
@@ -307,6 +307,9 @@ class Campaign < ActiveRecord::Base
               headers_present[c.strip]=pos
             end
           end
+          #prefer DWID over VAN ID if the upload has both
+          headers_present.delete("VAN ID") if headers_present.has_key?("VAN ID") && headers_present.has_key?("DWID")
+
           pos +=1
           
           # unless the column value is "R.No"(which is a roll no of student) find the subject using the abbreviation of that subject
@@ -339,6 +342,8 @@ class Campaign < ActiveRecord::Base
             #RAILS_DEFAULT_LOGGER.debug("#{h}: #{headers_present[h]}, #{col[headers_present[h]]}")
             thisHeader = h
             thisHeader="CustomID" if thisHeader=="VAN ID"
+            thisHeader="CustomID" if thisHeader=="DWID"
+            
            # RAILS_DEFAULT_LOGGER.debug("thisHeader: #{thisHeader}, #{h}")
            if thisHeader=="Phone"
              val = phone_format(col[headers_present[h]])

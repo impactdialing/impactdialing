@@ -17,25 +17,11 @@ class ApplicationController < ActionController::Base
       if c.length > 0
         voters = campaign.voters_count("not called")
         if voters.length < c.length * 10
-            warning+="
-            You are running low on numbers to dial for the #{campaign.name} campaign.
-            Unless you act quickly, you'll have called through all your lists in
-            about 30 minutes. You have three choices.<br/><br/>
-            1: Load up some more numbers. This is the best option, if you have
-            another list ready to go. If it's already loaded up, just add it to
-            this dialing group.<br/><br/>
-            2. Cycle back through the list another time. Generally, it's a good
-            idea not to call through the same list twice in one session, because
-            if someone didn't pick up before, chances are they won't pick up now,
-            and the people who said to call back might be pissed that you called
-            back so quickly. We'll dial really aggressively to try to find numbers
-            that will answer, but this will also cause more calls to be dropped.<br/><br/>
-            3. Do nothing and end the calling for this shift. If you don't have
-            more numbers and the calling shift is almost over anyways, this is
-            your best option.<br/><br/>
-
-            If you don't choose one of these options, we'll choose number 2 for
-            you when your numbers run out.<br/><br/>"
+            warning+="You are running low on numbers to dial for the #{campaign.name} campaign. You have three choices.<br/><br/>
+            1: Upload another list. This is the best option, if you have another list ready. If it's already uploaded, just check its box in the campaign.<br/><br/>
+            2. Do nothing and end calling for this shift. If you don't have another list and the calling shift is almost over anyways, this may be your best option.<br/><br/>
+            3. Cycle back through the list another time. Generally, it's a good idea not to call through the same list twice in one session, because if someone didn't pick up before, chances are they won't pick up now, and the people who said to call back might be upset that you called back so quickly.<br/><br/>
+            If you don't choose one of these options, number 3 will happen automatically when your numbers run out.<br/><br/>"
           end
         end
       end

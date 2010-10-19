@@ -916,28 +916,48 @@ class ClientController < ApplicationController
 
         if params[:download]=="1"
           #      attempts = CallAttempt.find_all_by_campaign_id(@campaign.id)
+          
+          subsql="select voter_id from call_attempts ca 
+           join voters v on v.id=ca.voter_id
+           where ca.campaign_id=#{@campaign.id} and last_call_attempt_id=ca.id
+           and ca.created_at > '#{@from_date.strftime("%Y-%m-%d")}'
+           and ca.created_at < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'
+          "
+          voters = ActiveRecord::Base.connection.execute(subsql)
+          voter_ids = []
+          voters.each do |a|
+            voter_ids << a[0]
+          end
+          if voter_ids.length==0
+            voter_subq = "0"
+          else
+            voter_subq = voter_ids.join(",")
+          end
+          
           sql="select
-          ca.result, ca.result_digit , v.Phone, v.CustomID, v.LastName, v.FirstName, v.MiddleName, v.Suffix, v.Email,
-          c.pin, c.name,  c.email,
-          ca.status, ca.connecttime, ca.call_end from
-          call_attempts ca
+          ca.result, ca.result_digit , v.Phone, v.CustomID, v.LastName, v.FirstName, v.MiddleName, v.Suffix, v.Email, c.pin, c.name,  c.email, ca.status, ca.connecttime, ca.call_end, last_call_attempt_id=ca.id as final 
+          from call_attempts ca
           join voters v on v.id=ca.voter_id
           left outer join callers c on c.id=ca.caller_id
           where
           ca.campaign_id=#{@campaign.id}
-          order by ca.id desc
+          and v.id in (#{voter_subq})
+          order by v.id asc, ca.id asc
           "
           attempts = ActiveRecord::Base.connection.execute(sql)
-
+          
           csv_string = FasterCSV.generate do |csv|
-            csv << [
-              "result", "result digit" , "voter phone", "voter id", "voter last", "voter first", "voter middle", "voter suffix", "voter email",
-              "caller pin", "caller name",  "caller email",
-              "status", "call start", "call end"
-
-            ]
+#            csv << ["result", "result digit" , "voter phone", "voter id", "voter last", "voter first", "voter middle", "voter suffix", "voter email","caller pin", "caller name",  "caller email","status", "call start", "call end", "number attempts"]
+             csv << ["id", "LastName", "FirstName", "MiddleName", "Suffix", "Phone", "Result", "Caller Name", "Status", "Call Start", "Call End", "Number Calls"]
+            num_call_attempts=0
             attempts.each do |a|
-              csv << [a[0],a[1],a[2],a[3],a[4],a[5],a[6],a[7],a[8],a[9],a[10],a[11],a[12],a[13],a[14],a[15]]
+              num_call_attempts+=1
+              if a[15]=="1"
+                #final attempt
+#                csv << [a[0],a[1],a[2],a[3],a[4],a[5],a[6],a[7],a[8],a[9],a[10],a[11],a[12],a[13],a[14],a[15],num_call_attempts]
+                csv << [a[3],a[4],a[5],a[6],a[7],a[2],a[0],a[10],a[12],a[13],a[14],num_call_attempts]
+                num_call_attempts=0
+              end
             end
           end
           send_data csv_string, :type => "text/plain",  :filename=>"report.csv", :disposition => 'attachment'
