@@ -438,7 +438,7 @@ class CallinController < ApplicationController
     @availableCaller = CallerSession.find_by_campaign_id_and_available_for_call_and_on_call(@campaign.id, true, true, :order=>"rand()")
     if @availableCaller.blank?
       @pause=2
-      @redirect="#{APP_URL}/callin/voterFindSession?campaign=#{@campaign.id}&voter=#{@voter.id}"
+      @redirect="#{APP_URL}/callin/voterFindSession?campaign=#{@campaign.id}&voter=#{@voter.id}&attempt=#{attempt.id}"
     else
       @availableCaller.voter_in_progress = @voter.id
       @availableCaller.attempt_in_progress = attempt.id
