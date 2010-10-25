@@ -3,24 +3,25 @@
 
 Dir[File.join(File.dirname(__FILE__), '../../', 'app/models') + "**/*.rb"].each {|file| 
       require file
-      DaemonKit.logger.info "#{file}"
+      DaemonKit.logger.info "#{file}" if defined? DaemonKit
 #      include self.class.const_get(File.basename(file).gsub('.rb','').split("_").map{|ea| ea.capitalize}.to_s)
 }
 
 
 
+if DaemonKit.env=="development"
+  APP_NUMBER="5104048117"
+  APP_URL="http://www.hinodae.com:5555"
+  TWILIO_ACCOUNT="ACc0208d4be3e204d5812af2813683243a"
+  TWILIO_AUTH="4e179c64daa7c9f5108bd6623c98aea6"
+else
+  TWILIO_ACCOUNT="AC422d17e57a30598f8120ee67feae29cd"
+  TWILIO_AUTH="897298ab9f34357f651895a7011e1631"
+  APP_NUMBER="4157020991"
+  APP_URL="http://impact-app-balancer-912849015.us-east-1.elb.amazonaws.com"
+end
+
 class Dialer
-  if DaemonKit.env=="development"
-    APP_NUMBER="5104048117"
-    APP_URL="http://www.hinodae.com:5555"
-    TWILIO_ACCOUNT="ACc0208d4be3e204d5812af2813683243a"
-    TWILIO_AUTH="4e179c64daa7c9f5108bd6623c98aea6"
-  else
-    TWILIO_ACCOUNT="AC422d17e57a30598f8120ee67feae29cd"
-    TWILIO_AUTH="897298ab9f34357f651895a7011e1631"
-    APP_NUMBER="4157020991"
-    APP_URL="http://impact-app-balancer-912849015.us-east-1.elb.amazonaws.com"
-  end
   def self.account
     TWILIO_ACCOUNT
   end

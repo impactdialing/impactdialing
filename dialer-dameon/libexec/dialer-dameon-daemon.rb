@@ -39,10 +39,21 @@ DaemonKit::Application.running! do |config|
 
 
   def handleCampaign(k)
-    DaemonKit.logger.info "Working on campaign #{k}"
+    if DaemonKit.env=="development"
+      root_path="/Volumes/MacHD/Users/blevine/dev/impact_dialing/dialer-dameon/"
+    else
+      root_path="/var/www/html/trunk/dialer-dameon/"
+    end
+
+
+    campaign = Campaign.find(k)
+    DaemonKit.logger.info "Working on campaign #{k} #{campaign.name}"
     # avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
     # campaign_hash = avail_campaign_hash[k]
-    campaign = Campaign.find(k)
+    if campaign.calls_in_progress?
+      DaemonKit.logger.info "#{campaign.name} is still dialing, returning"
+      return
+    end
     stats = campaign.call_stats(10)
     answer_pct = (stats[:answer_pct] * 100).to_i
     callers = CallerSession.find_all_by_campaign_id_and_on_call(k,1)
@@ -52,7 +63,7 @@ DaemonKit::Application.running! do |config|
     # callers = campaign_hash["callers"]
     # calls = campaign_hash["calls"]
     voters = campaign.voters("not called")
-    DaemonKit.logger.info "Callers logged in: #{callers.length}, Callers on call: #{callers_on_call.length}, Callers not on call:  #{not_on_call}, Voters to call: #{voters.length}, Calls in progress: #{calls.length}, Answer pct: #{answer_pct}"
+    DaemonKit.logger.info "#{campaign.name}: Callers logged in: #{callers.length}, Callers on call: #{callers_on_call.length}, Callers not on call:  #{not_on_call}, Voters to call: #{voters.length}, Calls in progress: #{calls.length}, Answer pct: #{answer_pct}"
     
     if callers.length==0
       in_progress = campaign.end_all_calls(Dialer.account, Dialer.auth, Dialer.appurl) 
@@ -166,12 +177,20 @@ DaemonKit::Application.running! do |config|
     newCalls=0 if newCalls<0
     DaemonKit.logger.info "#{newCalls} newcalls #{maxCalls} maxcalls"
     
-    voters.each do |voter|
-      #do we need to make another call?
-      if newCalls.to_i < maxCalls.to_i
-        DaemonKit.logger.info "#{newCalls.to_i} newcalls < #{maxCalls.to_i} maxcalls, calling #{voter.Phone}"
-        newCalls+=1
-        callNewVoter(voter,campaign)
+    if (DaemonKit.env=="development" && voters.length>0) || voters.length > 10 || campaign.id==27
+      #spawn externally
+      voter_ids=voters.collect{|v|v.id}.join(",")
+      campaign.calls_in_progress=true
+      campaign.save
+      exec("ruby #{root_path}/place_campaign_calls.rb #{DaemonKit.env} #{voter_ids}") if fork == nil
+    else
+      voters.each do |voter|
+        #do we need to make another call?
+        if newCalls.to_i < maxCalls.to_i
+          DaemonKit.logger.info "#{newCalls.to_i} newcalls < #{maxCalls.to_i} maxcalls, calling #{voter.Phone}"
+          newCalls+=1
+          callNewVoter(voter,campaign)
+        end
       end
     end
 
@@ -230,6 +249,7 @@ loop do
 #    puts "ActiveRecord::Base.verify_active_connections!: " + ActiveRecord::Base.verify_active_connections!.inspect
   rescue Exception => e
     DaemonKit.logger.info "Rescued - #{ e } (#{ e.class })!"
+    DaemonKit.logger.info e.backtrace
     ActiveRecord::Base.connection.reconnect!
   end
 end
