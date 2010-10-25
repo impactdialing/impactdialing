@@ -177,12 +177,14 @@ DaemonKit::Application.running! do |config|
     newCalls=0 if newCalls<0
     DaemonKit.logger.info "#{newCalls} newcalls #{maxCalls} maxcalls"
     
-    if false && (DaemonKit.env=="development" && voters.length>0) || voters.length > 10 || campaign.id==27
+    if (DaemonKit.env=="development" && voters.length>0) || voters.length > 10 || campaign.id==27
       #spawn externally
       voter_ids=voters.collect{|v|v.id}.join(",")
-      campaign.calls_in_progress=true
-      campaign.save
-      exec("ruby #{root_path}/place_campaign_calls.rb #{DaemonKit.env} #{voter_ids}") if fork == nil
+      if voter_ids.strip!=""
+        campaign.calls_in_progress=true
+        campaign.save
+        exec("ruby #{root_path}/place_campaign_calls.rb #{DaemonKit.env} #{voter_ids}") if fork == nil
+      end
     else
       voters.each do |voter|
         #do we need to make another call?
