@@ -62,6 +62,7 @@ require "#{root_path}/lib/dialer-dameon.rb"
 
 
 campaign=nil
+DaemonKit.logger.info "voter_list: #{voter_list}"
 
 voter_list.split(",").each do |voter_id|
   voter=Voter.find(voter_id)
