@@ -177,7 +177,7 @@ DaemonKit::Application.running! do |config|
     newCalls=0 if newCalls<0
     DaemonKit.logger.info "#{newCalls} newcalls #{maxCalls} maxcalls"
     
-    if false && (DaemonKit.env=="development" && voters.length>0) || voters.length > 10 || campaign.id==27
+    if false# && (DaemonKit.env=="development" && voters.length>0) || voters.length > 10 || campaign.id==27
       #spawn externally
       voter_ids=voters.collect{|v|v.id}.join(",")
       if voter_ids.strip!=""
