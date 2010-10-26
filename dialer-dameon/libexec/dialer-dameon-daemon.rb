@@ -177,13 +177,20 @@ DaemonKit::Application.running! do |config|
     newCalls=0 if newCalls<0
     DaemonKit.logger.info "#{newCalls} newcalls #{maxCalls} maxcalls"
     
-    if false# && (DaemonKit.env=="development" && voters.length>0) || voters.length > 10 || campaign.id==27
+    if (DaemonKit.env=="development" && voters.length>0)  || campaign.id==27 || campaign.id==65 # || voters.length > 10
       #spawn externally
-      voter_ids=voters.collect{|v|v.id}.join(",")
-      if voter_ids.strip!=""
+      voter_ids=[]
+      voters.each do |voter|
+        if newCalls.to_i < maxCalls.to_i
+          voter_ids<<voter.id
+          newCalls+=1
+        end
+      end
+      voter_id_list=voter_ids.join(",")
+      if voter_id_list.strip!=""
         campaign.calls_in_progress=true
         campaign.save
-        exec("ruby #{root_path}/place_campaign_calls.rb #{DaemonKit.env} #{voter_ids}") if fork == nil
+        exec("ruby #{root_path}/place_campaign_calls.rb #{DaemonKit.env} #{voter_id_list}") if fork == nil
       end
     else
       voters.each do |voter|
