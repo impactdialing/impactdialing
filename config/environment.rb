@@ -20,6 +20,7 @@ Rails::Initializer.run do |config|
   config.gem 'hoptoad_notifier'
   config.gem 'right_aws'
   config.gem 'json'
+  config.gem 'nokogiri'
   
   # Settings in config/environments/* take precedence over those specified here.
   # Application configuration should go into files in config/initializers
