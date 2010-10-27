@@ -177,30 +177,37 @@ DaemonKit::Application.running! do |config|
     newCalls=0 if newCalls<0
     DaemonKit.logger.info "#{newCalls} newcalls #{maxCalls} maxcalls"
     
-    if (DaemonKit.env=="development" && voters.length>0)  || campaign.id==27 || campaign.id==65 || voters.length > 10
-      #spawn externally
+    if true #(DaemonKit.env=="development" && voters.length>0)  || campaign.id==27 || campaign.id==65 || voters.length > 10
       voter_ids=[]
       voters.each do |voter|
         if newCalls.to_i < maxCalls.to_i
-          voter_ids<<voter.id
+          voter_ids<<voter
           newCalls+=1
         end
       end
-      voter_id_list=voter_ids.join(",")
+    end
+    
+    if voter_ids.length >10  || campaign.id==27
+      #spawn externally
+      voter_id_list=voter_ids.collect{|v| v.id}.join(",")
       if voter_id_list.strip!=""
         campaign.calls_in_progress=true
         campaign.save
+        DaemonKit.logger.info "Spawning external dialer for #{campaign.name} #{voter_id_list}"
         exec("ruby #{root_path}/place_campaign_calls.rb #{DaemonKit.env} #{voter_id_list}") if fork == nil
       end
     else
-      voters.each do |voter|
-        #do we need to make another call?
-        if newCalls.to_i < maxCalls.to_i
-          DaemonKit.logger.info "#{newCalls.to_i} newcalls < #{maxCalls.to_i} maxcalls, calling #{voter.Phone}"
-          newCalls+=1
-          callNewVoter(voter,campaign)
-        end
+      voter_ids.each do |voter|
+        DaemonKit.logger.info "calling #{voter.Phone} #{campaign.name}"
+        callNewVoter(voter,campaign)
       end
+      # voters.each do |voter|
+      #   if newCalls.to_i < maxCalls.to_i
+      #     DaemonKit.logger.info "#{newCalls.to_i} newcalls < #{maxCalls.to_i} maxcalls, calling #{voter.Phone}"
+      #     newCalls+=1
+      #     callNewVoter(voter,campaign)
+      #   end
+      # end
     end
 
   #      voterTest = Voter.find_by_campaign_id(callSession.campaign_id, :conditions=>"status='Call attempt in progress' and active=1")
