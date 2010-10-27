@@ -15,25 +15,26 @@
 
 	<% @logged_in_campaigns.each do |k| %>
 	<tr>
-		<td valign="top"><%= k.name %></td>
+		<td valign="top"><%= k.name %> <a target="_blank" href="/admin/login/<%= k.user_id %>" style="font-size:9px;">login</a></td>
 		<td>
 		    <%  
 		    stats = k.call_stats(10)
+			attempts = stats[:attempts]
 		    answer_pct = (stats[:answer_pct] * 100).to_i
-			@errors= @errors + " #{k.name} answer_pct #{answer_pct}" if answer_pct<5
+			@errors= @errors + " #{k.name} answer_pct #{answer_pct}" if answer_pct<5 && attempts.length > 10
 			callers = CallerSession.find_all_by_campaign_id_and_on_call(k,1)
 		    callers_on_call = CallerSession.find_all_by_campaign_id_and_on_call_and_available_for_call(k,1,0)
 		    not_on_call = callers.length - callers_on_call.length
 		    calls = CallAttempt.find_all_by_campaign_id(k, :conditions=>"call_end is NULL")
 		    voters = k.voters("not called")
 		    %> 
-			 
-			<br/>Callers logged in: <%= callers.length %>
+			 Callers logged in: <%= callers.length %>
 			<br/>Callers on call: <%= callers_on_call.length %>
 			<br/>Callers not on call: <%= not_on_call %>
 			<br/>Voters to call: <%=  voters.length %>
 			<br/>Calls in progress: <%= calls.length %>
 			<br/><% if answer_pct < 5 %><font color="red"><% end %>Answer pct: <%= answer_pct %>  
+				<hr/>
 		</td>
 	</tr>
 	<% end -%>
@@ -41,7 +42,7 @@
 </table>
 <font color="red"><b><%= @errors %></b></font>
 
-<% if @errors.strip!="" && params[:sms]=="1"
+<% if @errors.strip!="" && params[:sms]=="1" && ENV["RAILS_ENV"]=="production"
 	t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
 	a=t.call("POST", "SMS/Messages", {'From' => APP_NUMBER, 'To' => "8583829141", 'Body'=>"Alert: #{@errors[0..150]}"})
 	t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
