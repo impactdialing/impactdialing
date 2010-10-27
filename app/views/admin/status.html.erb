@@ -9,6 +9,9 @@
 		<td><%= @logged_in_campaigns.length %></td>
 	</tr>
 	<tr>
+		<td>Calls in progress:</td>
+		<td><%= @all_calls %></td>
+	<tr>
 		<td>Twilio queued:</td>
 		<td><% if @queued.to_i > 10 %><font color="red"><% @errors= @errors + " #{@queued} twilio queued calls" %> <% end %> <%= @queued %></td>
 	</tr>
