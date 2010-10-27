@@ -3,6 +3,18 @@ class AdminController < ApplicationController
   USER_NAME, PASSWORD = "impact", "dial123"
   before_filter :authenticate
   
+  def status
+    
+    if Time.now.hour > 0 && Time.now.hour < 6 && DaemonKit.env!="development"
+      @calling_status="<font color=red>Unavailable, off hours</font>"
+    else
+      @calling_status="Available"
+    end
+    @logged_in_campaigns = Campaign.all(:conditions=>"id in (select distinct campaign_id from caller_sessions where on_call=1)")
+    @ready_to_dial = CallAttempt.find_all_by_status("Call ready to dial", :conditions=>"call_end is null")
+    @errors=""
+  end
+  
   def users
     @users = User.all
   end

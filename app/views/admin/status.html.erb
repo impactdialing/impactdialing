@@ -1,0 +1,47 @@
+<h1>System Status</h1>
+<table>
+	<tr>
+		<td>Calling Status:</td>
+		<td><%= @calling_status %></td>
+	</tr>
+	<tr>
+		<td>Logged in campaigns:</td>
+		<td><%= @logged_in_campaigns.length %></td>
+	</tr>
+	<tr>
+		<td>Stuck dials:</td>
+		<td><% if @ready_to_dial.length >3 %> <% @errors= @errors + " #{@ready_to_dial.length} stuck dials" %> <font color="red"><% end %><%= @ready_to_dial.length %></font></td>
+	</tr>
+
+	<% @logged_in_campaigns.each do |k| %>
+	<tr>
+		<td valign="top"><%= k.name %></td>
+		<td>
+		    <%  
+		    stats = k.call_stats(10)
+		    answer_pct = (stats[:answer_pct] * 100).to_i
+			@errors= @errors + " #{k.name} answer_pct #{answer_pct}" if answer_pct<5
+			callers = CallerSession.find_all_by_campaign_id_and_on_call(k,1)
+		    callers_on_call = CallerSession.find_all_by_campaign_id_and_on_call_and_available_for_call(k,1,0)
+		    not_on_call = callers.length - callers_on_call.length
+		    calls = CallAttempt.find_all_by_campaign_id(k, :conditions=>"call_end is NULL")
+		    voters = k.voters("not called")
+		    %> 
+			 
+			<br/>Callers logged in: <%= callers.length %>
+			<br/>Callers on call: <%= callers_on_call.length %>
+			<br/>Callers not on call: <%= not_on_call %>
+			<br/>Voters to call: <%=  voters.length %>
+			<br/>Calls in progress: <%= calls.length %>
+			<br/><% if answer_pct < 5 %><font color="red"><% end %>Answer pct: <%= answer_pct %>  
+		</td>
+	</tr>
+	<% end -%>
+			
+</table>
+<font color="red"><b><%= @errors %></b></font>
+
+<% if @errors.strip!="" 
+	t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+	a=t.call("POST", "SMS/Messages", {'From' => APP_NUMBER, 'To' => "8583829141", 'Body'=>"Alert: #{@errors[0..150]}"})
+end %>
