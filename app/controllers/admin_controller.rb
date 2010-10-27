@@ -5,7 +5,7 @@ class AdminController < ApplicationController
   
   def status
     
-    if Time.now.hour > 0 && Time.now.hour < 6 && DaemonKit.env!="development"
+    if Time.now.hour > 0 && Time.now.hour < 6
       @calling_status="<font color=red>Unavailable, off hours</font>"
     else
       @calling_status="Available"
