@@ -8,8 +8,8 @@ require File.join(File.dirname(__FILE__), 'boot')
 require 'memcache'
 
 Rails::Initializer.run do |config|
-  config.time_zone = "Pacific Time (US & Canada)"
-#  config.active_record.default_timezone = :local
+#  config.time_zone = "Pacific Time (US & Canada)"
+  config.active_record.default_timezone = :local
 
   #config.time_zone = 'UTC'
 
