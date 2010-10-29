@@ -240,9 +240,13 @@ loop do
     # DaemonKit.logger.info "avail_campaign_hash: #{@avail_campaign_hash.keys}"
     logged_in_campaigns = ActiveRecord::Base.connection.execute("select distinct campaign_id from caller_sessions where on_call=1")
     DaemonKit.logger.info "logged_in_campaigns: #{logged_in_campaigns.num_rows}"
-    load_test=logged_in_campaigns.collect{|l| l.id}.index(38)
+    load_test=false
+    logged_in_campaigns.each do |c|
+      load_test=true if c[0]=="38"
+    end
+#    load_test=logged_in_campaigns.collect{|l| l.id}.index(38)
     
-    if Time.now.hour > 0 && Time.now.hour < 6 && DaemonKit.env!="development" && load_test==nil # ends 10pm PST starts 6am eastern
+    if Time.now.hour > 0 && Time.now.hour < 6 && DaemonKit.env!="development" && load_test==false # ends 10pm PST starts 6am eastern
       # too late, clear all logged in callers
       DaemonKit.logger.info "Off hours, don't make any calls"
       ActiveRecord::Base.connection.execute("update caller_sessions set on_call=0")      
