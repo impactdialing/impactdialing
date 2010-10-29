@@ -22,9 +22,9 @@ test:
 
 production:
     adapter: mysql
-    host: impactdialing.cjo94dhm4pos.us-east-1.rds.amazonaws.com
+    host: domU-12-31-39-0C-34-B4.compute-1.internal
     database: impactdialing_prod
-    username: awsuser
-    password: 4datadial123
+    username: root
+    password: p4mjo!
     timeout: 5000
     reconnect: true
