@@ -37,6 +37,16 @@ DaemonKit::Application.running! do |config|
   
 
 
+  def batch_calls(to_send)
+    voter_id_list=to_send.collect{|v| v.id}.join(",")
+    if voter_id_list.strip!=""
+      campaign.calls_in_progress=true
+      campaign.save
+      DaemonKit.logger.info "Spawning external dialer for #{campaign.name} #{voter_id_list}"
+      exec("ruby #{root_path}/place_campaign_calls.rb #{DaemonKit.env} #{voter_id_list}") if fork == nil
+    end
+
+  end
 
   def handleCampaign(k)
     if DaemonKit.env=="development"
@@ -282,16 +292,6 @@ loop do
 end
 
 
-def batch_calls(to_send)
-  voter_id_list=to_send.collect{|v| v.id}.join(",")
-  if voter_id_list.strip!=""
-    campaign.calls_in_progress=true
-    campaign.save
-    DaemonKit.logger.info "Spawning external dialer for #{campaign.name} #{voter_id_list}"
-    exec("ruby #{root_path}/place_campaign_calls.rb #{DaemonKit.env} #{voter_id_list}") if fork == nil
-  end
-  
-end
 #http://blog.elctech.com/2009/10/06/ruby-daemons-and-angels/
 # 
 # proportion of call attempts that are answered
