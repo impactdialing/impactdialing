@@ -37,7 +37,7 @@ DaemonKit::Application.running! do |config|
   
 
 
-  def batch_calls(to_send)
+  def batch_calls(to_send,campaign)
     voter_id_list=to_send.collect{|v| v.id}.join(",")
     if voter_id_list.strip!=""
       campaign.calls_in_progress=true
@@ -45,7 +45,6 @@ DaemonKit::Application.running! do |config|
       DaemonKit.logger.info "Spawning external dialer for #{campaign.name} #{voter_id_list}"
       exec("ruby #{root_path}/place_campaign_calls.rb #{DaemonKit.env} #{voter_id_list}") if fork == nil
     end
-
   end
 
   def handleCampaign(k)
@@ -204,11 +203,11 @@ DaemonKit::Application.running! do |config|
       voter_ids.each do |v|
         to_send << v
         if to_send.length==15
-          batch_calls(to_send)
+          batch_calls(to_send,campaign)
           to_send=[]
         end
       end
-      batch_calls(to_send) #remaining
+      batch_calls(to_send,campaign) #remaining
       
     else
       voter_ids.each do |voter|
