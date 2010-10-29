@@ -49,6 +49,7 @@ class Dialer
     c.campaign_id=campaign.id
     c.status="Call ready to dial"
     c.save
+    DaemonKit.logger.info caller_num
     if campaign.use_answering
       if campaign.use_recordings
         a=t.call("POST", "Calls", {'Timeout'=>campaign.answer_detection_timeout, 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}&attempt=#{c.id}", 'IfMachine'=>'Continue'})
@@ -60,6 +61,7 @@ class Dialer
     end
     require 'rubygems'
     require 'hpricot'
+    DaemonKit.logger.info a
     @doc = Hpricot::XML(a)
     puts @doc if DaemonKit.env=="development"
     c.sid=(@doc/"Sid").inner_html

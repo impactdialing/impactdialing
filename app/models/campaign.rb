@@ -75,6 +75,10 @@ class Campaign < ActiveRecord::Base
     in_progress.each do |caller|
       t = Twilio.new(account,auth)
       a=t.call("POST", "Calls/#{caller.sid}", {'CurrentUrl'=>"#{appurl}/callin/callerEndCall?session=#{caller.id}"})
+      if a.index("RestException")
+        caller.on_call=false
+        caller.save
+      end
     end
     in_progress
   end
