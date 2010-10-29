@@ -5,7 +5,11 @@ class AdminController < ApplicationController
   require "nokogiri"
   
   def status
-    
+    calls_to_end = CallAttempt.all(:conditions=>"tEndTime is not NULL and call_end is NULL")
+    calls_to_end.each do |c|
+      c.call_end = tEndTime
+      c.save
+    end
     if Time.now.hour > 0 && Time.now.hour < 6
       @calling_status="<font color=red>Unavailable, off hours</font>"
     else
