@@ -61,7 +61,7 @@ DaemonKit::Application.running! do |config|
     # campaign_hash = avail_campaign_hash[k]
     if campaign.calls_in_progress?
       DaemonKit.logger.info "#{campaign.name} is still dialing, returning"
-      return
+      #return
     end
     stats = campaign.call_stats(10)
     answer_pct = (stats[:answer_pct] * 100).to_i
