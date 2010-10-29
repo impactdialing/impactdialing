@@ -191,7 +191,7 @@ DaemonKit::Application.running! do |config|
       #spawn externally
 #      voter_id_list=voter_ids.collect{|v| v.id}.join(",")
       to_send=[]
-      voter_id_list.each do |v|
+      voter_ids.each do |v|
         to_send << v
         if to_send.length==15
           batch_calls(to_send)
