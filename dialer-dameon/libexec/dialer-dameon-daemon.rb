@@ -37,15 +37,6 @@ DaemonKit::Application.running! do |config|
   
 
 
-  def batch_calls(to_send,campaign)
-    voter_id_list=to_send.collect{|v| v.id}.join(",")
-    if voter_id_list.strip!=""
-      campaign.calls_in_progress=true
-      campaign.save
-      DaemonKit.logger.info "Spawning external dialer for #{campaign.name} #{voter_id_list}"
-      exec("ruby #{root_path}/place_campaign_calls.rb #{DaemonKit.env} #{voter_id_list}") if fork == nil
-    end
-  end
 
   def handleCampaign(k)
     if DaemonKit.env=="development"
@@ -61,7 +52,7 @@ DaemonKit::Application.running! do |config|
     # campaign_hash = avail_campaign_hash[k]
     if campaign.calls_in_progress?
       DaemonKit.logger.info "#{campaign.name} is still dialing, returning"
-      #return
+      return
     end
     stats = campaign.call_stats(10)
     answer_pct = (stats[:answer_pct] * 100).to_i
@@ -198,17 +189,13 @@ DaemonKit::Application.running! do |config|
     
     if voter_ids.length >10  || campaign.id==27
       #spawn externally
-#      voter_id_list=voter_ids.collect{|v| v.id}.join(",")
-      to_send=[]
-      voter_ids.each do |v|
-        to_send << v
-        if to_send.length==15
-          batch_calls(to_send,campaign)
-          to_send=[]
-        end
+      voter_id_list=voter_ids.collect{|v| v.id}.join(",")
+      if voter_id_list.strip!=""
+        campaign.calls_in_progress=true
+        campaign.save
+        DaemonKit.logger.info "Spawning external dialer for #{campaign.name} #{voter_id_list}"
+        exec("ruby #{root_path}/place_campaign_calls.rb #{DaemonKit.env} #{voter_id_list}") if fork == nil
       end
-      batch_calls(to_send,campaign) #remaining
-      
     else
       voter_ids.each do |voter|
         DaemonKit.logger.info "calling #{voter.Phone} #{campaign.name}"
@@ -289,7 +276,6 @@ loop do
     ActiveRecord::Base.connection.reconnect!
   end
 end
-
 
 #http://blog.elctech.com/2009/10/06/ruby-daemons-and-angels/
 # 
