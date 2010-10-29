@@ -3,7 +3,8 @@ TWILIO_AUTH="4e179c64daa7c9f5108bd6623c98aea6"
 #APP_NUMBER="5104048117"
 APP_NUMBER="8583673996"
 APP_URL="http://www.hinodae.com:5555"
-
+TEST_CALLER_NUMBER="8588889111"
+TEST_VOTER_NUMBER="4157293288"
 # Settings specified here will take precedence over those in config/environment.rb
 
 # In the development environment your application's code is reloaded on

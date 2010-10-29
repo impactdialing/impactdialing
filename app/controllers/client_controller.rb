@@ -683,6 +683,31 @@ class ClientController < ApplicationController
       @breadcrumb=[{"Reports"=>"/client/reports"},@campaign.name]
     end
   end
+  
+  def test
+    if params[:id]=="drop_all_caller"
+      c = Campaign.find(38)
+      c.end_all_callers(TWILIO_ACCOUNT, TWILIO_AUTH, APP_URL)
+      flash[:notice]="Callers dropped"
+    elsif params[:id]=="add_caller_5"
+      flash[:notice]="5 Test callers added"
+      (1..5).each do |i|
+        t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+        a=t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => APP_NUMBER, 'Called' => TEST_CALLER_NUMBER, 'Url'=>"#{APP_URL}/callin?test=1"})
+      end
+    elsif params[:id]=="add_caller_15"
+      flash[:notice]="15 Test callers added"
+      (1..15).each do |i|
+        t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+        a=t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => APP_NUMBER, 'Called' => TEST_CALLER_NUMBER, 'Url'=>"#{APP_URL}/callin?test=1"})
+      end
+    elsif params[:id]=="add_caller"
+      flash[:notice]="Test caller added"
+      t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+      a=t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => APP_NUMBER, 'Called' => TEST_CALLER_NUMBER, 'Url'=>"#{APP_URL}/callin?test=1"})
+    end
+    redirect_to :action=>"report_realtime", :id=>"38"
+  end
 
   def report_realtime
     check_warning

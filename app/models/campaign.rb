@@ -70,6 +70,15 @@ class Campaign < ActiveRecord::Base
     in_progress
   end
 
+  def end_all_callers(account,auth,appurl)
+    in_progress = CallerSession.find_all_by_campaign_id(self.id, :conditions=>"on_call=1")
+    in_progress.each do |caller|
+      t = Twilio.new(account,auth)
+      a=t.call("POST", "Calls/#{caller.sid}", {'CurrentUrl'=>"#{appurl}/callin/callerEndCall?session=#{caller.id}"})
+    end
+    in_progress
+  end
+
   def calls_in_ending_window(period=10,predective_type="longest")
     #calls predicted to end soon
     stats = self.call_stats(period)

@@ -34,17 +34,35 @@ class CallinController < ApplicationController
   end
 
   def index
-    
+
+    if !params[:test].blank? &&  params[:CallStatus]!="completed"
+      #load test, campaign 38
+      @campaign = Campaign.find(38)
+      c = Caller.find(1)
+      @session = CallerSession.new
+      @session.caller_number = params[:Caller]
+      @session.caller_id=c.id
+      @session.campaign_id=@campaign.id
+      @session.sid = params[:CallSid]
+      @session.starttime=Time.now
+      @session.available_for_call=true
+      @session.on_call=true
+      @session.save
+      cookies[:session] = @session.id
+      render :template => 'callin/start_conference.xml.builder', :layout => false
+      return
+    end
+
     if params[:CallStatus]=="completed"
       session_complete
       render :template => 'callin/index.xml.builder', :layout => false
       return
     end
-    
+
     # initial call-in
     att = params[:att] || 0
     if params[:att]=="3"
-#      @say="If you don't have a PIN, please ask your campaign manager for one and call back. Good-bye."
+      #      @say="If you don't have a PIN, please ask your campaign manager for one and call back. Good-bye."
       @play="#{APP_URL}/wav/no_pin.wav"
       @hangup=true
       render :template => 'callin/index.xml.builder', :layout => false
@@ -55,14 +73,14 @@ class CallinController < ApplicationController
     @gatherPost = @repeatRedirect
     if params[:Digits].blank?
       # initial call-in
-#      @say="Welcome to Impact Dialing.  Please enter your pin."
+      #      @say="Welcome to Impact Dialing.  Please enter your pin."
       @play="#{APP_URL}/wav/welcome.wav"
       cookies[:session]=nil
     else
       # response with PIN
       c = Caller.find_by_pin_and_active(params[:Digits], true)
       if c.blank?
-#        @say="We could not find that pin, try again."
+        #        @say="We could not find that pin, try again."
         @redirect="#{APP_URL}/callin/enter_group?session=0"
       else
         multi="ok"
@@ -83,7 +101,7 @@ class CallinController < ApplicationController
           # end
         end
 
-        
+
         if multi=="ok"
           # redirect to group ID
           s = CallerSession.new
@@ -93,7 +111,7 @@ class CallinController < ApplicationController
           s.save
           @redirect="#{APP_URL}/callin/enter_group?session=#{s.id}"
         else
-#          @say="That PIN is already in use. Please enter another PIN."
+          #          @say="That PIN is already in use. Please enter another PIN."
           @play="#{APP_URL}/wav/pin_in_use.wav"
         end
       end
@@ -107,13 +125,13 @@ class CallinController < ApplicationController
     #"CallStatus"=>"in-progress",
     #"CallStatus"=>"completed"
   end
-  
+
   def enter_group
     # params - session
 
     att = params[:att] || 0
     if params[:att]=="3"
-#      @say="If you don't have a campaign ID, please ask your campaign manager for one and call back. Good-bye."
+      #      @say="If you don't have a campaign ID, please ask your campaign manager for one and call back. Good-bye."
       @play="#{APP_URL}/wav/no_pin.wav"
       @hangup=true
       render :template => 'callin/index.xml.builder', :layout => false
@@ -123,20 +141,20 @@ class CallinController < ApplicationController
     @repeatRedirect="#{APP_URL}/callin/enter_group?session=#{params[:session]}&att=#{att.to_i+1}"
     @gatherPost = @repeatRedirect
     if params[:session]!="0"
-      @session = CallerSession.find(params[:session]) 
+      @session = CallerSession.find(params[:session])
       cookies[:session] = @session.id
       @caller = @session.caller
     end
 
     if params[:Digits].blank?
       # initial call-in
-#      @say="Now enter your campaign ID"
-      @play="#{APP_URL}/wav/enter_campaign_id.wav"  
+      #      @say="Now enter your campaign ID"
+      @play="#{APP_URL}/wav/enter_campaign_id.wav"
     else
       # response with PIN
       c = Campaign.find_by_group_id_and_active_and_user_id(params[:Digits], true, @caller.user_id) if params[:session]!="0"
       if params[:session]=="0" || c.blank?
-#        @say="We could not find that campain, try again."
+        #        @say="We could not find that campain, try again."
         @play="#{APP_URL}/wav/invalid_credentials.wav"
         @gather=false
         @repeatRedirect="#{APP_URL}/callin"
@@ -163,7 +181,7 @@ class CallinController < ApplicationController
     # params - session, campaign
     @finishOnKey=""
     @repeatRedirect="#{APP_URL}/callin/enter_group?session=#{params[:session]}&campaign=#{params[:campaign]}"
-    @session = CallerSession.find(params[:session]) 
+    @session = CallerSession.find(params[:session])
     @caller = @session.caller
     @campaign = Campaign.find(params[:campaign])
 
@@ -184,21 +202,21 @@ class CallinController < ApplicationController
       end
 
 
-#      send_rt (@publish_channel,{@publish_key=>@publish_value})
+      #      send_rt (@publish_channel,{@publish_key=>@publish_value})
 
     end
-    
+
     if params[:Digits].blank?
-#      @say="Press star to begin taking calls, or press pound for instructions."
-      @play="#{APP_URL}/wav/star_or_pound.wav"    
+      #      @say="Press star to begin taking calls, or press pound for instructions."
+      @play="#{APP_URL}/wav/star_or_pound.wav"
     else
-      
+
       if @campaign.use_web_ui
         @publish_channel="/#{@session.session_key}"
         @publish_key="waiting"
         @publish_value="ok"
       end
-      
+
       if params[:Digits]=="*"
         #send to conference room
         @session.starttime=Time.now
@@ -218,12 +236,12 @@ class CallinController < ApplicationController
         return
       elsif params[:Digits]=="#"
         #@say= "Impact Dialing eliminates unanswered phone calls, allowing you to spend your time talking to people instead of waiting for someone to pick up. When you're ready to start taking calls, press the star key. You'll hear a brief period of silence while Impact Dialing finds a someone who answers the phone. When you've been connected to someone, you'll hear this sound: bee-doop. You usually won't hear the person say hello, so start talking immediately. At the end of the conversation, do not hang up the phone. Instead, press star to end the call, and then enter the call result on your phone's keypad. Then press star to submit the result and keep taking calls, or press pound to submit the result and hang up. You will now be connected to the system. In a moment Impact Dialing will deliver you a call. Begin taking calls.  After a call: say Please enter your call result. Then press star to submit and keep taking calls, or press pound to submit and hang up."
-        @play="#{APP_URL}/wav/instructions.wav"    
+        @play="#{APP_URL}/wav/instructions.wav"
         render :template => 'callin/start_conference.xml.builder', :layout => false
         return
       else
-#        @say="Press star to begin taking calls.  Press pound for instructions."
-        @play="#{APP_URL}/wav/star_or_pound.wav"    
+        #        @say="Press star to begin taking calls.  Press pound for instructions."
+        @play="#{APP_URL}/wav/star_or_pound.wav"
       end
     end
 
@@ -232,7 +250,7 @@ class CallinController < ApplicationController
 
     render :template => 'callin/index.xml.builder', :layout => false
   end
-    
+
   def voterEndCall
     attempt = CallAttempt.find(params[:attempt])
     @hangup=true
@@ -250,13 +268,18 @@ class CallinController < ApplicationController
     render :template => 'callin/index.xml.builder', :layout => false
   end
 
-  
+
   def leaveConf
     # reached after call ends
     #session #campaign
     
+    if params[:campaign]=="38"
+      #test campaign
+      params[:Digits]="1"
+    end
+
     @repeatRedirect="#{APP_URL}/callin/leaveConf?session=#{params[:session]}&campaign=#{params[:campaign]}"
-    @session = CallerSession.find(params[:session]) 
+    @session = CallerSession.find(params[:session])
     @caller = @session.caller
     @campaign = @session.campaign
 
@@ -275,21 +298,21 @@ class CallinController < ApplicationController
       #         t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
       #         a=t.call("POST", "Calls/#{attempt.sid}", {'CurrentUrl'=>"#{APP_URL}/callin/voterEndCall?attempt=#{attempt.id}"})
       #       end
-            # initial call-in
-#      @play="#{APP_URL}/exitBeep.wav"
-      @play="#{APP_URL}/wav/beep_enter_call_result.wav"    
-#      @say="Please enter your call result. Then press star to submit and keep taking calls."
+      # initial call-in
+      #      @play="#{APP_URL}/exitBeep.wav"
+      @play="#{APP_URL}/wav/beep_enter_call_result.wav"
+      #      @say="Please enter your call result. Then press star to submit and keep taking calls."
       if @session.voter_in_progress!=nil
-       voter = Voter.find(@session.voter_in_progress)
-       voter.status='Call finished'
-       voter.result="No Disposition"
-       #attempt = CallAttempt.find_by_voter_id(@session.voter_in_progress, :order=>"id desc", :limit=>1)
-       attempt = CallAttempt.find(@session.attempt_in_progress)
-       attempt.result="No Disposition"
-       attempt.save
-       voter.save
+        voter = Voter.find(@session.voter_in_progress)
+        voter.status='Call finished'
+        voter.result="No Disposition"
+        #attempt = CallAttempt.find_by_voter_id(@session.voter_in_progress, :order=>"id desc", :limit=>1)
+        attempt = CallAttempt.find(@session.attempt_in_progress)
+        attempt.result="No Disposition"
+        attempt.save
+        voter.save
       end
-     else
+    else
       # digits entered, response given
       if params[:Digits]=="*"
         @say="Goodbye"
@@ -298,8 +321,8 @@ class CallinController < ApplicationController
         @say="Invalid result.  Please try again."
       else
         @clean_digit = params[:Digits].gsub("#","").gsub("*","").slice(0..1)
-        
-        handle_disposition_submit 
+
+        handle_disposition_submit
 
         if @campaign.use_web_ui
           @publish_channel="/#{@session.session_key}"
@@ -319,33 +342,33 @@ class CallinController < ApplicationController
 
     render :template => 'callin/index.xml.builder', :layout => false
   end
-  
+
   def start_conference
     # params - session, campaign
-    @session = CallerSession.find(params[:session]) 
+    @session = CallerSession.find(params[:session])
     @caller = @session.caller
     @campaign = Campaign.find(params[:campaign])
     render :template => 'callin/start_conference.xml.builder', :layout => false
   end
-  
+
   # def voterleaveConf
   #    @hangup=true
   #    render :template => 'callin/index.xml.builder', :layout => false
   # end
-  
+
   def voterFindSession
     # params session, voter, attempt
     # first callback for voters
 
     @campaign  = Campaign.find(params[:campaign])
     @voter = Voter.find(params[:voter])
-#    attempt = CallAttempt.find_by_voter_id(params[:voter], :order=>"id desc", :limit=>1)
+    #    attempt = CallAttempt.find_by_voter_id(params[:voter], :order=>"id desc", :limit=>1)
     attempt = CallAttempt.find(params[:attempt])
     if attempt.answertime==nil
       attempt.answertime=Time.now
       attempt.save
     end
-    
+
     #logger.info "params[:DialStatus]: #{params[:DialStatus]}"
     if params[:DialStatus]=="answered-machine"
       # play the answering machine message
@@ -362,15 +385,15 @@ class CallinController < ApplicationController
 
     if params[:CallStatus]=="completed" || params[:CallStatus]=="no-answer" || params[:CallStatus]=="busy" || params[:CallStatus]=="failed" || params[:CallStatus]=="canceled"
       #clean up voter hangup
-      
-      # if params[:CallStatus]!="completed" 
+
+      # if params[:CallStatus]!="completed"
       #   t = Twilio.new(TWILIO_ACCOUNT,TWILIO_AUTH)
       #   a=t.call("POST", "Calls/#{attempt.sid}", {'CurrentUrl'=>"#{APP_URL}/callin/voterEndCall?attempt=#{attempt.id}"})
       #   attempt.call_end=Time.now
       #   attempt.save
       # end
-      
-      
+
+
       if params[:DialStatus]=="hangup-machine"
         @voter.status="Hangup or answering machine"
         attempt.status="Hangup or answering machine"
@@ -396,7 +419,7 @@ class CallinController < ApplicationController
       else
         if attempt.caller_id==nil &&  attempt.status!="Message delivered"
           #abandon
-#          @voter.status="Call completed with success."
+          #          @voter.status="Call completed with success."
           attempt.status="Call abandoned"
         else
           @voter.status="Call completed with success." unless  @voter.status=="Message delivered"
@@ -409,7 +432,7 @@ class CallinController < ApplicationController
       if @voter.caller_session_id!=nil
         @session = CallerSession.find(@voter.caller_session_id)
         if @session.endtime==nil
-#          @session.available_for_call=true
+          #          @session.available_for_call=true
           @session.save
         end
       end
@@ -424,17 +447,17 @@ class CallinController < ApplicationController
       #     end
       #     n+=1
       #   end
-        # thisAttempt = avail_campaign_hash[attempt.campaign_id]["calls"].index(attempt)
-        # if thisAttempt!=nil
-        #   avail_campaign_hash[attempt.campaign_id]["calls"].delete_at(thisAttempt)
-        #   cache_set("avail_campaign_hash") {avail_campaign_hash}
-        # end
+      # thisAttempt = avail_campaign_hash[attempt.campaign_id]["calls"].index(attempt)
+      # if thisAttempt!=nil
+      #   avail_campaign_hash[attempt.campaign_id]["calls"].delete_at(thisAttempt)
+      #   cache_set("avail_campaign_hash") {avail_campaign_hash}
+      # end
       #end
       render :template => 'callin/index.xml.builder', :layout => false
       return
     end
 
-    
+
     @availableCaller = CallerSession.find_by_campaign_id_and_available_for_call_and_on_call(@campaign.id, true, true, :order=>"rand()")
     if @availableCaller.blank?
       @pause=2
@@ -483,9 +506,9 @@ class CallinController < ApplicationController
 
     render :template => 'callin/index.xml.builder', :layout => false
     return
-      
+
   end
-  
+
   def hold
     render :template => 'callin/hold.xml.builder', :layout => false
     return
@@ -493,7 +516,7 @@ class CallinController < ApplicationController
 
   # def voterStart
   #   # params session, voter, attempt
-  #   @session = CallerSession.find(params[:session]) 
+  #   @session = CallerSession.find(params[:session])
   #   @session.available_for_call=false
   #   @session.save
   #   @caller = @session.caller
@@ -504,7 +527,7 @@ class CallinController < ApplicationController
   #   render :template => 'callin/voter_start_conference.xml.builder', :layout => false
   #   return
   # end
-  
+
   def test
     # response.headers["Pragma"] = "no-cache"
     # response.headers["Cache-Control"] = "no-cache"
@@ -515,14 +538,19 @@ class CallinController < ApplicationController
     num = rand(100)
     if num < 10
       render :template => 'callin/reject.xml.builder', :layout => false
-    elsif num < 60
+    elsif num < 90
       render :template => 'callin/pause.xml.builder', :layout => false
     else
-      @play="#{APP_URL}/canta.mp3"
-      @play2="#{APP_URL}/canta.mp3"
+      rnd = rand(100)
+      if rnd < 70
+        @play="#{APP_URL}/canta_short.mp3"
+      else
+        @play="#{APP_URL}/canta.mp3"
+      end
+#      @play2="#{APP_URL}/canta.mp3"
       @hangup="true"
       render :template => 'callin/index.xml.builder', :layout => false
     end
   end
-
+  
 end
