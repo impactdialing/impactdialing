@@ -239,7 +239,7 @@ loop do
     # @avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
     # DaemonKit.logger.info "avail_campaign_hash: #{@avail_campaign_hash.keys}"
     logged_in_campaigns = ActiveRecord::Base.connection.execute("select distinct campaign_id from caller_sessions where on_call=1")
-    DaemonKit.logger.info "logged_in_campaigns: #{logged_in_campaigns.num_rows} #{DaemonKit.env}"
+    DaemonKit.logger.info "logged_in_campaigns: #{logged_in_campaigns.num_rows}"
     load_test=false
     logged_in_campaigns.each do |c|
       load_test=true if c[0]=="38"

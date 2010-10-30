@@ -60,25 +60,56 @@ require "#{root_path}/config/pre-daemonize/gems.rb"
 require "#{root_path}/config/post-daemonize/database_setup.rb"
 require "#{root_path}/lib/dialer-dameon.rb"
 
+def chunk_array(array, pieces=2)
+  len = array.length;
+  mid = (len/pieces)
+  chunks = []
+  start = 0
+  1.upto(pieces) do |i|
+    last = start+mid
+    last = last-1 unless len%pieces >= i
+    chunks << array[start..last] || []
+    start = last+1
+  end
+  chunks
+end
 
 campaign=nil
 DaemonKit.logger.info "voter_list: #{voter_list}"
 
-voter_list.split(",").each do |voter_id|
-  voter=Voter.find(voter_id)
-  campaign=Campaign.find(voter.campaign_id)
-  DaemonKit.logger.info "calling: #{voter.Phone}"
-  voter.status='Call attempt in progress'
-  voter.save
-  d = Dialer.startcall(voter, campaign)
+def dial_voters(voter_list)
+  DaemonKit.logger.info "start thread voter_list: #{voter_list}"
+#  puts "start thread voter_list: #{voter_list}"
+  voter_list.each do |voter_id|
+    voter=Voter.find(voter_id)
+    campaign=Campaign.find(voter.campaign_id)
+    Thread.current["campaign"] = campaign
+    DaemonKit.logger.info "calling: #{voter.Phone}"
+    voter.status='Call attempt in progress'
+    voter.save
+    d = Dialer.startcall(voter, campaign)
+    campaign
+  end
 end
 
+voter_array = voter_list.split(",").each {|v| v.strip!}
+if voter_array.length > 8
+  voter_chucks =  chunk_array(voter_array,4) #4 threads
+else
+  voter_chucks = voter_array
+end
 
+threads=[]
+voter_chucks.each do |chunk|
+  threads<<Thread.new{dial_voters(chunk)}
+end
 
-# (1..10).each do |i|
-#   DaemonKit.logger.info "sleep: #{i}"
-#   sleep 2  
-# end
+threads.each do |t|
+  t.join
+  campaign = t["campaign"]
+  DaemonKit.logger.info "end thread #{campaign.id}"
+#  puts "end thread #{campaign.id}"
+end
 
 if campaign!=nil
   campaign.calls_in_progress=false
