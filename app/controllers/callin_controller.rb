@@ -303,6 +303,7 @@ class CallinController < ApplicationController
       @play="#{APP_URL}/wav/beep_enter_call_result.wav"
       #      @say="Please enter your call result. Then press star to submit and keep taking calls."
       if @session.voter_in_progress!=nil
+        Voter.connection.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED") if @session.voter_in_progress.to_s=="16528"
         voter = Voter.find(@session.voter_in_progress)
         voter.status='Call finished'
         voter.result="No Disposition"
@@ -361,6 +362,7 @@ class CallinController < ApplicationController
     # first callback for voters
 
     @campaign  = Campaign.find(params[:campaign])
+    Voter.connection.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED") if params[:voter]=="16528"
     @voter = Voter.find(params[:voter])
     #    attempt = CallAttempt.find_by_voter_id(params[:voter], :order=>"id desc", :limit=>1)
     attempt = CallAttempt.find(params[:attempt])
