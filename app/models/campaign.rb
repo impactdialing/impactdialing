@@ -260,7 +260,7 @@ class Campaign < ActiveRecord::Base
   end
 
   def voters(status=nil,include_call_retries=true,limit=300)
-    return testVoters if self.name=="Load Test"
+    #return testVoters if self.name=="Load Test"
     return [] if  !self.user.paid
     return [] if self.caller_id.blank? || !self.caller_id_verified
     voters_returned=[]

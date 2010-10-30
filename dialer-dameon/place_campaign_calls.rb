@@ -82,7 +82,7 @@ def dial_voters(voter_list)
   #  puts "start thread voter_list: #{voter_list}"
   begin
     voter_list.each do |voter_id|
-      Voter.connection.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED")
+      #Voter.connection.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED") if voter_id=="16528"
       voter=Voter.find(voter_id)
       campaign=Campaign.find(voter.campaign_id)
       Thread.current["campaign"] = campaign
