@@ -28,3 +28,4 @@ production:
     password: p4mjo!
     timeout: 5000
     reconnect: true
+    pool: 10
