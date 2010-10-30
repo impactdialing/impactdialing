@@ -74,7 +74,7 @@ def chunk_array(array, pieces=2)
   chunks
 end
 
-campaign=nil
+campaigns_dialed=[]
 DaemonKit.logger.info "voter_list: #{voter_list}"
 
 def dial_voters(voter_list)
@@ -100,7 +100,7 @@ end
 
 voter_array = voter_list.split(",").each {|v| v.strip!}
 if voter_array.length > 8
-  voter_chucks =  chunk_array(voter_array,4) #4 threads
+  voter_chucks =  chunk_array(voter_array,8) #4 threads
 else
   voter_chucks = voter_array
 end
@@ -112,7 +112,7 @@ end
 
 threads.each do |t|
   t.join
-  campaign = t["campaign"]
+  campaigns_dialed<< t["campaign"] if !campaigns_dialed.index(t["campaign"])
   DaemonKit.logger.info "end thread #{campaign.id}"
   #  puts "end thread #{campaign.id}"
 end
