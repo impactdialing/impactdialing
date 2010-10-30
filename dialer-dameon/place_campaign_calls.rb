@@ -79,16 +79,21 @@ DaemonKit.logger.info "voter_list: #{voter_list}"
 
 def dial_voters(voter_list)
   DaemonKit.logger.info "start thread voter_list: #{voter_list}"
-#  puts "start thread voter_list: #{voter_list}"
-  voter_list.each do |voter_id|
-    voter=Voter.find(voter_id)
-    campaign=Campaign.find(voter.campaign_id)
-    Thread.current["campaign"] = campaign
-    DaemonKit.logger.info "calling: #{voter.Phone}"
-    voter.status='Call attempt in progress'
-    voter.save
-    d = Dialer.startcall(voter, campaign)
-    campaign
+  #  puts "start thread voter_list: #{voter_list}"
+  begin
+    voter_list.each do |voter_id|
+      voter=Voter.find(voter_id)
+      campaign=Campaign.find(voter.campaign_id)
+      Thread.current["campaign"] = campaign
+      DaemonKit.logger.info "calling: #{voter.Phone}"
+      voter.status='Call attempt in progress'
+      voter.save
+      d = Dialer.startcall(voter, campaign)
+      campaign
+    end
+  rescue Exception => e
+    DaemonKit.logger.info "Rescued in thread - #{ e } (#{ e.class })!"
+    DaemonKit.logger.info e.backtrace
   end
 end
 
@@ -108,7 +113,7 @@ threads.each do |t|
   t.join
   campaign = t["campaign"]
   DaemonKit.logger.info "end thread #{campaign.id}"
-#  puts "end thread #{campaign.id}"
+  #  puts "end thread #{campaign.id}"
 end
 
 if campaign!=nil
