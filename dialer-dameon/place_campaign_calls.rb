@@ -101,7 +101,7 @@ end
 
 voter_array = voter_list.split(",").each {|v| v.strip!}
 if voter_array.length > 8
-  voter_chucks =  chunk_array(voter_array,8) #4 threads
+  voter_chucks =  chunk_array(voter_array,4) #4 threads
 else
   voter_chucks = voter_array
 end
