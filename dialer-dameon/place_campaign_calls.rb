@@ -113,15 +113,19 @@ end
 
 threads.each do |t|
   t.join
-  campaigns_dialed<< t["campaign"] if !campaigns_dialed.index(t["campaign"])
-  DaemonKit.logger.info "end thread #{campaign.id}"
+  if t["campaign"]!=nil
+    campaigns_dialed<< t["campaign"] if !campaigns_dialed.index(t["campaign"])
+    DaemonKit.logger.info "end thread #{t["campaign"].id}"
+  else
+    DaemonKit.logger.info "end thread NO CAMPAIGN"
+  end
   #  puts "end thread #{campaign.id}"
 end
 
 
 DaemonKit.logger.info "ALL THREADS JOINED"
 
-if campaign!=nil
+campaigns_dialed.each do |campaign|
   campaign.calls_in_progress=false
   campaign.save
 end
