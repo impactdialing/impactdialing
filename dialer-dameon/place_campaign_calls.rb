@@ -86,10 +86,11 @@ def dial_voters(voter_list)
       voter=Voter.find(voter_id)
       campaign=Campaign.find(voter.campaign_id)
       Thread.current["campaign"] = campaign
-      DaemonKit.logger.info "calling: #{voter.Phone}"
+      DaemonKit.logger.info "calling: #{voter.Phone} (#{voter.id})"
       voter.status='Call attempt in progress'
       voter.save
       d = Dialer.startcall(voter, campaign)
+      DaemonKit.logger.info "done dialing (#{voter.id})"
       campaign
     end
   rescue Exception => e
