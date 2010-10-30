@@ -118,7 +118,13 @@ threads.each do |t|
   #  puts "end thread #{campaign.id}"
 end
 
+
+DaemonKit.logger.info "ALL THREADS JOINED"
+
 if campaign!=nil
   campaign.calls_in_progress=false
   campaign.save
 end
+
+
+DaemonKit.logger.info "EXITING WITH SUCCESS"
