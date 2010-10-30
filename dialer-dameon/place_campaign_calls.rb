@@ -78,10 +78,11 @@ campaign=nil
 DaemonKit.logger.info "voter_list: #{voter_list}"
 
 def dial_voters(voter_list)
-  DaemonKit.logger.info "start thread voter_list: #{voter_list}"
+  DaemonKit.logger.info "start thread voter_list: #{voter_list.inspect}"
   #  puts "start thread voter_list: #{voter_list}"
   begin
     voter_list.each do |voter_id|
+      Voter.connection.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED")
       voter=Voter.find(voter_id)
       campaign=Campaign.find(voter.campaign_id)
       Thread.current["campaign"] = campaign
