@@ -268,7 +268,7 @@ loop do
       end
     end
 
-    sleep 5
+    sleep 3
 #    puts "ActiveRecord::Base.verify_active_connections!: " + ActiveRecord::Base.verify_active_connections!.inspect
   rescue Exception => e
     DaemonKit.logger.info "Rescued - #{ e } (#{ e.class })!"
