@@ -17,7 +17,7 @@
 		<td><%= @all_calls %></td>
 	<tr>
 		<td>Twilio queued:</td>
-		<td><% if @queued.to_i > 50 %><font color="red"><% @errors= @errors + " #{@queued} twilio queued calls" %> <% end %> <%= @queued %></td>
+		<td><% if @queued.to_i > 100 %><font color="red"><% @errors= @errors + " #{@queued} twilio queued calls" %> <% end %> <%= @queued %></td>
 	</tr>
 	<tr>
 		<td>Stuck dials:</td>
