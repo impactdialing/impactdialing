@@ -9,15 +9,19 @@
 		<td><%= @logged_in_campaigns.length %></td>
 	</tr>
 	<tr>
+		<td>Logged in callers:</td>
+		<td><%= @logged_in_callers.length %></td>
+	</tr>
+	<tr>
 		<td>Calls in progress:</td>
 		<td><%= @all_calls %></td>
 	<tr>
 		<td>Twilio queued:</td>
-		<td><% if @queued.to_i > 40 %><font color="red"><% @errors= @errors + " #{@queued} twilio queued calls" %> <% end %> <%= @queued %></td>
+		<td><% if @queued.to_i > 50 %><font color="red"><% @errors= @errors + " #{@queued} twilio queued calls" %> <% end %> <%= @queued %></td>
 	</tr>
 	<tr>
 		<td>Stuck dials:</td>
-		<td><% if @ready_to_dial.length >3 %> <% @errors= @errors + " #{@ready_to_dial.length} stuck dials" %> <font color="red"><% end %><%= @ready_to_dial.length %></font></td>
+		<td><% if @ready_to_dial.length >7 %> <% @errors= @errors + " #{@ready_to_dial.length} stuck dials" %> <font color="red"><% end %><%= @ready_to_dial.length %></font></td>
 	</tr>
 
 	<% @logged_in_campaigns.each do |k| %>
