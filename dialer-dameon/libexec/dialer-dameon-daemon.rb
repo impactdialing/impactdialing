@@ -248,7 +248,7 @@ loop do
     
 #    load_test=logged_in_campaigns.collect{|l| l.id}.index(38)
     
-    if false #Time.now.hour > 0 && Time.now.hour < 6 && DaemonKit.env!="development" && load_test==false # ends 10pm PST starts 6am eastern
+    if Time.now.hour > 0 && Time.now.hour < 6 && DaemonKit.env!="development" && load_test==false # ends 10pm PST starts 6am eastern
       # too late, clear all logged in callers
       DaemonKit.logger.info "Off hours, don't make any calls"
       ActiveRecord::Base.connection.execute("update caller_sessions set on_call=0")      
