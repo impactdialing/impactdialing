@@ -3,9 +3,10 @@ class HomeController < ApplicationController
     if request.subdomains.first=="caller"
       redirect_to :controller=>"caller"
     else
-      redirect_to :controller=>"client"
+      #redirect_to :controller=>"client"
     end
     @user = User.new
+    render :layout=>false
   end
   
   def how_were_different

@@ -1,0 +1,255 @@
+@charset "UTF-8";
+/* CSS Document */
+
+* { padding:0; margin:0; outline:0; }
+body {
+	background-color:#F7F7F7;
+	font-family: helvetica, arial, sans-serif;
+	font-size:12px;
+	line-height:14px;
+	color:#666;
+}
+a img { border:0; }
+
+a { color:#000; text-decoration: underline; cursor:pointer; }
+a:hover { color:#000; text-decoration: none;}
+
+
+h1{ display: inline; font-size:20px; margin-bottom: 15px; line-height:24px; color:#3e71dd; font-weight: normal;}
+h1 a{ color:#fff; text-decoration: none; }
+h1 a:hover { color:#fff; text-decoration: underline; }
+h1.seo { display: none; }
+h2 { color: #2C2C2C; display: inline; font-size:14px; font-weight: normal; margin: 10px 0 0 10px; width: 200px; position: absolute; }
+h3 { color: #000; margin: 10px 0 20px; text-align: center; }
+h4 { font-size: 18px; font-weight: normal; text-align:center; }
+
+
+#header { position: relative; background-color: #fff; }
+#header_content { margin: 0 auto; position: relative; width: 960px; }
+#header_content img { margin-bottom: 20px; }
+
+.tag-line { float: right; margin-top: 40px; position: relative; right: 80px;	}
+.tag-line p { text-align: center; }
+ button { margin: 10px 70px 0 0; float: right; -moz-border-radius:3px; }
+ 
+.button { -moz-border-radius: 3px 3px 3px 3pxx; }
+
+li.impact { }	
+
+#navigation { background-color: #f9f4e9; position: absolute; bottom: 0; height: 40px; width: 100%; }
+#navigation ul { background: url(images/nav_bg2.png) no-repeat left; width: 960px; margin: 0 auto; }
+#navigation ul li { background: url(images/nav_bg2.png) no-repeat left;  display: inline; float: left; margin-right: 15px; }
+#navigation ul li a { color:#8F7758; font-size:14px; font-weight:normal; line-height:40px; padding-left: 20px; text-decoration:none; }
+#navigation ul li a:hover { color:#77553a; text-decoration:none; }
+	
+#header h1{ float:left; display:inline; padding-top:12px;  }
+
+
+#container { background-color:#6D6D6D; padding: 20px 0; }
+
+#main { margin: 0 auto; width: 960px; }
+#content { background-color: #fff; padding: 20px; width: 920px; -moz-border-radius:5px; -webkit-border-radius:5px; border-radius: 5px; box-shadow: 5px 5px 10px #666; -webkit-box-shadow: 5px 5px 10px #666; -moz-box-shadow: 5px 5px 10px #666; }
+
+.text { float: left; margin-bottom: 20px; width: 500px; }
+	ul.text { }
+	ul.text li { margin-left: 40px; margin-bottom: 10px; }
+.home { margin-bottom: 10px; position: relative; }
+
+.pricing { color:#666666; float: right; font-size: 16px; line-height: 20px; width: 400px; text-align:center; font-weight: normal; }
+	ul.pricing { margin-bottom: 5px; text-align:left; }
+	ul.pricing li { list-style-type: none; margin: 5px 0px 5px 140px; }
+	a.free { text-decoration: underline; line-height: 40px; }
+	p.minutes { margin-top:5px; font-size: 12px; }
+.tag { color:#000; float: left; font-size: 24px;line-height: 32px; position: relative; top: 70px; width: 400px; text-align: center; }
+.text_end { float: right; margin-bottom: 10px; width: 500px; }
+	ul.text_end li { margin-top: 10px; margin-left: 40px; margin-bottom: 10px; }
+.bubble {  }
+
+.try { display: inline; font-weight: bold; margin: 0px 0 0px 375px; position: relative; width: 300px; }
+.try a { display: inline; text-decoration: none; top: -10px; left: 40px; position: absolute; width: 150px; }
+.try a:hover { }
+.try img { display: inline; }
+
+.inline { display: inline; }
+
+#footer {  width:100%; height:60px; letter-spacing: 1px; line-height:44px;  background:-webkit-gradient(linear, left top, left bottom, from(#447aec), to(#1e3c7f));
+    background:-moz-linear-gradient(top, #447aec, #1e3c7f);
+    background:linear-gradient(top, #447aec, #1e3c7f); color:#ccc; text-align: center;}
+#footer a { color:#ccc; letter-spacing: 1px;text-decoration: none; }
+
+
+
+.button { -moz-box-shadow: 0 0 2px #978f6c; -webkit-box-shadow: 0 0 2px #978f6c;}
+
+li.impact  {
+	background: url(images/button_bg.png) no-repeat;
+	list-style-type: none;
+	margin: 5px auto;
+	padding: 10px 0 0 0;
+	width: 176px;
+	height: 56px;
+	text-align: center;
+}
+
+li.impact a {
+	color:#747474;
+	display: inline;
+	font-weight: bold;
+	font-size: 14px;
+	height: 56px;
+	text-decoration: none;
+	line-height: 18px;
+	margin: 10px 0 0px 0;
+	width: 150px;
+}
+
+/*.impact a {
+	position:relative;
+	border-color:#ccc;
+	text-align: center;
+	text-decoration: none;
+	padding: 2px;
+	font-weight: normal;
+	background:#1e3c7f;
+	color:#666;
+	width: 150px;
+	
+	
+
+	/* css3 */
+	/* NOTE: box-shadow is not currently in any CSS3 module. It may be reappear in a different form altogether
+	-moz-box-shadow:0 0 4px rgba(0,0,0,0.4);
+	-webkit-box-shadow:0 0 4px rgba(0,0,0,0.4);
+	box-shadow:0 0 4px rgba(0,0,0,0.4); /* standards version last */
+	/* NOTE: webkit gradient implementation is not as per spec 
+    background:-webkit-gradient(linear, left top, left bottom, from(#447aec), to(#1e3c7f));
+    background:-moz-linear-gradient(top, #fff, #fff);
+    background:linear-gradient(top, #447aec, #1e3c7f); /* standards version last 
+}*/
+
+li.google a {
+	display:block;
+	width:280px;
+	height:40px;
+	overflow:hidden;
+	border:1px solid transparent;
+	list-style-type: none;
+	line-height:64px;
+	text-decoration:none;
+	margin: 10px auto;
+	
+	/* css3 */
+	text-shadow:0 -1px 0 rgba(0,0,0,0.5);
+	-moz-border-radius:5px;
+	-webkit-border-radius:5px;
+	border-radius:5px; /* standards version last */
+}
+
+.twitter a {
+	position:relative;
+	border-color:#a8eaec;
+	text-decoration: none;
+	text-transform:lowercase;
+	text-indent:20px;
+	letter-spacing:40px;
+	font:bold 60px/1 Tahoma, sans-serif;
+	line-height:60px;
+	color:#76DDF8;
+	background:#daf6f7;
+
+	/* css3 */
+	text-shadow: 3px 3px 1px #fff, -3px -3px 1px #fff, 3px -3px 1px #fff, -3px 3px 1px #fff;
+	/* NOTE: box-shadow is not currently in any CSS3 module. It may be reappear in a different form altogether */
+	-moz-box-shadow:0 0 4px rgba(0,0,0,0.4);
+	-webkit-box-shadow:0 0 4px rgba(0,0,0,0.4);
+	box-shadow:0 0 4px rgba(0,0,0,0.4); /* standards version last */
+	/* NOTE: webkit gradient implementation is not as per spec */
+	background:-webkit-gradient(linear, left top, left bottom, from(#dbf7f8), to(#88e1e6));
+	background:-moz-linear-gradient(top, #dbf7f8, #88e1e6);
+	background:linear-gradient(top, #dbf7f8, #88e1e6); /* standards version last */
+}
+
+li.google {
+	list-style-type: none;	
+}
+
+.google a {
+	position:relative;
+	border-color:none;
+	text-decoration: none;
+	text-transform:lowercase;
+	text-indent:16px;
+	letter-spacing:1px;
+	padding: 10px;
+	font: 24px arial, sans-serif;
+	color:#fff;
+	background:#1e3c7f;
+	
+
+	/* css3 */
+	/* NOTE: box-shadow is not currently in any CSS3 module. It may be reappear in a different form altogether */
+	-moz-box-shadow:0 0 4px rgba(0,0,0,0.4);
+	-webkit-box-shadow:0 0 4px rgba(0,0,0,0.4);
+	box-shadow:0 0 4px rgba(0,0,0,0.4); /* standards version last */
+	/* NOTE: webkit gradient implementation is not as per spec */
+    background:-webkit-gradient(linear, left top, left bottom, from(#447aec), to(#1e3c7f));
+    background:-moz-linear-gradient(top, #447aec, #1e3c7f);
+    background:linear-gradient(top, #447aec, #1e3c7f); /* standards version last */
+}
+
+
+.technorati a {
+	position:relative;
+	border-color:#266F12;
+	text-indent:-9000px;
+	font-size:108px;
+	color:#b62b91;
+	background:#086B04;
+
+	/* css3 */
+	/* NOTE: box-shadow is not currently in any CSS3 module. It may be reappear in a different form altogether */
+	-moz-box-shadow:0 0 4px rgba(0,0,0,0.4);
+	-webkit-box-shadow:0 0 4px rgba(0,0,0,0.4);  	
+	box-shadow:0 0 4px rgba(0,0,0,0.4); /* standards version last */
+	/* NOTE: webkit gradient implementation is not as per spec */
+	background:-webkit-gradient(linear, left top, left bottom, from(#a3d679), to(#086b04));
+	background:-moz-linear-gradient(top, #a3d679, #086b04);
+	background:linear-gradient(top, #a3d679, #086b04); /* standards version last */
+}
+
+/* create the oval */
+/*.google a:before {
+	content:"\00a0";
+	position:absolute;
+	top:5px;
+	right:-5px;
+	width:40px;
+	height:25px;
+	border:8px solid #f5f5f5;
+   
+	/* css3 */
+	-moz-border-radius:45px / 35px;
+	-webkit-border-top-left-radius:45px 35px;
+	-webkit-border-top-right-radius:45px 35px;
+	-webkit-border-bottom-right-radius:45px 35px;
+	-webkit-border-bottom-left-radius:45px 35px;
+	border-radius:45px / 35px; /* standards version last */
+	/* NOTE: box-shadow is not currently in any CSS3 module. It may be reappear in a different form altogether */
+	-moz-box-shadow:0 0 2px rgba(0,0,0,0.6);
+	-webkit-box-shadow:0 0 2px rgba(0,0,0,0.6);
+	box-shadow:0 0 2px rgba(0,0,0,0.6); /* standards version last */
+}
+
+/* creat the triangle */
+/*.google a:after {
+	content:"\00a0";
+	position:absolute;
+	top:40px;
+	left:20px;
+	width:0;
+	height:0;
+	border-width:0 0 18px 13px;
+	border-style:solid;
+	border-color:transparent #f5f5f5;
+}
+
