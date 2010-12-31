@@ -9,6 +9,10 @@ class HomeController < ApplicationController
     render :layout=>false
   end
   
+  def homecss
+    render :layout=>false
+  end
+  
   def how_were_different
     
   end
