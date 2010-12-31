@@ -10,7 +10,7 @@ class HomeController < ApplicationController
   end
   
   def homecss
-    render :layout=>false
+    render :layout=>false, :content_type => "text/css"
   end
   
   def how_were_different
