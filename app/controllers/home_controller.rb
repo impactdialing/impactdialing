@@ -2,6 +2,7 @@ class HomeController < ApplicationController
   def index
     if request.subdomains.first=="caller"
       redirect_to :controller=>"caller"
+      return
     else
       #redirect_to :controller=>"client"
     end
