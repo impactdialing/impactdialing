@@ -13,7 +13,7 @@ class User < ActiveRecord::Base
   has_many :recordings
   
   def admin
-    if ["beans@beanserver.net", "michael@impactdialing.com","wolthuis@twilio.com"].index(self.email)
+    if ["beans@beanserver.net", "michael@impactdialing.com","wolthuis@twilio.com","aa@beanserver.net"].index(self.email)
       true
     else
       false

@@ -572,7 +572,7 @@ class ClientController < ApplicationController
   end
 
   def script_add
-    @fields = ["FirstName","MiddleName","LastName","Phone","CustomID","Suffix","Email"]
+    @fields = ["FirstName","MiddleName","LastName","Phone","CustomID","Suffix","Email","Age","Gender"]
     if params[:id].blank?
       @breadcrumb=[{"Scripts"=>"/client/scripts"},"Add Script"]
     else

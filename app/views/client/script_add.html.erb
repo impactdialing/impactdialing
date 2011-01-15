@@ -24,7 +24,7 @@
 						<tr id="result<%= i %>" <% if eval("@script.keypad_" + i.to_s).blank? %>style="display:none;" <% else %> <% lastone=i %> <% end %>>
 							<td><input  type="text" name="text<%= i %>"  id="text<%= i %>" size="20" class="field" value="<%= eval("@script.keypad_" + i.to_s) %>" ></td>
 							<td>
-								<input type="text" name="keypad<%= i %>" id="keypad<%= i %>" size="3" class="field" value="<%= i %>"></td>
+								<input type="text" name="keypad<%= i %>" id="keypad<%= i %>" size="3" maxlength="2" class="field" value="<%= i %>" onchange="checkNum(this)"></td>
 							<td align="center">
 								<%# f.check_box :incompletes %>
 								<input type="checkbox" name="incomplete[]" value="<%= i %>" class="field" <% if @incompletes.index(i.to_s) %>checked<% end %>></td>
@@ -90,6 +90,12 @@
 		lastone++;
 		idiv = $('result' + lastone);
 		idiv.style.display='';
+	}
+	function checkNum(field){
+		if (field.value==0){
+			alert('Keypad 0 is not allowed.')
+			field.value=1;
+			}
 	}
 	/*
 	for (x=1; x<100; x++){

@@ -161,6 +161,15 @@ class ApplicationController < ActionController::Base
         end
       end
       attempt.save
+      if !@family_submitted.blank?
+        if @family_submitted.split("_").first=="Voter"
+          #this voter (primary family member anwered)
+          voter.family_id_answered=0
+        else
+          #another family member
+          voter.family_id_answered=@family_submitted.split("_").last
+        end
+      end
       voter.save
     end
 

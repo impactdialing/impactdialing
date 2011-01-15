@@ -29,7 +29,7 @@
 		    Realtime.init("<%= TWILIO_ACCOUNT %>");
 		    Realtime.listen("/<%= @session.session_key %>", {
 			onmessage:  function(msg) {
-		     // $("body").append("<pre>"+JSON.stringify(msg)+"</pre>");
+//		      $("body").append("<pre>"+JSON.stringify(msg)+"</pre>");
 				for (var command in msg) {
 					
 					if (command=="voter_start"){
@@ -37,19 +37,39 @@
 						voter_data = JSON.parse(msg[command]);
 						var voter_out="";
 						var attempt_id='';
+						var family=[];
 						for (var info in voter_data){
 							if (info=='attempt_id')
 								attempt_id = voter_data[info];
+							else if (info=='family')
+								family = voter_data[info];
 							else
 								voter_out+= info + ": " + voter_data[info] + "<br/>";
 						}
-
 
 						$('#statusdiv').html("Status: In call");
 						$('#actiondiv').html('<input type="button" class="button" value="Submit and Keep Calling" onclick="processresult(' + attempt_id+ ',0);"> <input type="button" class="button" value="Submit and Stop Calling" onclick="processresult(' + attempt_id + ',1);"> <input type="button" class="button" value="End Call" onclick="dropcall(' + attempt_id + ');">');
 					 	$('#caller_buttons').effect("highlight", {"color":"#bc833c"}, 2000);
 						
-						$('#voter_info').html('<div style="font-size:.7em;">Connected to:</div> ' + voter_out );
+						if (family.length==0){
+							$('#voter_info').html('<input type="hidden" name="familychoice" id="familychoice" value=""><div style="font-size:.7em;">Connected to:</div> ' + voter_out );
+						} else {
+							voter_out='';
+							for (var index = 0; index < family.length; ++index) {
+								var item = family[index];
+								var selected='';
+								if (item.classname=='Voter')
+									selected='checked';
+							  	info = '<div class="fam"> <input type="radio" name="familychoice" value="' + item.classname + "_" + item.id + '" ' + selected + ' > Household member ' + (index+1) + ':<br/>';
+								for (var prop in item){
+										if(prop!="classname" && prop!="id")
+											info+= prop + ": " + item[prop] + "<br/>";
+								}
+								info+='</div> <br/>';
+								voter_out = voter_out + info;
+							}
+							$('#voter_info').html('<div style="font-size:.7em;">Connected to:</div> ' + voter_out );
+						}
 					 	$('#voter_info').effect("highlight", {"color":"#bc833c"}, 2000);
 					 	$('#response').effect("highlight", {"color":"#bc833c"}, 2000);
 					}
@@ -91,9 +111,27 @@
             
 		  });
 		
+		function $RF(el, radioGroup) {
+		    if($(el).type && $(el).type.toLowerCase() == 'radio') {
+		        var radioGroup = $(el).name;
+		        var el = $(el).form;
+		    } else if ($(el).tagName.toLowerCase() != 'form') {
+		        return false;
+		    }
+
+		    var checked = $(el).getInputs('radio', radioGroup).find(
+		        function(re) {return re.checked;}
+		    );
+		    return (checked) ? $F(checked) : null;
+		}
+
+
 		function processresult(attempt_id, hangup){
+
 			var disposition = $("#disposition").val();
-			var jsonUrl = "/caller/submit_result/?key=<%= @session.session_key %>&attempt=" + attempt_id + "&disposition=" + disposition + "&hangup=" + hangup;
+			var familychoice = get_family_value();
+			
+			var jsonUrl = "/caller/submit_result/?key=<%= @session.session_key %>&attempt=" + attempt_id + "&disposition=" + disposition + "&hangup=" + hangup + "&family="+ familychoice;
 			$("#actiondiv").html(ajax_load);
 			$.getJSON(jsonUrl,{}, 
 				function(json) {
@@ -133,4 +171,19 @@
 				function(json) {}
 			);
 			
+		}
+		
+		
+
+		function get_family_value() {
+			var rad_val='';
+			for (var i=0; i < document.myform.familychoice.length; i++)
+			{
+				if (document.myform.familychoice[i].checked)
+			      {
+			      rad_val = document.myform.familychoice[i].value;
+
+			      }
+			   }
+			return rad_val;
 		}

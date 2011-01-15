@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20101029064619) do
+ActiveRecord::Schema.define(:version => 20110115130215) do
 
   create_table "call_attempts", :force => true do |t|
     t.integer  "voter_id"
@@ -125,6 +125,33 @@ ActiveRecord::Schema.define(:version => 20101029064619) do
   create_table "campaigns_voter_lists", :id => false, :force => true do |t|
     t.integer "campaign_id"
     t.integer "voter_list_id"
+  end
+
+  create_table "family", :force => true do |t|
+    t.integer  "voter_id"
+    t.string   "Phone"
+    t.string   "CustomID"
+    t.string   "LastName"
+    t.string   "FirstName"
+    t.string   "MiddleName"
+    t.string   "Suffix"
+    t.string   "Email"
+    t.string   "result"
+    t.integer  "campaign_id"
+    t.integer  "user_id"
+    t.boolean  "active",                 :default => true
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string   "status",                 :default => "not called"
+    t.integer  "voter_list_id"
+    t.integer  "caller_session_id"
+    t.boolean  "call_back",              :default => false
+    t.integer  "caller_id"
+    t.string   "result_digit"
+    t.integer  "attempt_id"
+    t.datetime "result_date"
+    t.integer  "last_call_attempt_id"
+    t.datetime "last_call_attempt_time"
   end
 
   create_table "lists", :force => true do |t|
@@ -314,6 +341,9 @@ ActiveRecord::Schema.define(:version => 20101029064619) do
     t.datetime "result_date"
     t.integer  "last_call_attempt_id"
     t.datetime "last_call_attempt_time"
+    t.string   "age"
+    t.string   "gender"
+    t.integer  "family_id_answered"
   end
 
   add_index "voters", ["Phone"], :name => "index_voters_on_Phone"

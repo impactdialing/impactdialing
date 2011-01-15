@@ -130,9 +130,7 @@ textarea.size1 { height:180px; }
 
 .buttons { text-align: right; padding:10px; background:#eee; border-top:solid 1px #e0e0e0; }
 .caller_buttons { padding:10px; background:#eee; border-top:solid 1px #e0e0e0; }
-.buttons2 {  background:#eee; border-top:solid 1px #e0e0e0; padding:8px;
-	-moz-border-radius: 12px;  	    -webkit-border-radius: 12px;  
-	}
+.buttons2 {  background:#eee; border-top:solid 1px #e0e0e0; padding:8px; -moz-border-radius: 12px;  	    -webkit-border-radius: 12px;  }
 .buttons .button{ margin-left:3px;}
 .buttons2 .button{ margin-left:3px;font-size:1.4em; padding:8px;}
 
@@ -257,3 +255,4 @@ tr.odd td{
 .statTable tr td {font-size:12px; padding:2px;}
 
 .rt{padding:10px; border:1px solid #b0722f; -moz-border-radius: 15px; border-radius: 15px; font-size:1.3em; line-height:1.2em;}
+.fam{padding:4px; border:1px solid #000; -moz-border-radius: 8px; border-radius: 8px; font-size:.8em; line-height:1.2em; color:#000;}

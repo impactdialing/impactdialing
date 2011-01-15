@@ -153,6 +153,7 @@ class CallerController < ApplicationController
     @session = CallerSession.find_by_session_key(params[:key])
     return if @session.blank?
     @clean_digit=params[:disposition]
+    @family_submitted=params[:family]
     @caller = @session.caller
     @campaign = @session.campaign
 

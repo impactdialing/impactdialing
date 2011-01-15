@@ -488,10 +488,17 @@ class CallinController < ApplicationController
       @voter.save
 
       if @campaign.use_web_ui
-        @publish_channel="/#{@session.session_key}"
-        @publish_key="voter_start"
-        publish_hash = {"attempt_id"=>@attempt.id}
         script = @campaign.script
+        @publish_channel="/#{@session.session_key}"
+        
+        family=[hash_from_voter_and_script(script,attempt.voter)]
+        
+        @attempt.voter.families.each do |f|
+        	family << hash_from_voter_and_script(script,f)
+        end
+        
+        @publish_key="voter_start"
+        publish_hash = {"attempt_id"=>@attempt.id, "family"=>family}
         if !script.voter_fields.nil?
           fields = JSON.parse(script.voter_fields)
           fields.each do |field|
@@ -509,6 +516,19 @@ class CallinController < ApplicationController
     render :template => 'callin/index.xml.builder', :layout => false
     return
 
+  end
+  
+  def hash_from_voter_and_script(script,voter)
+    publish_hash={:id=>voter.id, :classname=>voter.class.to_s}
+#    publish_hash={:id=>voter.id}
+    if !script.voter_fields.nil?
+      fields = JSON.parse(script.voter_fields)
+      fields.each do |field|
+#        logger.info "field: #{field}"
+        publish_hash[field] = eval("voter.#{field}")
+      end
+    end
+    publish_hash
   end
 
   def hold

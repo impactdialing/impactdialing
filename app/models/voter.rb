@@ -2,6 +2,7 @@ class Voter < ActiveRecord::Base
   #  validates_uniqueness_of :Phone, :scope => [:campaign_id, :active] :message => " is already entered in this campaign"
   validates_presence_of :Phone, :on => :create, :message => "can't be blank"
   belongs_to :voter_list, :class_name => "VoterList", :foreign_key => "voter_list_id"
+  has_many :families
   cattr_reader :per_page
   @@per_page = 25
  
@@ -10,9 +11,9 @@ class Voter < ActiveRecord::Base
   def unique_number
     if !self.Phone.blank?
      if new_record?
-       errors.add("Phone is already entered in this campaign and") if Voter.find_by_Phone(self.Phone, :conditions=>"active=1 and campaign_id=#{self.campaign_id}")
+#       errors.add("Phone is already entered in this campaign and") if Voter.find_by_Phone(self.Phone, :conditions=>"active=1 and campaign_id=#{self.campaign_id}")
      else
-       errors.add("Phone is already entered in this campaign and") if Voter.find_by_Phone(self.Phone, :conditions=>"active=1 and campaign_id=#{self.campaign_id} and id <> #{self.id}")
+#       errors.add("Phone is already entered in this campaign and") if Voter.find_by_Phone(self.Phone, :conditions=>"active=1 and campaign_id=#{self.campaign_id} and id <> #{self.id}")
      end     
    end
   end
