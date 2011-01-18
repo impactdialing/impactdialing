@@ -13,6 +13,7 @@
 		<select class="field" id="campaign_predective_type" name="campaign[predective_type]"> 
 			<option value=""  <% if @campaign.predective_type=="" %>selected<% end %>>Original</option>
 			<option value="algorithm1" <% if @campaign.predective_type=="algorithm1" %>selected<% end %>> michael's algorithm</option>
+			<option value="algorithm2" <% if @campaign.predective_type=="algorithm2" %>selected<% end %>> michael's modified algorithm</option>
 		</select>
       </p>
 		<p><label>Original Algorithm Settings:</label></p>

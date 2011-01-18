@@ -211,7 +211,11 @@ class Campaign < ActiveRecord::Base
 		#final calcs
 		stats[:short_new_call_caller_threshold] = 1/(stats[:total_short].to_f / stats[:total_long].to_f).to_f
 		stats[:short_new_call_time_threshold] = ( stats[:avg_short] + (2*stats[:short_deviation]) ) - ( stats[:avg_ring_time] - (2*stats[:avg_ring_time_deviation]) )
-		stats[:long_new_call_time_threshold] = ( stats[:avg_long] + (2*stats[:long_deviation]))- ( stats[:avg_ring_time] - (2*stats[:avg_ring_time_deviation]))
+		if self.predective_type=="algorithm1"
+		  stats[:long_new_call_time_threshold] = ( stats[:avg_long] + (2*stats[:long_deviation]))- ( stats[:avg_ring_time] - (2*stats[:avg_ring_time_deviation]))
+	  else
+		  stats[:long_new_call_time_threshold] = stats[:avg_duration]
+    end
     
     # bimodal pacing algorithm:
     # when stats[:short_new_call_caller_threshold] callers are on calls of length less than stats[:short_time]s, dial  stats[:dials_needed] lines at stats[:short_new_call_time_threshold]) seconds after the last call began.

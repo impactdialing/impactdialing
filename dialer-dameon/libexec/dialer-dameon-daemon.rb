@@ -118,15 +118,17 @@ DaemonKit::Application.running! do |config|
       pool_size=0
       
       short_counter=0
-      callers_on_call.each do |session|
-         if !session.attempt_in_progress.blank?
-           attempt = CallAttempt.find(session.attempt_in_progress)
-           if attempt.duration!=nil && attempt.duration < stats[:short_time]
-             short_counter+=1
+      if campaign.predective_type=="algorithm1"
+        callers_on_call.each do |session|
+           if !session.attempt_in_progress.blank?
+             attempt = CallAttempt.find(session.attempt_in_progress)
+             if attempt.duration!=nil && attempt.duration < stats[:short_time]
+               short_counter+=1
+             end
            end
-         end
+        end
+        DaemonKit.logger.info "short_counter #{short_counter}"
       end
-      DaemonKit.logger.info "short_counter #{short_counter}"
       
       if stats[:ratio_short]>0  && short_counter >0
         max_short=(1/stats[:ratio_short]).round
