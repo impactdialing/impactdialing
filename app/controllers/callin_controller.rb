@@ -268,7 +268,17 @@ class CallinController < ApplicationController
     render :template => 'callin/index.xml.builder', :layout => false
   end
 
-
+  
+  def pause_then_start_conference
+    #when disposition aleady entered on web, pause then redirect here before 
+    # putting back in conference. a workaround for tilwio bug
+    @session = CallerSession.find(params[:session])
+    
+    @campaign = @session.campaign
+    render :template => 'callin/start_conference.xml.builder', :layout => false
+    return
+  end
+  
   def leaveConf
     # reached after call ends
     #session #campaign
@@ -286,7 +296,8 @@ class CallinController < ApplicationController
     #check for web response
     if @session.attempt_in_progress==nil
       #aleady entered result on web
-      render :template => 'callin/start_conference.xml.builder', :layout => false
+#      render :template => 'callin/start_conference.xml.builder', :layout => false
+      render :template => 'callin/pause_then_start_conference.xml.builder', :layout => false
       return
     end
 
