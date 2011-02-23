@@ -38,7 +38,7 @@
 
 
 <div class="box" style="width:400px;">
-	<%= render :partial => 'boxtop', :locals=>{:title=>"Add voters to #{@campaign.name}"} %>
+	<%= render :partial => 'boxtop', :locals=>{:title=>"Add phone numbers to #{@campaign.name}"} %>
 	<% form_tag ({}, :multipart => true) do %>
 
 	<!-- Form --> 
@@ -48,7 +48,7 @@
 			<%= file_field 'upload', 'datafile' %>
 		</p>	
 	   <p>
-	        <label>Voter List Name <span>(Required Field)</span></label>
+	        <label>List Name <span>(Required Field)</span></label>
 			<%= text_field_tag "list_name" %>
 	      </p>
 <!--

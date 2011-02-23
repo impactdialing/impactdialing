@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110115130215) do
+ActiveRecord::Schema.define(:version => 20110222124435) do
 
   create_table "call_attempts", :force => true do |t|
     t.integer  "voter_id"
@@ -38,6 +38,7 @@ ActiveRecord::Schema.define(:version => 20110115130215) do
     t.datetime "tEndTime"
     t.float    "tPrice"
     t.datetime "answertime"
+    t.string   "dialer_mode"
   end
 
   add_index "call_attempts", ["call_end"], :name => "index_call_attempts_on_call_end"
@@ -112,7 +113,7 @@ ActiveRecord::Schema.define(:version => 20110115130215) do
     t.string   "caller_id"
     t.boolean  "caller_id_verified",       :default => false
     t.boolean  "use_answering",            :default => true
-    t.string   "predective_type",          :default => "algorithm1"
+    t.string   "predective_type",          :default => "preview"
     t.integer  "recording_id"
     t.boolean  "use_recordings",           :default => false
     t.integer  "max_calls_per_caller",     :default => 20
@@ -127,7 +128,7 @@ ActiveRecord::Schema.define(:version => 20110115130215) do
     t.integer "voter_list_id"
   end
 
-  create_table "family", :force => true do |t|
+  create_table "families", :force => true do |t|
     t.integer  "voter_id"
     t.string   "Phone"
     t.string   "CustomID"
@@ -152,6 +153,8 @@ ActiveRecord::Schema.define(:version => 20110115130215) do
     t.datetime "result_date"
     t.integer  "last_call_attempt_id"
     t.datetime "last_call_attempt_time"
+    t.string   "Gender"
+    t.string   "Age"
   end
 
   create_table "lists", :force => true do |t|
@@ -341,9 +344,10 @@ ActiveRecord::Schema.define(:version => 20110115130215) do
     t.datetime "result_date"
     t.integer  "last_call_attempt_id"
     t.datetime "last_call_attempt_time"
-    t.string   "age"
-    t.string   "gender"
+    t.string   "Age"
+    t.string   "Gender"
     t.integer  "family_id_answered"
+    t.integer  "num_family",             :default => 1
   end
 
   add_index "voters", ["Phone"], :name => "index_voters_on_Phone"

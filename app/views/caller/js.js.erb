@@ -6,6 +6,7 @@
 		$.ajaxSetup ({   cache: false  });
 
 		function dialTimedOut(){
+		//	alert('dialTimedOut');
 			$('#statusdiv').html("Status: Not Connected");
 			$('#actiondiv').html('Enter your phone number: <input type="text" name="numtocall"> <input type="submit" class="button" value="Start Taking Calls">');
 		 	$('#voter_info').hide();
@@ -28,88 +29,114 @@
 		 	$('#caller_buttons').effect("highlight", {"color":"#bc833c"}, 2000);
 		    Realtime.init("<%= TWILIO_ACCOUNT %>");
 		    Realtime.listen("/<%= @session.session_key %>", {
-			onmessage:  function(msg) {
-//		      $("body").append("<pre>"+JSON.stringify(msg)+"</pre>");
-				for (var command in msg) {
-					
-					if (command=="voter_start"){
-
-						voter_data = JSON.parse(msg[command]);
-						var voter_out="";
-						var attempt_id='';
-						var family=[];
-						for (var info in voter_data){
-							if (info=='attempt_id')
-								attempt_id = voter_data[info];
-							else if (info=='family')
-								family = voter_data[info];
-							else
-								voter_out+= info + ": " + voter_data[info] + "<br/>";
-						}
-
-						$('#statusdiv').html("Status: In call");
-						$('#actiondiv').html('<input type="button" class="button" value="Submit and Keep Calling" onclick="processresult(' + attempt_id+ ',0);"> <input type="button" class="button" value="Submit and Stop Calling" onclick="processresult(' + attempt_id + ',1);"> <input type="button" class="button" value="End Call" onclick="dropcall(' + attempt_id + ');">');
-					 	$('#caller_buttons').effect("highlight", {"color":"#bc833c"}, 2000);
-						
-						if (family.length==0){
-							$('#voter_info').html('<input type="hidden" name="familychoice" id="familychoice" value=""><div style="font-size:.7em;">Connected to:</div> ' + voter_out );
-						} else {
-							voter_out='';
-							for (var index = 0; index < family.length; ++index) {
-								var item = family[index];
-								var selected='';
-								if (item.classname=='Voter')
-									selected='checked';
-							  	info = '<div class="fam"> <input type="radio" name="familychoice" value="' + item.classname + "_" + item.id + '" ' + selected + ' > Household member ' + (index+1) + ':<br/>';
-								for (var prop in item){
-										if(prop!="classname" && prop!="id")
-											info+= prop + ": " + item[prop] + "<br/>";
-								}
-								info+='</div> <br/>';
-								voter_out = voter_out + info;
+				onmessage:  function(msg) {
+					// $("body").append("<pre>"+JSON.stringify(msg)+"</pre>");
+					for (var command in msg) {
+						if (command=="voter_start"){
+							voter_data = JSON.parse(msg[command]);
+							var voter_out="";
+							var attempt_id='';
+							var family=[];
+							for (var info in voter_data){
+								if (info=='attempt_id')
+									attempt_id = voter_data[info];
+								else if (info=='family')
+									family = voter_data[info];
+								else
+									voter_out+= info + ": " + voter_data[info] + "<br/>";
 							}
-							$('#voter_info').html('<div style="font-size:.7em;">Connected to:</div> ' + voter_out );
+
+							$('#statusdiv').html("Status: In call");
+							$('#actiondiv').html('<input type="button" class="button" value="Submit and Keep Calling" onclick="processresult(' + attempt_id+ ',0);"> <input type="button" class="button" value="Submit and Stop Calling" onclick="processresult(' + attempt_id + ',1);"> <input type="button" class="button" value="End Call" onclick="dropcall(' + attempt_id + ');">');
+					 		$('#caller_buttons').effect("highlight", {"color":"#bc833c"}, 2000);
+						
+							if (family.length==0){
+								$('#voter_info').html('<input type="hidden" name="familychoice" id="familychoice" value=""><div style="font-size:.7em;">Connected to:</div> ' + voter_out );
+							} else {
+								voter_out='';
+								for (var index = 0; index < family.length; ++index) {
+									var item = family[index];
+									var selected='';
+									if (item.classname=='Voter')
+										selected='checked';
+							  		info = '<div class="fam"> <input type="radio" name="familychoice" value="' + item.classname + "_" + item.id + '" ' + selected + ' > Household member ' + (index+1) + ':<br/>';
+										for (var prop in item){
+											if(prop!="classname" && prop!="id")
+												info+= prop + ": " + item[prop] + "<br/>";
+										}	
+									info+='</div> <br/>';
+									voter_out = voter_out + info;
+								}
+								$('#voter_info').html('<div style="font-size:.7em;">Connected to:</div> ' + voter_out );
+							}
+					 		$('#voter_info').effect("highlight", {"color":"#bc833c"}, 2000);
+					 		$('#response').effect("highlight", {"color":"#bc833c"}, 2000);
 						}
-					 	$('#voter_info').effect("highlight", {"color":"#bc833c"}, 2000);
-					 	$('#response').effect("highlight", {"color":"#bc833c"}, 2000);
-					}
 					
-					if (command=="hangup"){
-					 	$('#voter_info').hide();
-					 	$('#response').hide();
-						$('#statusdiv').html("Status: Not Connected");
-						$('#actiondiv').html('Enter your phone number: <input type="text" name="numtocall"> <input type="submit" class="button" value="Start Taking Calls">');
-					 	$('#caller_buttons').effect("highlight", {"color":"#bc833c"}, 2000);
-					}
-					if (command=="waiting"){
-					 	$('#voter_info').hide();
-					 	$('#response').hide();
-						$('#statusdiv').html("Status: In call queue");
-						$('#actiondiv').html('<input type="button" class="button" value="Stop taking calls" onclick="imdone();">');
-					 	$('#caller_buttons').effect("highlight", {"color":"#bc833c"}, 2000);
-					}
+						if (command=="hangup"){
+					 		$('#voter_info').hide();
+							$('#previewInfo').hide();
+					 		$('#response').hide();
+							$('#statusdiv').html("Status: Not Connected");
+							$('#actiondiv').html('Enter your phone number: <input type="text" name="numtocall"> <input type="submit" class="button" value="Start Taking Calls">');
+					 		$('#caller_buttons').effect("highlight", {"color":"#bc833c"}, 2000);
+						}
+						
+						if (command=="waiting"){
+							clearTimeout(t);
+							var callMode = msg[command];
+							if (callMode=='preview') {
+
+								var url = '/caller/preview_choose?key=<%= @session.session_key %>';
+								$.ajax({
+								    type: 'GET',
+								    dataType: 'script',
+								    url: url
+								  });
+								
+						 		$('#voter_info').hide();
+						 		$('#response').hide();
+								$('#statusdiv').html("Status: In preview dial queue");
+								$('#actiondiv').html('<input type="button" class="button" value="Stop taking calls" onclick="imdone();"> <span id="callButton"></span> <input type="button" onclick="showPreview();" value="Skip" class="button">');
+						 		$('#caller_buttons').effect("highlight", {"color":"#bc833c"}, 2000);
+							} else if (callMode=="preview_dialing") {
+						 		$('#voter_info').hide();
+						 		$('#response').hide();
+								$('#previewInfo').hide();
+								$('#statusdiv').html("Status: Preview call dial in progress");
+								$('#actiondiv').html('<input type="button" class="button" value="Stop taking calls" onclick="imdone();">');
+						 		$('#caller_buttons').effect("highlight", {"color":"#bc833c"}, 2000);
+							} else {
+						 		$('#voter_info').hide();
+						 		$('#response').hide();
+								$('#previewInfo').hide();
+								$('#statusdiv').html("Status: In call queue");
+								$('#actiondiv').html('<input type="button" class="button" value="Stop taking calls" onclick="imdone();">');
+						 		$('#caller_buttons').effect("highlight", {"color":"#bc833c"}, 2000);
+								
+							}
+						}
 					
-					if(command=="confirm") {// + "'s value is " + msg[command]);
-						clearTimeout(t);
-						$('#statusdiv').html("Status: Confirm to start taking calls");
-						$('#actiondiv').html('<input type="button" class="button" value="Click here to start taking calls" onclick="imready();">');
-					 	$('#caller_buttons').effect("highlight", {"color":"#bc833c"}, 2000);
+						if(command=="confirm") {// + "'s value is " + msg[command]);
+							clearTimeout(t);
+							$('#statusdiv').html("Status: Confirm to start taking calls");
+							$('#actiondiv').html('<input type="button" class="button" value="Click here to start taking calls" onclick="imready();">');
+					 		$('#caller_buttons').effect("highlight", {"color":"#bc833c"}, 2000);
+						}
 					}
-				}
-			} ,
-			ondisconnect: function() { 
+				} ,
+				ondisconnect: function() { 
 					$('#voter_info').hide();
+					$('#previewInfo').hide();
 				 	$('#response').hide();
 					$('#statusdiv').html("Status: Not Connected");
 					$('#actiondiv').html('Enter your phone number: <input type="text" name="numtocall"> <input type="submit" class="button" value="Start Taking Calls">');
 				 	$('#caller_buttons').effect("highlight", {"color":"#bc833c"}, 2000);
 				 },
-			onconnect: function() { }
-
-		}
-			);
-            
-		  });
+				onconnect: function() { }
+			}
+		);
+	});
 		
 		function $RF(el, radioGroup) {
 		    if($(el).type && $(el).type.toLowerCase() == 'radio') {
@@ -152,6 +179,7 @@
 				}
 			);
 		}
+
 		
 		function imready(){
 			var jsonUrl = "/caller/session_ready/<%= @session.session_key %>";
@@ -186,4 +214,37 @@
 			      }
 			   }
 			return rad_val;
+		}
+
+		var currPreview=0;
+
+		function showPreview(){
+			if (voters.length==0) {
+				imdone();
+				alert('There are no more numbers to call in the <%= escape_javascript(@campaign.name) %> campaign.');
+				document.location.href='/caller/';
+				return;
+			}
+			$('#previewInfo').show();
+//			$('#previewInfo').effect("highlight", {"color":"#bc833c"}, 2000);
+			if (currPreview>=voters.length)
+				currPreview=0;
+			curVoter = voters[currPreview];
+			document.getElementById('previewvoterInfo').innerHTML='Name: ' + curVoter[0] + ' ' + curVoter[1] + '<br/>Phone: ' + curVoter[2];
+			document.getElementById('callButton').innerHTML='<input type="button" class="button" onclick="dialVoter(' + curVoter[3] + ');" value="Dial">';
+			currPreview++;
+			if (currPreview>=voters.length)
+				currPreview=0;
+		}
+		
+		function dialVoter(vid){
+				$('#previewInfo').hide();
+				var url = '/caller/preview_dial?key=<%= @session.session_key %>&voter_id=' + vid;
+				$.ajax({
+				    type: 'GET',
+				    dataType: 'script',
+				    url: url
+				  });
+			
+//			document.location.href='/caller/preview_dial?key=<%= params[:key] %>&voter_id=' + vid;
 		}

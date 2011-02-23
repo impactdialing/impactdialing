@@ -1,0 +1,6 @@
+var voters=[];
+<% @voters.each do |v| %>
+	v=["<%= escape_javascript v.FirstName %>","<%= escape_javascript v.LastName %>","<%= escape_javascript v.Phone %>","<%=  v.id %>"]
+	voters.push(v)
+<% end %>
+showPreview();

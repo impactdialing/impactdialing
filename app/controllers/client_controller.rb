@@ -57,46 +57,99 @@ class ClientController < ApplicationController
         @caller.multi_user=true
         @caller.user_id=@user.id
         @caller.save
-        @script = Script.new
-        @script.name="Voter ID Example"
-        @script.keypad_1="Strong supportive"
-        @script.keypad_2="Lean supportive"
-        @script.keypad_3="Undecided"
-        @script.keypad_4="Lean opposed"
-        @script.keypad_5="Strong opposed"
-        @script.keypad_6="Refused"
-        @script.keypad_7="Not home/call back"
-        @script.keypad_8="Language barrier"
-        @script.keypad_9="Wrong number"
-        @script.incompletes=["7"].to_json
-        @script.script="Hi, I'm a volunteer with the such-and-such campaign.
+        
+        if Script.find_by_name_and_user_id("Voter ID Example",@user.id)==nil
+          @script = Script.new
+          @script.name="Voter ID Example"
+          @script.keypad_1="Strong supportive"
+          @script.keypad_2="Lean supportive"
+          @script.keypad_3="Undecided"
+          @script.keypad_4="Lean opposed"
+          @script.keypad_5="Strong opposed"
+          @script.keypad_6="Refused"
+          @script.keypad_7="Not home/call back"
+          @script.keypad_8="Language barrier"
+          @script.keypad_9="Wrong number"
+          @script.incompletes=["7"].to_json
+          @script.script="Hi, is ___ there?
 
-        I'm voting for such-and-such because...
+          My name's ___ and I'm a volunteer with the such-and-such campaign.
 
-        Can we count on you to vote for such-and-such?"
-        @script.active=1
-        @script.user_id=@user.id
-        @script.save
-        @script = Script.new
-        @script.name="GOTV Example"
-        @script.keypad_1="Will vote early"
-        @script.keypad_2="Will vote on election day"
-        @script.keypad_3="Already voted"
-        @script.keypad_4="Will not vote"
-        @script.keypad_5="Not a supporter"
-        @script.keypad_6="Refused"
-        @script.keypad_7="Not home/call back"
-        @script.keypad_8="Language barrier"
-        @script.keypad_9="Wrong number"
-        @script.incompletes=["7"].to_json
-        @script.script="Hi, I'm a volunteer with the such-and-such campaign.
+          I'm voting for such-and-such because...
 
-        I'm voting for such-and-such because...
+          Can we count on you to vote for such-and-such?"
+          @script.active=1
+          @script.user_id=@user.id
+          @script.save
+        end
+      
+        # @script = Script.new
+        #       @script.name="GOTV Example"
+        #       @script.keypad_1="Will vote early"
+        #       @script.keypad_2="Will vote on election day"
+        #       @script.keypad_3="Already voted"
+        #       @script.keypad_4="Will not vote"
+        #       @script.keypad_5="Not a supporter"
+        #       @script.keypad_6="Refused"
+        #       @script.keypad_7="Not home/call back"
+        #       @script.keypad_8="Language barrier"
+        #       @script.keypad_9="Wrong number"
+        #       @script.incompletes=["7"].to_json
+        #       @script.script="Hi, I'm a volunteer with the such-and-such campaign.
+        # 
+        #       I'm voting for such-and-such because...
+        # 
+        #       Can we count on you to vote for such-and-such?"
+        #       @script.active=1
+        #       @script.user_id=@user.id
+        #       @script.save
 
-        Can we count on you to vote for such-and-such?"
-        @script.active=1
-        @script.user_id=@user.id
-        @script.save
+
+
+        if Script.find_by_name_and_user_id("Fundraising Example",@user.id)==nil
+          @script = Script.new
+          @script.name="Fundraising Example"
+          @script.keypad_1="Gave money"
+          @script.keypad_2="Requested remit"
+          @script.keypad_3="Will give later"
+          @script.keypad_4="Won't give again"
+          @script.keypad_5="Refused to talk"
+          @script.keypad_6="Not home"
+          @script.keypad_7="Call back"
+          @script.keypad_8="Wrong number"
+          @script.incompletes=["7","6"].to_json
+          @script.script="Hi, is ___ there?
+
+My name's ___, and I'm calling from the Organization to Make the World Better. 
+
+Will you donate to help our work?"
+          @script.active=1
+          @script.user_id=@user.id
+          @script.save
+        end
+
+        if Script.find_by_name_and_user_id("Sales Example",@user.id)==nil
+          @script = Script.new
+          @script.name="Sales Example"
+          @script.keypad_1="Bought the product"
+          @script.keypad_2="Wants more info"
+          @script.keypad_3="Not interested"
+          @script.keypad_4="Refused to talk"
+          @script.keypad_5="Not home"
+          @script.keypad_6="Call back"
+          @script.keypad_7="Wrong number"
+          @script.incompletes=["5","6"].to_json
+          @script.script="Hi, is ___ there?
+
+Hi! My name's ___. I'm calling from Widgets, Inc. We have some great new widgets in stock. 
+
+Do you want to buy a widget?"
+          @script.active=1
+          @script.user_id=@user.id
+          @script.save
+        end
+          
+                      
         if session[:user].blank?
           message = "Your account has been created"
         else
@@ -264,7 +317,9 @@ class ClientController < ApplicationController
       else
         caller_num=APP_NUMBER
       end
-      if campaign.use_answering
+      if campaign.predective_type=="preview"
+        a=t.call("POST", "Calls", {'Timeout'=>"20", 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}"})
+      elsif campaign.use_answering
         a=t.call("POST", "Calls", {'Timeout'=>"25", 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}", 'IfMachine'=>'Hangup'})
       else
         a=t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}"})
@@ -273,6 +328,7 @@ class ClientController < ApplicationController
       require 'hpricot'
       @doc = Hpricot::XML(a)
       c = CallAttempt.new
+      c.dialer_mode=campaign.predective_type
       c.sid=(@doc/"Sid").inner_html
       c.voter_id=voter.id
       c.campaign_id=campaign.id
@@ -454,7 +510,7 @@ class ClientController < ApplicationController
 
   def voter_upload
     @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id)
-    @breadcrumb=[{"Campaigns"=>"/client/campaigns"},{@campaign.name=>"/client/campaign_view/#{@campaign.id}"}, "Upload voters"]
+    @breadcrumb=[{"Campaigns"=>"/client/campaigns"},{@campaign.name=>"/client/campaign_view/#{@campaign.id}"}, "Upload Phone Numbers"]
     @lists=VoterList.find_all_by_user_id_and_active(@user.id,true, :order=>"name")
     if (request.post?)
       if params[:upload].blank?

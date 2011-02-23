@@ -54,6 +54,12 @@ DaemonKit::Application.running! do |config|
       DaemonKit.logger.info "#{campaign.name} is still dialing, returning"
       return
     end
+
+    if campaign.predective_type=="preview"
+      DaemonKit.logger.info "#{campaign.name} is preview dialing, returning"
+      return
+    end
+
     stats = campaign.call_stats(10)
     answer_pct = (stats[:answer_pct] * 100).to_i
     callers = CallerSession.find_all_by_campaign_id_and_on_call(k,1)
@@ -63,7 +69,7 @@ DaemonKit::Application.running! do |config|
     # callers = campaign_hash["callers"]
     # calls = campaign_hash["calls"]
     voters = campaign.voters("not called")
-    DaemonKit.logger.info "#{campaign.name}: Callers logged in: #{callers.length}, Callers on call: #{callers_on_call.length}, Callers not on call:  #{not_on_call}, Voters to call: #{voters.length}, Calls in progress: #{calls.length}, Answer pct: #{answer_pct}"
+    DaemonKit.logger.info "#{campaign.name}: Callers logged in: #{callers.length}, Callers on call: #{callers_on_call.length}, Callers not on call:  #{not_on_call}, Numbers to call: #{voters.length}, Calls in progress: #{calls.length}, Answer pct: #{answer_pct}"
     
     if callers.length==0
       in_progress = campaign.end_all_calls(Dialer.account, Dialer.auth, Dialer.appurl) 
@@ -80,6 +86,11 @@ DaemonKit::Application.running! do |config|
     else
       ratio_dial=1
     end
+    
+    if campaign.predective_type.index("power_")!=nil
+      ratio_dial = campaign.predective_type[6,1].to_i
+      DaemonKit.logger.info "ratio_dial: #{ratio_dial}, #{callers.length}, #{campaign.predective_type.index("power_")}"
+    end
 
     ratio_dial=campaign.ratio_override if campaign.ratio_override!=nil && !campaign.ratio_override.blank? && campaign.ratio_override > 0
 
@@ -88,17 +99,19 @@ DaemonKit::Application.running! do |config|
     end
     
     
-    if campaign.predective_type==""
+    if (campaign.predective_type=="" || campaign.predective_type.index("power_")==0)
       #original method
       maxCalls=callers.length * ratio_dial
+      DaemonKit.logger.info "maxCalls: #{maxCalls}"
       newCalls=calls.length
-      if campaign.ending_window_method!="Not used"
-        if campaign.ending_window_method=="Average"
-          newCalls = newCalls - campaign.calls_in_ending_window(10,"average").length
-        elsif campaign.ending_window_method=="Longest"
-          newCalls = newCalls - campaign.calls_in_ending_window(10,"longest").length
-        end
-      end
+      # if campaign.ending_window_method!="Not used"
+      #   if campaign.ending_window_method=="Average"
+      #     newCalls = newCalls - campaign.calls_in_ending_window(10,"average").length
+      #   elsif campaign.ending_window_method=="Longest"
+      #     newCalls = newCalls - campaign.calls_in_ending_window(10,"longest").length
+      #   end
+      # end
+      newCalls  = newCalls - maxCalls
     else
       #new mode
       #for each caller on a call
@@ -171,14 +184,16 @@ DaemonKit::Application.running! do |config|
         end
       end
 
+      maxCalls = pool_size
+      newCalls = calls.length
+
+      newCalls=0 if newCalls<0
+      DaemonKit.logger.info "#{newCalls} newcalls #{maxCalls} maxcalls"
     end
 
-    maxCalls = pool_size
-    newCalls = calls.length
-
-    newCalls=0 if newCalls<0
-    DaemonKit.logger.info "#{newCalls} newcalls #{maxCalls} maxcalls"
     
+    DaemonKit.logger.info "newCalls: #{newCalls}, maxCalls: #{maxCalls}"
+      
     if true #(DaemonKit.env=="development" && voters.length>0)  || campaign.id==27 || campaign.id==65 || voters.length > 10
       voter_ids=[]
       voters.each do |voter|

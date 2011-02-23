@@ -77,7 +77,7 @@ class CallerController < ApplicationController
 
         #flash[:notice]= "Calling you now"
         t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-        a=t.call("POST", "Calls", {'Caller' => APP_NUMBER, 'Called' => params[:numtocall], 'Url'=>"#{APP_URL}/callin/get_ready?campaign=#{params[:id]}&session=#{@session.id}"})
+        a=t.call("POST", "Calls", {'Caller' => APP_NUMBER, 'Called' => params[:numtocall], 'Url'=>"#{APP_URL}/callin/get_ready?campaign=#{params[:id]}&session=#{@session.id}&Digits=*"})
         @doc = Hpricot::XML(a)
         @session.sid=(@doc/"Sid").inner_html
         @session.save
@@ -109,7 +109,11 @@ class CallerController < ApplicationController
     a=t.call("POST", "Calls/#{session.sid}", {'CurrentUrl'=>"#{APP_URL}/callin/start_conference?session=#{session.id}&campaign=#{session.campaign_id}"})
 
     #update rt
-    send_rt (params[:id],{'waiting'=>'ok'})
+    if Campaign.find(session.campaign_id).predective_type=="preview"
+      send_rt (params[:id],{'waiting'=>'preview'})
+    else
+      send_rt (params[:id],{'waiting'=>'ok'})
+    end
     render :text=>  "ok"
   end
 
@@ -171,7 +175,13 @@ class CallerController < ApplicationController
       t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
       a=t.call("POST", "Calls/#{@session.sid}", {'CurrentUrl'=>"#{APP_URL}/callin/start_conference?session=#{@session.id}&campaign=#{@campaign.id}"})
 
-      send_rt (params[:key],{'waiting'=>'ok'})
+      if @campaign.predective_type=="preview"
+        send_rt (params[:key],{'waiting'=>'preview'})
+      else
+        send_rt (params[:key],{'waiting'=>'ok'})
+      end
+
+
       render :text=>  "ok"
     end
 
@@ -181,10 +191,27 @@ class CallerController < ApplicationController
     response.headers["Content-Type"] = 'text/javascript'
     
     @session = CallerSession.find_by_session_key(params[:id])
+    @campaign=@session.campaign
     respond_to do |format|
         format.js
     end
 #    render
+  end
+  
+  def preview_choose
+    @session = CallerSession.find_by_session_key(params[:key])
+    @campaign = @session.campaign
+    @voters = @campaign.voters("not called",true,25)
+    render :layout=>false
+  end
+  
+  def preview_dial
+    @session = CallerSession.find_by_session_key(params[:key])
+    @campaign = @session.campaign
+    @voter = Voter.find_by_campaign_id_and_id (@campaign.id, params[:voter_id])
+    @voter.call_and_connect_to_session(@session)
+    send_rt (params[:key],{'waiting'=>'preview_dialing'})
+    render :text=>  "ok"
   end
 
 end

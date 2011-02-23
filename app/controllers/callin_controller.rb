@@ -214,7 +214,11 @@ class CallinController < ApplicationController
       if @campaign.use_web_ui
         @publish_channel="/#{@session.session_key}"
         @publish_key="waiting"
-        @publish_value="ok"
+        if @campaign.predective_type=="preview"
+          @publish_value="preview"
+        else
+          @publish_value="ok"
+        end
       end
 
       if params[:Digits]=="*"
@@ -311,7 +315,12 @@ class CallinController < ApplicationController
       #       end
       # initial call-in
       #      @play="#{APP_URL}/exitBeep.wav"
-      @play="#{APP_URL}/wav/beep_enter_call_result.wav"
+      if @session.session_key.blank?
+        @play="#{APP_URL}/wav/beep_enter_call_result.wav"
+      else
+        # from web ui
+        @play="#{APP_URL}/wav/webui_beep_enter_call_result.wav"
+      end
       #      @say="Please enter your call result. Then press star to submit and keep taking calls."
       if @session.voter_in_progress!=nil
         #Voter.connection.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED") if @session.voter_in_progress.to_s=="16528"
@@ -339,7 +348,12 @@ class CallinController < ApplicationController
         if @campaign.use_web_ui
           @publish_channel="/#{@session.session_key}"
           @publish_key="waiting"
-          @publish_value="ok"
+          if @campaign.predective_type=="preview"
+            @publish_value="preview"
+          else
+            @publish_value="ok"
+          end
+
         end
 
 
@@ -405,7 +419,11 @@ class CallinController < ApplicationController
       #   attempt.call_end=Time.now
       #   attempt.save
       # end
-
+      
+       if params[:CallStatus]!="completed" && @campaign.use_web_ui && @campaign.predective_type=="preview"  && params[:selected_session]!=nil
+          @session = CallerSession.find(params[:selected_session])
+          send_rt (@session.session_key,{'waiting'=>'preview'})
+      end
 
       if params[:DialStatus]=="hangup-machine"
         @voter.status="Hangup or answering machine"
@@ -419,8 +437,8 @@ class CallinController < ApplicationController
         @voter.status="No answer busy signal"
         attempt.status="No answer busy signal"
         @voter.call_back=true
-        t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-        a=t.call("POST", "Calls/#{attempt.sid}", {'CurrentUrl'=>"#{APP_URL}/callin/voterEndCall?attempt=#{attempt.id}"})
+        # t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+        # a=t.call("POST", "Calls/#{attempt.sid}", {'CurrentUrl'=>"#{APP_URL}/callin/voterEndCall?attempt=#{attempt.id}"})
       elsif params[:CallStatus]=="canceled"
         @voter.status="Call cancelled"
         attempt.status="Call cancelled"
@@ -442,6 +460,9 @@ class CallinController < ApplicationController
       attempt.call_end=Time.now
       attempt.save
       @voter.save
+      # if @campaign.predective_type=="preview" && params[:selected_session]
+      #   send_rt (CallerSession.find(params[:selected_session]).session_key,{'waiting'=>'preview'})
+      # end
       if @voter.caller_session_id!=nil
         @session = CallerSession.find(@voter.caller_session_id)
         if @session.endtime==nil
@@ -470,8 +491,11 @@ class CallinController < ApplicationController
       return
     end
 
-
-    @availableCaller = CallerSession.find_by_campaign_id_and_available_for_call_and_on_call(@campaign.id, true, true, :order=>"rand()")
+    if params[:selected_session].blank?
+      @availableCaller = CallerSession.find_by_campaign_id_and_available_for_call_and_on_call(@campaign.id, true, true, :order=>"rand()")
+    else
+      @availableCaller = CallerSession.find_by_id_and_available_for_call_and_on_call(params[:selected_session], true, true, :order=>"rand()")
+    end
     if @availableCaller.blank?
       @pause=2
       @redirect="#{APP_URL}/callin/voterFindSession?campaign=#{@campaign.id}&voter=#{@voter.id}&attempt=#{attempt.id}"

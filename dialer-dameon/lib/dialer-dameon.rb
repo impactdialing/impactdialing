@@ -50,12 +50,15 @@ class Dialer
     end
     #DaemonKit.logger.info "APP_URL: #{APP_URL}"
     c = CallAttempt.new
+    c.dialer_mode=campaign.predective_type
     c.voter_id=voter.id
     c.campaign_id=campaign.id
     c.status="Call ready to dial"
     c.save
 #    DaemonKit.logger.info caller_num
-    if campaign.use_answering
+    if campaign.use_answering.predective_type=="preview"
+      a=t.call("POST", "Calls", {'Timeout'=>"20", 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}&attempt=#{c.id}"})
+    elsif campaign.use_answering
       if campaign.use_recordings
         a=t.call("POST", "Calls", {'Timeout'=>campaign.answer_detection_timeout, 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}&attempt=#{c.id}", 'IfMachine'=>'Continue'})
       else

@@ -28,6 +28,10 @@ class AdminController < ApplicationController
 
   end
   
+  def index
+    
+  end
+  
   def users
     @users = User.all
   end
