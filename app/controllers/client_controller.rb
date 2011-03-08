@@ -672,10 +672,10 @@ Do you want to buy a widget?"
       begin
         @incompletes = JSON.parse(@script.incompletes)
       rescue
-        @incompletes=[]
+        @incompletes={}
       end
     else
-      @incompletes=[]
+      @incompletes={}
     end
 
     if @script.voter_fields!=nil
