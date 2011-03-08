@@ -1,0 +1,36 @@
+<% 
+	thisRecord = eval("@script.result_set_#{num}") 
+	if thisRecord!=nil
+		thisJSON=JSON.parse(thisRecord)
+	else
+		thisJSON={}
+	end
+
+%>
+
+<div style="border:10px solid #efefef; margin:10px; -moz-border-radius: 15px; border-radius: 15px; background-color:#efefef; display:none;" id="result_container_<%= num %>">
+<label>Call Results <%= num %></label><br/>
+<table border=0>
+						<tr>
+							<td valign="top">Result</td>
+							<td align="left" valign="top">Keypad</td>
+							<td align="left" valign="top">Incomplete*</td>
+							<Td></td>
+						</tr>
+					<% for i in 1..99 do %>
+						<tr id="result_<%= num %>_<%= i %>" <% if thisJSON["keypad_#{i}"].blank? && i!=1 %>style="display:none;" <% else %> <% @lastone[i-i]=i %> <% end %>>
+							<td><input  type="text" name="text_<%= num %>_<%= i %>"  id="text_<%= num %>_<%= i %>" size="20" class="field" value="<%= thisJSON["keypad_#{i}"] %>" ></td>
+							<td>
+								<input type="text" name="keypad_<%= num %>_<%= i %>" id="keypad_<%= num %>_<%= i %>" size="3" maxlength="2" class="field" value="<%= i %>" onchange="checkNum(this)"></td>
+								<td align="center">
+									<%# f.check_box :incompletes %>
+									<input type="checkbox" name="incomplete_<%= num %>_[]" value="<%= i %>" class="field" <% if !@incompletes.nil? && @incompletes[num.to_s]!=nil && @incompletes[num.to_s].index(i.to_s) %>checked<% end %>></td>
+										<td align="center">
+
+							<td>&nbsp  <a href="javascript:var x=$('text_<%= num %>_<%= i %>').value='';var x=$('keypad<%= i %>').value='';" class="ico del">&nbsp</a></td>
+						</tr>
+					<% end %>
+					</table>
+					<br/>
+					&nbsp;<input type="button" value="New result" onclick="dlastone(<%= num %>);" class="button">
+</div>					

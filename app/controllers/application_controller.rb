@@ -149,12 +149,23 @@ class ApplicationController < ActionController::Base
 
       voter.attempt_id=attempt.id if attempt!=nil
       if @campaign.script!=nil
-        voter.result=eval("@campaign.script.keypad_" + @clean_digit)
-        attempt.result=eval("@campaign.script.keypad_" + @clean_digit)
+        if @clean_response.blank?
+          #old format
+          voter.result=eval("@campaign.script.keypad_" + @clean_digit)
+          attempt.result=eval("@campaign.script.keypad_" + @clean_digit)
+        else
+          voter.result=@clean_response
+          attempt.result=@clean_response
+        end
         begin
           if @campaign.script.incompletes!=nil
-            if eval(@campaign.script.incompletes).index(@clean_digit)
+            if @clean_incomplete!=nil
               voter.call_back=true
+            else
+              #old format
+              if eval(@campaign.script.incompletes).index(@clean_digit)
+                voter.call_back=true
+              end
             end
           end
         rescue

@@ -156,18 +156,53 @@ class CallerController < ApplicationController
     #@session @clean_digit @caller @campaign
     @session = CallerSession.find_by_session_key(params[:key])
     return if @session.blank?
-    @clean_digit=params[:disposition]
+    @campaign = @session.campaign
+    @script = @campaign.script
+    @clean_digit=nil
+    @clean_response=nil
+    @clean_incomplete=nil
+    if @script.incompletes!=nil && @script.incompletes.index("{")
+      incompletes=JSON.parse(@script.incompletes)
+    else
+      incompletes={}
+    end
+    
+    
+    #new style results
+    result_json={}
+    @script.result_sets_used.each do |r|
+      this_result_set = JSON.parse(eval("@script.result_set_#{r}" ))
+      thisKeypadval=eval("params[:disposition#{r}]" )
+      this_result_text=this_result_set["keypad_#{thisKeypadval}"]
+      result_json["result_#{r}"]=[this_result_text,thisKeypadval]
+      @clean_digit=thisKeypadval if @clean_digit.blank?
+      @clean_response=this_result_text if @clean_response==nil
+      logger.info "!!!@clean_response=#{@clean_response}!!!" 
+      this_incomplete = incompletes[r.to_s] || []
+      @clean_incomplete=true if this_incomplete.index(thisKeypadval.to_s)
+    end
+    @script.notes_used.each do |r|
+      thisResult=eval("params[:note#{r}]" )
+      result_json["note_#{r}"]=[thisResult]
+    end
+    if @session.voter_in_progress!=nil
+      voter = Voter.find(@session.voter_in_progress)    
+      voter.result_json=result_json
+      voter.save
+    end
+    attempt = CallAttempt.find(@session.attempt_in_progress)    
+    attempt.result_json=result_json
+    attempt.save
+        
+    #@clean_digit=params[:disposition]
+    
     @family_submitted=params[:family]
     @caller = @session.caller
-    @campaign = @session.campaign
-
     attempt = CallAttempt.find(params[:attempt])
     t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
     a=t.call("POST", "Calls/#{attempt.sid}", {'CurrentUrl'=>"#{APP_URL}/callin/voterEndCall?attempt=#{attempt.id}"})
-
-    handle_disposition_submit
-
-
+    handle_disposition_submit      
+ 
     #update rt
     if params[:hangup]=="1"
       session_end

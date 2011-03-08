@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110222124435) do
+ActiveRecord::Schema.define(:version => 20110308182418) do
 
   create_table "call_attempts", :force => true do |t|
     t.integer  "voter_id"
@@ -39,6 +39,7 @@ ActiveRecord::Schema.define(:version => 20110222124435) do
     t.float    "tPrice"
     t.datetime "answertime"
     t.string   "dialer_mode"
+    t.text     "resut_json"
   end
 
   add_index "call_attempts", ["call_end"], :name => "index_call_attempts_on_call_end"
@@ -177,7 +178,7 @@ ActiveRecord::Schema.define(:version => 20110222124435) do
   create_table "scripts", :force => true do |t|
     t.string   "name"
     t.text     "script"
-    t.boolean  "active",       :default => true
+    t.boolean  "active",        :default => true
     t.integer  "user_id"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -282,6 +283,26 @@ ActiveRecord::Schema.define(:version => 20110222124435) do
     t.string   "keypad_99"
     t.string   "incompletes"
     t.string   "voter_fields"
+    t.text     "result_set_1"
+    t.text     "result_set_2"
+    t.text     "result_set_3"
+    t.text     "result_set_4"
+    t.text     "result_set_5"
+    t.text     "result_set_6"
+    t.text     "result_set_7"
+    t.text     "result_set_8"
+    t.text     "result_set_9"
+    t.text     "result_set_10"
+    t.string   "note_1"
+    t.string   "note_2"
+    t.string   "note_3"
+    t.string   "note_4"
+    t.string   "note_5"
+    t.string   "note_6"
+    t.string   "note_7"
+    t.string   "note_8"
+    t.string   "note_9"
+    t.string   "note_10"
   end
 
   create_table "seos", :force => true do |t|
@@ -348,6 +369,7 @@ ActiveRecord::Schema.define(:version => 20110222124435) do
     t.string   "Gender"
     t.integer  "family_id_answered"
     t.integer  "num_family",             :default => 1
+    t.text     "result_json"
   end
 
   add_index "voters", ["Phone"], :name => "index_voters_on_Phone"

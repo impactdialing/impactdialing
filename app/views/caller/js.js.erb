@@ -84,6 +84,9 @@
 						
 						if (command=="waiting"){
 							clearTimeout(t);
+							<% @campaign.script.notes_used.each do |n| %>
+								$("#note<%=n%>").val('');
+							<% end %>
 							var callMode = msg[command];
 							if (callMode=='preview') {
 
@@ -158,8 +161,11 @@
 			var disposition = $("#disposition").val();
 			var familychoice = get_family_value();
 			
-			var jsonUrl = "/caller/submit_result/?key=<%= @session.session_key %>&attempt=" + attempt_id + "&disposition=" + disposition + "&hangup=" + hangup + "&family="+ familychoice;
+			var jsonUrl = "/caller/submit_result/?key=<%= @session.session_key %>&attempt=" + attempt_id <% @campaign.script.result_sets_used.each do |r| %>+ "&disposition<%= r %>=" +  escape($("#disposition<%=r%>").val()) <% end %> <% @campaign.script.notes_used.each do |n| %>+ "&note<%= n %>=" +  escape($("#note<%=n%>").val()) <% end %> + "&hangup=" + hangup + "&family="+ familychoice;
 			$("#actiondiv").html(ajax_load);
+//			document.getElementById('dbx').value=jsonUrl;
+			//alert(jsonUrl);
+			//$("#db").value=jsonUrl;
 			$.getJSON(jsonUrl,{}, 
 				function(json) {
 					//var result = "Language code is \"<strong>" + json.responseData.language + "\"";

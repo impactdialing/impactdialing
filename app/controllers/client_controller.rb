@@ -628,25 +628,40 @@ Do you want to buy a widget?"
   end
 
   def script_add
-    @fields = ["FirstName","MiddleName","LastName","Phone","CustomID","Suffix","Email","Age","Gender"]
+    @fields = ["CustomID","FirstName","MiddleName","LastName","Suffix","Age","Gender","Phone","Email"]
     if params[:id].blank?
       @breadcrumb=[{"Scripts"=>"/client/scripts"},"Add Script"]
     else
       @breadcrumb=[{"Scripts"=>"/client/scripts"},"Edit Script"]
     end
     @script = Script.find_by_id_and_user_id(params[:id],@user.id)
+    @numResults=0
+    if @script!=nil
+      for i in 1..10 do
+        @numResults+=1 if !eval("@script.result_set_#{i}").blank?
+      end
+      @numNotes=0
+      for i in 1..10 do
+        @numNotes+=1 if !eval("@script.note_#{i}").blank?
+      end
+    else
+      @numResults=1
+      @numNotes=0
+    end
     if @script==nil
       @script = Script.new
-      @script.keypad_1="Strong supportive"
-      @script.keypad_2="Lean supportive"
-      @script.keypad_3="Undecided"
-      @script.keypad_4="Lean opposed"
-      @script.keypad_5="Strong opposed"
-      @script.keypad_6="Refused"
-      @script.keypad_7="Not home/call back"
-      @script.keypad_8="Language barrier"
-      @script.keypad_9="Wrong number"
-      @script.incompletes=["7"].to_json
+      @rs={}
+      @rs["keypad_1"]="Strong supportive"
+      @rs["keypad_2"]="Lean supportive"
+      @rs["keypad_3"]="Undecided"
+      @rs["keypad_4"]="Lean opposed"
+      @rs["keypad_5"]="Strong opposed"
+      @rs["keypad_6"]="Refused"
+      @rs["keypad_7"]="Not home/call back"
+      @rs["keypad_8"]="Language barrier"
+      @rs["keypad_9"]="Wrong number"
+#      @rs.incompletes=["7"].to_json
+      @script.result_set_1=@rs.to_json
     end
     if @script.new_record?
       @label="Add Result"
@@ -655,7 +670,7 @@ Do you want to buy a widget?"
     end
     if @script.incompletes!=nil
       begin
-        @incompletes = eval(@script.incompletes)
+        @incompletes = JSON.parse(@script.incompletes)
       rescue
         @incompletes=[]
       end
@@ -675,37 +690,64 @@ Do you want to buy a widget?"
 
     if request.post?
       @script.update_attributes(params[:script])
+      #results_json={}
+      numResults = params[:numResults]
+      for r in 1..numResults.to_i do
+        thisResults={}
 
-      for i in 1..99 do
-        thisKeypadval=eval("params[:keypad#{i}]" )
-        if !thisKeypadval.blank? && !isnumber(thisKeypadval)
-          flash.now[:error]= "Keypad value entered '#{thisKeypadval}' must be numeric"
-          return
+        for i in 1..99 do
+          thisKeypadval=eval("params[:keypad_#{r}_#{i}]" )
+          if !thisKeypadval.blank? && !isnumber(thisKeypadval)
+            flash.now[:error]= "Keypad value for call results #{r} entered '#{thisKeypadval}' must be numeric"
+            return
+          end
+        end
+        
+        for i in 1..99 do
+          #@script.attributes = { "keypad_#{r}_#{i}" => nil }
+          thisResults["keypad_#{i}"] = nil
+        end
+
+        for i in 1..99 do
+          thisResult=eval("params[:text_#{r}_#{i}]")
+          thisKeypadval=eval("params[:keypad_#{r}_#{i}]" )
+          if !thisResult.blank? && !thisKeypadval.blank?
+            #@script.attributes = { "keypad_#{r}_#{thisKeypadval}" => thisResult }
+            thisResults["keypad_#{i}"] =  thisResult
+            #          eval("@script.keypad_#{thisKeypadval}") = thisResult
+            #        else
+            #          eval("@script.keypad_" + thisKeypadval) = nil
+          end
+        end
+        #results_json[r]=thisResults
+        logger.info "Done with #{r}: #{thisResults.inspect}"
+        @script.attributes =   { "result_set_#{r}" => thisResults.to_json }
+      end
+      
+      for i in 1..10 do
+        @script.attributes = { "note_#{i}" => nil }
+        thisNote=eval("params[:note_#{i}]")
+        @script.attributes = { "note_#{i}" => thisNote } if !thisNote.blank?
+      end
+
+      all_incompletes={}
+      for i in 1..10 do
+        this_incomplete=eval("params[:incomplete_#{i}_]")
+        if this_incomplete.nil?
+          all_incompletes[i]=[]
+        else
+          all_incompletes[i]=this_incomplete
         end
       end
+      @script.incompletes=all_incompletes.to_json
 
-      for i in 1..99 do
-        @script.attributes = { "keypad_#{i}" => nil }
-      end
-
-      for i in 1..99 do
-        thisResult=eval("params[:text#{i}]")
-        thisKeypadval=eval("params[:keypad#{i}]" )
-        if !thisResult.blank? && !thisKeypadval.blank?
-          @script.attributes = { "keypad_#{thisKeypadval}" => thisResult }
-
-          #          eval("@script.keypad_#{thisKeypadval}") = thisResult
-          #        else
-          #          eval("@script.keypad_" + thisKeypadval) = nil
-        end
-      end
         
       if @script.valid?
-        if params[:incomplete]
-          @script.incompletes=params[:incomplete].to_json
-        else
-          @script.incompletes=nil
-        end
+        # if params[:incomplete]
+        #   @script.incompletes=params[:incomplete].to_json
+        # else
+        #   @script.incompletes=nil
+        # end
 
         if params[:voter_field]
           @script.voter_fields=params[:voter_field].to_json

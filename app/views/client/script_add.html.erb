@@ -1,101 +1,176 @@
+
 <%= error_messages_for :script %>
-<% lastone=0 %>
+<% @lastone=[0,0,0,0,0,0,0,0,0,0,0]%>
 <table>
 	<tr>
 		<td valign="top">
-			<div class="box" style="width:400px;">
-				<%= render :partial => 'boxtop', :locals=>{:title=>@label} %>
+			<div class="box" style="width:520px;">
+				<%= render :partial => 'boxtop', :locals=>{:title=>@label, :lastone=>@lastone} %>
 
-				<% form_for :script do |f| -%>
+				<%# form_for :script do |f| -%>
+				<%# form_for :script => {:name => 'callerForm', :id => 'callerForm'}   do |f| %>
+				<% form_for :script, :url => { :action => "script_add" , :id=>@script.id}, :html => {:name => 'callerForm', :id => 'callerForm'}   do |f| %>
+
 			    <div class="form">
 			      <p>
 			        <label>Name <span>(Required Field)</span></label>
 					<%= f.text_field :name, {:class=>"field"} %>
 			      </p>
-					<label>Call Results</label><br/>
-					<table border=0>
-						<tr>
-							<td>Result</td>
-							<td align="left">Keypad</td>
-							<td align="left">Incomplete<sup>*</sup></td>
-							<Td></td>
-						</tr>
-					<% for i in 1..99 do %>
-						<tr id="result<%= i %>" <% if eval("@script.keypad_" + i.to_s).blank? %>style="display:none;" <% else %> <% lastone=i %> <% end %>>
-							<td><input  type="text" name="text<%= i %>"  id="text<%= i %>" size="20" class="field" value="<%= eval("@script.keypad_" + i.to_s) %>" ></td>
-							<td>
-								<input type="text" name="keypad<%= i %>" id="keypad<%= i %>" size="3" maxlength="2" class="field" value="<%= i %>" onchange="checkNum(this)"></td>
-							<td align="center">
-								<%# f.check_box :incompletes %>
-								<input type="checkbox" name="incomplete[]" value="<%= i %>" class="field" <% if @incompletes.index(i.to_s) %>checked<% end %>></td>
-							<td> &nbsp; <a href="javascript:var x=$('text<%= i %>').value='';var x=$('keypad<%= i %>').value='';" class="ico del">&nbsp</a></td>
-						</tr>
+					<% (1..10).each do |i| %>
+					 	<%= render :partial => 'call_result', :locals => { :num => i }  %>
 					<% end %>
-					</table><br/>
-					&nbsp;<input type="button" value="Add new result" onclick="dlastone();" class="button">
+					<% (1..10).each do |i| %>
+						<%= render :partial => 'call_note' , :locals => { :num => i }  %>
+
+					<% end %>
+					<br/>
+					<table align="center" width="100%" cellpadding="10" cellspacing="10">
+						<tr>
+							<td align="right"><input type="button" value="Add new result set" onclick="addResult();" class="button"></td>
+							<td><input type="button" value="Remove result set" onclick="remResult();" class="button"></td>
+						</tr>
+						<tr>
+							<td align="right"><input type="button" value="New note" onclick="addNote();" class="button"></td>
+							<td><input type="button" value="Remove note" onclick="delNote();" class="button"></td>
+						</tr>
+					</table>
+
 <br/><br/>					<sup>*</sup>
 					If a caller marks a phone call as an incomplete call result, the phone number will be added back to the campaign and tried again later.
 				</div>
-			    <div class="buttons">
-			      <input type="button" class="button" value="cancel" onclick="document.location.href='/client/scripts';"/>
-				<%= f.submit "submit", :disable_with => 'submiting...', :class=>"button" %>
-			    </div>
-			    <!-- End Form Buttons -->
-			</div>
-			<!-- End Box -->
-		</td>
-		<td> &nbsp; </td>
-		<td valign="top">
-			<div class="box" style="width:400px;">
-				<%= render :partial => 'boxtop', :locals=>{:title=>"Script"} %>
+<!--							    <div class="buttons">
+							      <input type="button" class="button" value="cancel" onclick="document.location.href='/client/scripts';"/>
+								<%= f.submit "submit", :disable_with => 'submiting...', :class=>"button" %>
+							    </div>-->
+							    <!-- End Form Buttons -->
+							</div>
+							<!-- End Box -->
+						</td>
+						<td> &nbsp; </td>
+						<td valign="top">
+							<div class="box" style="width:400px;">
+								<%= render :partial => 'boxtop', :locals=>{:title=>"Script"} %>
 
-			    <div class="form">
-			      <p>
-			        <label>Script</label>
-					<%= f.text_area :script, {:cols=>50, :rows=>10} %>
-			      </p>
-				</div>
-			    <div class="buttons">
-			      <input type="button" class="button" value="cancel" onclick="document.location.href='/client/scripts';"/>
-				<%= f.submit "submit", :disable_with => 'submiting...', :class=>"button" %>
-			    </div>
-			</div>
+							    <div class="form">
+							      <p>
+							        <label>Script</label>
+									<%= f.text_area :script, {:cols=>50, :rows=>10} %>
+							      </p>
+								</div>
+<!--							    <div class="buttons">
+							      <input type="button" class="button" value="cancel" onclick="document.location.href='/client/scripts';"/>
+								<%= f.submit "submit", :disable_with => 'submiting...', :class=>"button" %>
+							    </div>-->
+							</div>
 
-			<div class="box" style="width:400px;">
-				<%= render :partial => 'boxtop', :locals=>{:title=>"Additional Info"} %>
+							<div class="box" style="width:400px;">
+								<%= render :partial => 'boxtop', :locals=>{:title=>"Additional Info"} %>
 
-			    <div class="form">
-			      <p>
-			        <label>Display this information above the script:</label>
-					
-					<% @fields.each do |field| %>
-						<input  type="checkbox" name="voter_field[]" value="<%= field %>"  <% if @voter_fields.index(field) %>checked<% end %>> <%= field %><br/>
-					<% end %>
-			      </p>
-				</div>
-			    <div class="buttons">
-			      <input type="button" class="button" value="cancel" onclick="document.location.href='/client/scripts';"/>
-				<%= f.submit "submit", :disable_with => 'submiting...', :class=>"button" %>
-			    </div>
-				<% end -%>
-			</div>
+							    <div class="form">
+							      <p>
+							        <label>Display this information above the script:</label>
 
-		</td>
-	</tr>
-</table>
+									<% @fields.each do |field| %>
+										<input  type="checkbox" name="voter_field[]" value="<%= field %>"  <% if @voter_fields.index(field) %>checked<% end %>> <%= field %><br/>
+									<% end %>
+							      </p>
+								</div>
+<!--							    <div class="buttons">
+							      <input type="button" class="button" value="cancel" onclick="document.location.href='/client/scripts';"/>
+								<%= f.submit "submit", :disable_with => 'submiting...', :class=>"button" %>
+							    </div>-->
+								<input type="hidden" id="numResults" name="numResults" value="">
+								<input type="hidden" id="numNotes" name="numNotes" value="">
+								<% end -%>
+							</div>
+
+						</td>
+					</tr>
+				</table>
 
 <script>
-	var lastone=<%= lastone %>;
-	function dlastone() {
-		lastone++;
-		idiv = $('result' + lastone);
-		idiv.style.display='';
+	
+	var numResults=<%= @numResults %>;
+	var numNotes=<%= @numNotes %>;
+
+	for (i=1; i<=numResults;i++)
+		$('result_container_' + i).style.display='block';
+
+	for (i=1; i<=numNotes;i++)
+		$('note_container_' + i).style.display='block';
+	
+	function addResult(){
+		if (numResults==10){
+			alert ('Maximum number of result sets is 10');
+			return true;
+		}
+		numResults+=1;
+		for (i=1; i<=numResults;i++)
+			$('result_container_' + i).style.display='block';
 	}
+
+	function remResult(){
+		num=numResults;
+		if (num==1){
+			alert('You must have at least one result set.')
+			return true;
+		}
+		$('result_container_' + num).style.display='none';
+		numResults=numResults-1;
+	}
+
+	<% for i in 1..10 do %>
+		var lastone_<%= i %>=<%= @lastone[i] %>;
+	<% end %>
+
+	function dlastone(num) {
+		var lastone=0;
+		for (i=1;i<99;i++){
+			idiv = $('result_' + num + '_' + i);
+			if (idiv.style.display!=''){
+				lastone=i;
+				idiv.style.display='';
+				break;
+			}
+		}
+//		alert(lastone);
+//		lastone++;
+//		idiv = $('result_' + num + '_' + lastone);
+		
+	}
+	
+	function addNote(){
+		if (numNotes==10){
+			alert ('Maximum number of notes is 10');
+			return true;
+		}
+		
+		numNotes+=1;
+		for (i=1; i<=numNotes;i++)
+			$('note_container_' + i).style.display='block';
+	}
+
+
+	function delNote(){
+		if(numNotes==0)
+			return true;
+		num=numNotes;
+		$('note_container_' + num).style.display='none';
+		numNotes=numNotes-1;
+	}
+		
 	function checkNum(field){
 		if (field.value==0){
 			alert('Keypad 0 is not allowed.')
 			field.value=1;
 			}
+	}
+	
+	function saveForm(){
+		$('numResults').value=numResults;
+		$('numNotes').value=numNotes;
+		$('numResults').value=numResults;
+		$('callerForm').submit();
 	}
 	/*
 	for (x=1; x<100; x++){
