@@ -163,7 +163,7 @@ class ApplicationController < ActionController::Base
               voter.call_back=true
             else
               #old format
-              @campaign.script.incompletes.index("{")==nil
+              if @campaign.script.incompletes.index("{")==nil
                 if eval(@campaign.script.incompletes).index(@clean_digit)
                   voter.call_back=true
                 end
