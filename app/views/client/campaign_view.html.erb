@@ -37,7 +37,7 @@
 						<select class="field" id="campaign_predective_type" name="campaign[predective_type]"> 
 							<% public_dialers=["preview","power_2x","power_3x","power_4x"] %>
 							<% if !public_dialers.index(@campaign.predective_type) %>
-								<option value="@campaign.predective_type" selected><%= @campaign.predective_type %></option>
+								<option value="<%= @campaign.predective_type %>" selected><%= @campaign.predective_type %></option>
 							<% end %>
 							<% public_dialers.each do |d| %>
 							<option value="<%= d %>" <% if @campaign.predective_type==d %>selected<% end %>>
