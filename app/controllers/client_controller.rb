@@ -463,6 +463,39 @@ Do you want to buy a widget?"
     recording.save
     awsurl
   end
+  
+  def robo_session_start
+    @campaign=Campaign.find(params[:campaign_id])
+    @caller=Caller.find(params[:caller_id])
+    @session = CallerSession.new
+    @session.caller_number = phone_format("Robo")
+    @session.caller_id=@caller.id
+    @session.campaign_id=@campaign.id
+    @session.save
+    @session.starttime=Time.now
+    @session.available_for_call=true
+    @session.on_call=true
+    @session.save
+    flash[:notice]="Robo session started"
+    redirect_to :action=>"campaign_view", :id=>params[:campaign_id]
+  end
+  
+  def robo_session_end
+    require 'net/http'
+    require 'net/https'
+    require 'uri'
+    
+    sessions = CallerSession.find_all_by_caller_id_and_on_call(params[:caller_id],true)
+    sessions.each do |session|
+      session.endtime=Time.now
+      session.available_for_call=false
+      session.on_call=false
+      session.save
+    end
+    flash[:notice]="Robo session ended"
+    redirect_to :action=>"campaign_view", :id=>params[:campaign_id]
+  end
+  
   def campaign_view
     check_warning
     @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id)

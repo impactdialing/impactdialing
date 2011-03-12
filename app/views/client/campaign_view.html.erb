@@ -168,6 +168,10 @@
 										<th>Name</th>
 										<th>&nbsp;</th>
 										<th>PIN</th>
+										<% if @campaign.predective_type.index("robo,") %>
+										<th></th>
+										<th></th>
+										<% end %>
 									</tr>
 									<tr>
 										<td><input type="checkbox" value="0" id="listUse" onclick="allCallers();"> All Callers</td>
@@ -179,6 +183,11 @@
 											<td><%= check_box_tag "campaign[caller_ids][]", "#{l.id}", callerInCampaign(l), :onclick=>"someCallers();" -%> <%= l.name %></td>
 											<td></td>
 											<td><%= l.pin %></td>
+											<% if @campaign.predective_type.index("robo,") %>
+											<td><a href="/client/robo_session_start?caller_id=<%= l.id %>&campaign_id=<%= @campaign.id %>">start</a></td>
+											<td><a href="/client/robo_session_end?caller_id=<%= l.id %>&campaign_id=<%= @campaign.id %>">end</a></td>
+											<% end %>
+											
 										</tr>
 							<% end %>
 							</table>

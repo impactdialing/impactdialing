@@ -91,6 +91,10 @@ DaemonKit::Application.running! do |config|
       ratio_dial = campaign.predective_type[6,1].to_i
       DaemonKit.logger.info "ratio_dial: #{ratio_dial}, #{callers.length}, #{campaign.predective_type.index("power_")}"
     end
+    if campaign.predective_type.index("robo,")!=nil
+      ratio_dial = 1
+      DaemonKit.logger.info "ratio_dial: #{ratio_dial}, #{callers.length}, #{campaign.predective_type.index("robo")}"
+    end
 
     ratio_dial=campaign.ratio_override if campaign.ratio_override!=nil && !campaign.ratio_override.blank? && campaign.ratio_override > 0
 
@@ -99,7 +103,7 @@ DaemonKit::Application.running! do |config|
     end
     
     
-    if (campaign.predective_type=="" || campaign.predective_type.index("power_")==0)
+    if (campaign.predective_type=="" || campaign.predective_type.index("power_")==0 || campaign.predective_type.index("robo,")==0)
       #original method
       maxCalls=callers.length * ratio_dial
       DaemonKit.logger.info "maxCalls: #{maxCalls}"
