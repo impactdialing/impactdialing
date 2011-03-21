@@ -20,3 +20,4 @@ end
 #begin hold time counter
 @session.hold_time_start=Time.now
 @session.save
+RAILS_DEFAULT_LOGGER.debug(xml.target!) if DEBUG_TWIML

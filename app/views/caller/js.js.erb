@@ -31,6 +31,7 @@
 		    Realtime.listen("/<%= @session.session_key %>", {
 				onmessage:  function(msg) {
 					// $("body").append("<pre>"+JSON.stringify(msg)+"</pre>");
+					document.getElementById('dbx').innerHTML=document.getElementById('dbx').innerHTML + "\n" + JSON.stringify(msg);
 					for (var command in msg) {
 						if (command=="voter_start"){
 							voter_data = JSON.parse(msg[command]);
