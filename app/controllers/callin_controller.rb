@@ -227,6 +227,7 @@ class CallinController < ApplicationController
         @session.available_for_call=true
         @session.on_call=true
         @session.save
+        
         #avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
         # if !avail_campaign_hash.has_key?(@campaign.id)
         #   avail_campaign_hash[@campaign.id] = {"callers"=>[@session], "calls"=>[]}
@@ -497,8 +498,13 @@ class CallinController < ApplicationController
       @availableCaller = CallerSession.find_by_id_and_available_for_call_and_on_call(params[:selected_session], true, true, :order=>"rand()")
     end
     if @availableCaller.blank?
-      @pause=2
-      @redirect="#{APP_URL}/callin/voterFindSession?campaign=#{@campaign.id}&voter=#{@voter.id}&attempt=#{attempt.id}"
+      @anyCaller = CallerSession.find_by_campaign_id_and_on_call(@campaign.id, true)
+      if @anyCaller==nil
+        @hangup=true
+      else
+        @pause=2
+        @redirect="#{APP_URL}/callin/voterFindSession?campaign=#{@campaign.id}&voter=#{@voter.id}&attempt=#{attempt.id}"
+      end
     else
       @availableCaller.voter_in_progress = @voter.id
       @availableCaller.attempt_in_progress = attempt.id
