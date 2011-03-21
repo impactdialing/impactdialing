@@ -14,4 +14,5 @@ class Caller < ActiveRecord::Base
     end
     self.pin = uniq_pin
   end
+
 end

@@ -5,6 +5,10 @@ class AdminController < ApplicationController
   require "nokogiri"
   
   def status
+    if !params[:end].blank?
+      cs = CallerSession.find(params[:end])
+      cs.end_call
+    end
     calls_to_end = CallAttempt.all(:conditions=>"tEndTime is not NULL and call_end is NULL")
     calls_to_end.each do |c|
       c.call_end = tEndTime

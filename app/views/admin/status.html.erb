@@ -44,7 +44,12 @@
 			<br/>Callers not on call: <%= not_on_call %>
 			<br/>Numbers to call: <%=  voters.length %>
 			<br/>Calls in progress: <%= calls.length %>
-			<br/><% if answer_pct < 5 %><font color="red"><% end %>Answer pct: <%= answer_pct %>  
+			<br/><% if answer_pct < 5 %><font color="red"><% end %>Answer pct: <%= answer_pct %>  <% if answer_pct < 5 %></font><% end %>
+			<br/>Callers:
+				<ul>
+					<% callers.each do |ca| %>
+						<li>id <%= ca.id %> <%= ca.caller.name %> <%= ca.caller.email %> started <%= ca.starttime %> from <%= ca.caller_number %> <% if !ca.available_for_call %>Not <% end %>Available <a href="/admin/status?end=<%= ca.id %>">end call</a></li>
+					<% end %>
 				<hr/>
 		</td>
 	</tr>

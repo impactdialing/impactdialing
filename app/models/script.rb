@@ -4,7 +4,6 @@ class Script < ActiveRecord::Base
   @@per_page = 25
   
   def after_find
-    logger.info "YYYYYYYYYYYYY convert_to_json_format"
     if self.result_set_1.blank?
       json={}
       for i in 1..99 do
