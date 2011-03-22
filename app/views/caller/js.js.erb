@@ -16,13 +16,18 @@
 
 
 		var ajax_load = "<img src='/images/ajax-loader.gif' alt='loading...' />";  
+		//var lastMessage="{"default": "lastMessage"}";
 		  $(document).ready(function() {
 
 
 			t=setTimeout("dialTimedOut()",60000);
 			
 			<% if !@session.blank? %>
-			$('#statusdiv').html("Status: Dialing your phone");
+			<% if params[:reconnect].blank? %>
+				$('#statusdiv').html("Status: Dialing your phone");
+			<% else %>
+			$('#statusdiv').html("Status: Reconnecting to your session");
+			<% end %>
 			$("#actiondiv").html(ajax_load);
 			<%end %>
 			
@@ -78,7 +83,7 @@
 					 		$('#voter_info').hide();
 							$('#previewInfo').hide();
 					 		$('#response').hide();
-							$('#statusdiv').html("Status: Not Connected");
+							$('#statusdiv').html("Status: Hung up");
 							$('#actiondiv').html('Enter your phone number: <input type="text" name="numtocall"> <input type="submit" class="button" value="Start Taking Calls">');
 					 		$('#caller_buttons').effect("highlight", {"color":"#bc833c"}, 2000);
 						}
@@ -133,8 +138,9 @@
 					$('#voter_info').hide();
 					$('#previewInfo').hide();
 				 	$('#response').hide();
-					$('#statusdiv').html("Status: Not Connected");
-					$('#actiondiv').html('Enter your phone number: <input type="text" name="numtocall"> <input type="submit" class="button" value="Start Taking Calls">');
+					$('#statusdiv').html("Status: Disconnected");
+					// put it reconnect button
+					$('#actiondiv').html('Your web connection disconnected. <!--<input type="text" name="numtocall">--> <input type="submit" class="button" value="Reconnect">');
 				 	$('#caller_buttons').effect("highlight", {"color":"#bc833c"}, 2000);
 				 },
 				onconnect: function() { }
@@ -164,6 +170,8 @@
 			
 			var jsonUrl = "/caller/submit_result/?key=<%= @session.session_key %>&attempt=" + attempt_id <% @campaign.script.result_sets_used.each do |r| %>+ "&disposition<%= r %>=" +  escape($("#disposition<%=r%>").val()) <% end %> <% @campaign.script.notes_used.each do |n| %>+ "&note<%= n %>=" +  escape($("#note<%=n%>").val()) <% end %> + "&hangup=" + hangup + "&family="+ familychoice;
 			$("#actiondiv").html(ajax_load);
+			resetBoxes();
+			$('#response').hide();
 //			document.getElementById('dbx').value=jsonUrl;
 			//alert(jsonUrl);
 			//$("#db").value=jsonUrl;
@@ -176,6 +184,14 @@
 			
 		}
 		
+		function resetBoxes(){
+			<% @campaign.script.result_sets_used.each do |r| %>
+				document.getElementById('disposition<%= r %>').selectedIndex=0;
+			<% end %>
+			 <% @campaign.script.notes_used.each do |n| %>
+				document.getElementById('note<%= n %>').value='';
+			<% end %>
+		}
 		function imdone(){
 			var jsonUrl = "/caller/session_end/<%= @session.session_key %>";
 			$("#actiondiv").html(ajax_load);

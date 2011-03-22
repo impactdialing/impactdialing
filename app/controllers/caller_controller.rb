@@ -61,9 +61,9 @@ class CallerController < ApplicationController
       @breadcrumb=@campaign.name
     end
     @session = CallerSession.find_by_session_key(params[:key]) if !params[:key].blank? #use for debug
-
+    @on_call = CallerSession.find_by_caller_id_and_on_call(@caller.id,true)
     if request.post?
-      if !phone_number_valid(params[:numtocall])
+      if !phone_number_valid(params[:numtocall]) && !params[:numtocall].blank?
         flash.now[:error]= "Please enter a valid phone number"
       else
 
@@ -240,6 +240,11 @@ class CallerController < ApplicationController
     render :layout=>false
   end
   
+  def reconnect_rt
+    send_rt (params[:key],{params[:k]=>params[:v]})
+    render :text=>  "ok"
+  end
+
   def preview_dial
     @session = CallerSession.find_by_session_key(params[:key])
     @campaign = @session.campaign
