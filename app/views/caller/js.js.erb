@@ -43,6 +43,7 @@
 							var voter_out="";
 							var attempt_id='';
 							var family=[];
+							var isFam=false;
 							for (var info in voter_data){
 								if (info=='attempt_id')
 									attempt_id = voter_data[info];
@@ -52,8 +53,10 @@
 									voter_out+= info + ": " + voter_data[info] + "<br/>";
 							}
 
+							if (family.length>1)
+								isFam=true;
 							$('#statusdiv').html("Status: In call");
-							$('#actiondiv').html('<input type="button" class="button" value="Submit and Keep Calling" onclick="processresult(' + attempt_id+ ',0);"> <input type="button" class="button" value="Submit and Stop Calling" onclick="processresult(' + attempt_id + ',1);"> <input type="button" class="button" value="End Call" onclick="dropcall(' + attempt_id + ');">');
+							$('#actiondiv').html('<input type="button" class="button" value="Submit and Keep Calling" onclick="processresult(' + attempt_id+ ',0,' + isFam + ');"> <input type="button" class="button" value="Submit and Stop Calling" onclick="processresult(' + attempt_id + ',1,' + isFam+ ');"> <input type="button" class="button" value="End Call" onclick="dropcall(' + attempt_id + ');">');
 					 		$('#caller_buttons').effect("highlight", {"color":"#bc833c"}, 2000);
 						
 							if (family.length==0){
@@ -63,7 +66,11 @@
 								for (var index = 0; index < family.length; ++index) {
 									var item = family[index];
 									var selected='';
+									/*
 									if (item.classname=='Voter')
+										selected='checked';
+									*/
+									if (family.length==1)
 										selected='checked';
 							  		info = '<div class="fam"> <input type="radio" name="familychoice" value="' + item.classname + "_" + item.id + '" ' + selected + ' > Household member ' + (index+1) + ':<br/>';
 										for (var prop in item){
@@ -163,10 +170,16 @@
 		}
 
 
-		function processresult(attempt_id, hangup){
+		function processresult(attempt_id, hangup,isFam){
 
 			var disposition = $("#disposition").val();
 			var familychoice = get_family_value();
+			if (isFam){
+				if (familychoice==""){
+					alert('Please select a household member before submitting.');
+					return false;
+				}
+			}
 			
 			var jsonUrl = "/caller/submit_result/?key=<%= @session.session_key %>&attempt=" + attempt_id <% @campaign.script.result_sets_used.each do |r| %>+ "&disposition<%= r %>=" +  escape($("#disposition<%=r%>").val()) <% end %> <% @campaign.script.notes_used.each do |n| %>+ "&note<%= n %>=" +  escape($("#note<%=n%>").val()) <% end %> + "&hangup=" + hangup + "&family="+ familychoice;
 			$("#actiondiv").html(ajax_load);
