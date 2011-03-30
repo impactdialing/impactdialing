@@ -1091,10 +1091,11 @@ Do you want to buy a widget?"
           end
           
           sql="select
-          ca.result, ca.result_digit , v.Phone, v.CustomID, v.LastName, v.FirstName, v.MiddleName, v.Suffix, v.Email, c.pin, c.name,  c.email, ca.status, ca.connecttime, ca.call_end, last_call_attempt_id=ca.id as final , ca.result_json
+          ca.result, ca.result_digit , v.Phone, v.CustomID, v.LastName, v.FirstName, v.MiddleName, v.Suffix, v.Email, c.pin, c.name,  c.email, ca.status, ca.connecttime, ca.call_end, v.last_call_attempt_id=ca.id as final , ca.result_json, f.CustomID, f.LastName, f.FirstName, f.MiddleName, f.Suffix, f.Email
           from call_attempts ca
           join voters v on v.id=ca.voter_id
           left outer join callers c on c.id=ca.caller_id
+          left outer join families f on f.id=v.family_id_answered
           where
           ca.campaign_id=#{@campaign.id}
           and v.id in (#{voter_subq})
@@ -1112,7 +1113,7 @@ Do you want to buy a widget?"
           
           csv_string = FasterCSV.generate do |csv|
 #            csv << ["result", "result digit" , "voter phone", "voter id", "voter last", "voter first", "voter middle", "voter suffix", "voter email","caller pin", "caller name",  "caller email","status", "call start", "call end", "number attempts"]
-             csv << ["id", "LastName", "FirstName", "MiddleName", "Suffix", "Phone", "Result", "Caller Name", "Status", "Call Start", "Call End", "Number Calls"] + json_fields
+             csv << ["id", "LastName", "FirstName", "MiddleName", "Suffix", "Phone", "Result", "Caller Name", "Status", "Call Start", "Call End", "Number Calls"] + json_fields + ["fam_id", "fam_LastName", "fam_FirstName", "fam_MiddleName", "fam_Suffix", "fam_Email"]
             num_call_attempts=0
             attempts.each do |a|
               num_call_attempts+=1
