@@ -1091,7 +1091,7 @@ Do you want to buy a widget?"
           end
           
           sql="select
-          ca.result, ca.result_digit , v.Phone, v.CustomID, v.LastName, v.FirstName, v.MiddleName, v.Suffix, v.Email, c.pin, c.name,  c.email, ca.status, ca.connecttime, ca.call_end, v.last_call_attempt_id=ca.id as final , ca.result_json, f.CustomID, f.LastName, f.FirstName, f.MiddleName, f.Suffix, f.Email
+          ca.result, ca.result_digit , v.Phone, v.CustomID, v.LastName, v.FirstName, v.MiddleName, v.Suffix, v.Email, c.pin, c.name,  c.email, ca.status, ca.connecttime, ca.call_end, v.last_call_attempt_id=ca.id as final , ca.result_json, f.CustomID, f.LastName, f.FirstName, f.MiddleName, f.Suffix, f.Email, family_id_answered
           from call_attempts ca
           join voters v on v.id=ca.voter_id
           left outer join callers c on c.id=ca.caller_id
@@ -1113,7 +1113,7 @@ Do you want to buy a widget?"
           
           csv_string = FasterCSV.generate do |csv|
 #            csv << ["result", "result digit" , "voter phone", "voter id", "voter last", "voter first", "voter middle", "voter suffix", "voter email","caller pin", "caller name",  "caller email","status", "call start", "call end", "number attempts"]
-             csv << ["id", "LastName", "FirstName", "MiddleName", "Suffix", "Phone", "Result", "Caller Name", "Status", "Call Start", "Call End", "Number Calls"] + json_fields + ["fam_id", "fam_LastName", "fam_FirstName", "fam_MiddleName", "fam_Suffix", "fam_Email"]
+             csv << ["id", "LastName", "FirstName", "MiddleName", "Suffix", "Phone", "Result", "Caller Name", "Status", "Call Start", "Call End", "Number Calls"] + json_fields #+ ["fam_id", "fam_LastName", "fam_FirstName", "fam_MiddleName", "fam_Suffix", "fam_Email"]
             num_call_attempts=0
             attempts.each do |a|
               num_call_attempts+=1
@@ -1136,7 +1136,14 @@ Do you want to buy a widget?"
                     end
                   end
 #                csv << [a[0],a[1],a[2],a[3],a[4],a[5],a[6],a[7],a[8],a[9],a[10],a[11],a[12],a[13],a[14],a[15],num_call_attempts]
-                csv << [a[3],a[4],a[5],a[6],a[7],a[2],a[0],a[10],a[12],a[13],a[14],num_call_attempts]  + json_to_add + [a[17],a[18],a[19],a[20],a[21]]
+                #csv << [a[3],a[4],a[5],a[6],a[7],a[2],a[0],a[10],a[12],a[13],a[14],num_call_attempts]  + json_to_add + [a[17],a[18],a[19],a[20],a[21]]
+                if a[22]==0
+                  #no fam
+                  csv << [a[3],a[4],a[5],a[6],a[7],a[2],a[0],a[10],a[12],a[13],a[14],num_call_attempts]  + json_to_add + [a[17],a[18],a[19],a[20],a[21]]
+                else
+                  #fam
+                  csv << [a[17],a[18],a[19],a[20],a[7],a[2],a[0],a[10],a[12],a[13],a[14],num_call_attempts]  + json_to_add 
+                end
                
                 num_call_attempts=0
               end
