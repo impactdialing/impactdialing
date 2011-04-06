@@ -179,7 +179,12 @@ class CallerController < ApplicationController
       @clean_response=this_result_text if @clean_response==nil
       logger.info "!!!@clean_response=#{@clean_response}!!!" 
       this_incomplete = incompletes[r.to_s] || []
-      @clean_incomplete=true if this_incomplete.index(thisKeypadval.to_s)
+      
+      if this_incomplete.index(thisKeypadval.to_s)
+        @clean_incomplete=true 
+      else
+        @clean_incomplete=false
+      end
     end
     @script.notes_used.each do |r|
       thisResult=eval("params[:note#{r}]" )
