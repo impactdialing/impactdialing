@@ -391,10 +391,10 @@ class CallinController < ApplicationController
     #Voter.connection.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED") if params[:voter]=="16528"
     @voter = Voter.find(params[:voter])
     #    attempt = CallAttempt.find_by_voter_id(params[:voter], :order=>"id desc", :limit=>1)
-    attempt = CallAttempt.find(params[:attempt])
-    if attempt.answertime==nil
-      attempt.answertime=Time.now
-      attempt.save
+    @attempt = CallAttempt.find(params[:attempt])
+    if @attempt.answertime==nil
+      @attempt.answertime=Time.now
+      @attempt.save
     end
 
     #logger.info "params[:DialStatus]: #{params[:DialStatus]}"
@@ -404,9 +404,9 @@ class CallinController < ApplicationController
       @play=@campaign.recording.recording_url
       @hangup="true"
       @voter.status="Message delivered"
-      attempt.status="Message delivered"
+      @attempt.status="Message delivered"
       @voter.save
-      attempt.save
+      @attempt.save
       render :template => 'callin/index.xml.builder', :layout => false
       return
     end
@@ -428,38 +428,38 @@ class CallinController < ApplicationController
 
       if params[:DialStatus]=="hangup-machine"
         @voter.status="Hangup or answering machine"
-        attempt.status="Hangup or answering machine"
+        @attempt.status="Hangup or answering machine"
         @voter.call_back=true
       elsif params[:DialStatus]=="no-answer"
         @voter.status="No answer"
-        attempt.status="No answer"
+        @attempt.status="No answer"
         @voter.call_back=true
       elsif params[:CallStatus]=="busy"
         @voter.status="No answer busy signal"
-        attempt.status="No answer busy signal"
+        @attempt.status="No answer busy signal"
         @voter.call_back=true
         # t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
         # a=t.call("POST", "Calls/#{attempt.sid}", {'CurrentUrl'=>"#{APP_URL}/callin/voterEndCall?attempt=#{attempt.id}"})
       elsif params[:CallStatus]=="canceled"
         @voter.status="Call cancelled"
-        attempt.status="Call cancelled"
+        @attempt.status="Call cancelled"
         @voter.call_back=false
       elsif params[:CallStatus]=="failed"
         @voter.status="Call failed"
-        attempt.status="Call failed"
+        @attempt.status="Call failed"
         @voter.call_back=false
       else
-        if attempt.caller_id==nil &&  attempt.status!="Message delivered"
+        if @attempt.caller_id==nil &&  @attempt.status!="Message delivered"
           #abandon
           #          @voter.status="Call completed with success."
-          attempt.status="Call abandoned"
+          @attempt.status="Call abandoned"
         else
           @voter.status="Call completed with success." unless  @voter.status=="Message delivered"
-          attempt.status="Call completed with success." unless  attempt.status=="Message delivered"
+          @attempt.status="Call completed with success." unless  @attempt.status=="Message delivered"
         end
       end
-      attempt.call_end=Time.now
-      attempt.save
+      @attempt.call_end=Time.now
+      @attempt.save
       @voter.save
       # if @campaign.predective_type=="preview" && params[:selected_session]
       #   send_rt (CallerSession.find(params[:selected_session]).session_key,{'waiting'=>'preview'})
@@ -491,67 +491,74 @@ class CallinController < ApplicationController
       render :template => 'callin/index.xml.builder', :layout => false
       return
     end
-
+    
+    
     if params[:selected_session].blank?
-      @availableCaller = CallerSession.find_by_campaign_id_and_available_for_call_and_on_call(@campaign.id, true, true, :order=>"rand()")
+      @available_caller_session = CallerSession.find_by_campaign_id_and_available_for_call_and_on_call(@campaign.id, true, true, :order=>"rand()")
     else
-      @availableCaller = CallerSession.find_by_id_and_available_for_call_and_on_call(params[:selected_session], true, true, :order=>"rand()")
+      #preview dialing
+      @available_caller_session = CallerSession.find_by_id_and_available_for_call_and_on_call(params[:selected_session], true, true, :order=>"rand()")
     end
-    if @availableCaller.blank?
+
+    if @available_caller_session.blank?
       @anyCaller = CallerSession.find_by_campaign_id_and_on_call(@campaign.id, true)
       if @anyCaller==nil
         @hangup=true
       else
         @pause=2
-        @redirect="#{APP_URL}/callin/voterFindSession?campaign=#{@campaign.id}&voter=#{@voter.id}&attempt=#{attempt.id}"
+        @redirect="#{APP_URL}/callin/voterFindSession?campaign=#{@campaign.id}&voter=#{@voter.id}&attempt=#{@attempt.id}"
       end
     else
-      @availableCaller.voter_in_progress = @voter.id
-      @availableCaller.attempt_in_progress = attempt.id
-      @availableCaller.save
-      attempt.caller_session_id=@availableCaller.id
-      attempt.caller_id=@availableCaller.caller.id
-      attempt.call_start=Time.now
-      attempt.save
-      #old@redirect="#{APP_URL}/callin/voterStart?session=#{@availableCaller.id}&voter=#{@voter.id}&attempt=#{attempt.id}"
-      # new
-      @attempt=attempt
-      @session = @availableCaller
-      @session.available_for_call=false
-      # end caller hold time
-      @attempt.caller_hold_time = (Time.now - @session.hold_time_start).to_i if @session.hold_time_start!=nil
-      @attempt.save
-      @session.hold_time_start=nil
-      @session.save
-      @caller = @session.caller
-      @voter.status = "Connected to caller #{@caller.pin} #{@caller.email}"
-      @voter.caller_session_id=@session.id
-      @voter.save
+      # ensure only one caller gets this voter
+      begin
 
-      if @campaign.use_web_ui
-        script = @campaign.script
-        @publish_channel="/#{@session.session_key}"
-        
-        family=[hash_from_voter_and_script(script,attempt.voter)]
-        
-        @attempt.voter.families.each do |f|
-        	family << hash_from_voter_and_script(script,f)
+        CallerSession.transaction do
+          raise "caller already in session" if CallerSession.find(@available_caller_session.id).available_for_call==false
+
+          @available_caller_session.voter_in_progress = @voter.id
+          @available_caller_session.attempt_in_progress = @attempt.id
+          @available_caller_session.hold_time_start=nil
+          @available_caller_session.available_for_call=false
+          @available_caller_session.save
         end
-        
-        @publish_key="voter_start"
-        publish_hash = {"attempt_id"=>@attempt.id, "family"=>family}
-        if !script.voter_fields.nil?
-          fields = JSON.parse(script.voter_fields)
-          fields.each do |field|
-            publish_hash[field] = eval("@voter.#{field}")
+
+        @attempt.caller_session_id=@available_caller_session.id
+        @attempt.caller_id=@available_caller_session.caller.id
+        @attempt.call_start=Time.now
+        @attempt.caller_hold_time = (Time.now - @available_caller_session.hold_time_start).to_i if @available_caller_session.hold_time_start!=nil # end caller hold time
+        @attempt.save
+
+        @voter.status = "Connected to caller #{@available_caller_session.caller.pin} #{@available_caller_session.caller.email}"
+        @voter.caller_session_id=@available_caller_session.id
+        @voter.save
+
+        if @campaign.use_web_ui
+          script = @campaign.script
+          @publish_channel="/#{@available_caller_session.session_key}"
+          family=[hash_from_voter_and_script(script,@attempt.voter)]
+          @attempt.voter.families.each do |f|
+          	family << hash_from_voter_and_script(script,f)
           end
+          @publish_key="voter_start"
+          publish_hash = {"attempt_id"=>@attempt.id, "family"=>family}
+          if !script.voter_fields.nil?
+            fields = JSON.parse(script.voter_fields)
+            fields.each do |field|
+              publish_hash[field] = eval("@voter.#{field}")
+            end
+          end
+          @publish_value=publish_hash.to_json
         end
-        @publish_value=publish_hash.to_json
+        render :template => 'callin/voter_start_conference.xml.builder', :layout => false
+        return
+        
+      rescue Exception => e
+        logger.debug "#{ e } (#{ e.class })!"
+        # caller already connected to someone else
+        @pause=2
+        @redirect="#{APP_URL}/callin/voterFindSession?campaign=#{@campaign.id}&voter=#{@voter.id}&attempt=#{@attempt.id}"
       end
 
-
-      render :template => 'callin/voter_start_conference.xml.builder', :layout => false
-      return
     end
 
     render :template => 'callin/index.xml.builder', :layout => false
@@ -614,6 +621,21 @@ class CallinController < ApplicationController
       @hangup="true"
       render :template => 'callin/index.xml.builder', :layout => false
     end
+  end
+  
+  def monitorEavesdrop
+    #types
+    #0=eavesdrop
+    #1=break in
+    #2=take over
+    
+    if params[:type]==0
+      @muted="true"
+    else
+      @muted="false"
+    end
+    render :template => 'callin/start_eavesdrop_conference.xml.builder', :layout => false
+    return
   end
   
 end

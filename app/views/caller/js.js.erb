@@ -3,6 +3,11 @@
 		alert(d);
 		alert(JSON.parse(d));
 		*/
+		<%#  vars for reconnect key/value %>
+		var k='';
+		var v='';
+		var currAttempt='';
+		var sk='<%= @session.session_key %>';
 		$.ajaxSetup ({   cache: false  });
 
 		function dialTimedOut(){
@@ -52,6 +57,7 @@
 								else
 									voter_out+= info + ": " + voter_data[info] + "<br/>";
 							}
+							currAttempt=attempt_id;
 
 							if (family.length>1)
 								isFam=true;
@@ -96,6 +102,7 @@
 						}
 						
 						if (command=="waiting"){
+							currAttempt='waiting';
 							clearTimeout(t);
 							<% @campaign.script.notes_used.each do |n| %>
 								$("#note<%=n%>").val('');
@@ -284,3 +291,14 @@
 			
 //			document.location.href='/caller/preview_dial?key=<%= params[:key] %>&voter_id=' + vid;
 		}
+
+		function dpoll(){
+			var url = '/caller/dpoll?key=<%= @session.session_key %>&currAttempt=' + currAttempt;
+			$.ajax({
+			    type: 'GET',
+			    dataType: 'script',
+			    url: url
+			  });
+			setTimeout("dpoll()", 30000);			
+		}
+		setTimeout("dpoll()", 30000);

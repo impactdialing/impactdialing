@@ -39,58 +39,33 @@
 	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
 	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.5/jquery-ui.min.js"></script>
 	<script type="text/javascript" src="http://www.twiliort.com/v1/realtime-client.js"></script>
+	<!--var url = '/caller/reconnect_rt?key=<%# @on_call.session_key %>&k=<%=@k%>&v=<%=@v%>';-->
+	<script>
+	function rc(k,v){
+		var url = '/caller/reconnect_rt?key=' + sk + '&k=' + k + '&v=' + v;
+		$.ajax({
+			type: 'GET',
+			dataType: 'script',
+			url: url
+		});
+	}
+	</script>
 	<% if !@session.blank? %>
 	<script type="text/javascript" src="/caller/js/<%= @session.session_key %>"></script>
 	<% end %>
 	<% if @on_call!=nil %>
 		<script type="text/javascript" src="/caller/js/<%= @on_call.session_key %>?reconnect=1"></script>
-		<%- 
-			if @on_call.available_for_call? 
-				k="waiting"
-				if @campaign.predective_type=="preview"
-					v="preview"
-#        			send_rt (params[:key],{'waiting'=>'preview'})
-      			else
-					v="ok"
- #       			send_rt (params[:key],{'waiting'=>'ok'})
-      			end
-			else
-				script = @campaign.script
-				attempt = CallAttempt.find(@on_call.attempt_in_progress)
-				family=[hash_from_voter_and_script(script,attempt.voter)]
-		        attempt.voter.families.each do |f|
-		        	family << hash_from_voter_and_script(script,f)
-		        end
-				k="voter_start"
-        		publish_hash = {"attempt_id"=>attempt.id, "family"=>family}
-        		if !script.voter_fields.nil?
-          			fields = JSON.parse(script.voter_fields)
-          			fields.each do |field|
-            			publish_hash[field] = eval("attempt.voter.#{field}")
-          			end
-        		end
-        		v=publish_hash.to_json
-				
-			end 
-			-%>
+		<% render :partial => 'get_reconnect_key_value' %>
 
 		<script>
 			$('#statusdiv').html("Status: Reconnecting");
-						function rc(){
-						var url = '/caller/reconnect_rt?key=<%= @on_call.session_key %>&k=<%=k%>&v=<%=v%>';
-						$.ajax({
-						    type: 'GET',
-						    dataType: 'script',
-						    url: url
-						  });
-						}
-						setTimeout("rc()", 3000);
-
+			setTimeout("rc('<%= @k %>','<%= escape_javascript @v %>')", 4000);
 		</script>
 
 	<% end %>
 <% end -%>
 
+<!--<input type="button" value="poll" onclick="dpoll();">-->
 <%# @session.session_key if @session!=nil %>
 <textarea id="dbx" rows="10" cols="90" style="overflow:auto; font-size:10px; display:none;"></textarea>
 <p><a href="#" onclick="$('#dbx').show();">&mdash;</a></p>

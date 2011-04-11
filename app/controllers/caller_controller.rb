@@ -258,5 +258,19 @@ class CallerController < ApplicationController
     send_rt (params[:key],{'waiting'=>'preview_dialing'})
     render :text=>  "ok"
   end
+  
+  def dpoll
+    response.headers["Content-Type"] = 'text/javascript'
+    
+    @on_call = CallerSession.find_by_session_key(params[:key])
+    if (@on_call==nil || @on_call.on_call==false)
+      render :text=>""
+      return
+    end
+    @campaign = @on_call.campaign
+    respond_to do |format|
+        format.js
+    end
+  end
 
 end
