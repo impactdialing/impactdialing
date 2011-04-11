@@ -9,10 +9,10 @@ xml.Response("version"=>"1.0") do |response|
   end
 
   xml.Dial("hangupOnStar"=>"false") do |d|
-    d.Conference("session#{@session.id}", "waitUrl"=>"","beep"=>false, "endConferenceOnExit"=>"true", "maxParticipants"=>"2")
+    d.Conference("session#{@available_caller_session.id}", "waitUrl"=>"","beep"=>false, "endConferenceOnExit"=>"true", "maxParticipants"=>"2")
   end
 end
 @attempt.connecttime=Time.now
-@attempt.status = "Connected to caller #{@caller.pin} #{@caller.email}"
+@attempt.status = "Connected to caller #{@available_caller_session.caller.pin} #{@available_caller_session.caller.email}"
 @attempt.save
 RAILS_DEFAULT_LOGGER.debug(xml.target!) if DEBUG_TWIML
