@@ -92,7 +92,7 @@ DaemonKit::Application.running! do |config|
       DaemonKit.logger.info "ratio_dial: #{ratio_dial}, #{callers.length}, #{campaign.predective_type.index("power_")}"
     end
     if campaign.predective_type.index("robo,")!=nil
-      ratio_dial = 1
+      ratio_dial = 5
       DaemonKit.logger.info "ratio_dial: #{ratio_dial}, #{callers.length}, #{campaign.predective_type.index("robo")}"
     end
 

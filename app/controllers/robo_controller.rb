@@ -120,6 +120,62 @@ class RoboController < ApplicationController
     render :template => 'robo/index.xml.builder', :layout => false
     return
   end
+  
+  def treatment2
+    status_callback
+    if @retval==true
+      render :template => 'robo/index.xml.builder', :layout => false
+      return
+    end
+    @numDigits="1"
+    if !params[:Digits].blank?
+      if params[:Digits]=="2"
+        @play="/robo/newPart2-NO.mp3"
+        attempt = CallAttempt.find(params[:attempt])
+        attempt.result_digit="0"
+        attempt.save
+        voter = Voter.find(attempt.voter_id)
+        voter.result_digit="0"
+        voter.result_date=Time.now
+        voter.call_back=false
+        voter.save
+      elsif params[:Digits]=="1"
+        @play="/robo/newPart2-YES.mp3"
+        @gather=true
+        @gatherPost="/robo/treatment_record2?t=#{params[:t]}&campaign=#{params[:campaign]}&voter=#{params[:voter]}&attempt=#{params[:attempt]}"
+      else
+        @say="We did not receive your response"
+        @gather=true
+        @play="/robo/#{params[:t]}.mp3"
+      end
+    else
+      @gather=true
+      @play="/robo/#{params[:t]}.mp3"
+    end
+    render :template => 'robo/index.xml.builder', :layout => false
+    return
+  end
+
+
+  def treatment_record2
+    #record response
+    if params[:Digits]!="1" && params[:Digits]!="2" && params[:Digits]!="3"
+      @redirsay="Your response was invalid"
+      @repeatRedirect="/robo/treatment2?t=#{params[:t]}&campaign=#{params[:campaign]}&voter=#{params[:voter]}&attempt=#{params[:attempt]}&Digits=1"
+    else
+      attempt = CallAttempt.find(params[:attempt])
+      attempt.result_digit=params[:Digits]
+      attempt.save
+      voter = Voter.find(attempt.voter_id)
+      voter.result_digit=params[:Digits]
+      voter.call_back=false
+      voter.result_date=Time.now
+      voter.save
+      @play="/robo/newPart3-YES.mp3"
+    end
+    render :template => 'robo/index.xml.builder', :layout => false
+    return
+  end
 
   def treatment_record
     #record response
@@ -133,6 +189,7 @@ class RoboController < ApplicationController
       voter = Voter.find(attempt.voter_id)
       voter.result_digit=params[:Digits]
       voter.result_date=Time.now
+      voter.call_back=false
       voter.save
       @play="/robo/Part3-YES.mp3"
     end

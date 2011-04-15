@@ -57,7 +57,7 @@ class Dialer
     c.save
 #    DaemonKit.logger.info caller_num
     if campaign.predective_type.index("robo,")
-      a=t.call("POST", "Calls", {'Timeout'=>"20", 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/robo/#{campaign.predective_type.split(",").last}&campaign=#{campaign.id}&voter=#{voter.id}&attempt=#{c.id}"})
+      a=t.call("POST", "Calls", {'Timeout'=>"15", 'IfMachine'=>'Hangup', 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/robo/#{campaign.predective_type.split(",").last}&campaign=#{campaign.id}&voter=#{voter.id}&attempt=#{c.id}"})
     elsif campaign.predective_type=="preview"
       a=t.call("POST", "Calls", {'Timeout'=>"20", 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}&attempt=#{c.id}"})
     elsif campaign.use_answering
