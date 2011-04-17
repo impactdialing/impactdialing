@@ -1137,9 +1137,9 @@ Do you want to buy a widget?"
                   end
 #                csv << [a[0],a[1],a[2],a[3],a[4],a[5],a[6],a[7],a[8],a[9],a[10],a[11],a[12],a[13],a[14],a[15],num_call_attempts]
                 #csv << [a[3],a[4],a[5],a[6],a[7],a[2],a[0],a[10],a[12],a[13],a[14],num_call_attempts]  + json_to_add + [a[17],a[18],a[19],a[20],a[21]]
-                if a[22]==0 || a[22]=="" || a[22]==nil
+                if a[23]==0 || a[23]=="" || a[23]==nil
                   #no fam
-                  csv << [a[3],a[4],a[5],a[6],a[7],a[2],a[0],a[10],a[12],a[13],a[14],num_call_attempts]  + json_to_add + [a[17],a[18],a[19],a[20],a[21]]
+                  csv << [a[3],a[4],a[5],a[6],a[7],a[2],a[0],a[10],a[12],a[13],a[14],num_call_attempts]  + json_to_add #+ [a[17],a[18],a[19],a[20],a[21]]
                 else
                   #fam
                   csv << [a[17],a[18],a[19],a[20],a[7],a[2],a[0],a[10],a[12],a[13],a[14],num_call_attempts]  + json_to_add 
@@ -1206,6 +1206,20 @@ Do you want to buy a widget?"
         @from_date = Date.parse("2010/01/01") if @from_date==nil
         @to_date = DateTime.now if @to_date==nil
 
+      end
+      
+      def monitor
+        @logged_in_campaigns = Campaign.all(:conditions=>"id in (select distinct campaign_id from caller_sessions where on_call=1 and user_id=#{@user.id})")
+#        @logged_in_callers = CallerSession.find_all_by_on_call(1)
+#        @ready_to_dial = CallAttempt.find_all_by_status("Call ready to dial", :conditions=>"call_end is null")
+      end
+      
+      def eavesdrop_call
+        t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+        # a=t.call("POST", "Calls/#{caller.sid}", {'CurrentUrl'=>"#{appurl}/callin/callerEndCall?session=#{caller.id}"})
+        session=CallerSession.find(params[:session_id])
+        a=t.call("POST", "Calls", {'Timeout'=>"20", 'Caller' => session.campaign.caller_id, 'Called' => params[:num], 'Url'=>"#{APP_URL}/callin/monitorEavesdrop?session=#{session.id}"})
+        render :text=>""
       end
 
       private
