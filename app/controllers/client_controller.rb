@@ -1117,9 +1117,10 @@ Do you want to buy a widget?"
             num_call_attempts=0
             attempts.each do |a|
               num_call_attempts+=1
-              logger.info "a[15]: #{a[15]}"
+              #logger.info "a[15]: #{a[15]}"
               if a[15]=="1"
                 #final attempt
+                #logger.info a.inspect
                  json_to_add=[]
                   if a[16].blank?
                     json_fields.each do |j|
@@ -1137,11 +1138,13 @@ Do you want to buy a widget?"
                   end
 #                csv << [a[0],a[1],a[2],a[3],a[4],a[5],a[6],a[7],a[8],a[9],a[10],a[11],a[12],a[13],a[14],a[15],num_call_attempts]
                 #csv << [a[3],a[4],a[5],a[6],a[7],a[2],a[0],a[10],a[12],a[13],a[14],num_call_attempts]  + json_to_add + [a[17],a[18],a[19],a[20],a[21]]
-                if a[23]==0 || a[23]=="" || a[23]==nil
+                if a[23]==0 || a[23]=="" || a[23]==nil || a[23]=="0"
                   #no fam
+                  #logger.info "no fam"
                   csv << [a[3],a[4],a[5],a[6],a[7],a[2],a[0],a[10],a[12],a[13],a[14],num_call_attempts]  + json_to_add #+ [a[17],a[18],a[19],a[20],a[21]]
                 else
                   #fam
+                  #logger.info "fam: #{a[23]}"
                   csv << [a[17],a[18],a[19],a[20],a[7],a[2],a[0],a[10],a[12],a[13],a[14],num_call_attempts]  + json_to_add 
                 end
                
