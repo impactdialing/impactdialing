@@ -9,7 +9,21 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110308182418) do
+ActiveRecord::Schema.define(:version => 20110519085111) do
+
+  create_table "accounts", :force => true do |t|
+    t.integer  "user_id"
+    t.string   "cc"
+    t.boolean  "active"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string   "cardtype"
+    t.integer  "expires_month"
+    t.integer  "expires_year"
+    t.string   "last4"
+    t.string   "zip"
+    t.string   "address1"
+  end
 
   create_table "call_attempts", :force => true do |t|
     t.integer  "voter_id"
@@ -39,7 +53,7 @@ ActiveRecord::Schema.define(:version => 20110308182418) do
     t.float    "tPrice"
     t.datetime "answertime"
     t.string   "dialer_mode"
-    t.text     "resut_json"
+    t.text     "result_json"
   end
 
   add_index "call_attempts", ["call_end"], :name => "index_call_attempts_on_call_end"
@@ -129,6 +143,23 @@ ActiveRecord::Schema.define(:version => 20110308182418) do
     t.integer "voter_list_id"
   end
 
+  create_table "dumps", :force => true do |t|
+    t.integer  "request_id"
+    t.integer  "first_line"
+    t.integer  "last_line"
+    t.integer  "completed_id"
+    t.integer  "completed_lineno"
+    t.float    "duration"
+    t.integer  "status"
+    t.string   "url"
+    t.integer  "params_id"
+    t.integer  "params_line"
+    t.string   "params"
+    t.string   "guid"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
   create_table "families", :force => true do |t|
     t.integer  "voter_id"
     t.string   "Phone"
@@ -150,12 +181,12 @@ ActiveRecord::Schema.define(:version => 20110308182418) do
     t.boolean  "call_back",              :default => false
     t.integer  "caller_id"
     t.string   "result_digit"
+    t.string   "Age"
+    t.string   "Gender"
     t.integer  "attempt_id"
     t.datetime "result_date"
     t.integer  "last_call_attempt_id"
     t.datetime "last_call_attempt_time"
-    t.string   "Gender"
-    t.string   "Age"
   end
 
   create_table "lists", :force => true do |t|
@@ -367,13 +398,14 @@ ActiveRecord::Schema.define(:version => 20110308182418) do
     t.datetime "last_call_attempt_time"
     t.string   "Age"
     t.string   "Gender"
-    t.integer  "family_id_answered"
     t.integer  "num_family",             :default => 1
+    t.integer  "family_id_answered"
     t.text     "result_json"
   end
 
   add_index "voters", ["Phone"], :name => "index_voters_on_Phone"
   add_index "voters", ["attempt_id"], :name => "index_voters_on_attempt_id"
+  add_index "voters", ["caller_id"], :name => "ix_caller_id"
   add_index "voters", ["campaign_id"], :name => "index_voters_on_campaign_id"
   add_index "voters", ["status"], :name => "index_voters_on_status"
   add_index "voters", ["voter_list_id"], :name => "index_voters_on_voter_list_id"

@@ -18,6 +18,7 @@
 							<Td></td>
 						</tr>
 					<% for i in 1..99 do %>
+						<% if i <= 20 %>
 						<tr id="result_<%= num %>_<%= i %>" <% if thisJSON["keypad_#{i}"].blank? && i!=1 %>style="display:none;" <% else %> <% @lastone[i-i]=i %> <% end %>>
 							<td><input  type="text" name="text_<%= num %>_<%= i %>"  id="text_<%= num %>_<%= i %>" size="20" class="field" value="<%= thisJSON["keypad_#{i}"] %>" ></td>
 							<td>
@@ -29,6 +30,11 @@
 
 							<td>&nbsp  <a href="javascript:var x=$('text_<%= num %>_<%= i %>').value='';var x=$('keypad<%= i %>').value='';" class="ico del">&nbsp</a></td>
 						</tr>
+						<% else %>
+							<%# limit to 20 rows %>
+							<input type="hidden" name="text_<%= num %>_<%= i %>" value="">
+							<input type="hidden" name="keypad_<%= num %>_<%= i %>" value="" >
+						<% end %>
 					<% end %>
 					</table>
 					<br/>

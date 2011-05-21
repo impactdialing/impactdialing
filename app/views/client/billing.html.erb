@@ -1,0 +1,46 @@
+<div class="box" style="width:600px;">
+	<%= render :partial => 'boxtop', :locals=>{:title=>"Billing information"} %>
+	<div class="table">
+		 <div class="form">
+			<%= error_messages_for :account, :header_message => "Please review and correct the following errors:" %>
+			<% form_for :account, @account do |f| -%>
+
+				<p><label for="last_name">Card Type:</label>
+				<% if BILLING_GW.class.to_s=="ActiveMerchant::Billing::BogusGateway" %>
+					<%= select( "account", "cardtype", { "Bogus" => "bogus"}) %>
+				<% else %>
+					<%= select( "account", "cardtype", { "Visa" => "visa", "Mastercard" => "master", "American Express"=>"american_express"}) %>
+				<% end %>
+				</p>
+
+				<p><label for="email">Card Number:</label>
+				<% if !@tempcc.blank?	
+					@account.cc = @tempcc # restore unencrypted card number to view
+				end %>
+				<%= f.text_field :cc %></p>
+
+				<p><label for="password">Card Expiration:</label>
+
+
+					<%= select( "account", "expires_month", 1..12) %>			
+					<%= select( "account", "expires_year", Time.now.year..2040) %>			
+				</p>
+				<p><label for="zip">Card security code:</label>
+				<input type="text" name="code" value="<%= params[:code] %>">
+				</p>
+				<p><label for="zip">Billing Address:</label>
+					<%= f.text_field :address1 %></p>
+				<p><label for="zip">Billing zip code:</label>
+						<%= f.text_field :zip %></p>
+				<p><!--<label for="email">Card Number:</label><br/>-->
+
+
+				<br/>
+				<%# submit_tag "Update account" %>
+				<%= f.submit "submit", :disable_with => 'submiting...', :class=>"button" %>
+
+			<% end -%>
+		</div>
+	</div>
+</div>
+

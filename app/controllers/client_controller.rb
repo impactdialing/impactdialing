@@ -496,6 +496,89 @@ Do you want to buy a widget?"
     redirect_to :action=>"campaign_view", :id=>params[:campaign_id]
   end
   
+  def billing
+    @breadcrumb="Billing"
+    @account = @user.account || Account.new
+    @oldcc = @account.cc
+    if @account.last4.blank?
+      @tempcc = ""
+      @account.cc = ""
+    else
+      @tempcc = "xxxx xxxx xxxx #{@account.last4}"
+      @account.cc = "xxxx xxxx xxxx #{@account.last4}"
+    end
+
+    if request.post?
+      @account.user_id=@user.id
+      @account.attributes = params[:account]
+
+      if @account.cc==@tempcc
+        @account.cc=@oldcc
+      else
+        if @account.cc.length > 4
+          @account.last4 = @account.cc[@account.cc.length-4,4]
+        else
+          @account.last4 = @account.cc
+        end
+        @account.encyrpt_cc
+      end
+      
+
+      # test an auth to make sure this card is good.
+      creditcard = ActiveMerchant::Billing::CreditCard.new(
+        :number     => @account.decrypt_cc,
+        :month      => @account.expires_month,
+        :year       => @account.expires_year,
+        :type       => @account.cardtype,
+        :first_name => @user.fname,
+        :last_name  => @user.lname,
+        :verification_value => params[:code]
+        )
+
+
+
+
+      if !creditcard.valid?
+        if creditcard.expired?
+          flash[:error]="Invalid card expiration, please try again"
+          @account.cc = ""
+        else
+          flash[:error]="Invalid card number or security code, please try again"
+          @account.cc = ""
+        end
+        return
+      end
+      
+#      p = Payment.authorize(1, creditcard, {:ip=>getIP, :zip=>@account.zip, :billing_address => @account.address1}) 
+#      p.user_id=@user.id
+#      p.save
+#      if !p.success
+#        flash[:notice]="We had a problem authorizing that credit card.  Please try again"
+#        return
+#      end      
+
+      billing_address = { :name => "#{@user.fname} #{@user.lname}", :address1 => @account.address1 , :zip =>@account.zip}
+      options = {:address => {}, :address1 => billing_address, :billing_address => billing_address, :ip=>"127.0.0.1", :order_id=>""}
+      response = BILLING_GW.authorize(1, creditcard,options)
+      logger.info response.inspect
+
+
+      if response.success?
+        flash[:notice]="Account activated."
+        @account.save
+        @user.paid=1
+        @user.save
+        redirect_to :action=>"index"
+        return
+      else
+        flash[:error]="There was a problem validating your credit card.  Please email <a href='mailto:info@impactdialing.com'>info@impactdialing.com</a> for further support."
+      end
+
+    end    
+
+  end
+  
+  
   def campaign_view
     check_warning
     @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id)
@@ -670,11 +753,11 @@ Do you want to buy a widget?"
     @script = Script.find_by_id_and_user_id(params[:id],@user.id)
     @numResults=0
     if @script!=nil
-      for i in 1..10 do
+      for i in 1..NUM_RESULT_FIELDS do
         @numResults+=1 if !eval("@script.result_set_#{i}").blank?
       end
       @numNotes=0
-      for i in 1..10 do
+      for i in 1..NUM_RESULT_FIELDS do
         @numNotes+=1 if !eval("@script.note_#{i}").blank?
       end
     else
@@ -695,6 +778,13 @@ Do you want to buy a widget?"
       @rs["keypad_9"]="Wrong number"
 #      @rs.incompletes=["7"].to_json
       @script.result_set_1=@rs.to_json
+      @script.incompletes='{"5":[],"6":[],"1":["7"],"7":[],"2":[],"8":[],"3":[],"9":[],"4":[],"10":[]}'
+      @script.name="Political Example Script"
+      @script.note_1="Email"
+      @numResults=1
+      @numNotes=1
+      @script.voter_fields='["CustomID","FirstName","MiddleName","LastName","Suffix","Age","Gender","Email"]'
+     
     end
     if @script.new_record?
       @label="Add Result"
@@ -757,14 +847,14 @@ Do you want to buy a widget?"
         @script.attributes =   { "result_set_#{r}" => thisResults.to_json }
       end
       
-      for i in 1..10 do
+      for i in 1..NUM_RESULT_FIELDS do
         @script.attributes = { "note_#{i}" => nil }
         thisNote=eval("params[:note_#{i}]")
         @script.attributes = { "note_#{i}" => thisNote } if !thisNote.blank?
       end
 
       all_incompletes={}
-      for i in 1..10 do
+      for i in 1..NUM_RESULT_FIELDS do
         this_incomplete=eval("params[:incomplete_#{i}_]")
         if this_incomplete.nil?
           all_incompletes[i]=[]
@@ -1113,7 +1203,8 @@ Do you want to buy a widget?"
           
           csv_string = FasterCSV.generate do |csv|
 #            csv << ["result", "result digit" , "voter phone", "voter id", "voter last", "voter first", "voter middle", "voter suffix", "voter email","caller pin", "caller name",  "caller email","status", "call start", "call end", "number attempts"]
-             csv << ["id", "LastName", "FirstName", "MiddleName", "Suffix", "Phone", "Result", "Caller Name", "Status", "Call Start", "Call End", "Number Calls"] + json_fields #+ ["fam_id", "fam_LastName", "fam_FirstName", "fam_MiddleName", "fam_Suffix", "fam_Email"]
+            #csv << ["id", "LastName", "FirstName", "MiddleName", "Suffix", "Phone", "Result", "Caller Name", "Status", "Call Start", "Call End", "Number Calls"] + json_fields #+ ["fam_id", "fam_LastName", "fam_FirstName", "fam_MiddleName", "fam_Suffix", "fam_Email"]
+            csv << ["id", "LastName", "FirstName", "MiddleName", "Suffix", "Phone", "Caller Name", "Status", "Call Start", "Call End", "Number Calls"] + json_fields #+ ["fam_id", "fam_LastName", "fam_FirstName", "fam_MiddleName", "fam_Suffix", "fam_Email"]
             num_call_attempts=0
             attempts.each do |a|
               num_call_attempts+=1
@@ -1141,11 +1232,11 @@ Do you want to buy a widget?"
                 if a[23]==0 || a[23]=="" || a[23]==nil || a[23]=="0"
                   #no fam
                   #logger.info "no fam"
-                  csv << [a[3],a[4],a[5],a[6],a[7],a[2],a[0],a[10],a[12],a[13],a[14],num_call_attempts]  + json_to_add #+ [a[17],a[18],a[19],a[20],a[21]]
+                  csv << [a[3],a[4],a[5],a[6],a[7],a[2],a[10],a[12],a[13],a[14],num_call_attempts]  + json_to_add #+ [a[17],a[18],a[19],a[20],a[21]]
                 else
                   #fam
                   #logger.info "fam: #{a[23]}"
-                  csv << [a[17],a[18],a[19],a[20],a[7],a[2],a[0],a[10],a[12],a[13],a[14],num_call_attempts]  + json_to_add 
+                  csv << [a[17],a[18],a[19],a[20],a[7],a[2],a[10],a[12],a[13],a[14],num_call_attempts]  + json_to_add 
                 end
                
                 num_call_attempts=0

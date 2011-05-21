@@ -16,7 +16,7 @@ class Script < ActiveRecord::Base
   
   def result_sets_used
     ret=[]
-    for i in 1..10 do 
+    for i in 1..NUM_RESULT_FIELDS do 
 				result_set = eval("self.result_set_#{i}")
 				if result_set==nil 
 					json={}
@@ -31,7 +31,7 @@ class Script < ActiveRecord::Base
 
   def notes_used
     ret=[]
-    for i in 1..10 do 
+    for i in 1..NUM_RESULT_FIELDS do 
 				note = eval("self.note_#{i}")
 				if !note.blank?
 				  ret << i

@@ -16,10 +16,10 @@
 			        <label>Name <span>(Required Field)</span></label>
 					<%= f.text_field :name, {:class=>"field"} %>
 			      </p>
-					<% (1..10).each do |i| %>
+					<% (1..NUM_RESULT_FIELDS).each do |i| %>
 					 	<%= render :partial => 'call_result', :locals => { :num => i }  %>
 					<% end %>
-					<% (1..10).each do |i| %>
+					<% (1..NUM_RESULT_FIELDS).each do |i| %>
 						<%= render :partial => 'call_note' , :locals => { :num => i }  %>
 
 					<% end %>
@@ -92,6 +92,7 @@
 	
 	var numResults=<%= @numResults %>;
 	var numNotes=<%= @numNotes %>;
+	var maxNotes=<%= NUM_RESULT_FIELDS %>;
 
 	for (i=1; i<=numResults;i++)
 		$('result_container_' + i).style.display='block';
@@ -100,8 +101,8 @@
 		$('note_container_' + i).style.display='block';
 	
 	function addResult(){
-		if (numResults==10){
-			alert ('Maximum number of result sets is 10');
+		if (numResults==maxNotes){
+			alert ('Maximum number of result sets is ' + maxNotes);
 			return true;
 		}
 		numResults+=1;
@@ -119,7 +120,7 @@
 		numResults=numResults-1;
 	}
 
-	<% for i in 1..10 do %>
+	<% for i in 1..NUM_RESULT_FIELDS do %>
 		var lastone_<%= i %>=<%= @lastone[i] %>;
 	<% end %>
 
@@ -140,8 +141,8 @@
 	}
 	
 	function addNote(){
-		if (numNotes==10){
-			alert ('Maximum number of notes is 10');
+		if (numNotes==maxNotes){
+			alert ('Maximum number of notes is '+ maxNotes);
 			return true;
 		}
 		
