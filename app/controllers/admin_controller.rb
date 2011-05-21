@@ -1,6 +1,6 @@
 class AdminController < ApplicationController
   layout "basic"
-  USER_NAME, PASSWORD = "impact", "dial123"
+  USER_NAME, PASSWORD = "impact", "Mb<3Ad4F@2tCallz"
   before_filter :authenticate
   require "nokogiri"
   
@@ -182,6 +182,19 @@ Can we count on you to vote for such-and-such?"
         end
       end    
       @versions = Seo.find(:all).map{ |i| i.version }.uniq
+    end
+    
+    def robo_log_parse
+      counter = 1
+      out=[]
+      f = File.new(File.join(RAILS_ROOT, 'result_combined.txt')) 
+      while (line = f.gets)
+        hash = eval(line.gsub("Parameters:", "").strip)
+        puts "#{counter}: #{hash["attempt"]}"
+        out << hash["attempt"]
+        counter = counter + 1
+      end
+      render :text=>out.join(",")
     end
 
     def copy_cms
