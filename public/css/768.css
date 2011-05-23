@@ -1,0 +1,266 @@
+/* 768 
+
+_____________________________________________________
+
+320 and Up boilerplate extension
+Author: Andy Clarke
+Version: 0.9.3b
+URL: http://stuffandnonsense.co.uk/projects/320andup/
+License: http://creativecommons.org/licenses/MIT/
+_____________________________________________________
+
+1.ROOT
+2.HEADINGS
+3.TYPOGRAPHY
+4.LINKS
+5.FIGURES & IMAGES
+6.TABLES
+7.FORMS (See css/mylibs/forms.css)
+8.BANNER — header[role="banner"]
+9.NAVIGATION — nav[role="navigation"]
+10.CONTENT
+11.MAIN — div[role="main"]
+12.COMPLIMENTARY — div[role="complementary"]
+13.CONTENTINFO — footer[role="contentinfo"]
+14.GLOBAL OBJECTS
+15.VENDOR-SPECIFIC 
+16.TEMPLATE SPECIFICS
+17.MODERNIZR
+
+*/
+
+/* 1.ROOT */
+/* 2.HEADINGS */
+/* 3.TYPOGRAPHY */
+/* 4.LINKS */
+/* 5.FIGURES & IMAGES */
+/* 6.TABLES */
+/* 7.FORMS (See css/mylibs/forms.css) */
+
+.buttons button {
+display : inline-block;
+margin-bottom : 0; }
+
+/* 8.BANNER */
+
+header[role="banner"],
+nav[role="navigation"],
+.content,
+footer[role="contentinfo"] {
+margin : 0 auto 1.5em; }
+
+header[role="banner"] {
+margin-bottom: 0; }
+
+/* 9.NAVIGATION */
+
+nav[role="navigation"] {
+margin-bottom : 0;
+padding-bottom : 0;
+border-bottom-width : 0; }
+
+nav[role="navigation"] ul {
+padding : 0; 
+background-color : rgb(223,223,228); 
+border : 1px solid rgb(173,173,178); }
+
+nav[role="navigation"] li {
+float : left; 
+margin-bottom : 0;
+padding : 0;
+width : 20.08% /* 180 / 896 = .2008 */;
+border-width : 0;
+border-right : 1px solid rgb(255,255,255);
+border-left : 1px solid rgb(173,173,178); }
+
+nav[role="navigation"] li:nth-child(3) {
+border-right-width : 0; }
+
+nav[role="navigation"] li:first-child {
+width : 28% /* 180 / 896 = .2008 */;
+border-left-width : 0; }
+
+nav[role="navigation"] li:last-child {
+float : right;
+margin-right : 0; 
+background-color : rgb(194,54,52); 
+border-right-width : 0; }
+
+nav[role="navigation"] a {
+padding : 1em 0; }
+
+nav[role="navigation"] a:hover {
+text-decoration : none; }
+
+/* 10.CONTENT */
+
+.reverse {
+margin-bottom : 1.5em;
+padding : 24px;
+background : rgb(49,49,49) url(../img/furniture-reverse.png) repeat 0 0; 
+border-bottom-width : 0;
+color : rgb(255,255,255); 
+text-shadow : 0 -1px 1px rgb(0,0,0); }
+
+.reverse h1 {
+font-size : 2.375em; /* 38 / 16 = 2.375 */ }
+
+.reverse h2 {
+font-size : 1.75em; /* 28 / 16 = 1.75 */ }
+
+.reverse .disabled { 
+padding : 6px 24px 7px;
+background-color : rgb(82,82,82);
+border : 1px solid rgb(45,45,45); 
+color : rgb(255,255,255); 
+font-size : 1em; 
+font-weight : 700; }
+
+.reverse li {
+margin-bottom : .25em;
+font-size : 1.15em; }
+
+/* 11.MAIN */
+
+[role="main"] {
+float : left; 
+width : 58.92% /* 528 / 896 = .5892 */; }
+
+/* hentry */
+
+.hentry header ul {
+overflow : hidden; }
+
+.hentry header li {
+display : inline-block;
+float : left; 
+margin-right : 24px; }
+
+/* 12.COMPLEMENTARY */
+
+[role="complementary"] {
+float : right; 
+width : 33.48% /* 300 / 896 = .3348 */; }
+
+/* 13.CONTENTINFO */
+
+footer[role="contentinfo"] ul {
+float : left; 
+width : 58.92% /* 528 / 896 = .5892 */; }
+
+footer[role="contentinfo"] div {
+float : right; 
+width : 33.48% /* 300 / 896 = .3348 */; }
+
+footer[role="contentinfo"] p {
+clear : both; }
+
+/* 14.GLOBAL OBJECTS */
+
+form ul.clearfix {
+margin-bottom : 0; }
+
+form ul.clearfix li {
+float : left;
+width : 49%; }
+
+.callout a.action {
+float : right; 
+margin-bottom : 0; }
+
+/* 15.VENDOR-SPECIFIC */
+
+/* 16.TEMPLATE SPECIFICS */
+
+.admin header[role="banner"] ul {
+position : absolute; 
+display : block;
+position : absolute;
+top : 1em;
+right : 0; }
+
+.admin header[role="banner"] li {
+display : inline-block;
+margin-right : 24px; }
+
+.admin header[role="banner"] li:first-child {
+margin-right : 24px;
+padding-right : 24px; 
+border-right : 1px solid rgb(192,192,200); }
+
+.cssgradients .admin nav[role="navigation"] li:last-child {
+background-image : -webkit-gradient(linear, left top, left bottom, from(rgb(223,223,228)), to(rgb(207,207,213)));
+background-image : -moz-linear-gradient(top, rgb(223,223,228), rgb(207,207,213));
+background-image : -o-linear-gradient(top, rgb(223,223,228), rgb(207,207,213));
+background-image : linear-gradient(top, rgb(223,223,228), rgb(207,207,213)); }
+
+.no-cssgradients .admin nav[role="navigation"] li:last-child {
+background-color : transparent!important;
+background-image : none!important; }
+
+.admin nav[role="navigation"] li:nth-child(3) {
+border-right-width : 1px; }
+
+.admin nav[role="navigation"] li:last-child {
+float : left;
+border-width : 0;
+border-left-width : 1px;
+-webkit-border-top-right-radius : 0!important;
+-webkit-border-bottom-right-radius : 0!important;
+-moz-border-radius-topright : 0!important;
+-moz-border-radius-bottomright : 0!important;
+border-top-right-radius : 0!important;
+border-bottom-right-radius : 0!important; }
+
+.admin nav[role="navigation"] li:last-child a {
+color : rgb(51,51,51);  
+text-shadow : 0 1px 1px rgb(255,255,255); }
+
+/* 17.MODERNIZR */
+
+/* border-radius */
+
+nav[role="navigation"] li:last-child {
+-webkit-border-top-right-radius : 6px;
+-webkit-border-bottom-right-radius : 6px;
+-moz-border-radius-topright : 6px;
+-moz-border-radius-bottomright : 6px;
+border-top-right-radius : 6px;
+border-bottom-right-radius : 6px; }
+
+.reverse {
+-webkit-border-radius : 6px;
+-moz-border-radius : 6px;
+border-radius : 6px; }
+
+.reverse .disabled  {
+-webkit-border-radius : 6px;
+-moz-border-radius : 6px;
+border-radius : 6px; }
+
+nav[role="navigation"] li  {
+-webkit-border-radius : 0;
+-moz-border-radius : 0;
+border-radius : 0; }
+
+/* cssgradients */
+
+.cssgradients nav[role="navigation"] ul {
+background-image : -webkit-gradient(linear, left top, left bottom, from(rgb(223,223,228)), to(rgb(207,207,213)));
+background-image : -moz-linear-gradient(top, rgb(223,223,228), rgb(207,207,213));
+background-image : -o-linear-gradient(top, rgb(223,223,228), rgb(207,207,213));
+background-image : linear-gradient(top, rgb(223,223,228), rgb(207,207,213)); }
+
+.cssgradients nav[role="navigation"] li:hover,
+.cssgradients nav[role="navigation"] li.active {
+background-image : -webkit-gradient(linear, left top, left bottom, from(rgb(169,169,171)), to(rgb(207,207,213)));
+background-image : -moz-linear-gradient(top, rgb(169,169,171), rgb(207,207,213));
+background-image : -o-linear-gradient(top, rgb(169,169,171), rgb(207,207,213));
+background-image : linear-gradient(top, rgb(169,169,171), rgb(207,207,213)); }
+
+/* multiplebgs */
+
+.multiplebgs .reverse {
+background-image : url(../img/furniture-reverse-dialer.png), url(../img/furniture-reverse.png);
+background-repeat : no-repeat, repeat;
+background-position : 100% 50%, 0 0; }
