@@ -1,9 +1,10 @@
 <%= error_messages_for :caller %>
 <div class="box" style="width:400px;">
-	<%= render :partial => 'boxtop', :locals=>{:title=>@label} %>
+	<h1><%= @label %></h1>
+
 
 	<% form_for :caller do |f| -%>
-    <div class="form">
+	<fieldset>
       <p>
         <label>Name <span>(Required Field)</span></label>
 		<%= f.text_field :name, {:class=>"field"} %>
@@ -20,12 +21,12 @@
         <label>Multi-User? &nbsp; <%= f.check_box :multi_user%></label>
 		
       </p>
+	<div class="buttons">
+	<button type="submit">Submit</button>
 	</div>
-    <div class="buttons">
-      <input type="button" class="button" value="cancel" onclick="document.location.href='/client/callers';"/>
-	<%= f.submit "submit", :disable_with => 'submiting...', :class=>"button" %>
+
     </div>
-    <!-- End Form Buttons -->
+</fieldset>
 	<% end -%>
 </div>
 <!-- End Box -->

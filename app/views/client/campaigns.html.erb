@@ -1,11 +1,9 @@
-<div class="box">
-	<%= render :partial => 'boxtop', :locals=>{:title=>"Campaigns"} %>
+<h1>Campaigns</h1>
 	<% if @campaigns.length==0 %>
 		<div class="form">
 	      <label>No campaigns entered.</label>
 		</div>
 	<% else %>
-  <div class="table">
     <table width="100%" border="0" cellspacing="0" cellpadding="0">
       <tr>
         <th>Name</th>
@@ -32,33 +30,6 @@
 	</div>
     </div>
     <!-- End Pagging -->
-  </div>
   <!-- Table -->	<% end %>
-  <div class="box-content"> <a href="/client/campaign_new" class="add-button"><span>Add new Campaign</span></a><div class="cl">&nbsp;</div></div>
+<p class="actions"><a href="/client/campaign_new" class="action primary">Add a new campaign</a></p>
 
-</div>
-
-
-<% content_for :sidebarx do %>
-<!-- Box -->
-<div class="box">
-  <!-- Box Head -->
-  <div class="box-head">
-    <h2>Management</h2>
-  </div>
-  <!-- End Box Head
-<% if @campaigns.length > 0 %>
-  <div class="box-content campaignlinks" >
-	<div style="color: #818181; font-weight:bold; margin-bottom:10px; ">Select a campaign</div>
-	<% @campaigns.each do |c| %>
-		<a href="/client/campaign_view/<%= c.id %>" ><%= c.name %></a><br/>
-	<% end %>
-	</div>
-	<% end %>-->
-  <div class="box-content"> <a href="/client/campaign_add" class="add-button"><span>Add new Campaign</span></a><div class="cl">&nbsp;</div>
-
-	</div>
-</div>
-<!-- End Box -->
-
-<% end %>

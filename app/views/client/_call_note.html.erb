@@ -1,3 +1,9 @@
-<div style="border:10px solid #efefef; margin:10px; -moz-border-radius: 15px; border-radius: 15px; background-color:#efefef; display:none;" id="note_container_<%= num %>"> &nbsp;
-Note <%= num %> name: <input type="text" name="note_<%= num %>" value="<%= eval("@script.note_#{num}") %>">
+
+<div style="display:none;" id="note_container_<%= num %>"> 
+
+	<fieldset>
+	<p><label for="">Note <%= num %></label><br>
+	<input type="text" name="note_<%= num %>" value="<%= eval("@script.note_#{num}") %>"></p>
+	</fieldset>
+
 </div>

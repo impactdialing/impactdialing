@@ -1,38 +1,26 @@
 <% if params[:id].blank? %>
-	<div class="box" style="width:600px;">
-		<%= render :partial => 'boxtop', :locals=>{:title=>"Campaigns"} %>
-		<div class="table" width="100%">
-		    <table width="100%" border="0" cellspacing="0" cellpadding="0">
-			<% if @user.campaigns.length==0 %>
-				<tr>
-					<td>You haven't created any campaigns yet.</td>
-				</tr>
-			<% else %>
-			  <tr>
-		        <th colspan="7">Name</th>
-			</tr>
-		    
-			<% end %>
-			<% @user.campaigns.each do |c| %>
-			<tr>
-				<td><%= c.name %></td>
-				<td><a href="/client/report_overview?id=<%= c.id %>">Overview</a></td>
-				<td><a href="/client/report_overview_old?id=<%= c.id %>&type=1">Answered</a><br/></td>
-				<td><a href="/client/report_caller?id=<%= c.id %>">By Caller</a><br/></td>
+	<h1>Campaigns</h1>
+    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+		<% if @user.campaigns.length==0 %>
+		<tr><td>You haven't created any campaigns yet.</td></tr>
+		<% else %>
+		<tr><th colspan="7">Name</th></tr>
+		<% end %>
+		<% @user.campaigns.each do |c| %>
+		<tr>
+			<td><%= c.name %></td>
+			<td><a href="/client/report_overview?id=<%= c.id %>">Overview</a></td>
+			<td><a href="/client/report_overview_old?id=<%= c.id %>&type=1">Answered</a><br/></td>
+			<td><a href="/client/report_caller?id=<%= c.id %>">By Caller</a><br/></td>
 <!--				<td><a href="/client/report_caller_overview?id=<%= c.id %>">Caller</a><br/></td>-->
-				<td><a href="/client/report_real?id=<%= c.id %>">Realtime</a><br/></td>
-				<td><a href="/client/report_download?id=<%= c.id %>">Download</a><br/></td>
-
-			</tr>
-			<% end %>
-			</table>
-		</div>
-	</div>
+			<td><a href="/client/report_real?id=<%= c.id %>">Realtime</a><br/></td>
+			<td><a href="/client/report_download?id=<%= c.id %>">Download</a><br/></td>
+		</tr>
+		<% end %>
+	</table>
 
 <% else %>
-<div class="box" style="width:600px;">
-	<%= render :partial => 'boxtop', :locals=>{:title=>"Choose a report for #{@campaign.name}"} %>
-	<div class="table">
+	<h1>Choose a report for #{@campaign.name}</h1>
 		<table>
 			<tr><td><a href="/client/report_overview?id=<%=  params[:id]%>">Overview Report</a></td></tr>
 			<tr><td><a href="/client/report_overview_old?id=<%= params[:id]%>&type=1">Answered Calls Report</a><br/></td></tr>
@@ -47,7 +35,5 @@
 		
 		
 		</table>
-	</div>
-</div>
 
 <% end %>

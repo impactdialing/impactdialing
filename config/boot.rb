@@ -56,6 +56,7 @@ module Rails
     end
 
     def load_rails_gem
+      gem 'i18n', '0.4.2' # Add this line
       if version = self.class.gem_version
         gem 'rails', version
       else

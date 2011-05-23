@@ -1,92 +1,66 @@
-
+<h1><%= @label %></h1>
 <%= error_messages_for :script %>
 <% @lastone=[0,0,0,0,0,0,0,0,0,0,0]%>
-<table>
-	<tr>
-		<td valign="top">
-			<div class="box" style="width:520px;">
-				<%= render :partial => 'boxtop', :locals=>{:title=>@label, :lastone=>@lastone} %>
 
-				<%# form_for :script do |f| -%>
-				<%# form_for :script => {:name => 'callerForm', :id => 'callerForm'}   do |f| %>
-				<% form_for :script, :url => { :action => "script_add" , :id=>@script.id}, :html => {:name => 'callerForm', :id => 'callerForm'}   do |f| %>
+<% form_for :script, :url => { :action => "script_add" , :id=>@script.id}, :html => {:name => 'callerForm', :id => 'callerForm'}   do |f| %>
+	
+     <p>
+       <label>Name <span>(Required Field)</span></label>
+		<%= f.text_field :name, {:class=>"field"} %>
+     </p>
 
-			    <div class="form">
-			      <p>
-			        <label>Name <span>(Required Field)</span></label>
-					<%= f.text_field :name, {:class=>"field"} %>
-			      </p>
-					<% (1..NUM_RESULT_FIELDS).each do |i| %>
-					 	<%= render :partial => 'call_result', :locals => { :num => i }  %>
-					<% end %>
-					<% (1..NUM_RESULT_FIELDS).each do |i| %>
-						<%= render :partial => 'call_note' , :locals => { :num => i }  %>
+	<% (1..NUM_RESULT_FIELDS).each do |i| %>
+	 	<%= render :partial => 'call_result', :locals => { :num => i }  %>
+	<% end %>
+	<% (1..NUM_RESULT_FIELDS).each do |i| %>
+		<%= render :partial => 'call_note' , :locals => { :num => i }  %>
+	<% end %>
 
-					<% end %>
-					<br/>
-					<table align="center" width="100%" cellpadding="10" cellspacing="10">
-						<tr>
-							<td align="right"><input type="button" value="Add new result set" onclick="addResult();" class="button"></td>
-							<td><input type="button" value="Remove result set" onclick="remResult();" class="button"></td>
-						</tr>
-						<tr>
-							<td align="right"><input type="button" value="New note" onclick="addNote();" class="button"></td>
-							<td><input type="button" value="Remove note" onclick="delNote();" class="button"></td>
-						</tr>
-					</table>
+	<fieldset>
 
-<br/><br/>					<sup>*</sup>
-					If a caller marks a phone call as an incomplete call result, the phone number will be added back to the campaign and tried again later.
-				</div>
-<!--							    <div class="buttons">
-							      <input type="button" class="button" value="cancel" onclick="document.location.href='/client/scripts';"/>
-								<%= f.submit "submit", :disable_with => 'submiting...', :class=>"button" %>
-							    </div>-->
-							    <!-- End Form Buttons -->
-							</div>
-							<!-- End Box -->
-						</td>
-						<td> &nbsp; </td>
-						<td valign="top">
-							<div class="box" style="width:400px;">
-								<%= render :partial => 'boxtop', :locals=>{:title=>"Script"} %>
+	<p>
+	<a href="javascript:addResult();" class="action primary">New result set</a>
+	<a href="javascript:remResult();" class="action primary">Delete result set</a>
+	<a href="javascript:addNote();" class="action primary">New note</a>
+	<a href="javascript:delNote();" class="action primary">Delete note</a>
+	</p>
 
-							    <div class="form">
-							      <p>
-							        <label>Script</label>
-									<%= f.text_area :script, {:cols=>50, :rows=>10} %>
-							      </p>
-								</div>
-<!--							    <div class="buttons">
-							      <input type="button" class="button" value="cancel" onclick="document.location.href='/client/scripts';"/>
-								<%= f.submit "submit", :disable_with => 'submiting...', :class=>"button" %>
-							    </div>-->
-							</div>
+	<p><sup>*</sup> If a caller marks a call as an incomplete call result, the number will be added back to the campaign and tried later.</p>
 
-							<div class="box" style="width:400px;">
-								<%= render :partial => 'boxtop', :locals=>{:title=>"Additional Info"} %>
+	</fieldset>
 
-							    <div class="form">
-							      <p>
-							        <label>Display this information above the script:</label>
 
-									<% @fields.each do |field| %>
-										<input  type="checkbox" name="voter_field[]" value="<%= field %>"  <% if @voter_fields.index(field) %>checked<% end %>> <%= field %><br/>
-									<% end %>
-							      </p>
-								</div>
-<!--							    <div class="buttons">
-							      <input type="button" class="button" value="cancel" onclick="document.location.href='/client/scripts';"/>
-								<%= f.submit "submit", :disable_with => 'submiting...', :class=>"button" %>
-							    </div>-->
+
+	<fieldset>
+	<legend>Script</legend>
+	<p>	<%= f.text_area :script, {:cols=>50, :rows=>10} %></p>		
+	</fieldset>	
+								
+						
+
+	<fieldset>
+	<legend>Additional information</legend>
+	<p><label>Display this information above the script:</label><p>
+	<ul class="clearfix">
+
+		<% @fields.each do |field| %>
+		<li>	<input  type="checkbox" name="voter_field[]" value="<%= field %>"  <% if @voter_fields.index(field) %>checked<% end %>> <%= field %></li>
+		<% end %>
+
+	</ul>
+	</fieldset>
+								
+
 								<input type="hidden" id="numResults" name="numResults" value="">
 								<input type="hidden" id="numNotes" name="numNotes" value="">
-								<% end -%>
-							</div>
 
-						</td>
-					</tr>
-				</table>
+								<div class="buttons">
+								<button type="submit">Save script</button>
+								</div>
+								<% end -%>
+
+
+				
 
 <script>
 	

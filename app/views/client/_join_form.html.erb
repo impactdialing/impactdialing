@@ -1,11 +1,11 @@
+<h1>Sign Up Free</h1>
 
 <%= error_messages_for :user %>
-
-	<div class="box" style="width:400px;">
-		<%= render :partial => 'client/boxtop', :locals=>{:title=>@title} %>
 		<% form_for :user do |f| -%>
-	    <div class="form">
 
+		<fieldset>
+
+<!--
 	      <p>
 	        <label>First Name <span>(Required)</span></label>
 			<%= f.text_field :fname, {:class=>"field"} %>
@@ -18,6 +18,7 @@
 	        <label>Organization Name <span>(Required)</span></label>
 			<%= f.text_field :orgname, {:class=>"field"} %>
 	      </p>
+	-->
 	      <p>
 	        <label>Email <span>(Required)</span></label>
 			<%= f.text_field :email, {:class=>"field"} %>
@@ -34,20 +35,23 @@
 			<input class="field" id="user_password" name="user[password]" size="30" type="password" value="" /> 
 
 	      </p>
+	<!--
 	      <p>
 	        <label><% if !@user.new_record? %>New <% end %>Password Confirmation <% if @user.new_record? %><span>(Required)</span><% end %></label>
-			<%= f.password_field :password_confirmation, {:class=>"field"} %>
-	      </p>
+			<%# f.password_field :password_confirmation, {:class=>"field"} %>
+	      </p>-->
 	<% if @user.new_record? %>
 			<p>	
 				<label>	<input type="checkbox" name="tos" value="1" <% if params[:tos] %>checked<% end %>/> I agree to the <a href="/home/tos" target="_blank">Terms of Service</a></label>
 				
 			</p>
 			<% end %>
-			<%= f.submit "submit", :disable_with => 'submiting...', :class=>"button" %>
+			<div class="buttons">
+			<button type="submit">Join</button>
+			</div>
 
+			<%# f.submit "submit", :disable_with => 'submiting...', :class=>"button" %>
 
-	</div>
-</div>
+		</fieldset>
 
 <% end -%>

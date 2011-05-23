@@ -1,5 +1,4 @@
-<div class="box">
-	<%= render :partial => 'boxtop', :locals=>{:title=>"Callers"} %>
+<h2>Callers</h2>
 	<% if @callers.length==0 %>
 		<div class="form">
 	      <label>No callers entered.</label>
@@ -28,29 +27,11 @@
 	<% end %>
 
     </table>
+	<% end %>
 
-    <!-- Pagging -->
-    <div class="pagging">
-   <div class="left"><%= page_entries_info @callers %></div>
-      <div class="right"> <%= will_paginate @callers %>
-	</div>
-    </div>
-    <!-- End Pagging -->
-  </div>
-  <!-- Table -->	<% end %>
- <div class="box-content"> <a href="/client/caller_add" class="add-button"><span>Add new Caller</span></a><div class="cl">&nbsp;</div></div></div>
-
-
-<% content_for :sidebarx do %>
-<!-- Box -->
-<div class="box">
-  <!-- Box Head -->
-  <div class="box-head">
-    <h2>Management</h2>
-  </div>
-  <!-- End Box Head-->
-  <div class="box-content"> <a href="/client/caller_add" class="add-button"><span>Add new Caller</span></a><div class="cl">&nbsp;</div></div>
 </div>
-<!-- End Box -->
 
-<% end %>
+<p><%= page_entries_info @callers %> <%= will_paginate @callers %></p>
+<p class="actions"><a href="/client/caller_add" class="action primary">Add new caller</a></p>
+
+

@@ -10,6 +10,7 @@
 			<% if !@campaign.script.script.blank? %><div class="rt"> <%= @campaign.script.script.gsub("\n", "<br/>") %></div><% end %>
 			<br/>
 			<div id="response" class="rt" style="display:none; font-size:1em;">
+				<fieldset>
 				<%# @script.name %>
 				<% @script.result_sets_used.each do |r| %>
 					<% json = JSON.parse(eval("@script.result_set_#{r}")) %>
@@ -24,12 +25,20 @@
 					<% thisNote=eval("@script.note_#{b}") %>
 					<div style="margin:3px;padding:3px;"><%= thisNote %> <input type="text" name="note<%= b %>" id="note<%= b %>"  size="30"></div>
 				<% end %>
+				</fieldset>
 
 			</div>
 		</div>
 		<div class="caller_buttons" id="caller_buttons">
 			<div id="statusdiv" style="float:right; padding-bottom:10px;">Status: Not connected.</div>
-	      	<div id="actiondiv">Enter your phone number: <input type="text" name="numtocall"> <input type="submit" class="button" value="Start Taking Calls">
+	      	<div id="actiondiv">
+		Enter your phone number:
+		<input type="text" name="numtocall" placeholder="Type your phone number here"> 
+		<div class="buttons">
+		<button type="submit">Start Taking Calls</button>
+		</div>
+		
+<!--		<input type="submit" class="button" value="Start Taking Calls">-->
 			
 		</div>
 	

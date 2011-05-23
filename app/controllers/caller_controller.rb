@@ -1,5 +1,5 @@
 class CallerController < ApplicationController
-  layout "caller"
+  layout "client"
   before_filter :check_login, :except=>[:login]
 
   def index

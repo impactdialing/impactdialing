@@ -57,8 +57,41 @@ class ClientController < ApplicationController
         @caller.multi_user=true
         @caller.user_id=@user.id
         @caller.save
+
+      if Script.find_by_name_and_user_id("Voter ID Example",@user.id)==nil
+          @script = Script.new
+          @script.name="Voter ID Example"
+          @rs={}
+          @rs["keypad_1"]="Strong supportive"
+          @rs["keypad_2"]="Lean supportive"
+          @rs["keypad_3"]="Undecided"
+          @rs["keypad_4"]="Lean opposed"
+          @rs["keypad_5"]="Strong opposed"
+          @rs["keypad_6"]="Refused"
+          @rs["keypad_7"]="Not home/call back"
+          @rs["keypad_8"]="Language barrier"
+          @rs["keypad_9"]="Wrong number"
+      #      @rs.incompletes=["7"].to_json
+          @script.result_set_1=@rs.to_json
+          @script.incompletes='{"5":[],"6":[],"1":["7"],"7":[],"2":[],"8":[],"3":[],"9":[],"4":[],"10":[]}'
+          @script.name="Political Example Script"
+          @script.note_1="Email"
+          @numResults=1
+          @numNotes=1
+          @script.voter_fields='["CustomID","FirstName","MiddleName","LastName","Suffix","Age","Gender","Email"]'
+           @script.script="Hi, is ___ there?
+
+My name's ___ and I'm a volunteer with the such-and-such campaign.
+
+I'm voting for such-and-such because...
+
+Can we count on you to vote for such-and-such?"
+            @script.active=1
+            @script.user_id=@user.id
+            @script.save
+        end
         
-        if Script.find_by_name_and_user_id("Voter ID Example",@user.id)==nil
+        if false && Script.find_by_name_and_user_id("Voter ID Example",@user.id)==nil
           @script = Script.new
           @script.name="Voter ID Example"
           @script.keypad_1="Strong supportive"
@@ -106,7 +139,7 @@ class ClientController < ApplicationController
 
 
 
-        if Script.find_by_name_and_user_id("Fundraising Example",@user.id)==nil
+        if false && Script.find_by_name_and_user_id("Fundraising Example",@user.id)==nil
           @script = Script.new
           @script.name="Fundraising Example"
           @script.keypad_1="Gave money"
@@ -128,7 +161,7 @@ Will you donate to help our work?"
           @script.save
         end
 
-        if Script.find_by_name_and_user_id("Sales Example",@user.id)==nil
+        if false && Script.find_by_name_and_user_id("Sales Example",@user.id)==nil
           @script = Script.new
           @script.name="Sales Example"
           @script.keypad_1="Bought the product"
@@ -151,7 +184,7 @@ Do you want to buy a widget?"
           
                       
         if session[:user].blank?
-          message = "Your account has been created"
+          #message = "Your account has been created"
         else
           message="Your account has been updated"
         end
@@ -593,7 +626,7 @@ Do you want to buy a widget?"
     flash.now[:error]="You must enter a campaign Caller ID before you can take calls"  if @campaign.caller_id.blank?
     @isAdmin = @user.admin
     @show_voter_buttons = @user.show_voter_buttons
-    render :layout=>"campaign_view"
+#    render :layout=>"campaign_view"
   end
 
   def campaign_caller_id_verified

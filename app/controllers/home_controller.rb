@@ -4,7 +4,8 @@ class HomeController < ApplicationController
       redirect_to :controller=>"caller"
       return
     else
-      #redirect_to :controller=>"client"
+      redirect_to :controller=>"client"
+      return
     end
     @user = User.new
     render :layout=>false

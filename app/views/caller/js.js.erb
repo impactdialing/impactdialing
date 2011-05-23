@@ -55,18 +55,18 @@
 								else if (info=='family')
 									family = voter_data[info];
 								else
-									voter_out+= info + ": " + voter_data[info] + "<br/>";
+									voter_out+= '<li>' + info + ": " + voter_data[info] + "</li>";
 							}
 							currAttempt=attempt_id;
 
 							if (family.length>1)
 								isFam=true;
 							$('#statusdiv').html("Status: In call");
-							$('#actiondiv').html('<input type="button" class="button" value="Submit and Keep Calling" onclick="processresult(' + attempt_id+ ',0,' + isFam + ');"> <input type="button" class="button" value="Submit and Stop Calling" onclick="processresult(' + attempt_id + ',1,' + isFam+ ');"> <input type="button" class="button" value="End Call" onclick="dropcall(' + attempt_id + ');">');
+							$('#actiondiv').html('<div class="buttons"><input type="button" class="button" value="Submit and Keep Calling" onclick="processresult(' + attempt_id+ ',0,' + isFam + ');"> <input type="button" class="button" value="Submit and Stop Calling" onclick="processresult(' + attempt_id + ',1,' + isFam+ ');"> <input type="button" class="button" value="End Call" onclick="dropcall(' + attempt_id + ');"></div>');
 					 		$('#caller_buttons').effect("highlight", {"color":"#bc833c"}, 2000);
 						
 							if (family.length==0){
-								$('#voter_info').html('<input type="hidden" name="familychoice" id="familychoice" value=""><div style="font-size:.7em;">Connected to:</div> ' + voter_out );
+								$('#voter_info').html('<input type="hidden" name="familychoice" id="familychoice" value=""><div style="font-size:.7em;">Connected to:</div><ul> ' + voter_out + '</ul>' );
 							} else {
 								voter_out='';
 								for (var index = 0; index < family.length; ++index) {
@@ -78,13 +78,13 @@
 									*/
 									if (family.length==1)
 										selected='checked';
-							  		info = '<div class="fam"> <input type="radio" name="familychoice" value="' + item.classname + "_" + item.id + '" ' + selected + ' > Household member ' + (index+1) + ':<br/>';
+							  		info = '<div class="fam"> <input type="radio" name="familychoice" value="' + item.classname + "_" + item.id + '" ' + selected + ' > Household member ' + (index+1) + ':<ul>';
 										for (var prop in item){
 											if(prop!="classname" && prop!="id")
-												info+= prop + ": " + item[prop] + "<br/>";
+												info+= '<li>' + prop + ": " + item[prop] + "</li>";
 										}	
 									info+='</div> <br/>';
-									voter_out = voter_out + info;
+									voter_out = voter_out + info + '</ul>';
 								}
 								$('#voter_info').html('<div style="font-size:.7em;">Connected to:</div> ' + voter_out );
 							}
@@ -273,7 +273,7 @@
 			if (currPreview>=voters.length)
 				currPreview=0;
 			curVoter = voters[currPreview];
-			document.getElementById('previewvoterInfo').innerHTML='Name: ' + curVoter[0] + ' ' + curVoter[1] + '<br/>Phone: ' + curVoter[2];
+			document.getElementById('previewvoterInfo').innerHTML='<p>Name: ' + curVoter[0] + ' ' + curVoter[1] + '</p><p>Phone: ' + curVoter[2] + '</p>';
 			document.getElementById('callButton').innerHTML='<input type="button" class="button" onclick="dialVoter(' + curVoter[3] + ');" value="Dial">';
 			currPreview++;
 			if (currPreview>=voters.length)

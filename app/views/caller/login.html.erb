@@ -1,45 +1,18 @@
-<table>
-	<tr>
-		<td valign="top">
-			<div class="box" style="width:400px;">
-				<%= render :partial => 'client/boxtop', :locals=>{:title=>"Caller Login"} %>
+<h1>Caller Login</h1>
 				<% form_tag("/caller/login", :id=>"loginForm") do |f| %>
-	  
-			  <div class="table not">
-			    <table  border="0" cellspacing="0" cellpadding="0">
-			      <tr>
-			        <td><h3>Email:</h3></td>
-			        <td><input type="text" name="email" class="field" value="<%= params[:email] %>" />
-			        </td>
-			      </tr>
-			      <tr >
-			        <td><h3>Password:</h3></td>
-			        <td><input type="password" class="field" name="password"/>
-			        </td>
-			      </tr>
-			      <tr>
-			        <td>
-						<input type="submit" value="Login" class="button">
-						<!--<a href="javascript:$('loginForm').submit();" class="button"><span>Login</span></a>-->
-						
-					</td>
-			        <td><a href="/client/forgot">Forgot Password?</a></td>
-			      </tr>
-				</table>
-			</div>
-			</div>
-		</td>
-		<% end %>
-		<td width="40">&nbsp;</td>
-		<td valign="top">
-<!--JOIN?			-->
-		</td>
-	</tr>
-</table>
+<fieldset>	  
+		<p><label for="">Email address</label><br>
+	<input type="text" name="email" class="field" value="<%= params[:email] %>" />
+		
 
-<!-- End Box -->
-<!--
-<% javascript_tag do %>
-Event.observe(document, 'keypress', function(event) { if(event.keyCode== Event.KEY_RETURN) document.getElementById('loginForm').submit();});
-<% end %>
--->
+		<p><label for="">Password</label><br>
+	<input type="password" class="field" name="password"/>
+		
+
+	<div class="buttons">
+	<button type="submit">Log in</button>
+	</div>
+
+<a href="/client/forgot">Forgot Password?</a>
+</fieldset>
+			<% end %>
