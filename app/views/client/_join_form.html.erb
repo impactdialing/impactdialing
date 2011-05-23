@@ -1,4 +1,8 @@
-<h1>Sign Up Free</h1>
+	<% if @user.new_record? %>
+	<h1>Sign Up Free</h1>
+	<% else %>
+	<h1>My Account</h1>
+	<% end %>
 
 <%= error_messages_for :user %>
 		<% form_for :user do |f| -%>
@@ -51,7 +55,9 @@
 			</div>
 
 			<%# f.submit "submit", :disable_with => 'submiting...', :class=>"button" %>
-
+				<% if !@user.new_record? %>
+			<a href="/client/forgot">Forgot Password?</a>
+			<% end %>
 		</fieldset>
 
 <% end -%>
