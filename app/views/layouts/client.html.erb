@@ -67,7 +67,7 @@
 <body class="admin clearfix">
 
 <header role="banner" class="clearfix">
-<h1><a href="/client">Impact Dialing</a></h1>
+<h1><a href="<% if @controllerName=="client" %>/client<% else %>/caller<% end %>">Impact Dialing</a></h1>
 
 
 <% if !session[:user].blank? && @user!=nil %>
@@ -104,17 +104,17 @@
 </div>
 <% end -%>
 
+<% if flash[:warning] -%>
+<div class="callout alert clearfix">
+<p><%= flash[:warning] %></p>
+</div>
+<% end -%>
 
 <div class="content clearfix">
 	<%= yield %>
  	<%= yield :sidebar %>
 </div>
 
-<% if flash[:warning] -%>
-<div class="callout alert clearfix">
-<p><%= flash[:warning] %></p>
-</div>
-<% end -%>
 
 <footer role="contentinfo" class="clearfix">
 <% if @controllerName=="client" %>

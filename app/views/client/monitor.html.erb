@@ -49,8 +49,8 @@ function eavesdrop(sess,type){
         <th>Phone Number</th>
 		<th></th>
 		<th></th>
-		<th></th>
-		<th></th>
+<!--		<th></th>
+		<th></th>-->
       </tr>
 	<% @logged_in_campaigns.each do |c| %>
 	<% CallerSession.find_all_by_on_call_and_campaign_id(1, c.id).each do |session| %>
@@ -62,8 +62,8 @@ function eavesdrop(sess,type){
 			<td><%= voter.Phone %></td>
 			<td><input type="button" value="Eavesdrop" class="button" onclick="eavesdrop(<%= session.id %>,0);"></td>
 			<td><input type="button" value="Break In" class="button" onclick="eavesdrop(<%= session.id %>,1);"></td>
-			<td><input type="button" value="Take Over" class="button" onclick="eavesdrop(<%= session.id %>,2);"></td>
-			<td>Record</td>
+			<!--<td><input type="button" value="Take Over" class="button" onclick="eavesdrop(<%= session.id %>,2);"></td>
+			<td>Record</td>-->
 		<% end %>
       </tr>
 	<% end %>

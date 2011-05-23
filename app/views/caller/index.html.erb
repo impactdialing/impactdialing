@@ -1,21 +1,21 @@
-<div class="box" >
-	<%= render :partial => 'client/boxtop', :locals=>{:title=>"Welcome to Impact Dialing"} %>
-	<div class="copybox">
-	<%= cms "caller_welcome_text" %>
+<h1>Welcome to Impact Dialing</h1>
 
-		<br/><br/>
-		<% form_tag("/caller", :id=>"loginForm") do |f| %>
-		<select name="campaign_id" class="field">
-			<option value="">-- Choose your campaign --</option>
-			<% @caller.campaigns.uniq.each do |c| %>
-				<% if c.use_web_ui? %>
-				<option value="<%= c.id %>"><%= c.name %></option>
-				<% end %>
-			<% end %>
-		</select>
-		<input class="button" value="Go!" type="submit"> (You can preview the script before taking calls)
+<% form_tag("/caller", :id=>"loginForm") do |f| %>
+<select name="campaign_id" class="field">
+	<option value="">-- Choose your campaign --</option>
+	<% @caller.campaigns.uniq.each do |c| %>
+		<% if c.use_web_ui? %>
+		<option value="<%= c.id %>"><%= c.name %></option>
 		<% end %>
-
-	</div>
+	<% end %>
+</select>
+<div class="buttons">
+<button type="submit">Go to campaign</button>  (You can preview the script before taking calls)
 </div>
 
+
+<% end %>
+
+<p>
+<%= cms "caller_welcome_text" %>
+</p>

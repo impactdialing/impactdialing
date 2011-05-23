@@ -4,6 +4,7 @@
 		 <div class="form">
 			<%= error_messages_for :account, :header_message => "Please review and correct the following errors:" %>
 			<% form_for :account, @account do |f| -%>
+			<fieldset>
 
 				<p><label for="last_name">Card Type:</label>
 				<% if BILLING_GW.class.to_s=="ActiveMerchant::Billing::BogusGateway" %>
@@ -38,6 +39,7 @@
 				<br/>
 				<%# submit_tag "Update account" %>
 				<%= f.submit "submit", :disable_with => 'submiting...', :class=>"button" %>
+				</fieldset>
 
 			<% end -%>
 		</div>

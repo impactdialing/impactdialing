@@ -16,7 +16,7 @@
 			$('#actiondiv').html('Enter your phone number: <input type="text" name="numtocall"> <input type="submit" class="button" value="Start Taking Calls">');
 		 	$('#voter_info').hide();
 		 	$('#response').hide();
-		 	$('#caller_buttons').effect("highlight", {"color":"#bc833c"}, 2000);
+		 	$('#caller_buttons').effect("highlight", {"color":"#3c5b7b"}, 2000);
 		}
 
 
@@ -36,7 +36,7 @@
 			$("#actiondiv").html(ajax_load);
 			<%end %>
 			
-		 	$('#caller_buttons').effect("highlight", {"color":"#bc833c"}, 2000);
+		 	$('#caller_buttons').effect("highlight", {"color":"#3c5b7b"}, 2000);
 		    Realtime.init("<%= TWILIO_ACCOUNT %>");
 		    Realtime.listen("/<%= @session.session_key %>", {
 				onmessage:  function(msg) {
@@ -63,7 +63,7 @@
 								isFam=true;
 							$('#statusdiv').html("Status: In call");
 							$('#actiondiv').html('<div class="buttons"><input type="button" class="button" value="Submit and Keep Calling" onclick="processresult(' + attempt_id+ ',0,' + isFam + ');"> <input type="button" class="button" value="Submit and Stop Calling" onclick="processresult(' + attempt_id + ',1,' + isFam+ ');"> <input type="button" class="button" value="End Call" onclick="dropcall(' + attempt_id + ');"></div>');
-					 		$('#caller_buttons').effect("highlight", {"color":"#bc833c"}, 2000);
+					 		$('#caller_buttons').effect("highlight", {"color":"#3c5b7b"}, 2000);
 						
 							if (family.length==0){
 								$('#voter_info').html('<input type="hidden" name="familychoice" id="familychoice" value=""><div style="font-size:.7em;">Connected to:</div><ul> ' + voter_out + '</ul>' );
@@ -88,8 +88,8 @@
 								}
 								$('#voter_info').html('<div style="font-size:.7em;">Connected to:</div> ' + voter_out );
 							}
-					 		$('#voter_info').effect("highlight", {"color":"#bc833c"}, 2000);
-					 		$('#response').effect("highlight", {"color":"#bc833c"}, 2000);
+					 		$('#voter_info').effect("highlight", {"color":"#3c5b7b"}, 2000);
+					 		$('#response').effect("highlight", {"color":"#3c5b7b"}, 2000);
 						}
 					
 						if (command=="hangup"){
@@ -98,7 +98,7 @@
 					 		$('#response').hide();
 							$('#statusdiv').html("Status: Hung up");
 							$('#actiondiv').html('Enter your phone number: <input type="text" name="numtocall"> <input type="submit" class="button" value="Start Taking Calls">');
-					 		$('#caller_buttons').effect("highlight", {"color":"#bc833c"}, 2000);
+					 		$('#caller_buttons').effect("highlight", {"color":"#3c5b7b"}, 2000);
 						}
 						
 						if (command=="waiting"){
@@ -121,21 +121,21 @@
 						 		$('#response').hide();
 								$('#statusdiv').html("Status: In preview dial queue");
 								$('#actiondiv').html('<input type="button" class="button" value="Stop taking calls" onclick="imdone();"> <span id="callButton"></span> <input type="button" onclick="showPreview();" value="Skip" class="button">');
-						 		$('#caller_buttons').effect("highlight", {"color":"#bc833c"}, 2000);
+						 		$('#caller_buttons').effect("highlight", {"color":"#3c5b7b"}, 2000);
 							} else if (callMode=="preview_dialing") {
 						 		$('#voter_info').hide();
 						 		$('#response').hide();
 								$('#previewInfo').hide();
 								$('#statusdiv').html("Status: Preview call dial in progress");
 								$('#actiondiv').html('<input type="button" class="button" value="Stop taking calls" onclick="imdone();">');
-						 		$('#caller_buttons').effect("highlight", {"color":"#bc833c"}, 2000);
+						 		$('#caller_buttons').effect("highlight", {"color":"#3c5b7b"}, 2000);
 							} else {
 						 		$('#voter_info').hide();
 						 		$('#response').hide();
 								$('#previewInfo').hide();
 								$('#statusdiv').html("Status: In call queue");
 								$('#actiondiv').html('<input type="button" class="button" value="Stop taking calls" onclick="imdone();">');
-						 		$('#caller_buttons').effect("highlight", {"color":"#bc833c"}, 2000);
+						 		$('#caller_buttons').effect("highlight", {"color":"#3c5b7b"}, 2000);
 								
 							}
 						}
@@ -144,7 +144,7 @@
 							clearTimeout(t);
 							$('#statusdiv').html("Status: Confirm to start taking calls");
 							$('#actiondiv').html('<input type="button" class="button" value="Click here to start taking calls" onclick="imready();">');
-					 		$('#caller_buttons').effect("highlight", {"color":"#bc833c"}, 2000);
+					 		$('#caller_buttons').effect("highlight", {"color":"#3c5b7b"}, 2000);
 						}
 					}
 				} ,
@@ -155,7 +155,7 @@
 					$('#statusdiv').html("Status: Disconnected");
 					// put it reconnect button
 					$('#actiondiv').html('Your web connection disconnected. <!--<input type="text" name="numtocall">--> <input type="submit" class="button" value="Reconnect">');
-				 	$('#caller_buttons').effect("highlight", {"color":"#bc833c"}, 2000);
+				 	$('#caller_buttons').effect("highlight", {"color":"#3c5b7b"}, 2000);
 				 },
 				onconnect: function() { }
 			}
@@ -269,7 +269,7 @@
 				return;
 			}
 			$('#previewInfo').show();
-//			$('#previewInfo').effect("highlight", {"color":"#bc833c"}, 2000);
+//			$('#previewInfo').effect("highlight", {"color":"#3c5b7b"}, 2000);
 			if (currPreview>=voters.length)
 				currPreview=0;
 			curVoter = voters[currPreview];

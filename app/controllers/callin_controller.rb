@@ -629,7 +629,7 @@ class CallinController < ApplicationController
     #1=break in
     #2=take over
     
-    if params[:type]==0
+    if params[:type]=="0"
       @muted="true"
     else
       @muted="false"

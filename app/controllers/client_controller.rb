@@ -316,7 +316,7 @@ Do you want to buy a widget?"
     callers.each do |caller|
       c.callers << caller
     end
-    flash[:notice]="Campaign created."
+    #flash[:notice]="Campaign created."
     redirect_to :action=>"campaign_view", :id=>c.id
     return
   end
@@ -799,25 +799,26 @@ Do you want to buy a widget?"
     end
     if @script==nil
       @script = Script.new
-      @rs={}
-      @rs["keypad_1"]="Strong supportive"
-      @rs["keypad_2"]="Lean supportive"
-      @rs["keypad_3"]="Undecided"
-      @rs["keypad_4"]="Lean opposed"
-      @rs["keypad_5"]="Strong opposed"
-      @rs["keypad_6"]="Refused"
-      @rs["keypad_7"]="Not home/call back"
-      @rs["keypad_8"]="Language barrier"
-      @rs["keypad_9"]="Wrong number"
-#      @rs.incompletes=["7"].to_json
-      @script.result_set_1=@rs.to_json
-      @script.incompletes='{"5":[],"6":[],"1":["7"],"7":[],"2":[],"8":[],"3":[],"9":[],"4":[],"10":[]}'
-      @script.name="Political Example Script"
-      @script.note_1="Email"
-      @numResults=1
-      @numNotes=1
-      @script.voter_fields='["CustomID","FirstName","MiddleName","LastName","Suffix","Age","Gender","Email"]'
-     
+#       @rs={}
+#       @rs["keypad_1"]="Strong supportive"
+#       @rs["keypad_2"]="Lean supportive"
+#       @rs["keypad_3"]="Undecided"
+#       @rs["keypad_4"]="Lean opposed"
+#       @rs["keypad_5"]="Strong opposed"
+#       @rs["keypad_6"]="Refused"
+#       @rs["keypad_7"]="Not home/call back"
+#       @rs["keypad_8"]="Language barrier"
+#       @rs["keypad_9"]="Wrong number"
+# #      @rs.incompletes=["7"].to_json
+#       @script.result_set_1=@rs.to_json
+#       @script.incompletes='{"5":[],"6":[],"1":["7"],"7":[],"2":[],"8":[],"3":[],"9":[],"4":[],"10":[]}'
+#       @script.name="Political Example Script"
+       @script.name="Untitled Script"
+#       @script.note_1="Email"
+#       @numResults=1
+#       @numNotes=1
+#       @script.voter_fields='["CustomID","FirstName","MiddleName","LastName","Suffix","Age","Gender","Email"]'
+#      
     end
     if @script.new_record?
       @label="Add Result"
@@ -1345,7 +1346,7 @@ Do you want to buy a widget?"
         t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
         # a=t.call("POST", "Calls/#{caller.sid}", {'CurrentUrl'=>"#{appurl}/callin/callerEndCall?session=#{caller.id}"})
         session=CallerSession.find(params[:session_id])
-        a=t.call("POST", "Calls", {'Timeout'=>"20", 'Caller' => session.campaign.caller_id, 'Called' => params[:num], 'Url'=>"#{APP_URL}/callin/monitorEavesdrop?session=#{session.id}"})
+        a=t.call("POST", "Calls", {'Timeout'=>"20", 'Caller' => session.campaign.caller_id, 'Called' => params[:num], 'Url'=>"#{APP_URL}/callin/monitorEavesdrop?session=#{session.id}&type=#{params[:type]}"})
         render :text=>""
       end
 
