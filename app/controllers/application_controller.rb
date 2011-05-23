@@ -6,7 +6,7 @@ class ApplicationController < ActionController::Base
   protect_from_forgery # See ActionController::RequestForgeryProtection for details
   before_filter :controllerName#, :preload_models
   # Scrub sensitive parameters from your log
-  filter_parameter_logging :password, :card_number, :card_verification
+  filter_parameter_logging :password, :card_number, :card_verification, :cc, :code
   helper_method :phone_format, :phone_number_valid  
   
   def warning_text
