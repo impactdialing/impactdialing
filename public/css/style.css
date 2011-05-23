@@ -102,7 +102,7 @@ padding : 0; }
 
 html {
 overflow-y : scroll;
-background : rgb(255,255,255) /* url(/img/tmp/grid.png) repeat-y 50% 0 */; }
+background : rgb(255,255,255) /* url(../img/tmp/grid.png) repeat-y 50% 0 */; }
 
 body { 
 margin : 0 auto;
@@ -269,7 +269,7 @@ a.primary h3 {
 margin-bottom : 0; 
 padding-left : 40px;
 font-weight : 500; 
-background : transparent url(/img/furniture-primary-signup.png) no-repeat 0 50%; }
+background : transparent url(../img/furniture-primary-signup.png) no-repeat 0 50%; }
 
 a.primary p {
 margin-bottom : 0;
@@ -299,10 +299,10 @@ height : 20px;
 text-indent : -9999px; }
 
 .del {
-background : transparent url(/img/icon-del.png) no-repeat 0 0; }
+background : transparent url(../img/icon-del.png) no-repeat 0 0; }
 
 .dl {
-background : transparent url(/img/icon-dl.png) no-repeat 0 0; }
+background : transparent url(../img/icon-dl.png) no-repeat 0 0; }
 
 /* 5.FIGURES & IMAGES */
 
@@ -407,7 +407,7 @@ header[role="banner"] h1 {
 margin-bottom : .5em;
 width : 300px;
 height : 55px; 
-background : transparent url(/img/furniture-h1.png) no-repeat 0 0;
+background : transparent url(../img/furniture-h1.png) no-repeat 0 0;
 text-indent : -9999px; }
 
 header[role="banner"] h1 a {
@@ -519,12 +519,12 @@ margin-bottom : 0; }
 #contact .contact-email {
 margin-bottom : .75em;
 padding-left : 40px;
-background : transparent url(/img/icon-contact-email.png) no-repeat 0 50%; }
+background : transparent url(../img/icon-contact-email.png) no-repeat 0 50%; }
 
 #contact .contact-phone {
 height : 28px;
 padding-left : 40px;
-background : transparent url(/img/icon-contact-phone.png) no-repeat 0 50%; 
+background : transparent url(../img/icon-contact-phone.png) no-repeat 0 50%; 
 line-height : 28px; }
 
 /* 13.CONTENTINFO */
@@ -587,7 +587,7 @@ margin-bottom : 1.5em; }
 
 .alert {
 padding-left : 60px;
-background : rgb(225,242,254) url(/img/icon-alert.png) no-repeat 20px 20px;
+background : rgb(225,242,254) url(../img/icon-alert.png) no-repeat 20px 20px;
 border : 1px solid rgb(199,224,241); }
 
 /* col */
@@ -843,7 +843,6 @@ opacity : .95; }
 
 .rgba .primary  {
 color : rgba(255,255,255,.9); }
-
 
 
 
