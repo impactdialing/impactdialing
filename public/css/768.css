@@ -155,6 +155,9 @@ width : 33.48% /* 300 / 896 = .3348 */; }
 footer[role="contentinfo"] p {
 clear : both; }
 
+footer[role="contentinfo"] a[href="http://stuffandnonsense.co.uk"] {
+display : inline; }
+
 /* 14.GLOBAL OBJECTS */
 
 form ul.clearfix {
@@ -171,50 +174,6 @@ margin-bottom : 0; }
 /* 15.VENDOR-SPECIFIC */
 
 /* 16.TEMPLATE SPECIFICS */
-
-.admin header[role="banner"] ul {
-position : absolute; 
-display : block;
-position : absolute;
-top : 1em;
-right : 0; }
-
-.admin header[role="banner"] li {
-display : inline-block;
-margin-right : 24px; }
-
-.admin header[role="banner"] li:first-child {
-margin-right : 24px;
-padding-right : 24px; 
-border-right : 1px solid rgb(192,192,200); }
-
-.cssgradients .admin nav[role="navigation"] li:last-child {
-background-image : -webkit-gradient(linear, left top, left bottom, from(rgb(223,223,228)), to(rgb(207,207,213)));
-background-image : -moz-linear-gradient(top, rgb(223,223,228), rgb(207,207,213));
-background-image : -o-linear-gradient(top, rgb(223,223,228), rgb(207,207,213));
-background-image : linear-gradient(top, rgb(223,223,228), rgb(207,207,213)); }
-
-.no-cssgradients .admin nav[role="navigation"] li:last-child {
-background-color : transparent!important;
-background-image : none!important; }
-
-.admin nav[role="navigation"] li:nth-child(3) {
-border-right-width : 1px; }
-
-.admin nav[role="navigation"] li:last-child {
-float : left;
-border-width : 0;
-border-left-width : 1px;
--webkit-border-top-right-radius : 0!important;
--webkit-border-bottom-right-radius : 0!important;
--moz-border-radius-topright : 0!important;
--moz-border-radius-bottomright : 0!important;
-border-top-right-radius : 0!important;
-border-bottom-right-radius : 0!important; }
-
-.admin nav[role="navigation"] li:last-child a {
-color : rgb(51,51,51);  
-text-shadow : 0 1px 1px rgb(255,255,255); }
 
 /* 17.MODERNIZR */
 
@@ -264,3 +223,53 @@ background-image : linear-gradient(top, rgb(169,169,171), rgb(207,207,213)); }
 background-image : url(../img/furniture-reverse-dialer.png), url(../img/furniture-reverse.png);
 background-repeat : no-repeat, repeat;
 background-position : 100% 50%, 0 0; }
+
+
+/* admin overrides */
+
+.admin header[role="banner"] ul {
+position : absolute; 
+display : block;
+position : absolute;
+top : 1em;
+right : 0; }
+
+.admin header[role="banner"] li {
+display : inline-block;
+margin-right : 24px; }
+
+.admin header[role="banner"] li:first-child {
+margin-right : 24px;
+padding-right : 24px; 
+border-right : 1px solid rgb(192,192,200); }
+
+.cssgradients .admin nav[role="navigation"] li:last-child {
+background-image : -webkit-gradient(linear, left top, left bottom, from(rgb(223,223,228)), to(rgb(207,207,213)));
+background-image : -moz-linear-gradient(top, rgb(223,223,228), rgb(207,207,213));
+background-image : -o-linear-gradient(top, rgb(223,223,228), rgb(207,207,213));
+background-image : linear-gradient(top, rgb(223,223,228), rgb(207,207,213)); }
+
+.admin nav[role="navigation"] li {
+width : 18%; }
+
+.no-cssgradients .admin nav[role="navigation"] li:last-child {
+background-color : transparent!important;
+background-image : none!important; }
+
+.admin nav[role="navigation"] li:nth-child(3) {
+border-right-width : 1px; }
+
+.admin nav[role="navigation"] li:last-child {
+float : left;
+border-width : 0;
+border-left-width : 1px;
+-webkit-border-top-right-radius : 0!important;
+-webkit-border-bottom-right-radius : 0!important;
+-moz-border-radius-topright : 0!important;
+-moz-border-radius-bottomright : 0!important;
+border-top-right-radius : 0!important;
+border-bottom-right-radius : 0!important; }
+
+.admin nav[role="navigation"] li:last-child a {
+color : rgb(51,51,51);  
+text-shadow : 0 1px 1px rgb(255,255,255); }
