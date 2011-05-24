@@ -36,6 +36,68 @@ class AdminController < ApplicationController
     
   end
   
+  def report
+#    @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
+    set_report_date_range
+    sql="select distinct ca.campaign_id , name, email, c.user_id from caller_sessions ca
+      join campaigns c on c.id=ca.campaign_id 
+      join users u on u.id=c.user_id where 
+      ca.created_at > '#{@from_date.strftime("%Y-%m-%d")}'
+      and ca.created_at  < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'
+    "
+    logger.info sql
+    @campaigns = ActiveRecord::Base.connection.execute(sql)
+    @output=[]
+    @campaigns.each do |c|
+      calls_sql="
+      select count(*),  sum(ceil(tDuration/60)), sum(tPrice)
+      from call_attempts ca 
+      where 
+      ca.created_at > '#{@from_date.strftime("%Y-%m-%d")}'
+      and ca.created_at  < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'
+      and ca.campaign_id=#{c[0]}
+      group by ca.campaign_id"
+      session_sql="
+      select count(*),  sum(ceil(tDuration/60)), sum(tPrice)
+      from caller_sessions ca 
+      join campaigns c on c.id=ca.campaign_id 
+      join users u on u.id=c.user_id 
+      where 
+      ca.created_at > '#{@from_date.strftime("%Y-%m-%d")}'
+      and ca.created_at  < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'
+      and ca.campaign_id=#{c[0]}
+      group by ca.campaign_id"
+      @calls = ActiveRecord::Base.connection.execute(calls_sql)
+      @sessions = ActiveRecord::Base.connection.execute(session_sql)
+      result={}
+      result["calls"]=@calls
+      result["sessions"]=@sessions
+      result["campaign"]=c
+      @output<< result
+    end
+    
+    render :layout=>"client"
+  end
+
+
+  def set_report_date_range
+    begin
+      if params[:from_date]
+        @from_date=Date.parse params[:from_date]
+        @to_date = Date.parse params[:to_date]
+      else
+        @from_date = 1.month.ago
+        @to_date = DateTime.now 
+      end
+    rescue
+      #just use the defaults below
+    end
+
+    @from_date = 1.month.ago if @from_date==nil
+    @to_date = DateTime.now if @to_date==nil
+
+  end
+    
   def users
     @users = User.all
   end

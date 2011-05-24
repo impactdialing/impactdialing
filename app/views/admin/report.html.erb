@@ -1,0 +1,83 @@
+<h1>Admin Reporting</h1>
+
+Report Date Range:
+<% form_tag ("/admin/report") do %> 
+  
+<table>
+	<tr>
+		<td>From:</td>
+		<td> <%= unobtrusive_date_text_picker_tag :from_date,@from_date %> </td>
+	</tr>
+	<tr>
+		<td>
+			To:</td>
+		<td>  <%= unobtrusive_date_text_picker_tag :to_date,@to_date %> 
+			<!--<input type="submit" class="button" value="update" size="4">-->
+			</td>
+	</tr>
+</table>	<button type="submit">Show results</button>
+
+
+<% end %>
+
+<!--
+<% form_tag ("/admin/report") do %> 
+	<input type="hidden" name="from_date" value="<%= @from_date %>">
+	<input type="hidden" name="to_date" value="<%= @to_date %>">
+	<button type="submit">Show results</button>
+<% end %>
+-->
+
+
+<br/>
+<%# debug @output %>
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+    <tr>
+      <th>Campaign ID</th>
+      <th>Campaign Name</th>
+      <th>Email</th>
+      <th>User Id</th>
+      <th>Agent Call Count</th>
+      <th>Agent Minutes</th>
+      <th>Agent Twilio Cost</th>
+      <th>Call Count</th>
+      <th>Call Minutes</th>
+      <th>Call Twilio Cost</th>
+      <th>Total Minutes</th>
+      <th>Total Twilio Cost</th>
+    </tr>
+
+<% @output.each do |r| %>
+	<% campaign=r["campaign"] %>
+	<% calls=r["calls"] %>
+	<% sessions=r["sessions"] %>
+	<% 
+		agent_mins=0 
+		agent_twilio=0
+		call_mins=0
+		call_twilio=0
+	%>
+<tr class="<%= cycle("odd","even") %>">
+	<td><%= campaign[0] %></td>
+	<td><%= campaign[1] %></td>
+	<td><%= campaign[2] %></td>
+	<td><%= campaign[3] %></td>
+	<% sessions.each do |c| %>
+	<% agent_mins=c[1] %>
+	<% agent_twilio=c[2] %>
+	<td><%= c[0] %></td>
+	<td><%= agent_mins %></td>
+	<td><%=  number_to_currency agent_twilio %></td>
+	<% end %>
+	<% calls.each do |c| %>
+	<% call_mins=c[1] %>
+	<% call_twilio=c[2] %>
+	<td><%= c[0] %></td>
+	<td><%= call_mins %></td>
+	<td><%=  number_to_currency call_twilio %></td>
+	<% end %>
+	<td><%= agent_mins.to_i +  call_mins.to_i%></td>
+	<td><%= number_to_currency(agent_twilio.to_f +  call_twilio.to_f)%></td>
+</tr>
+<% end %>
+  </table>
