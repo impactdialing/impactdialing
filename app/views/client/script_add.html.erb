@@ -5,10 +5,29 @@
 <% form_for :script, :url => { :action => "script_add" , :id=>@script.id}, :html => {:name => 'callerForm', :id => 'callerForm'}   do |f| %>
 	
      <p>
-       <label>Name <span>(Required Field)</span></label>
+       <label>Script name</label>
 		<%= f.text_field :name, {:class=>"field"} %>
      </p>
 
+	<fieldset>
+		<legend>Lead information</legend>
+		<p><label>Display this information above the script:</label><p>
+		<ul class="clearfix">
+			<% @fields.each do |field| %>
+			<li>	<input  type="checkbox" name="voter_field[]" value="<%= field %>"  <% if @voter_fields.index(field) %>checked<% end %>> <%= field %></li>
+			<% end %>
+
+		</ul>
+	</fieldset>
+
+	<fieldset>
+	<legend>Script</legend>
+	<p>	<%= f.text_area :script, {:cols=>50, :rows=>10} %></p>		
+	</fieldset>
+
+
+	<fieldset>
+		
 	<% (1..NUM_RESULT_FIELDS).each do |i| %>
 	 	<%= render :partial => 'call_result', :locals => { :num => i }  %>
 	<% end %>
@@ -16,46 +35,25 @@
 		<%= render :partial => 'call_note' , :locals => { :num => i }  %>
 	<% end %>
 
-	<fieldset>
 
-	<p>
-	<a href="javascript:addResult();" class="action primary">New result set</a>
-	<a href="javascript:remResult();" class="action primary">Delete result set</a>
-	<a href="javascript:addNote();" class="action primary">New note</a>
-	<a href="javascript:delNote();" class="action primary">Delete note</a>
+
+	<p class="actions">
+	<a href="javascript:addResult();" class="action secondary">New result set</a>
+	<a href="javascript:remResult();" class="action secondary">Delete result set</a>
+	<a href="javascript:addNote();" class="action secondary">New note</a>
+	<a href="javascript:delNote();" class="action secondary">Delete note</a>
 	</p>
 
-	<p><sup>*</sup> If a caller marks a call as an incomplete call result, the number will be added back to the campaign and tried later.</p>
 
 	</fieldset>
 
 
-
-	<fieldset>
-	<legend>Script</legend>
-	<p>	<%= f.text_area :script, {:cols=>50, :rows=>10} %></p>		
-	</fieldset>	
-								
-						
-
-	<fieldset>
-	<legend>Additional information</legend>
-	<p><label>Display this information above the script:</label><p>
-	<ul class="clearfix">
-
-		<% @fields.each do |field| %>
-		<li>	<input  type="checkbox" name="voter_field[]" value="<%= field %>"  <% if @voter_fields.index(field) %>checked<% end %>> <%= field %></li>
-		<% end %>
-
-	</ul>
-	</fieldset>
-								
 
 								<input type="hidden" id="numResults" name="numResults" value="">
 								<input type="hidden" id="numNotes" name="numNotes" value="">
 
 								<div class="buttons">
-								<button type="button" onclick="saveForm();">Save script</button>
+								<button type="button" onclick="saveForm();">Save</button>
 								</div>
 								<% end -%>
 

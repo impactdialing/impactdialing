@@ -1,32 +1,30 @@
 <%= error_messages_for :caller %>
-<div class="box" style="width:400px;">
+
 	<h1><%= @label %></h1>
 
 
 	<% form_for :caller do |f| -%>
-	<fieldset>
-      <p>
-        <label>Name <span>(Required Field)</span></label>
-		<%= f.text_field :name, {:class=>"field"} %>
-      </p>
-      <p>
-        <label>Email </label>
-		<%= f.text_field :email, {:class=>"field"} %>
-      </p>
-      <p>
-        <label>Password </label>
-		<%= f.text_field :password, {:class=>"field"} %>
-      </p>
-      <p>
-        <label>Multi-User? &nbsp; <%= f.check_box :multi_user%></label>
-		
-      </p>
-	<div class="buttons">
-	<button type="submit">Submit</button>
-	</div>
+		<fieldset>
+	      <p>
+	        <label>Name <em>// Required</em></label>
+			<%= f.text_field :name, {:class=>"field"} %>
+	      </p>
+	      <p>
+	        <label>Email</label>
+			<%= f.text_field :email, {:class=>"field"} %>
+	      </p>
+	      <p>
+	        <label>Password</label>
+			<%= f.text_field :password, {:class=>"field"} %>
+	      </p>
+	      <p>
+	        <label><%= f.check_box :multi_user%> &nbsp; Shared login?</label>
 
-    </div>
-</fieldset>
-	<% end -%>
-</div>
-<!-- End Box -->
+	      </p>
+	    </fieldset>
+
+		<div class="buttons">
+		<button type="submit">Save</button>
+		</div>
+<% end -%>
+

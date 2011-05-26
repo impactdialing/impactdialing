@@ -250,9 +250,9 @@ Do you want to buy a widget?"
     @breadcrumb=[{"Callers"=>"/client/callers"},"Add Caller"]
     @caller = Caller.find_by_id_and_user_id(params[:id],@user.id) || Caller.new
     if @caller.new_record?
-      @label="Add Caller"
+      @label="Add caller"
     else
-      @label="Edit Caller"
+      @label="Edit caller"
     end
     if request.post?
       @caller.update_attributes(params[:caller])
@@ -382,9 +382,9 @@ Do you want to buy a widget?"
     @breadcrumb=[{"Campaigns"=>"/client/campaigns"},"Add Campaign"]
     @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id) || Campaign.new
     if @campaign.new_record?
-      @label="Add Campaign"
+      @label="Add campaign"
     else
-      @label="Edit Campaign"
+      @label="Edit campaign"
     end
     newrecord = @campaign.new_record?
     if request.post?
@@ -623,7 +623,7 @@ Do you want to buy a widget?"
 
     #    @campaign.check_valid_caller_id_and_save
     #    flash.now[:error]="Your Campaign Caller ID is not verified."  if !@campaign.caller_id.blank? && !@campaign.caller_id_verified
-    flash.now[:error]="You must enter a campaign Caller ID before you can take calls"  if @campaign.caller_id.blank?
+    flash.now[:error]="You must enter and verify a Caller ID before you can make calls."  if @campaign.caller_id.blank?
     @isAdmin = @user.admin
     @show_voter_buttons = @user.show_voter_buttons
 #    render :layout=>"campaign_view"

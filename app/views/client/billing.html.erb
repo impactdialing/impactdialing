@@ -7,7 +7,7 @@
 			<% form_for :account, @account do |f| -%>
 			<fieldset>
 
-				<p><label for="last_name">Card Type:</label>
+				<p><label for="last_name">Card type:</label>
 				<% if BILLING_GW.class.to_s=="ActiveMerchant::Billing::BogusGateway" %>
 					<%= select( "account", "cardtype", { "Bogus" => "bogus"}) %>
 				<% else %>
@@ -15,13 +15,13 @@
 				<% end %>
 				</p>
 
-				<p><label for="email">Card Number:</label>
+				<p><label for="email">Card number:</label>
 				<% if !@tempcc.blank?	
 					@account.cc = @tempcc # restore unencrypted card number to view
 				end %>
 				<%= f.text_field :cc %></p>
 
-				<p><label for="password">Card Expiration:</label>
+				<p><label for="password">Card expiration:</label>
 
 
 					<%= select( "account", "expires_month", 1..12) %>			
@@ -30,7 +30,7 @@
 				<p><label for="zip">Card security code:</label>
 				<input type="text" name="code" value="<%= params[:code] %>">
 				</p>
-				<p><label for="zip">Billing Address:</label>
+				<p><label for="zip">Billing address:</label>
 					<%= f.text_field :address1 %></p>
 				<p><label for="zip">Billing zip code:</label>
 						<%= f.text_field :zip %></p>
@@ -39,8 +39,12 @@
 
 				<br/>
 				<%# submit_tag "Update account" %>
-				<%= f.submit "submit", :disable_with => 'submiting...', :class=>"button" %>
-				</devefieldset>
+				<%# f.submit "Submit", :disable_with => 'submiting...', :class=>"button" %>
+				<div class="buttons">
+					<button type="submit">Submit</button>
+				</div>
+
+				</fieldset>
 
 			<% end -%>
 		</div>

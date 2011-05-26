@@ -1,7 +1,7 @@
 	<% if @user.new_record? %>
-	<h1>Sign Up Free</h1>
+	<h1>Sign up free</h1>
 	<% else %>
-	<h1>My Account</h1>
+	<h1>My account</h1>
 	<% end %>
 
 <%= error_messages_for :user %>
@@ -23,22 +23,23 @@
 			<%= f.text_field :orgname, {:class=>"field"} %>
 	      </p>
 	-->
-	      <p>
-	        <label>Email <span>(Required)</span></label>
-			<%= f.text_field :email, {:class=>"field"} %>
-	      </p>
-		<% if @user==nil || !@user.new_record? %>
 	    <p>
-	      <label>Current Password <span>(Required)</span></label>
-			<input type="password" class="field" name="exist_pw" value="<%= params[:exist_pw] %>">
-	    </p>
-		<% end %>
-	      <p>
-	        <label><% if !@user.new_record? %>New <% end %>Password <% if @user.new_record? %><span>(Required)</span><% end %></label>
-			<%# f.password_field :password, {:class=>"field"} %>
-			<input class="field" id="user_password" name="user[password]" size="30" type="password" value="" /> 
+			        <label>Email</label>
+					<%= f.text_field :email, {:class=>"field"} %>
+			      </p>
+				<% if @user==nil || !@user.new_record? %>
+			    <p>
+			      <label>Password</label>
+					<input type="password" class="field" name="exist_pw" value="<%= params[:exist_pw] %>">
+			    </p>
+				<% end %>
+			      <p>
+			        <label><% if !@user.new_record? %>New <% end %>Password <% if @user.new_record? %><% end %></label>
+					<%# f.password_field :password, {:class=>"field"} %>
+					<input class="field" id="user_password" name="user[password]" size="30" type="password" value="" /> 
 
-	      </p>
+			      </p>
+		
 	<!--
 	      <p>
 	        <label><% if !@user.new_record? %>New <% end %>Password Confirmation <% if @user.new_record? %><span>(Required)</span><% end %></label>
@@ -46,18 +47,24 @@
 	      </p>-->
 	<% if @user.new_record? %>
 			<p>	
-				<label>	<input type="checkbox" name="tos" value="1" <% if params[:tos] %>checked<% end %>/> I agree to the <a href="/home/tos" target="_blank">Terms of Service</a></label>
+				<label>	<input type="checkbox" name="tos" value="1" <% if params[:tos] %>checked<% end %>/> I agree to the <a href="http://www.impactdialing.com/policies.html#terms" target="_blank">Terms of Service</a></label>
 				
 			</p>
 			<% end %>
-			<div class="buttons">
-			<button type="submit">Join</button>
-			</div>
-
 			<%# f.submit "submit", :disable_with => 'submiting...', :class=>"button" %>
 				<% if !@user.new_record? %>
-			<a href="/client/forgot">Forgot Password?</a>
+			<a href="/client/forgot">Forgot password?</a>
 			<% end %>
 		</fieldset>
 
+		<div class="buttons">
+
+			<% if @user.new_record? %>
+			<button type="submit">Sign up</button>
+			<% else %>
+			<button type="submit">Save</button>
+			<% end %>
+
+		</div>
+		
 <% end -%>

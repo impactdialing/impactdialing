@@ -23,13 +23,8 @@
 
     </table>
 
-    <!-- Pagging -->
-    <div class="pagging">
-   <div class="left"><%= page_entries_info @campaigns %></div>
-      <div class="right"> <%= will_paginate @campaigns %>
-	</div>
-    </div>
-    <!-- End Pagging -->
-  <!-- Table -->	<% end %>
+	<p><%= page_entries_info @campaigns %> <%= will_paginate @campaigns %></p>
+
+<% end %>
 <p class="actions"><a href="/client/campaign_new" class="action primary">Add a new campaign</a></p>
 
