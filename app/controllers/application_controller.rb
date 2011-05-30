@@ -12,7 +12,7 @@ class ApplicationController < ActionController::Base
   
 
   def redirect_to_ssl
-     return true if local_request? || RAILS_ENV == 'test' || RAILS_ENV == 'development'
+     return true if local_request? || RAILS_ENV == 'test' || RAILS_ENV == 'development' || action_name=="monitor"
      @cont = controller_name
      @act = action_name
      redirect_to "https://admin.impactdialing.com/#{@cont}/#{@act}/#{params[:id]}" unless (ssl? or local_request?)
