@@ -1,6 +1,7 @@
 class CallerController < ApplicationController
   layout "client"
   before_filter :check_login, :except=>[:login]
+  before_filter :redirect_to_ssl
 
   def index
     if request.post?
