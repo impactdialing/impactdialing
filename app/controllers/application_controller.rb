@@ -15,7 +15,7 @@ class ApplicationController < ActionController::Base
      return true if local_request? || RAILS_ENV == 'test' || RAILS_ENV == 'development'
      @cont = controller_name
      @act = action_name
-     redirect_to "https://www.impactdialing.com/#{@cont}/#{@act}/#{params[:id]}" unless (ssl? or local_request?)
+     redirect_to "https://admin.impactdialing.com/#{@cont}/#{@act}/#{params[:id]}" unless (ssl? or local_request?)
      flash.keep
      return false  
   end
