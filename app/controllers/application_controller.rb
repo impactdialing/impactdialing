@@ -5,10 +5,25 @@ class ApplicationController < ActionController::Base
   helper :all # include all helpers, all the time
   protect_from_forgery # See ActionController::RequestForgeryProtection for details
   before_filter :controllerName#, :preload_models
+  before_filter :redirect_to_ssl
   # Scrub sensitive parameters from your log
   filter_parameter_logging :password, :card_number, :card_verification, :cc, :code
   helper_method :phone_format, :phone_number_valid  
   
+
+  def redirect_to_ssl
+     return true if local_request? || RAILS_ENV == 'test' || RAILS_ENV == 'development'
+     @cont = controller_name
+     @act = action_name
+     redirect_to "https://#{APP_URL}/#{@cont}/#{@act}/#{params[:id]}" unless (ssl? or local_request?)
+     flash.keep
+     return false  
+  end
+
+  def ssl?
+        request.env['HTTPS'] == 'on' || request.env['HTTP_X_FORWARDED_PROTO'] == 'https'
+  end
+
   def warning_text
     return "" if @user==nil
     warning=""

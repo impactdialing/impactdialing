@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110519085111) do
+ActiveRecord::Schema.define(:version => 20110528122013) do
 
   create_table "accounts", :force => true do |t|
     t.integer  "user_id"
@@ -57,6 +57,7 @@ ActiveRecord::Schema.define(:version => 20110519085111) do
   end
 
   add_index "call_attempts", ["call_end"], :name => "index_call_attempts_on_call_end"
+  add_index "call_attempts", ["caller_session_id"], :name => "index_call_attempts_on_caller_session_id"
   add_index "call_attempts", ["campaign_id"], :name => "index_call_attempts_on_campaign_id"
   add_index "call_attempts", ["voter_id"], :name => "index_call_attempts_on_voter_id"
 
@@ -134,7 +135,7 @@ ActiveRecord::Schema.define(:version => 20110519085111) do
     t.integer  "max_calls_per_caller",     :default => 20
     t.string   "callin_number",            :default => "4157020991"
     t.boolean  "use_web_ui",               :default => true
-    t.integer  "answer_detection_timeout", :default => 20
+    t.integer  "answer_detection_timeout", :default => 30
     t.boolean  "calls_in_progress",        :default => false
   end
 
@@ -159,6 +160,8 @@ ActiveRecord::Schema.define(:version => 20110519085111) do
     t.datetime "created_at"
     t.datetime "updated_at"
   end
+
+  add_index "dumps", ["guid"], :name => "index_dumps_on_guid"
 
   create_table "families", :force => true do |t|
     t.integer  "voter_id"

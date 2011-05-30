@@ -275,6 +275,20 @@ Can we count on you to vote for such-and-such?"
         redirect_to :action=>"cms"
       end
     end
+    def log
+      if params[:id]
+        @reqs=Dump.find_all_by_guid(params[:id], :order=>"first_line")
+        @session=0
+        @reqs.each do |r|
+          begin
+            p=YAML.load(r.params)
+            @session=p[:session] if p[:session]!=nil
+          rescue
+          end
+        end
+        @attempts = CallAttempt.find_all_by_caller_session_id(@session, :order=>"id")
+      end
+    end
   private
    def authenticate
      authenticate_or_request_with_http_basic(self.class.controller_path) do |user_name, password| 
