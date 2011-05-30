@@ -1,6 +1,7 @@
 class ClientController < ApplicationController
   before_filter :check_login, :except=>[:login,:user_add, :forgot]
   before_filter :check_paid
+  before_filter :redirect_to_ssl
   layout "client"
   in_place_edit_for :campaign, :name
 
