@@ -265,10 +265,12 @@ class CallerController < ApplicationController
     
     @on_call = CallerSession.find_by_session_key(params[:key])
     if (@on_call==nil || @on_call.on_call==false)
-      render :text=>""
-      return
+      #hungup?
+#      render :text=>""
+#      return
+    else
+      @campaign = @on_call.campaign
     end
-    @campaign = @on_call.campaign
     respond_to do |format|
         format.js
     end

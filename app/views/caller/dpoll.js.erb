@@ -1,12 +1,16 @@
 <% begin %>
-<% render :partial => 'get_reconnect_key_value' %>
-<% if @k=="voter_start" %>
-	if (currAttempt!='<%= @attempt.id %>')
-		rc('<%= @k %>','<%= escape_javascript @v %>');
-<% else %>
-	if (currAttempt!='waiting')
-		rc('<%= @k %>','<%=  @v %>');
-<% end %>
-clearTimeout(t);
+	<% if (@on_call==nil || @on_call.on_call==false) %>
+		window.location.reload();
+	<% else %>
+		<% render :partial => 'get_reconnect_key_value' %>
+		<% if @k=="voter_start" %>
+			if (currAttempt!='<%= @attempt.id %>')
+				rc('<%= @k %>','<%= escape_javascript @v %>');
+		<% else %>
+			if (currAttempt!='waiting')
+				rc('<%= @k %>','<%=  @v %>');
+		<% end %>
+		clearTimeout(t);
+	<% end %>
 <% rescue %>
 <% end %>
