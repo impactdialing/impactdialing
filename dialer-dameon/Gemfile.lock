@@ -18,7 +18,6 @@ GEM
     fastercsv (1.5.3)
     hpricot (0.8.2)
     mysql (2.7)
-    rack (1.0.1)
     rails (2.3.11)
       actionmailer (= 2.3.11)
       actionpack (= 2.3.11)
