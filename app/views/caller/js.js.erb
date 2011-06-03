@@ -40,6 +40,7 @@
 		    Realtime.init("<%= TWILIO_ACCOUNT %>");
 		    Realtime.listen("/<%= @session.session_key %>", {
 				onmessage:  function(msg) {
+					$('#result_instruction').hide();
 					// $("body").append("<pre>"+JSON.stringify(msg)+"</pre>");
 					document.getElementById('dbx').innerHTML=document.getElementById('dbx').innerHTML + "\n" + JSON.stringify(msg);
 					for (var command in msg) {
@@ -62,7 +63,8 @@
 							if (family.length>1)
 								isFam=true;
 							$('#statusdiv').html("Status: In call");
-							$('#actiondiv').html('<div class="buttons"><input type="button" class="button" value="Submit and Keep Calling" onclick="processresult(' + attempt_id+ ',0,' + isFam + ');"> <input type="button" class="button" value="Submit and Stop Calling" onclick="processresult(' + attempt_id + ',1,' + isFam+ ');"> <input type="button" class="button" value="End Call" onclick="dropcall(' + attempt_id + ');"></div>');
+//							$('#actiondiv').html('<div class="buttons"><input type="button" class="button" value="Submit and Keep Calling" onclick="processresult(' + attempt_id+ ',0,' + isFam + ');"> <input type="button" class="button" value="Submit and Stop Calling" onclick="processresult(' + attempt_id + ',1,' + isFam+ ');"> <input type="button" class="button" value="End Call" onclick="dropcall(' + attempt_id + ');"></div>');
+							$('#actiondiv').html('<span class="actions"><a href="javascript:processresult(' + attempt_id + ',0,' + isFam + ');" class="action secondary">Submit and Keep Calling</a></span> <span class="actions"><a href="javascript:processresult(' + attempt_id + ',1,' + isFam+ ');" class="action secondary">Submit and Stop Calling</a></span> <span class="actions"><a href="javascript:dropcall(' + attempt_id + ');" class="action secondary">End Call</a></span>');
 					 		$('#caller_buttons').effect("highlight", {"color":"#3c5b7b"}, 2000);
 						
 							if (family.length==0){
@@ -120,21 +122,22 @@
 						 		$('#voter_info').hide();
 						 		$('#response').hide();
 								$('#statusdiv').html("Status: In preview dial queue");
-								$('#actiondiv').html('<input type="button" class="button" value="Stop taking calls" onclick="imdone();"> <span id="callButton"></span> <input type="button" onclick="showPreview();" value="Skip" class="button">');
+							//	$('#actiondiv').html('<input type="button" class="button" value="Stop taking calls" onclick="imdone();"> <span id="callButton"></span> <input type="button" onclick="showPreview();" value="Skip" class="button">');
+								$('#actiondiv').html('<span class="actions"><a href="javascript:imdone();" class="action secondary">Stop taking calls</a></span> <span id="callButton"></span> <span class="actions"><a href="javascript:showPreview();" class="action secondary">Skip</a></span> ');
 						 		$('#caller_buttons').effect("highlight", {"color":"#3c5b7b"}, 2000);
 							} else if (callMode=="preview_dialing") {
 						 		$('#voter_info').hide();
 						 		$('#response').hide();
 								$('#previewInfo').hide();
 								$('#statusdiv').html("Status: Preview call dial in progress");
-								$('#actiondiv').html('<input type="button" class="button" value="Stop taking calls" onclick="imdone();">');
+								$('#actiondiv').html('<span class="actions"><a href="javascript:imdone();" class="action secondary">Stop taking calls</a></span>');
 						 		$('#caller_buttons').effect("highlight", {"color":"#3c5b7b"}, 2000);
 							} else {
 						 		$('#voter_info').hide();
 						 		$('#response').hide();
 								$('#previewInfo').hide();
 								$('#statusdiv').html("Status: In call queue");
-								$('#actiondiv').html('<input type="button" class="button" value="Stop taking calls" onclick="imdone();">');
+								$('#actiondiv').html('<span class="actions"><a href="javascript:imdone();" class="action secondary">Stop taking calls</a></span>');
 						 		$('#caller_buttons').effect("highlight", {"color":"#3c5b7b"}, 2000);
 								
 							}
@@ -274,7 +277,8 @@
 				currPreview=0;
 			curVoter = voters[currPreview];
 			document.getElementById('previewvoterInfo').innerHTML='<p>Name: ' + curVoter[0] + ' ' + curVoter[1] + '</p><p>Phone: ' + curVoter[2] + '</p>';
-			document.getElementById('callButton').innerHTML='<input type="button" class="button" onclick="dialVoter(' + curVoter[3] + ');" value="Dial">';
+//			document.getElementById('callButton').innerHTML='<input type="button" class="button" onclick="dialVoter(' + curVoter[3] + ');" value="Dial">';
+			document.getElementById('callButton').innerHTML='<span class="actions"><a href="javascript:dialVoter(' + curVoter[3] + ');" class="action secondary">Dial</a></span>';
 			currPreview++;
 			if (currPreview>=voters.length)
 				currPreview=0;

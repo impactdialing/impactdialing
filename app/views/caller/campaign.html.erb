@@ -4,12 +4,10 @@
 <fieldset>
 	<legend>Lead information</legend>
 		<div class="box-content">
-<!-- Does this section do anything important? I hope not... ;) -MKN
 
 			<div id="previewInfo" style="display:none;" class="rt">
 				<div id="previewvoterInfo"></div>
 			</div>
--->
 			<div id="voter_info" class="rt"><em>When connected, lead information will appear here.</em></div>
 
 </fieldset>
@@ -19,7 +17,8 @@
 </fieldset>
 <fieldset>
 	<legend>Results</legend>
-			<div id="response" class="rt">
+		<div id="result_instruction"><em>When connected, call result options will appear here.</em></div>
+			<div id="response" class="rt" style="display:none; font-size:1em;">
 
 				<%# @script.name %>
 				<% @script.result_sets_used.each do |r| %>
