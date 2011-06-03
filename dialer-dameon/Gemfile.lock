@@ -6,7 +6,7 @@ GEM
       actionpack (= 2.3.11)
     actionpack (2.3.11)
       activesupport (= 2.3.11)
-      rack (~> 1.0.0)
+      rack (>= 1.0.0)
     activerecord (2.3.11)
       activesupport (= 2.3.11)
     activeresource (2.3.11)
