@@ -37,18 +37,18 @@
 <%# debug @result %>
 
 
-<div class="box" style="width:400px;">
-	<%= render :partial => 'boxtop', :locals=>{:title=>"Add phone numbers to #{@campaign.name}"} %>
+<div class="box">
+	<%= render :partial => 'boxtop', :locals=>{:title=>"Add a list to #{@campaign.name}"} %>
 	<% form_tag ({}, :multipart => true) do %>
 
 	<!-- Form --> 
 	<div class="form"> 
 		<p> 
-			<label>Select Upload File <span>(Required Field)</span></label> 
+			<label>Select list</label> 
 			<%= file_field 'upload', 'datafile' %>
 		</p>	
 	   <p>
-	        <label>List Name <span>(Required Field)</span></label>
+	        <label>List name</label>
 			<%= text_field_tag "list_name" %>
 	      </p>
 <!--
@@ -70,10 +70,10 @@
 				<label><span>Optional File Headers: "VAN ID"	LastName FirstName	MiddleName	Suffix		Email</span></label>
 				</div>
 			-->
-			<label>File Type</label> 
+			<label>File type</label> 
 			<select class="field size3" name="seperator"> 
-				<option value="tab">Tab (txt)</option> 
-				<option value="comma">Comma (csv)</option> 
+				<option value="tab">Tab (*.txt)</option> 
+				<option value="comma">Comma (*.csv)</option> 
 			</select> 
 		</p> 
 	</div> 
@@ -81,8 +81,8 @@
 
 	<!-- Form Buttons --> 
 	<div class="buttons"> 
-		<input type="button" class="button" value="cancel" onclick="document.location.href='/client/campaign_view/<%= @campaign.id %>';" /> 
-		<input type="submit" class="button" value="submit" /> 
+		<input type="button" class="button" value="Cancel" onclick="document.location.href='/client/campaign_view/<%= @campaign.id %>';" /> 
+		<input type="submit" class="button" value="Add list" /> 
 	</div> 
 	<!-- End Form Buttons --> 
 	<% end %>
@@ -107,14 +107,11 @@
 <div class="box">
   <!-- Box Head -->
   <div class="box-head">
-    <h2>Upload Help</h2>
+    <h2>Upload help</h2>
   </div>
   <!-- End Box Head-->
 	<div class="box-content">
-		Your list must be either a "comma-separated value" spreadsheet (these files usually have the extension .csv) or a "tab-separated text" spreadsheet (usually with extension .txt). Any spreadsheet can be saved in one of these formats in a spreadsheet editor like Microsoft Excel. 
-	</div>
-	<div class="box-content">
-		In the spreadsheet, the column containing the phone numbers must have the header "Phone". The other optional headers that Impact Dialing can process are ID, FirstName, MiddleName, LastName, Suffix, and Email.
+		Your list must be either a "comma-separated value" spreadsheet (these files usually have the extension .csv) or a "tab-separated text" spreadsheet (usually with extension .txt). Any spreadsheet can be saved in one of these formats in a spreadsheet editor like Microsoft Excel. In the spreadsheet, the column containing the phone numbers must have the header "Phone". The other optional headers that Impact Dialing can process are ID, FirstName, MiddleName, LastName, Suffix, Age, Gender, and Email.
 	</div>
 </div>
 <!-- End Box -->

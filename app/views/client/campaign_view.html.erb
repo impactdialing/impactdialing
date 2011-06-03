@@ -1,16 +1,19 @@
+<h1>Edit campaign</h1>
+
 <div id="callerid"></div>
+
 <% form_for :campaign, :url => { :action => "campaign_add" , :id=>@campaign.id}, :html => {:name => 'callerForm', :id => 'callerForm'}   do |f| %>
 
 	<fieldset>
 		<legend>Campaign information</legend>
-		<p><label for="">Name:</label><br>
+		<p><label for="">Name</label><br>
 		<%= f.text_field :name, {:class=>"field size3"} %></p>
-		<p><label for="">Caller ID:</label><br>
+		<p><label for="">Caller ID</label><br>
 		<%= f.text_field :caller_id, {:class=>"field size3"} %></p>
-		<p><label for="">Script:</label><br>
+		<p><label for="">Script</label><br>
 			<%= f.collection_select(:script_id, Script.find_all_by_user_id_and_active(@user.id,1), :id, :name, { :prompt => true},  {:class=>"field"} 	)  %>
 		</p>
-		<p><label for="">Dialing Mode:</label>
+		<p><label for="">Dialing Mode</label>
 		<select class="field" id="campaign_predective_type" name="campaign[predective_type]"> 
 		<% public_dialers=["preview","power_2x","power_3x","power_4x"] %>
 		<% if !public_dialers.index(@campaign.predective_type) %>
@@ -27,7 +30,7 @@
 		</select>
 		</p>
 		<% if !@campaign.user.recordings.blank? %>
-			<p><label> <%= f.check_box :use_recordings, :onclick=>"doRecord();"%> &nbsp; Leave message</label></p>
+			<p><label> <%= f.check_box :use_recordings, :onclick=>"doRecord();"%> &nbsp; Leave voicemail</label></p>
 			<div id="recordingsdiv" <% if  !@campaign.use_recordings?%> style="display:none;" <% end %>> 
 				<p>Recording:</p>
 				<%= f.collection_select(:recording_id, Recording.find_all_by_user_id_and_active(@user.id,1), :id, :name, { :prompt => false},  {:class=>"field", :onchange=>"updatePreview();"}  )  %>
@@ -46,10 +49,10 @@
 	</fieldset>
 
 	<fieldset>
-	<legend>Available lists</legend>
+	<legend>Lists</legend>
 	<% if @lists.length==0 %>
 		<p>You haven't uploaded any lists yet.</p>						
-		<p class="actions"><a href="/client/voter_upload/<%= @campaign.id %>" class="action secondary">Upload voters</a></p>
+		<p class="actions"><a href="/client/voter_upload/<%= @campaign.id %>" class="action secondary">Upload a list</a></p>
 		<% if @show_voter_buttons %>
 			<a href="/client/voter_add?campaign_id=<%= @campaign.id %>" class="add-button"><span>Enter Voter</span></a>
 		<% end %>

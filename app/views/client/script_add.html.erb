@@ -10,8 +10,7 @@
      </p>
 
 	<fieldset>
-		<legend>Lead information</legend>
-		<p><label>Display this information above the script:</label><p>
+		<legend>Display above script</legend>
 		<ul class="clearfix">
 			<% @fields.each do |field| %>
 			<li>	<input  type="checkbox" name="voter_field[]" value="<%= field %>"  <% if @voter_fields.index(field) %>checked<% end %>> <%= field %></li>
@@ -27,7 +26,7 @@
 
 
 	<fieldset>
-		
+		<legend>Call results</legend>
 	<% (1..NUM_RESULT_FIELDS).each do |i| %>
 	 	<%= render :partial => 'call_result', :locals => { :num => i }  %>
 	<% end %>

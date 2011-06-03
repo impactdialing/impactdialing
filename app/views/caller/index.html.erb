@@ -1,20 +1,26 @@
-<h1>Welcome to Impact Dialing</h1>
+<h1>Welcome!</h1>
+
+<fieldset>
+	<legend>Select campaign</legend>
 
 <% form_tag("/caller", :id=>"loginForm") do |f| %>
+<p><label for="">Campaigns</label>
 <select name="campaign_id" class="field">
-	<option value="">-- Choose your campaign --</option>
+<!--	<option value="">-- Choose your campaign --</option>  -->
 	<% @caller.campaigns.uniq.each do |c| %>
 		<% if c.use_web_ui? %>
 		<option value="<%= c.id %>"><%= c.name %></option>
 		<% end %>
 	<% end %>
-</select>
+</select></p>
 <div class="buttons">
-<button type="submit">Go to campaign</button>  (You can preview the script before taking calls)
+<button type="submit">Go to campaign</button>  (You'll preview the script before calling.)
 </div>
 
 
 <% end %>
+
+</fieldset>
 
 <p>
 <%= cms "caller_welcome_text" %>

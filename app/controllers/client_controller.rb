@@ -628,6 +628,9 @@ Do you want to buy a widget?"
     @isAdmin = @user.admin
     @show_voter_buttons = @user.show_voter_buttons
 #    render :layout=>"campaign_view"
+
+
+
   end
 
   def campaign_caller_id_verified
@@ -822,9 +825,9 @@ Do you want to buy a widget?"
 #      
     end
     if @script.new_record?
-      @label="Add Result"
+      @label="New script"
     else
-      @label="Results"
+      @label="Add script"
     end
     if @script.incompletes!=nil
       begin
