@@ -1,0 +1,1 @@
+nohup bin/dialer-dameon -e production &
