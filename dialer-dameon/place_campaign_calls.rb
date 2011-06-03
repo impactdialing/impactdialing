@@ -8,7 +8,7 @@ if $environment=="development"
 else
   TWILIO_ACCOUNT="AC422d17e57a30598f8120ee67feae29cd"
   TWILIO_AUTH="897298ab9f34357f651895a7011e1631"
-  root_path="/var/www/html/trunk/dialer-dameon/"
+  root_path="/opt/bitnami/apache2/trunk/dialer-dameon/"
 end
 
 ENV['BUNDLE_GEMFILE']="#{root_path}/Gemfile"

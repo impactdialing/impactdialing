@@ -6,7 +6,7 @@ if DaemonKit.env=="development"
   databases = YAML::load(database_yaml)
   ActiveRecord::Base.establish_connection(databases["development"])
 else
-  database_yaml = IO.read('/var/www/html/trunk/config/database.yml')
+  database_yaml = IO.read('/opt/bitnami/apache2/trunk/config/database.yml')
   databases = YAML::load(database_yaml)
   ActiveRecord::Base.establish_connection(databases["production"])
 end

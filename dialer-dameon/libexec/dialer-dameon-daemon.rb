@@ -42,7 +42,7 @@ DaemonKit::Application.running! do |config|
     if DaemonKit.env=="development"
       root_path="/Volumes/MacHD/Users/blevine/dev/impact_dialing/dialer-dameon/"
     else
-      root_path="/var/www/html/trunk/dialer-dameon/"
+      root_path="/opt/bitnami/apache2/trunk/dialer-dameon/"
     end
 
 
