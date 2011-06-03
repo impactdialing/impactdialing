@@ -15,7 +15,7 @@ GEM
     daemon-kit (0.1.8.1)
       eventmachine (>= 0.12.10)
     eventmachine (0.12.10)
-    fastercsv (>=1.5.3)
+    fastercsv (>= 1.5.3)
     hpricot (0.8.2)
     mysql (2.7)
     rails (2.3.11)
