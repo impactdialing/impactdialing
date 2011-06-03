@@ -5,4 +5,5 @@
 #config.log_level = :debug
 
 APP_NUMBER="4157020991"
-APP_URL="http://impact-app-balancer-912849015.us-east-1.elb.amazonaws.com"
+#APP_URL="http://impact-app-balancer-912849015.us-east-1.elb.amazonaws.com"
+APP_URL="http://admin.impactdialing.com"

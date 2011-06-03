@@ -23,7 +23,7 @@ else
   TWILIO_ACCOUNT="AC422d17e57a30598f8120ee67feae29cd"
   TWILIO_AUTH="897298ab9f34357f651895a7011e1631"
   APP_NUMBER="4157020991"
-  APP_URL="http://impact-app-balancer-912849015.us-east-1.elb.amazonaws.com"
+  APP_URL="http://admin.impactdialing.com"
 end
 
 class Dialer
