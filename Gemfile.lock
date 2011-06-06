@@ -76,7 +76,7 @@ DEPENDENCIES
   fastercsv (~> 1.5.4)
   hirb (~> 0.4.5)
   hoptoad_notifier (~> 2.3.6)
-  hpricot
+  hpricot (~> 0.8.4)
   i18n (~> 0.4.2)
   interactive_editor (~> 0.0.8)
   json (~> 1.5.1)
