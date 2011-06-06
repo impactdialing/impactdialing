@@ -345,65 +345,48 @@ class Campaign < ActiveRecord::Base
 
         #validation
         if col[headers_present["Phone"]]==nil || !phone_number_valid(col[headers_present["Phone"]])
-#          RAILS_DEFAULT_LOGGER.debug("a")
           result[:uploads] << "Row " + (num+1).to_s + ": Invalid phone number"
           failedCount+=1
         elsif Voter.find_by_Phone_and_voter_list_id_and_active(phone_format(col[headers_present["Phone"]]),voter_list_id,true) && Family.find_by_Phone_and_voter_list_id_and_active_and_FirstName_and_LastName(phone_format(col[headers_present["Phone"]]),voter_list_id,true,col[headers_present["FirstName"]],col[headers_present["LastName"]])
 #        elsif false
-#          RAILS_DEFAULT_LOGGER.debug("b")
           result[:uploads] << "Row "  + (num+1).to_s + ": " + format_number_to_phone(col[headers_present["Phone"]]) + " " + format_number_to_phone(col[headers_present["FirstName"]]) + " " + format_number_to_phone(col[headers_present["LastName"]]) + " already in this list"
           failedCount+=1
         else
-#          RAILS_DEFAULT_LOGGER.debug("c")
           #valid row
           familyVoterTest=Voter.find_by_Phone_and_voter_list_id_and_active(phone_format(col[headers_present["Phone"]]),voter_list_id,true)
 #          familyVoterTest=nil
           if familyVoterTest.nil?
             v = Voter.new
-#            RAILS_DEFAULT_LOGGER.debug("d")
           else
             v = Family.new
             v.voter_id = familyVoterTest.id
             familyVoterTest.num_family+=1
             familyVoterTest.save
           end
-#          RAILS_DEFAULT_LOGGER.debug("e")
           v.campaign_id=self.id
           v.user_id=uid
-#          RAILS_DEFAULT_LOGGER.debug("f")
           headers_present.keys.each do |h|
-            #RAILS_DEFAULT_LOGGER.debug("#{h}: #{headers_present[h]}, #{col[headers_present[h]]}")
             thisHeader = h
             thisHeader="CustomID" if thisHeader=="VAN ID"
             thisHeader="CustomID" if thisHeader=="DWID"
-            RAILS_DEFAULT_LOGGER.debug("g")
 
-           # RAILS_DEFAULT_LOGGER.debug("thisHeader: #{thisHeader}, #{h}")
            if thisHeader=="Phone"
              val = phone_format(col[headers_present[h]])
            else
              val = col[headers_present[h]]
            end
-#           RAILS_DEFAULT_LOGGER.debug("h")
            val="" if val==nil
             v.attributes={thisHeader=>val}
           end
- #         RAILS_DEFAULT_LOGGER.debug("i")
           v.voter_list_id=voter_list_id
-#          RAILS_DEFAULT_LOGGER.debug("j")
-#          RAILS_DEFAULT_LOGGER.debug(v.valid?)
-#          RAILS_DEFAULT_LOGGER.debug(v.errors)
           v.save
-#          RAILS_DEFAULT_LOGGER.debug(v.errors.inspect)
-#          RAILS_DEFAULT_LOGGER.debug("k")
           successCount+=1
         end
       end
       num += 1
     end
-  RAILS_DEFAULT_LOGGER.debug("present: #{headers_present.to_yaml}")
-  result[:successCount]=successCount
-  result[:failedCount]=failedCount
+    result[:successCount]=successCount
+    result[:failedCount]=failedCount
     return result
   end
 
@@ -420,29 +403,27 @@ class Campaign < ActiveRecord::Base
     str.scan(/[0-9]/).size > 9
   end
 
-
- def format_number_to_phone(number, options = {})
+  def format_number_to_phone(number, options = {})
     number       = number.to_s.strip unless number.nil?
-   options      = options.symbolize_keys
-   area_code    = options[:area_code] || nil
-   delimiter    = options[:delimiter] || "-"
-   extension    = options[:extension].to_s.strip || nil
-   country_code = options[:country_code] || nil
+    options      = options.symbolize_keys
+    area_code    = options[:area_code] || nil
+    delimiter    = options[:delimiter] || "-"
+    extension    = options[:extension].to_s.strip || nil
+    country_code = options[:country_code] || nil
 
-   begin
-     str = ""
-     str << "+#{country_code}#{delimiter}" unless country_code.blank?
-     str << if area_code
-     number.gsub!(/([0-9]{1,3})([0-9]{3})([0-9]{4}$)/,"(\\1) \\2#{delimiter}\\3")
-     else
-       number.gsub!(/([0-9]{0,3})([0-9]{3})([0-9]{4})$/,"\\1#{delimiter}\\2#{delimiter}\\3")
-       number.starts_with?('-') ? number.slice!(1..-1) : number
-     end
-     str << " x #{extension}" unless extension.blank?
-     str
-   rescue
-     number
-   end
- end
-
+    begin
+      str = ""
+      str << "+#{country_code}#{delimiter}" unless country_code.blank?
+      str << if area_code
+               number.gsub!(/([0-9]{1,3})([0-9]{3})([0-9]{4}$)/,"(\\1) \\2#{delimiter}\\3")
+      else
+        number.gsub!(/([0-9]{0,3})([0-9]{3})([0-9]{4})$/,"\\1#{delimiter}\\2#{delimiter}\\3")
+        number.starts_with?('-') ? number.slice!(1..-1) : number
+      end
+      str << " x #{extension}" unless extension.blank?
+      str
+    rescue
+      number
+    end
+  end
 end
