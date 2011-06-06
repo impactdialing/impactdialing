@@ -15,17 +15,8 @@ Rails::Initializer.run do |config|
 
   #config.time_zone = 'UTC'
 
-  config.gem 'will_paginate', :version => '~> 2.3.11', :source => 'http://gemcutter.org'
-  config.gem 'memcache-client', :lib => 'memcache'
-  config.gem 'fastercsv'
-  config.gem "newrelic_rpm"
-  config.gem 'hoptoad_notifier'
-  config.gem 'right_aws'
-  config.gem 'json'
-  config.gem 'nokogiri'
-  config.gem "activemerchant", :lib => "active_merchant"
-  config.gem "rspec", :lib => "active_merchant"
-
+  require 'active_merchant'
+  require 'hoptoad_notifier'
   # Settings in config/environments/* take precedence over those specified here.
   # Application configuration should go into files in config/initializers
   # -- all .rb files in that directory are automatically loaded.
