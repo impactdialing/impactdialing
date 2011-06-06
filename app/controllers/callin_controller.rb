@@ -18,8 +18,8 @@ class CallinController < ApplicationController
 
 
   def session_complete
-    logger.info "NO SESSION COOKIE"  if (cookies[:session]==nil || cookies[:session]=="0") && params[:session].blank?
-    return if (cookies[:session]==nil || cookies[:session]=="0") && params[:session].blank?
+    logger.info "NO SESSION COOKIE"  if(cookies[:session]==nil || cookies[:session]=="0") && params[:session].blank?
+    return if(cookies[:session]==nil || cookies[:session]=="0") && params[:session].blank?
     #remove this caller
     if !params[:session].blank?
       @session = CallerSession.find(params[:session])
@@ -202,7 +202,7 @@ class CallinController < ApplicationController
       end
 
 
-      #      send_rt (@publish_channel,{@publish_key=>@publish_value})
+      #      send_rt(@publish_channel,{@publish_key=>@publish_value})
 
     end
 
@@ -227,7 +227,7 @@ class CallinController < ApplicationController
         @session.available_for_call=true
         @session.on_call=true
         @session.save
-        
+
         #avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
         # if !avail_campaign_hash.has_key?(@campaign.id)
         #   avail_campaign_hash[@campaign.id] = {"callers"=>[@session], "calls"=>[]}
@@ -273,21 +273,21 @@ class CallinController < ApplicationController
     render :template => 'callin/index.xml.builder', :layout => false
   end
 
-  
+
   def pause_then_start_conference
-    #when disposition aleady entered on web, pause then redirect here before 
+    #when disposition aleady entered on web, pause then redirect here before
     # putting back in conference. a workaround for tilwio bug
     @session = CallerSession.find(params[:session])
-    
+
     @campaign = @session.campaign
     render :template => 'callin/start_conference.xml.builder', :layout => false
     return
   end
-  
+
   def leaveConf
     # reached after call ends
     #session #campaign
-    
+
     if params[:campaign]=="38"
       #test campaign
       params[:Digits]="1"
@@ -420,10 +420,10 @@ class CallinController < ApplicationController
       #   attempt.call_end=Time.now
       #   attempt.save
       # end
-      
+
        if params[:CallStatus]!="completed" && @campaign.use_web_ui && @campaign.predective_type=="preview"  && params[:selected_session]!=nil
           @session = CallerSession.find(params[:selected_session])
-          send_rt (@session.session_key,{'waiting'=>'preview'})
+          send_rt(@session.session_key,{'waiting'=>'preview'})
       end
 
       if params[:DialStatus]=="hangup-machine"
@@ -462,7 +462,7 @@ class CallinController < ApplicationController
       @attempt.save
       @voter.save
       # if @campaign.predective_type=="preview" && params[:selected_session]
-      #   send_rt (CallerSession.find(params[:selected_session]).session_key,{'waiting'=>'preview'})
+      #   send_rt(CallerSession.find(params[:selected_session]).session_key,{'waiting'=>'preview'})
       # end
       if @voter.caller_session_id!=nil
         @session = CallerSession.find(@voter.caller_session_id)
@@ -491,8 +491,8 @@ class CallinController < ApplicationController
       render :template => 'callin/index.xml.builder', :layout => false
       return
     end
-    
-    
+
+
     if params[:selected_session].blank?
       @available_caller_session = CallerSession.find_by_campaign_id_and_available_for_call_and_on_call(@campaign.id, true, true, :order=>"rand()")
     else
@@ -525,7 +525,7 @@ class CallinController < ApplicationController
         @attempt.caller_session_id=@available_caller_session.id
         @attempt.caller_id=@available_caller_session.caller.id
         @attempt.call_start=Time.now
-        @attempt.caller_hold_time = (Time.now - @available_caller_session.hold_time_start).to_i if @available_caller_session.hold_time_start!=nil # end caller hold time
+        @attempt.caller_hold_time =(Time.now - @available_caller_session.hold_time_start).to_i if @available_caller_session.hold_time_start!=nil # end caller hold time
         @attempt.save
 
         @voter.status = "Connected to caller #{@available_caller_session.caller.pin} #{@available_caller_session.caller.email}"
@@ -551,9 +551,9 @@ class CallinController < ApplicationController
         end
         render :template => 'callin/voter_start_conference.xml.builder', :layout => false
         return
-        
+
       rescue Exception => e
-        logger.debug "#{ e } (#{ e.class })!"
+        logger.debug "#{ e }(#{ e.class })!"
         # caller already connected to someone else
         @pause=2
         @redirect="#{APP_URL}/callin/voterFindSession?campaign=#{@campaign.id}&voter=#{@voter.id}&attempt=#{@attempt.id}"
@@ -565,7 +565,7 @@ class CallinController < ApplicationController
     return
 
   end
-  
+
   def hash_from_voter_and_script(script,voter)
     publish_hash={:id=>voter.id, :classname=>voter.class.to_s}
 #    publish_hash={:id=>voter.id}
@@ -622,13 +622,13 @@ class CallinController < ApplicationController
       render :template => 'callin/index.xml.builder', :layout => false
     end
   end
-  
+
   def monitorEavesdrop
     #types
     #0=eavesdrop
     #1=break in
     #2=take over
-    
+
     if params[:type]=="0"
       @muted="true"
     else
@@ -637,5 +637,5 @@ class CallinController < ApplicationController
     render :template => 'callin/start_eavesdrop_conference.xml.builder', :layout => false
     return
   end
-  
+
 end

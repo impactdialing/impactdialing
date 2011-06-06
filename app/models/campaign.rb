@@ -3,19 +3,19 @@ class Campaign < ActiveRecord::Base
   validates_presence_of :name, :on => :create, :message => "can't be blank"
 #  has_and_belongs_to_many :voter_lists
 #  has_many :voter_lists
-  has_many :voter_lists, :conditions => {:active => true}  
+  has_many :voter_lists, :conditions => {:active => true}
   has_and_belongs_to_many :callers
   belongs_to :script
   belongs_to :user
   belongs_to :recording
   cattr_reader :per_page
   @@per_page = 25
-  
+
   def check_valid_caller_id_and_save
     check_valid_caller_id
     self.save
   end
-  
+
   def check_valid_caller_id
     #verify caller_Id
     self.caller_id_verified=false
@@ -36,9 +36,9 @@ class Campaign < ActiveRecord::Base
       rescue
       end
     end
-    true  
+    true
   end
-  
+
   def before_create
     uniq_pin=0
     while uniq_pin==0 do
@@ -48,11 +48,11 @@ class Campaign < ActiveRecord::Base
     end
     self.group_id = uniq_pin
   end
-  
+
   def before_save
     #check_valid_caller_id if self.caller_id_changed?
     check_valid_caller_id
-    
+
   end
 
   def recent_attempts(mins=10)
@@ -93,14 +93,14 @@ class Campaign < ActiveRecord::Base
     end
     window = window - 10 if window > 10
 #   RAILS_DEFAULT_LOGGER.debug("window: #{window}")
-    ending = CallAttempt.all (:conditions=>"
+    ending = CallAttempt.all(:conditions=>"
     campaign_id=#{self.id}
     and status like'Connected to caller%'
     and timediff(now(),call_start) >SEC_TO_TIME(#{window})
     ")
     ending
   end
-  
+
   def call_stats(mins=nil)
     stats={:attempts=>[], :abandon=>0, :answer=>0, :no_answer=>0, :total=>0, :answer_pct=>0, :avg_duration=>0, :abandon_pct=>0, :avg_hold_time=>0, :total_long=>0, :total_short=>0, :avg_long=>0, :biggest_long=>0, :avg_ring_time=>0, :avg_ring_time_devation=>0, :current_short=>0, :current_long=>0, :short_deviation=>0, :avg_short=>0}
     totduration=0
@@ -114,7 +114,7 @@ class Campaign < ActiveRecord::Base
     longattempts=[]
     shortattempts=[]
 		stats[:short_time] = 15
-    
+
     if mins.blank?
       attempts = CallAttempt.find_all_by_campaign_id(self.id, :order=>"id desc")
     else
@@ -147,10 +147,10 @@ class Campaign < ActiveRecord::Base
           stats[:current_short]=stats[:current_short]+1
         end
       end
-      
+
 
       if attempt.duration!=nil && attempt.duration>0
-        totduration = totduration + attempt.duration 
+        totduration = totduration + attempt.duration
         if attempt.duration <= stats[:short_time]
           stats[:total_short]  = stats[:total_short]+1
           totshortduration = totshortduration + attempt.duration
@@ -164,7 +164,7 @@ class Campaign < ActiveRecord::Base
       end
 
       if !attempt.caller_hold_time.blank?
-        tothold = tothold + attempt.caller_hold_time 
+        tothold = tothold + attempt.caller_hold_time
         totholddata+=1
       end
     end
@@ -180,21 +180,21 @@ class Campaign < ActiveRecord::Base
     stats[:long_deviation] = self.std_deviation(longattempts)
     stats[:short_deviation] = self.std_deviation(shortattempts)
     stats[:answer_plus_abandon_ct] = (stats[:abandon].to_f + stats[:answer].to_f) / stats[:total].to_f if stats[:total] > 0
-    
-    
+
+
     #new algo stuff
     if stats[:answer_plus_abandon_ct] ==nil
   		stats[:dials_needed]  = 2
     else
       dials = 1 / stats[:answer_plus_abandon_ct]
-      dials = 2 if dials.infinite? 
+      dials = 2 if dials.infinite?
       dials = dials.to_f.round
       dials = self.max_calls_per_caller if dials > self.max_calls_per_caller
       dials = 2 if attempts.length < 50
 #      dials=1
   		stats[:dials_needed]  = dials
     end
-		stats[:avg_ring_time_adjusted] =  stats[:avg_ring_time] - (2*stats[:avg_ring_time_deviation]) 
+		stats[:avg_ring_time_adjusted] =  stats[:avg_ring_time] - (2*stats[:avg_ring_time_deviation])
 		stats[:call_length_long] = stats[:avg_long] + (2*stats[:long_deviation])
 		stats[:call_length_short] = stats[:avg_short] + (2*stats[:short_deviation])
 
@@ -207,7 +207,7 @@ class Campaign < ActiveRecord::Base
 	  else
 		  stats[:ratio_short] = stats[:total_short].to_f / (stats[:total_long] + stats[:total_short]).to_f
 	  end
-		stats[:short_callers]= 1/(stats[:total_short].to_f / stats[:total_long].to_f).to_f 
+		stats[:short_callers]= 1/(stats[:total_short].to_f / stats[:total_long].to_f).to_f
 		#final calcs
 		stats[:short_new_call_caller_threshold] = 1/(stats[:total_short].to_f / stats[:total_long].to_f).to_f
 		stats[:short_new_call_time_threshold] = ( stats[:avg_short] + (2*stats[:short_deviation]) ) - ( stats[:avg_ring_time] - (2*stats[:avg_ring_time_deviation]) )
@@ -216,15 +216,15 @@ class Campaign < ActiveRecord::Base
 	  else
 		  stats[:long_new_call_time_threshold] = stats[:avg_duration]
     end
-    
+
     # bimodal pacing algorithm:
     # when stats[:short_new_call_caller_threshold] callers are on calls of length less than stats[:short_time]s, dial  stats[:dials_needed] lines at stats[:short_new_call_time_threshold]) seconds after the last call began.
-    # if a call passes length 15s, dial stats[:dials_needed] lines at stats[:short_new_long_time_threshold]sinto the call.        
-        
-    
+    # if a call passes length 15s, dial stats[:dials_needed] lines at stats[:short_new_long_time_threshold]sinto the call.
+
+
 		stats
   end
-  
+
   def voters_called
     Voter.find_all_by_campaign_id(self.id, :select=>"id", :conditions=>"status <> 'not called'")
   end
@@ -237,7 +237,7 @@ class Campaign < ActiveRecord::Base
     end
     voters
   end
-  
+
   def voters_count(status=nil,include_call_retries=true)
     active_lists = VoterList.find_all_by_campaign_id_and_active_and_enabled(self.id, 1, 1)
     return [] if active_lists.length==0
@@ -246,10 +246,10 @@ class Campaign < ActiveRecord::Base
 
     Voter.find_all_by_active(1, :select=>"id", :conditions=>"voter_list_id in (#{active_list_ids.join(",")})  and (status='#{status}' OR (call_back=1 and last_call_attempt_time < (Now() - INTERVAL 180 MINUTE)) )")
 #    Voter.find_by_sql("select count(*) as count from voters where voter_list_id in (#{active_list_ids.join(",")})  and (status='#{status}' OR (call_back=1 and last_call_attempt_time < (Now() - INTERVAL 180 MINUTE)) )")
-    
+
   end
-  
-  
+
+
   def std_deviation(values)
     return 0 if values==nil || values.size==0
     begin
@@ -286,7 +286,7 @@ class Campaign < ActiveRecord::Base
         voter_ids  << voter.id
       end
     end
-    
+
     if voters_returned.length==0 && include_call_retries
       # no one left, so call everyone we missed over 10 minutes
       uncalled = Voter.find_all_by_campaign_id_and_active_and_call_back(self.id, 1, 1, :conditions=>"voter_list_id in (select id from voter_lists where campaign_id=#{self.id} and active=1 and enabled=1)")
@@ -297,16 +297,16 @@ class Campaign < ActiveRecord::Base
       end
       return voters_returned.sort_by{rand}
     end
-    
+
     voters_returned.sort_by{rand}
   end
-  
+
   def voter_upload(upload,uid,seperator,voter_list_id)
     name = upload['datafile'].original_filename
     directory = "/tmp"
     path = File.join(directory, name)
     File.open(path, "wb") { |f| f.write(upload['datafile'].read) }
-    
+
     all_headers=["Phone","VAN ID","LastName","FirstName","MiddleName","Suffix","Email","DWID","Age","Gender"]
     headers_present={}
     num = 0
@@ -328,7 +328,7 @@ class Campaign < ActiveRecord::Base
           headers_present.delete("VAN ID") if headers_present.has_key?("VAN ID") && headers_present.has_key?("DWID")
 
           pos +=1
-          
+
           # unless the column value is "R.No"(which is a roll no of student) find the subject using the abbreviation of that subject
           # unless c == "R.No"
           #   subj = Subject.first(:conditions => ["abbreviation = '#{c}'"])
@@ -342,7 +342,7 @@ class Campaign < ActiveRecord::Base
         if !headers_present.has_key?("Phone")
           return {:error=>"Could not process upload file.  Missing column header: Phone"}
         end
-        
+
         #validation
         if col[headers_present["Phone"]]==nil || !phone_number_valid(col[headers_present["Phone"]])
 #          RAILS_DEFAULT_LOGGER.debug("a")
@@ -377,7 +377,7 @@ class Campaign < ActiveRecord::Base
             thisHeader="CustomID" if thisHeader=="VAN ID"
             thisHeader="CustomID" if thisHeader=="DWID"
             RAILS_DEFAULT_LOGGER.debug("g")
-            
+
            # RAILS_DEFAULT_LOGGER.debug("thisHeader: #{thisHeader}, #{h}")
            if thisHeader=="Phone"
              val = phone_format(col[headers_present[h]])
@@ -420,7 +420,7 @@ class Campaign < ActiveRecord::Base
     str.scan(/[0-9]/).size > 9
   end
 
-  
+
  def format_number_to_phone(number, options = {})
     number       = number.to_s.strip unless number.nil?
    options      = options.symbolize_keys
@@ -444,5 +444,5 @@ class Campaign < ActiveRecord::Base
      number
    end
  end
- 
+
 end

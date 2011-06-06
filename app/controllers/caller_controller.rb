@@ -111,9 +111,9 @@ class CallerController < ApplicationController
 
     #update rt
     if Campaign.find(session.campaign_id).predective_type=="preview"
-      send_rt (params[:id],{'waiting'=>'preview'})
+      send_rt(params[:id],{'waiting'=>'preview'})
     else
-      send_rt (params[:id],{'waiting'=>'ok'})
+      send_rt(params[:id],{'waiting'=>'ok'})
     end
     render :text=>  "ok"
   end
@@ -130,18 +130,18 @@ class CallerController < ApplicationController
     if params[:key]
       session = CallerSession.find_by_session_key(params[:key])
     else
-      session = CallerSession.find_by_session_key(params[:id]) 
+      session = CallerSession.find_by_session_key(params[:id])
     end
 
     t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
     a=t.call("POST", "Calls/#{session.sid}", {'CurrentUrl'=>"#{APP_URL}/callin/callerEndCall?session=#{session.id}"})
 
     #update rt
-    send_rt (params[:id],{'hangup'=>'ok'})
+    send_rt(params[:id],{'hangup'=>'ok'})
     render :text=>  "ok hangup #{session.sid}"
     return
   end
-  
+
   def drop_call
     @session = CallerSession.find_by_session_key(params[:key])
     return if @session.blank?
@@ -167,8 +167,8 @@ class CallerController < ApplicationController
     else
       incompletes={}
     end
-    
-    
+
+
     #new style results
     result_json={}
     @script.result_sets_used.each do |r|
@@ -178,11 +178,11 @@ class CallerController < ApplicationController
       result_json["result_#{r}"]=[this_result_text,thisKeypadval]
       @clean_digit=thisKeypadval if @clean_digit.blank?
       @clean_response=this_result_text if @clean_response==nil
-      logger.info "!!!@clean_response=#{@clean_response}!!!" 
+      logger.info "!!!@clean_response=#{@clean_response}!!!"
       this_incomplete = incompletes[r.to_s] || []
-      
+
       if this_incomplete.index(thisKeypadval.to_s)
-        @clean_incomplete=true 
+        @clean_incomplete=true
       else
         @clean_incomplete=false
       end
@@ -192,23 +192,23 @@ class CallerController < ApplicationController
       result_json["note_#{r}"]=[thisResult]
     end
     if @session.voter_in_progress!=nil
-      voter = Voter.find(@session.voter_in_progress)    
+      voter = Voter.find(@session.voter_in_progress)
       voter.result_json=result_json
       voter.save
     end
-    attempt = CallAttempt.find(@session.attempt_in_progress)    
+    attempt = CallAttempt.find(@session.attempt_in_progress)
     attempt.result_json=result_json
     attempt.save
-        
+
     #@clean_digit=params[:disposition]
-    
+
     @family_submitted=params[:family]
     @caller = @session.caller
     attempt = CallAttempt.find(params[:attempt])
     t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
     a=t.call("POST", "Calls/#{attempt.sid}", {'CurrentUrl'=>"#{APP_URL}/callin/voterEndCall?attempt=#{attempt.id}"})
-    handle_disposition_submit      
- 
+    handle_disposition_submit
+
     #update rt
     if params[:hangup]=="1"
       session_end
@@ -217,9 +217,9 @@ class CallerController < ApplicationController
       a=t.call("POST", "Calls/#{@session.sid}", {'CurrentUrl'=>"#{APP_URL}/callin/start_conference?session=#{@session.id}&campaign=#{@campaign.id}"})
 
       if @campaign.predective_type=="preview"
-        send_rt (params[:key],{'waiting'=>'preview'})
+        send_rt(params[:key],{'waiting'=>'preview'})
       else
-        send_rt (params[:key],{'waiting'=>'ok'})
+        send_rt(params[:key],{'waiting'=>'ok'})
       end
 
 
@@ -227,10 +227,10 @@ class CallerController < ApplicationController
     end
 
   end
-  
+
   def js
     response.headers["Content-Type"] = 'text/javascript'
-    
+
     @session = CallerSession.find_by_session_key(params[:id])
     @campaign=@session.campaign
     respond_to do |format|
@@ -238,33 +238,33 @@ class CallerController < ApplicationController
     end
 #    render
   end
-  
+
   def preview_choose
     @session = CallerSession.find_by_session_key(params[:key])
     @campaign = @session.campaign
     @voters = @campaign.voters("not called",true,25)
     render :layout=>false
   end
-  
+
   def reconnect_rt
-    send_rt (params[:key],{params[:k]=>params[:v]})
+    send_rt(params[:key],{params[:k]=>params[:v]})
     render :text=>  "ok"
   end
 
   def preview_dial
     @session = CallerSession.find_by_session_key(params[:key])
     @campaign = @session.campaign
-    @voter = Voter.find_by_campaign_id_and_id (@campaign.id, params[:voter_id])
+    @voter = Voter.find_by_campaign_id_and_id(@campaign.id, params[:voter_id])
     @voter.call_and_connect_to_session(@session)
-    send_rt (params[:key],{'waiting'=>'preview_dialing'})
+    send_rt(params[:key],{'waiting'=>'preview_dialing'})
     render :text=>  "ok"
   end
-  
+
   def dpoll
     response.headers["Content-Type"] = 'text/javascript'
-    
+
     @on_call = CallerSession.find_by_session_key(params[:key])
-    if (@on_call==nil || @on_call.on_call==false)
+    if(@on_call==nil || @on_call.on_call==false)
       #hungup?
 #      render :text=>""
 #      return
