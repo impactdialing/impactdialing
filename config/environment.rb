@@ -48,6 +48,9 @@ Rails::Initializer.run do |config|
   # config.i18n.load_path += Dir[Rails.root.join('my', 'locales', '*.{rb,yml}')]
   # config.i18n.default_locale = :de
 end
+
+require 'will_paginate'
+
 #CACHE = MemCache.new 'localhost:11211'
 ActionMailer::Base.delivery_method = :sendmail
 ActionMailer::Base.default_content_type = "text/html"
