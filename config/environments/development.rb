@@ -31,7 +31,7 @@ config.after_initialize do
   ActiveMerchant::Billing::Base.mode = :test
   ActiveMerchant::Billing::LinkpointGateway.pem_file  = File.read(RAILS_ROOT + '/1909186423.pem')
   ::BILLING_GW = gateway = ActiveMerchant::Billing::LinkpointGateway.new(
-     :login => "1909186423"  
+     :login => "1909186423"
    )
 end
 
@@ -49,6 +49,6 @@ end
 #   :readonly => false,
 #   :urlencode => false
 # }
-#  
+#
 # CACHE = MemCache.new memcache_options
 # CACHE.servers = '127.0.0.1:11211'

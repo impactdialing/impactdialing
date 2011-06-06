@@ -1,1 +1,211 @@
 
+** [Hoptoad] Notifier 2.3.6 ready to catch errors
+** [Hoptoad] Notifier 2.3.6 ready to catch errors
+** [Hoptoad] Notifier 2.3.6 ready to catch errors
+** [Hoptoad] Notifier 2.3.6 ready to catch errors
+** [Hoptoad] Notifier 2.3.6 ready to catch errors
+** [Hoptoad] Notifier 2.3.6 ready to catch errors
+  [4;36;1mSQL (2.3ms)[0m   [0;1m SELECT name
+ FROM sqlite_master
+ WHERE type = 'table' AND NOT name = 'sqlite_sequence'
+[0m
+  [4;35;1mSQL (0.7ms)[0m   [0mSELECT version FROM schema_migrations[0m
+Migrating to CreateUsers (20100804082038)
+Migrating to CreateCallers (20100805090016)
+Migrating to CreateLists (20100805090025)
+Migrating to CreateCampaigns (20100806094028)
+Migrating to CreateVoters (20100807122737)
+Migrating to CreateCallerSessions (20100808205540)
+Migrating to CreateVoterResults (20100808210001)
+Migrating to VoterAddStatus (20100808221311)
+Migrating to CreateVoterLists (20100811140028)
+Migrating to CreateSeos (20100812100123)
+Migrating to CreateScripts (20100812103334)
+Migrating to AddCampaiginsLists (20100815083030)
+Migrating to CreateCallAttempts (20100817115742)
+Migrating to CampaignAddRatio (20100822210728)
+Migrating to RemoveMemcached (20100824110442)
+Migrating to ListAddCampaign (20100826055929)
+Migrating to VoterAddResult (20100827134800)
+Migrating to CallAttemptResult (20100827140414)
+Migrating to CallerSessionAddCallerNumber (20100828164145)
+Migrating to VoterListEnabled (20100829093259)
+Migrating to Useraddpaid (20100830103006)
+Migrating to CallSessionsAddTwilioStats (20100831192355)
+Migrating to VoterAddResultDate (20100902093304)
+Migrating to CallAttemptsAddIndex (20100911182701)
+Migrating to MoreIndexes (20100911183110)
+Migrating to VoterAddIndex (20100912105856)
+Migrating to VoterAddLastAttempt (20100912112156)
+Migrating to VoterAddAttemptId (20100914083947)
+Migrating to CampaignAddAnsweringMachine (20100918050203)
+Migrating to CampaignChangeRatioTypes (20100918051242)
+Migrating to CampaignAddPredectiveType (20100924142335)
+Migrating to CreateRecordings (20100928072136)
+Migrating to CallerAddPassword (20101010010105)
+Migrating to CampaginAddMaxcalls (20101010012230)
+Migrating to ScriptAddVoterFields (20101010014837)
+Migrating to CampaignAddCallinNumber (20101010073530)
+Migrating to CampaignUseWebui (20101011040031)
+Migrating to CampaignAddAnswerDials (20101016052133)
+Migrating to CampaignUseScript (20101019180413)
+Migrating to CampaignAddCallsInProgress (20101024155019)
+Migrating to CallAttemptAddCallEndIndex (20101029064619)
+Migrating to AddFamily (20110115130215)
+Migrating to CallAttemptAddPredectiveMode (20110222124435)
+Migrating to ScriptAddResultGroups (20110303120516)
+Migrating to VoterAddResultsetResults (20110308182418)
+Migrating to AddLogdump (20110509074125)
+Migrating to CreateAccount (20110519085111)
+Migrating to DumpIndexGuid (20110528114942)
+Migrating to CallAttemptIndexSession (20110528122013)
+  [4;36;1mSQL (0.2ms)[0m   [0;1mselect sqlite_version(*)[0m
+  [4;35;1mSQL (0.3ms)[0m   [0m SELECT name
+ FROM sqlite_master
+ WHERE type = 'table' AND NOT name = 'sqlite_sequence'
+[0m
+  [4;36;1mSQL (0.6ms)[0m   [0;1mSELECT version FROM schema_migrations[0m
+  [4;35;1mSQL (0.3ms)[0m   [0m SELECT name
+ FROM sqlite_master
+ WHERE type = 'table' AND NOT name = 'sqlite_sequence'
+[0m
+  [4;36;1mSQL (0.0ms)[0m   [0;1mPRAGMA index_list("accounts")[0m
+  [4;35;1mSQL (0.1ms)[0m   [0mPRAGMA index_list("call_attempts")[0m
+  [4;36;1mSQL (0.1ms)[0m   [0;1mPRAGMA index_info('index_call_attempts_on_voter_id')[0m
+  [4;35;1mSQL (0.1ms)[0m   [0mPRAGMA index_info('index_call_attempts_on_campaign_id')[0m
+  [4;36;1mSQL (0.1ms)[0m   [0;1mPRAGMA index_info('index_call_attempts_on_caller_session_id')[0m
+  [4;35;1mSQL (0.1ms)[0m   [0mPRAGMA index_info('index_call_attempts_on_call_end')[0m
+  [4;36;1mSQL (0.2ms)[0m   [0;1mPRAGMA index_list("caller_sessions")[0m
+  [4;35;1mSQL (0.1ms)[0m   [0mPRAGMA index_info('index_caller_sessions_on_campaign_id')[0m
+  [4;36;1mSQL (0.1ms)[0m   [0;1mPRAGMA index_info('index_caller_sessions_on_caller_id')[0m
+  [4;35;1mSQL (0.0ms)[0m   [0mPRAGMA index_list("callers")[0m
+  [4;36;1mSQL (0.0ms)[0m   [0;1mPRAGMA index_list("callers_campaigns")[0m
+  [4;35;1mSQL (0.1ms)[0m   [0mPRAGMA index_list("campaigns")[0m
+  [4;36;1mSQL (0.0ms)[0m   [0;1mPRAGMA index_list("campaigns_voter_lists")[0m
+  [4;35;1mSQL (0.1ms)[0m   [0mPRAGMA index_list("dumps")[0m
+  [4;36;1mSQL (0.1ms)[0m   [0;1mPRAGMA index_info('index_dumps_on_guid')[0m
+  [4;35;1mSQL (0.2ms)[0m   [0mPRAGMA index_list("families")[0m
+  [4;36;1mSQL (0.1ms)[0m   [0;1mPRAGMA index_list("lists")[0m
+  [4;35;1mSQL (0.0ms)[0m   [0mPRAGMA index_list("recordings")[0m
+  [4;36;1mSQL (0.0ms)[0m   [0;1mPRAGMA index_list("scripts")[0m
+  [4;35;1mSQL (0.0ms)[0m   [0mPRAGMA index_list("seos")[0m
+  [4;36;1mSQL (0.0ms)[0m   [0;1mPRAGMA index_list("users")[0m
+  [4;35;1mSQL (0.0ms)[0m   [0mPRAGMA index_list("voter_lists")[0m
+  [4;36;1mSQL (0.1ms)[0m   [0;1mPRAGMA index_list("voters")[0m
+  [4;35;1mSQL (0.1ms)[0m   [0mPRAGMA index_info('index_voters_on_voter_list_id')[0m
+  [4;36;1mSQL (0.1ms)[0m   [0;1mPRAGMA index_info('index_voters_on_status')[0m
+  [4;35;1mSQL (0.1ms)[0m   [0mPRAGMA index_info('index_voters_on_campaign_id')[0m
+  [4;36;1mSQL (0.1ms)[0m   [0;1mPRAGMA index_info('index_voters_on_attempt_id')[0m
+  [4;35;1mSQL (0.1ms)[0m   [0mPRAGMA index_info('index_voters_on_Phone')[0m
+** [Hoptoad] Notifier 2.3.6 ready to catch errors
+** [Hoptoad] Notifier 2.3.6 ready to catch errors
+** [Hoptoad] Notifier 2.3.6 ready to catch errors
+** [Hoptoad] Notifier 2.3.6 ready to catch errors
+** [Hoptoad] Notifier 2.3.6 ready to catch errors
+  [4;36;1mSQL (0.2ms)[0m   [0;1mSET SQL_AUTO_IS_NULL=0[0m
+** [Hoptoad] Notifier 2.3.6 ready to catch errors
+  [4;36;1mSQL (0.2ms)[0m   [0;1mSET SQL_AUTO_IS_NULL=0[0m
+** [Hoptoad] Notifier 2.3.6 ready to catch errors
+  [4;36;1mSQL (0.2ms)[0m   [0;1mSET SQL_AUTO_IS_NULL=0[0m
+  [4;35;1mSQL (0.8ms)[0m   [0mSHOW TABLES[0m
+  [4;36;1mSQL (0.5ms)[0m   [0;1mSELECT version FROM schema_migrations[0m
+Migrating to CreateUsers (20100804082038)
+Migrating to CreateCallers (20100805090016)
+Migrating to CreateLists (20100805090025)
+Migrating to CreateCampaigns (20100806094028)
+Migrating to CreateVoters (20100807122737)
+Migrating to CreateCallerSessions (20100808205540)
+Migrating to CreateVoterResults (20100808210001)
+Migrating to VoterAddStatus (20100808221311)
+Migrating to CreateVoterLists (20100811140028)
+Migrating to CreateSeos (20100812100123)
+Migrating to CreateScripts (20100812103334)
+Migrating to AddCampaiginsLists (20100815083030)
+Migrating to CreateCallAttempts (20100817115742)
+Migrating to CampaignAddRatio (20100822210728)
+Migrating to RemoveMemcached (20100824110442)
+Migrating to ListAddCampaign (20100826055929)
+Migrating to VoterAddResult (20100827134800)
+Migrating to CallAttemptResult (20100827140414)
+Migrating to CallerSessionAddCallerNumber (20100828164145)
+Migrating to VoterListEnabled (20100829093259)
+Migrating to Useraddpaid (20100830103006)
+Migrating to CallSessionsAddTwilioStats (20100831192355)
+Migrating to VoterAddResultDate (20100902093304)
+Migrating to CallAttemptsAddIndex (20100911182701)
+Migrating to MoreIndexes (20100911183110)
+Migrating to VoterAddIndex (20100912105856)
+Migrating to VoterAddLastAttempt (20100912112156)
+Migrating to VoterAddAttemptId (20100914083947)
+Migrating to CampaignAddAnsweringMachine (20100918050203)
+Migrating to CampaignChangeRatioTypes (20100918051242)
+Migrating to CampaignAddPredectiveType (20100924142335)
+Migrating to CreateRecordings (20100928072136)
+Migrating to CallerAddPassword (20101010010105)
+Migrating to CampaginAddMaxcalls (20101010012230)
+Migrating to ScriptAddVoterFields (20101010014837)
+Migrating to CampaignAddCallinNumber (20101010073530)
+Migrating to CampaignUseWebui (20101011040031)
+Migrating to CampaignAddAnswerDials (20101016052133)
+Migrating to CampaignUseScript (20101019180413)
+Migrating to CampaignAddCallsInProgress (20101024155019)
+Migrating to CallAttemptAddCallEndIndex (20101029064619)
+Migrating to AddFamily (20110115130215)
+Migrating to CallAttemptAddPredectiveMode (20110222124435)
+Migrating to ScriptAddResultGroups (20110303120516)
+Migrating to VoterAddResultsetResults (20110308182418)
+Migrating to AddLogdump (20110509074125)
+Migrating to CreateAccount (20110519085111)
+Migrating to DumpIndexGuid (20110528114942)
+Migrating to CallAttemptIndexSession (20110528122013)
+  [4;35;1mSQL (0.8ms)[0m   [0mSHOW TABLES[0m
+  [4;36;1mSQL (0.1ms)[0m   [0;1mSELECT version FROM schema_migrations[0m
+  [4;35;1mSQL (0.6ms)[0m   [0mSHOW TABLES[0m
+  [4;36;1mSQL (3.3ms)[0m   [0;1mSHOW FIELDS FROM `accounts`[0m
+  [4;35;1mSQL (50.6ms)[0m   [0mdescribe `accounts`[0m
+  [4;36;1mSQL (1.0ms)[0m   [0;1mSHOW KEYS FROM `accounts`[0m
+  [4;35;1mSQL (4.2ms)[0m   [0mSHOW FIELDS FROM `call_attempts`[0m
+  [4;36;1mSQL (4.4ms)[0m   [0;1mdescribe `call_attempts`[0m
+  [4;35;1mSQL (1.3ms)[0m   [0mSHOW KEYS FROM `call_attempts`[0m
+  [4;36;1mSQL (3.8ms)[0m   [0;1mSHOW FIELDS FROM `caller_sessions`[0m
+  [4;35;1mSQL (4.2ms)[0m   [0mdescribe `caller_sessions`[0m
+  [4;36;1mSQL (2.4ms)[0m   [0;1mSHOW KEYS FROM `caller_sessions`[0m
+  [4;35;1mSQL (3.0ms)[0m   [0mSHOW FIELDS FROM `callers`[0m
+  [4;36;1mSQL (3.2ms)[0m   [0;1mdescribe `callers`[0m
+  [4;35;1mSQL (0.9ms)[0m   [0mSHOW KEYS FROM `callers`[0m
+  [4;36;1mSQL (2.3ms)[0m   [0;1mSHOW FIELDS FROM `callers_campaigns`[0m
+  [4;35;1mSQL (3.4ms)[0m   [0mdescribe `callers_campaigns`[0m
+  [4;36;1mSQL (0.9ms)[0m   [0;1mSHOW KEYS FROM `callers_campaigns`[0m
+  [4;35;1mSQL (3.1ms)[0m   [0mSHOW FIELDS FROM `campaigns`[0m
+  [4;36;1mSQL (3.9ms)[0m   [0;1mdescribe `campaigns`[0m
+  [4;35;1mSQL (1.1ms)[0m   [0mSHOW KEYS FROM `campaigns`[0m
+  [4;36;1mSQL (2.3ms)[0m   [0;1mSHOW FIELDS FROM `campaigns_voter_lists`[0m
+  [4;35;1mSQL (3.7ms)[0m   [0mdescribe `campaigns_voter_lists`[0m
+  [4;36;1mSQL (0.8ms)[0m   [0;1mSHOW KEYS FROM `campaigns_voter_lists`[0m
+  [4;35;1mSQL (2.9ms)[0m   [0mSHOW FIELDS FROM `dumps`[0m
+  [4;36;1mSQL (3.2ms)[0m   [0;1mdescribe `dumps`[0m
+  [4;35;1mSQL (1.4ms)[0m   [0mSHOW KEYS FROM `dumps`[0m
+  [4;36;1mSQL (4.8ms)[0m   [0;1mSHOW FIELDS FROM `families`[0m
+  [4;35;1mSQL (4.4ms)[0m   [0mdescribe `families`[0m
+  [4;36;1mSQL (0.6ms)[0m   [0;1mSHOW KEYS FROM `families`[0m
+  [4;35;1mSQL (2.6ms)[0m   [0mSHOW FIELDS FROM `lists`[0m
+  [4;36;1mSQL (3.7ms)[0m   [0;1mdescribe `lists`[0m
+  [4;35;1mSQL (1.3ms)[0m   [0mSHOW KEYS FROM `lists`[0m
+  [4;36;1mSQL (2.8ms)[0m   [0;1mSHOW FIELDS FROM `recordings`[0m
+  [4;35;1mSQL (4.2ms)[0m   [0mdescribe `recordings`[0m
+  [4;36;1mSQL (1.7ms)[0m   [0;1mSHOW KEYS FROM `recordings`[0m
+  [4;35;1mSQL (4.2ms)[0m   [0mSHOW FIELDS FROM `scripts`[0m
+  [4;36;1mSQL (3.9ms)[0m   [0;1mdescribe `scripts`[0m
+  [4;35;1mSQL (1.1ms)[0m   [0mSHOW KEYS FROM `scripts`[0m
+  [4;36;1mSQL (2.8ms)[0m   [0;1mSHOW FIELDS FROM `seos`[0m
+  [4;35;1mSQL (3.7ms)[0m   [0mdescribe `seos`[0m
+  [4;36;1mSQL (1.1ms)[0m   [0;1mSHOW KEYS FROM `seos`[0m
+  [4;35;1mSQL (3.9ms)[0m   [0mSHOW FIELDS FROM `users`[0m
+  [4;36;1mSQL (3.8ms)[0m   [0;1mdescribe `users`[0m
+  [4;35;1mSQL (0.9ms)[0m   [0mSHOW KEYS FROM `users`[0m
+  [4;36;1mSQL (2.4ms)[0m   [0;1mSHOW FIELDS FROM `voter_lists`[0m
+  [4;35;1mSQL (3.6ms)[0m   [0mdescribe `voter_lists`[0m
+  [4;36;1mSQL (0.9ms)[0m   [0;1mSHOW KEYS FROM `voter_lists`[0m
+  [4;35;1mSQL (3.2ms)[0m   [0mSHOW FIELDS FROM `voters`[0m
+  [4;36;1mSQL (4.6ms)[0m   [0;1mdescribe `voters`[0m
+  [4;35;1mSQL (0.9ms)[0m   [0mSHOW KEYS FROM `voters`[0m

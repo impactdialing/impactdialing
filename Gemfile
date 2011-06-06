@@ -1,0 +1,33 @@
+source 'http://rubygems.org'
+
+gem 'rails', '2.3.11'
+
+gem 'will_paginate', '~> 2.3.11'
+gem 'mysql', '~> 2.8.1'
+gem 'memcache-client', '~> 1.8.5', :require => 'memcache'
+gem 'fastercsv', '~> 1.5.4'
+gem "newrelic_rpm", '~> 3.0.1'
+gem 'hoptoad_notifier', '~> 2.3.6'
+gem 'right_aws', '~> 2.1.0'
+gem 'json', '~> 1.5.1'
+gem 'nokogiri', '~> 1.4.4'
+gem "activemerchant", '~> 1.15.0', :require => "active_merchant"
+gem 'i18n'
+
+group :development, :test do
+  gem 'ruby-debug', '~> 0.10.4'
+  gem 'rspec-rails', '~> 1.3.4'
+end
+
+group :development do
+  gem 'wirble', '~> 0.1.3'
+  gem 'hirb', '~> 0.4.5'
+  gem 'interactive_editor', '~> 0.0.8'
+  gem 'mongrel', '~> 1.2.0.pre2'
+end
+
+group :test do
+  gem 'factory_girl', '~> 1.3.3'
+  gem 'rspec', '~> 1.3.1'
+  gem 'rcov', '~> 0.9.9'
+end

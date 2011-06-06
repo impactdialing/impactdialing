@@ -6,8 +6,8 @@ class CreateScripts < ActiveRecord::Migration
       t.boolean :active, :default=>true
       t.integer :user_id
       t.timestamps
-      (1..99).each{|i| 
-        t.string :"keypad_#{i}"
+      (1..99).each{|i|
+        t.blob :"keypad_#{i}"
       }
     end
   end
