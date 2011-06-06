@@ -18,7 +18,7 @@ class ClientController < ApplicationController
   end
 
   def forgot
-    @breadcrumb="Password Recovery"
+    @breadcrumb = "Password Recovery"
     if request.post?
       u = User.find_by_email(params[:email])
       if u.blank?
@@ -31,8 +31,8 @@ class ClientController < ApplicationController
     end
   end
   def user_add
-    @breadcrumb="My Account"
-    @title="My Account"
+    @breadcrumb = "My Account"
+    @title = "My Account"
 
     if session[:user].blank?
       @user = User.new
@@ -41,7 +41,7 @@ class ClientController < ApplicationController
     end
 
     if request.post?
-      old_existing_password=@user.password 
+      old_existing_password = @user.password
       @user.attributes =  params[:user]
       if @user.new_record? && params[:tos].blank?
         flash.now[:error]="You must agree to the terms of service."
@@ -54,14 +54,14 @@ class ClientController < ApplicationController
       if @user.valid?
         @user.save
         @caller = Caller.new
-        @caller.name="Default Caller"
-        @caller.multi_user=true
-        @caller.user_id=@user.id
+        @caller.name = "Default Caller"
+        @caller.multi_user = true
+        @caller.user_id = @user.id
         @caller.save
 
       if Script.find_by_name_and_user_id("Voter ID Example",@user.id)==nil
           @script = Script.new
-          @script.name="Voter ID Example"
+          @script.name = "Voter ID Example"
           @rs={}
           @rs["keypad_1"]="Strong supportive"
           @rs["keypad_2"]="Lean supportive"
@@ -73,50 +73,50 @@ class ClientController < ApplicationController
           @rs["keypad_8"]="Language barrier"
           @rs["keypad_9"]="Wrong number"
       #      @rs.incompletes=["7"].to_json
-          @script.result_set_1=@rs.to_json
+          @script.result_set_1 = @rs.to_json
           @script.incompletes='{"5":[],"6":[],"1":["7"],"7":[],"2":[],"8":[],"3":[],"9":[],"4":[],"10":[]}'
-          @script.name="Political Example Script"
-          @script.note_1="Email"
-          @numResults=1
-          @numNotes=1
+          @script.name = "Political Example Script"
+          @script.note_1 = "Email"
+          @numResults = 1
+          @numNotes = 1
           @script.voter_fields='["CustomID","FirstName","MiddleName","LastName","Suffix","Age","Gender","Email"]'
-           @script.script="Hi, is ___ there?
+           @script.script = "Hi, is ___ there?
 
 My name's ___ and I'm a volunteer with the such-and-such campaign.
 
 I'm voting for such-and-such because...
 
 Can we count on you to vote for such-and-such?"
-            @script.active=1
-            @script.user_id=@user.id
+            @script.active = 1
+            @script.user_id = @user.id
             @script.save
         end
-        
+
         if false && Script.find_by_name_and_user_id("Voter ID Example",@user.id)==nil
           @script = Script.new
-          @script.name="Voter ID Example"
-          @script.keypad_1="Strong supportive"
-          @script.keypad_2="Lean supportive"
-          @script.keypad_3="Undecided"
-          @script.keypad_4="Lean opposed"
-          @script.keypad_5="Strong opposed"
-          @script.keypad_6="Refused"
-          @script.keypad_7="Not home/call back"
-          @script.keypad_8="Language barrier"
-          @script.keypad_9="Wrong number"
-          @script.incompletes=["7"].to_json
-          @script.script="Hi, is ___ there?
+          @script.name = "Voter ID Example"
+          @script.keypad_1 = "Strong supportive"
+          @script.keypad_2 = "Lean supportive"
+          @script.keypad_3 = "Undecided"
+          @script.keypad_4 = "Lean opposed"
+          @script.keypad_5 = "Strong opposed"
+          @script.keypad_6 = "Refused"
+          @script.keypad_7 = "Not home/call back"
+          @script.keypad_8 = "Language barrier"
+          @script.keypad_9 = "Wrong number"
+          @script.incompletes = ["7"].to_json
+          @script.script = "Hi, is ___ there?
 
           My name's ___ and I'm a volunteer with the such-and-such campaign.
 
           I'm voting for such-and-such because...
 
           Can we count on you to vote for such-and-such?"
-          @script.active=1
-          @script.user_id=@user.id
+          @script.active = 1
+          @script.user_id = @user.id
           @script.save
         end
-      
+
         # @script = Script.new
         #       @script.name="GOTV Example"
         #       @script.keypad_1="Will vote early"
@@ -130,15 +130,13 @@ Can we count on you to vote for such-and-such?"
         #       @script.keypad_9="Wrong number"
         #       @script.incompletes=["7"].to_json
         #       @script.script="Hi, I'm a volunteer with the such-and-such campaign.
-        # 
+        #
         #       I'm voting for such-and-such because...
-        # 
+        #
         #       Can we count on you to vote for such-and-such?"
-        #       @script.active=1
-        #       @script.user_id=@user.id
+        #       @script.active = 1
+        #       @script.user_id = @user.id
         #       @script.save
-
-
 
         if false && Script.find_by_name_and_user_id("Fundraising Example",@user.id)==nil
           @script = Script.new
@@ -154,11 +152,11 @@ Can we count on you to vote for such-and-such?"
           @script.incompletes=["7","6"].to_json
           @script.script="Hi, is ___ there?
 
-My name's ___, and I'm calling from the Organization to Make the World Better. 
+My name's ___, and I'm calling from the Organization to Make the World Better.
 
 Will you donate to help our work?"
-          @script.active=1
-          @script.user_id=@user.id
+          @script.active = 1
+          @script.user_id = @user.id
           @script.save
         end
 
@@ -175,15 +173,14 @@ Will you donate to help our work?"
           @script.incompletes=["5","6"].to_json
           @script.script="Hi, is ___ there?
 
-Hi! My name's ___. I'm calling from Widgets, Inc. We have some great new widgets in stock. 
+Hi! My name's ___. I'm calling from Widgets, Inc. We have some great new widgets in stock.
 
 Do you want to buy a widget?"
-          @script.active=1
-          @script.user_id=@user.id
+          @script.active = 1
+          @script.user_id = @user.id
           @script.save
         end
-          
-                      
+
         if session[:user].blank?
           #message = "Your account has been created"
         else
@@ -195,25 +192,24 @@ Do you want to buy a widget?"
       end
     end
 
-
   end
 
   def check_warning
-    text=warning_text
+    text = warning_text
     if !text.blank?
       flash.now[:warning]=text
     end
   end
 
   def check_paid
-    text=unpaid_text
+    text = unpaid_text
     if !text.blank?
       flash.now[:warning]=text
     end
   end
 
   def index
-    @breadcrumb=nil
+    @breadcrumb = nil
   end
 
   def login
@@ -258,7 +254,7 @@ Do you want to buy a widget?"
     if request.post?
       @caller.update_attributes(params[:caller])
       if @caller.valid?
-        @caller.user_id=@user.id
+        @caller.user_id = @user.id
         @caller.save
 
         # add to campaigns with all callers
@@ -280,7 +276,7 @@ Do you want to buy a widget?"
   def caller_delete
     @caller = Caller.find_by_id_and_user_id(params[:id],@user.id)
     if !@caller.blank?
-      @caller.active=false
+      @caller.active = false
       @caller.save
     end
     flash[:notice]="Caller deleted"
@@ -288,16 +284,14 @@ Do you want to buy a widget?"
     return
   end
 
-
   def campaign_delete
     @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id)
     if !@campaign.blank?
-      @campaign.active=false
+      @campaign.active = false
       @campaign.save
     end
     flash[:notice]="Campaign deleted"
     redirect_to :action=>"campaigns"
-    return
   end
 
   def campaigns
@@ -306,19 +300,19 @@ Do you want to buy a widget?"
   end
 
   def campaign_new
-    c = Campaign.new
-    c.user_id=@user.id
+    campaign = Campaign.new
+    campaign.user_id = @user.id
     count = Campaign.find_all_by_user_id(@user.id)
-    c.name="Untitled #{count.length+1}"
+    campaign.name="Untitled #{count.length+1}"
     script = Script.find_by_user_id(@user.id)
-    c.script_id=script.id if script!=nil
-    c.save
+    campaign.script_id = script.id if script!=nil
+    campaign.save
     callers = Caller.find_all_by_user_id_and_active(@user.id,1)
     callers.each do |caller|
-      c.callers << caller
+      campaign.callers << caller
     end
     #flash[:notice]="Campaign created."
-    redirect_to :action=>"campaign_view", :id=>c.id
+    redirect_to :action=>"campaign_view", :id=>campaign.id
     return
   end
 
@@ -335,10 +329,10 @@ Do you want to buy a widget?"
 
       if voter.blank?
         voter = Voter.new
-        voter.Phone=num
-        voter.campaign_id=params[:id].to_i
-        voter.voter_list_id=list.id
-        voter.user_id=campaign.user_id
+        voter.Phone = num
+        voter.campaign_id = params[:id].to_i
+        voter.voter_list_id = list.id
+        voter.user_id = campaign.user_id
         voter.save
       end
       require "hpricot"
@@ -347,29 +341,29 @@ Do you want to buy a widget?"
       voter.save
       t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
       if !campaign.caller_id.blank? && campaign.caller_id_verified
-        caller_num=campaign.caller_id
+        caller_num = campaign.caller_id
       else
-        caller_num=APP_NUMBER
+        caller_num = APP_NUMBER
       end
       if campaign.predective_type=="preview"
-        a=t.call("POST", "Calls", {'Timeout'=>"20", 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}"})
+        a = t.call("POST", "Calls", {'Timeout'=>"20", 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}"})
       elsif campaign.use_answering
-        a=t.call("POST", "Calls", {'Timeout'=>"25", 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}", 'IfMachine'=>'Hangup'})
+        a = t.call("POST", "Calls", {'Timeout'=>"25", 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}", 'IfMachine'=>'Hangup'})
       else
-        a=t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}"})
+        a = t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}"})
       end
       require 'rubygems'
       require 'hpricot'
       @doc = Hpricot::XML(a)
       c = CallAttempt.new
-      c.dialer_mode=campaign.predective_type
+      c.dialer_mode = campaign.predective_type
       c.sid=(@doc/"Sid").inner_html
-      c.voter_id=voter.id
-      c.campaign_id=campaign.id
+      c.voter_id = voter.id
+      c.campaign_id = campaign.id
       c.status="Call in progress"
       c.save
-      voter.last_call_attempt_id=c.id
-      voter.last_call_attempt_time=Time.now
+      voter.last_call_attempt_id = c.id
+      voter.last_call_attempt_time = Time.now
       voter.save
 
       flash[:notice]="Calling you now!"
@@ -396,28 +390,28 @@ Do you want to buy a widget?"
         if !@campaign.caller_id_verified || (!@campaign.caller_id.blank? && last_caller_id != @campaign.caller_id)
           #verify this callerid
           t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-          a=t.call("POST", "OutgoingCallerIds", {'PhoneNumber'=>@campaign.caller_id, 'FriendlyName' => "Campaign #{@campaign.id}"})
+          a = t.call("POST", "OutgoingCallerIds", {'PhoneNumber'=>@campaign.caller_id, 'FriendlyName' => "Campaign #{@campaign.id}"})
           require 'rubygems'
           require 'hpricot'
           @doc = Hpricot::XML(a)
           puts @doc
           code= (@doc/"ValidationCode").inner_html
         end
-        @campaign.user_id=@user.id
+        @campaign.user_id = @user.id
         if @campaign.script_id.blank?
           s = Script.find_by_user_id_and_active(@user.id,1)
-          @campaign.script_id=s.id if s!=nil
+          @campaign.script_id = s.id if s!=nil
         end
         @campaign.save
         if params[:listsSent]
           @campaign.voter_lists.each do |l|
-            l.enabled=false
+            l.enabled = false
             l.save
           end
           if !params[:voter_list_ids].blank?
             params[:voter_list_ids].each do |lid|
               l = VoterList.find(lid)
-              l.enabled=true
+              l.enabled = true
               l.save
             end
           end
@@ -449,7 +443,7 @@ Do you want to buy a widget?"
         flash.now[:error]="No name entered"
         return
       end
-      
+
       name =  params[:upload]['datafile'].original_filename
       extension = name.split(".").last
       if extension!='wav' &&  extension!='mp3' && extension!='aif' && extension!='aiff'
@@ -464,8 +458,8 @@ Do you want to buy a widget?"
         return
       end
       r = Recording.new
-      r.user_id=@user.id
-      r.name=params[:filename]
+      r.user_id = @user.id
+      r.name = params[:filename]
       r.save
       save_s3(path,r)
       flash[:notice]="Recording saved."
@@ -497,39 +491,39 @@ Do you want to buy a widget?"
     recording.save
     awsurl
   end
-  
+
   def robo_session_start
-    @campaign=Campaign.find(params[:campaign_id])
-    @caller=Caller.find(params[:caller_id])
+    @campaign = Campaign.find(params[:campaign_id])
+    @caller = Caller.find(params[:caller_id])
     @session = CallerSession.new
     @session.caller_number = phone_format("Robo")
-    @session.caller_id=@caller.id
-    @session.campaign_id=@campaign.id
+    @session.caller_id = @caller.id
+    @session.campaign_id = @campaign.id
     @session.save
-    @session.starttime=Time.now
-    @session.available_for_call=true
-    @session.on_call=true
+    @session.starttime = Time.now
+    @session.available_for_call = true
+    @session.on_call = true
     @session.save
     flash[:notice]="Robo session started"
     redirect_to :action=>"campaign_view", :id=>params[:campaign_id]
   end
-  
+
   def robo_session_end
     require 'net/http'
     require 'net/https'
     require 'uri'
-    
+
     sessions = CallerSession.find_all_by_caller_id_and_on_call(params[:caller_id],true)
     sessions.each do |session|
-      session.endtime=Time.now
-      session.available_for_call=false
-      session.on_call=false
+      session.endtime = Time.now
+      session.available_for_call = false
+      session.on_call = false
       session.save
     end
     flash[:notice]="Robo session ended"
     redirect_to :action=>"campaign_view", :id=>params[:campaign_id]
   end
-  
+
   def billing
     @breadcrumb="Billing"
     @account = @user.account || Account.new
@@ -543,11 +537,11 @@ Do you want to buy a widget?"
     end
 
     if request.post?
-      @account.user_id=@user.id
+      @account.user_id = @user.id
       @account.attributes = params[:account]
 
       if @account.cc==@tempcc
-        @account.cc=@oldcc
+        @account.cc = @oldcc
       else
         if @account.cc.length > 4
           @account.last4 = @account.cc[@account.cc.length-4,4]
@@ -556,7 +550,6 @@ Do you want to buy a widget?"
         end
         @account.encyrpt_cc
       end
-      
 
       # test an auth to make sure this card is good.
       creditcard = ActiveMerchant::Billing::CreditCard.new(
@@ -569,9 +562,6 @@ Do you want to buy a widget?"
         :verification_value => params[:code]
         )
 
-
-
-
       if !creditcard.valid?
         if creditcard.expired?
           flash[:error]="Invalid card expiration, please try again"
@@ -582,25 +572,24 @@ Do you want to buy a widget?"
         end
         return
       end
-      
-#      p = Payment.authorize(1, creditcard, {:ip=>getIP, :zip=>@account.zip, :billing_address => @account.address1}) 
-#      p.user_id=@user.id
+
+#      p = Payment.authorize(1, creditcard, {:ip=>getIP, :zip=>@account.zip, :billing_address => @account.address1})
+#      p.user_id = @user.id
 #      p.save
 #      if !p.success
 #        flash[:notice]="We had a problem authorizing that credit card.  Please try again"
 #        return
-#      end      
+#      end
 
       billing_address = { :name => "#{@user.fname} #{@user.lname}", :address1 => @account.address1 , :zip =>@account.zip}
       options = {:address => {}, :address1 => billing_address, :billing_address => billing_address, :ip=>"127.0.0.1", :order_id=>""}
       response = BILLING_GW.authorize(1, creditcard,options)
       logger.info response.inspect
 
-
       if response.success?
         flash[:notice]="Account activated."
         @account.save
-        @user.paid=1
+        @user.paid = 1
         @user.save
         redirect_to :action=>"index"
         return
@@ -608,11 +597,10 @@ Do you want to buy a widget?"
         flash[:error]="There was a problem validating your credit card.  Please email <a href='mailto:info@impactdialing.com'>info@impactdialing.com</a> for further support."
       end
 
-    end    
+    end
 
   end
-  
-  
+
   def campaign_view
     check_warning
     @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id)
@@ -628,9 +616,6 @@ Do you want to buy a widget?"
     @isAdmin = @user.admin
     @show_voter_buttons = @user.show_voter_buttons
 #    render :layout=>"campaign_view"
-
-
-
   end
 
   def campaign_caller_id_verified
@@ -652,7 +637,7 @@ Do you want to buy a widget?"
     @campaign.end_all_calls(TWILIO_ACCOUNT,TWILIO_AUTH,APP_URL)
     @sessions = CallerSession.find_all_by_campaign_id_and_on_call(params[:id],1)
     @sessions.each do |sess|
-      sess.on_call=false
+      sess.on_call = false
       sess.endtime = Time.now if sess.endtime==nil
       sess.save
     end
@@ -664,7 +649,7 @@ Do you want to buy a widget?"
   def voter_upload
     @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id)
     @breadcrumb=[{"Campaigns"=>"/client/campaigns"},{@campaign.name=>"/client/campaign_view/#{@campaign.id}"}, "Upload Phone Numbers"]
-    @lists=VoterList.find_all_by_user_id_and_active(@user.id,true, :order=>"name")
+    @lists = VoterList.find_all_by_user_id_and_active(@user.id,true, :order=>"name")
     if (request.post?)
       if params[:upload].blank?
         flash.now[:error]="You must select a file to upload"
@@ -678,9 +663,9 @@ Do you want to buy a widget?"
         return
       end
       list = VoterList.new
-      list.campaign_id=@campaign.id
-      list.name=params[:list_name]
-      list.user_id=@user.id
+      list.campaign_id = @campaign.id
+      list.name = params[:list_name]
+      list.user_id = @user.id
       list.save
 
       # if params[:voterList]=="0" && params[:new_list_name].blank?
@@ -695,9 +680,9 @@ Do you want to buy a widget?"
       # end
       # if params[:voterList]=="0"
       #   list = VoterList.new
-      #   list.campaign_id=@campaign.id
-      #   list.name=params[:new_list_name]
-      #   list.user_id=@user.id
+      #   list.campaign_id = @campaign.id
+      #   list.name = params[:new_list_name]
+      #   list.user_id = @user.id
       #   list.save
       # else
       #   list = VoterList.find(params[:voterList])
@@ -715,7 +700,7 @@ Do you want to buy a widget?"
   def voter_delete
     @voter = Voter.find_by_id_and_user_id(params[:id],@user.id)
     if !@voter.blank?
-      @voter.active=false
+      @voter.active = false
       @voter.save
     end
     flash[:notice]="Voter deleted"
@@ -745,17 +730,17 @@ Do you want to buy a widget?"
       end
       if params[:voterList]=="0"
         list = VoterList.new
-        list.campaign_id=@campaign.id
-        list.name=params[:new_list_name]
-        list.user_id=@user.id
+        list.campaign_id = @campaign.id
+        list.name = params[:new_list_name]
+        list.user_id = @user.id
         list.save
       else
         list = VoterList.find(params[:voterList])
       end
 
-      @voter.voter_list_id=list.id
-      @voter.user_id=@user.id
-      @voter.campaign_id=@campaign.id
+      @voter.voter_list_id = list.id
+      @voter.user_id = @user.id
+      @voter.campaign_id = @campaign.id
       @voter.update_attributes(params[:voter])
       if @voter.valid?
         @voter.save
@@ -788,18 +773,18 @@ Do you want to buy a widget?"
       @breadcrumb=[{"Scripts"=>"/client/scripts"},"Edit Script"]
     end
     @script = Script.find_by_id_and_user_id(params[:id],@user.id)
-    @numResults=0
+    @numResults = 0
     if @script!=nil
       for i in 1..NUM_RESULT_FIELDS do
         @numResults+=1 if !eval("@script.result_set_#{i}").blank?
       end
-      @numNotes=0
+      @numNotes = 0
       for i in 1..NUM_RESULT_FIELDS do
         @numNotes+=1 if !eval("@script.note_#{i}").blank?
       end
     else
-      @numResults=1
-      @numNotes=0
+      @numResults = 1
+      @numNotes = 0
     end
     if @script==nil
       @script = Script.new
@@ -814,20 +799,20 @@ Do you want to buy a widget?"
 #       @rs["keypad_8"]="Language barrier"
 #       @rs["keypad_9"]="Wrong number"
 # #      @rs.incompletes=["7"].to_json
-#       @script.result_set_1=@rs.to_json
+#       @script.result_set_1 = @rs.to_json
 #       @script.incompletes='{"5":[],"6":[],"1":["7"],"7":[],"2":[],"8":[],"3":[],"9":[],"4":[],"10":[]}'
-#       @script.name="Political Example Script"
-       @script.name="Untitled Script"
-#       @script.note_1="Email"
-#       @numResults=1
-#       @numNotes=1
+#       @script.name = "Political Example Script"
+       @script.name = "Untitled Script"
+#       @script.note_1 = "Email"
+#       @numResults = 1
+#       @numNotes = 1
 #       @script.voter_fields='["CustomID","FirstName","MiddleName","LastName","Suffix","Age","Gender","Email"]'
-#      
+#
     end
     if @script.new_record?
-      @label="New script"
+      @label = "New script"
     else
-      @label="Add script"
+      @label = "Add script"
     end
     if @script.incompletes!=nil
       begin
@@ -857,21 +842,21 @@ Do you want to buy a widget?"
         thisResults={}
 
         for i in 1..99 do
-          thisKeypadval=eval("params[:keypad_#{r}_#{i}]" )
+          thisKeypadval = eval("params[:keypad_#{r}_#{i}]" )
           if !thisKeypadval.blank? && !isnumber(thisKeypadval)
             flash.now[:error]= "Keypad value for call results #{r} entered '#{thisKeypadval}' must be numeric"
             return
           end
         end
-        
+
         for i in 1..99 do
           #@script.attributes = { "keypad_#{r}_#{i}" => nil }
           thisResults["keypad_#{i}"] = nil
         end
 
         for i in 1..99 do
-          thisResult=eval("params[:text_#{r}_#{i}]")
-          thisKeypadval=eval("params[:keypad_#{r}_#{i}]" )
+          thisResult = eval("params[:text_#{r}_#{i}]")
+          thisKeypadval = eval("params[:keypad_#{r}_#{i}]" )
           if !thisResult.blank? && !thisKeypadval.blank?
             #@script.attributes = { "keypad_#{r}_#{thisKeypadval}" => thisResult }
             thisResults["keypad_#{i}"] =  thisResult
@@ -884,39 +869,38 @@ Do you want to buy a widget?"
         logger.info "Done with #{r}: #{thisResults.inspect}"
         @script.attributes =   { "result_set_#{r}" => thisResults.to_json }
       end
-      
+
       for i in 1..NUM_RESULT_FIELDS do
         @script.attributes = { "note_#{i}" => nil }
-        thisNote=eval("params[:note_#{i}]")
+        thisNote = eval("params[:note_#{i}]")
         @script.attributes = { "note_#{i}" => thisNote } if !thisNote.blank?
       end
 
       all_incompletes={}
       for i in 1..NUM_RESULT_FIELDS do
-        this_incomplete=eval("params[:incomplete_#{i}_]")
+        this_incomplete = eval("params[:incomplete_#{i}_]")
         if this_incomplete.nil?
           all_incompletes[i]=[]
         else
           all_incompletes[i]=this_incomplete
         end
       end
-      @script.incompletes=all_incompletes.to_json
+      @script.incompletes = all_incompletes.to_json
 
-        
       if @script.valid?
         # if params[:incomplete]
-        #   @script.incompletes=params[:incomplete].to_json
+        #   @script.incompletes = params[:incomplete].to_json
         # else
-        #   @script.incompletes=nil
+        #   @script.incompletes = nil
         # end
 
         if params[:voter_field]
-          @script.voter_fields=params[:voter_field].to_json
+          @script.voter_fields = params[:voter_field].to_json
         else
-          @script.voter_fields=nil
+          @script.voter_fields = nil
         end
-        
-        @script.user_id=@user.id
+
+        @script.user_id = @user.id
         @script.save
         flash[:notice]="Script saved"
         redirect_to :action=>"scripts"
@@ -936,13 +920,13 @@ Do you want to buy a widget?"
 
   def reports
     if params[:id].blank?
-      @breadcrumb="Reports"
+      @breadcrumb = "Reports"
     else
       @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id)
       @breadcrumb=[{"Reports"=>"/client/reports"},@campaign.name]
     end
   end
-  
+
   def test
     if params[:id]=="drop_all_caller"
       c = Campaign.find(38)
@@ -952,18 +936,18 @@ Do you want to buy a widget?"
       flash[:notice]="5 Test callers added"
       (1..5).each do |i|
         t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-        a=t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => APP_NUMBER, 'Called' => TEST_CALLER_NUMBER, 'Url'=>"#{APP_URL}/callin?test=1"})
+        a = t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => APP_NUMBER, 'Called' => TEST_CALLER_NUMBER, 'Url'=>"#{APP_URL}/callin?test=1"})
       end
     elsif params[:id]=="add_caller_15"
       flash[:notice]="15 Test callers added"
       (1..15).each do |i|
         t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-        a=t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => APP_NUMBER, 'Called' => TEST_CALLER_NUMBER, 'Url'=>"#{APP_URL}/callin?test=1"})
+        a = t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => APP_NUMBER, 'Called' => TEST_CALLER_NUMBER, 'Url'=>"#{APP_URL}/callin?test=1"})
       end
     elsif params[:id]=="add_caller"
       flash[:notice]="Test caller added"
       t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-      a=t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => APP_NUMBER, 'Called' => TEST_CALLER_NUMBER, 'Url'=>"#{APP_URL}/callin?test=1"})
+      a = t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => APP_NUMBER, 'Called' => TEST_CALLER_NUMBER, 'Url'=>"#{APP_URL}/callin?test=1"})
     end
     redirect_to :action=>"report_realtime", :id=>"38"
   end
@@ -971,7 +955,7 @@ Do you want to buy a widget?"
   def report_realtime
     check_warning
     if params[:id].blank?
-      @breadcrumb="Reports"
+      @breadcrumb = "Reports"
     else
       @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
       if @campaign.blank?
@@ -983,7 +967,6 @@ Do you want to buy a widget?"
     #    require "#{RAILS_ROOT}/app/models/caller_session.rb"
     #    require "#{RAILS_ROOT}/app/models/caller.rb"
   end
-
 
   def report_realtime_new
     check_warning
@@ -1026,9 +1009,8 @@ Do you want to buy a widget?"
       return
     end
 
-
     @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Overview Report"]
-    sql="#select distinct status from call_attempts
+    sql = "#select distinct status from call_attempts
 
     select
     count(*) as cnt,
@@ -1083,14 +1065,14 @@ Do you want to buy a widget?"
           return
         end
         if params[:type]=="1"
-          extra="and result is not null"
+          extra = "and result is not null"
         end
 
         @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Answereds Call Report"]
 
         set_report_date_range
 
-        sql="
+        sql = "
         SELECT count(*) as cnt, result
         FROM call_attempts
         where campaign_id=#{@campaign.id}
@@ -1109,7 +1091,6 @@ Do you want to buy a widget?"
         @voters_to_call = @campaign.voters_count("not called",false)
         @voters_called = @campaign.voters_called
         @totalvoters = @voters_to_call.length + @voters_called.length
-
 
       end
 
@@ -1134,7 +1115,7 @@ Do you want to buy a widget?"
           return
         end
         if params[:type]=="1"
-          extra="and result is not null"
+          extra = "and result is not null"
         end
 
         @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Caller Report"]
@@ -1158,7 +1139,7 @@ Do you want to buy a widget?"
           return
         end
         if params[:type]=="1"
-          extra="and result is not null"
+          extra = "and result is not null"
         end
 
         @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Caller Report"]
@@ -1180,7 +1161,7 @@ Do you want to buy a widget?"
           return
         end
         if params[:type]=="1"
-          extra="and result is not null"
+          extra = "and result is not null"
         end
 
         @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Caller Report"]
@@ -1200,8 +1181,8 @@ Do you want to buy a widget?"
 
         if params[:download]=="1"
           #      attempts = CallAttempt.find_all_by_campaign_id(@campaign.id)
-          
-          subsql="select voter_id from call_attempts ca 
+
+          subsql = "select voter_id from call_attempts ca
            join voters v on v.id=ca.voter_id
            where ca.campaign_id=#{@campaign.id} and last_call_attempt_id=ca.id
            and ca.created_at > '#{@from_date.strftime("%Y-%m-%d")}'
@@ -1217,8 +1198,8 @@ Do you want to buy a widget?"
           else
             voter_subq = voter_ids.join(",")
           end
-          
-          sql="select
+
+          sql = "select
           ca.result, ca.result_digit , v.Phone, v.CustomID, v.LastName, v.FirstName, v.MiddleName, v.Suffix, v.Email, c.pin, c.name,  c.email, ca.status, ca.connecttime, ca.call_end, v.last_call_attempt_id=ca.id as final , ca.result_json, f.CustomID, f.LastName, f.FirstName, f.MiddleName, f.Suffix, f.Email, family_id_answered
           from call_attempts ca
           join voters v on v.id=ca.voter_id
@@ -1237,8 +1218,8 @@ Do you want to buy a widget?"
               json_fields = YAML.load(a[16]).keys
             end
           end
-          attempts.data_seek(0) 
-          
+          attempts.data_seek(0)
+
           csv_string = FasterCSV.generate do |csv|
 #            csv << ["result", "result digit" , "voter phone", "voter id", "voter last", "voter first", "voter middle", "voter suffix", "voter email","caller pin", "caller name",  "caller email","status", "call start", "call end", "number attempts"]
             #csv << ["id", "LastName", "FirstName", "MiddleName", "Suffix", "Phone", "Result", "Caller Name", "Status", "Call Start", "Call End", "Number Calls"] + json_fields #+ ["fam_id", "fam_LastName", "fam_FirstName", "fam_MiddleName", "fam_Suffix", "fam_Email"]
@@ -1274,9 +1255,9 @@ Do you want to buy a widget?"
                 else
                   #fam
                   #logger.info "fam: #{a[23]}"
-                  csv << [a[17],a[18],a[19],a[20],a[7],a[2],a[10],a[12],a[13],a[14],num_call_attempts]  + json_to_add 
+                  csv << [a[17],a[18],a[19],a[20],a[7],a[2],a[10],a[12],a[13],a[14],num_call_attempts]  + json_to_add
                 end
-               
+
                 num_call_attempts=0
               end
             end
@@ -1290,7 +1271,7 @@ Do you want to buy a widget?"
       def report_real
         check_warning
         if params[:id].blank?
-          @breadcrumb="Reports"
+          @breadcrumb = "Reports"
         else
           @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
           if @campaign.blank?
@@ -1339,18 +1320,18 @@ Do you want to buy a widget?"
         @to_date = DateTime.now if @to_date==nil
 
       end
-      
+
       def monitor
         @logged_in_campaigns = Campaign.all(:conditions=>"id in (select distinct campaign_id from caller_sessions where on_call=1 and user_id=#{@user.id})")
 #        @logged_in_callers = CallerSession.find_all_by_on_call(1)
 #        @ready_to_dial = CallAttempt.find_all_by_status("Call ready to dial", :conditions=>"call_end is null")
       end
-      
+
       def eavesdrop_call
         t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-        # a=t.call("POST", "Calls/#{caller.sid}", {'CurrentUrl'=>"#{appurl}/callin/callerEndCall?session=#{caller.id}"})
+        # a = t.call("POST", "Calls/#{caller.sid}", {'CurrentUrl'=>"#{appurl}/callin/callerEndCall?session=#{caller.id}"})
         session=CallerSession.find(params[:session_id])
-        a=t.call("POST", "Calls", {'Timeout'=>"20", 'Caller' => session.campaign.caller_id, 'Called' => params[:num], 'Url'=>"#{APP_URL}/callin/monitorEavesdrop?session=#{session.id}&type=#{params[:type]}"})
+        a = t.call("POST", "Calls", {'Timeout'=>"20", 'Caller' => session.campaign.caller_id, 'Called' => params[:num], 'Url'=>"#{APP_URL}/callin/monitorEavesdrop?session=#{session.id}&type=#{params[:type]}"})
         render :text=>""
       end
 

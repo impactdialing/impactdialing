@@ -12,7 +12,8 @@ gem 'right_aws', '~> 2.1.0'
 gem 'json', '~> 1.5.1'
 gem 'nokogiri', '~> 1.4.4'
 gem "activemerchant", '~> 1.15.0', :require => "active_merchant"
-gem 'i18n'
+gem 'i18n', '~> 0.4.2'
+gem 'hpricot', '~> 0.8.4'
 
 group :development, :test do
   gem 'ruby-debug', '~> 0.10.4'

@@ -52,3 +52,8 @@ Spec::Runner.configure do |config|
   #
   # For more information take a look at Spec::Runner::Configuration and Spec::Runner
 end
+
+def login_as(user)
+  @controller.stub!(:current_user).and_return(user)
+  session[:user] = user.id
+end

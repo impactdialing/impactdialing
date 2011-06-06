@@ -7,8 +7,7 @@ class ApplicationController < ActionController::Base
   before_filter :controllerName#, :preload_models
   # Scrub sensitive parameters from your log
   filter_parameter_logging :password, :card_number, :card_verification, :cc, :code
-  helper_method :phone_format, :phone_number_valid  
-  
+  helper_method :phone_format, :phone_number_valid
 
   def redirect_to_ssl
      return true if local_request? || RAILS_ENV == 'test' || RAILS_ENV == 'development' || action_name=="monitor"
@@ -20,11 +19,11 @@ class ApplicationController < ActionController::Base
        redirect_to "https://admin.impactdialing.com/#{@cont}/#{@act}/#{params[:id]}" unless (ssl? or local_request?)
      end
      flash.keep
-     return false  
+     return false
   end
 
   def ssl?
-        request.env['HTTPS'] == 'on' || request.env['HTTP_X_FORWARDED_PROTO'] == 'https'
+    request.env['HTTPS'] == 'on' || request.env['HTTP_X_FORWARDED_PROTO'] == 'https'
   end
 
   def warning_text
@@ -45,7 +44,7 @@ class ApplicationController < ActionController::Base
       end
     warning
   end
-  
+
   def unpaid_text
     return "" if @user==nil
     warning=""
@@ -55,19 +54,18 @@ class ApplicationController < ActionController::Base
       warning= "Your account is not funded and cannot make calls. <a href=\"/client/billing\">Click here to activate your account.</a>"
     end
     warning
-  end  
+  end
 
   def preload_models
     CallAttempt
     CallerSession
     Caller
   end
-  
+
   def controllerName
     @controllerName = self.class.controller_path
     @actionName = action_name
   end
-
 
   def phone_format(str)
     return "" if str.blank?
@@ -96,7 +94,7 @@ class ApplicationController < ActionController::Base
   end
 
   def cache_set(key)
-    output = yield      
+    output = yield
     if CACHE.get(key)==nil
        CACHE.add(key, output)
      else
@@ -106,20 +104,18 @@ class ApplicationController < ActionController::Base
 
   def isnumber(string)
      string.to_i.to_s == string ? true : false
-  end  
-  
-   def generate_session_key
-      secure_digest(Time.now, (1..10).map{ rand.to_s })
-   end
+  end
 
+  def generate_session_key
+    secure_digest(Time.now, (1..10).map{ rand.to_s })
+  end
 
   def secure_digest(*args)
     Digest::SHA1.hexdigest(args.flatten.join('--'))
   end
-  
 
   def format_number_to_phone(number, options = {})
-     number       = number.to_s.strip unless number.nil?
+    number       = number.to_s.strip unless number.nil?
     options      = options.symbolize_keys
     area_code    = options[:area_code] || nil
     delimiter    = options[:delimiter] || "-"
@@ -144,17 +140,16 @@ class ApplicationController < ActionController::Base
 
   def send_rt(key, post_data)
     # msg_url="https://#{TWILIO_AUTH}:x@#{TWILIO_ACCOUNT}.twiliort.com/#{key}"
-      http = Net::HTTP.new("#{TWILIO_ACCOUNT}.twiliort.com", 443)
-      req = Net::HTTP::Post.new("/#{key}")
-      http.use_ssl = true
-      req.basic_auth TWILIO_AUTH, "x"
-      req.set_form_data(post_data, ';')
-      response = http.request(req)
-      logger.info "SENT RT #{key} #{post_data}: #{response.body}"
-      return response.body
+    http = Net::HTTP.new("#{TWILIO_ACCOUNT}.twiliort.com", 443)
+    req = Net::HTTP::Post.new("/#{key}")
+    http.use_ssl = true
+    req.basic_auth TWILIO_AUTH, "x"
+    req.set_form_data(post_data, ';')
+    response = http.request(req)
+    logger.info "SENT RT #{key} #{post_data}: #{response.body}"
+    return response.body
   end
-  
-  
+
   def handle_disposition_submit
     #@session @clean_digit @caller @campaign
     if @session.voter_in_progress!=nil
@@ -208,7 +203,7 @@ class ApplicationController < ActionController::Base
       voter.save
     end
 
-#    @session = CallerSession.find(params[:session]) 
+#    @session = CallerSession.find(params[:session])
     if @session.endtime==nil
       @session.available_for_call=true
       @session.voter_in_progress=nil
@@ -216,6 +211,5 @@ class ApplicationController < ActionController::Base
       @session.save
     end
   end
-
 
 end
