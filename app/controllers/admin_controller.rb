@@ -3,7 +3,7 @@ class AdminController < ApplicationController
   USER_NAME, PASSWORD = "impact", "Mb<3Ad4F@2tCallz"
   before_filter :authenticate
   require "nokogiri"
-  
+
   def status
     if !params[:end].blank?
       cs = CallerSession.find(params[:end])
@@ -31,17 +31,17 @@ class AdminController < ApplicationController
     @queued=tcalls.first.attributes["total"].value if tcalls.length>0
 
   end
-  
+
   def index
-    
+
   end
-  
+
   def report
 #    @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
     set_report_date_range
     sql="select distinct ca.campaign_id , name, email, c.user_id from caller_sessions ca
-      join campaigns c on c.id=ca.campaign_id 
-      join users u on u.id=c.user_id where 
+      join campaigns c on c.id=ca.campaign_id
+      join users u on u.id=c.user_id where
       ca.created_at > '#{@from_date.strftime("%Y-%m-%d")}'
       and ca.created_at  < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'
     "
@@ -51,18 +51,18 @@ class AdminController < ApplicationController
     @campaigns.each do |c|
       calls_sql="
       select count(*),  sum(ceil(tDuration/60)), sum(tPrice)
-      from call_attempts ca 
-      where 
+      from call_attempts ca
+      where
       ca.created_at > '#{@from_date.strftime("%Y-%m-%d")}'
       and ca.created_at  < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'
       and ca.campaign_id=#{c[0]}
       group by ca.campaign_id"
       session_sql="
       select count(*),  sum(ceil(tDuration/60)), sum(tPrice)
-      from caller_sessions ca 
-      join campaigns c on c.id=ca.campaign_id 
-      join users u on u.id=c.user_id 
-      where 
+      from caller_sessions ca
+      join campaigns c on c.id=ca.campaign_id
+      join users u on u.id=c.user_id
+      where
       ca.created_at > '#{@from_date.strftime("%Y-%m-%d")}'
       and ca.created_at  < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'
       and ca.campaign_id=#{c[0]}
@@ -75,7 +75,7 @@ class AdminController < ApplicationController
       result["campaign"]=c
       @output<< result
     end
-    
+
     render :layout=>"client"
   end
 
@@ -87,7 +87,7 @@ class AdminController < ApplicationController
         @to_date = Date.parse params[:to_date]
       else
         @from_date = 1.month.ago
-        @to_date = DateTime.now 
+        @to_date = DateTime.now
       end
     rescue
       #just use the defaults below
@@ -97,11 +97,11 @@ class AdminController < ApplicationController
     @to_date = DateTime.now if @to_date==nil
 
   end
-    
+
   def users
     @users = User.all
   end
-  
+
   def toggle_paid
     user = User.find(params[:id])
     if user.paid==true
@@ -112,12 +112,12 @@ class AdminController < ApplicationController
     user.save
     redirect_to :action=>"users"
   end
-  
+
   def login
     session[:user]=params[:id]
     redirect_to :controller=>"client", :action=>"index"
   end
-  
+
   def user
     @user = User.new
     if request.post?
@@ -162,9 +162,9 @@ Can we count on you to vote for such-and-such?"
         @script.keypad_9="Wrong number"
         @script.incompletes=["7"].to_json
         @script.script="Hi, I'm a volunteer with the such-and-such campaign.
-        
+
 I'm voting for such-and-such because...
-        
+
 Can we count on you to vote for such-and-such?"
         @script.active=1
         @script.user_id=@user.id
@@ -174,9 +174,9 @@ Can we count on you to vote for such-and-such?"
       end
     end
   end
-  
+
     def cms
-      @version = session[:cms_version] 
+      @version = session[:cms_version]
       @keys = Seo.find(:all).map{ |i| i.crmkey }.uniq
       @keys.delete_if {|x| x == nil}
       @keys.sort!
@@ -195,8 +195,8 @@ Can we count on you to vote for such-and-such?"
         redirect_to :action=>"cms"
       end
     end
-    
-    
+
+
     def edit_cms
       @seo = Seo.new
       @seoold = Seo.find(params[:id])
@@ -216,7 +216,7 @@ Can we count on you to vote for such-and-such?"
         return
       end
      end
-     
+
     def pick_version
       if request.post?
         if params[:v]
@@ -242,14 +242,14 @@ Can we count on you to vote for such-and-such?"
             redirect_to :action=>"cms"
           end
         end
-      end    
+      end
       @versions = Seo.find(:all).map{ |i| i.version }.uniq
     end
-    
+
     def robo_log_parse
       counter = 1
       out=[]
-      f = File.new(File.join(RAILS_ROOT, 'result_combined.txt')) 
+      f = File.new(File.join(RAILS_ROOT, 'result_combined.txt'))
       while (line = f.gets)
         hash = eval(line.gsub("Parameters:", "").strip)
         puts "#{counter}: #{hash["attempt"]}"
@@ -291,7 +291,7 @@ Can we count on you to vote for such-and-such?"
     end
   private
    def authenticate
-     authenticate_or_request_with_http_basic(self.class.controller_path) do |user_name, password| 
+     authenticate_or_request_with_http_basic(self.class.controller_path) do |user_name, password|
        user_name == USER_NAME && password == PASSWORD
      end
   end
