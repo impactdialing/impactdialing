@@ -43,6 +43,12 @@ ActionController::Routing::Routes.draw do |map|
   map.connect '/pricing', :controller=>"home", :action=>"pricing"
   map.connect '/contact', :controller=>"home", :action=>"contact"
   map.connect '/homecss/css/style.css', :controller=>"home", :action=>"homecss"
+  map.namespace 'admin' do |admin|
+    admin.resources :campaigns, :only => [:index] do |campaign|
+      campaign.restore '/restore', :controller => 'campaigns', :action => 'restore', :conditions => { :method => :put }
+    end
+  end
+
   map.connect 'admin/:action/:id', :controller=>"admin"
   map.connect 'admin/:action', :controller=>"admin"
   map.connect ':controller/:action/:id'
