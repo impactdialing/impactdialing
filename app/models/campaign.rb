@@ -8,6 +8,8 @@ class Campaign < ActiveRecord::Base
   belongs_to :script
   belongs_to :user
   belongs_to :recording
+
+  named_scope :by_updated, lambda { { :order => ['updated_at desc'] } }
   cattr_reader :per_page
   @@per_page = 25
 
@@ -27,7 +29,7 @@ class Campaign < ActiveRecord::Base
       require 'hpricot'
       begin
         @doc = Hpricot::XML(a)
-        code= (@doc/"Sid").inner_html
+        code = (@doc/"Sid").inner_html
         if code.blank?
           self.caller_id_verified=false
         else
@@ -52,7 +54,6 @@ class Campaign < ActiveRecord::Base
   def before_save
     #check_valid_caller_id if self.caller_id_changed?
     check_valid_caller_id
-
   end
 
   def recent_attempts(mins=10)
