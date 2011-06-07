@@ -2,6 +2,10 @@ class Caller < ActiveRecord::Base
   validates_presence_of :name, :on => :create, :message => "can't be blank"
   validates_format_of :email, :allow_blank => true, :with => /^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i, :message => "Invalid email"
   has_and_belongs_to_many :campaigns
+  belongs_to :user
+
+  named_scope :by_updated, lambda { { :order => ['updated_at desc'] } }
+
   cattr_reader :per_page
   @@per_page = 25
 
@@ -15,4 +19,7 @@ class Caller < ActiveRecord::Base
     self.pin = uniq_pin
   end
 
+  def restore
+    self.active = true
+  end
 end

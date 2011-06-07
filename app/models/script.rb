@@ -1,5 +1,9 @@
 class Script < ActiveRecord::Base
   validates_presence_of :name, :on => :create, :message => "can't be blank"
+  belongs_to :user
+
+  named_scope :by_updated, lambda { { :order => ['updated_at desc'] } }
+
   cattr_reader :per_page
   @@per_page = 25
 
@@ -40,5 +44,7 @@ class Script < ActiveRecord::Base
 		ret
   end
 
-
+  def restore
+    self.active = true
+  end
 end

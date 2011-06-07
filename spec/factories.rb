@@ -10,3 +10,11 @@ end
 Factory.define :campaign do |c|
   c.name 'a campaign'
 end
+
+Factory.define :script do |s|
+  s.name 'a script'
+end
+
+Factory.define :caller do |s|
+  s.name 'a caller'
+end

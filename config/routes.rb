@@ -44,8 +44,10 @@ ActionController::Routing::Routes.draw do |map|
   map.connect '/contact', :controller=>"home", :action=>"contact"
   map.connect '/homecss/css/style.css', :controller=>"home", :action=>"homecss"
   map.namespace 'admin' do |admin|
-    admin.resources :campaigns, :only => [:index] do |campaign|
-      campaign.restore '/restore', :controller => 'campaigns', :action => 'restore', :conditions => { :method => :put }
+    [:campaigns, :scripts, :callers].each do |entities|
+      admin.resources entities, :only => [:index] do |entity|
+        entity.restore '/restore', :controller => entities, :action => 'restore', :conditions => { :method => :put }
+      end
     end
   end
 
