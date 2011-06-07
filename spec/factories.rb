@@ -2,6 +2,11 @@ Factory.sequence :email do |n|
   "user#{n}@example.com"
 end
 
+Factory.sequence :name do |n|
+  "user#{n}"
+end
+
+
 Factory.define :user do |u|
   u.email { Factory.next(:email) }
   u.password 'password'
@@ -17,4 +22,10 @@ end
 
 Factory.define :caller do |s|
   s.name 'a caller'
+end
+
+Factory.define :voter_list do |v|
+  v.campaign_id { Factory(:campaign).id }
+  v.name { Factory.next(:name) }
+  v.user_id { Factory(:user).id }
 end
