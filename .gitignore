@@ -4,3 +4,4 @@
 ._*
 config/database.yml
 coverage/
+.bundle/*
