@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110528122013) do
+ActiveRecord::Schema.define(:version => 20110607102029) do
 
   create_table "accounts", :force => true do |t|
     t.integer  "user_id"
@@ -374,6 +374,8 @@ ActiveRecord::Schema.define(:version => 20110528122013) do
     t.integer  "campaign_id"
     t.boolean  "enabled",     :default => true
   end
+
+  add_index "voter_lists", ["user_id", "name"], :name => "index_voter_lists_on_user_id_and_name", :unique => true
 
   create_table "voters", :force => true do |t|
     t.string   "Phone"

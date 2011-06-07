@@ -652,41 +652,19 @@ Do you want to buy a widget?"
     @lists = VoterList.find_all_by_user_id_and_active(@user.id,true, :order=>"name")
     if (request.post?)
       if params[:upload].blank?
-        flash.now[:error]="You must select a file to upload"
+        flash[:error]="You must select a file to upload"
         return
       end
-      if params[:list_name].blank?
-        flash.now[:error]="List name cannot be blank"
-        return
-      elsif VoterList.find_by_user_id_and_name_and_active(@user.id,params[:list_name],1)!=nil
-        flash.now[:error]="List name is aleady in use in this campaign"
-        return
-      end
+
       list = VoterList.new
       list.campaign_id = @campaign.id
       list.name = params[:list_name]
       list.user_id = @user.id
-      list.save
+      unless list.save
+        flash[:error] = list.errors.full_messages
+        return
+      end
 
-      # if params[:voterList]=="0" && params[:new_list_name].blank?
-      #   flash.now[:error]="List name cannot be blank"
-      #   return
-      # elseif params[:voterList]=="0"
-      #   l = VoterList.find_by_name_and_user_id(params[:new_list_name], @user.id)
-      #   if !l.blank?
-      #     flash.now[:error]="List name cannot be blank"
-      #     return
-      #   end
-      # end
-      # if params[:voterList]=="0"
-      #   list = VoterList.new
-      #   list.campaign_id = @campaign.id
-      #   list.name = params[:new_list_name]
-      #   list.user_id = @user.id
-      #   list.save
-      # else
-      #   list = VoterList.find(params[:voterList])
-      # end
       if params[:seperator]=="tab"
         sep="\t"
       else
@@ -694,7 +672,6 @@ Do you want to buy a widget?"
       end
       @result = @campaign.voter_upload(params[:upload], @user.id,sep, list.id)
     end
-
   end
 
   def voter_delete

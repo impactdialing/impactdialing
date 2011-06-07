@@ -1,5 +1,7 @@
 class VoterList < ActiveRecord::Base
-#  has_and_belongs_to_many :campaigns
   belongs_to :campaign
-  has_many :voters, :conditions => {:active => true}  
+  has_many :voters, :conditions => {:active => true}
+
+  validates_presence_of :name
+  validates_uniqueness_of :name, :scope => :user_id
 end

@@ -28,4 +28,4 @@ config.action_mailer.delivery_method = :test
 # config.active_record.schema_format = :sql
 
 require 'shoulda'
-require 'Factory_girl'
+require 'factory_girl'

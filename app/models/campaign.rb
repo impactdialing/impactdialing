@@ -327,16 +327,7 @@ class Campaign < ActiveRecord::Base
           end
           #prefer DWID over VAN ID if the upload has both
           headers_present.delete("VAN ID") if headers_present.has_key?("VAN ID") && headers_present.has_key?("DWID")
-
           pos +=1
-
-          # unless the column value is "R.No"(which is a roll no of student) find the subject using the abbreviation of that subject
-          # unless c == "R.No"
-          #   subj = Subject.first(:conditions => ["abbreviation = '#{c}'"])
-          #   if subj.present?
-          #     m.push(subj.id)
-          #   end
-          # end
         end
       else
         # process column
