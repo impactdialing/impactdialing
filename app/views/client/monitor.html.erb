@@ -7,8 +7,9 @@ function eavesdrop(sess,type){
 	<%= remote_function(:url => { :action => 'eavesdrop_call'} , :with =>	"'session_id='+ sess + '&num=' + num + '&type=' + type") %>
 }
 </script>
+<h1>Monitor</h1>
 <div class="box">
-	<%= render :partial => 'boxtop', :locals=>{:title=>"Monitor"} %>
+	<%= render :partial => 'boxtop', :locals=>{:title=>"Active Campaigns"} %>
 	<% if @logged_in_campaigns.length==0 %>
 		<div class="form">
 	      <label>No campaigns active.</label>
