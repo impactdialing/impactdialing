@@ -1,5 +1,5 @@
 class ClientController < ApplicationController
-  before_filter :check_login, :except=>[:login,:user_add, :forgot]
+  before_filter :check_login, :except => [:login,:user_add, :forgot]
   before_filter :check_paid
   before_filter :redirect_to_ssl
   layout "client"
@@ -296,7 +296,7 @@ Do you want to buy a widget?"
 
   def campaigns
     @breadcrumb="Campaigns"
-    @campaigns = Campaign.paginate :page => params[:page], :conditions =>"active=1 and user_id=#{@user.id}", :order => 'id desc'
+    @campaigns = Campaign.active.for_user(@user).paginate :page => params[:page], :order => 'id desc'
   end
 
   def campaign_new

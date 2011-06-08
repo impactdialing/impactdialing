@@ -67,7 +67,7 @@
 <body class="admin clearfix">
 
 <header role="banner" class="clearfix">
-<h1><a href="<% if @controllerName=="client" %>/client<% else %>/caller<% end %>">Impact Dialing</a></h1>
+<h1><a href="<% if @controllerName=="client" || @controllerName == 'client/campaigns' %>/client<% else %>/caller<% end %>">Impact Dialing</a></h1>
 
 
 <% if !session[:user].blank? && @user!=nil %>
@@ -80,7 +80,7 @@
 
 </header>
 
-<% if @controllerName=="client" %>
+<% if @controllerName=="client"  || @controllerName == 'client/campaigns' %>
 <nav role="navigation" class="clearfix">
 <ul class="clearfix">
 	<!--<li><a href="/client" <% if @actionName=="index" %>class="active"<% end %>><span>Welcome</span></a></li>-->
@@ -117,7 +117,7 @@
 
 
 <footer role="contentinfo" class="clearfix">
-<% if @controllerName=="client" %>
+<% if @controllerName=="client"  || @controllerName == 'client/campaigns' %>
 <ul>
 	<!--<li><a href="/client" <% if @actionName=="index" %>class="active"<% end %>><span>Welcome</span></a></li>-->
 	<li><a href="/client/callers" <% if @actionName.index("caller") %>class="active"<% end %>><span>Callers</span></a></li>

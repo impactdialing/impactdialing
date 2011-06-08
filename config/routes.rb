@@ -50,6 +50,11 @@ ActionController::Routing::Routes.draw do |map|
       end
     end
   end
+  map.campaigns '/client/campaigns', :action => 'campaigns', :controller => 'client', :conditions => { :method => :get }
+  map.deleted_campaigns '/client/deleted_campaigns', :action => 'deleted', :controller => 'client/campaigns', :conditions => { :method => :get }
+  map.restore_campaign '/client/campaigns/:campaign_id/restore', :action => 'restore', :controller => 'client/campaigns', :conditions => { :method => :put }
+  map.campaign_new '/client/campaign_new', :action => 'campaign_new', :controller => 'client'
+  map.campaign_view '/client/campaign_view/:id', :action => 'campaign_view', :controller => 'client'
 
   map.connect 'admin/:action/:id', :controller=>"admin"
   map.connect 'admin/:action', :controller=>"admin"

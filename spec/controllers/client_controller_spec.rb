@@ -28,23 +28,23 @@ describe ClientController do
 
       it "needs a list name" do
         post :voter_upload, :id => @campaign.id,
-             :upload            => csv_file_upload
+          :upload            => csv_file_upload
         flash[:error].should include "Name can't be blank"
       end
 
       it "creates a voter list entry" do
         lambda {
           Campaign.should_receive(:find_by_id_and_user_id).
-              with(@campaign.id.to_s, session[:user]).
-              and_return(@campaign)
-          
+          with(@campaign.id.to_s, session[:user]).
+          and_return(@campaign)
+
           @campaign.should_receive(:voter_upload).with(
-              csv_file_upload, session[:user], ",", anything()
+            csv_file_upload, session[:user], ",", anything()
           )
           post :voter_upload,
-               :id        => @campaign.id,
-               :upload    => csv_file_upload,
-               :list_name => "foobar"
+            :id        => @campaign.id,
+            :upload    => csv_file_upload,
+            :list_name => "foobar"
           flash[:error].should be_blank
           response.code.should == "200"
         }.should change(VoterList, :count)

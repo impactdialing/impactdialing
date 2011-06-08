@@ -9,6 +9,7 @@
       <th>Name</th>
       <th>Campaign ID</th>
       <th>Date Added</th>
+      <th>Date Deleted</th>
       <th width="55" class="ac"></th>
     </tr>
     <% @campaigns.each do |c| %>
@@ -16,8 +17,12 @@
         <td><h3><a href="/client/campaign_view/<%= c.id %>"><%= c.name %></a></h3></td>
         <td><%= c.group_id %></td>
         <td><%= c.created_at.strftime("%m/%d/%Y") %></td>
-        <td><a href="javascript:if(confirm('Are you sure you want to delete this campaign?')) document.location.href='/client/campaign_delete/<%= c.id %>';" class="ico del">Delete</a>
-          <!--<a href="/client/campaign_add/<%= c.id %>" class="ico edit">Edit</a>--></td>
+        <td><%= c.updated_at.strftime("%m/%d/%Y") %></td>
+        <td>
+          <% form_tag(restore_campaign_path(:campaign_id => c.id), :id => "restore-campaign#{c.id}-form", :method => :put) do |f| %>
+            <%= link_to 'Restore', 'javascript:void(0)', :onclick => "$('restore-campaign#{c.id}-form').submit()" %>
+          <% end %>
+          </td>
       </tr>
     <% end %>
 
@@ -26,6 +31,6 @@
   <p><%= page_entries_info @campaigns %> <%= will_paginate @campaigns %></p>
 
 <% end %>
-<p class="actions"><%= link_to 'View deleted campaigns', deleted_campaigns_path, :class => 'action' %></p>
+<p class="actions"><%= link_to 'View undeleted campaigns', '/client/campaigns', :class => 'action' %></p>
 <p class="actions"><a href="/client/campaign_new" class="action primary">Add a new campaign</a></p>
 

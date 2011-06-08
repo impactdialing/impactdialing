@@ -17,6 +17,12 @@ describe Campaign do
     Campaign.by_updated.all.should == [newer_campaign, older_campaign]
   end
 
+  it "lists deleted campaigns" do
+    deleted_campaign = Factory(:campaign, :active => false)
+    other_campaign = Factory(:campaign, :active => true)
+    Campaign.deleted.should == [deleted_campaign]
+  end
+
   describe "upload voters list" do
     let(:csv_file_upload) { {"datafile" => fixture_file_upload("files/voters_list.csv")} }
     let(:user) { Factory(:user) }

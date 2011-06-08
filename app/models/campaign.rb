@@ -10,6 +10,9 @@ class Campaign < ActiveRecord::Base
   belongs_to :recording
 
   named_scope :by_updated, lambda { { :order => ['updated_at desc'] } }
+  named_scope :deleted, lambda { { :conditions => {:active => false} } }
+  named_scope :active, lambda { { :conditions => {:active => true} } }
+  named_scope :for_user, lambda {|user| { :conditions => ["user_id = ?", user.id] }}
   cattr_reader :per_page
   @@per_page = 25
 
