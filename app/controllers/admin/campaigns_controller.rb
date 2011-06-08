@@ -1,7 +1,7 @@
 module Admin
   class CampaignsController < AdminController
     def index
-      @entities = type.by_updated.paginate(:per_page => Campaign.per_page, :page => params[:page])
+      @campaigns = Campaign.by_updated.paginate(:per_page => Campaign.per_page, :page => params[:page])
     end
 
     def restore
