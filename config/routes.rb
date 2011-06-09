@@ -53,17 +53,15 @@ ActionController::Routing::Routes.draw do |map|
   end
 
   map.namespace 'client' do |client|
-    map.deleted_campaigns '/client/deleted_campaigns', :action => 'deleted', :controller => 'client/campaigns', :conditions => { :method => :get }
     map.campaign_new '/client/campaign_new', :action => 'campaign_new', :controller => 'client'
     map.campaign_view '/client/campaign_view/:id', :action => 'campaign_view', :controller => 'client'
-    map.campaigns '/client/campaigns', :action => 'campaigns', :controller => 'client', :conditions => { :method => :get }
-    client.resources :campaigns, :only => [] do |campaign|
-      campaign.restore 'restore', :action => 'restore', :controller => 'campaigns', :conditions => { :method => :put }
-    end
-    map.deleted_scripts '/client/deleted_scripts', :action => 'deleted', :controller => 'client/scripts', :conditions => { :method => :get }
-    map.scripts '/client/scripts', :action => 'scripts', :controller => 'client', :conditions => { :method => :get }
-    client.resources :scripts, :only => [] do |script|
-      script.restore 'restore', :action => 'restore', :controller => 'scripts', :conditions => { :method => :put }
+
+    ['campaigns', 'scripts', 'callers'].each do |type_plural|
+      map.send("deleted_#{type_plural}", "/client/deleted_#{type_plural}", :action => 'deleted', :controller => "/client/#{type_plural}", :conditions => { :method => :get })
+      map.send(type_plural, "/client/#{type_plural}", :action => type_plural, :controller => "/client", :conditions => { :method => :get })
+      client.resources type_plural, :only => [] do |type|
+        type.restore 'restore', :action => 'restore', :controller => type_plural, :conditions => { :method => :put }
+      end
     end
   end
 

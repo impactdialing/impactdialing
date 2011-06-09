@@ -5,9 +5,9 @@ module Client
     end
 
     def restore
-      Script.find(params[:script_id]).tap do |c|
-        c.restore
-        c.save
+      Script.find(params[:script_id]).tap do |s|
+        s.restore
+        s.save
       end
       redirect_to :back
     end
