@@ -1,6 +1,6 @@
 # Your starting point for daemon specific classes. This directory is
 # already included in your load path, so no need to specify it.
-
+require File.join(File.dirname(__FILE__), '../../', 'app/models/deletable.rb')
 Dir[File.join(File.dirname(__FILE__), '../../', 'app/models') + "**/*.rb"].each {|file| 
       require file
       DaemonKit.logger.info "#{file}" if defined? DaemonKit
