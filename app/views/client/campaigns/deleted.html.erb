@@ -19,10 +19,10 @@
         <td><%= c.created_at.strftime("%m/%d/%Y") %></td>
         <td><%= c.updated_at.strftime("%m/%d/%Y") %></td>
         <td>
-          <% form_tag(restore_campaign_path(:campaign_id => c.id), :id => "restore-campaign#{c.id}-form", :method => :put) do |f| %>
+          <% form_tag(client_campaign_restore_path(c), :id => "restore-campaign#{c.id}-form", :method => :put) do |f| %>
             <%= link_to 'Restore', 'javascript:void(0)', :onclick => "$('restore-campaign#{c.id}-form').submit()" %>
           <% end %>
-          </td>
+        </td>
       </tr>
     <% end %>
 
