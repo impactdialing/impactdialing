@@ -38,7 +38,7 @@
 			</div>
 		<% end %>
 <!--		<p><input type="button" class="button" value="Manage Recordings" onclick="document.location.href='/client/recording_add?campaign_id=<%= @campaign.id %>';"/></p>-->
-<p class="actions"><a href='/client/recording_add?campaign_id=<%= @campaign.id %>' class="action secondary">Mange voicemails</a></p>
+<p class="actions"><a href='/client/recording_add?campaign_id=<%= @campaign.id %>' class="action secondary">Manage voicemails</a></p>
 		<p>Phones-only call-in number (use <a href="http://caller.impactdialing.com">caller.impactdialing.com</a> for computers): 	<% if ENV["RAILS_ENV"]=="development"%>
 					<%= number_to_phone(APP_NUMBER, :area_code => true) %>
 				<% else %>
