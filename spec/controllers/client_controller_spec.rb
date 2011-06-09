@@ -16,6 +16,13 @@ describe ClientController do
       login_as Factory(:user)
     end
 
+    describe "and attempt to login yet again" do
+      it "redirects to 'add new client'" do
+        get "login"
+        response.should redirect_to "/client/user_add"
+      end
+    end
+
     describe 'new campaign' do
       it "creates a new campaign & redirects to campaign view" do
         lambda {

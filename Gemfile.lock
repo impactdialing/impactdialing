@@ -15,8 +15,8 @@ GEM
     activeresource (2.3.11)
       activesupport (= 2.3.11)
     activesupport (2.3.11)
-    braintree (2.10.0)
-      builder
+    braintree (2.10.1)
+      builder (>= 2.0.0)
     builder (3.0.0)
     columnize (0.3.2)
     daemons (1.0.10)

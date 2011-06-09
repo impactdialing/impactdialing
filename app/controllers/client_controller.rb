@@ -213,6 +213,8 @@ Do you want to buy a widget?"
   end
 
   def login
+    redirect_to :action => "user_add" if session[:user]
+    
     @breadcrumb="Login"
     @title="Join Impact Dialing"
     @user = User.new {params[:user]}
