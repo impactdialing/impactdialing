@@ -17,8 +17,4 @@ class Caller < ActiveRecord::Base
     end
     self.pin = uniq_pin
   end
-
-  def restore
-    self.active = true
-  end
 end

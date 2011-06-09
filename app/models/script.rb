@@ -42,8 +42,4 @@ class Script < ActiveRecord::Base
 		end
 		ret
   end
-
-  def restore
-    self.active = true
-  end
 end

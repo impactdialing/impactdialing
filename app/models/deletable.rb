@@ -1,15 +1,15 @@
 module Deletable
-
-end
-
-
-module Deletable
   module ClassMethods
-
   end
 
   module InstanceMethods
+    def restore
+      self.active = true
+    end
 
+    def delete
+      self.active = false
+    end
   end
 
   def self.included(receiver)

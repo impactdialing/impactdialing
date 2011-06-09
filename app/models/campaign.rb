@@ -419,8 +419,4 @@ class Campaign < ActiveRecord::Base
       number
     end
   end
-
-  def restore
-    self.active = true
-  end
 end
