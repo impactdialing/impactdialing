@@ -32,6 +32,5 @@
 </div>
 
 <p><%= page_entries_info @callers %> <%= will_paginate @callers %></p>
-<p class="actions"><%= link_to 'View deleted callers', deleted_callers_path, :class => 'action' %></p>
 <p class="actions"><a href="/client/caller_add" class="action primary">Add new caller</a></p>
-
+<p class="actions"><%= link_to 'View deleted callers', deleted_callers_path, :class => 'action secondary' %></p>

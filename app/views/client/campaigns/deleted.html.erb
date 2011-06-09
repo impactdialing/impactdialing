@@ -31,6 +31,5 @@
   <p><%= page_entries_info @campaigns %> <%= will_paginate @campaigns %></p>
 
 <% end %>
-<p class="actions"><%= link_to 'View undeleted campaigns', '/client/campaigns', :class => 'action' %></p>
-<p class="actions"><a href="/client/campaign_new" class="action primary">Add a new campaign</a></p>
+<p class="actions"><%= link_to 'Return to active campaigns', '/client/campaigns', :class => 'action primary' %></p>
 
