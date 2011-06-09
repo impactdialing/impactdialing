@@ -4,18 +4,18 @@ module ApplicationHelper
   def cms(key)
     s = Seo.find_by_crmkey_and_active_and_version(key,1,session[:seo_version])
     s = Seo.find_by_crmkey_and_active_and_version(key,1,nil) if s.blank?
-    
+
     if s.blank?
       ""
     else
       s.content
     end
   end
-  
+
   def float_sidebar
     @floatSidebar="<script>
-    $('content').style.float='right'; 
-    $('sidebar').style.float='left'; 
+    $('content').style.float='right';
+    $('sidebar').style.float='left';
 
       var obj = document.getElementById('sidebar');
       if (obj.style.styleFloat) {
@@ -30,7 +30,7 @@ module ApplicationHelper
       } else {
           obj.style.cssFloat = 'right';
       }
-      
+
       </script>";
       ""
   end
@@ -45,7 +45,7 @@ module ApplicationHelper
       logger.info "SENT RT #{key} #{post_data}: #{response.body}"
       return response.body
   end
-    
+
     def hash_from_voter_and_script(script,voter)
       publish_hash={:id=>voter.id, :classname=>voter.class.to_s}
   #    publish_hash={:id=>voter.id}
@@ -57,5 +57,9 @@ module ApplicationHelper
         end
       end
       publish_hash
+    end
+
+    def client_controller?(controllerName)
+      ['client', 'client/campaigns', 'client/scripts', 'client/callers'].include?(controllerName)
     end
 end
