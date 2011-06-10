@@ -1213,7 +1213,7 @@ Do you want to buy a widget?"
               end
             end
           end
-          send_data csv_string, :type => "text/plain",  :filename=>"report.csv", :disposition => 'attachment'
+          send_data csv_string, :type => "text/csv",  :filename=>"report.csv", :disposition => 'attachment'
           return
         end
 
