@@ -648,34 +648,6 @@ Do you want to buy a widget?"
     return
   end
 
-  def voter_upload
-    @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id)
-    @breadcrumb=[{"Campaigns"=>"/client/campaigns"},{@campaign.name=>"/client/campaign_view/#{@campaign.id}"}, "Upload Phone Numbers"]
-    @lists = VoterList.find_all_by_user_id_and_active(@user.id,true, :order=>"name")
-    if (request.post?)
-      if params[:upload].blank?
-        flash[:error]="You must select a file to upload"
-        return
-      end
-
-      list = VoterList.new
-      list.campaign_id = @campaign.id
-      list.name = params[:list_name]
-      list.user_id = @user.id
-      unless list.save
-        flash[:error] = list.errors.full_messages
-        return
-      end
-
-      if params[:seperator]=="tab"
-        sep="\t"
-      else
-        sep=","
-      end
-      @result = @campaign.voter_upload(params[:upload], @user.id,sep, list.id)
-    end
-  end
-
   def voter_delete
     @voter = Voter.find_by_id_and_user_id(params[:id],@user.id)
     if !@voter.blank?

@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110607102029) do
+ActiveRecord::Schema.define(:version => 20110609095425) do
 
   create_table "accounts", :force => true do |t|
     t.integer  "user_id"
@@ -408,6 +408,7 @@ ActiveRecord::Schema.define(:version => 20110607102029) do
     t.text     "result_json"
   end
 
+  add_index "voters", ["Phone", "voter_list_id"], :name => "index_voters_on_Phone_and_voter_list_id", :unique => true
   add_index "voters", ["Phone"], :name => "index_voters_on_Phone"
   add_index "voters", ["attempt_id"], :name => "index_voters_on_attempt_id"
   add_index "voters", ["campaign_id"], :name => "index_voters_on_campaign_id"

@@ -1,0 +1,19 @@
+<% content_for :stylesheets do %>
+    <%= stylesheet_link_tag "column_mapping" %>
+<% end %>
+
+<p>
+  We found the following headers in your uploaded file. Please map them to the fields below.
+</p>
+
+<% form_tag(add_to_db_campaign_voter_list_path(@campaign, @voter_list), :method => :post, :html => {:multipart => true}) do %>
+    <dl class='table-display'>
+      <% @csv_column_headers.each do |csv_header| %>
+          <% selected =  matching_system_header_for(csv_header) %>
+          <dt><%= csv_header %></dt>
+          <dd><%= select_tag "csv_to_system_map[#{csv_header}]", options_for_select(@system_column_headers, selected) %></dd>
+      <% end %>
+    </dl>
+    <div style='clear:both;'></div>
+    <%= submit_tag "Finish" %>
+<% end %>

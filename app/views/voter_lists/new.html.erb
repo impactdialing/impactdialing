@@ -1,0 +1,31 @@
+<div class="box">
+  <%= render :partial => 'shared/boxtop', :locals=>{:title=>"Add a list to #{@campaign.name}"} %>
+  <% form_for(@voter_list, :url=> campaign_voter_lists_path(@campaign), :method => :post, :html => {:multipart => true}) do %>
+      <div class="form">
+        <p>
+          <label>Select list</label>
+          <%= file_field 'upload', 'datafile' %>
+        </p>
+
+        <p>
+          <label>List name</label>
+          <%= text_field_tag "list_name" %>
+        </p>
+
+        <p class="inline-field">
+          <label>File type</label>
+          <select class="field size3" name="seperator">
+            <option value="tab">Tab (*.txt)</option>
+            <option value="comma">Comma (*.csv)</option>
+          </select>
+        </p>
+      </div>
+
+      <div class="buttons">
+        <input type="button" class="button" value="Cancel" onclick="document.location.href='/client/campaign_view/<%= @campaign.id %>';"/>
+        <input type="submit" class="button" value="Add list"/>
+      </div>
+  <% end %>
+</div>
+
+<%= render :partial => "voter_lists/sidebar" %>

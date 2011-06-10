@@ -64,6 +64,9 @@ ActionController::Routing::Routes.draw do |map|
       end
     end
   end
+  map.resources :campaigns do |campaign|
+    campaign.resources :voter_lists, :member => {:add_to_db => :post}
+  end
 
   map.connect 'admin/:action/:id', :controller=>"admin"
   map.connect 'admin/:action', :controller=>"admin"

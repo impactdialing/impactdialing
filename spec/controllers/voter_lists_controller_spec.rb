@@ -1,0 +1,67 @@
+require "spec_helper"
+
+describe VoterListsController do
+  include ActionController::TestProcess
+
+  before :each do
+    login_as Factory(:user)
+  end
+
+  describe "voters list" do
+    let(:csv_file_upload) { {"datafile" => fixture_file_upload("files/voters_list.csv")} }
+    before :each do
+      @campaign = Factory(:campaign, :user_id => session[:user])
+    end
+
+    it "needs an uploaded file" do
+      post :create, :campaign_id => @campaign.id
+      flash[:error].should == "You must select a file to upload"
+    end
+
+    it "needs a list name" do
+      post :create, :campaign_id => @campaign.id,
+           :upload               => csv_file_upload
+      flash[:error].should include "Name can't be blank"
+    end
+
+    describe "create voter list" do
+      before :each do
+        VoterList.delete_all
+        session[:voters_list_uploads] = nil
+        post :create,
+             :campaign_id => @campaign.id,
+             :upload      => csv_file_upload,
+             :list_name   => "foobar"
+      end
+      it "creates a voter list entry" do
+        VoterList.count.should == 1
+      end
+
+      it "renders the mappings screen" do
+        flash[:error].should be_blank
+        response.code.should == "200"
+        response.should render_template("column_mapping")
+      end
+
+      it "saves the uploaded csv" do
+        File.should exist("#{Rails.root}/tmp/#{session[:voters_list_uploads][VoterList.first.id]['filename']}")
+      end
+
+      describe "select the mappings" do
+        it "saves all the voters in the csv according to the mappings" do
+          Voter.delete_all
+          post :add_to_db,
+               :id                => VoterList.first.id,
+               :campaign_id       => @campaign.id,
+               :csv_to_system_map => {
+                   "Phone" => "Phone",
+                   "LAST"  =>"LastName"
+               }
+          Voter.count.should == 1
+          Voter.first.Phone.should == "1234567895"
+          Voter.first.LastName.should == "Bar"
+        end
+      end
+    end
+  end
+end
