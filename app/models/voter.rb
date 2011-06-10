@@ -71,7 +71,7 @@ class Voter < ActiveRecord::Base
   end
 
   def dial_predictive
-    call_attempt = new_call_attempt(self.campaign.predective_type)
+    call_attempt = new_call_attempt(self.campaign.predictive_type)
     response = Twilio::Call.make(
         self.campaign.caller_id,
         self.Phone,

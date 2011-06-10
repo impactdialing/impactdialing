@@ -345,7 +345,7 @@ Can we count on you to vote for such-and-such?
   end
 
   def campaign_new
-    campaign = Campaign.new(:user_id => @user.id, :predective_type => 'algorithm1')
+    campaign = Campaign.new(:user_id => @user.id, :predictive_type => 'algorithm1')
     campaign.user_id = @user.id
     count = Campaign.find_all_by_user_id(@user.id)
     campaign.name="Untitled #{count.length+1}"

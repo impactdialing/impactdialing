@@ -136,7 +136,7 @@ class CallerController < ApplicationController
     a=t.call("POST", "Calls/#{session.sid}", {'CurrentUrl'=>"#{APP_URL}/callin/start_conference?session=#{session.id}&campaign=#{session.campaign_id}"})
 
     #update rt
-    if Campaign.find(session.campaign_id).predective_type=="preview"
+    if Campaign.find(session.campaign_id).predictive_type=="preview"
       send_rt(params[:id], 'waiting', 'preview')
     else
       send_rt(params[:id], 'waiting', 'ok')
@@ -249,7 +249,7 @@ class CallerController < ApplicationController
       t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
       a=t.call("POST", "Calls/#{@session.sid}", {'CurrentUrl'=>"#{APP_URL}/callin/start_conference?session=#{@session.id}&campaign=#{@campaign.id}"})
 
-      if @campaign.predective_type=="preview"
+      if @campaign.predictive_type=="preview"
         send_rt(params[:key], 'waiting', 'preview')
       else
         send_rt(params[:key], 'waiting', 'ok')

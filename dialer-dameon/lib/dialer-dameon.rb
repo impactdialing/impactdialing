@@ -69,11 +69,6 @@ class TwilioLib
       http.use_ssl=true
     end
 
-#    Rails.logger.info "#{@root}#{service_method}"
-#    Rails.logger.info "???#{service_method}???"
-
-    #return 'err'    if service_method=="IncomingPhoneNumbers/Local" && (Rails.env =="development" || Rails.env =="dynamo_dev")
-
     if service_method=="IncomingPhoneNumbers/Local" && (Rails.env =="development" || Rails.env =="dynamo_dev") && !params.has_key?("SmsUrl")
       return '<?xml version="1.0" encoding="UTF-8"?>
       <TwilioResponse>
@@ -102,10 +97,7 @@ class TwilioLib
     #Rails.logger.debug "#{@root}#{service_method}"
 
     req.set_form_data(params)
-#    Rails.logger.info  params
     response = http.start{http.request(req)}
-    #Rails.logger.info  response.body if Rails.env =="development"
-#    Rails.logger.info  response.body
     response.body
   end
 

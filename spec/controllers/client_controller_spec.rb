@@ -35,7 +35,7 @@ describe ClientController do
 
       it "defaults the campaign's mode to predictive type" do
         get :campaign_new
-        Campaign.last.predective_type.should == 'algorithm1'
+        Campaign.last.predictive_type.should == 'algorithm1'
       end
     end
 

@@ -89,7 +89,7 @@ describe Voter do
   end
 
   describe "predictive dialing" do
-    let(:campaign) { Factory(:campaign, :robo => false, :predective_type => 'algorithm1') }
+    let(:campaign) { Factory(:campaign, :robo => false, :predictive_type => 'algorithm1') }
     let(:voter) { Factory(:voter, :campaign => campaign) }
 
     it "is dialed" do
