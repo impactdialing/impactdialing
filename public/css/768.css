@@ -1,4 +1,4 @@
-/* 768 
+/* 768
 
 _____________________________________________________
 
@@ -23,7 +23,7 @@ _____________________________________________________
 12.COMPLIMENTARY — div[role="complementary"]
 13.CONTENTINFO — footer[role="contentinfo"]
 14.GLOBAL OBJECTS
-15.VENDOR-SPECIFIC 
+15.VENDOR-SPECIFIC
 16.TEMPLATE SPECIFICS
 17.MODERNIZR
 
@@ -60,12 +60,12 @@ padding-bottom : 0;
 border-bottom-width : 0; }
 
 nav[role="navigation"] ul {
-padding : 0; 
-background-color : rgb(223,223,228); 
+padding : 0;
+background-color : rgb(223,223,228);
 border : 1px solid rgb(173,173,178); }
 
 nav[role="navigation"] li {
-float : left; 
+float : left;
 margin-bottom : 0;
 padding : 0;
 width : 20.08% /* 180 / 896 = .2008 */;
@@ -82,8 +82,8 @@ border-left-width : 0; }
 
 nav[role="navigation"] li:last-child {
 float : right;
-margin-right : 0; 
-background-color : rgb(194,54,52); 
+margin-right : 0;
+background-color : rgb(194,54,52);
 border-right-width : 0; }
 
 nav[role="navigation"] a {
@@ -97,9 +97,9 @@ text-decoration : none; }
 .reverse {
 margin-bottom : 1.5em;
 padding : 24px;
-background : rgb(49,49,49) url(../img/furniture-reverse.png) repeat 0 0; 
+background : rgb(49,49,49) url(../img/furniture-reverse.png) repeat 0 0;
 border-bottom-width : 0;
-color : rgb(255,255,255); 
+color : rgb(255,255,255);
 text-shadow : 0 -1px 1px rgb(0,0,0); }
 
 .reverse h1 {
@@ -108,12 +108,12 @@ font-size : 2.375em; /* 38 / 16 = 2.375 */ }
 .reverse h2 {
 font-size : 1.75em; /* 28 / 16 = 1.75 */ }
 
-.reverse .disabled { 
+.reverse .disabled {
 padding : 6px 24px 7px;
 background-color : rgb(82,82,82);
-border : 1px solid rgb(45,45,45); 
-color : rgb(255,255,255); 
-font-size : 1em; 
+border : 1px solid rgb(45,45,45);
+color : rgb(255,255,255);
+font-size : 1em;
 font-weight : 700; }
 
 .reverse li {
@@ -123,7 +123,7 @@ font-size : 1.15em; }
 /* 11.MAIN */
 
 [role="main"] {
-float : left; 
+float : left;
 width : 58.92% /* 528 / 896 = .5892 */; }
 
 /* hentry */
@@ -133,23 +133,23 @@ overflow : hidden; }
 
 .hentry header li {
 display : inline-block;
-float : left; 
+float : left;
 margin-right : 24px; }
 
 /* 12.COMPLEMENTARY */
 
 [role="complementary"] {
-float : right; 
+float : right;
 width : 33.48% /* 300 / 896 = .3348 */; }
 
 /* 13.CONTENTINFO */
 
 footer[role="contentinfo"] ul {
-float : left; 
+float : left;
 width : 58.92% /* 528 / 896 = .5892 */; }
 
 footer[role="contentinfo"] div {
-float : right; 
+float : right;
 width : 33.48% /* 300 / 896 = .3348 */; }
 
 footer[role="contentinfo"] p {
@@ -168,7 +168,7 @@ float : left;
 width : 49%; }
 
 .callout a.action {
-float : right; 
+float : right;
 margin-bottom : 0; }
 
 /* 15.VENDOR-SPECIFIC */
@@ -228,7 +228,7 @@ background-position : 100% 50%, 0 0; }
 /* admin overrides */
 
 .admin header[role="banner"] ul {
-position : absolute; 
+position : absolute;
 display : block;
 position : absolute;
 top : 1em;
@@ -238,9 +238,9 @@ right : 0; }
 display : inline-block;
 margin-right : 24px; }
 
-.admin header[role="banner"] li:first-child {
+.admin header[role="banner"] li.divider {
 margin-right : 24px;
-padding-right : 24px; 
+padding-right : 24px;
 border-right : 1px solid rgb(192,192,200); }
 
 .cssgradients .admin nav[role="navigation"] li:last-child {
@@ -277,5 +277,5 @@ border-top-right-radius : 0!important;
 border-bottom-right-radius : 0!important; }
 
 .admin nav[role="navigation"] li:last-child a {
-color : rgb(51,51,51);  
+color : rgb(51,51,51);
 text-shadow : 0 1px 1px rgb(255,255,255); }

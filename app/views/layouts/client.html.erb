@@ -71,10 +71,11 @@
 
 
 <% if !session[:user].blank? && @user!=nil %>
-<ul class="clearfix">
-<li><a href="/client/user_add">Account</a></li>
-<li><a href="/client/logout">Log out</a></li>
-</ul>
+  <ul class="clearfix">
+    <li class='divider'><a href="/client" class='divider'>Help</a></li>
+    <li class='divider'><a href="/client/user_add">Account</a></li>
+    <li><a href="/client/logout">Log out</a></li>
+  </ul>
 <% end %> 
 
 
