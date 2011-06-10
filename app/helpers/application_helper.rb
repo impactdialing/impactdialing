@@ -61,6 +61,6 @@ module ApplicationHelper
   end
 
   def client_controller?(controllerName)
-    ['client', 'client/campaigns', 'client/scripts', 'client/callers'].include?(controllerName)
+    ['client', 'voter_lists', 'client/campaigns', 'client/scripts', 'client/callers'].include?(controllerName)
   end
 end

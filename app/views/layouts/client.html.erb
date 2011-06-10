@@ -36,6 +36,7 @@
 <link rel="stylesheet" media="screen" href="/css/768.css?v=1">
 <link rel="stylesheet" media="screen" href="/css/992.css?v=1">
 <![endif]-->
+<%= yield :stylesheets %>
 
 <!-- JavaScript at bottom except for Modernizr -->
 <script src="/js/libs/modernizr-custom.js"></script>
@@ -81,7 +82,7 @@
 
 </header>
 
-<% if client_controller?(@controllerName) %>
+<% iclient_controller?(@controllerName) %>
 <nav role="navigation" class="clearfix">
 <ul class="clearfix">
 	<!--<li><a href="/client" <% if @actionName=="index" %>class="active"<% end %>><span>Welcome</span></a></li>-->
