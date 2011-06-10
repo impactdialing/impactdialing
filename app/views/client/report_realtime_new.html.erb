@@ -4,7 +4,7 @@
 		<%	stats[:answer_pct] = 0.000001 if stats[:answer_pct]==0 %>
 		
 		<div class="box" style="width:750px; ">
-			<%= render :partial => 'boxtop', :locals=>{:title=>"#{campaign.name}: michael's algorithm<sup>&copy;</sup>"} %>
+			<%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{campaign.name}: michael's algorithm<sup>&copy;</sup>"} %>
 			<div class="box-content">
 				
 				avg ring_time = <%=  stats[:avg_ring_time] %>, 

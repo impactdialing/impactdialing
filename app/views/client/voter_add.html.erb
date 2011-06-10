@@ -1,6 +1,6 @@
 <%= error_messages_for :voter %>
 <div class="box" style="width:400px;">
-	<%= render :partial => 'boxtop', :locals=>{:title=>@label} %>
+	<%= render :partial => 'shared/boxtop', :locals=>{:title=>@label} %>
 	<% form_for :voter do |f| -%>
 	<input type="hidden" name="campaign_id" value="<%= @campaign.id %>">
     <div class="form">

@@ -1,6 +1,6 @@
 <%= error_messages_for :campaign %>
 <div class="box" style="width:400px;">
-	<%= render :partial => 'boxtop', :locals=>{:title=>@label} %>
+	<%= render :partial => 'shared/boxtop', :locals=>{:title=>@label} %>
 
 	<% form_for :campaign do |f| -%>
     <div class="form">

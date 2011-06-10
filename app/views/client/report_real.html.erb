@@ -1,7 +1,7 @@
 <% if params[:id].blank? %>
 
 <div class="box" style="width:600px;">
-	<%= render :partial => 'boxtop', :locals=>{:title=>"Choose a campaign"} %>
+	<%= render :partial => 'shared/boxtop', :locals=>{:title=>"Choose a campaign"} %>
 	<div class="box-content">
 		<% @user.campaigns.each do |c| %>
 		<a href="/client/reports/<%= c.id %>"><%= c.name %></a><br/>

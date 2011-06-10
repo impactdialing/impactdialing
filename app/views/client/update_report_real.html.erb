@@ -2,7 +2,7 @@
 <% stats = campaign.call_stats(@timeframe) %>
 <% attempts = stats[:attempts] %>
 <div class="box" style="width:350px; float:right;">
-	<%= render :partial => 'boxtop', :locals=>{:title=>"#{campaign.name}: Recent Calls"} %>
+	<%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{campaign.name}: Recent Calls"} %>
 	<div class="box-content">
 		
 		<% if attempts.length==0 %>None 
@@ -23,7 +23,7 @@
 	</div>
 </div>
 <div class="box" style="width:370px;">
-	<%= render :partial => 'boxtop', :locals=>{:title=>"#{campaign.name}: Recent Call Stats"} %>
+	<%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{campaign.name}: Recent Call Stats"} %>
     <%# callers = info["callers"]  %>
     <%# calls = info["calls"] %>
     <% callers = CallerSession.find_all_by_campaign_id_and_on_call(campaign.id, 1) %>
@@ -63,7 +63,7 @@
 <% v = Voter.find_all_by_campaign_id(campaign.id, :conditions=>"result_digit is not null and result_date > DATE_SUB(now(),INTERVAL #{@timeframe} MINUTE)", :order=>"id desc") %>
 <% if v.length > 0 %>
 	<div class="box" style="width:370px;">
-		<%= render :partial => 'boxtop', :locals=>{:title=>"#{campaign.name}: Recent Call Results"} %>
+		<%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{campaign.name}: Recent Call Results"} %>
 		<div class="box-content">
 			Recent Results:<br/>
 

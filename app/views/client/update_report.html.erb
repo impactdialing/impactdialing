@@ -3,7 +3,7 @@
 		<% attempts = stats[:attempts] %>
 
 		<div class="box" style="width:350px; float:right;">
-			<%= render :partial => 'boxtop', :locals=>{:title=>"#{campaign.name}: Recent Calls (#{attempts.length})"} %>
+			<%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{campaign.name}: Recent Calls (#{attempts.length})"} %>
 			<div class="box-content">
 
 				
@@ -26,7 +26,7 @@
 			</div>
 		</div>
 		<div class="box" style="width:370px;">
-			<%= render :partial => 'boxtop', :locals=>{:title=>"#{campaign.name}: Recent Call Stats"} %>
+			<%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{campaign.name}: Recent Call Stats"} %>
 
 
 
@@ -93,7 +93,7 @@
 		<% if v.length > 0 %>
 
 		<div class="box" style="width:370px;">
-			<%= render :partial => 'boxtop', :locals=>{:title=>"#{campaign.name}: Call Results"} %>
+			<%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{campaign.name}: Call Results"} %>
 			<div class="box-content">
 				Results:<br/>
 				<% v.each do |voter| %>

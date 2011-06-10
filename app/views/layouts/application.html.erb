@@ -73,7 +73,7 @@
 			</td>
 			<td width="40">&nbsp;</td>
 			<td valign="top">
-					<%= render :partial => 'client/boxtop', :locals=>{:title=>"Login"} %>
+					<%= render :partial => 'shared/boxtop', :locals=>{:title=>"Login"} %>
 					<% form_tag("/client/login", :id=>"loginForm") do |f| %>
 
 				  <div class="table not">
@@ -100,7 +100,7 @@
 					<% end %>
 				</div>			
 				<br/>
-				<%= render :partial => 'client/boxtop', :locals=>{:title=>"Join"} %>
+				<%= render :partial => 'shared/boxtop', :locals=>{:title=>"Join"} %>
 				<div style="background-color:#fff">
 					<div class="box-content">
 						<a href="/client/join">Click here to join Impact Dialing</a>

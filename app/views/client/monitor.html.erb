@@ -9,7 +9,7 @@ function eavesdrop(sess,type){
 </script>
 <h1>Monitor</h1>
 <div class="box">
-	<%= render :partial => 'boxtop', :locals=>{:title=>"Active Campaigns"} %>
+	<%= render :partial => 'shared/boxtop', :locals=>{:title=>"Active Campaigns"} %>
 	<% if @logged_in_campaigns.length==0 %>
 		<div class="form">
 	      <label>No campaigns active.</label>
@@ -41,7 +41,7 @@ function eavesdrop(sess,type){
 
 <% if @logged_in_campaigns.length > 0 %>
 <div class="box">
-	<%= render :partial => 'boxtop', :locals=>{:title=>"Active Callers"} %>
+	<%= render :partial => 'shared/boxtop', :locals=>{:title=>"Active Callers"} %>
   <div class="table">
     <table width="100%" border="0" cellspacing="0" cellpadding="0">
       <tr>

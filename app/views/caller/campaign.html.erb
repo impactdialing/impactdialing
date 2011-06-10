@@ -1,6 +1,6 @@
 <% form_tag("/caller/campaign/#{params[:id]}", {:class => "form", :id=>"myform", :name=>"myform"}) do %>
 	<div class="box" style="width:100%;">
-		<%= render :partial => 'client/boxtop', :locals=>{:title=>"#{@campaign.name}"} %>
+		<%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@campaign.name}"} %>
 <fieldset>
 	<legend>Lead information</legend>
 		<div class="box-content">
