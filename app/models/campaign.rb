@@ -116,10 +116,10 @@ class Campaign < ActiveRecord::Base
     in_progress
   end
 
-  def calls_in_ending_window(period=10,predective_type="longest")
+  def calls_in_ending_window(period=10,predictive_type="longest")
     #calls predicted to end soon
     stats = self.call_stats(period)
-    if predective_type=="longest"
+    if predictive_type=="longest"
       window = stats[:biggest_long]
     else
       window = stats[:avg_long]
@@ -244,7 +244,7 @@ class Campaign < ActiveRecord::Base
 		#final calcs
 		stats[:short_new_call_caller_threshold] = 1/(stats[:total_short].to_f / stats[:total_long].to_f).to_f
 		stats[:short_new_call_time_threshold] = ( stats[:avg_short] + (2*stats[:short_deviation]) ) - ( stats[:avg_ring_time] - (2*stats[:avg_ring_time_deviation]) )
-		if self.predective_type=="algorithm1"
+		if self.predictive_type=="algorithm1"
 		  stats[:long_new_call_time_threshold] = ( stats[:avg_long] + (2*stats[:long_deviation]))- ( stats[:avg_ring_time] - (2*stats[:avg_ring_time_deviation]))
 	  else
 		  stats[:long_new_call_time_threshold] = stats[:avg_duration]
@@ -253,7 +253,6 @@ class Campaign < ActiveRecord::Base
     # bimodal pacing algorithm:
     # when stats[:short_new_call_caller_threshold] callers are on calls of length less than stats[:short_time]s, dial  stats[:dials_needed] lines at stats[:short_new_call_time_threshold]) seconds after the last call began.
     # if a call passes length 15s, dial stats[:dials_needed] lines at stats[:short_new_long_time_threshold]sinto the call.
-
 
 		stats
   end

@@ -232,7 +232,7 @@ class CallinController < ApplicationController
       if @campaign.use_web_ui
         @publish_channel="#{@session.session_key}"
         @publish_key="waiting"
-        if @campaign.predective_type=="preview"
+        if @campaign.predictive_type=="preview"
           @publish_value="preview"
         else
           @publish_value="ok"
@@ -388,7 +388,7 @@ class CallinController < ApplicationController
         if @campaign.use_web_ui
           @publish_channel="#{@session.session_key}"
           @publish_key="waiting"
-          if @campaign.predective_type=="preview"
+          if @campaign.predictive_type=="preview"
             @publish_value="preview"
           else
             @publish_value="ok"
@@ -498,7 +498,7 @@ class CallinController < ApplicationController
       #   attempt.save
       # end
 
-       if params[:CallStatus]!="completed" && @campaign.use_web_ui && @campaign.predective_type=="preview"  && params[:selected_session]!=nil
+       if params[:CallStatus]!="completed" && @campaign.use_web_ui && @campaign.predictive_type=="preview"  && params[:selected_session]!=nil
           @session = CallerSession.find(params[:selected_session])
           send_rt(@session.session_key,'waiting','preview')
       end
@@ -538,7 +538,7 @@ class CallinController < ApplicationController
       @attempt.call_end=Time.now
       @attempt.save
       @voter.save
-      # if @campaign.predective_type=="preview" && params[:selected_session]
+      # if @campaign.predictive_type=="preview" && params[:selected_session]
       #   send_rt(CallerSession.find(params[:selected_session]).session_key,{'waiting'=>'preview'})
       # end
       if @voter.caller_session_id!=nil
