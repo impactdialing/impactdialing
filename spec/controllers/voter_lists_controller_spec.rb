@@ -61,6 +61,19 @@ describe VoterListsController do
           Voter.first.Phone.should == "1234567895"
           Voter.first.LastName.should == "Bar"
         end
+        it "removes the temporary file from disk" do
+          temp_filename = "#{Rails.root}/tmp/#{session[:voters_list_uploads][VoterList.first.id]['filename']}"
+          post :add_to_db,
+               :id                => VoterList.first.id,
+               :campaign_id       => @campaign.id,
+               :csv_to_system_map => {
+                   "Phone" => "Phone",
+                   "LAST"  =>"LastName"
+               }
+          File.should_not exist(temp_filename)
+          session[:voters_list_uploads][VoterList.first.id].should be_blank
+        end
+
       end
     end
   end

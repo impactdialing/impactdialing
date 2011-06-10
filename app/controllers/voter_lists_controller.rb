@@ -57,6 +57,7 @@ class VoterListsController < ClientController
                                                separator)
     uploaded_file.close
     File.unlink temp_file_path(csv_filename)
+    session[:voters_list_uploads].delete id
     render :show
   end
 
