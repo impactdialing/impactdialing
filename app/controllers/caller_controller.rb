@@ -1,6 +1,6 @@
 class CallerController < ApplicationController
   layout "client"
-  before_filter :check_login, :except=>[:login]
+  before_filter :check_login, :except=>[:login,:feedback]
   before_filter :redirect_to_ssl
 
   def index
@@ -265,15 +265,18 @@ class CallerController < ApplicationController
 
     @on_call = CallerSession.find_by_session_key(params[:key])
     if(@on_call==nil || @on_call.on_call==false)
-      #hungup?
-#      render :text=>""
-#      return
+      #hungup?  the view will reload the page in this case to reset the ui
     else
       @campaign = @on_call.campaign
     end
     respond_to do |format|
         format.js
     end
+  end
+  
+  def feedback
+            Postoffice.deliver_feedback(params[:issue])
+        render :text=>  "ok"
   end
 
 end

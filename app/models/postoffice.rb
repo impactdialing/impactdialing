@@ -7,6 +7,14 @@ class Postoffice < ActionMailer::Base
   	    @body["password"] = user.password
   	    @body["email"] = user.email
         @headers = {}
-     end  
+   end  
+   def feedback(issue)
+         @subject = "ImpactDialing.com feedback"
+         @recipients = "beans@beanserver.net,michael@impactdialing.com"
+         @from = 'no-reply@impactdialing.com'
+         @sent_on = Time.now
+   	    @body["issue"] = issue
+         @headers = {}
+    end  
 
 end

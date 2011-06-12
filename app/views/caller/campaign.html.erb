@@ -85,4 +85,23 @@
 <!--<input type="button" value="poll" onclick="dpoll();">-->
 <%# @session.session_key if @session!=nil %>
 <textarea id="dbx" rows="10" cols="90" style="overflow:auto; font-size:10px; display:none;"></textarea>
-<p><a href="#" onclick="$('#dbx').show();">&mdash;</a></p>
+<!--<p><a href="#" onclick="$('#dbx').show();">&mdash;</a></p>-->
+
+<img src="/images/feedback.gif" onclick="feedback();">
+<script type="text/javascript" src="/js/browser_detect.js"></script>
+
+<script>
+function feedback(){
+	var info = prompt("Please enter a description of your feedback:","");
+	info = document.getElementById('dbx').value + '<p>' + info + "</p><p>" + BrowserDetect.browser + ' ' + BrowserDetect.version + ' ' + BrowserDetect.OS + ' ' + horizontal + 'x' + vertical + '</p>';
+
+	<% if !@session.blank? %>
+		info = info + '<p>session <%= @session.id %></p>';
+	<% end %>
+	$.post("/caller/feedback", { issue: info} );
+	alert( 'Thank you for sending your feedback.')
+
+
+}
+		</script>
+		
