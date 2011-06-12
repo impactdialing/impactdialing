@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110609095425) do
+ActiveRecord::Schema.define(:version => 20110610201559) do
 
   create_table "accounts", :force => true do |t|
     t.integer  "user_id"
@@ -129,7 +129,7 @@ ActiveRecord::Schema.define(:version => 20110609095425) do
     t.string   "caller_id"
     t.boolean  "caller_id_verified",       :default => false
     t.boolean  "use_answering",            :default => true
-    t.string   "predective_type"
+    t.string   "predective_type",          :default => "preview"
     t.integer  "recording_id"
     t.boolean  "use_recordings",           :default => false
     t.integer  "max_calls_per_caller",     :default => 20

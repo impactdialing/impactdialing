@@ -48,15 +48,14 @@ class VoterListsController < ClientController
       return
     end
 
-    csv_filename  = session[:voters_list_uploads][id]["filename"]
-    separator     = session[:voters_list_uploads][id]["separator"]
-    uploaded_file = File.open(temp_file_path(csv_filename), "r")
-    
-    @result       = voter_list.append_from_csv(csv_to_system_map,
-                                               uploaded_file,
-                                               separator)
-    uploaded_file.close
-    File.unlink temp_file_path(csv_filename)
+    csv_filename      = session[:voters_list_uploads][id]["filename"]
+    separator         = session[:voters_list_uploads][id]["separator"]
+    uploaded_filename = temp_file_path(csv_filename)
+
+    @result = voter_list.import_leads(csv_to_system_map,
+                                      uploaded_filename,
+                                      separator)
+    File.unlink uploaded_filename
     session[:voters_list_uploads].delete id
     render :show
   end

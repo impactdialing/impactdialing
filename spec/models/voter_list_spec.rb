@@ -4,14 +4,21 @@ describe VoterList do
   include ActionController::TestProcess
 
   describe "upload voters list" do
-    let(:csv_file_upload) { fixture_file_upload("files/voters_list.csv") }
+    let(:csv_file_upload) {
+      fixture_path = ActionController::TestCase.fixture_path
+      source_file = "#{fixture_path}files/voters_list.csv"
+      temp_dir = "#{fixture_path}test_tmp"
+      temp_filename = "#{temp_dir}/voters_list.csv"
+      FileUtils.cp source_file, temp_filename
+      temp_filename
+    }
     let(:user) { Factory(:user) }
     let(:campaign) { Factory(:campaign, :user => user) }
     let(:voter_list) { Factory(:voter_list, :campaign => campaign, :user_id => user.id) }
 
     before :each do
       Voter.destroy_all
-      @result = voter_list.append_from_csv(
+      @result = voter_list.import_leads(
           {
               "LAST"      => "LastName",
               "FIRSTName" => "FirstName",
