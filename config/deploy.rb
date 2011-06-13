@@ -4,7 +4,6 @@ repository = "https://impact-dialing.svn.beanstalkapp.com/webapp/trunk"
 set :application, "impactdialing"
 set :user, "rails"
 set :scm, :subversion
-set :scm_username, "srushti"
 set :scm_auth_cache, true
 set :deploy_via, :export
 set :repository,  repository
@@ -33,7 +32,7 @@ end
 
 task :staging do
   set :server_name, "ec2-174-129-172-31.compute-1.amazonaws.com"
-  set :rails_env, 'production'
+  set :rails_env, 'staging'
   role :web, 'staging.impactdialing.com'
   role :app, 'staging.impactdialing.com'
   role :db, 'staging.impactdialing.com'
