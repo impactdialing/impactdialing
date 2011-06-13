@@ -57,6 +57,7 @@ class CallerController < ApplicationController
 
     @campaign = Campaign.find_by_id(params[:id])
     @script=@campaign.script
+    @client_ip = request.remote_ip  
     if !@caller.campaigns.index(@campaign)
       redirect_to :action=>"index"
       return
