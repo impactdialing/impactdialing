@@ -18,8 +18,8 @@
 
       <p><label for="">Dialing Mode</label>
         <select class="field" id="campaign_predective_type" name="campaign[predective_type]">
-          <% public_dialers = {"Preview" => "preview","Power 2x" => "power_2x","Power 3x" => "power_3x","Power 4x" => "power_4x", "Predictive" => "algorithm1"} %>
-          <% if !public_dialers.values.index(@campaign.predective_type) %>
+          <% public_dialers = [ ["Predictive", "algorithm1"], ["Power x4", "power_4x"], ["Power x3", "power_3x"], ["Power x2", "power_2x"], ["Preview", "preview"],] %>
+          <% if !public_dialers.map{|pair| pair[1]}.index(@campaign.predective_type) %>
             <option value="<%= @campaign.predective_type %>" selected><%= @campaign.predective_type %></option>
           <% end %>
           <%= options_for_select public_dialers, @campaign.predective_type %>
