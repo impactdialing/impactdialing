@@ -42,6 +42,9 @@
 	      	<div id="actiondiv">
 		Enter your phone number:
 		<input type="text" name="numtocall" placeholder="Type your phone number here"> 
+
+<img src="/images/report_bug.png" onclick="feedback();" align="right">
+
 		<p><div class="buttons">
 		<button type="submit">Start taking calls</button>
 		</div></p>
@@ -81,7 +84,7 @@
 
 	<% end %>
 <% end -%>
-<img src="/images/report_bug.png" onclick="feedback();" align="right">
+<!-- <img src="/images/report_bug.png" onclick="feedback();" align="right"> -->
 
 <!--<input type="button" value="poll" onclick="dpoll();">-->
 <%# @session.session_key if @session!=nil %>
@@ -117,5 +120,5 @@ function feedback(){
 
 
 }
-		</script>
+</script>
 		
