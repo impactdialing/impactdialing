@@ -59,7 +59,7 @@ class ClientController < ApplicationController
         @caller.user_id = @user.id
         @caller.save
 
-      if Script.find_by_name_and_user_id("Voter ID Example",@user.id)==nil
+        if Script.find_by_name_and_user_id("Voter ID Example",@user.id)==nil
           @script = Script.new
           @script.name = "Voter ID Example"
           @rs={}
@@ -72,7 +72,7 @@ class ClientController < ApplicationController
           @rs["keypad_7"]="Not home/call back"
           @rs["keypad_8"]="Language barrier"
           @rs["keypad_9"]="Wrong number"
-      #      @rs.incompletes=["7"].to_json
+          #      @rs.incompletes=["7"].to_json
           @script.result_set_1 = @rs.to_json
           @script.incompletes='{"5":[],"6":[],"1":["7"],"7":[],"2":[],"8":[],"3":[],"9":[],"4":[],"10":[]}'
           @script.name = "Political Example Script"
@@ -80,16 +80,18 @@ class ClientController < ApplicationController
           @numResults = 1
           @numNotes = 1
           @script.voter_fields='["CustomID","FirstName","MiddleName","LastName","Suffix","Age","Gender","Email"]'
-           @script.script = "Hi, is ___ there?
+          @script.script = <<-EOS
+          Hi, is ___ there?
 
-My name's ___ and I'm a volunteer with the such-and-such campaign.
+          My name's ___ and I'm a volunteer with the such-and-such campaign.
 
-I'm voting for such-and-such because...
+          I'm voting for such-and-such because...
 
-Can we count on you to vote for such-and-such?"
-            @script.active = 1
-            @script.user_id = @user.id
-            @script.save
+          Can we count on you to vote for such-and-such?
+          EOS
+          @script.active = 1
+          @script.user_id = @user.id
+          @script.save
         end
 
         if false && Script.find_by_name_and_user_id("Voter ID Example",@user.id)==nil
@@ -150,11 +152,13 @@ Can we count on you to vote for such-and-such?"
           @script.keypad_7="Call back"
           @script.keypad_8="Wrong number"
           @script.incompletes=["7","6"].to_json
-          @script.script="Hi, is ___ there?
+          @script.script= <<-EOS
+          Hi, is ___ there?
 
-My name's ___, and I'm calling from the Organization to Make the World Better.
+          My name's ___, and I'm calling from the Organization to Make the World Better.
 
-Will you donate to help our work?"
+          Will you donate to help our work?
+          EOS
           @script.active = 1
           @script.user_id = @user.id
           @script.save
@@ -171,11 +175,13 @@ Will you donate to help our work?"
           @script.keypad_6="Call back"
           @script.keypad_7="Wrong number"
           @script.incompletes=["5","6"].to_json
-          @script.script="Hi, is ___ there?
+          @script.script= <<-EOS
+          Hi, is ___ there?
 
-Hi! My name's ___. I'm calling from Widgets, Inc. We have some great new widgets in stock.
+          Hi! My name's ___. I'm calling from Widgets, Inc. We have some great new widgets in stock.
 
-Do you want to buy a widget?"
+          Do you want to buy a widget?
+          EOS
           @script.active = 1
           @script.user_id = @user.id
           @script.save
@@ -214,7 +220,7 @@ Do you want to buy a widget?"
 
   def login
     redirect_to :action => "user_add" if session[:user]
-    
+
     @breadcrumb="Login"
     @title="Join Impact Dialing"
     @user = User.new {params[:user]}
@@ -562,7 +568,7 @@ Do you want to buy a widget?"
         :first_name => @user.fname,
         :last_name  => @user.lname,
         :verification_value => params[:code]
-        )
+      )
 
       if !creditcard.valid?
         if creditcard.expired?
@@ -575,13 +581,13 @@ Do you want to buy a widget?"
         return
       end
 
-#      p = Payment.authorize(1, creditcard, {:ip=>getIP, :zip=>@account.zip, :billing_address => @account.address1})
-#      p.user_id = @user.id
-#      p.save
-#      if !p.success
-#        flash[:notice]="We had a problem authorizing that credit card.  Please try again"
-#        return
-#      end
+      #      p = Payment.authorize(1, creditcard, {:ip=>getIP, :zip=>@account.zip, :billing_address => @account.address1})
+      #      p.user_id = @user.id
+      #      p.save
+      #      if !p.success
+      #        flash[:notice]="We had a problem authorizing that credit card.  Please try again"
+      #        return
+      #      end
 
       billing_address = { :name => "#{@user.fname} #{@user.lname}", :address1 => @account.address1 , :zip =>@account.zip}
       options = {:address => {}, :address1 => billing_address, :billing_address => billing_address, :ip=>"127.0.0.1", :order_id=>""}
@@ -617,7 +623,7 @@ Do you want to buy a widget?"
     flash.now[:error]="When Impact Dialing makes a call, it needs a phone number to use for the Caller ID. Enter the phone number you want to use for your Caller ID and click Verify. To prevent abuse, Impact Dialing will call that number and ask you to enter a validation code that will appear on your screen. Until you do this, you can't make calls with this campaign."  if @campaign.caller_id.blank?
     @isAdmin = @user.admin
     @show_voter_buttons = @user.show_voter_buttons
-#    render :layout=>"campaign_view"
+    #    render :layout=>"campaign_view"
   end
 
   def campaign_caller_id_verified
@@ -739,26 +745,26 @@ Do you want to buy a widget?"
     end
     if @script==nil
       @script = Script.new
-#       @rs={}
-#       @rs["keypad_1"]="Strong supportive"
-#       @rs["keypad_2"]="Lean supportive"
-#       @rs["keypad_3"]="Undecided"
-#       @rs["keypad_4"]="Lean opposed"
-#       @rs["keypad_5"]="Strong opposed"
-#       @rs["keypad_6"]="Refused"
-#       @rs["keypad_7"]="Not home/call back"
-#       @rs["keypad_8"]="Language barrier"
-#       @rs["keypad_9"]="Wrong number"
-# #      @rs.incompletes=["7"].to_json
-#       @script.result_set_1 = @rs.to_json
-#       @script.incompletes='{"5":[],"6":[],"1":["7"],"7":[],"2":[],"8":[],"3":[],"9":[],"4":[],"10":[]}'
-#       @script.name = "Political Example Script"
-       @script.name = "Untitled Script"
-#       @script.note_1 = "Email"
-#       @numResults = 1
-#       @numNotes = 1
-#       @script.voter_fields='["CustomID","FirstName","MiddleName","LastName","Suffix","Age","Gender","Email"]'
-#
+      #       @rs={}
+      #       @rs["keypad_1"]="Strong supportive"
+      #       @rs["keypad_2"]="Lean supportive"
+      #       @rs["keypad_3"]="Undecided"
+      #       @rs["keypad_4"]="Lean opposed"
+      #       @rs["keypad_5"]="Strong opposed"
+      #       @rs["keypad_6"]="Refused"
+      #       @rs["keypad_7"]="Not home/call back"
+      #       @rs["keypad_8"]="Language barrier"
+      #       @rs["keypad_9"]="Wrong number"
+      # #      @rs.incompletes=["7"].to_json
+      #       @script.result_set_1 = @rs.to_json
+      #       @script.incompletes='{"5":[],"6":[],"1":["7"],"7":[],"2":[],"8":[],"3":[],"9":[],"4":[],"10":[]}'
+      #       @script.name = "Political Example Script"
+      @script.name = "Untitled Script"
+      #       @script.note_1 = "Email"
+      #       @numResults = 1
+      #       @numNotes = 1
+      #       @script.voter_fields='["CustomID","FirstName","MiddleName","LastName","Suffix","Age","Gender","Email"]'
+      #
     end
     if @script.new_record?
       @label = "New script"
@@ -1007,23 +1013,23 @@ Do you want to buy a widget?"
           @callerMins += session.minutes_used
         end
 
-      end
+  end
 
-      def report_overview_old
-        @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
-        if @campaign.blank?
-          render :text=>"Unauthorized"
-          return
-        end
-        if params[:type]=="1"
-          extra = "and result is not null"
-        end
+  def report_overview_old
+    @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
+    if @campaign.blank?
+      render :text=>"Unauthorized"
+      return
+    end
+    if params[:type]=="1"
+      extra = "and result is not null"
+    end
 
-        @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Answereds Call Report"]
+    @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Answereds Call Report"]
 
-        set_report_date_range
+    set_report_date_range
 
-        sql = "
+    sql = "
         SELECT count(*) as cnt, result
         FROM call_attempts
         where campaign_id=#{@campaign.id}
@@ -1043,268 +1049,268 @@ Do you want to buy a widget?"
         @voters_called = @campaign.voters_called
         @totalvoters = @voters_to_call.length + @voters_called.length
 
-      end
+  end
 
-      # def show_memcached
-      #   @avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
-      # end
-      def script_delete
-        @script = Script.find_by_id_and_user_id(params[:id],@user.id)
-        if !@script.blank?
-          @script.active=false
-          @script.save
-        end
-        flash[:notice]="Script deleted"
-        redirect_to :action=>"scripts"
-        return
-      end
+  # def show_memcached
+  #   @avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
+  # end
+  def script_delete
+    @script = Script.find_by_id_and_user_id(params[:id],@user.id)
+    if !@script.blank?
+      @script.active=false
+      @script.save
+    end
+    flash[:notice]="Script deleted"
+    redirect_to :action=>"scripts"
+    return
+  end
 
-      def report_caller
-        @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
-        if @campaign.blank?
-          render :text=>"Unauthorized"
-          return
-        end
-        if params[:type]=="1"
-          extra = "and result is not null"
-        end
+  def report_caller
+    @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
+    if @campaign.blank?
+      render :text=>"Unauthorized"
+      return
+    end
+    if params[:type]=="1"
+      extra = "and result is not null"
+    end
 
-        @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Caller Report"]
+    @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Caller Report"]
 
-        set_report_date_range
-        caller_ids=CallerSession.all(:select=>"distinct caller_id", :conditions=>"campaign_id=#{@campaign.id}")
-        @callers=[]
-        caller_ids.each do |caller_session|
-          @callers<< Caller.find(caller_session.caller_id)
-        end
+    set_report_date_range
+    caller_ids=CallerSession.all(:select=>"distinct caller_id", :conditions=>"campaign_id=#{@campaign.id}")
+    @callers=[]
+    caller_ids.each do |caller_session|
+      @callers<< Caller.find(caller_session.caller_id)
+    end
 
-        #{}find_all_by_user_id(@user.id)
-        @responses = Voter.all(:select=>"distinct result", :conditions=>"campaign_id = #{@campaign.id} and result is not null and result_date > '#{@from_date.strftime("%Y-%m-%d")}' and result_date < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'")
-        @num_responses = Voter.all(:conditions=>"campaign_id = #{@campaign.id} and result is not null and result_date > '#{@from_date.strftime("%Y-%m-%d")}' and result_date < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'").length
-      end
+    #{}find_all_by_user_id(@user.id)
+    @responses = Voter.all(:select=>"distinct result", :conditions=>"campaign_id = #{@campaign.id} and result is not null and result_date > '#{@from_date.strftime("%Y-%m-%d")}' and result_date < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'")
+    @num_responses = Voter.all(:conditions=>"campaign_id = #{@campaign.id} and result is not null and result_date > '#{@from_date.strftime("%Y-%m-%d")}' and result_date < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'").length
+  end
 
-      def report_caller_overview
-        @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
-        if @campaign.blank?
-          render :text=>"Unauthorized"
-          return
-        end
-        if params[:type]=="1"
-          extra = "and result is not null"
-        end
+  def report_caller_overview
+    @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
+    if @campaign.blank?
+      render :text=>"Unauthorized"
+      return
+    end
+    if params[:type]=="1"
+      extra = "and result is not null"
+    end
 
-        @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Caller Report"]
+    @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Caller Report"]
 
-        set_report_date_range
-        caller_ids=CallerSession.all(:select=>"distinct caller_id", :conditions=>"campaign_id=#{@campaign.id}")
-        @callers=[]
-        caller_ids.each do |caller_session|
-          @callers<< Caller.find(caller_session.caller_id)
-        end
+    set_report_date_range
+    caller_ids=CallerSession.all(:select=>"distinct caller_id", :conditions=>"campaign_id=#{@campaign.id}")
+    @callers=[]
+    caller_ids.each do |caller_session|
+      @callers<< Caller.find(caller_session.caller_id)
+    end
 
-      end
+  end
 
-      def report_login
+  def report_login
 
-        @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
-        if @campaign.blank?
-          render :text=>"Unauthorized"
-          return
-        end
-        if params[:type]=="1"
-          extra = "and result is not null"
-        end
+    @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
+    if @campaign.blank?
+      render :text=>"Unauthorized"
+      return
+    end
+    if params[:type]=="1"
+      extra = "and result is not null"
+    end
 
-        @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Caller Report"]
-        #      @logins = CallerSession.find_all_by_campagin_id(@campagin.id, :order=>"id desc")
-        @logins = CallerSession.find_all_by_campaign_id(@campaign.id, :order=>"id desc")
-      end
+    @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Caller Report"]
+    #      @logins = CallerSession.find_all_by_campagin_id(@campagin.id, :order=>"id desc")
+    @logins = CallerSession.find_all_by_campaign_id(@campaign.id, :order=>"id desc")
+  end
 
-      def report_download
-        @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
-        if @campaign.blank?
-          render :text=>"Unauthorized"
-          return
-        end
+  def report_download
+    @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
+    if @campaign.blank?
+      render :text=>"Unauthorized"
+      return
+    end
 
-        @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Download Report"]
-        set_report_date_range
+    @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Download Report"]
+    set_report_date_range
 
-        if params[:download]=="1"
-          #      attempts = CallAttempt.find_all_by_campaign_id(@campaign.id)
+    if params[:download]=="1"
+      #      attempts = CallAttempt.find_all_by_campaign_id(@campaign.id)
 
-          subsql = "select voter_id from call_attempts ca
+      subsql = "select voter_id from call_attempts ca
            join voters v on v.id=ca.voter_id
            where ca.campaign_id=#{@campaign.id} and last_call_attempt_id=ca.id
            and ca.created_at > '#{@from_date.strftime("%Y-%m-%d")}'
            and ca.created_at < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'
-          "
-          voters = ActiveRecord::Base.connection.execute(subsql)
-          voter_ids = []
-          voters.each do |a|
-            voter_ids << a[0]
-          end
-          if voter_ids.length==0
-            voter_subq = "0"
-          else
-            voter_subq = voter_ids.join(",")
-          end
+      "
+      voters = ActiveRecord::Base.connection.execute(subsql)
+      voter_ids = []
+      voters.each do |a|
+        voter_ids << a[0]
+      end
+      if voter_ids.length==0
+        voter_subq = "0"
+      else
+        voter_subq = voter_ids.join(",")
+      end
 
-          sql = "select
-          ca.result, ca.result_digit , v.Phone, v.CustomID, v.LastName, v.FirstName, v.MiddleName, v.Suffix, v.Email, c.pin, c.name,  c.email, ca.status, ca.connecttime, ca.call_end, v.last_call_attempt_id=ca.id as final , ca.result_json, f.CustomID, f.LastName, f.FirstName, f.MiddleName, f.Suffix, f.Email, family_id_answered
-          from call_attempts ca
-          join voters v on v.id=ca.voter_id
-          left outer join callers c on c.id=ca.caller_id
-          left outer join families f on f.id=v.family_id_answered
-          where
-          ca.campaign_id=#{@campaign.id}
-          and v.id in (#{voter_subq})
-          order by v.id asc, ca.id asc
-          "
-          attempts = ActiveRecord::Base.connection.execute(sql)
-            logger.info "attempts: #{attempts}"
-          json_fields=[]
-          attempts.each do |a|
-            if json_fields.empty? && a[16]!=nil
-              json_fields = YAML.load(a[16]).keys
-            end
-          end
-          attempts.data_seek(0)
+      sql = <<-EOSQL
+        select
+        ca.result, ca.result_digit , v.Phone, v.CustomID, v.LastName, v.FirstName, v.MiddleName, v.Suffix, v.Email, c.pin, c.name,  c.email, ca.status, ca.connecttime, ca.call_end, v.last_call_attempt_id=ca.id as final , ca.result_json, f.CustomID, f.LastName, f.FirstName, f.MiddleName, f.Suffix, f.Email, family_id_answered
+        from call_attempts ca
+        join voters v on v.id=ca.voter_id
+        left outer join callers c on c.id=ca.caller_id
+        left outer join families f on f.id=v.family_id_answered
+        where
+        ca.campaign_id=#{@campaign.id}
+        and v.id in (#{voter_subq})
+        order by v.id asc, ca.id asc
+      EOSQL
+      attempts = ActiveRecord::Base.connection.execute(sql)
+      logger.info "attempts: #{attempts}"
+      json_fields=[]
+      attempts.each do |a|
+        if json_fields.empty? && a[16]!=nil
+          json_fields = YAML.load(a[16]).keys
+        end
+      end
+      attempts.data_seek(0)
 
-          csv_string = FasterCSV.generate do |csv|
-#            csv << ["result", "result digit" , "voter phone", "voter id", "voter last", "voter first", "voter middle", "voter suffix", "voter email","caller pin", "caller name",  "caller email","status", "call start", "call end", "number attempts"]
-            #csv << ["id", "LastName", "FirstName", "MiddleName", "Suffix", "Phone", "Result", "Caller Name", "Status", "Call Start", "Call End", "Number Calls"] + json_fields #+ ["fam_id", "fam_LastName", "fam_FirstName", "fam_MiddleName", "fam_Suffix", "fam_Email"]
-            csv << ["id", "LastName", "FirstName", "MiddleName", "Suffix", "Phone", "Caller Name", "Status", "Call Start", "Call End", "Number Calls"] + json_fields #+ ["fam_id", "fam_LastName", "fam_FirstName", "fam_MiddleName", "fam_Suffix", "fam_Email"]
-            num_call_attempts=0
-            attempts.each do |a|
-              num_call_attempts+=1
-              #logger.info "a[15]: #{a[15]}"
-              if a[15]=="1"
-                #final attempt
-                #logger.info a.inspect
-                 json_to_add=[]
-                  if a[16].blank?
-                    json_fields.each do |j|
-                      json_to_add << ""
-                    end
-                  else
-                    json=YAML.load(a[16])
-                    json_fields.each do |j|
-                      if json.keys.index(j)
-                        json_to_add << json[j]
-                      else
-                        json_to_add << ""
-                      end
-                    end
-                  end
-#                csv << [a[0],a[1],a[2],a[3],a[4],a[5],a[6],a[7],a[8],a[9],a[10],a[11],a[12],a[13],a[14],a[15],num_call_attempts]
-                #csv << [a[3],a[4],a[5],a[6],a[7],a[2],a[0],a[10],a[12],a[13],a[14],num_call_attempts]  + json_to_add + [a[17],a[18],a[19],a[20],a[21]]
-                if a[23]==0 || a[23]=="" || a[23]==nil || a[23]=="0"
-                  #no fam
-                  #logger.info "no fam"
-                  csv << [a[3],a[4],a[5],a[6],a[7],a[2],a[10],a[12],a[13],a[14],num_call_attempts]  + json_to_add #+ [a[17],a[18],a[19],a[20],a[21]]
+      csv_string = FasterCSV.generate do |csv|
+        #            csv << ["result", "result digit" , "voter phone", "voter id", "voter last", "voter first", "voter middle", "voter suffix", "voter email","caller pin", "caller name",  "caller email","status", "call start", "call end", "number attempts"]
+        #csv << ["id", "LastName", "FirstName", "MiddleName", "Suffix", "Phone", "Result", "Caller Name", "Status", "Call Start", "Call End", "Number Calls"] + json_fields #+ ["fam_id", "fam_LastName", "fam_FirstName", "fam_MiddleName", "fam_Suffix", "fam_Email"]
+        csv << ["id", "LastName", "FirstName", "MiddleName", "Suffix", "Phone", "Caller Name", "Status", "Call Start", "Call End", "Number Calls"] + json_fields #+ ["fam_id", "fam_LastName", "fam_FirstName", "fam_MiddleName", "fam_Suffix", "fam_Email"]
+        num_call_attempts=0
+        attempts.each do |a|
+          num_call_attempts+=1
+          #logger.info "a[15]: #{a[15]}"
+          if a[15]=="1"
+            #final attempt
+            #logger.info a.inspect
+            json_to_add=[]
+            if a[16].blank?
+              json_fields.each do |j|
+                json_to_add << ""
+              end
+            else
+              json=YAML.load(a[16])
+              json_fields.each do |j|
+                if json.keys.index(j)
+                  json_to_add << json[j]
                 else
-                  #fam
-                  #logger.info "fam: #{a[23]}"
-                  csv << [a[17],a[18],a[19],a[20],a[7],a[2],a[10],a[12],a[13],a[14],num_call_attempts]  + json_to_add
+                  json_to_add << ""
                 end
-
-                num_call_attempts=0
               end
             end
-          end
-          send_data csv_string, :type => "text/csv",  :filename=>"report.csv", :disposition => 'attachment'
-          return
-        end
-
-      end
-
-      def report_real
-        check_warning
-        if params[:id].blank?
-          @breadcrumb = "Reports"
-        else
-          @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
-          if @campaign.blank?
-            render :text=>"Unauthorized"
-            return
-          end
-          @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Realtime Report"]
-        end
-
-      end
-      def update_report_real
-        if params[:timeframe].blank?
-          @timeframe = 10
-        else
-          @timeframe = params[:timeframe].to_i
-        end
-
-        # if !params[:clear].blank?
-        #   cache_delete("avail_campaign_hash")
-        # end
-        # @avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
-        @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id)
-        render :layout=>false
-      end
-
-      def set_report_date_range
-        begin
-          if params[:from_date]
-            @from_date=Date.parse params[:from_date]
-            @to_date = Date.parse params[:to_date]
-          else
-            firstCall = CallerSession.find_by_campaign_id(@campaign.id,:order=>"id asc", :limit=>"1")
-            lastCall = CallerSession.find_by_campaign_id(@campaign.id,:order=>"id desc", :limit=>"1")
-            if !firstCall.blank?
-              @from_date  = firstCall.created_at
+            #                csv << [a[0],a[1],a[2],a[3],a[4],a[5],a[6],a[7],a[8],a[9],a[10],a[11],a[12],a[13],a[14],a[15],num_call_attempts]
+            #csv << [a[3],a[4],a[5],a[6],a[7],a[2],a[0],a[10],a[12],a[13],a[14],num_call_attempts]  + json_to_add + [a[17],a[18],a[19],a[20],a[21]]
+            if a[23]==0 || a[23]=="" || a[23]==nil || a[23]=="0"
+              #no fam
+              #logger.info "no fam"
+              csv << [a[3],a[4],a[5],a[6],a[7],a[2],a[10],a[12],a[13],a[14],num_call_attempts]  + json_to_add #+ [a[17],a[18],a[19],a[20],a[21]]
+            else
+              #fam
+              #logger.info "fam: #{a[23]}"
+              csv << [a[17],a[18],a[19],a[20],a[7],a[2],a[10],a[12],a[13],a[14],num_call_attempts]  + json_to_add
             end
-            if !lastCall.blank?
-              @to_date  = lastCall.created_at
-            end
+
+            num_call_attempts=0
           end
-        rescue
-          #just use the defaults below
         end
-
-        @from_date = Date.parse("2010/01/01") if @from_date==nil
-        @to_date = DateTime.now if @to_date==nil
-
       end
-
-      def monitor
-        @logged_in_campaigns = Campaign.all(:conditions=>"id in (select distinct campaign_id from caller_sessions where on_call=1 and user_id=#{@user.id})")
-#        @logged_in_callers = CallerSession.find_all_by_on_call(1)
-#        @ready_to_dial = CallAttempt.find_all_by_status("Call ready to dial", :conditions=>"call_end is null")
-      end
-
-      def eavesdrop_call
-        t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-        # a = t.call("POST", "Calls/#{caller.sid}", {'CurrentUrl'=>"#{appurl}/callin/callerEndCall?session=#{caller.id}"})
-        session=CallerSession.find(params[:session_id])
-        a = t.call("POST", "Calls", {'Timeout'=>"20", 'Caller' => session.campaign.caller_id, 'Called' => params[:num], 'Url'=>"#{APP_URL}/callin/monitorEavesdrop?session=#{session.id}&type=#{params[:type]}"})
-        render :text=>""
-      end
-
-      private
-      def stream_csv
-        filename = params[:action] + ".csv"
-
-        #this is required if you want this to work with IE
-        if request.env['HTTP_USER_AGENT'] =~ /msie/i
-          headers['Pragma'] = 'public'
-          headers["Content-type"] = "text/plain"
-          headers['Cache-Control'] = 'no-cache, must-revalidate, post-check=0, pre-check=0'
-          headers['Content-Disposition'] = "attachment; filename=\"#{filename}\""
-          headers['Expires'] = "0"
-        else
-          headers["Content-Type"] ||= 'text/csv'
-          headers["Content-Disposition"] = "attachment; filename=\"#{filename}\""
-        end
-
-        render :text => Proc.new { |response, output|
-          csv = FasterCSV.new(output, :row_sep => "\r\n")
-          yield csv
-        }
-      end
+      send_data csv_string, :type => "text/csv",  :filename=>"report.csv", :disposition => 'attachment'
+      return
     end
+
+  end
+
+  def report_real
+    check_warning
+    if params[:id].blank?
+      @breadcrumb = "Reports"
+    else
+      @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
+      if @campaign.blank?
+        render :text=>"Unauthorized"
+        return
+      end
+      @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Realtime Report"]
+    end
+  end
+
+  def update_report_real
+    if params[:timeframe].blank?
+      @timeframe = 10
+    else
+      @timeframe = params[:timeframe].to_i
+    end
+
+    # if !params[:clear].blank?
+    #   cache_delete("avail_campaign_hash")
+    # end
+    # @avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
+    @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id)
+    render :layout=>false
+  end
+
+  def set_report_date_range
+    begin
+      if params[:from_date]
+        @from_date=Date.parse params[:from_date]
+        @to_date = Date.parse params[:to_date]
+      else
+        firstCall = CallerSession.find_by_campaign_id(@campaign.id,:order=>"id asc", :limit=>"1")
+        lastCall = CallerSession.find_by_campaign_id(@campaign.id,:order=>"id desc", :limit=>"1")
+        if !firstCall.blank?
+          @from_date  = firstCall.created_at
+        end
+        if !lastCall.blank?
+          @to_date  = lastCall.created_at
+        end
+      end
+    rescue
+      #just use the defaults below
+    end
+
+    @from_date = Date.parse("2010/01/01") if @from_date==nil
+    @to_date = DateTime.now if @to_date==nil
+  end
+
+  def monitor
+    @logged_in_campaigns = Campaign.all(:conditions=>"id in (select distinct campaign_id from caller_sessions where on_call=1 and user_id=#{@user.id})")
+    #        @logged_in_callers = CallerSession.find_all_by_on_call(1)
+    #        @ready_to_dial = CallAttempt.find_all_by_status("Call ready to dial", :conditions=>"call_end is null")
+  end
+
+  def eavesdrop_call
+    t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+    # a = t.call("POST", "Calls/#{caller.sid}", {'CurrentUrl'=>"#{appurl}/callin/callerEndCall?session=#{caller.id}"})
+    session=CallerSession.find(params[:session_id])
+    a = t.call("POST", "Calls", {'Timeout'=>"20", 'Caller' => session.campaign.caller_id, 'Called' => params[:num], 'Url'=>"#{APP_URL}/callin/monitorEavesdrop?session=#{session.id}&type=#{params[:type]}"})
+    render :text=>""
+  end
+
+  private
+  def stream_csv
+    filename = params[:action] + ".csv"
+
+    #this is required if you want this to work with IE
+    if request.env['HTTP_USER_AGENT'] =~ /msie/i
+      headers['Pragma'] = 'public'
+      headers["Content-type"] = "text/plain"
+      headers['Cache-Control'] = 'no-cache, must-revalidate, post-check=0, pre-check=0'
+      headers['Content-Disposition'] = "attachment; filename=\"#{filename}\""
+      headers['Expires'] = "0"
+    else
+      headers["Content-Type"] ||= 'text/csv'
+      headers["Content-Disposition"] = "attachment; filename=\"#{filename}\""
+    end
+
+    render :text => Proc.new { |response, output|
+      csv = FasterCSV.new(output, :row_sep => "\r\n")
+      yield csv
+    }
+  end
+end
