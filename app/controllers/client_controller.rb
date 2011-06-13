@@ -30,6 +30,7 @@ class ClientController < ApplicationController
       end
     end
   end
+
   def user_add
     @breadcrumb = "My Account"
     @title = "My Account"
@@ -308,7 +309,7 @@ class ClientController < ApplicationController
   end
 
   def campaign_new
-    campaign = Campaign.new
+    campaign = Campaign.new(:user_id => @user.id, :predective_type => 'algorithm1')
     campaign.user_id = @user.id
     count = Campaign.find_all_by_user_id(@user.id)
     campaign.name="Untitled #{count.length+1}"

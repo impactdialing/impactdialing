@@ -28,6 +28,11 @@ describe ClientController do
         }.should change(Campaign, :count).by(1)
         response.should redirect_to "/client/campaign_view/#{Campaign.last.id}"
       end
+
+      it "defaults the campaign's mode to predictive type" do
+        get :campaign_new
+        Campaign.last.predective_type.should == 'algorithm1'
+      end
     end
   end
 end
