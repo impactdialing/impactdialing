@@ -34,3 +34,13 @@ production:
     timeout: 5000
     reconnect: true
     pool: 10
+
+staging:
+    adapter: mysql
+    host: ec2-174-129-172-31.compute-1.amazonaws.com
+    database: impactdialing_staging
+    username: root
+    password: 
+    timeout: 5000
+    reconnect: true
+    pool: 10
