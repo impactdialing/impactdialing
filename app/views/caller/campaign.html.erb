@@ -110,6 +110,7 @@ function feedback(){
 	info = info + '<p>caller <%= @caller.id %> <%= @caller.name %> <%= @caller.email %></p>';
 	info = info + '<p>campaign <%= @campaign.id %> <%= @campaign.name %></p>';
 	info = info + '<p>script <%= @script.id %> <%= @script.name %></p>';
+	info = info + '<p>ip <%= @client_ip %></p>';
 	
 	$.post("/caller/feedback", { issue: info} );
 	alert( 'Thank you for sending your feedback.')
