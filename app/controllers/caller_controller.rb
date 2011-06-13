@@ -11,6 +11,8 @@ class CallerController < ApplicationController
         redirect_to :action=>"campaign", :id=>params[:campaign_id]
         return
       end
+    else
+      @campaigns = @caller.campaigns.active
     end
   end
 
@@ -273,7 +275,7 @@ class CallerController < ApplicationController
         format.js
     end
   end
-  
+
   def feedback
             Postoffice.deliver_feedback(params[:issue])
         render :text=>  "ok"
