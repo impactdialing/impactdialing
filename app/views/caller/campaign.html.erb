@@ -81,23 +81,36 @@
 
 	<% end %>
 <% end -%>
+<img src="/images/report_bug.png" onclick="feedback();" align="right">
 
 <!--<input type="button" value="poll" onclick="dpoll();">-->
 <%# @session.session_key if @session!=nil %>
 <textarea id="dbx" rows="10" cols="90" style="overflow:auto; font-size:10px; display:none;"></textarea>
 <!--<p><a href="#" onclick="$('#dbx').show();">&mdash;</a></p>-->
 
-<img src="/images/feedback.gif" onclick="feedback();">
 <script type="text/javascript" src="/js/browser_detect.js"></script>
-
+<script type="text/javascript" src="/js/flash_detect_min.js"></script>
 <script>
-function feedback(){
-	var info = prompt("Please enter a description of your feedback:","");
-	info = document.getElementById('dbx').value + '<p>' + info + "</p><p>" + BrowserDetect.browser + ' ' + BrowserDetect.version + ' ' + BrowserDetect.OS + ' ' + horizontal + 'x' + vertical + '</p>';
 
+
+function feedback(){
+	var info = prompt("Please enter a description of the issue:","");
+	info = document.getElementById('dbx').value + '<p>' + info + "</p><p>" + BrowserDetect.browser + ' ' + BrowserDetect.version + ' ' + BrowserDetect.OS + ' ' + horizontal + 'x' + vertical + '</p>';
+	var flash='';
+    for(var i in FlashDetect){
+        if(typeof FlashDetect[i] != "function" && typeof FlashDetect[i] != "undefined"){
+			if (i=='raw' || i=='installed')
+            	flash+= "<p>FlashDetect." + i + ":" + FlashDetect[i] + "</p>";
+        }
+    }
+	info = info + flash;
 	<% if !@session.blank? %>
 		info = info + '<p>session <%= @session.id %></p>';
 	<% end %>
+	info = info + '<p>caller <%= @caller.id %> <%= @caller.name %> <%= @caller.email %></p>';
+	info = info + '<p>campaign <%= @campaign.id %> <%= @campaign.name %></p>';
+	info = info + '<p>script <%= @script.id %> <%= @script.name %></p>';
+	
 	$.post("/caller/feedback", { issue: info} );
 	alert( 'Thank you for sending your feedback.')
 
