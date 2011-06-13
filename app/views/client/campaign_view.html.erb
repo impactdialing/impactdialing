@@ -57,7 +57,7 @@
       <% if @lists.length==0 %>
           <p>You haven't uploaded any lists yet.</p>
           <p class="actions">
-            <%= link_to "Upload voters", new_campaign_voter_list_path(@campaign.id), :class => "action secondary" %>
+            <%= link_to "Upload list", new_campaign_voter_list_path(@campaign.id), :class => "action secondary" %>
           </p>
           <% if @show_voter_buttons %>
               <a href="/client/voter_add?campaign_id=<%= @campaign.id %>" class="add-button"><span>Enter Voter</span></a>
