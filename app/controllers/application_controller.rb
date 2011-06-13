@@ -14,9 +14,9 @@ class ApplicationController < ActionController::Base
     @cont = controller_name
     @act = action_name
     if controller_name=="caller"
-      redirect_to "https://caller.#{request.domain}:#{request.port}/#{@cont}/#{@act}/#{params[:id]}" unless (ssl? or local_request?)
+      redirect_to "https://caller.#{request.domain}/#{@cont}/#{@act}/#{params[:id]}" unless (ssl? or local_request?)
     else
-      redirect_to "https://admin.#{request.domain}:#{request.port}/#{@cont}/#{@act}/#{params[:id]}" unless (ssl? or local_request?)
+      redirect_to "https://admin.#{request.domain}/#{@cont}/#{@act}/#{params[:id]}" unless (ssl? or local_request?)
     end
     flash.keep
     return false
