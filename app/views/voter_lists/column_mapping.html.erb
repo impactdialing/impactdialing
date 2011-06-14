@@ -2,18 +2,17 @@
     <%= stylesheet_link_tag "column_mapping" %>
 <% end %>
 
-
+<h1>Add list</h1>
 <% form_tag(add_to_db_campaign_voter_lists_path(@campaign), :method => :post, :html => {:multipart => true}) do %>
     <%= hidden_field_tag "separator", @separator %>
     <p>
-      Please give a name for this list.
       <label>List name</label>
       <%= text_field_tag "voter_list_name",nil, :required => true, :id => "voter_list_name"
       %>
     </p>
 
     <p>
-      We found the following headers in your uploaded file. Please map them to the fields below.
+      We found the following headers in the file you uploaded. Please map them to the fields below.
     </p>
 
     <dl class='table-display'>
@@ -24,6 +23,5 @@
       <% end %>
     </dl>
     <div style='clear:both;'></div>
-
-    <%= submit_tag "Finish", :id => "submit" %>
+    <button type="submit">Finish</button>
 <% end %>
