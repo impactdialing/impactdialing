@@ -1,5 +1,5 @@
 <div class="box">
-  <%= render :partial => 'shared/boxtop', :locals=>{:title=>"Add a list to #{@campaign.name}"} %>
+  <h5>Add List</h5>
   <% form_for(@voter_list, :url=> campaign_voter_lists_path(@campaign), :method => :post, :html => {:multipart => true}) do %>
       <div class="form">
         <p>

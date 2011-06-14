@@ -3,53 +3,96 @@
 <div id="callerid"></div>
 
 <% form_for :campaign, :url => {:action => "campaign_add", :id=>@campaign.id}, :html => {:name => 'callerForm', :id => 'callerForm'} do |f| %>
-
     <fieldset>
-      <legend>Campaign information</legend>
-      <p><label for="">Name</label><br>
-        <%= f.text_field :name, {:class=>"field size3"} %></p>
+      <fieldset>
+        <legend>Campaign information</legend>
+        <p><label for="">Name</label><br>
+          <%= f.text_field :name, {:class=>"field size3"} %></p>
 
-      <p><label for="">Caller ID</label><br>
-        <%= f.text_field :caller_id, {:class=>"field size3"} %></p>
+        <p><label for="">Caller ID</label><br>
+          <%= f.text_field :caller_id, {:class=>"field size3"} %></p>
 
-      <p><label for="">Script</label><br>
-        <%= f.collection_select(:script_id, Script.find_all_by_user_id_and_active(@user.id, 1), :id, :name, {:prompt => true}, {:class=>"field"}) %>
-      </p>
+        <p><label for="">Script</label><br>
+          <%= f.collection_select(:script_id, Script.find_all_by_user_id_and_active(@user.id, 1), :id, :name, {:prompt => true}, {:class=>"field"}) %>
+        </p>
 
-      <p><label for="">Dialing Mode</label>
-        <select class="field" id="campaign_predective_type" name="campaign[predective_type]">
-          <% public_dialers = [ ["Predictive", "algorithm1"], ["Power x4", "power_4x"], ["Power x3", "power_3x"], ["Power x2", "power_2x"], ["Preview", "preview"],] %>
-          <% if !public_dialers.map{|pair| pair[1]}.index(@campaign.predective_type) %>
-            <option value="<%= @campaign.predective_type %>" selected><%= @campaign.predective_type %></option>
-          <% end %>
-          <%= options_for_select public_dialers, @campaign.predective_type %>
-        </select>
-      </p>
-      <% if !@campaign.user.recordings.blank? %>
-          <p><label> <%= f.check_box :use_recordings, :onclick=>"doRecord();" %> &nbsp; Leave voicemail</label></p>
+        <p><label for="">Dialing Mode</label>
+          <select class="field" id="campaign_predective_type" name="campaign[predective_type]">
+            <% public_dialers = [["Predictive", "algorithm1"], ["Power x4", "power_4x"], ["Power x3", "power_3x"], ["Power x2", "power_2x"], ["Preview", "preview"],] %>
+            <% if !public_dialers.map { |pair| pair[1] }.index(@campaign.predective_type) %>
+                <option value="<%= @campaign.predective_type %>" selected><%= @campaign.predective_type %></option>
+            <% end %>
+            <%= options_for_select public_dialers, @campaign.predective_type %>
+          </select>
+        </p>
+        <% if !@campaign.user.recordings.blank? %>
+            <p><label> <%= f.check_box :use_recordings, :onclick=>"doRecord();" %> &nbsp; Leave voicemail</label></p>
 
-          <div id="recordingsdiv"
-               <% if  !@campaign.use_recordings? %> style="display:none;"
-               <% end %>>
-            <p>Recording:</p>
-            <%= f.collection_select(:recording_id, Recording.find_all_by_user_id_and_active(@user.id, 1), :id, :name, {:prompt => false}, {:class=>"field", :onchange=>"updatePreview();"}) %>
-            <div id="sndPreview"></div>
-          </div>
-      <% end %>
-      <!--		<p><input type="button" class="button" value="Manage Recordings" onclick="document.location.href='/client/recording_add?campaign_id=<%= @campaign.id %>';"/></p>-->
-      <p class="actions">
-        <a href='/client/recording_add?campaign_id=<%= @campaign.id %>' class="action secondary">Manage voicemails</a>
-      </p>
-
-      <p>Call-in number:
-        <% if ENV["RAILS_ENV"]=="development" %>
-            <%= number_to_phone(APP_NUMBER, :area_code => true) %>
-        <% else %>
-            <%= number_to_phone(@campaign.callin_number, :area_code => true) %>
+            <div id="recordingsdiv"
+                 <% if  !@campaign.use_recordings? %> style="display:none;"
+                 <% end %>>
+              <p>Recording:</p>
+              <%= f.collection_select(:recording_id, Recording.find_all_by_user_id_and_active(@user.id, 1), :id, :name, {:prompt => false}, {:class=>"field", :onchange=>"updatePreview();"}) %>
+              <div id="sndPreview"></div>
+            </div>
         <% end %>
-      </p>
+        <!--		<p><input type="button" class="button" value="Manage Recordings" onclick="document.location.href='/client/recording_add?campaign_id=<%= @campaign.id %>';"/></p>-->
+        <p class="actions">
+          <a href='/client/recording_add?campaign_id=<%= @campaign.id %>' class="action secondary">Manage voicemails</a>
+        </p>
 
-      <p>Campaign ID:  <%= @campaign.group_id %></p>
+        <p>Call-in number:
+          <% if ENV["RAILS_ENV"]=="development" %>
+              <%= number_to_phone(APP_NUMBER, :area_code => true) %>
+          <% else %>
+              <%= number_to_phone(@campaign.callin_number, :area_code => true) %>
+          <% end %>
+        </p>
+
+        <p>Campaign ID:  <%= @campaign.group_id %></p>
+      </fieldset>
+      <fieldset>
+        <legend>Callers with access</legend>
+        <% if @callers.length==0 %>
+            <p>No callers entered.</p>
+            <a href="/client/callers" class="add-button"><span>Add callers</span></a>
+        <% else %>
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr>
+                <th>Name</th>
+                <th>&nbsp;</th>
+                <th>PIN</th>
+                <% if @campaign.predective_type.index("robo,") %>
+                    <th></th>
+                    <th></th>
+                <% end %>
+              </tr>
+              <tr>
+                <td><input type="checkbox" value="0" id="listUse" onclick="allCallers();"> All Callers</td>
+                <td></td>
+                <td></td>
+              </tr>
+              <% @callers.each do |l| %>
+                  <tr>
+                    <td><%= check_box_tag "campaign[caller_ids][]", "#{l.id}", callerInCampaign(l), :onclick=>"someCallers();" -%> <%= l.name %></td>
+                    <td></td>
+                    <td><%= l.pin %></td>
+                    <% if @campaign.predective_type.index("robo,") %>
+                        <td>
+                          <a href="/client/robo_session_start?caller_id=<%= l.id %>&campaign_id=<%= @campaign.id %>">start</a>
+                        </td>
+                        <td>
+                          <a href="/client/robo_session_end?caller_id=<%= l.id %>&campaign_id=<%= @campaign.id %>">end</a>
+                        </td>
+                    <% end %>
+                  </tr>
+              <% end %>
+            </table>
+        <% end %>
+      </fieldset>
+      <div class="buttons">
+        <button type="submit">Save</button>
+      </div>
     </fieldset>
 
     <fieldset>
@@ -80,60 +123,12 @@
           </table>
           <input type="hidden" name="listsSent" value="1">
           (uncheck to stop calling)
-          <p class="actions">
-            <%= link_to "Upload voters", new_campaign_voter_list_path(@campaign.id), :class => "action secondary" %>
-          </p>
           <% if @user.id==1 && @show_voter_buttons %>
               <a href="/client/voter_add?campaign_id=<%= @campaign.id %>" class="add-button"><span>Enter Voter</span></a>
               <a href="/client/voter_view?campaign_id=<%= @campaign.id %>" class="button"><span>View Voters</span></a>
           <% end %>
       <% end %>
     </fieldset>
-
-    <fieldset>
-      <legend>Callers with access</legend>
-      <% if @callers.length==0 %>
-          <p>No callers entered.</p>
-          <a href="/client/callers" class="add-button"><span>Add callers</span></a>
-      <% else %>
-          <table width="100%" border="0" cellspacing="0" cellpadding="0">
-            <tr>
-              <th>Name</th>
-              <th>&nbsp;</th>
-              <th>PIN</th>
-              <% if @campaign.predective_type.index("robo,") %>
-                  <th></th>
-                  <th></th>
-              <% end %>
-            </tr>
-            <tr>
-              <td><input type="checkbox" value="0" id="listUse" onclick="allCallers();"> All Callers</td>
-              <td></td>
-              <td></td>
-            </tr>
-            <% @callers.each do |l| %>
-                <tr>
-                  <td><%= check_box_tag "campaign[caller_ids][]", "#{l.id}", callerInCampaign(l), :onclick=>"someCallers();" -%> <%= l.name %></td>
-                  <td></td>
-                  <td><%= l.pin %></td>
-                  <% if @campaign.predective_type.index("robo,") %>
-                      <td>
-                        <a href="/client/robo_session_start?caller_id=<%= l.id %>&campaign_id=<%= @campaign.id %>">start</a>
-                      </td>
-                      <td>
-                        <a href="/client/robo_session_end?caller_id=<%= l.id %>&campaign_id=<%= @campaign.id %>">end</a>
-                      </td>
-                  <% end %>
-                </tr>
-            <% end %>
-          </table>
-      <% end %>
-    </fieldset>
-
-
-    <div class="buttons">
-      <button type="submit">Save</button>
-    </div>
 <% end %>
 
 
