@@ -24,6 +24,7 @@ class ClientController < ApplicationController
       if u.blank?
         flash.now[:error]="We could not find an account with that email address"
       else
+        u.create_reset_code
         Postoffice.deliver_password_recovery(u)
         flash[:notice]="We emailed your password to you. Please check your spam folder in case it accidentally ends up there."
         redirect_to :action=>"login"
@@ -230,7 +231,7 @@ class ClientController < ApplicationController
     end
 
     if !params[:email].blank?
-      @user = User.find_by_email_and_password(params[:email],params[:password])
+      @user = User.authenticate(params[:email], params[:password])
       if @user.blank?
         flash.now[:error]="Invalid Login"
         @user = User.new {params[:user]}

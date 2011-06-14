@@ -13,7 +13,7 @@ end
 
 Factory.define :user do |u|
   u.email { Factory.next(:email) }
-  u.password 'password'
+  u.hashed_password 'password'
 end
 
 Factory.define :campaign do |c|

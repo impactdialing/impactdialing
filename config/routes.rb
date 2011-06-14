@@ -64,6 +64,12 @@ ActionController::Routing::Routes.draw do |map|
       end
     end
   end
+
+  map.resources :users do |user|
+    user.update_password '/update_password', :action => 'update_password', :controller => 'client/users', :conditions => { :method => :put }
+  end
+  map.reset_password '/reset_password', :action => 'reset_password', :controller => 'client/users', :conditions =>{ :method => :get }
+
   map.resources :campaigns do |campaign|
     campaign.resources :voter_lists, :member => {:add_to_db => :post}
   end
