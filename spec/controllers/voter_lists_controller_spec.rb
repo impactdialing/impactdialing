@@ -42,6 +42,7 @@ describe VoterListsController do
       describe "select the mappings" do
         def add_to_db
           post :add_to_db,
+               :separator         => ",",
                :voter_list_name   => "voter list name",
                :campaign_id       => @campaign.id,
                :csv_to_system_map => {
@@ -52,6 +53,7 @@ describe VoterListsController do
 
         it "needs a list name" do
           post :add_to_db,
+               :separator         => ",",
                :campaign_id       => @campaign.id,
                :csv_to_system_map => {
                    "Phone" => "Phone",
@@ -73,12 +75,6 @@ describe VoterListsController do
           File.should_not exist(temp_filename)
           session[:voters_list_upload].should be_blank
         end
-        it "sets the voter list to be valid after successful import" do
-          VoterList.delete_all
-          add_to_db()
-          VoterList.first.state.should == VoterList::States::VALID
-        end
-
       end
     end
   end
