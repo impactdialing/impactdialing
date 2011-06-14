@@ -94,6 +94,7 @@
         <button type="submit">Save</button>
       </div>
     </fieldset>
+<% end %>
 
     <fieldset>
       <legend>Lists</legend>
@@ -128,8 +129,8 @@
               <a href="/client/voter_view?campaign_id=<%= @campaign.id %>" class="button"><span>View Voters</span></a>
           <% end %>
       <% end %>
+      <%= render :partial => "voter_lists/new" %>
     </fieldset>
-<% end %>
 
 
 <script>

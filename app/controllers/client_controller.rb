@@ -625,7 +625,7 @@ class ClientController < ApplicationController
     flash.now[:error]="When Impact Dialing makes a call, it needs a phone number to use for the Caller ID. Enter the phone number you want to use for your Caller ID and click Verify. To prevent abuse, Impact Dialing will call that number and ask you to enter a validation code that will appear on your screen. Until you do this, you can't make calls with this campaign."  if @campaign.caller_id.blank?
     @isAdmin = @user.admin
     @show_voter_buttons = @user.show_voter_buttons
-    #    render :layout=>"campaign_view"
+    @voter_list = @campaign.voter_lists.new
   end
 
   def campaign_caller_id_verified
