@@ -1,16 +1,14 @@
 require "spec_helper"
 
-module Admin
-  describe CampaignsController do
-    before(:each) do
-      controller.should_receive(:authenticate).and_return(true)
-    end
+describe Admin::CampaignsController do
+  before(:each) do
+    controller.should_receive(:authenticate).and_return(true)
+  end
 
-    it "restores a deleted campaign" do
-      campaign = Factory(:campaign, :active => false)
-      put :restore, :campaign_id => campaign.id
-      campaign.reload.should be_active
-      response.should redirect_to admin_campaigns_path
-    end
+  it "restores a deleted campaign" do
+    campaign = Factory(:campaign, :active => false)
+    put :restore, :campaign_id => campaign.id
+    campaign.reload.should be_active
+    response.should redirect_to admin_campaigns_path
   end
 end
