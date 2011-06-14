@@ -39,7 +39,6 @@ class VoterListsController < ClientController
     @voter_list.name        = params[:voter_list_name]
     @voter_list.campaign_id = params[:campaign_id]
     @voter_list.user_id     = session[:user]
-    @voter_list.state       = VoterList::States::INITIAL
     unless @voter_list.valid?
       flash[:error] = @voter_list.errors.full_messages
       return
@@ -50,7 +49,6 @@ class VoterListsController < ClientController
                                       uploaded_filename,
                                       separator)
     
-    @voter_list.update_attribute(:state, VoterList::States::VALID)
     File.unlink uploaded_filename
     session[:voters_list_upload] = nil
     render :show

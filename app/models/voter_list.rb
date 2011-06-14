@@ -7,12 +7,6 @@ class VoterList < ActiveRecord::Base
   validates_presence_of :name
   validates_uniqueness_of :name, :scope => :user_id
 
-  module States
-    INITIAL = "initial"
-    VALID = "valid"
-  end
-  validates_inclusion_of :state, :in => [States::INITIAL, States::VALID]
-
   VOTER_DATA_COLUMNS = ["Phone", "VAN ID", "LastName", "FirstName", "MiddleName", "Suffix", "Email", "DWID", "Age", "Gender"]
   def import_leads(csv_to_system_map, csv_filename, seperator)
     result      = {:messages     => [],
