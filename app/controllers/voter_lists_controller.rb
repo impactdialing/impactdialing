@@ -34,7 +34,7 @@ class VoterListsController < ClientController
   def add_to_db
     id         = params["id"].to_i
     voter_list = VoterList.find(id)
-    unless voter_list.user_id.to_i == session[:user]
+    unless voter_list.user_id.to_s == session[:user].to_s
       flash[:error] = "You are not authorized to edit this list"
       redirect_to new_campaign_voter_list_path(@campaign.id)
       return
