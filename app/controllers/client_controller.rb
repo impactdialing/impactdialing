@@ -25,7 +25,7 @@ class ClientController < ApplicationController
         flash.now[:error]="We could not find an account with that email address"
       else
         Postoffice.deliver_password_recovery(u)
-        flash[:notice]="Check your email for your account password"
+        flash[:notice]="We emailed your password to you. Please check your spam folder in case it accidentally ends up there."
         redirect_to :action=>"login"
       end
     end
