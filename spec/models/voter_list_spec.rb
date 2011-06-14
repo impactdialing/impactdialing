@@ -3,6 +3,30 @@ require "spec_helper"
 describe VoterList do
   include ActionController::TestProcess
 
+  describe "state" do
+    it "should validate the state" do
+      Factory.build(:voter_list, :state => "xyz").should_not be_valid
+      Factory.build(:voter_list, :state => VoterList::States::INITIAL).should be_valid
+    end
+    describe "default scope" do
+      it "should not give voter lists in initial state" do
+        lambda { Factory(:voter_list, :state => VoterList::States::INITIAL) }.should_not change {
+          VoterList.count
+        }
+      end
+      it "should give valid voter lists" do
+        lambda { Factory(:voter_list, :state => VoterList::States::VALID) }.should change {
+          VoterList.count
+        }.by(1)
+      end
+    end
+    it "should give all records when unscoped" do
+      lambda { Factory(:voter_list, :state => VoterList::States::INITIAL) }.should change {
+        VoterList.unscoped { VoterList.count }
+      }
+    end
+  end
+
   describe "upload voters list" do
     let(:csv_file_upload) {
       fixture_path = ActionController::TestCase.fixture_path
@@ -14,7 +38,7 @@ describe VoterList do
     }
     let(:user) { Factory(:user) }
     let(:campaign) { Factory(:campaign, :user => user) }
-    let(:voter_list) { Factory(:voter_list, :campaign => campaign, :user_id => user.id) }
+    let(:voter_list) { Factory(:voter_list, :campaign => campaign, :user_id => user.id, :state => VoterList::States::INITIAL) }
 
     before :each do
       Voter.destroy_all

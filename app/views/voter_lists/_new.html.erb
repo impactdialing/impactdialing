@@ -1,28 +1,15 @@
 <div class="box">
-  <h5>Add List</h5>
   <% form_for(@voter_list, :url=> campaign_voter_lists_path(@campaign), :method => :post, :html => {:multipart => true}) do %>
       <div class="form">
         <p>
           <label>Select list</label>
           <%= file_field 'upload', 'datafile' %>
         </p>
-
-        <p>
-          <label>List name</label>
-          <%= text_field_tag "list_name" %>
-        </p>
-
-        <p class="inline-field">
-          <label>File type</label>
-          <select class="field size3" name="seperator">
-            <option value="tab">Tab (*.txt)</option>
-            <option value="comma">Comma (*.csv)</option>
-          </select>
-        </p>
+        <span class="fine-print">Files with CSV extension are assumed to be comma separated. .TXT files are supposed to be tab separated</span>
       </div>
 
       <div class="buttons">
-        <input type="button" class="button" value="Cancel" onclick="document.location.href='/client/campaign_view/<%= @campaign.id %>';"/>
+        <input type="reset" class="button" value="Cancel" />
         <input type="submit" class="button" value="Add list"/>
       </div>
   <% end %>

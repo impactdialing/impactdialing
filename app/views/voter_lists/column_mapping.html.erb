@@ -2,11 +2,20 @@
     <%= stylesheet_link_tag "column_mapping" %>
 <% end %>
 
-<p>
-  We found the following headers in your uploaded file. Please map them to the fields below.
-</p>
 
-<% form_tag(add_to_db_campaign_voter_list_path(@campaign, @voter_list), :method => :post, :html => {:multipart => true}) do %>
+<% form_tag(add_to_db_campaign_voter_lists_path(@campaign), :method => :post, :html => {:multipart => true}) do %>
+    <%= hidden_field_tag "separator", @separator %>
+    <p>
+      Please give a name for this list.
+      <label>List name</label>
+      <%= text_field_tag "voter_list_name",nil, :required => true, :id => "voter_list_name"
+      %>
+    </p>
+
+    <p>
+      We found the following headers in your uploaded file. Please map them to the fields below.
+    </p>
+
     <dl class='table-display'>
       <% @csv_column_headers.each do |csv_header| %>
           <% selected =  matching_system_header_for(csv_header) %>
@@ -15,5 +24,6 @@
       <% end %>
     </dl>
     <div style='clear:both;'></div>
-    <%= submit_tag "Finish" %>
+
+    <%= submit_tag "Finish", :id => "submit" %>
 <% end %>

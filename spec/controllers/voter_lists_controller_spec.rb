@@ -18,23 +18,19 @@ describe VoterListsController do
       flash[:error].should == "You must select a file to upload"
     end
 
-    it "needs a list name" do
-      post :create, :campaign_id => @campaign.id,
-           :upload               => csv_file_upload
-      flash[:error].should include "Name can't be blank"
-    end
-
     describe "create voter list" do
       before :each do
-        VoterList.delete_all
-        session[:voters_list_uploads] = nil
+        session[:voters_list_upload] = nil
         post :create,
              :campaign_id => @campaign.id,
              :upload      => csv_file_upload,
              :list_name   => "foobar"
       end
-      it "creates a voter list entry" do
-        VoterList.count.should == 1
+      it "sets the session to the new voter list entry" do
+        session[:voters_list_upload].should_not be_empty
+      end
+      it "saves the uploaded csv" do
+        File.should exist("#{Rails.root}/tmp/#{session[:voters_list_upload]['filename']}")
       end
 
       it "renders the mappings screen" do
@@ -43,35 +39,44 @@ describe VoterListsController do
         response.should render_template("column_mapping")
       end
 
-      it "saves the uploaded csv" do
-        File.should exist("#{Rails.root}/tmp/#{session[:voters_list_uploads][VoterList.first.id]['filename']}")
-      end
-
       describe "select the mappings" do
-        it "saves all the voters in the csv according to the mappings" do
-          Voter.delete_all
+        def add_to_db
           post :add_to_db,
-               :id                => VoterList.first.id,
+               :voter_list_name   => "voter list name",
                :campaign_id       => @campaign.id,
                :csv_to_system_map => {
                    "Phone" => "Phone",
                    "LAST"  =>"LastName"
                }
+        end
+
+        it "needs a list name" do
+          post :add_to_db,
+               :campaign_id       => @campaign.id,
+               :csv_to_system_map => {
+                   "Phone" => "Phone",
+                   "LAST"  =>"LastName"
+               }
+          flash[:error].should include "Name can't be blank"
+        end
+
+        it "saves all the voters in the csv according to the mappings" do
+          Voter.delete_all
+          add_to_db()
           Voter.count.should == 1
           Voter.first.Phone.should == "1234567895"
           Voter.first.LastName.should == "Bar"
         end
         it "removes the temporary file from disk" do
-          temp_filename = "#{Rails.root}/tmp/#{session[:voters_list_uploads][VoterList.first.id]['filename']}"
-          post :add_to_db,
-               :id                => VoterList.first.id,
-               :campaign_id       => @campaign.id,
-               :csv_to_system_map => {
-                   "Phone" => "Phone",
-                   "LAST"  =>"LastName"
-               }
+          temp_filename = "#{Rails.root}/tmp/#{session[:voters_list_upload]['filename']}"
+          add_to_db()
           File.should_not exist(temp_filename)
-          session[:voters_list_uploads][VoterList.first.id].should be_blank
+          session[:voters_list_upload].should be_blank
+        end
+        it "sets the voter list to be valid after successful import" do
+          VoterList.delete_all
+          add_to_db()
+          VoterList.first.state.should == VoterList::States::VALID
         end
 
       end
