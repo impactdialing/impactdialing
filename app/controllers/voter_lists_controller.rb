@@ -4,7 +4,8 @@ class VoterListsController < ClientController
 
   def create
     if params[:upload].blank?
-      flash[:error]="You must select a file to upload"
+      flash[:error] = "You must select a file to upload"
+      redirect_to campaign_view_path(@campaign.id)
       return
     end
 
@@ -28,10 +29,15 @@ class VoterListsController < ClientController
     phone_column      = csv_to_system_map.values.map(&:upcase).index("PHONE")
     unless phone_column.present?
       flash[:error] = "Could not process upload file.  Missing column header: Phone"
-      redirect_to new_campaign_voter_list_path(@campaign.id)
+      redirect_to campaign_view_path(@campaign.id)
       return
     end
 
+    unless session[:voters_list_upload] and session[:voters_list_upload]["filename"]
+      flash[:error] = "Please upload the file again."
+      redirect_to campaign_view_path(@campaign.id)
+      return
+    end
     csv_filename      = session[:voters_list_upload]["filename"]
     uploaded_filename = temp_file_path(csv_filename)
 
@@ -45,16 +51,14 @@ class VoterListsController < ClientController
     end
     @voter_list.save!
 
-    @result = @voter_list.import_leads(csv_to_system_map,
+    result = @voter_list.import_leads(csv_to_system_map,
                                       uploaded_filename,
                                       separator)
     
     File.unlink uploaded_filename
     session[:voters_list_upload] = nil
-    render :show
-  end
-
-  def show
+    flash[:notice] = "Upload completed. #{result[:successCount]} out of #{result[:successCount]+result[:failedCount]} rows imported successfully."
+    redirect_to campaign_view_path(@campaign.id)
   end
 
   def new

@@ -71,7 +71,7 @@ ActionController::Routing::Routes.draw do |map|
   map.reset_password '/reset_password', :action => 'reset_password', :controller => 'client/users', :conditions =>{ :method => :get }
 
   map.resources :campaigns do |campaign|
-    campaign.resources :voter_lists, :collection => {:add_to_db => :post}, :except => [:new]
+    campaign.resources :voter_lists, :collection => {:add_to_db => :post}, :except => [:new, :show]
   end
 
   map.connect 'admin/:action/:id', :controller=>"admin"

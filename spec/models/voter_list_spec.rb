@@ -35,7 +35,6 @@ describe VoterList do
 
     it "should be successful" do
       @result.should == {
-          :messages     => [],
           :successCount => 2,
           :failedCount  => 0
       }

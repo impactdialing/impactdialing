@@ -9,8 +9,7 @@ class VoterList < ActiveRecord::Base
 
   VOTER_DATA_COLUMNS = ["Phone", "VAN ID", "LastName", "FirstName", "MiddleName", "Suffix", "Email", "DWID", "Age", "Gender"]
   def import_leads(csv_to_system_map, csv_filename, seperator)
-    result      = {:messages     => [],
-                   :successCount => 0,
+    result      = {:successCount => 0,
                    :failedCount  => 0}
 
     voters_list = FasterCSV.parse(File.read(csv_filename), :col_sep => seperator)
@@ -38,7 +37,6 @@ class VoterList < ActiveRecord::Base
       end
 
       unless lead.save
-        result[:messages] << "Row #{(row+2).to_s} : #{lead.errors.full_messages.join("; ")}"
         result[:failedCount] +=1
       else
         result[:successCount] +=1
