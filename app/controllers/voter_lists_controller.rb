@@ -89,6 +89,6 @@ class VoterListsController < ClientController
 
   private
   def separator_from_file_extension(filename)
-    (File.extname(filename).downcase.include?('.csv')) ? ',' : '\t'
+    (File.extname(filename).downcase.include?('.csv')) ? ',' : "\t"
   end
 end
