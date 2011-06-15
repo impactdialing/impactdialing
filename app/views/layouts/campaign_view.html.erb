@@ -57,17 +57,7 @@
 	</div>
     <!-- End Small Nav -->
 
-	<% if flash[:notice] -%>
-
-			<div class="msg msg-ok">
-				<p><strong><%= flash[:notice] %></strong></p>
-			</div>
-	<% end -%>
-	<% if flash[:error] -%>
-	<div class="msg msg-error"> 
-				<p><strong><%= flash[:error] %></strong></p> 
-			</div>
-	<% end -%>
+    <%= render :partial => "shared/flash_messages" %>
 
     <br />
     <!-- Main -->
@@ -84,11 +74,7 @@
   </div>
 
 <br/>
-<% if flash[:warning] -%>
-<div class="msg msg-error"> 
-			<p><strong><%= flash[:warning] %></strong></p> 
-		</div>
-<% end -%>
+     <%= render :partial => "shared/client_flash_messages", :locals => {:display => [:warning]} %>
 <% if @isAdmin %>
 <a href="/client/campaign_clear_calls/<%=  @campaign.id%>" class="button"><span>Clear Campaign Calls</span></a>
 <div class="cl">&nbsp;</div><br/>

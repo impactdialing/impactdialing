@@ -1,10 +1,11 @@
 require 'tempfile'
 class VoterListsController < ClientController
   before_filter :load_campaign
-
+  skip_before_filter :check_paid
+  
   def create
     if params[:upload].blank?
-      flash[:error] = "You must select a file to upload"
+      flash_message(:error, "You must select a file to upload")
       redirect_to campaign_view_path(@campaign.id)
       return
     end
@@ -28,13 +29,13 @@ class VoterListsController < ClientController
     csv_to_system_map = params["csv_to_system_map"]
     phone_column      = csv_to_system_map.values.map(&:upcase).index("PHONE")
     unless phone_column.present?
-      flash[:error] = "Could not process upload file.  Missing column header: Phone"
+      flash_message(:error,"Could not process upload file.  Missing column header: Phone")
       redirect_to campaign_view_path(@campaign.id)
       return
     end
 
     unless session[:voters_list_upload] and session[:voters_list_upload]["filename"]
-      flash[:error] = "Please upload the file again."
+      flash_message(:error, "Please upload the file again.")
       redirect_to campaign_view_path(@campaign.id)
       return
     end
@@ -46,7 +47,7 @@ class VoterListsController < ClientController
     @voter_list.campaign_id = params[:campaign_id]
     @voter_list.user_id     = session[:user]
     unless @voter_list.valid?
-      flash[:error] = @voter_list.errors.full_messages
+      flash_message(:error, @voter_list.errors.full_messages.join("; "))
       return
     end
     @voter_list.save!
@@ -57,12 +58,8 @@ class VoterListsController < ClientController
     
     File.unlink uploaded_filename
     session[:voters_list_upload] = nil
-    flash[:notice] = "Upload completed. #{result[:successCount]} out of #{result[:successCount]+result[:failedCount]} rows imported successfully."
+    flash_message(:notice, "Upload completed. #{result[:successCount]} out of #{result[:successCount]+result[:failedCount]} rows imported successfully.")
     redirect_to campaign_view_path(@campaign.id)
-  end
-
-  def new
-    @voter_list = @campaign.voter_lists.new
   end
 
   private

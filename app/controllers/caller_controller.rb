@@ -6,7 +6,7 @@ class CallerController < ApplicationController
   def index
     if request.post?
       if params[:campaign_id].blank?
-        flash.now[:error]= "Please select a campaign"
+        flash_now(:error, "Please select a campaign")
       else
         redirect_to :action=>"campaign", :id=>params[:campaign_id]
         return
@@ -42,7 +42,7 @@ class CallerController < ApplicationController
     if !params[:email].blank?
       @caller = Caller.find_by_email_and_password(params[:email],params[:password])
       if @caller.blank?
-        flash.now[:error]="Invalid Login"
+        flash_now(:error, "Invalid Login")
       else
         session[:caller]=@caller.id
         redirect_to :action=>"index"
@@ -68,7 +68,7 @@ class CallerController < ApplicationController
     @on_call = CallerSession.find_by_caller_id_and_on_call(@caller.id,true)
     if request.post?
       if !phone_number_valid(params[:numtocall]) && !params[:numtocall].blank?
-        flash.now[:error]= "Please enter a valid phone number"
+        flash_now(:error, "Please enter a valid phone number")
       else
 
         @session = CallerSession.new

@@ -44,18 +44,8 @@
 <div id="container">
   <div class="shell">
 
-	<% if flash[:notice] -%>
-
-			<div class="msg msg-ok">
-				<p><strong><%= flash[:notice] %></strong></p>
-			</div>
-	<% end -%>
-	<% if flash[:error] -%>
-	<div class="msg msg-error"> 
-				<p><strong><%= flash[:error] %></strong></p> 
-			</div>
-	<% end -%>
-
+    <%= render :partial => "shared/flash_messages", :locals => {:display => [:error, :notice]} %>
+    
     <br />
     <!-- Main -->
     <div id="main" <% if @actionName=="campaign_view" %>style="background-color:white; -moz-border-radius: 20px;  	    -webkit-border-radius: 20px;  padding:14px;	border:1px solid #b0722f;<% end %>   "> 
@@ -126,11 +116,7 @@
 <% end %>
     <!-- Main -->
   </div>
-<% if flash[:warning] -%>
-<div class="msg msg-error"> 
-			<p><strong><%= flash[:warning] %></strong></p> 
-		</div>
-<% end -%>
+    <%= render :partial => "shared/flash_messages", :locals => {:display => [:warning]} %>
 </div>
 
 <!-- End Container -->

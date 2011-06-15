@@ -22,11 +22,11 @@ class ClientController < ApplicationController
     if request.post?
       u = User.find_by_email(params[:email])
       if u.blank?
-        flash.now[:error]="We could not find an account with that email address"
+        flash_now(:error, "We could not find an account with that email address")
       else
         u.create_reset_code
         Postoffice.deliver_password_recovery(u)
-        flash[:notice]="We emailed your password to you. Please check your spam folder in case it accidentally ends up there."
+        flash_message(:notice, "We emailed your password to you. Please check your spam folder in case it accidentally ends up there.")
         redirect_to :action=>"login"
       end
     end
@@ -46,10 +46,10 @@ class ClientController < ApplicationController
       old_existing_password = @user.password
       @user.attributes =  params[:user]
       if @user.new_record? && params[:tos].blank?
-        flash.now[:error]="You must agree to the terms of service."
+        flash_now(:error, "You must agree to the terms of service.")
         return
       elsif !@user.new_record? && params[:exist_pw]!=old_existing_password
-        flash.now[:error]="Current password incorrect"
+        flash_now(:error, "Current password incorrect")
         return
       end
 
@@ -196,7 +196,7 @@ class ClientController < ApplicationController
         end
         session[:user]=@user.id
         redirect_to :action=>"index"
-        flash[:notice]=message
+        flash_message(:notice, message)
       end
     end
 
@@ -205,14 +205,14 @@ class ClientController < ApplicationController
   def check_warning
     text = warning_text
     if !text.blank?
-      flash.now[:warning]=text
+      flash_now(:warning, text)
     end
   end
 
   def check_paid
     text = unpaid_text
     if !text.blank?
-      flash.now[:warning]=text
+      flash_now(:warning, text)
     end
   end
 
@@ -233,7 +233,7 @@ class ClientController < ApplicationController
     if !params[:email].blank?
       @user = User.authenticate(params[:email], params[:password])
       if @user.blank?
-        flash.now[:error]="Invalid Login"
+        flash_now(:error, "Invalid Login")
         @user = User.new {params[:user]}
       else
         session[:user]=@user.id
@@ -275,7 +275,7 @@ class ClientController < ApplicationController
             campaign.callers << @caller
           end
         end
-        flash[:notice]="Caller saved"
+        flash_message(:notice, "Caller saved")
         redirect_to :action=>"callers"
         return
       end
@@ -289,7 +289,7 @@ class ClientController < ApplicationController
       @caller.active = false
       @caller.save
     end
-    flash[:notice]="Caller deleted"
+    flash_message(:notice, "Caller deleted")
     redirect_to :action=>"callers"
     return
   end
@@ -300,7 +300,7 @@ class ClientController < ApplicationController
       @campaign.active = false
       @campaign.save
     end
-    flash[:notice]="Campaign deleted"
+    flash_message(:notice, "Campaign deleted")
     redirect_to :action=>"campaigns"
   end
 
@@ -329,9 +329,9 @@ class ClientController < ApplicationController
   def call_now
     campaign = Campaign.find(params[:id])
     if !phone_number_valid(params[:num])
-      flash[:error]="Phone number entered is invalid!"
+      flash_now(:error, "Phone number entered is invalid!")
     elsif list = VoterList.find_all_by_campaign_id(params[:id]).length==0
-      flash[:error]="No voter list available"
+      flash_now(:error, "No voter list available")
     else
       list = VoterList.find_all_by_campaign_id(params[:id]).first
       num = params[:num].gsub(/[^0-9]/, "")
@@ -376,7 +376,7 @@ class ClientController < ApplicationController
       voter.last_call_attempt_time = Time.now
       voter.save
 
-      flash[:notice]="Calling you now!"
+      flash_message(:notice, "Calling you now!")
     end
 
     redirect_to :action=>"campaign_view", :id=>params[:id]
@@ -433,9 +433,9 @@ class ClientController < ApplicationController
           end
         end
         if code.blank?
-          flash[:notice]="Campaign saved"
+          flash_message(:notice, "Campaign saved")
         else
-          flash[:notice]="Campaign saved.  <font color=red>Enter code #{code} when called.</font>"
+          flash_message(:notice, "Campaign saved.  <font color=red>Enter code #{code} when called.</font>")
         end
         redirect_to :action=>"campaign_view", :id=>@campaign.id
         return
@@ -446,25 +446,25 @@ class ClientController < ApplicationController
   def recording_add
     if request.post?
       if params[:upload].blank?
-        flash.now[:error]="No file uploaded"
+        flash_now(:error, "No file uploaded")
         return
       end
       if params[:filename].blank?
-        flash.now[:error]="No name entered"
+        flash_now(:error, "No name entered")
         return
       end
 
       name =  params[:upload]['datafile'].original_filename
       extension = name.split(".").last
       if extension!='wav' &&  extension!='mp3' && extension!='aif' && extension!='aiff'
-        flash.now[:error]="Filetype #{extension} is not supported.  Please upload a file ending in .mp3, .wav, or .aiff"
+        flash_now(:error, "Filetype #{extension} is not supported.  Please upload a file ending in .mp3, .wav, or .aiff")
         return
       end
       path = File.join("/tmp/", name)
       File.open(path, "wb") { |f| f.write(params[:upload]['datafile'].read) }
       bytes = File.size(path)
       if bytes > 1048576*15 #15MB
-        flash.now[:error]="Uploaded file is too large (max 15MB)"
+        flash_now(:error, "Uploaded file is too large (max 15MB)")
         return
       end
       r = Recording.new
@@ -472,7 +472,7 @@ class ClientController < ApplicationController
       r.name = params[:filename]
       r.save
       save_s3(path,r)
-      flash[:notice]="Recording saved."
+      flash_message(:notice, "Recording saved.")
       redirect_to :action=>"campaign_view", :id=>params[:campaign_id]
       return
     end
@@ -514,7 +514,7 @@ class ClientController < ApplicationController
     @session.available_for_call = true
     @session.on_call = true
     @session.save
-    flash[:notice]="Robo session started"
+    flash_message(:notice, "Robo session started")
     redirect_to :action=>"campaign_view", :id=>params[:campaign_id]
   end
 
@@ -530,7 +530,7 @@ class ClientController < ApplicationController
       session.on_call = false
       session.save
     end
-    flash[:notice]="Robo session ended"
+    flash_message(:notice, "Robo session ended")
     redirect_to :action=>"campaign_view", :id=>params[:campaign_id]
   end
 
@@ -574,10 +574,10 @@ class ClientController < ApplicationController
 
       if !creditcard.valid?
         if creditcard.expired?
-          flash[:error]="Invalid card expiration, please try again"
+          flash_now(:error, "Invalid card expiration, please try again")
           @account.cc = ""
         else
-          flash[:error]="Invalid card number or security code, please try again"
+          flash_now(:error, "Invalid card number or security code, please try again")
           @account.cc = ""
         end
         return
@@ -597,14 +597,14 @@ class ClientController < ApplicationController
       logger.info response.inspect
 
       if response.success?
-        flash[:notice]="Account activated."
+        flash_message(:notice, "Account activated.")
         @account.save
         @user.paid = 1
         @user.save
         redirect_to :action=>"index"
         return
       else
-        flash[:error]="There was a problem validating your credit card.  Please email <a href='mailto:info@impactdialing.com'>info@impactdialing.com</a> for further support."
+        flash_now(:error, "There was a problem validating your credit card.  Please email <a href='mailto:info@impactdialing.com'>info@impactdialing.com</a> for further support.")
       end
 
     end
@@ -622,7 +622,7 @@ class ClientController < ApplicationController
 
     #    @campaign.check_valid_caller_id_and_save
     #    flash.now[:error]="Your Campaign Caller ID is not verified."  if !@campaign.caller_id.blank? && !@campaign.caller_id_verified
-    flash.now[:error]="When Impact Dialing makes a call, it needs a phone number to use for the Caller ID. Enter the phone number you want to use for your Caller ID and click Verify. To prevent abuse, Impact Dialing will call that number and ask you to enter a validation code that will appear on your screen. Until you do this, you can't make calls with this campaign."  if @campaign.caller_id.blank?
+    flash_now(:warning, "When Impact Dialing makes a call, it needs a phone number to use for the Caller ID. Enter the phone number you want to use for your Caller ID and click Verify. To prevent abuse, Impact Dialing will call that number and ask you to enter a validation code that will appear on your screen. Until you do this, you can't make calls with this campaign.") if @campaign.caller_id.blank?
     @isAdmin = @user.admin
     @show_voter_buttons = @user.show_voter_buttons
     @voter_list = @campaign.voter_lists.new
@@ -651,7 +651,7 @@ class ClientController < ApplicationController
       sess.endtime = Time.now if sess.endtime==nil
       sess.save
     end
-    flash[:notice]="Dialer Reset.  Callers must call back in."
+    flash_message(:notice, "Dialer Reset.  Callers must call back in.")
     redirect_to :action=>"campaign_view", :id=>params[:id]
     return
   end
@@ -662,7 +662,7 @@ class ClientController < ApplicationController
       @voter.active = false
       @voter.save
     end
-    flash[:notice]="Voter deleted"
+    flash_message(:notice, "Voter deleted")
     redirect_to :action=>"campaign_view", :id=>@voter.campaign_id
     return
   end
@@ -678,12 +678,12 @@ class ClientController < ApplicationController
     @breadcrumb=[{"Campaigns"=>"/client/campaigns"},{@campaign.name=>"/client/campaign_view/#{@campaign.id}"}, @label]
     if request.post?
       if params[:voterList]=="0" && params[:new_list_name].blank?
-        flash.now[:error]="List name cannot be blank"
+        flash_now(:error, "List name cannot be blank")
         return
         elseif params[:voterList]=="0"
         l = VoterList.find_by_name_and_user_id(params[:new_list_name], @user.id)
         if !l.blank?
-          flash.now[:error]="List name cannot be blank"
+          flash_now(:error, "List name cannot be blank")
           return
         end
       end
@@ -703,7 +703,7 @@ class ClientController < ApplicationController
       @voter.update_attributes(params[:voter])
       if @voter.valid?
         @voter.save
-        flash[:notice]="Voter saved"
+        flash_message(:notice, "Voter saved")
         redirect_to :action=>"campaign_view", :id=>@campaign.id
         return
       end
@@ -714,7 +714,7 @@ class ClientController < ApplicationController
   def campaign_clear_calls
     ActiveRecord::Base.connection.execute("update voters set result=NULL, status='not called' where campaign_id=#{params[:id]}")
     #    ActiveRecord::Base.connection.execute("delete from voter_results where campaign_id=#{params[:id]}")
-    flash[:notice]="Calls cleared"
+    flash_message(:notice, "Calls cleared")
     redirect_to :action=>"campaign_view", :id=>params[:id]
     return
   end
@@ -803,7 +803,7 @@ class ClientController < ApplicationController
         for i in 1..99 do
           thisKeypadval = eval("params[:keypad_#{r}_#{i}]" )
           if !thisKeypadval.blank? && !isnumber(thisKeypadval)
-            flash.now[:error]= "Keypad value for call results #{r} entered '#{thisKeypadval}' must be numeric"
+            flash_now(:error, "Keypad value for call results #{r} entered '#{thisKeypadval}' must be numeric")
             return
           end
         end
@@ -861,7 +861,7 @@ class ClientController < ApplicationController
 
         @script.user_id = @user.id
         @script.save
-        flash[:notice]="Script saved"
+        flash_message(:notice, "Script saved")
         redirect_to :action=>"scripts"
         return
       end
@@ -890,21 +890,21 @@ class ClientController < ApplicationController
     if params[:id]=="drop_all_caller"
       c = Campaign.find(38)
       c.end_all_callers(TWILIO_ACCOUNT, TWILIO_AUTH, APP_URL)
-      flash[:notice]="Callers dropped"
+      flash_message(:notice, "Callers dropped")
     elsif params[:id]=="add_caller_5"
-      flash[:notice]="5 Test callers added"
+      flash_message(:notice, "5 Test callers added")
       (1..5).each do |i|
         t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
         a = t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => APP_NUMBER, 'Called' => TEST_CALLER_NUMBER, 'Url'=>"#{APP_URL}/callin?test=1"})
       end
     elsif params[:id]=="add_caller_15"
-      flash[:notice]="15 Test callers added"
+      flash_message(:notice, "15 Test callers added")
       (1..15).each do |i|
         t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
         a = t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => APP_NUMBER, 'Called' => TEST_CALLER_NUMBER, 'Url'=>"#{APP_URL}/callin?test=1"})
       end
     elsif params[:id]=="add_caller"
-      flash[:notice]="Test caller added"
+      flash_message(:notice, "Test caller added")
       t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
       a = t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => APP_NUMBER, 'Called' => TEST_CALLER_NUMBER, 'Url'=>"#{APP_URL}/callin?test=1"})
     end
@@ -1062,7 +1062,7 @@ class ClientController < ApplicationController
       @script.active=false
       @script.save
     end
-    flash[:notice]="Script deleted"
+    flash_message(:notice, "Script deleted")
     redirect_to :action=>"scripts"
     return
   end

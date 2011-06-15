@@ -95,23 +95,8 @@
 </ul>
 </nav>
 <% end %>
-<% if flash[:notice] -%>
-<div class="callout clearfix">
-<p><%= flash[:notice] %></p>
-</div>
-<% end -%>
 
-<% if flash[:error] -%>
-<div class="callout alert clearfix">
-<p><%= flash[:error] %></p>
-</div>
-<% end -%>
-
-<% if flash[:warning] -%>
-<div class="callout alert clearfix">
-<p><%= flash[:warning] %></p>
-</div>
-<% end -%>
+<%= render :partial => "shared/client_flash_messages", :locals => {:display => [:notice, :error, :warning]} %>
 
 <div class="content clearfix">
 	<%= yield %>

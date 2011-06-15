@@ -169,7 +169,7 @@ Can we count on you to vote for such-and-such?"
         @script.active=1
         @script.user_id=@user.id
         @script.save
-        flash[:notice]="User created!"
+        flash_message(:notice, "User created!")
         redirect_to :controller=>"client"
       end
     end
@@ -191,7 +191,7 @@ Can we count on you to vote for such-and-such?"
         s.save
         s.version=session[:cms_version]
         s.version=nil if session[:cms_version].blank?
-        flash[:notice]="CMS updated successfully"
+        flash_message(:notice, "CMS updated successfully")
         redirect_to :action=>"cms"
       end
     end
@@ -211,7 +211,7 @@ Can we count on you to vote for such-and-such?"
         @seo.version=session[:cms_version]
         @seo.version=nil if session[:cms_version].blank?
         @seo.save
-        flash[:notice]="CMS updated successfully"
+        flash_message(:notice, "CMS updated successfully")
         redirect_to :action=>"cms"
         return
       end
@@ -222,7 +222,7 @@ Can we count on you to vote for such-and-such?"
         if params[:v]
           session[:cms_version]=params[:v]
           session[:cms_version]=nil if params[:v].blank? || params[:v]=="Live"
-          flash[:notice]="CMS version changed"
+          flash_message(:notice,"CMS version changed")
           redirect_to :action=>"cms"
         end
         if !params[:nv].blank?
@@ -238,7 +238,7 @@ Can we count on you to vote for such-and-such?"
             # x.save
             # session[:cms_version]=x.version
             session[:cms_version]=params[:nv].strip
-            flash[:notice]="CMS version added successfully"
+            flash_message(:notice,"CMS version added successfully")
             redirect_to :action=>"cms"
           end
         end
@@ -271,7 +271,7 @@ Can we count on you to vote for such-and-such?"
         s.version=session[:cms_version]
         s.version=nil if session[:cms_version].blank?
         s.save
-        flash[:notice]="CMS updated successfully"
+        flash_message(:notice,"CMS updated successfully")
         redirect_to :action=>"cms"
       end
     end

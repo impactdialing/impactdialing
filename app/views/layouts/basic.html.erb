@@ -1,17 +1,6 @@
 <html>
 	<body>
-
-		<% if flash[:notice] -%>
-
-				<div class="msg msg-ok">
-					<p><strong><%= flash[:notice] %></strong></p>
-				</div>
-		<% end -%>
-		<% if flash[:error] -%>
-		<div class="msg msg-error"> 
-					<p><strong><%= flash[:error] %></strong></p> 
-				</div>
-		<% end -%>
+        <%= render :partial => "shared/flash_messages" %>
 		<%= yield %>
 	</body>
 </html>
