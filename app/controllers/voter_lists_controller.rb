@@ -48,6 +48,7 @@ class VoterListsController < ClientController
     @voter_list.user_id     = session[:user]
     unless @voter_list.valid?
       flash_message(:error, @voter_list.errors.full_messages.join("; "))
+      redirect_to campaign_view_path(@campaign.id)
       return
     end
     @voter_list.save!
