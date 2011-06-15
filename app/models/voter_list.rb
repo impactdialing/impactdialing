@@ -5,7 +5,7 @@ class VoterList < ActiveRecord::Base
   has_many :voters, :conditions => {:active => true}
 
   validates_presence_of :name
-  validates_uniqueness_of :name, :scope => :user_id
+  validates_uniqueness_of :name, :scope => :user_id, :message => "for this voter list is already taken"
 
   VOTER_DATA_COLUMNS = ["Phone", "VAN ID", "LastName", "FirstName", "MiddleName", "Suffix", "Email", "DWID", "Age", "Gender"]
   def import_leads(csv_to_system_map, csv_filename, seperator)
@@ -27,6 +27,11 @@ class VoterList < ActiveRecord::Base
       phone_number = Voter.sanitize_phone(voter_info[csv_phone_column_location])
 
       lead = new_lead(phone_number)
+      unless lead
+        result[:failedCount] +=1
+        next
+      end
+      
       lead.voter_list_id = self.id
       lead.user_id       = self.user_id
       lead.campaign_id   = self.campaign_id
@@ -47,13 +52,17 @@ class VoterList < ActiveRecord::Base
 
   private
   def new_lead(phone_number)
-    existing_voter_entry = Voter.existing_phone(phone_number, self.id)
+    existing_voter_entry = Voter.existing_phone_in_campaign(phone_number, self.campaign_id)
     if existing_voter_entry.present?
-      existing_voter_entry            = existing_voter_entry.first
-      existing_voter_entry.num_family += 1
-      existing_voter_entry.save
-      lead                            = Family.new
-      lead.voter_id                   = existing_voter_entry.id
+      if existing_voter_entry.detect {|entry| entry.voter_list_id == self.id}
+        existing_voter_entry            = existing_voter_entry.first
+        existing_voter_entry.num_family += 1
+        existing_voter_entry.save
+        lead                            = Family.new
+        lead.voter_id                   = existing_voter_entry.id
+      else
+        return nil
+      end
     else
       lead = Voter.new
     end

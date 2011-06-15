@@ -2,6 +2,16 @@ require "spec_helper"
 
 describe VoterList do
   include ActionController::TestProcess
+  MAPPINGS = {
+      "LAST"      => "LastName",
+      "FIRSTName" => "FirstName",
+      "Phone"     => "Phone",
+      "Email"     => "Email",
+      "VAN ID"    => "VAN ID",
+      "Age"       => "Age",
+      "Gender"    => "Gender",
+      "DWID"      => "DWID"
+  }
 
   describe "upload voters list" do
     let(:csv_file_upload) {
@@ -19,16 +29,7 @@ describe VoterList do
     before :each do
       Voter.destroy_all
       @result = voter_list.import_leads(
-          {
-              "LAST"      => "LastName",
-              "FIRSTName" => "FirstName",
-              "Phone"     => "Phone",
-              "Email"     => "Email",
-              "VAN ID"    => "VAN ID",
-              "Age"       => "Age",
-              "Gender"    => "Gender",
-              "DWID"      => "DWID"
-          },
+          MAPPINGS,
           csv_file_upload,
           ",")
     end
@@ -57,7 +58,7 @@ describe VoterList do
       voter.Suffix.should be_blank
     end
 
-    it "should add a family member when two voters have same phone number" do
+    it "should add a family member when two voters in the same voters list have same phone number" do
       Family.count.should == 1
       Voter.first.num_family.should == 2
 
@@ -73,7 +74,30 @@ describe VoterList do
       family_member.Email.should == "choco@bar.com"
       family_member.MiddleName.should be_blank
       family_member.Suffix.should be_blank
-
+    end
+    it "should ignore the same phone is repeated in another voters list for the same campaign" do
+      another_voter_list = Factory(:voter_list, :campaign => campaign, :user_id => user.id)
+      another_voter_list.import_leads(
+          MAPPINGS,
+          csv_file_upload,
+          ",").should ==
+          {
+              :successCount => 0,
+              :failedCount  => 2
+          }
+    end
+    it "should add even if the same phone is repeated in a different campaign" do
+      another_voter_list = Factory(:voter_list,
+                                   :campaign => Factory(:campaign, :user => user),
+                                   :user_id => user.id)
+      another_voter_list.import_leads(
+          MAPPINGS,
+          csv_file_upload,
+          ",").should ==
+          {
+              :successCount => 2,
+              :failedCount  => 0
+          }
     end
 
     it "should update only DWID as the CustomId if both DWID and VAN ID are present" do

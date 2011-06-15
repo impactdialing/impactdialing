@@ -6,8 +6,8 @@ class Voter < ActiveRecord::Base
   validates_length_of :Phone, :minimum => 10
   validates_uniqueness_of :Phone, :scope => :voter_list_id
 
-  named_scope :existing_phone, lambda { |phone_number, voter_list_id|
-    {:conditions => ['Phone = ? and voter_list_id = ?', phone_number, voter_list_id]}
+  named_scope :existing_phone_in_campaign, lambda { |phone_number, campaign_id|
+    {:conditions => ['Phone = ? and campaign_id = ?', phone_number, campaign_id]}
   }
   cattr_reader :per_page
   @@per_page = 25
