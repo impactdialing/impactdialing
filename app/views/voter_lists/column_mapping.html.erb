@@ -3,7 +3,7 @@
 <% end %>
 
 <h1>Add list</h1>
-<% form_tag(add_to_db_campaign_voter_lists_path(@campaign), :method => :post, :html => {:multipart => true}) do %>
+<% form_tag(import_campaign_voter_lists_path(@campaign), :method => :post, :html => {:multipart => true}) do %>
     <%= hidden_field_tag "separator", @separator %>
     <p>
       <label>List name</label>

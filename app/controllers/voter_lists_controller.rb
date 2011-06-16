@@ -1,6 +1,7 @@
 require 'tempfile'
 class VoterListsController < ClientController
   before_filter :load_campaign
+  before_filter :check_file_uploaded, :only => [:import]
   skip_before_filter :check_paid
   
   def create
@@ -23,22 +24,16 @@ class VoterListsController < ClientController
     render "column_mapping"
   end
 
-  def add_to_db
-
+  def import
     separator = params["separator"]
-    csv_to_system_map = params["csv_to_system_map"]
-    phone_column      = csv_to_system_map.values.map(&:upcase).index("PHONE")
-    unless phone_column.present?
-      flash_message(:error,"Could not process upload file.  Missing column header: Phone")
+
+    csv_to_system_map = CsvMapping.new(params["csv_to_system_map"])
+    unless csv_to_system_map.valid?
+      csv_to_system_map.errors.each {|error| flash_message(:error, error) }
       redirect_to campaign_view_path(@campaign.id)
       return
     end
 
-    unless session[:voters_list_upload] and session[:voters_list_upload]["filename"]
-      flash_message(:error, "Please upload the file again.")
-      redirect_to campaign_view_path(@campaign.id)
-      return
-    end
     csv_filename      = session[:voters_list_upload]["filename"]
     uploaded_filename = temp_file_path(csv_filename)
 
@@ -68,6 +63,13 @@ class VoterListsController < ClientController
     @campaign = Campaign.find(params[:campaign_id])
   end
 
+  def check_file_uploaded
+    return true if session[:voters_list_upload] and session[:voters_list_upload]["filename"]
+    flash_message(:error, "Please upload the file again.")
+    redirect_to campaign_view_path(@campaign.id)
+    false
+  end
+
   def write_csv_file(uploaded_file)
     uploaded_file = params[:upload]["datafile"]
     csv_filename  = "#{uploaded_file.original_filename}_#{Time.now.to_i}_#{rand(999)}"
@@ -89,7 +91,6 @@ class VoterListsController < ClientController
     "#{Rails.root}/tmp/#{filename}"
   end
 
-  private
   def separator_from_file_extension(filename)
     (File.extname(filename).downcase.include?('.csv')) ? ',' : "\t"
   end

@@ -7,21 +7,17 @@ class VoterList < ActiveRecord::Base
   validates_presence_of :name
   validates_uniqueness_of :name, :scope => :user_id, :message => "for this voter list is already taken"
 
-  VOTER_DATA_COLUMNS = ["Phone", "VAN ID", "LastName", "FirstName", "MiddleName", "Suffix", "Email", "DWID", "Age", "Gender"]
+  VOTER_DATA_COLUMNS = ["Phone", "ID", "LastName", "FirstName", "MiddleName", "Suffix", "Email", "Age", "Gender"]
   def import_leads(csv_to_system_map, csv_filename, seperator)
+
     result      = {:successCount => 0,
                    :failedCount  => 0}
 
     voters_list = FasterCSV.parse(File.read(csv_filename), :col_sep => seperator)
     csv_headers = voters_list.delete_at(0)
 
-    if csv_to_system_map.index("VAN ID") && csv_to_system_map.index("DWID")
-      csv_to_system_map.delete(csv_to_system_map.index("VAN ID"))
-    end
-
-    csv_remap_column csv_to_system_map, "VAN ID", :to => "CustomID"
-    csv_remap_column csv_to_system_map, "DWID", :to => "CustomID"
-    csv_phone_column_location = csv_headers.index(csv_to_system_map.index "Phone")
+    csv_to_system_map.remap_system_column! "ID", :to => "CustomID"
+    csv_phone_column_location = csv_headers.index(csv_to_system_map.csv_index_for "Phone")
 
     voters_list.each_with_index do |voter_info, row|
       phone_number = Voter.sanitize_phone(voter_info[csv_phone_column_location])
@@ -37,7 +33,7 @@ class VoterList < ActiveRecord::Base
       lead.campaign_id   = self.campaign_id
 
       csv_headers.each_with_index do |csv_column_title, column_location|
-        system_column = csv_to_system_map[csv_column_title]
+        system_column = csv_to_system_map.system_column_for csv_column_title
         lead[system_column] = voter_info[column_location] if system_column
       end
 
@@ -67,13 +63,5 @@ class VoterList < ActiveRecord::Base
       lead = Voter.new
     end
     lead
-  end
-
-  def csv_remap_column(mapping, source_field, hash)
-    destination_field = hash[:to]
-    index             = mapping.index source_field
-    if index
-      mapping[index] = destination_field
-    end
   end
 end

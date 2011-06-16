@@ -2,22 +2,12 @@ require "spec_helper"
 
 describe VoterList do
   include ActionController::TestProcess
-  MAPPINGS = {
-      "LAST"      => "LastName",
-      "FIRSTName" => "FirstName",
-      "Phone"     => "Phone",
-      "Email"     => "Email",
-      "VAN ID"    => "VAN ID",
-      "Age"       => "Age",
-      "Gender"    => "Gender",
-      "DWID"      => "DWID"
-  }
 
   describe "upload voters list" do
     let(:csv_file_upload) {
-      fixture_path = ActionController::TestCase.fixture_path
-      source_file = "#{fixture_path}files/voters_list.csv"
-      temp_dir = "#{fixture_path}test_tmp"
+      fixture_path  = ActionController::TestCase.fixture_path
+      source_file   = "#{fixture_path}files/voters_list.csv"
+      temp_dir      = "#{fixture_path}test_tmp"
       temp_filename = "#{temp_dir}/voters_list.csv"
       FileUtils.cp source_file, temp_filename
       temp_filename
@@ -27,6 +17,15 @@ describe VoterList do
     let(:voter_list) { Factory(:voter_list, :campaign => campaign, :user_id => user.id) }
 
     describe "import from csv" do
+      USER_MAPPINGS = CsvMapping.new({
+          "LAST"      => "LastName",
+          "FIRSTName" => "FirstName",
+          "Phone"     => "Phone",
+          "Email"     => "Email",
+          "ID"        => "ID",
+          "Age"       => "Age",
+          "Gender"    => "Gender",
+      })
       before :each do
         Voter.destroy_all
         @result = voter_list.import_leads(
@@ -53,6 +52,7 @@ describe VoterList do
         # check some values from the csv fixture
         voter.Phone.should == "1234567895"
         voter.FirstName.should == "Foo"
+        voter.CustomID.should == "987"
         voter.LastName.should == "Bar"
         voter.Email.should == "foo@bar.com"
         voter.MiddleName.should be_blank
@@ -99,10 +99,6 @@ describe VoterList do
                 :successCount => 2,
                 :failedCount  => 0
             }
-      end
-
-      it "should update only DWID as the CustomId if both DWID and VAN ID are present" do
-        Voter.first.CustomID.should == "987"
       end
     end
   end
