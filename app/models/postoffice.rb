@@ -4,7 +4,7 @@ class Postoffice < ActionMailer::Base
     @recipients = user.email
     @from = 'no-reply@impactdialing.com'
     @sent_on = Time.now
-    @body["reset_code"] = user.reset_code
+    @body["reset_code"] = user.password_reset_code
     @body["email"] = user.email
     @headers = {}
   end
