@@ -8,7 +8,9 @@
 
 <script>
 voters=[]
+formatted_phone_numbers = [];
 <% @voters.each do |v| %>
+    formatted_phone_numbers.push( <%=number_to_phone(v.Phone.to_s, :groupings => [4, 3, 3], :delimiter => "-", :area_code => true).to_json%> );
 	v=["<%= escape_javascript v.FirstName %>","<%= escape_javascript v.LastName %>","<%= escape_javascript v.Phone %>","<%=  v.id %>"]
 	voters.push(v)
 <% end %>
@@ -17,7 +19,7 @@ currPreview=0;
 
 function showPreview(){
 	curVoter = voters[currPreview];
-	document.getElementById('previewvoterInfo').innerHTML='Name: ' + curVoter[0] + ' ' + curVoter[1] + '<br/>Phone: ' + curVoter[2];
+	document.getElementById('previewvoterInfo').innerHTML='Name: ' + curVoter[0] + ' ' + curVoter[1] + '<br/>Phone: ' + formatted_phone_numbers[currPreview];
 	document.getElementById('callButton').innerHTML='<input type="button" onclick="dialVoter(' + curVoter[3] + ');" value="Dial">';
 	currPreview++;
 	if (currPreview>=voters.length)
