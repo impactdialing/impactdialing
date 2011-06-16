@@ -2,9 +2,11 @@ require "spec_helper"
 
 describe VoterListsController do
   include ActionController::TestProcess
+  integrate_views
 
   before :each do
-    login_as Factory(:user)
+    @current_user = Factory(:user)
+    login_as @current_user
   end
 
   describe "voters list" do
@@ -23,8 +25,7 @@ describe VoterListsController do
         session[:voters_list_upload] = nil
         post :create,
              :campaign_id => @campaign.id,
-             :upload      => csv_file_upload,
-             :list_name   => "foobar"
+             :upload      => csv_file_upload
       end
       it "sets the session to the new voter list entry" do
         session[:voters_list_upload].should_not be_empty
@@ -61,7 +62,19 @@ describe VoterListsController do
                }
           flash[:error].should include "Name can't be blank"
         end
-
+        it "should not save a list if the user already has a list with the same name" do
+          Factory(:voter_list, :user_id => @current_user.id, :campaign_id => @campaign.id, :name => "abcd")
+          post :add_to_db,
+               :separator         => ",",
+               :campaign_id       => @campaign.id,
+               :csv_to_system_map => {
+                   "Phone" => "Phone",
+                   "LAST"  =>"LastName"
+               },
+              :voter_list_name => "abcd"
+          flash[:error].should include "Name for this voter list is already taken"
+          response.should redirect_to campaign_view_path(@campaign.id)
+        end
         it "saves all the voters in the csv according to the mappings" do
           Voter.delete_all
           add_to_db()
