@@ -19,12 +19,12 @@ describe Client::UsersController do
   end
 
   it "does not change the password if the reset code is invalid" do
-    user = Factory(:user, :hashed_password => 'xyzzy', :salt => "abcdef")
+    user = Factory(:user, :new_password => 'xyzzy')
     user.create_reset_code
     put :update_password, :user_id => user.id, :reset_code => 'xyz', :password => 'new_password'
     User.authenticate(user.email, 'new_password').should_not == user
     user.reload.password_reset_code.should_not be_nil
-    user.hashed_password.should == "xyzzy"
+    user.authenticate_with?("xyzzy").should be_true
     flash[:error].should_not be_blank
   end
 end

@@ -43,12 +43,11 @@ class ClientController < ApplicationController
     end
 
     if request.post?
-      old_existing_password = @user.password
       @user.attributes =  params[:user]
       if @user.new_record? && params[:tos].blank?
         flash_now(:error, "You must agree to the terms of service.")
         return
-      elsif !@user.new_record? && params[:exist_pw]!=old_existing_password
+      elsif !@user.new_record? and (not @user.authenticate_with?(params[:exist_pw]))
         flash_now(:error, "Current password incorrect")
         return
       end
@@ -190,7 +189,7 @@ class ClientController < ApplicationController
         end
 
         if session[:user].blank?
-          #message = "Your account has been created"
+          message = "Your account has been created"
         else
           message="Your account has been updated"
         end

@@ -19,4 +19,18 @@ describe User do
     user.clear_reset_code
     user.password_reset_code.should be_nil
   end
+
+  it "authenticates an email id with password" do
+    user = Factory(:user, :email => "user@user.com")
+    user.new_password = "abracadabra"
+    user.save
+
+    User.authenticate("user@user.com", "abracadabra").should == user
+  end
+  it "authenticates a User object with password" do
+    user = Factory(:user)
+    user.new_password = "xyzzy123"
+    user.save
+    user.authenticate_with?("xyzzy123").should be_true
+  end
 end

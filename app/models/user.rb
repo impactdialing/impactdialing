@@ -1,19 +1,18 @@
 class User < ActiveRecord::Base
   validates_uniqueness_of :email, :message => " is already in use"
-#  validates_confirmation_of :password
   validates_format_of :email,
       :with => /^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i
-#  validates_presence_of :orgname, :on => :create, :message => "can't be blank"
   validates_presence_of :email, :on => :create, :message => "can't be blank"
-#  validates_presence_of :fname, :on => :create, :message => "can't be blank"
-#  validates_presence_of :lname, :on => :create, :message => "can't be blank"
-  validates_presence_of :hashed_password, :on => :create, :message => "can't be blank"
-  validates_length_of :hashed_password, :within => 5..50, :on => :create, :message => "must be 5 characters or greater"
+
   has_many :campaigns, :conditions => {:active => true}
-  attr_accessor :new_password
-  before_save :hash_new_password, :if => :password_changed?
   has_many :recordings
   has_one :account
+
+  attr_accessor :new_password
+  validates_presence_of :new_password, :on => :create, :message => "can't be blank"
+  validates_length_of :new_password, :within => 5..50, :on => :create, :message => "must be 5 characters or greater"
+
+  before_save :hash_new_password, :if => :password_changed?
 
   def password_changed?
     !!@new_password
@@ -26,10 +25,12 @@ class User < ActiveRecord::Base
 
   def self.authenticate(email, password)
     if user = find_by_email(email)
-      if user.hashed_password == Digest::SHA2.hexdigest(user.salt + password)
-        user
-      end
+      user if user.authenticate_with?(password)
     end
+  end
+
+  def authenticate_with?(password)
+   self.hashed_password == Digest::SHA2.hexdigest(self.salt + password)
   end
 
   def create_reset_code
