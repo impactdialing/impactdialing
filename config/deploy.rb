@@ -35,5 +35,5 @@ task :staging do
   set :rails_env, 'staging'
   role :web, 'staging.impactdialing.com'
   role :app, 'staging.impactdialing.com'
-  role :db, 'staging.impactdialing.com'
+  role :db, 'staging.impactdialing.com', :primary => true
 end
