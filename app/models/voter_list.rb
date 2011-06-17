@@ -5,15 +5,16 @@ class VoterList < ActiveRecord::Base
   has_many :voters, :conditions => {:active => true}
 
   validates_presence_of :name
+  validates_length_of :name, :minimum => 3
   validates_uniqueness_of :name, :scope => :user_id, :message => "for this voter list is already taken"
 
   VOTER_DATA_COLUMNS = ["Phone", "ID", "LastName", "FirstName", "MiddleName", "Suffix", "Email", "Age", "Gender"]
-  def import_leads(csv_to_system_map, csv_filename, seperator)
+  def import_leads(csv_to_system_map, csv_filename, separator)
 
     result      = {:successCount => 0,
                    :failedCount  => 0}
 
-    voters_list = FasterCSV.parse(File.read(csv_filename), :col_sep => seperator)
+    voters_list = FasterCSV.parse(File.read(csv_filename), :col_sep => separator)
     csv_headers = voters_list.delete_at(0)
 
     csv_to_system_map.remap_system_column! "ID", :to => "CustomID"

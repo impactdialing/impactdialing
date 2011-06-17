@@ -11,26 +11,24 @@ class VoterListsController < ClientController
       return
     end
 
-    uploaded_file = params[:upload]["datafile"]
-
-    @separator         = separator_from_file_extension(uploaded_file.original_filename)
+    uploaded_file  = params[:upload]["datafile"]
     saved_filename = write_csv_file(uploaded_file)
     save_csv_filename_to_session(saved_filename)
 
-    @system_column_headers = VoterList::VOTER_DATA_COLUMNS.zip(VoterList::VOTER_DATA_COLUMNS)
-    @system_column_headers = [["Not available", nil]].concat @system_column_headers
-    @csv_column_headers    = FasterCSV.parse(uploaded_file.readline, :col_sep => @separator).first
+    @separator           = separator_from_file_extension(uploaded_file.original_filename)
+    @csv_column_headers = FasterCSV.parse(uploaded_file.readline, :col_sep => @separator).first
 
     render "column_mapping"
   end
 
   def import
-    separator = params["separator"]
+    @separator = params["separator"]
+    @csv_column_headers = JSON.parse(params["json_csv_column_headers"])
 
     csv_to_system_map = CsvMapping.new(params["csv_to_system_map"])
     unless csv_to_system_map.valid?
-      csv_to_system_map.errors.each {|error| flash_message(:error, error) }
-      redirect_to campaign_view_path(@campaign.id)
+      csv_to_system_map.errors.each {|error| flash_now(:error, error) }
+      render "column_mapping"
       return
     end
 
@@ -42,15 +40,15 @@ class VoterListsController < ClientController
     @voter_list.campaign_id = params[:campaign_id]
     @voter_list.user_id     = session[:user]
     unless @voter_list.valid?
-      flash_message(:error, @voter_list.errors.full_messages.join("; "))
-      redirect_to campaign_view_path(@campaign.id)
+      flash_now(:error, @voter_list.errors.full_messages.join("; "))
+      render "column_mapping"
       return
     end
     @voter_list.save!
 
     result = @voter_list.import_leads(csv_to_system_map,
                                       uploaded_filename,
-                                      separator)
+                                      @separator)
     
     File.unlink uploaded_filename
     session[:voters_list_upload] = nil

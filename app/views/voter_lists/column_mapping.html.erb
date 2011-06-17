@@ -5,6 +5,7 @@
 <h1>Add list</h1>
 <% form_tag(import_campaign_voter_lists_path(@campaign), :method => :post, :html => {:multipart => true}) do %>
     <%= hidden_field_tag "separator", @separator %>
+    <%= hidden_field_tag "json_csv_column_headers", @csv_column_headers.to_json%>
     <p>
       <label>List name</label>
       <%= text_field_tag "voter_list_name",nil, :required => true, :id => "voter_list_name"
@@ -19,7 +20,7 @@
       <% @csv_column_headers.each do |csv_header| %>
           <% selected =  matching_system_header_for(csv_header) %>
           <dt><%= csv_header %></dt>
-          <dd><%= select_tag "csv_to_system_map[#{csv_header}]", options_for_select(@system_column_headers, selected) %></dd>
+          <dd><%= select_tag "csv_to_system_map[#{csv_header}]", options_for_select(system_column_headers, selected) %></dd>
       <% end %>
     </dl>
     <div style='clear:both;'></div>

@@ -41,55 +41,46 @@ describe VoterListsController do
       end
 
       describe "import" do
-        def import
-          post :import,
-               :separator         => ",",
-               :voter_list_name   => "voter list name",
-               :campaign_id       => @campaign.id,
-               :csv_to_system_map => {
-                   "Phone" => "Phone",
-                   "LAST"  =>"LastName"
-               }
+        def import(parameters={})
+          defaults = {
+              :separator               => ",",
+              :voter_list_name         => "voter list name",
+              :json_csv_column_headers => ["Phone", "LAST"].to_json,
+              :campaign_id             => @campaign.id,
+              :csv_to_system_map       => {
+                  "Phone" => "Phone",
+                  "LAST"  =>"LastName"
+              }
+          }
+          post :import, defaults.merge(parameters)
         end
 
         describe "requirements" do
           it "needs a list name" do
-            post :import,
-                 :separator         => ",",
-                 :campaign_id       => @campaign.id,
-                 :csv_to_system_map => {
-                     "Phone" => "Phone",
-                     "LAST"  =>"LastName"
-                 }
-            flash[:error].should include "Name can't be blank"
+            import :voter_list_name => ""
+            response.flash.now[:error].first.should include "Name can't be blank"
+            response.should render_template "column_mapping"
           end
 
           it "should not save a list if the user already has a list with the same name" do
             Factory(:voter_list, :user_id => @current_user.id, :campaign_id => @campaign.id, :name => "abcd")
-            post :import,
-                 :separator         => ",",
-                 :campaign_id       => @campaign.id,
-                 :csv_to_system_map => {
-                     "Phone" => "Phone",
-                     "LAST"  =>"LastName"
-                 },
-                 :voter_list_name   => "abcd"
-            flash[:error].should include "Name for this voter list is already taken"
-            response.should redirect_to campaign_view_path(@campaign.id)
+            import :voter_list_name   => "abcd"
+            response.flash.now[:error].first.should include "Name for this voter list is already taken"
+            response.should render_template "column_mapping"
           end
         end
 
         describe "after import" do
           it "saves all the voters in the csv according to the mappings" do
             Voter.delete_all
-            import()
+            import
             Voter.count.should == 1
             Voter.first.Phone.should == "1234567895"
             Voter.first.LastName.should == "Bar"
           end
           it "removes the temporary file from disk" do
             temp_filename = "#{Rails.root}/tmp/#{session[:voters_list_upload]['filename']}"
-            import()
+            import
             File.should_not exist(temp_filename)
             session[:voters_list_upload].should be_blank
           end

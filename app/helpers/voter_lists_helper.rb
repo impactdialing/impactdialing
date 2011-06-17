@@ -7,4 +7,8 @@ module VoterListsHelper
     match ||= ('DWID' if normalized_csv_header.include? 'ID')
     match
   end
+
+  def system_column_headers
+    @system_column_headers ||= [["Not available", nil]].concat (VoterList::VOTER_DATA_COLUMNS.zip(VoterList::VOTER_DATA_COLUMNS))
+  end
 end
