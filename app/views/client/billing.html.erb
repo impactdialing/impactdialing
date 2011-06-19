@@ -30,12 +30,74 @@
 				<p><label for="zip">Card security code:</label>
 				<input type="text" name="code" value="<%= params[:code] %>">
 				</p>
+				<p><label for="zip">Billing name:</label>
+					<%= f.text_field :name %>
+				</p>
 				<p><label for="zip">Billing address:</label>
-					<%= f.text_field :address1 %></p>
-				<p><label for="zip">Billing zip code:</label>
-						<%= f.text_field :zip %></p>
-				<p><!--<label for="email">Card Number:</label><br/>-->
-
+					<%= f.text_field :address1 %>
+				</p>
+				<p>
+					<label for="zip">Billing city:</label>
+					<%= f.text_field :city %>
+				</p>
+				<p>
+					<label for="zip">Billing state:</label>
+					<%= f.select :state, ['AK',
+								'AL',
+								'AR',
+								'AZ',
+								'CA',
+								'CO',
+								'CT',
+								'DC',
+								'DE',
+								'FL',
+								'GA',
+								'HI',
+								'IA',
+								'ID',
+								'IL',
+								'IN',
+								'KS',
+								'KY',
+								'LA',
+								'MA',
+								'MD',
+								'ME',
+								'MI',
+								'MN',
+								'MO',
+								'MS',
+								'MT',
+								'NC',
+								'ND',
+								'NE',
+								'NH',
+								'NJ',
+								'NM',
+								'NV',
+								'NY',
+								'OH',
+								'OK',
+								'OR',
+								'PA',
+								'RI',
+								'SC',
+								'SD',
+								'TN',
+								'TX',
+								'UT',
+								'VA',
+								'VT',
+								'WA',
+								'WI',
+								'WV',
+								'WY'], 
+								:include_blank => false %>				</p>
+				<p>
+					<label for="zip">Billing zip code:</label>
+					<%= f.text_field :zip %>
+				</p>
 
 				<br/>
 				<%# submit_tag "Update account" %>

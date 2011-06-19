@@ -590,7 +590,24 @@ class ClientController < ApplicationController
       #        return
       #      end
 
-      billing_address = { :name => "#{@user.fname} #{@user.lname}", :address1 => @account.address1 , :zip =>@account.zip}
+      billing_address = { 
+          :name => "#{@user.fname} #{@user.lname}", 
+          :address1 => @account.address1 , 
+          :zip =>@account.zip,
+          :city     => @account.city,
+          :state    => @account.state,
+          :country  => 'US'
+        }
+      # billing_address = { 
+      #     :name     => "John Smith",
+      #     :address1 => '123 First St.',
+      #     :address2 => '',
+      #     :city     => 'Los Angeles',
+      #     :state    => 'CA',
+      #     :country  => 'US',
+      #     :zip      => '90068',
+      #     :phone    => '310-555-1234'
+      # }     
       options = {:address => {}, :address1 => billing_address, :billing_address => billing_address, :ip=>"127.0.0.1", :order_id=>""}
       response = BILLING_GW.authorize(1, creditcard,options)
       logger.info response.inspect
