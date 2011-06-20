@@ -71,15 +71,17 @@
 <header role="banner" class="clearfix">
 <h1><a href="<% if client_controller?(@controllerName) %>/client<% else %>/caller<% end %>">Impact Dialing</a></h1>
 
-
-<% if !session[:user].blank? && @user!=nil %>
+<% if logged_in_as_client? %>
   <ul class="clearfix">
     <li class='divider'><a href="/client" class='divider'>Help</a></li>
     <li class='divider'><a href="/client/user_add">Account</a></li>
     <li><a href="/client/logout">Log out</a></li>
   </ul>
-<% end %> 
-
+<% elsif logged_in_as_caller? %>
+  <ul class='clearfix'>
+    <li><a href="/caller/logout">Log out</a></li>
+  </ul>
+<% end %>
 
 </header>
 
@@ -145,4 +147,4 @@ g.src=("https:"==location.protocol?"//ssl":"//www")+".google-analytics.com/ga.js
 s.parentNode.insertBefore(g,s)}(document,"script"));
 </script>
 </body>
-</html>		
+</html>
