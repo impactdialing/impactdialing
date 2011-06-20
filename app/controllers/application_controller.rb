@@ -13,12 +13,13 @@ class ApplicationController < ActionController::Base
     return true if local_request? || RAILS_ENV == 'test' || RAILS_ENV == 'development' || RAILS_ENV == 'staging' || action_name=="monitor"
     @cont = controller_name
     @act = action_name
-    if controller_name=="caller"
-      redirect_to "https://caller.#{request.domain}/#{@cont}/#{@act}/#{params[:id]}" unless (ssl? or local_request?)
+    if controller_name=="caller" && !(ssl? || local_request?)
+      redirect_to "https://caller.#{request.domain}/#{@cont}/#{@act}/#{params[:id]}"
+      flash.keep
     else
-      redirect_to "https://admin.#{request.domain}/#{@cont}/#{@act}/#{params[:id]}" unless (ssl? or local_request?)
+      redirect_to "https://admin.#{request.domain}/#{@cont}/#{@act}/#{params[:id]}"
+      flash.keep
     end
-    flash.keep
     return false
   end
 
@@ -230,5 +231,5 @@ class ApplicationController < ActionController::Base
       flash.now[where] = [error_message]
     end
   end
-  
+
 end
