@@ -9,6 +9,6 @@ module VoterListsHelper
   end
 
   def system_column_headers
-    @system_column_headers ||= [["Not available", nil]].concat (VoterList::VOTER_DATA_COLUMNS.zip(VoterList::VOTER_DATA_COLUMNS))
+    @system_column_headers ||= [["Not available", nil]].concat(VoterList::VOTER_DATA_COLUMNS.zip(VoterList::VOTER_DATA_COLUMNS))
   end
 end
