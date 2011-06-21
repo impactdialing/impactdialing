@@ -6,7 +6,7 @@ class VoterListsController < ClientController
   
   def create
     if params[:upload].blank?
-      flash_message(:error, "You must select a file to upload")
+      flash_message(:error, "Please click \"Choose file\" and select your list before clicking Upload.")
       redirect_to campaign_view_path(@campaign.id)
       return
     end

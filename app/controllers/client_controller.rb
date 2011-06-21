@@ -45,7 +45,7 @@ class ClientController < ApplicationController
     if request.post?
       @user.attributes =  params[:user]
       if @user.new_record? && params[:tos].blank?
-        flash_now(:error, "You must agree to the terms of service.")
+        flash_now(:error, "You must agree to the Terms of Service to create an account.")
         return
       elsif !@user.new_record? and (not @user.authenticate_with?(params[:exist_pw]))
         flash_now(:error, "Current password incorrect")
@@ -232,7 +232,7 @@ class ClientController < ApplicationController
     if !params[:email].blank?
       @user = User.authenticate(params[:email], params[:password])
       if @user.blank?
-        flash_now(:error, "Invalid Login")
+        flash_now(:error, "The email or password you entered was incorrect. Please try again.")
         @user = User.new {params[:user]}
       else
         session[:user]=@user.id
@@ -573,10 +573,10 @@ class ClientController < ApplicationController
 
       if !creditcard.valid?
         if creditcard.expired?
-          flash_now(:error, "Invalid card expiration, please try again")
+          flash_now(:error, "The card expiration date you entered was invalid. Please try again.")
           @account.cc = ""
         else
-          flash_now(:error, "Invalid card number or security code, please try again")
+          flash_now(:error, "The card number or security code you entered was invalid. Please try again.")
           @account.cc = ""
         end
         return

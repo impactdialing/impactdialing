@@ -17,7 +17,7 @@ describe VoterListsController do
 
     it "needs an uploaded file" do
       post :create, :campaign_id => @campaign.id
-      flash[:error].should == ["You must select a file to upload"]
+      flash[:error].should == ["Please click \"Choose file\" and select your list before clicking Upload."]
     end
 
     describe "create voter list" do
