@@ -22,4 +22,18 @@ describe Campaign do
     other_campaign = Factory(:campaign, :active => true)
     Campaign.deleted.should == [deleted_campaign]
   end
+
+  it "generates its own name if one isn't provided" do
+    user = Factory(:user)
+    campaign = user.campaigns.create!
+    campaign.name.should == 'Untitled 1'
+    campaign = user.campaigns.create!
+    campaign.name.should == 'Untitled 2'
+  end
+
+  it "doesn't overwrite a name that has been explicitly set" do
+    user = Factory(:user)
+    campaign = user.campaigns.create!(:name => 'Titled')
+    campaign.name.should == 'Titled'
+  end
 end

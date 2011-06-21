@@ -1,8 +1,8 @@
 <div class="box" style="width:600px;">
 	<%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@campaign.name} Overview Report"} %>
 	<div class="box-content">
-		
-		
+
+
 		<div class="table">
 		    <table width="100%" border="0" cellspacing="0" cellpadding="0">
 		      <tr>
@@ -10,7 +10,7 @@
 		        <th>Number</th>
 		        <th>Percentage</th>
 		      </tr>
-			
+
 				<% @records.each do |r| %>
 				<tr class="<%= cycle("odd","even") %>">
 					<td>
@@ -32,9 +32,9 @@
 		    </div>
 
 		</div>
-		
+
 		<br/>
-		
+
 			<% if @totalvoters>0 %>
 			<div class="table">
 			    <table width="100%" border="0" cellspacing="0" cellpadding="0">
@@ -55,7 +55,7 @@
 						<td><%=((@voters_called.length.to_f/@totalvoters.to_f)*100).to_i  %>%</td>
 					</tr>
 			    </table>
-			
+
 			</div>
 			<br/>
 			<% end %>
@@ -75,15 +75,15 @@
 						<td><%= @callerMins  %></td>
 					</tr>
 			    </table>
-			
+
 
 			    <div class="pagging">
 			   		<div class="left"><%= @callerMins + @talkmins%> total minutes</div>
 			    </div>
 			</div>
-						 
-			
-			
-		
+
+
+
+
 	</div>
 </div>

@@ -11,5 +11,9 @@ module Client
       end
       redirect_to :back
     end
+
+    def create
+      @user.campaigns.create!(:script => @user.scripts.first)
+    end
   end
 end

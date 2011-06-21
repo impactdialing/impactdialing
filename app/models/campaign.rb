@@ -14,6 +14,10 @@ class Campaign < ActiveRecord::Base
   cattr_reader :per_page
   @@per_page = 25
 
+  def before_validation_on_create
+    self.name = "Untitled #{user.campaigns.count + 1}" if self.name.blank?
+  end
+
   def check_valid_caller_id_and_save
     check_valid_caller_id
     self.save
