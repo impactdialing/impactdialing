@@ -21,9 +21,6 @@ group :development, :test do
 end
 
 group :development do
-  gem 'wirble', '~> 0.1.3'
-  gem 'hirb', '~> 0.4.5'
-  gem 'interactive_editor', '~> 0.0.8'
   gem 'mongrel', '~> 1.2.0.pre2'
 end
 
