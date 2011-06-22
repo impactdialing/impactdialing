@@ -1,7 +1,7 @@
 module Client
   class CampaignsController < ClientController
     def deleted
-      @campaigns = Campaign.deleted.for_user(@user).paginate :page => params[:page], :order => 'id desc'
+      @campaigns = @user.campaigns.deleted.paginate(:page => params[:page], :order => "id desc")
     end
 
     def restore
@@ -13,7 +13,8 @@ module Client
     end
 
     def create
-      @user.campaigns.create!(:script => @user.scripts.first)
+      campaign = @user.campaigns.create!(:script => @user.scripts.first, :predective_type => 'algorithm1')
+      redirect_to campaign_path(campaign)
     end
   end
 end

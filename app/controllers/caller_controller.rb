@@ -34,7 +34,6 @@ class CallerController < ApplicationController
     redirect_to :controller => 'caller', :action=>"index"
   end
 
-
   def login
     @breadcrumb="Login"
     @title="Login to Impact Dialing"
@@ -48,7 +47,6 @@ class CallerController < ApplicationController
         redirect_to :action=>"index"
       end
     end
-
   end
 
   def campaign
@@ -57,7 +55,7 @@ class CallerController < ApplicationController
 
     @campaign = Campaign.find_by_id(params[:id])
     @script=@campaign.script
-    @client_ip = request.remote_ip  
+    @client_ip = request.remote_ip
     if !@caller.campaigns.index(@campaign)
       redirect_to :action=>"index"
       return
@@ -70,14 +68,12 @@ class CallerController < ApplicationController
       if !phone_number_valid(params[:numtocall]) && !params[:numtocall].blank?
         flash_now(:error, "Please enter a valid phone number")
       else
-
         @session = CallerSession.new
         @session.caller_number = phone_format(params[:numtocall])
         @session.caller_id=@caller.id
         @session.campaign_id=@campaign.id
         @session.session_key=generate_session_key
         @session.save
-
 
         #flash[:notice]= "Calling you now"
         t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
@@ -87,7 +83,6 @@ class CallerController < ApplicationController
         @session.save
         #        redirect_to :action=>"campaign", :id=>params[:id], :key=>s.session_key
         #        return
-
       end
     end
     if @campaign.user_id==31
@@ -127,7 +122,6 @@ class CallerController < ApplicationController
     require 'net/https'
     require 'uri'
 
-
     logger.info "SESSION END CALLED"
 
     if params[:key]
@@ -154,9 +148,7 @@ class CallerController < ApplicationController
     render :text=>"drop ok"
   end
 
-
   def submit_result
-
     #@session @clean_digit @caller @campaign
     @session = CallerSession.find_by_session_key(params[:key])
     return if @session.blank?
@@ -170,7 +162,6 @@ class CallerController < ApplicationController
     else
       incompletes={}
     end
-
 
     #new style results
     result_json={}
@@ -225,10 +216,8 @@ class CallerController < ApplicationController
         send_rt(params[:key],{'waiting'=>'ok'})
       end
 
-
       render :text=>  "ok"
     end
-
   end
 
   def js
@@ -237,9 +226,8 @@ class CallerController < ApplicationController
     @session = CallerSession.find_by_session_key(params[:id])
     @campaign=@session.campaign
     respond_to do |format|
-        format.js
+      format.js
     end
-#    render
   end
 
   def preview_choose
@@ -278,8 +266,7 @@ class CallerController < ApplicationController
   end
 
   def feedback
-            Postoffice.deliver_feedback(params[:issue])
-        render :text=>  "ok"
+    Postoffice.deliver_feedback(params[:issue])
+    render :text=>  "ok"
   end
-
 end
