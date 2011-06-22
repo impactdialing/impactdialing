@@ -16,6 +16,10 @@ class CampaignsController < ClientController
     redirect_to campaign_path(campaign)
   end
 
+  def index
+    @campaigns = Campaign.active.for_user(@user).paginate :page => params[:page], :order => 'id desc'
+  end
+
   def show
     @campaign = Campaign.find(params[:id])
     @callers = @user.callers.active
