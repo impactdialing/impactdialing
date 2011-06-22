@@ -7,7 +7,7 @@ class VoterListsController < ClientController
   def create
     if params[:upload].blank?
       flash_message(:error, "Please click \"Choose file\" and select your list before clicking Upload.")
-      redirect_to client_campaign_view_path(@campaign.id)
+      redirect_to campaign_view_path(@campaign.id)
       return
     end
 
@@ -53,7 +53,7 @@ class VoterListsController < ClientController
     File.unlink uploaded_filename
     session[:voters_list_upload] = nil
     flash_message(:notice, "Upload completed. #{result[:successCount]} out of #{result[:successCount]+result[:failedCount]} rows imported successfully.")
-    redirect_to client_campaign_view_path(@campaign.id)
+    redirect_to campaign_view_path(@campaign.id)
   end
 
   private
@@ -64,7 +64,7 @@ class VoterListsController < ClientController
   def check_file_uploaded
     return true if session[:voters_list_upload] and session[:voters_list_upload]["filename"]
     flash_message(:error, "Please upload the file again.")
-    redirect_to client_campaign_view_path(@campaign.id)
+    redirect_to campaign_view_path(@campaign.id)
     false
   end
 
