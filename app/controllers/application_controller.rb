@@ -52,7 +52,7 @@ class ApplicationController < ActionController::Base
     if !@user.paid?
       #warning= "Your account is not funded and cannot make calls. For a free trial or to fund your account, email <a href=\"mailto:info@impactdialing.com\">info@impactdialing.com</a> or call (415) 347-5723."
 #      warning= "Your account is not funded and cannot make calls. Click here to<a href=\"/client/billing\"> activate your account</a>, or email <a href=\"mailto:info@impactdialing.com\">info@impactdialing.com</a> or call (415) 347-5723."
-      warning= "Before you can make calls, you need to verify a credit card number that we can bill. Until then, you can try out as much of Impact Dialing as you like, except for actually calling. <a href=\"/client/billing\">Click here to verify a credit card number.</a>"
+      warning= "Before you can make calls, you need to verify a credit card number that we can bill. Until then, you can try out as much as you like, except for actually calling. <a href=\"/client/billing\">Click here to verify a credit card number.</a>"
     end
     warning
   end
