@@ -1,4 +1,6 @@
 class CampaignsController < ClientController
+  layout 'v2'
+
   def deleted
     @campaigns = @user.campaigns.deleted.paginate(:page => params[:page], :order => "id desc")
   end

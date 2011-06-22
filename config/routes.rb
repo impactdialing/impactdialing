@@ -16,22 +16,15 @@ ActionController::Routing::Routes.draw do |map|
   end
 
   map.namespace 'client' do |client|
-    map.campaign_new '/client/campaign_new', :action => 'campaign_new', :controller => 'client'
-    map.campaign_view '/client/campaign_view/:id', :action => 'campaign_view', :controller => 'client'
+    client.campaign_new 'campaign_new', :action => 'campaign_new'
+    client.campaign_view 'campaign_view/:id', :action => 'campaign_view'
 
     ['campaigns', 'scripts', 'callers'].each do |type_plural|
-      map.send("deleted_#{type_plural}", "/client/deleted_#{type_plural}", :action => 'deleted', :controller => "/client/#{type_plural}", :conditions => { :method => :get })
-      map.send(type_plural, "/client/#{type_plural}", :action => type_plural, :controller => "/client", :conditions => { :method => :get })
-    end
-
-    client.resources :campaigns, :controller => 'client/campaigns', :only => [:index, :show, :create, :update, :destroy] do |type|
-      type.restore 'restore', :action => 'restore', :controller => :campaigns, :conditions => { :method => :put }
-    end
-    client.resources :scripts, :only => [] do |type|
-      type.restore 'restore', :action => 'restore', :controller => :scripts, :conditions => { :method => :put }
-    end
-    client.resources :callers, :only => [] do |type|
-      type.restore 'restore', :action => 'restore', :controller => :callers, :conditions => { :method => :put }
+      client.send("deleted_#{type_plural}", "/deleted_#{type_plural}", :action => 'deleted', :controller => "#{type_plural}", :conditions => { :method => :get })
+      client.send(type_plural, "#{type_plural}", :action => type_plural, :conditions => { :method => :get })
+      client.resources type_plural, :only => [] do |type|
+        type.restore 'restore', :action => 'restore', :controller => type_plural, :conditions => { :method => :put }
+      end
     end
   end
 
@@ -40,11 +33,11 @@ ActionController::Routing::Routes.draw do |map|
   end
   map.reset_password '/reset_password', :action => 'reset_password', :controller => 'client/users', :conditions =>{ :method => :get }
 
+  map.resources :campaigns, :path_prefix => "v2"
+
   map.resources :campaigns, :only => [] do |campaign|
     campaign.resources :voter_lists, :collection => {:import => :post}, :except => [:new, :show]
   end
-
-  map.resources :campaigns, :path_prefix => "v2"
 
   map.connect 'admin/:action/:id', :controller=>"admin"
   map.connect 'admin/:action', :controller=>"admin"
