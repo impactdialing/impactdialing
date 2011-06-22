@@ -17,7 +17,7 @@ class CampaignsController < ClientController
   end
 
   def index
-    @campaigns = Campaign.active.for_user(@user).paginate :page => params[:page], :order => 'id desc'
+    @campaigns = @user.campaigns.active.paginate :page => params[:page], :order => 'id desc'
   end
 
   def show
