@@ -2,6 +2,10 @@ class CampaignsController < ClientController
   layout 'v2'
   include DeletableController
 
+  def type_name
+    'campaign'
+  end
+
   def create
     campaign = @user.campaigns.create!(:script => @user.scripts.first, :predective_type => 'algorithm1', :callers => @user.callers.active)
     redirect_to campaign_path(campaign)
