@@ -15,7 +15,7 @@
     </tr>
     <% @campaigns.each do |c| %>
       <tr class="<%= cycle("odd","even") %>">
-        <td><h3><a href="/client/campaign_view/<%= c.id %>"><%= c.name %></a></h3></td>
+        <td><h3><%= link_to c.name,c %></h3></td>
         <td><%= c.group_id %></td>
         <td><%= c.created_at.strftime("%m/%d/%Y") %></td>
         <td><a href="javascript:if(confirm('Are you sure you want to delete this campaign?')) document.location.href='/client/campaign_delete/<%= c.id %>';" class="ico del">Delete</a>
