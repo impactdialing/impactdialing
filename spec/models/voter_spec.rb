@@ -8,4 +8,10 @@ describe Voter do
       Voter.existing_phone_in_campaign('0123456789', 99).count
     }.by(1)
   end
+
+  it "returns only active voters" do
+    active_voter = Factory(:voter, :active => true)
+    inactive_voter = Factory(:voter, :active => false)
+    Voter.active.should == [active_voter]
+  end
 end

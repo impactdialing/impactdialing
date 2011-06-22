@@ -14,11 +14,11 @@
     <!-- Logo + Top Nav -->
     <div id="top">
       <h1><a href="/client">Impact Dialing</a></h1>
-      <div id="top-navigation"> 
+      <div id="top-navigation">
 	<% if !@user.blank? %>
 	Welcome <strong><%= @user.fname %></strong>
-	<!-- <span>|</span> <a href="#">Help</a> <span>|</span> <a href="#"> Settings</a> --> <span>|</span> <a href="/client/user_add">My Account</a>  <span>|</span> <a href="/client/logout">Log out</a> 
-	<% end %> 
+	<!-- <span>|</span> <a href="#">Help</a> <span>|</span> <a href="#"> Settings</a> --> <span>|</span> <a href="/client/user_add">My Account</a>  <span>|</span> <a href="/client/logout">Log out</a>
+	<% end %>
 	</div>
 
     </div>
@@ -41,16 +41,16 @@
 <div id="container">
   <div class="shell">
     <!-- Small Nav -->
-    <div class="small-nav"> <a href="/client">Welcome</a> 
+    <div class="small-nav"> <a href="/client">Welcome</a>
 	<% if @breadcrumb.class.to_s=="String" %>
-		<span>&gt;</span> <%= @breadcrumb %> 
+		<span>&gt;</span> <%= @breadcrumb %>
 	<% elsif @breadcrumb!=nil %>
 		<% @breadcrumb.each do |b| %>
 			<% if b.class.to_s=="Hash" %>
 				<span>&gt;</span>
 				<a href="<%= b[b.keys.first] %>"><%= b.keys.first %></a>
 			<% else %>
-				<span>&gt;</span> <%= b %> 
+				<span>&gt;</span> <%= b %>
 			<% end %>
 		<% end %>
 	<% end %>
@@ -61,7 +61,7 @@
 
     <br />
     <!-- Main -->
-    <div id="main" <% if @actionName=="campaign_view" %>style="background-color:white; -moz-border-radius: 20px;  	    -webkit-border-radius: 20px;  padding:14px;	border:1px solid #b0722f;<% end %>   "> 
+    <div id="main" <% if @actionName=="campaign_view" %>style="background-color:white; -moz-border-radius: 20px;  	    -webkit-border-radius: 20px;  padding:14px;	border:1px solid #b0722f;<% end %>   ">
       <div class="cl">&nbsp;</div>
 	 <%= yield  %>
       <div class="cl">&nbsp;</div>
@@ -75,7 +75,7 @@
 
 <br/>
      <%= render :partial => "shared/client_flash_messages", :locals => {:display => [:warning]} %>
-<% if @isAdmin %>
+<% if @user.admin? %>
 <a href="/client/campaign_clear_calls/<%=  @campaign.id%>" class="button"><span>Clear Campaign Calls</span></a>
 <div class="cl">&nbsp;</div><br/>
 <a href="/client/campaign_add/<%=  @campaign.id%>" class="button"><span>Edit Predective Properties</span></a>
@@ -87,7 +87,7 @@
 <!-- End Container -->
 <!-- Footer -->
 <div id="footer">
-  <div class="shell"> <span class="left">&copy; 2010 Impact Dialing</span> 
+  <div class="shell"> <span class="left">&copy; 2010 Impact Dialing</span>
 	 </div>
 </div>
 <%= @floatSidebar %>

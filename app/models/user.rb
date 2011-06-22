@@ -47,7 +47,15 @@ class User < ActiveRecord::Base
     ["beans@beanserver.net", "michael@impactdialing.com","wolthuis@twilio.com","aa@beanserver.net"].index(self.email)
   end
 
+  def admin?
+    admin
+  end
+
   def show_voter_buttons
     ["beans@beanserver.net", "wolthuis@twilio.com"].index(self.email)
+  end
+
+  def show_voter_buttons?
+    show_voter_buttons
   end
 end

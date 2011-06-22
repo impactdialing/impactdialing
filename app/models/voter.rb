@@ -9,6 +9,10 @@ class Voter < ActiveRecord::Base
   named_scope :existing_phone_in_campaign, lambda { |phone_number, campaign_id|
     {:conditions => ['Phone = ? and campaign_id = ?', phone_number, campaign_id]}
   }
+
+  default_scope :order => 'LastName, FirstName, Phone'
+  named_scope :active, lambda { { :conditions => ["active = ?", true] }}
+
   cattr_reader :per_page
   @@per_page = 25
 
