@@ -13,16 +13,16 @@ class ApplicationController < ActionController::Base
     return true if local_request? || RAILS_ENV == 'test' || RAILS_ENV == 'development' || RAILS_ENV == 'staging' || action_name=="monitor"
     @cont = controller_name
     @act = action_name
-    if controller_name=="caller" && !(ssl? || local_request?)
-      redirect_to "https://caller.#{request.domain}/#{@cont}/#{@act}/#{params[:id]}"
+    if controller_name=="caller" && !ssl?
+      redirect_to "https://caller.#{request.domain}/#{@cont}/#{@act}/#{params[:id]}" 
       flash.keep
-    else
+    elsif !ssl?
       redirect_to "https://admin.#{request.domain}/#{@cont}/#{@act}/#{params[:id]}"
       flash.keep
     end
-    return false
+    return true
   end
-
+  
   def ssl?
     request.env['HTTPS'] == 'on' || request.env['HTTP_X_FORWARDED_PROTO'] == 'https'
   end
