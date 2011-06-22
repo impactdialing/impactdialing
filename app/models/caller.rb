@@ -5,6 +5,8 @@ class Caller < ActiveRecord::Base
   has_and_belongs_to_many :campaigns
   belongs_to :user
 
+  named_scope :active, lambda { { :conditions => ["active = ?", true] }}
+
   cattr_reader :per_page
   @@per_page = 25
 

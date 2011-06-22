@@ -14,4 +14,10 @@ describe Caller do
     Caller.record_timestamps = true
     Caller.by_updated.all.should == [newer_caller, older_caller]
   end
+
+  it "lists active callers" do
+    active_caller = Factory(:caller, :active => true)
+    inactive_caller = Factory(:caller, :active => false)
+    Caller.active.should == [active_caller]
+  end
 end

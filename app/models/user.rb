@@ -8,6 +8,7 @@ class User < ActiveRecord::Base
   has_many :recordings
   has_one :account
   has_many :scripts
+  has_many :callers
 
   attr_accessor :new_password
   validates_presence_of :new_password, :on => :create, :message => "can't be blank"

@@ -12,7 +12,7 @@
     end
 
     def create
-      campaign = @user.campaigns.create!(:script => @user.scripts.first, :predective_type => 'algorithm1')
+      campaign = @user.campaigns.create!(:script => @user.scripts.first, :predective_type => 'algorithm1', :callers => @user.callers.active)
       redirect_to campaign_path(campaign)
     end
   end
