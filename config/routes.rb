@@ -16,8 +16,8 @@ ActionController::Routing::Routes.draw do |map|
   end
 
   map.namespace 'client' do |client|
-    client.campaign_new 'campaign_new', :action => 'campaign_new'
-    client.campaign_view 'campaign_view/:id', :action => 'campaign_view'
+    map.campaign_new 'client/campaign_new', :action => 'campaign_new', :controller => 'client'
+    map.campaign_view 'client/campaign_view/:id', :action => 'campaign_view', :controller => 'client'
 
     ['campaigns', 'scripts', 'callers'].each do |type_plural|
       client.send("deleted_#{type_plural}", "/deleted_#{type_plural}", :action => 'deleted', :controller => type_plural, :conditions => { :method => :get })
