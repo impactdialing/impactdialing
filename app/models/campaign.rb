@@ -5,7 +5,7 @@ class Campaign < ActiveRecord::Base
 #  has_and_belongs_to_many :voter_lists
 #  has_many :voter_lists
   has_many :voter_lists, :conditions => {:active => true}
-  has_many :voters
+  has_many :all_voters, :class_name => "Voter"
   has_and_belongs_to_many :callers
   belongs_to :script
   belongs_to :user

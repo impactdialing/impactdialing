@@ -25,9 +25,8 @@ class CampaignsController < ClientController
     @callers = @user.callers.active
     @lists = @campaign.voter_lists
 
-    @voters = @campaign.voters.active.paginate(:page => params[:page])
+    @voters = @campaign.all_voters.active.paginate(:page => params[:page])
     flash_now(:warning, "When Impact Dialing makes a call, it needs a phone number to use for the Caller ID. Enter the phone number you want to use for your Caller ID and click Verify. To prevent abuse, Impact Dialing will call that number and ask you to enter a validation code that will appear on your screen. Until you do this, you can't make calls with this campaign.") if @campaign.caller_id.blank?
     @voter_list = @campaign.voter_lists.new
-    render :layout => 'campaign_view'
   end
 end
