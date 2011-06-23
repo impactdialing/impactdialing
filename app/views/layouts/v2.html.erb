@@ -9,7 +9,7 @@
 <head>
 <meta charset="utf-8">
 
-<title>Impact Dialing</title>
+<title><%= title %></title>
 <meta name="description" content="">
 <meta name="author" content="">
 
@@ -69,7 +69,7 @@
 <body class="admin clearfix">
 
 <header role="banner" class="clearfix">
-<h1><a href="<% if client_controller?(@controllerName) %>/client<% else %>/caller<% end %>">Impact Dialing</a></h1>
+<h1 class="<%= domain %>"><a href="<% if client_controller?(@controllerName) %>/client<% else %>/caller<% end %>"><%= title %></a></h1>
 
 <% if logged_in_as_client? %>
   <ul class="clearfix">
@@ -120,8 +120,8 @@
 	</ul>
 <% end %>
 <div>
-<p class="vcard">Need help? <span class="tel">(415) 347-5723</span> or <a href="mailto:email@impactdialing.com">email@impactdialing.com</a></p>
-<small>&#169; 2011 <span class="fn org">Impact Dialing, Inc.</span></small>
+  <p class="vcard">Need help? <span class="tel"><%= phone %></span> or <a href="mailto:<%= email %>"><%= email %></a></p>
+  <small>&#169; 2011 <span class="fn org"><%= title %>, Inc.</span></small>
 </div>
 </footer>
 
