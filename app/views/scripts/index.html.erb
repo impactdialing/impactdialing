@@ -32,6 +32,6 @@
 
   <!-- Table -->
 <% end %>
-<p class="actions"><a href="/client/script_add" class="action primary">Add new script</a></p>
+<p class="actions"><%= link_to 'Add new script', new_script_path, :class => 'action primary' %></p>
 <p class="actions"><%= link_to 'View deleted scripts', client_deleted_scripts_path, :class => 'action secondary' %></p>
 
