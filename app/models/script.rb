@@ -2,6 +2,7 @@ class Script < ActiveRecord::Base
   include Deletable
   validates_presence_of :name, :on => :create, :message => "can't be blank"
   belongs_to :user
+  named_scope :active, {:conditions => {:active => 1}}
 
   cattr_reader :per_page
   @@per_page = 25
