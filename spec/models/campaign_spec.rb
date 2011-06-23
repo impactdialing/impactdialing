@@ -36,4 +36,11 @@ describe Campaign do
     campaign = user.campaigns.create!(:name => 'Titled')
     campaign.name.should == 'Titled'
   end
+
+  it "should not invoke Twilio if caller id is not present" do
+    Twilio.should_not_receive(:new)
+    campaign = Factory(:campaign)
+    campaign.caller_id = nil
+    campaign.save
+  end
 end

@@ -28,5 +28,5 @@
   <p><%= page_entries_info @campaigns %> <%= will_paginate @campaigns %></p>
 
 <% end %>
-<p class="actions"><a href="/client/campaign_new" class="action primary">Add a new campaign</a></p>
+<p class="actions"><%= link_to "Add a new campaign", "#", :method => :post, :class => "action primary", :id => "add_campaign" %></p>
 <p class="actions"><%= link_to 'View deleted campaigns', client_deleted_campaigns_path, :class => 'action secondary' %></p>
