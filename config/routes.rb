@@ -35,6 +35,7 @@ ActionController::Routing::Routes.draw do |map|
   map.reset_password '/reset_password', :action => 'reset_password', :controller => 'client/users', :conditions =>{ :method => :get }
 
   map.resources :campaigns, :path_prefix => "v2"
+  map.resources :scripts, :path_prefix => "v2"
 
   map.resources :campaigns, :only => [] do |campaign|
     campaign.resources :voter_lists, :collection => {:import => :post}, :except => [:new, :show]

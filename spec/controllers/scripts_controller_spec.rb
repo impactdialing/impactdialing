@@ -12,4 +12,11 @@ describe ScriptsController do
   end
 
   it_should_behave_like 'all controllers of deletable entities'
+
+  it "lists all scripts" do
+    active_script = Factory(:script, :user => user, :active => true)
+    inactive_script = Factory(:script, :user => user, :active => false)
+    get :index
+    assigns(:scripts).should == [active_script]
+  end
 end
