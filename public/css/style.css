@@ -537,6 +537,10 @@ header[role='banner'] h1.dc-london {
   background : transparent url(../img/dc-london-h1.png) no-repeat 0 0;
 }
 
+header[role='banner'] h1.stonesphones {
+  background : transparent url(../img/stonesphones-h1.png) no-repeat 0 0;
+}
+
 header[role="banner"] h1 a {
 display : block;
 height : 55px; }
