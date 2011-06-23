@@ -19,4 +19,10 @@ describe ScriptsController do
     get :index
     assigns(:scripts).should == [active_script]
   end
+
+  it "creates a new script" do
+    get :new
+    assigns(:script).should be
+    assigns(:script).name.should == 'Untitled Script'
+  end
 end
