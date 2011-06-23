@@ -1,6 +1,5 @@
 # Methods added to this helper will be available to all templates in the application.
 module ApplicationHelper
-  DOMAINS = {'dc-london' => 'dc-London', 'impactdialing' => 'Impact Dialing'}
   def cms(key)
     s = Seo.find_by_crmkey_and_active_and_version(key, 1, session[:seo_version])
     s = Seo.find_by_crmkey_and_active_and_version(key, 1, nil) if s.blank?
