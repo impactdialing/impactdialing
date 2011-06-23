@@ -3,6 +3,8 @@ class Script < ActiveRecord::Base
   validates_presence_of :name, :on => :create, :message => "can't be blank"
   belongs_to :user
 
+  default_scope :order => :name
+
   cattr_reader :per_page
   @@per_page = 25
 
@@ -10,10 +12,9 @@ class Script < ActiveRecord::Base
     if self.result_set_1.blank?
       json={}
       for i in 1..99 do
-        curValue = eval("self.keypad_#{i}")
-        json["keypad_#{i}"]=curValue
+        json["keypad_#{i}"] = self.send("keypad_#{i}")
       end
-      self.result_set_1=json.to_json
+      self.result_set_1 = json.to_json
     end
   end
 
