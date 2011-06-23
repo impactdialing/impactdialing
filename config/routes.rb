@@ -5,6 +5,7 @@ ActionController::Routing::Routes.draw do |map|
   map.connect '/how_were_different', :controller=>"home", :action=>"how_were_different"
   map.connect '/pricing', :controller=>"home", :action=>"pricing"
   map.connect '/contact', :controller=>"home", :action=>"contact"
+  map.policies '/policies', :controller => 'home', :action => 'policies'
   map.connect '/homecss/css/style.css', :controller=>"home", :action=>"homecss"
 
   map.namespace 'admin' do |admin|
