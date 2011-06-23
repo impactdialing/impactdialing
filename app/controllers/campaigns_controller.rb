@@ -19,7 +19,6 @@ class CampaignsController < ClientController
     @campaign = Campaign.find(params[:id])
     @callers = @user.callers.active
     @lists = @campaign.voter_lists
-
     @voters = @campaign.all_voters.active.paginate(:page => params[:page])
     flash_now(:warning, t(:caller_id_blank)) if @campaign.caller_id.blank?
     @voter_list = @campaign.voter_lists.new

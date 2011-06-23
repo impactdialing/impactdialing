@@ -109,19 +109,19 @@
 
 <footer role="contentinfo" class="clearfix">
 <% if client_controller?(@controllerName) %>
-<ul>
-	<!--<li><a href="/client" <% if @actionName=="index" %>class="active"<% end %>><span>Welcome</span></a></li>-->
-	<li><a href="/client/callers" <% if @actionName.index("caller") %>class="active"<% end %>><span>Callers</span></a></li>
-	<li><a href="/client/scripts" <% if @actionName.index("script") %>class="active"<% end %>><span>Scripts</span></a></li>
-	<li><a href="/client/campaigns" <% if @actionName.index("upload") || @actionName.index("campaign") %>class="active"<% end %>><span>Campaigns</span></a></li>
-	<!--<li><a href="/client/monitor" <% if @actionName.index("monitor") %>class="active"<% end %>><span>Monitor</span></a></li>-->
-	<li><a href="/client/monitor" <% if @actionName.index("monitor") %>class="active"<% end %>><span>Monitor</span></a></li>
-	<li><a href="/client/reports" <% if @actionName.index("report") %>class="active"<% end %>><span>Reports</span></a></li>
-	</ul>
+  <ul>
+    <!--<li><a href="/client" <% if @actionName=="index" %>class="active"<% end %>><span>Welcome</span></a></li>-->
+    <li><a href="/client/callers" <% if @actionName.index("caller") %>class="active"<% end %>><span>Callers</span></a></li>
+    <li><a href="/client/scripts" <% if @actionName.index("script") %>class="active"<% end %>><span>Scripts</span></a></li>
+    <li><a href="/client/campaigns" <% if @actionName.index("upload") || @actionName.index("campaign") %>class="active"<% end %>><span>Campaigns</span></a></li>
+    <!--<li><a href="/client/monitor" <% if @actionName.index("monitor") %>class="active"<% end %>><span>Monitor</span></a></li>-->
+    <li><a href="/client/monitor" <% if @actionName.index("monitor") %>class="active"<% end %>><span>Monitor</span></a></li>
+    <li><a href="/client/reports" <% if @actionName.index("report") %>class="active"<% end %>><span>Reports</span></a></li>
+  </ul>
 <% end %>
 <div>
-<p class="vcard">Need help? <span class="tel">(415) 347-5723</span> or <a href="mailto:email@impactdialing.com">email@impactdialing.com</a></p>
-<small>&#169; 2011 <span class="fn org">Impact Dialing, Inc.</span></small>
+  <p class="vcard">Need help? <span class="tel"><%= phone %></span> or <a href="mailto:<%= email %>"><%= email %></a></p>
+  <small>&#169; 2011 <span class="fn org"><%= title %>, Inc.</span></small>
 </div>
 </footer>
 

@@ -2,8 +2,8 @@
 module ApplicationHelper
   DOMAINS = {'dc-london' => 'dc-London', 'impactdialing' => 'Impact Dialing'}
   def cms(key)
-    s = Seo.find_by_crmkey_and_active_and_version(key,1,session[:seo_version])
-    s = Seo.find_by_crmkey_and_active_and_version(key,1,nil) if s.blank?
+    s = Seo.find_by_crmkey_and_active_and_version(key, 1, session[:seo_version])
+    s = Seo.find_by_crmkey_and_active_and_version(key, 1, nil) if s.blank?
 
     if s.blank?
       ""
@@ -64,16 +64,18 @@ module ApplicationHelper
     ['client', 'voter_lists', 'client/campaigns', 'client/scripts', 'client/callers', 'campaigns',].include?(controllerName)
   end
 
-  def title
-    DOMAINS[domain] || 'Impact Dialing'
+  ['title', 'phone', 'email'].each do |value|
+    define_method(value)do
+      t("white_labeling.#{domain}.#{value}")
+    end
   end
 
   def domain
     d = request.domain.downcase.gsub(/\.com/, '')
-    if DOMAINS.keys.include?(d)
-      d
-    else
+    if t("white_labeling.#{d}", :default => '').blank?
       'impactdialing'
+    else
+      d
     end
   end
 end
