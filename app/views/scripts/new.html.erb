@@ -2,8 +2,7 @@
 <%= error_messages_for :script %>
 <% @lastone=[0,0,0,0,0,0,0,0,0,0,0]%>
 
-<% form_for :script, :url => { :action => "script_add" , :id=>@script.id}, :html => {:name => 'callerForm', :id => 'callerForm'}   do |f| %>
-
+<% form_for @script, :html => {:name => 'callerForm', :id => 'callerForm'}   do |f| %>
   <p>
     <label>Script name</label>
     <%= f.text_field :name, {:class=>"field"} %>
@@ -15,7 +14,6 @@
       <% @fields.each do |field| %>
         <li>	<input  type="checkbox" name="voter_field[]" value="<%= field %>"  <% if @voter_fields.index(field) %>checked<% end %>> <%= field %></li>
       <% end %>
-
     </ul>
   </fieldset>
 
@@ -23,7 +21,6 @@
     <legend>Script</legend>
     <p>	<%= f.text_area :script, {:cols=>50, :rows=>10} %></p>
   </fieldset>
-
 
   <fieldset>
     <legend>Call results</legend>
@@ -34,19 +31,13 @@
       <%= render :partial => 'client/call_note' , :locals => { :num => i }  %>
     <% end %>
 
-
-
     <p class="actions">
-      <a href="javascript:addResult();" class="action secondary">New question</a>
-      <a href="javascript:remResult();" class="action secondary">Delete last question</a>
-      <a href="javascript:addNote();" class="action secondary">New note</a>
-      <a href="javascript:delNote();" class="action secondary">Delete last note</a>
+      <a href="javascript:void(0)" onclick="addResult();" class="action secondary">New question</a>
+      <a href="javascript:void(0)" onclick="remResult();" class="action secondary">Delete last question</a>
+      <a href="javascript:void(0)" onclick="addNote();" class="action secondary">New note</a>
+      <a href="javascript:void(0)" onclick="delNote();" class="action secondary">Delete last note</a>
     </p>
-
-
   </fieldset>
-
-
 
   <input type="hidden" id="numResults" name="numResults" value="">
   <input type="hidden" id="numNotes" name="numNotes" value="">
@@ -56,20 +47,16 @@
   </div>
 <% end -%>
 
-
-
-
 <script>
-
   var numResults=<%= @numResults %>;
   var numNotes=<%= @numNotes %>;
   var maxNotes=<%= NUM_RESULT_FIELDS %>;
 
   for (i=1; i<=numResults;i++)
-  $('result_container_' + i).style.display='block';
+    $('result_container_' + i).style.display='block';
 
   for (i=1; i<=numNotes;i++)
-  $('note_container_' + i).style.display='block';
+    $('note_container_' + i).style.display='block';
 
   function addResult(){
     if (numResults==maxNotes){
@@ -78,7 +65,7 @@
     }
     numResults+=1;
     for (i=1; i<=numResults;i++)
-    $('result_container_' + i).style.display='block';
+      $('result_container_' + i).style.display='block';
   }
 
   function remResult(){
@@ -105,10 +92,6 @@
         break;
       }
     }
-    //		alert(lastone);
-    //		lastone++;
-    //		idiv = $('result_' + num + '_' + lastone);
-
   }
 
   function addNote(){
@@ -116,16 +99,14 @@
       alert ('Maximum number of notes is '+ maxNotes);
       return true;
     }
-
     numNotes+=1;
     for (i=1; i<=numNotes;i++)
-    $('note_container_' + i).style.display='block';
+      $('note_container_' + i).style.display='block';
   }
-
 
   function delNote(){
     if(numNotes==0)
-    return true;
+      return true;
     num=numNotes;
     $('note_container_' + num).style.display='none';
     numNotes=numNotes-1;
@@ -141,34 +122,6 @@
   function saveForm(){
     $('numResults').value=numResults;
     $('numNotes').value=numNotes;
-    $('numResults').value=numResults;
     $('callerForm').submit();
   }
-  /*
-  for (x=1; x<100; x++){
-    idiv = $('result' +x);
-    ifrm = $('script_keypad_' + x);
-
-    if (ifrm.value!='' || x < 10)
-    idiv.style.display='block';
-  }
-
-  function newVal(){
-    maxN=0;
-    for (x=1; x<100; x++){
-      idiv = $('result' +x);
-      ifrm = $('script_keypad_' + x);
-
-      if (ifrm.value!='' || x < 10)
-      maxN=x;
-    }
-    sfrm = $('script_keypad_' + (maxN));
-    sdiv = $('result' + (maxN+1));
-    if (sfrm.value=='')
-    alert('Enter a value for keypad ' + maxN );
-    else
-    sdiv.style.display='block';
-  }
-  $('content').style.float='left';
-  */
 </script>
