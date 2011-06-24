@@ -22,7 +22,7 @@ ActionController::Routing::Routes.draw do |map|
 
     ['campaigns', 'scripts', 'callers'].each do |type_plural|
       client.send("deleted_#{type_plural}", "/deleted_#{type_plural}", :action => 'deleted', :controller => type_plural, :conditions => { :method => :get })
-      map.send(type_plural, "/client/#{type_plural}", :action => type_plural, :controller => 'client', :conditions => { :method => :get })
+      map.send("client_#{type_plural}", "/client/#{type_plural}", :action => type_plural, :controller => 'client', :conditions => { :method => :get })
       client.resources type_plural, :only => [] do |type|
         type.restore 'restore', :action => 'restore', :controller => type_plural, :conditions => { :method => :put }
       end
