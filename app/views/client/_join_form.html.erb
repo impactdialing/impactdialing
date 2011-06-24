@@ -39,16 +39,16 @@
 					<input class="field" id="user_password" name="user[new_password]" size="30" type="password" value="" />
 
 			      </p>
-		
+
 	<!--
 	      <p>
 	        <label><% if !@user.new_record? %>New <% end %>Password Confirmation <% if @user.new_record? %><span>(Required)</span><% end %></label>
 			<%# f.password_field :password_confirmation, {:class=>"field"} %>
 	      </p>-->
 	<% if @user.new_record? %>
-			<p>	
-				<label>	<input type="checkbox" name="tos" value="1" <% if params[:tos] %>checked<% end %>/> I agree to the <a href="policies#terms" target="_blank">Terms of Service</a></label>
-				
+			<p>
+        <label>	<input type="checkbox" name="tos" value="1" <% if params[:tos] %>checked<% end %>/> I agree to the <a href="<%= policies_path %>#terms" target="_blank">Terms of Service</a></label>
+
 			</p>
 			<% end %>
 			<%# f.submit "submit", :disable_with => 'submiting...', :class=>"button" %>
@@ -66,5 +66,5 @@
 			<% end %>
 
 		</div>
-		
+
 <% end -%>
