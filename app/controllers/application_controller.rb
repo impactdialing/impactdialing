@@ -151,6 +151,53 @@ class ApplicationController < ActionController::Base
     return response.body
   end
 
+  def handle_multi_disposition_submit(result_set_num,attempt_id)
+    #@session
+    logger.info "handle_multi_disposition_submit called for attempt #{attempt_id} result #{result_set_num}"
+    return if @session.blank?
+    @campaign = @session.campaign
+    @script = @campaign.script
+    @clean_incomplete=nil
+    if @script.incompletes!=nil && @script.incompletes.index("{")
+      incompletes=JSON.parse(@script.incompletes)
+    else
+      incompletes={}
+    end
+    
+
+    #new style results
+    attempt = CallAttempt.find(attempt_id)
+    begin
+      result_json=YAML.load(attempt.result_json)
+    rescue
+      result_json={}
+    end
+    logger.info "before result_json=#{result_json.inspect}"
+    
+    r=result_set_num
+    this_result_set = JSON.parse(eval("@script.result_set_#{r}" ))
+    thisKeypadval= params[:Digits].gsub("#","").gsub("*","").slice(0..1)
+    this_result_text=this_result_set["keypad_#{thisKeypadval}"]
+    result_json["result_#{r}"]=[this_result_text,thisKeypadval]
+    this_incomplete = incompletes[r.to_s] || []
+    logger.info "after result_json=#{result_json.inspect}"
+
+    if this_incomplete.index(thisKeypadval.to_s)
+      @clean_incomplete=true
+    else
+      @clean_incomplete=false
+    end
+
+    attempt = CallAttempt.find(attempt_id)
+    attempt.result_json=result_json
+    attempt.save
+
+    voter = attempt.voter
+    voter.result_json=result_json
+    voter.save
+
+  end
+
   def handle_disposition_submit
     #@session @clean_digit @caller @campaign
     if @session.voter_in_progress!=nil

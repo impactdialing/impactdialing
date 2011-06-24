@@ -172,7 +172,7 @@ class CallerController < ApplicationController
       result_json["result_#{r}"]=[this_result_text,thisKeypadval]
       @clean_digit=thisKeypadval if @clean_digit.blank?
       @clean_response=this_result_text if @clean_response==nil
-      logger.info "!!!@clean_response=#{@clean_response}!!!"
+#      logger.info "!!!@clean_response=#{@clean_response}!!!"
       this_incomplete = incompletes[r.to_s] || []
 
       if this_incomplete.index(thisKeypadval.to_s)
