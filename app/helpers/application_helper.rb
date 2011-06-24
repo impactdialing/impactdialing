@@ -1,9 +1,8 @@
 # Methods added to this helper will be available to all templates in the application.
 module ApplicationHelper
-
   def cms(key)
-    s = Seo.find_by_crmkey_and_active_and_version(key,1,session[:seo_version])
-    s = Seo.find_by_crmkey_and_active_and_version(key,1,nil) if s.blank?
+    s = Seo.find_by_crmkey_and_active_and_version(key, 1, session[:seo_version])
+    s = Seo.find_by_crmkey_and_active_and_version(key, 1, nil) if s.blank?
 
     if s.blank?
       ""
@@ -61,6 +60,21 @@ module ApplicationHelper
   end
 
   def client_controller?(controllerName)
-    ['client', 'voter_lists', 'client/campaigns', 'client/scripts', 'client/callers', 'campaigns',].include?(controllerName)
+    ['client', 'voter_lists', 'client/campaigns', 'client/scripts', 'client/callers', 'campaigns', 'scripts'].include?(controllerName)
+  end
+
+  ['title', 'phone', 'email'].each do |value|
+    define_method(value)do
+      t("white_labeling.#{domain}.#{value}")
+    end
+  end
+
+  def domain
+    d = request.domain.downcase.gsub(/\.com/, '')
+    if t("white_labeling.#{d}", :default => '').blank?
+      'impactdialing'
+    else
+      d
+    end
   end
 end

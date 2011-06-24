@@ -10,23 +10,23 @@ class HomeController < ApplicationController
     @user = User.new
     render :layout=>false
   end
-  
+
   def homecss
     render :layout=>false, :content_type => "text/css"
   end
-  
+
   def how_were_different
-    
+
   end
-  
+
   def pricing
-    
+
   end
 
   def contact
-    
+
   end
-  
+
   def tos
     render :layout=>"client"
   end
@@ -34,5 +34,9 @@ class HomeController < ApplicationController
   def monitor
     render :text=>"OK"
     return
+  end
+
+  def policies
+    render :layout => 'client'
   end
 end

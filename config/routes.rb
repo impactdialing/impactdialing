@@ -5,6 +5,7 @@ ActionController::Routing::Routes.draw do |map|
   map.connect '/how_were_different', :controller=>"home", :action=>"how_were_different"
   map.connect '/pricing', :controller=>"home", :action=>"pricing"
   map.connect '/contact', :controller=>"home", :action=>"contact"
+  map.policies '/policies', :controller => 'home', :action => 'policies'
   map.connect '/homecss/css/style.css', :controller=>"home", :action=>"homecss"
 
   map.namespace 'admin' do |admin|
@@ -21,7 +22,7 @@ ActionController::Routing::Routes.draw do |map|
 
     ['campaigns', 'scripts', 'callers'].each do |type_plural|
       client.send("deleted_#{type_plural}", "/deleted_#{type_plural}", :action => 'deleted', :controller => type_plural, :conditions => { :method => :get })
-      map.send(type_plural, "/client/#{type_plural}", :action => type_plural, :controller => 'client', :conditions => { :method => :get })
+      map.send("client_#{type_plural}", "/client/#{type_plural}", :action => type_plural, :controller => 'client', :conditions => { :method => :get })
       client.resources type_plural, :only => [] do |type|
         type.restore 'restore', :action => 'restore', :controller => type_plural, :conditions => { :method => :put }
       end
@@ -34,6 +35,7 @@ ActionController::Routing::Routes.draw do |map|
   map.reset_password '/reset_password', :action => 'reset_password', :controller => 'client/users', :conditions =>{ :method => :get }
 
   map.resources :campaigns, :path_prefix => "v2"
+  map.resources :scripts, :path_prefix => "v2"
 
   map.resources :campaigns, :only => [] do |campaign|
     campaign.resources :voter_lists, :collection => {:import => :post}, :except => [:new, :show]

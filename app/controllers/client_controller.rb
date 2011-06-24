@@ -590,15 +590,15 @@ class ClientController < ApplicationController
       #        return
       #      end
 
-      billing_address = { 
-          :name => "#{@user.fname} #{@user.lname}", 
-          :address1 => @account.address1 , 
+      billing_address = {
+          :name => "#{@user.fname} #{@user.lname}",
+          :address1 => @account.address1 ,
           :zip =>@account.zip,
           :city     => @account.city,
           :state    => @account.state,
           :country  => 'US'
         }
-      # billing_address = { 
+      # billing_address = {
       #     :name     => "John Smith",
       #     :address1 => '123 First St.',
       #     :address2 => '',
@@ -607,7 +607,7 @@ class ClientController < ApplicationController
       #     :country  => 'US',
       #     :zip      => '90068',
       #     :phone    => '310-555-1234'
-      # }     
+      # }
       options = {:address => {}, :address1 => billing_address, :billing_address => billing_address, :ip=>"127.0.0.1", :order_id=>""}
       response = BILLING_GW.authorize(1, creditcard,options)
       logger.info response.inspect
@@ -638,7 +638,7 @@ class ClientController < ApplicationController
 
     #    @campaign.check_valid_caller_id_and_save
     #    flash.now[:error]="Your Campaign Caller ID is not verified."  if !@campaign.caller_id.blank? && !@campaign.caller_id_verified
-    flash_now(:warning, "When Impact Dialing makes a call, it needs a phone number to use for the Caller ID. Enter the phone number you want to use for your Caller ID and click Verify. To prevent abuse, Impact Dialing will call that number and ask you to enter a validation code that will appear on your screen. Until you do this, you can't make calls with this campaign.") if @campaign.caller_id.blank?
+    flash_now(:warning, "When you make calls with this campaign, you need a phone number to use for the Caller ID. Enter the phone number you want to use for your Caller ID and click Verify. To prevent abuse, the system will call that number and ask you to enter a validation code that will appear on your screen. Until you do this, you can't make calls with this campaign.") if @campaign.caller_id.blank?
     @isAdmin = @user.admin
     @show_voter_buttons = @user.show_voter_buttons
     @voter_list = @campaign.voter_lists.new
@@ -763,26 +763,7 @@ class ClientController < ApplicationController
     end
     if @script==nil
       @script = Script.new
-      #       @rs={}
-      #       @rs["keypad_1"]="Strong supportive"
-      #       @rs["keypad_2"]="Lean supportive"
-      #       @rs["keypad_3"]="Undecided"
-      #       @rs["keypad_4"]="Lean opposed"
-      #       @rs["keypad_5"]="Strong opposed"
-      #       @rs["keypad_6"]="Refused"
-      #       @rs["keypad_7"]="Not home/call back"
-      #       @rs["keypad_8"]="Language barrier"
-      #       @rs["keypad_9"]="Wrong number"
-      # #      @rs.incompletes=["7"].to_json
-      #       @script.result_set_1 = @rs.to_json
-      #       @script.incompletes='{"5":[],"6":[],"1":["7"],"7":[],"2":[],"8":[],"3":[],"9":[],"4":[],"10":[]}'
-      #       @script.name = "Political Example Script"
       @script.name = "Untitled Script"
-      #       @script.note_1 = "Email"
-      #       @numResults = 1
-      #       @numNotes = 1
-      #       @script.voter_fields='["CustomID","FirstName","MiddleName","LastName","Suffix","Age","Gender","Email"]'
-      #
     end
     if @script.new_record?
       @label = "New script"
@@ -811,11 +792,10 @@ class ClientController < ApplicationController
 
     if request.post?
       @script.update_attributes(params[:script])
-      #results_json={}
       numResults = params[:numResults]
       for r in 1..numResults.to_i do
         thisResults={}
-
+        thisResults["name"]=eval("params[:qname_#{r}]")
         for i in 1..99 do
           thisKeypadval = eval("params[:keypad_#{r}_#{i}]" )
           if !thisKeypadval.blank? && !isnumber(thisKeypadval)
@@ -833,14 +813,9 @@ class ClientController < ApplicationController
           thisResult = eval("params[:text_#{r}_#{i}]")
           thisKeypadval = eval("params[:keypad_#{r}_#{i}]" )
           if !thisResult.blank? && !thisKeypadval.blank?
-            #@script.attributes = { "keypad_#{r}_#{thisKeypadval}" => thisResult }
             thisResults["keypad_#{i}"] =  thisResult
-            #          eval("@script.keypad_#{thisKeypadval}") = thisResult
-            #        else
-            #          eval("@script.keypad_" + thisKeypadval) = nil
           end
         end
-        #results_json[r]=thisResults
         logger.info "Done with #{r}: #{thisResults.inspect}"
         @script.attributes =   { "result_set_#{r}" => thisResults.to_json }
       end
@@ -863,11 +838,6 @@ class ClientController < ApplicationController
       @script.incompletes = all_incompletes.to_json
 
       if @script.valid?
-        # if params[:incomplete]
-        #   @script.incompletes = params[:incomplete].to_json
-        # else
-        #   @script.incompletes = nil
-        # end
 
         if params[:voter_field]
           @script.voter_fields = params[:voter_field].to_json

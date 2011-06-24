@@ -1,15 +1,9 @@
 module Client
   class CallersController < ClientController
-    def deleted
-      @callers = Caller.deleted.for_user(@user).paginate :page => params[:page], :order => 'id desc'
-    end
+    include DeletableController
 
-    def restore
-      Caller.find(params[:caller_id]).tap do |c|
-        c.restore
-        c.save
-      end
-      redirect_to :back
+    def type_name
+      'caller'
     end
   end
 end

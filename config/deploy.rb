@@ -1,11 +1,10 @@
 require "bundler/capistrano"
 
-repository = "https://impact-dialing.svn.beanstalkapp.com/webapp/trunk"
+repository = "git@github.com:impactdialing/Impact-Dialing.git"
 set :application, "impactdialing"
 set :user, "rails"
-set :scm, :subversion
+set :scm, :git
 set :scm_auth_cache, true
-set :deploy_via, :export
 set :repository,  repository
 set :runner, 'rails'
 set :use_sudo, false
@@ -26,7 +25,6 @@ namespace :deploy do
 end
 
 task :production do
-  set :server_name, "domU-12-31-39-09-65-F3.compute-1.internal"
   set :rails_env, 'production'
 end
 

@@ -297,7 +297,8 @@ class CallinController < ApplicationController
     @session = CallerSession.find(params[:session])
     @caller = @session.caller
     @campaign = @session.campaign
-
+   @script=@campaign.script
+         
     #check for web response
     if @session.attempt_in_progress==nil
       #aleady entered result on web
@@ -317,7 +318,18 @@ class CallinController < ApplicationController
       # initial call-in
       #      @play="#{APP_URL}/exitBeep.wav"
       if @session.session_key.blank?
-        @play="#{APP_URL}/wav/beep_enter_call_result.wav"
+         #get the first script question
+         this_result_set = JSON.parse(eval("@script.result_set_#{@script.result_sets_used.first}" ))
+         question_name=this_result_set["name"]
+         if question_name.blank?
+           @play="#{APP_URL}/wav/beep_enter_call_result.wav"
+         else
+           #this_result_set.keys.select{|k|  false && "Press #{k.gsub("keypad_","")} for #{this_result_set[k]}" if !this_result_set[k].blank?}
+           choices=this_result_set.keys.select{|k|  this_result_set[k] && k!="name"}.collect{|k|  "Press #{k.gsub("keypad_","")} for #{this_result_set[k]}" }.join(".  ")
+           @play="#{APP_URL}/wav/exitBeep.wav"
+           @say="#{question_name}. Enter your response and then press star. #{choices}"
+         end
+        
       else
         # from web ui
         @play="#{APP_URL}/wav/webui_beep_enter_call_result.wav"
@@ -336,15 +348,24 @@ class CallinController < ApplicationController
       end
     else
       # digits entered, response given
+      @clean_digit = params[:Digits].gsub("#","").gsub("*","").slice(0..1)
       if params[:Digits]=="*"
         @say="Goodbye"
         @hangup=true
       elsif params[:Digits].chars.first=="0"
         @say="Invalid result.  Please try again."
+      elsif JSON.parse(eval("@script.result_set_1" )).keys.index("keypad_#{@clean_digit}").nil? || JSON.parse(eval("@script.result_set_1" ))["keypad_#{@clean_digit}"].nil?
+        #invalid choice
+        @say="Invalid result.  Please try again."
       else
-        @clean_digit = params[:Digits].gsub("#","").gsub("*","").slice(0..1)
-
+        attempt=@session.attempt_in_progress
+        handle_multi_disposition_submit(@script.result_sets_used.first, attempt) #first element
         handle_disposition_submit
+        
+        if @script.result_sets_used.length>1
+          redirect_to :action=>"next_question", :session=>@session.id, :num=>"1", :attempt=>attempt
+          return
+        end
 
         if @campaign.use_web_ui
           @publish_channel="/#{@session.session_key}"
@@ -367,6 +388,44 @@ class CallinController < ApplicationController
     @numDigits=3
     @finishOnKey="*"
 
+    render :template => 'callin/index.xml.builder', :layout => false
+  end
+  
+  def next_question
+    #session, #attempt
+    @gather=true
+    @numDigits=3
+    @finishOnKey="*"
+    @repeatRedirect="#{APP_URL}/callin/next_question?session=#{params[:session]}&num=#{params[:num]}&attempt=#{params[:attempt]}"
+    @session = CallerSession.find(params[:session])
+    @caller = @session.caller
+    @campaign = @session.campaign
+    @script=@campaign.script
+    num=params[:num].to_i
+    result_num=@script.result_sets_used[num]
+    this_result_set = JSON.parse(eval("@script.result_set_#{result_num}" ))
+    thisKeypadval= params[:Digits].gsub("#","").gsub("*","").slice(0..1) if !params[:Digits].blank?
+        
+    if params[:Digits].blank?
+      question_name=this_result_set["name"]
+      choices=this_result_set.keys.select{|k|  this_result_set[k] && k!="name"}.collect{|k|  "Press #{k.gsub("keypad_","")} for #{this_result_set[k]}" }.join(".  ")
+ #     @say="#{question_name}.  #{choices}"
+       @say="#{question_name}. Enter your response and then press star. #{choices}"
+    elsif JSON.parse(eval("@script.result_set_#{result_num}" )).keys.index("keypad_#{thisKeypadval}").nil? || JSON.parse(eval("@script.result_set_#{result_num}" ))["keypad_#{thisKeypadval}"].nil?
+       #invalid choice
+       @say="Invalid result.  Please try again."
+    else
+      #record selection
+      handle_multi_disposition_submit(result_num, params[:attempt])
+      if @script.result_sets_used.length>num+1
+        redirect_to :action=>"next_question", :session=>@session.id, :num=>num+1
+        return
+      end
+
+      render :template => 'callin/start_conference.xml.builder', :layout => false
+      return      
+    end
+      
     render :template => 'callin/index.xml.builder', :layout => false
   end
 
