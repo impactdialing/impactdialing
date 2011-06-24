@@ -9,8 +9,8 @@ source "http://gems.github.com"
 
 # daemon-kit
 gem 'daemon-kit'
-gem 'rails'
-gem 'activerecord'
+gem 'rails', '2.3.11'
+#gem 'activerecord'
 gem 'mysql'
 gem 'hpricot'
 gem 'fastercsv'

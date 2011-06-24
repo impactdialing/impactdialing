@@ -795,7 +795,7 @@ class ClientController < ApplicationController
       numResults = params[:numResults]
       for r in 1..numResults.to_i do
         thisResults={}
-
+        thisResults["name"]=eval("params[:qname_#{r}]")
         for i in 1..99 do
           thisKeypadval = eval("params[:keypad_#{r}_#{i}]" )
           if !thisKeypadval.blank? && !isnumber(thisKeypadval)
