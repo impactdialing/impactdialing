@@ -1,16 +1,9 @@
 class CampaignsController < ClientController
   layout 'v2'
+  include DeletableController
 
-  def deleted
-    @campaigns = @user.campaigns.deleted.paginate(:page => params[:page], :order => "id desc")
-  end
-
-  def restore
-    Campaign.find(params[:campaign_id]).tap do |c|
-      c.restore
-      c.save
-    end
-    redirect_to :back
+  def type_name
+    'campaign'
   end
 
   def create
@@ -27,7 +20,6 @@ class CampaignsController < ClientController
     @campaign = Campaign.find(params[:id])
     @callers  = @user.callers.active
     @lists    = @campaign.voter_lists
-
     @voters = @campaign.all_voters.active.paginate(:page => params[:page])
     if @campaign.caller_id.blank?
       flash_now(:warning, t(:caller_id_blank))

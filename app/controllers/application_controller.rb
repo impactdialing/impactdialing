@@ -52,7 +52,7 @@ class ApplicationController < ActionController::Base
     if !@user.paid?
       #warning= "Your account is not funded and cannot make calls. For a free trial or to fund your account, email <a href=\"mailto:info@impactdialing.com\">info@impactdialing.com</a> or call (415) 347-5723."
 #      warning= "Your account is not funded and cannot make calls. Click here to<a href=\"/client/billing\"> activate your account</a>, or email <a href=\"mailto:info@impactdialing.com\">info@impactdialing.com</a> or call (415) 347-5723."
-      warning= "Before you can make calls, you need to verify a credit card number that we can bill. Until then, you can try out as much of Impact Dialing as you like, except for actually calling. <a href=\"/client/billing\">Click here to verify a credit card number.</a>"
+      warning= "Before you can make calls, you need to verify a credit card number that we can bill. Until then, you can try out as much as you like, except for actually calling. <a href=\"/client/billing\">Click here to verify a credit card number.</a>"
     end
     warning
   end
@@ -149,6 +149,53 @@ class ApplicationController < ActionController::Base
     response = http.request(req)
     logger.info "SENT RT #{key} #{post_data}: #{response.body}"
     return response.body
+  end
+
+  def handle_multi_disposition_submit(result_set_num,attempt_id)
+    #@session
+    logger.info "handle_multi_disposition_submit called for attempt #{attempt_id} result #{result_set_num}"
+    return if @session.blank?
+    @campaign = @session.campaign
+    @script = @campaign.script
+    @clean_incomplete=nil
+    if @script.incompletes!=nil && @script.incompletes.index("{")
+      incompletes=JSON.parse(@script.incompletes)
+    else
+      incompletes={}
+    end
+    
+
+    #new style results
+    attempt = CallAttempt.find(attempt_id)
+    begin
+      result_json=YAML.load(attempt.result_json)
+    rescue
+      result_json={}
+    end
+    logger.info "before result_json=#{result_json.inspect}"
+    
+    r=result_set_num
+    this_result_set = JSON.parse(eval("@script.result_set_#{r}" ))
+    thisKeypadval= params[:Digits].gsub("#","").gsub("*","").slice(0..1)
+    this_result_text=this_result_set["keypad_#{thisKeypadval}"]
+    result_json["result_#{r}"]=[this_result_text,thisKeypadval]
+    this_incomplete = incompletes[r.to_s] || []
+    logger.info "after result_json=#{result_json.inspect}"
+
+    if this_incomplete.index(thisKeypadval.to_s)
+      @clean_incomplete=true
+    else
+      @clean_incomplete=false
+    end
+
+    attempt = CallAttempt.find(attempt_id)
+    attempt.result_json=result_json
+    attempt.save
+
+    voter = attempt.voter
+    voter.result_json=result_json
+    voter.save
+
   end
 
   def handle_disposition_submit

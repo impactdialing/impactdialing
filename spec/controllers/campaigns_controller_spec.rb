@@ -45,4 +45,10 @@ describe CampaignsController do
       response.body.should be_blank
     end
   end
+
+  def type_name
+    'campaign'
+  end
+
+  it_should_behave_like 'all controllers of deletable entities'
 end
