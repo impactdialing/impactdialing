@@ -19,11 +19,13 @@ class Campaign < ActiveRecord::Base
     self.name = "Untitled #{user.campaigns.count + 1}" if self.name.blank?
   end
 
+  # TODO: remove
   def check_valid_caller_id_and_save
     check_valid_caller_id
     self.save
   end
 
+  # TODO: remove
   def check_valid_caller_id
     #verify caller_Id
     self.caller_id_verified=false
