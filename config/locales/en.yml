@@ -5,14 +5,17 @@ en:
   caller_id_blank: "When you make calls with this campaign, you need a phone number to use for the Caller ID. Enter the phone number you want to use for your Caller ID and click Verify. To prevent abuse, the system will call that number and ask you to enter a validation code that will appear on your screen. Until you do this, you can't make calls with this campaign."
   white_labeling:
     impactdialing:
-      title: 'Impact Dialing'
-      phone: '(415) 347-5723'
-      email: 'email@impactdialing.com'
+      title: "Impact Dialing"
+      full_title: "Impact Dialing, Inc."
+      phone: "(415) 347-5723"
+      email: "email@impactdialing.com"
     dc-london:
-      title: 'dc-London'
+      title: "dc-London"
+      full_title: "dc-London, Inc."
       phone: "(623) 826-6436"
       email: "andrew@dc-london.com"
     stonesphones:
-        title: 'Stones Dialer'
-        phone: "(202) 393-4626"
-        email: "info@stonesphones.com"
+      title: "Stones' Phones"
+      full_title: "Stones' Phones, LLC."
+      phone: "(202) 393-4626"
+      email: "info@stonesphones.com"

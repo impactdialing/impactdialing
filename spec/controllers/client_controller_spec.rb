@@ -10,10 +10,11 @@ describe ClientController do
   end
 
 
-  describe "when logged in" do
+  context "when logged in" do
     before :each do
       login_as Factory(:user)
     end
+
     describe "and attempt to login yet again" do
       it "redirects to 'add new client'" do
         get "login"
@@ -32,6 +33,14 @@ describe ClientController do
       it "defaults the campaign's mode to predictive type" do
         get :campaign_new
         Campaign.last.predective_type.should == 'algorithm1'
+      end
+    end
+
+    describe 'callers' do
+      integrate_views
+      it "shows" do
+        get :callers
+        response.code.should == '200'
       end
     end
   end
