@@ -37,7 +37,7 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :campaigns, :path_prefix => "v2"
   map.resources :scripts, :path_prefix => "v2"
 
-  map.resources :campaigns, :only => [] do |campaign|
+  map.resources :campaigns, :member => {:verify_callerid => :post}, :only => [] do |campaign|
     campaign.resources :voter_lists, :collection => {:import => :post}, :except => [:new, :show]
   end
 

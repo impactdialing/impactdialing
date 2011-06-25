@@ -26,4 +26,18 @@ class CampaignsController < ClientController
     end
     @voter_list = @campaign.voter_lists.new
   end
+
+  def verify_callerid
+    begin
+      @campaign = @user.campaigns.find(params[:id].to_i)
+    rescue ActiveRecord::RecordNotFound => e
+      render :text => "Permission denied", :status => 550 and return
+    end
+    @campaign.check_valid_caller!
+    @campaign.save
+    ret = if @campaign.caller_id.present? and (not @campaign.caller_id_verified)
+            "<div class='msg msg-error'> <p><strong>Your Campaign Caller ID is not verified.</strong></p> </div>"
+          end
+    render :text => ret
+  end
 end

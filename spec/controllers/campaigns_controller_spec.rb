@@ -24,25 +24,27 @@ describe CampaignsController do
 
   describe "caller id verification" do
     before :each do
-      @campaign = Factory(:campaign, :user => user)
-      @campaign.stub(:check_valid_caller_id)
-      @campaign.update_attributes(:caller_id => "1234567890")
-      Campaign.stub!(:find, @campaign.id).and_return(@campaign)
-    end
-    
-    it "verifies caller id" do
-      @campaign.should_receive(:check_valid_caller_id_and_save)
-      post :verify_callerid, :id => @campaign.id
+      @campaign = Factory(:campaign, :user => user, :caller_id => "1234567890")
     end
     it "should render 'not verified' if caller id not verified" do
-      @campaign.stub(:check_valid_caller_id).and_return(false)
+      invalid_caller_id_object = mock
+      invalid_caller_id_object.should_receive(:validate).and_return(false)
+      Campaign.should_receive(:find).with(@campaign.id, anything).and_return(@campaign)
+      @campaign.stub!(:caller_id_object).and_return(invalid_caller_id_object)
       post :verify_callerid, :id => @campaign.id
       response.body.should include "not verified"
     end
     it "should render nothing if caller id is verified" do
-      @campaign.stub!(:caller_id_verified).and_return(true)
+      valid_caller_id_object = mock
+      valid_caller_id_object.should_receive(:validate).and_return(true)
+      Campaign.should_receive(:find).with(@campaign.id, anything).and_return(@campaign)
+      @campaign.stub!(:caller_id_object).and_return(valid_caller_id_object)
       post :verify_callerid, :id => @campaign.id
       response.body.should be_blank
+    end
+    it "can verify caller id only for campaigns owned by the user'" do
+      post :verify_callerid, :id => another_users_campaign.id
+      response.code.should == '550'
     end
   end
 
