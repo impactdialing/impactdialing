@@ -3,9 +3,15 @@ class ScriptsController < ClientController
   include DeletableController
 
   before_filter :new_script, :only => [:new, :create]
+  before_filter :load_script, :only => [:update, :show, :destroy, :edit]
+  before_filter :apply_changes, :only => [:create, :update]
 
   def type_name
     'script'
+  end
+
+  def load_script
+    @script = Script.find(params[:id])
   end
 
   def index
@@ -23,7 +29,7 @@ class ScriptsController < ClientController
     @numNotes = 0
   end
 
-  def create
+  def apply_changes
     @script.update_attributes(params[:script])
     numResults = params[:numResults]
     for r in 1..numResults.to_i do
@@ -37,7 +43,6 @@ class ScriptsController < ClientController
       end
 
       this_results={}
-
       for i in 1..99 do
         this_result = params["text_#{r}_#{i}"]
         this_keypadval = params["keypad_#{r}_#{i}"]
@@ -68,9 +73,45 @@ class ScriptsController < ClientController
 
       @script.save
       flash_message(:notice, "Script saved")
-      redirect_to scripts_path
+      redirect_to @script
     else
       render :action => 'new'
     end
+  end
+
+  def show
+    @fields = ["CustomID","FirstName","MiddleName","LastName","Suffix","Age","Gender","Phone","Email"]
+    @breadcrumb=[{"Scripts"=>"/client/scripts"},"Edit Script"]
+    @label = "Add script"
+
+    @numResults = 0
+    for i in 1..NUM_RESULT_FIELDS do
+      @numResults+=1 if !eval("@script.result_set_#{i}").blank?
+    end
+    @numNotes = 0
+    for i in 1..NUM_RESULT_FIELDS do
+      @numNotes+=1 if !eval("@script.note_#{i}").blank?
+    end
+
+    if @script.incompletes!=nil
+      begin
+        @incompletes = JSON.parse(@script.incompletes)
+      rescue
+        @incompletes={}
+      end
+    else
+      @incompletes={}
+    end
+
+    if @script.voter_fields!=nil
+      begin
+        @voter_fields = eval(@script.voter_fields)
+      rescue
+        @voter_fields=[]
+      end
+    else
+      @voter_fields=[]
+    end
+    render :template => 'scripts/new'
   end
 end

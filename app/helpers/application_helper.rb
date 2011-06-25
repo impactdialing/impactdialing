@@ -63,7 +63,7 @@ module ApplicationHelper
     ['client', 'voter_lists', 'client/campaigns', 'client/scripts', 'client/callers', 'campaigns', 'scripts'].include?(controllerName)
   end
 
-  ['title', 'phone', 'email'].each do |value|
+  ['title', 'full_title', 'phone', 'email', ].each do |value|
     define_method(value)do
       t("white_labeling.#{domain}.#{value}")
     end
