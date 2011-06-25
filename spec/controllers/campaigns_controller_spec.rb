@@ -2,6 +2,8 @@ require "spec_helper"
 
 describe CampaignsController do
   let(:user) { Factory(:user) }
+  let(:another_users_campaign) { Factory(:campaign, :user => Factory(:user)) }
+
 
   before(:each) do
     login_as user
@@ -12,14 +14,45 @@ describe CampaignsController do
     response.code.should == '200'
   end
 
-  it "creates a campaign" do
-    lambda { post :create }.should change(Campaign, :count)
+  describe "create a campaign" do
+    it "creates a campaign" do
+      lambda { post :create }.should change(Campaign, :count)
+      response.should redirect_to(campaign_path(Campaign.first))
+    end
+    it "adds the user's existing active callers to the campaign" do
+      Factory(:caller, :user => user, :active => false)
+      active_callers = [Factory(:caller, :user => user, :active => true), Factory(:caller, :user => user, :active => true)]
+      post :create
+      Campaign.count.should == 1
+      Campaign.first.callers.should == active_callers
+    end
   end
 
-  it "updates a campaign" do
-    campaign = Factory(:campaign)
-    post :update, :id => campaign.id, :campaign => {:name => "an impactful campaign"}
-    campaign.reload.name.should == "an impactful campaign"
+  describe "update a campaign" do
+    let(:campaign) { Factory(:campaign, :user => user) }
+    it "updates the campaign attributes" do
+      post :update, :id => campaign.id, :campaign => {:name => "an impactful campaign"}
+      campaign.reload.name.should == "an impactful campaign"
+    end
+    it "assigns one of the scripts of the current user" do
+      script = Factory(:script, :user => user)
+      post :update, :id => campaign.id, :campaign => {}
+      campaign.reload.script.should == script
+    end
+    it "validates the caller id" do
+      phone_number = "1234567890"
+      validation_code = "xyzzyspoonshift1"
+      caller_id_object = mock
+      caller_id_object.should_receive(:validation_code).and_return("xyzzyspoonshift1")
+      campaign.stub!(:caller_id_object).and_return(caller_id_object)
+      Campaign.should_receive(:find).with(campaign.id, anything).and_return(campaign)
+      post :update, :id => campaign.id, :campaign => {:name => "an impactful campaign", :caller_id => phone_number}
+      flash[:notice].join.should include validation_code
+    end
+    it "can update only campaigns owned by the user'" do
+      post :update, :id => another_users_campaign.id
+      response.code.should == '550'
+    end
   end
 
   describe "caller id verification" do
