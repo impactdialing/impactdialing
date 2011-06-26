@@ -11,7 +11,7 @@ class CampaignsController < ClientController
     campaign.script = @user.scripts.first
     campaign.predective_type = 'algorithm1'
     campaign.callers << @user.callers.active
-    campaign.save
+    campaign.save!
     redirect_to campaign_path(campaign)
   end
 
