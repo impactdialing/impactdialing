@@ -33,15 +33,15 @@ ActionController::Routing::Routes.draw do |map|
     user.update_password '/update_password', :action => 'update_password', :controller => 'client/users', :conditions => { :method => :put }
   end
   map.reset_password '/reset_password', :action => 'reset_password', :controller => 'client/users', :conditions =>{ :method => :get }
+  map.resources :campaigns, :member => {:verify_callerid => :post}, :only => [] do |campaign|
+    campaign.resources :voter_lists, :collection => {:import => :post}, :except => [:new, :show]
+  end
 
+  #v2
   map.resources :campaigns, :path_prefix => "v2", :member => {:verify_callerid => :post} do |campaign|
     campaign.resources :voter_lists, :collection => {:import => :post}, :except => [:new, :show]
   end
   map.resources :scripts, :path_prefix => "v2"
-
-  map.resources :campaigns, :member => {:verify_callerid => :post}, :only => [] do |campaign|
-    campaign.resources :voter_lists, :collection => {:import => :post}, :except => [:new, :show]
-  end
 
   map.connect 'admin/:action/:id', :controller=>"admin"
   map.connect 'admin/:action', :controller=>"admin"
