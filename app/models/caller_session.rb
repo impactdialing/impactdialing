@@ -1,6 +1,7 @@
 class CallerSession < ActiveRecord::Base
   belongs_to :caller, :class_name => "Caller", :foreign_key => "caller_id"
   belongs_to :campaign
+  named_scope :on_call, :conditions => {:on_call => true}
   unloadable
   def minutes_used
     return 0 if self.tDuration.blank?

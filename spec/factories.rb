@@ -38,3 +38,8 @@ Factory.define :voter do |v|
   v.FirstName { Factory.next(:name) }
   v.Phone { Factory.next(:phonenumber) }
 end
+
+Factory.define :caller_session do |s|
+  s.campaign_id { Factory(:campaign, :user => Factory(:user)).id }
+  s.caller_id { Factory(:caller)}
+end
