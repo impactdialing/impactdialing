@@ -12,12 +12,11 @@ class Campaign < ActiveRecord::Base
   belongs_to :recording
 
   named_scope :for_user, lambda {|user| { :conditions => ["user_id = ?", user.id] }}
-  named_scope :with_running_caller_sessions, lambda { |user| {
+  named_scope :with_running_caller_sessions, {
       :select     => "distinct campaigns.*",
       :joins      => "inner join caller_sessions on (caller_sessions.campaign_id = campaigns.id)",
-      :conditions => {"caller_sessions.on_call" => true,
-                      "campaigns.user_id"        => user.id},
-  } }
+      :conditions => {"caller_sessions.on_call" => true}
+  }
 
   cattr_reader :per_page
   @@per_page = 25
