@@ -43,6 +43,7 @@ describe CampaignsController do
       phone_number = "1234567890"
       validation_code = "xyzzyspoonshift1"
       caller_id_object = mock
+      caller_id_object.should_receive(:validate).and_return(false)
       caller_id_object.should_receive(:validation_code).and_return("xyzzyspoonshift1")
       campaign.stub!(:caller_id_object).and_return(caller_id_object)
       Campaign.should_receive(:find).with(campaign.id, anything).and_return(campaign)
@@ -57,21 +58,22 @@ describe CampaignsController do
 
   describe "caller id verification" do
     before :each do
-      @campaign = Factory(:campaign, :user => user, :caller_id => "1234567890")
+      @campaign = Factory(:campaign, :user => user)
+      @caller_id_object = mock
+      @caller_id_object.stub!(:validate)
+      @campaign.stub!(:caller_id_object).and_return(@caller_id_object)
+      @campaign.update_attribute(:caller_id, "0123456789")
     end
     it "should render 'not verified' if caller id not verified" do
-      invalid_caller_id_object = mock
-      invalid_caller_id_object.should_receive(:validate).and_return(false)
+      @caller_id_object.stub!(:validate)
       Campaign.should_receive(:find).with(@campaign.id, anything).and_return(@campaign)
-      @campaign.stub!(:caller_id_object).and_return(invalid_caller_id_object)
+      @caller_id_object.should_receive(:validate).and_return(false)
       post :verify_callerid, :id => @campaign.id
       response.body.should include "not verified"
     end
     it "should render nothing if caller id is verified" do
-      valid_caller_id_object = mock
-      valid_caller_id_object.should_receive(:validate).and_return(true)
+      @caller_id_object.stub!(:validate).and_return(true)
       Campaign.should_receive(:find).with(@campaign.id, anything).and_return(@campaign)
-      @campaign.stub!(:caller_id_object).and_return(valid_caller_id_object)
       post :verify_callerid, :id => @campaign.id
       response.body.should be_blank
     end
