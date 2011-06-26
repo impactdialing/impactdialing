@@ -54,7 +54,8 @@ class VoterListsController < ClientController
                                         @separator)
       flash_message(:notice, "Upload completed. #{result[:successCount]} out of #{result[:successCount]+result[:failedCount]} rows imported successfully.")
     rescue FasterCSV::MalformedCSVError => err
-      flash_message(:error, "Invalid CSV file.")
+      @voter_list.destroy
+      flash_message(:error, "Invalid CSV file. Could not import.")
     ensure
       File.unlink uploaded_filename
       session[:voters_list_upload] = nil

@@ -90,14 +90,19 @@ describe VoterListsController do
       end
 
       describe "malformed csv file" do
-        it "should flash an error" do
+        before :each do
           session[:voters_list_upload] = nil
           post :create,
                :campaign_id => @campaign.id,
                :upload      => {"datafile" => fixture_file_upload("files/invalid_voters_list.csv")}
           import
+        end
+        it "should flash an error" do
           flash[:error].join.should include "Invalid CSV file"
           response.code.should == "302"
+        end
+        it "should not save the voters list entry" do
+          VoterList.all.should be_empty
         end
       end
     end
