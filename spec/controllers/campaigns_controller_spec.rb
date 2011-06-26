@@ -4,7 +4,6 @@ describe CampaignsController do
   let(:user) { Factory(:user) }
   let(:another_users_campaign) { Factory(:campaign, :user => Factory(:user)) }
 
-
   before(:each) do
     login_as user
   end
@@ -58,8 +57,7 @@ describe CampaignsController do
       voter_list2.reload.should be_enabled
     end
     it "can update only campaigns owned by the user'" do
-      post :update, :id => another_users_campaign.id
-      response.code.should == '550'
+      lambda { post :update, :id => another_users_campaign.id }.should raise_exception
     end
   end
 
@@ -85,8 +83,7 @@ describe CampaignsController do
       response.body.should be_blank
     end
     it "can verify caller id only for campaigns owned by the user'" do
-      post :verify_callerid, :id => another_users_campaign.id
-      response.code.should == '550'
+      lambda { post :verify_callerid, :id => another_users_campaign.id }.should raise_exception
     end
   end
 
