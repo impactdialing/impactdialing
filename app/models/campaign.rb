@@ -2,8 +2,7 @@ class Campaign < ActiveRecord::Base
   include Deletable
   require "fastercsv"
   validates_presence_of :name, :on => :create, :message => "can't be blank"
-#  has_and_belongs_to_many :voter_lists
-#  has_many :voter_lists
+  has_many :caller_sessions
   has_many :voter_lists, :conditions => {:active => true}
   has_many :all_voters, :class_name => 'Voter'
   has_and_belongs_to_many :callers

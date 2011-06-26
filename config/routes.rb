@@ -42,6 +42,7 @@ ActionController::Routing::Routes.draw do |map|
     campaign.resources :voter_lists, :collection => {:import => :post}, :except => [:new, :show]
   end
   map.resources :scripts, :path_prefix => "v2"
+  map.connect '/v2/monitor', :controller => "monitor", :action => "index"
 
   map.connect 'admin/:action/:id', :controller=>"admin"
   map.connect 'admin/:action', :controller=>"admin"
