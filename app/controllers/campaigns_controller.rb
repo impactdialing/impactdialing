@@ -16,12 +16,7 @@ class CampaignsController < ClientController
   end
 
   def update
-    begin
-      campaign = @user.all_campaigns.find(params[:id].to_i)
-    rescue ActiveRecord::RecordNotFound => e
-      render :text => "Permission denied", :status => 550 and return
-    end
-
+    campaign = @user.all_campaigns.find(params[:id].to_i)
     campaign.attributes = params[:campaign]
     campaign.script = Script.active.find_by_user_id(@user.id) unless campaign.script
     campaign.voter_lists.disable_all
@@ -46,11 +41,7 @@ class CampaignsController < ClientController
   end
 
   def show
-    begin
-      @campaign = @user.campaigns.find(params[:id].to_i)
-    rescue ActiveRecord::RecordNotFound => e
-      render :text => "Permission denied", :status => 550 and return
-    end
+    @campaign = @user.campaigns.find(params[:id].to_i)
     @callers  = @user.callers.active
     @lists    = @campaign.voter_lists
     @voters = @campaign.all_voters.active.paginate(:page => params[:page])
@@ -61,11 +52,7 @@ class CampaignsController < ClientController
   end
 
   def verify_callerid
-    begin
-      @campaign = @user.campaigns.find(params[:id].to_i)
-    rescue ActiveRecord::RecordNotFound => e
-      render :text => "Permission denied", :status => 550 and return
-    end
+    @campaign = @user.campaigns.find(params[:id].to_i)
     @campaign.check_valid_caller!
     @campaign.save
     ret = if @campaign.caller_id.present? and (not @campaign.caller_id_verified)
