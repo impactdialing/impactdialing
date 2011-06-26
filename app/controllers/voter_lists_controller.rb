@@ -46,13 +46,18 @@ class VoterListsController < ClientController
     end
     @voter_list.save!
 
-    result = @voter_list.import_leads(csv_to_system_map,
-                                      uploaded_filename,
-                                      @separator)
+    begin
+      result = @voter_list.import_leads(csv_to_system_map,
+                                        uploaded_filename,
+                                        @separator)
+      flash_message(:notice, "Upload completed. #{result[:successCount]} out of #{result[:successCount]+result[:failedCount]} rows imported successfully.")
+    rescue FasterCSV::MalformedCSVError => err
+      flash_message(:error, "Invalid CSV file.")
+    ensure
+      File.unlink uploaded_filename
+      session[:voters_list_upload] = nil
+    end
 
-    File.unlink uploaded_filename
-    session[:voters_list_upload] = nil
-    flash_message(:notice, "Upload completed. #{result[:successCount]} out of #{result[:successCount]+result[:failedCount]} rows imported successfully.")
     redirect_to campaign_view_path(@campaign.id)
   end
 

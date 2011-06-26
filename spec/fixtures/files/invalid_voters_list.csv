@@ -1,0 +1,4 @@
+Phone
+"\"one\", \"two\",\"three\""
+And here is why the invalid csv error is right:
+http://stackoverflow.com/questions/1807942/overcoming-a-basic-problem-with-csv-parsing-using-the-fastercsv-gem
