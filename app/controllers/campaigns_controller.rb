@@ -21,18 +21,10 @@ class CampaignsController < ClientController
     campaign.script = Script.active.find_by_user_id(@user.id) unless campaign.script
     campaign.voter_lists.disable_all
     campaign.voter_lists.by_ids(params[:voter_list_ids]).enable_all
-    campaign.save
-    flash_message(:notice, "Campaign saved")
-
-    if campaign.caller_id.present? and (not campaign.caller_id_verified)
-      validation_code = campaign.caller_id_object.validation_code
-      if validation_code
-        flash_message(:notice, "<font color=red>Please enter code #{validation_code} when called.</font>")
-      else
-        flash_message(:error, "Could not validate your caller id")
-      end
+    if campaign.save
+      flash_message(:notice, "Campaign saved")
+      generate_validation_token_for_caller_id(campaign) if campaign.caller_id.present? and (not campaign.caller_id_verified)
     end
-
     redirect_to campaign_path(campaign)
   end
 
@@ -59,5 +51,15 @@ class CampaignsController < ClientController
             "<div class='msg msg-error'> <p><strong>Your Campaign Caller ID is not verified.</strong></p> </div>"
           end
     render :text => ret
+  end
+
+  private
+  def generate_validation_token_for_caller_id(campaign)
+    validation_code = campaign.caller_id_object.validation_code
+    if validation_code
+      flash_message(:notice, "<font color=red>Please enter code #{validation_code} when called.</font>")
+    else
+      flash_message(:error, "Could not validate your caller id")
+    end
   end
 end
