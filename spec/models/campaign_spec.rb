@@ -43,4 +43,25 @@ describe Campaign do
     campaign.caller_id = nil
     campaign.save
   end
+
+  describe "campaigns with caller sessions that are on call" do
+    let(:user) { Factory(:user) }
+    let(:campaign) { Factory(:campaign, :user => user) }
+
+    it "should give the campaign only once even if it has multiple caller sessions" do
+      Factory(:caller_session, :campaign => campaign, :on_call => true)
+      Factory(:caller_session, :campaign => campaign, :on_call => true)
+      Campaign.with_running_caller_sessions(user).should == [campaign]
+    end
+
+    it "should not give campaigns without on_call caller sessions" do
+      Factory(:caller_session, :campaign => campaign, :on_call => false)
+      Campaign.with_running_caller_sessions(user).should be_empty
+    end
+
+    it "should not give another user's campaign'" do
+      Factory(:caller_session, :campaign => Factory(:campaign, :user => Factory(:user)), :on_call => true)
+      Campaign.with_running_caller_sessions(user).should be_empty
+    end
+  end
 end
