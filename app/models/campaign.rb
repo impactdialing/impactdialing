@@ -61,6 +61,7 @@ class Campaign < ActiveRecord::Base
 
   def before_save
     self.check_valid_caller!
+    true
   end
 
   def caller_id_object
