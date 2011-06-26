@@ -28,7 +28,7 @@ class CallerIdObject
     @valid     =
         begin
           code = (Hpricot::XML(api_result)/"Sid").inner_html
-          code.presence
+          code.present?
         rescue
           false
         end
