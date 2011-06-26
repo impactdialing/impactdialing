@@ -50,6 +50,13 @@ describe CampaignsController do
       post :update, :id => campaign.id, :campaign => {:name => "an impactful campaign", :caller_id => phone_number}
       flash[:notice].join.should include validation_code
     end
+    it "disables voters list which are not to be called" do
+      voter_list1 = Factory(:voter_list, :campaign => campaign, :enabled => true)
+      voter_list2 = Factory(:voter_list, :campaign => campaign, :enabled => false)
+      post :update, :id => campaign.id, :voter_list_ids => [voter_list2.id]
+      voter_list1.reload.should_not be_enabled
+      voter_list2.reload.should be_enabled
+    end
     it "can update only campaigns owned by the user'" do
       post :update, :id => another_users_campaign.id
       response.code.should == '550'

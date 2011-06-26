@@ -24,6 +24,8 @@ class CampaignsController < ClientController
 
     campaign.attributes = params[:campaign]
     campaign.script = Script.active.find_by_user_id(@user.id) unless campaign.script
+    campaign.voter_lists.disable_all
+    campaign.voter_lists.by_ids(params[:voter_list_ids]).enable_all
     campaign.save
     flash_message(:notice, "Campaign saved")
 
