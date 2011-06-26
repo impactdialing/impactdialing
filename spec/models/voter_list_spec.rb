@@ -3,6 +3,29 @@ require "spec_helper"
 describe VoterList do
   include ActionController::TestProcess
 
+  it "can return all voter lists of the given ids" do
+    v = 3.times.map { Factory(:voter_list) }
+    VoterList.by_ids([v.first.id, v.last.id]).should == [v.first, v.last]
+  end
+  
+  describe "enable and disable voter lists" do
+    let(:campaign) { Factory(:campaign) }
+    it "can disable all voter lists in the given scope" do
+      Factory(:voter_list, :campaign => campaign, :enabled => true)
+      Factory(:voter_list, :campaign => campaign, :enabled => true)
+      Factory(:voter_list, :campaign => Factory(:campaign), :enabled => true)
+      campaign.voter_lists.disable_all
+      VoterList.all.map(&:enabled).should == [false, false, true]
+    end
+    it "can enable all voter lists in the given scope" do
+      Factory(:voter_list, :campaign => campaign, :enabled => false)
+      Factory(:voter_list, :campaign => campaign, :enabled => false)
+      Factory(:voter_list, :campaign => Factory(:campaign), :enabled => false)
+      campaign.voter_lists.enable_all
+      VoterList.all.map(&:enabled).should == [true, true, false]
+    end
+  end
+
   describe "upload voters list" do
     let(:csv_file_upload) {
       fixture_path  = ActionController::TestCase.fixture_path

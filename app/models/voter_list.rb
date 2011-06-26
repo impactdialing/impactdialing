@@ -8,7 +8,22 @@ class VoterList < ActiveRecord::Base
   validates_length_of :name, :minimum => 3
   validates_uniqueness_of :name, :scope => :user_id, :message => "for this voter list is already taken"
 
+  named_scope :by_ids, lambda {|ids| {:conditions => {:id => ids} } }
+  
   VOTER_DATA_COLUMNS = ["Phone", "ID", "LastName", "FirstName", "MiddleName", "Suffix", "Email", "Age", "Gender"]
+
+  def self.disable_all
+    self.all.each do |voter_list|
+      voter_list.update_attribute(:enabled, false)
+    end
+  end
+
+  def self.enable_all
+    self.all.each do |voter_list|
+      voter_list.update_attribute(:enabled, true)
+    end
+  end
+
   def import_leads(csv_to_system_map, csv_filename, separator)
 
     result      = {:successCount => 0,
