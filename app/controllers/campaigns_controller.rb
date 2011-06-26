@@ -43,6 +43,7 @@ class CampaignsController < ClientController
     @voter_list = @campaign.voter_lists.new
   end
 
+  #TODO: extract html message to partial
   def verify_callerid
     @campaign = @user.campaigns.find(params[:id].to_i)
     @campaign.check_valid_caller!
