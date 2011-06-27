@@ -10,6 +10,8 @@ class Campaign < ActiveRecord::Base
   belongs_to :user
   belongs_to :recording
 
+  named_scope :robo, :conditions => {:robo => true }
+  named_scope :manual, :conditions => {:robo => false }
   named_scope :for_user, lambda {|user| { :conditions => ["user_id = ?", user.id] }}
   named_scope :with_running_caller_sessions, {
       :select     => "distinct campaigns.*",

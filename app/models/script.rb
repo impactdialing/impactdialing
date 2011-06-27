@@ -6,6 +6,8 @@ class Script < ActiveRecord::Base
 
   default_scope :order => :name
 
+  named_scope :robo, :conditions => {:robo => true }
+
   cattr_reader :per_page
   @@per_page = 25
 
