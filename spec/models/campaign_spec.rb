@@ -64,4 +64,19 @@ describe Campaign do
       user.campaigns.with_running_caller_sessions.should be_empty
     end
   end
+
+  describe 'lists campaigns' do
+    before(:each) do
+      @robo_campaign = Factory(:campaign, :robo => true)
+      @manual_campaign = Factory(:campaign, :robo => false)
+    end
+
+    it "which are robo" do
+      Campaign.robo.should == [@robo_campaign]
+    end
+
+    it "which are manual" do
+      Campaign.manual.should == [@manual_campaign]
+    end
+  end
 end

@@ -305,7 +305,7 @@ class ClientController < ApplicationController
 
   def campaigns
     @breadcrumb="Campaigns"
-    @campaigns = Campaign.active.for_user(@user).paginate :page => params[:page], :order => 'id desc'
+    @campaigns = Campaign.active.manual.for_user(@user).paginate :page => params[:page], :order => 'id desc'
   end
 
   def campaign_new

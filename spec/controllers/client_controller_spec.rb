@@ -9,10 +9,10 @@ describe ClientController do
     end
   end
 
-
   context "when logged in" do
+    let(:user) { Factory(:user) }
     before :each do
-      login_as Factory(:user)
+      login_as user
     end
 
     describe "and attempt to login yet again" do
@@ -34,6 +34,13 @@ describe ClientController do
         get :campaign_new
         Campaign.last.predective_type.should == 'algorithm1'
       end
+    end
+
+    it "lists all manual campaigns" do
+      robo_campaign = Factory(:campaign, :user => user, :robo => true)
+      manual_campaign = Factory(:campaign, :user => user, :robo => false)
+      get :campaigns
+      assigns(:campaigns).should == [manual_campaign]
     end
 
     describe 'callers' do

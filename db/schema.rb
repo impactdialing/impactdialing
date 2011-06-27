@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110619093828) do
+ActiveRecord::Schema.define(:version => 20110627064928) do
 
   create_table "accounts", :force => true do |t|
     t.integer  "user_id"
@@ -141,6 +141,7 @@ ActiveRecord::Schema.define(:version => 20110619093828) do
     t.boolean  "use_web_ui",               :default => true
     t.integer  "answer_detection_timeout", :default => 20
     t.boolean  "calls_in_progress",        :default => false
+    t.boolean  "robo",                     :default => false
   end
 
   create_table "campaigns_voter_lists", :id => false, :force => true do |t|
@@ -341,6 +342,7 @@ ActiveRecord::Schema.define(:version => 20110619093828) do
     t.string   "note_8"
     t.string   "note_9"
     t.string   "note_10"
+    t.boolean  "robo",          :default => false
   end
 
   create_table "seos", :force => true do |t|
@@ -414,7 +416,7 @@ ActiveRecord::Schema.define(:version => 20110619093828) do
     t.text     "result_json"
   end
 
-  add_index "voters", ["Phone", "voter_list_id"], :name => "index_voters_on_Phone_and_voter_list_id", :unique => true
+  add_index "voters", ["Phone", "voter_list_id"], :name => "index_voters_on_Phone_and_voter_list_id"
   add_index "voters", ["Phone"], :name => "index_voters_on_Phone"
   add_index "voters", ["attempt_id"], :name => "index_voters_on_attempt_id"
   add_index "voters", ["campaign_id"], :name => "index_voters_on_campaign_id"
