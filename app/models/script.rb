@@ -2,6 +2,9 @@ class Script < ActiveRecord::Base
   include Deletable
   validates_presence_of :name, :on => :create, :message => "can't be blank"
   belongs_to :user
+  has_many :recordings
+  accepts_nested_attributes_for :recordings, :reject_if => lambda { |a| a[:name].blank? }, :allow_destroy => true
+
   named_scope :active, {:conditions => {:active => 1}}
 
   default_scope :order => :name

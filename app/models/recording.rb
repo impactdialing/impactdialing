@@ -1,3 +1,6 @@
 class Recording < ActiveRecord::Base
-  belongs_to :user
+  has_attached_file :file,
+                    :storage => :s3,
+                    :s3_credentials => "#{RAILS_ROOT}/config/amazon_s3.yml"
+  belongs_to :script
 end
