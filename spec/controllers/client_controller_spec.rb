@@ -43,6 +43,13 @@ describe ClientController do
       assigns(:campaigns).should == [manual_campaign]
     end
 
+    it "lists all manual scripts" do
+      robo_script = Factory(:script, :user => user, :robo => true)
+      manual_script = Factory(:script, :user => user, :robo => false)
+      get :scripts
+      assigns(:scripts).should == [manual_script]
+    end
+
     describe 'callers' do
       integrate_views
       it "shows" do
