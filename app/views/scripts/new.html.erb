@@ -3,6 +3,7 @@
 <% @lastone=[0,0,0,0,0,0,0,0,0,0,0]%>
 
 <% form_for @script, :html => {:name => 'callerForm', :id => 'callerForm'}   do |f| %>
+    <%= f.hidden_field :robo %>
   <p>
     <label>Script name</label>
     <%= f.text_field :name, {:class=>"field"} %>
