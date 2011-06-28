@@ -737,7 +737,7 @@ class ClientController < ApplicationController
 
   def scripts
     @breadcrumb="Scripts"
-    @scripts = Script.paginate :page => params[:page], :conditions =>"active=1 and user_id=#{@user.id}", :order => 'name'
+    @scripts = @user.scripts.active.manual.paginate :page => params[:page], :order => 'name'
   end
 
   def script_add
