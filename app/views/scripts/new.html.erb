@@ -1,18 +1,18 @@
 <h1><%= @label %></h1>
 <%= error_messages_for :script %>
 
-<% form_for @script, :html => {:name => 'callerForm', :id => 'callerForm'}   do |f| %>
+<% form_for @script, :html => {:name => 'callerForm', :id => 'callerForm', :multipart=>true}   do |f| %>
     <%= f.hidden_field :robo %>
   <p>
     <label>Script name</label>
     <%= f.text_field :name, {:class=>"field"} %>
   </p>
 
-    <p><%= link_to_add_fields "Add Recording", f, :recordings %></p>
-
-    <%f.fields_for :recordings do |builder|%>
-       <%= render :partial=>"recording_fields", :locals=>{:f => builder}%>
+    <%f.fields_for :recordings do |recording|%>
+       <%= render :partial=>"recording_fields", :locals=>{:f => recording}%>
     <%end %>
+
+    <p><%= link_to_add_fields "Add Recording", f, :recordings%></p>
 
     <%= f.submit "Create" %>
 
