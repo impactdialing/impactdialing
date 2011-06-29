@@ -300,7 +300,7 @@ class ClientController < ApplicationController
       @campaign.save
     end
     flash_message(:notice, "Campaign deleted")
-    redirect_to :action=>"campaigns"
+    redirect_to :back
   end
 
   def campaigns

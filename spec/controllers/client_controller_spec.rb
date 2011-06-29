@@ -50,11 +50,14 @@ describe ClientController do
       assigns(:scripts).should == [manual_script]
     end
 
-    it "deleting a script redirects to the referer" do
-      request.env['HTTP_REFERER'] = 'http://referer/'
-      script = Factory(:script, :user => user, :active => true)
-      post :script_delete, :id => script.id
-      response.should redirect_to :back
+    ['script', 'campaign',].each do |entity_type|
+      it "deleting a #{entity_type} redirects to the referer" do
+        request.env['HTTP_REFERER'] = 'http://referer/'
+        entity = Factory(entity_type, :user => user, :active => true)
+        post "#{entity_type}_delete", :id => entity.id
+        entity.reload.active.should be_false
+        response.should redirect_to :back
+      end
     end
 
     describe 'callers' do
