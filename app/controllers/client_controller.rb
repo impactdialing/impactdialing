@@ -7,7 +7,7 @@ class ClientController < ApplicationController
 
   def check_login
     if session[:user].blank?
-      redirect_to :action=>"login"
+      redirect_to login_path
       return
     end
     begin

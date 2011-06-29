@@ -44,6 +44,8 @@ ActionController::Routing::Routes.draw do |map|
     campaign.resources :voter_lists, :collection => {:import => :post}, :except => [:new, :show]
   end
 
+  map.login '/client/login', :action => 'login', :controller => 'client'
+
   map.connect 'admin/:action/:id', :controller=>"admin"
   map.connect 'admin/:action', :controller=>"admin"
   map.connect ':controller/:action/:id'
