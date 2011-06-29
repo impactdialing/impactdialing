@@ -3,10 +3,16 @@
     Recording
     <%= f.text_field :name%>
     <%= f.file_field :file %>
-    <embed type="application/x-shockwave-flash"
-    wmode="transparent"
-    src="http://www.google.com/reader/ui/3523697345-audio-player.swf?audioUrl=<%= f.object.file.url %>"
-    height="27" width="320"></embed>
+    <embed type="application/x-shockwave-flash" wmode="transparent" height="27" width="320"
+           src="http://www.google.com/reader/ui/3523697345-audio-player.swf?audioUrl=<%= f.object.file.url %>"></embed>
     <%= link_to_remove_fields "remove", f %><br />
   </p>
+
+  <% f.object.recording_responses.each do |recording_response| %>
+    <% fields_for :recording_responses, recording_response do |response_form| %>
+      <%= render :partial=>"recording_response_fields", :locals => { :f => response_form} %>
+    <% end %>
+  <% end %>
+
+  <p><%= link_to_add_fields "Add Response", f, :recording_responses%></p>
 </div>
