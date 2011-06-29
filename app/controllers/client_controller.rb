@@ -1049,8 +1049,7 @@ class ClientController < ApplicationController
       @script.save
     end
     flash_message(:notice, "Script deleted")
-    redirect_to :action=>"scripts"
-    return
+    redirect_to :back
   end
 
   def report_caller
