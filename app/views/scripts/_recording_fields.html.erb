@@ -3,11 +3,11 @@
     Recording
     <%= f.label :name %>
     <%= f.text_field :name %>
-    <%= f.file_field :file %>
     <% if f.object.file.exists? %>
-      <embed type="application/x-shockwave-flash" wmode="transparent" height="27" width="320"
-      src="http://www.google.com/reader/ui/3523697345-audio-player.swf?audioUrl=<%= f.object.file.url %>"/>
+      <div><embed type="application/x-shockwave-flash" wmode="transparent" height="27" width="320"
+        src="http://www.google.com/reader/ui/3523697345-audio-player.swf?audioUrl=<%= f.object.file.url %>"/></div>
     <% end %>
+    <%= f.file_field :file %>
     <%= link_to_remove_fields "remove", f %><br />
   </p>
 
