@@ -3,6 +3,10 @@
     Recording
     <%= f.text_field :name%>
     <%= f.file_field :file %>
+    <embed type="application/x-shockwave-flash"
+    wmode="transparent"
+    src="http://www.google.com/reader/ui/3523697345-audio-player.swf?audioUrl=<%= f.object.file.url %>"
+    height="27" width="320"></embed>
     <%= link_to_remove_fields "remove", f %><br />
   </p>
 </div>
