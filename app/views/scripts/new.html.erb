@@ -1,4 +1,4 @@
-<h1><%= @label %></h1>
+<h1><%= @script.new_record? ? "New Script" : "Edit Script" %></h1>
 <%= error_messages_for :script %>
 
 <% form_for @script, :html => {:name => 'callerForm', :id => 'callerForm', :multipart=>true}   do |f| %>
@@ -14,7 +14,7 @@
 
     <p><%= link_to_add_fields "Add Recording", f, :recordings%></p>
 
-    <%= f.submit "Create" %>
+    <%= f.submit @script.new_record? ? "Create" : "Update" %>
 
 <% end %>
 
