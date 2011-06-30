@@ -9,7 +9,7 @@
 		<% @user.campaigns.each do |c| %>
 		<tr>
 			<td><%= c.name %></td>
-			<td><a href="/client/report_overview?id=<%= c.id %>">Overview</a></td>
+			<td><a href="/client/report_overview?id=<%= c.id %>">Dials</a></td>
 			<td><a href="/client/report_overview_old?id=<%= c.id %>&type=1">Answered</a><br/></td>
 			<td><a href="/client/report_caller?id=<%= c.id %>">By Caller</a><br/></td>
 			<td><a href="/client/report_usage?id=<%= c.id %>">Usage</a><br/></td>
@@ -23,7 +23,7 @@
 <% else %>
 	<h1>Choose a report for #{@campaign.name}</h1>
 		<table>
-			<tr><td><a href="/client/report_overview?id=<%=  params[:id]%>">Overview Report</a></td></tr>
+			<tr><td><a href="/client/report_overview?id=<%=  params[:id]%>">Dials Report</a></td></tr>
 			<tr><td><a href="/client/report_overview_old?id=<%= params[:id]%>&type=1">Answered Calls Report</a><br/></td></tr>
 			<tr><td><a href="/client/report_caller?id=<%=  params[:id]%>">Caller Results Report</a><br/></td></tr>
 			<tr><td><a href="/client/report_caller_overview?id=<%=  params[:id]%>">Caller Overview Report</a><br/></td></tr>
