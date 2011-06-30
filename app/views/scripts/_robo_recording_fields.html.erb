@@ -11,11 +11,10 @@
   <%= link_to_remove_fields "remove", f %><br />
   </p>
 
-  <% f.object.recording_responses.each do |recording_response| %>
-      <% fields_for :recording_responses, recording_response do |response_form| %>
-          <%= render :partial=>"recording_response_fields", :locals => { :f => response_form} %>
-      <% end %>
+  <% f.fields_for :recording_responses do |response_form| %>
+      <%= render :partial=>"recording_response_fields", :locals => { :f => response_form} %>
   <% end %>
+
 
 
   <p><%= link_to_add_fields "Add Response", f, :recording_responses%></p>

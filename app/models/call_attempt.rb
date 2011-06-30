@@ -1,5 +1,5 @@
 class CallAttempt < ActiveRecord::Base
-  belongs_to :voter, :class_name => "Voter", :foreign_key => "voter_id"
+  belongs_to :voter
   
   def ring_time
     if self.answertime!=nil && self.created_at!=nil
