@@ -946,6 +946,56 @@ class ClientController < ApplicationController
     render :layout=>false
     #    end
   end
+  
+  def report_usage
+    @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
+    if @campaign.blank?
+      render :text=>"Unauthorized"
+      return
+    end
+
+    calls_util_sql="
+    select sum(tDuration) as total_seconds,  sum(ceil(tDuration/60)) as total_mins
+    from call_attempts ca
+    where
+    ca.campaign_id=#{params[:id]}"
+    caller_util_sql="
+    select sum(tDuration) as total_seconds,  sum(ceil(tDuration/60)) as total_mins
+    from caller_sessions ca
+    where
+    ca.campaign_id=#{params[:id]}"
+    @calls_util = ActiveRecord::Base.connection.execute(calls_util_sql)
+    @caller_util = ActiveRecord::Base.connection.execute(caller_util_sql)
+    
+    calls_bill_sql="
+    select sum(tDuration) as total_seconds,  sum(ceil(tDuration/60)) as total_mins
+    from call_attempts ca
+    where
+    ca.campaign_id=#{params[:id]}
+    and status <> 'Message delivered'
+    and status <> 'Call abandoned'"
+
+    vm_bill_sql="
+    select sum(tDuration) as total_seconds,  sum(ceil(tDuration/60)) as total_mins
+    from call_attempts ca
+    where
+    ca.campaign_id=#{params[:id]}
+    and status = 'Message delivered'"
+    
+    abandon_bill_sql="
+    select sum(tDuration) as total_seconds,  sum(ceil(tDuration/60)) as total_mins
+    from call_attempts ca
+    where
+    ca.campaign_id=#{params[:id]}
+    and status= 'Call abandoned'"
+
+    @calls_bill = ActiveRecord::Base.connection.execute(calls_bill_sql)
+    @vm_bill = ActiveRecord::Base.connection.execute(vm_bill_sql)
+    @abandon_bill = ActiveRecord::Base.connection.execute(abandon_bill_sql)
+
+
+    
+  end
 
   def report_overview
     @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
