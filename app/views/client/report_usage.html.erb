@@ -1,7 +1,8 @@
+<%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@campaign.name} Usage Report"} %>
 <table>
 	<tr>
-		<td>Utilization (1-second increments)</td>
-		<td>Minutes</td>
+		<th>Utilization (1-second increments)</th>
+		<th>Minutes</th>
 <!--		<td>Minutes</td> -->
 	</tr>
 	<tr>
@@ -21,8 +22,8 @@
 		<td colspan="2">&nbsp;</td>
 	</tr>
 	<tr>
-		<td>Billable time (1-minute increments)</td>
-		<td>Minutes</td>
+		<th>Billable time (1-minute increments)</th>
+		<th>Minutes</th>
 	</tr>
 	<tr>
 		<td>Callers</td>
@@ -37,7 +38,7 @@
 		<td><% @vm_bill.each do |c| %> <%= c[1].to_i %> <% end %> <% @vm_bill.data_seek(0) %> </td>
 	</tr>
 	<tr>
-		<td>Abandoned Calls</td>
+		<td>Abandoned calls</td>
 		<td><% @abandon_bill.each do |c| %> <%= c[1].to_i %> <% end %> <% @abandon_bill.data_seek(0) %> </td>
 	</tr>
 </table>
