@@ -46,6 +46,9 @@ ActionController::Routing::Routes.draw do |map|
 
   map.login '/client/login', :action => 'login', :controller => 'client'
 
+  map.report '/client/reports', :action => 'reports', :controller => 'client'
+  map.report_usage '/client/reports/usage', :action => 'usage', :controller => 'client/reports'
+
   map.connect 'admin/:action/:id', :controller=>"admin"
   map.connect 'admin/:action', :controller=>"admin"
   map.connect ':controller/:action/:id'
