@@ -16,6 +16,13 @@ ActionController::Routing::Routes.draw do |map|
     end
   end
 
+  #v2
+  map.resources :campaigns, :path_prefix => "v2", :member => {:verify_callerid => :post} do |campaign|
+    campaign.resources :voter_lists, :collection => {:import => :post}, :except => [:new, :show]
+  end
+  map.resources :scripts, :path_prefix => "v2"
+  map.connect '/v2/monitor', :controller => "monitor", :action => "index"
+
   map.namespace 'client' do |client|
     map.campaign_new 'client/campaign_new', :action => 'campaign_new', :controller => 'client'
     map.campaign_view 'client/campaign_view/:id', :action => 'campaign_view', :controller => 'client'
@@ -37,12 +44,10 @@ ActionController::Routing::Routes.draw do |map|
     campaign.resources :voter_lists, :collection => {:import => :post}, :except => [:new, :show]
   end
 
-  #v2
-  map.resources :campaigns, :path_prefix => "v2", :member => {:verify_callerid => :post} do |campaign|
-    campaign.resources :voter_lists, :collection => {:import => :post}, :except => [:new, :show]
-  end
-  map.resources :scripts, :path_prefix => "v2"
-  map.connect '/v2/monitor', :controller => "monitor", :action => "index"
+  map.login '/client/login', :action => 'login', :controller => 'client'
+
+  map.report '/client/reports', :action => 'reports', :controller => 'client'
+  map.report_usage '/client/reports/usage', :action => 'usage', :controller => 'client/reports'
 
   map.connect 'admin/:action/:id', :controller=>"admin"
   map.connect 'admin/:action', :controller=>"admin"

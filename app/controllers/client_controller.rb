@@ -7,7 +7,7 @@ class ClientController < ApplicationController
 
   def check_login
     if session[:user].blank?
-      redirect_to :action=>"login"
+      redirect_to login_path
       return
     end
     begin
@@ -300,12 +300,12 @@ class ClientController < ApplicationController
       @campaign.save
     end
     flash_message(:notice, "Campaign deleted")
-    redirect_to :action=>"campaigns"
+    redirect_to :back
   end
 
   def campaigns
     @breadcrumb="Campaigns"
-    @campaigns = Campaign.active.for_user(@user).paginate :page => params[:page], :order => 'id desc'
+    @campaigns = Campaign.active.manual.for_user(@user).paginate :page => params[:page], :order => 'id desc'
   end
 
   def campaign_new
@@ -737,7 +737,7 @@ class ClientController < ApplicationController
 
   def scripts
     @breadcrumb="Scripts"
-    @scripts = Script.paginate :page => params[:page], :conditions =>"active=1 and user_id=#{@user.id}", :order => 'name'
+    @scripts = @user.scripts.active.manual.paginate :page => params[:page], :order => 'name'
   end
 
   def script_add
@@ -867,7 +867,7 @@ class ClientController < ApplicationController
     if params[:id].blank?
       @breadcrumb = "Reports"
     else
-      @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id)
+      @campaign = Campaign.find(params[:id])
       @breadcrumb=[{"Reports"=>"/client/reports"},@campaign.name]
     end
   end
@@ -1099,8 +1099,7 @@ class ClientController < ApplicationController
       @script.save
     end
     flash_message(:notice, "Script deleted")
-    redirect_to :action=>"scripts"
-    return
+    redirect_to :back
   end
 
   def report_caller
