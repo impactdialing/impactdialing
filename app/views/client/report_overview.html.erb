@@ -1,13 +1,13 @@
 <div class="box" style="width:600px;">
-	<%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@campaign.name} Overview Report"} %>
+	<%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@campaign.name} Dials Report"} %>
 	<div class="box-content">
 
 
 		<div class="table">
 		    <table width="100%" border="0" cellspacing="0" cellpadding="0">
 		      <tr>
-		        <th width="300">Calls</th>
-		        <th>Number</th>
+		        <th width="300">Call status</th>
+		        <th>Dials</th>
 		        <th>Percentage</th>
 		      </tr>
 
@@ -28,12 +28,14 @@
 		    </table>
 
 		    <div class="pagging">
-		   		<div class="left"><%= @total %> calls total</div>
+		   		<div class="left"><%= @total %> dials total</div>
 		    </div>
 
 		</div>
 
 		<br/>
+
+<!--  Old Overview Report with Penetration and Minutes
 
 			<% if @totalvoters>0 %>
 			<div class="table">
@@ -83,7 +85,7 @@
 			</div>
 
 
-
+-->
 
 	</div>
 </div>
