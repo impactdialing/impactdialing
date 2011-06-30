@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110629095355) do
+ActiveRecord::Schema.define(:version => 20110630054647) do
 
   create_table "accounts", :force => true do |t|
     t.integer  "user_id"
@@ -206,21 +206,27 @@ ActiveRecord::Schema.define(:version => 20110629095355) do
   end
 
   create_table "recording_responses", :force => true do |t|
-    t.integer "recording_id"
+    t.integer "robo_recording_id"
     t.string  "response"
     t.integer "keypad"
   end
 
   create_table "recordings", :force => true do |t|
-    t.integer  "active",            :default => 1
+    t.integer  "active",        :default => 1
     t.string   "name"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "user_id"
+    t.string   "recording_url"
+  end
+
+  create_table "robo_recordings", :force => true do |t|
+    t.integer  "script_id"
+    t.string   "name"
     t.string   "file_file_name"
     t.string   "file_content_type"
     t.integer  "file_file_size"
     t.datetime "file_updated_at"
-    t.integer  "script_id"
   end
 
   create_table "scripts", :force => true do |t|
