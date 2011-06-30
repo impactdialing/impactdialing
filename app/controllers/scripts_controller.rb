@@ -15,14 +15,14 @@ class ScriptsController < ClientController
   end
 
   def index
-    @scripts = @user.scripts.active.paginate(:page => params[:page])
+    @scripts = @user.scripts.active.robo.paginate(:page => params[:page])
   end
 
   def new_script
     @fields = ["CustomID","FirstName","MiddleName","LastName","Suffix","Age","Gender","Phone","Email"]
     @breadcrumb=[{"Scripts"=>"/client/scripts"},"Add Script"]
     @label = 'New Script'
-    @script = @user.scripts.new(:name => 'Untitled Script')
+    @script = @user.scripts.new(:name => 'Untitled Script', :robo=>true)
     @incompletes = {}
     @voter_fields = []
     @numResults = 1

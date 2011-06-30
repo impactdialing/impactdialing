@@ -1,6 +1,11 @@
 class CallAttempt < ActiveRecord::Base
-  belongs_to :voter, :class_name => "Voter", :foreign_key => "voter_id"
-  
+  belongs_to :voter
+  belongs_to :campaign
+  belongs_to :caller
+
+  named_scope :for_campaign, lambda{|campaign| {:conditions => ["campaign_id = ?", campaign.id] }}
+  named_scope :for_status, lambda{|status| {:conditions => ["status = ?", status] }}
+
   def ring_time
     if self.answertime!=nil && self.created_at!=nil
       (self.answertime  - self.created_at).to_i
@@ -18,9 +23,13 @@ class CallAttempt < ActiveRecord::Base
       nil
     end
   end
-  
+
   def minutes_used
     return 0 if self.tDuration.blank?
     self.tDuration/60.ceil
+  end
+
+  def client
+    campaign.client
   end
 end

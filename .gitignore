@@ -7,3 +7,4 @@ coverage/
 .bundle/*
 tmp
 public/.DS_Store
+test/

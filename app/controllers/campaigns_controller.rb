@@ -7,18 +7,14 @@ class CampaignsController < ClientController
   end
 
   def create
-    campaign = @user.campaigns.new
-    campaign.script = @user.scripts.first
-    campaign.predective_type = 'algorithm1'
-    campaign.callers << @user.callers.active
-    campaign.save!
-    redirect_to campaign_path(campaign)
+    campaign = @user.campaigns.create!(:script => @user.scripts.robo.first, :predective_type => 'algorithm1', :callers => @user.callers.active, :robo => true)
+    redirect_to campaign
   end
 
   def update
-    campaign = @user.all_campaigns.find(params[:id].to_i)
+    campaign = @user.all_campaigns.find(params[:id])
     campaign.attributes = params[:campaign]
-    campaign.script = Script.active.find_by_user_id(@user.id) unless campaign.script
+    campaign.script ||= @user.scripts.active.first
     campaign.voter_lists.disable_all
     campaign.voter_lists.by_ids(params[:voter_list_ids]).enable_all
     if campaign.save
@@ -29,7 +25,7 @@ class CampaignsController < ClientController
   end
 
   def index
-    @campaigns = @user.campaigns.active.paginate :page => params[:page], :order => 'id desc'
+    @campaigns = @user.campaigns.active.robo.paginate :page => params[:page], :order => 'id desc'
   end
 
   def show
