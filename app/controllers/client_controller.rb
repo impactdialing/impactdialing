@@ -867,7 +867,7 @@ class ClientController < ApplicationController
     if params[:id].blank?
       @breadcrumb = "Reports"
     else
-      @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id)
+      @campaign = Campaign.find(params[:id])
       @breadcrumb=[{"Reports"=>"/client/reports"},@campaign.name]
     end
   end
