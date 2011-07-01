@@ -16,6 +16,8 @@ gem 'i18n', '~> 0.4.2'
 gem 'hpricot', '~> 0.8.4'
 gem "aws-s3", "~> 0.6.2", :require => "aws/s3"
 gem "paperclip", "2.3.11"
+gem 'daemons', '~> 1.0.10'
+gem 'twilio', '~> 3.0.1'
 
 group :development, :test do
   gem 'ruby-debug', '~> 0.10.4'
