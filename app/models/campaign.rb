@@ -38,7 +38,7 @@ class Campaign < ActiveRecord::Base
     self.caller_id_verified=false
     if !self.caller_id.blank?
       #verify
-      t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+      t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
       a=t.call("GET", "OutgoingCallerIds", {'PhoneNumber'=>self.caller_id})
       require 'rubygems'
       require 'hpricot'
@@ -86,7 +86,7 @@ class Campaign < ActiveRecord::Base
   def end_all_calls(account,auth,appurl)
     in_progress = CallAttempt.find_all_by_campaign_id(self.id, :conditions=>"sid is not null and call_end is null and id > 45")
     in_progress.each do |attempt|
-      t = Twilio.new(account,auth)
+      t = TwilioLib.new(account,auth)
       a=t.call("POST", "Calls/#{attempt.sid}", {'CurrentUrl'=>"#{appurl}/callin/voterEndCall?attempt=#{attempt.id}"})
       attempt.call_end=Time.now
       attempt.save
@@ -97,7 +97,7 @@ class Campaign < ActiveRecord::Base
   def end_all_callers(account,auth,appurl)
     in_progress = CallerSession.find_all_by_campaign_id(self.id, :conditions=>"on_call=1")
     in_progress.each do |caller|
-      t = Twilio.new(account,auth)
+      t = TwilioLib.new(account,auth)
       a=t.call("POST", "Calls/#{caller.sid}", {'CurrentUrl'=>"#{appurl}/callin/callerEndCall?session=#{caller.id}"})
       if a.index("RestException")
         caller.on_call=false

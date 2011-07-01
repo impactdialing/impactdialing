@@ -1,4 +1,4 @@
-class Twilio
+class TwilioLib
   require 'net/http'
 
   DEFAULT_SERVER = "api.twilio.com"
@@ -74,7 +74,7 @@ class Twilio
     require 'rubygems'
     require 'hpricot'
     return if model_instance.sid.blank?
-    t = Twilio.new(TWILIO_ACCOUNT,TWILIO_AUTH)
+    t = TwilioLib.new(TWILIO_ACCOUNT,TWILIO_AUTH)
     @a=t.call("GET", "Calls/" + model_instance.sid, {})
     @doc = Hpricot::XML(@a)
     puts @doc

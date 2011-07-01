@@ -38,7 +38,7 @@ describe Campaign do
   end
 
   it "should not invoke Twilio if caller id is not present" do
-    Twilio.should_not_receive(:new)
+    TwilioLib.should_not_receive(:new)
     campaign = Factory(:campaign)
     campaign.caller_id = nil
     campaign.save

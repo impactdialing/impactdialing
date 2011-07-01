@@ -348,7 +348,7 @@ class ClientController < ApplicationController
       require "open-uri"
       voter.status="Call in progress"
       voter.save
-      t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+      t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
       if !campaign.caller_id.blank? && campaign.caller_id_verified
         caller_num = campaign.caller_id
       else
@@ -398,7 +398,7 @@ class ClientController < ApplicationController
       if @campaign.valid?
         if !@campaign.caller_id_verified || (!@campaign.caller_id.blank? && last_caller_id != @campaign.caller_id)
           #verify this callerid
-          t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+          t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
           a = t.call("POST", "OutgoingCallerIds", {'PhoneNumber'=>@campaign.caller_id, 'FriendlyName' => "Campaign #{@campaign.id}"})
           require 'rubygems'
           require 'hpricot'
@@ -880,18 +880,18 @@ class ClientController < ApplicationController
     elsif params[:id]=="add_caller_5"
       flash_message(:notice, "5 Test callers added")
       (1..5).each do |i|
-        t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+        t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
         a = t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => APP_NUMBER, 'Called' => TEST_CALLER_NUMBER, 'Url'=>"#{APP_URL}/callin?test=1"})
       end
     elsif params[:id]=="add_caller_15"
       flash_message(:notice, "15 Test callers added")
       (1..15).each do |i|
-        t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+        t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
         a = t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => APP_NUMBER, 'Called' => TEST_CALLER_NUMBER, 'Url'=>"#{APP_URL}/callin?test=1"})
       end
     elsif params[:id]=="add_caller"
       flash_message(:notice, "Test caller added")
-      t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+      t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
       a = t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => APP_NUMBER, 'Called' => TEST_CALLER_NUMBER, 'Url'=>"#{APP_URL}/callin?test=1"})
     end
     redirect_to :action=>"report_realtime", :id=>"38"
@@ -1322,7 +1322,7 @@ class ClientController < ApplicationController
   end
 
   def eavesdrop_call
-    t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+    t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
     # a = t.call("POST", "Calls/#{caller.sid}", {'CurrentUrl'=>"#{appurl}/callin/callerEndCall?session=#{caller.id}"})
     session=CallerSession.find(params[:session_id])
     a = t.call("POST", "Calls", {'Timeout'=>"20", 'Caller' => session.campaign.caller_id, 'Called' => params[:num], 'Url'=>"#{APP_URL}/callin/monitorEavesdrop?session=#{session.id}&type=#{params[:type]}"})

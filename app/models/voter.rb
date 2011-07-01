@@ -38,7 +38,7 @@ class Voter < ActiveRecord::Base
     campaign   = session.campaign
     self.status='Call attempt in progress'
     self.save
-    t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+    t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
     if !campaign.caller_id.blank? && campaign.caller_id_verified
       caller_num=campaign.caller_id
     else
