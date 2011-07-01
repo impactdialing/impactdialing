@@ -76,7 +76,7 @@ class CallerController < ApplicationController
         @session.save
 
         #flash[:notice]= "Calling you now"
-        t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+        t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
         a=t.call("POST", "Calls", {'Caller' => APP_NUMBER, 'Called' => params[:numtocall], 'Url'=>"#{APP_URL}/callin/get_ready?campaign=#{params[:id]}&session=#{@session.id}&Digits=*"})
         @doc = Hpricot::XML(a)
         @session.sid=(@doc/"Sid").inner_html
@@ -104,7 +104,7 @@ class CallerController < ApplicationController
     session.save
 
     #redirect to start
-    t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+    t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
     a=t.call("POST", "Calls/#{session.sid}", {'CurrentUrl'=>"#{APP_URL}/callin/start_conference?session=#{session.id}&campaign=#{session.campaign_id}"})
 
     #update rt
@@ -130,7 +130,7 @@ class CallerController < ApplicationController
       session = CallerSession.find_by_session_key(params[:id])
     end
 
-    t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+    t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
     a=t.call("POST", "Calls/#{session.sid}", {'CurrentUrl'=>"#{APP_URL}/callin/callerEndCall?session=#{session.id}"})
 
     #update rt
@@ -143,7 +143,7 @@ class CallerController < ApplicationController
     @session = CallerSession.find_by_session_key(params[:key])
     return if @session.blank?
     attempt = CallAttempt.find(params[:attempt])
-    t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+    t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
     a=t.call("POST", "Calls/#{attempt.sid}", {'CurrentUrl'=>"#{APP_URL}/callin/voterEndCall?attempt=#{attempt.id}"})
     render :text=>"drop ok"
   end
@@ -199,7 +199,7 @@ class CallerController < ApplicationController
     @family_submitted=params[:family]
     @caller = @session.caller
     attempt = CallAttempt.find(params[:attempt])
-    t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+    t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
     a=t.call("POST", "Calls/#{attempt.sid}", {'CurrentUrl'=>"#{APP_URL}/callin/voterEndCall?attempt=#{attempt.id}"})
     handle_disposition_submit
 
@@ -207,7 +207,7 @@ class CallerController < ApplicationController
     if params[:hangup]=="1"
       session_end
     else
-      t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+      t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
       a=t.call("POST", "Calls/#{@session.sid}", {'CurrentUrl'=>"#{APP_URL}/callin/start_conference?session=#{@session.id}&campaign=#{@campaign.id}"})
 
       if @campaign.predective_type=="preview"

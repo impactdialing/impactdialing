@@ -24,7 +24,7 @@ class AdminController < ApplicationController
     @logged_in_callers = CallerSession.find_all_by_on_call(1)
     @ready_to_dial = CallAttempt.find_all_by_status("Call ready to dial", :conditions=>"call_end is null")
     @errors=""
-  	t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+  	t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
   	a=t.call("GET", "Calls?Status=queued", {})
     doc  = Nokogiri::XML(a)
     tcalls=doc.xpath("//Calls")

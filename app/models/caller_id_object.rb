@@ -6,7 +6,7 @@ class CallerIdObject
   end
 
   def twilio
-    @twilio   ||= Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+    @twilio   ||= TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
   end
   
   def valid?
