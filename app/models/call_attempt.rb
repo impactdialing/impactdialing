@@ -6,6 +6,7 @@ class CallAttempt < ActiveRecord::Base
   named_scope :for_campaign, lambda{|campaign| {:conditions => ["campaign_id = ?", campaign.id] }}
   named_scope :for_status, lambda{|status| {:conditions => ["status = ?", status] }}
 
+
   def ring_time
     if self.answertime!=nil && self.created_at!=nil
       (self.answertime  - self.created_at).to_i
@@ -31,5 +32,10 @@ class CallAttempt < ActiveRecord::Base
 
   def client
     campaign.client
+  end
+
+  module Status
+    VOICEMAIL = "Message delivered"
+    SUCCESS = "Call completed with success."
   end
 end

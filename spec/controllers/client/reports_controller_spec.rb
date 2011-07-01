@@ -11,10 +11,10 @@ describe Client::ReportsController do
     before(:each) do
       campaign = Factory(:campaign)
       time_now = Time.now
-      Factory(:call_attempt, :call_start => time_now, :call_end => time_now + 10.minutes, :status => 'Call completed with success.', :campaign => campaign)
-      Factory(:call_attempt, :call_start => time_now, :call_end => time_now + 101.minutes, :status => 'Call completed with success.', :campaign => campaign)
-      Factory(:call_attempt, :call_start => time_now, :call_end => time_now + 20.minutes, :status => 'Message delivered', :campaign => campaign)
-      Factory(:call_attempt, :call_start => time_now, :call_end => time_now + 30.minutes, :status => 'Message delivered', :campaign => campaign)
+      Factory(:call_attempt, :call_start => time_now, :call_end => time_now + 10.minutes, :status => CallAttempt::Status::SUCCESS, :campaign => campaign)
+      Factory(:call_attempt, :call_start => time_now, :call_end => time_now + 101.minutes, :status => CallAttempt::Status::SUCCESS, :campaign => campaign)
+      Factory(:call_attempt, :call_start => time_now, :call_end => time_now + 20.minutes, :status => CallAttempt::Status::VOICEMAIL, :campaign => campaign)
+      Factory(:call_attempt, :call_start => time_now, :call_end => time_now + 30.minutes, :status => CallAttempt::Status::VOICEMAIL, :campaign => campaign)
       get :usage, :id => campaign.id
     end
 
