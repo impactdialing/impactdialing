@@ -22,7 +22,9 @@ describe Voter do
     let(:voter) { Factory(:voter, :campaign => campaign) }
 
     it "is dialed" do
-      callback_url = twilio_callback_url(:host => HOST, :port => PORT)
+      call_attempt = Factory(:call_attempt)
+      voter.should_receive(:new_call_attempt).and_return(call_attempt)
+      callback_url = twilio_callback_url(:call_attempt_id => call_attempt, :host => HOST, :port => PORT)
       fallback_url = twilio_report_error_url(:host => HOST, :port => PORT)
       callended_url = twilio_call_ended_url(:host => HOST, :port => PORT)
       Twilio::Call.should_receive(:make).with(voter.campaign.caller_id, voter.Phone, callback_url, 'Timeout' => '20', 'FallbackUrl' => fallback_url, 'StatusCallback' => callended_url).and_return({"Call" => {"Sid" => "abcd"}})
