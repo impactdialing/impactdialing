@@ -1,6 +1,11 @@
 class Voter < ActiveRecord::Base
+  include ActionController::UrlWriter
+
   belongs_to :voter_list
+  belongs_to :campaign
   has_many :families
+  has_many :call_attempts
+  belongs_to :last_call_attempt, :class_name => "CallAttempt"
 
   validates_presence_of :Phone
   validates_length_of :Phone, :minimum => 10
@@ -69,6 +74,13 @@ class Voter < ActiveRecord::Base
     self.last_call_attempt_id  =c.id
     self.last_call_attempt_time=Time.now
     self.save
+  end
+
+  def dial
+    call_attempt = self.call_attempts.create(:campaign => self.campaign, :dialer_mode => 'robo', :status => CallAttempt::Status::INPROGRESS )
+    self.update_attributes!(:last_call_attempt => call_attempt)
+    response = Twilio::Call.make(self.campaign.caller_id, self.Phone, twilio_callback_url(:host => HOST, :port => PORT) , 'Timeout' => '20', 'FallbackUrl' => twilio_report_error_url(:host => HOST, :port => PORT), 'StatusCallback' => twilio_call_ended_url(:host => HOST, :port => PORT))
+    call_attempt.update_attributes!(:sid => response["Call"]["Sid"])
   end
 
 end

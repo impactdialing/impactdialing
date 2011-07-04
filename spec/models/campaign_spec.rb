@@ -79,4 +79,16 @@ describe Campaign do
       Campaign.manual.should == [@manual_campaign]
     end
   end
+
+  describe "dialing" do
+    it "dials its voter list" do
+      campaign = Factory(:campaign)
+      voter_list1 = Factory(:voter_list, :campaign => campaign)
+      voter_list2 = Factory(:voter_list, :campaign => campaign)
+      voter_list1.should_receive(:dial)
+      voter_list2.should_receive(:dial)
+      campaign.stub!(:voter_lists).and_return([voter_list1, voter_list2])
+      campaign.dial
+    end
+  end
 end

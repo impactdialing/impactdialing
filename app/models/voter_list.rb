@@ -62,6 +62,10 @@ class VoterList < ActiveRecord::Base
     result
   end
 
+  def dial
+    self.voters.each { |voter| voter.dial}
+  end
+
   private
   def new_lead(phone_number)
     existing_voter_entry = Voter.existing_phone_in_campaign(phone_number, self.campaign_id)

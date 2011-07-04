@@ -125,4 +125,16 @@ describe VoterList do
       end
     end
   end
+
+  describe "dial" do
+    let(:voter_list) { Factory(:voter_list)}
+    it "dials all its voters" do
+      voter1 = Factory(:voter, :voter_list => voter_list, :campaign => voter_list.campaign)
+      voter2 = Factory(:voter, :voter_list => voter_list, :campaign => voter_list.campaign)
+      voter1.should_receive(:dial)
+      voter2.should_receive(:dial)
+      voter_list.stub!(:voters).and_return([voter1, voter2])
+      voter_list.dial
+    end
+  end
 end
