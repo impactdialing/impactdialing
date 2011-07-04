@@ -51,6 +51,7 @@ ActionController::Routing::Routes.draw do |map|
   map.twilio_callback '/twilio_callback', :controller => 'twilio', :action => 'callback'
   map.twilio_report_error '/twilio_report_error', :controller => 'twilio', :action => 'report_error'
   map.twilio_call_ended '/twilio_call_ended', :controller => 'twilio', :action => 'call_ended'
+  map.resource :call_attempts, :only => :create
 
   map.connect 'admin/:action/:id', :controller=>"admin"
   map.connect 'admin/:action', :controller=>"admin"

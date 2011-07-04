@@ -2,6 +2,7 @@ class CallAttempt < ActiveRecord::Base
   belongs_to :voter
   belongs_to :campaign
   belongs_to :caller
+  has_many :call_responses
 
   named_scope :for_campaign, lambda{|campaign| {:conditions => ["campaign_id = ?", campaign.id] }}
   named_scope :for_status, lambda{|status| {:conditions => ["status = ?", status] }}
