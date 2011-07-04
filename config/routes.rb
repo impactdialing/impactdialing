@@ -49,6 +49,8 @@ ActionController::Routing::Routes.draw do |map|
   map.report '/client/reports', :action => 'reports', :controller => 'client'
   map.report_usage '/client/reports/usage', :action => 'usage', :controller => 'client/reports'
   map.twilio_callback '/twilio_callback', :controller => 'twilio', :action => 'callback'
+  map.twilio_report_error '/twilio_report_error', :controller => 'twilio', :action => 'report_error'
+  map.twilio_call_ended '/twilio_call_ended', :controller => 'twilio', :action => 'call_ended'
 
   map.connect 'admin/:action/:id', :controller=>"admin"
   map.connect 'admin/:action', :controller=>"admin"
