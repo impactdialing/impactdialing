@@ -1,6 +1,8 @@
 require "spec_helper"
 
 describe Voter do
+  include ActionController::UrlWriter
+
   it "should list existing entries in a campaign having the given phone number" do
     lambda {
       Factory(:voter, :Phone => '0123456789', :campaign_id => 99)
@@ -13,5 +15,41 @@ describe Voter do
     active_voter = Factory(:voter, :active => true)
     inactive_voter = Factory(:voter, :active => false)
     Voter.active.should == [active_voter]
+  end
+
+  describe "Dialing" do
+    let(:campaign) { Factory(:campaign) }
+    let(:voter) { Factory(:voter, :campaign => campaign) }
+
+    it "is dialed" do
+      callback_url = twilio_callback_url(:host => HOST, :port => PORT)
+      fallback_url = twilio_report_error_url(:host => HOST, :port => PORT)
+      callended_url = twilio_call_ended_url(:host => HOST, :port => PORT)
+      Twilio::Call.should_receive(:make).with(voter.campaign.caller_id, voter.Phone, callback_url, 'Timeout' => '20', 'FallbackUrl' => fallback_url, 'StatusCallback' => callended_url).and_return({"Call" => {"Sid" => "abcd"}})
+      voter.dial
+    end
+
+    it "records a call attempt for a dialed voter" do
+      Twilio::Call.stub!(:make).and_return({"Call" => {"Sid" => "abcd"}})
+      lambda {
+        voter.dial
+      }.should change {
+        voter.call_attempts.count
+      }.by(1)
+
+      call_attempt = voter.call_attempts.first
+      call_attempt.campaign.should == campaign
+      call_attempt.dialer_mode.should == "robo"
+      call_attempt.status.should == CallAttempt::Status::INPROGRESS
+      voter.last_call_attempt.should == call_attempt
+    end
+
+    it "updates the sid for a dialed voter" do
+      sid = "xyzzyspoonshift1"
+      Twilio::Call.stub!(:make).and_return({"Call" => {"Sid" => sid}})
+      voter.dial
+      voter.call_attempts.last.sid.should == sid
+    end
+
   end
 end

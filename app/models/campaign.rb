@@ -360,4 +360,8 @@ class Campaign < ActiveRecord::Base
       number
     end
   end
+
+  def dial
+    self.voter_lists.each{ |voter_list| voter_list.dial}
+  end
 end

@@ -37,5 +37,6 @@ class CallAttempt < ActiveRecord::Base
   module Status
     VOICEMAIL = "Message delivered"
     SUCCESS = "Call completed with success."
+    INPROGRESS = "Call in progress"
   end
 end
