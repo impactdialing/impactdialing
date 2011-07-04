@@ -1,10 +1,17 @@
 class TwilioController < ApplicationController
+  include ::Twilio
   def callback
-    render :xml => Twilio::Verb.play(URI.escape('http://impactdialingapp.s3.amazonaws.com/development/uploads/1/6MontyPython.wav'))
+    verb = Twilio::Verb.new { |v|
+      v.play "http://s3.amazonaws.com/impactdiallingapp/BachGavotteShort.mp3"
+      v.say "The time is #{Time.now}"
+      v.hangup
+    }
+    render :xml => verb.response
+    response.headers["Content-Type"] = 'text/xml'
   end
 
   def report_error
-    puts "Error", params
+    puts "Error", params.inspect
     render :text => ''
   end
 
