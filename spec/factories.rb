@@ -41,8 +41,16 @@ end
 
 Factory.define :caller_session do |s|
   s.campaign_id { Factory(:campaign, :user => Factory(:user)).id }
-  s.caller_id { Factory(:caller)}
+  s.caller_id { Factory(:caller) }
 end
 
 Factory.define :call_attempt do |ca|
 end
+
+Factory.define :robo_recording do |rr|
+  rr.name { Factory.next(:name) }
+end
+
+Factory.define :recording_response do |rr|
+end
+
