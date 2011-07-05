@@ -1059,24 +1059,60 @@ class ClientController < ApplicationController
       render :text=>"Unauthorized"
       return
     end
-    if params[:type]=="1"
-      extra = "and result is not null"
-    end
+    @script=@campaign.script
+    extra = ""
 
     @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Answereds Call Report"]
 
     set_report_date_range
 
     sql = "
-        SELECT count(*) as cnt, result
+        SELECT result_json
         FROM call_attempts
         where campaign_id=#{@campaign.id}
+        and result_json IS NOT NULL
         and created_at > '#{@from_date.strftime("%Y-%m-%d")}'
         and created_at < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'  #{extra}
-        group by result order by count(*) desc"
+        "
         logger.info sql
 
         @records = ActiveRecord::Base.connection.execute(sql)
+        
+        @json_fields=[]
+        @results_hash={}
+        @names_hash={}
+        @records.each do |r|
+          this_record=YAML.load(r[0])
+          @json_fields = @json_fields | this_record.keys
+          this_record.keys.each do |f|
+            if this_record[f].index("name")
+            end
+#            @names_hash
+          end
+        end
+        # render :text=>json_fields.inspect
+        # return 
+        
+        @json_fields.each do |f|
+          @results_hash[f]={}
+          @records.data_seek(0)
+          @records.each do |r|
+            this_record=YAML.load(r[0])
+            if this_record.keys.index(f)
+              this_result = this_record[f]
+              # render :text=>this_record.inspect
+              # return
+#              this_result = this_records_fields[this_records_fields.index(f)]
+              @results_hash[f][this_result]=0 if !@results_hash[f].keys.index(this_result)
+              @results_hash[f][this_result] += 1
+            end
+          end
+        end
+        
+#        render :text=>@results_hash.inspect
+#        return 
+        
+        
         @total=0
         @records.each do |r|
           @total = @total + r[0].to_i
