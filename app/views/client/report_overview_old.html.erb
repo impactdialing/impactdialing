@@ -1,63 +1,65 @@
-<div class="box" style="width:600px;">
-	<%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@campaign.name} Answered Calls Report"} %>
-	<div class="box-content">
-		
-		
-		<div class="table">
-		    <table width="100%" border="0" cellspacing="0" cellpadding="0">
-		      <tr>
-		        <th>Status</th>
-		        <th>Number</th>
-		        <th>Percentage</th>
-		      </tr>
-			
-				<% @records.each do |r| %>
-				<tr class="<%= cycle("odd","even") %>">
-					<td>
-					<% if r[1].blank? %>Unanswered<% end %>
-					<%= r[1] %></td>
-					<td><%= r[0] %></td>
-					<td><%= ((r[0].to_f/@total)*100).to_i %>%</td>
-				</tr>
-				<% end %>
-		    </table>
+<%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@campaign.name} Answered Calls Report"} %>
 
-		    <div class="pagging">
-		   		<div class="left"><%= @total %> calls total</div>
-		    </div>
-
-		</div>
-		
-		<br/>
-		
-		<% if params[:type]!="1" %>
-			<% if @totalvoters>0 %>
-			<div class="table">
-			    <table width="100%" border="0" cellspacing="0" cellpadding="0">
-			      <tr>
-			        <th>Type</th>
-			        <th>Numbers</th>
-			        <th>Percentage</th>
-			      </tr>
-
-					<tr class="odd">
-						<td>Remaining Numbers</td>
-						<td><%= @voters_to_call.length %></td>
-						<td><%=@voters_to_call.length/@totalvoters*100  %></td>
-					</tr>
-					<tr class="event">
-						<td>Finished Numbers</td>
-						<td><%= @voters_called.length %></td>
-						<td><%=@voters_called.length/@totalvoters*100  %>%</td>
-					</tr>
-			    </table>
-			
-			</div>
-			<% end %>
+<% @json_fields.each do |f| %>
+	<% num=f[f.length-1,1] %>
+	<% if f.index("result") %>
+		<% this_result_set = JSON.parse(eval("@script.result_set_#{num}" )) %>
+		<% name = this_result_set["name"] %>
+		<% if name.blank? %>
+			<h3><%=f%></h3>
+		<% else %>
+			<h3><%=name%></h3>
 		<% end %>
+	<% else %>
+		<h3><%= f %></h3>
+	<% end %>
 
-		
-	</div>
+
+	
+
+   <table width="100%" border="0" cellspacing="0" cellpadding="0">
+     <tr>
+       <th>Answer</th>
+       <th>Number</th>
+       <th>Percentage</th>
+     </tr>
+
+	<% cnt=0 %>
+	<% @results_hash[f].keys.each do |r| %>
+		<% cnt+=@results_hash[f][r] %>
+	<% end %>
+	<% @results_hash[f].keys.each do |r| %>
+		<% this_num=@results_hash[f][r].to_i %>
+		<tr class="<%= cycle("odd","even") %>">
+			<td><%= r %></td>
+			<td><%= this_num %></td>
+			<td><%=((this_num.to_f/cnt.to_f) *100).round%>
+			<%# ((r[0].to_f/@total)*100).to_i %>%</td>
+		</tr>
+	<% end %>
+	</table>
+<% end %>
+<br/>
+	<% if @totalvoters>0 %>
+	    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+	      <tr>
+	        <th>Type</th>
+	        <th>Numbers</th>
+	        <th>Percentage</th>
+	      </tr>
+
+			<tr class="odd">
+				<td>Remaining Numbers</td>
+				<td><%= @voters_to_call.length %></td>
+				<td><%=@voters_to_call.length/@totalvoters*100  %></td>
+			</tr>
+			<tr class="event">
+				<td>Finished Numbers</td>
+				<td><%= @voters_called.length %></td>
+				<td><%=@voters_called.length/@totalvoters*100  %>%</td>
+			</tr>
+	    </table>
+	<% end %>
 	<div class="box-content">
 	Report Date Range:
 	<% form_tag ("/client/report_overview_old?id=#{ params[:id]}&type=#{params[:type]}") do %> 
@@ -77,8 +79,3 @@
 	</table>
 	<% end %>
 	
-	</div>
-</div>
-
-
-
