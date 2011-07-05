@@ -79,7 +79,12 @@ class Voter < ActiveRecord::Base
   def dial
     call_attempt = new_call_attempt
     response = Twilio::Call.make(self.campaign.caller_id, self.Phone, twilio_callback_url(:call_attempt_id => call_attempt.id, :host => HOST, :port => PORT) , 'Timeout' => '20', 'FallbackUrl' => twilio_report_error_url(:host => HOST, :port => PORT), 'StatusCallback' => twilio_call_ended_url(:host => HOST, :port => PORT))
-    call_attempt.update_attributes!(:sid => response["Call"]["Sid"])
+    if response["TwilioResponse"]["RestException"]
+      puts "There was an error calling the Campaign: #{response["TwilioResponse"]["RestException"].inspect}"
+      return false
+    end
+    call_attempt.update_attributes!(:sid => response["TwilioResponse"]["Call"]["Sid"])
+    true
   end
 
   private

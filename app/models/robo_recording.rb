@@ -24,9 +24,8 @@ class RoboRecording < ActiveRecord::Base
     self.recording_responses.find_by_keypad(digits)
   end
 
-  # @param call_attempt [Object]
   def twilio_xml(call_attempt)
-    url = call_attempts_url(:host => '3njb.localtunnel.com', :id => call_attempt.id, :robo_recording_id => self.id)
+    url = call_attempts_url(:host => HOST, :id => call_attempt.id, :robo_recording_id => self.id)
     verb = Twilio::Verb.new do |v|
       v.gather(:numDigits => 1, :timeout => 10, :action => url, :method => "POST") do
         v.play URI.escape(self.file.url)
