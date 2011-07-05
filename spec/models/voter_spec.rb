@@ -27,12 +27,12 @@ describe Voter do
       callback_url = twilio_callback_url(:call_attempt_id => call_attempt, :host => HOST, :port => PORT)
       fallback_url = twilio_report_error_url(:host => HOST, :port => PORT)
       callended_url = twilio_call_ended_url(:host => HOST, :port => PORT)
-      Twilio::Call.should_receive(:make).with(voter.campaign.caller_id, voter.Phone, callback_url, 'Timeout' => '20', 'FallbackUrl' => fallback_url, 'StatusCallback' => callended_url).and_return({"Call" => {"Sid" => "abcd"}})
+      Twilio::Call.should_receive(:make).with(voter.campaign.caller_id, voter.Phone, callback_url, 'Timeout' => '20', 'FallbackUrl' => fallback_url, 'StatusCallback' => callended_url).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
       voter.dial
     end
 
     it "records a call attempt for a dialed voter" do
-      Twilio::Call.stub!(:make).and_return({"Call" => {"Sid" => "abcd"}})
+      Twilio::Call.stub!(:make).and_return({"TwilioResponse" => {"Call" => {"Sid" => "abcd"}}})
       lambda {
         voter.dial
       }.should change {
@@ -48,7 +48,7 @@ describe Voter do
 
     it "updates the sid for a dialed voter" do
       sid = "xyzzyspoonshift1"
-      Twilio::Call.stub!(:make).and_return({"Call" => {"Sid" => sid}})
+      Twilio::Call.stub!(:make).and_return({"TwilioResponse" => {"Call" => {"Sid" => sid}}})
       voter.dial
       voter.call_attempts.last.sid.should == sid
     end
