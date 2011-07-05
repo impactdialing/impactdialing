@@ -23,6 +23,9 @@
 				<%# @script.name %>
 				<% @script.result_sets_used.each do |r| %>
 					<% json = JSON.parse(eval("@script.result_set_#{r}")) %>
+					<% if !json["name"].blank? %>
+						<div><%= json["name"] %></div>
+					<% end %>
 					<select class="field" id="disposition<%= r %>" style="display:inline;">
 						<%  for b in 1..99 do %>
 							<% thisKeypadval=json["keypad_#{b}"] %>
