@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110619093828) do
+ActiveRecord::Schema.define(:version => 20110704134148) do
 
   create_table "accounts", :force => true do |t|
     t.integer  "user_id"
@@ -64,6 +64,14 @@ ActiveRecord::Schema.define(:version => 20110619093828) do
   add_index "call_attempts", ["caller_session_id"], :name => "index_call_attempts_on_caller_session_id"
   add_index "call_attempts", ["campaign_id"], :name => "index_call_attempts_on_campaign_id"
   add_index "call_attempts", ["voter_id"], :name => "index_call_attempts_on_voter_id"
+
+  create_table "call_responses", :force => true do |t|
+    t.integer  "call_attempt_id"
+    t.string   "response"
+    t.integer  "recording_response_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
   create_table "caller_sessions", :force => true do |t|
     t.integer  "caller_id"
@@ -141,6 +149,7 @@ ActiveRecord::Schema.define(:version => 20110619093828) do
     t.boolean  "use_web_ui",               :default => true
     t.integer  "answer_detection_timeout", :default => 20
     t.boolean  "calls_in_progress",        :default => false
+    t.boolean  "robo",                     :default => false
   end
 
   create_table "campaigns_voter_lists", :id => false, :force => true do |t|
@@ -204,6 +213,12 @@ ActiveRecord::Schema.define(:version => 20110619093828) do
     t.datetime "updated_at"
   end
 
+  create_table "recording_responses", :force => true do |t|
+    t.integer "robo_recording_id"
+    t.string  "response"
+    t.integer "keypad"
+  end
+
   create_table "recordings", :force => true do |t|
     t.integer  "user_id"
     t.string   "recording_url"
@@ -211,6 +226,15 @@ ActiveRecord::Schema.define(:version => 20110619093828) do
     t.string   "name"
     t.datetime "created_at"
     t.datetime "updated_at"
+  end
+
+  create_table "robo_recordings", :force => true do |t|
+    t.integer  "script_id"
+    t.string   "name"
+    t.string   "file_file_name"
+    t.string   "file_content_type"
+    t.integer  "file_file_size"
+    t.datetime "file_updated_at"
   end
 
   create_table "scripts", :force => true do |t|
@@ -341,6 +365,7 @@ ActiveRecord::Schema.define(:version => 20110619093828) do
     t.string   "note_8"
     t.string   "note_9"
     t.string   "note_10"
+    t.boolean  "robo",          :default => false
   end
 
   create_table "seos", :force => true do |t|
