@@ -6,4 +6,4 @@ config/database.yml
 coverage/
 .bundle/*
 tmp
-public/.DS_Store
+*.DS_Store
