@@ -128,13 +128,22 @@ describe VoterList do
 
   describe "dial" do
     let(:voter_list) { Factory(:voter_list, :campaign => Factory(:campaign, :calls_in_progress => true)) }
-    it "dials all its voters" do
+    it "dials all the voters who have not been dialed yet" do
       voter1 = Factory(:voter, :voter_list => voter_list, :campaign => voter_list.campaign)
       voter2 = Factory(:voter, :voter_list => voter_list, :campaign => voter_list.campaign)
       voter1.should_receive(:dial)
       voter2.should_receive(:dial)
-      voter_list.stub!(:voters).and_return([voter1, voter2])
+      voters = mock
+      voters.should_receive(:not_dialed).and_return([voter1, voter2])
+      voter_list.stub!(:voters).and_return(voters)
       voter_list.dial
+    end
+
+    it "gives the list of voters to be dialed" do
+      voter1 = Factory(:voter, :voter_list => voter_list, :campaign => voter_list.campaign)
+      voter2 = Factory(:voter, :voter_list => voter_list, :campaign => voter_list.campaign)
+      Factory(:call_attempt, :campaign => voter_list.campaign, :voter => voter1)
+      voter_list.voters.not_dialed.should == [voter2]
     end
   end
 end

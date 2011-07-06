@@ -63,7 +63,7 @@ class VoterList < ActiveRecord::Base
   end
 
   def dial
-    self.voters.each do |voter|
+    self.voters.not_dialed.each do |voter|
       return false unless self.campaign.calls_in_progress?
       voter.dial
     end

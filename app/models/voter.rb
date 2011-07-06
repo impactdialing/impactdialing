@@ -16,7 +16,8 @@ class Voter < ActiveRecord::Base
   }
 
   default_scope :order => 'LastName, FirstName, Phone'
-  named_scope :active, lambda { { :conditions => ["active = ?", true] }}
+  named_scope :active, :conditions => ["active = ?", true]
+  named_scope :not_dialed, :include => [:call_attempts], :conditions => ["call_attempts.id is null"]
 
   cattr_reader :per_page
   @@per_page = 25
