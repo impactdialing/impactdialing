@@ -2,6 +2,8 @@ class ClientController < ApplicationController
   before_filter :check_login, :except => [:login,:user_add, :forgot]
   before_filter :check_paid
   before_filter :redirect_to_ssl
+  skip_before_filter :verify_authenticity_token
+
   layout "client"
   in_place_edit_for :campaign, :name
 
@@ -946,7 +948,7 @@ class ClientController < ApplicationController
     render :layout=>false
     #    end
   end
-  
+
   def report_usage
     @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
     if @campaign.blank?
@@ -966,7 +968,7 @@ class ClientController < ApplicationController
     ca.campaign_id=#{params[:id]}"
     @calls_util = ActiveRecord::Base.connection.execute(calls_util_sql)
     @caller_util = ActiveRecord::Base.connection.execute(caller_util_sql)
-    
+
     calls_bill_sql="
     select sum(tDuration) as total_seconds,  sum(ceil(tDuration/60)) as total_mins
     from call_attempts ca
@@ -981,7 +983,7 @@ class ClientController < ApplicationController
     where
     ca.campaign_id=#{params[:id]}
     and status = 'Message delivered'"
-    
+
     abandon_bill_sql="
     select sum(tDuration) as total_seconds,  sum(ceil(tDuration/60)) as total_mins
     from call_attempts ca
@@ -994,7 +996,7 @@ class ClientController < ApplicationController
     @abandon_bill = ActiveRecord::Base.connection.execute(abandon_bill_sql)
 
 
-    
+
   end
 
   def report_overview

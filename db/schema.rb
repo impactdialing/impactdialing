@@ -220,12 +220,12 @@ ActiveRecord::Schema.define(:version => 20110704134148) do
   end
 
   create_table "recordings", :force => true do |t|
+    t.integer  "user_id"
+    t.string   "recording_url"
     t.integer  "active",        :default => 1
     t.string   "name"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.integer  "user_id"
-    t.string   "recording_url"
   end
 
   create_table "robo_recordings", :force => true do |t|
