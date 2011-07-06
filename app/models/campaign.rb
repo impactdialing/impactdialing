@@ -5,6 +5,7 @@ class Campaign < ActiveRecord::Base
   has_many :caller_sessions
   has_many :voter_lists, :conditions => {:active => true}
   has_many :all_voters, :class_name => 'Voter'
+  has_many :call_attempts, :through => :all_voters
   has_and_belongs_to_many :callers
   belongs_to :script
   belongs_to :user
@@ -378,10 +379,18 @@ class Campaign < ActiveRecord::Base
     update_attribute(:calls_in_progress, false)
   end
 
+  def voters_dialed
+    self.call_attempts.count('voter_id', :distinct => true)
+  end
+
+  def voters_remaining
+    self.all_voters.count - voters_dialed
+  end
+
   private
   def dial_voters
     self.voter_lists.each do |voter_list|
-    #  return unless self.calls_in_progress?
+      return unless self.calls_in_progress?
       voter_list.dial
     end
   end

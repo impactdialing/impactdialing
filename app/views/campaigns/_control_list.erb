@@ -13,8 +13,8 @@
       <% campaigns.each do |c| %>
           <tr class="<%= cycle("odd", "even") %>">
             <td><h3><%= link_to c.name, c %></h3></td>
-            <td><%= "Numbers Called Here." %></td>
-            <td><%= "Numbers Remaining Here." %></td>
+            <td><%= c.voters_dialed %></td>
+            <td><%= c.voters_remaining %></td>
             <td>
               <% if c.calls_in_progress? %>
                   <%= link_to "Stop", stop_campaign_path(c.id), :method => :post %>

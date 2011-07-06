@@ -124,5 +124,62 @@ describe Campaign do
       campaign.calls_in_progress.should be_false
     end
 
+    describe "number of dialed voters" do
+      it "gives the number of dialed calls" do
+        campaign = Factory(:campaign)
+        lambda {
+          call_attempt = Factory(:call_attempt, :campaign => campaign, :voter => Factory(:voter, :campaign => campaign))
+        }.should change {
+          campaign.voters_dialed
+        }.by(1)
+      end
+
+      it "counts a number only once even if there are multiple attempts on it" do
+        campaign = Factory(:campaign)
+        voter = Factory(:voter, :campaign => campaign)
+        lambda {
+          call_attempt = Factory(:call_attempt, :campaign => campaign, :voter => voter)
+        }.should change {
+          campaign.voters_dialed
+        }.by(1)
+      end
+
+      it "counts only the call attempts made on voters in the same campaign" do
+        campaign1 = Factory(:campaign)
+        campaign2 = Factory(:campaign)
+        voter1 = Factory(:voter, :campaign => campaign1)
+        voter2 = Factory(:voter, :campaign => campaign2)
+        lambda {
+          Factory(:call_attempt, :campaign => campaign1, :voter => voter1)
+          Factory(:call_attempt, :campaign => campaign2, :voter => voter2)
+        }.should change {
+          campaign1.voters_dialed
+        }.by(1)
+      end
+    end
+
+    describe "number of remaining voters to be called" do
+      it "gives the number of voters to be called" do
+        campaign = Factory(:campaign)
+        voter1 = Factory(:voter, :campaign => campaign)
+        voter2 = Factory(:voter, :campaign => campaign)
+        lambda {
+          Factory(:call_attempt, :campaign => campaign, :voter => voter1)
+        }.should change {
+          campaign.voters_remaining
+        }.by(-1)
+      end
+
+      it "counts a number only once even if there are multiple attempts on it" do
+        campaign = Factory(:campaign)
+        voter = Factory(:voter, :campaign => campaign)
+        lambda {
+          Factory(:call_attempt, :campaign => campaign, :voter => voter)
+          Factory(:call_attempt, :campaign => campaign, :voter => voter)
+        }.should change {
+          campaign.voters_remaining
+        }.by(-1)
+      end
+    end
   end
 end
