@@ -1,8 +1,8 @@
-.content > .col{float:left;width:28.12%;margin-right:2.67%;}
-.content > .col:last-child{float:right;width:38.39%;margin-right:0;}
-[role="main"]{float:left;width:58.92%;}
-[role="complementary"]{float:right;width:38.39%;}
-footer[role="contentinfo"] div{width:38.39%;}
-footer[role="contentinfo"] li{display:inline;margin-right:24px;}
-.ie6 body, .ie7 body, .ie8 body{width:960px;}
-.ie6 form .action, .ie7 form .action, .ie8 form .action{position:relative;left:6px!important;}
+.content>.col{float:left;width:28.12%;margin-right:2.67%}
+.content>.col:last-child{float:right;width:38.39%;margin-right:0}
+[role="main"]{float:left;width:58.92%}
+[role="complementary"]{float:right;width:38.39%}
+footer[role="contentinfo"] div{width:38.39%}
+footer[role="contentinfo"] li{display:inline;margin-right:24px}
+.ie6 body,.ie7 body,.ie8 body{width:960px}
+.ie6 form .action,.ie7 form .action,.ie8 form .action{position:relative;left:6px!important}

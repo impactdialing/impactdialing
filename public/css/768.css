@@ -3,17 +3,22 @@ header[role="banner"],nav[role="navigation"],.content,footer[role="contentinfo"]
 header[role="banner"]{margin-bottom:0}
 nav[role="navigation"]{margin-bottom:0;padding-bottom:0;border-bottom-width:0}
 nav[role="navigation"] ul{padding:0;background-color:#dfdfe4;border:1px solid #adadb2}
-nav[role="navigation"] li{float:left;margin-bottom:0;padding:0;width:20.08%;border-width:0;border-right:1px solid #fff;border-left:1px solid #adadb2}
+nav[role="navigation"] li{float:left;margin-bottom:0;padding:0 24px;width:20.08%;width:auto;border-width:0;border-right:1px solid #fff;border-left:1px solid #adadb2}
 nav[role="navigation"] li:nth-child(3){border-right-width:0}
-nav[role="navigation"] li:first-child{width:28%;border-left-width:0}
+nav[role="navigation"] li:first-child{border-left-width:0}
 nav[role="navigation"] li:last-child{float:right;margin-right:0;background-color:#c23634;border-right-width:0}
-nav[role="navigation"] a{padding:1em 0}
+nav[role="navigation"] a{padding:1em 0;font-size:.75em}
 nav[role="navigation"] a:hover{text-decoration:none}
 .reverse{margin-bottom:1.5em;padding:24px;background:#313131 url(../img/furniture-reverse.png) repeat 0 0;border-bottom-width:0;color:#fff;text-shadow:0 -1px 1px #000}
 .reverse h1{font-size:2.375em}
 .reverse h2{font-size:1.75em}
 .reverse .disabled{padding:6px 24px 7px;background-color:#525252;border:1px solid #2d2d2d;color:#fff;font-size:1em;font-weight:700}
 .reverse li{margin-bottom:.25em;font-size:1.15em}
+.highlight{margin-bottom:1.5em;padding:24px;background:#eee url(../img/furniture-highlight.png) repeat 0 0;border:1px solid #e3e3e3}
+.highlight h1{font-size:2.375em}
+.highlight h2{font-size:1.75em}
+.highlight .disabled{padding:6px 24px 7px;background-color:#525252;border:1px solid #2d2d2d;color:#fff;font-size:1em;font-weight:700}
+.highlight li{margin-bottom:.25em;font-size:1.15em}
 [role="main"]{float:left;width:58.92%}
 .hentry header ul{overflow:hidden}
 .hentry header li{display:inline-block;float:left;margin-right:24px}
@@ -25,16 +30,22 @@ footer[role="contentinfo"] a[href="http://stuffandnonsense.co.uk"]{display:inlin
 form ul.clearfix{margin-bottom:0}
 form ul.clearfix li{float:left;width:19%}
 .callout a.action{float:right;margin-bottom:0}
+.engage form p{float:left;width:20.53%;margin-right:2.67%}
+.engage form p.tos{position:relative;top:1.5em;width:34%}
+.engage form p.tos input{position:relative;top:-3px}
+.engage form p.buttons{position:relative;top:1em;width:15%;margin-right:0}
 nav[role="navigation"] li:last-child{-webkit-border-top-right-radius:6px;-webkit-border-bottom-right-radius:6px;-moz-border-radius-topright:6px;-moz-border-radius-bottomright:6px;border-top-right-radius:6px;border-bottom-right-radius:6px}
-.reverse{-webkit-border-radius:6px;-moz-border-radius:6px;border-radius:6px}
+.reverse,.highlight{-webkit-border-radius:6px;-moz-border-radius:6px;border-radius:6px}
 .reverse .disabled{-webkit-border-radius:6px;-moz-border-radius:6px;border-radius:6px}
 nav[role="navigation"] li{-webkit-border-radius:0;-moz-border-radius:0;border-radius:0}
 .cssgradients nav[role="navigation"] ul{background-image:-webkit-gradient(linear,left top,left bottom,from(#dfdfe4),to(#cfcfd5));background-image:-moz-linear-gradient(top,#dfdfe4,#cfcfd5);background-image:-o-linear-gradient(top,#dfdfe4,#cfcfd5);background-image:linear-gradient(top,#dfdfe4,#cfcfd5)}
 .cssgradients nav[role="navigation"] li:hover,.cssgradients nav[role="navigation"] li.active{background-image:-webkit-gradient(linear,left top,left bottom,from(#a9a9ab),to(#cfcfd5));background-image:-moz-linear-gradient(top,#a9a9ab,#cfcfd5);background-image:-o-linear-gradient(top,#a9a9ab,#cfcfd5);background-image:linear-gradient(top,#a9a9ab,#cfcfd5)}
-.multiplebgs .reverse{background-image:url(../img/furniture-reverse-dialer.png),url(../img/furniture-reverse.png);background-repeat:no-repeat,repeat;background-position:100% 50%,0 0}
+.multiplebgs .reverse,.multiplebgs .highlight{background-repeat:no-repeat,repeat;background-position:100% 50%,0 0}
+.multiplebgs .reverse{background-image:url(../img/furniture-reverse-dialer.png),url(../img/furniture-reverse.png)}
+.multiplebgs .highlight{background-image:url(../img/furniture-highlight-dialer.png),url(../img/furniture-highlight.png)}
 .admin header[role="banner"] ul{position:absolute;display:block;position:absolute;top:1em;right:0}
 .admin header[role="banner"] li{display:inline-block;margin-right:24px}
-.admin header[role="banner"] li.divider{margin-right:24px;padding-right:24px;border-right:1px solid #c0c0c8}
+.admin header[role="banner"] li:divider{margin-right:24px;padding-right:24px;border-right:1px solid #c0c0c8}
 .cssgradients .admin nav[role="navigation"] li:last-child{background-image:-webkit-gradient(linear,left top,left bottom,from(#dfdfe4),to(#cfcfd5));background-image:-moz-linear-gradient(top,#dfdfe4,#cfcfd5);background-image:-o-linear-gradient(top,#dfdfe4,#cfcfd5);background-image:linear-gradient(top,#dfdfe4,#cfcfd5)}
 .cssgradients .admin nav[role="navigation"] li:last-child:hover{background-image:-webkit-gradient(linear,left top,left bottom,from(#a9a9ab),to(#cfcfd5));background-image:-moz-linear-gradient(top,#a9a9ab,#cfcfd5);background-image:-o-linear-gradient(top,#a9a9ab,#cfcfd5);background-image:linear-gradient(top,#a9a9ab,#cfcfd5)}
 .admin nav[role="navigation"] li{width:18%}
