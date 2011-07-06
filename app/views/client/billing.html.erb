@@ -11,7 +11,7 @@
 				<% if BILLING_GW.class.to_s=="ActiveMerchant::Billing::BogusGateway" %>
 					<%= select( "account", "cardtype", { "Bogus" => "bogus"}) %>
 				<% else %>
-					<%= select( "account", "cardtype", { "Visa" => "visa", "Mastercard" => "master", "American Express"=>"american_express"}) %>
+					<%= select( "account", "cardtype", { "Visa" => "visa", "Mastercard" => "master"}) %>
 				<% end %>
 				</p>
 
