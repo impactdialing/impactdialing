@@ -1,6 +1,6 @@
+<fieldset>
+<legend>Recording</legend>
 <div class="fields">
-  <p>
-    Recording
     <%= f.label :name %>
     <%= f.text_field :name %>
     <% if f.object.file.exists? %>
@@ -9,7 +9,6 @@
   <% end %>
   <%= f.file_field :file %>
   <%= link_to_remove_fields "remove", f %><br />
-  </p>
 
   <% f.fields_for :recording_responses do |response_form| %>
       <%= render :partial=>"recording_response_fields", :locals => { :f => response_form} %>
@@ -19,3 +18,4 @@
 
   <p><%= link_to_add_fields "Add Response", f, :recording_responses%></p>
 </div>
+</fieldset>
