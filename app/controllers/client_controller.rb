@@ -75,6 +75,7 @@ class ClientController < ApplicationController
           @rs["keypad_7"]="Not home/call back"
           @rs["keypad_8"]="Language barrier"
           @rs["keypad_9"]="Wrong number"
+          @rs["name"]="How supportive was the voter?"
           #      @rs.incompletes=["7"].to_json
           @script.result_set_1 = @rs.to_json
           @script.incompletes='{"5":[],"6":[],"1":["7"],"7":[],"2":[],"8":[],"3":[],"9":[],"4":[],"10":[]}'

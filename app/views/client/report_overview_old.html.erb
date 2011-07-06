@@ -2,7 +2,7 @@
 
 <% @json_fields.each do |f| %>
 	<% num=f[f.length-1,1] %>
-	<% if f.index("result") %>
+	<% if f.index("result") #no notes %>
 		<% this_result_set = JSON.parse(eval("@script.result_set_#{num}" )) %>
 		<% name = this_result_set["name"] %>
 		<% if name.blank? %>
@@ -10,34 +10,30 @@
 		<% else %>
 			<h3><%=name%></h3>
 		<% end %>
-	<% else %>
-		<h3><%= f %></h3>
+
+	   <table width="100%" border="0" cellspacing="0" cellpadding="0">
+	     <tr>
+	       <th>Answer</th>
+	       <th>Number</th>
+	       <th>Percentage</th>
+	     </tr>
+
+		<% cnt=0 %>
+		<% @results_hash[f].keys.each do |r| %>
+			<% cnt+=@results_hash[f][r] %>
+		<% end %>
+		<% @results_hash[f].keys.each do |r| %>
+			<% this_num=@results_hash[f][r].to_i %>
+			<tr class="<%= cycle("odd","even") %>">
+				<td><%= r %></td>
+				<td><%= this_num %></td>
+				<td><%=((this_num.to_f/cnt.to_f) *100).round%>
+				<%# ((r[0].to_f/@total)*100).to_i %>%</td>
+			</tr>
+		<% end %>
+		</table>
 	<% end %>
 
-
-	
-
-   <table width="100%" border="0" cellspacing="0" cellpadding="0">
-     <tr>
-       <th>Answer</th>
-       <th>Number</th>
-       <th>Percentage</th>
-     </tr>
-
-	<% cnt=0 %>
-	<% @results_hash[f].keys.each do |r| %>
-		<% cnt+=@results_hash[f][r] %>
-	<% end %>
-	<% @results_hash[f].keys.each do |r| %>
-		<% this_num=@results_hash[f][r].to_i %>
-		<tr class="<%= cycle("odd","even") %>">
-			<td><%= r %></td>
-			<td><%= this_num %></td>
-			<td><%=((this_num.to_f/cnt.to_f) *100).round%>
-			<%# ((r[0].to_f/@total)*100).to_i %>%</td>
-		</tr>
-	<% end %>
-	</table>
 <% end %>
 
 <!-- old penetration report stuff
