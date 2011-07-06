@@ -77,8 +77,10 @@ class Voter < ActiveRecord::Base
   end
 
   def dial
+    Rails.logger.error("\n\n\nI'm being dialed: \n\n\n\n\n#{self.Phone}\n\n\n\n")
     call_attempt = new_call_attempt
-    response = Twilio::Call.make(self.campaign.caller_id, self.Phone, twilio_callback_url(:call_attempt_id => call_attempt.id, :host => HOST, :port => PORT) , 'Timeout' => '20', 'FallbackUrl' => twilio_report_error_url(:host => HOST, :port => PORT), 'StatusCallback' => twilio_call_ended_url(:host => HOST, :port => PORT))
+    response = Twilio::Call.make(self.campaign.caller_id, self.Phone, twilio_callback_url(:call_attempt_id => call_attempt.id, :host => HOST, :port => PORT) ,
+                                 'Timeout' => '20', 'FallbackUrl' => twilio_report_error_url(:host => HOST, :port => PORT), 'StatusCallback' => twilio_call_ended_url(:host => HOST, :port => PORT))
     if response["TwilioResponse"]["RestException"]
       puts "There was an error calling the Campaign: #{response["TwilioResponse"]["RestException"].inspect}"
       return false

@@ -1,0 +1,32 @@
+<% if campaigns.length==0 %>
+    <div class="form">
+      <label>No campaigns entered.</label>
+    </div>
+<% else %>
+    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+      <tr>
+        <th>Name</th>
+        <th>Numbers Called</th>
+        <th>Numbers Remaining</th>
+        <th width="55" class="ac"></th>
+      </tr>
+      <% campaigns.each do |c| %>
+          <tr class="<%= cycle("odd", "even") %>">
+            <td><h3><%= link_to c.name, c %></h3></td>
+            <td><%= "Numbers Called Here." %></td>
+            <td><%= "Numbers Remaining Here." %></td>
+            <td>
+              <% if c.calls_in_progress? %>
+                  <%= link_to "Stop", stop_campaign_path(c.id), :method => :post %>
+              <% else %>
+                  <%= link_to "Start", start_campaign_path(c.id), :method => :post %>
+              <% end %>
+            </td>
+          </tr>
+      <% end %>
+    </table>
+    <p><%= page_entries_info campaigns %> <%= will_paginate campaigns %></p>
+<% end %>
+
+
+

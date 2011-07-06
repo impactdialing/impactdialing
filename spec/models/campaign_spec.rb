@@ -11,8 +11,8 @@ describe Campaign do
 
   it "sorts by the updated date" do
     Campaign.record_timestamps = false
-    older_campaign             = Factory(:campaign).tap { |c| c.update_attribute(:updated_at, 2.days.ago) }
-    newer_campaign             = Factory(:campaign).tap { |c| c.update_attribute(:updated_at, 1.day.ago) }
+    older_campaign = Factory(:campaign).tap { |c| c.update_attribute(:updated_at, 2.days.ago) }
+    newer_campaign = Factory(:campaign).tap { |c| c.update_attribute(:updated_at, 1.day.ago) }
     Campaign.record_timestamps = true
     Campaign.by_updated.all.should == [newer_campaign, older_campaign]
   end
@@ -42,6 +42,14 @@ describe Campaign do
     campaign = Factory(:campaign)
     campaign.caller_id = nil
     campaign.save
+  end
+
+  it "should return active campaigns" do
+    campaign1 = Factory(:campaign)
+    campaign2 = Factory(:campaign)
+    campaign3 = Factory(:campaign, :active => false)
+
+    Campaign.active.should == [campaign1, campaign2]
   end
 
   describe "campaigns with caller sessions that are on call" do
@@ -90,5 +98,31 @@ describe Campaign do
       campaign.stub!(:voter_lists).and_return([voter_list1, voter_list2])
       campaign.dial
     end
+
+    it "sets the calls in progress flag when it starts dialing" do
+      Campaign.send(:define_method,:dial_voters) do
+        self.calls_in_progress?.should == true
+      end
+      campaign = Factory(:campaign)
+      campaign.dial
+      campaign.calls_in_progress.should == false
+    end
+
+    it "starts the dialer daemon for the campaign if it is not running" do
+      campaign = Factory(:campaign, :calls_in_progress => false)
+      campaign.start.should be_true
+    end
+
+    it "does not start the dialer daemon for the campaign if it is already started" do
+      campaign = Factory(:campaign, :calls_in_progress => true)
+      campaign.start.should be_false
+    end
+
+    it "stops the dialer daemon " do
+      campaign = Factory(:campaign, :calls_in_progress => true)
+      campaign.stop
+      campaign.calls_in_progress.should be_false
+    end
+
   end
 end

@@ -17,7 +17,7 @@ ActionController::Routing::Routes.draw do |map|
   end
 
   #v2
-  map.resources :campaigns, :path_prefix => "v2", :member => {:verify_callerid => :post} do |campaign|
+  map.resources :campaigns, :path_prefix => "v2", :member => {:verify_callerid => :post, :start => :post, :stop => :post }, :collection => {:control => :get, :running_status => :get} do |campaign|
     campaign.resources :voter_lists, :collection => {:import => :post}, :except => [:new, :show]
   end
   map.resources :scripts, :path_prefix => "v2"

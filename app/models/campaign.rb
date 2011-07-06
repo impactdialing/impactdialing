@@ -362,6 +362,28 @@ class Campaign < ActiveRecord::Base
   end
 
   def dial
-    self.voter_lists.each{ |voter_list| voter_list.dial}
+    update_attribute(:calls_in_progress, true)
+    dial_voters()
+    update_attribute(:calls_in_progress, false)
   end
+
+  def start
+    return false if self.calls_in_progress?
+    daemon = "#{Rails.root.join('script', "dialer_control.rb start -- #{self.id}")}"
+    system(daemon)
+    return true
+  end
+
+  def stop
+    update_attribute(:calls_in_progress, false)
+  end
+
+  private
+  def dial_voters
+    self.voter_lists.each do |voter_list|
+    #  return unless self.calls_in_progress?
+      voter_list.dial
+    end
+  end
+
 end

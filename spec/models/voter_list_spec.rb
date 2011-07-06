@@ -127,7 +127,7 @@ describe VoterList do
   end
 
   describe "dial" do
-    let(:voter_list) { Factory(:voter_list)}
+    let(:voter_list) { Factory(:voter_list, :campaign => Factory(:campaign, :calls_in_progress => true)) }
     it "dials all its voters" do
       voter1 = Factory(:voter, :voter_list => voter_list, :campaign => voter_list.campaign)
       voter2 = Factory(:voter, :voter_list => voter_list, :campaign => voter_list.campaign)

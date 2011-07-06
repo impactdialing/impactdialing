@@ -25,7 +25,7 @@ class CampaignsController < ClientController
   end
 
   def index
-    @campaigns = @user.campaigns.active.robo.paginate :page => params[:page], :order => 'id desc'
+    @campaigns = active_robo_campaigns
   end
 
   def show
@@ -50,6 +50,26 @@ class CampaignsController < ClientController
     render :text => ret
   end
 
+  def control
+    @campaigns = active_robo_campaigns
+  end
+
+  def running_status
+    render :partial => "control_list", :locals => { :campaigns => active_robo_campaigns }
+  end
+
+  def start
+    @campaign = Campaign.find(params[:id])
+    @campaign.start
+    redirect_to control_campaigns_path
+  end
+
+  def stop
+    @campaign = Campaign.find(params[:id])
+    @campaign.stop
+    redirect_to control_campaigns_path
+  end
+
   private
   def generate_validation_token_for_caller_id(campaign)
     validation_code = campaign.caller_id_object.validation_code
@@ -58,5 +78,9 @@ class CampaignsController < ClientController
     else
       flash_message(:error, "Could not validate your caller id")
     end
+  end
+
+  def active_robo_campaigns
+    @user.campaigns.active.robo.paginate :page => params[:page], :order => 'id desc'
   end
 end
