@@ -5,6 +5,9 @@ APP_URL="http://admin.impactdialing.com"
 TEST_CALLER_NUMBER="8583679749"
 TEST_VOTER_NUMBER="4154486970"
 
+HOST = "staging.impactdialing.com"
+PORT = "80"
+
 # Settings specified here will take precedence over those in config/environment.rb
 
 # The production environment is meant for finished, "live" apps.
