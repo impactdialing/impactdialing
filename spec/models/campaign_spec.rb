@@ -52,6 +52,13 @@ describe Campaign do
     Campaign.active.should == [campaign1, campaign2]
   end
 
+  it "gives only active voter lists" do
+    campaign = Factory(:campaign)
+    active_voterlist = Factory(:voter_list, :campaign => campaign, :active => true)
+    inactive_voterlist = Factory(:voter_list, :campaign => campaign, :active => false)
+    campaign.voter_lists.should == [active_voterlist]
+  end
+
   describe "campaigns with caller sessions that are on call" do
     let(:user) { Factory(:user) }
     let(:campaign) { Factory(:campaign, :user => user) }
