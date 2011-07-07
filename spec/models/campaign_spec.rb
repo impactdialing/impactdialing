@@ -106,6 +106,16 @@ describe Campaign do
       campaign.dial
     end
 
+    it "dials only enabled voter lists" do
+      campaign = Factory(:campaign)
+      voter_list1 = Factory(:voter_list, :campaign => campaign)
+      voter_list2 = Factory(:voter_list, :campaign => campaign, :enabled => false)
+      voter_list1.should_receive(:dial)
+      voter_list2.should_not_receive(:dial)
+      campaign.stub!(:voter_lists).and_return([voter_list1, voter_list2])
+      campaign.dial
+    end
+
     it "sets the calls in progress flag when it starts dialing" do
       Campaign.send(:define_method,:dial_voters) do
         self.calls_in_progress?.should == true
