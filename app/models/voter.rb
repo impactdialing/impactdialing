@@ -78,14 +78,24 @@ class Voter < ActiveRecord::Base
   end
 
   def dial
-    p("[dialer] Campaign #{self.campaign_id} Dialling #{self.Phone} ")
+    message = "#{self.Phone} for campaign id:#{self.campaign_id}"
+    logger.info "[dialer] Dialling #{message} "
     call_attempt = new_call_attempt
-    response = Twilio::Call.make(self.campaign.caller_id, self.Phone, twilio_callback_url(:call_attempt_id => call_attempt.id, :host => HOST, :port => PORT) ,
-                                 'Timeout' => '20', 'FallbackUrl' => twilio_report_error_url(:host => HOST, :port => PORT), 'StatusCallback' => twilio_call_ended_url(:host => HOST, :port => PORT))
+    callback_params = {:call_attempt_id => call_attempt.id, :host => HOST, :port => PORT}
+    response = Twilio::Call.make(
+        self.campaign.caller_id,
+        self.Phone,
+        twilio_callback_url(callback_params),
+        'FallbackUrl'    => twilio_report_error_url(callback_params),
+        'StatusCallback' => twilio_call_ended_url(callback_params),
+        'Timeout'        => '20'
+    )
+
     if response["TwilioResponse"]["RestException"]
-      p("[dialer] Campaign #{self.campaign_id} Error dialing #{self.Phone}. #{response["TwilioResponse"]["RestException"].inspect}")
+      logger.info "[dialer] Exception when attempted to call #{message}  Response: #{response["TwilioResponse"]["RestException"].inspect}"
       return false
     end
+    logger.info "[dialer] Dialed #{message}. Response: #{response["TwilioResponse"].inspect}"
     call_attempt.update_attributes!(:sid => response["TwilioResponse"]["Call"]["Sid"])
     true
   end

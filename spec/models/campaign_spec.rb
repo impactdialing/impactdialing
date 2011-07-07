@@ -125,11 +125,6 @@ describe Campaign do
       campaign.calls_in_progress.should == false
     end
 
-    it "starts the dialer daemon for the campaign if it is not running" do
-      campaign = Factory(:campaign, :calls_in_progress => false)
-      campaign.start.should be_true
-    end
-
     it "does not start the dialer daemon for the campaign if it is already started" do
       campaign = Factory(:campaign, :calls_in_progress => true)
       campaign.start.should be_false
