@@ -6,6 +6,7 @@
 		<td>email</td>
 		<td>created_at</td>
 		<td>paid</td>
+		<td>domain</td>
 		<td></td>
 		<td></td>
 	</tr>
@@ -17,7 +18,8 @@
 		<td><%= u.email %></td>
 		<td><%= u.created_at %></td>
 		<td><%= u.paid %> </td>
+		<td><%= u.domain %> </td>
 		<td><a href="/admin/toggle_paid/<%= u.id %>">toggle paid</a></td>
 		<td><a href="/admin/login/<%= u.id %>">login</a></td>
 	</tr>
-	<% end %>
+	<%  nd %>
