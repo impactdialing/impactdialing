@@ -90,4 +90,7 @@ module ApplicationHelper
     link_to_function(name, h("add_fields(this, \"#{association}\", \"#{escape_javascript(fields)}\")"))
   end
 
+  def button_tag(value, opts = {})
+    content_tag :button, value, { :type => :submit }.merge(opts)
+  end
 end
