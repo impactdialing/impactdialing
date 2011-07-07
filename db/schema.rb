@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110704134148) do
+ActiveRecord::Schema.define(:version => 20110706104931) do
 
   create_table "accounts", :force => true do |t|
     t.integer  "user_id"
@@ -394,6 +394,7 @@ ActiveRecord::Schema.define(:version => 20110704134148) do
     t.string   "hashed_password"
     t.string   "salt"
     t.string   "password_reset_code"
+    t.string   "domain"
   end
 
   create_table "voter_lists", :force => true do |t|
@@ -439,7 +440,7 @@ ActiveRecord::Schema.define(:version => 20110704134148) do
     t.text     "result_json"
   end
 
-  add_index "voters", ["Phone", "voter_list_id"], :name => "index_voters_on_Phone_and_voter_list_id", :unique => true
+  add_index "voters", ["Phone", "voter_list_id"], :name => "index_voters_on_Phone_and_voter_list_id"
   add_index "voters", ["Phone"], :name => "index_voters_on_Phone"
   add_index "voters", ["attempt_id"], :name => "index_voters_on_attempt_id"
   add_index "voters", ["campaign_id"], :name => "index_voters_on_campaign_id"
