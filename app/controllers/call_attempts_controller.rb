@@ -19,6 +19,7 @@ class CallAttemptsController < ApplicationController
           end
           invalid_response.response
         end
+    logger.info "[dialer] DTMF input received. call_attempt: #{params[:id]} keypad: #{params[:Digits]} Response: #{xml}"
     render :xml => xml
   end
 end

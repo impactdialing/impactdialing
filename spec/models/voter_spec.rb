@@ -25,9 +25,16 @@ describe Voter do
       call_attempt = Factory(:call_attempt)
       voter.should_receive(:new_call_attempt).and_return(call_attempt)
       callback_url = twilio_callback_url(:call_attempt_id => call_attempt, :host => HOST, :port => PORT)
-      fallback_url = twilio_report_error_url(:host => HOST, :port => PORT)
-      callended_url = twilio_call_ended_url(:host => HOST, :port => PORT)
-      Twilio::Call.should_receive(:make).with(voter.campaign.caller_id, voter.Phone, callback_url, 'Timeout' => '20', 'FallbackUrl' => fallback_url, 'StatusCallback' => callended_url).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
+      fallback_url = twilio_report_error_url(:call_attempt_id => call_attempt, :host => HOST, :port => PORT)
+      callended_url = twilio_call_ended_url(:call_attempt_id => call_attempt, :host => HOST, :port => PORT)
+      Twilio::Call.should_receive(:make).with(
+          voter.campaign.caller_id,
+          voter.Phone,
+          callback_url,
+          'FallbackUrl'    => fallback_url,
+          'StatusCallback' => callended_url,
+          'Timeout'        => '20'
+      ).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
       voter.dial
     end
 
