@@ -25,15 +25,28 @@ class RoboRecording < ActiveRecord::Base
   end
 
   def twilio_xml(call_attempt)
-    url  = call_attempts_url(:host => HOST, :id => call_attempt.id, :robo_recording_id => self.id)
-    verb = Twilio::Verb.new do |v|
-      3.times do
-        v.gather(:numDigits => 1, :timeout => 10, :action => url, :method => "POST") do
-          v.play URI.escape(self.file.url)
-        end
-      end
+    ivr_url  = call_attempts_url(:host => HOST, :id => call_attempt.id, :robo_recording_id => self.id)
+    if self.recording_responses.count > 0
+      verb = ivr_prompt(ivr_url)
+    else
+      verb = play_message
     end
     verb.response
   end
 
+  private
+  def play_message
+    Twilio::Verb.new do |v|
+      v.play URI.escape(self.file.url)
+    end
+  end
+  def ivr_prompt(ivr_url)
+    Twilio::Verb.new do |v|
+      3.times do
+        v.gather(:numDigits => 1, :timeout => 10, :action => ivr_url, :method => "POST") do
+          v.play URI.escape(self.file.url)
+        end
+      end
+    end
+  end
 end
