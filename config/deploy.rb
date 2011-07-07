@@ -18,6 +18,7 @@ namespace :deploy do
   end
 
   after('deploy:symlink', 'deploy:link_configuration')
+  after('deploy:link_configuration', 'deploy:migrate')
 
   task :link_configuration, :roles => :app do
     run "ln -s #{deploy_to}/shared/config/database.yml #{current_path}/config/database.yml"
