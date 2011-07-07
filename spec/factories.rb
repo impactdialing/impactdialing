@@ -29,6 +29,7 @@ Factory.define :caller do |s|
 end
 
 Factory.define :voter_list do |v|
+  v.enabled { true }
   v.campaign_id { Factory(:campaign).id }
   v.name { Factory.next(:name) }
   v.user_id { Factory(:user).id }

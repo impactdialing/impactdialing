@@ -7,7 +7,7 @@ class CampaignsController < ClientController
   end
 
   def create
-    campaign = @user.campaigns.create!(:script => @user.scripts.robo.first, :predective_type => 'algorithm1', :callers => @user.callers.active, :robo => true)
+    campaign = @user.campaigns.create!(:script => @user.scripts.robo.first, :robo => true)
     redirect_to campaign
   end
 

@@ -391,7 +391,7 @@ class Campaign < ActiveRecord::Base
   def dial_voters
     self.voter_lists.each do |voter_list|
       return unless self.calls_in_progress?
-      voter_list.dial
+      voter_list.dial if voter_list.enabled
     end
   end
 
