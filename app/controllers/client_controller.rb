@@ -45,7 +45,7 @@ class ClientController < ApplicationController
     end
 
     if request.post?
-      @user.attributes =  params[:user]
+      @user.attributes =  params[:user].merge(:domain => request.domain)
       if @user.new_record? && params[:tos].blank?
         flash_now(:error, "You must agree to the Terms of Service to create an account.")
         return
@@ -949,7 +949,7 @@ class ClientController < ApplicationController
     render :layout=>false
     #    end
   end
-  
+
   def report_usage
     @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
     if @campaign.blank?
@@ -969,7 +969,7 @@ class ClientController < ApplicationController
     ca.campaign_id=#{params[:id]}"
     @calls_util = ActiveRecord::Base.connection.execute(calls_util_sql)
     @caller_util = ActiveRecord::Base.connection.execute(caller_util_sql)
-    
+
     calls_bill_sql="
     select sum(tDuration) as total_seconds,  sum(ceil(tDuration/60)) as total_mins
     from call_attempts ca
@@ -984,7 +984,7 @@ class ClientController < ApplicationController
     where
     ca.campaign_id=#{params[:id]}
     and status = 'Message delivered'"
-    
+
     abandon_bill_sql="
     select sum(tDuration) as total_seconds,  sum(ceil(tDuration/60)) as total_mins
     from call_attempts ca
@@ -997,7 +997,7 @@ class ClientController < ApplicationController
     @abandon_bill = ActiveRecord::Base.connection.execute(abandon_bill_sql)
 
 
-    
+
   end
 
   def report_overview
@@ -1080,7 +1080,7 @@ class ClientController < ApplicationController
         logger.info sql
 
         @records = ActiveRecord::Base.connection.execute(sql)
-        
+
         @json_fields=[]
         @results_hash={}
         @names_hash={}
@@ -1094,8 +1094,8 @@ class ClientController < ApplicationController
           end
         end
         # render :text=>json_fields.inspect
-        # return 
-        
+        # return
+
         @json_fields.each do |f|
           @results_hash[f]={}
           @records.data_seek(0)
@@ -1111,11 +1111,11 @@ class ClientController < ApplicationController
             end
           end
         end
-        
+
 #        render :text=>@results_hash.inspect
-#        return 
-        
-        
+#        return
+
+
         @total=0
         @records.each do |r|
           @total = @total + r[0].to_i

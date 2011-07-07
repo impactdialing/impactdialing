@@ -7,8 +7,15 @@ describe ClientController do
       get "/client"
       response.should redirect_to "/client/login"
     end
-  end
 
+    it "creates a new user with the appropriate domain" do
+      request.stub!(:domain).and_return('domain.com')
+      lambda {
+        post :user_add, :user => { :email => 'email@example.com', :new_password => 'something' }, :tos => true
+      }.should change(User, :count).by(1)
+      User.last.domain.should == 'domain.com'
+    end
+  end
 
   context "when logged in" do
     before :each do
