@@ -35,14 +35,6 @@ describe CampaignsController do
       lambda { post :create }.should change(Campaign, :count)
       response.should redirect_to(campaign_path(Campaign.first))
     end
-
-    it "adds the user's existing active callers to the campaign" do
-      Factory(:caller, :user => user, :active => false)
-      active_callers = [Factory(:caller, :user => user, :active => true), Factory(:caller, :user => user, :active => true)]
-      post :create
-      Campaign.count.should == 1
-      Campaign.first.callers.should == active_callers
-    end
   end
 
   describe "update a campaign" do
