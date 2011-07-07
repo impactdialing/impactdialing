@@ -17,13 +17,12 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def duration
-    if self.call_end!=nil && self.call_start!=nil
-      (self.call_end  - self.call_start).to_i
-    elsif self.call_start!=nil && self.call_end==nil
-      (Time.now  - self.call_start).to_i
-    else
-      nil
-    end
+    return nil unless call_start
+    ((call_end || Time.now) - self.call_start).to_i
+  end
+
+  def duration_rounded_up
+    ((duration || 0) / 60.0).ceil
   end
 
   def minutes_used
