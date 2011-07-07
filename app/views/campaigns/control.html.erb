@@ -1,6 +1,4 @@
-<%= @breadcrumb = "Campaigns" %>
-
-<h1>Campaigns</h1>
+<h1>Control</h1>
 <div id="running_list">
   <%= render :partial => 'control_list', :locals => {:campaigns => @campaigns} %>
 </div>
@@ -12,5 +10,4 @@
     function refreshCampaignStatus() {
         new Ajax.Updater('running_list', "<%= running_status_campaigns_path %>", {method: 'get'});
     }
-
 </script>
