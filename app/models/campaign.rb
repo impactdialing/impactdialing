@@ -369,7 +369,7 @@ class Campaign < ActiveRecord::Base
   end
 
   def start
-    return false if self.calls_in_progress?
+    return false if self.calls_in_progress? or (not self.user.paid)
     daemon = "#{Rails.root.join('script', "dialer_control.rb start -- #{self.id}")}"
     logger.info "[dialer] User id:#{self.user.id} started campaign id:#{self.id} name:#{self.name}"
     system(daemon)

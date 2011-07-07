@@ -125,6 +125,11 @@ describe Campaign do
       campaign.calls_in_progress.should == false
     end
 
+    it "does not start the dialer daemon for the campaign if the use has not already paid" do
+      campaign = Factory(:campaign, :user => Factory(:user, :paid => false))
+      campaign.start.should be_false
+    end
+
     it "does not start the dialer daemon for the campaign if it is already started" do
       campaign = Factory(:campaign, :calls_in_progress => true)
       campaign.start.should be_false
