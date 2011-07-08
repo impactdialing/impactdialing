@@ -5,6 +5,9 @@
     <%= f.label :name %>
     <%= f.text_field :name %>
 
+<fieldset>
+	<legend>Audio</legend>
+
     <% if f.object.file.exists? %>
         <div>
           <embed type="application/x-shockwave-flash" wmode="transparent" height="27" width="320"
@@ -12,7 +15,7 @@
         </div>
     <% end %>
     <%= f.file_field :file %>
-    <%= link_to_remove_fields "remove", f %>
+</fieldset>
 
     <fieldset>
       <legend>Responses</legend>
@@ -20,9 +23,11 @@
         <% f.fields_for :recording_responses do |response_form| %>
             <%= render :partial=>"recording_response_fields", :locals => {:f => response_form} %>
         <% end %>
-        <%= link_to_add_fields "Add Response", f, :recording_responses %>
+        <p class="actions"><%= link_to_add_fields "Add Response", f, :recording_responses, :class => 'action secondary' %></p>
       </div>
     </fieldset>
+
+   <%= link_to_remove_fields "Remove this recording", f %>
 
   </fieldset>
 </div>
