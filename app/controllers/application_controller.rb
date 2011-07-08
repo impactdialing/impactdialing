@@ -10,7 +10,7 @@ class ApplicationController < ActionController::Base
   helper_method :phone_format, :phone_number_valid
 
   def redirect_to_ssl
-    return true if local_request? || RAILS_ENV == 'test' || RAILS_ENV == 'development' || RAILS_ENV == 'staging' || action_name=="monitor"
+    return true if local_request? || RAILS_ENV == 'test' || RAILS_ENV == 'development' || RAILS_ENV == 'staging' || action_name=="monitor" || request.domain.index("amazonaws")
     @cont = controller_name
     @act = action_name
     if controller_name=="caller" && !ssl?
