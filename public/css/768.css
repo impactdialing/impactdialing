@@ -45,7 +45,7 @@ nav[role="navigation"] li{-webkit-border-radius:0;-moz-border-radius:0;border-ra
 .multiplebgs .highlight{background-image:url(../img/furniture-highlight-dialer.png),url(../img/furniture-highlight.png)}
 .admin header[role="banner"] ul{position:absolute;display:block;position:absolute;top:1em;right:0}
 .admin header[role="banner"] li{display:inline-block;margin-right:24px}
-.admin header[role="banner"] li:divider{margin-right:24px;padding-right:24px;border-right:1px solid #c0c0c8}
+.admin header[role="banner"] li.divider{margin-right:24px;padding-right:24px;border-right:1px solid #c0c0c8}
 .cssgradients .admin nav[role="navigation"] li:last-child{background-image:-webkit-gradient(linear,left top,left bottom,from(#dfdfe4),to(#cfcfd5));background-image:-moz-linear-gradient(top,#dfdfe4,#cfcfd5);background-image:-o-linear-gradient(top,#dfdfe4,#cfcfd5);background-image:linear-gradient(top,#dfdfe4,#cfcfd5)}
 .cssgradients .admin nav[role="navigation"] li:last-child:hover{background-image:-webkit-gradient(linear,left top,left bottom,from(#a9a9ab),to(#cfcfd5));background-image:-moz-linear-gradient(top,#a9a9ab,#cfcfd5);background-image:-o-linear-gradient(top,#a9a9ab,#cfcfd5);background-image:linear-gradient(top,#a9a9ab,#cfcfd5)}
 .admin nav[role="navigation"] li{width:auto}
