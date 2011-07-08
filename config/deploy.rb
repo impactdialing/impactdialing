@@ -18,6 +18,7 @@ namespace :deploy do
   end
 
   after('deploy:symlink', 'deploy:link_configuration')
+  after('deploy:link_configuration', 'deploy:migrate')
 
   task :link_configuration, :roles => :app do
     run "ln -s #{deploy_to}/shared/config/database.yml #{current_path}/config/database.yml"
@@ -31,7 +32,23 @@ end
 task :staging do
   set :server_name, "ec2-174-129-172-31.compute-1.amazonaws.com"
   set :rails_env, 'staging'
+  set :branch, "v2"
   role :web, 'staging.impactdialing.com'
   role :app, 'staging.impactdialing.com'
   role :db, 'staging.impactdialing.com', :primary => true
+end
+
+
+task :production do
+  set :rails_env, 'production'
+  role :web, 'ec2-75-101-228-54.compute-1.amazonaws.com', 'ec2-184-73-34-159.compute-1.amazonaws.com'
+  role :app, 'ec2-75-101-228-54.compute-1.amazonaws.com', 'ec2-184-73-34-159.compute-1.amazonaws.com'
+  role :db, 'ec2-75-101-228-54.compute-1.amazonaws.com', :primary => true #use an app server for migrations 
+end
+
+
+
+task :search_libs, :hosts => "ec2-75-101-228-54.compute-1.amazonaws.com", :user=>"ubuntu" do
+  set :user, "ubuntu"
+  run "ls -x1 /usr/lib | grep -i xml"
 end
