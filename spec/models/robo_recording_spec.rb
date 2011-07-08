@@ -30,21 +30,25 @@ describe RoboRecording do
   end
 
   describe "twilio responses" do
+
     before :each do
       @twilio_response = mock
       @twilio_response.stub!(:response)
       @robo_recording = Factory(:robo_recording)
     end
+
     it "presents an IVR prompt if the recording expects a response" do
       Factory(:recording_response, :robo_recording => @robo_recording, :response => "hakkuna mathatha", :keypad => "1")
       @robo_recording.should_receive(:ivr_prompt).and_return(@twilio_response)
       @robo_recording.should_not_receive(:play_message)
       @robo_recording.twilio_xml(Factory(:call_attempt))
     end
+
     it "plays a message if the recording does not expect any response" do
       @robo_recording.should_not_receive(:ivr_prompt)
       @robo_recording.should_receive(:play_message).and_return(@twilio_response)
       @robo_recording.twilio_xml(Factory(:call_attempt))
     end
+
   end
 end

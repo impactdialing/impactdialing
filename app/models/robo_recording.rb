@@ -17,36 +17,45 @@ class RoboRecording < ActiveRecord::Base
   end
 
   def next
-    self.script.robo_recordings.find(:first, :conditions => ["id > ?", self.id])
+    @next_recording ||= self.script.robo_recordings.find(:first, :conditions => ["id > ?", self.id])
+    @next_recording
   end
+
 
   def response_for(digits)
     self.recording_responses.find_by_keypad(digits)
   end
 
   def twilio_xml(call_attempt)
-    ivr_url  = call_attempts_url(:host => HOST, :id => call_attempt.id, :robo_recording_id => self.id)
-    if self.recording_responses.count > 0
-      verb = ivr_prompt(ivr_url)
-    else
-      verb = play_message
-    end
-    verb.response
+    ivr_url = call_attempts_url(:host => HOST, :id => call_attempt.id, :robo_recording_id => self.id)
+    xml =
+        if self.recording_responses.count > 0
+          ivr_prompt(ivr_url)
+        else
+          play_message
+        end
+    xml
+  end
+
+  def hangup
+    Twilio::Verb.new { |v| v.hangup }.response
   end
 
   private
+
   def play_message
-    Twilio::Verb.new do |v|
-      v.play URI.escape(self.file.url)
-    end
+    Twilio::Verb.new { |v| v.play URI.escape(self.file.url) }.response
   end
+
   def ivr_prompt(ivr_url)
-    Twilio::Verb.new do |v|
+    verb = Twilio::Verb.new do |v|
       3.times do
         v.gather(:numDigits => 1, :timeout => 10, :action => ivr_url, :method => "POST") do
           v.play URI.escape(self.file.url)
         end
       end
     end
+    verb.response
   end
+
 end
