@@ -70,6 +70,10 @@ class VoterList < ActiveRecord::Base
     true
   end
 
+  def voters_remaining
+    voters.not_dialed.size + voters.to_callback.size
+  end
+
   private
   def new_lead(phone_number)
     existing_voter_entry = Voter.existing_phone_in_campaign(phone_number, self.campaign_id)
