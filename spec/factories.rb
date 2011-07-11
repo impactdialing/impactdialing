@@ -55,3 +55,7 @@ end
 Factory.define :recording_response do |rr|
 end
 
+Factory.define :call_response do |cr|
+end
+
+
