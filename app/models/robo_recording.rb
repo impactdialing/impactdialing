@@ -18,8 +18,7 @@ class RoboRecording < ActiveRecord::Base
   end
 
   def next
-    @next_recording ||= self.script.robo_recordings.find(:first, :conditions => ["id > ?", self.id])
-    @next_recording
+    self.script.robo_recordings.find(:first, :conditions => ["id > ?", self.id]) || OpenStruct.new(:twilio_xml => hangup)
   end
 
 
