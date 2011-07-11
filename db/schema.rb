@@ -222,12 +222,12 @@ ActiveRecord::Schema.define(:version => 20110708110240) do
   end
 
   create_table "recordings", :force => true do |t|
+    t.integer  "user_id"
+    t.string   "recording_url"
     t.integer  "active",        :default => 1
     t.string   "name"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.integer  "user_id"
-    t.string   "recording_url"
   end
 
   create_table "robo_recordings", :force => true do |t|
@@ -441,6 +441,7 @@ ActiveRecord::Schema.define(:version => 20110708110240) do
     t.text     "result_json"
   end
 
+  add_index "voters", ["Phone", "voter_list_id"], :name => "index_voters_on_Phone_and_voter_list_id"
   add_index "voters", ["Phone"], :name => "index_voters_on_Phone"
   add_index "voters", ["attempt_id"], :name => "index_voters_on_attempt_id"
   add_index "voters", ["campaign_id"], :name => "index_voters_on_campaign_id"
