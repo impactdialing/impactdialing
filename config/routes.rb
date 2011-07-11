@@ -16,12 +16,12 @@ ActionController::Routing::Routes.draw do |map|
     end
   end
 
-  #v2
-  map.resources :campaigns, :path_prefix => "v2", :member => {:verify_callerid => :post, :start => :post, :stop => :post }, :collection => {:control => :get, :running_status => :get} do |campaign|
+  #broadcast
+  map.resources :campaigns, :path_prefix => "broadcast", :member => {:verify_callerid => :post, :start => :post, :stop => :post }, :collection => {:control => :get, :running_status => :get} do |campaign|
     campaign.resources :voter_lists, :collection => {:import => :post}, :except => [:new, :show]
   end
-  map.resources :scripts, :path_prefix => "v2"
-  map.connect '/v2/monitor', :controller => "monitor", :action => "index"
+  map.resources :scripts, :path_prefix => "broadcast"
+  map.connect 'monitor', :controller => "monitor", :action => "index", :path_prefix => 'broadcast'
 
   map.namespace 'client' do |client|
     map.campaign_new 'client/campaign_new', :action => 'campaign_new', :controller => 'client'
