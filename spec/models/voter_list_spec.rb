@@ -145,5 +145,15 @@ describe VoterList do
       Factory(:call_attempt, :campaign => voter_list.campaign, :voter => voter1)
       voter_list.voters.not_dialed.should == [voter2]
     end
+
+    it "gives the count of remaining voters" do
+      voter_list = Factory(:voter_list)
+      Factory(:voter, :voter_list => voter_list)
+      attempted_voter = Factory(:voter, :voter_list => voter_list)
+      callback_voter = Factory(:voter, :voter_list => voter_list, :call_back => true)
+      Factory(:call_attempt, :voter => callback_voter)
+      Factory(:call_attempt, :voter => attempted_voter)
+      voter_list.voters_remaining.should == 2
+    end
   end
 end
