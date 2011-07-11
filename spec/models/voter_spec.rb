@@ -61,5 +61,12 @@ describe Voter do
       voter.call_attempts.last.sid.should == sid
     end
 
+    it "records users to call back" do
+      voter1 = Factory(:voter)
+      Voter.to_callback.should == []
+      voter2 = Factory(:voter, :call_back =>true)
+      Voter.to_callback.should == [voter2]
+    end
+
   end
 end
