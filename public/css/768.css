@@ -42,3 +42,4 @@ nav[role="navigation"] li{-webkit-border-radius:0;-moz-border-radius:0;border-ra
 .admin nav[role="navigation"] li:nth-child(3){border-right-width:1px}
 .admin nav[role="navigation"] li:last-child{float:left;border-width:0;border-left-width:1px;-webkit-border-top-right-radius:0!important;-webkit-border-bottom-right-radius:0!important;-moz-border-radius-topright:0!important;-moz-border-radius-bottomright:0!important;border-top-right-radius:0!important;border-bottom-right-radius:0!important}
 .admin nav[role="navigation"] li:last-child a{color:#333;text-shadow:0 1px 1px #fff}
+.admin footer li.divider{margin-right:24px;padding-right:24px;border-right:1px solid #c0c0c8}
