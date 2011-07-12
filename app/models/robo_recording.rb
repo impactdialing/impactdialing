@@ -28,13 +28,7 @@ class RoboRecording < ActiveRecord::Base
 
   def twilio_xml(call_attempt)
     ivr_url = call_attempts_url(:host => HOST, :id => call_attempt.id, :robo_recording_id => self.id)
-    xml =
-        if self.recording_responses.count > 0
-          ivr_prompt(ivr_url)
-        else
-          play_message
-        end
-    xml
+    self.recording_responses.count > 0 ? ivr_prompt(ivr_url) : play_message
   end
 
   def hangup
