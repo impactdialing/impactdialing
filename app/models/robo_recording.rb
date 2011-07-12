@@ -18,7 +18,7 @@ class RoboRecording < ActiveRecord::Base
   end
 
   def next
-    self.script.robo_recordings.find(:first, :conditions => ["id > ?", self.id]) || OpenStruct.new(:twilio_xml => hangup)
+    self.script.robo_recordings.find(:first, :conditions => ["id > ?", self.id])
   end
 
 
@@ -28,26 +28,39 @@ class RoboRecording < ActiveRecord::Base
 
   def twilio_xml(call_attempt)
     ivr_url = call_attempts_url(:host => HOST, :id => call_attempt.id, :robo_recording_id => self.id)
-    self.recording_responses.count > 0 ? ivr_prompt(ivr_url) : play_message
+    self.recording_responses.count > 0 ? ivr_prompt(ivr_url) : play_message(call_attempt)
   end
 
   def hangup
     Twilio::Verb.new { |v| v.hangup }.response
   end
 
-  private
+  def play_message(call_attempt)
+    verb = Twilio::Verb.new do |v|
+      recording = self
+      while (recording) do
+        unless recording.recording_responses.empty?
+          recording.prompt_message(call_attempts_url(:host => HOST, :id => call_attempt.id, :robo_recording_id => recording.id), v)
+          break
+        end
+        v.play URI.escape(recording.file.url)
+        recording = recording.next
+      end
+    end
+    verb.response
+  end
 
-  def play_message
-    Twilio::Verb.new { |v| v.play URI.escape(self.file.url) }.response
+  def prompt_message(ivr_url, verb)
+    3.times do
+      verb.gather(:numDigits => 1, :timeout => 10, :action => ivr_url, :method => "POST") do
+        verb.play URI.escape(self.file.url)
+      end
+    end
   end
 
   def ivr_prompt(ivr_url)
     verb = Twilio::Verb.new do |v|
-      3.times do
-        v.gather(:numDigits => 1, :timeout => 10, :action => ivr_url, :method => "POST") do
-          v.play URI.escape(self.file.url)
-        end
-      end
+      prompt_message(ivr_url, v)
     end
     verb.response
   end
