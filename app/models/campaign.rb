@@ -364,7 +364,7 @@ class Campaign < ActiveRecord::Base
 
   def dial
     update_attribute(:calls_in_progress, true)
-    dial_voters()
+    dial_voters
     update_attribute(:calls_in_progress, false)
   end
 
@@ -373,7 +373,6 @@ class Campaign < ActiveRecord::Base
     daemon = "#{Rails.root.join('script', "dialer_control.rb start -- #{self.id}")}"
     logger.info "[dialer] User id:#{self.user.id} started campaign id:#{self.id} name:#{self.name}"
     system(daemon)
-    true
   end
 
   def stop

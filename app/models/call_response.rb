@@ -12,6 +12,4 @@ class CallResponse < ActiveRecord::Base
     call_response.update_attributes(:times_attempted => call_response.times_attempted + 1, :recording_response => recording_response)
     call_response
   end
-
-
 end

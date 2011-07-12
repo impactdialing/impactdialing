@@ -86,23 +86,15 @@ describe Campaign do
       @manual_campaign = Factory(:campaign, :robo => false)
     end
 
-    it "which are robo" do
-      Campaign.robo.should == [@robo_campaign]
-    end
-
-    it "which are manual" do
-      Campaign.manual.should == [@manual_campaign]
-    end
+    it "which are robo" do Campaign.robo.should == [@robo_campaign] end
+    it "which are manual" do Campaign.manual.should == [@manual_campaign] end
   end
 
   describe "dialing" do
     it "dials its voter list" do
       campaign = Factory(:campaign)
-      voter_list1 = Factory(:voter_list, :campaign => campaign)
-      voter_list2 = Factory(:voter_list, :campaign => campaign)
-      voter_list1.should_receive(:dial)
-      voter_list2.should_receive(:dial)
-      campaign.stub!(:voter_lists).and_return([voter_list1, voter_list2])
+      lists = 2.times.map{Factory(:voter_list, :campaign => campaign).tap{|list| list.should_receive(:dial)}}
+      campaign.stub!(:voter_lists).and_return(lists)
       campaign.dial
     end
 
@@ -135,6 +127,14 @@ describe Campaign do
       campaign.start.should be_false
     end
 
+    [true, false].each do |exit_status|
+      it "reports the status if the daemon start success was #{exit_status}" do
+        campaign = Factory(:campaign, :calls_in_progress => false, :user => Factory(:user, :paid => true))
+        campaign.stub(:system).and_return(exit_status)
+        campaign.start.should eql(exit_status)
+      end
+    end
+
     it "stops the dialer daemon " do
       campaign = Factory(:campaign, :calls_in_progress => true)
       campaign.stop
@@ -146,9 +146,7 @@ describe Campaign do
         campaign = Factory(:campaign)
         lambda {
           call_attempt = Factory(:call_attempt, :campaign => campaign, :voter => Factory(:voter, :campaign => campaign))
-        }.should change {
-          campaign.voters_dialed
-        }.by(1)
+        }.should change(campaign, :voters_dialed).by(1)
       end
 
       it "counts a number only once even if there are multiple attempts on it" do
@@ -156,9 +154,7 @@ describe Campaign do
         voter = Factory(:voter, :campaign => campaign)
         lambda {
           call_attempt = Factory(:call_attempt, :campaign => campaign, :voter => voter)
-        }.should change {
-          campaign.voters_dialed
-        }.by(1)
+        }.should change(campaign, :voters_dialed).by(1)
       end
 
       it "counts only the call attempts made on voters in the same campaign" do
@@ -169,9 +165,7 @@ describe Campaign do
         lambda {
           Factory(:call_attempt, :campaign => campaign1, :voter => voter1)
           Factory(:call_attempt, :campaign => campaign2, :voter => voter2)
-        }.should change {
-          campaign1.voters_dialed
-        }.by(1)
+        }.should change(campaign1, :voters_dialed).by(1)
       end
     end
 
@@ -182,9 +176,7 @@ describe Campaign do
         voter2 = Factory(:voter, :campaign => campaign)
         lambda {
           Factory(:call_attempt, :campaign => campaign, :voter => voter1)
-        }.should change {
-          campaign.voters_remaining
-        }.by(-1)
+        }.should change(campaign, :voters_remaining).by(-1)
       end
 
       it "counts a number only once even if there are multiple attempts on it" do
@@ -193,9 +185,7 @@ describe Campaign do
         lambda {
           Factory(:call_attempt, :campaign => campaign, :voter => voter)
           Factory(:call_attempt, :campaign => campaign, :voter => voter)
-        }.should change {
-          campaign.voters_remaining
-        }.by(-1)
+        }.should change(campaign, :voters_remaining).by(-1)
       end
     end
   end

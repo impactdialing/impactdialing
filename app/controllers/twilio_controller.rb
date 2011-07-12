@@ -4,8 +4,12 @@ class TwilioController < ApplicationController
 
   def callback
     logger.info "[dialer] call picked up. #{@log_message}"
-    response = @call_attempt.campaign.script.robo_recordings.first.twilio_xml(@call_attempt)
-    render :xml => response
+    if params['CallStatus'] == 'in-progress'
+      response = @call_attempt.campaign.script.robo_recordings.first.twilio_xml(@call_attempt)
+      render :xml => response
+    elsif
+      render :xml => Twilio::Verb.hangup
+    end
   end
 
   def report_error
