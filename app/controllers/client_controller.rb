@@ -569,8 +569,8 @@ class ClientController < ApplicationController
         :month      => @account.expires_month,
         :year       => @account.expires_year,
         :type       => @account.cardtype,
-        :first_name => @user.fname,
-        :last_name  => @user.lname,
+        :first_name => @account.name.split(" ").first,
+        :last_name  => @account.name.split(" ").collect {|n| n if n!= @account.name.split(" ").first}.join(" ").strip,
         :verification_value => params[:code]
       )
 
