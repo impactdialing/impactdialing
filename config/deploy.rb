@@ -41,9 +41,9 @@ end
 
 task :production do
   set :rails_env, 'production'
-  role :web, 'ec2-75-101-228-54.compute-1.amazonaws.com', 'ec2-184-73-34-159.compute-1.amazonaws.com'
-  role :app, 'ec2-75-101-228-54.compute-1.amazonaws.com', 'ec2-184-73-34-159.compute-1.amazonaws.com'
-  role :db, 'ec2-75-101-228-54.compute-1.amazonaws.com', :primary => true #use an app server for migrations 
+  role :web, 'ec2-107-20-17-151.compute-1.amazonaws.com', 'ec2-184-73-34-159.compute-1.amazonaws.com'
+  role :app, 'ec2-107-20-17-151.compute-1.amazonaws.com', 'ec2-184-73-34-159.compute-1.amazonaws.com'
+  role :db, 'ec2-107-20-17-151.compute-1.amazonaws.com', :primary => true #use an app server for migrations 
 end
 
 
