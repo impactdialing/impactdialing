@@ -18,7 +18,7 @@ describe RoboRecording do
       recording2 = Factory(:robo_recording, :script => script)
       recording3 = Factory(:robo_recording, :script => Factory(:script))
       recording1.next.should == recording2
-      recording2.next.should be_nil
+      recording2.next.twilio_xml.should == Twilio::Verb.new(&:hangup).response
     end
   end
 
