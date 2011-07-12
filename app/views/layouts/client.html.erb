@@ -73,7 +73,7 @@
 
 <% if logged_in_as_client? %>
   <ul class="clearfix">
-    <li class='divider'><a href="/client" class='divider'>Help</a></li>
+    <li class='divider'><a href="/client">Help</a></li>
     <li class='divider'><a href="/client/user_add">Account</a></li>
     <li><a href="/client/logout">Log out</a></li>
   </ul>
@@ -122,7 +122,15 @@
 <div>
   <p class="vcard">Need help? <span class="tel"><%= phone %></span> or <a href="mailto:<%= email %>"><%= email %></a></p>
 </div>
-<p>&#169; 2011 - <a href="/policies#privacy">Privacy</a> - <a href="/policies#terms">Terms</a></p>
+
+<p>
+<ul class="clearfix">
+  <li class='divider'>&#169; 2011</li>
+  <li class='divider'><a href="/policies#privacy">Privacy</a></li>
+  <li><a href="/policies#terms">Terms</a></li>
+</ul>
+</p>
+
 </footer>
 
 <!--
