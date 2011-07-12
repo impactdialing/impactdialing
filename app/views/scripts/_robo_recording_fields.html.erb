@@ -19,19 +19,20 @@
 
     <fieldset>
       <legend>Responses</legend>
-      <table>
-        <tr>
-          <th><%= f.label :response %></th>
-          <th><%= f.label :keypad %></th>
-          <th width="55" class="ac"></th>
-        <tr>
-        <div class="fields">
-          <% f.fields_for :recording_responses do |response_form| %>
-              <%= render :partial=>"recording_response_fields", :locals => {:f => response_form} %>
-          <% end %>
-          <p class="actions"><%= link_to_add_fields "Add Response", f, :recording_responses, :class => 'action secondary' %></p>
-        </div>
-      </table>
+        <table>
+          <tr>
+            <td>Request</td>
+            <td>Keypad</td>
+            <td></td>
+          </tr>
+        </table>
+
+        <% f.fields_for :recording_responses do |response_form| %>
+            <%= render :partial=>"recording_response_fields", :locals => {:f => response_form} %>
+        <% end %>
+      <div class="fields">
+        <%= link_to_add_fields "Add Response", f, :recording_responses, :class => 'action secondary' %>
+      </div>
     </fieldset>
 
     <%= link_to_remove_fields "Remove this recording", f %>
