@@ -1,21 +1,11 @@
-<!-- michael's table format - fix remove (currently removes all responses, not just the one in its row) and move headers into robo_recording_fields partial
-
--->
-
 <div class="fields">
   <p>
+
   <div class="table">
-    <table>
-      <tr>
-        <th><%= f.label :response %></th>
-        <th><%= f.label :keypad %></th>
-        <th width="55" class="ac"></th>
-      <tr>
-        <td><%= f.text_field :response %></td>
-        <td><%= f.text_field :keypad %></td>
-        <td><%= link_to_remove_fields "remove", f, :class => 'ico del' %></td>
+      <td><%= f.text_field :response %></td>
+      <td><%= f.text_field :keypad %></td>
+      <td><%= link_to_remove_fields "remove", f, :class => 'ico del' %></td>
       </tr>
-    </table>
   </div>
   </p>
 </div>
