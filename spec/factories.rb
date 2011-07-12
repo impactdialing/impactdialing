@@ -53,6 +53,8 @@ Factory.define :robo_recording do |rr|
 end
 
 Factory.define :recording_response do |rr|
+  rr.response 'response'
+  rr.keypad '1'
 end
 
 Factory.define :call_response do |cr|
