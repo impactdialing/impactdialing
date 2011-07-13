@@ -9,7 +9,7 @@ class VoterList < ActiveRecord::Base
   validates_uniqueness_of :name, :scope => :user_id, :message => "for this voter list is already taken"
 
   named_scope :by_ids, lambda {|ids| {:conditions => {:id => ids} } }
-  
+
   VOTER_DATA_COLUMNS = ["Phone", "ID", "LastName", "FirstName", "MiddleName", "Suffix", "Email", "Age", "Gender"]
 
   def self.disable_all
@@ -43,7 +43,7 @@ class VoterList < ActiveRecord::Base
         result[:failedCount] +=1
         next
       end
-      
+
       lead.voter_list_id = self.id
       lead.user_id       = self.user_id
       lead.campaign_id   = self.campaign_id
@@ -63,7 +63,7 @@ class VoterList < ActiveRecord::Base
   end
 
   def dial
-    self.voters.not_dialed.each do |voter|
+    self.voters.not_dialed.randomly.each do |voter|
       return false unless self.campaign.calls_in_progress?
       voter.dial
     end

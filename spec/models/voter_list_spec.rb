@@ -7,7 +7,7 @@ describe VoterList do
     v = 3.times.map { Factory(:voter_list) }
     VoterList.by_ids([v.first.id, v.last.id]).should == [v.first, v.last]
   end
-  
+
   describe "enable and disable voter lists" do
     let(:campaign) { Factory(:campaign) }
     it "can disable all voter lists in the given scope" do
@@ -134,7 +134,7 @@ describe VoterList do
       voter1.should_receive(:dial)
       voter2.should_receive(:dial)
       voters = mock
-      voters.should_receive(:not_dialed).and_return([voter1, voter2])
+      voters.should_receive(:not_dialed).and_return(mock('voters', :randomly => [voter1, voter2]))
       voter_list.stub!(:voters).and_return(voters)
       voter_list.dial
     end
