@@ -93,7 +93,7 @@
     <li><%= link_to content_tag(:span, 'Scripts'), scripts_path, :class => @controllerName.index('script') ? 'active' : '' %></li>
     <li><%= link_to content_tag(:span, 'Campaigns'), campaigns_path, :class => @controllerName.index('campaigns') ? 'active' : '' %></li>
     <li><%= link_to content_tag(:span, 'Control'), control_campaigns_path, :class => @control_campaigns_active ? 'active' : '' %></li>
-    <li><%= link_to content_tag(:span, 'Reports'), control_campaigns_path, :class => @control_campaigns_active ? 'active' : '' %></li>
+    <li><%= link_to content_tag(:span, 'Reports'), reports_path, :class => @control_campaigns_active ? 'active' : '' %></li>
 </ul>
 </nav>
 <% end %>
