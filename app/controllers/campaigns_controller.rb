@@ -70,6 +70,10 @@ class CampaignsController < ClientController
     redirect_to control_campaigns_path
   end
 
+  def dial_statistics
+    @campaign = @user.campaigns.find(params[:id])
+  end
+
   private
   def generate_validation_token_for_caller_id(campaign)
     validation_code = campaign.caller_id_object.validation_code

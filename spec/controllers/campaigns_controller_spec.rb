@@ -105,6 +105,19 @@ describe CampaignsController do
     end
   end
 
+  describe "dial statistics" do
+    before :each do
+      @campaign = Factory(:campaign, :user => user)
+    end
+
+    it "renders dial statistics for a campaign" do
+      campaign = Factory(:campaign, :user => user)
+      get :dial_statistics, :id => campaign.id
+      assigns(:campaign).should == campaign
+      response.code.should == '200'
+    end
+  end
+
   def type_name
     'campaign'
   end

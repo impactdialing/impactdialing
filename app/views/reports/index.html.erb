@@ -1,0 +1,24 @@
+<h1>Reports</h1>
+<% if @campaigns.length==0 %>
+  <div class="form">
+    <label>No campaigns exist.</label>
+  </div>
+<% else %>
+  <div class="table">
+    <table>
+      <tr>
+        <th>Name</th>
+        <th>Reports</th>
+      </tr>
+      <% @campaigns.each do |c| %>
+        <tr class="<%= cycle("odd","even") %>">
+          <td><h3><%= link_to c.name, campaign_path(c) %></h3></td>
+          <td>Reports Here</td>
+        </tr>
+      <% end %>
+
+    </table>
+  </div>
+
+
+<% end %>
