@@ -3,11 +3,11 @@ class TwilioController < ApplicationController
   before_filter :retrieve_call_details
 
   def callback
-    logger.info "[dialer] call picked up. #{@log_message}"
+    logger.info "[dialer] call picked up. #{@log_message}; Call Status : #{params['CallStatus']}"
     if params['CallStatus'] == 'in-progress'
       response = @call_attempt.campaign.script.robo_recordings.first.twilio_xml(@call_attempt)
       render :xml => response
-    elsif
+    else
       render :xml => Twilio::Verb.hangup
     end
   end
@@ -25,6 +25,7 @@ class TwilioController < ApplicationController
   private
   def retrieve_call_details
     @call_attempt = CallAttempt.find(params[:call_attempt_id])
+    @call_attempt.update_attribute('status', CallAttempt::Status::MAP[params['CallStatus']])
     campaign = @call_attempt.campaign
     voter = @call_attempt.voter
     @log_message = "call_attempt: #{@call_attempt.id} campaign: #{campaign.name}, phone: #{voter.Phone}\n callback parameters: #{params.inspect}"

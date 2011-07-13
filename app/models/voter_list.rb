@@ -63,7 +63,7 @@ class VoterList < ActiveRecord::Base
   end
 
   def dial
-    self.voters.not_dialed.randomly.each do |voter|
+    self.voters.to_be_dialed.randomly.each do |voter|
       return false unless self.campaign.calls_in_progress?
       voter.dial
     end
@@ -71,7 +71,7 @@ class VoterList < ActiveRecord::Base
   end
 
   def voters_remaining
-    voters.not_dialed.size + voters.to_callback.size
+    voters.to_be_dialed.size
   end
 
   private
