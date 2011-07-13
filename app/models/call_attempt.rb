@@ -45,5 +45,16 @@ class CallAttempt < ActiveRecord::Base
     VOICEMAIL = "Message delivered"
     SUCCESS = "Call completed with success."
     INPROGRESS = "Call in progress"
+    NOANSWER = "No answer"
+    ABANDONED = "Call abandoned"
+    BUSY = "No answer busy signal"
+    FAILED = "Call failed"
+    HANGUP = "Hangup or answering machine"
+    READY = "Call ready to dial"
+    CANCELLED = "Call cancelled"
+
+    MAP = {'in-progress' => INPROGRESS, 'completed' => SUCCESS, 'busy' => BUSY, 'failed' => FAILED, 'no-answer' => NOANSWER, 'canceled' => CANCELLED }
+    ALL = MAP.values
   end
+
 end

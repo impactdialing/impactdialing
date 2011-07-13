@@ -17,6 +17,7 @@ describe Voter do
     Voter.active.should == [active_voter]
   end
 
+
   describe "Dialing" do
     let(:campaign) { Factory(:campaign) }
     let(:voter) { Factory(:voter, :campaign => campaign) }
@@ -31,10 +32,10 @@ describe Voter do
           voter.campaign.caller_id,
           voter.Phone,
           callback_url,
-          'FallbackUrl'    => fallback_url,
+          'FallbackUrl' => fallback_url,
           'StatusCallback' => callended_url,
-          'Timeout'        => '20',
-          'IfMachine'      => 'Continue'
+          'Timeout' => '20',
+          'IfMachine' => 'Continue'
       ).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
       voter.dial
     end
@@ -66,6 +67,29 @@ describe Voter do
       Voter.to_callback.should == []
       voter2 = Factory(:voter, :call_back =>true)
       Voter.to_callback.should == [voter2]
+    end
+
+  end
+
+  describe "to be dialed" do
+
+    it "includes voters never called" do
+      voter = Factory(:voter)
+      Voter.to_be_dialed.should == [voter]
+    end
+
+    it "includes voters with a busy signal" do
+      voter = Factory(:voter)
+      Factory(:call_attempt, :voter => voter, :status => CallAttempt::Status::BUSY)
+      Voter.to_be_dialed.should == [voter]
+    end
+
+    (CallAttempt::Status::ALL - [CallAttempt::Status::SUCCESS]).each do |status|
+      it "includes voters with a status of  #{status} " do
+        voter = Factory(:voter)
+        Factory(:call_attempt, :voter => voter, :status => status)
+        Voter.to_be_dialed.should == [voter]
+      end
     end
 
   end
