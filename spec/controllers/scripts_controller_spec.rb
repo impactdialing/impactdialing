@@ -14,7 +14,8 @@ describe ScriptsController do
 
     it "defaults to robo script" do
       get :new
-      assigns(:script).robo.should be_true
+      assigns(:script).should be_robo
+      assigns(:script).robo_recordings.should have(1).thing
     end
 
     it "lists robo scripts" do

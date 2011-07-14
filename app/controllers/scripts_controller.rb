@@ -23,6 +23,7 @@ class ScriptsController < ClientController
     @breadcrumb=[{"Scripts"=>"/client/scripts"},"Add Script"]
     @label = 'New Script'
     @script = @user.scripts.new(:name => 'Untitled Script', :robo=>true)
+    @script.robo_recordings << RoboRecording.new
     @incompletes = {}
     @voter_fields = []
     @numResults = 1
