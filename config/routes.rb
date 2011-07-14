@@ -24,6 +24,8 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :scripts, :path_prefix => "broadcast"
   map.connect 'monitor', :controller => "monitor", :action => "index", :path_prefix => 'broadcast'
 
+  map.broadcast_root '/broadcast', :action => 'index', :controller => 'broadcast'
+
   map.namespace 'client' do |client|
     map.campaign_new 'client/campaign_new', :action => 'campaign_new', :controller => 'client'
     map.campaign_view 'client/campaign_view/:id', :action => 'campaign_view', :controller => 'client'
