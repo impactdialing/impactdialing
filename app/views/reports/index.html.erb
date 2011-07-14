@@ -8,7 +8,8 @@
     <table>
       <tr>
         <th>Name</th>
-        <th>Reports</th>
+		<th></th>
+		<th></th>
       </tr>
       <% @campaigns.each do |c| %>
         <tr class="<%= cycle("odd","even") %>">
@@ -17,7 +18,7 @@
             <%= link_to 'Usage', usage_reports_path(:campaign_id => c.id) %>
           </td>
           <td>
-            <%= link_to 'Download Dial Details', dial_details_reports_path(:campaign_id => c) %>
+            <%= link_to 'Download', dial_details_reports_path(:campaign_id => c) %>
           </td>
         </tr>
       <% end %>
