@@ -17,6 +17,13 @@ describe ReportsController do
       assigns(:campaigns)[0].should be_active
     end
 
+    it "lists usage for a campaign" do
+      campaign = Factory(:campaign, :active => true)
+      get :usage, :campaign_id => campaign.id
+      assigns(:campaign).should == campaign
+      assigns(:minutes).should_not be_nil
+    end
+
   end
 
 
