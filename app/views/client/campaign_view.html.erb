@@ -17,7 +17,7 @@
 	      </div>
 
         <p><label for="">Script</label><br>
-          <%= f.collection_select(:script_id, Script.find_all_by_user_id_and_active(@user.id, 1), :id, :name, {:prompt => true}, {:class=>"field"}) %>
+          <%= f.collection_select(:script_id, @scripts, :id, :name, {:prompt => true}, {:class=>"field"}) %>
         </p>
 
         <p><label for="">Dialing Mode</label>

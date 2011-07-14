@@ -24,8 +24,6 @@ describe ScriptsController do
       assigns(:scripts).should == [robo_script]
     end
 
-
-
     it_should_behave_like 'all controllers of deletable entities'
 
     it "lists active scripts" do

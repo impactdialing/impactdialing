@@ -30,6 +30,13 @@ describe CampaignsController do
     response.code.should == '200'
   end
 
+  it "only provides robo scritps to select for a campaign" do
+    robo_script = Factory(:script, :user => user, :robo => true)
+    manual_script = Factory(:script, :user => user, :robo => false)
+    get :show, :id => Factory(:campaign, :user => user).id
+    assigns(:scripts).should == [robo_script]
+  end
+
   describe "create a campaign" do
     it "creates a campaign" do
       lambda { post :create }.should change(Campaign, :count)
