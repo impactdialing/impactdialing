@@ -637,6 +637,7 @@ class ClientController < ApplicationController
     @callers = Caller.find_all_by_user_id_and_active(@user.id,true)
     @lists = @campaign.voter_lists
     @voters = Voter.paginate :page => params[:page], :conditions =>"active=1 and campaign_id=#{@campaign.id}", :order => 'LastName,FirstName,Phone'
+    @scripts = @user.scripts.manual
 
     #    @campaign.check_valid_caller_id_and_save
     #    flash.now[:error]="Your Campaign Caller ID is not verified."  if !@campaign.caller_id.blank? && !@campaign.caller_id_verified

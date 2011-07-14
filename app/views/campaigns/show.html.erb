@@ -17,7 +17,7 @@
 	      </div>
 
         <p><label for="">Message for live call</label><br>
-          <%= f.collection_select(:script_id, Script.find_all_by_user_id_and_active(@user.id, 1), :id, :name, {:prompt => true}, {:class=>"field"}) %>
+          <%= f.collection_select(:script_id, @scripts, :id, :name, {:prompt => true}, {:class=>"field"}) %>
         </p>
       </fieldset>
       <fieldset>

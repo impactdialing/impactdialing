@@ -29,6 +29,7 @@ class CampaignsController < ClientController
   end
 
   def show
+    @scripts = @user.scripts.robo.active
     @campaign = @user.campaigns.find(params[:id].to_i)
     @callers  = @user.callers.active
     @lists    = @campaign.voter_lists
