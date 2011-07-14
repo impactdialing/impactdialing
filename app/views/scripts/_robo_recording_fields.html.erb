@@ -21,17 +21,19 @@
       <legend>Responses</legend>
         <table>
           <tr>
-            <td>Response</td>
-            <td>Keypad</td>
-            <td></td>
+            <th>Response</th>
+            <th>Keypad</th>
+            <th>Delete</th>
           </tr>
-        </table>
+
 
         <% f.fields_for :recording_responses do |response_form| %>
             <%= render :partial=>"recording_response_fields", :locals => {:f => response_form} %>
         <% end %>
+        </table>
+
       <div class="fields">
-        <%= link_to_add_fields "Add Response", f, :recording_responses, :class => 'action secondary' %>
+        <%= link_to_add_fields "Add response", f, :recording_responses, :class => 'action secondary' %>
       </div>
     </fieldset>
 

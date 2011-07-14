@@ -69,11 +69,11 @@
 <body class="admin clearfix">
 
 <header role="banner" class="clearfix">
-<h1 class="<%= domain %>"><a href="<% if client_controller?(@controllerName) %>/client<% else %>/caller<% end %>"><%= title %></a></h1>
+<h1 class="<%= domain %>"><a href="<% if client_controller?(@controllerName) %>/broadcast<% else %>/caller<% end %>"><%= title %></a></h1>
 
 <% if logged_in_as_client? %>
   <ul class="clearfix">
-    <li class='divider'><a href="/client" class='divider'>Help</a></li>
+    <li class='divider'><a href="/broadcast" class='divider'>Help</a></li>
     <li class='divider'><a href="/client/user_add">Account</a></li>
     <li><a href="/client/logout">Log out</a></li>
   </ul>
@@ -109,14 +109,11 @@
 <footer role="contentinfo" class="clearfix">
 <% if client_controller?(@controllerName) %>
 <ul>
-	<!--<li><a href="/client" <% if @actionName=="index" %>class="active"<% end %>><span>Welcome</span></a></li>-->
-	<li><a href="/client/callers" <% if @actionName.index("caller") %>class="active"<% end %>><span>Callers</span></a></li>
-	<li><a href="/client/scripts" <% if @actionName.index("script") %>class="active"<% end %>><span>Scripts</span></a></li>
-  <li><%= link_to content_tag(:span, 'Campaigns'), campaigns_path, :class => @controllerName.index('campaigns') ? 'active' : '' %></li>
-	<!--<li><a href="/client/monitor" <% if @actionName.index("monitor") %>class="active"<% end %>><span>Monitor</span></a></li>-->
-	<li><a href="/client/monitor" <% if @actionName.index("monitor") %>class="active"<% end %>><span>Monitor</span></a></li>
-	<li><a href="/client/reports" <% if @actionName.index("report") %>class="active"<% end %>><span>Reports</span></a></li>
-	</ul>
+    <li><%= link_to content_tag(:span, 'Scripts'), scripts_path, :class => @controllerName.index('script') ? 'active' : '' %></li>
+    <li><%= link_to content_tag(:span, 'Campaigns'), campaigns_path, :class => @controllerName.index('campaigns') ? 'active' : '' %></li>
+    <li><%= link_to content_tag(:span, 'Control'), control_campaigns_path, :class => @control_campaigns_active ? 'active' : '' %></li>
+    <li><%= link_to content_tag(:span, 'Reports'), reports_path, :class => @control_campaigns_active ? 'active' : '' %></li>
+</ul>
 <% end %>
 <div>
   <p class="vcard">Need help? <span class="tel"><%= phone %></span> or <a href="mailto:<%= email %>"><%= email %></a></p>

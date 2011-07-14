@@ -16,7 +16,7 @@
 	        <button type="submit">Verify this Caller ID</button>
 	      </div>
 
-        <p><label for="">Message for live call</label><br>
+        <p><label for="">Script</label><br>
           <%= f.collection_select(:script_id, @scripts, :id, :name, {:prompt => true}, {:class=>"field"}) %>
         </p>
       </fieldset>
