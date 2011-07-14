@@ -13,7 +13,9 @@
       <% @campaigns.each do |c| %>
         <tr class="<%= cycle("odd","even") %>">
           <td><h3><%= link_to c.name, campaign_path(c) %></h3></td>
-          <td>Reports Here</td>
+          <td>
+            <%= link_to 'Usage', usage_reports_path(:campaign_id => c.id) %>
+          </td>
         </tr>
       <% end %>
 

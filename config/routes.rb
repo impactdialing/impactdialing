@@ -20,7 +20,7 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :campaigns, :path_prefix => "broadcast", :member => {:verify_callerid => :post, :start => :post, :stop => :post , :dial_statistics => :get}, :collection => {:control => :get, :running_status => :get} do |campaign|
     campaign.resources :voter_lists, :collection => {:import => :post}, :except => [:new, :show]
   end
-  map.resources :reports, :path_prefix => "broadcast"
+  map.resources :reports, :path_prefix => "broadcast", :collection => {:usage => :get}
   map.resources :scripts, :path_prefix => "broadcast"
   map.connect 'monitor', :controller => "monitor", :action => "index", :path_prefix => 'broadcast'
 
