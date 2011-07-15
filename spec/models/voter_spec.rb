@@ -92,5 +92,12 @@ describe Voter do
       end
     end
 
+    it "excludes voters with a status of a successful call" do
+      voter = Factory(:voter)
+      Factory(:call_attempt, :voter => voter, :status => CallAttempt::Status::SUCCESS)
+      Voter.to_be_dialed.should be_empty
+    end
+
+
   end
 end
