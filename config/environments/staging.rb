@@ -5,7 +5,6 @@ APP_URL="http://admin.impactdialing.com"
 TEST_CALLER_NUMBER="8583679749"
 TEST_VOTER_NUMBER="4154486970"
 
-TWILIO_LOG = Logger.new(File.open("#{Rails.root}/log/broadcast.log", 'a'))
 HOST = "staging.impactdialing.com"
 PORT = "80"
 
