@@ -3,6 +3,7 @@ class TwilioController < ApplicationController
   before_filter :retrieve_call_details
 
   def callback
+    TWILIO_LOG.info "New Call to : #{@call_attempt.voter.Phone}"
     logger.info "[dialer] call picked up. #{@log_message}; Call Status : #{params['CallStatus']}"
     if params['CallStatus'] == 'in-progress'
       response = @call_attempt.campaign.script.robo_recordings.first.twilio_xml(@call_attempt)
@@ -13,11 +14,13 @@ class TwilioController < ApplicationController
   end
 
   def report_error
+    TWILIO_LOG.info "#{@call_attempt.voter.Phone} : Error occured."
     logger.info "[dialer] error. #{@log_message}"
     render :text => ''
   end
 
   def call_ended
+    TWILIO_LOG.info "#{@call_attempt.voter.Phone} : Call Ended"
     logger.info "[dialer] call ended. #{@log_message}"
     render :text => ''
   end
