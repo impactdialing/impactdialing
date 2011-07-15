@@ -1,55 +1,349 @@
-.buttons button{display:inline-block;margin-bottom:0}
-header[role="banner"],nav[role="navigation"],.content,footer[role="contentinfo"]{margin:0 auto 1.5em}
-header[role="banner"]{margin-bottom:0}
-nav[role="navigation"]{margin-bottom:0;padding-bottom:0;border-bottom-width:0}
-nav[role="navigation"] ul{padding:0;background-color:#dfdfe4;border:1px solid #adadb2}
-nav[role="navigation"] li{float:left;margin-bottom:0;padding:0 24px;width:20.08%;width:auto;border-width:0;border-right:1px solid #fff;border-left:1px solid #adadb2}
-nav[role="navigation"] li:nth-child(3){border-right-width:0}
-nav[role="navigation"] li:first-child{border-left-width:0}
-nav[role="navigation"] li:last-child{float:right;margin-right:0;background-color:#c23634;border-right-width:0}
-nav[role="navigation"] a{padding:1em 0;font-size:.75em}
-nav[role="navigation"] a:hover{text-decoration:none}
-.reverse{margin-bottom:1.5em;padding:24px;background:#313131 url(../img/furniture-reverse.png) repeat 0 0;border-bottom-width:0;color:#fff;text-shadow:0 -1px 1px #000}
-.reverse h1{font-size:2.375em}
-.reverse h2{font-size:1.75em}
-.reverse .disabled{padding:6px 24px 7px;background-color:#525252;border:1px solid #2d2d2d;color:#fff;font-size:1em;font-weight:700}
-.reverse li{margin-bottom:.25em;font-size:1.15em}
-.highlight{margin-bottom:1.5em;padding:24px;background:#eee url(../img/furniture-highlight.png) repeat 0 0;border:1px solid #e3e3e3}
-.highlight h1{font-size:2.375em}
-.highlight h2{font-size:1.75em}
-.highlight .disabled{padding:6px 24px 7px;background-color:#525252;border:1px solid #2d2d2d;color:#fff;font-size:1em;font-weight:700}
-.highlight li{margin-bottom:.25em;font-size:1.15em}
-[role="main"]{float:left;width:58.92%}
-.hentry header ul{overflow:hidden}
-.hentry header li{display:inline-block;float:left;margin-right:24px}
-[role="complementary"]{float:right;width:33.48%}
-footer[role="contentinfo"] ul{float:left;width:58.92%}
-footer[role="contentinfo"] div{float:right;width:33.48%}
-footer[role="contentinfo"] p{clear:both}
-footer[role="contentinfo"] a[href="http://stuffandnonsense.co.uk"]{display:inline}
-form ul.clearfix{margin-bottom:0}
-form ul.clearfix li{float:left;width:19%}
-.callout a.action{float:right;margin-bottom:0}
-.engage form p{float:left;width:20.53%;margin-right:2.67%}
-.engage form p.tos{position:relative;top:1.5em;width:34%}
-.engage form p.tos input{position:relative;top:-3px}
-.engage form p.buttons{position:relative;top:1em;width:15%;margin-right:0}
-nav[role="navigation"] li:last-child{-webkit-border-top-right-radius:6px;-webkit-border-bottom-right-radius:6px;-moz-border-radius-topright:6px;-moz-border-radius-bottomright:6px;border-top-right-radius:6px;border-bottom-right-radius:6px}
-.reverse,.highlight{-webkit-border-radius:6px;-moz-border-radius:6px;border-radius:6px}
-.reverse .disabled{-webkit-border-radius:6px;-moz-border-radius:6px;border-radius:6px}
-nav[role="navigation"] li{-webkit-border-radius:0;-moz-border-radius:0;border-radius:0}
-.cssgradients nav[role="navigation"] ul{background-image:-webkit-gradient(linear,left top,left bottom,from(#dfdfe4),to(#cfcfd5));background-image:-moz-linear-gradient(top,#dfdfe4,#cfcfd5);background-image:-o-linear-gradient(top,#dfdfe4,#cfcfd5);background-image:linear-gradient(top,#dfdfe4,#cfcfd5)}
-.cssgradients nav[role="navigation"] li:hover,.cssgradients nav[role="navigation"] li.active{background-image:-webkit-gradient(linear,left top,left bottom,from(#a9a9ab),to(#cfcfd5));background-image:-moz-linear-gradient(top,#a9a9ab,#cfcfd5);background-image:-o-linear-gradient(top,#a9a9ab,#cfcfd5);background-image:linear-gradient(top,#a9a9ab,#cfcfd5)}
-.multiplebgs .reverse,.multiplebgs .highlight{background-repeat:no-repeat,repeat;background-position:100% 50%,0 0}
-.multiplebgs .reverse{background-image:url(../img/furniture-reverse-dialer.png),url(../img/furniture-reverse.png)}
-.multiplebgs .highlight{background-image:url(../img/furniture-highlight-dialer.png),url(../img/furniture-highlight.png)}
-.admin header[role="banner"] ul{position:absolute;display:block;position:absolute;top:1em;right:0}
-.admin header[role="banner"] li{display:inline-block;margin-right:24px}
-.admin header[role="banner"] li.divider{margin-right:24px;padding-right:24px;border-right:1px solid #c0c0c8}
-.cssgradients .admin nav[role="navigation"] li:last-child{background-image:-webkit-gradient(linear,left top,left bottom,from(#dfdfe4),to(#cfcfd5));background-image:-moz-linear-gradient(top,#dfdfe4,#cfcfd5);background-image:-o-linear-gradient(top,#dfdfe4,#cfcfd5);background-image:linear-gradient(top,#dfdfe4,#cfcfd5)}
-.cssgradients .admin nav[role="navigation"] li:last-child:hover{background-image:-webkit-gradient(linear,left top,left bottom,from(#a9a9ab),to(#cfcfd5));background-image:-moz-linear-gradient(top,#a9a9ab,#cfcfd5);background-image:-o-linear-gradient(top,#a9a9ab,#cfcfd5);background-image:linear-gradient(top,#a9a9ab,#cfcfd5)}
-.admin nav[role="navigation"] li{width:auto}
-.no-cssgradients .admin nav[role="navigation"] li:last-child{background-color:transparent!important;background-image:none!important}
-.admin nav[role="navigation"] li:nth-child(3){border-right-width:1px}
-.admin nav[role="navigation"] li:last-child{float:left;border-width:0;border-left-width:1px;-webkit-border-top-right-radius:0!important;-webkit-border-bottom-right-radius:0!important;-moz-border-radius-topright:0!important;-moz-border-radius-bottomright:0!important;border-top-right-radius:0!important;border-bottom-right-radius:0!important}
-.admin nav[role="navigation"] li:last-child a{color:#333;text-shadow:0 1px 1px #fff}
+/* 768 
+
+_____________________________________________________
+
+320 and Up boilerplate extension
+Author: Andy Clarke
+Version: 0.9.3b
+URL: http://stuffandnonsense.co.uk/projects/320andup/
+License: http://creativecommons.org/licenses/MIT/
+_____________________________________________________
+
+1.ROOT
+2.HEADINGS
+3.TYPOGRAPHY
+4.LINKS
+5.FIGURES & IMAGES
+6.TABLES
+7.FORMS (See css/mylibs/forms.css)
+8.BANNER — header[role="banner"]
+9.NAVIGATION — nav[role="navigation"]
+10.CONTENT
+11.MAIN — div[role="main"]
+12.COMPLIMENTARY — div[role="complementary"]
+13.CONTENTINFO — footer[role="contentinfo"]
+14.GLOBAL OBJECTS
+15.VENDOR-SPECIFIC 
+16.TEMPLATE SPECIFICS
+17.MODERNIZR
+
+*/
+
+/* 1.ROOT */
+/* 2.HEADINGS */
+/* 3.TYPOGRAPHY */
+/* 4.LINKS */
+/* 5.FIGURES & IMAGES */
+/* 6.TABLES */
+/* 7.FORMS (See css/mylibs/forms.css) */
+
+.buttons button {
+display : inline-block;
+margin-bottom : 0; }
+
+/* 8.BANNER */
+
+header[role="banner"],
+nav[role="navigation"],
+.content,
+footer[role="contentinfo"] {
+margin : 0 auto 1.5em; }
+
+header[role="banner"] {
+margin-bottom: 0; }
+
+/* 9.NAVIGATION */
+
+nav[role="navigation"] {
+margin-bottom : 0;
+padding-bottom : 0;
+border-bottom-width : 0; }
+
+nav[role="navigation"] ul {
+padding : 0; 
+background-color : rgb(223,223,228); 
+border : 1px solid rgb(173,173,178); }
+
+nav[role="navigation"] li {
+float : left; 
+margin-bottom : 0;
+padding : 0 24px;
+width : 20.08% /* 180 / 896 = .2008 */;
+width : auto /* Amended style */;
+border-width : 0;
+border-right : 1px solid rgb(255,255,255);
+border-left : 1px solid rgb(173,173,178); }
+
+nav[role="navigation"] li:nth-child(3) {
+border-right-width : 0; }
+
+nav[role="navigation"] li:first-child {
+border-left-width : 0; }
+
+nav[role="navigation"] li:last-child {
+float : right;
+margin-right : 0; 
+background-color : rgb(194,54,52); 
+border-right-width : 0; }
+
+nav[role="navigation"] a {
+padding : 1em 0; 
+font-size : .75em; /* 12 / 16 = .75 */ }
+
+nav[role="navigation"] a:hover {
+text-decoration : none; }
+
+/* 10.CONTENT */
+
+/* reverse */
+
+.reverse {
+margin-bottom : 1.5em;
+padding : 24px;
+background : rgb(49,49,49) url(../img/furniture-reverse.png) repeat 0 0; 
+border-bottom-width : 0;
+color : rgb(255,255,255); 
+text-shadow : 0 -1px 1px rgb(0,0,0); }
+
+.reverse h1 {
+font-size : 2.375em; /* 38 / 16 = 2.375 */ }
+
+.reverse h2 {
+font-size : 1.75em; /* 28 / 16 = 1.75 */ }
+
+.reverse .disabled { 
+padding : 6px 24px 7px;
+background-color : rgb(82,82,82);
+border : 1px solid rgb(45,45,45); 
+color : rgb(255,255,255); 
+font-size : 1em; 
+font-weight : 700; }
+
+.reverse li {
+margin-bottom : .25em;
+font-size : 1.15em; }
+
+/* highlight */
+
+.highlight {
+margin-bottom : 1.5em;
+padding : 24px;
+background : rgb(238,238,238) url(../img/furniture-highlight.png) repeat 0 0; 
+border : 1px solid rgb(227,227,227); }
+
+.highlight h1 {
+font-size : 2.375em; /* 38 / 16 = 2.375 */ }
+
+.highlight h2 {
+font-size : 1.75em; /* 28 / 16 = 1.75 */ }
+
+.highlight .disabled { 
+padding : 6px 24px 7px;
+background-color : rgb(82,82,82);
+border : 1px solid rgb(45,45,45); 
+color : rgb(255,255,255); 
+font-size : 1em; 
+font-weight : 700; }
+
+.highlight li {
+margin-bottom : .25em;
+font-size : 1.15em; }
+
+/* 11.MAIN */
+
+[role="main"] {
+float : left; 
+width : 58.92% /* 528 / 896 = .5892 */; }
+
+/* hentry */
+
+.hentry header ul {
+overflow : hidden; }
+
+.hentry header li {
+display : inline-block;
+float : left; 
+margin-right : 24px; }
+
+/* 12.COMPLEMENTARY */
+
+[role="complementary"] {
+float : right; 
+width : 33.48% /* 300 / 896 = .3348 */; }
+
+/* 13.CONTENTINFO */
+
+footer[role="contentinfo"] ul {
+float : left; 
+width : 58.92% /* 528 / 896 = .5892 */; }
+
+footer[role="contentinfo"] div {
+float : right; 
+width : 33.48% /* 300 / 896 = .3348 */; }
+
+footer[role="contentinfo"] p {
+clear : both; }
+
+footer[role="contentinfo"] a[href="http://stuffandnonsense.co.uk"] {
+display : inline; }
+
+/* 14.GLOBAL OBJECTS */
+
+form ul.clearfix {
+margin-bottom : 0; }
+
+form ul.clearfix li {
+float : left;
+width : 19%; }
+
+/* callout */
+
+.callout a.action {
+float : right; 
+margin-bottom : 0; }
+
+/* engage */ /* michael re-did this section to add another field. it's not as nice now. michael will ask andy to fix it sometime. andy will not be happy with what michael did. */
+
+.engage form p {
+float : left; 
+width : 18% /* this is an old comment from andy 184 / 896 = .2053 */;  
+margin-right : 2.67% /* 24 / 896 = .0267 */; }
+
+.engage form p.tos {
+position : relative;
+top : 1.5em; 
+width : 213px;  }
+
+.engage form p.tos input {
+position : relative;
+top : -3px; }
+
+.engage form p.buttons {
+position : relative;
+top : 1em;
+width : 81px; 
+margin-right : 0; }
+
+/* 15.VENDOR-SPECIFIC */
+
+/* 16.TEMPLATE SPECIFICS */
+
+/* 17.MODERNIZR */
+
+/* border-radius */
+
+nav[role="navigation"] li:last-child {
+-webkit-border-top-right-radius : 6px;
+-webkit-border-bottom-right-radius : 6px;
+-moz-border-radius-topright : 6px;
+-moz-border-radius-bottomright : 6px;
+border-top-right-radius : 6px;
+border-bottom-right-radius : 6px; }
+
+.reverse,
+.highlight {
+-webkit-border-radius : 6px;
+-moz-border-radius : 6px;
+border-radius : 6px; }
+
+.reverse .disabled  {
+-webkit-border-radius : 6px;
+-moz-border-radius : 6px;
+border-radius : 6px; }
+
+nav[role="navigation"] li  {
+-webkit-border-radius : 0;
+-moz-border-radius : 0;
+border-radius : 0; }
+
+/* cssgradients */
+
+.cssgradients nav[role="navigation"] ul {
+background-image : -webkit-gradient(linear, left top, left bottom, from(rgb(223,223,228)), to(rgb(207,207,213)));
+background-image : -moz-linear-gradient(top, rgb(223,223,228), rgb(207,207,213));
+background-image : -o-linear-gradient(top, rgb(223,223,228), rgb(207,207,213));
+background-image : linear-gradient(top, rgb(223,223,228), rgb(207,207,213)); }
+
+.cssgradients nav[role="navigation"] li:hover,
+.cssgradients nav[role="navigation"] li.active {
+background-image : -webkit-gradient(linear, left top, left bottom, from(rgb(169,169,171)), to(rgb(207,207,213)));
+background-image : -moz-linear-gradient(top, rgb(169,169,171), rgb(207,207,213));
+background-image : -o-linear-gradient(top, rgb(169,169,171), rgb(207,207,213));
+background-image : linear-gradient(top, rgb(169,169,171), rgb(207,207,213)); }
+
+/* multiplebgs */
+
+.multiplebgs .reverse,
+.multiplebgs .highlight {
+background-repeat : no-repeat, repeat;
+background-position : 100% 50%, 0 0; }
+
+.multiplebgs .reverse {
+background-image : url(../img/furniture-reverse-dialer.png), url(../img/furniture-reverse.png); }
+
+.multiplebgs .highlight {
+background-image : url(../img/furniture-highlight-dialer.png), url(../img/furniture-highlight.png); }
+
+/* admin overrides */
+
+.admin header[role="banner"] ul {
+position : absolute; 
+display : block;
+position : absolute;
+top : 1em;
+right : 0; }
+
+.admin header[role="banner"] li {
+display : inline-block;
+margin-right : 24px; }
+
+.admin header[role="banner"] li.divider {
+margin-right : 24px;
+padding-right : 24px; 
+border-right : 1px solid rgb(192,192,200); }
+
+/* makes last item not red and float right in admin
+
+.cssgradients .admin nav[role="navigation"] li:last-child {
+background-image : -webkit-gradient(linear, left top, left bottom, from(rgb(223,223,228)), to(rgb(207,207,213)));
+background-image : -moz-linear-gradient(top, rgb(223,223,228), rgb(207,207,213));
+background-image : -o-linear-gradient(top, rgb(223,223,228), rgb(207,207,213));
+background-image : linear-gradient(top, rgb(223,223,228), rgb(207,207,213)); }
+
+.cssgradients .admin nav[role="navigation"] li:last-child:hover {
+background-image : -webkit-gradient(linear, left top, left bottom, from(rgb(169,169,171)), to(rgb(207,207,213)));
+background-image : -moz-linear-gradient(top, rgb(169,169,171), rgb(207,207,213));
+background-image : -o-linear-gradient(top, rgb(169,169,171), rgb(207,207,213));
+background-image : linear-gradient(top, rgb(169,169,171), rgb(207,207,213)); }
+
+.admin nav[role="navigation"] li {
+width : auto; }
+
+.no-cssgradients .admin nav[role="navigation"] li:last-child {
+background-color : transparent!important;
+background-image : none!important; }
+
+.admin nav[role="navigation"] li:nth-child(3) {
+border-right-width : 1px; }
+
+.admin nav[role="navigation"] li:last-child {
+float : left;
+border-width : 0;
+border-left-width : 1px;
+-webkit-border-top-right-radius : 0!important;
+-webkit-border-bottom-right-radius : 0!important;
+-moz-border-radius-topright : 0!important;
+-moz-border-radius-bottomright : 0!important;
+border-top-right-radius : 0!important;
+border-bottom-right-radius : 0!important; }
+
+.admin nav[role="navigation"] li:last-child a {
+color : rgb(51,51,51);  
+text-shadow : 0 1px 1px rgb(255,255,255); }
+
+.admin footer li.divider { 
+margin-right : 24px;
+padding-right : 24px;
+border-right : 1px solid #c0c0c8; }
+
+*/
