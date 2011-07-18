@@ -2,7 +2,7 @@ class ReportsController < ClientController
   layout 'v2'
 
   def index
-    @campaigns = @user.campaigns.active
+    @campaigns = @user.campaigns.robo.active
   end
 
   def usage
