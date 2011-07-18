@@ -36,6 +36,17 @@ describe ClientController do
       end
     end
 
+    describe "campaign" do
+      it "shows only active scripts" do
+        campaign = Factory(:campaign, :user => user)
+        active_manual_script = Factory(:script, :robo => false, :active => true, :user => user)
+        deleted_manual_script = Factory(:script, :robo => false, :active => false, :user => user)
+        get :campaign_view, :id => campaign.id
+        assigns(:campaign).should == campaign
+        assigns(:scripts).should == [active_manual_script]
+      end
+    end
+
     it "lists all manual campaigns" do
       robo_campaign = Factory(:campaign, :user => user, :robo => true)
       manual_campaign = Factory(:campaign, :user => user, :robo => false)
