@@ -1,5 +1,5 @@
 class CallerController < ApplicationController
-  layout "client"
+  layout "caller"
   before_filter :check_login, :except=>[:login,:feedback]
   before_filter :redirect_to_ssl
 
@@ -56,14 +56,19 @@ class CallerController < ApplicationController
     @campaign = Campaign.find_by_id(params[:id])
     @script=@campaign.script
     @client_ip = request.remote_ip
+
     if !@caller.campaigns.index(@campaign)
       redirect_to :action=>"index"
       return
     else
       @breadcrumb=@campaign.name
     end
+
     @session = CallerSession.find_by_session_key(params[:key]) if !params[:key].blank? #use for debug
-    @on_call = CallerSession.find_by_caller_id_and_on_call(@caller.id,true)
+    @on_call = CallerSession.find_by_caller_id_and_on_call_and_campaign_id(@caller.id,true, @campaign.id)
+    @key = @on_call.session_key if @on_call!=nil
+    @session = @on_call if @on_call!=nil
+    
     if request.post?
       if !phone_number_valid(params[:numtocall]) && !params[:numtocall].blank?
         flash_now(:error, "Please enter a valid phone number")
@@ -85,13 +90,20 @@ class CallerController < ApplicationController
         #        return
       end
     end
-    if @campaign.user_id==31
-      render :layout=>"prop19"
-    else
-      return
-    end
+
   end
 
+  def jspush
+    response.headers["Content-Type"] = 'text/javascript'
+    @start_action_div_contents='Enter your phone number: <input type="text" name="numtocall" placeholder="Type your phone number here">  <img src="/images/report_bug.png" onclick="feedback();" align="right"><p><div class="buttons"><button type="submit">Start taking calls</button></div></p>'
+    @session = CallerSession.find_by_session_key(params[:id])
+    @on_call = CallerSession.find_by_session_key_and_on_call(params[:id],true)
+    @campaign=@session.campaign
+    respond_to do |format|
+      format.js
+    end
+  end
+  
   def session_ready
     require 'net/http'
     require 'net/https'
@@ -109,11 +121,11 @@ class CallerController < ApplicationController
 
     #update rt
     if Campaign.find(session.campaign_id).predective_type=="preview"
-      send_rt(params[:id],{'waiting'=>'preview'})
+      send_rt(params[:id],'waiting','preview')
     else
-      send_rt(params[:id],{'waiting'=>'ok'})
+      send_rt(params[:id],'waiting','ok')
     end
-    render :text=>  "ok"
+    render :text=>  "var x='ok';"
   end
 
 
@@ -134,8 +146,8 @@ class CallerController < ApplicationController
     a=t.call("POST", "Calls/#{session.sid}", {'CurrentUrl'=>"#{APP_URL}/callin/callerEndCall?session=#{session.id}"})
 
     #update rt
-    send_rt(params[:id],{'hangup'=>'ok'})
-    render :text=>  "ok hangup #{session.sid}"
+    #send_rt(params[:id],'hangup','ok') #this done in callerEndCall
+    render :text=>  "var x='ok';"
     return
   end
 
@@ -145,7 +157,7 @@ class CallerController < ApplicationController
     attempt = CallAttempt.find(params[:attempt])
     t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
     a=t.call("POST", "Calls/#{attempt.sid}", {'CurrentUrl'=>"#{APP_URL}/callin/voterEndCall?attempt=#{attempt.id}"})
-    render :text=>"drop ok"
+    render :text=>  "var x='ok';"
   end
 
   def submit_result
@@ -211,12 +223,12 @@ class CallerController < ApplicationController
       a=t.call("POST", "Calls/#{@session.sid}", {'CurrentUrl'=>"#{APP_URL}/callin/start_conference?session=#{@session.id}&campaign=#{@campaign.id}"})
 
       if @campaign.predective_type=="preview"
-        send_rt(params[:key],{'waiting'=>'preview'})
+        send_rt(params[:key],'waiting','preview')
       else
-        send_rt(params[:key],{'waiting'=>'ok'})
+        send_rt(params[:key],'waiting','ok')
       end
 
-      render :text=>  "ok"
+      render :text=>  "var x='ok';"
     end
   end
 
@@ -238,8 +250,8 @@ class CallerController < ApplicationController
   end
 
   def reconnect_rt
-    send_rt(params[:key],{params[:k]=>params[:v]})
-    render :text=>  "ok"
+    send_rt(params[:key], params[:k], params[:v])
+    render :text=>  "var x='ok';"
   end
 
   def preview_dial
@@ -247,8 +259,8 @@ class CallerController < ApplicationController
     @campaign = @session.campaign
     @voter = Voter.find_by_campaign_id_and_id(@campaign.id, params[:voter_id])
     @voter.call_and_connect_to_session(@session)
-    send_rt(params[:key],{'waiting'=>'preview_dialing'})
-    render :text=>  "ok"
+    send_rt(params[:key],'waiting','preview_dialing')
+    render :text=>  "var x='ok';"
   end
 
   def dpoll
@@ -267,6 +279,6 @@ class CallerController < ApplicationController
 
   def feedback
     Postoffice.deliver_feedback(params[:issue])
-    render :text=>  "ok"
+    render :text=>  "var x='ok';"
   end
 end

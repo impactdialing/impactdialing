@@ -14,6 +14,8 @@ gem 'nokogiri', '~> 1.4.4'
 gem "activemerchant", '~> 1.15.0', :require => "active_merchant"
 gem 'i18n', '~> 0.4.2'
 gem 'hpricot', '~> 0.8.4'
+gem 'uakari'
+gem "pusher", "~> 0.8.2"
 
 group :development, :test do
   gem 'ruby-debug', '~> 0.10.4'
