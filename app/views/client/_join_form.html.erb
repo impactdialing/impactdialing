@@ -8,6 +8,7 @@
 		<% form_for :user do |f| -%>
 
 		<fieldset>
+		<p>By signing up, you agree to our <a href="<%= policies_path %>#terms" target="_blank">Terms of Service</a>.</p> 
 	    <p>
 			        <label>Your email</label>
 					<%= f.text_field :email, {:class=>"field"} %>
@@ -42,7 +43,7 @@
 					<input type="text" name="fullname" value="<%= params[:fullname]%>">
 			      </p>
 			    <p>
-		        <label>Your Phone</label>
+		        <label>Your phone</label>
 				<%= f.text_field :phone, {:class=>"field"} %>
 		      </p>
 
