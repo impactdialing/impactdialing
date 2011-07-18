@@ -36,8 +36,11 @@ class CallAttempt < ActiveRecord::Base
 
   def next_recording(current_recording = nil, call_response = nil)
     return campaign.script.robo_recordings.first.twilio_xml(self) unless current_recording
-    return current_recording.hangup if call_response && call_response.times_attempted >= 3
-    return current_recording.twilio_xml(self) if call_response && !call_response.recording_response
+    if call_response
+      (return current_recording.next ? current_recording.next.twilio_xml(self) : current_recording.hangup) if call_response.recording_response
+      return current_recording.hangup if call_response.times_attempted > 2
+      return current_recording.twilio_xml(self) if call_response && !call_response.recording_response
+    end
     current_recording.next ? current_recording.next.twilio_xml(self) : current_recording.hangup
   end
 

@@ -48,13 +48,14 @@ describe ClientController do
     end
 
     describe "reports" do
-      let(:campaign){ Factory(:campaign, :user => user, :robo => false) }
 
       it "shows only manual campaigns" do
+        campaign = Factory(:campaign, :user => user, :robo => false)
         Factory(:campaign, :user => user, :robo => true)
         get :reports
         assigns(:campaigns).should == [campaign]
       end
+
     end
 
     it "lists all manual campaigns" do
