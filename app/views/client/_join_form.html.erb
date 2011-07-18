@@ -8,7 +8,10 @@
 		<% form_for :user do |f| -%>
 
 		<fieldset>
-
+			  <p>
+		        <label>Name<span></span></label>
+				<input type="text" name="fullname" value="<%= params[:fullname]%>">
+		      </p>
 <!--
 	      <p>
 	        <label>First Name <span>(Required)</span></label>
@@ -49,7 +52,7 @@
 	        <label><% if !@user.new_record? %>New <% end %>Password Confirmation <% if @user.new_record? %><span>(Required)</span><% end %></label>
 			<%# f.password_field :password_confirmation, {:class=>"field"} %>
 	      </p>-->
-	<% if @user.new_record? %>
+	<% if @user.new_record? && false %>
 			<p>
         <label>	<input type="checkbox" name="tos" value="1" <% if params[:tos] %>checked<% end %>/> I agree to the <a href="<%= policies_path %>#terms" target="_blank">Terms of Service</a></label>
 

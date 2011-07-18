@@ -46,7 +46,14 @@ class ClientController < ApplicationController
 
     if request.post?
       @user.attributes =  params[:user].merge(:domain => request.domain)
-      if @user.new_record? && params[:tos].blank?
+      if params[:fullname]!=nil
+        name_arr=params[:fullname].split(" ")
+        fname=name_arr.shift
+        @user.fname=fname.strip
+        @user.lname=name_arr.join(" ").strip
+      end
+      
+      if false && @user.new_record? && params[:tos].blank?
         flash_now(:error, "You must agree to the Terms of Service to create an account.")
         return
       elsif !@user.new_record? and (not @user.authenticate_with?(params[:exist_pw]))
@@ -562,6 +569,10 @@ class ClientController < ApplicationController
         end
         @account.encyrpt_cc
       end
+      
+      name_arr=@account.name.split(" ")
+      fname=name_arr.shift
+      lname=name_arr.join(" ").strip
 
       # test an auth to make sure this card is good.
       creditcard = ActiveMerchant::Billing::CreditCard.new(
@@ -569,8 +580,8 @@ class ClientController < ApplicationController
         :month      => @account.expires_month,
         :year       => @account.expires_year,
         :type       => @account.cardtype,
-        :first_name => @account.name.split(" ").first,
-        :last_name  => @account.name.split(" ").collect {|n| n if n!= @account.name.split(" ").first}.join(" ").strip,
+        :first_name => fname,
+        :last_name  => lname,
         :verification_value => params[:code]
       )
 
