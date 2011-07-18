@@ -9,7 +9,7 @@
 <head>
 <meta charset="utf-8">
 
-<title>Impact Dialing</title>
+<title><%= title %></title>
 <meta name="description" content="">
 <meta name="author" content="">
 
@@ -17,8 +17,14 @@
 <meta name="HandheldFriendly" content="True">
 <meta name="MobileOptimized" content="320">
 <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1">
-<%= javascript_include_tag :defaults %>
-<%= unobtrusive_datepicker_includes %>
+<%# javascript_include_tag :defaults %>
+<%# unobtrusive_datepicker_includes %>
+
+<%# web ui scripts %>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.5/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/js/browser_detect.js"></script>
+<script type="text/javascript" src="/js/flash_detect_min.js"></script>
 
 <!-- For all browsers -->
 <link rel="stylesheet" media="screen" href="/css/style.css?v=1">
@@ -66,98 +72,94 @@
 <%= stylesheet_link_tag "application" %>
 </head>
 
-<body>
-<!-- Header -->
-<div id="header">
-  <div class="shell">
-    <!-- Logo + Top Nav -->
-    <div id="top">
-      <h1><a href="/client">Impact Dialing</a></h1>
-      <div id="top-navigation"> 
+<body class="admin clearfix">
 
-	<% if !session[:caller].blank? && @caller!=nil %>
-	<ul class="clearfix">
-	    <li class='divider'><a href="/caller" class='divider'>Home</a></li>
-	    <li><a href="/caller/logout">Log out</a></li>
-	  </ul>
-	<% end %> 
+<header role="banner" class="clearfix">
+<h1 class="<%= domain %>"><a href="<% if client_controller?(@controllerName) %>/client<% else %>/caller<% end %>"><%= title %></a></h1>
 
-	</div>
-
-    </div>
-    <!-- End Logo + Top Nav -->
-    <!-- Main Nav -->
-    <div id="navigation">
-	<!--
-      <ul>
-        <li><a href="/client" <% if @actionName=="index" %>class="active"<% end %>><span>Welcome</span></a></li>
-        <li><a href="/client/callers" <% if @actionName.index("caller") %>class="active"<% end %>><span>Callers</span></a></li>
-        <li><a href="/client/scripts" <% if @actionName.index("script") %>class="active"<% end %>><span>Scripts</span></a></li>
-        <li><a href="/client/campaigns" <% if @actionName.index("upload") || @actionName.index("campaign") %>class="active"<% end %>><span>Campaigns</span></a></li>
-        <li><a href="/client/reports" <% if @actionName.index("report") %>class="active"<% end %>><span>Reports</span></a></li>
-      </ul>
--->
-    </div>
-    <!-- End Main Nav -->
-  </div>
-</div>
-<!-- End Header -->
-<!-- Container -->
-<div id="container">
-  <div class="shell">
-    <!-- Small Nav -->
-    <div class="small-nav"> <a href="/caller">Welcome</a>
-	<% if @breadcrumb.class.to_s=="String" %>
-		<span>&gt;</span> <%= @breadcrumb %> 
-	<% elsif @breadcrumb!=nil %>
-		<% @breadcrumb.each do |b| %>
-			<% if b.class.to_s=="Hash" %>
-				<span>&gt;</span>
-				<a href="<%= b[b.keys.first] %>"><%= b.keys.first %></a>
-			<% else %>
-				<span>&gt;</span> <%= b %> 
-			<% end %>
-		<% end %>
-	<% end %>
-	</div>
-    <!-- End Small Nav -->
-
-    <%= render :partial => "shared/flash_messages" %>
-
-    <br />
-    <!-- Main -->
-    <div id="main" <% if @actionName=="campaign_view" %>style="background-color:white; -moz-border-radius: 20px;  	    -webkit-border-radius: 20px;  padding:14px;	border:1px solid #b0722f;<% end %>   "> 
-      <div class="cl">&nbsp;</div>
-      <!-- Content -->
-      <div id="content">
-		<%= yield %>
-      </div>
-      <!-- End Content -->
-      <!-- Sidebar -->
-      <div id="sidebar" <% if @actionName=="campaign_view" %>style="width:190px; margin-top:2px; margin-right:6px;"<% end %>>
-	 <%= yield :sidebar %>
-      </div>
-      <!-- End Sidebar -->
-      <div class="cl">&nbsp;</div>
-<% if @actionName=="campaign_view" %>
-	<div class="buttons2" align="center">
-		<input type="button" class="button" value="Save Campaign" onclick="$('callerForm').submit();">
-    </div><br/>
+<% if logged_in_as_client? %>
+  <ul class="clearfix">
+    <li class='divider'><a href="/client">Help</a></li>
+    <li class='divider'><a href="/client/user_add">Account</a></li>
+    <li><a href="/client/logout">Log out</a></li>
+  </ul>
+<% elsif logged_in_as_caller? %>
+  <ul class='clearfix'>
+    <li class='divider'><a href="/caller" class='divider'>Home</a></li>
+    <li><a href="/caller/logout">Log out</a></li>
+  </ul>
 <% end %>
-    <!-- Main -->
-  </div>
-   <%= render :partial => "shared/flash_messages", :locals => {:display => [:warning]} %>
+
+</header>
+
+<% if client_controller?(@controllerName) %>
+<nav role="navigation" class="clearfix">
+<ul class="clearfix">
+	<!--<li><a href="/client" <% if @actionName=="index" %>class="active"<% end %>><span>Welcome</span></a></li>-->
+	<li><a href="/client/callers" <% if @actionName.index("caller") %>class="active"<% end %>><span>Callers</span></a></li>
+	<li><a href="/client/scripts" <% if @actionName.index("script") %>class="active"<% end %>><span>Scripts</span></a></li>
+	<li><a href="/client/campaigns" <% if @actionName.index("upload") || @actionName.index("campaign") %>class="active"<% end %>><span>Campaigns</span></a></li>
+	<li><a href="/client/monitor" <% if @actionName.index("monitor") %>class="active"<% end %>><span>Monitor</span></a></li>
+	<li><a href="/client/reports" <% if @actionName.index("report") %>class="active"<% end %>><span>Reports</span></a></li>
+</ul>
+</nav>
+<% end %>
+
+<%= render :partial => "shared/client_flash_messages", :locals => {:display => [:notice, :error, :warning]} %>
+
+<div class="content clearfix">
+	<%= yield %>
+ 	<%= yield :sidebar %>
 </div>
 
-<!-- End Container -->
-<!-- Footer -->
-<div id="footer">
-  <div class="shell"> <span class="left">&copy; 2010 Impact Dialing
-	<span style="margin-left:20px;"><a href="http://www.impactdialing.com">Contact Us</a></span>
-	</span>
-	</div>
+
+<footer role="contentinfo" class="clearfix">
+<% if client_controller?(@controllerName) %>
+  <ul>
+    <!--<li><a href="/client" <% if @actionName=="index" %>class="active"<% end %>><span>Welcome</span></a></li>-->
+    <li><a href="/client/callers" <% if @actionName.index("caller") %>class="active"<% end %>><span>Callers</span></a></li>
+    <li><a href="/client/scripts" <% if @actionName.index("script") %>class="active"<% end %>><span>Scripts</span></a></li>
+    <li><a href="/client/campaigns" <% if @actionName.index("upload") || @actionName.index("campaign") %>class="active"<% end %>><span>Campaigns</span></a></li>
+    <!--<li><a href="/client/monitor" <% if @actionName.index("monitor") %>class="active"<% end %>><span>Monitor</span></a></li>-->
+    <li><a href="/client/monitor" <% if @actionName.index("monitor") %>class="active"<% end %>><span>Monitor</span></a></li>
+    <li><a href="/client/reports" <% if @actionName.index("report") %>class="active"<% end %>><span>Reports</span></a></li>
+  </ul>
+<% end %>
+<div>
+  <p class="vcard">Need help? <span class="tel"><%= phone %></span> or <a href="mailto:<%= email %>"><%= email %></a></p>
 </div>
-<%= @floatSidebar %>
-<!-- End Footer -->
+
+<p>
+<ul class="clearfix">
+  <li class='divider'>&#169; 2011</li>
+  <li class='divider'><a href="/policies#privacy">Privacy</a></li>
+  <li><a href="/policies#terms">Terms</a></li>
+</ul>
+</p>
+
+</footer>
+
+<!--
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js"></script>
+<script>window.jQuery || document.write('<script src="js/libs/jquery-1.5.1.min.js">\x3C/script>')</script>
+
+<script src="js/mylibs/helper.js"></script>
+<script src="js/plugins.js"></script>
+<script src="js/rwd-images.js"></script>
+ -->
+
+<!--[if (lt IE 9) & (!IEMobile)]>
+<script src="js/libs/DOMAssistantCompressed-2.8.js"></script>
+<script src="js/libs/selectivizr-1.0.1.js"></script>
+<script src="js/libs/imgsizer.js"></script>
+<![endif]-->
+
+<!-- http://t.co/HZe9oJ4 -->
+<script>
+var _gaq=[["_setAccount","UA-23484025-1"],["_trackPageview"]];
+(function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];g.async=1;
+g.src=("https:"==location.protocol?"//ssl":"//www")+".google-analytics.com/ga.js";
+s.parentNode.insertBefore(g,s)}(document,"script"));
+</script>
 </body>
 </html>

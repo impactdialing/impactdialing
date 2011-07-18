@@ -297,7 +297,7 @@
 		}
 
 		function dpoll(){
-			var url = '/caller/dpoll?key=<%= @session.session_key %>&currAttempt=' + currAttempt;
+			var url = '/caller/dpoll?id=<%= @session.id %>&key=<%= @session.session_key %>&currAttempt=' + currAttempt;
 			$.ajax({
 			    type: 'GET',
 			    dataType: 'script',

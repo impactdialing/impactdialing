@@ -1,6 +1,7 @@
 class CallinController < ApplicationController
   skip_before_filter :verify_authenticity_token
   before_filter :set_vars, :preload_models
+  after_filter :send_pusher
 
   def set_vars
     @say=false
@@ -14,6 +15,10 @@ class CallinController < ApplicationController
     @repeatRedirect=false
     @finishOnKey="#"
     @gatherPost=""
+  end
+  
+  def send_pusher
+    send_rt(@publish_channel,@publish_key,@publish_value) if !@publish_channel.blank?
   end
 
 
@@ -188,14 +193,14 @@ class CallinController < ApplicationController
     if @campaign.use_web_ui
       @gathertimeout=60
       if params[:CallStatus]=="completed"
-        @publish_channel="/#{@session.session_key}"
+        @publish_channel="#{@session.session_key}"
         @publish_key="hangup"
         @publish_value="ok"
         session_complete
         render :template => 'callin/index.xml.builder', :layout => false
         return
       else
-        @publish_channel="/#{@session.session_key}"
+        @publish_channel="#{@session.session_key}"
         @publish_key="confirm"
         @publish_value="go"
         cookies[:session] = @session.id
@@ -212,7 +217,7 @@ class CallinController < ApplicationController
     else
 
       if @campaign.use_web_ui
-        @publish_channel="/#{@session.session_key}"
+        @publish_channel="#{@session.session_key}"
         @publish_key="waiting"
         if @campaign.predective_type=="preview"
           @publish_value="preview"
@@ -265,7 +270,7 @@ class CallinController < ApplicationController
   def callerEndCall
     #session
     @hangup=true
-    @publish_channel="/#{params[:session]}"
+    @publish_channel="#{params[:session]}"
     @publish_key="hangup"
     @publish_value="ok"
     session_complete
@@ -368,7 +373,7 @@ class CallinController < ApplicationController
         end
 
         if @campaign.use_web_ui
-          @publish_channel="/#{@session.session_key}"
+          @publish_channel="#{@session.session_key}"
           @publish_key="waiting"
           if @campaign.predective_type=="preview"
             @publish_value="preview"
@@ -482,7 +487,7 @@ class CallinController < ApplicationController
 
        if params[:CallStatus]!="completed" && @campaign.use_web_ui && @campaign.predective_type=="preview"  && params[:selected_session]!=nil
           @session = CallerSession.find(params[:selected_session])
-          send_rt(@session.session_key,{'waiting'=>'preview'})
+          send_rt(@session.session_key,'waiting','preview')
       end
 
       if params[:DialStatus]=="hangup-machine"
@@ -593,7 +598,7 @@ class CallinController < ApplicationController
 
         if @campaign.use_web_ui
           script = @campaign.script
-          @publish_channel="/#{@available_caller_session.session_key}"
+          @publish_channel="#{@available_caller_session.session_key}"
           family=[hash_from_voter_and_script(script,@attempt.voter)]
           @attempt.voter.families.each do |f|
           	family << hash_from_voter_and_script(script,f)
@@ -606,7 +611,8 @@ class CallinController < ApplicationController
               publish_hash[field] = eval("@voter.#{field}")
             end
           end
-          @publish_value=publish_hash.to_json
+#          @publish_value=publish_hash.to_json
+          @publish_value=publish_hash
         end
         render :template => 'callin/voter_start_conference.xml.builder', :layout => false
         return

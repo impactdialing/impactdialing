@@ -9,6 +9,11 @@ APP_NUMBER="8582254595"
 APP_URL="http://www.hinodae.com:5555"
 TEST_CALLER_NUMBER="8588889111"
 TEST_VOTER_NUMBER="4157293288"
+
+PUSHER_APP_ID="6868"
+PUSHER_KEY="1e93714ff1e5907aa618"
+PUSHER_SECRET="26b438b5e27a3e84d59c"
+
 # Settings specified here will take precedence over those in config/environment.rb
 
 # In the development environment your application's code is reloaded on

@@ -139,7 +139,7 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  def send_rt(key, post_data)
+  def send_rt_old(key, post_data)
     # msg_url="https://#{TWILIO_AUTH}:x@#{TWILIO_ACCOUNT}.twiliort.com/#{key}"
     http = Net::HTTP.new("#{TWILIO_ACCOUNT}.twiliort.com", 443)
     req = Net::HTTP::Post.new("/#{key}")
@@ -151,6 +151,16 @@ class ApplicationController < ActionController::Base
     return response.body
   end
 
+  def send_rt(channel, key, post_data)
+    require 'pusher'
+    Pusher.app_id = PUSHER_APP_ID
+    Pusher.key = PUSHER_KEY
+    Pusher.secret = PUSHER_SECRET
+    Pusher[channel].trigger(key, post_data)
+    logger.info "SENT RT #{key} #{post_data} #{channel}"
+  end
+
+  
   def handle_multi_disposition_submit(result_set_num,attempt_id)
     #@session
     logger.info "handle_multi_disposition_submit called for attempt #{attempt_id} result #{result_set_num}"
