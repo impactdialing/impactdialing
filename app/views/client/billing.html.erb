@@ -1,11 +1,13 @@
-<h1>Billing information</h1>
+<div role="main">
+	<h1>Billing information</h1>
+<p>We will charge your card on the first of every month. If you would like to be billed per caller, rather than per minute, please let us know at <a href="mailto:email@impactdialing.com">email@impactdialing.com</a>.</p>
 
-<p>We use industry standard encryption to protect your credit card information.</p>
 	<div class="table">
 		 <div class="form">
 			<%= error_messages_for :account, :header_message => "Please review and correct the following errors:" %>
 			<% form_for :account, @account do |f| -%>
 			<fieldset>
+				<h5>We use industry standard encryption to protect your credit card information.</h5>
 
 				<p><label for="last_name">Card type:</label>
 				<% if BILLING_GW.class.to_s=="ActiveMerchant::Billing::BogusGateway" %>
@@ -105,9 +107,29 @@
 				<div class="buttons">
 					<button type="submit">Verify this card</button>
 				</div>
-				<p>You won't be charged until you make calls.</p>
 				</fieldset>
 			<% end -%>
 		</div>
 	</div>
-
+</div>
+<div role="complementary">
+	<h1>Prices</h1>
+	<h3>Pay per minute</h3> 
+	<h4>Hosted predictive dialer</h4> 
+	<ul> 
+	<li>Preview dialer: 4&#162;/min</li> 
+	<li>Power dialer: 6&#162;/min</li> 
+	<li>Predictive dialer: 9&#162;/min</li> 
+	</ul> 
+	<h4>Voice broadcasting</h4> 
+	<ul> 
+	<li>Robo calls: 3&#162;/min</li> 
+	<li>Robo surveys: 7&#162;/min</li> 
+	</ul> 
+	<h3>Or pay per caller</h3> 
+	<h4>Hosted predictive dialer</h4> 
+	<ul> 
+	<li>$100/month + 2&#162;/min, or</li> 
+	<li>$300/month flat (up to 15,000 mins)</li> 
+	</ul>
+</div>
