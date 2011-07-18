@@ -73,8 +73,8 @@
 
 <% if logged_in_as_client? %>
   <ul class="clearfix">
-    <li class='divider'><a href="/broadcast" class='divider'>Help</a></li>
-    <li class='divider'><a href="/client/user_add">Account</a></li>
+    <li class='divider'><%=link_to 'Help', :controller=>'broadcast', :action=>'index' %></li>
+    <li class='divider'><%=link_to 'Account', :action => 'user_add' %></li>
     <li><%=link_to 'Log out', :action=>'logout' %></li>
   </ul>
 <% elsif logged_in_as_caller? %>
