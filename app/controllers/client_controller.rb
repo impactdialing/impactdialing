@@ -8,15 +8,16 @@ class ClientController < ApplicationController
   in_place_edit_for :campaign, :name
 
   def check_login
-    if session[:user].blank?
-      redirect_to login_path
-      return
-    end
+    redirect_to_login and return if session[:user].blank?
     begin
       @user = User.find(session[:user])
     rescue
       logout
     end
+  end
+
+  def redirect_to_login
+    redirect_to login_path
   end
 
   def forgot
@@ -246,7 +247,7 @@ class ClientController < ApplicationController
 
   def logout
     session[:user]=nil
-    redirect_to :controller => 'home', :action=>"index"
+    redirect_to_login
   end
 
   def callers

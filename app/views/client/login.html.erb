@@ -1,35 +1,4 @@
 <div role="main">
   <%= render :partial => 'join_form' %>
 </div>
-
-<div role="complementary" class="clearfix">
-
-  <div class="box">
-
-    <h1>Log in</h1>
-
-    <% form_tag("/client/login", :id=>"loginForm") do |f| %>
-      <fieldset>
-        <p>
-          <label for="">Email</label>
-          <br/>
-          <input type="text" name="email" class="field" value="<%= params[:email] %>" />
-
-          <p>
-            <label for="">Password</label>
-            <br/>
-            <input type="password" class="field" name="password"/>
-          </p>
-          <p><a href="/client/forgot">Forgot Password?</a></p>
-        </p>
-      </fieldset>
-
-      <div class="buttons">
-        <button type="submit">Log in</button>
-      </div>
-
-    <% end %>
-
-  </div>
-
-</div>
+<%= render :partial => 'login', :locals => { :login_to => '/client/login' }%>

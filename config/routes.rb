@@ -25,6 +25,7 @@ ActionController::Routing::Routes.draw do |map|
   map.connect 'monitor', :controller => "monitor", :action => "index", :path_prefix => 'broadcast'
 
   map.broadcast_root '/broadcast', :action => 'index', :controller => 'broadcast'
+  map.broadcast_login '/broadcast/login', :action => 'login', :controller => 'broadcast'
 
   map.namespace 'client' do |client|
     map.campaign_new 'client/campaign_new', :action => 'campaign_new', :controller => 'client'
