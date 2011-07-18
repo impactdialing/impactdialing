@@ -870,6 +870,7 @@ class ClientController < ApplicationController
   def reports
     if params[:id].blank?
       @breadcrumb = "Reports"
+      @campaigns = @user.campaigns.manual
     else
       @campaign = Campaign.find(params[:id])
       @breadcrumb=[{"Reports"=>"/client/reports"},@campaign.name]

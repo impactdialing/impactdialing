@@ -9,10 +9,11 @@ describe ReportsController do
       login_as user
     end
 
-    it "lists all active campaigns belonging to a user" do
+    it "lists all active robo campaigns belonging to a user" do
       Factory(:campaign, :active => false, :user => user)
+      Factory(:campaign, :active => true, :robo => false, :user => user)
       Factory(:campaign, :active => true, :user => Factory(:user))
-      campaign = Factory(:campaign, :active => true, :user => user)
+      campaign = Factory(:campaign, :active => true, :robo => true, :user => user)
       get :index
       assigns(:campaigns).should == [campaign]
     end
