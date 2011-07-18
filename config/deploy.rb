@@ -13,6 +13,10 @@ set :deploy_to, "/var/www/rails/#{application}"
 set :chmod755, "app config db lib public vendor script script/* public/ disp*"
 
 namespace :deploy do
+  task :bundle_new_release, :roles => :app do
+    run "cd #{deploy_to} && bundle install --without test"
+  end
+
   task :restart, :roles => :app do
     run "touch #{deploy_to}/current/tmp/restart.txt"
   end
@@ -23,6 +27,7 @@ namespace :deploy do
   task :link_configuration, :roles => :app do
     run "ln -s #{deploy_to}/shared/config/database.yml #{current_path}/config/database.yml"
   end
+
 end
 
 task :production do
