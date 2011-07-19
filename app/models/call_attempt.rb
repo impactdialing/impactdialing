@@ -27,7 +27,7 @@ class CallAttempt < ActiveRecord::Base
 
   def minutes_used
     return 0 if self.tDuration.blank?
-    self.tDuration/60.ceil
+    (self.tDuration/60.0).ceil
   end
 
   def client
