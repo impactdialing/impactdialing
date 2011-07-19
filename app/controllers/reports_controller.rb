@@ -7,7 +7,7 @@ class ReportsController < ClientController
 
   def usage
     @campaign = @user.campaigns.find(params[:campaign_id])
-    @minutes = @campaign.call_attempts.for_status(CallAttempt::Status::SUCCESS).inject(0) { |sum, ca| sum + ca.duration_rounded_up }
+    @minutes = @campaign.call_attempts.for_status(CallAttempt::Status::SUCCESS).inject(0) { |sum, ca| sum + ca.minutes_used }
   end
 
   def dial_details
