@@ -50,7 +50,7 @@ describe ReportsController do
 
         csv = assigns(:csv)
         lines = csv.split("\n")
-        lines[0].should match("Phone,Status,recording1,recording2")
+        lines[0].should == "Phone,Status,recording1,recording2"
         lines[1].should == "#{voter1.Phone},#{voter1.call_attempts.last.status},#{response1.response},#{response4.response}"
         lines[2].should == "#{voter2.Phone},Not Dialed"
 

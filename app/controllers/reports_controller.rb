@@ -15,7 +15,7 @@ class ReportsController < ClientController
     respond_to do |format|
       format.csv do
         @csv = FasterCSV.generate do |csv|
-          csv << ["id", "Phone", "Status", @campaign.script.robo_recordings.collect{|rec| rec.name}].flatten
+          csv << ["Phone", "Status", @campaign.script.robo_recordings.collect{|rec| rec.name}].flatten
           @campaign.all_voters.each do |voter|
             attempt = voter.call_attempts.last
             if attempt
