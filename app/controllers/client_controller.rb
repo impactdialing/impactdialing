@@ -49,7 +49,7 @@ class ClientController < ApplicationController
       if params[:fullname]!=nil
         name_arr=params[:fullname].split(" ")
         fname=name_arr.shift
-        @user.fname=fname.strip
+        @user.fname=fname.strip if fname!=nil
         @user.lname=name_arr.join(" ").strip
       end
       
