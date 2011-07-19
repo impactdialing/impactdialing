@@ -1,4 +1,3 @@
-TWILIO_LOG = Logger.new(File.open("#{Rails.root}/log/broadcast.log", 'a'))
 TWILIO_ACCOUNT="AC422d17e57a30598f8120ee67feae29cd"
 TWILIO_AUTH="897298ab9f34357f651895a7011e1631"
 APP_NUMBER="4157020991"

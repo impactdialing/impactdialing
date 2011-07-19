@@ -55,3 +55,4 @@ require 'will_paginate'
 ActionMailer::Base.delivery_method = :sendmail
 ActionMailer::Base.default_content_type = "text/html"
 
+TWILIO_LOG = Logger.new(File.open("#{Rails.root}/log/broadcast.log", 'a'))
