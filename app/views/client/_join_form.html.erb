@@ -37,11 +37,21 @@
 			      </p>
 
 
-
+				<% if @user.new_record? %>
 				  <p>
 			        <label>Your name<span></span></label>
 					<input type="text" name="fullname" value="<%= params[:fullname]%>">
 			      </p>
+				<% else  %>
+				  <p>
+			        <label>First name<span></span></label>
+					<%= f.text_field :fname, {:class=>"field"} %>
+			      </p>
+				  <p>
+			        <label>Last name<span></span></label>
+					<%= f.text_field :lname, {:class=>"field"} %>
+			      </p>
+				<% end %>
 			    <p>
 		        <label>Your phone</label>
 				<%= f.text_field :phone, {:class=>"field"} %>
