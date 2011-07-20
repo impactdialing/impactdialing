@@ -21,6 +21,7 @@ ActionController::Routing::Routes.draw do |map|
     campaign.resources :voter_lists, :collection => {:import => :post}, :except => [:new, :show]
   end
   map.resources :reports, :path_prefix => "broadcast", :collection => {:usage => :get, :dial_details => :get}
+  map.broadcast_deleted_campaigns "/deleted_campaigns", :action => "deleted", :controller => 'campaigns', :conditions => { :method => :get }, :path_prefix => 'broadcast'
   map.resources :scripts, :path_prefix => "broadcast"
   map.connect 'monitor', :controller => "monitor", :action => "index", :path_prefix => 'broadcast'
 

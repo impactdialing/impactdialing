@@ -74,13 +74,13 @@ module ApplicationHelper
 
   ['title', 'full_title', 'phone', 'email', ].each do |value|
     define_method(value)do
-      t("white_labeling.#{domain}.#{value}")
+      I18n.t("white_labeling.#{domain}.#{value}")
     end
   end
 
   def domain
     d = request.domain.downcase.gsub(/\.com/, '')
-    if t("white_labeling.#{d}", :default => '').blank?
+    if I18n.t("white_labeling.#{d}", :default => '').blank?
       'impactdialing'
     else
       d
