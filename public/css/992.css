@@ -1,8 +1,90 @@
-.content > .col{float:left;width:28.12%;margin-right:2.67%;}
-.content > .col:last-child{float:right;width:38.39%;margin-right:0;}
-[role="main"]{float:left;width:58.92%;}
-[role="complementary"]{float:right;width:38.39%;}
-footer[role="contentinfo"] div{width:38.39%;}
-footer[role="contentinfo"] li{display:inline;margin-right:24px;}
-.ie6 body, .ie7 body, .ie8 body{width:960px;}
-.ie6 form .action, .ie7 form .action, .ie8 form .action{position:relative;left:6px!important;}
+/* 992 
+
+_____________________________________________________
+
+320 and Up boilerplate extension
+Author: Andy Clarke
+Version: 0.9.3b
+URL: http://stuffandnonsense.co.uk/projects/320andup/
+License: http://creativecommons.org/licenses/MIT/
+_____________________________________________________
+
+1.ROOT
+2.HEADINGS
+3.TYPOGRAPHY
+4.LINKS
+5.FIGURES & IMAGES
+6.TABLES
+7.FORMS (See css/mylibs/forms.css)
+8.BANNER — header[role="banner"]
+9.NAVIGATION — nav[role="navigation"]
+10.CONTENT
+11.MAIN — div[role="main"]
+12.COMPLIMENTARY — div[role="complementary"]
+13.CONTENTINFO — footer[role="contentinfo"]
+14.GLOBAL OBJECTS
+15.VENDOR-SPECIFIC 
+16.TEMPLATE SPECIFICS
+17.MODERNIZR
+
+*/
+
+/* 1.ROOT */
+/* 2.HEADINGS */
+/* 3.TYPOGRAPHY */
+/* 4.LINKS */
+/* 5.FIGURES & IMAGES */
+/* 6.TABLES */
+/* 7.FORMS (See css/mylibs/forms.css) */
+/* 8.BANNER */
+/* 9.NAVIGATION */
+/* 10.CONTENT */
+
+.content > .col {
+float : left;
+width : 28.12% /* 252 / 896 = .2812 */; 
+margin-right : 2.67% /* 24 / 896 = .0267 */; }
+
+.content > .col:last-child {
+float : right; 
+width : 38.39% /* 344 / 896 = .3839 */;
+margin-right : 0; }
+
+/* 11.MAIN */
+
+[role="main"] {
+float : left; 
+width : 58.92% /* 528 / 896 = .5892 */; }
+
+/* 12.COMPLIMENTARY */
+
+[role="complementary"] {
+float : right; 
+width : 38.39% /* 344 / 896 = .3839 */; }
+
+/* 13.CONTENTINFO */
+
+footer[role="contentinfo"] div {
+width : 38.39% /* 344 / 896 = .3839 */; }
+
+footer[role="contentinfo"] li {
+display : inline; 
+margin-right : 24px; }
+
+/* 14.GLOBAL OBJECTS */
+/* 15.VENDOR-SPECIFIC */
+/* 16.TEMPLATE SPECIFICS */
+/* 17.MODERNIZR */
+
+/* 18.FULL SITE IE FIXES */
+
+.ie6 body,
+.ie7 body,
+.ie8 body {
+width : 960px; }
+
+.ie6 form .action,
+.ie7 form .action,
+.ie8 form .action {
+position : relative; 
+left : 6px!important; }

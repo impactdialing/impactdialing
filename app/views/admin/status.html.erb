@@ -60,8 +60,8 @@
 <font color="red"><b><%= @errors %></b></font>
 
 <% if @errors.strip!="" && params[:sms]=="1" && ENV["RAILS_ENV"]=="production"
-	t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+	t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
 	a=t.call("POST", "SMS/Messages", {'From' => APP_NUMBER, 'To' => "8583829141", 'Body'=>"Alert: #{@errors[0..150]}"})
-	t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+	t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
 	a=t.call("POST", "SMS/Messages", {'From' => APP_NUMBER, 'To' => "9165959543", 'Body'=>"Alert: #{@errors[0..150]}"})
 end %>

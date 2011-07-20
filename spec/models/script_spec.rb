@@ -14,4 +14,16 @@ describe Script do
     Script.record_timestamps = true
     Script.by_updated.all.should == [newer_script, older_script]
   end
+
+  it "gives active scripts" do
+    inactive = Factory(:script, :active => false)
+    active = Factory(:script, :active => true)
+    Script.active.should == [active]
+  end
+
+  it "lists robo scripts" do
+    robo_script = Factory(:script, :robo => true)
+    manual_script = Factory(:script, :robo => false)
+    Script.robo.should == [robo_script]
+  end
 end

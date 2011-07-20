@@ -245,7 +245,7 @@ DaemonKit::Application.running! do |config|
 end
 
 
-# todo - remove all callers in progress
+# need to do - remove all callers in progress
 # delete cache for now
 #cache_delete("avail_campaign_hash")
 #ActiveRecord::Base.connection.execute("update caller_sessions set available_for_call=0")

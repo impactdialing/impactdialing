@@ -14,7 +14,7 @@ class ApplicationController < ActionController::Base
     @cont = controller_name
     @act = action_name
     if controller_name=="caller" && !ssl?
-      redirect_to "https://caller.#{request.domain}/#{@cont}/#{@act}/#{params[:id]}" 
+      redirect_to "https://caller.#{request.domain}/#{@cont}/#{@act}/#{params[:id]}"
       flash.keep
     elsif !ssl?
       redirect_to "https://admin.#{request.domain}/#{@cont}/#{@act}/#{params[:id]}"
@@ -22,7 +22,7 @@ class ApplicationController < ActionController::Base
     end
     return true
   end
-  
+
   def ssl?
     request.env['HTTPS'] == 'on' || request.env['HTTP_X_FORWARDED_PROTO'] == 'https'
   end
@@ -52,9 +52,15 @@ class ApplicationController < ActionController::Base
     if !@user.paid?
       #warning= "Your account is not funded and cannot make calls. For a free trial or to fund your account, email <a href=\"mailto:info@impactdialing.com\">info@impactdialing.com</a> or call (415) 347-5723."
 #      warning= "Your account is not funded and cannot make calls. Click here to<a href=\"/client/billing\"> activate your account</a>, or email <a href=\"mailto:info@impactdialing.com\">info@impactdialing.com</a> or call (415) 347-5723."
-      warning= "Before you can make calls, you need to verify a credit card number that we can bill. Until then, you can try out as much as you like, except for actually calling. <a href=\"/client/billing\">Click here to verify a credit card number.</a>"
+      warning= "Before you can make calls, you need to verify a credit card number that we can bill. Until then, you can try out as much as you like, except for actually calling. #{billing_link(self.active_layout.instance_variable_get(:@template_path))} "
     end
     warning
+  end
+
+  def billing_link(layout)
+    #raise layout.inspect
+    controller = layout.include?("v2")  ? :broadcast : :client
+    "<a href=\"/#{controller}/billing\">Click Here to Verify a credit card number</a>"
   end
 
   def preload_models
@@ -173,7 +179,7 @@ class ApplicationController < ActionController::Base
     else
       incompletes={}
     end
-    
+
 
     #new style results
     attempt = CallAttempt.find(attempt_id)
@@ -183,7 +189,7 @@ class ApplicationController < ActionController::Base
       result_json={}
     end
     logger.info "before result_json=#{result_json.inspect}"
-    
+
     r=result_set_num
     this_result_set = JSON.parse(eval("@script.result_set_#{r}" ))
     thisKeypadval= params[:Digits].gsub("#","").gsub("*","").slice(0..1)

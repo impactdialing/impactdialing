@@ -29,6 +29,7 @@ Factory.define :caller do |s|
 end
 
 Factory.define :voter_list do |v|
+  v.enabled { true }
   v.campaign_id { Factory(:campaign).id }
   v.name { Factory.next(:name) }
   v.user_id { Factory(:user).id }
@@ -38,3 +39,25 @@ Factory.define :voter do |v|
   v.FirstName { Factory.next(:name) }
   v.Phone { Factory.next(:phonenumber) }
 end
+
+Factory.define :caller_session do |s|
+  s.campaign_id { Factory(:campaign, :user => Factory(:user)).id }
+  s.caller_id { Factory(:caller) }
+end
+
+Factory.define :call_attempt do |ca|
+end
+
+Factory.define :robo_recording do |rr|
+  rr.name { Factory.next(:name) }
+end
+
+Factory.define :recording_response do |rr|
+  rr.response 'response'
+  rr.keypad '1'
+end
+
+Factory.define :call_response do |cr|
+end
+
+

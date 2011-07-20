@@ -4,52 +4,5 @@
  * twitter.com/keithclarkcouk
  * www.keithclark.co.uk
  */
-
-(function($) {
-	function getNthIndex(cur, dir) {
-		var t = cur, idx = 0;
-		while (cur = cur[dir] ) {
-			if (t.tagName == cur.tagName) {
-				idx++;
-			}
-		}
-		return idx;
-	}
-
-	function isNthOf(elm, pattern, dir) {
-		var position = getNthIndex(elm, dir), loop;
-		if (pattern == "odd" || pattern == "even") {
-			loop = 2;
-			position -= !(pattern == "odd");
-		} else {
-			var nth = pattern.indexOf("n");
-			if (nth > -1) {
-				loop = parseInt(pattern, 10);
-				position -= (parseInt(pattern.substring(nth + 1), 10) || 0) - 1;
-			} else {
-				loop = position + 1;
-				position -= parseInt(pattern, 10) - 1;
-			}
-		}
-		return (loop<0 ? position<=0 : position >= 0) && position % loop == 0
-	}
-
-	var pseudos = {
-		"first-of-type": function(elm) {
-			return getNthIndex(elm, "previousSibling") == 0;
-		},
-		"last-of-type": function(elm) { 
-			return getNthIndex(elm, "nextSibling") == 0;
-		},
-		"only-of-type": function(elm) { 
-			return pseudos["first-of-type"](elm) && pseudos["last-of-type"](elm);
-		},
-		"nth-of-type": function(elm, b, match, all) {
-			return isNthOf(elm, match[3], "previousSibling");
-		},
-		"nth-last-of-type": function(elm, i, match) {
-			return isNthOf(elm, match[3], "nextSibling");
-		}		
-	}
-	$.extend($.expr[':'], pseudos);
-}(jQuery));
+(function(g){function e(a,c){for(var b=a,d=0;a=a[c];)b.tagName==a.tagName&&d++;return d}function h(a,c,b){a=e(a,b);if(c=="odd"||c=="even")b=2,a-=c!="odd";else{var d=c.indexOf("n");d>-1?(b=parseInt(c,10),a-=(parseInt(c.substring(d+1),10)||0)-1):(b=a+1,a-=parseInt(c,10)-1)}return(b<0?a<=0:a>=0)&&a%b==0}var f={"first-of-type":function(a){return e(a,"previousSibling")==0},"last-of-type":function(a){return e(a,"nextSibling")==0},"only-of-type":function(a){return f["first-of-type"](a)&&f["last-of-type"](a)},
+"nth-of-type":function(a,c,b){return h(a,b[3],"previousSibling")},"nth-last-of-type":function(a,c,b){return h(a,b[3],"nextSibling")}};g.extend(g.expr[":"],f)})(jQuery);

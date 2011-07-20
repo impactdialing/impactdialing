@@ -41,7 +41,7 @@ class Dialer
     require "open-uri"
     voter.status="Call in progress"
     voter.save
-    t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+    t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
 #    a=t.call("POST", "Calls", {'IfMachine'=>"Hangup", 'Caller' => APP_NUMBER, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}"})
     if !campaign.caller_id.blank? && campaign.caller_id_verified
       caller_num=campaign.caller_id
@@ -93,7 +93,7 @@ class Dialer
   end
 end
 
-class Twilio
+class TwilioLib
   require 'net/http'
 
   DEFAULT_SERVER = "api.twilio.com"

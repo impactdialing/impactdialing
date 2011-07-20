@@ -6,7 +6,7 @@
 		<% else %>
 		<tr><th colspan="7">Name</th></tr>
 		<% end %>
-		<% @user.campaigns.each do |c| %>
+		<% @campaigns.each do |c| %>
 		<tr>
 			<td><%= c.name %></td>
 			<td><a href="/client/report_overview?id=<%= c.id %>">Dials</a></td>
@@ -33,8 +33,8 @@
 				<% if @user.admin %>
 			<tr><td><a href="/client/report_realtime?id=<%=  params[:id]%>">Admin Realtime Report</a></td></tr>
 			<% end %>
-		
-		
+
+
 		</table>
 
 <% end %>

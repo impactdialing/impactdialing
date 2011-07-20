@@ -3,12 +3,35 @@ require "spec_helper"
 describe VoterList do
   include ActionController::TestProcess
 
+  it "can return all voter lists of the given ids" do
+    v = 3.times.map { Factory(:voter_list) }
+    VoterList.by_ids([v.first.id, v.last.id]).should == [v.first, v.last]
+  end
+
+  describe "enable and disable voter lists" do
+    let(:campaign) { Factory(:campaign) }
+    it "can disable all voter lists in the given scope" do
+      Factory(:voter_list, :campaign => campaign, :enabled => true)
+      Factory(:voter_list, :campaign => campaign, :enabled => true)
+      Factory(:voter_list, :campaign => Factory(:campaign), :enabled => true)
+      campaign.voter_lists.disable_all
+      VoterList.all.map(&:enabled).should == [false, false, true]
+    end
+    it "can enable all voter lists in the given scope" do
+      Factory(:voter_list, :campaign => campaign, :enabled => false)
+      Factory(:voter_list, :campaign => campaign, :enabled => false)
+      Factory(:voter_list, :campaign => Factory(:campaign), :enabled => false)
+      campaign.voter_lists.enable_all
+      VoterList.all.map(&:enabled).should == [true, true, false]
+    end
+  end
+
   describe "upload voters list" do
     let(:csv_file_upload) {
       fixture_path  = ActionController::TestCase.fixture_path
-      source_file   = "#{fixture_path}files/voters_list.csv"
+      source_file   = "#{fixture_path}files/valid_voters_list.csv"
       temp_dir      = "#{fixture_path}test_tmp"
-      temp_filename = "#{temp_dir}/voters_list.csv"
+      temp_filename = "#{temp_dir}/valid_voters_list.csv"
       FileUtils.cp source_file, temp_filename
       temp_filename
     }
@@ -100,6 +123,28 @@ describe VoterList do
                 :failedCount  => 0
             }
       end
+    end
+  end
+
+  describe "dial" do
+    let(:voter_list) { Factory(:voter_list, :campaign => Factory(:campaign, :calls_in_progress => true)) }
+    it "dials all the voters who have not been dialed yet" do
+      voter1 = Factory(:voter, :voter_list => voter_list, :campaign => voter_list.campaign)
+      voter2 = Factory(:voter, :voter_list => voter_list, :campaign => voter_list.campaign)
+      voter1.should_receive(:dial)
+      voter2.should_receive(:dial)
+      voters = mock
+      voters.should_receive(:to_be_dialed).and_return(mock('voters', :randomly => [voter1, voter2]))
+      voter_list.stub!(:voters).and_return(voters)
+      voter_list.dial
+    end
+
+    it "gives the count of remaining voters" do
+      voter_list = Factory(:voter_list)
+      Factory(:voter, :voter_list => voter_list)
+      attempted_voter = Factory(:voter, :voter_list => voter_list)
+      Factory(:call_attempt, :voter => attempted_voter)
+      voter_list.voters_remaining.should == 1
     end
   end
 end

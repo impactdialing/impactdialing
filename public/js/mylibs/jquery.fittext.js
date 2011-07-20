@@ -8,33 +8,4 @@
 *
 * Date: Thu May 05 14:23:00 2011 -0600
 */
-
-(function( $ ){
-	
-	$.fn.fitText = function( kompressor ) {
-	
-			return this.each(function(){
-				var $this = $(this);                                      // store the object
-				var fontResize = origFontSize = $this.css('font-size');   // init the font sizes
-				var compressor = kompressor || 1;                         // set the compressor
-
-        // Resizer() resizes items based on the object width divided by the compressor * 10
-				var resizer = function ( obj ) {
-					fontResize =  obj.width() / (compressor*10);
-					fontResize = (fontResize >= origFontSize)?  origFontSize : fontResize; 
-					obj.css('font-size',fontResize);
-				}
-
-				// Call once to set.
-				resizer($this);
-				
-				// Call on resize. Opera debounces their resize by default. 
-      	$(window).resize(function() {
-					resizer($this);
-      	});
-      	
-			});
-
-	};
-
-})( jQuery );
+(function(a){a.fn.fitText=function(e){return this.each(function(){var c=a(this),b=origFontSize=c.css("font-size"),f=e||1,d=function(a){b=a.width()/(f*10);b=b>=origFontSize?origFontSize:b;a.css("font-size",b)};d(c);a(window).resize(function(){d(c)})})}})(jQuery);

@@ -1,6 +1,13 @@
 class CallAttempt < ActiveRecord::Base
-  belongs_to :voter, :class_name => "Voter", :foreign_key => "voter_id"
-  
+  belongs_to :voter
+  belongs_to :campaign
+  belongs_to :caller
+  has_many :call_responses
+
+  named_scope :for_campaign, lambda{|campaign| {:conditions => ["campaign_id = ?", campaign.id] }}
+  named_scope :for_status, lambda{|status| {:conditions => ["call_attempts.status = ?", status] }}
+
+
   def ring_time
     if self.answertime!=nil && self.created_at!=nil
       (self.answertime  - self.created_at).to_i
@@ -10,17 +17,47 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def duration
-    if self.call_end!=nil && self.call_start!=nil
-      (self.call_end  - self.call_start).to_i
-    elsif self.call_start!=nil && self.call_end==nil
-      (Time.now  - self.call_start).to_i
-    else
-      nil
-    end
+    return nil unless call_start
+    ((call_end || Time.now) - self.call_start).to_i
   end
-  
+
+  def duration_rounded_up
+    ((duration || 0) / 60.0).ceil
+  end
+
   def minutes_used
     return 0 if self.tDuration.blank?
-    self.tDuration/60.ceil
+    (self.tDuration/60.0).ceil
   end
+
+  def client
+    campaign.client
+  end
+
+  def next_recording(current_recording = nil, call_response = nil)
+    return campaign.script.robo_recordings.first.twilio_xml(self) unless current_recording
+    if call_response
+      (return current_recording.next ? current_recording.next.twilio_xml(self) : current_recording.hangup) if call_response.recording_response
+      return current_recording.hangup if call_response.times_attempted > 2
+      return current_recording.twilio_xml(self) if call_response && !call_response.recording_response
+    end
+    current_recording.next ? current_recording.next.twilio_xml(self) : current_recording.hangup
+  end
+
+  module Status
+    VOICEMAIL = "Message delivered"
+    SUCCESS = "Call completed with success."
+    INPROGRESS = "Call in progress"
+    NOANSWER = "No answer"
+    ABANDONED = "Call abandoned"
+    BUSY = "No answer busy signal"
+    FAILED = "Call failed"
+    HANGUP = "Hangup or answering machine"
+    READY = "Call ready to dial"
+    CANCELLED = "Call cancelled"
+
+    MAP = {'in-progress' => INPROGRESS, 'completed' => SUCCESS, 'busy' => BUSY, 'failed' => FAILED, 'no-answer' => NOANSWER, 'canceled' => CANCELLED }
+    ALL = MAP.values
+  end
+
 end
