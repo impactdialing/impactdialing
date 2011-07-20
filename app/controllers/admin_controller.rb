@@ -11,7 +11,7 @@ class AdminController < ApplicationController
     end
     calls_to_end = CallAttempt.all(:conditions=>"tEndTime is not NULL and call_end is NULL")
     calls_to_end.each do |c|
-      c.call_end = tEndTime
+      c.call_end = c.tEndTime
       c.save
     end
     if Time.now.hour > 0 && Time.now.hour < 6
