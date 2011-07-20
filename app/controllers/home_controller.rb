@@ -3,6 +3,9 @@ class HomeController < ApplicationController
     if request.subdomains.first=="caller"
       redirect_to :controller=>"caller"
       return
+    elsif request.subdomains.first=="broadcast"
+      redirect_to :controller=>"broadcast"
+      return
     else
       redirect_to :controller=>"client"
       return
