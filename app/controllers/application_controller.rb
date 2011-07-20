@@ -60,7 +60,7 @@ class ApplicationController < ActionController::Base
   def billing_link(layout)
     #raise layout.inspect
     controller = layout.include?("v2")  ? :broadcast : :client
-    "<a href=\"/#{controller}/billing\">Click Here to Verify a credit card number</a>"
+    "<a href=\"/#{controller}/billing\">Click here to verify a credit card.</a>"
   end
 
   def preload_models
