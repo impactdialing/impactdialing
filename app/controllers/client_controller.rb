@@ -93,13 +93,13 @@ class ClientController < ApplicationController
           @numNotes = 1
           @script.voter_fields='["CustomID","FirstName","MiddleName","LastName","Suffix","Age","Gender","Email"]'
           @script.script = <<-EOS
-          Hi, is ___ there?
+Hi, is ___ there?
 
-          My name's ___ and I'm a volunteer with the such-and-such campaign.
+My name's ___ and I'm a volunteer with the such-and-such campaign.
 
-          I'm voting for such-and-such because...
+I'm voting for such-and-such because...
 
-          Can we count on you to vote for such-and-such?
+Can we count on you to vote for such-and-such?
           EOS
           @script.active = 1
           @script.user_id = @user.id
