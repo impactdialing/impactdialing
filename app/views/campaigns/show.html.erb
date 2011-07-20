@@ -1,10 +1,8 @@
-<% @breadcrumb=[{"Campaigns"=>"/client/campaigns"}, @campaign.name] %>
-
 <h1>Edit campaign</h1>
 
 <div id="callerid"></div>
 
-<% form_for :campaign, :url => {:action => "campaign_add", :id=>@campaign.id}, :html => {:name => 'callerForm', :id => 'callerForm'} do |f| %>
+<% form_for @campaign, :html => {:name => 'callerForm', :id => 'callerForm'} do |f| %>
     <fieldset>
 	  <legend>Campaign options</legend>
       <fieldset>
@@ -19,82 +17,8 @@
 	      </div>
 
         <p><label for="">Script</label><br>
-          <%= f.collection_select(:script_id, Script.find_all_by_user_id_and_active(@user.id, 1), :id, :name, {:prompt => true}, {:class=>"field"}) %>
+          <%= f.collection_select(:script_id, @scripts, :id, :name, {:prompt => true}, {:class=>"field"}) %>
         </p>
-
-        <p><label for="">Dialing Mode</label>
-          <select class="field" id="campaign_predective_type" name="campaign[predective_type]">
-            <% public_dialers = [["Predictive", "algorithm1"], ["Power x4", "power_4x"], ["Power x3", "power_3x"], ["Power x2", "power_2x"], ["Preview", "preview"],] %>
-            <% if !public_dialers.map { |pair| pair[1] }.index(@campaign.predective_type) %>
-                <option value="<%= @campaign.predective_type %>" selected><%= @campaign.predective_type %></option>
-            <% end %>
-            <%= options_for_select public_dialers, @campaign.predective_type %>
-          </select>
-        </p>
-        <% if !@campaign.user.recordings.blank? %>
-            <p><label> <%= f.check_box :use_recordings, :onclick=>"doRecord();" %> &nbsp; Leave voicemail</label></p>
-
-            <div id="recordingsdiv"
-                 <% if  !@campaign.use_recordings? %> style="display:none;"
-                 <% end %>>
-              <p>Recording:</p>
-              <%= f.collection_select(:recording_id, Recording.find_all_by_user_id_and_active(@user.id, 1), :id, :name, {:prompt => false}, {:class=>"field", :onchange=>"updatePreview();"}) %>
-              <div id="sndPreview"></div>
-            </div>
-        <% end %>
-        <!--		<p><input type="button" class="button" value="Manage Recordings" onclick="document.location.href='/client/recording_add?campaign_id=<%= @campaign.id %>';"/></p>-->
-        <p class="actions">
-          <a href='/client/recording_add?campaign_id=<%= @campaign.id %>' class="action secondary">Manage voicemails</a>
-        </p>
-
-        <p>Call-in number:
-          <% if ENV["RAILS_ENV"]=="development" %>
-              <%= number_to_phone(APP_NUMBER, :area_code => true) %>
-          <% else %>
-              <%= number_to_phone(@campaign.callin_number, :area_code => true) %>
-          <% end %>
-        </p>
-
-        <p>Campaign ID:  <%= @campaign.group_id %></p>
-      </fieldset>
-      <fieldset>
-        <legend>Callers with access</legend>
-        <% if @callers.length==0 %>
-            <p>No callers entered.</p>
-            <a href="/client/callers" class="add-button"><span>Add callers</span></a>
-        <% else %>
-            <table width="100%" border="0" cellspacing="0" cellpadding="0">
-              <tr>
-                <th>Name</th>
-                <th>&nbsp;</th>
-                <th>PIN</th>
-                <% if @campaign.predective_type.index("robo,") %>
-                    <th></th>
-                    <th></th>
-                <% end %>
-              </tr>
-              <tr>
-                <td><input type="checkbox" value="0" id="listUse" onclick="allCallers();"> All Callers</td>
-                <td></td>
-                <td></td>
-              </tr>
-              <% @callers.each do |l| %>
-                  <tr>
-                    <td><%= check_box_tag "campaign[caller_ids][]", "#{l.id}", callerInCampaign(l), :onclick=>"someCallers();" -%> <%= l.name %></td>
-                    <td></td>
-                    <td><%= l.pin %></td>
-                    <% if @campaign.predective_type.index("robo,") %>
-                        <td>
-                          <a href="/client/robo_session_start?caller_id=<%= l.id %>&campaign_id=<%= @campaign.id %>">start</a>
-                        </td>
-                        <td>
-                          <a href="/client/robo_session_end?caller_id=<%= l.id %>&campaign_id=<%= @campaign.id %>">end</a>
-                        </td>
-                    <% end %>
-                  </tr>
-              <% end %>
-            </table>
-        <% end %>
       </fieldset>
       <fieldset>
         <legend>Available lists</legend>
@@ -115,8 +39,8 @@
               <% @lists.each do |l| %>
                   <tr>
                     <td valign="top"><%= check_box_tag "voter_list_ids[]", "#{l.id}", l.enabled -%> <%= l.name %></td>
-                    <td valign="top"><%= l.voters.size %> <%# Voter.find_all_by_voter_list_id(l.id).length %></td>
-                    <td valign="top"><%# l.voters.collect{|v| v.id if v.result_digit.blank?}.reject(&:blank?).length %> <%= Voter.find_all_by_voter_list_id_and_active(l.id, 1, :conditions=>"status= 'Not Called' or call_back=1").size %></td>
+                    <td valign="top"><%= l.voters.size %></td>
+                    <td valign="top"><%= l.voters_remaining%></td>
                   </tr>
               <% end %>
             </table>
@@ -139,63 +63,5 @@
 </fieldset>
 
 <script>
-    function allCallers() {
-        var f = document.forms['callerForm'].elements['campaign[caller_ids][]'];
-
-        for (var i = 0; i < f.length; i++) {
-            f[i].checked = true;
-        }
-
-    }
-    function someCallers() {
-        $('listUse').checked = false;
-        isAll();
-    }
-
-    function isAll() {
-        var f = document.forms['callerForm'].elements['campaign[caller_ids][]'];
-        var n = 0;
-        for (var i = 0; i < f.length; i++) {
-            if (f[i].checked == true)
-                n++;
-        }
-        if (n ==<%= @callers.length %>) {
-            $('listUse').checked = true;
-
-        }
-    }
-    <% if @callers.length!=0 %>
-    isAll();
-    <% end %>
-    <%= remote_function(:update => "callerid",
-:url => { :action => "campaign_caller_id_verified", :id=>@campaign.id }) %>
-
-    function doRecord() {
-        if ($('campaign_use_recordings').checked) {
-            $('recordingsdiv').style.display = 'block';
-        } else {
-            $('recordingsdiv').style.display = 'none';
-        }
-    }
-
-    <% if !@campaign.user.recordings.blank? %>
-    function updatePreview() {
-        recording_id = $('campaign_recording_id').value;
-    <%@user.recordings.each do |recording| %>
-        if (recording_id ==<%= recording.id %>) {
-            path = '<%= recording.recording_url %>';
-            name = '<%= escape_javascript recording.name %>';
-        }
-    <% end %>
-
-        var o = 'Preview: ' + name + '<br/>';
-
-        if (path.indexOf('mp3') > -1)
-            o = o + '<object type="application/x-shockwave-flash" width="200" height="14" data="/xspf_player_slim.swf?player_title=' + name + '&song_title=' + name + '&song_url=' + escape(path) + '"><param name="movie" value="/xspf_player_slim.swf?player_title=' + name + '&song_title=' + name + '&song_url=' + escape(path) + '" /></object>';
-        else
-            o = o + '<EMBED SRC="' + path + '" WIDTH="240" HEIGHT = "25" AUTOPLAY="false" CONTROLLER="true" LOOP="false" PLUGINSPAGE="http://www.apple.com/quicktime/">';
-        $('sndPreview').innerHTML = o;
-    }
-    <% end %>
-    updatePreview();
+    <%= remote_function(:update => "callerid", :url => { :action => "verify_callerid", :id=>@campaign.id }) %>
 </script>

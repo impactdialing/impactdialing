@@ -1,5 +1,7 @@
 require 'tempfile'
 class VoterListsController < ClientController
+  layout 'v2'
+
   before_filter :load_campaign
   before_filter :check_file_uploaded, :only => [:import]
   skip_before_filter :check_paid
@@ -7,7 +9,7 @@ class VoterListsController < ClientController
   def create
     if params[:upload].blank?
       flash_message(:error, "Please click \"Choose file\" and select your list before clicking Upload.")
-      redirect_to campaign_view_path(@campaign.id)
+      redirect_to campaign_path(@campaign.id)
       return
     end
 
@@ -46,14 +48,20 @@ class VoterListsController < ClientController
     end
     @voter_list.save!
 
-    result = @voter_list.import_leads(csv_to_system_map,
-                                      uploaded_filename,
-                                      @separator)
+    begin
+      result = @voter_list.import_leads(csv_to_system_map,
+                                        uploaded_filename,
+                                        @separator)
+      flash_message(:notice, "Upload completed. #{result[:successCount]} out of #{result[:successCount]+result[:failedCount]} rows imported successfully.")
+    rescue FasterCSV::MalformedCSVError => err
+      @voter_list.destroy
+      flash_message(:error, "Invalid CSV file. Could not import.")
+    ensure
+      File.unlink uploaded_filename
+      session[:voters_list_upload] = nil
+    end
 
-    File.unlink uploaded_filename
-    session[:voters_list_upload] = nil
-    flash_message(:notice, "Upload completed. #{result[:successCount]} out of #{result[:successCount]+result[:failedCount]} rows imported successfully.")
-    redirect_to campaign_view_path(@campaign.id)
+    redirect_to campaign_path(@campaign.id)
   end
 
   private
@@ -64,7 +72,7 @@ class VoterListsController < ClientController
   def check_file_uploaded
     return true if session[:voters_list_upload] and session[:voters_list_upload]["filename"]
     flash_message(:error, "Please upload the file again.")
-    redirect_to campaign_view_path(@campaign.id)
+    redirect_to campaign_path(@campaign.id)
     false
   end
 

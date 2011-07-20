@@ -1,6 +1,11 @@
 class Voter < ActiveRecord::Base
+  include ActionController::UrlWriter
+
   belongs_to :voter_list
+  belongs_to :campaign
   has_many :families
+  has_many :call_attempts
+  belongs_to :last_call_attempt, :class_name => "CallAttempt"
 
   validates_presence_of :Phone
   validates_length_of :Phone, :minimum => 10
@@ -11,7 +16,10 @@ class Voter < ActiveRecord::Base
   }
 
   default_scope :order => 'LastName, FirstName, Phone'
-  named_scope :active, lambda { { :conditions => ["active = ?", true] }}
+  named_scope :active, :conditions => ["active = ?", true]
+  named_scope :to_be_dialed, :include => [:call_attempts], :conditions => ["(call_attempts.id is null and call_back is false) OR call_attempts.status IN (?)", CallAttempt::Status::ALL - [CallAttempt::Status::SUCCESS] ]
+  named_scope :randomly, :order => 'rand()'
+  named_scope :to_callback, :conditions => ["call_back is true"]
 
   cattr_reader :per_page
   @@per_page = 25
@@ -38,7 +46,7 @@ class Voter < ActiveRecord::Base
     campaign   = session.campaign
     self.status='Call attempt in progress'
     self.save
-    t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+    t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
     if !campaign.caller_id.blank? && campaign.caller_id_verified
       caller_num=campaign.caller_id
     else
@@ -71,4 +79,34 @@ class Voter < ActiveRecord::Base
     self.save
   end
 
+  def dial
+    message = "#{self.Phone} for campaign id:#{self.campaign_id}"
+    logger.info "[dialer] Dialling #{message} "
+    call_attempt = new_call_attempt
+    callback_params = {:call_attempt_id => call_attempt.id, :host => HOST, :port => PORT}
+    response = Twilio::Call.make(
+        self.campaign.caller_id,
+        self.Phone,
+        twilio_callback_url(callback_params),
+        'FallbackUrl'    => twilio_report_error_url(callback_params),
+        'StatusCallback' => twilio_call_ended_url(callback_params),
+        'Timeout'        => '20',
+        'IfMachine'      => 'Hangup'
+    )
+
+    if response["TwilioResponse"]["RestException"]
+      logger.info "[dialer] Exception when attempted to call #{message}  Response: #{response["TwilioResponse"]["RestException"].inspect}"
+      return false
+    end
+    logger.info "[dialer] Dialed #{message}. Response: #{response["TwilioResponse"].inspect}"
+    call_attempt.update_attributes!(:sid => response["TwilioResponse"]["Call"]["Sid"])
+    true
+  end
+
+  private
+  def new_call_attempt
+    call_attempt = self.call_attempts.create(:campaign => self.campaign, :dialer_mode => 'robo', :status => CallAttempt::Status::INPROGRESS )
+    self.update_attributes!(:last_call_attempt => call_attempt)
+    call_attempt
+  end
 end

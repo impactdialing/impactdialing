@@ -5,6 +5,7 @@ class User < ActiveRecord::Base
   validates_presence_of :email, :on => :create, :message => "can't be blank"
 
   has_many :campaigns, :conditions => {:active => true}
+  has_many :all_campaigns, :class_name => 'Campaign'
   has_many :recordings
   has_one :account
   has_many :scripts

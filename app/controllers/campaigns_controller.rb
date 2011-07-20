@@ -7,20 +7,85 @@ class CampaignsController < ClientController
   end
 
   def create
-    campaign = @user.campaigns.create!(:script => @user.scripts.first, :predective_type => 'algorithm1', :callers => @user.callers.active)
+    campaign = @user.campaigns.create!(:script => @user.scripts.robo.first, :robo => true)
+    redirect_to campaign
+  end
+
+  def update
+    campaign = @user.all_campaigns.find(params[:id])
+    campaign.attributes = params[:campaign]
+    campaign.script ||= @user.scripts.active.first
+    campaign.voter_lists.disable_all
+    campaign.voter_lists.by_ids(params[:voter_list_ids]).enable_all
+    if campaign.save
+      flash_message(:notice, "Campaign saved")
+      generate_validation_token_for_caller_id(campaign) if campaign.caller_id.present? and (not campaign.caller_id_verified)
+    end
     redirect_to campaign_path(campaign)
   end
 
   def index
-    @campaigns = Campaign.active.for_user(@user).paginate :page => params[:page], :order => 'id desc'
+    @campaigns = active_robo_campaigns
   end
 
   def show
-    @campaign = Campaign.find(params[:id])
-    @callers = @user.callers.active
-    @lists = @campaign.voter_lists
+    @scripts = @user.scripts.robo.active
+    @campaign = @user.campaigns.find(params[:id].to_i)
+    @callers  = @user.callers.active
+    @lists    = @campaign.voter_lists
     @voters = @campaign.all_voters.active.paginate(:page => params[:page])
-    flash_now(:warning, t(:caller_id_blank)) if @campaign.caller_id.blank?
+    if @campaign.caller_id.blank?
+      flash_now(:warning, t(:caller_id_blank))
+    end
     @voter_list = @campaign.voter_lists.new
+  end
+
+  #TODO: extract html message to partial
+  def verify_callerid
+    @campaign = @user.campaigns.find(params[:id].to_i)
+    @campaign.check_valid_caller!
+    @campaign.save
+    ret = if @campaign.caller_id.present? and (not @campaign.caller_id_verified)
+            "<div class='msg msg-error'> <p><strong>Your Campaign Caller ID is not verified.</strong></p> </div>"
+          end
+    render :text => ret
+  end
+
+  def control
+    @campaigns = active_robo_campaigns
+  end
+
+  def running_status
+    render :partial => "control_list", :locals => { :campaigns => active_robo_campaigns }
+  end
+
+  def start
+    @campaign = Campaign.find(params[:id])
+    @campaign.start
+    redirect_to control_campaigns_path
+  end
+
+  def stop
+    @campaign = Campaign.find(params[:id])
+    @campaign.stop
+    redirect_to control_campaigns_path
+  end
+
+  def dial_statistics
+    @campaign = @user.campaigns.find(params[:id])
+  end
+
+  private
+  def generate_validation_token_for_caller_id(campaign)
+    validation_code = campaign.caller_id_object.validation_code
+    if validation_code
+      flash_message(:notice, "<font color=red>Please enter code #{validation_code} when called.</font>")
+    else
+      flash_message(:error, "Could not validate your caller id")
+    end
+  end
+
+  def active_robo_campaigns
+    @user.campaigns.active.robo.paginate :page => params[:page], :order => 'id desc'
   end
 end

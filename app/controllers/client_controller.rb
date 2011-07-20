@@ -8,15 +8,16 @@ class ClientController < ApplicationController
   in_place_edit_for :campaign, :name
 
   def check_login
-    if session[:user].blank?
-      redirect_to :action=>"login"
-      return
-    end
+    redirect_to_login and return if session[:user].blank?
     begin
       @user = User.find(session[:user])
     rescue
       logout
     end
+  end
+
+  def redirect_to_login
+    redirect_to login_path
   end
 
   def forgot
@@ -254,7 +255,7 @@ class ClientController < ApplicationController
 
   def logout
     session[:user]=nil
-    redirect_to :controller => 'home', :action=>"index"
+    redirect_to_login
   end
 
   def callers
@@ -310,12 +311,12 @@ class ClientController < ApplicationController
       @campaign.save
     end
     flash_message(:notice, "Campaign deleted")
-    redirect_to :action=>"campaigns"
+    redirect_to :back
   end
 
   def campaigns
     @breadcrumb="Campaigns"
-    @campaigns = Campaign.active.for_user(@user).paginate :page => params[:page], :order => 'id desc'
+    @campaigns = Campaign.active.manual.for_user(@user).paginate :page => params[:page], :order => 'id desc'
   end
 
   def campaign_new
@@ -358,7 +359,7 @@ class ClientController < ApplicationController
       require "open-uri"
       voter.status="Call in progress"
       voter.save
-      t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+      t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
       if !campaign.caller_id.blank? && campaign.caller_id_verified
         caller_num = campaign.caller_id
       else
@@ -408,7 +409,7 @@ class ClientController < ApplicationController
       if @campaign.valid?
         if !@campaign.caller_id_verified || (!@campaign.caller_id.blank? && last_caller_id != @campaign.caller_id)
           #verify this callerid
-          t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+          t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
           a = t.call("POST", "OutgoingCallerIds", {'PhoneNumber'=>@campaign.caller_id, 'FriendlyName' => "Campaign #{@campaign.id}"})
           require 'rubygems'
           require 'hpricot'
@@ -649,6 +650,7 @@ class ClientController < ApplicationController
     @callers = Caller.find_all_by_user_id_and_active(@user.id,true)
     @lists = @campaign.voter_lists
     @voters = Voter.paginate :page => params[:page], :conditions =>"active=1 and campaign_id=#{@campaign.id}", :order => 'LastName,FirstName,Phone'
+    @scripts = @user.scripts.manual.active
 
     #    @campaign.check_valid_caller_id_and_save
     #    flash.now[:error]="Your Campaign Caller ID is not verified."  if !@campaign.caller_id.blank? && !@campaign.caller_id_verified
@@ -751,7 +753,7 @@ class ClientController < ApplicationController
 
   def scripts
     @breadcrumb="Scripts"
-    @scripts = Script.paginate :page => params[:page], :conditions =>"active=1 and user_id=#{@user.id}", :order => 'name'
+    @scripts = @user.scripts.active.manual.paginate :page => params[:page], :order => 'name'
   end
 
   def script_add
@@ -880,8 +882,9 @@ class ClientController < ApplicationController
   def reports
     if params[:id].blank?
       @breadcrumb = "Reports"
+      @campaigns = @user.campaigns.manual
     else
-      @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id)
+      @campaign = Campaign.find(params[:id])
       @breadcrumb=[{"Reports"=>"/client/reports"},@campaign.name]
     end
   end
@@ -894,18 +897,18 @@ class ClientController < ApplicationController
     elsif params[:id]=="add_caller_5"
       flash_message(:notice, "5 Test callers added")
       (1..5).each do |i|
-        t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+        t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
         a = t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => APP_NUMBER, 'Called' => TEST_CALLER_NUMBER, 'Url'=>"#{APP_URL}/callin?test=1"})
       end
     elsif params[:id]=="add_caller_15"
       flash_message(:notice, "15 Test callers added")
       (1..15).each do |i|
-        t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+        t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
         a = t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => APP_NUMBER, 'Called' => TEST_CALLER_NUMBER, 'Url'=>"#{APP_URL}/callin?test=1"})
       end
     elsif params[:id]=="add_caller"
       flash_message(:notice, "Test caller added")
-      t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+      t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
       a = t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => APP_NUMBER, 'Called' => TEST_CALLER_NUMBER, 'Url'=>"#{APP_URL}/callin?test=1"})
     end
     redirect_to :action=>"report_realtime", :id=>"38"
@@ -1149,8 +1152,7 @@ class ClientController < ApplicationController
       @script.save
     end
     flash_message(:notice, "Script deleted")
-    redirect_to :action=>"scripts"
-    return
+    redirect_to :back
   end
 
   def report_caller
@@ -1374,7 +1376,7 @@ class ClientController < ApplicationController
   end
 
   def eavesdrop_call
-    t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+    t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
     # a = t.call("POST", "Calls/#{caller.sid}", {'CurrentUrl'=>"#{appurl}/callin/callerEndCall?session=#{caller.id}"})
     session=CallerSession.find(params[:session_id])
     a = t.call("POST", "Calls", {'Timeout'=>"20", 'Caller' => session.campaign.caller_id, 'Called' => params[:num], 'Url'=>"#{APP_URL}/callin/monitorEavesdrop?session=#{session.id}&type=#{params[:type]}"})

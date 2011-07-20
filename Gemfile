@@ -7,8 +7,8 @@ gem 'mysql', '~> 2.8.1'
 gem 'memcache-client', '~> 1.8.5', :require => 'memcache'
 gem 'fastercsv', '~> 1.5.4'
 gem "newrelic_rpm", '~> 3.0.1'
-gem 'hoptoad_notifier', '~> 2.3.6'
-gem 'right_aws', '~> 2.1.0'
+gem 'hoptoad_notifier', '~> 2.4.11'
+#gem 'right_aws', '~> 2.1.0'
 gem 'json', '~> 1.5.1'
 gem 'nokogiri', '~> 1.4.4'
 gem "activemerchant", '~> 1.15.0', :require => "active_merchant"
@@ -16,6 +16,10 @@ gem 'i18n', '~> 0.4.2'
 gem 'hpricot', '~> 0.8.4'
 gem 'uakari'
 gem "pusher", "~> 0.8.2"
+gem "aws-s3", "~> 0.6.2", :require => "aws/s3"
+gem "paperclip", "2.3.11"
+gem 'daemons', '~> 1.0.10'
+gem 'twilio', '~> 3.0.1'
 
 group :development, :test do
   gem 'ruby-debug', '~> 0.10.4'

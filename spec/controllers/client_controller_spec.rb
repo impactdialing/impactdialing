@@ -18,8 +18,9 @@ describe ClientController do
   end
 
   context "when logged in" do
+    let(:user) { Factory(:user) }
     before :each do
-      login_as Factory(:user)
+      login_as user
     end
 
     describe "and attempt to login yet again" do
@@ -40,6 +41,52 @@ describe ClientController do
       it "defaults the campaign's mode to predictive type" do
         get :campaign_new
         Campaign.last.predective_type.should == 'algorithm1'
+      end
+    end
+
+    describe "campaign" do
+      let(:campaign) { campaign = Factory(:campaign, :user => user) }
+      it "shows only active scripts" do
+        active_manual_script = Factory(:script, :robo => false, :active => true, :user => user)
+        Factory(:script, :robo => false, :active => false, :user => user)
+        get :campaign_view, :id => campaign.id
+        assigns(:campaign).should == campaign
+        assigns(:scripts).should == [active_manual_script]
+      end
+    end
+
+    describe "reports" do
+
+      it "shows only manual campaigns" do
+        campaign = Factory(:campaign, :user => user, :robo => false)
+        Factory(:campaign, :user => user, :robo => true)
+        get :reports
+        assigns(:campaigns).should == [campaign]
+      end
+
+    end
+
+    it "lists all manual campaigns" do
+      robo_campaign = Factory(:campaign, :user => user, :robo => true)
+      manual_campaign = Factory(:campaign, :user => user, :robo => false)
+      get :campaigns
+      assigns(:campaigns).should == [manual_campaign]
+    end
+
+    it "lists all manual scripts" do
+      robo_script = Factory(:script, :user => user, :robo => true)
+      manual_script = Factory(:script, :user => user, :robo => false)
+      get :scripts
+      assigns(:scripts).should == [manual_script]
+    end
+
+    ['script', 'campaign',].each do |entity_type|
+      it "deleting a #{entity_type} redirects to the referer" do
+        request.env['HTTP_REFERER'] = 'http://referer/'
+        entity = Factory(entity_type, :user => user, :active => true)
+        post "#{entity_type}_delete", :id => entity.id
+        entity.reload.active.should be_false
+        response.should redirect_to :back
       end
     end
 

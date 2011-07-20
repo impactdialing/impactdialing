@@ -1,0 +1,44 @@
+<div class="fields">
+  <fieldset>
+    <legend>Recording</legend>
+
+    <%= f.label :name %>
+    <%= f.text_field :name %>
+
+    <fieldset>
+      <legend>Audio</legend>
+
+      <% if f.object.file.exists? %>
+          <div>
+            <embed type="application/x-shockwave-flash" wmode="transparent" height="27" width="320"
+                   src="http://www.google.com/reader/ui/3523697345-audio-player.swf?audioUrl=<%= f.object.file.url %>"/>
+          </div>
+      <% end %>
+      <%= f.file_field :file %>
+    </fieldset>
+    <!--DO NOT EDIT-->
+    <fieldset>
+      <legend>Responses</legend>
+      <table>
+        <tr>
+          <th width="30%">Response</th>
+          <th width="30%">Keypad</th>
+          <th width="30%">Delete</th>
+        </tr>
+      </table>
+
+      <% f.fields_for :recording_responses do |response_form| %>
+          <%= render :partial=>"recording_response_fields", :locals => {:f => response_form} %>
+      <% end %>
+      </table>
+
+      <div class="fields">
+        <%= link_to_add_fields "Add response", f, :recording_responses, :class => 'action secondary' %>
+      </div>
+    </fieldset>
+
+    <%= link_to_remove_fields "Remove this recording", f %>
+    <!--DO NOT EDIT-->
+  </fieldset>
+</div>
+

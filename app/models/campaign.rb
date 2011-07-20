@@ -2,16 +2,24 @@ class Campaign < ActiveRecord::Base
   include Deletable
   require "fastercsv"
   validates_presence_of :name, :on => :create, :message => "can't be blank"
-#  has_and_belongs_to_many :voter_lists
-#  has_many :voter_lists
+  has_many :caller_sessions
   has_many :voter_lists, :conditions => {:active => true}
   has_many :all_voters, :class_name => 'Voter'
+  has_many :call_attempts, :through => :all_voters
   has_and_belongs_to_many :callers
   belongs_to :script
   belongs_to :user
   belongs_to :recording
 
+  named_scope :robo, :conditions => {:robo => true }
+  named_scope :manual, :conditions => {:robo => false }
   named_scope :for_user, lambda {|user| { :conditions => ["user_id = ?", user.id] }}
+  named_scope :with_running_caller_sessions, {
+      :select     => "distinct campaigns.*",
+      :joins      => "inner join caller_sessions on (caller_sessions.campaign_id = campaigns.id)",
+      :conditions => {"caller_sessions.on_call" => true}
+  }
+
   cattr_reader :per_page
   @@per_page = 25
 
@@ -19,17 +27,19 @@ class Campaign < ActiveRecord::Base
     self.name = "Untitled #{user.campaigns.count + 1}" if self.name.blank?
   end
 
+  # TODO: remove
   def check_valid_caller_id_and_save
     check_valid_caller_id
     self.save
   end
 
+  # TODO: remove
   def check_valid_caller_id
     #verify caller_Id
     self.caller_id_verified=false
     if !self.caller_id.blank?
       #verify
-      t = Twilio.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+      t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
       a=t.call("GET", "OutgoingCallerIds", {'PhoneNumber'=>self.caller_id})
       require 'rubygems'
       require 'hpricot'
@@ -58,8 +68,16 @@ class Campaign < ActiveRecord::Base
   end
 
   def before_save
-    #check_valid_caller_id if self.caller_id_changed?
-    check_valid_caller_id
+    self.check_valid_caller!
+    true
+  end
+
+  def caller_id_object
+    CallerIdObject.new(caller_id, 'FriendlyName' => "Campaign #{self.id}")
+  end
+
+  def check_valid_caller!
+    self.caller_id_verified = self.caller_id_object.validate
   end
 
   def recent_attempts(mins=10)
@@ -69,7 +87,7 @@ class Campaign < ActiveRecord::Base
   def end_all_calls(account,auth,appurl)
     in_progress = CallAttempt.find_all_by_campaign_id(self.id, :conditions=>"sid is not null and call_end is null and id > 45")
     in_progress.each do |attempt|
-      t = Twilio.new(account,auth)
+      t = TwilioLib.new(account,auth)
       a=t.call("POST", "Calls/#{attempt.sid}", {'CurrentUrl'=>"#{appurl}/callin/voterEndCall?attempt=#{attempt.id}"})
       attempt.call_end=Time.now
       attempt.save
@@ -80,7 +98,7 @@ class Campaign < ActiveRecord::Base
   def end_all_callers(account,auth,appurl)
     in_progress = CallerSession.find_all_by_campaign_id(self.id, :conditions=>"on_call=1")
     in_progress.each do |caller|
-      t = Twilio.new(account,auth)
+      t = TwilioLib.new(account,auth)
       a=t.call("POST", "Calls/#{caller.sid}", {'CurrentUrl'=>"#{appurl}/callin/callerEndCall?session=#{caller.id}"})
       if a.index("RestException")
         caller.on_call=false
@@ -343,4 +361,39 @@ class Campaign < ActiveRecord::Base
       number
     end
   end
+
+  def dial
+    update_attribute(:calls_in_progress, true)
+    dial_voters()
+    update_attribute(:calls_in_progress, false)
+  end
+
+  def start
+    return false if self.calls_in_progress? or (not self.user.paid)
+    daemon = "#{Rails.root.join('script', "dialer_control.rb start -- #{self.id}")}"
+    logger.info "[dialer] User id:#{self.user.id} started campaign id:#{self.id} name:#{self.name}"
+    update_attribute(:calls_in_progress, true)
+    system(daemon)
+  end
+
+  def stop
+    update_attribute(:calls_in_progress, false)
+  end
+
+  def voters_dialed
+    self.call_attempts.count('voter_id', :distinct => true)
+  end
+
+  def voters_remaining
+    self.all_voters.count - voters_dialed
+  end
+
+  private
+  def dial_voters
+    self.voter_lists.each do |voter_list|
+      return unless self.calls_in_progress?
+      voter_list.dial if voter_list.enabled
+    end
+  end
+
 end
