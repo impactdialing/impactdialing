@@ -58,8 +58,7 @@ class ApplicationController < ActionController::Base
   end
 
   def billing_link(layout)
-    #raise layout.inspect
-    controller = layout.include?("v2")  ? :broadcast : :client
+    controller = (layout && layout.include?("v2")) ? :broadcast : :client
     "<a href=\"/#{controller}/billing\">Click here to verify a credit card.</a>"
   end
 
@@ -166,7 +165,7 @@ class ApplicationController < ActionController::Base
     logger.info "SENT RT #{key} #{post_data} #{channel}"
   end
 
-  
+
   def handle_multi_disposition_submit(result_set_num,attempt_id)
     #@session
     logger.info "handle_multi_disposition_submit called for attempt #{attempt_id} result #{result_set_num}"
