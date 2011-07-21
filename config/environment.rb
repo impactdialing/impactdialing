@@ -4,7 +4,7 @@ APP_URL="http://www.hinodae.com:5555"
 RAILS_GEM_VERSION = '2.3.11' unless defined? RAILS_GEM_VERSION
 NUM_RESULT_FIELDS=6
 DEBUG_TWIML=true
-
+MAILCHIMP_API_KEY="011c309139adae5ea68dac0b8020fcb5-us2"
 # Bootstrap the Rails environment, frameworks, and default configuration
 require File.join(File.dirname(__FILE__), 'boot')
 require 'memcache'
