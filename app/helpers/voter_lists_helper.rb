@@ -11,4 +11,8 @@ module VoterListsHelper
   def system_column_headers
     @system_column_headers ||= [["Not available", nil]].concat(VoterList::VOTER_DATA_COLUMNS.zip(VoterList::VOTER_DATA_COLUMNS))
   end
+
+  def import_voter_lists_path(campaign)
+    campaign.robo? ? import_campaign_voter_lists_path(campaign) : import_client_campaign_voter_lists_path(campaign)
+  end
 end

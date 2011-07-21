@@ -1,10 +1,10 @@
-  <% form_for(@voter_list, :url=> campaign_voter_lists_path(@campaign), :method => :post, :html => {:multipart => true}) do %>
-      <div class="form">
-          <%= file_field 'upload', 'datafile' %>
-      </div>
+<% form_for(@voter_list, :url=> path, :method => :post, :html => {:multipart => true}) do %>
+  <div class="form">
+    <%= file_field 'upload', 'datafile' %>
+  </div>
 
-      <div class="buttons">
-        <button type="submit">Upload list</button>
-      </div>
-<p>Please upload a comma-separated value (CSV) or tab-delimited text (TXT) file. If your list is in Excel format (XLS or XLSX), use "Save As" to change it to one of these formats.</p>
-  <% end %>
+  <div class="buttons">
+    <button type="submit">Upload list</button>
+  </div>
+  <p>Please upload a comma-separated value (CSV) or tab-delimited text (TXT) file. If your list is in Excel format (XLS or XLSX), use "Save As" to change it to one of these formats.</p>
+<% end %>

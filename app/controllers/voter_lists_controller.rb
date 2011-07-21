@@ -1,15 +1,16 @@
 require 'tempfile'
+
 class VoterListsController < ClientController
   layout 'v2'
 
-  before_filter :load_campaign
+  before_filter :load_campaign, :setup_based_on_type
   before_filter :check_file_uploaded, :only => [:import]
   skip_before_filter :check_paid
 
   def create
     if params[:upload].blank?
       flash_message(:error, "Please click \"Choose file\" and select your list before clicking Upload.")
-      redirect_to campaign_path(@campaign.id)
+      redirect_to @campaign_path
       return
     end
 
@@ -20,7 +21,7 @@ class VoterListsController < ClientController
     @separator           = separator_from_file_extension(uploaded_file.original_filename)
     @csv_column_headers = FasterCSV.parse(uploaded_file.readline, :col_sep => @separator).first
 
-    render "column_mapping"
+    render "column_mapping", :layout => @layout
   end
 
   def import
@@ -30,7 +31,7 @@ class VoterListsController < ClientController
     csv_to_system_map = CsvMapping.new(params["csv_to_system_map"])
     unless csv_to_system_map.valid?
       csv_to_system_map.errors.each {|error| flash_now(:error, error) }
-      render "column_mapping"
+      render "column_mapping", :layout => @layout
       return
     end
 
@@ -43,7 +44,7 @@ class VoterListsController < ClientController
     @voter_list.user_id     = session[:user]
     unless @voter_list.valid?
       flash_now(:error, @voter_list.errors.full_messages.join("; "))
-      render "column_mapping"
+      render "column_mapping", :layout => @layout
       return
     end
     @voter_list.save!
@@ -61,7 +62,7 @@ class VoterListsController < ClientController
       session[:voters_list_upload] = nil
     end
 
-    redirect_to campaign_path(@campaign.id)
+    redirect_to @campaign_path
   end
 
   private
@@ -72,7 +73,7 @@ class VoterListsController < ClientController
   def check_file_uploaded
     return true if session[:voters_list_upload] and session[:voters_list_upload]["filename"]
     flash_message(:error, "Please upload the file again.")
-    redirect_to campaign_path(@campaign.id)
+    redirect_to @campaign_path
     false
   end
 
@@ -94,10 +95,20 @@ class VoterListsController < ClientController
   end
 
   def temp_file_path(filename)
-    "#{Rails.root}/tmp/#{filename}"
+    Rails.root.join('tmp', filename).to_s
   end
 
   def separator_from_file_extension(filename)
     (File.extname(filename).downcase.include?('.csv')) ? ',' : "\t"
+  end
+
+  def setup_based_on_type
+    if @campaign.robo?
+      @layout = 'v2'
+      @campaign_path = campaign_path(@campaign)
+    else
+      @layout = 'client'
+      @campaign_path = campaign_view_path(@campaign)
+    end
   end
 end

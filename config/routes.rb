@@ -39,15 +39,15 @@ ActionController::Routing::Routes.draw do |map|
         type.restore 'restore', :action => 'restore', :controller => type_plural, :conditions => { :method => :put }
       end
     end
+    client.resources :campaigns, :member => { :verify_callerid => :post }, :only => [] do |campaign|
+      campaign.resources :voter_lists, :collection => { :import => :post }, :except => [:new, :show]
+    end
   end
 
   map.resources :users do |user|
     user.update_password '/update_password', :action => 'update_password', :controller => 'client/users', :conditions => { :method => :put }
   end
   map.reset_password '/reset_password', :action => 'reset_password', :controller => 'client/users', :conditions => { :method => :get }
-  map.resources :campaigns, :member => { :verify_callerid => :post }, :only => [] do |campaign|
-    campaign.resources :voter_lists, :collection => { :import => :post }, :except => [:new, :show]
-  end
 
   map.login '/client/login', :action => 'login', :controller => 'client'
 
