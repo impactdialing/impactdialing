@@ -59,7 +59,7 @@
 <% end %>
 <fieldset>
   <legend>Add Lists</legend>
-    <%= render :partial => "voter_lists/new" %>
+  <%= render :partial => "voter_lists/new", :locals => { :path => campaign_voter_lists_path(@campaign) } %>
 </fieldset>
 
 <script>
