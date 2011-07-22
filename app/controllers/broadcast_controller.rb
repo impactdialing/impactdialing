@@ -8,4 +8,7 @@ class BroadcastController < ClientController
     redirect_to broadcast_login_path
   end
 
+  def policies
+    render 'home/policies'
+  end
 end
