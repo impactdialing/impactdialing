@@ -3,7 +3,7 @@ class RoboRecording < ActiveRecord::Base
 
   has_attached_file :file,
                     :storage => :s3,
-                    :s3_credentials => "#{RAILS_ROOT}/config/amazon_s3.yml",
+                    :s3_credentials => Rails.root.join('config', 'amazon_s3.yml').to_s,
                     :path=>"/:filename"
   belongs_to :script
   has_many :recording_responses

@@ -16,7 +16,7 @@ class CallinController < ApplicationController
     @finishOnKey="#"
     @gatherPost=""
   end
-  
+
   def send_pusher
     send_rt(@publish_channel,@publish_key,@publish_value) if !@publish_channel.blank?
   end
@@ -303,7 +303,7 @@ class CallinController < ApplicationController
     @caller = @session.caller
     @campaign = @session.campaign
    @script=@campaign.script
-         
+
     #check for web response
     if @session.attempt_in_progress==nil
       #aleady entered result on web
@@ -334,7 +334,7 @@ class CallinController < ApplicationController
            @play="#{APP_URL}/wav/exitBeep.wav"
            @say="#{question_name}. Enter your response and then press star. #{choices}"
          end
-        
+
       else
         # from web ui
         @play="#{APP_URL}/wav/webui_beep_enter_call_result.wav"
@@ -366,7 +366,7 @@ class CallinController < ApplicationController
         attempt=@session.attempt_in_progress
         handle_multi_disposition_submit(@script.result_sets_used.first, attempt) #first element
         handle_disposition_submit
-        
+
         if @script.result_sets_used.length>1
           redirect_to :action=>"next_question", :session=>@session.id, :num=>"1", :attempt=>attempt
           return
@@ -395,7 +395,7 @@ class CallinController < ApplicationController
 
     render :template => 'callin/index.xml.builder', :layout => false
   end
-  
+
   def next_question
     #session, #attempt
     @gather=true
@@ -410,7 +410,7 @@ class CallinController < ApplicationController
     result_num=@script.result_sets_used[num]
     this_result_set = JSON.parse(eval("@script.result_set_#{result_num}" ))
     thisKeypadval= params[:Digits].gsub("#","").gsub("*","").slice(0..1) if !params[:Digits].blank?
-        
+
     if params[:Digits].blank?
       question_name=this_result_set["name"]
       choices=this_result_set.keys.select{|k|  this_result_set[k] && k!="name"}.collect{|k|  "Press #{k.gsub("keypad_","")} for #{this_result_set[k]}" }.join(".  ")
@@ -428,9 +428,9 @@ class CallinController < ApplicationController
       end
 
       render :template => 'callin/start_conference.xml.builder', :layout => false
-      return      
+      return
     end
-      
+
     render :template => 'callin/index.xml.builder', :layout => false
   end
 
@@ -465,7 +465,7 @@ class CallinController < ApplicationController
     if params[:DialStatus]=="answered-machine"
       # play the answering machine message
       logger.info "answered machine!"
-      @play=@campaign.recording.recording_url
+      @play=@campaign.recording.file.url
       @hangup="true"
       @voter.status="Message delivered"
       @attempt.status="Message delivered"

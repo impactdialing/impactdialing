@@ -53,7 +53,7 @@ class ClientController < ApplicationController
         @user.fname=fname.strip if fname!=nil
         @user.lname=name_arr.join(" ").strip
       end
-      
+
       if false && @user.new_record? && params[:tos].blank?
         flash_now(:error, "You must agree to the Terms of Service to create an account.")
         return
@@ -455,36 +455,34 @@ Can we count on you to vote for such-and-such?
 
   def recording_add
     if request.post?
-      if params[:upload].blank?
+      @recording = @user.recordings.new(params[:recording])
+      if params[:recording][:file].blank?
         flash_now(:error, "No file uploaded")
         return
       end
-      if params[:filename].blank?
+      if params[:recording][:name].blank?
         flash_now(:error, "No name entered")
         return
       end
+      @recording.save!
 
-      name =  params[:upload]['datafile'].original_filename
-      extension = name.split(".").last
-      if extension!='wav' &&  extension!='mp3' && extension!='aif' && extension!='aiff'
-        flash_now(:error, "Filetype #{extension} is not supported.  Please upload a file ending in .mp3, .wav, or .aiff")
-        return
-      end
-      path = File.join("/tmp/", name)
-      File.open(path, "wb") { |f| f.write(params[:upload]['datafile'].read) }
-      bytes = File.size(path)
-      if bytes > 1048576*15 #15MB
-        flash_now(:error, "Uploaded file is too large (max 15MB)")
-        return
-      end
-      r = Recording.new
-      r.user_id = @user.id
-      r.name = params[:filename]
-      r.save
-      save_s3(path,r)
+      #path = File.join("/tmp/", name)
+      #File.open(path, "wb") { |f| f.write(params[:upload]['datafile'].read) }
+      #bytes = File.size(path)
+      #if bytes > 1048576*15 #15MB
+        #flash_now(:error, "Uploaded file is too large (max 15MB)")
+        #return
+      #end
+      #r = Recording.new
+      #r.user_id = @user.id
+      #r.name = params[:filename]
+      #r.save
+      #save_s3(path,r)
       flash_message(:notice, "Recording saved.")
-      redirect_to :action=>"campaign_view", :id=>params[:campaign_id]
+      redirect_to :action => "campaign_view", :id => params[:campaign_id]
       return
+    else
+      @recording = @user.recordings.new
     end
   end
 
@@ -507,7 +505,7 @@ Can we count on you to vote for such-and-such?
     content_type="audio/aiff" if extension=='aif'
     key.put(nil, 'public-read', {'Content-type' => content_type}.merge({}))
     awsurl = "http://s3.amazonaws.com/#{bucket}/#{s3path}"
-    recording.recording_url = awsurl
+    recording.file.url = awsurl
     recording.save
     awsurl
   end
@@ -570,7 +568,7 @@ Can we count on you to vote for such-and-such?
         end
         @account.encyrpt_cc
       end
-      
+
       name_arr=@account.name.split(" ")
       fname=name_arr.shift
       lname=name_arr.join(" ").strip
