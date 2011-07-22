@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110712073906) do
+ActiveRecord::Schema.define(:version => 20110721174122) do
 
   create_table "accounts", :force => true do |t|
     t.integer  "user_id"
@@ -223,11 +223,14 @@ ActiveRecord::Schema.define(:version => 20110712073906) do
 
   create_table "recordings", :force => true do |t|
     t.integer  "user_id"
-    t.string   "recording_url"
-    t.integer  "active",        :default => 1
+    t.integer  "active",            :default => 1
     t.string   "name"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "file_file_name"
+    t.string   "file_content_type"
+    t.string   "file_file_size"
+    t.datetime "file_updated_at"
   end
 
   create_table "robo_recordings", :force => true do |t|
@@ -443,7 +446,7 @@ ActiveRecord::Schema.define(:version => 20110712073906) do
     t.text     "result_json"
   end
 
-  add_index "voters", ["Phone", "voter_list_id"], :name => "index_voters_on_Phone_and_voter_list_id", :unique => true
+  add_index "voters", ["Phone", "voter_list_id"], :name => "index_voters_on_Phone_and_voter_list_id"
   add_index "voters", ["Phone"], :name => "index_voters_on_Phone"
   add_index "voters", ["attempt_id"], :name => "index_voters_on_attempt_id"
   add_index "voters", ["campaign_id"], :name => "index_voters_on_campaign_id"

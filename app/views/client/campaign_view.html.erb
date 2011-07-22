@@ -113,8 +113,8 @@
               <% @lists.each do |l| %>
                   <tr>
                     <td valign="top"><%= check_box_tag "voter_list_ids[]", "#{l.id}", l.enabled -%> <%= l.name %></td>
-                    <td valign="top"><%= l.voters.size %> <%# Voter.find_all_by_voter_list_id(l.id).length %></td>
-                    <td valign="top"><%# l.voters.collect{|v| v.id if v.result_digit.blank?}.reject(&:blank?).length %> <%= Voter.find_all_by_voter_list_id_and_active(l.id, 1, :conditions=>"status= 'Not Called' or call_back=1").size %></td>
+                    <td valign="top"><%= l.voters.size %></td>
+                    <td valign="top"><%= Voter.find_all_by_voter_list_id_and_active(l.id, 1, :conditions=>"status= 'Not Called' or call_back=1").size %></td>
                   </tr>
               <% end %>
             </table>
@@ -181,7 +181,7 @@
         recording_id = $('campaign_recording_id').value;
     <%@user.recordings.each do |recording| %>
         if (recording_id ==<%= recording.id %>) {
-            path = '<%= recording.recording_url %>';
+            path = '<%= recording.file.url %>';
             name = '<%= escape_javascript recording.name %>';
         }
     <% end %>

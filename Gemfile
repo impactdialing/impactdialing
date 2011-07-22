@@ -8,7 +8,6 @@ gem 'memcache-client', '~> 1.8.5', :require => 'memcache'
 gem 'fastercsv', '~> 1.5.4'
 gem "newrelic_rpm", '~> 3.0.1'
 gem 'hoptoad_notifier', '~> 2.4.11'
-#gem 'right_aws', '~> 2.1.0'
 gem 'json', '~> 1.5.1'
 gem 'nokogiri', '~> 1.4.4'
 gem "activemerchant", '~> 1.15.0', :require => "active_merchant"
