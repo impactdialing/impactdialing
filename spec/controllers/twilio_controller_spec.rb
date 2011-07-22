@@ -19,7 +19,7 @@ describe TwilioController do
     end
 
     ['report_error', 'call_ended'].each do |callback|
-      it "update the call attempt status" do
+      it "#{callback} updates the call attempt status on #{call_status}" do
         post callback, :call_attempt_id => call_attempt.id, :CallStatus => call_status
         call_attempt.reload.status.should == CallAttempt::Status::MAP[call_status]
       end
