@@ -85,7 +85,7 @@ describe Voter do
     end
 
     (CallAttempt::Status::ALL - [CallAttempt::Status::SUCCESS]).each do |status|
-      it "includes voters with a status of  #{status} " do
+      it "includes voters with a status of #{status} " do
         voter = Factory(:voter)
         Factory(:call_attempt, :voter => voter, :status => status)
         Voter.to_be_dialed.should == [voter]
