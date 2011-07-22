@@ -94,7 +94,7 @@
     <li><%= link_to content_tag(:span, 'Campaigns'), campaigns_path, :class => @controllerName.index('campaigns') ? 'active' : '' %></li>
     <li><%= link_to content_tag(:span, 'Control'), control_campaigns_path, :class => @control_campaigns_active ? 'active' : '' %></li>
     <li><%= link_to content_tag(:span, 'Reports'), reports_path, :class => @control_campaigns_active ? 'active' : '' %></li>
-    <li><a href="/client" >Predictive Dialer</a></li> 
+    <li><a href="/client" >Predictive Dialer</a></li>
 </ul>
 </nav>
 <% end %>
@@ -119,12 +119,16 @@
 <div>
   <p class="vcard">Need help? <span class="tel"><%= phone %></span> or <a href="mailto:<%= email %>"><%= email %></a></p>
 </div>
-<p> 
-<ul class="clearfix"> 
-  <li class='divider'>&#169; 2011</li> 
-  <li class='divider'><a href="/policies#privacy">Privacy</a></li> 
-  <li><a href="/policies#terms">Terms</a></li> 
-</ul> 
+<p>
+<ul class="clearfix">
+  <li class='divider'>&#169; 2011</li>
+  <li class='divider'>
+    <%= link_to "Privacy", "#{broadcast_policies_path}#privacy" %>
+  </li>
+  <li>
+    <%= link_to "Terms", "#{broadcast_policies_path}#terms" %>
+  </li>
+</ul>
 </p>
 </footer>
 

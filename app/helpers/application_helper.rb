@@ -69,7 +69,7 @@ module ApplicationHelper
   end
 
   def client_controller?(controllerName)
-    ['client', 'voter_lists', 'monitor', 'client/campaigns', 'client/scripts', 'client/callers', 'client/reports', 'campaigns', 'scripts', 'broadcast', 'reports'].include?(controllerName)
+    ['client', 'voter_lists', 'monitor', 'client/campaigns', 'client/scripts', 'client/callers', 'client/reports', 'campaigns', 'scripts', 'broadcast', 'reports', 'home', ].include?(controllerName)
   end
 
   ['title', 'full_title', 'phone', 'email', ].each do |value|

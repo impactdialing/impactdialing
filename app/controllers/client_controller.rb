@@ -1381,6 +1381,10 @@ Can we count on you to vote for such-and-such?
     render :text=>""
   end
 
+  def policies
+    render 'home/policies'
+  end
+
   private
   def stream_csv
     filename = params[:action] + ".csv"
