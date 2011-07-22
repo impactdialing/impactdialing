@@ -39,10 +39,10 @@ ActionController::Routing::Routes.draw do |map|
         type.restore 'restore', :action => 'restore', :controller => type_plural, :conditions => { :method => :put }
       end
     end
+  end
 
-    client.resources :campaigns, :member => { :verify_callerid => :post }, :only => [] do |campaign|
-      campaign.resources :voter_lists, :collection => { :import => :post }, :except => [:new, :show], :name_prefix => 'client_'
-    end
+  map.resources :campaigns, :member => { :verify_callerid => :post }, :path_prefix => 'client', :only => [] do |campaign|
+    campaign.resources :voter_lists, :collection => { :import => :post }, :except => [:new, :show], :name_prefix => 'client_'
   end
 
   map.resources :users do |user|
