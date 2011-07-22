@@ -136,7 +136,7 @@ $(document).ready(function() {
 				*/
 				if (family.length==1)
 					selected='checked';
-		  		info = '<div class="fam"> <input type="radio" name="familychoice" value="' + item.classname + "_" + item.id + '" ' + selected + ' > Household member ' + (index+1) + ':<ul>';
+		  		info = '<div class="clearfix"> <input type="radio" name="familychoice" value="' + item.classname + "_" + item.id + '" ' + selected + ' > Household member ' + (index+1) + ':<ul>';
 					for (var prop in item){
 						if(prop!="classname" && prop!="id")
 							info+= '<li>' + prop + ": " + item[prop] + "</li>";
