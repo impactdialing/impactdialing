@@ -10,6 +10,7 @@ function dialTimedOut(){
 	$('#actiondiv').html('<%= @start_action_div_contents %>');
  	$('#voter_info').hide();
  	$('#response').hide();
+	$('#result_instruction').show();
  	$('#caller_buttons').effect("highlight", {"color":"#3c5b7b"}, 2000);
 }
 
@@ -54,6 +55,7 @@ $(document).ready(function() {
 		$('#voter_info').hide();
 		$('#previewInfo').hide();
 	 	$('#response').hide();
+	 	$('#result_instruction').show();
 		$('#statusdiv').html("Status: Browser push connection failed");
 		// put it reconnect button
 		$('#actiondiv').html('Your web connection disconnected. <!--<input type="text" name="numtocall">--> <input type="submit" class="button" value="Reconnect">');
@@ -80,12 +82,14 @@ $(document).ready(function() {
 			  });
 	 		$('#voter_info').hide();
 	 		$('#response').hide();
+			$('#result_instruction').show();
 			$('#statusdiv').html("Status: In preview dial queue");
 			$('#actiondiv').html('<span class="actions"><a href="javascript:imdone();" class="action secondary">Stop taking calls</a></span> <span id="callButton"></span> <span class="actions"><a href="javascript:showPreview();" class="action secondary">Skip</a></span> ');
 	 		$('#caller_buttons').effect("highlight", {"color":"#3c5b7b"}, 2000);
 		} else if (callMode=="preview_dialing") {
 	 		$('#voter_info').hide();
 	 		$('#response').hide();
+			$('#result_instruction').show();
 			$('#previewInfo').hide();
 			$('#statusdiv').html("Status: Preview call dial in progress");
 			$('#actiondiv').html('<span class="actions"><a href="javascript:imdone();" class="action secondary">Stop taking calls</a></span>');
@@ -93,6 +97,7 @@ $(document).ready(function() {
 		} else {
 	 		$('#voter_info').hide();
 	 		$('#response').hide();
+			$('#result_instruction').show();
 			$('#previewInfo').hide();
 			$('#statusdiv').html("Status: In call queue");
 			$('#actiondiv').html('<span class="actions"><a href="javascript:imdone();" class="action secondary">Stop taking calls</a></span>');
@@ -148,12 +153,14 @@ $(document).ready(function() {
 		}
  		$('#voter_info').effect("highlight", {"color":"#3c5b7b"}, 2000);
  		$('#response').effect("highlight", {"color":"#3c5b7b"}, 2000);	
+		$('#result_instruction').hide();
 	});
 	
 	channel.bind('hangup', function(data) {
  		$('#voter_info').hide();
 		$('#previewInfo').hide();
  		$('#response').hide();
+		$('#result_instruction').show();
 		$('#statusdiv').html("Status: Hung up");
 		$('#actiondiv').html('<%= @start_action_div_contents %>');
  		$('#caller_buttons').effect("highlight", {"color":"#3c5b7b"}, 2000);
@@ -193,6 +200,7 @@ function processresult(attempt_id, hangup,isFam){
 	$("#actiondiv").html(ajax_load);
 	resetBoxes();
 	$('#response').hide();
+	$('#result_instruction').show();
 //	document.getElementById('dbx').value=jsonUrl;
 	//alert(jsonUrl);
 	//$("#db").value=jsonUrl;
