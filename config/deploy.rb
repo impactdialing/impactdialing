@@ -28,6 +28,11 @@ namespace :deploy do
   task :link_configuration, :roles => :app do
     run "ln -s #{deploy_to}/shared/config/database.yml #{current_path}/config/database.yml"
   end
+
+  task :install_cron_jobs do
+    run "chmod a+x #{current_path}/script/configure_crontab.sh"
+    run "#{current_path}/script/configure_crontab.sh #{rails_env} #{deploy_to}"
+  end
 end
 
 task :production do
@@ -53,9 +58,4 @@ end
 task :search_libs, :hosts => "ec2-75-101-228-54.compute-1.amazonaws.com", :user=>"ubuntu" do
   set :user, "ubuntu"
   run "ls -x1 /usr/lib | grep -i xml"
-end
-
-task :install_cron_jobs do
-  run "chmod a+x #{current_path}/script/configure_crontab.sh"
-  run "#{current_path}/script/configure_crontab.sh #{rails_env} #{deploy_to}"
 end
