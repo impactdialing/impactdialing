@@ -8,6 +8,12 @@ describe VoterList do
     VoterList.by_ids([v.first.id, v.last.id]).should == [v.first, v.last]
   end
 
+  it "validates the uniqueness of name in a case insensitive manner" do
+    user = Factory(:user)
+    Factory(:voter_list, :name => 'same', :user => user)
+    Factory.build(:voter_list, :name => 'Same', :user => user).should have(1).error_on(:name)
+  end
+
   describe "enable and disable voter lists" do
     let(:campaign) { Factory(:campaign) }
     it "can disable all voter lists in the given scope" do
