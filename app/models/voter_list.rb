@@ -2,11 +2,12 @@ require 'ostruct'
 
 class VoterList < ActiveRecord::Base
   belongs_to :campaign
+  belongs_to :user
   has_many :voters, :conditions => {:active => true}
 
   validates_presence_of :name
   validates_length_of :name, :minimum => 3
-  validates_uniqueness_of :name, :scope => :user_id, :message => "for this voter list is already taken"
+  validates_uniqueness_of :name, :case_sensitive => false, :scope => :user_id, :message => "for this voter list is already taken"
 
   named_scope :by_ids, lambda {|ids| {:conditions => {:id => ids} } }
 
