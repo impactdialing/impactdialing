@@ -59,4 +59,35 @@ class User < ActiveRecord::Base
   def show_voter_buttons?
     show_voter_buttons
   end
+  
+  def send_welcome_email
+    begin
+      emailText="<p>Hi #{self.fname}! I think you're going love Impact Dialing, so I want to make you an offer: for the next two weeks, call for up to 1,000 minutes risk-free. If you aren't happy, we won’t charge you a thing. </p>
+      <p>I could write pages about how we're different - unmatched scalability, beautiful design, complete self-service - but I think you'll enjoy using Impact Dialing more than reading about it. So head to admin.impactdialing.com and get calling before your 2 weeks are up!</p
+      <p>Also, I love hearing from our current and prospective clients. Whether it's a question, feature request, or just a note about how you're using Impact Dialing, let me know at twitter.com/impactdialing or facebook.com/impactdialing. Or, if you prefer, reply to this email. </p>
+      <p>--<br/>
+      Michael Kaiser-Nyman<br/>
+      Founder & CEO, Impact Dialing<br/>
+      (415) 347-5723</p>
+
+      <p>P.S. Don't wait until it's too late - start your 2-week free trial now at admin.impactdialing.com.</p>"
+      subject="Test drive Impact Dialing until " + (Date.today + 14).strftime("%B %d") 
+      u = Uakari.new(MAILCHIMP_API_KEY)
+
+      response = u.send_email({
+          :track_opens => true, 
+          :track_clicks => true, 
+          :message => {
+              :subject => subject, 
+              :html => emailText, 
+              :text => emailText, 
+              :from_name => 'Impact Dialing', 
+              :from_email => 'email@impactdialing.com', 
+              :to_email => [self.email]
+          }
+      })
+      rescue Exception => e
+        logger.error(e.inspect)
+    end
+  end
 end
