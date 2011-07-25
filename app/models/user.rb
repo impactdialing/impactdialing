@@ -61,6 +61,7 @@ class User < ActiveRecord::Base
   end
   
   def send_welcome_email
+    return false if self.domain!="impactdialing.com" && self.domain!="localhost"
     begin
       emailText="<p>Hi #{self.fname}! I think you're going love Impact Dialing, so I want to make you an offer: for the next two weeks, call for up to 1,000 minutes risk-free. If you aren't happy, we won’t charge you a thing. </p>
       <p>I could write pages about how we're different - unmatched scalability, beautiful design, complete self-service - but I think you'll enjoy using Impact Dialing more than reading about it. So head to admin.impactdialing.com and get calling before your 2 weeks are up!</p
