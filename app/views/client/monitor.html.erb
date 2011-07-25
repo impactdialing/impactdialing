@@ -1,10 +1,12 @@
 <script>
 var num='';
 function eavesdrop(sess,type){
-	if (num==''){
+	if (num=='' || num==null){
 		num = prompt("Enter your phone number:", "Type your phone number here");
 	}
 	<%= remote_function(:url => { :action => 'eavesdrop_call'} , :with =>	"'session_id='+ sess + '&num=' + num + '&type=' + type") %>
+	if (num!='' && num!=null)
+		alert('We\'re calling you now.');
 }
 </script>
 <h1>Monitor</h1>
