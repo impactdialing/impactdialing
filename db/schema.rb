@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110721174122) do
+ActiveRecord::Schema.define(:version => 20110725124349) do
 
   create_table "accounts", :force => true do |t|
     t.integer  "user_id"
@@ -444,6 +444,7 @@ ActiveRecord::Schema.define(:version => 20110721174122) do
     t.integer  "num_family",             :default => 1
     t.integer  "family_id_answered"
     t.text     "result_json"
+    t.datetime "scheduled_date"
   end
 
   add_index "voters", ["Phone"], :name => "index_voters_on_Phone"
