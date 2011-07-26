@@ -40,6 +40,11 @@ Factory.define :voter do |v|
   v.Phone { Factory.next(:phonenumber) }
 end
 
+Factory.define :family do |v|
+  v.FirstName { Factory.next(:name) }
+  v.Phone { Factory.next(:phonenumber) }
+end
+
 Factory.define :caller_session do |s|
   s.campaign_id { Factory(:campaign, :user => Factory(:user)).id }
   s.caller_id { Factory(:caller) }
@@ -63,4 +68,11 @@ end
 Factory.define :recording do |r|
   r.name 'name'
   r.file_file_name 'foo.mp3'
+end
+
+Factory.define :custom_voter_field do |cvf|
+  cvf.name 'name'
+end
+
+Factory.define :custom_voter_field_value do |cvfv|
 end
