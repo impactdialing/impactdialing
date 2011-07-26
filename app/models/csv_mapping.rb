@@ -20,7 +20,8 @@ class CsvMapping
   end
 
   def invalid_repetition_of_system_column?
-    not (@mapping.values.uniq.count == @mapping.values.count)
+    mapped = @mapping.reject{ |column,mapped_to| mapped_to.blank?}
+    not (mapped.values.uniq.count == mapped.values.count)
   end
 
   def valid?
