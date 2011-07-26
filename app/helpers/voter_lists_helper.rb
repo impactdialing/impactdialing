@@ -8,8 +8,10 @@ module VoterListsHelper
     match
   end
 
-  def system_column_headers
-    @system_column_headers ||= [["Not available", nil]].concat(VoterList::VOTER_DATA_COLUMNS.zip(VoterList::VOTER_DATA_COLUMNS))
+  def system_column_headers(csv_header)
+    basic_header = [["Not available", nil]]
+    basic_header << ["#{csv_header} (custom)", csv_header] unless VoterList::VOTER_DATA_COLUMNS.include?(csv_header)
+    basic_header.concat(VoterList::VOTER_DATA_COLUMNS.zip(VoterList::VOTER_DATA_COLUMNS))
   end
 
   def import_voter_lists_path(campaign)
