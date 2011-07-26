@@ -11,6 +11,16 @@ describe CsvMapping do
     mapping.errors.should include CsvMapping::ErrorMessages::MULTIPLE_MAPPING
   end
 
+  it "should not consider an unmapped column as a multiple mapping" do
+    mapping = CsvMapping.new({
+             "Phone"     => "Phone",
+             "foo" => "",
+             "bar" => "",
+         })
+    mapping.validate
+    mapping.errors.should_not include CsvMapping::ErrorMessages::MULTIPLE_MAPPING
+  end
+
   it "should mandatorily have a system mapping for Phone" do
     mapping = CsvMapping.new({
              "LAST"      => "LastName",
