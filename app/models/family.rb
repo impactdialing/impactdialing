@@ -7,8 +7,4 @@ class Family < ActiveRecord::Base
     self.Phone = Voter.sanitize_phone(self.Phone)
   end
 
-  def apply_attribute(attribute, value)
-     self[attribute] = value if self.has_attribute? attribute
-  end
-
 end

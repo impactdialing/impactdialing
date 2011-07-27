@@ -20,7 +20,7 @@
   <% @csv_column_headers.each do |csv_header| %>
     <% selected =  matching_system_header_for(csv_header) %>
     <dt><%= csv_header %></dt>
-    <dd><%= select_tag "csv_to_system_map[#{csv_header}]", options_for_select(system_column_headers(csv_header), selected) %></dd>
+    <dd><%= select_tag "csv_to_system_map[#{csv_header}]", options_for_select(system_column_headers, selected) %></dd>
   <% end %>
 </dl>
 <div style='clear:both;'></div>
