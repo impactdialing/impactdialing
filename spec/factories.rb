@@ -64,3 +64,15 @@ Factory.define :recording do |r|
   r.name 'name'
   r.file_file_name 'foo.mp3'
 end
+
+Factory.define :family do |v|
+  v.FirstName { Factory.next(:name) }
+  v.Phone { Factory.next(:phonenumber) }
+end
+
+Factory.define :custom_voter_field do |cvf|
+  cvf.name 'name'
+end
+
+Factory.define :custom_voter_field_value do |cvfv|
+end
