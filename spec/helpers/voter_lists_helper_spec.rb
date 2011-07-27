@@ -24,7 +24,13 @@ describe VoterListsHelper do
     end
 
     it "returns a list of all available voter attributes as well an unknown attribute" do
-      helper.system_column_headers("bar").should == [["Not available", nil], ["bar (custom)", "bar"], ["foo", "foo"]]
+      helper.system_column_headers("bar").should == [["Not available", nil], ["bar (Custom)", "bar"], ["foo", "foo"]]
+    end
+
+    it "returns a list of all custom fields along with the others" do
+      custom_field = "baz"
+      Factory(:custom_voter_field, :name => "baz", :user => Factory(:user))
+      helper.system_column_headers("foo").should == [["Not available", nil], ["foo", "foo"], ["#{custom_field} (Custom)", custom_field]]
     end
   end
 end

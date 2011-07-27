@@ -34,9 +34,9 @@ describe VoterList do
 
   describe "upload voters list" do
     let(:csv_file_upload) {
-      fixture_path  = ActionController::TestCase.fixture_path
-      source_file   = "#{fixture_path}files/valid_voters_list.csv"
-      temp_dir      = "#{fixture_path}test_tmp"
+      fixture_path = ActionController::TestCase.fixture_path
+      source_file = "#{fixture_path}files/valid_voters_list.csv"
+      temp_dir = "#{fixture_path}test_tmp"
       temp_filename = "#{temp_dir}/valid_voters_list.csv"
       FileUtils.cp source_file, temp_filename
       temp_filename
@@ -47,14 +47,14 @@ describe VoterList do
 
     describe "import from csv" do
       USER_MAPPINGS = CsvMapping.new({
-          "LAST"      => "LastName",
-          "FIRSTName" => "FirstName",
-          "Phone"     => "Phone",
-          "Email"     => "Email",
-          "ID"        => "ID",
-          "Age"       => "Age",
-          "Gender"    => "Gender",
-      })
+                                         "LAST" => "LastName",
+                                         "FIRSTName" => "FirstName",
+                                         "Phone" => "Phone",
+                                         "Email" => "Email",
+                                         "ID" => "ID",
+                                         "Age" => "Age",
+                                         "Gender" => "Gender",
+                                     })
       before :each do
         Voter.destroy_all
         @result = voter_list.import_leads(
@@ -66,7 +66,7 @@ describe VoterList do
       it "should be successful" do
         @result.should == {
             :successCount => 2,
-            :failedCount  => 0
+            :failedCount => 0
         }
       end
 
@@ -78,7 +78,7 @@ describe VoterList do
         voter.user_id.should == user.id
         voter.voter_list_id.should == voter_list.id
 
-        # check some values from the csv fixture
+          # check some values from the csv fixture
         voter.Phone.should == "1234567895"
         voter.FirstName.should == "Foo"
         voter.CustomID.should == "987"
@@ -97,7 +97,7 @@ describe VoterList do
         family_member.user_id.should == user.id
         family_member.voter_list_id.should == voter_list.id
 
-        # check some values from the csv fixture
+          # check some values from the csv fixture
         family_member.Phone.should == "1234567895"
         family_member.FirstName.should == "Chocolate"
         family_member.LastName.should == "Bar"
@@ -113,24 +113,49 @@ describe VoterList do
             ",").should ==
             {
                 :successCount => 0,
-                :failedCount  => 2
+                :failedCount => 2
             }
       end
       it "should add even if the same phone is repeated in a different campaign" do
         another_voter_list = Factory(:voter_list,
                                      :campaign => Factory(:campaign, :user => user),
-                                     :user_id  => user.id)
+                                     :user_id => user.id)
         another_voter_list.import_leads(
             USER_MAPPINGS,
             csv_file_upload,
             ",").should ==
             {
                 :successCount => 2,
-                :failedCount  => 0
+                :failedCount => 0
             }
       end
     end
+
+    describe "with custom fields" do
+      let(:csv_file) {
+        fixture_path = ActionController::TestCase.fixture_path
+        source_file = "#{fixture_path}files/voters_custom_fields_list.csv"
+        temp_dir = "#{fixture_path}test_tmp"
+        temp_filename = "#{temp_dir}/valid_voters_list.csv"
+        FileUtils.cp source_file, temp_filename
+        temp_filename
+      }
+
+      let(:mappings) { CsvMapping.new({ "Phone" => "Phone", "Custom" =>"Custom"}) }
+
+      it "creates custom fields when they do not exist" do
+        custom_field = "Custom"
+        voter_list = Factory(:voter_list, :campaign => Factory(:campaign, :user => user), :user_id => user.id)
+        voter_list.import_leads(mappings, csv_file, ",").should == {:successCount => 2, :failedCount => 0}
+        CustomVoterField.find_by_name(custom_field).should_not be_nil
+        CustomVoterField.all.size.should == 1
+        voter_list.voters[0].get_attribute(custom_field).should ==  "Foo" #this is set in the csv file, may be the test should have this
+        voter_list.voters[1].get_attribute(custom_field).should ==  "Bar" #this is set in the csv file, may be the test should have this
+      end
+    end
+
   end
+
 
   describe "dial" do
     let(:voter_list) { Factory(:voter_list, :campaign => Factory(:campaign, :calls_in_progress => true)) }

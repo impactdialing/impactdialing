@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110726094424) do
+ActiveRecord::Schema.define(:version => 20110727114257) do
 
   create_table "accounts", :force => true do |t|
     t.integer  "user_id"
@@ -166,7 +166,8 @@ ActiveRecord::Schema.define(:version => 20110726094424) do
   end
 
   create_table "custom_voter_fields", :force => true do |t|
-    t.integer "name", :null => false
+    t.string  "name",    :null => false
+    t.integer "user_id"
   end
 
   create_table "dumps", :force => true do |t|

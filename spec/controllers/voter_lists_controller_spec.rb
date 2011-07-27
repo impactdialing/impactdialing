@@ -79,11 +79,24 @@ describe VoterListsController do
               Voter.first.Phone.should == "1234567895"
               Voter.first.LastName.should == "Bar"
             end
+
             it "removes the temporary file from disk" do
               temp_filename = "#{Rails.root}/tmp/#{session[:voters_list_upload]['filename']}"
               import
               File.should_not exist(temp_filename)
               session[:voters_list_upload].should be_blank
+            end
+          end
+
+          describe "custom fields" do
+            let(:csv_file_upload) { {"datafile" => fixture_file_upload("files/voters_custom_fields_list.csv")} }
+            it "creates previously uncreated custom columns" do
+              custom_field = "Custom"
+              Voter.delete_all
+              import({:json_csv_column_headers => ["Phone", "Custom"].to_json, :csv_to_system_map =>{"Phone"=>"Phone", custom_field=>custom_field}})
+              CustomVoterField.all.size.should == 1
+              Voter.all[0].get_attribute(custom_field).should == "Foo"
+              Voter.all[1].get_attribute(custom_field).should == "Bar"
             end
           end
         end
