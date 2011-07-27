@@ -103,6 +103,24 @@ class Voter < ActiveRecord::Base
     true
   end
 
+  def apply_attribute(attribute,value)
+    if self.has_attribute? attribute
+      self[attribute] = value
+    else
+      custom_attribute = CustomVoterField.find_by_name(attribute)
+      custom_attribute ||= CustomVoterField.create(:name => attribute)
+      CustomVoterFieldValue.create(:voter => self, :custom_voter_field => custom_attribute, :value => value)
+    end
+  end
+
+  def get_attribute(attribute)
+    return self[attribute] if self.has_attribute? attribute
+    return unless CustomVoterField.find_by_name(attribute)
+    fields = CustomVoterFieldValue.voter_fields(self,CustomVoterField.find_by_name(attribute))
+    return if fields.empty?
+    return fields.first.value
+  end
+
   private
   def new_call_attempt
     call_attempt = self.call_attempts.create(:campaign => self.campaign, :dialer_mode => 'robo', :status => CallAttempt::Status::INPROGRESS )

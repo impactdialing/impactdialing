@@ -11,7 +11,7 @@ DaemonKit::Application.running! do |config|
   # config.trap( 'INT' ) do
   #   # do something clever
   # end
-  config.trap( 'INT', Proc.new { exit! } )
+  config.trap('INT', Proc.new { exit! })
 
   private
   def cache_get(key)
@@ -29,13 +29,11 @@ DaemonKit::Application.running! do |config|
   def cache_set(key)
     output = yield
     if CACHE.get(key)==nil
-       CACHE.add(key, output)
-     else
-       CACHE.set(key, output)
-     end
+      CACHE.add(key, output)
+    else
+      CACHE.set(key, output)
+    end
   end
-
-
 
 
   def handleCampaign(k)
@@ -43,8 +41,8 @@ DaemonKit::Application.running! do |config|
 
     campaign = Campaign.find(k)
     DaemonKit.logger.info "Working on campaign #{k} #{campaign.name}"
-    # avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
-    # campaign_hash = avail_campaign_hash[k]
+      # avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
+      # campaign_hash = avail_campaign_hash[k]
     if campaign.calls_in_progress?
       DaemonKit.logger.info "#{campaign.name} is still dialing, returning"
       return
@@ -57,12 +55,12 @@ DaemonKit::Application.running! do |config|
 
     stats = campaign.call_stats(10)
     answer_pct = (stats[:answer_pct] * 100).to_i
-    callers = CallerSession.find_all_by_campaign_id_and_on_call(k,1)
-    callers_on_call = CallerSession.find_all_by_campaign_id_and_on_call_and_available_for_call(k,1,0)
+    callers = CallerSession.find_all_by_campaign_id_and_on_call(k, 1)
+    callers_on_call = CallerSession.find_all_by_campaign_id_and_on_call_and_available_for_call(k, 1, 0)
     not_on_call = callers.length - callers_on_call.length
     calls = CallAttempt.find_all_by_campaign_id(k, :conditions=>"call_end is NULL")
-    # callers = campaign_hash["callers"]
-    # calls = campaign_hash["calls"]
+      # callers = campaign_hash["callers"]
+      # calls = campaign_hash["calls"]
     voters = campaign.voters("not called")
     DaemonKit.logger.info "#{campaign.name}: Callers logged in: #{callers.length}, Callers on call: #{callers_on_call.length}, Callers not on call:  #{not_on_call}, Numbers to call: #{voters.length}, Calls in progress: #{calls.length}, Answer pct: #{answer_pct}"
 
@@ -83,7 +81,7 @@ DaemonKit::Application.running! do |config|
     end
 
     if campaign.predective_type.index("power_")!=nil
-      ratio_dial = campaign.predective_type[6,1].to_i
+      ratio_dial = campaign.predective_type[6, 1].to_i
       DaemonKit.logger.info "ratio_dial: #{ratio_dial}, #{callers.length}, #{campaign.predective_type.index("power_")}"
     end
     if campaign.predective_type.index("robo,")!=nil
@@ -103,14 +101,14 @@ DaemonKit::Application.running! do |config|
       maxCalls=callers.length * ratio_dial
       DaemonKit.logger.info "maxCalls: #{maxCalls}"
       newCalls=calls.length
-      # if campaign.ending_window_method!="Not used"
-      #   if campaign.ending_window_method=="Average"
-      #     newCalls = newCalls - campaign.calls_in_ending_window(10,"average").length
-      #   elsif campaign.ending_window_method=="Longest"
-      #     newCalls = newCalls - campaign.calls_in_ending_window(10,"longest").length
-      #   end
-      # end
-      newCalls  = newCalls - maxCalls
+        # if campaign.ending_window_method!="Not used"
+        #   if campaign.ending_window_method=="Average"
+        #     newCalls = newCalls - campaign.calls_in_ending_window(10,"average").length
+        #   elsif campaign.ending_window_method=="Longest"
+        #     newCalls = newCalls - campaign.calls_in_ending_window(10,"longest").length
+        #   end
+        # end
+      newCalls = newCalls - maxCalls
     else
       #new mode
       #for each caller on a call
@@ -123,26 +121,26 @@ DaemonKit::Application.running! do |config|
 #      DaemonKit.logger.info "maxCalls: #{maxCalls}"
 #      newCalls=calls.length
       newCalls=maxCalls-calls.length
-      #newCalls= callers_on_call.length * stats[:dials_needed]
-      #for each caller thats not on a call, make stats[:dials_needed] calls
-      #newCalls= newCalls  - (not_on_call * stats[:dials_needed])
+#newCalls= callers_on_call.length * stats[:dials_needed]
+#for each caller thats not on a call, make stats[:dials_needed] calls
+#newCalls= newCalls  - (not_on_call * stats[:dials_needed])
 
       pool_size=0
 
       short_counter=0
       if campaign.predective_type=="algorithm1"
         callers_on_call.each do |session|
-           if !session.attempt_in_progress.blank?
-             attempt = CallAttempt.find(session.attempt_in_progress)
-             if attempt.duration!=nil && attempt.duration < stats[:short_time]
-               short_counter+=1
-             end
-           end
+          if !session.attempt_in_progress.blank?
+            attempt = CallAttempt.find(session.attempt_in_progress)
+            if attempt.duration!=nil && attempt.duration < stats[:short_time]
+              short_counter+=1
+            end
+          end
         end
         DaemonKit.logger.info "short_counter #{short_counter}"
       end
 
-      if stats[:ratio_short]>0  && short_counter >0
+      if stats[:ratio_short]>0 && short_counter >0
         max_short=(1/stats[:ratio_short]).round
         short_to_dial = (short_counter/max_short).to_f.ceil
       else
@@ -165,14 +163,14 @@ DaemonKit::Application.running! do |config|
             if attempt.duration < stats[:short_time] && done_short<short_to_dial
               if attempt.duration > stats[:short_new_call_time_threshold]
                 done_short+=1
-                #when stats[:short_new_call_caller_threshold] callers are on calls of length less than stats[:short_time]s, dial  stats[:dials_needed] lines at stats[:short_new_call_time_threshold]) seconds after the last call began.
-                #newCalls= newCalls  - stats[:dials_needed]
+                  #when stats[:short_new_call_caller_threshold] callers are on calls of length less than stats[:short_time]s, dial  stats[:dials_needed] lines at stats[:short_new_call_time_threshold]) seconds after the last call began.
+                  #newCalls= newCalls  - stats[:dials_needed]
                 pool_size = pool_size + stats[:dials_needed]
                 DaemonKit.logger.info "short to pool, duration #{attempt.duration}, done_short=#{done_short}, short_to_dial=#{short_to_dial}"
               end
             else
               # if a call passes length 15s, dial stats[:dials_needed] lines at stats[:short_new_long_time_threshold]sinto the call.
-            #  newCalls= newCalls  - stats[:dials_needed] if attempt.duration > stats[:long_new_call_time_threshold]
+              #  newCalls= newCalls  - stats[:dials_needed] if attempt.duration > stats[:long_new_call_time_threshold]
               DaemonKit.logger.info "looking at long to pool, session #{session.id}, attempt.duration #{attempt.duration}, thresh #{stats[:long_new_call_time_threshold]}"
               if attempt.duration > stats[:long_new_call_time_threshold]
                 DaemonKit.logger.info "LONG TO POOL, session #{session.id}, attempt.duration #{attempt.duration}, thresh #{stats[:long_new_call_time_threshold]}"
@@ -193,19 +191,17 @@ DaemonKit::Application.running! do |config|
 
     DaemonKit.logger.info "newCalls: #{newCalls}, maxCalls: #{maxCalls}"
 
-    if true #(DaemonKit.env=="development" && voters.length>0)  || campaign.id==27 || campaign.id==65 || voters.length > 10
-      voter_ids=[]
-      voters.each do |voter|
-        if newCalls.to_i < maxCalls.to_i
-          voter_ids<<voter
-          newCalls+=1
-        end
+    voter_ids=[]
+    voters.each do |voter|
+      if newCalls.to_i < maxCalls.to_i
+        voter_ids<<voter
+        newCalls+=1
       end
     end
 
-    if voter_ids.length >10  || campaign.id==27
+    if voter_ids.length >10 || campaign.id==27
       #spawn externally
-      voter_id_list=voter_ids.collect{|v| v.id}.join(",")
+      voter_id_list=voter_ids.collect { |v| v.id }.join(",")
       if voter_id_list.strip!=""
         campaign.calls_in_progress=true
         campaign.save
@@ -215,7 +211,7 @@ DaemonKit::Application.running! do |config|
     else
       voter_ids.each do |voter|
         DaemonKit.logger.info "calling #{voter.Phone} #{campaign.name}"
-        callNewVoter(voter,campaign)
+        callNewVoter(voter, campaign)
       end
       # voters.each do |voter|
       #   if newCalls.to_i < maxCalls.to_i
@@ -226,11 +222,11 @@ DaemonKit::Application.running! do |config|
       # end
     end
 
-  #      voterTest = Voter.find_by_campaign_id(callSession.campaign_id, :conditions=>"status='Call attempt in progress' and active=1")
+    #      voterTest = Voter.find_by_campaign_id(callSession.campaign_id, :conditions=>"status='Call attempt in progress' and active=1")
 
   end
 
-  def callNewVoter(voter,campaign)
+  def callNewVoter(voter, campaign)
     DaemonKit.logger.info "calling: #{voter.Phone}"
     voter.status='Call attempt in progress'
     voter.save
@@ -265,7 +261,7 @@ loop do
 #    load_test=logged_in_campaigns.collect{|l| l.id}.index(38)
 
     if Time.now.hour > 0 && Time.now.hour < 6 && DaemonKit.env!="development" && load_test==false # ends 10pm PST starts 6am eastern
-      # too late, clear all logged in callers
+                                                                                                  # too late, clear all logged in callers
       DaemonKit.logger.info "Off hours, don't make any calls"
       ActiveRecord::Base.connection.execute("update caller_sessions set on_call=0")
     elsif logged_in_campaigns.num_rows>0
