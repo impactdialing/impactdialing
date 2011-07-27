@@ -10,8 +10,9 @@ module VoterListsHelper
 
   def system_column_headers(csv_header)
     basic_header = [["Not available", nil]]
-    basic_header << ["#{csv_header} (custom)", csv_header] unless VoterList::VOTER_DATA_COLUMNS.include?(csv_header)
+    basic_header << ["#{csv_header} (Custom)", csv_header] unless VoterList::VOTER_DATA_COLUMNS.include?(csv_header)
     basic_header.concat(VoterList::VOTER_DATA_COLUMNS.zip(VoterList::VOTER_DATA_COLUMNS))
+    basic_header.concat(CustomVoterField.all.map(&:name).map{|field| ["#{field} (Custom)", field]})
   end
 
   def import_voter_lists_path(campaign)
