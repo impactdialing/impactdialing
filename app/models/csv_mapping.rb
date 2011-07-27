@@ -5,10 +5,10 @@ class CsvMapping
     MULTIPLE_MAPPING = "Could not import. Two columns in the uploaded file were mapped to the same destination."
     NO_PHONE = "Could not import. You did not map any column in the uploaded file to Phone"
   end
-
+  
   def initialize(mapping)
     @mapping = mapping
-    @errors = []
+    @errors  = []
   end
 
   def csv_index_for(system_column_title)
@@ -20,7 +20,7 @@ class CsvMapping
   end
 
   def invalid_repetition_of_system_column?
-    mapped = @mapping.reject { |column, mapped_to| mapped_to.blank? }
+    mapped = @mapping.reject{ |column,mapped_to| mapped_to.blank?}
     not (mapped.values.uniq.count == mapped.values.count)
   end
 
@@ -37,7 +37,7 @@ class CsvMapping
 
   def remap_system_column!(source_field, hash)
     destination_field = hash[:to]
-    index = @mapping.index source_field
+    index             = @mapping.index source_field
     if index
       @mapping[index] = destination_field
     end

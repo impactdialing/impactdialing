@@ -100,35 +100,4 @@ describe Voter do
 
 
   end
-
-  describe "voter attributes" do
-
-    let(:voter){ Factory(:voter, :campaign => Factory(:campaign), :Phone => '384756923349') }
-
-    it "populates original attributes" do
-      voter.apply_attribute('Phone', '0123456789')
-      voter.Phone.should == '0123456789'
-    end
-
-    it "populates custom attributes" do
-      attribute , value = 'Custom' , 'foo'
-      voter.apply_attribute(attribute, value)
-      field = CustomVoterField.find_by_name(attribute)
-      field.should_not be_nil
-      CustomVoterFieldValue.voter_fields(voter,field).first.value.should == value
-    end
-
-    it "returns value of original attributes" do
-      attribute , value = 'Phone' , '2947832874'
-      voter.apply_attribute(attribute,value)
-      voter.get_attribute(attribute).should == value
-    end
-
-    it "returns value of custom attributes" do
-      attribute , value = 'Custom' , 'abcde'
-      voter.apply_attribute(attribute,value)
-      voter.get_attribute(attribute).should == value
-    end
-
-  end
 end
