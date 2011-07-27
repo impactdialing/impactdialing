@@ -66,6 +66,16 @@ describe ClientController do
 
     end
 
+    describe "fields" do
+
+      it "shows original and custom fields" do
+        field = Factory(:custom_voter_field, :user => user, :name => "Foo")
+        script = Factory(:script, :user => user)
+        get :script_add, :id => script.id
+        assigns(:fields).should include(field.name)
+      end
+    end
+
     it "lists all manual campaigns" do
       robo_campaign = Factory(:campaign, :user => user, :robo => true)
       manual_campaign = Factory(:campaign, :user => user, :robo => false)

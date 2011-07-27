@@ -13,7 +13,7 @@
 		<legend>Display above script</legend>
 		<ul class="clearfix">
 			<% @fields.each do |field| %>
-			<li>	<input  type="checkbox" name="voter_field[]" value="<%= field %>"  <% if @voter_fields.index(field) %>checked<% end %>> <%= field %></li>
+			<li>	<input  type="checkbox" name="voter_field[]" value="<%= field %>"  <% if @voter_fields.index(field) %>checked<% end %>> <%= field %> </input></li>
 			<% end %>
 
 		</ul>

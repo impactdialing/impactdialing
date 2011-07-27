@@ -51,8 +51,7 @@ class VoterList < ActiveRecord::Base
 
       csv_headers.each_with_index do |csv_column_title, column_location|
         system_column = csv_to_system_map.system_column_for csv_column_title
-        lead[system_column] = voter_info[column_location] if system_column
-        #lead.apply_attribute( system_column, voter_info[column_location] )   if system_column
+        lead.apply_attribute(system_column, voter_info[column_location]) if system_column
       end
 
       unless lead.save
