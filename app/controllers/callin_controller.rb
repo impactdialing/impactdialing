@@ -608,7 +608,8 @@ class CallinController < ApplicationController
           if !script.voter_fields.nil?
             fields = JSON.parse(script.voter_fields)
             fields.each do |field|
-              publish_hash[field] = eval("@voter.#{field}")
+              publish_hash[field] = @voter.get_attribute(field)
+              #publish_hash[field] = eval("@voter.#{field}")
             end
           end
 #          @publish_value=publish_hash.to_json
