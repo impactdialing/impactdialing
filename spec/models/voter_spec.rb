@@ -25,9 +25,9 @@ describe Voter do
     it "is dialed" do
       call_attempt = Factory(:call_attempt)
       voter.should_receive(:new_call_attempt).and_return(call_attempt)
-      callback_url = twilio_callback_url(:call_attempt_id => call_attempt, :host => HOST, :port => PORT)
-      fallback_url = twilio_report_error_url(:call_attempt_id => call_attempt, :host => HOST, :port => PORT)
-      callended_url = twilio_call_ended_url(:call_attempt_id => call_attempt, :host => HOST, :port => PORT)
+      callback_url = twilio_callback_url(:call_attempt_id => call_attempt, :host => Settings.host, :port => Settings.port)
+      fallback_url = twilio_report_error_url(:call_attempt_id => call_attempt, :host => Settings.host, :port => Settings.port)
+      callended_url = twilio_call_ended_url(:call_attempt_id => call_attempt, :host => Settings.host, :port => Settings.port)
       Twilio::Call.should_receive(:make).with(
           voter.campaign.caller_id,
           voter.Phone,
