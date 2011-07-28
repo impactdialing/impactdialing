@@ -1,86 +1,137 @@
-<% form_tag("/caller/campaign/#{params[:id]}", {:class => "form", :id=>"myform", :name=>"myform"}) do %>
-<h3><%= @campaign.name %></h3>
-<fieldset>
-	<legend>Lead information</legend>
-	<div id="previewInfo" style="display:none;" class="rt">
-		<div id="previewvoterInfo"></div>
-	</div>
-	<div id="voter_info" class="rt"><em>When connected, lead information will appear here.</em></div>
-</fieldset>
-
-<fieldset>
-	<legend>Script</legend>
-	<% if !@campaign.script.script.blank? %><div class="rt"> <%= @campaign.script.script.gsub("\n", "<br/>") %></div><% end %>
-</fieldset>
-
-<fieldset>
-	<legend>Results</legend>
-	<div id="result_instruction"><em>When connected, call result options will appear here.</em></div>
-	<div id="response" class="rt" style="display:none; font-size:1em;">
-		<% @script.result_sets_used.each do |r| %>
-			<% json = JSON.parse(eval("@script.result_set_#{r}")) %>
-			<% if !json["name"].blank? %>
-				<div><%= json["name"] %></div>
-			<% end %>
-			<select class="field" id="disposition<%= r %>" style="display:inline;">
-			<%  for b in 1..99 do %>
-				<% thisKeypadval=json["keypad_#{b}"] %>
-				<% if !thisKeypadval.blank? %><option value="<%= b %>"><%= thisKeypadval %></option><% end %>
-			<% end %>
-			</select>
-		<% end %>
-		<% @campaign.script.notes_used.each do |b| %>
-			<% thisNote=eval("@script.note_#{b}") %>
-			<div style="margin:3px;padding:3px;"><%= thisNote %> <input type="text" name="note<%= b %>" id="note<%= b %>"  size="30"></div>
-		<% end %>
-	</div>
-</fieldset>
-
-<div class="caller_buttons" id="caller_buttons">
-	<div id="statusdiv" style="float:right; padding-bottom:10px;">Status: Not connected.</div>
-	<div id="actiondiv">
-		Enter your phone number:
-		<input type="text" name="numtocall" placeholder="Type your phone number here"> 
-		<img src="/images/report_bug.png" onclick="feedback();" align="right">
-		<p>
-			<div class="buttons">
-				<button type="submit">Start taking calls</button>
-			</div>
-		</p>
-	</div>
-</div>
-
-<% if !@session.blank? %>
-  	<script src="http://js.pusherapp.com/1.8/pusher.min.js" type="text/javascript"></script>
-	<script type="text/javascript" src="/caller/jspush/<%= @session.session_key %>"></script>
+<% content_for :stylesheets do %>
+    <%= stylesheet_link_tag 'jquery.ui.datetime' %>
 <% end %>
+<% content_for :javascripts do %>
+    <%= javascript_include_tag 'jquery.ui.datetime.min' %>
+<% end %>
+
+<% form_tag("/caller/campaign/#{params[:id]}", {:class => "form", :id=>"myform", :name=>"myform"}) do %>
+    <h3><%= @campaign.name %></h3>
+    <fieldset>
+      <legend>Lead information</legend>
+      <div id="previewInfo" style="display:none;" class="rt">
+        <div id="previewvoterInfo"></div>
+      </div>
+      <div id="voter_info" class="rt">
+        <em>When connected, lead information will appear here.</em>
+        <%= button_to_function 'Schedule for later', 'show_scheduler()' %>
+        <div id="callback_info" style="display: none;">
+          <p></p>
+          Schedule callbacks :
+          <%= button_to_function 'Hide', 'hide_scheduler()' %>
+          <p></p>
+
+          <input id="scheduled_date"/>
+          <input type="hidden" id="current_call_attempt_id" value="0">
+          <%= button_to_function 'Go', 'set_schedule()' %>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Script</legend>
+      <% if !@campaign.script.script.blank? %>
+          <div class="rt script"> <%= @campaign.script.script.gsub("\n", "<br/>") %></div>
+      <% end %>
+    </fieldset>
+
+    <fieldset>
+      <legend>Results</legend>
+      <div id="result_instruction"><em>When connected, call result options will appear here.</em></div>
+      <div id="response" class="rt" style="display:none; font-size:1em;">
+        <% @script.result_sets_used.each do |r| %>
+            <% json = JSON.parse(eval("@script.result_set_#{r}")) %>
+            <% if !json["name"].blank? %>
+                <div><%= json["name"] %></div>
+            <% end %>
+            <select class="field" id="disposition<%= r %>" style="display:inline;">
+              <% for b in 1..99 do %>
+                  <% thisKeypadval=json["keypad_#{b}"] %>
+                  <% if !thisKeypadval.blank? %><option value="<%= b %>"><%= thisKeypadval %></option>
+                  <% end %>
+              <% end %>
+            </select>
+        <% end %>
+        <% @campaign.script.notes_used.each do |b| %>
+            <% thisNote=eval("@script.note_#{b}") %>
+            <div style="margin:3px;padding:3px;"><%= thisNote %>
+              <input type="text" name="note<%= b %>" id="note<%= b %>" size="30"></div>
+        <% end %>
+      </div>
+    </fieldset>
+
+    <div class="caller_buttons" id="caller_buttons">
+      <div id="statusdiv" style="float:right; padding-bottom:10px;">Status: Not connected.</div>
+      <div id="actiondiv">
+        Enter your phone number:
+        <input type="text" name="numtocall" placeholder="Type your phone number here">
+        <img src="/images/report_bug.png" onclick="feedback();" align="right">
+
+        <p>
+
+        <div class="buttons">
+          <button type="submit">Start taking calls</button>
+        </div>
+        </p>
+      </div>
+    </div>
+
+    <% if !@session.blank? %>
+        <script src="http://js.pusherapp.com/1.8/pusher.min.js" type="text/javascript"></script>
+        <script type="text/javascript" src="/caller/jspush/<%= @session.session_key %>"></script>
+    <% end %>
 
 <% end -%>
 <!--<input type="button" value="poll" onclick="dpoll();">-->
 <textarea id="dbx" rows="10" cols="90" style="overflow:auto; font-size:10px; display:none;"></textarea>
 
 <script>
-function feedback(){
-	var info = prompt("Please enter a description of the issue:","");
-	info = document.getElementById('dbx').value + '<p>' + info + "</p><p>" + BrowserDetect.browser + ' ' + BrowserDetect.version + ' ' + BrowserDetect.OS + ' ' + horizontal + 'x' + vertical + '</p>';
-	var flash='';
-    for(var i in FlashDetect){
-        if(typeof FlashDetect[i] != "function" && typeof FlashDetect[i] != "undefined"){
-			if (i=='raw' || i=='installed')
-            	flash+= "<p>FlashDetect." + i + ":" + FlashDetect[i] + "</p>";
+    function feedback() {
+        var info = prompt("Please enter a description of the issue:", "");
+        info = document.getElementById('dbx').value + '<p>' + info + "</p><p>" + BrowserDetect.browser + ' ' + BrowserDetect.version + ' ' + BrowserDetect.OS + ' ' + horizontal + 'x' + vertical + '</p>';
+        var flash = '';
+        for (var i in FlashDetect) {
+            if (typeof FlashDetect[i] != "function" && typeof FlashDetect[i] != "undefined") {
+                if (i == 'raw' || i == 'installed')
+                    flash += "<p>FlashDetect." + i + ":" + FlashDetect[i] + "</p>";
+            }
         }
+        info = info + flash;
+    <% if !@session.blank? %>
+        info = info + '<p>session <%= @session.id %></p>';
+    <% end %>
+        info = info + '<p>caller <%= @caller.id %> <%= @caller.name %> <%= @caller.email %></p>';
+        info = info + '<p>campaign <%= @campaign.id %> <%= @campaign.name %></p>';
+        info = info + '<p>script <%= @script.id %> <%= @script.name %></p>';
+        info = info + '<p>ip <%= @client_ip %></p>';
+
+        $.post("/caller/feedback", { issue: info});
+        alert('Thank you for sending your feedback.')
     }
-	info = info + flash;
-	<% if !@session.blank? %>
-		info = info + '<p>session <%= @session.id %></p>';
-	<% end %>
-	info = info + '<p>caller <%= @caller.id %> <%= @caller.name %> <%= @caller.email %></p>';
-	info = info + '<p>campaign <%= @campaign.id %> <%= @campaign.name %></p>';
-	info = info + '<p>script <%= @script.id %> <%= @script.name %></p>';
-	info = info + '<p>ip <%= @client_ip %></p>';
-	
-	$.post("/caller/feedback", { issue: info} );
-	alert( 'Thank you for sending your feedback.')
-}
+
+    function show_scheduler() {
+        $("#callback_info").show();
+    }
+
+    function hide_scheduler() {
+        $("#callback_info").hide();
+    }
+
+    function set_schedule() {
+        $.ajax({
+            url: "<%= call_attempt_path(':call_attempt_id') %>".replace(':call_attempt_id', $('#current_call_attempt_id').val(call_attempt_id)),
+            data: {_method: 'PUT', call_attempt : { scheduled_date : $('#scheduled_date').val()},
+            method: 'post',
+            success: function(response){
+                alert(response.body);
+            }
+        }});
+    }
+
+    $(document).ready(function() {
+        $('#scheduled_date').datetime();
+    });
+
+
 </script>
 		
