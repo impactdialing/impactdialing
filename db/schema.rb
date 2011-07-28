@@ -232,11 +232,11 @@ ActiveRecord::Schema.define(:version => 20110726094424) do
   end
 
   create_table "recordings", :force => true do |t|
+    t.integer  "user_id"
     t.integer  "active",            :default => 1
     t.string   "name"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.integer  "user_id"
     t.string   "file_file_name"
     t.string   "file_content_type"
     t.string   "file_file_size"
@@ -457,6 +457,7 @@ ActiveRecord::Schema.define(:version => 20110726094424) do
     t.datetime "scheduled_date"
   end
 
+  add_index "voters", ["Phone", "voter_list_id"], :name => "index_voters_on_Phone_and_voter_list_id", :unique => true
   add_index "voters", ["Phone"], :name => "index_voters_on_Phone"
   add_index "voters", ["attempt_id"], :name => "index_voters_on_attempt_id"
   add_index "voters", ["campaign_id"], :name => "index_voters_on_campaign_id"
