@@ -8,9 +8,6 @@ PUSHER_APP_ID="6964"
 PUSHER_KEY="6f37f3288a3762e60f94"
 PUSHER_SECRET="b9a1cfc2c1ab4b64ad03"
 
-HOST = "admin.impactdialing.com"
-PORT = "80"
-
 # Settings specified here will take precedence over those in config/environment.rb
 
 # The production environment is meant for finished, "live" apps.
