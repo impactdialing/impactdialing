@@ -10,7 +10,8 @@ begin
   Twilio.default_options[:ssl_ca_file] = File.join(RAILS_ROOT, 'cacert.pem')
   Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
   campaign.dial
-rescue
+rescue => e
+  logger.error "[dialer] Stopping daemon for campaign : #{campaign.name}, because : #{e.message} :::::::: #{e.backtrace}"
   campaign.stop
 end
 
