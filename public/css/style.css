@@ -543,6 +543,13 @@ height : 57px;
 background : transparent url(../img/stonesphones-h1.png) no-repeat 0 0;
 text-indent : -9999px; }
 
+header[role="banner"] h1.cosalesforce {
+margin-bottom : .5em;
+width : 300px;
+height : 57px; 
+background : transparent url(../img/cosalesforce-h1.png) no-repeat 0 0;
+text-indent : -9999px; }
+
 header[role="banner"] h1 a {
 display : block; 
 height : 55px; }
