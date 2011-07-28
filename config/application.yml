@@ -1,0 +1,19 @@
+default: &default_settings
+  host: localhost
+  port: 3000
+
+development:
+  <<: *default_settings
+
+test:
+  <<: *default_settings
+
+production:
+  <<: *default_settings
+  host: admin.impactdialing.com
+  port: 80
+
+staging:
+  <<: *default_settings
+  host: staging.impactdialing.com
+  port: 80
