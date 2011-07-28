@@ -8,9 +8,6 @@ PUSHER_APP_ID="7054"
 PUSHER_KEY="e6c025759382ac4172ad"
 PUSHER_SECRET="feb564060d2c27aa9d2b"
 
-HOST = "staging.impactdialing.com"
-PORT = "80"
-
 # Settings specified here will take precedence over those in config/environment.rb
 
 # The production environment is meant for finished, "live" apps.
@@ -29,7 +26,7 @@ config.after_initialize do
 #  ActiveMerchant::Billing::Base.mode = :test
   ActiveMerchant::Billing::LinkpointGateway.pem_file  = File.read(RAILS_ROOT + '/1359891.pem')
   ::BILLING_GW = gateway = ActiveMerchant::Billing::LinkpointGateway.new(
-     :login => "1359891"  
+     :login => "1359891"
    )
 end
 
@@ -57,11 +54,11 @@ end
 #   :readonly => false,
 #   :urlencode => false
 # }
-#  
+#
 # CACHE = MemCache.new memcache_options
 # #CACHE.servers = '127.0.0.1:11211'
 # CACHE.servers = 'domU-12-31-39-10-89-26.compute-1.internal:11211'
-# 
+#
 # begin
 #    PhusionPassenger.on_event(:starting_worker_process) do |forked|
 #      if forked
