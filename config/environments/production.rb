@@ -4,11 +4,12 @@ APP_NUMBER="4157020991"
 APP_URL="http://admin.impactdialing.com"
 TEST_CALLER_NUMBER="8583679749"
 TEST_VOTER_NUMBER="4154486970"
-
 PUSHER_APP_ID="6964"
 PUSHER_KEY="6f37f3288a3762e60f94"
 PUSHER_SECRET="b9a1cfc2c1ab4b64ad03"
 
+HOST = "admin.impactdialing.com"
+PORT = "80"
 
 # Settings specified here will take precedence over those in config/environment.rb
 
@@ -28,7 +29,7 @@ config.after_initialize do
 #  ActiveMerchant::Billing::Base.mode = :test
   ActiveMerchant::Billing::LinkpointGateway.pem_file  = File.read(RAILS_ROOT + '/1359891.pem')
   ::BILLING_GW = gateway = ActiveMerchant::Billing::LinkpointGateway.new(
-     :login => "1359891"  
+     :login => "1359891"
    )
 end
 
@@ -56,11 +57,11 @@ end
 #   :readonly => false,
 #   :urlencode => false
 # }
-#  
+#
 # CACHE = MemCache.new memcache_options
 # #CACHE.servers = '127.0.0.1:11211'
 # CACHE.servers = 'domU-12-31-39-10-89-26.compute-1.internal:11211'
-# 
+#
 # begin
 #    PhusionPassenger.on_event(:starting_worker_process) do |forked|
 #      if forked
