@@ -13,4 +13,9 @@ class CallAttemptsController < ApplicationController
     render :xml => xml
   end
 
+  def update
+    call_attempt = CallAttempt.find(params[:id])
+    call_attempt.update_attributes(params[:call_attempt])
+    render :text => 'Call Attempt updated', :status => :ok
+  end
 end

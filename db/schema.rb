@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110727114257) do
+ActiveRecord::Schema.define(:version => 20110728113736) do
 
   create_table "accounts", :force => true do |t|
     t.integer  "user_id"
@@ -58,6 +58,7 @@ ActiveRecord::Schema.define(:version => 20110727114257) do
     t.datetime "answertime"
     t.string   "dialer_mode"
     t.text     "result_json"
+    t.datetime "scheduled_date"
   end
 
   add_index "call_attempts", ["call_end"], :name => "index_call_attempts_on_call_end"
