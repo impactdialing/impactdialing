@@ -68,7 +68,7 @@ class CallerController < ApplicationController
     @on_call = CallerSession.find_by_caller_id_and_on_call_and_campaign_id(@caller.id,true, @campaign.id)
     @key = @on_call.session_key if @on_call!=nil
     @session = @on_call if @on_call!=nil
-    
+
     if request.post?
       if !phone_number_valid(params[:numtocall]) && !params[:numtocall].blank?
         flash_now(:error, "Please enter a valid phone number")
@@ -82,7 +82,7 @@ class CallerController < ApplicationController
 
         #flash[:notice]= "Calling you now"
         t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-        a=t.call("POST", "Calls", {'Caller' => APP_NUMBER, 'Called' => params[:numtocall], 'Url'=>"#{APP_URL}/callin/get_ready?campaign=#{params[:id]}&session=#{@session.id}&Digits=*"})
+        a=t.call("POST", "Calls", {'Caller' => APP_NUMBER, 'Called' => params[:numtocall], 'Url'=>"#{APP_URL}/callin/get_ready?campaign=#{params[:id]}&session=#{@session.id}&Digits=*", 'IfMachine' => 'Hangup'})
         @doc = Hpricot::XML(a)
         @session.sid=(@doc/"Sid").inner_html
         @session.save
@@ -103,7 +103,7 @@ class CallerController < ApplicationController
       format.js
     end
   end
-  
+
   def session_ready
     require 'net/http'
     require 'net/https'
