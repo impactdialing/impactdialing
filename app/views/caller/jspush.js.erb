@@ -106,7 +106,6 @@ $(document).ready(function() {
     });
 
     channel.bind('voter_start', function(data) {
-        update_schedule_form(data['call_attempt_id']);
 //		voter_data = JSON.parse(data);
         voter_data = data;
         var voter_out = "";
@@ -122,6 +121,8 @@ $(document).ready(function() {
                 voter_out += '<li>' + info + ": " + voter_data[info] + "</li>";
         }
         currAttempt = attempt_id;
+        update_schedule_form(currAttempt);
+        $("#callback_scheduler").show();
 
         if (family.length > 1)
             isFam = true;
