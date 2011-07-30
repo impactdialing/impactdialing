@@ -61,6 +61,7 @@ class User < ActiveRecord::Base
   end
   
   def send_welcome_email
+    send_michael_welcome_email
     return false if self.domain!="impactdialing.com" && self.domain!="localhost"
     begin
       emailText="<p>Hi #{self.fname}! I think you're going love Impact Dialing, so I want to make you an offer: for the next two weeks, call for up to 1,000 minutes risk-free. If you aren't happy, we won’t charge you a thing. </p>
@@ -92,4 +93,29 @@ class User < ActiveRecord::Base
         logger.error(e.inspect)
     end
   end
+
+  
+  def send_michael_welcome_email
+    begin
+      emailText="<pre>#{self.attributes.to_yaml}</pre>"
+      subject="New user signup!"
+      u = Uakari.new(MAILCHIMP_API_KEY)
+
+      response = u.send_email({
+          :track_opens => true, 
+          :track_clicks => true, 
+          :message => {
+              :subject => subject, 
+              :html => emailText, 
+              :text => emailText, 
+              :from_name => 'Impact Dialing', 
+              :from_email => 'email@impactdialing.com', 
+              :to_email=>['michael@impactdialing.com','brian@impactdialing.com']
+          }
+      })
+      rescue Exception => e
+        logger.error(e.inspect)
+    end
+  end
+  
 end
