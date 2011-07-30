@@ -831,6 +831,9 @@ Can we count on you to vote for such-and-such?
 
     if request.post?
       @script.update_attributes(params[:script])
+      for r in 1..10 do
+        @script.attributes = {"result_set_#{r}"=>nil}
+      end
       numResults = params[:numResults]
       for r in 1..numResults.to_i do
         thisResults={}
