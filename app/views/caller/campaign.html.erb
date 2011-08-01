@@ -26,22 +26,7 @@
 
     <fieldset>
       <legend>Results</legend>
-      <div id="result_instruction"><em>When connected, call result options will appear here.</em>
-
-        <div id="callback_scheduler" style="display: none;">
-          <%= button_to_function 'Schedule for later', 'show_scheduler()' %>
-          <div id="callback_info" style="display: none;">
-            <p></p>
-            Schedule callbacks :
-            <%= button_to_function 'Hide', 'hide_scheduler()' %>
-            <p></p>
-
-            <input id="scheduled_date"/>
-            <input type="hidden" id="current_call_attempt_id" value="0">
-            <%= link_to_function 'Go', 'set_schedule()' %>
-          </div>
-        </div>
-      </div>
+      <div id="result_instruction"><em>When connected, call result options will appear here.</em></div>
       <div id="response" class="rt" style="display:none; font-size:1em;">
         <% @script.result_sets_used.each do |r| %>
             <% json = JSON.parse(eval("@script.result_set_#{r}")) %>
@@ -61,6 +46,19 @@
             <div style="margin:3px;padding:3px;"><%= thisNote %>
               <input type="text" name="note<%= b %>" id="note<%= b %>" size="30"></div>
         <% end %>
+        <div id="callback_scheduler" style="display: none;">
+          <%= button_to_function 'Schedule for later', 'show_scheduler()' %>
+          <div id="callback_info" style="display: none;">
+            <p></p>
+            Schedule callbacks :
+            <%= button_to_function 'Hide', 'hide_scheduler()' %>
+            <p></p>
+
+            <input id="scheduled_date"/>
+            <input type="hidden" id="current_call_attempt_id" value="0">
+            <%= link_to_function 'Go', 'set_schedule()' %>
+          </div>
+        </div>
       </div>
     </fieldset>
 
