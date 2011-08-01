@@ -619,7 +619,8 @@ class CallinController < ApplicationController
         return
 
       rescue Exception => e
-        logger.debug "#{ e }(#{ e.class })!"
+        logger.debug "#{ e }(#{ e.class })! : #{e.backtrace}"
+        logger.debug "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
         # caller already connected to someone else
         @pause=2
         @redirect="#{APP_URL}/callin/voterFindSession?campaign=#{@campaign.id}&voter=#{@voter.id}&attempt=#{@attempt.id}"
@@ -639,7 +640,7 @@ class CallinController < ApplicationController
       fields = JSON.parse(script.voter_fields)
       fields.each do |field|
 #        logger.info "field: #{field}"
-        publish_hash[field] = eval("voter.#{field}")
+        publish_hash[field] = voter.get_attribute(field)
       end
     end
     publish_hash
