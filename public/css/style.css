@@ -554,6 +554,13 @@ header[role="banner"] h1 a {
 display : block; 
 height : 55px; }
 
+header[role="banner"] h1.frontporchstrategies {
+margin-bottom : .5em;
+width : 300px;
+height : 57px; 
+background : transparent url(../img/frontporchstrategies-h1.png) no-repeat 0 0;
+text-indent : -9999px; }
+
 header[role="banner"] a.action {
 display : block; 
 text-align : center; }
