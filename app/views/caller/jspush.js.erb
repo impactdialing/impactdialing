@@ -282,7 +282,7 @@ function showPreview(){
 	if (currPreview>=voters.length)
 		currPreview=0;
 	curVoter = voters[currPreview];
-	document.getElementById('previewvoterInfo').innerHTML='<p>Name: ' + curVoter[0] + ' ' + curVoter[1] + '</p><p>Phone: ' + curVoter[2] + '</p>';
+	document.getElementById('previewvoterInfo').innerHTML='<p>Name: ' + curVoter[0] + ' ' + curVoter[1] + '</p><p>Phone: ' + curVoter[2] + '</p>' + curVoter[4] ;
 //	document.getElementById('callButton').innerHTML='<input type="button" class="button" onclick="dialVoter(' + curVoter[3] + ');" value="Dial">';
 	document.getElementById('callButton').innerHTML='<span class="actions"><a href="javascript:dialVoter(' + curVoter[3] + ');" class="action secondary">Dial</a></span>';
 	currPreview++;
