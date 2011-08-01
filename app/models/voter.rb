@@ -5,6 +5,7 @@ class Voter < ActiveRecord::Base
   belongs_to :campaign
   has_many :families
   has_many :call_attempts
+  has_many :custom_voter_field_values
   belongs_to :last_call_attempt, :class_name => "CallAttempt"
 
   validates_presence_of :Phone
