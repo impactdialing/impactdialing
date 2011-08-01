@@ -16,6 +16,7 @@ class CallAttemptsController < ApplicationController
   def update
     call_attempt = CallAttempt.find(params[:id])
     call_attempt.update_attributes(params[:call_attempt])
+    call_attempt.update_attribute('status', CallAttempt::Status::SCHEDULED) if params[:call_attempt][:scheduled_date]
     render :text => 'Call Attempt updated', :status => :ok
   end
 end
