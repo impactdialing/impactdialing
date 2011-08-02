@@ -29,7 +29,7 @@ class ClientController < ApplicationController
       else
         user.create_reset_code
         #Postoffice.deliver_password_recovery(u)
-        
+
         begin
           emailText="Click here to reset your password<br/>
           http://admin.impactdialing.com/reset_password?reset_code=#{user.password_reset_code}"
@@ -37,21 +37,21 @@ class ClientController < ApplicationController
           u = Uakari.new(MAILCHIMP_API_KEY)
 
           response = u.send_email({
-              :track_opens => true, 
-              :track_clicks => true, 
+              :track_opens => true,
+              :track_clicks => true,
               :message => {
-                  :subject => "ImpactDialing.com password recovery", 
-                  :html => emailText, 
-                  :text => emailText, 
-                  :from_name => 'Impact Dialing', 
-                  :from_email => 'email@impactdialing.com', 
+                  :subject => "ImpactDialing.com password recovery",
+                  :html => emailText,
+                  :text => emailText,
+                  :from_name => 'Impact Dialing',
+                  :from_email => 'email@impactdialing.com',
                   :to_email => [user.email]
               }
           })
           rescue Exception => e
             logger.error(e.inspect)
         end
-                
+
         flash_message(:notice, "We emailed your password to you. Please check your spam folder in case it accidentally ends up there.")
         redirect_to :action=>"login"
       end
@@ -88,7 +88,7 @@ class ClientController < ApplicationController
       if @user.valid?
         @user.send_welcome_email if @user.new_record?
         @user.save
-        
+
         @caller = Caller.new
         @caller.name = "Default Caller"
         @caller.multi_user = true
@@ -786,7 +786,7 @@ Can we count on you to vote for such-and-such?
       @breadcrumb=[{"Scripts"=>"/client/scripts"},"Edit Script"]
     end
     @script = Script.find_by_id_and_user_id(params[:id],@user.id)
-    @fields = ["CustomID","FirstName","MiddleName","LastName","Suffix","Age","Gender","Phone","Email"].concat @script.user.custom_voter_fields.map(&:name)
+    @fields = ["CustomID","FirstName","MiddleName","LastName","Suffix","Age","Gender","Phone","Email"].concat (@script ? @script.user.custom_voter_fields.map(&:name) : [])
     @numResults = 0
     if @script!=nil
       for i in 1..NUM_RESULT_FIELDS do
