@@ -48,18 +48,18 @@
               <input type="text" name="note<%= b %>" id="note<%= b %>" size="30"></div>
         <% end %>
         <div id="callback_scheduler" style="display: none;">
-          <p><%= link_to_function 'Schedule for later', 'expand_scheduler()', :class=> "action secondary" %></p>
+          <p><%= link_to_function 'Schedule callback', 'expand_scheduler()', :class=> "action secondary" %></p>
 
           <div id="callback_info" style="display: none;">
             <div>
               <p>
-                Schedule callbacks :
+                Date and time to call back:
                 <input id="scheduled_date"/>
                 <input type="hidden" id="current_call_attempt_id" value="0">
               </p>
             </div>
             <div style="clear: both;">
-              <%= link_to_function 'Go', 'set_schedule()', :class=> "action secondary" %>
+              <%= link_to_function 'Schedule', 'set_schedule()', :class=> "action secondary" %>
               <%= link_to_function 'Hide', 'collapse_scheduler()', :class=> "action secondary" %>
             </div>
           </div>
