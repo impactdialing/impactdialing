@@ -42,7 +42,7 @@ end
 task :staging do
   set :server_name, "ec2-174-129-172-31.compute-1.amazonaws.com"
   set :rails_env, 'staging'
-  set :branch, "custom_fields"
+  set :branch, "master"
   role :web, 'staging.impactdialing.com'
   role :app, 'staging.impactdialing.com'
   role :db, 'staging.impactdialing.com', :primary => true
