@@ -786,7 +786,7 @@ Can we count on you to vote for such-and-such?
       @breadcrumb=[{"Scripts"=>"/client/scripts"},"Edit Script"]
     end
     @script = Script.find_by_id_and_user_id(params[:id],@user.id)
-    @fields = ["CustomID","FirstName","MiddleName","LastName","Suffix","Age","Gender","Phone","Email"].concat (@script ? @script.user.custom_voter_fields.map(&:name) : [])
+    @fields = ["CustomID","FirstName","MiddleName","LastName","Suffix","Age","Gender","Phone","Email"].concat(@script ? @script.user.custom_voter_fields.map(&:name) : [])
     @numResults = 0
     if @script!=nil
       for i in 1..NUM_RESULT_FIELDS do
