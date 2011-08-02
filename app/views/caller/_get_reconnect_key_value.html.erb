@@ -18,7 +18,7 @@ else
     if !script.voter_fields.nil?
     	fields = JSON.parse(script.voter_fields)
         fields.each do |field|
-        	publish_hash[field] = eval("@attempt.voter.#{field}")
+        	publish_hash[field] = @attempt.voter.get_attribute(field)
         end
     end
     @v=publish_hash.to_json

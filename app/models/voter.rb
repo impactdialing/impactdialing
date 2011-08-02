@@ -21,6 +21,8 @@ class Voter < ActiveRecord::Base
   named_scope :to_be_dialed, :include => [:call_attempts], :conditions => ["(call_attempts.id is null and call_back is false) OR call_attempts.status IN (?)", CallAttempt::Status::ALL - [CallAttempt::Status::SUCCESS] ]
   named_scope :randomly, :order => 'rand()'
   named_scope :to_callback, :conditions => ["call_back is true"]
+  named_scope :scheduled, :conditions => { :scheduled_date => (10.minutes.ago..10.minutes.from_now), :status => CallAttempt::Status::SCHEDULED }
+  named_scope :limit, lambda { |n| {:limit => n }}
 
   cattr_reader :per_page
   @@per_page = 25
