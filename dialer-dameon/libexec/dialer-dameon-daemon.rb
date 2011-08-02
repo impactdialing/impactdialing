@@ -213,13 +213,13 @@ DaemonKit::Application.running! do |config|
     else
       voter_ids.each do |voter|
         DaemonKit.logger.info "calling #{voter.Phone} #{campaign.name}"
-        callNewVoter(voter, campaign)
+        call_new_voter(voter, campaign)
       end
       # voters.each do |voter|
       #   if new_calls.to_i < max_calls.to_i
       #     DaemonKit.logger.info "#{new_calls.to_i} newcalls < #{max_calls.to_i} maxcalls, calling #{voter.Phone}"
       #     new_calls+=1
-      #     callNewVoter(voter,campaign)
+      #     call_new_voter(voter,campaign)
       #   end
       # end
     end
@@ -228,7 +228,7 @@ DaemonKit::Application.running! do |config|
 
   end
 
-  def callNewVoter(voter, campaign)
+  def call_new_voter(voter, campaign)
     DaemonKit.logger.info "calling: #{voter.Phone}"
     voter.status='Call attempt in progress'
     voter.save
@@ -247,7 +247,7 @@ end
 
 #here be the main loop
 DaemonKit.logger.info "Starting up..."
-doInitialClean=true
+do_initial_clean=true
 loop do
   begin
     # @avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
@@ -272,8 +272,8 @@ loop do
       end
     else
       #cleanup
-      if rand(10)==2 || doInitialClean
-        doInitialClean=false
+      if rand(10)==2 || do_initial_clean
+        do_initial_clean=false
         logged_out_campaigns = ActiveRecord::Base.connection.execute("select distinct campaign_id from caller_sessions where campaign_id not in (select distinct campaign_id from caller_sessions where on_call=1) and campaign_id is not null")
         logged_out_campaigns.each do |k|
           DaemonKit.logger.info "Cleaning up campaign #{k[0]}"

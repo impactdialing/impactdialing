@@ -1,4 +1,5 @@
 <% content_for :stylesheets do %>
+    <link rel="stylesheet" type="text/css" media="screen" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.14/themes/smoothness/jquery-ui.css" />
     <%= stylesheet_link_tag 'jquery.ui.datetime' %>
 <% end %>
 <% content_for :javascripts do %>
@@ -47,17 +48,22 @@
               <input type="text" name="note<%= b %>" id="note<%= b %>" size="30"></div>
         <% end %>
         <div id="callback_scheduler" style="display: none;">
-          <%= button_to_function 'Schedule for later', 'show_scheduler()' %>
-          <div id="callback_info" style="display: none;">
-            <p></p>
-            Schedule callbacks :
-            <%= button_to_function 'Hide', 'hide_scheduler()' %>
-            <p></p>
+          <p><%= link_to_function 'Schedule for later', 'expand_scheduler()', :class=> "action secondary" %></p>
 
-            <input id="scheduled_date"/>
-            <input type="hidden" id="current_call_attempt_id" value="0">
-            <%= link_to_function 'Go', 'set_schedule()' %>
+          <div id="callback_info" style="display: none;">
+            <div>
+              <p>
+                Schedule callbacks :
+                <input id="scheduled_date"/>
+                <input type="hidden" id="current_call_attempt_id" value="0">
+              </p>
+            </div>
+            <div style="clear: both;">
+              <%= link_to_function 'Go', 'set_schedule()', :class=> "action secondary" %>
+              <%= link_to_function 'Hide', 'collapse_scheduler()', :class=> "action secondary" %>
+            </div>
           </div>
+
         </div>
       </div>
     </fieldset>
@@ -112,11 +118,15 @@
     }
 
     function show_scheduler() {
-        $("#callback_info").show();
+        $("#callback_scheduler").show();
     }
 
-    function hide_scheduler() {
+    function collapse_scheduler() {
         $("#callback_info").hide();
+    }
+
+    function expand_scheduler() {
+        $("#callback_info").show();
     }
 
     function set_schedule() {
@@ -129,7 +139,7 @@
     }
 
     $(document).ready(function() {
-        $('#scheduled_date').datetime();
+        $('#scheduled_date').datetime({ inline: true });
     });
 
 
