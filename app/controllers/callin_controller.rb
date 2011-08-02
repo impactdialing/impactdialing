@@ -518,8 +518,8 @@ class CallinController < ApplicationController
           #          @voter.status="Call completed with success."
           @attempt.status="Call abandoned"
         else
-          @voter.status="Call completed with success." unless  (@voter.status=="Message delivered" || @voter.status == CallAttempt::Status::SCHEDULED)
-          @attempt.status="Call completed with success." unless  (@attempt.status=="Message delivered" || @voter.status == CallAttempt::Status::SCHEDULED)
+          @voter.status= CallAttempt::Status::SUCCESS unless (@voter.status== CallAttempt::Status::VOICEMAIL || @voter.status == CallAttempt::Status::SCHEDULED)
+          @attempt.status= CallAttempt::Status::SUCCESS unless (@attempt.status== CallAttempt::Status::VOICEMAIL || @attempt.status == CallAttempt::Status::SCHEDULED)
         end
       end
       @attempt.call_end=Time.now
