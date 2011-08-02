@@ -1,17 +1,16 @@
 $environment = ARGV[0]
 voter_list = ARGV[1]
 
+root_path = File.expand_path(File.join(File.dirname(__FILE__)))
 if $environment=="development"
-  root_path="/Volumes/MacHD/Users/blevine/dev/impact_dialing/dialer-dameon/"
-  TWILIO_ACCOUNT="ACc0208d4be3e204d5812af2813683243a"
-  TWILIO_AUTH="4e179c64daa7c9f5108bd6623c98aea6"
+  TWILIO_ACCOUNT = "ACc0208d4be3e204d5812af2813683243a"
+  TWILIO_AUTH = "4e179c64daa7c9f5108bd6623c98aea6"
 else
-  TWILIO_ACCOUNT="AC422d17e57a30598f8120ee67feae29cd"
-  TWILIO_AUTH="897298ab9f34357f651895a7011e1631"
-  root_path="/opt/bitnami/apache2/trunk/dialer-dameon/"
+  TWILIO_ACCOUNT = "AC422d17e57a30598f8120ee67feae29cd"
+  TWILIO_AUTH = "897298ab9f34357f651895a7011e1631"
 end
 
-ENV['BUNDLE_GEMFILE']="#{root_path}/Gemfile"
+ENV['BUNDLE_GEMFILE'] = "#{root_path}/Gemfile"
 
 require 'rubygems'
 require 'bundler'
