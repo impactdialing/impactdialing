@@ -74,6 +74,11 @@ describe ClientController do
         get :script_add, :id => script.id
         assigns(:fields).should include(field.name)
       end
+
+      it "doesn't add custom fields on a new script" do
+        get :script_add
+        assigns(:fields).should == ["CustomID","FirstName","MiddleName","LastName","Suffix","Age","Gender","Phone","Email"]
+      end
     end
 
     it "lists all manual campaigns" do
