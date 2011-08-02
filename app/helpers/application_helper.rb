@@ -79,7 +79,7 @@ module ApplicationHelper
   end
 
   def domain
-    d = request.domain.downcase.gsub(/\.com/, '')
+    d = request.domain.downcase.gsub(/\..+$/, '')
     if I18n.t("white_labeling.#{d}", :default => '').blank?
       'impactdialing'
     else
