@@ -17,7 +17,6 @@ describe Voter do
     Voter.active.should == [active_voter]
   end
 
-
   describe "Dialing" do
     let(:campaign) { Factory(:campaign) }
     let(:voter) { Factory(:voter, :campaign => campaign) }
@@ -68,11 +67,9 @@ describe Voter do
       voter2 = Factory(:voter, :call_back =>true)
       Voter.to_callback.should == [voter2]
     end
-
   end
 
   describe "to be dialed" do
-
     it "includes voters never called" do
       voter = Factory(:voter)
       Voter.to_be_dialed.should == [voter]
@@ -97,12 +94,9 @@ describe Voter do
       Factory(:call_attempt, :voter => voter, :status => CallAttempt::Status::SUCCESS)
       Voter.to_be_dialed.should be_empty
     end
-
-
   end
 
   describe "voter attributes" do
-
     let(:voter){ Factory(:voter, :campaign => Factory(:campaign, :user=> Factory(:user)), :Phone => '384756923349') }
 
     it "populates original attributes" do
@@ -111,7 +105,7 @@ describe Voter do
     end
 
     it "populates custom attributes" do
-      attribute , value = 'Custom' , 'foo'
+      attribute, value = 'Custom', 'foo'
       voter.apply_attribute(attribute, value)
       field = CustomVoterField.find_by_name(attribute)
       field.should_not be_nil
@@ -119,16 +113,27 @@ describe Voter do
     end
 
     it "returns value of original attributes" do
-      attribute , value = 'Phone' , '2947832874'
+      attribute, value = 'Phone', '2947832874'
       voter.apply_attribute(attribute,value)
       voter.get_attribute(attribute).should == value
     end
 
     it "returns value of custom attributes" do
-      attribute , value = 'Custom' , 'abcde'
+      attribute, value = 'Custom', 'abcde'
       voter.apply_attribute(attribute,value)
       voter.get_attribute(attribute).should == value
     end
+  end
 
+  it "lists scheduled voters" do
+    recent_voter = Factory(:voter, :scheduled_date => 2.minutes.ago, :status => CallAttempt::Status::SCHEDULED)
+    really_old_voter = Factory(:voter, :scheduled_date => 2.hours.ago, :status => CallAttempt::Status::SCHEDULED)
+    recent_but_unscheduled_voter = Factory(:voter, :scheduled_date => 1.minute.ago, :status => nil)
+    Voter.scheduled.should == [recent_voter]
+  end
+
+  it "limits voters when listing them" do
+    10.times{Factory(:voter)}
+    Voter.limit(5).should have(5).voters
   end
 end
