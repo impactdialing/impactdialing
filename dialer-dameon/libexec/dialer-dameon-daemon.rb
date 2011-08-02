@@ -36,7 +36,7 @@ DaemonKit::Application.running! do |config|
   end
 
 
-  def handleCampaign(k)
+  def handle_campaign(k)
     root_path = File.join(File.dirname(__FILE__, '..'))
 
     campaign = Campaign.find(k)
@@ -98,17 +98,17 @@ DaemonKit::Application.running! do |config|
 
     if (campaign.predective_type=="" || campaign.predective_type.index("power_")==0 || campaign.predective_type.index("robo,")==0)
       #original method
-      maxCalls=callers.length * ratio_dial
-      DaemonKit.logger.info "maxCalls: #{maxCalls}"
-      newCalls=calls.length
+      max_calls=callers.length * ratio_dial
+      DaemonKit.logger.info "max_calls: #{max_calls}"
+      new_calls=calls.length
         # if campaign.ending_window_method!="Not used"
         #   if campaign.ending_window_method=="Average"
-        #     newCalls = newCalls - campaign.calls_in_ending_window(10,"average").length
+        #     new_calls = new_calls - campaign.calls_in_ending_window(10,"average").length
         #   elsif campaign.ending_window_method=="Longest"
-        #     newCalls = newCalls - campaign.calls_in_ending_window(10,"longest").length
+        #     new_calls = new_calls - campaign.calls_in_ending_window(10,"longest").length
         #   end
         # end
-      newCalls = newCalls - maxCalls
+      new_calls = new_calls - max_calls
     else
       #new mode
       #for each caller on a call
@@ -117,13 +117,13 @@ DaemonKit::Application.running! do |config|
       # if a call passes length 15s, dial stats[:dials_needed] lines at stats[:short_new_long_time_threshold]sinto the call.
 
 
-      maxCalls=callers.length * stats[:dials_needed]
-#      DaemonKit.logger.info "maxCalls: #{maxCalls}"
-#      newCalls=calls.length
-      newCalls=maxCalls-calls.length
-#newCalls= callers_on_call.length * stats[:dials_needed]
+      max_calls=callers.length * stats[:dials_needed]
+#      DaemonKit.logger.info "max_calls: #{max_calls}"
+#      new_calls=calls.length
+      new_calls=max_calls-calls.length
+#new_calls= callers_on_call.length * stats[:dials_needed]
 #for each caller thats not on a call, make stats[:dials_needed] calls
-#newCalls= newCalls  - (not_on_call * stats[:dials_needed])
+#new_calls= new_calls  - (not_on_call * stats[:dials_needed])
 
       pool_size=0
 
@@ -140,7 +140,7 @@ DaemonKit::Application.running! do |config|
         DaemonKit.logger.info "short_counter #{short_counter}"
       end
 
-      if stats[:ratio_short]>0 && short_counter >0
+      if stats[:ratio_short]>0 && short_counter > 0
         max_short=(1/stats[:ratio_short]).round
         short_to_dial = (short_counter/max_short).to_f.ceil
       else
@@ -155,7 +155,7 @@ DaemonKit::Application.running! do |config|
           pool_size = pool_size + stats[:dials_needed]
           DaemonKit.logger.info "empty to pool, session #{session.id} attempt_in_progress is blank"
           #idle
-          #newCalls= newCalls  - stats[:dials_needed]
+          #new_calls= new_calls  - stats[:dials_needed]
         else
           attempt = CallAttempt.find(session.attempt_in_progress)
           DaemonKit.logger.info "session #{session.id} attempt_in_progress is #{attempt.id}"
@@ -164,13 +164,13 @@ DaemonKit::Application.running! do |config|
               if attempt.duration > stats[:short_new_call_time_threshold]
                 done_short+=1
                   #when stats[:short_new_call_caller_threshold] callers are on calls of length less than stats[:short_time]s, dial  stats[:dials_needed] lines at stats[:short_new_call_time_threshold]) seconds after the last call began.
-                  #newCalls= newCalls  - stats[:dials_needed]
+                  #new_calls= new_calls  - stats[:dials_needed]
                 pool_size = pool_size + stats[:dials_needed]
                 DaemonKit.logger.info "short to pool, duration #{attempt.duration}, done_short=#{done_short}, short_to_dial=#{short_to_dial}"
               end
             else
               # if a call passes length 15s, dial stats[:dials_needed] lines at stats[:short_new_long_time_threshold]sinto the call.
-              #  newCalls= newCalls  - stats[:dials_needed] if attempt.duration > stats[:long_new_call_time_threshold]
+              #  new_calls= new_calls  - stats[:dials_needed] if attempt.duration > stats[:long_new_call_time_threshold]
               DaemonKit.logger.info "looking at long to pool, session #{session.id}, attempt.duration #{attempt.duration}, thresh #{stats[:long_new_call_time_threshold]}"
               if attempt.duration > stats[:long_new_call_time_threshold]
                 DaemonKit.logger.info "LONG TO POOL, session #{session.id}, attempt.duration #{attempt.duration}, thresh #{stats[:long_new_call_time_threshold]}"
@@ -181,21 +181,23 @@ DaemonKit::Application.running! do |config|
         end
       end
 
-      maxCalls = pool_size
-      newCalls = calls.length
+      max_calls = pool_size
+      new_calls = calls.length
 
-      newCalls=0 if newCalls<0
-      DaemonKit.logger.info "#{newCalls} newcalls #{maxCalls} maxcalls"
+      new_calls=0 if new_calls<0
+      DaemonKit.logger.info "#{new_calls} newcalls #{max_calls} maxcalls"
     end
 
 
-    DaemonKit.logger.info "newCalls: #{newCalls}, maxCalls: #{maxCalls}"
+    DaemonKit.logger.info "new_calls: #{new_calls}, max_calls: #{max_calls}"
 
-    voter_ids=[]
+    voter_ids = campaign.voters.scheduled.limit(max_calls - new_calls)
+    new_calls = new_calls + voter_ids.size
     voters.each do |voter|
-      if newCalls.to_i < maxCalls.to_i
-        voter_ids<<voter
-        newCalls+=1
+      break if new_calls.to_i >= max_calls.to_i
+      unless voter_ids.include?(voter)
+        voter_ids << voter
+        new_calls+=1
       end
     end
 
@@ -214,9 +216,9 @@ DaemonKit::Application.running! do |config|
         callNewVoter(voter, campaign)
       end
       # voters.each do |voter|
-      #   if newCalls.to_i < maxCalls.to_i
-      #     DaemonKit.logger.info "#{newCalls.to_i} newcalls < #{maxCalls.to_i} maxcalls, calling #{voter.Phone}"
-      #     newCalls+=1
+      #   if new_calls.to_i < max_calls.to_i
+      #     DaemonKit.logger.info "#{new_calls.to_i} newcalls < #{max_calls.to_i} maxcalls, calling #{voter.Phone}"
+      #     new_calls+=1
       #     callNewVoter(voter,campaign)
       #   end
       # end
@@ -266,7 +268,7 @@ loop do
       ActiveRecord::Base.connection.execute("update caller_sessions set on_call=0")
     elsif logged_in_campaigns.num_rows>0
       logged_in_campaigns.each do |k|
-        handleCampaign(k[0])
+        handle_campaign(k[0])
       end
     else
       #cleanup

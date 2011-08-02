@@ -47,6 +47,8 @@ ActionController::Routing::Routes.draw do |map|
     campaign.resources :voter_lists, :collection => { :import => :post }, :except => [:new, :show], :name_prefix => 'client_'
   end
 
+  map.resources :call_attempts, :only => [:create, :update]
+
   map.resources :users do |user|
     user.update_password '/update_password', :action => 'update_password', :controller => 'client/users', :conditions => { :method => :put }
   end
