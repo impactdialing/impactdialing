@@ -7,7 +7,7 @@ var ajax_load = "<img src='/images/ajax-loader.gif' alt='loading...' />";
 
 function dialTimedOut(){
 	$('#statusdiv').html("Status: Not Connected");
-	$('#actiondiv').html('<%= @start_action_div_contents %>');
+	$('#actiondiv').html('<%= escape_javascript @start_action_div_contents %>');
  	$('#voter_info').hide();
  	$('#response').hide();
 	$('#result_instruction').show();
@@ -16,6 +16,7 @@ function dialTimedOut(){
 
 
 $(document).ready(function() {
+	goclient();
 	<%# make call or re-establish session %>
 	t=setTimeout("dialTimedOut()",60000);
 	<% if @on_call!=nil %>
@@ -106,6 +107,7 @@ $(document).ready(function() {
 	});
 
 	channel.bind('voter_start', function(data) {
+		clearTimeout(t);
 //		voter_data = JSON.parse(data);
 		voter_data = data;
 		var voter_out="";
@@ -157,12 +159,13 @@ $(document).ready(function() {
 	});
 	
 	channel.bind('hangup', function(data) {
+		clearTimeout(t);
  		$('#voter_info').hide();
 		$('#previewInfo').hide();
  		$('#response').hide();
 		$('#result_instruction').show();
 		$('#statusdiv').html("Status: Hung up");
-		$('#actiondiv').html('<%= @start_action_div_contents %>');
+		$('#actiondiv').html('<%= escape_javascript @start_action_div_contents %>');
  		$('#caller_buttons').effect("highlight", {"color":"#3c5b7b"}, 2000);
 	});
 	
@@ -224,6 +227,9 @@ function resetBoxes(){
 function imdone(){
 	var jsonUrl = "/caller/session_end/<%= @session.session_key %>";
 	$("#actiondiv").html(ajax_load);
+	if (typeof(Twilio) != "undefined"){
+        Twilio.Device.disconnectAll();
+	}
 	$.getJSON(jsonUrl,{}, 
 		function(json) {
 		//	var result = "Language code is \"<strong>" + json.responseData.language + "\"";
