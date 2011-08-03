@@ -9,3 +9,4 @@ tmp
 *.DS_Store
 public/.DS_Store
 test/
+lib/*.pid
