@@ -2,6 +2,10 @@ class CallerSession < ActiveRecord::Base
   belongs_to :caller, :class_name => "Caller", :foreign_key => "caller_id"
   belongs_to :campaign
   named_scope :on_call, :conditions => {:on_call => true}
+  named_scope :not_on_call, :conditions => {:on_call => false}
+  named_scope :available, :conditions => {:available_for_call => true }
+  named_scope :held_for_duration, lambda{|minutes| {:conditions => ["hold_time_start <= ?", minutes.ago]}}
+
   unloadable
   def minutes_used
     return 0 if self.tDuration.blank?
