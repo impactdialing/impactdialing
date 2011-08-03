@@ -55,6 +55,7 @@ class CallAttempt < ActiveRecord::Base
     HANGUP = "Hangup or answering machine"
     READY = "Call ready to dial"
     CANCELLED = "Call cancelled"
+    SCHEDULED = 'Scheduled for later'
 
     MAP = {'in-progress' => INPROGRESS, 'completed' => SUCCESS, 'busy' => BUSY, 'failed' => FAILED, 'no-answer' => NOANSWER, 'canceled' => CANCELLED }
     ALL = MAP.values

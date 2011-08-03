@@ -62,7 +62,7 @@ module ApplicationHelper
       fields = JSON.parse(script.voter_fields)
       fields.each do |field|
         #        logger.info "field: #{field}"
-        publish_hash[field] = eval("voter.#{field}")
+        publish_hash[field] = voter.get_attribute(field)
       end
     end
     publish_hash
@@ -79,7 +79,7 @@ module ApplicationHelper
   end
 
   def domain
-    d = request.domain.downcase.gsub(/\.com/, '')
+    d = request.domain.downcase.gsub(/\..+$/, '')
     if I18n.t("white_labeling.#{d}", :default => '').blank?
       'impactdialing'
     else
