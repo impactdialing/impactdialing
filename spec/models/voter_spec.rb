@@ -11,6 +11,13 @@ describe Voter do
     }.by(1)
   end
 
+  it "lists voters not called" do
+    voter1 = Factory(:voter, :campaign => Factory(:campaign), :status=> Voter::Status::NOTCALLED)
+    voter2 = Factory(:voter, :campaign => Factory(:campaign), :status=> Voter::Status::NOTCALLED)
+    Factory(:voter, :campaign => Factory(:campaign), :status=> "Random")
+    Voter.by_status(Voter::Status::NOTCALLED).should == [voter1,voter2]
+  end
+
   it "returns only active voters" do
     active_voter = Factory(:voter, :active => true)
     inactive_voter = Factory(:voter, :active => false)

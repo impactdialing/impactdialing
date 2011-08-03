@@ -146,7 +146,7 @@ def handle_campaign(k)
           if attempt.duration < stats[:short_time] && done_short<short_to_dial
             if attempt.duration > stats[:short_new_call_time_threshold]
               done_short+=1
-              #when stats[:short_new_call_caller_threshold] callers are on calls of length less than stats[:short_time]s, dial  stats[:dials_needed] lines at stats[:short_new_call_time_threshold]) seconds after the last call began.
+                #when stats[:short_new_call_caller_threshold] callers are on calls of length less than stats[:short_time]s, dial  stats[:dials_needed] lines at stats[:short_new_call_time_threshold]) seconds after the last call began.
               pool_size = pool_size + stats[:dials_needed]
               Rails.logger.info "short to pool, duration #{attempt.duration}, done_short=#{done_short}, short_to_dial=#{short_to_dial}"
             end
@@ -197,6 +197,11 @@ def handle_campaign(k)
       call_new_voter(voter, campaign)
     end
   end
+
+  Rails.logger.info "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+  Rails.logger.info "#{k.all_voters.by_status(Voter::Status::NOTCALLED).size} not called at: #{Time.now}"
+  Rails.logger.info "CALLER SESSIONS IDLE FOR > = 3 minutues : "
+  k.caller_sessions.available.held_for_duration(3.minutes).each { |session| Rails.logger.info "Email : #{session.caller.email} : Idle for : #{((Time.now - session.hold_time_start)/60).ceil} " }
 
 end
 
