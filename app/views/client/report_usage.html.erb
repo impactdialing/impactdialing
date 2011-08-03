@@ -1,23 +1,21 @@
 <%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@campaign.name} Usage Report"} %>
+<div class="content clearfix">
+<div role="main">
+<p>Two sets of metrics are provided for you below. First, you can see how much time your callers actually spent on the phone; each call is rounded to the nearest second. Next, you can see how much time you are being billed for; each call is rounded to the nearest minute. If your callers are using our browser phone, you will not be billed for their minutes.</p>
 <table>
 	<tr>
 		<th>Utilization (1-second increments)</th>
 		<th>Minutes</th>
-<!--		<td>Minutes</td> -->
 	</tr>
 	<tr>
 		<td>Callers</td>
 		<td><% @caller_util.each do |c| %> <%= c[0].to_i/60 %> <% end %> <% @caller_util.data_seek(0) %> </td>
-<!--		<td><% @caller_util.each do |c| %> <%= (c[0].to_f/60).round %> <% end %> <% @caller_util.data_seek(0) %> </td> -->
 	</tr>
 
 		<tr>
 			<td>Calls</td>
 			<td><% @calls_util.each do |c| %> <%= c[0].to_i/60 %> <% end %> <% @calls_util.data_seek(0) %> </td>
-	<!--		<td><% @caller_util.each do |c| %> <%= (c[0].to_f/60).round %> <% end %> <% @caller_util.data_seek(0) %> </td> -->
 		</tr>
-
-
 	<tr>
 		<td colspan="2">&nbsp;</td>
 	</tr>
@@ -42,3 +40,5 @@
 		<td><% @abandon_bill.each do |c| %> <%= c[1].to_i %> <% end %> <% @abandon_bill.data_seek(0) %> </td>
 	</tr>
 </table>
+</div>
+</div>
