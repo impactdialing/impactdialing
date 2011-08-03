@@ -62,6 +62,7 @@ class User < ActiveRecord::Base
   end
   
   def send_welcome_email
+    return false if RAILS_ENV!="production"
     send_michael_welcome_email
     return false if self.domain!="impactdialing.com" && self.domain!="localhost"
     begin
