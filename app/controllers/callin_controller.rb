@@ -187,6 +187,10 @@ class CallinController < ApplicationController
     @finishOnKey=""
     @repeatRedirect="#{APP_URL}/callin/enter_group?session=#{params[:session]}&campaign=#{params[:campaign]}"
     @session = CallerSession.find(params[:session])
+    if @session.sid.blank?
+      @session.sid=params[:CallSid]
+      @session.save
+    end
     @caller = @session.caller
     @campaign = Campaign.find(params[:campaign])
 
