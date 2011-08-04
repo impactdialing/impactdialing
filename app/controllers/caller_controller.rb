@@ -70,7 +70,7 @@ class CallerController < ApplicationController
     @session = @on_call if @on_call!=nil
 
     if request.post?
-      if !phone_number_valid(params[:numtocall]) && !params[:numtocall].blank?
+      if !phone_number_valid(params[:numtocall]) && !params[:numtocall].blank? && params[:client]=="0"
         flash_now(:error, "Please enter a valid phone number")
       else
         @session = CallerSession.new
@@ -80,22 +80,40 @@ class CallerController < ApplicationController
         @session.session_key=generate_session_key
         @session.save
 
-        #flash[:notice]= "Calling you now"
-        t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-        a=t.call("POST", "Calls", {'Caller' => APP_NUMBER, 'Called' => params[:numtocall], 'Url'=>"#{APP_URL}/callin/get_ready?campaign=#{params[:id]}&session=#{@session.id}&Digits=*", 'IfMachine' => 'Hangup'})
-        @doc = Hpricot::XML(a)
-        @session.sid=(@doc/"Sid").inner_html
-        @session.save
-        #        redirect_to :action=>"campaign", :id=>params[:id], :key=>s.session_key
-        #        return
+        if params[:client]=="0"
+          t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+          a=t.call("POST", "Calls", {'Caller' => APP_NUMBER, 'Called' => params[:numtocall], 'Url'=>"#{APP_URL}/callin/get_ready?campaign=#{params[:id]}&session=#{@session.id}&Digits=*"})
+          @doc = Hpricot::XML(a)
+          @session.sid=(@doc/"Sid").inner_html
+          @session.save
+        else
+          twilio_capability = Twilio::Util::Capability.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+          twilio_capability.allow_client_outgoing(TWILIO_APP_SID)
+          @token = twilio_capability.generate
+          @params="{'campaign':'#{params[:id]}', 'session':'#{@session.id}', 'Digits':'*'}"
+          @session.caller_number="client"
+          @session.save
+        end
       end
     end
 
   end
-
+  
   def jspush
     response.headers["Content-Type"] = 'text/javascript'
-    @start_action_div_contents='Enter your phone number: <input type="text" name="numtocall" placeholder="Type your phone number here">  <img src="/images/report_bug.png" onclick="feedback();" align="right"><p><div class="buttons"><button type="submit">Start taking calls</button></div></p>'
+    @start_action_div_contents = '
+    Enter your phone number:
+    		<input type="text" name="numtocall" id="numtocall" placeholder="Type your phone number here"> 
+    		<p> 
+    			<div class="buttons"> 
+    				<button type="submit">Start taking calls</button> 
+    			</div> 
+
+    			<p><input type="radio" name="client" value="0" checked onclick="$(\'#numtocall\').show();"> Call my Phone</p> 
+    			<p><input type="radio" name="client" value="1" onclick="$(\'#numtocall\').hide(\'slide\', { direction: \'up\' }, 400);"> Use Browser Phone</p> 
+
+    		</p>
+    '
     @session = CallerSession.find_by_session_key(params[:id])
     @on_call = CallerSession.find_by_session_key_and_on_call(params[:id],true)
     @campaign=@session.campaign
@@ -144,6 +162,17 @@ class CallerController < ApplicationController
 
     t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
     a=t.call("POST", "Calls/#{session.sid}", {'CurrentUrl'=>"#{APP_URL}/callin/callerEndCall?session=#{session.id}"})
+
+    #client new
+    
+    if session.caller_number=="client"
+      session.endtime=Time.now
+      session.available_for_call=false
+      session.on_call=false
+      session.save
+
+      send_rt(session.session_key,'hangup','ok')
+    end
 
     #update rt
     #send_rt(params[:id],'hangup','ok') #this done in callerEndCall
