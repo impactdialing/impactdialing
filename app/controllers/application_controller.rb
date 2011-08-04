@@ -268,7 +268,7 @@ class ApplicationController < ActionController::Base
 
 #    @session = CallerSession.find(params[:session])
     if @session.endtime==nil
-      @session.available_for_call=true
+#      @session.available_for_call=true
       @session.voter_in_progress=nil
       @session.attempt_in_progress=nil
       @session.save
