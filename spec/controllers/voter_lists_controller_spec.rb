@@ -23,13 +23,13 @@ describe VoterListsController do
     describe "create voter list" do
       def import(parameters={})
         defaults = {
-            :separator               => ",",
-            :voter_list_name         => "voter list name",
+            :separator => ",",
+            :voter_list_name => "voter list name",
             :json_csv_column_headers => ["Phone", "LAST"].to_json,
-            :campaign_id             => @campaign.id,
-            :csv_to_system_map       => {
+            :campaign_id => @campaign.id,
+            :csv_to_system_map => {
                 "Phone" => "Phone",
-                "LAST"  =>"LastName"
+                "LAST" =>"LastName"
             }
         }
         post :import, defaults.merge(parameters)
@@ -40,7 +40,7 @@ describe VoterListsController do
           session[:voters_list_upload] = nil
           post :create,
                :campaign_id => @campaign.id,
-               :upload      => csv_file_upload
+               :upload => csv_file_upload
         end
         it "sets the session to the new voter list entry" do
           session[:voters_list_upload].should_not be_empty
@@ -53,6 +53,15 @@ describe VoterListsController do
           flash[:error].should be_blank
           response.code.should == "200"
           response.should render_template("column_mapping")
+        end
+
+        describe "missing header info" do
+          let(:csv_file_upload) { {"datafile" => fixture_file_upload("files/voters_with_nil_header_info.csv")} }
+
+          it "ignores columns without a header" do
+            post :create, :campaign_id => @campaign.id
+            assigns(:csv_column_headers).size.should == 2
+          end
         end
 
         describe "import" do
@@ -107,7 +116,7 @@ describe VoterListsController do
           session[:voters_list_upload] = nil
           post :create,
                :campaign_id => @campaign.id,
-               :upload      => {"datafile" => fixture_file_upload("files/invalid_voters_list.csv")}
+               :upload => {"datafile" => fixture_file_upload("files/invalid_voters_list.csv")}
           import
         end
         it "should flash an error" do
