@@ -592,7 +592,7 @@ class CallinController < ApplicationController
 
         @attempt.caller_session_id=@available_caller_session.id
         @attempt.caller_id=@available_caller_session.caller.id
-        @attempt.call_start=Time.now
+        @attempt.call_start=Time.now.in_time_zone('Pacific Time (US & Canada)')
         @attempt.caller_hold_time =(Time.now - @available_caller_session.hold_time_start).to_i if @available_caller_session.hold_time_start!=nil # end caller hold time
         @attempt.save
 
