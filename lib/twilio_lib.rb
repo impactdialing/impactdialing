@@ -89,8 +89,8 @@ class TwilioLib
         model_instance.tCaller = status.at("Caller").innerHTML
         model_instance.tPhoneNumberSid = status.at("PhoneNumberSid").innerHTML
         model_instance.tStatus = status.at("Status").innerHTML
-        model_instance.tStartTime = status.at("StartTime").innerHTML
-        model_instance.tEndTime = status.at("EndTime").innerHTML
+        model_instance.tStartTime = Time.parse(status.at("StartTime").innerHTML)
+        model_instance.tEndTime = Time.parse(status.at("EndTime").innerHTML)
         Rails.logger.info "!!!!!!!!! Twilio End Time for id : #{model_instance.id}: #{status.at("EndTime").innerHTML}"
         model_instance.tDuration = status.at("Duration").innerHTML
         model_instance.tPrice = status.at("Price").innerHTML
