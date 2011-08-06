@@ -23,14 +23,23 @@ class CallinController < ApplicationController
 
 
   def session_complete
-    logger.info "NO SESSION COOKIE"  if(cookies[:session]==nil || cookies[:session]=="0") && params[:session].blank?
-    return if(cookies[:session]==nil || cookies[:session]=="0") && params[:session].blank?
-    #remove this caller
-    if !params[:session].blank?
-      @session = CallerSession.find(params[:session])
+    if(cookies[:session]==nil || cookies[:session]=="0") && params[:session].blank?
+      logger.info "NO SESSION COOKIE"  
+      @session=CallerSession.find_by_sid(params[:CallSid]) if !params[:CallSid].blank?
+      @session=CallerSession.find_by_sid(params[:CallGuid]) if !params[:CallGuid].blank?
     else
-      @session = CallerSession.find(cookies[:session])
+      if !params[:session].blank?
+        @session = CallerSession.find(params[:session])
+      else
+        @session = CallerSession.find(cookies[:session])
+      end
     end
+    if @session.nil?
+      logger.info "BAILING ON SESSION_COMPLETE"  
+      return 
+    end
+    #return if(cookies[:session]==nil || cookies[:session]=="0") && params[:session].blank?
+    #remove this caller
     @session.endtime=Time.now
     @session.available_for_call=false
     @session.on_call=false
