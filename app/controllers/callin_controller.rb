@@ -636,6 +636,10 @@ class CallinController < ApplicationController
         logger.debug "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
         # caller already connected to someone else
         @pause=2
+        @available_caller_session.voter_in_progress = nil
+        @available_caller_session.attempt_in_progressnil
+        @available_caller_session.available_for_call=true
+        @available_caller_session.save
         @redirect="#{APP_URL}/callin/voterFindSession?campaign=#{@campaign.id}&voter=#{@voter.id}&attempt=#{@attempt.id}"
       end
 
