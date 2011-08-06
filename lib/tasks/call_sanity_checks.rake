@@ -8,7 +8,7 @@ task :post_call_availabilty_check => :environment do
   sql="select cs.id, UTC_TIMESTAMP()-ca.call_end as seconds_since_last_attempt_ended, c.name, ca.call_end, attempt_in_progress, cs.campaign_id from caller_sessions cs
   join call_attempts ca on ca.id=cs.attempt_in_progress
   join campaigns c on c.id=cs.campaign_id
-   where on_call=1 and available_for_call=0 and UTC_TIMESTAMP()-ca.call_end > 90"
+   where on_call=1 and available_for_call=0 and UTC_TIMESTAMP()-ca.call_end > 45"
    
   @session_to_fix= ActiveRecord::Base.connection.execute(sql)
   @session_to_fix.each do |s|
