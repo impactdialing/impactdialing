@@ -1369,6 +1369,10 @@ Can we count on you to vote for such-and-such?
     # end
     # @avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
     @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id)
+    if @campaign.nil?
+      render :text=>"Campaign not found or access not permitted"
+      return
+    end
     render :layout=>false
   end
 
