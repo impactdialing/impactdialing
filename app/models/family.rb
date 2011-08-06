@@ -11,4 +11,12 @@ class Family < ActiveRecord::Base
      self[attribute] = value if self.has_attribute? attribute
   end
 
+  def get_attribute(attribute)
+    return self[attribute] if self.has_attribute? attribute
+    return unless CustomVoterField.find_by_name(attribute)
+    fields = CustomVoterFieldValue.voter_fields(self,CustomVoterField.find_by_name(attribute))
+    return if fields.empty?
+    return fields.first.value
+  end
+
 end
