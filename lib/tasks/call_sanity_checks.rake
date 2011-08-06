@@ -15,8 +15,20 @@ task :post_call_availabilty_check => :environment do
     puts s.inspect
     @session=CallerSession.find( s[0])
 #    puts @session.inspect
-    debug="Idle fix Session #{@session.id} CallAttempt #{@session.attempt_in_progress} Campaign #{s[2]} Idle #{s[1].to_i}s"
-    Postoffice.deliver_feedback(debug)
+    debug="Session #{@session.id} CallAttempt #{@session.attempt_in_progress} Campaign #{s[2]} Idle #{s[1].to_i}s"
+    u = Uakari.new(MAILCHIMP_API_KEY)
+    u.send_email({
+        :track_opens => true, 
+        :track_clicks => true, 
+        :message => {
+            :subject => "Idle session fix", 
+            :html => debug, 
+            :text => debug, 
+            :from_name => 'Impact Dialing', 
+            :from_email => 'email@impactdialing.com', 
+            :to_email=>['michael@impactdialing.com','brian@impactdialing.com']
+        }
+    })
     @session.available_for_call=1
     @session.save
     t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
