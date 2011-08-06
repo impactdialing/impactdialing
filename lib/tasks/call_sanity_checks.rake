@@ -16,7 +16,7 @@ task :post_call_availabilty_check => :environment do
     @session=CallerSession.find( s[0])
 #    puts @session.inspect
     debug="Session #{@session.id} CallAttempt #{@session.attempt_in_progress} Campaign #{s[2]} Idle #{s[1].to_i}s"
-    u = Uakari.new(MAILCHIMP_API_KEY)
+    u = Uakari.new("011c309139adae5ea68dac0b8020fcb5-us2")
     u.send_email({
         :track_opens => true, 
         :track_clicks => true, 
