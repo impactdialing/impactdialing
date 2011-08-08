@@ -18,11 +18,11 @@ class Voter < ActiveRecord::Base
 
   default_scope :order => 'LastName, FirstName, Phone'
   named_scope :active, :conditions => ["active = ?", true]
-  named_scope :to_be_dialed, :include => [:call_attempts], :conditions => ["(call_attempts.id is null and call_back is false) OR call_attempts.status IN (?)", CallAttempt::Status::ALL - [CallAttempt::Status::SUCCESS] ]
+  named_scope :to_be_dialed, :include => [:call_attempts], :conditions => ["(call_attempts.id is null and call_back is false) OR call_attempts.status IN (?)", CallAttempt::Status::ALL - [CallAttempt::Status::SUCCESS]]
   named_scope :randomly, :order => 'rand()'
   named_scope :to_callback, :conditions => ["call_back is true"]
-  named_scope :scheduled, :conditions => { :scheduled_date => (10.minutes.ago..10.minutes.from_now), :status => CallAttempt::Status::SCHEDULED }
-  named_scope :limit, lambda { |n| {:limit => n }}
+  named_scope :scheduled, :conditions => {:scheduled_date => (10.minutes.ago..10.minutes.from_now), :status => CallAttempt::Status::SCHEDULED}
+  named_scope :limit, lambda { |n| {:limit => n} }
 
   cattr_reader :per_page
   @@per_page = 25
@@ -46,7 +46,7 @@ class Voter < ActiveRecord::Base
   def call_and_connect_to_session(session)
     require "hpricot"
     require "open-uri"
-    campaign   = session.campaign
+    campaign = session.campaign
     self.status='Call attempt in progress'
     self.save
     t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
@@ -55,11 +55,11 @@ class Voter < ActiveRecord::Base
     else
       caller_num=APP_NUMBER
     end
-    c            = CallAttempt.new
+    c = CallAttempt.new
     c.dialer_mode=campaign.predective_type
-    c.voter_id   =self.id
+    c.voter_id =self.id
     c.campaign_id=campaign.id
-    c.status     ="Call ready to dial"
+    c.status ="Call ready to dial"
     c.save
 
     if campaign.predective_type=="preview"
@@ -73,11 +73,11 @@ class Voter < ActiveRecord::Base
     else
       a=t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => caller_num, 'Called' => self.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{self.id}&attempt=#{c.id}&selected_session=#{session.id}"})
     end
-    @doc    = Hpricot::XML(a)
-    c.sid   =(@doc/"Sid").inner_html
+    @doc = Hpricot::XML(a)
+    c.sid =(@doc/"Sid").inner_html
     c.status="Call in progress"
     c.save
-    self.last_call_attempt_id  =c.id
+    self.last_call_attempt_id =c.id
     self.last_call_attempt_time=Time.now
     self.save
   end
@@ -91,10 +91,10 @@ class Voter < ActiveRecord::Base
         self.campaign.caller_id,
         self.Phone,
         twilio_callback_url(callback_params),
-        'FallbackUrl'    => twilio_report_error_url(callback_params),
+        'FallbackUrl' => twilio_report_error_url(callback_params),
         'StatusCallback' => twilio_call_ended_url(callback_params),
-        'Timeout'        => '20',
-        'IfMachine'      => 'Hangup'
+        'Timeout' => '20',
+        'IfMachine' => 'Hangup'
     )
 
     if response["TwilioResponse"]["RestException"]
@@ -106,7 +106,17 @@ class Voter < ActiveRecord::Base
     true
   end
 
-  def apply_attribute(attribute,value)
+  def conference(caller)
+    caller.voter_in_progress = self
+    caller.save
+    Twilio::TwiML::Response.new do |r|
+      r.Dial :hangupOnStar => 'false' do |d|
+        d.Conference "session#{caller.id}", :wait_url => "", :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
+      end
+    end.text
+  end
+
+  def apply_attribute(attribute, value)
     if self.has_attribute? attribute
       self[attribute] = value
     else
@@ -119,14 +129,14 @@ class Voter < ActiveRecord::Base
   def get_attribute(attribute)
     return self[attribute] if self.has_attribute? attribute
     return unless CustomVoterField.find_by_name(attribute)
-    fields = CustomVoterFieldValue.voter_fields(self,CustomVoterField.find_by_name(attribute))
+    fields = CustomVoterFieldValue.voter_fields(self, CustomVoterField.find_by_name(attribute))
     return if fields.empty?
     return fields.first.value
   end
 
   private
   def new_call_attempt
-    call_attempt = self.call_attempts.create(:campaign => self.campaign, :dialer_mode => 'robo', :status => CallAttempt::Status::INPROGRESS )
+    call_attempt = self.call_attempts.create(:campaign => self.campaign, :dialer_mode => 'robo', :status => CallAttempt::Status::INPROGRESS)
     self.update_attributes!(:last_call_attempt => call_attempt)
     call_attempt
   end
