@@ -1,16 +1,17 @@
 class CallAttempt < ActiveRecord::Base
+  include ActionController::UrlWriter
   belongs_to :voter
   belongs_to :campaign
   belongs_to :caller
   has_many :call_responses
 
-  named_scope :for_campaign, lambda{|campaign| {:conditions => ["campaign_id = ?", campaign.id] }}
-  named_scope :for_status, lambda{|status| {:conditions => ["call_attempts.status = ?", status] }}
+  named_scope :for_campaign, lambda { |campaign| {:conditions => ["campaign_id = ?", campaign.id]} }
+  named_scope :for_status, lambda { |status| {:conditions => ["call_attempts.status = ?", status]} }
 
 
   def ring_time
     if self.answertime!=nil && self.created_at!=nil
-      (self.answertime  - self.created_at).to_i
+      (self.answertime - self.created_at).to_i
     else
       nil
     end
@@ -44,6 +45,21 @@ class CallAttempt < ActiveRecord::Base
     current_recording.next ? current_recording.next.twilio_xml(self) : current_recording.hangup
   end
 
+  def conference(caller)
+    self.voter.conference(caller)
+  end
+
+  def wait(time)
+    Twilio::TwiML::Response.new do |r|
+      r.Pause :length => time
+      r.Redirect "#{connect_call_attempts_path(:id => self.id)}"
+    end.text
+  end
+
+  def hangup
+    Twilio::TwiML::Response.new { |r| r.Hangup }.text
+  end
+
   module Status
     VOICEMAIL = "Message delivered"
     SUCCESS = "Call completed with success."
@@ -57,7 +73,7 @@ class CallAttempt < ActiveRecord::Base
     CANCELLED = "Call cancelled"
     SCHEDULED = 'Scheduled for later'
 
-    MAP = {'in-progress' => INPROGRESS, 'completed' => SUCCESS, 'busy' => BUSY, 'failed' => FAILED, 'no-answer' => NOANSWER, 'canceled' => CANCELLED }
+    MAP = {'in-progress' => INPROGRESS, 'completed' => SUCCESS, 'busy' => BUSY, 'failed' => FAILED, 'no-answer' => NOANSWER, 'canceled' => CANCELLED}
     ALL = MAP.values
   end
 

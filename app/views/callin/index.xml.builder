@@ -1,4 +1,4 @@
-xml.instruct! :xml, :version=>"1.0" 
+xml.instruct! :xml, :version=>"1.0"
 xml.Response("version"=>"1.0") do |response|
 
   if @publish_channel

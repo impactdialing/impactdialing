@@ -1,4 +1,5 @@
 require "spec_helper"
+include ActionController::UrlWriter
 
 describe CallAttempt do
 
@@ -34,9 +35,9 @@ describe CallAttempt do
   end
 
   describe 'next recording' do
-    let(:script) {Factory(:script)}
-    let(:campaign) {Factory(:campaign, :script => script)}
-    let(:call_attempt) {Factory(:call_attempt, :campaign => campaign)}
+    let(:script) { Factory(:script) }
+    let(:campaign) { Factory(:campaign, :script => script) }
+    let(:call_attempt) { Factory(:call_attempt, :campaign => campaign) }
 
     before(:each) do
       @recording1 = Factory(:robo_recording, :script => script)
@@ -56,14 +57,29 @@ describe CallAttempt do
     end
 
     it "hangs up when a recording has been responded to incorrectly 3 times" do
-      Factory(:call_response, :robo_recording => @recording2, :call_attempt => call_attempt , :times_attempted => 3)
+      Factory(:call_response, :robo_recording => @recording2, :call_attempt => call_attempt, :times_attempted => 3)
       call_attempt.next_recording(@recording2).should == Twilio::Verb.new(&:hangup).response
     end
 
     it "replays current recording has been responded to incorrectly < 3 times" do
       recording_response = Factory(:recording_response, :robo_recording => @recording2, :response => 'xyz', :keypad => 1)
-      Factory(:call_response, :robo_recording => @recording2, :call_attempt => call_attempt , :times_attempted => 2)
+      Factory(:call_response, :robo_recording => @recording2, :call_attempt => call_attempt, :times_attempted => 2)
       call_attempt.next_recording(@recording2).should == Twilio::Verb.new(&:hangup).response
+    end
+
+    it "makes an attempt wait" do
+      call_attempt = Factory(:call_attempt)
+      call_attempt.wait(2).should == Twilio::TwiML::Response.new do |r|
+        r.Pause :length => 2
+        r.Redirect "#{connect_call_attempts_path(:id => call_attempt.id)}"
+      end.text
+    end
+
+    it "conferences a call_attempt to a caller" do
+      caller = Factory(:caller_session)
+      voter = Factory(:voter)
+      call_attempt = Factory(:call_attempt, :voter => voter)
+      call_attempt.conference(caller).should == voter.conference(caller)
     end
 
   end
