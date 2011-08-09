@@ -15,23 +15,24 @@ class CallAttemptsController < ApplicationController
 
   def connect
     call_attempt = CallAttempt.find(params[:id])
-    caller = call_attempt.campaign.caller_sessions.available.first
     response = case params[:DialStatus]
                  when "answered-machine"
-                   call_attempt.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
-                   call_attempt.voter.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
+                   call_attempt.play_recorded_message
+                 when "hangup-machine"
+                   call_attempt.voter.update_attributes(:status => CallAttempt::Status::HANGUP, :call_back => true)
+                   call_attempt.update_attributes(:status => CallAttempt::Status::HANGUP, :call_end => Time.now)
                    call_attempt.hangup
                  when "no-answer"
                    call_attempt.voter.update_attributes(:status => CallAttempt::Status::NOANSWER, :call_back => true)
-                   call_attempt.update_attributes( :status => CallAttempt::Status::NOANSWER )
+                   call_attempt.update_attributes(:status => CallAttempt::Status::NOANSWER, :call_end => Time.now)
+                 when "busy"
+                   call_attempt.voter.update_attributes(:status => CallAttempt::Status::BUSY, :call_back => true)
+                   call_attempt.update_attributes(:status => CallAttempt::Status::BUSY, :call_end => Time.now)
+                 when "fail"
+                   call_attempt.voter.update_attributes(:status => CallAttempt::Status::FAILED, :call_back => true)
+                   call_attempt.update_attributes(:status => CallAttempt::Status::FAILED, :call_end => Time.now)
                  else
-                   if caller
-                     call_attempt.conference(caller)
-                   elsif CallerSession.on_call.size > 0
-                     call_attempt.wait(2)
-                   else
-                     call_attempt.hangup
-                   end
+                   call_attempt.connect_to_caller
                end
     render :xml => response
   end

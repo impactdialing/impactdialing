@@ -44,16 +44,47 @@ describe CallAttemptsController do
       response.body.should == Twilio::TwiML::Response.new { |r| r.Hangup }.text
     end
 
-    it "records a voter on voicemail" do
+    it "plays a voice mail to a voters answering the campaign uses recordings" do
+      campaign = Factory(:campaign, :use_recordings => true, :recording => Factory(:recording, :file_file_name => 'abc.mp3'))
+      call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign)
       post :connect, :id => call_attempt.id, :DialStatus => "answered-machine"
       call_attempt.reload.status.should == CallAttempt::Status::VOICEMAIL
       call_attempt.voter.status.should == CallAttempt::Status::VOICEMAIL
+      call_attempt.call_end.should_not be_nil
+    end
+
+    it "hangs up on the voters answering machine when the campaign does not use recordings" do
+      post :connect, :id => call_attempt.id, :DialStatus => "hangup-machine"
+
+      response.body.should == Twilio::TwiML::Response.new { |r| r.Hangup }.text
+      call_attempt.reload.status.should == CallAttempt::Status::HANGUP
+      call_attempt.voter.status.should == CallAttempt::Status::HANGUP
+      call_attempt.call_end.should_not be_nil
+      call_attempt.voter.call_back.should == true
     end
 
     it "updates the details of a call not answered" do
       post :connect, :id => call_attempt.id, :DialStatus => "no-answer"
       call_attempt.reload.status.should == CallAttempt::Status::NOANSWER
       call_attempt.voter.status.should == CallAttempt::Status::NOANSWER
+      voter.reload.call_back.should be_true
+      call_attempt.call_end.should_not be_nil
+    end
+
+    it "updates the details of a busy voter" do
+      post :connect, :id => call_attempt.id, :DialStatus => "busy"
+      call_attempt.reload.status.should == CallAttempt::Status::BUSY
+      call_attempt.voter.status.should == CallAttempt::Status::BUSY
+      voter.reload.call_back.should be_true
+      call_attempt.call_end.should_not be_nil
+    end
+
+    it "updates the details of a call failed" do
+      post :connect, :id => call_attempt.id, :DialStatus => "fail"
+      call_attempt.reload.status.should == CallAttempt::Status::FAILED
+      call_attempt.voter.status.should == CallAttempt::Status::FAILED
+      voter.reload.call_back.should be_true
+      call_attempt.call_end.should_not be_nil
     end
 
 
