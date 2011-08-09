@@ -66,7 +66,9 @@ describe CallAttempt do
       Factory(:call_response, :robo_recording => @recording2, :call_attempt => call_attempt, :times_attempted => 2)
       call_attempt.next_recording(@recording2).should == Twilio::Verb.new(&:hangup).response
     end
+  end
 
+  describe "voter connected" do
     it "makes an attempt wait" do
       call_attempt = Factory(:call_attempt)
       call_attempt.wait(2).should == Twilio::TwiML::Response.new do |r|
@@ -80,6 +82,43 @@ describe CallAttempt do
       voter = Factory(:voter)
       call_attempt = Factory(:call_attempt, :voter => voter)
       call_attempt.conference(caller).should == voter.conference(caller)
+    end
+
+    it "connects a successful call attempt to a caller when available" do
+      campaign = Factory(:campaign)
+      voter = Factory(:voter, :campaign => campaign)
+      caller = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true)
+      call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign)
+      call_attempt.connect_to_caller.should == voter.conference(caller)
+    end
+
+    it "hangs up a successful call attempt when no one is on call" do
+      campaign = Factory(:campaign)
+      voter = Factory(:voter, :campaign => campaign)
+      caller = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => false)
+      call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign)
+      call_attempt.connect_to_caller.should == call_attempt.hangup
+    end
+
+    it "waits a successful call attempt when no one on call is available for call" do
+      campaign = Factory(:campaign)
+      voter = Factory(:voter, :campaign => campaign)
+      caller = Factory(:caller_session, :campaign => campaign, :available_for_call => false, :on_call => true)
+      call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign)
+      call_attempt.connect_to_caller.should == call_attempt.wait(2)
+    end
+
+    it "plays a recorded message to the voters answering machine and hangs up" do
+      campaign = Factory(:campaign, :use_recordings => true, :recording => Factory(:recording, :file_file_name => 'abc.mp3'))
+      voter = Factory(:voter, :campaign => campaign)
+      call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign)
+      call_attempt.play_recorded_message.should == Twilio::TwiML::Response.new do |r|
+        r.Play campaign.recording.file.url
+        r.Hangup
+      end.text
+      call_attempt.reload.status.should == CallAttempt::Status::VOICEMAIL
+      call_attempt.voter.status.should == CallAttempt::Status::VOICEMAIL
+      call_attempt.call_end.should_not be_nil
     end
 
   end

@@ -45,6 +45,26 @@ class CallAttempt < ActiveRecord::Base
     current_recording.next ? current_recording.next.twilio_xml(self) : current_recording.hangup
   end
 
+  def connect_to_caller
+    caller = self.campaign.caller_sessions.available.first
+    if caller
+      self.conference caller
+    elsif self.campaign.caller_sessions.on_call.size > 0
+      self.wait(2)
+    else
+      self.hangup
+    end
+  end
+
+  def play_recorded_message
+    self.voter.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
+    self.update_attributes(:status => CallAttempt::Status::VOICEMAIL, :call_end => Time.now)
+    Twilio::TwiML::Response.new do |r|
+      r.Play self.campaign.recording.file.url
+      r.Hangup
+    end.text
+  end
+
   def conference(caller)
     self.voter.conference(caller)
   end
@@ -75,6 +95,7 @@ class CallAttempt < ActiveRecord::Base
 
     MAP = {'in-progress' => INPROGRESS, 'completed' => SUCCESS, 'busy' => BUSY, 'failed' => FAILED, 'no-answer' => NOANSWER, 'canceled' => CANCELLED}
     ALL = MAP.values
+    RETRY = [NOANSWER, BUSY, FAILED]
   end
 
 end
