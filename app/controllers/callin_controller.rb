@@ -578,11 +578,12 @@ class CallinController < ApplicationController
     end
 
     if @available_caller_session.blank?
+
       @hangup=true
       render :template => 'callin/index.xml.builder', :layout => false
       return
       
-      # no longer retry voter
+      # no longer retry voters if no callers available
       # @anyCaller = CallerSession.find_by_campaign_id_and_on_call(@campaign.id, true)
       # if @anyCaller==nil
       #   @hangup=true
@@ -629,7 +630,7 @@ class CallinController < ApplicationController
               if @voter.has_attribute?(field)
                 publish_hash[field] = @voter.get_attribute(field)
               else
-                logger.info "FAMILY ERROR could not find #{field}  in #{@ nvoter.id}"
+                logger.info "FAMILY ERROR could not find #{field}  in #{@voter.id}"
               end
               #publish_hash[field] = eval("@voter.#{field}")
             end
