@@ -47,7 +47,7 @@ ActionController::Routing::Routes.draw do |map|
     campaign.resources :voter_lists, :collection => { :import => :post }, :except => [:new, :show], :name_prefix => 'client_'
   end
 
-  map.resources :call_attempts, :only => [:create, :update]
+  map.resources :call_attempts, :only => [:create, :update], :member => { :connect => :post }
 
   map.resources :users do |user|
     user.update_password '/update_password', :action => 'update_password', :controller => 'client/users', :conditions => { :method => :put }
@@ -61,7 +61,6 @@ ActionController::Routing::Routes.draw do |map|
   map.twilio_callback '/twilio_callback', :controller => 'twilio', :action => 'callback'
   map.twilio_report_error '/twilio_report_error', :controller => 'twilio', :action => 'report_error'
   map.twilio_call_ended '/twilio_call_ended', :controller => 'twilio', :action => 'call_ended'
-  map.resource :call_attempts, :only => :create, :member => { :connect => :post }
 
   map.connect 'admin/:action/:id', :controller=>"admin"
   map.connect 'admin/:action', :controller=>"admin"
