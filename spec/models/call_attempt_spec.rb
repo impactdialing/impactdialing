@@ -73,7 +73,7 @@ describe CallAttempt do
       call_attempt = Factory(:call_attempt)
       call_attempt.wait(2).should == Twilio::TwiML::Response.new do |r|
         r.Pause :length => 2
-        r.Redirect "#{connect_call_attempts_path(:id => call_attempt.id)}"
+        r.Redirect "#{connect_call_attempt_path(call_attempt)}"
       end.text
     end
 
@@ -98,14 +98,6 @@ describe CallAttempt do
       caller = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => false)
       call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign)
       call_attempt.connect_to_caller.should == call_attempt.hangup
-    end
-
-    it "waits a successful call attempt when no one on call is available for call" do
-      campaign = Factory(:campaign)
-      voter = Factory(:voter, :campaign => campaign)
-      caller = Factory(:caller_session, :campaign => campaign, :available_for_call => false, :on_call => true)
-      call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign)
-      call_attempt.connect_to_caller.should == call_attempt.wait(2)
     end
 
     it "plays a recorded message to the voters answering machine and hangs up" do

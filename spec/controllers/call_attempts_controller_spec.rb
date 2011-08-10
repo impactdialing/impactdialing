@@ -29,15 +29,6 @@ describe CallAttemptsController do
       end.text
     end
 
-    it "waits if there are on call callers but not available for call" do
-      available_caller = Factory(:caller_session, :campaign => campaign, :available_for_call => false, :on_call => true)
-      post :connect, :id => call_attempt.id
-      response.body.should == Twilio::TwiML::Response.new do |r|
-        r.Pause :length => 2
-        r.Redirect "#{connect_call_attempts_path(:id => call_attempt.id)}"
-      end.text
-    end
-
     it "hangs up if there are no callers on call" do
       available_caller = Factory(:caller_session, :campaign => campaign, :available_for_call => false, :on_call => false)
       post :connect, :id => call_attempt.id
