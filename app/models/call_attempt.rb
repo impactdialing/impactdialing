@@ -47,13 +47,7 @@ class CallAttempt < ActiveRecord::Base
 
   def connect_to_caller
     caller = self.campaign.caller_sessions.available.first
-    if caller
-      self.conference caller
-    elsif self.campaign.caller_sessions.on_call.size > 0
-      self.wait(2)
-    else
-      self.hangup
-    end
+    caller ? conference(caller) : hangup
   end
 
   def play_recorded_message
@@ -72,7 +66,7 @@ class CallAttempt < ActiveRecord::Base
   def wait(time)
     Twilio::TwiML::Response.new do |r|
       r.Pause :length => time
-      r.Redirect "#{connect_call_attempts_path(:id => self.id)}"
+      r.Redirect "#{connect_call_attempt_path(:id => self.id)}"
     end.text
   end
 

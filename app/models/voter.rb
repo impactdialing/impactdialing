@@ -106,6 +106,18 @@ class Voter < ActiveRecord::Base
     true
   end
 
+  def dial_predictive
+    call_attempt = new_call_attempt(self.campaign.predective_type)
+    response = Twilio::Call.make(
+        self.campaign.caller_id,
+        self.Phone,
+        connect_call_attempt_path(call_attempt),
+        'IfMachine' => self.campaign.use_recordings? ? 'Continue' : 'Hangup' ,
+        'Timeout' => campaign.answer_detection_timeout || "20"
+    )
+    call_attempt.update_attributes(:status => CallAttempt::Status::INPROGRESS, :sid => response["TwilioResponse"]["Call"]["Sid"])
+  end
+
   def conference(caller)
     caller.voter_in_progress = self
     caller.save
@@ -135,8 +147,8 @@ class Voter < ActiveRecord::Base
   end
 
   private
-  def new_call_attempt
-    call_attempt = self.call_attempts.create(:campaign => self.campaign, :dialer_mode => 'robo', :status => CallAttempt::Status::INPROGRESS)
+  def new_call_attempt(mode = 'robo')
+    call_attempt = self.call_attempts.create(:campaign => self.campaign, :dialer_mode => mode, :status => CallAttempt::Status::INPROGRESS)
     self.update_attributes!(:last_call_attempt => call_attempt)
     call_attempt
   end
