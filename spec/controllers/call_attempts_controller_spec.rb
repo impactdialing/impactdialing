@@ -18,9 +18,10 @@ describe CallAttemptsController do
 
     it "connects the voter to an available caller" do
       Factory(:caller_session, :campaign => campaign, :available_for_call => false)
-      available_caller = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true)
+      available_caller = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller))
       post :connect, :id => call_attempt.id
 
+      call_attempt.reload.caller.should == available_caller.caller
       available_caller.reload.voter_in_progress.should == voter
       response.body.should == Twilio::TwiML::Response.new do |r|
         r.Dial :hangupOnStar => 'false' do |d|
