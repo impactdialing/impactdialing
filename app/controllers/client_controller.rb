@@ -31,9 +31,7 @@ class ClientController < ApplicationController
         #Postoffice.deliver_password_recovery(u)
 
         begin
-          emailText="Click here to reset your password<br/>
-          http://admin.impactdialing.com/reset_password?reset_code=#{user.password_reset_code}"
-
+          emailText="Click here to reset your password<br/> #{ reset_password_url(:reset_code => user.password_reset_code) }"
           u = Uakari.new(MAILCHIMP_API_KEY)
 
           response = u.send_email({
