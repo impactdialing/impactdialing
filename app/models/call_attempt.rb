@@ -46,8 +46,8 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def connect_to_caller
-    caller = self.campaign.caller_sessions.available.first
-    caller ? conference(caller) : hangup
+    caller_session = self.campaign.caller_sessions.available.first
+    caller_session ? conference(caller_session) : hangup
   end
 
   def play_recorded_message
@@ -59,8 +59,10 @@ class CallAttempt < ActiveRecord::Base
     end.text
   end
 
-  def conference(caller)
-    self.voter.conference(caller)
+  def conference(session)
+    self.update_attribute(:caller , session.caller)
+    Pusher[session.session_key].trigger('voter_start',{:some => :data})
+    self.voter.conference(session)
   end
 
   def wait(time)

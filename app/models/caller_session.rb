@@ -1,5 +1,5 @@
 class CallerSession < ActiveRecord::Base
-  belongs_to :caller, :class_name => "Caller", :foreign_key => "caller_id"
+  belongs_to :caller
   belongs_to :campaign
   named_scope :on_call, :conditions => {:on_call => true}
   named_scope :available, :conditions => {:available_for_call => true, :on_call => true}
