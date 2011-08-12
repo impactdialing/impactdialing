@@ -26,5 +26,16 @@ class Account < ActiveRecord::Base
        ""
      end
   end
+  
+  def first_name
+    name_arr=self.name.split(" ")
+    name_arr.shift
+  end
+
+  def last_name
+    name_arr=self.name.split(" ")
+    name_arr.join(" ").strip
+  end    
+
 
 end
