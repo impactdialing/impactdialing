@@ -61,7 +61,7 @@ class CallAttempt < ActiveRecord::Base
 
   def conference(session)
     self.update_attribute(:caller , session.caller)
-    Pusher[session.session_key].trigger('voter_start',{:some => :data})
+    Pusher[session.session_key].trigger('voter_start',{:attempt_id => self.id, :family => Hash[CustomVoterFieldValue.for(self.voter).collect {|val| [val.custom_voter_field.name, val.value]}] })
     self.voter.conference(session)
   end
 
