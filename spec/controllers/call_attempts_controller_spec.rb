@@ -79,6 +79,16 @@ describe CallAttemptsController do
       call_attempt.call_end.should_not be_nil
     end
 
+    it "notifies pusher when a call attempt is connected" do
+      session_key = 'foo'
+      custom_field = Factory(:custom_voter_field)
+      Factory(:custom_voter_field_value, :voter => voter, :custom_voter_field => custom_field, :value => 'value')
+      session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller), :session_key => session_key)
+      pusher_session = mock
+      pusher_session.should_receive(:trigger).with('voter_start', {:attempt_id=> call_attempt.id, :family => { custom_field.name => CustomVoterFieldValue.voter_fields(voter,custom_field).first.value}})
+      Pusher.stub(:[]).with(session_key).and_return(pusher_session)
+      post :connect, :id => call_attempt.id
+    end
 
   end
 end
