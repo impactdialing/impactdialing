@@ -52,7 +52,7 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :users do |user|
     user.update_password '/update_password', :action => 'update_password', :controller => 'client/users', :conditions => { :method => :put }
   end
-  map.reset_password '/reset_password', :action => 'reset_password', :controller => 'client/users', :conditions => { :method => :get }
+  map.reset_password '/reset_password', :controller => 'client/users', :action => 'reset_password', :conditions => { :method => :get }
 
   map.login '/client/login', :action => 'login', :controller => 'client'
 
