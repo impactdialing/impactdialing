@@ -1,0 +1,17 @@
+<% if request.post? %>
+
+	<%  if @success %>
+	SUCCESS!
+	<% else %>
+	FAILURE!
+	<%= @response.inspect %>
+	<% end %>
+
+<% else %>
+
+	<% form_tag do |f| %>
+	  Amount to charge: $<input type="text" name="tocharge">
+	<br/> <%= @user.email %>
+	<%=  submit_tag "Make charge", :disable_with => "Please wait..." %>	
+	<% end -%>
+<% end %>
