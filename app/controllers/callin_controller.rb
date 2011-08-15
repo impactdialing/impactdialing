@@ -436,7 +436,7 @@ class CallinController < ApplicationController
       #record selection
       handle_multi_disposition_submit(result_num, params[:attempt])
       if @script.result_sets_used.length>num+1
-        redirect_to :action=>"next_question", :session=>@session.id, :num=>num+1
+        redirect_to :action=>"next_question", :session=>@session.id, :num=>num+1, :attempt=>params[:attempt]
         return
       end
 
