@@ -39,15 +39,7 @@ class VoterList < ActiveRecord::Base
     voters_list.each do |voter_info|
       phone_number = Voter.sanitize_phone(voter_info[csv_phone_column_location])
 
-      lead = new_lead(phone_number)
-      unless lead
-        result[:failedCount] +=1
-        next
-      end
-
-      lead.voter_list_id = self.id
-      lead.user_id = self.user_id
-      lead.campaign_id = self.campaign_id
+      lead = Voter.new(:Phone => phone_number, :voter_list => self, :user => self.user, :campaign => self.campaign)
 
       csv_headers.each_with_index do |csv_column_title, column_location|
         system_column = csv_to_system_map.system_column_for csv_column_title

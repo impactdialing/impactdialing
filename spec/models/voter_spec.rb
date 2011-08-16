@@ -3,6 +3,12 @@ require "spec_helper"
 describe Voter do
   include ActionController::UrlWriter
 
+  it "can share the same number" do
+    Factory(:voter, :Phone => '92345623434')
+    Factory(:voter, :Phone => '92345623434')
+    Voter.all.size.should == 2
+  end
+
   it "should list existing entries in a campaign having the given phone number" do
     lambda {
       Factory(:voter, :Phone => '0123456789', :campaign_id => 99)

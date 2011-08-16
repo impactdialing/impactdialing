@@ -7,10 +7,10 @@ class Voter < ActiveRecord::Base
   has_many :call_attempts
   has_many :custom_voter_field_values
   belongs_to :last_call_attempt, :class_name => "CallAttempt"
+  belongs_to :user
 
   validates_presence_of :Phone
   validates_length_of :Phone, :minimum => 10
-  validates_uniqueness_of :Phone, :scope => :voter_list_id
 
   named_scope :existing_phone_in_campaign, lambda { |phone_number, campaign_id|
     {:conditions => ['Phone = ? and campaign_id = ?', phone_number, campaign_id]}
