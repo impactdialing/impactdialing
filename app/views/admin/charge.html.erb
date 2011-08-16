@@ -1,11 +1,13 @@
 <% if request.post? %>
 
 	<%  if @success %>
-	SUCCESS!
+	SUCCESS!  <%= @user.email %> has been charged <%= params[:tocharge].to_f %>.<br/>
+	<%= @response.inspect %>
 	<% else %>
 	FAILURE!
 	<%= @response.inspect %>
 	<% end %>
+	<br/><a href="/admin/users">Back to user admin</a>
 
 <% else %>
 

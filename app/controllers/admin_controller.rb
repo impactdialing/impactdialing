@@ -299,8 +299,8 @@ Can we count on you to vote for such-and-such?"
          :month      => account.expires_month,
          :year       => account.expires_year,
          :type       => account.cardtype,
-         :first_name => account.fname,
-         :last_name  => account.lname
+         :first_name => account.first_name,
+         :last_name  => account.last_name
        )
 
        billing_address = {
@@ -311,11 +311,11 @@ Can we count on you to vote for such-and-such?"
            :state    => @account.state,
            :country  => 'US'
          }
-       options = {:address => {}, :address1 => billing_address, :billing_address => billing_address, :ip=>"127.0.0.1", :order_id=>"1"}
+       options = {:address => {}, :address1 => billing_address, :billing_address => billing_address, :ip=>"127.0.0.1", :order_id=>""}
        @response = BILLING_GW.authorize(amount.to_f*100, creditcard,options)
          
        if @response.message == 'APPROVED' 
-         GATEWAY.capture(@amount,  @response.authorization) 
+         BILLING_GW.capture(@amount,  @response.authorization) 
          true
       else 
         false
