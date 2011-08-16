@@ -84,7 +84,7 @@ describe VoterListsController do
             it "saves all the voters in the csv according to the mappings" do
               Voter.delete_all
               import
-              Voter.count.should == 1
+              Voter.count.should == 2
               Voter.first.Phone.should == "1234567895"
               Voter.first.LastName.should == "Bar"
             end
