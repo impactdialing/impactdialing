@@ -34,3 +34,5 @@ require 'factory_girl'
 PUSHER_APP_ID="blah"
 PUSHER_KEY="blahblah"
 PUSHER_SECRET="blahblahblah"
+TWILIO_ACCOUNT="blahblahblah"
+TWILIO_AUTH="blahblahblah"

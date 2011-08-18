@@ -93,6 +93,16 @@ describe CallAttempt do
       call_attempt.caller.should == caller_session.caller
     end
 
+    it "connects a successful call attempt to a specified caller_session " do
+      campaign = Factory(:campaign)
+      voter = Factory(:voter, :campaign => campaign)
+      Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller))
+      caller_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller))
+      call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign)
+      call_attempt.connect_to_caller(caller_session).should == voter.conference(caller_session)
+      call_attempt.caller.should == caller_session.caller
+    end
+
     it "hangs up a successful call attempt when no one is on call" do
       campaign = Factory(:campaign)
       voter = Factory(:voter, :campaign => campaign)

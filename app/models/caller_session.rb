@@ -21,4 +21,9 @@ class CallerSession < ActiveRecord::Base
     end
   end
 
+  def call(voter)
+    voter.update_attribute(:caller_session, self)
+    voter.dial_predictive
+  end
+
 end
