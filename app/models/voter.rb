@@ -8,6 +8,7 @@ class Voter < ActiveRecord::Base
   has_many :custom_voter_field_values
   belongs_to :last_call_attempt, :class_name => "CallAttempt"
   belongs_to :user
+  belongs_to :caller_session
 
   validates_presence_of :Phone
   validates_length_of :Phone, :minimum => 10
@@ -43,45 +44,6 @@ class Voter < ActiveRecord::Base
     ["Phone", "CustomID", "LastName", "FirstName", "MiddleName", "Suffix", "Email"]
   end
 
-  def call_and_connect_to_session(session)
-    require "hpricot"
-    require "open-uri"
-    campaign = session.campaign
-    self.status='Call attempt in progress'
-    self.save
-    t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-    if !campaign.caller_id.blank? && campaign.caller_id_verified
-      caller_num=campaign.caller_id
-    else
-      caller_num=APP_NUMBER
-    end
-    c = CallAttempt.new
-    c.dialer_mode=campaign.predective_type
-    c.voter_id =self.id
-    c.campaign_id=campaign.id
-    c.status ="Call ready to dial"
-    c.save
-
-    if campaign.predective_type=="preview"
-      a=t.call("POST", "Calls", {'Timeout'=>"20", 'Caller' => caller_num, 'Called' => self.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{self.id}&attempt=#{c.id}&selected_session=#{session.id}"})
-    elsif campaign.use_answering
-      if campaign.use_recordings
-        a=t.call("POST", "Calls", {'Timeout'=>campaign.answer_detection_timeout, 'Caller' => caller_num, 'Called' => self.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{self.id}&attempt=#{c.id}&selected_session=#{session.id}", 'IfMachine'=>'Continue'})
-      else
-        a=t.call("POST", "Calls", {'Timeout'=>campaign.answer_detection_timeout, 'Caller' => caller_num, 'Called' => self.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{self.id}&attempt=#{c.id}&selected_session=#{session.id}", 'IfMachine'=>'Hangup'})
-      end
-    else
-      a=t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => caller_num, 'Called' => self.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{self.id}&attempt=#{c.id}&selected_session=#{session.id}"})
-    end
-    @doc = Hpricot::XML(a)
-    c.sid =(@doc/"Sid").inner_html
-    c.status="Call in progress"
-    c.save
-    self.last_call_attempt_id =c.id
-    self.last_call_attempt_time=Time.now
-    self.save
-  end
-
   def dial
     message = "#{self.Phone} for campaign id:#{self.campaign_id}"
     logger.info "[dialer] Dialling #{message} "
@@ -111,10 +73,11 @@ class Voter < ActiveRecord::Base
     response = Twilio::Call.make(
         self.campaign.caller_id,
         self.Phone,
-        connect_call_attempt_path(call_attempt),
+        connect_call_attempt_url(call_attempt, :host => Settings.host, :port =>Settings.port),
         'IfMachine' => self.campaign.use_recordings? ? 'Continue' : 'Hangup' ,
         'Timeout' => campaign.answer_detection_timeout || "20"
     )
+    puts response
     call_attempt.update_attributes(:status => CallAttempt::Status::INPROGRESS, :sid => response["TwilioResponse"]["Call"]["Sid"])
   end
 
@@ -149,7 +112,7 @@ class Voter < ActiveRecord::Base
   private
   def new_call_attempt(mode = 'robo')
     call_attempt = self.call_attempts.create(:campaign => self.campaign, :dialer_mode => mode, :status => CallAttempt::Status::INPROGRESS)
-    self.update_attributes!(:last_call_attempt => call_attempt)
+    self.update_attributes!(:last_call_attempt => call_attempt, :last_call_attempt_time => Time.now)
     call_attempt
   end
 end

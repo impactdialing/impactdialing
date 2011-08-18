@@ -32,7 +32,7 @@ class CallAttemptsController < ApplicationController
                    call_attempt.voter.update_attributes(:status => CallAttempt::Status::FAILED, :call_back => true)
                    call_attempt.update_attributes(:status => CallAttempt::Status::FAILED, :call_end => Time.now)
                  else
-                   call_attempt.connect_to_caller
+                   call_attempt.connect_to_caller(call_attempt.voter.caller_session)
                end
     render :xml => response
   end

@@ -371,46 +371,7 @@ Can we count on you to vote for such-and-such?
       list = VoterList.find_all_by_campaign_id(params[:id]).first
       num = params[:num].gsub(/[^0-9]/, "")
       voter = Voter.find_by_campaign_id_and_Phone(params[:id], num)
-
-      if voter.blank?
-        voter = Voter.new
-        voter.Phone = num
-        voter.campaign_id = params[:id].to_i
-        voter.voter_list_id = list.id
-        voter.user_id = campaign.user_id
-        voter.save
-      end
-      require "hpricot"
-      require "open-uri"
-      voter.status="Call in progress"
-      voter.save
-      t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-      if !campaign.caller_id.blank? && campaign.caller_id_verified
-        caller_num = campaign.caller_id
-      else
-        caller_num = APP_NUMBER
-      end
-      if campaign.predective_type=="preview"
-        a = t.call("POST", "Calls", {'Timeout'=>"20", 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}"})
-      elsif campaign.use_answering
-        a = t.call("POST", "Calls", {'Timeout'=>"25", 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}", 'IfMachine'=>'Hangup'})
-      else
-        a = t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}"})
-      end
-      require 'rubygems'
-      require 'hpricot'
-      @doc = Hpricot::XML(a)
-      c = CallAttempt.new
-      c.dialer_mode = campaign.predective_type
-      c.sid=(@doc/"Sid").inner_html
-      c.voter_id = voter.id
-      c.campaign_id = campaign.id
-      c.status="Call in progress"
-      c.save
-      voter.last_call_attempt_id = c.id
-      voter.last_call_attempt_time = Time.now
-      voter.save
-
+      voter.dial_predictive
       flash_message(:notice, "Calling you now!")
     end
 

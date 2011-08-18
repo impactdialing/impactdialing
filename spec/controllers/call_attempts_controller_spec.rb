@@ -30,6 +30,18 @@ describe CallAttemptsController do
       end.text
     end
 
+    it "connects a voter to a specified caller" do
+      Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => false)
+      available_caller = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => false)
+      voter.update_attribute(:caller_session , available_caller)
+      post :connect, :id => call_attempt.id
+      response.body.should == Twilio::TwiML::Response.new do |r|
+        r.Dial :hangupOnStar => 'false' do |d|
+          d.Conference "session#{available_caller.id}", :wait_url => "", :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
+        end
+      end.text
+    end
+
     it "hangs up if there are no callers on call" do
       available_caller = Factory(:caller_session, :campaign => campaign, :available_for_call => false, :on_call => false)
       post :connect, :id => call_attempt.id
