@@ -2,6 +2,7 @@ class CallerController < ApplicationController
   layout "caller"
   before_filter :check_login, :except=>[:login,:feedback]
   before_filter :redirect_to_ssl
+  before_filter :connect_to_twilio, :only => [:preview_dial]
 
   def index
     if request.post?
@@ -287,9 +288,13 @@ class CallerController < ApplicationController
     @session = CallerSession.find_by_session_key(params[:key])
     @campaign = @session.campaign
     @voter = Voter.find_by_campaign_id_and_id(@campaign.id, params[:voter_id])
-    @voter.call_and_connect_to_session(@session)
+    @session.call(@voter)
     send_rt(params[:key],'waiting','preview_dialing')
     render :text=>  "var x='ok';"
+  end
+
+  def connect_to_twilio
+    Twilio.connect(TWILIO_ACCOUNT,TWILIO_AUTH)
   end
 
   def dpoll
