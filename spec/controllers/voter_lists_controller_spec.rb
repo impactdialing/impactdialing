@@ -1,8 +1,7 @@
 require "spec_helper"
 
 describe VoterListsController do
-  include ActionController::TestProcess
-  integrate_views
+  render_views
 
   before :each do
     @current_user = Factory(:user)

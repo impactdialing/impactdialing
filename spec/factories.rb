@@ -10,7 +10,6 @@ Factory.sequence :phonenumber do |n|
   "#{(10**10)+n}"
 end
 
-
 Factory.define :user do |u|
   u.email { Factory.next(:email) }
   u.new_password 'password'

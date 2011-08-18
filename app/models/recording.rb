@@ -1,3 +1,5 @@
+require "paperclip"
+
 class Recording < ActiveRecord::Base
   validates_presence_of :file_file_name, :message => "File can't be blank"
   validates_presence_of :name
