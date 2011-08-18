@@ -45,8 +45,8 @@ class CallAttempt < ActiveRecord::Base
     current_recording.next ? current_recording.next.twilio_xml(self) : current_recording.hangup
   end
 
-  def connect_to_caller
-    caller_session = self.campaign.caller_sessions.available.first
+  def connect_to_caller(caller_session = nil)
+    caller_session ||= self.campaign.caller_sessions.available.first
     caller_session ? conference(caller_session) : hangup
   end
 

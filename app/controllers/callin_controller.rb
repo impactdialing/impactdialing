@@ -592,8 +592,8 @@ class CallinController < ApplicationController
         CallerSession.transaction do
           raise "caller already in session" if CallerSession.find(@available_caller_session.id).available_for_call==false
 
-          @available_caller_session.voter_in_progress = @voter.id
-          @available_caller_session.attempt_in_progress = @attempt.id
+          @available_caller_session.voter_in_progress = @voter
+          @available_caller_session.attempt_in_progress = @attempt
           @available_caller_session.hold_time_start=nil
           @available_caller_session.available_for_call=false
           @available_caller_session.save
