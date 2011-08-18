@@ -1,7 +1,6 @@
 require "spec_helper"
 
 describe VoterList do
-  include ActionController::TestProcess
 
   it "can return all voter lists of the given ids" do
     v = 3.times.map { Factory(:voter_list) }

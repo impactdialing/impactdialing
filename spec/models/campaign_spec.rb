@@ -1,7 +1,7 @@
 require "spec_helper"
+require "lib/twilio_lib"
 
 describe Campaign do
-  include ActionController::TestProcess
 
   it "restoring makes it active" do
     campaign = Factory(:campaign, :active => false)

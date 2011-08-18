@@ -1,4 +1,4 @@
-ActionController::Routing::Routes.draw do |map|
+ImpactDialing::Application.routes.draw do |map|
   map.root :controller => "home"
 
   map.connect '/monitor', :controller=>"home", :action=>"monitor"

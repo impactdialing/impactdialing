@@ -1,6 +1,6 @@
-source 'http://rubygems.org'
+source :rubygems
 
-gem 'rails', '2.3.11'
+gem 'rails', '3.0.3'
 
 gem 'will_paginate', '~> 2.3.11'
 gem 'mysql', '~> 2.8.1'
@@ -16,16 +16,16 @@ gem 'hpricot', '~> 0.8.4'
 gem 'uakari'
 gem "pusher", "~> 0.8.2"
 gem "aws-s3", "~> 0.6.2", :require => "aws/s3"
-gem "paperclip", "2.3.11"
+gem "paperclip", "2.3.16"
 gem 'daemons', '~> 1.0.10'
 gem 'twilio', '~> 3.0.1'
 gem 'settingslogic', '~> 2.0.6'
 gem 'spork', '~> 0.8.5'
 gem "twilio-ruby"
-	
+
 group :development, :test do
   gem 'ruby-debug', '~> 0.10.4'
-  gem 'rspec-rails', '~> 1.3.4'
+  gem 'rspec-rails', '~> 2.6.1'
 end
 
 group :development do
@@ -34,7 +34,6 @@ end
 
 group :test do
   gem 'factory_girl', '~> 1.3.3'
-  gem 'rspec', '~> 1.3.1'
   gem 'shoulda', '~> 2.11.3'
   gem 'rcov', '~> 0.9.9'
 end
