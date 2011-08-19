@@ -22,6 +22,7 @@ gem 'twilio', '~> 3.0.1'
 gem 'settingslogic', '~> 2.0.6'
 gem 'spork', '~> 0.8.5'
 gem "twilio-ruby"
+gem 'dynamic_form'
 
 group :development, :test do
   gem 'ruby-debug', '~> 0.10.4'

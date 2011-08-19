@@ -37,6 +37,8 @@ ImpactDialing::Application.configure do
   config.action_mailer.perform_deliveries = false
   config.action_mailer.delivery_method = :test
 
+  config.active_support.deprecation = :log
+
   config.after_initialize do
     ActiveMerchant::Billing::Base.mode = :test
     ActiveMerchant::Billing::LinkpointGateway.pem_file  = File.read(RAILS_ROOT + '/1909186423.pem')
