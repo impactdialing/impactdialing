@@ -285,7 +285,7 @@ Can we count on you to vote for such-and-such?
 
   def callers
     @breadcrumb="Callers"
-    @callers = Caller.paginate :page => params[:page], :conditions =>"active=1 and user_id=#{@user.id}", :order => 'name'
+    @callers = Caller.where(:active => true, :user_id => @user.id).order(:name).paginate(:page => params[:page])
   end
 
   def caller_add
@@ -633,7 +633,7 @@ Can we count on you to vote for such-and-such?
 
     @callers = Caller.find_all_by_user_id_and_active(@user.id,true)
     @lists = @campaign.voter_lists
-    @voters = Voter.paginate :page => params[:page], :conditions =>"active=1 and campaign_id=#{@campaign.id}", :order => 'LastName,FirstName,Phone'
+    @voters = Voter.where(:active => true).where(:campaign_id => @campaign.id).order('LastName, FirstName, Phone').paginate(:page => params[:page])
     @scripts = @user.scripts.manual.active
 
     #    @campaign.check_valid_caller_id_and_save
