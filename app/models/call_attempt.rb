@@ -1,5 +1,5 @@
 class CallAttempt < ActiveRecord::Base
-  include ActionController::UrlWriter
+  include Rails.application.routes.url_helpers
   belongs_to :voter
   belongs_to :campaign
   belongs_to :caller

@@ -23,6 +23,8 @@ class Campaign < ActiveRecord::Base
   }
   named_scope :using_web_ui, :conditions => {:use_web_ui => true}
 
+  before_create :create_uniq_pin
+
   cattr_reader :per_page
   @@per_page = 25
 
@@ -63,7 +65,7 @@ class Campaign < ActiveRecord::Base
     true
   end
 
-  def before_create
+  def create_uniq_pin
     uniq_pin=0
     while uniq_pin==0 do
       pin = rand.to_s[2..6]

@@ -3,7 +3,7 @@
 <% end %>
 
 <h1>Add list</h1>
-<% form_tag(import_voter_lists_path(@campaign), :method => :post, :html => {:multipart => true}) do %>
+<%= form_tag(import_voter_lists_path(@campaign), :method => :post, :html => {:multipart => true}) do %>
   <%= hidden_field_tag "separator", @separator %>
   <%= hidden_field_tag "json_csv_column_headers", @csv_column_headers.to_json%>
   <p>

@@ -14,6 +14,6 @@ describe Recording do
   it "is not valid with a file of a different extension" do
     recording = Factory.build(:recording, :file_file_name => 'foo.swf')
     recording.should_not be_valid
-    recording.errors.on(:base).should == "Filetype swf is not supported.  Please upload a file ending in .mp3, .wav, or .aiff"
+    recording.errors[:base].should include("Filetype swf is not supported.  Please upload a file ending in .mp3, .wav, or .aiff")
   end
 end

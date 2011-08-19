@@ -5,13 +5,14 @@ class Caller < ActiveRecord::Base
   has_and_belongs_to_many :campaigns
   belongs_to :user
   has_many :caller_sessions
+  before_create :create_uniq_pin
 
   scope :active, lambda { { :conditions => ["active = ?", true] }}
 
   cattr_reader :per_page
   @@per_page = 25
 
-  def before_create
+  def create_uniq_pin
     uniq_pin=0
     while uniq_pin==0 do
       pin = rand.to_s[2..6]

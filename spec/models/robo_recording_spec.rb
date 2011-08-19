@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe RoboRecording do
-  include ActionController::UrlWriter
+  include Rails.application.routes.url_helpers
 
   describe "next recording in the script" do
     it "return the next recording in the script" do
