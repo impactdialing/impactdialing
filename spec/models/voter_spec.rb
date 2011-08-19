@@ -107,7 +107,6 @@ describe Voter do
       voter.last_call_attempt.should == call_attempt
       time_now = Time.now
       Time.stub!(:now).and_return(time_now)
-      puts voter.last_call_attempt_time.class, time_now.class
       DateTime.parse(voter.last_call_attempt_time.to_s).should == DateTime.parse(time_now.utc.to_s)
     end
 

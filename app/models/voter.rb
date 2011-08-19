@@ -77,7 +77,6 @@ class Voter < ActiveRecord::Base
         'IfMachine' => self.campaign.use_recordings? ? 'Continue' : 'Hangup' ,
         'Timeout' => campaign.answer_detection_timeout || "20"
     )
-    puts response
     call_attempt.update_attributes(:status => CallAttempt::Status::INPROGRESS, :sid => response["TwilioResponse"]["Call"]["Sid"])
   end
 

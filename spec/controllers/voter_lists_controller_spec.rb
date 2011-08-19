@@ -9,7 +9,7 @@ describe VoterListsController do
   end
 
   describe "voters list" do
-    let(:csv_file_upload) { {"datafile" => fixture_file_upload("files/valid_voters_list.csv")} }
+    let(:csv_file_upload) { {"datafile" => fixture_file_upload("/files/valid_voters_list.csv")} }
 
     before :each do
       @campaign = Factory(:campaign, :user_id => session[:user])
@@ -58,7 +58,7 @@ describe VoterListsController do
         end
 
         describe "missing header info" do
-          let(:csv_file_upload) { {"datafile" => fixture_file_upload("files/voters_with_nil_header_info.csv")} }
+          let(:csv_file_upload) { {"datafile" => fixture_file_upload("/files/voters_with_nil_header_info.csv")} }
 
           it "ignores columns without a header" do
             post :create, :campaign_id => @campaign.id
@@ -100,7 +100,7 @@ describe VoterListsController do
           end
 
           describe "custom fields" do
-            let(:csv_file_upload) { {"datafile" => fixture_file_upload("files/voters_custom_fields_list.csv")} }
+            let(:csv_file_upload) { {"datafile" => fixture_file_upload("/files/voters_custom_fields_list.csv")} }
             it "creates previously uncreated custom columns" do
               custom_field = "Custom"
               Voter.delete_all
@@ -118,7 +118,7 @@ describe VoterListsController do
           session[:voters_list_upload] = nil
           post :create,
                :campaign_id => @campaign.id,
-               :upload => {"datafile" => fixture_file_upload("files/invalid_voters_list.csv")}
+               :upload => {"datafile" => fixture_file_upload("/files/invalid_voters_list.csv")}
           import
         end
 

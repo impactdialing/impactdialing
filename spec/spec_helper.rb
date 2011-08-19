@@ -31,6 +31,7 @@ Spork.prefork do
   end
 
   require "factories"
+  include ActionDispatch::TestProcess
 
   def login_as(user)
     @controller.stub!(:current_user).and_return(user)
@@ -40,6 +41,10 @@ Spork.prefork do
 
   def fixture_path
     Rails.root.join('spec/fixtures/').to_s
+  end
+
+  def fixture_file_upload(path, mime_type = nil, binary = false)
+    Rack::Test::UploadedFile.new("#{fixture_path}#{path}", mime_type, binary)
   end
 end
 
