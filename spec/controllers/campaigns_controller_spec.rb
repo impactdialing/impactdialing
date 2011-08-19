@@ -65,7 +65,7 @@ describe CampaignsController do
       caller_id_object.should_receive(:validate).and_return(false)
       caller_id_object.should_receive(:validation_code).and_return("xyzzyspoonshift1")
       campaign.stub!(:caller_id_object).and_return(caller_id_object)
-      Campaign.should_receive(:find).with(campaign.id.to_s, anything).and_return(campaign)
+      Campaign.should_receive(:find).with(campaign.id).and_return(campaign)
       post :update, :id => campaign.id, :campaign => {:name => "an impactful campaign", :caller_id => phone_number}
       flash[:notice].join.should include validation_code
     end
@@ -93,8 +93,7 @@ describe CampaignsController do
     end
 
     it "should render 'not verified' if caller id not verified" do
-      @caller_id_object.stub!(:validate)
-      Campaign.should_receive(:find).with(@campaign.id, anything).and_return(@campaign)
+      Campaign.should_receive(:find).with(@campaign.id).and_return(@campaign)
       @caller_id_object.should_receive(:validate).and_return(false)
       post :verify_callerid, :id => @campaign.id
       response.body.should include "not verified"
@@ -102,7 +101,7 @@ describe CampaignsController do
 
     it "should render nothing if caller id is verified" do
       @caller_id_object.stub!(:validate).and_return(true)
-      Campaign.should_receive(:find).with(@campaign.id, anything).and_return(@campaign)
+      Campaign.should_receive(:find).with(@campaign.id).and_return(@campaign)
       post :verify_callerid, :id => @campaign.id
       response.body.should be_blank
     end

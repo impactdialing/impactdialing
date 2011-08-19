@@ -1,3 +1,5 @@
+require "lib/twilio_lib"
+
 class Campaign < ActiveRecord::Base
   include Deletable
   require "fastercsv"
@@ -25,6 +27,7 @@ class Campaign < ActiveRecord::Base
   @@per_page = 25
 
   before_validation(:before_validation_on_create_campaign, :on => :create)
+  before_save :before_save_campaign
 
   def before_validation_on_create_campaign
     self.name = "Untitled #{user.campaigns.count + 1}" if self.name.blank?
@@ -70,7 +73,7 @@ class Campaign < ActiveRecord::Base
     self.group_id = uniq_pin
   end
 
-  def before_save
+  def before_save_campaign
     self.check_valid_caller!
     true
   end
