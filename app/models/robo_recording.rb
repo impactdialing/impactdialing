@@ -1,5 +1,5 @@
 class RoboRecording < ActiveRecord::Base
-  include ActionController::UrlWriter
+  include Rails.application.routes.url_helpers
 
   has_attached_file :file,
                     :storage => :s3,

@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe Voter do
-  include ActionController::UrlWriter
+  include Rails.application.routes.url_helpers
 
   it "can share the same number" do
     Factory(:voter, :Phone => '92345623434')

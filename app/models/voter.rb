@@ -1,5 +1,5 @@
 class Voter < ActiveRecord::Base
-  include ActionController::UrlWriter
+  include Rails.application.routes.url_helpers
 
   belongs_to :voter_list
   belongs_to :campaign
@@ -25,6 +25,8 @@ class Voter < ActiveRecord::Base
   scope :scheduled, :conditions => {:scheduled_date => (10.minutes.ago..10.minutes.from_now), :status => CallAttempt::Status::SCHEDULED}
   scope :limit, lambda { |n| {:limit => n} }
 
+  before_validation :sanitize_phone
+
   cattr_reader :per_page
   @@per_page = 25
 
@@ -32,7 +34,7 @@ class Voter < ActiveRecord::Base
     phonenumber.gsub(/[^0-9]/, "") unless phonenumber.blank?
   end
 
-  def before_validation
+  def sanitize_phone
     self.Phone = Voter.sanitize_phone(self.Phone)
   end
 

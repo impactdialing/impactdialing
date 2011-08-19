@@ -1,5 +1,5 @@
 require "spec_helper"
-include ActionController::UrlWriter
+include Rails.application.routes.url_helpers
 
 describe CallAttempt do
 

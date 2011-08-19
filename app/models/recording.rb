@@ -4,6 +4,7 @@ class Recording < ActiveRecord::Base
   validates_presence_of :file_file_name, :message => "File can't be blank"
   validates_presence_of :name
   belongs_to :user
+  validate :validate_file_name
 
   has_attached_file :file,
                     :storage => :s3,
@@ -11,7 +12,7 @@ class Recording < ActiveRecord::Base
                     :path => "/#{Rails.env}/uploads/:user_id/:id.:extension",
                     :bucket => 'impactdialingapp'
 
-  def validate
+  def validate_file_name
     if file_file_name.blank?
       errors.add(:file, "can't be blank")
     else

@@ -70,14 +70,14 @@ describe VoterListsController do
           describe "requirements" do
             it "needs a list name" do
               import :voter_list_name => ""
-              response.flash.now[:error].first.should include "Name can't be blank"
+              request.flash.now[:error].first.should include "Name can't be blank"
               response.should render_template "column_mapping"
             end
 
             it "should not save a list if the user already has a list with the same name" do
               Factory(:voter_list, :user_id => @current_user.id, :campaign_id => @campaign.id, :name => "abcd")
               import :voter_list_name => "abcd"
-              response.flash.now[:error].first.should include "Name for this voter list is already taken"
+              request.flash.now[:error].first.should include "Name for this voter list is already taken"
               response.should render_template "column_mapping"
             end
           end

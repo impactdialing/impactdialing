@@ -99,7 +99,8 @@ describe ClientController do
     end
 
     describe 'callers' do
-      integrate_views
+      render_views
+
       it "shows" do
         get :callers
         response.code.should == '200'

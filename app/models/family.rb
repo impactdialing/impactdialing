@@ -3,7 +3,9 @@ class Family < ActiveRecord::Base
   validates_presence_of :Phone
   validates_length_of :Phone, :minimum => 10
 
-  def before_validation
+  before_validation :sanitize_phone
+
+  def sanitize_phone
     self.Phone = Voter.sanitize_phone(self.Phone)
   end
 
