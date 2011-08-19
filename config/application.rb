@@ -15,6 +15,7 @@ module ImpactDialing
   #  config.time_zone = "Pacific Time (US & Canada)"
     config.active_record.default_timezone = :local
 
+    config.filter_parameters << :password << :card_number << :card_verification << :cc << :code
     #config.time_zone = 'UTC'
 
     require 'active_merchant'
@@ -24,7 +25,7 @@ module ImpactDialing
     # -- all .rb files in that directory are automatically loaded.
 
     # Add additional load paths for your own custom dirs
-    # config.load_paths += %W( #{RAILS_ROOT}/extras )
+    # config.load_paths += %W( #{Rails.root.to_s}/extras )
 
     # Specify gems that this application depends on and have them installed with rake gems:install
     # config.gem "bj"

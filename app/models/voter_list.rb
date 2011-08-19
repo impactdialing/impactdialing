@@ -9,7 +9,7 @@ class VoterList < ActiveRecord::Base
   validates_length_of :name, :minimum => 3
   validates_uniqueness_of :name, :case_sensitive => false, :scope => :user_id, :message => "for this voter list is already taken"
 
-  named_scope :by_ids, lambda { |ids| {:conditions => {:id => ids}} }
+  scope :by_ids, lambda { |ids| {:conditions => {:id => ids}} }
 
   VOTER_DATA_COLUMNS = ["Phone", "ID", "LastName", "FirstName", "MiddleName", "Suffix", "Email", "Age", "Gender"]
 

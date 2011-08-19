@@ -6,11 +6,10 @@ class ApplicationController < ActionController::Base
   protect_from_forgery # See ActionController::RequestForgeryProtection for details
   before_filter :controllerName#, :preload_models
   # Scrub sensitive parameters from your log
-  filter_parameter_logging :password, :card_number, :card_verification, :cc, :code
   helper_method :phone_format, :phone_number_valid
 
   def redirect_to_ssl
-    return true if RAILS_ENV == 'test' || RAILS_ENV == 'development' || RAILS_ENV == 'staging' || action_name=="monitor" || request.domain.index("amazonaws")
+    return true if Rails.env == 'test' || Rails.env == 'development' || Rails.env == 'staging' || action_name=="monitor" || request.domain.index("amazonaws")
     @cont = controller_name
     @act = action_name
     if controller_name=="caller" && !ssl?

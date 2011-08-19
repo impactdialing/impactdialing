@@ -31,7 +31,7 @@ $(document).ready(function() {
     var pusher = new Pusher('<%= PUSHER_KEY %>');
     var channel = pusher.subscribe('<%= @session.session_key %>');
 
-    <% if RAILS_ENV!="production"%>
+    <% if Rails.env !="production"%>
     Pusher.log = function(message) {
         if (window.console && window.console.log) window.console.log(message);
     };
