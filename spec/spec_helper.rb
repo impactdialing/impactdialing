@@ -27,6 +27,7 @@ Spork.prefork do
     # examples within a transaction, remove the following line or assign false
     # instead of true.
     config.use_transactional_fixtures = true
+    config.fixture_path = Rails.root.join('spec/fixtures')
   end
 
   require "factories"
@@ -35,6 +36,10 @@ Spork.prefork do
     @controller.stub!(:current_user).and_return(user)
     session[:user] = user.id
     session[:caller] = user.id
+  end
+
+  def fixture_path
+    Rails.root.join('spec/fixtures/').to_s
   end
 end
 

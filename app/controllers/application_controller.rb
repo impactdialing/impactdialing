@@ -10,7 +10,7 @@ class ApplicationController < ActionController::Base
   helper_method :phone_format, :phone_number_valid
 
   def redirect_to_ssl
-    return true if local_request? || RAILS_ENV == 'test' || RAILS_ENV == 'development' || RAILS_ENV == 'staging' || action_name=="monitor" || request.domain.index("amazonaws")
+    return true if RAILS_ENV == 'test' || RAILS_ENV == 'development' || RAILS_ENV == 'staging' || action_name=="monitor" || request.domain.index("amazonaws")
     @cont = controller_name
     @act = action_name
     if controller_name=="caller" && !ssl?
@@ -55,6 +55,10 @@ class ApplicationController < ActionController::Base
       warning= "Before you can make calls, you need to verify a credit card number that we can bill. Until then, you can try out as much as you like, except for actually calling. #{billing_link(self.active_layout.instance_variable_get(:@template_path))} "
     end
     warning
+  end
+
+  def active_layout
+    send(:_layout)
   end
 
   def billing_link(layout)

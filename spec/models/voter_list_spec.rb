@@ -33,9 +33,8 @@ describe VoterList do
 
   describe "upload voters list" do
     let(:csv_file_upload) {
-      fixture_path = ActionController::TestCase.fixture_path
-      source_file = "#{fixture_path}files/valid_voters_list.csv"
-      temp_dir = "#{fixture_path}test_tmp"
+      source_file = "#{fixture_path}/files/valid_voters_list.csv"
+      temp_dir = "#{fixture_path}/test_tmp"
       temp_filename = "#{temp_dir}/valid_voters_list.csv"
       FileUtils.cp source_file, temp_filename
       temp_filename
@@ -119,9 +118,8 @@ describe VoterList do
 
     describe "with custom fields" do
       let(:csv_file) {
-        fixture_path = ActionController::TestCase.fixture_path
-        source_file = "#{fixture_path}files/voters_custom_fields_list.csv"
-        temp_dir = "#{fixture_path}test_tmp"
+        source_file = "#{fixture_path}/files/voters_custom_fields_list.csv"
+        temp_dir = "#{fixture_path}/test_tmp"
         temp_filename = "#{temp_dir}/valid_voters_list.csv"
         FileUtils.cp source_file, temp_filename
         temp_filename
