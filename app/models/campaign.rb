@@ -24,7 +24,9 @@ class Campaign < ActiveRecord::Base
   cattr_reader :per_page
   @@per_page = 25
 
-  def before_validation_on_create
+  before_validation(:before_validation_on_create_campaign, :on => :create)
+
+  def before_validation_on_create_campaign
     self.name = "Untitled #{user.campaigns.count + 1}" if self.name.blank?
   end
 
