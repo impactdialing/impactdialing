@@ -297,7 +297,7 @@ Can we count on you to vote for such-and-such?
       @label="Edit caller"
     end
     if request.post?
-      @caller.update_attributes(params[:caller])
+      @caller.update_attributes(params[:callers])
       if @caller.valid?
         @caller.user_id = @user.id
         @caller.save

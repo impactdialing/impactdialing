@@ -19,6 +19,7 @@ class Campaign < ActiveRecord::Base
       :joins      => "inner join caller_sessions on (caller_sessions.campaign_id = campaigns.id)",
       :conditions => {"caller_sessions.on_call" => true}
   }
+  named_scope :using_web_ui, :conditions => {:use_web_ui => true}
 
   cattr_reader :per_page
   @@per_page = 25

@@ -18,6 +18,11 @@ ActionController::Routing::Routes.draw do |map|
     end
   end
 
+  map.namespace "callers" do |caller|
+    caller.resources :campaigns
+  end
+
+
   #broadcast
   map.resources :campaigns, :path_prefix => "broadcast", :member => {:verify_callerid => :post, :start => :post, :stop => :post , :dial_statistics => :get}, :collection => {:control => :get, :running_status => :get} do |campaign|
     campaign.resources :voter_lists, :collection => {:import => :post}, :except => [:new, :show]
@@ -55,6 +60,7 @@ ActionController::Routing::Routes.draw do |map|
   map.reset_password '/reset_password', :action => 'reset_password', :controller => 'client/users', :conditions => { :method => :get }
 
   map.login '/client/login', :action => 'login', :controller => 'client'
+  map.caller_login '/caller/login', :action => 'login', :controller => 'caller'
 
   map.report '/client/reports', :action => 'reports', :controller => 'client'
   map.report_usage '/client/reports/usage', :action => 'usage', :controller => 'client/reports'

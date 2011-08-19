@@ -52,6 +52,12 @@ describe Campaign do
     Campaign.active.should == [campaign1, campaign2]
   end
 
+  it "returns campaigns using web ui" do
+    campaign1 = Factory(:campaign, :use_web_ui => true)
+    campaign2 = Factory(:campaign, :use_web_ui => false)
+    Campaign.using_web_ui.should == [campaign1]
+  end
+
   it "gives only active voter lists" do
     campaign = Factory(:campaign)
     active_voterlist = Factory(:voter_list, :campaign => campaign, :active => true)
