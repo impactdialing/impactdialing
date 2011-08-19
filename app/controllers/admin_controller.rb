@@ -249,7 +249,7 @@ Can we count on you to vote for such-and-such?"
     def robo_log_parse
       counter = 1
       out=[]
-      f = File.new(File.join(RAILS_ROOT, 'result_combined.txt'))
+      f = File.new(Rails.root.join('result_combined.txt'))
       while (line = f.gets)
         hash = eval(line.gsub("Parameters:", "").strip)
         puts "#{counter}: #{hash["attempt"]}"

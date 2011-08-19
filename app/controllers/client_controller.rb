@@ -476,10 +476,10 @@ Can we count on you to vote for such-and-such?
     require 'right_aws'
     @file_data = File.new(filepath, "r")
     extension = filepath.split(".").last
-    @config = YAML::load(File.open("#{RAILS_ROOT}/config/amazon_s3.yml"))
+    @config = YAML::load(File.open("#{Rails.root}/config/amazon_s3.yml"))
     s3 = RightAws::S3.new(@config["access_key_id"], @config["secret_access_key"])
     bucket = s3.bucket("impactdialingapp")
-    s3path="#{ENV["RAILS_ENV"]}/uploads/#{@user.id}/#{recording.id}.#{extension}"
+    s3path="#{Rails.env}/uploads/#{@user.id}/#{recording.id}.#{extension}"
     key = bucket.key(s3path)
     key.data = File.open(filepath)
     key = bucket.key(s3path)
@@ -913,8 +913,8 @@ Can we count on you to vote for such-and-such?
       end
       @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Realtime Report"]
     end
-    #    require "#{RAILS_ROOT}/app/models/caller_session.rb"
-    #    require "#{RAILS_ROOT}/app/models/caller.rb"
+    #    require "#{Rails.root.to_s}/app/models/caller_session.rb"
+    #    require "#{Rails.root.to_s}/app/models/caller.rb"
   end
 
   def report_realtime_new

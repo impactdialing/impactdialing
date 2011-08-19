@@ -5,8 +5,8 @@ class CallAttempt < ActiveRecord::Base
   belongs_to :caller
   has_many :call_responses
 
-  named_scope :for_campaign, lambda { |campaign| {:conditions => ["campaign_id = ?", campaign.id]} }
-  named_scope :for_status, lambda { |status| {:conditions => ["call_attempts.status = ?", status]} }
+  scope :for_campaign, lambda { |campaign| {:conditions => ["campaign_id = ?", campaign.id]} }
+  scope :for_status, lambda { |status| {:conditions => ["call_attempts.status = ?", status]} }
 
 
   def ring_time

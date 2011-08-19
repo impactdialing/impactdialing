@@ -1,8 +1,8 @@
 class CallerSession < ActiveRecord::Base
   belongs_to :caller
   belongs_to :campaign
-  named_scope :on_call, :conditions => {:on_call => true}
-  named_scope :available, :conditions => {:available_for_call => true, :on_call => true}
+  scope :on_call, :conditions => {:on_call => true}
+  scope :available, :conditions => {:available_for_call => true, :on_call => true}
   has_one :voter_in_progress, :class_name => 'Voter'
   unloadable
 

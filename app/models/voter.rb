@@ -13,17 +13,17 @@ class Voter < ActiveRecord::Base
   validates_presence_of :Phone
   validates_length_of :Phone, :minimum => 10
 
-  named_scope :existing_phone_in_campaign, lambda { |phone_number, campaign_id|
+  scope :existing_phone_in_campaign, lambda { |phone_number, campaign_id|
     {:conditions => ['Phone = ? and campaign_id = ?', phone_number, campaign_id]}
   }
 
   default_scope :order => 'LastName, FirstName, Phone'
-  named_scope :active, :conditions => ["active = ?", true]
-  named_scope :to_be_dialed, :include => [:call_attempts], :conditions => ["(call_attempts.id is null and call_back is false) OR call_attempts.status IN (?)", CallAttempt::Status::ALL - [CallAttempt::Status::SUCCESS]]
-  named_scope :randomly, :order => 'rand()'
-  named_scope :to_callback, :conditions => ["call_back is true"]
-  named_scope :scheduled, :conditions => {:scheduled_date => (10.minutes.ago..10.minutes.from_now), :status => CallAttempt::Status::SCHEDULED}
-  named_scope :limit, lambda { |n| {:limit => n} }
+  scope :active, :conditions => ["active = ?", true]
+  scope :to_be_dialed, :include => [:call_attempts], :conditions => ["(call_attempts.id is null and call_back is false) OR call_attempts.status IN (?)", CallAttempt::Status::ALL - [CallAttempt::Status::SUCCESS]]
+  scope :randomly, :order => 'rand()'
+  scope :to_callback, :conditions => ["call_back is true"]
+  scope :scheduled, :conditions => {:scheduled_date => (10.minutes.ago..10.minutes.from_now), :status => CallAttempt::Status::SCHEDULED}
+  scope :limit, lambda { |n| {:limit => n} }
 
   cattr_reader :per_page
   @@per_page = 25

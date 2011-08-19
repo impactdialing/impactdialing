@@ -13,10 +13,10 @@ class Campaign < ActiveRecord::Base
   belongs_to :user
   belongs_to :recording
 
-  named_scope :robo, :conditions => {:robo => true }
-  named_scope :manual, :conditions => {:robo => false }
-  named_scope :for_user, lambda {|user| { :conditions => ["user_id = ?", user.id] }}
-  named_scope :with_running_caller_sessions, {
+  scope :robo, :conditions => {:robo => true }
+  scope :manual, :conditions => {:robo => false }
+  scope :for_user, lambda {|user| { :conditions => ["user_id = ?", user.id] }}
+  scope :with_running_caller_sessions, {
       :select     => "distinct campaigns.*",
       :joins      => "inner join caller_sessions on (caller_sessions.campaign_id = campaigns.id)",
       :conditions => {"caller_sessions.on_call" => true}

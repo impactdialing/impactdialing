@@ -6,7 +6,7 @@ class Caller < ActiveRecord::Base
   belongs_to :user
   has_many :caller_sessions
 
-  named_scope :active, lambda { { :conditions => ["active = ?", true] }}
+  scope :active, lambda { { :conditions => ["active = ?", true] }}
 
   cattr_reader :per_page
   @@per_page = 25
