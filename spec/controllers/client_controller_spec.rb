@@ -3,11 +3,6 @@ require "spec_helper"
 describe ClientController do
 
   describe "when not logged in" do
-    it "redirects to the login page" do
-      get "/client"
-      response.should redirect_to "/client/login"
-    end
-
     it "creates a new user with the appropriate domain" do
       request.stub!(:domain).and_return('domain.com')
       lambda {
@@ -56,14 +51,12 @@ describe ClientController do
     end
 
     describe "reports" do
-
       it "shows only manual campaigns" do
         campaign = Factory(:campaign, :user => user, :robo => false)
         Factory(:campaign, :user => user, :robo => true)
         get :reports
         assigns(:campaigns).should == [campaign]
       end
-
     end
 
     describe "fields" do
