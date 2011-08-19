@@ -12,22 +12,18 @@ class ReportsController < ClientController
 
   def dial_details
     @campaign = @user.campaigns.find(params[:campaign_id])
-    respond_to do |format|
-      format.csv do
-        @csv = FasterCSV.generate do |csv|
-          csv << ["Phone", "Status", @campaign.script.robo_recordings.collect{|rec| rec.name}].flatten
-          @campaign.all_voters.each do |voter|
-            attempt = voter.call_attempts.last
-            if attempt
-              csv  << [voter.Phone, voter.call_attempts.last.status, (attempt.call_responses.collect{|call_response| call_response.recording_response.response } if attempt.call_responses.size > 0) ].flatten
-            else
-              csv  << [voter.Phone, 'Not Dialed']
-            end
-          end
+    @csv = FasterCSV.generate do |csv|
+      csv << ["Phone", "Status", @campaign.script.robo_recordings.collect{|rec| rec.name}].flatten
+      @campaign.all_voters.each do |voter|
+        attempt = voter.call_attempts.last
+        if attempt
+          csv  << [voter.Phone, voter.call_attempts.last.status, (attempt.call_responses.collect{|call_response| call_response.recording_response.response } if attempt.call_responses.size > 0) ].flatten
+        else
+          csv  << [voter.Phone, 'Not Dialed']
         end
-        send_data @csv, :disposition => "attachment; filename=#{@campaign.name}_dial_details_report.csv"
       end
     end
+    send_data @csv, :disposition => "attachment; filename=#{@campaign.name}_dial_details_report.csv"
   end
 
 end
