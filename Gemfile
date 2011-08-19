@@ -1,6 +1,6 @@
 source :rubygems
 
-gem 'rails', '3.0.3'
+gem 'rails', '3.0.10'
 
 gem 'will_paginate', '~> 2.3.11'
 gem 'mysql', '~> 2.8.1'
@@ -11,7 +11,7 @@ gem 'hoptoad_notifier', '~> 2.4.11'
 gem 'json', '~> 1.5.1'
 gem 'nokogiri', '~> 1.4.4'
 gem "activemerchant", '~> 1.15.0', :require => "active_merchant"
-gem 'i18n', '~> 0.4.2'
+gem 'i18n', '~> 0.5.0'
 gem 'hpricot', '~> 0.8.4'
 gem 'uakari'
 gem "pusher", "~> 0.8.2"
