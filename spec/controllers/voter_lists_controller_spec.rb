@@ -11,6 +11,7 @@ describe VoterListsController do
 
   describe "voters list" do
     let(:csv_file_upload) { {"datafile" => fixture_file_upload("files/valid_voters_list.csv")} }
+
     before :each do
       @campaign = Factory(:campaign, :user_id => session[:user])
     end
@@ -42,9 +43,11 @@ describe VoterListsController do
                :campaign_id => @campaign.id,
                :upload => csv_file_upload
         end
+
         it "sets the session to the new voter list entry" do
           session[:voters_list_upload].should_not be_empty
         end
+
         it "saves the uploaded csv" do
           File.should exist("#{Rails.root}/tmp/#{session[:voters_list_upload]['filename']}")
         end
@@ -119,10 +122,12 @@ describe VoterListsController do
                :upload => {"datafile" => fixture_file_upload("files/invalid_voters_list.csv")}
           import
         end
+
         it "should flash an error" do
           flash[:error].join.should include "Invalid CSV file"
           response.code.should == "302"
         end
+
         it "should not save the voters list entry" do
           VoterList.all.should be_empty
         end
