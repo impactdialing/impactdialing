@@ -2,15 +2,25 @@ require "spec_helper"
 
 describe CallerController do
   describe 'index' do
-    it "doesn't list deleted campaigns" do
-      caller = Factory(:caller)
-      caller.campaigns << Factory(:campaign, :active => false)
-      caller.campaigns << Factory(:campaign, :active => true)
-      caller.save!
+    let(:caller) { Factory(:caller) }
+    before(:each) do
       login_as(caller)
+    end
+
+    it "doesn't list deleted campaigns" do
+      caller.campaigns = [(Factory(:campaign, :active => false)), Factory(:campaign, :active => true) ]
+      caller.save!
       get :index
       assigns(:campaigns).should have(1).thing
       assigns(:campaigns)[0].should be_active
+    end
+
+    it "lists all campaigns for web ui" do
+      Factory(:campaign, :use_web_ui => false)
+      campaign = Factory(:campaign, :use_web_ui => true)
+      caller.update_attribute(:campaigns, [campaign])
+      get :index
+      assigns(:campaigns).should == [campaign]
     end
   end
 
@@ -23,7 +33,7 @@ describe CallerController do
       session = Factory(:caller_session, :caller=> caller, :session_key => session_key)
       CallerSession.stub(:find_by_session_key).with(session_key).and_return(session)
       session.stub(:call)
-      Twilio.should_receive(:connect).with(anything,anything)
+      Twilio.should_receive(:connect).with(anything, anything)
       get :preview_dial, :key => session_key, :voter_id => Factory(:voter).id
     end
 
