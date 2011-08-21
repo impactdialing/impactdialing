@@ -205,7 +205,7 @@ class CallinController < ApplicationController
 
     if @campaign.use_web_ui
       @gathertimeout=60
-      if params[:CallStatus]=="completed"
+      if params[:CallStatus]=="completed" || params[:CallStatus]=="no-answer" || params[:CallStatus]=="busy" || params[:CallStatus]=="fail"
         @publish_channel="#{@session.session_key}"
         @publish_key="hangup"
         @publish_value="ok"
