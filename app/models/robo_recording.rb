@@ -18,7 +18,7 @@ class RoboRecording < ActiveRecord::Base
   end
 
   def next
-    self.script.robo_recordings.find(:first, :conditions => ["id > ?", self.id])
+    script.robo_recordings.where("id > #{self.id}")
   end
 
 

@@ -21,17 +21,17 @@ class Campaign < ActiveRecord::Base
       :joins      => "inner join caller_sessions on (caller_sessions.campaign_id = campaigns.id)",
       :conditions => {"caller_sessions.on_call" => true}
   }
-  named_scope :using_web_ui, :conditions => {:use_web_ui => true}
+  scope :using_web_ui, :conditions => {:use_web_ui => true}
 
   before_create :create_uniq_pin
 
   cattr_reader :per_page
   @@per_page = 25
 
-  before_validation(:before_validation_on_create_campaign, :on => :create)
+  before_validation(:set_untitled_name, :on => :create)
   before_save :before_save_campaign
 
-  def before_validation_on_create_campaign
+  def set_untitled_name
     self.name = "Untitled #{user.campaigns.count + 1}" if self.name.blank?
   end
 
@@ -125,7 +125,7 @@ class Campaign < ActiveRecord::Base
       window = stats[:avg_long]
     end
     window = window - 10 if window > 10
-#   RAILS_DEFAULT_LOGGER.debug("window: #{window}")
+#   Rails.logger.debug("window: #{window}")
     ending = CallAttempt.all(:conditions=>"
     campaign_id=#{self.id}
     and status like'Connected to caller%'
@@ -290,7 +290,7 @@ class Campaign < ActiveRecord::Base
       mean = values.inject(:+) / count.to_f
       stddev = Math.sqrt( values.inject(0) { |sum, e| sum + (e - mean) ** 2 } / count.to_f )
     rescue
-#      RAILS_DEFAULT_LOGGER.debug("deviation error: #{values.inspect}")
+#      Rails.logger.debug("deviation error: #{values.inspect}")
       puts "deviation error: #{values.inspect}"
       return 0
     end

@@ -1,7 +1,7 @@
 # Your starting point for daemon specific classes. This directory is
 # already included in your load path, so no need to specify it.
 require File.join(File.dirname(__FILE__), '../../', 'app/models/deletable.rb')
-Dir[File.join(File.dirname(__FILE__), '../../', 'app/models') + "**/*.rb"].each {|file| 
+Dir[File.join(File.dirname(__FILE__), '../../', 'app/models') + "**/*.rb"].each {|file|
       require file
       DaemonKit.logger.info "#{file}" if defined? DaemonKit
 #      include self.class.const_get(File.basename(file).gsub('.rb','').split("_").map{|ea| ea.capitalize}.to_s)
@@ -50,7 +50,7 @@ class TwilioLib
 
   def accountguid
   end
-  
+
   def initialize(accountguid=TWILIO_ACCOUNT, authtoken=TWILIO_AUTH, options = {})
     @server = DEFAULT_SERVER
     @port = DEFAULT_PORT
@@ -59,22 +59,22 @@ class TwilioLib
     @http_password = authtoken
   end
 
-  
+
   def call(http_method, service_method, params = {})
-    if service_method=="IncomingPhoneNumbers/Local" && ENV["RAILS_ENV"]=="development"  && !params.has_key?("SmsUrl")
-      http = Net::HTTP.new(@server, "5000")  
+    if service_method=="IncomingPhoneNumbers/Local" && Rails.env =="development"  && !params.has_key?("SmsUrl")
+      http = Net::HTTP.new(@server, "5000")
       http.use_ssl=false
     else
-      http = Net::HTTP.new(@server, @port)  
-      http.use_ssl=true  
+      http = Net::HTTP.new(@server, @port)
+      http.use_ssl=true
     end
 
-#    RAILS_DEFAULT_LOGGER.info "#{@root}#{service_method}"
-#    RAILS_DEFAULT_LOGGER.info "???#{service_method}???"
-    
-    #return 'err'    if service_method=="IncomingPhoneNumbers/Local" && (ENV["RAILS_ENV"]=="development" || ENV["RAILS_ENV"]=="dynamo_dev")
-       
-    if service_method=="IncomingPhoneNumbers/Local" && (ENV["RAILS_ENV"]=="development" || ENV["RAILS_ENV"]=="dynamo_dev") && !params.has_key?("SmsUrl")
+#    Rails.logger.info "#{@root}#{service_method}"
+#    Rails.logger.info "???#{service_method}???"
+
+    #return 'err'    if service_method=="IncomingPhoneNumbers/Local" && (Rails.env =="development" || Rails.env =="dynamo_dev")
+
+    if service_method=="IncomingPhoneNumbers/Local" && (Rails.env =="development" || Rails.env =="dynamo_dev") && !params.has_key?("SmsUrl")
       return '<?xml version="1.0" encoding="UTF-8"?>
       <TwilioResponse>
         <IncomingPhoneNumber>
@@ -91,21 +91,21 @@ class TwilioLib
       '
     else
       if http_method=="POST"
-        req = Net::HTTP::Post.new("#{@root}#{service_method}")    
+        req = Net::HTTP::Post.new("#{@root}#{service_method}")
       elsif http_method=="DELETE"
-        req = Net::HTTP::Delete.new("#{@root}#{service_method}")    
+        req = Net::HTTP::Delete.new("#{@root}#{service_method}")
       else
-        req = Net::HTTP::Get.new("#{@root}#{service_method}")    
+        req = Net::HTTP::Get.new("#{@root}#{service_method}")
       end
       req.basic_auth @http_user, @http_password
     end
-    #RAILS_DEFAULT_LOGGER.debug "#{@root}#{service_method}"
+    #Rails.logger.debug "#{@root}#{service_method}"
 
     req.set_form_data(params)
-#    RAILS_DEFAULT_LOGGER.info  params
-    response = http.start{http.request(req)}  
-    #RAILS_DEFAULT_LOGGER.info  response.body if ENV["RAILS_ENV"]=="development"
-#    RAILS_DEFAULT_LOGGER.info  response.body
+#    Rails.logger.info  params
+    response = http.start{http.request(req)}
+    #Rails.logger.info  response.body if Rails.env =="development"
+#    Rails.logger.info  response.body
     response.body
   end
 

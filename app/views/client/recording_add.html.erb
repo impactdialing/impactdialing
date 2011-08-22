@@ -1,7 +1,7 @@
 <div class="box">
   <%= render :partial => 'shared/boxtop', :locals => {:title => "New Recording"} %>
   <div class="box-content">
-    <% form_for @recording, :url => '/client/recording_add', :html => {:multipart => true} do |f| %>
+    <%= form_for @recording, :url => '/client/recording_add', :html => {:multipart => true} do |f| %>
       <%= hidden_field_tag :campaign_id, params[:campaign_id] %>
       <p>
         <label for="upload_file">Select a file: </label>

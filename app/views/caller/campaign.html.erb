@@ -6,7 +6,7 @@
     <%= javascript_include_tag 'jquery.ui.datetime.min' %>
 <% end %>
 
-<% form_tag("/caller/campaign/#{params[:id]}", {:class => "form", :id=>"myform", :name=>"myform"}) do %>
+<%= form_tag("/caller/campaign/#{params[:id]}", {:class => "form", :id=>"myform", :name=>"myform"}) do %>
     <h3><%= @campaign.name %></h3>
     <fieldset>
       <legend>Lead information</legend>
@@ -92,7 +92,7 @@
         <script type="text/javascript" src="/caller/jspush/<%= @session.session_key %>"></script>
 
 		<% if params[:client]=="1" %>
-		<script type="text/javascript" src="http://static.twilio.com/libs/twiliojs/1.0/twilio.js"></script> 
+		<script type="text/javascript" src="http://static.twilio.com/libs/twiliojs/1.0/twilio.js"></script>
 		<script>
 		Twilio.Device.setup("<%= @token %>", {'debug':true});
 
@@ -109,9 +109,9 @@
 
 		}
 		</script>
-		<% else %>	
+		<% else %>
 			<script>
-			function goclient() {}	
+			function goclient() {}
 		</script>
 		<% end %>
     <% end %>

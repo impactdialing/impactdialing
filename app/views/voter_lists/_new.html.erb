@@ -1,4 +1,4 @@
-<% form_for(@voter_list, :url=> path, :method => :post, :html => {:multipart => true}) do %>
+<%= form_for(@voter_list, :url=> path, :method => :post, :html => {:multipart => true}) do %>
   <div class="form">
     <%= file_field 'upload', 'datafile' %>
   </div>

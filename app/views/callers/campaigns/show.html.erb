@@ -6,7 +6,7 @@
     <%= javascript_include_tag 'jquery.ui.datetime.min' %>
 <% end %>
 
-<% form_tag("/caller/campaign/#{params[:id]}", {:class => "form", :id=>"myform", :name=>"myform"}) do %>
+<%= form_tag("/caller/campaign/#{params[:id]}", {:class => "form", :id=>"myform", :name=>"myform"}) do %>
     <h3><%= @campaign.name %></h3>
     <fieldset>
       <legend>Lead information</legend>

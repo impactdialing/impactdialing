@@ -1,6 +1,6 @@
 require File.join(Rails.root.to_s, 'config/environment')
 
-logger = Logger.new(Rails.root.join("log", "dialer_#{RAILS_ENV}.log"))
+logger = Logger.new(Rails.root.join("log", "dialer_#{Rails.env}.log"))
 ActiveRecord::Base.logger = logger
 campaign_id = ARGV.first.to_i
 campaign = Campaign.find(campaign_id)
