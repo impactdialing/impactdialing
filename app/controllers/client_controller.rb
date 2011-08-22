@@ -633,7 +633,7 @@ Can we count on you to vote for such-and-such?
 
     @callers = Caller.find_all_by_user_id_and_active(@user.id,true)
     @lists = @campaign.voter_lists
-    @voters = Voter.where(:active => true).where(:campaign_id => @campaign.id).order('LastName, FirstName, Phone').paginate(:page => params[:page])
+    @voters = Voter.where(:active => true, :campaign_id => @campaign.id).order('LastName, FirstName, Phone').paginate(:page => params[:page])
     @scripts = @user.scripts.manual.active
 
     #    @campaign.check_valid_caller_id_and_save

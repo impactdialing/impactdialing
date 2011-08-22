@@ -8,7 +8,6 @@ class CallAttempt < ActiveRecord::Base
   scope :for_campaign, lambda { |campaign| {:conditions => ["campaign_id = ?", campaign.id]} }
   scope :for_status, lambda { |status| {:conditions => ["call_attempts.status = ?", status]} }
 
-
   def ring_time
     if self.answertime!=nil && self.created_at!=nil
       (self.answertime - self.created_at).to_i

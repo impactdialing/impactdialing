@@ -23,6 +23,4 @@ describe CallResponse do
     CallResponse.log_response(call_attempt, robo_recording,2).times_attempted.should == 2
     CallResponse.log_response(call_attempt, robo_recording,2).times_attempted.should == 3
   end
-
-
 end
