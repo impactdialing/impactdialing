@@ -95,14 +95,14 @@ class CallerController < ApplicationController
     response.headers["Content-Type"] = 'text/javascript'
     @start_action_div_contents = '
     Enter your phone number:
-    		<input type="text" name="numtocall" id="numtocall" placeholder="Type your phone number here"> 
-    		<p> 
-    			<div class="buttons"> 
-    				<button type="submit">Start taking calls</button> 
-    			</div> 
+    		<input type="text" name="numtocall" id="numtocall" placeholder="Type your phone number here">
+    		<p>
+    			<div class="buttons">
+    				<button type="submit">Start taking calls</button>
+    			</div>
 
-    			<p><input type="radio" name="client" value="0" checked onclick="$(\'#numtocall\').show();"> Call my Phone</p> 
-    			<p><input type="radio" name="client" value="1" onclick="$(\'#numtocall\').hide(\'slide\', { direction: \'up\' }, 400);"> Use Browser Phone</p> 
+    			<p><input type="radio" name="client" value="0" checked onclick="$(\'#numtocall\').show();"> Call my Phone</p>
+    			<p><input type="radio" name="client" value="1" onclick="$(\'#numtocall\').hide(\'slide\', { direction: \'up\' }, 400);"> Use Browser Phone</p>
 
     		</p>
     '
@@ -303,7 +303,7 @@ class CallerController < ApplicationController
   end
 
   def feedback
-    Postoffice.deliver_feedback(params[:issue])
+    Postoffice.feedback(params[:issue]).deliver
     render :text=> "var x='ok';"
   end
 end

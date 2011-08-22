@@ -177,7 +177,7 @@ Can we count on you to vote for such-and-such?"
 
     def cms
       @version = session[:cms_version]
-      @keys = Seo.find(:all).map{ |i| i.crmkey }.uniq
+      @keys = Seo.all.map{ |i| i.crmkey }.uniq
       @keys.delete_if {|x| x == nil}
       @keys.sort!
     end
@@ -243,7 +243,7 @@ Can we count on you to vote for such-and-such?"
           end
         end
       end
-      @versions = Seo.find(:all).map{ |i| i.version }.uniq
+      @versions = Seo.all.map{ |i| i.version }.uniq
     end
 
     def robo_log_parse

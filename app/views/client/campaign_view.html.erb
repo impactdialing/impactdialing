@@ -2,7 +2,7 @@
 
 <div id="callerid"></div>
 
-<% form_for :campaign, :url => {:action => "campaign_add", :id=>@campaign.id}, :html => {:name => 'callerForm', :id => 'callerForm'} do |f| %>
+<%= form_for :campaign, :url => {:action => "campaign_add", :id=>@campaign.id}, :html => {:name => 'callerForm', :id => 'callerForm'} do |f| %>
     <fieldset>
 	  <legend>Campaign options</legend>
       <fieldset>
@@ -46,7 +46,7 @@
         </p>
 
         <p>Call-in number:
-          <% if ENV["RAILS_ENV"]=="development" %>
+          <% if Rails.env =="development" %>
               <%= number_to_phone(APP_NUMBER, :area_code => true) %>
           <% else %>
               <%= number_to_phone(@campaign.callin_number, :area_code => true) %>

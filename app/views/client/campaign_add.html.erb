@@ -2,7 +2,7 @@
 <div class="box" style="width:400px;">
 	<%= render :partial => 'shared/boxtop', :locals=>{:title=>@label} %>
 
-	<% form_for :campaign do |f| -%>
+	<%= form_for :campaign do |f| -%>
     <div class="form">
       <p>
         <label>Name <span>(Required Field)</span></label>
@@ -10,7 +10,7 @@
       </p>
       <p>
         <label>Predictive Algorithm</label>
-		<select class="field" id="campaign_predective_type" name="campaign[predective_type]"> 
+		<select class="field" id="campaign_predective_type" name="campaign[predective_type]">
 			<option value=""  <% if @campaign.predective_type=="" %>selected<% end %>>Original</option>
 			<option value="algorithm1" <% if @campaign.predective_type=="algorithm1" %>selected<% end %>> michael's algorithm</option>
 			<option value="algorithm2" <% if @campaign.predective_type=="algorithm2" %>selected<% end %>> michael's modified algorithm</option>
@@ -45,7 +45,7 @@
       </p>
       <p>
         <label>Pacing Prediction Method</label>
-			<select class="field" id="campaign_ending_window_method" name="campaign[ending_window_method]"> 
+			<select class="field" id="campaign_ending_window_method" name="campaign[ending_window_method]">
 				<option value="Not Used"  <% if @campaign.ending_window_method=="Not Used" %>selected<% end %>>Not Used</option>
 				<option value="Longest" <% if @campaign.ending_window_method=="Longest" %>selected<% end %>>Longest</option>
 				<option value="Average" <% if @campaign.ending_window_method=="Average" %>selected<% end %>>Average</option>
@@ -62,7 +62,7 @@
 	<% end -%>
 </div>
 
-<% form_tag("/client/call_now?id=#{params[:id]}") do %>
+<%= form_tag("/client/call_now?id=#{params[:id]}") do %>
   Call me now:
 	<input type="text" name="num">
 	<input type="submit" class="button">
@@ -78,19 +78,19 @@
 			$('campaign_keypad_3').value='Undecided';
 			$('campaign_keypad_4').value='Lean opposed';
 			$('campaign_keypad_5').value='Strong opposed';
-		} else {	
+		} else {
 			$('campaign_keypad_1').value='Will vote early';
 			$('campaign_keypad_2').value='Will vote on election day';
 			$('campaign_keypad_3').value='Already voted';
 			$('campaign_keypad_4').value='Will not vote';
 			$('campaign_keypad_5').value=' Not a supporter';
-		}	
+		}
 		$('campaign_keypad_6').value='Refused (complete)';
 		$('campaign_keypad_7').value='Not home/call back (incomplete)';
 		$('campaign_keypad_8').value='Language barrier (complete)';
 		$('campaign_keypad_9').value='Wrong number (complete)';
 	}
-	
+
 	if ($('campaign_keypad_6').value=='')
 		 defaults(1);
 </script>

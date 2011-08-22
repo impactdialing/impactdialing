@@ -15,4 +15,4 @@ end
 @attempt.connecttime=Time.now
 @attempt.status = "Connected to caller #{@available_caller_session.caller.pin} #{@available_caller_session.caller.email}"
 @attempt.save
-RAILS_DEFAULT_LOGGER.debug(xml.target!) if DEBUG_TWIML
+Rails.logger.debug(xml.target!) if DEBUG_TWIML

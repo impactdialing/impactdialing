@@ -1,8 +1,8 @@
 <h1>Admin Reporting</h1>
 
 Report Date Range:
-<% form_tag ("/admin/report") do %> 
-  
+<%= form_tag ("/admin/report") do %>
+
 <table>
 	<tr>
 		<td>From:</td>
@@ -11,7 +11,7 @@ Report Date Range:
 	<tr>
 		<td>
 			To:</td>
-		<td>  <%= unobtrusive_date_text_picker_tag :to_date,@to_date %> 
+		<td>  <%= unobtrusive_date_text_picker_tag :to_date,@to_date %>
 			<!--<input type="submit" class="button" value="update" size="4">-->
 			</td>
 	</tr>
@@ -21,7 +21,7 @@ Report Date Range:
 <% end %>
 
 <!--
-<% form_tag ("/admin/report") do %> 
+<%= form_tag ("/admin/report") do %>
 	<input type="hidden" name="from_date" value="<%= @from_date %>">
 	<input type="hidden" name="to_date" value="<%= @to_date %>">
 	<button type="submit">Show results</button>
@@ -51,8 +51,8 @@ Report Date Range:
 	<% campaign=r["campaign"] %>
 	<% calls=r["calls"] %>
 	<% sessions=r["sessions"] %>
-	<% 
-		agent_mins=0 
+	<%
+		agent_mins=0
 		agent_twilio=0
 		call_mins=0
 		call_twilio=0
