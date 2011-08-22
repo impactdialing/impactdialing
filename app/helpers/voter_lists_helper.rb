@@ -16,6 +16,6 @@ module VoterListsHelper
   end
 
   def import_voter_lists_path(campaign)
-    campaign.robo? ? import_campaign_voter_lists_path(campaign) : import_client_voter_lists_path(campaign)
+    campaign.robo? ? import_campaign_voter_lists_path(campaign) : import_campaign_client_voter_lists_path(campaign)
   end
 end
