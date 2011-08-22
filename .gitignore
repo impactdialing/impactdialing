@@ -10,3 +10,4 @@ tmp
 public/.DS_Store
 test/
 *.rails2
+spec/fixtures/test_tmp/
