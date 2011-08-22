@@ -1,75 +1,102 @@
-ImpactDialing::Application.routes.draw do |map|
-  map.root :controller => "home"
+ImpactDialing::Application.routes.draw do
+  root :to => "home#index"
 
-  map.connect '/monitor', :controller=>"home", :action=>"monitor"
-  map.connect '/how_were_different', :controller=>"home", :action=>"how_were_different"
-  map.connect '/pricing', :controller=>"home", :action=>"pricing"
-  map.connect '/contact', :controller=>"home", :action=>"contact"
-  map.policies '/policies', :controller => 'home', :action => 'policies'
-  map.client_policies '/client/policies', :controller => 'client', :action => 'policies'
-  map.broadcast_policies '/broadcast/policies', :controller => 'broadcast', :action => 'policies'
-  map.connect '/homecss/css/style.css', :controller=>"home", :action=>"homecss"
+  ['monitor', 'how_were_different', 'pricing', 'contact', 'policies'].each do |path|
+    match "/#{path}", :to => "home##{path}", :as => path
+  end
+  match '/client/policies', :to => 'client#policies', :as => :client_policies
+  match '/broadcast/policies', :to => 'broadcast#policies', :as => :broadcast_policies
+  match '/homecss/css/style.css', :to => 'home#homecss'
 
-  map.namespace 'admin' do |admin|
+  namespace 'admin' do
     [:campaigns, :scripts, :callers].each do |entities|
-      admin.resources entities, :only => [:index] do |entity|
-        entity.restore '/restore', :controller => entities, :action => 'restore', :conditions => { :method => :put }
+      resources entities, :only => [:index] do
+        put '/restore', :controller => entities, :action => 'restore', :as => 'restore'
       end
     end
   end
 
-  map.namespace "callers" do |caller|
-    caller.resources :campaigns
+  namespace "callers" do
+    resources :campaigns
   end
 
 
   #broadcast
-  map.resources :campaigns, :path_prefix => "broadcast", :member => {:verify_callerid => :post, :start => :post, :stop => :post , :dial_statistics => :get}, :collection => {:control => :get, :running_status => :get} do |campaign|
-    campaign.resources :voter_lists, :collection => {:import => :post}, :except => [:new, :show]
+  scope 'broadcast' do
+    resources :campaigns do
+      member do
+        post :verify_callerid
+        post :start
+        post :stop
+        get :dial_statistics
+      end
+      collection do
+        get :control
+        get :running_status
+      end
+      resources :voter_lists, :except => [:new, :show] do
+        collection { post :import }
+      end
+    end
+    resources :reports do
+      collection do
+        get :usage
+        get :dial_details
+      end
+    end
+    get '/deleted_campaigns', :to => 'campaigns#deleted', :as => :broadcast_deleted_campaigns
+    resources :scripts
+    match 'monitor', :to => 'monitor#index'
+
+    match '/', :to => 'broadcast#index', :as => 'broadcast_root'
+    match '/login', :to => 'broadcast#login', :as => 'broadcast_login'
   end
-  map.resources :reports, :path_prefix => "broadcast", :collection => {:usage => :get, :dial_details => :get}
-  map.broadcast_deleted_campaigns "/deleted_campaigns", :action => "deleted", :controller => 'campaigns', :conditions => { :method => :get }, :path_prefix => 'broadcast'
-  map.resources :scripts, :path_prefix => "broadcast"
-  map.connect 'monitor', :controller => "monitor", :action => "index", :path_prefix => 'broadcast'
 
-  map.broadcast_root '/broadcast', :action => 'index', :controller => 'broadcast'
-  map.broadcast_login '/broadcast/login', :action => 'login', :controller => 'broadcast'
-
-  map.namespace 'client' do |client|
-    map.campaign_new 'client/campaign_new', :action => 'campaign_new', :controller => 'client'
-    map.campaign_view 'client/campaign_view/:id', :action => 'campaign_view', :controller => 'client'
+  namespace 'client' do
+    match 'campaign_new', :to => 'client#campaign_new', :as => 'campaign_new'
+    match 'campaign_view/:id', :to => 'client#campaign_view', :as => 'campaign_view'
 
     ['campaigns', 'scripts', 'callers'].each do |type_plural|
-      client.send("deleted_#{type_plural}", "/deleted_#{type_plural}", :action => 'deleted', :controller => type_plural, :conditions => { :method => :get })
-      map.send("client_#{type_plural}", "/client/#{type_plural}", :action => type_plural, :controller => 'client', :conditions => { :method => :get })
-      client.resources type_plural, :only => [] do |type|
-        type.restore 'restore', :action => 'restore', :controller => type_plural, :conditions => { :method => :put }
+      get "/deleted_#{type_plural}", :to => "#{type_plural}#deleted", :as => "deleted_#{type_plural}"
+      get "/#{type_plural}", :to => "client#type_plural", :as => "#{type_plural}"
+      resources type_plural, :only => [] do
+        put 'restore', :to => "#{type_plural}#restore"
       end
     end
   end
 
-  map.resources :campaigns, :member => { :verify_callerid => :post }, :path_prefix => 'client', :only => [] do |campaign|
-    campaign.resources :voter_lists, :collection => { :import => :post }, :except => [:new, :show], :name_prefix => 'client_'
+  scope 'client' do
+    match '/', :to => 'client#index', :as => 'client_root'
+    resources :campaigns, :only => [] do
+      member { post :verify_callerid }
+      resources :voter_lists, :except => [:new, :show], :name_prefix => 'client' do
+        collection { post :import }
+      end
+    end
   end
 
-  map.resources :call_attempts, :only => [:create, :update], :member => { :connect => :post }
-
-  map.resources :users do |user|
-    user.update_password '/update_password', :action => 'update_password', :controller => 'client/users', :conditions => { :method => :put }
+  scope 'caller' do
+    match '/', :to => 'caller#index', :as => 'caller_root'
   end
-  map.reset_password '/reset_password', :action => 'reset_password', :controller => 'client/users', :conditions => { :method => :get }
 
-  map.login '/client/login', :action => 'login', :controller => 'client'
-  map.caller_login '/caller/login', :action => 'login', :controller => 'caller'
+  resources :call_attempts, :only => [:create, :update] do
+    member { post :connect }
+  end
 
-  map.report '/client/reports', :action => 'reports', :controller => 'client'
-  map.report_usage '/client/reports/usage', :action => 'usage', :controller => 'client/reports'
-  map.twilio_callback '/twilio_callback', :controller => 'twilio', :action => 'callback'
-  map.twilio_report_error '/twilio_report_error', :controller => 'twilio', :action => 'report_error'
-  map.twilio_call_ended '/twilio_call_ended', :controller => 'twilio', :action => 'call_ended'
+  resources :users do
+    put '/update_password', :to => 'client/users#update_password', :as => 'update_password'
+  end
+  get '/reset_password', :to => 'client/users#reset_password', :as => 'reset_password'
 
-  map.connect 'admin/:action/:id', :controller=>"admin"
-  map.connect 'admin/:action', :controller=>"admin"
-  map.connect ':controller/:action/:id'
-  map.connect ':controller/:action/:id.:format'
+  match '/client/login', :to => 'client#login', :as => :login
+  match '/caller/login', :to => 'caller#login', :as => :caller_login
+
+  match '/client/reports', :to => 'client#reports', :as => 'report'
+  match '/client/reports/usage', :to => 'client/reports#usage', :as => 'report_usage'
+  match '/twilio_callback', :to => 'twilio#callback', :as => :twilio_callback
+  match '/twilio_report_error', :to => 'twilio#report_error', :as => :twilio_report_error
+  match '/twilio_call_ended', :to => 'twilio#call_ended', :as => :twilio_call_ended
+
+  match ':controller/:action/:id'
+  match ':controller/:action'
 end
