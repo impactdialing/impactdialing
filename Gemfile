@@ -11,9 +11,8 @@ gem 'hoptoad_notifier', '~> 2.4.11'
 gem 'json', '~> 1.5.1'
 gem 'nokogiri', '~> 1.4.4'
 gem "activemerchant", '~> 1.15.0', :require => "active_merchant"
-gem 'i18n', '~> 0.5.0'
 gem 'hpricot', '~> 0.8.4'
-gem 'uakari'
+gem 'uakari', '~> 0.2.0'
 gem "pusher", "~> 0.8.2"
 gem "aws-s3", "~> 0.6.2", :require => "aws/s3"
 gem "paperclip", "2.3.16"
@@ -21,8 +20,8 @@ gem 'daemons', '~> 1.0.10'
 gem 'twilio', '~> 3.0.1'
 gem 'settingslogic', '~> 2.0.6'
 gem 'spork', '~> 0.8.5'
-gem "twilio-ruby"
-gem 'dynamic_form'
+gem "twilio-ruby", '~> 3.3.0'
+gem 'dynamic_form', '~> 1.1.4'
 
 group :development, :test do
   gem 'ruby-debug', '~> 0.10.4'
