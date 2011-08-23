@@ -41,6 +41,12 @@ class CallerController < ApplicationController
     end
   end
 
+  def callin
+    caller = Caller.find(params[:id])
+    @caller_session = caller.callin(params[:callin_from])
+    render :text => "Connected"
+  end
+
   def campaign
     require "hpricot"
     require "open-uri"
