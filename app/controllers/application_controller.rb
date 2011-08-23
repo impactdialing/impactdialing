@@ -10,17 +10,22 @@ class ApplicationController < ActionController::Base
   helper_method :phone_format, :phone_number_valid
 
   def redirect_to_ssl
-    return true if local_request? || RAILS_ENV == 'test' || RAILS_ENV == 'development' || RAILS_ENV == 'staging' || action_name=="monitor" || request.domain.index("amazonaws")
+    return true if local_request? || RAILS_ENV == 'development' || testing? || RAILS_ENV == 'staging' || action_name=="monitor" || request.domain.index("amazonaws")
+    return true if ssl?
     @cont = controller_name
     @act = action_name
-    if controller_name=="caller" && !ssl?
+    flash.keep
+    if controller_name=="caller"
       redirect_to "https://caller.#{request.domain}/#{@cont}/#{@act}/#{params[:id]}"
-      flash.keep
-    elsif !ssl?
+    elsif controller_name == 'broadcast'
+      redirect_to "https://broadcast.#{request.domain}#{request.path}"
+    else
       redirect_to "https://admin.#{request.domain}/#{@cont}/#{@act}/#{params[:id]}"
-      flash.keep
     end
-    return true
+  end
+
+  def testing?
+    RAILS_ENV == 'test'
   end
 
   def ssl?
@@ -102,14 +107,14 @@ class ApplicationController < ActionController::Base
   def cache_set(key)
     output = yield
     if CACHE.get(key)==nil
-       CACHE.add(key, output)
-     else
-       CACHE.set(key, output)
-     end
+      CACHE.add(key, output)
+    else
+      CACHE.set(key, output)
+    end
   end
 
   def isnumber(string)
-     string.to_i.to_s == string ? true : false
+    string.to_i.to_s == string ? true : false
   end
 
   def generate_session_key
