@@ -1,4 +1,5 @@
 class Caller < ActiveRecord::Base
+  include ActionController::UrlWriter
   include Deletable
   validates_presence_of :name, :on => :create, :message => "can't be blank"
   validates_format_of :email, :allow_blank => true, :with => /^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i, :message => "Invalid email"
@@ -20,5 +21,14 @@ class Caller < ActiveRecord::Base
       uniq_pin=pin if check.blank?
     end
     self.pin = uniq_pin
+  end
+
+  def callin(from)
+    response = TwilioClient.instance.account.calls.create(
+        :from =>APP_NUMBER,
+        :to => from,
+        :url => ready_caller_url(:id=>self.id, :host => 'http://localhost:3000')
+    )
+    CallerSession.create(:caller => self, :sid => response["TwilioResponse"]["Call"]["Sid"])
   end
 end

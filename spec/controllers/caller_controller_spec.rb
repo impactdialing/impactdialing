@@ -37,6 +37,18 @@ describe CallerController do
       get :preview_dial, :key => session_key, :voter_id => Factory(:voter).id
     end
 
+  end
+
+  describe "caller calling in" do
+
+    it "is ready to receive calls" do
+      caller = Factory(:caller)
+      login_as(caller)
+      Caller.stub!(:find).and_return(caller)
+      caller.stub(:callin).with(anything).and_return(Factory(:caller_session, :sid => "sid"))
+      post :callin, :id => caller.id, :calling_from => "39465987345"
+      assigns(:caller_session).should_not be_nil
+    end
 
   end
 end

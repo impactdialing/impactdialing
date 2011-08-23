@@ -21,6 +21,14 @@ ImpactDialing::Application.routes.draw do
   end
 
 
+  resources :caller do
+    member do
+      post :callin
+      post :ready
+    end
+    collection { get :login }
+  end
+
   #broadcast
   scope 'broadcast' do
     resources :campaigns do

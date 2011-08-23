@@ -20,4 +20,13 @@ describe Caller do
     inactive_caller = Factory(:caller, :active => false)
     Caller.active.should == [active_caller]
   end
+
+  it "calls in to the campaign" do
+    Twilio::REST::Client
+    sid = "gogaruko"
+    caller = Factory(:caller)
+    TwilioClient.stub_chain(:instance,:account, :calls, :create).and_return({"TwilioResponse" => {"Call" => {"Sid" => sid}}})
+    session = caller.callin(5463459043)
+    session.sid.should == sid
+  end
 end
