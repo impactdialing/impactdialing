@@ -1,7 +1,9 @@
 require "spec_helper"
 
 describe Callers::CampaignsController do
-  let(:caller) { Factory(:caller) }
+  let(:user) { Factory(:user) }
+  let(:caller) { Factory(:caller, :user => user) }
+  let(:campaign) { Factory(:campaign, :user => user) }
 
   before(:each) do
     login_as(caller)
@@ -25,6 +27,19 @@ describe Callers::CampaignsController do
     caller.save
     get :show, :id => campaign1.id
     assigns(:campaign).should == campaign1
+  end
+
+  it "allows a caller to callin to a campaign" do
+    login_as(caller)
+    Caller.stub!(:find).and_return(caller)
+    sid = "sid"
+    TwilioClient.stub_chain(:instance,:account, :calls, :create).and_return({"TwilioResponse" => {"Call" => {"Sid" => sid}}})
+    post :callin, :id => campaign.id, :calling_from => "39465987345"
+    session = assigns(:session)
+    session.campaign.should == campaign
+    session.sid.should == sid
+    session.available_for_call.should == false
+    session.on_call.should == false
   end
 
 
