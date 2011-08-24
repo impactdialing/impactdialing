@@ -8,7 +8,7 @@ class Caller < ActiveRecord::Base
   has_many :caller_sessions
   before_create :create_uniq_pin
 
-  scope :active, lambda { { :conditions => ["active = ?", true] }}
+  scope :active, lambda { {:conditions => ["active = ?", true]} }
 
   cattr_reader :per_page
   @@per_page = 25
@@ -23,12 +23,12 @@ class Caller < ActiveRecord::Base
     self.pin = uniq_pin
   end
 
-  def callin(from)
+  def callin(campaign, phone)
     response = TwilioClient.instance.account.calls.create(
         :from =>APP_NUMBER,
-        :to => from,
-        :url => ready_caller_url(:id=>self.id, :host => 'http://localhost:3000')
+        :to => phone,
+        :url => ready_callers_campaign_url(:id=>campaign.id, :host => 'http://localhost:3000')
     )
-    CallerSession.create(:caller => self, :sid => response["TwilioResponse"]["Call"]["Sid"])
+    CallerSession.create(:caller => self, :campaign => campaign, :sid => response["TwilioResponse"]["Call"]["Sid"])
   end
 end

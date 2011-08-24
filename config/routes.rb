@@ -17,15 +17,16 @@ ImpactDialing::Application.routes.draw do
   end
 
   namespace "callers" do
-    resources :campaigns
+    resources :campaigns do
+      member do
+        post :callin
+        post :ready
+      end
+    end
   end
 
 
   resources :caller do
-    member do
-      post :callin
-      post :ready
-    end
     collection { get :login }
   end
 
