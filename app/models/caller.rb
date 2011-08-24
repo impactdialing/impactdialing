@@ -27,8 +27,12 @@ class Caller < ActiveRecord::Base
     response = TwilioClient.instance.account.calls.create(
         :from =>APP_NUMBER,
         :to => phone,
-        :url => ready_callers_campaign_url(:id=>campaign.id, :host => 'http://localhost:3000')
+        :url => caller_ready_callers_campaign_url(:id=>campaign.id, :host => 'http://localhost:3000')
     )
     CallerSession.create(:caller => self, :campaign => campaign, :sid => response["TwilioResponse"]["Call"]["Sid"])
+  end
+
+  def phone
+    #required for the form field.
   end
 end
