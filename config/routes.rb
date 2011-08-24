@@ -18,10 +18,8 @@ ImpactDialing::Application.routes.draw do
 
   namespace "callers" do
     resources :campaigns do
-      member do
-        post :callin
-        post :ready
-      end
+      put 'callin', :on => :member
+      put 'caller_ready', :on => :member
     end
   end
 
