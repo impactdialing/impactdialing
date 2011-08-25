@@ -22,6 +22,7 @@ gem 'settingslogic', '~> 2.0.6'
 gem 'spork', '~> 0.8.5'
 gem "twilio-ruby", '~> 3.3.0'
 gem 'dynamic_form', '~> 1.1.4'
+gem 'in_place_editing', '~> 1.1.1'
 
 group :development, :test do
   gem 'ruby-debug', '~> 0.10.4'
