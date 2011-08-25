@@ -11,3 +11,5 @@ public/.DS_Store
 test/
 *.rails2
 spec/fixtures/test_tmp/
+coverage_unit/
+coverage_controller/
