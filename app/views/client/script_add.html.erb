@@ -1,6 +1,10 @@
 <h1><%= @label %></h1>
 <%= error_messages_for :script %>
-<% @lastone=[0,0,0,0,0,0,0,0,0,0,0]%>
+<% @lastone=[]
+for i in 0..NUM_RESULT_FIELDS do
+	@lastone<<0
+end
+%>
 
 <% form_for :script, :url => { :action => "script_add" , :id=>@script.id}, :html => {:name => 'callerForm', :id => 'callerForm'}   do |f| %>
 
