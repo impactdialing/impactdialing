@@ -11,4 +11,6 @@ describe CustomVoterFieldValue do
     CustomVoterFieldValue.voter_fields(voter,custom_field).first.value.should == value
   end
 
+  it { should validate_presence_of :voter_id }
+  it { should validate_presence_of :custom_voter_field_id }
 end
