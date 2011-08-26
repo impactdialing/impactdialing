@@ -21,8 +21,8 @@ gem 'daemons', '~> 1.0.10'
 gem 'twilio', '~> 3.0.1'
 gem 'settingslogic', '~> 2.0.6'
 gem 'spork', '~> 0.8.5'
-gem "twilio-ruby"
-	
+gem "twilio-ruby", '~> 3.2.0'
+
 group :development, :test do
   gem 'ruby-debug', '~> 0.10.4'
   gem 'rspec-rails', '~> 1.3.4'
