@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110826160416) do
+ActiveRecord::Schema.define(:version => 20110828141819) do
 
   create_table "accounts", :force => true do |t|
     t.integer  "user_id"
@@ -336,12 +336,12 @@ ActiveRecord::Schema.define(:version => 20110826160416) do
     t.string   "note_9"
     t.string   "note_10"
     t.boolean  "robo",          :default => false
-    t.text     "result_set_11"
-    t.text     "result_set_12"
-    t.text     "result_set_13"
-    t.text     "result_set_14"
-    t.text     "result_set_15"
-    t.text     "result_set_16"
+    t.string   "result_set_11"
+    t.string   "result_set_12"
+    t.string   "result_set_13"
+    t.string   "result_set_14"
+    t.string   "result_set_15"
+    t.string   "result_set_16"
     t.string   "note_11"
     t.string   "note_12"
     t.string   "note_13"
