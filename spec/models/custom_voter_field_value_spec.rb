@@ -18,4 +18,6 @@ describe CustomVoterFieldValue do
     CustomVoterFieldValue.for(voter).should == [val1, val2]
   end
 
+  it { should validate_presence_of :voter_id }
+  it { should validate_presence_of :custom_voter_field_id }
 end

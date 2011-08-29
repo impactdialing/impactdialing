@@ -74,7 +74,7 @@ class CallerController < ApplicationController
 
         if params[:client]=="0"
           t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-          a=t.call("POST", "Calls", {'Caller' => APP_NUMBER, 'Called' => params[:numtocall], 'Url'=>"#{APP_URL}/callin/get_ready?campaign=#{params[:id]}&session=#{@session.id}&Digits=*"})
+          a=t.call("POST", "Calls", {'Caller' => APP_NUMBER, 'Called' => params[:numtocall], 'Url'=>"#{APP_URL}/callin/get_ready?campaign=#{params[:id]}&session=#{@session.id}"})
           @doc = Hpricot::XML(a)
           @session.sid=(@doc/"Sid").inner_html
           @session.save

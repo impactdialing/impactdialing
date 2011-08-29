@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110824055245) do
+ActiveRecord::Schema.define(:version => 20110828141819) do
 
   create_table "accounts", :force => true do |t|
     t.integer  "user_id"
@@ -236,11 +236,11 @@ ActiveRecord::Schema.define(:version => 20110824055245) do
   end
 
   create_table "recordings", :force => true do |t|
+    t.integer  "user_id"
     t.integer  "active",            :default => 1
     t.string   "name"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.integer  "user_id"
     t.string   "file_file_name"
     t.string   "file_content_type"
     t.string   "file_file_size"
@@ -312,56 +312,6 @@ ActiveRecord::Schema.define(:version => 20110824055245) do
     t.text     "keypad_47"
     t.text     "keypad_48"
     t.text     "keypad_49"
-    t.text     "keypad_50"
-    t.text     "keypad_51"
-    t.text     "keypad_52"
-    t.text     "keypad_53"
-    t.text     "keypad_54"
-    t.text     "keypad_55"
-    t.text     "keypad_56"
-    t.text     "keypad_57"
-    t.text     "keypad_58"
-    t.text     "keypad_59"
-    t.text     "keypad_60"
-    t.text     "keypad_61"
-    t.text     "keypad_62"
-    t.text     "keypad_63"
-    t.text     "keypad_64"
-    t.text     "keypad_65"
-    t.text     "keypad_66"
-    t.text     "keypad_67"
-    t.text     "keypad_68"
-    t.text     "keypad_69"
-    t.text     "keypad_70"
-    t.text     "keypad_71"
-    t.text     "keypad_72"
-    t.text     "keypad_73"
-    t.text     "keypad_74"
-    t.text     "keypad_75"
-    t.text     "keypad_76"
-    t.text     "keypad_77"
-    t.text     "keypad_78"
-    t.text     "keypad_79"
-    t.text     "keypad_80"
-    t.text     "keypad_81"
-    t.text     "keypad_82"
-    t.text     "keypad_83"
-    t.text     "keypad_84"
-    t.text     "keypad_85"
-    t.text     "keypad_86"
-    t.text     "keypad_87"
-    t.text     "keypad_88"
-    t.text     "keypad_89"
-    t.text     "keypad_90"
-    t.text     "keypad_91"
-    t.text     "keypad_92"
-    t.text     "keypad_93"
-    t.text     "keypad_94"
-    t.text     "keypad_95"
-    t.text     "keypad_96"
-    t.text     "keypad_97"
-    t.text     "keypad_98"
-    t.text     "keypad_99"
     t.string   "incompletes"
     t.string   "voter_fields"
     t.text     "result_set_1"
@@ -385,6 +335,18 @@ ActiveRecord::Schema.define(:version => 20110824055245) do
     t.string   "note_9"
     t.string   "note_10"
     t.boolean  "robo",          :default => false
+    t.string   "result_set_11"
+    t.string   "result_set_12"
+    t.string   "result_set_13"
+    t.string   "result_set_14"
+    t.string   "result_set_15"
+    t.string   "result_set_16"
+    t.string   "note_11"
+    t.string   "note_12"
+    t.string   "note_13"
+    t.string   "note_14"
+    t.string   "note_15"
+    t.string   "note_16"
   end
 
   create_table "seos", :force => true do |t|
@@ -461,6 +423,7 @@ ActiveRecord::Schema.define(:version => 20110824055245) do
     t.datetime "scheduled_date"
   end
 
+  add_index "voters", ["Phone", "voter_list_id"], :name => "index_voters_on_Phone_and_voter_list_id"
   add_index "voters", ["Phone"], :name => "index_voters_on_Phone"
   add_index "voters", ["attempt_id"], :name => "index_voters_on_attempt_id"
   add_index "voters", ["campaign_id"], :name => "index_voters_on_campaign_id"

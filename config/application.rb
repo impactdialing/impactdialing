@@ -6,7 +6,9 @@ require "rails/all"
 # you've limited to :test, :development, or :production.
 Bundler.require(:default, Rails.env) if defined?(Bundler)
 
-NUM_RESULT_FIELDS=6
+APP_URL="http://www.hinodae.com:5555"
+
+NUM_RESULT_FIELDS=16
 DEBUG_TWIML=true
 MAILCHIMP_API_KEY="011c309139adae5ea68dac0b8020fcb5-us2"
 

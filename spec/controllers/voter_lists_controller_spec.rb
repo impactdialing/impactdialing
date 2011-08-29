@@ -101,6 +101,7 @@ describe VoterListsController do
 
           describe "custom fields" do
             let(:csv_file_upload) { {"datafile" => fixture_file_upload("/files/voters_custom_fields_list.csv")} }
+
             it "creates previously uncreated custom columns" do
               custom_field = "Custom"
               Voter.delete_all

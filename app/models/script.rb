@@ -19,7 +19,7 @@ class Script < ActiveRecord::Base
   def set_result_set
     if self.result_set_1.blank?
       json={}
-      for i in 1..99 do
+      for i in 1..49 do
         json["keypad_#{i}"] = self.send("keypad_#{i}")
       end
       self.result_set_1 = json.to_json
