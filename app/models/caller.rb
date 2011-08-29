@@ -24,12 +24,15 @@ class Caller < ActiveRecord::Base
   end
 
   def callin(campaign, phone)
+    session = CallerSession.create(:caller => self, :campaign => campaign)
     response = TwilioClient.instance.account.calls.create(
         :from =>APP_NUMBER,
         :to => phone,
-        :url => caller_ready_callers_campaign_url(:id=>campaign.id, :host => 'http://localhost:3000')
+        :url => caller_ready_callers_campaign_url(:id=>campaign.id, :caller_sid => session.sid, :host => APP_HOST)
     )
-    CallerSession.create(:caller => self, :campaign => campaign, :sid => response["TwilioResponse"]["Call"]["Sid"])
+    #raise response.inspect
+    session.update_attribute(:sid, response["TwilioResponse"]["Call"]["Sid"])
+    session
   end
 
   def phone

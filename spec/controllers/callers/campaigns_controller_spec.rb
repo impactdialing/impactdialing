@@ -29,21 +29,26 @@ describe Callers::CampaignsController do
     assigns(:campaign).should == campaign1
   end
 
-  it "allows a caller to callin to a campaign" do
-    login_as(caller)
-    Caller.stub!(:find).and_return(caller)
-    sid = "sid"
-    TwilioClient.stub_chain(:instance,:account, :calls, :create).and_return({"TwilioResponse" => {"Call" => {"Sid" => sid}}})
-    put :callin, :id => campaign.id, :caller => {:phone => '39465987345'}
-    session = assigns(:session)
-    session.campaign.should == campaign
-    session.sid.should == sid
-    session.available_for_call.should == false
-    session.on_call.should == false
-  end
+  #it "allows a caller to callin to a campaign" do
+  #  #login_as(caller)
+  #  Caller.stub(:find).and_return(caller)
+  #  sid = "sid"
+  #  TwilioClient.stub_chain(:instance, :account, :calls, :create).and_return({"TwilioResponse" => {"Call" => {"Sid" => sid}}})
+  #  post :callin, :id => campaign.id, :caller => {:phone => '39465987345'}
+  #  session = assigns(:session)
+  #  session.campaign.should == campaign
+  #  session.sid.should == sid
+  #  session.available_for_call.should == false
+  #  session.on_call.should == false
+  #end
 
   it "receives caller ready callback from twilio" do
-
+    login_as(caller)
+    session = Factory(:caller_session, :caller => caller, :sid => "sid")
+    CallerSession.stub(:find_by_sid).and_return(session)
+    post :caller_ready, :id => campaign.id, :caller_id => caller.id, :caller_sid => session.sid
+    session.on_call.should be_true
+    session.available_for_call.should be_true
   end
 
 
