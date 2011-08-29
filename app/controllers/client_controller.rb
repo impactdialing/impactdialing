@@ -829,7 +829,7 @@ Can we count on you to vote for such-and-such?
 
     if request.post?
       @script.update_attributes(params[:script])
-      for r in 1..10 do
+      for r in 1..16 do
         @script.attributes = {"result_set_#{r}"=>nil}
       end
       numResults = params[:numResults]
@@ -844,10 +844,10 @@ Can we count on you to vote for such-and-such?
           end
         end
 
-        for i in 1..99 do
+#        for i in 1..99 do
           #@script.attributes = { "keypad_#{r}_#{i}" => nil }
-          thisResults["keypad_#{i}"] = nil
-        end
+ #         thisResults["keypad_#{i}"] = nil
+#        end
 
         for i in 1..99 do
           thisResult = eval("params[:text_#{r}_#{i}]")
@@ -856,7 +856,7 @@ Can we count on you to vote for such-and-such?
             thisResults["keypad_#{i}"] =  thisResult
           end
         end
-        logger.info "Done with #{r}: #{thisResults.inspect}"
+#        logger.info "Done with #{r}: #{thisResults.inspect}"
         @script.attributes =   { "result_set_#{r}" => thisResults.to_json }
       end
 
