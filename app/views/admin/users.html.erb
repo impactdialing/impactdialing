@@ -10,6 +10,7 @@
 		<td>domain</td>
 		<td></td>
 		<td></td>
+		<td></td>
 	</tr>
 	<% @users.each do |u| %>
 	<tr>
@@ -22,6 +23,7 @@
 		<td><%= u.paid %> </td>
 		<td><%= u.domain %> </td>
 		<td><a href="/admin/toggle_paid/<%= u.id %>">toggle paid</a></td>
+		<td><a href="/admin/charge/<%= u.id %>">charge</a></td>
 		<td><a href="/admin/login/<%= u.id %>">login</a></td>
 	</tr>
 	<% end %>

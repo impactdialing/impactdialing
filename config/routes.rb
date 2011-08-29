@@ -93,6 +93,7 @@ ImpactDialing::Application.routes.draw do
   resources :users do
     put '/update_password', :to => 'client/users#update_password', :as => 'update_password'
   end
+
   get '/reset_password', :to => 'client/users#reset_password', :as => 'reset_password'
 
   match '/client/login', :to => 'client#login', :as => :login

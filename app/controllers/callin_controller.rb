@@ -205,7 +205,7 @@ class CallinController < ApplicationController
 
     if @campaign.use_web_ui
       @gathertimeout=60
-      if params[:CallStatus]=="completed"
+      if params[:CallStatus]=="completed" || params[:CallStatus]=="no-answer" || params[:CallStatus]=="busy" || params[:CallStatus]=="fail"
         @publish_channel="#{@session.session_key}"
         @publish_key="hangup"
         @publish_value="ok"
@@ -436,7 +436,7 @@ class CallinController < ApplicationController
       #record selection
       handle_multi_disposition_submit(result_num, params[:attempt])
       if @script.result_sets_used.length>num+1
-        redirect_to :action=>"next_question", :session=>@session.id, :num=>num+1
+        redirect_to :action=>"next_question", :session=>@session.id, :num=>num+1, :attempt=>params[:attempt]
         return
       end
 
@@ -578,13 +578,19 @@ class CallinController < ApplicationController
     end
 
     if @available_caller_session.blank?
-      @anyCaller = CallerSession.find_by_campaign_id_and_on_call(@campaign.id, true)
-      if @anyCaller==nil
-        @hangup=true
-      else
-        @pause=2
-        @redirect="#{APP_URL}/callin/voterFindSession?campaign=#{@campaign.id}&voter=#{@voter.id}&attempt=#{@attempt.id}"
-      end
+
+      @hangup=true
+      render :template => 'callin/index.xml.builder', :layout => false
+      return
+      
+      # no longer retry voters if no callers available
+      # @anyCaller = CallerSession.find_by_campaign_id_and_on_call(@campaign.id, true)
+      # if @anyCaller==nil
+      #   @hangup=true
+      # else
+      #   @pause=2
+      #   @redirect="#{APP_URL}/callin/voterFindSession?campaign=#{@campaign.id}&voter=#{@voter.id}&attempt=#{@attempt.id}"
+      # end
     else
       # ensure only one caller gets this voter
       begin

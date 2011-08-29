@@ -133,6 +133,7 @@ describe VoterList do
         voter_list.import_leads(mappings, csv_file, ",").should == {:successCount => 2, :failedCount => 0}
         CustomVoterField.find_by_name(custom_field).should_not be_nil
         CustomVoterField.all.size.should == 1
+
         voter_list.voters[0].get_attribute(custom_field).should ==  "Foo" #this is set in the csv file, may be the test should have this
         voter_list.voters[1].get_attribute(custom_field).should ==  "Bar" #this is set in the csv file, may be the test should have this
       end
