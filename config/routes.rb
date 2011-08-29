@@ -18,8 +18,10 @@ ImpactDialing::Application.routes.draw do
 
   namespace "callers" do
     resources :campaigns do
-      put 'callin', :on => :member
-      put 'caller_ready', :on => :member
+      member do
+        match :callin
+        match :caller_ready
+      end
     end
   end
 
@@ -27,6 +29,9 @@ ImpactDialing::Application.routes.draw do
   resources :caller do
     collection { get :login }
   end
+
+  post :receive_call, :to => 'callin#create'
+  post :identify_caller, :to => 'callin#identify'
 
   #broadcast
   scope 'broadcast' do
