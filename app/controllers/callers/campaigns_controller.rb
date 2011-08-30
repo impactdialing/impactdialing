@@ -11,9 +11,8 @@ module Callers
     end
 
     def callin
-      #raise params.inspect
       campaign = Campaign.find(params[:id])
-      @session = @caller.callin(campaign,params[:caller][:phone])
+      @session = @caller.callin(campaign, params[:caller][:phone])
       render :text => :nothing
     end
 
