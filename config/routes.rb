@@ -19,7 +19,7 @@ ImpactDialing::Application.routes.draw do
   namespace "callers" do
     resources :campaigns do
       member do
-        match :callin
+        post :callin
         match :caller_ready
       end
     end
