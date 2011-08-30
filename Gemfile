@@ -19,7 +19,6 @@ gem "paperclip", "2.3.16"
 gem 'daemons', '~> 1.0.10'
 gem 'twilio', '~> 3.0.1'
 gem 'settingslogic', '~> 2.0.6'
-gem 'spork', '~> 0.8.5'
 gem "twilio-ruby", '~> 3.3.0'
 gem 'dynamic_form', '~> 1.1.4'
 gem 'in_place_editing', '~> 1.1.1'
@@ -37,4 +36,5 @@ group :test do
   gem 'factory_girl', '~> 1.3.3'
   gem 'shoulda', '~> 2.11.3'
   gem 'rcov', '~> 0.9.9'
+  gem 'spork', '~> 0.9.0.rc9'
 end
