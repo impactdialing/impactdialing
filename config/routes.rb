@@ -64,6 +64,10 @@ ImpactDialing::Application.routes.draw do
     match '/login', :to => 'broadcast#login', :as => 'broadcast_login'
   end
 
+  ['campaigns', 'scripts', 'callers'].each do |type_plural|
+    get type_plural, :to => "client##{type_plural}", :as => type_plural
+  end
+
   namespace 'client' do
     match 'campaign_new', :to => 'client#campaign_new', :as => 'campaign_new'
     match 'campaign_view/:id', :to => 'client#campaign_view', :as => 'campaign_view'
