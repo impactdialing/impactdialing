@@ -423,7 +423,7 @@ ActiveRecord::Schema.define(:version => 20110828141819) do
     t.datetime "scheduled_date"
   end
 
-  add_index "voters", ["Phone", "voter_list_id"], :name => "index_voters_on_Phone_and_voter_list_id"
+  add_index "voters", ["Phone", "voter_list_id"], :name => "index_voters_on_Phone_and_voter_list_id", :unique => true
   add_index "voters", ["Phone"], :name => "index_voters_on_Phone"
   add_index "voters", ["attempt_id"], :name => "index_voters_on_attempt_id"
   add_index "voters", ["campaign_id"], :name => "index_voters_on_campaign_id"
