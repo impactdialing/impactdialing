@@ -89,3 +89,21 @@
 
 	</div>
 </div>
+
+<h2>Report Date Range:</h2>
+<% form_tag ("/client/report_overview?id=#{ params[:id]}") do %> 
+  
+<table>
+	<tr>
+		<td>From:</td>
+		<td> <%= unobtrusive_date_text_picker_tag :from_date,@from_date %> </td>
+	</tr>
+	<tr>
+		<td>
+			To:</td>
+		<td>  <%= unobtrusive_date_text_picker_tag :to_date,@to_date %> 
+			<input type="submit" class="button" value="update" size="4">
+			</td>
+	</tr>
+</table>
+<% end %>

@@ -995,16 +995,24 @@ Can we count on you to vote for such-and-such?
       return
     end
 
+    set_report_date_range
+
     calls_util_sql="
     select sum(tDuration) as total_seconds,  sum(ceil(tDuration/60)) as total_mins
     from call_attempts ca
     where
-    ca.campaign_id=#{params[:id]}"
+    ca.campaign_id=#{params[:id]}
+    and created_at > '#{@from_date.strftime("%Y-%m-%d")}'
+    and created_at < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'
+    "
     caller_util_sql="
     select sum(tDuration) as total_seconds,  sum(ceil(tDuration/60)) as total_mins
     from caller_sessions ca
     where
-    ca.campaign_id=#{params[:id]}"
+    ca.campaign_id=#{params[:id]}
+    and created_at > '#{@from_date.strftime("%Y-%m-%d")}'
+    and created_at < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'
+    "
     @calls_util = ActiveRecord::Base.connection.execute(calls_util_sql)
     @caller_util = ActiveRecord::Base.connection.execute(caller_util_sql)
 
@@ -1014,21 +1022,30 @@ Can we count on you to vote for such-and-such?
     where
     ca.campaign_id=#{params[:id]}
     and status <> 'Message delivered'
-    and status <> 'Call abandoned'"
+    and status <> 'Call abandoned'
+    and created_at > '#{@from_date.strftime("%Y-%m-%d")}'
+    and created_at < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'
+    "
 
     vm_bill_sql="
     select sum(tDuration) as total_seconds,  sum(ceil(tDuration/60)) as total_mins
     from call_attempts ca
     where
     ca.campaign_id=#{params[:id]}
-    and status = 'Message delivered'"
+    and status = 'Message delivered'
+    and created_at > '#{@from_date.strftime("%Y-%m-%d")}'
+    and created_at < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'
+    "
 
     abandon_bill_sql="
     select sum(tDuration) as total_seconds,  sum(ceil(tDuration/60)) as total_mins
     from call_attempts ca
     where
     ca.campaign_id=#{params[:id]}
-    and status= 'Call abandoned'"
+    and status= 'Call abandoned'
+    and created_at > '#{@from_date.strftime("%Y-%m-%d")}'
+    and created_at < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'
+    "
 
     @calls_bill = ActiveRecord::Base.connection.execute(calls_bill_sql)
     @vm_bill = ActiveRecord::Base.connection.execute(vm_bill_sql)
@@ -1045,6 +1062,7 @@ Can we count on you to vote for such-and-such?
       return
     end
 
+    set_report_date_range
     @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Overview Report"]
     sql = "#select distinct status from call_attempts
 
@@ -1060,6 +1078,8 @@ Can we count on you to vote for such-and-such?
       from
       call_attempts ca
       where ca.campaign_id=#{@campaign.id}
+      and created_at > '#{@from_date.strftime("%Y-%m-%d")}'
+      and created_at < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'
       group by
       case WHEN ca.status='Call abandoned' THEN 'Call abandoned'
         WHEN ca.status='Hangup or answering machine' THEN 'Hangup or answering machine'
@@ -1067,7 +1087,6 @@ Can we count on you to vote for such-and-such?
         WHEN ca.status='No answer busy signal' THEN 'Busy signal'
         ELSE ca.status
         END
-
         order by count(*) desc"
         @records = ActiveRecord::Base.connection.execute(sql)
         @total=0
