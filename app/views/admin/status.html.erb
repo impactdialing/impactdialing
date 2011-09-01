@@ -39,7 +39,7 @@
 		    not_on_call = callers.length - callers_on_call.length
 		    calls = CallAttempt.find_all_by_campaign_id(k, :conditions=>"call_end is NULL")
 		    voters = k.voters("not called")
-			@errors= @errors + " #{k.name} abandon_pct #{abandon_pct}" if abandon_pct>50 && attempts.length > 10
+			@errors= @errors + " #{k.name} abandon_pct #{abandon_pct}" if abandon_pct>65 && attempts.length > 10
 		    %> 
 			 Callers logged in: <%= callers.length %>
 			<br/>Callers on call: <%= callers_on_call.length %>
