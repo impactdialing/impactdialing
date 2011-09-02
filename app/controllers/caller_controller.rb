@@ -48,6 +48,17 @@ class CallerController < ApplicationController
       end
     end
   end
+  
+  def ping
+    #sleep 2.5
+    send_rt(params[:key], 'ping', params[:num])
+    render :text=>"pong"
+  end
+  
+  def network_test
+    @rand=rand
+  end
+  
 
   def campaign
     require "hpricot"
@@ -98,6 +109,7 @@ class CallerController < ApplicationController
     end
 
   end
+  
   
   def jspush
     response.headers["Content-Type"] = 'text/javascript'
