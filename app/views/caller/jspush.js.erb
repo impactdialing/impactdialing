@@ -57,7 +57,11 @@ $(document).ready(function() {
                 $.ajax({
                     type: 'GET',
                     dataType: 'script',
-                    url: url
+                    url: url,
+			        error: function(XMLHttpRequest, textStatus, errorThrown)
+			        {
+						logErr(urltextStatus);
+					}
                 });
                 <% end %>
             }
@@ -104,7 +108,11 @@ $(document).ready(function() {
             $.ajax({
                 type: 'GET',
                 dataType: 'script',
-                url: url
+                url: url,
+		        error: function(XMLHttpRequest, textStatus, errorThrown)
+		        {
+					logErr(urltextStatus);
+				}
             });
             $('#voter_info').hide();
             $('#response').hide();
@@ -337,7 +345,11 @@ function dialVoter(vid) {
     $.ajax({
         type: 'GET',
         dataType: 'script',
-        url: url
+        url: url,
+        error: function(XMLHttpRequest, textStatus, errorThrown)
+        {
+			logErr(urltextStatus);
+		}
     });
 
 //	document.location.href='/caller/preview_dial?key=<%= params[:key] %>&voter_id=' + vid;
@@ -348,7 +360,11 @@ function dpoll() {
     $.ajax({
         type: 'GET',
         dataType: 'script',
-        url: url
+        url: url,
+        error: function(XMLHttpRequest, textStatus, errorThrown)
+        {
+			logErr(urltextStatus);
+		}
     });
     setTimeout("dpoll()", 20000);
 }
@@ -376,6 +392,10 @@ function getDate(){
 	return str;
 }
 
+function logErr(url,msg){
+	alert('Ajax error ' + msg);
+	document.getElementById('dbx').innerHTML=document.getElementById('dbx').innerHTML +  getDate() + ' Ajax error ' + url + ' ' + msg + '<br/>';	
+}
 function logit(msg){
 	document.getElementById('dbx').innerHTML=document.getElementById('dbx').innerHTML +  getDate() + ' ' + msg + '<br/>';	
 }
