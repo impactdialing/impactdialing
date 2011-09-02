@@ -7,7 +7,7 @@
   <%= javascript_include_tag 'jquery.ui.datetime.min' %>
 <% end %>
 
-<% form_tag(callin_callers_campaign_path(@campaign), {:class => "form", :id=>"myform", :name=>"myform"}) do |f|%>
+<% form_tag(callin_callers_campaign_path(@campaign), {:class => "form", :id=>"myform", :name=>"myform"}) %>
   <%= label_tag "Number to call :" %>
   <%= text_field :caller, :phone %>
   <%= submit_tag "Call In"%>
