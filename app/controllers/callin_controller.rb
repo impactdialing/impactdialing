@@ -15,6 +15,7 @@ class CallinController < ApplicationController
   def identify
     #get the caller from the digits and push voter details.
     @caller = Caller.find_by_pin(params[:Digits])
+    @session = @caller.caller_sessions.create(:on_call => false, :available_for_call => false)
     render :nothing => true
   end
 

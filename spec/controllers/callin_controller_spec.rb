@@ -1,9 +1,9 @@
 require "spec_helper"
 
 describe CallinController do
-  describe 'Caller Callin' do
+  describe 'Caller Calling In' do
 
-    it "prompts for PIN for a caller calling in" do
+    it "prompts for PIN for a caller " do
       post :create
       resp = Twilio::Verb.new do |v|
         v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.host), :method => "POST") do
@@ -22,8 +22,17 @@ describe CallinController do
     end
 
     it "creates a caller session on pin verification" do
-
+      pin = rand.to_s[2..6]
+      caller = Factory(:caller, :pin => pin)
+      Caller.stub(:find_by_pin).and_return(caller)
+      post :identify, :Digits => pin
+      session = assigns(:session)
+      session.caller.should == caller
+      session.available_for_call.should be_false
+      session.on_call.should be_false
     end
+
+
 
   end
 
