@@ -32,8 +32,28 @@ describe CallinController do
       session.on_call.should be_false
     end
 
+    it "Prompts on incorrect pin" do
+      pin = rand.to_s[2..6]
+      Caller.stub(:find_by_pin).and_return(nil)
+      post :identify, :Digits => pin
+      response.body.should == Twilio::Verb.new do |v|
+        v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.host, :attempt => 1), :method => "POST") do
+          v.say "Incorrect Pin. Please enter your pin."
+        end
+      end.response
+    end
 
+    it "Hangs up on incorrect pin after the third attempt" do
+      pin = rand.to_s[2..6]
+      Caller.stub(:find_by_pin).and_return(nil)
+      post :identify, :Digits => pin, :attempt => 2
+      response.body.should == Twilio::Verb.new do |v|
+        v.say "Incorrect Pin."
+        v.hangup
+      end.response
+    end
 
   end
+
 
 end

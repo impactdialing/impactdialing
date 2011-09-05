@@ -1,6 +1,8 @@
 require "spec_helper"
 
 describe Caller do
+  include ActionController::UrlWriter
+
   let(:user) { Factory(:user) }
   it "restoring makes it active" do
     caller_object = Factory(:caller, :active => false)
@@ -32,4 +34,13 @@ describe Caller do
     session.sid.should == sid
     session.campaign.should == campaign
   end
+
+  it "asks for pin again" do
+    Caller.ask_for_pin(nil.to_i).should == Twilio::Verb.new do |v|
+        v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.host, :attempt => 1), :method => "POST") do
+          v.say "Incorrect Pin. Please enter your pin."
+        end
+      end.response
+  end
+
 end
