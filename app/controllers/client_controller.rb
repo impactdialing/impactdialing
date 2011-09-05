@@ -337,11 +337,6 @@ Can we count on you to vote for such-and-such?
     redirect_to :back
   end
 
-  def campaigns
-    @breadcrumb="Campaigns"
-    @campaigns = Campaign.active.manual.for_user(@user).paginate :page => params[:page], :order => 'id desc'
-  end
-
   def campaign_new
     campaign = Campaign.new(:user_id => @user.id, :predictive_type => 'algorithm1')
     campaign.user_id = @user.id
@@ -622,24 +617,6 @@ Can we count on you to vote for such-and-such?
 
     end
 
-  end
-
-  def campaign_view
-    check_warning
-    @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id)
-    @breadcrumb=[{"Campaigns"=>"/client/campaigns"},@campaign.name]
-
-    @callers = Caller.find_all_by_user_id_and_active(@user.id,true)
-    @lists = @campaign.voter_lists
-    @voters = Voter.where(:active => true, :campaign_id => @campaign.id).order('LastName, FirstName, Phone').paginate(:page => params[:page])
-    @scripts = @user.scripts.manual.active
-
-    #    @campaign.check_valid_caller_id_and_save
-    #    flash.now[:error]="Your Campaign Caller ID is not verified."  if !@campaign.caller_id.blank? && !@campaign.caller_id_verified
-    flash_now(:warning, "When you make calls with this campaign, you need a phone number to use for the Caller ID. Enter the phone number you want to use for your Caller ID and click Verify. To prevent abuse, the system will call that number and ask you to enter a validation code that will appear on your screen. Until you do this, you can't make calls with this campaign.") if @campaign.caller_id.blank?
-    @isAdmin = @user.admin
-    @show_voter_buttons = @user.show_voter_buttons
-    @voter_list = @campaign.voter_lists.new
   end
 
   def campaign_caller_id_verified
