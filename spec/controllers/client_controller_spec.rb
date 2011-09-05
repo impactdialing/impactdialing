@@ -39,17 +39,6 @@ describe ClientController do
       end
     end
 
-    describe "campaign" do
-      let(:campaign) { campaign = Factory(:campaign, :user => user) }
-      it "shows only active scripts" do
-        active_manual_script = Factory(:script, :robo => false, :active => true, :user => user)
-        Factory(:script, :robo => false, :active => false, :user => user)
-        get :campaign_view, :id => campaign.id
-        assigns(:campaign).should == campaign
-        assigns(:scripts).should == [active_manual_script]
-      end
-    end
-
     describe "reports" do
       it "shows only manual campaigns" do
         campaign = Factory(:campaign, :user => user, :robo => false)
@@ -60,7 +49,6 @@ describe ClientController do
     end
 
     describe "fields" do
-
       it "shows original and custom fields" do
         field = Factory(:custom_voter_field, :user => user, :name => "Foo")
         script = Factory(:script, :user => user)
@@ -72,13 +60,6 @@ describe ClientController do
         get :script_add
         assigns(:fields).should == ["CustomID","FirstName","MiddleName","LastName","Suffix","Age","Gender","Phone","Email"]
       end
-    end
-
-    it "lists all manual campaigns" do
-      robo_campaign = Factory(:campaign, :user => user, :robo => true)
-      manual_campaign = Factory(:campaign, :user => user, :robo => false)
-      get :campaigns
-      assigns(:campaigns).should == [manual_campaign]
     end
 
     it "lists all manual scripts" do

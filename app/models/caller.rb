@@ -8,7 +8,7 @@ class Caller < ActiveRecord::Base
   has_many :caller_sessions
   before_create :create_uniq_pin
 
-  scope :active, lambda { {:conditions => ["active = ?", true]} }
+  scope :active, where(:active => true)
 
   cattr_reader :per_page
   @@per_page = 25

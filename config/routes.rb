@@ -56,7 +56,7 @@ ImpactDialing::Application.routes.draw do
         get :dial_details
       end
     end
-    get '/deleted_campaigns', :to => 'campaigns#deleted', :as => :broadcast_deleted_campaigns
+    get '/deleted_campaigns', :to => 'broadcast/campaigns#deleted', :as => :broadcast_deleted_campaigns
     resources :scripts
     match 'monitor', :to => 'monitor#index'
 
@@ -69,9 +69,8 @@ ImpactDialing::Application.routes.draw do
     match 'campaign_view/:id', :to => 'client#campaign_view', :as => 'campaign_view'
 
     ['campaigns', 'scripts', 'callers'].each do |type_plural|
-      get "/deleted_#{type_plural}", :to => "#{type_plural}#deleted", :as => "deleted_#{type_plural}"
-      get "/#{type_plural}", :to => "client##{type_plural}", :as => "#{type_plural}"
-      resources type_plural, :only => [] do
+      get "/deleted_#{type_plural}", :to => "client/#{type_plural}#deleted", :as => "client_deleted_#{type_plural}"
+      resources type_plural, :only => [:index, :show], :name_prefix => 'client' do
         put 'restore', :to => "#{type_plural}#restore"
       end
     end

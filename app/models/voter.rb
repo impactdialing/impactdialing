@@ -18,7 +18,7 @@ class Voter < ActiveRecord::Base
   }
 
   default_scope :order => 'LastName, FirstName, Phone'
-  scope :active, :conditions => ["active = ?", true]
+  scope :active, where(:active => true)
   scope :to_be_dialed, :include => [:call_attempts], :conditions => ["(call_attempts.id is null and call_back is false) OR call_attempts.status IN (?)", CallAttempt::Status::ALL - [CallAttempt::Status::SUCCESS]]
   scope :randomly, :order => 'rand()'
   scope :to_callback, :conditions => ["call_back is true"]
