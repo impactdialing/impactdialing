@@ -1,6 +1,8 @@
 require "spec_helper"
 
 describe CallerSession do
+  include ActionController::UrlWriter
+
   it "lists active calls" do
     call1 = Factory(:caller_session, :on_call=> true)
     call2 = Factory(:caller_session, :on_call=> false)
@@ -23,5 +25,15 @@ describe CallerSession do
     voter.should_receive(:dial_predictive)
     session.call(voter)
     voter.caller_session.should == session
+  end
+
+  it "asks the caller for the campaign context" do
+    caller = Factory(:caller)
+    session = Factory(:caller_session, :caller => caller)
+    session.ask_for_campaign(nil.to_i).should == Twilio::Verb.new do |v|
+      v.gather(:numDigits => 5, :timeout => 10, :action => assign_campaign_caller_url(caller, :host => Settings.host), :method => "POST") do
+          v.say "Please enter your campaign pin."
+        end
+    end.response
   end
 end

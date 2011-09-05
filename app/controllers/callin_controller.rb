@@ -15,8 +15,12 @@ class CallinController < ApplicationController
   def identify
     #get the caller from the digits and push voter details.
     @caller = Caller.find_by_pin(params[:Digits])
-    @session = @caller.caller_sessions.create(:on_call => false, :available_for_call => false)
-    render :nothing => true
+    if @caller
+      @session = @caller.caller_sessions.create(:on_call => false, :available_for_call => false)
+      render :nothing => true
+    else
+      render :xml => Caller.ask_for_pin(params[:attempt].to_i)
+    end
   end
 
   def set_vars
@@ -599,7 +603,7 @@ class CallinController < ApplicationController
       @hangup=true
       render :template => 'callin/index.xml.builder', :layout => false
       return
-      
+
       # no longer retry voters if no callers available
       # @anyCaller = CallerSession.find_by_campaign_id_and_on_call(@campaign.id, true)
       # if @anyCaller==nil

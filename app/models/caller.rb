@@ -23,6 +23,27 @@ class Caller < ActiveRecord::Base
     self.pin = uniq_pin
   end
 
+  class << self
+    include ActionController::UrlWriter
+
+    def ask_for_pin(attempt)
+      xml = if attempt >= 2
+              Twilio::Verb.new do |v|
+                v.say "Incorrect Pin."
+                v.hangup
+              end
+            else
+              Twilio::Verb.new do |v|
+                v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.host, :attempt => attempt + 1), :method => "POST") do
+                  v.say "Incorrect Pin. Please enter your pin."
+                end
+              end
+            end
+      xml.response
+    end
+
+  end
+
   def callin(campaign, phone)
     session = CallerSession.create(:caller => self, :campaign => campaign)
     response = TwilioClient.instance.account.calls.create(
@@ -33,6 +54,10 @@ class Caller < ActiveRecord::Base
     #raise response.inspect
     session.update_attribute(:sid, response["TwilioResponse"]["Call"]["Sid"])
     session
+  end
+
+  def ask_for_campaign
+
   end
 
   def phone

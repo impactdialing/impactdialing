@@ -1,7 +1,8 @@
 class CallerSession < ActiveRecord::Base
+  include ActionController::UrlWriter
   belongs_to :caller
   belongs_to :campaign
-  scope :on_call, :conditions => {:on_call => true}
+  scope :on_call, :conditions => { :on_call => true }
   scope :available, :conditions => {:available_for_call => true, :on_call => true}
   has_one :voter_in_progress, :class_name => 'Voter'
   unloadable
@@ -9,6 +10,15 @@ class CallerSession < ActiveRecord::Base
   def minutes_used
     return 0 if self.tDuration.blank?
     self.tDuration/60.ceil
+  end
+
+  def ask_for_campaign(attempt)
+    Twilio::Verb.new do |v|
+      v.gather(:numDigits => 5, :timeout => 10, :action => assign_campaign_caller_url(caller, :host => Settings.host), :method => "POST") do
+          v.say "Please enter your campaign pin."
+        end
+    end.response
+
   end
 
     #  def end_call(account,auth,appurl)
