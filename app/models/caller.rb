@@ -1,4 +1,5 @@
 class Caller < ActiveRecord::Base
+  include Rails.application.routes.url_helpers
   include Deletable
   validates_presence_of :name, :on => :create, :message => "can't be blank"
   validates_format_of :email, :allow_blank => true, :with => /^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i, :message => "Invalid email"
@@ -25,8 +26,8 @@ class Caller < ActiveRecord::Base
   class << self
     include Rails.application.routes.url_helpers
 
-    def ask_for_pin(attempt)
-      xml = if attempt >= 2
+    def ask_for_pin(attempt = 0)
+      xml = if attempt > 2
               Twilio::Verb.new do |v|
                 v.say "Incorrect Pin."
                 v.hangup
@@ -34,7 +35,7 @@ class Caller < ActiveRecord::Base
             else
               Twilio::Verb.new do |v|
                 v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.host, :attempt => attempt + 1), :method => "POST") do
-                  v.say "Incorrect Pin. Please enter your pin."
+                  v.say attempt == 0 ? "Please enter your pin." : "Incorrect Pin. Please enter your pin."
                 end
               end
             end
@@ -43,23 +44,20 @@ class Caller < ActiveRecord::Base
 
   end
 
-  def callin(campaign, phone)
-    session = CallerSession.create(:caller => self, :campaign => campaign)
-    response = TwilioClient.instance.account.calls.create(
-        :from =>APP_NUMBER,
-        :to => phone,
-        :url => caller_ready_callers_campaign_url(:id=>campaign.id, :caller_sid => session.sid, :host => APP_HOST)
-    )
-    #raise response.inspect
-    session.update_attribute(:sid, response["TwilioResponse"]["Call"]["Sid"])
-    session
-  end
+def callin(campaign, phone)
+  session = CallerSession.create(:caller => self, :campaign => campaign)
+  response = TwilioClient.instance.account.calls.create(
+      :from =>APP_NUMBER,
+      :to => phone,
+      :url => caller_ready_callers_campaign_url(:id=>campaign.id, :caller_sid => session.sid, :host => Settings.host)
+  )
+  #raise response.inspect
+  session.update_attribute(:sid, response["TwilioResponse"]["Call"]["Sid"])
+  session
+end
 
-  def ask_for_campaign
+def phone
+  #required for the form field.
+end
 
-  end
-
-  def phone
-    #required for the form field.
-  end
 end

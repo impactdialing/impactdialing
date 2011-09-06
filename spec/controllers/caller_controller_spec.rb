@@ -39,4 +39,17 @@ describe CallerController do
 
   end
 
+  it "allocates a campaign to a caller calling in" do
+    caller = Factory(:caller)
+    login_as(caller)
+    pin = '1234'
+    campaign = Factory(:campaign, :campaign_id => pin)
+    session = Factory(:caller_session, :caller => caller, :campaign => nil)
+
+    post :assign_campaign, :session_id => session.id, :campaign_id => pin
+    assigns(:session).campaign.should == campaign
+  end
+
+
+
 end

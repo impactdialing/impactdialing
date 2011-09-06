@@ -41,6 +41,13 @@ class CallerController < ApplicationController
     end
   end
 
+  def assign_campaign
+    @campaign = Campaign.find_by_campaign_id(params[:campaign_id])
+    @session = CallerSession.find(params[:session_id])
+    @session.update_attributes(:campaign => @campaign)
+    render :nothing => true
+  end
+
   def campaign
     require "hpricot"
     require "open-uri"

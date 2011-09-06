@@ -27,13 +27,32 @@ describe CallerSession do
     voter.caller_session.should == session
   end
 
-  it "asks the caller for the campaign context" do
+  it "asks for the campaign context" do
     caller = Factory(:caller)
     session = Factory(:caller_session, :caller => caller)
-    session.ask_for_campaign(nil.to_i).should == Twilio::Verb.new do |v|
-      v.gather(:numDigits => 5, :timeout => 10, :action => assign_campaign_caller_url(caller, :host => Settings.host), :method => "POST") do
-          v.say "Please enter your campaign pin."
-        end
+    session.ask_for_campaign.should == Twilio::Verb.new do |v|
+      v.gather(:numDigits => 5, :timeout => 10, :action => assign_campaign_caller_url(session, :host => Settings.host, :attempt => 1), :method => "POST") do
+        v.say "Please enter your campaign id."
+      end
+    end.response
+  end
+
+  it "asks for campaign pin context again" do
+    caller = Factory(:caller)
+    session = Factory(:caller_session, :caller => caller)
+    session.ask_for_campaign(1).should == Twilio::Verb.new do |v|
+      v.gather(:numDigits => 5, :timeout => 10, :action => assign_campaign_caller_url(session, :host => Settings.host, :attempt => 2), :method => "POST") do
+        v.say "Incorrect campaign Id. Please enter your campaign Id."
+      end
+    end.response
+  end
+
+  it "hangs up on three incorrect campaign contexts" do
+    caller = Factory(:caller)
+    session = Factory(:caller_session, :caller => caller)
+    session.ask_for_campaign(3).should == Twilio::Verb.new do |v|
+      v.say "Incorrect campaign Id."
+      v.hangup
     end.response
   end
 end
