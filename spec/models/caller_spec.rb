@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe Caller do
-  include ActionController::UrlWriter
+  include Rails.application.routes.url_helpers
 
   let(:user) { Factory(:user) }
   it "restoring makes it active" do

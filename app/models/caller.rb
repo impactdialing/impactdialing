@@ -1,5 +1,4 @@
 class Caller < ActiveRecord::Base
-  include Rails.application.routes.url_helpers
   include Deletable
   validates_presence_of :name, :on => :create, :message => "can't be blank"
   validates_format_of :email, :allow_blank => true, :with => /^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i, :message => "Invalid email"
@@ -24,7 +23,7 @@ class Caller < ActiveRecord::Base
   end
 
   class << self
-    include ActionController::UrlWriter
+    include Rails.application.routes.url_helpers
 
     def ask_for_pin(attempt)
       xml = if attempt >= 2
