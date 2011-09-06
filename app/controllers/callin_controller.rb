@@ -4,20 +4,15 @@ class CallinController < ApplicationController
   after_filter :send_pusher
 
   def create
-    verb = Twilio::Verb.new do |v|
-      v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.host), :method => "POST") do
-        v.say "Please enter your pin"
-      end
-    end
-    render :xml => verb.response
+    render :xml => Caller.ask_for_pin
   end
 
   def identify
     #get the caller from the digits and push voter details.
     @caller = Caller.find_by_pin(params[:Digits])
     if @caller
-      @session = @caller.caller_sessions.create(:on_call => false, :available_for_call => false)
-      render :nothing => true
+      @session = @caller.caller_sessions.create(:on_call => false, :available_for_call => false, :session_key => generate_session_key)
+      render :xml => @session.ask_for_campaign
     else
       render :xml => Caller.ask_for_pin(params[:attempt].to_i)
     end

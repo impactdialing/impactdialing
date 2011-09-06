@@ -12,15 +12,6 @@ class CallerSession < ActiveRecord::Base
     self.tDuration/60.ceil
   end
 
-  def ask_for_campaign(attempt)
-    Twilio::Verb.new do |v|
-      v.gather(:numDigits => 5, :timeout => 10, :action => assign_campaign_caller_url(caller, :host => Settings.host), :method => "POST") do
-          v.say "Please enter your campaign pin."
-        end
-    end.response
-
-  end
-
     #  def end_call(account,auth,appurl)
   def end_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH, appurl=APP_URL)
     t = TwilioLib.new(account, auth)
@@ -34,6 +25,24 @@ class CallerSession < ActiveRecord::Base
   def call(voter)
     voter.update_attribute(:caller_session, self)
     voter.dial_predictive
+  end
+
+  def ask_for_campaign(attempt = 0)
+    Twilio::Verb.new do |v|
+      case attempt
+        when 0
+          v.gather(:numDigits => 5, :timeout => 10, :action => assign_campaign_caller_url(self, :host => Settings.host, :attempt => attempt + 1), :method => "POST") do
+            v.say "Please enter your campaign id."
+          end
+        when 1, 2
+          v.gather(:numDigits => 5, :timeout => 10, :action => assign_campaign_caller_url(self, :host => Settings.host, :attempt => attempt + 1), :method => "POST") do
+            v.say "Incorrect campaign Id. Please enter your campaign Id."
+          end
+        else
+          v.say "Incorrect campaign Id."
+          v.hangup
+      end
+    end.response
   end
 
 end
