@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe CallerSession do
-  include ActionController::UrlWriter
+  include Rails.application.routes.url_helpers
 
   it "lists active calls" do
     call1 = Factory(:caller_session, :on_call=> true)
