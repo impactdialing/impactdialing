@@ -11,7 +11,7 @@ class CallinController < ApplicationController
     #get the caller from the digits and push voter details.
     @caller = Caller.find_by_pin(params[:Digits])
     if @caller
-      @session = @caller.caller_sessions.create(:on_call => false, :available_for_call => false, :session_key => generate_session_key)
+      @session = @caller.caller_sessions.create(:on_call => false, :available_for_call => false, :session_key => generate_session_key, :sid => params[:CallSid])
       render :xml => @session.ask_for_campaign
     else
       render :xml => Caller.ask_for_pin(params[:attempt].to_i)

@@ -23,14 +23,16 @@ describe CallinController do
 
     it "creates a caller session on pin verification" do
       pin = rand.to_s[2..6]
+      call_sid = "asdflkjh"
       caller = Factory(:caller, :pin => pin)
       Caller.stub(:find_by_pin).and_return(caller)
-      post :identify, :Digits => pin
+      post :identify, :Digits => pin, :CallSid => call_sid
       session = assigns(:session)
       session.caller.should == caller
       session.available_for_call.should be_false
       session.on_call.should be_false
       session.session_key.should be
+      session.sid.should == call_sid
     end
 
     it "Prompts on incorrect pin" do

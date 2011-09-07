@@ -29,10 +29,12 @@ ImpactDialing::Application.routes.draw do
   resources :caller do
     collection { get :login }
     member { post :assign_campaign }
+    member { post :end_session }
   end
 
   post :receive_call, :to => 'callin#create'
   post :identify_caller, :to => 'callin#identify'
+  get :hold_call, :to => 'callin#hold'
 
   #broadcast
   scope 'broadcast' do

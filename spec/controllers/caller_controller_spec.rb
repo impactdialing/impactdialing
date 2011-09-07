@@ -41,13 +41,33 @@ describe CallerController do
 
   it "allocates a campaign to a caller calling in" do
     caller = Factory(:caller)
-    login_as(caller)
     pin = '1234'
     campaign = Factory(:campaign, :campaign_id => pin)
     session = Factory(:caller_session, :caller => caller, :campaign => nil)
+    CallerSession.stub(:find).and_return(session)
+    session.stub(:start).and_return(:nothing)
+
+    post :assign_campaign, :session_id => session, :campaign_id => pin
+    assigns(:session).campaign.should == campaign
+  end
+
+  it "creates a conference for a caller calling in" do
+    caller = Factory(:caller)
+    pin = '1234'
+    campaign = Factory(:campaign, :campaign_id => pin)
+    session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => 'key')
 
     post :assign_campaign, :session_id => session.id, :campaign_id => pin
-    assigns(:session).campaign.should == campaign
+    response.body.should == session.start
+  end
+
+  it "asks for campaign pin again when incorrect" do
+    caller = Factory(:caller)
+    campaign = Factory(:campaign)
+    session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => 'key')
+
+    post :assign_campaign, :session_id => session.id, :campaign_id => '1234', :attempt => 1
+    response.body.should == session.ask_for_campaign(1)
   end
 
 
