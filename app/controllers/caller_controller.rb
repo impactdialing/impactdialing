@@ -1,6 +1,6 @@
 class CallerController < ApplicationController
   layout "caller"
-  before_filter :check_login, :except=>[:login, :feedback]
+  before_filter :check_login, :except=>[:login, :feedback, :assign_campaign]
   before_filter :redirect_to_ssl
   before_filter :connect_to_twilio, :only => [:preview_dial]
 
@@ -42,10 +42,14 @@ class CallerController < ApplicationController
   end
 
   def assign_campaign
-    @campaign = Campaign.find_by_campaign_id(params[:campaign_id])
     @session = CallerSession.find(params[:session_id])
-    @session.update_attributes(:campaign => @campaign)
-    render :nothing => true
+    @campaign = Campaign.find_by_campaign_id(params[:campaign_id])
+    if @campaign
+      @session.update_attributes(:campaign => @campaign)
+      render :xml => @session.start
+    else
+      render :xml => @session.ask_for_campaign(params[:attempt])
+    end
   end
 
   def campaign
