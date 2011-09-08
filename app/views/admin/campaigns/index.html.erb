@@ -17,7 +17,7 @@
     </tr>
     <% @campaigns.each do |c| %>
       <tr class="<%= cycle("odd","even") %>">
-        <td><h3><a href="/client/campaign_view/<%= c.id %>"><%= c.name %></a></h3></td>
+        <td><h3><a href="<%= client_campaign_path(c) %>"><%= c.name %></a></h3></td>
         <td><%= c.user.email %></td>
         <td><%= c.group_id %></td>
         <td><%= c.created_at.strftime("%m/%d/%Y") %></td>

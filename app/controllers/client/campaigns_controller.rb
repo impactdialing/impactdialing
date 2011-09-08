@@ -24,12 +24,26 @@ module Client
       render 'campaigns/index'
     end
 
+    def destroy
+      if !@campaign.blank?
+        @campaign.update_attribute(:active, false)
+      end
+      flash_message(:notice, "Campaign deleted")
+      redirect_to :back
+    end
+
     def deleted
       render 'campaigns/deleted'
     end
 
-    def deleted_campaigns_path
-      client_deleted_campaigns_path
+    def setup_campaigns_paths
+      @deleted_campaigns_path = client_deleted_campaigns_path
+      @campaigns_path = client_campaigns_path
+    end
+
+    def create
+      campaign = @user.campaigns.create(:predictive_type => 'algorithm1', :script => @user.scripts.first, :callers => @user.callers.active)
+      redirect_to campaign
     end
   end
 end

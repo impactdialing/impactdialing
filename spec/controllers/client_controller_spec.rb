@@ -25,20 +25,6 @@ describe ClientController do
       end
     end
 
-    describe 'new campaign' do
-      it "creates a new campaign & redirects to campaign view" do
-        lambda {
-          get :campaign_new
-        }.should change(Campaign, :count).by(1)
-        response.should redirect_to "/client/campaign_view/#{Campaign.last.id}"
-      end
-
-      it "defaults the campaign's mode to predictive type" do
-        get :campaign_new
-        Campaign.last.predictive_type.should == 'algorithm1'
-      end
-    end
-
     describe "reports" do
       it "shows only manual campaigns" do
         campaign = Factory(:campaign, :user => user, :robo => false)
@@ -69,14 +55,12 @@ describe ClientController do
       assigns(:scripts).should == [manual_script]
     end
 
-    ['script', 'campaign',].each do |entity_type|
-      it "deleting a #{entity_type} redirects to the referer" do
-        request.env['HTTP_REFERER'] = 'http://referer/'
-        entity = Factory(entity_type, :user => user, :active => true)
-        post "#{entity_type}_delete", :id => entity.id
-        entity.reload.active.should be_false
-        response.should redirect_to :back
-      end
+    it "deleting a script redirects to the referer" do
+      request.env['HTTP_REFERER'] = 'http://referer/'
+      entity = Factory(:script, :user => user, :active => true)
+      post "script_delete", :id => entity.id
+      entity.reload.active.should be_false
+      response.should redirect_to :back
     end
 
     describe 'callers' do

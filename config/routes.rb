@@ -25,7 +25,6 @@ ImpactDialing::Application.routes.draw do
     end
   end
 
-
   resources :caller do
     collection { get :login }
     member { post :assign_campaign }
@@ -67,13 +66,10 @@ ImpactDialing::Application.routes.draw do
     match '/login', :to => 'broadcast#login', :as => 'broadcast_login'
   end
 
-  scope 'client' do
-    match 'campaign_new', :to => 'client#campaign_new', :as => 'campaign_new'
-    match 'campaign_view/:id', :to => 'client#campaign_view', :as => 'campaign_view'
-
+  namespace 'client' do
     ['campaigns', 'scripts', 'callers'].each do |type_plural|
-      get "/deleted_#{type_plural}", :to => "client/#{type_plural}#deleted", :as => "client_deleted_#{type_plural}"
-      resources type_plural, :only => [], :name_prefix => 'client' do
+      get "/deleted_#{type_plural}", :to => "#{type_plural}#deleted", :as => "deleted_#{type_plural}"
+      resources type_plural, :only => [:index, :show, :destroy, :create] do
         put 'restore', :to => "#{type_plural}#restore"
       end
     end

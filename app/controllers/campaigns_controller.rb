@@ -1,7 +1,8 @@
 class CampaignsController < ClientController
   layout 'v2'
   include DeletableController
-  before_filter :verify_campaign_ownership, :only => [:update, :show, :verify_callerid, :start, :stop, :dial_statistics]
+  before_filter :verify_campaign_ownership, :only => [:update, :show, :verify_callerid, :start, :stop, :dial_statistics, :destroy]
+  before_filter :setup_campaigns_paths, :only => [:index]
 
   def verify_campaign_ownership
     @campaign = Campaign.find(params[:id])
@@ -50,9 +51,9 @@ class CampaignsController < ClientController
   def verify_callerid
     @campaign.check_valid_caller!
     @campaign.save
-    ret = if @campaign.caller_id.present? and (not @campaign.caller_id_verified)
-            "<div class='msg msg-error'> <p><strong>Your Campaign Caller ID is not verified.</strong></p> </div>"
-          end
+    if @campaign.caller_id.present? and (not @campaign.caller_id_verified)
+      ret = "<div class='msg msg-error'> <p><strong>Your Campaign Caller ID is not verified.</strong></p> </div>".html_safe
+    end
     render :text => ret
   end
 
@@ -89,5 +90,10 @@ class CampaignsController < ClientController
 
   def active_robo_campaigns
     @user.campaigns.active.robo.paginate :page => params[:page], :order => 'id desc'
+  end
+
+  def setup_campaigns_paths
+    @deleted_campaigns_path = client_deleted_campaigns_path
+    @campaigns_path = campaigns_path
   end
 end
