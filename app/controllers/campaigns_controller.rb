@@ -37,8 +37,8 @@ class CampaignsController < ClientController
 
   def show
     @scripts = @user.scripts.robo.active
-    @callers  = @user.callers.active
-    @lists    = @campaign.voter_lists
+    @callers = @user.callers.active
+    @lists = @campaign.voter_lists
     @voters = @campaign.all_voters.active.paginate(:page => params[:page])
     if @campaign.caller_id.blank?
       flash_now(:warning, t(:caller_id_blank))
@@ -61,7 +61,7 @@ class CampaignsController < ClientController
   end
 
   def running_status
-    render :partial => "control_list", :locals => { :campaigns => active_robo_campaigns }
+    render :partial => "control_list", :locals => {:campaigns => active_robo_campaigns}
   end
 
   def start

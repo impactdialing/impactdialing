@@ -42,8 +42,8 @@ class CallerController < ApplicationController
   end
 
   def assign_campaign
-    @session = CallerSession.find(params[:session_id])
-    @campaign = Campaign.find_by_campaign_id(params[:campaign_id])
+    @session = CallerSession.find(params[:session])
+    @campaign = @session.caller.user.campaigns.find_by_campaign_id(params[:Digits])
     if @campaign
       @session.update_attributes(:campaign => @campaign)
       render :xml => @session.start

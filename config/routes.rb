@@ -73,9 +73,12 @@ ImpactDialing::Application.routes.draw do
 
     ['campaigns', 'scripts', 'callers'].each do |type_plural|
       get "/deleted_#{type_plural}", :to => "client/#{type_plural}#deleted", :as => "client_deleted_#{type_plural}"
-      resources type_plural, :only => [:index, :show], :name_prefix => 'client' do
+      resources type_plural, :only => [], :name_prefix => 'client' do
         put 'restore', :to => "#{type_plural}#restore"
       end
+    end
+    [:campaigns, :scripts].each do |type_plural|
+      resources type_plural, :only => [:index, :show], :name_prefix => 'client'
     end
   end
 
