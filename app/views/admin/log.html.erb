@@ -1,5 +1,5 @@
 <% if params[:id].blank? %>
-	<% form_tag do %>
+	<%= form_tag do %>
 		Enter call Sid:
   		<input type="textbox" name="id">
 		<input type="submit">
@@ -13,13 +13,13 @@
 					<tr>
 						<td><%= req.url[req.url.index("/callin"),999] %></td>
 						<td>
-							<% 
+							<%
 								begin
 									p=YAML.load(req.params )
 								rescue
 									p=req.params
 								end
-				
+
 							%>
 							<%if p.class==Hash %>
 								<% p.keys.each do |k| %>
@@ -35,7 +35,7 @@
 				</table>
 			</td>
 			<td valign="top">
-				
+
 				<% @attempts.each do |a| %>
 					<% colour = "%06x" % (rand * 0xffffff) %>
 					<table border="1">
@@ -48,13 +48,13 @@
 					<tr>
 						<td colspan="4">
 							<table>
-						
+
 								<% attemptreqs=Dump.find_all_by_guid(a.sid, :order=>"first_line") %>
 								<% attemptreqs.each do |areq| %>
 									<tr bgcolor="<%= colour %>">
 										<td><%= areq.url[areq.url.index("/callin"),999] %></td>
 										<td>
-											<% 
+											<%
 												begin
 													p=YAML.load(areq.params )
 												rescue

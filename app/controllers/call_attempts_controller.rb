@@ -5,12 +5,36 @@ class CallAttemptsController < ApplicationController
     call_response = CallResponse.log_response(call_attempt, robo_recording, params[:Digits])
     xml = call_attempt.next_recording(robo_recording, call_response)
 
-    #TWILIO_LOG.info "#{call_attempt.voter.Phone} : DTMF input received : #{ params[:Digits] } for recording : #{robo_recording.name}"
-    #TWILIO_LOG.info "Responding with : #{xml}"
+      #TWILIO_LOG.info "#{call_attempt.voter.Phone} : DTMF input received : #{ params[:Digits] } for recording : #{robo_recording.name}"
+      #TWILIO_LOG.info "Responding with : #{xml}"
 
     logger.info "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
     logger.info "[dialer] DTMF input received. call_attempt: #{params[:id]} keypad: #{params[:Digits]} Response: #{xml}"
     render :xml => xml
+  end
+
+  def connect
+    call_attempt = CallAttempt.find(params[:id])
+    response = case params[:DialStatus]
+                 when "answered-machine"
+                   call_attempt.play_recorded_message
+                 when "hangup-machine"
+                   call_attempt.voter.update_attributes(:status => CallAttempt::Status::HANGUP, :call_back => true)
+                   call_attempt.update_attributes(:status => CallAttempt::Status::HANGUP, :call_end => Time.now)
+                   call_attempt.hangup
+                 when "no-answer"
+                   call_attempt.voter.update_attributes(:status => CallAttempt::Status::NOANSWER, :call_back => true)
+                   call_attempt.update_attributes(:status => CallAttempt::Status::NOANSWER, :call_end => Time.now)
+                 when "busy"
+                   call_attempt.voter.update_attributes(:status => CallAttempt::Status::BUSY, :call_back => true)
+                   call_attempt.update_attributes(:status => CallAttempt::Status::BUSY, :call_end => Time.now)
+                 when "fail"
+                   call_attempt.voter.update_attributes(:status => CallAttempt::Status::FAILED, :call_back => true)
+                   call_attempt.update_attributes(:status => CallAttempt::Status::FAILED, :call_end => Time.now)
+                 else
+                   call_attempt.connect_to_caller(call_attempt.voter.caller_session)
+               end
+    render :xml => response
   end
 
   def update

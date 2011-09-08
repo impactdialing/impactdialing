@@ -22,7 +22,7 @@
         <td><%= c.active? ? '' : c.updated_at.strftime("%m/%d/%Y") %></td>
         <td>
           <% if !c.active? %>
-            <% form_tag(admin_caller_restore_path(c), :id => "restore-caller#{c.id}-form", :method => :put) do |f| %>
+            <%= form_tag(admin_caller_restore_path(c), :id => "restore-caller#{c.id}-form", :method => :put) do |f| %>
               <%= link_to 'Restore', 'javascript:void(0)', :onclick => "$('restore-caller#{c.id}-form').submit()" %>
             <% end %>
           <% end %>

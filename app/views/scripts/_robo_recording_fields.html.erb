@@ -28,7 +28,7 @@
         </tr>
       </table>
 
-      <% f.fields_for :recording_responses do |response_form| %>
+      <%= f.fields_for :recording_responses do |response_form| %>
           <%= render :partial=>"recording_response_fields", :locals => {:f => response_form} %>
       <% end %>
       </table>

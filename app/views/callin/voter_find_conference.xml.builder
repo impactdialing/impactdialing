@@ -4,4 +4,4 @@ xml.Response("version"=>"1.0") do |response|
     d.Conference("session#{@session.id}")
   end
 end
-RAILS_DEFAULT_LOGGER.debug(xml.target!) if DEBUG_TWIML
+Rails.logger.debug(xml.target!) if DEBUG_TWIML

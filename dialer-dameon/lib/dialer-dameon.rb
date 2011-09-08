@@ -1,7 +1,7 @@
 # Your starting point for daemon specific classes. This directory is
 # already included in your load path, so no need to specify it.
 require File.join(File.dirname(__FILE__), '../../', 'app/models/deletable.rb')
-Dir[File.join(File.dirname(__FILE__), '../../', 'app/models') + "**/*.rb"].each {|file| 
+Dir[File.join(File.dirname(__FILE__), '../../', 'app/models') + "**/*.rb"].each {|file|
       require file
       DaemonKit.logger.info "#{file}" if defined? DaemonKit
 #      include self.class.const_get(File.basename(file).gsub('.rb','').split("_").map{|ea| ea.capitalize}.to_s)
@@ -37,59 +37,7 @@ class Dialer
     APP_URL
   end
   def self.startcall(voter, campaign)
-    require "hpricot"
-    require "open-uri"
-    voter.status="Call in progress"
-    voter.save
-    t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-#    a=t.call("POST", "Calls", {'IfMachine'=>"Hangup", 'Caller' => APP_NUMBER, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}"})
-    if !campaign.caller_id.blank? && campaign.caller_id_verified
-      caller_num=campaign.caller_id
-    else
-      caller_num=APP_NUMBER
-    end
-    #DaemonKit.logger.info "APP_URL: #{APP_URL}"
-    c = CallAttempt.new
-    c.dialer_mode=campaign.predective_type
-    c.voter_id=voter.id
-    c.campaign_id=campaign.id
-    c.status="Call ready to dial"
-    c.save
-#    DaemonKit.logger.info caller_num
-    if campaign.predective_type.index("robo,")
-      a=t.call("POST", "Calls", {'Timeout'=>"15", 'IfMachine'=>'Hangup', 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/robo/#{campaign.predective_type.split(",").last}&campaign=#{campaign.id}&voter=#{voter.id}&attempt=#{c.id}"})
-    elsif campaign.predective_type=="preview"
-      a=t.call("POST", "Calls", {'Timeout'=>"20", 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}&attempt=#{c.id}"})
-    elsif campaign.use_answering
-      if campaign.use_recordings
-        a=t.call("POST", "Calls", {'Timeout'=>campaign.answer_detection_timeout, 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}&attempt=#{c.id}", 'IfMachine'=>'Continue'})
-      else
-        a=t.call("POST", "Calls", {'Timeout'=>campaign.answer_detection_timeout, 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}&attempt=#{c.id}", 'IfMachine'=>'Hangup'})
-      end
-    else
-      a=t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}&attempt=#{c.id}"})
-    end
-    require 'rubygems'
-    require 'hpricot'
-    DaemonKit.logger.info a
-    @doc = Hpricot::XML(a)
-    puts @doc if DaemonKit.env=="development"
-    c.sid=(@doc/"Sid").inner_html
-    c.status="Call in progress"
-    c.save
-    v = Voter.find(voter.id)
-    v.last_call_attempt_id=c.id
-    v.last_call_attempt_time=Time.now
-    v.save
-
-    # avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
-    # if !avail_campaign_hash.has_key?(campaign.id)
-    #   avail_campaign_hash[campaign.id] = {"callers"=>[],"calls"=>[c]}
-    # else
-    #   avail_campaign_hash[campaign.id]["calls"] << c
-    # end
-    # cache_set("avail_campaign_hash") {avail_campaign_hash}
-
+    voter.dial_predictive #booya
   end
 end
 
@@ -102,7 +50,7 @@ class TwilioLib
 
   def accountguid
   end
-  
+
   def initialize(accountguid=TWILIO_ACCOUNT, authtoken=TWILIO_AUTH, options = {})
     @server = DEFAULT_SERVER
     @port = DEFAULT_PORT
@@ -111,22 +59,17 @@ class TwilioLib
     @http_password = authtoken
   end
 
-  
+
   def call(http_method, service_method, params = {})
-    if service_method=="IncomingPhoneNumbers/Local" && ENV["RAILS_ENV"]=="development"  && !params.has_key?("SmsUrl")
-      http = Net::HTTP.new(@server, "5000")  
+    if service_method=="IncomingPhoneNumbers/Local" && Rails.env =="development"  && !params.has_key?("SmsUrl")
+      http = Net::HTTP.new(@server, "5000")
       http.use_ssl=false
     else
-      http = Net::HTTP.new(@server, @port)  
-      http.use_ssl=true  
+      http = Net::HTTP.new(@server, @port)
+      http.use_ssl=true
     end
 
-#    RAILS_DEFAULT_LOGGER.info "#{@root}#{service_method}"
-#    RAILS_DEFAULT_LOGGER.info "???#{service_method}???"
-    
-    #return 'err'    if service_method=="IncomingPhoneNumbers/Local" && (ENV["RAILS_ENV"]=="development" || ENV["RAILS_ENV"]=="dynamo_dev")
-       
-    if service_method=="IncomingPhoneNumbers/Local" && (ENV["RAILS_ENV"]=="development" || ENV["RAILS_ENV"]=="dynamo_dev") && !params.has_key?("SmsUrl")
+    if service_method=="IncomingPhoneNumbers/Local" && (Rails.env =="development" || Rails.env =="dynamo_dev") && !params.has_key?("SmsUrl")
       return '<?xml version="1.0" encoding="UTF-8"?>
       <TwilioResponse>
         <IncomingPhoneNumber>
@@ -143,21 +86,18 @@ class TwilioLib
       '
     else
       if http_method=="POST"
-        req = Net::HTTP::Post.new("#{@root}#{service_method}")    
+        req = Net::HTTP::Post.new("#{@root}#{service_method}")
       elsif http_method=="DELETE"
-        req = Net::HTTP::Delete.new("#{@root}#{service_method}")    
+        req = Net::HTTP::Delete.new("#{@root}#{service_method}")
       else
-        req = Net::HTTP::Get.new("#{@root}#{service_method}")    
+        req = Net::HTTP::Get.new("#{@root}#{service_method}")
       end
       req.basic_auth @http_user, @http_password
     end
-    #RAILS_DEFAULT_LOGGER.debug "#{@root}#{service_method}"
+    #Rails.logger.debug "#{@root}#{service_method}"
 
     req.set_form_data(params)
-#    RAILS_DEFAULT_LOGGER.info  params
-    response = http.start{http.request(req)}  
-    #RAILS_DEFAULT_LOGGER.info  response.body if ENV["RAILS_ENV"]=="development"
-#    RAILS_DEFAULT_LOGGER.info  response.body
+    response = http.start{http.request(req)}
     response.body
   end
 

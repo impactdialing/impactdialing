@@ -62,7 +62,11 @@ module ApplicationHelper
       fields = JSON.parse(script.voter_fields)
       fields.each do |field|
         #        logger.info "field: #{field}"
-        publish_hash[field] = voter.get_attribute(field)
+        if voter.has_attribute?(field)
+          publish_hash[field] = voter.get_attribute(field)
+        else
+          logger.info "FAMILY ERROR could not find #{field}  in #{voter.id}"
+        end
       end
     end
     publish_hash

@@ -1,3 +1,5 @@
+require "twilio"
+
 class TwilioController < ApplicationController
   include ::Twilio
   before_filter :retrieve_call_details

@@ -5,20 +5,21 @@ class Script < ActiveRecord::Base
   has_many :robo_recordings
   accepts_nested_attributes_for :robo_recordings, :allow_destroy => true
 
-  named_scope :active, {:conditions => {:active => 1}}
-
   default_scope :order => :name
 
-  named_scope :robo, :conditions => {:robo => true }
-  named_scope :manual, :conditions => {:robo => false }
+  scope :robo, :conditions => {:robo => true }
+  scope :manual, :conditions => {:robo => false }
+  scope :active, {:conditions => {:active => 1}}
+
+  after_find :set_result_set
 
   cattr_reader :per_page
   @@per_page = 25
 
-  def after_find
+  def set_result_set
     if self.result_set_1.blank?
       json={}
-      for i in 1..99 do
+      for i in 1..49 do
         json["keypad_#{i}"] = self.send("keypad_#{i}")
       end
       self.result_set_1 = json.to_json

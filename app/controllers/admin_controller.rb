@@ -177,7 +177,7 @@ Can we count on you to vote for such-and-such?"
 
     def cms
       @version = session[:cms_version]
-      @keys = Seo.find(:all).map{ |i| i.crmkey }.uniq
+      @keys = Seo.all.map{ |i| i.crmkey }.uniq
       @keys.delete_if {|x| x == nil}
       @keys.sort!
     end
@@ -243,13 +243,13 @@ Can we count on you to vote for such-and-such?"
           end
         end
       end
-      @versions = Seo.find(:all).map{ |i| i.version }.uniq
+      @versions = Seo.all.map{ |i| i.version }.uniq
     end
 
     def robo_log_parse
       counter = 1
       out=[]
-      f = File.new(File.join(RAILS_ROOT, 'result_combined.txt'))
+      f = File.new(Rails.root.join('result_combined.txt'))
       while (line = f.gets)
         hash = eval(line.gsub("Parameters:", "").strip)
         puts "#{counter}: #{hash["attempt"]}"
@@ -275,6 +275,54 @@ Can we count on you to vote for such-and-such?"
         redirect_to :action=>"cms"
       end
     end
+    
+    def charge
+      @user=User.find(params[:id])
+      @account=Account.find_by_user_id(params[:id])
+      if @account.nil?
+        render :text=>"User has not entered credit card info"
+        return
+      end
+      
+      if request.post?
+        @success = charge_account(@account, params[:tocharge].to_f) 
+      end
+
+    end
+
+
+
+    def charge_account(account, amount) 
+      
+       creditcard = ActiveMerchant::Billing::CreditCard.new(
+         :number     => account.decrypt_cc,
+         :month      => account.expires_month,
+         :year       => account.expires_year,
+         :type       => account.cardtype,
+         :first_name => account.first_name,
+         :last_name  => account.last_name
+       )
+
+       billing_address = {
+           :name => "#{@user.fname} #{@user.lname}",
+           :address1 => @account.address1 ,
+           :zip =>@account.zip,
+           :city     => @account.city,
+           :state    => @account.state,
+           :country  => 'US'
+         }
+       options = {:address => {}, :address1 => billing_address, :billing_address => billing_address, :ip=>"127.0.0.1", :order_id=>""}
+       @response = BILLING_GW.authorize(amount.to_f*100, creditcard,options)
+         
+       if @response.message == 'APPROVED' 
+         BILLING_GW.capture(@amount,  @response.authorization) 
+         true
+      else 
+        false
+      end 
+
+    end
+    
     def log
       if params[:id]
         @reqs=Dump.find_all_by_guid(params[:id], :order=>"first_line")

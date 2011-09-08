@@ -3,9 +3,9 @@
 <b>Editing  <%= @seo.crmkey %>
 	<br/>
 	<b>Version: <% if @version.blank? %>Live<% else %><%= @version %><% end %> (<a href="/admin/pick_version">edit</a>)</b>
-	
+
 	</td>
-<% form_for :seo, @seo do |f| -%>
+<%= form_for :seo, @seo do |f| -%>
 	<table>
 		<tr>
 			<td>content:</td>
