@@ -31,7 +31,7 @@ describe CallerSession do
     caller = Factory(:caller)
     session = Factory(:caller_session, :caller => caller)
     session.ask_for_campaign.should == Twilio::Verb.new do |v|
-      v.gather(:numDigits => 5, :timeout => 10, :action => assign_campaign_caller_url(session, :host => Settings.host, :attempt => 1), :method => "POST") do
+      v.gather(:numDigits => 5, :timeout => 10, :action => assign_campaign_caller_url(session.caller , :session => session, :host => Settings.host, :attempt => 1), :method => "POST") do
         v.say "Please enter your campaign id."
       end
     end.response
@@ -41,7 +41,7 @@ describe CallerSession do
     caller = Factory(:caller)
     session = Factory(:caller_session, :caller => caller)
     session.ask_for_campaign(1).should == Twilio::Verb.new do |v|
-      v.gather(:numDigits => 5, :timeout => 10, :action => assign_campaign_caller_url(session, :host => Settings.host, :attempt => 2), :method => "POST") do
+      v.gather(:numDigits => 5, :timeout => 10, :action => assign_campaign_caller_url(session.caller , :session => session, :host => Settings.host, :attempt => 2), :method => "POST") do
         v.say "Incorrect campaign Id. Please enter your campaign Id."
       end
     end.response

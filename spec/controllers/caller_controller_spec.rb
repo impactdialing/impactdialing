@@ -40,33 +40,46 @@ describe CallerController do
   end
 
   it "allocates a campaign to a caller calling in" do
-    caller = Factory(:caller)
+    user = Factory(:user)
+    caller = Factory(:caller, :user => user)
     pin = '1234'
-    campaign = Factory(:campaign, :campaign_id => pin)
+    campaign = Factory(:campaign, :campaign_id => pin, :user => user)
     session = Factory(:caller_session, :caller => caller, :campaign => nil)
     CallerSession.stub(:find).and_return(session)
     session.stub(:start).and_return(:nothing)
 
-    post :assign_campaign, :session_id => session, :campaign_id => pin
+    post :assign_campaign, :session_id => session, :Digits => pin
     assigns(:session).campaign.should == campaign
   end
 
   it "creates a conference for a caller calling in" do
-    caller = Factory(:caller)
+    user = Factory(:user)
+    caller = Factory(:caller, :user => user)
     pin = '1234'
-    campaign = Factory(:campaign, :campaign_id => pin)
+    campaign = Factory(:campaign, :campaign_id => pin, :user => user)
     session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => 'key')
 
-    post :assign_campaign, :session_id => session.id, :campaign_id => pin
+    post :assign_campaign, :session => session.id, :Digits => pin
     response.body.should == session.start
   end
 
   it "asks for campaign pin again when incorrect" do
-    caller = Factory(:caller)
-    campaign = Factory(:campaign)
+    user = Factory(:user)
+    caller = Factory(:caller, :user => user)
+    campaign = Factory(:campaign, :user => user)
     session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => 'key')
 
-    post :assign_campaign, :session_id => session.id, :campaign_id => '1234', :attempt => 1
+    post :assign_campaign, :session => session.id, :Digits => '1234', :attempt => 1
+    response.body.should == session.ask_for_campaign(1)
+  end
+
+  it "does not allow a caller from one user to log onto a campaign of another user" do
+    user = Factory(:user)
+    caller = Factory(:caller, :user => user)
+    cpin = '1234'
+    Factory(:campaign, :user => Factory(:user), :campaign_id => cpin)
+    session = Factory(:caller_session, :caller => caller, :session_key => 'key')
+    post :assign_campaign, :session => session.id, :Digits => '1234', :attempt => 1
     response.body.should == session.ask_for_campaign(1)
   end
 
