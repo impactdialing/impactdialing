@@ -33,8 +33,13 @@ $(document).ready(function() {
     $('#statusdiv').html("Status: Reconnecting to your session");
     $("#actiondiv").html(ajax_load);
     <% else %>
-    $('#statusdiv').html("Status: Dialing your phone");
-	logit("dialing phone");
+	if (typeof(Twilio) != "undefined"){
+    	$('#statusdiv').html("Status: Connecting Browser phone");
+		logit("Connecting Browser phone");
+	} else {
+    	$('#statusdiv').html("Status: Dialing your phone");
+		logit("dialing phone");
+	}
     <% end %>
     $("#actiondiv").html(ajax_load);
     $('#caller_buttons').effect("highlight", {"color":"#3c5b7b"}, 2000);
