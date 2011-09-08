@@ -44,4 +44,24 @@ describe Client::CampaignsController do
       response.should be_ok
     end
   end
+
+  it "deletes campaigns" do
+    request.env['HTTP_REFERER'] = 'http://referer'
+    campaign = Factory(:campaign, :user => user, :active => true, :robo => false)
+    delete :destroy, :id => campaign.id
+    campaign.reload.should_not be_active
+    response.should redirect_to 'http://referer'
+  end
+
+  it "creates a new campaign" do
+    script = Factory(:script, :user => user)
+    callers = 3.times.map{Factory(:caller, :user => user)}
+    lambda {
+      post :create
+    }.should change {user.reload.campaigns.size} .by(1)
+    campaign = user.campaigns.last
+    campaign.predictive_type.should == 'algorithm1'
+    campaign.script.should == script
+    campaign.callers.should == callers
+  end
 end

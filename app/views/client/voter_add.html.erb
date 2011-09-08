@@ -23,7 +23,7 @@
 	</div>
 
     <div class="buttons">
-      <input type="button" class="button" value="cancel" onclick="document.location.href='/client/campaign_view/<%= @campaign.id %>';"/>
+      <input type="button" class="button" value="cancel" onclick="document.location.href='<%= client_campaign_path(@campaign) %>';"/>
 	<%= f.submit "submit", :disable_with => 'submiting...', :class=>"button" %>
     </div>
     <!-- End Form Buttons -->

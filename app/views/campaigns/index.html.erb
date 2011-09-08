@@ -24,5 +24,9 @@
   <p><%= page_entries_info @campaigns %> <%= will_paginate @campaigns %></p>
 
 <% end %>
-<p class="actions"><%= link_to "Add a new campaign", "#", :method => :post, :class => "action primary", :id => "add_campaign" %></p>
+<p class="actions">
+  <%= form_tag @campaigns_path, :id => 'campaign_create_form' do %>
+    <%= link_to "Add a new campaign", 'javascript:void(0)', :class => "action primary", :onclick => "$('#campaign_create_form').submit()" %>
+  <% end %>
+</p>
 <p class="actions"><%= link_to 'View deleted campaigns', @deleted_campaigns_path, :class => 'action secondary' %></p>
