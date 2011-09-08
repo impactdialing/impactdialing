@@ -1,3 +1,5 @@
+require "lib/twilio_lib"
+
 class Campaign < ActiveRecord::Base
   include Deletable
   require "fastercsv"
@@ -11,19 +13,25 @@ class Campaign < ActiveRecord::Base
   belongs_to :user
   belongs_to :recording
 
-  named_scope :robo, :conditions => {:robo => true }
-  named_scope :manual, :conditions => {:robo => false }
-  named_scope :for_user, lambda {|user| { :conditions => ["user_id = ?", user.id] }}
-  named_scope :with_running_caller_sessions, {
+  scope :robo, :conditions => {:robo => true }
+  scope :manual, :conditions => {:robo => false }
+  scope :for_user, lambda {|user| { :conditions => ["user_id = ?", user.id] }}
+  scope :with_running_caller_sessions, {
       :select     => "distinct campaigns.*",
       :joins      => "inner join caller_sessions on (caller_sessions.campaign_id = campaigns.id)",
       :conditions => {"caller_sessions.on_call" => true}
   }
+  scope :using_web_ui, :conditions => {:use_web_ui => true}
+
+  before_create :create_uniq_pin
 
   cattr_reader :per_page
   @@per_page = 25
 
-  def before_validation_on_create
+  before_validation(:set_untitled_name, :on => :create)
+  before_save :before_save_campaign
+
+  def set_untitled_name
     self.name = "Untitled #{user.campaigns.count + 1}" if self.name.blank?
   end
 
@@ -57,7 +65,7 @@ class Campaign < ActiveRecord::Base
     true
   end
 
-  def before_create
+  def create_uniq_pin
     uniq_pin=0
     while uniq_pin==0 do
       pin = rand.to_s[2..6]
@@ -67,7 +75,7 @@ class Campaign < ActiveRecord::Base
     self.group_id = uniq_pin
   end
 
-  def before_save
+  def before_save_campaign
     self.check_valid_caller!
     true
   end
@@ -108,16 +116,16 @@ class Campaign < ActiveRecord::Base
     in_progress
   end
 
-  def calls_in_ending_window(period=10,predective_type="longest")
+  def calls_in_ending_window(period=10,predictive_type="longest")
     #calls predicted to end soon
     stats = self.call_stats(period)
-    if predective_type=="longest"
+    if predictive_type=="longest"
       window = stats[:biggest_long]
     else
       window = stats[:avg_long]
     end
     window = window - 10 if window > 10
-#   RAILS_DEFAULT_LOGGER.debug("window: #{window}")
+#   Rails.logger.debug("window: #{window}")
     ending = CallAttempt.all(:conditions=>"
     campaign_id=#{self.id}
     and status like'Connected to caller%'
@@ -236,7 +244,7 @@ class Campaign < ActiveRecord::Base
 		#final calcs
 		stats[:short_new_call_caller_threshold] = 1/(stats[:total_short].to_f / stats[:total_long].to_f).to_f
 		stats[:short_new_call_time_threshold] = ( stats[:avg_short] + (2*stats[:short_deviation]) ) - ( stats[:avg_ring_time] - (2*stats[:avg_ring_time_deviation]) )
-		if self.predective_type=="algorithm1"
+		if self.predictive_type=="algorithm1"
 		  stats[:long_new_call_time_threshold] = ( stats[:avg_long] + (2*stats[:long_deviation]))- ( stats[:avg_ring_time] - (2*stats[:avg_ring_time_deviation]))
 	  else
 		  stats[:long_new_call_time_threshold] = stats[:avg_duration]
@@ -245,7 +253,6 @@ class Campaign < ActiveRecord::Base
     # bimodal pacing algorithm:
     # when stats[:short_new_call_caller_threshold] callers are on calls of length less than stats[:short_time]s, dial  stats[:dials_needed] lines at stats[:short_new_call_time_threshold]) seconds after the last call began.
     # if a call passes length 15s, dial stats[:dials_needed] lines at stats[:short_new_long_time_threshold]sinto the call.
-
 
 		stats
   end
@@ -282,7 +289,7 @@ class Campaign < ActiveRecord::Base
       mean = values.inject(:+) / count.to_f
       stddev = Math.sqrt( values.inject(0) { |sum, e| sum + (e - mean) ** 2 } / count.to_f )
     rescue
-#      RAILS_DEFAULT_LOGGER.debug("deviation error: #{values.inspect}")
+#      Rails.logger.debug("deviation error: #{values.inspect}")
       puts "deviation error: #{values.inspect}"
       return 0
     end

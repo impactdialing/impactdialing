@@ -1,5 +1,5 @@
 class RoboRecording < ActiveRecord::Base
-  include ActionController::UrlWriter
+  include Rails.application.routes.url_helpers
 
   has_attached_file :file,
                     :storage => :s3,
@@ -18,7 +18,7 @@ class RoboRecording < ActiveRecord::Base
   end
 
   def next
-    self.script.robo_recordings.find(:first, :conditions => ["id > ?", self.id])
+    script.robo_recordings.where("id > #{self.id}").first
   end
 
 
@@ -28,7 +28,7 @@ class RoboRecording < ActiveRecord::Base
 
   def twilio_xml(call_attempt)
     ivr_url = call_attempts_url(:host => Settings.host, :id => call_attempt.id, :robo_recording_id => self.id)
-    self.recording_responses.count > 0 ? ivr_prompt(ivr_url) : play_message(call_attempt)
+    recording_responses.count > 0 ? ivr_prompt(ivr_url) : play_message(call_attempt)
   end
 
   def hangup

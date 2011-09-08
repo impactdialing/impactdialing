@@ -1,25 +1,17 @@
 class CallerController < ApplicationController
   layout "caller"
-  before_filter :check_login, :except=>[:login,:feedback]
+  before_filter :check_login, :except=>[:login, :feedback]
   before_filter :redirect_to_ssl
+  before_filter :connect_to_twilio, :only => [:preview_dial]
 
   def index
-    if request.post?
-      if params[:campaign_id].blank?
-        flash_now(:error, "Please select a campaign")
-      else
-        redirect_to :action=>"campaign", :id=>params[:campaign_id]
-        return
-      end
-    else
-      @campaigns = @caller.campaigns.active
-    end
+    @campaigns = @caller.campaigns.active.collect{|c| c if c.use_web_ui? }
   end
 
 
   def check_login
     if session[:caller].blank?
-      redirect_to :action=>"login"
+      redirect_to caller_login_path
       return
     end
     begin
@@ -39,7 +31,7 @@ class CallerController < ApplicationController
     @title="Login to Impact Dialing"
 
     if !params[:email].blank?
-      @caller = Caller.find_by_email_and_password(params[:email],params[:password])
+      @caller = Caller.find_by_email_and_password(params[:email], params[:password])
       if @caller.blank?
         flash_now(:error, "Invalid Login")
       else
@@ -65,7 +57,7 @@ class CallerController < ApplicationController
     end
 
     @session = CallerSession.find_by_session_key(params[:key]) if !params[:key].blank? #use for debug
-    @on_call = CallerSession.find_by_caller_id_and_on_call_and_campaign_id(@caller.id,true, @campaign.id)
+    @on_call = CallerSession.find_by_caller_id_and_on_call_and_campaign_id(@caller.id, true, @campaign.id)
     @key = @on_call.session_key if @on_call!=nil
     @session = @on_call if @on_call!=nil
 
@@ -82,7 +74,7 @@ class CallerController < ApplicationController
 
         if params[:client]=="0"
           t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-          a=t.call("POST", "Calls", {'Caller' => APP_NUMBER, 'Called' => params[:numtocall], 'Url'=>"#{APP_URL}/callin/get_ready?campaign=#{params[:id]}&session=#{@session.id}&Digits=*"})
+          a=t.call("POST", "Calls", {'Caller' => APP_NUMBER, 'Called' => params[:numtocall], 'Url'=>"#{APP_URL}/callin/get_ready?campaign=#{params[:id]}&session=#{@session.id}"})
           @doc = Hpricot::XML(a)
           @session.sid=(@doc/"Sid").inner_html
           @session.save
@@ -98,24 +90,24 @@ class CallerController < ApplicationController
     end
 
   end
-  
+
   def jspush
     response.headers["Content-Type"] = 'text/javascript'
     @start_action_div_contents = '
     Enter your phone number:
-    		<input type="text" name="numtocall" id="numtocall" placeholder="Type your phone number here"> 
-    		<p> 
-    			<div class="buttons"> 
-    				<button type="submit">Start taking calls</button> 
-    			</div> 
+    		<input type="text" name="numtocall" id="numtocall" placeholder="Type your phone number here">
+    		<p>
+    			<div class="buttons">
+    				<button type="submit">Start taking calls</button>
+    			</div>
 
-    			<p><input type="radio" name="client" value="0" checked onclick="$(\'#numtocall\').show();"> Call my Phone</p> 
-    			<p><input type="radio" name="client" value="1" onclick="$(\'#numtocall\').hide(\'slide\', { direction: \'up\' }, 400);"> Use Browser Phone</p> 
+    			<p><input type="radio" name="client" value="0" checked onclick="$(\'#numtocall\').show();"> Call my Phone</p>
+    			<p><input type="radio" name="client" value="1" onclick="$(\'#numtocall\').hide(\'slide\', { direction: \'up\' }, 400);"> Use Browser Phone</p>
 
     		</p>
     '
     @session = CallerSession.find_by_session_key(params[:id])
-    @on_call = CallerSession.find_by_session_key_and_on_call(params[:id],true)
+    @on_call = CallerSession.find_by_session_key_and_on_call(params[:id], true)
     @campaign=@session.campaign
     respond_to do |format|
       format.js
@@ -138,12 +130,12 @@ class CallerController < ApplicationController
     a=t.call("POST", "Calls/#{session.sid}", {'CurrentUrl'=>"#{APP_URL}/callin/start_conference?session=#{session.id}&campaign=#{session.campaign_id}"})
 
     #update rt
-    if Campaign.find(session.campaign_id).predective_type=="preview"
-      send_rt(params[:id],'waiting','preview')
+    if Campaign.find(session.campaign_id).predictive_type=="preview"
+      send_rt(params[:id], 'waiting', 'preview')
     else
-      send_rt(params[:id],'waiting','ok')
+      send_rt(params[:id], 'waiting', 'ok')
     end
-    render :text=>  "var x='ok';"
+    render :text=> "var x='ok';"
   end
 
 
@@ -164,19 +156,19 @@ class CallerController < ApplicationController
     a=t.call("POST", "Calls/#{session.sid}", {'CurrentUrl'=>"#{APP_URL}/callin/callerEndCall?session=#{session.id}"})
 
     #client new
-    
+
     if session.caller_number=="client"
       session.endtime=Time.now
       session.available_for_call=false
       session.on_call=false
       session.save
 
-      send_rt(session.session_key,'hangup','ok')
+      send_rt(session.session_key, 'hangup', 'ok')
     end
 
     #update rt
     #send_rt(params[:id],'hangup','ok') #this done in callerEndCall
-    render :text=>  "var x='ok';"
+    render :text=> "var x='ok';"
     return
   end
 
@@ -186,7 +178,7 @@ class CallerController < ApplicationController
     attempt = CallAttempt.find(params[:attempt])
     t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
     a=t.call("POST", "Calls/#{attempt.sid}", {'CurrentUrl'=>"#{APP_URL}/callin/voterEndCall?attempt=#{attempt.id}"})
-    render :text=>  "var x='ok';"
+    render :text=> "var x='ok';"
   end
 
   def submit_result
@@ -207,10 +199,10 @@ class CallerController < ApplicationController
     #new style results
     result_json={}
     @script.result_sets_used.each do |r|
-      this_result_set = JSON.parse(eval("@script.result_set_#{r}" ))
-      thisKeypadval=eval("params[:disposition#{r}]" )
+      this_result_set = JSON.parse(eval("@script.result_set_#{r}"))
+      thisKeypadval=eval("params[:disposition#{r}]")
       this_result_text=this_result_set["keypad_#{thisKeypadval}"]
-      result_json["result_#{r}"]=[this_result_text,thisKeypadval]
+      result_json["result_#{r}"]=[this_result_text, thisKeypadval]
       @clean_digit=thisKeypadval if @clean_digit.blank?
       @clean_response=this_result_text if @clean_response==nil
 #      logger.info "!!!@clean_response=#{@clean_response}!!!"
@@ -223,7 +215,7 @@ class CallerController < ApplicationController
       end
     end
     @script.notes_used.each do |r|
-      thisResult=eval("params[:note#{r}]" )
+      thisResult=eval("params[:note#{r}]")
       result_json["note_#{r}"]=[thisResult]
     end
     if @session.voter_in_progress!=nil
@@ -251,13 +243,13 @@ class CallerController < ApplicationController
       t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
       a=t.call("POST", "Calls/#{@session.sid}", {'CurrentUrl'=>"#{APP_URL}/callin/start_conference?session=#{@session.id}&campaign=#{@campaign.id}"})
 
-      if @campaign.predective_type=="preview"
-        send_rt(params[:key],'waiting','preview')
+      if @campaign.predictive_type=="preview"
+        send_rt(params[:key], 'waiting', 'preview')
       else
-        send_rt(params[:key],'waiting','ok')
+        send_rt(params[:key], 'waiting', 'ok')
       end
 
-      render :text=>  "var x='ok';"
+      render :text=> "var x='ok';"
     end
   end
 
@@ -274,40 +266,44 @@ class CallerController < ApplicationController
   def preview_choose
     @session = CallerSession.find_by_session_key(params[:key])
     @campaign = @session.campaign
-    @voters = @campaign.voters("not called",true,25)
+    @voters = @campaign.voters("not called", true, 25)
     render :layout=>false
   end
 
   def reconnect_rt
     send_rt(params[:key], params[:k], params[:v])
-    render :text=>  "var x='ok';"
+    render :text=> "var x='ok';"
   end
 
   def preview_dial
     @session = CallerSession.find_by_session_key(params[:key])
     @campaign = @session.campaign
     @voter = Voter.find_by_campaign_id_and_id(@campaign.id, params[:voter_id])
-    @voter.call_and_connect_to_session(@session)
-    send_rt(params[:key],'waiting','preview_dialing')
-    render :text=>  "var x='ok';"
+    @session.call(@voter)
+    send_rt(params[:key], 'waiting', 'preview_dialing')
+    render :text=> "var x='ok';"
+  end
+
+  def connect_to_twilio
+    Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
   end
 
   def dpoll
     response.headers["Content-Type"] = 'text/javascript'
 
     @on_call = CallerSession.find_by_session_key(params[:key])
-    if(@on_call==nil || @on_call.on_call==false)
+    if (@on_call==nil || @on_call.on_call==false)
       #hungup?  the view will reload the page in this case to reset the ui
     else
       @campaign = @on_call.campaign
     end
     respond_to do |format|
-        format.js
+      format.js
     end
   end
 
   def feedback
-    Postoffice.deliver_feedback(params[:issue])
-    render :text=>  "var x='ok';"
+    Postoffice.feedback(params[:issue]).deliver
+    render :text=> "var x='ok';"
   end
 end

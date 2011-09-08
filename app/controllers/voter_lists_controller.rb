@@ -19,7 +19,7 @@ class VoterListsController < ClientController
     save_csv_filename_to_session(saved_filename)
 
     @separator = separator_from_file_extension(uploaded_file.original_filename)
-    @csv_column_headers = FasterCSV.parse(uploaded_file.readline, :col_sep => @separator).first
+    @csv_column_headers = FasterCSV.parse(uploaded_file.readline, :col_sep => @separator).first.compact
 
     render "column_mapping", :layout => @layout
   end
@@ -108,7 +108,7 @@ class VoterListsController < ClientController
       @campaign_path = campaign_path(@campaign)
     else
       @layout = 'client'
-      @campaign_path = campaign_view_path(@campaign)
+      @campaign_path = client_campaign_view_path(@campaign)
     end
   end
 end

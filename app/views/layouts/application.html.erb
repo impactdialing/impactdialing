@@ -5,7 +5,7 @@
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
 <link rel="stylesheet" href="/css/style.css" type="text/css" media="all" />
 <%= javascript_include_tag :defaults %>
-<%= unobtrusive_datepicker_includes %>
+<%= unobtrusive_datepicker_includes.html_safe %>
 <%= stylesheet_link_tag "application" %>
 <%= yield :head %>
 </head>
@@ -17,11 +17,11 @@
     <div id="top">
 		<img src="/images/logo.png" style="position:relative; left:-67px;">
       <h1><a href="/"><img src="/images/logo_text.png" style="position:absolute;"></a></h1>
-      <div id="top-navigation"> 
+      <div id="top-navigation">
 	<% if !session[:user].blank? && @user!=nil %>
 	Welcome <strong><%= @user.fname %></strong>
-	<!-- <span>|</span> <a href="#">Help</a> <span>|</span> <a href="#"> Settings</a> --> <span>|</span> <a href="/client/user_add">My Account</a>  <span>|</span> <a href="/client/logout">Log out</a> 
-	<% end %> 
+	<!-- <span>|</span> <a href="#">Help</a> <span>|</span> <a href="#"> Settings</a> --> <span>|</span> <a href="/client/user_add">My Account</a>  <span>|</span> <a href="/client/logout">Log out</a>
+	<% end %>
 	</div>
 
     </div>
@@ -45,10 +45,10 @@
   <div class="shell">
 
     <%= render :partial => "shared/flash_messages", :locals => {:display => [:error, :notice]} %>
-    
+
     <br />
     <!-- Main -->
-    <div id="main" <% if @actionName=="campaign_view" %>style="background-color:white; -moz-border-radius: 20px;  	    -webkit-border-radius: 20px;  padding:14px;	border:1px solid #b0722f;<% end %>   "> 
+    <div id="main" <% if @actionName=="campaign_view" %>style="background-color:white; -moz-border-radius: 20px;  	    -webkit-border-radius: 20px;  padding:14px;	border:1px solid #b0722f;<% end %>   ">
       <div class="cl">&nbsp;</div>
       <!-- Content -->
       <div id="content">
@@ -65,7 +65,7 @@
 			<td width="40">&nbsp;</td>
 			<td valign="top">
 					<%= render :partial => 'shared/boxtop', :locals=>{:title=>"Login"} %>
-					<% form_tag("/client/login", :id=>"loginForm") do |f| %>
+					<%= form_tag("/client/login", :id=>"loginForm") do |f| %>
 
 				  <div class="table not">
 				    <table  border="0" cellspacing="0" cellpadding="0">
@@ -89,7 +89,7 @@
 				      </tr>
 					</table>
 					<% end %>
-				</div>			
+				</div>
 				<br/>
 				<%= render :partial => 'shared/boxtop', :locals=>{:title=>"Join"} %>
 				<div style="background-color:#fff">

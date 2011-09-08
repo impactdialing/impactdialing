@@ -21,5 +21,6 @@ end
 
 #begin hold time counter
 @session.hold_time_start=Time.now
+@session.available_for_call=true
 @session.save
-RAILS_DEFAULT_LOGGER.debug(xml.target!) if DEBUG_TWIML
+Rails.logger.debug(xml.target!) if DEBUG_TWIML

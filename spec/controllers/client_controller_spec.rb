@@ -3,11 +3,6 @@ require "spec_helper"
 describe ClientController do
 
   describe "when not logged in" do
-    it "redirects to the login page" do
-      get "/client"
-      response.should redirect_to "/client/login"
-    end
-
     it "creates a new user with the appropriate domain" do
       request.stub!(:domain).and_return('domain.com')
       lambda {
@@ -40,7 +35,7 @@ describe ClientController do
 
       it "defaults the campaign's mode to predictive type" do
         get :campaign_new
-        Campaign.last.predective_type.should == 'algorithm1'
+        Campaign.last.predictive_type.should == 'algorithm1'
       end
     end
 
@@ -56,14 +51,12 @@ describe ClientController do
     end
 
     describe "reports" do
-
       it "shows only manual campaigns" do
         campaign = Factory(:campaign, :user => user, :robo => false)
         Factory(:campaign, :user => user, :robo => true)
         get :reports
         assigns(:campaigns).should == [campaign]
       end
-
     end
 
     describe "fields" do
@@ -106,7 +99,8 @@ describe ClientController do
     end
 
     describe 'callers' do
-      integrate_views
+      render_views
+
       it "shows" do
         get :callers
         response.code.should == '200'

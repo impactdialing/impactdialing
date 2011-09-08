@@ -6,21 +6,25 @@ class ApplicationController < ActionController::Base
   protect_from_forgery # See ActionController::RequestForgeryProtection for details
   before_filter :controllerName#, :preload_models
   # Scrub sensitive parameters from your log
-  filter_parameter_logging :password, :card_number, :card_verification, :cc, :code
   helper_method :phone_format, :phone_number_valid
 
   def redirect_to_ssl
-    return true if local_request? || RAILS_ENV == 'test' || RAILS_ENV == 'development' || RAILS_ENV == 'staging' || action_name=="monitor" || request.domain.index("amazonaws")
+    return true if Rails.env == 'development' || testing? || Rails.env == 'staging' || action_name=="monitor" || request.domain.index("amazonaws")
+    return true if ssl?
     @cont = controller_name
     @act = action_name
-    if controller_name=="caller" && !ssl?
+    flash.keep
+    if controller_name=="caller"
       redirect_to "https://caller.#{request.domain}/#{@cont}/#{@act}/#{params[:id]}"
-      flash.keep
-    elsif !ssl?
+    elsif controller_name == 'broadcast'
+      redirect_to "https://broadcast.#{request.domain}#{request.path}"
+    else
       redirect_to "https://admin.#{request.domain}/#{@cont}/#{@act}/#{params[:id]}"
-      flash.keep
     end
-    return true
+  end
+
+  def testing?
+    Rails.env == 'test'
   end
 
   def ssl?
@@ -55,6 +59,10 @@ class ApplicationController < ActionController::Base
       warning= "Before you can make calls, you need to verify a credit card number that we can bill. Until then, you can try out as much as you like, except for actually calling. #{billing_link(self.active_layout.instance_variable_get(:@template_path))} "
     end
     warning
+  end
+
+  def active_layout
+    send(:_layout)
   end
 
   def billing_link(layout)
@@ -102,14 +110,14 @@ class ApplicationController < ActionController::Base
   def cache_set(key)
     output = yield
     if CACHE.get(key)==nil
-       CACHE.add(key, output)
-     else
-       CACHE.set(key, output)
-     end
+      CACHE.add(key, output)
+    else
+      CACHE.set(key, output)
+    end
   end
 
   def isnumber(string)
-     string.to_i.to_s == string ? true : false
+    string.to_i.to_s == string ? true : false
   end
 
   def generate_session_key
@@ -268,7 +276,7 @@ class ApplicationController < ActionController::Base
 
 #    @session = CallerSession.find(params[:session])
     if @session.endtime==nil
-      @session.available_for_call=true
+#      @session.available_for_call=true
       @session.voter_in_progress=nil
       @session.attempt_in_progress=nil
       @session.save

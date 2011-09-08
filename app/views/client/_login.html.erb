@@ -7,7 +7,7 @@
 
     <h1>Log in</h1>
 
-    <% form_tag("/client/login", :id => "loginForm") do %>
+    <%= form_tag("/client/login", :id => "loginForm") do %>
       <fieldset>
         <p>
           <label for="">Email</label>
@@ -20,7 +20,7 @@
           <br/>
           <input type="password" class="field" name="password"/>
         </p>
-        <p><a href="/client/forgot">Forgot Password?</a></p>
+        <p><a href="/client/forgot">Forgot password?</a></p>
       </fieldset>
 
       <div class="buttons">

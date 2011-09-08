@@ -1,16 +1,16 @@
 class CallAttempt < ActiveRecord::Base
+  include Rails.application.routes.url_helpers
   belongs_to :voter
   belongs_to :campaign
   belongs_to :caller
   has_many :call_responses
 
-  named_scope :for_campaign, lambda{|campaign| {:conditions => ["campaign_id = ?", campaign.id] }}
-  named_scope :for_status, lambda{|status| {:conditions => ["call_attempts.status = ?", status] }}
-
+  scope :for_campaign, lambda { |campaign| {:conditions => ["campaign_id = ?", campaign.id]} }
+  scope :for_status, lambda { |status| {:conditions => ["call_attempts.status = ?", status]} }
 
   def ring_time
     if self.answertime!=nil && self.created_at!=nil
-      (self.answertime  - self.created_at).to_i
+      (self.answertime - self.created_at).to_i
     else
       nil
     end
@@ -44,6 +44,37 @@ class CallAttempt < ActiveRecord::Base
     current_recording.next ? current_recording.next.twilio_xml(self) : current_recording.hangup
   end
 
+  def connect_to_caller(caller_session = nil)
+    caller_session ||= self.campaign.caller_sessions.available.first
+    caller_session ? conference(caller_session) : hangup
+  end
+
+  def play_recorded_message
+    self.voter.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
+    self.update_attributes(:status => CallAttempt::Status::VOICEMAIL, :call_end => Time.now)
+    Twilio::TwiML::Response.new do |r|
+      r.Play self.campaign.recording.file.url
+      r.Hangup
+    end.text
+  end
+
+  def conference(session)
+    self.update_attribute(:caller , session.caller)
+    Pusher[session.session_key].trigger('voter_start',{:attempt_id => self.id, :family => Hash[CustomVoterFieldValue.for(self.voter).collect {|val| [val.custom_voter_field.name, val.value]}] })
+    self.voter.conference(session)
+  end
+
+  def wait(time)
+    Twilio::TwiML::Response.new do |r|
+      r.Pause :length => time
+      r.Redirect "#{connect_call_attempt_path(:id => self.id)}"
+    end.text
+  end
+
+  def hangup
+    Twilio::TwiML::Response.new { |r| r.Hangup }.text
+  end
+
   module Status
     VOICEMAIL = "Message delivered"
     SUCCESS = "Call completed with success."
@@ -57,8 +88,9 @@ class CallAttempt < ActiveRecord::Base
     CANCELLED = "Call cancelled"
     SCHEDULED = 'Scheduled for later'
 
-    MAP = {'in-progress' => INPROGRESS, 'completed' => SUCCESS, 'busy' => BUSY, 'failed' => FAILED, 'no-answer' => NOANSWER, 'canceled' => CANCELLED }
+    MAP = {'in-progress' => INPROGRESS, 'completed' => SUCCESS, 'busy' => BUSY, 'failed' => FAILED, 'no-answer' => NOANSWER, 'canceled' => CANCELLED}
     ALL = MAP.values
+    RETRY = [NOANSWER, BUSY, FAILED]
   end
 
 end

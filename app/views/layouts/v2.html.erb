@@ -18,7 +18,7 @@
 <meta name="MobileOptimized" content="320">
 <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1">
 <%= javascript_include_tag :defaults %>
-<%= unobtrusive_datepicker_includes %>
+<%= unobtrusive_datepicker_includes.html_safe %>
 
 <!-- For all browsers -->
 <link rel="stylesheet" media="screen" href="/css/style.css?v=1">
@@ -94,7 +94,7 @@
     <li><%= link_to content_tag(:span, 'Campaigns'), campaigns_path, :class => @controllerName.index('campaigns') ? 'active' : '' %></li>
     <li><%= link_to content_tag(:span, 'Control'), control_campaigns_path, :class => @control_campaigns_active ? 'active' : '' %></li>
     <li><%= link_to content_tag(:span, 'Reports'), reports_path, :class => @control_campaigns_active ? 'active' : '' %></li>
-    <li><a href="/client" >Predictive Dialer</a></li>
+    <li><a href="/client" >Go to Predictive Dialer</a></li>
 </ul>
 </nav>
 <% end %>

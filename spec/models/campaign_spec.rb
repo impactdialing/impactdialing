@@ -1,7 +1,7 @@
 require "spec_helper"
+require "lib/twilio_lib"
 
 describe Campaign do
-  include ActionController::TestProcess
 
   it "restoring makes it active" do
     campaign = Factory(:campaign, :active => false)
@@ -50,6 +50,12 @@ describe Campaign do
     campaign3 = Factory(:campaign, :active => false)
 
     Campaign.active.should == [campaign1, campaign2]
+  end
+
+  it "returns campaigns using web ui" do
+    campaign1 = Factory(:campaign, :use_web_ui => true)
+    campaign2 = Factory(:campaign, :use_web_ui => false)
+    Campaign.using_web_ui.should == [campaign1]
   end
 
   it "gives only active voter lists" do

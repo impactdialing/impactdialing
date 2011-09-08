@@ -1,7 +1,13 @@
 require "spec_helper"
 
 describe Voter do
-  include ActionController::UrlWriter
+  include Rails.application.routes.url_helpers
+
+  it "can share the same number" do
+    Factory(:voter, :Phone => '92345623434')
+    Factory(:voter, :Phone => '92345623434')
+    Voter.all.size.should == 2
+  end
 
   it "should list existing entries in a campaign having the given phone number" do
     lambda {
@@ -22,6 +28,19 @@ describe Voter do
     active_voter = Factory(:voter, :active => true)
     inactive_voter = Factory(:voter, :active => false)
     Voter.active.should == [active_voter]
+  end
+
+
+  it "conferences a caller" do
+    voter = Factory(:voter)
+    caller = Factory(:caller_session)
+
+    voter.conference(caller).should == Twilio::TwiML::Response.new do |r|
+      r.Dial :hangupOnStar => 'false' do |d|
+        d.Conference "session#{caller.id}", :wait_url => "", :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
+      end
+    end.text
+    caller.voter_in_progress.should == voter
   end
 
   describe "Dialing" do
@@ -76,6 +95,65 @@ describe Voter do
     end
   end
 
+  describe "predictive dialing" do
+    let(:campaign) { Factory(:campaign, :robo => false, :predictive_type => 'algorithm1') }
+    let(:voter) { Factory(:voter, :campaign => campaign) }
+
+    it "is dialed" do
+      Twilio::Call.stub!(:make).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
+      voter.dial_predictive
+      call_attempt = voter.call_attempts.last
+      call_attempt.sid.should == "sid"
+      call_attempt.status.should == CallAttempt::Status::INPROGRESS
+    end
+
+    it "updates voter attributes" do
+      Twilio::Call.stub!(:make).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
+      voter.dial_predictive
+      call_attempt = voter.call_attempts.last
+      voter.last_call_attempt.should == call_attempt
+      time_now = Time.now
+      Time.stub!(:now).and_return(time_now)
+      DateTime.parse(voter.last_call_attempt_time.to_s).should == DateTime.parse(time_now.utc.to_s)
+    end
+
+    it "updates the call_attempts campaign" do
+      Twilio::Call.stub!(:make).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
+      voter.dial_predictive
+      call_attempt = voter.call_attempts.last
+      call_attempt.campaign.should == voter.campaign
+    end
+
+    it "dials the voter and hangs up on answering machine when not using recordings" do
+      campaign.use_recordings = false
+      Twilio::Call.should_receive(:make).with(anything, anything, anything, {'IfMachine' => 'Hangup', 'Timeout' => 20}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
+      voter.dial_predictive
+    end
+
+    it "dials the voter and continues on answering machine when using recordings" do
+      campaign.use_recordings = true
+      voter.campaign = campaign
+      Twilio::Call.should_receive(:make).with(anything, anything, anything, {'IfMachine' => 'Continue', 'Timeout' => 20}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
+      voter.dial_predictive
+    end
+
+    it "dials the voter with the campaigns answer detection timeout" do
+      campaign.use_recordings = true
+      campaign.answer_detection_timeout = "10"
+      voter.campaign = campaign
+      Twilio::Call.should_receive(:make).with(anything, anything, anything, {'IfMachine' => 'Continue', 'Timeout' => campaign.answer_detection_timeout}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
+      voter.dial_predictive
+    end
+
+    it "dials with answer detection timeout defaults" do
+      campaign.use_recordings = true
+      voter.campaign = campaign
+      Twilio::Call.should_receive(:make).with(anything, anything, anything, {'IfMachine' => 'Continue', 'Timeout' => 20}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
+      voter.dial_predictive
+    end
+
+  end
+
   describe "to be dialed" do
     it "includes voters never called" do
       voter = Factory(:voter)
@@ -104,7 +182,7 @@ describe Voter do
   end
 
   describe "voter attributes" do
-    let(:voter){ Factory(:voter, :campaign => Factory(:campaign, :user=> Factory(:user)), :Phone => '384756923349') }
+    let(:voter) { Factory(:voter, :campaign => Factory(:campaign, :user=> Factory(:user)), :Phone => '384756923349') }
 
     it "populates original attributes" do
       voter.apply_attribute('Phone', '0123456789')
@@ -116,18 +194,18 @@ describe Voter do
       voter.apply_attribute(attribute, value)
       field = CustomVoterField.find_by_name(attribute)
       field.should_not be_nil
-      CustomVoterFieldValue.voter_fields(voter,field).first.value.should == value
+      CustomVoterFieldValue.voter_fields(voter, field).first.value.should == value
     end
 
     it "returns value of original attributes" do
       attribute, value = 'Phone', '2947832874'
-      voter.apply_attribute(attribute,value)
+      voter.apply_attribute(attribute, value)
       voter.get_attribute(attribute).should == value
     end
 
     it "returns value of custom attributes" do
       attribute, value = 'Custom', 'abcde'
-      voter.apply_attribute(attribute,value)
+      voter.apply_attribute(attribute, value)
       voter.get_attribute(attribute).should == value
     end
   end
@@ -140,13 +218,13 @@ describe Voter do
   end
 
   it "limits voters when listing them" do
-    10.times{Factory(:voter)}
+    10.times { Factory(:voter) }
     Voter.limit(5).should have(5).voters
   end
 
   describe "voter attributes" do
 
-    let(:voter){ Factory(:voter, :campaign => Factory(:campaign, :user=> Factory(:user)), :Phone => '384756923349') }
+    let(:voter) { Factory(:voter, :campaign => Factory(:campaign, :user=> Factory(:user)), :Phone => '384756923349') }
 
     it "populates original attributes" do
       voter.apply_attribute('Phone', '0123456789')
@@ -154,22 +232,22 @@ describe Voter do
     end
 
     it "populates custom attributes" do
-      attribute , value = 'Custom' , 'foo'
+      attribute, value = 'Custom', 'foo'
       voter.apply_attribute(attribute, value)
       field = CustomVoterField.find_by_name(attribute)
       field.should_not be_nil
-      CustomVoterFieldValue.voter_fields(voter,field).first.value.should == value
+      CustomVoterFieldValue.voter_fields(voter, field).first.value.should == value
     end
 
     it "returns value of original attributes" do
-      attribute , value = 'Phone' , '2947832874'
-      voter.apply_attribute(attribute,value)
+      attribute, value = 'Phone', '2947832874'
+      voter.apply_attribute(attribute, value)
       voter.get_attribute(attribute).should == value
     end
 
     it "returns value of custom attributes" do
-      attribute , value = 'Custom' , 'abcde'
-      voter.apply_attribute(attribute,value)
+      attribute, value = 'Custom', 'abcde'
+      voter.apply_attribute(attribute, value)
       voter.get_attribute(attribute).should == value
     end
 

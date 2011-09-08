@@ -1,8 +1,7 @@
 require "spec_helper"
 
 describe VoterListsController do
-  include ActionController::TestProcess
-  integrate_views
+  render_views
 
   before :each do
     @current_user = Factory(:user)
@@ -10,7 +9,8 @@ describe VoterListsController do
   end
 
   describe "voters list" do
-    let(:csv_file_upload) { {"datafile" => fixture_file_upload("files/valid_voters_list.csv")} }
+    let(:csv_file_upload) { {"datafile" => fixture_file_upload("/files/valid_voters_list.csv")} }
+
     before :each do
       @campaign = Factory(:campaign, :user_id => session[:user])
     end
@@ -23,13 +23,13 @@ describe VoterListsController do
     describe "create voter list" do
       def import(parameters={})
         defaults = {
-            :separator               => ",",
-            :voter_list_name         => "voter list name",
+            :separator => ",",
+            :voter_list_name => "voter list name",
             :json_csv_column_headers => ["Phone", "LAST"].to_json,
-            :campaign_id             => @campaign.id,
-            :csv_to_system_map       => {
+            :campaign_id => @campaign.id,
+            :csv_to_system_map => {
                 "Phone" => "Phone",
-                "LAST"  =>"LastName"
+                "LAST" =>"LastName"
             }
         }
         post :import, defaults.merge(parameters)
@@ -40,11 +40,13 @@ describe VoterListsController do
           session[:voters_list_upload] = nil
           post :create,
                :campaign_id => @campaign.id,
-               :upload      => csv_file_upload
+               :upload => csv_file_upload
         end
+
         it "sets the session to the new voter list entry" do
           session[:voters_list_upload].should_not be_empty
         end
+
         it "saves the uploaded csv" do
           File.should exist("#{Rails.root}/tmp/#{session[:voters_list_upload]['filename']}")
         end
@@ -55,18 +57,27 @@ describe VoterListsController do
           response.should render_template("column_mapping")
         end
 
+        describe "missing header info" do
+          let(:csv_file_upload) { {"datafile" => fixture_file_upload("/files/voters_with_nil_header_info.csv")} }
+
+          it "ignores columns without a header" do
+            post :create, :campaign_id => @campaign.id
+            assigns(:csv_column_headers).size.should == 2
+          end
+        end
+
         describe "import" do
           describe "requirements" do
             it "needs a list name" do
               import :voter_list_name => ""
-              response.flash.now[:error].first.should include "Name can't be blank"
+              request.flash.now[:error].first.should include "Name can't be blank"
               response.should render_template "column_mapping"
             end
 
             it "should not save a list if the user already has a list with the same name" do
               Factory(:voter_list, :user_id => @current_user.id, :campaign_id => @campaign.id, :name => "abcd")
               import :voter_list_name => "abcd"
-              response.flash.now[:error].first.should include "Name for this voter list is already taken"
+              request.flash.now[:error].first.should include "Name for this voter list is already taken"
               response.should render_template "column_mapping"
             end
           end
@@ -75,7 +86,7 @@ describe VoterListsController do
             it "saves all the voters in the csv according to the mappings" do
               Voter.delete_all
               import
-              Voter.count.should == 1
+              Voter.count.should == 2
               Voter.first.Phone.should == "1234567895"
               Voter.first.LastName.should == "Bar"
             end
@@ -89,7 +100,8 @@ describe VoterListsController do
           end
 
           describe "custom fields" do
-            let(:csv_file_upload) { {"datafile" => fixture_file_upload("files/voters_custom_fields_list.csv")} }
+            let(:csv_file_upload) { {"datafile" => fixture_file_upload("/files/voters_custom_fields_list.csv")} }
+
             it "creates previously uncreated custom columns" do
               custom_field = "Custom"
               Voter.delete_all
@@ -107,13 +119,15 @@ describe VoterListsController do
           session[:voters_list_upload] = nil
           post :create,
                :campaign_id => @campaign.id,
-               :upload      => {"datafile" => fixture_file_upload("files/invalid_voters_list.csv")}
+               :upload => {"datafile" => fixture_file_upload("/files/invalid_voters_list.csv")}
           import
         end
+
         it "should flash an error" do
           flash[:error].join.should include "Invalid CSV file"
           response.code.should == "302"
         end
+
         it "should not save the voters list entry" do
           VoterList.all.should be_empty
         end

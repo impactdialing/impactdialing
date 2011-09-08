@@ -3,6 +3,22 @@ class CallinController < ApplicationController
   before_filter :set_vars, :preload_models
   after_filter :send_pusher
 
+  def create
+    verb = Twilio::Verb.new do |v|
+      v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.host), :method => "POST") do
+        v.say "Please enter your pin"
+      end
+    end
+    render :xml => verb.response
+  end
+
+  def identify
+    #get the caller from the digits and push voter details.
+    @caller = Caller.find_by_pin(params[:Digits])
+    @session = @caller.caller_sessions.create(:on_call => false, :available_for_call => false)
+    render :nothing => true
+  end
+
   def set_vars
     @say=false
     @play=false
@@ -17,20 +33,30 @@ class CallinController < ApplicationController
     @gatherPost=""
   end
 
+
   def send_pusher
-    send_rt(@publish_channel,@publish_key,@publish_value) if !@publish_channel.blank?
+    send_rt(@publish_channel, @publish_key, @publish_value) if !@publish_channel.blank?
   end
 
 
   def session_complete
-    logger.info "NO SESSION COOKIE"  if(cookies[:session]==nil || cookies[:session]=="0") && params[:session].blank?
-    return if(cookies[:session]==nil || cookies[:session]=="0") && params[:session].blank?
-    #remove this caller
-    if !params[:session].blank?
-      @session = CallerSession.find(params[:session])
+    if (cookies[:session]==nil || cookies[:session]=="0") && params[:session].blank?
+      logger.info "NO SESSION COOKIE"
+      @session=CallerSession.find_by_sid(params[:CallSid]) if !params[:CallSid].blank?
+      @session=CallerSession.find_by_sid(params[:CallGuid]) if !params[:CallGuid].blank?
     else
-      @session = CallerSession.find(cookies[:session])
+      if !params[:session].blank?
+        @session = CallerSession.find(params[:session])
+      else
+        @session = CallerSession.find(cookies[:session])
+      end
     end
+    if @session.nil?
+      logger.info "BAILING ON SESSION_COMPLETE"
+      return
+    end
+    #return if(cookies[:session]==nil || cookies[:session]=="0") && params[:session].blank?
+    #remove this caller
     @session.endtime=Time.now
     @session.available_for_call=false
     @session.on_call=false
@@ -40,7 +66,7 @@ class CallinController < ApplicationController
 
   def index
 
-    if !params[:test].blank? &&  params[:CallStatus]!="completed"
+    if !params[:test].blank? && params[:CallStatus]!="completed"
       #load test, campaign 38
       @campaign = Campaign.find(38)
       c = Caller.find(1)
@@ -196,7 +222,7 @@ class CallinController < ApplicationController
 
     if @campaign.use_web_ui
       @gathertimeout=60
-      if params[:CallStatus]=="completed"
+      if params[:CallStatus]=="completed" || params[:CallStatus]=="no-answer" || params[:CallStatus]=="busy" || params[:CallStatus]=="fail"
         @publish_channel="#{@session.session_key}"
         @publish_key="hangup"
         @publish_value="ok"
@@ -223,7 +249,7 @@ class CallinController < ApplicationController
       if @campaign.use_web_ui
         @publish_channel="#{@session.session_key}"
         @publish_key="waiting"
-        if @campaign.predective_type=="preview"
+        if @campaign.predictive_type=="preview"
           @publish_value="preview"
         else
           @publish_value="ok"
@@ -306,12 +332,12 @@ class CallinController < ApplicationController
     @session = CallerSession.find(params[:session])
     @caller = @session.caller
     @campaign = @session.campaign
-   @script=@campaign.script
+    @script=@campaign.script
 
     #check for web response
     if @session.attempt_in_progress==nil
       #aleady entered result on web
-#      render :template => 'callin/start_conference.xml.builder', :layout => false
+      #      render :template => 'callin/start_conference.xml.builder', :layout => false
       render :template => 'callin/pause_then_start_conference.xml.builder', :layout => false
       return
     end
@@ -327,17 +353,17 @@ class CallinController < ApplicationController
       # initial call-in
       #      @play="#{APP_URL}/exitBeep.wav"
       if @session.session_key.blank?
-         #get the first script question
-         this_result_set = JSON.parse(eval("@script.result_set_#{@script.result_sets_used.first}" ))
-         question_name=this_result_set["name"]
-         if question_name.blank?
-           @play="#{APP_URL}/wav/beep_enter_call_result.wav"
-         else
-           #this_result_set.keys.select{|k|  false && "Press #{k.gsub("keypad_","")} for #{this_result_set[k]}" if !this_result_set[k].blank?}
-           choices=this_result_set.keys.select{|k|  this_result_set[k] && k!="name"}.collect{|k|  "Press #{k.gsub("keypad_","")} for #{this_result_set[k]}" }.join(".  ")
-           @play="#{APP_URL}/wav/exitBeep.wav"
-           @say="#{question_name}. Enter your response and then press star. #{choices}"
-         end
+        #get the first script question
+        this_result_set = JSON.parse(eval("@script.result_set_#{@script.result_sets_used.first}"))
+        question_name=this_result_set["name"]
+        if question_name.blank?
+          @play="#{APP_URL}/wav/beep_enter_call_result.wav"
+        else
+          #this_result_set.keys.select{|k|  false && "Press #{k.gsub("keypad_","")} for #{this_result_set[k]}" if !this_result_set[k].blank?}
+          choices=this_result_set.keys.select { |k| this_result_set[k] && k!="name" }.collect { |k| "Press #{k.gsub("keypad_", "")} for #{this_result_set[k]}" }.join(".  ")
+          @play="#{APP_URL}/wav/exitBeep.wav"
+          @say="#{question_name}. Enter your response and then press star. #{choices}"
+        end
 
       else
         # from web ui
@@ -357,13 +383,13 @@ class CallinController < ApplicationController
       end
     else
       # digits entered, response given
-      @clean_digit = params[:Digits].gsub("#","").gsub("*","").slice(0..1)
+      @clean_digit = params[:Digits].gsub("#", "").gsub("*", "").slice(0..1)
       if params[:Digits]=="*"
         @say="Goodbye"
         @hangup=true
       elsif params[:Digits].chars.first=="0"
         @say="Invalid result.  Please try again."
-      elsif JSON.parse(eval("@script.result_set_1" )).keys.index("keypad_#{@clean_digit}").nil? || JSON.parse(eval("@script.result_set_1" ))["keypad_#{@clean_digit}"].nil?
+      elsif JSON.parse(eval("@script.result_set_1")).keys.index("keypad_#{@clean_digit}").nil? || JSON.parse(eval("@script.result_set_1"))["keypad_#{@clean_digit}"].nil?
         #invalid choice
         @say="Invalid result.  Please try again."
       else
@@ -379,7 +405,7 @@ class CallinController < ApplicationController
         if @campaign.use_web_ui
           @publish_channel="#{@session.session_key}"
           @publish_key="waiting"
-          if @campaign.predective_type=="preview"
+          if @campaign.predictive_type=="preview"
             @publish_value="preview"
           else
             @publish_value="ok"
@@ -412,22 +438,22 @@ class CallinController < ApplicationController
     @script=@campaign.script
     num=params[:num].to_i
     result_num=@script.result_sets_used[num]
-    this_result_set = JSON.parse(eval("@script.result_set_#{result_num}" ))
-    thisKeypadval= params[:Digits].gsub("#","").gsub("*","").slice(0..1) if !params[:Digits].blank?
+    this_result_set = JSON.parse(eval("@script.result_set_#{result_num}"))
+    thisKeypadval= params[:Digits].gsub("#", "").gsub("*", "").slice(0..1) if !params[:Digits].blank?
 
     if params[:Digits].blank?
       question_name=this_result_set["name"]
-      choices=this_result_set.keys.select{|k|  this_result_set[k] && k!="name"}.collect{|k|  "Press #{k.gsub("keypad_","")} for #{this_result_set[k]}" }.join(".  ")
- #     @say="#{question_name}.  #{choices}"
-       @say="#{question_name}. Enter your response and then press star. #{choices}"
-    elsif JSON.parse(eval("@script.result_set_#{result_num}" )).keys.index("keypad_#{thisKeypadval}").nil? || JSON.parse(eval("@script.result_set_#{result_num}" ))["keypad_#{thisKeypadval}"].nil?
-       #invalid choice
-       @say="Invalid result.  Please try again."
+      choices=this_result_set.keys.select { |k| this_result_set[k] && k!="name" }.collect { |k| "Press #{k.gsub("keypad_", "")} for #{this_result_set[k]}" }.join(".  ")
+      #     @say="#{question_name}.  #{choices}"
+      @say="#{question_name}. Enter your response and then press star. #{choices}"
+    elsif JSON.parse(eval("@script.result_set_#{result_num}")).keys.index("keypad_#{thisKeypadval}").nil? || JSON.parse(eval("@script.result_set_#{result_num}"))["keypad_#{thisKeypadval}"].nil?
+      #invalid choice
+      @say="Invalid result.  Please try again."
     else
       #record selection
       handle_multi_disposition_submit(result_num, params[:attempt])
       if @script.result_sets_used.length>num+1
-        redirect_to :action=>"next_question", :session=>@session.id, :num=>num+1
+        redirect_to :action=>"next_question", :session=>@session.id, :num=>num+1, :attempt=>params[:attempt]
         return
       end
 
@@ -455,7 +481,7 @@ class CallinController < ApplicationController
     # params session, voter, attempt
     # first callback for voters
 
-    @campaign  = Campaign.find(params[:campaign])
+    @campaign = Campaign.find(params[:campaign])
     #Voter.connection.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED") if params[:voter]=="16528"
     @voter = Voter.find(params[:voter])
     #    attempt = CallAttempt.find_by_voter_id(params[:voter], :order=>"id desc", :limit=>1)
@@ -489,9 +515,9 @@ class CallinController < ApplicationController
       #   attempt.save
       # end
 
-       if params[:CallStatus]!="completed" && @campaign.use_web_ui && @campaign.predective_type=="preview"  && params[:selected_session]!=nil
-          @session = CallerSession.find(params[:selected_session])
-          send_rt(@session.session_key,'waiting','preview')
+      if params[:CallStatus]!="completed" && @campaign.use_web_ui && @campaign.predictive_type=="preview" && params[:selected_session]!=nil
+        @session = CallerSession.find(params[:selected_session])
+        send_rt(@session.session_key, 'waiting', 'preview')
       end
 
       if params[:DialStatus]=="hangup-machine"
@@ -517,7 +543,7 @@ class CallinController < ApplicationController
         @attempt.status="Call failed"
         @voter.call_back=false
       else
-        if @attempt.caller_id==nil &&  @attempt.status!="Message delivered"
+        if @attempt.caller_id==nil && @attempt.status!="Message delivered"
           #abandon
           #          @voter.status="Call completed with success."
           @attempt.status="Call abandoned"
@@ -529,7 +555,7 @@ class CallinController < ApplicationController
       @attempt.call_end=Time.now
       @attempt.save
       @voter.save
-      # if @campaign.predective_type=="preview" && params[:selected_session]
+      # if @campaign.predictive_type=="preview" && params[:selected_session]
       #   send_rt(CallerSession.find(params[:selected_session]).session_key,{'waiting'=>'preview'})
       # end
       if @voter.caller_session_id!=nil
@@ -569,13 +595,19 @@ class CallinController < ApplicationController
     end
 
     if @available_caller_session.blank?
-      @anyCaller = CallerSession.find_by_campaign_id_and_on_call(@campaign.id, true)
-      if @anyCaller==nil
-        @hangup=true
-      else
-        @pause=2
-        @redirect="#{APP_URL}/callin/voterFindSession?campaign=#{@campaign.id}&voter=#{@voter.id}&attempt=#{@attempt.id}"
-      end
+
+      @hangup=true
+      render :template => 'callin/index.xml.builder', :layout => false
+      return
+      
+      # no longer retry voters if no callers available
+      # @anyCaller = CallerSession.find_by_campaign_id_and_on_call(@campaign.id, true)
+      # if @anyCaller==nil
+      #   @hangup=true
+      # else
+      #   @pause=2
+      #   @redirect="#{APP_URL}/callin/voterFindSession?campaign=#{@campaign.id}&voter=#{@voter.id}&attempt=#{@attempt.id}"
+      # end
     else
       # ensure only one caller gets this voter
       begin
@@ -583,8 +615,8 @@ class CallinController < ApplicationController
         CallerSession.transaction do
           raise "caller already in session" if CallerSession.find(@available_caller_session.id).available_for_call==false
 
-          @available_caller_session.voter_in_progress = @voter.id
-          @available_caller_session.attempt_in_progress = @attempt.id
+          @available_caller_session.voter_in_progress = @voter
+          @available_caller_session.attempt_in_progress = @attempt
           @available_caller_session.hold_time_start=nil
           @available_caller_session.available_for_call=false
           @available_caller_session.save
@@ -603,16 +635,20 @@ class CallinController < ApplicationController
         if @campaign.use_web_ui
           script = @campaign.script
           @publish_channel="#{@available_caller_session.session_key}"
-          family=[hash_from_voter_and_script(script,@attempt.voter)]
+          family=[hash_from_voter_and_script(script, @attempt.voter)]
           @attempt.voter.families.each do |f|
-          	family << hash_from_voter_and_script(script,f)
+            family << hash_from_voter_and_script(script, f)
           end
           @publish_key="voter_start"
           publish_hash = {"attempt_id"=>@attempt.id, "family"=>family}
           if !script.voter_fields.nil?
             fields = JSON.parse(script.voter_fields)
             fields.each do |field|
-              publish_hash[field] = @voter.get_attribute(field)
+              if @voter.has_attribute?(field)
+                publish_hash[field] = @voter.get_attribute(field)
+              else
+                logger.info "FAMILY ERROR could not find #{field}  in #{@voter.id}"
+              end
               #publish_hash[field] = eval("@voter.#{field}")
             end
           end
@@ -627,6 +663,10 @@ class CallinController < ApplicationController
         logger.debug "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
         # caller already connected to someone else
         @pause=2
+        @available_caller_session.voter_in_progress = nil
+        @available_caller_session.attempt_in_progress = nil
+        @available_caller_session.available_for_call=true
+        @available_caller_session.save
         @redirect="#{APP_URL}/callin/voterFindSession?campaign=#{@campaign.id}&voter=#{@voter.id}&attempt=#{@attempt.id}"
       end
 
@@ -637,14 +677,18 @@ class CallinController < ApplicationController
 
   end
 
-  def hash_from_voter_and_script(script,voter)
+  def hash_from_voter_and_script(script, voter)
     publish_hash={:id=>voter.id, :classname=>voter.class.to_s}
 #    publish_hash={:id=>voter.id}
     if !script.voter_fields.nil?
       fields = JSON.parse(script.voter_fields)
       fields.each do |field|
 #        logger.info "field: #{field}"
-        publish_hash[field] = voter.get_attribute(field)
+        if voter.has_attribute?(field)
+          publish_hash[field] = voter.get_attribute(field)
+        else
+          logger.info "FAMILY ERROR could not find #{field}  in #{voter.id}"
+        end
       end
     end
     publish_hash

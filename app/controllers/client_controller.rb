@@ -28,12 +28,10 @@ class ClientController < ApplicationController
         flash_now(:error, "We could not find an account with that email address")
       else
         user.create_reset_code
-        #Postoffice.deliver_password_recovery(u)
+        #Postoffice.password_recovery(u).deliver
 
         begin
-          emailText="Click here to reset your password<br/>
-          http://admin.impactdialing.com/reset_password?reset_code=#{user.password_reset_code}"
-
+          emailText="Click here to reset your password<br/> #{ reset_password_url(:reset_code => user.password_reset_code) }"
           u = Uakari.new(MAILCHIMP_API_KEY)
 
           response = u.send_email({
@@ -285,7 +283,7 @@ Can we count on you to vote for such-and-such?
 
   def callers
     @breadcrumb="Callers"
-    @callers = Caller.paginate :page => params[:page], :conditions =>"active=1 and user_id=#{@user.id}", :order => 'name'
+    @callers = Caller.where(:active => true, :user_id => @user.id).order(:name).paginate(:page => params[:page])
   end
 
   def caller_add
@@ -297,7 +295,7 @@ Can we count on you to vote for such-and-such?
       @label="Edit caller"
     end
     if request.post?
-      @caller.update_attributes(params[:caller])
+      @caller.update_attributes(params[:callers])
       if @caller.valid?
         @caller.user_id = @user.id
         @caller.save
@@ -345,7 +343,7 @@ Can we count on you to vote for such-and-such?
   end
 
   def campaign_new
-    campaign = Campaign.new(:user_id => @user.id, :predective_type => 'algorithm1')
+    campaign = Campaign.new(:user_id => @user.id, :predictive_type => 'algorithm1')
     campaign.user_id = @user.id
     count = Campaign.find_all_by_user_id(@user.id)
     campaign.name="Untitled #{count.length+1}"
@@ -371,46 +369,7 @@ Can we count on you to vote for such-and-such?
       list = VoterList.find_all_by_campaign_id(params[:id]).first
       num = params[:num].gsub(/[^0-9]/, "")
       voter = Voter.find_by_campaign_id_and_Phone(params[:id], num)
-
-      if voter.blank?
-        voter = Voter.new
-        voter.Phone = num
-        voter.campaign_id = params[:id].to_i
-        voter.voter_list_id = list.id
-        voter.user_id = campaign.user_id
-        voter.save
-      end
-      require "hpricot"
-      require "open-uri"
-      voter.status="Call in progress"
-      voter.save
-      t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-      if !campaign.caller_id.blank? && campaign.caller_id_verified
-        caller_num = campaign.caller_id
-      else
-        caller_num = APP_NUMBER
-      end
-      if campaign.predective_type=="preview"
-        a = t.call("POST", "Calls", {'Timeout'=>"20", 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}"})
-      elsif campaign.use_answering
-        a = t.call("POST", "Calls", {'Timeout'=>"25", 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}", 'IfMachine'=>'Hangup'})
-      else
-        a = t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => caller_num, 'Called' => voter.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{voter.id}"})
-      end
-      require 'rubygems'
-      require 'hpricot'
-      @doc = Hpricot::XML(a)
-      c = CallAttempt.new
-      c.dialer_mode = campaign.predective_type
-      c.sid=(@doc/"Sid").inner_html
-      c.voter_id = voter.id
-      c.campaign_id = campaign.id
-      c.status="Call in progress"
-      c.save
-      voter.last_call_attempt_id = c.id
-      voter.last_call_attempt_time = Time.now
-      voter.save
-
+      voter.dial_predictive
       flash_message(:notice, "Calling you now!")
     end
 
@@ -515,10 +474,10 @@ Can we count on you to vote for such-and-such?
     require 'right_aws'
     @file_data = File.new(filepath, "r")
     extension = filepath.split(".").last
-    @config = YAML::load(File.open("#{RAILS_ROOT}/config/amazon_s3.yml"))
+    @config = YAML::load(File.open("#{Rails.root}/config/amazon_s3.yml"))
     s3 = RightAws::S3.new(@config["access_key_id"], @config["secret_access_key"])
     bucket = s3.bucket("impactdialingapp")
-    s3path="#{ENV["RAILS_ENV"]}/uploads/#{@user.id}/#{recording.id}.#{extension}"
+    s3path="#{Rails.env}/uploads/#{@user.id}/#{recording.id}.#{extension}"
     key = bucket.key(s3path)
     key.data = File.open(filepath)
     key = bucket.key(s3path)
@@ -672,7 +631,7 @@ Can we count on you to vote for such-and-such?
 
     @callers = Caller.find_all_by_user_id_and_active(@user.id,true)
     @lists = @campaign.voter_lists
-    @voters = Voter.paginate :page => params[:page], :conditions =>"active=1 and campaign_id=#{@campaign.id}", :order => 'LastName,FirstName,Phone'
+    @voters = Voter.where(:active => true, :campaign_id => @campaign.id).order('LastName, FirstName, Phone').paginate(:page => params[:page])
     @scripts = @user.scripts.manual.active
 
     #    @campaign.check_valid_caller_id_and_save
@@ -952,8 +911,8 @@ Can we count on you to vote for such-and-such?
       end
       @breadcrumb=[{"Reports"=>"/client/reports"},{"#{@campaign.name}"=>"/client/reports/#{@campaign.id}"},"Realtime Report"]
     end
-    #    require "#{RAILS_ROOT}/app/models/caller_session.rb"
-    #    require "#{RAILS_ROOT}/app/models/caller.rb"
+    #    require "#{Rails.root.to_s}/app/models/caller_session.rb"
+    #    require "#{Rails.root.to_s}/app/models/caller.rb"
   end
 
   def report_realtime_new
@@ -1369,6 +1328,10 @@ Can we count on you to vote for such-and-such?
     # end
     # @avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
     @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id)
+    if @campaign.nil?
+      render :text=>"Campaign not found or access not permitted"
+      return
+    end
     render :layout=>false
   end
 

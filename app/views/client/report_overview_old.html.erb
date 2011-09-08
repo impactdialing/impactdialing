@@ -59,13 +59,13 @@
 			</tr>
 	    </table>
 	<% end %>
-	
+
 -->
 
 
 	<h2>Report Date Range:</h2>
-	<% form_tag ("/client/report_overview_old?id=#{ params[:id]}&type=#{params[:type]}") do %> 
-	  
+	<%= form_tag ("/client/report_overview_old?id=#{ params[:id]}&type=#{params[:type]}") do %>
+
 	<table>
 		<tr>
 			<td>From:</td>
@@ -74,10 +74,10 @@
 		<tr>
 			<td>
 				To:</td>
-			<td>  <%= unobtrusive_date_text_picker_tag :to_date,@to_date %> 
+			<td>  <%= unobtrusive_date_text_picker_tag :to_date,@to_date %>
 				<input type="submit" class="button" value="update" size="4">
 				</td>
 		</tr>
 	</table>
 	<% end %>
-	
+

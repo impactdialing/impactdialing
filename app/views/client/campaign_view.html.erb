@@ -2,7 +2,7 @@
 
 <div id="callerid"></div>
 
-<% form_for :campaign, :url => {:action => "campaign_add", :id=>@campaign.id}, :html => {:name => 'callerForm', :id => 'callerForm'} do |f| %>
+<%= form_for :campaign, :url => {:action => "campaign_add", :id=>@campaign.id}, :html => {:name => 'callerForm', :id => 'callerForm'} do |f| %>
     <fieldset>
 	  <legend>Campaign options</legend>
       <fieldset>
@@ -21,12 +21,12 @@
         </p>
 
         <p><label for="">Dialing Mode</label>
-          <select class="field" id="campaign_predective_type" name="campaign[predective_type]">
+          <select class="field" id="campaign_predictive_type" name="campaign[predictive_type]">
             <% public_dialers = [["Predictive", "algorithm1"], ["Power x4", "power_4x"], ["Power x3", "power_3x"], ["Power x2", "power_2x"], ["Preview", "preview"],] %>
-            <% if !public_dialers.map { |pair| pair[1] }.index(@campaign.predective_type) %>
-                <option value="<%= @campaign.predective_type %>" selected><%= @campaign.predective_type %></option>
+            <% if !public_dialers.map { |pair| pair[1] }.index(@campaign.predictive_type) %>
+                <option value="<%= @campaign.predictive_type %>" selected><%= @campaign.predictive_type %></option>
             <% end %>
-            <%= options_for_select public_dialers, @campaign.predective_type %>
+            <%= options_for_select public_dialers, @campaign.predictive_type %>
           </select>
         </p>
         <% if !@campaign.user.recordings.blank? %>
@@ -46,7 +46,7 @@
         </p>
 
         <p>Call-in number:
-          <% if ENV["RAILS_ENV"]=="development" %>
+          <% if Rails.env =="development" %>
               <%= number_to_phone(APP_NUMBER, :area_code => true) %>
           <% else %>
               <%= number_to_phone(@campaign.callin_number, :area_code => true) %>
@@ -66,7 +66,7 @@
                 <th>Name</th>
                 <th>&nbsp;</th>
                 <th>PIN</th>
-                <% if @campaign.predective_type.index("robo,") %>
+                <% if @campaign.predictive_type.index("robo,") %>
                     <th></th>
                     <th></th>
                 <% end %>
@@ -81,7 +81,7 @@
                     <td><%= check_box_tag "campaign[caller_ids][]", "#{l.id}", callerInCampaign(l), :onclick=>"someCallers();" -%> <%= l.name %></td>
                     <td></td>
                     <td><%= l.pin %></td>
-                    <% if @campaign.predective_type.index("robo,") %>
+                    <% if @campaign.predictive_type.index("robo,") %>
                         <td>
                           <a href="/client/robo_session_start?caller_id=<%= l.id %>&campaign_id=<%= @campaign.id %>">start</a>
                         </td>
@@ -133,7 +133,7 @@
 <% end %>
 <fieldset>
   <legend>Add Lists</legend>
-  <%= render :partial => "voter_lists/new", :locals => { :path => client_voter_lists_path(@campaign) } %>
+  <%= render :partial => "voter_lists/new", :locals => { :path => campaign_client_voter_lists_path(@campaign) } %>
 </fieldset>
 
 <script>

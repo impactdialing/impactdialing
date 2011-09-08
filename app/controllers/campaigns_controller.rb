@@ -1,6 +1,14 @@
 class CampaignsController < ClientController
   layout 'v2'
   include DeletableController
+  before_filter :verify_campaign_ownership, :only => [:update, :show, :verify_callerid, :start, :stop, :dial_statistics]
+
+  def verify_campaign_ownership
+    @campaign = Campaign.find(params[:id])
+    if @campaign.user != @user
+      render :nothing, :status => :unauthorized
+    end
+  end
 
   def type_name
     'campaign'
@@ -12,16 +20,15 @@ class CampaignsController < ClientController
   end
 
   def update
-    campaign = @user.all_campaigns.find(params[:id])
-    campaign.attributes = params[:campaign]
-    campaign.script ||= @user.scripts.active.first
-    campaign.voter_lists.disable_all
-    campaign.voter_lists.by_ids(params[:voter_list_ids]).enable_all
-    if campaign.save
+    @campaign.attributes = params[:campaign]
+    @campaign.script ||= @user.scripts.active.first
+    @campaign.voter_lists.disable_all
+    @campaign.voter_lists.by_ids(params[:voter_list_ids]).enable_all
+    if @campaign.save
       flash_message(:notice, "Campaign saved")
-      generate_validation_token_for_caller_id(campaign) if campaign.caller_id.present? and (not campaign.caller_id_verified)
+      generate_validation_token_for_caller_id(@campaign) if @campaign.caller_id.present? and (not @campaign.caller_id_verified)
     end
-    redirect_to campaign_path(campaign)
+    redirect_to campaign_path(@campaign)
   end
 
   def index
@@ -30,7 +37,6 @@ class CampaignsController < ClientController
 
   def show
     @scripts = @user.scripts.robo.active
-    @campaign = @user.campaigns.find(params[:id].to_i)
     @callers  = @user.callers.active
     @lists    = @campaign.voter_lists
     @voters = @campaign.all_voters.active.paginate(:page => params[:page])
@@ -42,7 +48,6 @@ class CampaignsController < ClientController
 
   #TODO: extract html message to partial
   def verify_callerid
-    @campaign = @user.campaigns.find(params[:id].to_i)
     @campaign.check_valid_caller!
     @campaign.save
     ret = if @campaign.caller_id.present? and (not @campaign.caller_id_verified)
@@ -60,19 +65,16 @@ class CampaignsController < ClientController
   end
 
   def start
-    @campaign = Campaign.find(params[:id])
     @campaign.start
     redirect_to control_campaigns_path
   end
 
   def stop
-    @campaign = Campaign.find(params[:id])
     @campaign.stop
     redirect_to control_campaigns_path
   end
 
   def dial_statistics
-    @campaign = @user.campaigns.find(params[:id])
   end
 
   private

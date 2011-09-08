@@ -6,6 +6,13 @@ $.ajaxSetup({   cache: false  });
 var ajax_load = "<img src='/images/ajax-loader.gif' alt='loading...' />";
 
 function dialTimedOut() {
+    var jsonUrl = "/caller/session_end/<%= @session.session_key %>";
+    $.getJSON(jsonUrl, {},
+            function(json) {
+                //	var result = "Language code is \"<strong>" + json.responseData.language + "\"";
+                //	$("#result").html(result);
+            }
+    );
     $('#statusdiv').html("Status: Not Connected");
     $('#actiondiv').html('<%= escape_javascript @start_action_div_contents %>');
     $('#voter_info').hide();
@@ -31,7 +38,7 @@ $(document).ready(function() {
     var pusher = new Pusher('<%= PUSHER_KEY %>');
     var channel = pusher.subscribe('<%= @session.session_key %>');
 
-    <% if RAILS_ENV!="production"%>
+    <% if Rails.env !="production"%>
     Pusher.log = function(message) {
         if (window.console && window.console.log) window.console.log(message);
     };

@@ -1,5 +1,5 @@
 class Voter < ActiveRecord::Base
-  include ActionController::UrlWriter
+  include Rails.application.routes.url_helpers
 
   belongs_to :voter_list
   belongs_to :campaign
@@ -7,23 +7,27 @@ class Voter < ActiveRecord::Base
   has_many :call_attempts
   has_many :custom_voter_field_values
   belongs_to :last_call_attempt, :class_name => "CallAttempt"
+  belongs_to :user
+  belongs_to :caller_session
 
   validates_presence_of :Phone
   validates_length_of :Phone, :minimum => 10
-  validates_uniqueness_of :Phone, :scope => :voter_list_id
 
-  named_scope :existing_phone_in_campaign, lambda { |phone_number, campaign_id|
+  scope :existing_phone_in_campaign, lambda { |phone_number, campaign_id|
     {:conditions => ['Phone = ? and campaign_id = ?', phone_number, campaign_id]}
   }
 
   default_scope :order => 'LastName, FirstName, Phone'
-  named_scope :active, :conditions => ["active = ?", true]
-  named_scope :to_be_dialed, :include => [:call_attempts], :conditions => ["(call_attempts.id is null and call_back is false) OR call_attempts.status IN (?)", CallAttempt::Status::ALL - [CallAttempt::Status::SUCCESS]]
-  named_scope :randomly, :order => 'rand()'
-  named_scope :to_callback, :conditions => ["call_back is true"]
-  named_scope :scheduled, :conditions => {:scheduled_date => (10.minutes.ago..10.minutes.from_now), :status => CallAttempt::Status::SCHEDULED}
-  named_scope :limit, lambda { |n| {:limit => n} }
-  named_scope :by_status, lambda { |status| {:conditions => ["status = ? ", status]} }
+
+  scope :by_status, lambda { |status| {:conditions => ["status = ? ", status]} }
+  scope :active, :conditions => ["active = ?", true]
+  scope :to_be_dialed, :include => [:call_attempts], :conditions => ["(call_attempts.id is null and call_back is false) OR call_attempts.status IN (?)", CallAttempt::Status::ALL - [CallAttempt::Status::SUCCESS]]
+  scope :randomly, :order => 'rand()'
+  scope :to_callback, :conditions => ["call_back is true"]
+  scope :scheduled, :conditions => {:scheduled_date => (10.minutes.ago..10.minutes.from_now), :status => CallAttempt::Status::SCHEDULED}
+  scope :limit, lambda { |n| {:limit => n} }
+
+  before_validation :sanitize_phone
 
   cattr_reader :per_page
   @@per_page = 25
@@ -32,7 +36,7 @@ class Voter < ActiveRecord::Base
     phonenumber.gsub(/[^0-9]/, "") unless phonenumber.blank?
   end
 
-  def before_validation
+  def sanitize_phone
     self.Phone = Voter.sanitize_phone(self.Phone)
   end
 
@@ -107,6 +111,28 @@ class Voter < ActiveRecord::Base
     true
   end
 
+  def dial_predictive
+    call_attempt = new_call_attempt(self.campaign.predictive_type)
+    response = Twilio::Call.make(
+        self.campaign.caller_id,
+        self.Phone,
+        connect_call_attempt_url(call_attempt, :host => Settings.host, :port =>Settings.port),
+        'IfMachine' => self.campaign.use_recordings? ? 'Continue' : 'Hangup' ,
+        'Timeout' => campaign.answer_detection_timeout || "20"
+    )
+    call_attempt.update_attributes(:status => CallAttempt::Status::INPROGRESS, :sid => response["TwilioResponse"]["Call"]["Sid"])
+  end
+
+  def conference(session)
+    session.voter_in_progress = self
+    session.save
+    Twilio::TwiML::Response.new do |r|
+      r.Dial :hangupOnStar => 'false' do |d|
+        d.Conference "session#{session.id}", :wait_url => "", :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
+      end
+    end.text
+  end
+
   def apply_attribute(attribute, value)
     if self.has_attribute? attribute
       self[attribute] = value
@@ -130,9 +156,9 @@ class Voter < ActiveRecord::Base
   end
 
   private
-  def new_call_attempt
-    call_attempt = self.call_attempts.create(:campaign => self.campaign, :dialer_mode => 'robo', :status => CallAttempt::Status::INPROGRESS)
-    self.update_attributes!(:last_call_attempt => call_attempt)
+  def new_call_attempt(mode = 'robo')
+    call_attempt = self.call_attempts.create(:campaign => self.campaign, :dialer_mode => mode, :status => CallAttempt::Status::INPROGRESS)
+    self.update_attributes!(:last_call_attempt => call_attempt, :last_call_attempt_time => Time.now)
     call_attempt
   end
 end

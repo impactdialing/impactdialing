@@ -48,7 +48,7 @@ DaemonKit::Application.running! do |config|
       return
     end
 
-    if campaign.predective_type=="preview"
+    if campaign.predictive_type=="preview"
       DaemonKit.logger.info "#{campaign.name} is preview dialing, returning"
       return
     end
@@ -80,13 +80,13 @@ DaemonKit::Application.running! do |config|
       ratio_dial=1
     end
 
-    if campaign.predective_type.index("power_")!=nil
-      ratio_dial = campaign.predective_type[6, 1].to_i
-      DaemonKit.logger.info "ratio_dial: #{ratio_dial}, #{callers.length}, #{campaign.predective_type.index("power_")}"
+    if campaign.predictive_type.index("power_")!=nil
+      ratio_dial = campaign.predictive_type[6, 1].to_i
+      DaemonKit.logger.info "ratio_dial: #{ratio_dial}, #{callers.length}, #{campaign.predictive_type.index("power_")}"
     end
-    if campaign.predective_type.index("robo,")!=nil
+    if campaign.predictive_type.index("robo,")!=nil
       ratio_dial = 5
-      DaemonKit.logger.info "ratio_dial: #{ratio_dial}, #{callers.length}, #{campaign.predective_type.index("robo")}"
+      DaemonKit.logger.info "ratio_dial: #{ratio_dial}, #{callers.length}, #{campaign.predictive_type.index("robo")}"
     end
 
     ratio_dial=campaign.ratio_override if campaign.ratio_override!=nil && !campaign.ratio_override.blank? && campaign.ratio_override > 0
@@ -96,7 +96,7 @@ DaemonKit::Application.running! do |config|
     end
 
 
-    if (campaign.predective_type=="" || campaign.predective_type.index("power_")==0 || campaign.predective_type.index("robo,")==0)
+    if (campaign.predictive_type=="" || campaign.predictive_type.index("power_")==0 || campaign.predictive_type.index("robo,")==0)
       #original method
       max_calls=callers.length * ratio_dial
       DaemonKit.logger.info "max_calls: #{max_calls}"
@@ -128,7 +128,7 @@ DaemonKit::Application.running! do |config|
       pool_size=0
 
       short_counter=0
-      if campaign.predective_type=="algorithm1"
+      if campaign.predictive_type=="algorithm1"
         callers_on_call.each do |session|
           if !session.attempt_in_progress.blank?
             attempt = CallAttempt.find(session.attempt_in_progress)
