@@ -55,4 +55,8 @@ class CallerSession < ActiveRecord::Base
     response
   end
 
+  def end
+    self.update_attributes(:on_call => false, :available_for_call => false, :endtime => Time.now)
+  end
+
 end

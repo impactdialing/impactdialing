@@ -27,45 +27,57 @@ describe CallerSession do
     voter.caller_session.should == session
   end
 
-  it "asks for the campaign context" do
-    caller = Factory(:caller)
-    session = Factory(:caller_session, :caller => caller)
-    session.ask_for_campaign.should == Twilio::Verb.new do |v|
-      v.gather(:numDigits => 5, :timeout => 10, :action => assign_campaign_caller_url(session.caller , :session => session, :host => Settings.host, :attempt => 1), :method => "POST") do
-        v.say "Please enter your campaign id."
-      end
-    end.response
-  end
+  describe "Calling in" do
+    let(:caller){ Factory(:caller) }
 
-  it "asks for campaign pin context again" do
-    caller = Factory(:caller)
-    session = Factory(:caller_session, :caller => caller)
-    session.ask_for_campaign(1).should == Twilio::Verb.new do |v|
-      v.gather(:numDigits => 5, :timeout => 10, :action => assign_campaign_caller_url(session.caller , :session => session, :host => Settings.host, :attempt => 2), :method => "POST") do
-        v.say "Incorrect campaign Id. Please enter your campaign Id."
-      end
-    end.response
-  end
+    it "asks for the campaign context" do
+      session = Factory(:caller_session, :caller => caller)
+      session.ask_for_campaign.should == Twilio::Verb.new do |v|
+        v.gather(:numDigits => 5, :timeout => 10, :action => assign_campaign_caller_url(session.caller, :session => session, :host => Settings.host, :attempt => 1), :method => "POST") do
+          v.say "Please enter your campaign id."
+        end
+      end.response
+    end
 
-  it "hangs up on three incorrect campaign contexts" do
-    caller = Factory(:caller)
-    session = Factory(:caller_session, :caller => caller)
-    session.ask_for_campaign(3).should == Twilio::Verb.new do |v|
-      v.say "Incorrect campaign Id."
-      v.hangup
-    end.response
-  end
+    it "asks for campaign pin context again" do
+      session = Factory(:caller_session, :caller => caller)
+      session.ask_for_campaign(1).should == Twilio::Verb.new do |v|
+        v.gather(:numDigits => 5, :timeout => 10, :action => assign_campaign_caller_url(session.caller, :session => session, :host => Settings.host, :attempt => 2), :method => "POST") do
+          v.say "Incorrect campaign Id. Please enter your campaign Id."
+        end
+      end.response
+    end
 
-  it "creates a conference" do
-    caller , campaign, conf_key = Factory(:caller), Factory(:campaign), "conference_key"
-    session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => conf_key)
-    session.start.should == Twilio::Verb.new do |v|
-      v.dial(:hangupOnStar => true, :action => end_session_caller_url(caller ,:host => Settings.host, :session => session, :campaign => campaign)) do
-        v.conference(conf_key, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host), :waitMethod => "GET")
-      end
-    end.response
-    session.on_call.should be_true
-    session.available_for_call.should be_true
+    it "hangs up on three incorrect campaign contexts" do
+      session = Factory(:caller_session, :caller => caller)
+      session.ask_for_campaign(3).should == Twilio::Verb.new do |v|
+        v.say "Incorrect campaign Id."
+        v.hangup
+      end.response
+    end
+
+    it "creates a conference" do
+      campaign, conf_key = Factory(:campaign), "conference_key"
+      session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => conf_key)
+      session.start.should == Twilio::Verb.new do |v|
+        v.dial(:hangupOnStar => true, :action => end_session_caller_url(caller, :host => Settings.host, :session => session, :campaign => campaign)) do
+          v.conference(conf_key, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host), :waitMethod => "GET")
+        end
+      end.response
+      session.on_call.should be_true
+      session.available_for_call.should be_true
+    end
+
+    it "terminates a conference" do
+      campaign, conf_key = Factory(:campaign), "conference_key"
+      session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => conf_key)
+      time_now = Time.now
+      Time.stub(:now).and_return(time_now)
+      session.end
+      session.available_for_call.should be_false
+      session.on_call.should be_false
+      session.endtime.should == time_now
+    end
   end
 
 end

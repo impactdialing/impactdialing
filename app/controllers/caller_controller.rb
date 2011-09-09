@@ -1,6 +1,6 @@
 class CallerController < ApplicationController
   layout "caller"
-  before_filter :check_login, :except=>[:login, :feedback, :assign_campaign]
+  before_filter :check_login, :except=>[:login, :feedback, :assign_campaign, :end_session]
   before_filter :redirect_to_ssl
   before_filter :connect_to_twilio, :only => [:preview_dial]
 
@@ -50,6 +50,13 @@ class CallerController < ApplicationController
     else
       render :xml => @session.ask_for_campaign(params[:attempt])
     end
+  end
+
+  def end_session
+    caller = Caller.find(params[:id])
+    @session = caller.caller_sessions.find(params[:session])
+    @session.end
+    render :xml => Twilio::Verb.hangup
   end
 
   def campaign
