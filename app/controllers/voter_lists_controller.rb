@@ -108,7 +108,7 @@ class VoterListsController < ClientController
       @campaign_path = campaign_path(@campaign)
     else
       @layout = 'client'
-      @campaign_path = campaign_view_path(@campaign)
+      @campaign_path = client_campaign_path(@campaign)
     end
   end
 end

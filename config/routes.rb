@@ -30,9 +30,14 @@ ActionController::Routing::Routes.draw do |map|
   map.broadcast_root '/broadcast', :action => 'index', :controller => 'broadcast'
   map.broadcast_login '/broadcast/login', :action => 'login', :controller => 'broadcast'
 
+  map.namespace 'broadcast' do |broadcast|
+    broadcast.resources :campaigns, :only => [:show, :index]
+  end
+
   map.namespace 'client' do |client|
     map.campaign_new 'client/campaign_new', :action => 'campaign_new', :controller => 'client'
-    map.campaign_view 'client/campaign_view/:id', :action => 'campaign_view', :controller => 'client'
+
+    client.resources :campaigns, :only => [:show, :index, :create]
 
     ['campaigns', 'scripts', 'callers'].each do |type_plural|
       client.send("deleted_#{type_plural}", "/deleted_#{type_plural}", :action => 'deleted', :controller => type_plural, :conditions => { :method => :get })
