@@ -84,12 +84,12 @@ ActiveRecord::Schema.define(:version => 20110829060451) do
     t.integer  "num_calls"
     t.integer  "avg_wait"
     t.string   "sid"
-    t.boolean  "available_for_call",   :default => false
-    t.integer  "voter_in_progress_id"
+    t.boolean  "available_for_call",  :default => false
+    t.integer  "voter_in_progress"
     t.datetime "hold_time_start"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.boolean  "on_call",              :default => false
+    t.boolean  "on_call",             :default => false
     t.string   "caller_number"
     t.string   "tCallSegmentSid"
     t.string   "tAccountSid"
@@ -145,7 +145,7 @@ ActiveRecord::Schema.define(:version => 20110829060451) do
     t.string   "caller_id"
     t.boolean  "caller_id_verified",       :default => false
     t.boolean  "use_answering",            :default => true
-    t.string   "predictive_type",          :default => "preview"
+    t.string   "predective_type",          :default => "preview"
     t.integer  "recording_id"
     t.boolean  "use_recordings",           :default => false
     t.integer  "max_calls_per_caller",     :default => 20
@@ -422,7 +422,7 @@ ActiveRecord::Schema.define(:version => 20110829060451) do
     t.datetime "scheduled_date"
   end
 
-  add_index "voters", ["Phone", "voter_list_id"], :name => "index_voters_on_Phone_and_voter_list_id", :unique => true
+  add_index "voters", ["Phone", "voter_list_id"], :name => "index_voters_on_Phone_and_voter_list_id"
   add_index "voters", ["Phone"], :name => "index_voters_on_Phone"
   add_index "voters", ["attempt_id"], :name => "index_voters_on_attempt_id"
   add_index "voters", ["campaign_id"], :name => "index_voters_on_campaign_id"
