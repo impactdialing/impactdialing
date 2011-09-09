@@ -28,7 +28,7 @@ class ClientController < ApplicationController
         flash_now(:error, "We could not find an account with that email address")
       else
         user.create_reset_code
-        #Postoffice.deliver_password_recovery(u)
+        #Postoffice.password_recovery(u).deliver
 
         begin
           emailText="Click here to reset your password<br/> #{ reset_password_url(:reset_code => user.password_reset_code) }"
@@ -327,38 +327,6 @@ Can we count on you to vote for such-and-such?
     return
   end
 
-  def campaign_delete
-    @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id)
-    if !@campaign.blank?
-      @campaign.active = false
-      @campaign.save
-    end
-    flash_message(:notice, "Campaign deleted")
-    redirect_to :back
-  end
-
-  def campaigns
-    @breadcrumb="Campaigns"
-    @campaigns = Campaign.active.manual.for_user(@user).paginate :page => params[:page], :order => 'id desc'
-  end
-
-  def campaign_new
-    campaign = Campaign.new(:user_id => @user.id, :predective_type => 'algorithm1')
-    campaign.user_id = @user.id
-    count = Campaign.find_all_by_user_id(@user.id)
-    campaign.name="Untitled #{count.length+1}"
-    script = Script.find_by_user_id(@user.id)
-    campaign.script_id = script.id if script!=nil
-    campaign.save
-    callers = Caller.find_all_by_user_id_and_active(@user.id,1)
-    callers.each do |caller|
-      campaign.callers << caller
-    end
-    #flash[:notice]="Campaign created."
-    redirect_to :action=>"campaign_view", :id=>campaign.id
-    return
-  end
-
   def call_now
     campaign = Campaign.find(params[:id])
     if !phone_number_valid(params[:num])
@@ -412,7 +380,7 @@ Can we count on you to vote for such-and-such?
       flash_message(:notice, "Calling you now!")
     end
 
-    redirect_to :action=>"campaign_view", :id=>params[:id]
+    redirect_to client_campaign_path(campaign)
     return
   end
 
@@ -470,7 +438,7 @@ Can we count on you to vote for such-and-such?
         else
           flash_message(:notice, "Campaign saved.  <font color=red>Enter code #{code} when called.</font>")
         end
-        redirect_to :action=>"campaign_view", :id=>@campaign.id
+        redirect_to client_campaign_path(@campaign)
         return
       end
     end
@@ -502,7 +470,7 @@ Can we count on you to vote for such-and-such?
       #r.save
       #save_s3(path,r)
       flash_message(:notice, "Recording saved.")
-      redirect_to :action => "campaign_view", :id => params[:campaign_id]
+      redirect_to client_campaign_path(params[:campaign_id])
       return
     else
       @recording = @user.recordings.new
@@ -546,7 +514,7 @@ Can we count on you to vote for such-and-such?
     @session.on_call = true
     @session.save
     flash_message(:notice, "Robo session started")
-    redirect_to :action=>"campaign_view", :id=>params[:campaign_id]
+    redirect_to client_campaigns_path(params[:campaign_id])
   end
 
   def robo_session_end
@@ -562,7 +530,7 @@ Can we count on you to vote for such-and-such?
       session.save
     end
     flash_message(:notice, "Robo session ended")
-    redirect_to :action=>"campaign_view", :id=>params[:campaign_id]
+    redirect_to client_campaigns_path(params[:campaign_id])
   end
 
   def billing
@@ -663,24 +631,6 @@ Can we count on you to vote for such-and-such?
 
   end
 
-  def campaign_view
-    check_warning
-    @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id)
-    @breadcrumb=[{"Campaigns"=>"/client/campaigns"},@campaign.name]
-
-    @callers = Caller.find_all_by_user_id_and_active(@user.id,true)
-    @lists = @campaign.voter_lists
-    @voters = Voter.paginate :page => params[:page], :conditions =>"active=1 and campaign_id=#{@campaign.id}", :order => 'LastName,FirstName,Phone'
-    @scripts = @user.scripts.manual.active
-
-    #    @campaign.check_valid_caller_id_and_save
-    #    flash.now[:error]="Your Campaign Caller ID is not verified."  if !@campaign.caller_id.blank? && !@campaign.caller_id_verified
-    flash_now(:warning, "When you make calls with this campaign, you need a phone number to use for the Caller ID. Enter the phone number you want to use for your Caller ID and click Verify. To prevent abuse, the system will call that number and ask you to enter a validation code that will appear on your screen. Until you do this, you can't make calls with this campaign.") if @campaign.caller_id.blank?
-    @isAdmin = @user.admin
-    @show_voter_buttons = @user.show_voter_buttons
-    @voter_list = @campaign.voter_lists.new
-  end
-
   def campaign_caller_id_verified
     @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id)
     @campaign.check_valid_caller_id_and_save
@@ -705,7 +655,7 @@ Can we count on you to vote for such-and-such?
       sess.save
     end
     flash_message(:notice, "Dialer Reset.  Callers must call back in.")
-    redirect_to :action=>"campaign_view", :id=>params[:id]
+    redirect_to client_campaigns_path(params[:id])
     return
   end
 
@@ -716,7 +666,7 @@ Can we count on you to vote for such-and-such?
       @voter.save
     end
     flash_message(:notice, "Voter deleted")
-    redirect_to :action=>"campaign_view", :id=>@voter.campaign_id
+    redirect_to client_campaigns_path(@voter.campaign_id)
     return
   end
 
@@ -728,7 +678,7 @@ Can we count on you to vote for such-and-such?
     else
       @label="Edit Voter"
     end
-    @breadcrumb=[{"Campaigns"=>"/client/campaigns"},{@campaign.name=>"/client/campaign_view/#{@campaign.id}"}, @label]
+    @breadcrumb=[{"Campaigns"=>"/client/campaigns"},{@campaign.name=>client_campaign_path(@campaign)}, @label]
     if request.post?
       if params[:voterList]=="0" && params[:new_list_name].blank?
         flash_now(:error, "List name cannot be blank")
@@ -757,7 +707,7 @@ Can we count on you to vote for such-and-such?
       if @voter.valid?
         @voter.save
         flash_message(:notice, "Voter saved")
-        redirect_to :action=>"campaign_view", :id=>@campaign.id
+        redirect_to client_campaigns_path(@campaign.id)
         return
       end
     end
@@ -768,7 +718,7 @@ Can we count on you to vote for such-and-such?
     ActiveRecord::Base.connection.execute("update voters set result=NULL, status='not called' where campaign_id=#{params[:id]}")
     #    ActiveRecord::Base.connection.execute("delete from voter_results where campaign_id=#{params[:id]}")
     flash_message(:notice, "Calls cleared")
-    redirect_to :action=>"campaign_view", :id=>params[:id]
+    redirect_to client_campaigns_path(params[:id])
     return
   end
 
@@ -897,7 +847,7 @@ Can we count on you to vote for such-and-such?
 
   def voter_view
     @campaign = Campaign.find_by_id_and_user_id(params[:campaign_id],@user.id)
-    @breadcrumb=[{"Campaigns"=>"/client/campaigns"},{"#{@campaign.name}"=>"/client/campaign_view/#{@campaign.id}"},"View Voters"]
+    @breadcrumb=[{"Campaigns"=>"/client/campaigns"},{"#{@campaign.name}"=>client_campaign_path(@campaign)},"View Voters"]
     #@voters = Voter.find_all_by_campaign_id_and_active_and_user_id(params[:campaign_id],1,@user.id)
     #    @voters = Voter.paginate :page => params[:page], :conditions =>"active=1 and campaign_id=#{@campaign.id}", :order => 'LastName,FirstName,Phone'
     @voters = Voter.paginate :page => params[:page], :conditions =>"active=1 and campaign_id=#{@campaign.id} and voter_list_id in (#{@campaign.voter_lists.collect{|c| c.id.to_s + ","}}0)", :order => 'LastName,FirstName,Phone'
