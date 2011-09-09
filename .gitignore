@@ -9,3 +9,5 @@ tmp
 *.DS_Store
 public/.DS_Store
 test/
+spec/fixtures/test_tmp/
+bin/*
