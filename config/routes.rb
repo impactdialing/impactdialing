@@ -69,4 +69,8 @@ ActionController::Routing::Routes.draw do |map|
   map.twilio_call_ended '/twilio_call_ended', :controller => 'twilio', :action => 'call_ended'
   map.resource :call_attempts, :only => :create
 
+  map.connect 'admin/:action/:id', :controller=>"admin"
+  map.connect 'admin/:action', :controller=>"admin"
+  map.connect ':controller/:action/:id'
+  map.connect ':controller/:action/:id.:format'
 end
