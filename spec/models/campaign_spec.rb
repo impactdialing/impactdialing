@@ -6,7 +6,7 @@ describe Campaign do
   it "restoring makes it active" do
     campaign = Factory(:campaign, :active => false)
     campaign.restore
-    campaign.active?.should == true
+    campaign.should be_active
   end
 
   it "sorts by the updated date" do
@@ -188,5 +188,18 @@ describe Campaign do
         }.should change(campaign, :voters_remaining).by(-1)
       end
     end
+  end
+
+  it "clears calls" do
+    campaign = Factory(:campaign)
+    voters = 3.times.map{ Factory(:voter, :campaign => campaign, :result => 'foo', :status => 'bar') }
+    voter_on_another_campaign = Factory(:voter, :result => 'hello', :status => 'world')
+    campaign.clear_calls
+    voters.each(&:reload).each do |voter|
+      voter.result.should be_nil
+      voter.status.should == 'not called'
+    end
+    voter_on_another_campaign.result.should == 'hello'
+    voter_on_another_campaign.status.should == 'world'
   end
 end
