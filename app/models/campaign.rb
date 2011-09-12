@@ -388,6 +388,10 @@ class Campaign < ActiveRecord::Base
     self.all_voters.count - voters_dialed
   end
 
+  def clear_calls
+    all_voters.update_all(:result => nil, :status => 'not called')
+  end
+
   private
   def dial_voters
     self.voter_lists.each do |voter_list|
@@ -395,5 +399,4 @@ class Campaign < ActiveRecord::Base
       voter_list.dial if voter_list.enabled
     end
   end
-
 end

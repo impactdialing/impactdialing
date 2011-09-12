@@ -714,14 +714,6 @@ Can we count on you to vote for such-and-such?
 
   end
 
-  def campaign_clear_calls
-    ActiveRecord::Base.connection.execute("update voters set result=NULL, status='not called' where campaign_id=#{params[:id]}")
-    #    ActiveRecord::Base.connection.execute("delete from voter_results where campaign_id=#{params[:id]}")
-    flash_message(:notice, "Calls cleared")
-    redirect_to client_campaigns_path(params[:id])
-    return
-  end
-
   def scripts
     @breadcrumb="Scripts"
     @scripts = @user.scripts.active.manual.paginate :page => params[:page], :order => 'name'

@@ -45,5 +45,12 @@ module Client
       campaign = @user.campaigns.create(:predective_type => 'algorithm1', :script => @user.scripts.first, :callers => @user.callers.active)
       redirect_to campaign
     end
+
+    def clear_calls
+      campaign = Campaign.find(params[:campaign_id])
+      campaign.clear_calls
+      flash_message(:notice, "Calls cleared")
+      redirect_to :back
+    end
   end
 end
