@@ -2,13 +2,14 @@ require "spec_helper"
 
 describe CallerController do
   describe 'index' do
-    let(:caller) { Factory(:caller) }
+    let(:user) { Factory(:user) }
+    let(:caller) { Factory(:caller, :user => user) }
     before(:each) do
       login_as(caller)
     end
 
     it "doesn't list deleted campaigns" do
-      caller.campaigns = [(Factory(:campaign, :active => false)), Factory(:campaign, :active => true)]
+      user.campaigns = [(Factory(:campaign, :active => false)), Factory(:campaign, :active => true)]
       caller.save!
       get :index
       assigns(:campaigns).should have(1).thing
@@ -18,7 +19,7 @@ describe CallerController do
     it "lists all campaigns for web ui" do
       Factory(:campaign, :use_web_ui => false)
       campaign = Factory(:campaign, :use_web_ui => true)
-      caller.update_attribute(:campaigns, [campaign])
+      user.update_attribute(:campaigns, [campaign])
       get :index
       assigns(:campaigns).should == [campaign]
     end

@@ -59,4 +59,9 @@ class CallerSession < ActiveRecord::Base
     self.update_attributes(:on_call => false, :available_for_call => false, :endtime => Time.now)
   end
 
+  def publish(event,data)
+    return unless self.campaign.use_web_ui?
+    Pusher[self.session_key].trigger(event,data)
+  end
+
 end
