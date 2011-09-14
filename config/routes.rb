@@ -29,6 +29,7 @@ ImpactDialing::Application.routes.draw do
     collection { get :login }
     member { post :assign_campaign }
     member { post :end_session }
+    member { post :active_session }
   end
 
   post :receive_call, :to => 'callin#create'
