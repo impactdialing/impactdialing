@@ -59,6 +59,12 @@ class CallerController < ApplicationController
     render :xml => Twilio::Verb.hangup
   end
 
+  def active_session
+    @caller = Caller.find(params[:id])
+    active_sessions = @caller.caller_sessions.available
+    render :json => active_sessions.blank? ? {} : active_sessions.last
+  end
+
   def campaign
     require "hpricot"
     require "open-uri"

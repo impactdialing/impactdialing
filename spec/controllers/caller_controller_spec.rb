@@ -41,8 +41,8 @@ describe CallerController do
   end
 
   describe "calling in" do
-    let(:user){ Factory(:user) }
-    let(:caller){ Factory(:caller, :user => user) }
+    let(:user) { Factory(:user) }
+    let(:caller) { Factory(:caller, :user => user) }
 
     it "allocates a campaign to a caller" do
       pin = '1234'
@@ -86,6 +86,20 @@ describe CallerController do
       assigns(:session).available_for_call.should be_false
       assigns(:session).on_call.should be_false
       response.body.should == Twilio::Verb.hangup
+    end
+
+    it "finds the callers active session" do
+      login_as(caller)
+      session = Factory(:caller_session, :caller => caller, :session_key => 'key', :on_call => true, :available_for_call => true)
+      post :active_session, :id => caller.id
+      response.body.should == session.to_json
+      end
+
+    it "returns no session if the caller is not connected" do
+      login_as(caller)
+      session = Factory(:caller_session, :caller => caller, :session_key => 'key', :on_call => false, :available_for_call => true)
+      post :active_session, :id => caller.id
+      response.body.should == {}.to_json
     end
 
   end
