@@ -1,4 +1,4 @@
-class Account < ActiveRecord::Base
+class BillingAccount < ActiveRecord::Base
   belongs_to :user
 #  validates_presence_of :cc
 
@@ -17,16 +17,16 @@ class Account < ActiveRecord::Base
       end
     end
   end
-  
+
   def decrypt_cc
      priv_key = Crypto::Key.from_file('rsa_key')
      if !self.cc.blank?
-       priv_key.decrypt(self.cc) 
+       priv_key.decrypt(self.cc)
      else
        ""
      end
   end
-  
+
   def first_name
     name_arr=self.name.split(" ")
     name_arr.shift
@@ -35,7 +35,7 @@ class Account < ActiveRecord::Base
   def last_name
     name_arr=self.name.split(" ")
     name_arr.join(" ").strip
-  end    
+  end
 
 
 end
