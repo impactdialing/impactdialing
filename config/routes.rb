@@ -46,6 +46,8 @@ ActionController::Routing::Routes.draw do |map|
         type.restore 'restore', :action => 'restore', :controller => type_plural, :conditions => { :method => :put }
       end
     end
+
+    client.report_usage 'reports/usage', :action => 'usage', :controller => 'reports'
   end
 
   map.resources :campaigns, :member => { :verify_callerid => :post }, :path_prefix => 'client', :only => [] do |campaign|
@@ -63,7 +65,6 @@ ActionController::Routing::Routes.draw do |map|
   map.login '/client/login', :action => 'login', :controller => 'client'
 
   map.report '/client/reports', :action => 'reports', :controller => 'client'
-  map.report_usage '/client/reports/usage', :action => 'usage', :controller => 'client/reports'
   map.twilio_callback '/twilio_callback', :controller => 'twilio', :action => 'callback'
   map.twilio_report_error '/twilio_report_error', :controller => 'twilio', :action => 'report_error'
   map.twilio_call_ended '/twilio_call_ended', :controller => 'twilio', :action => 'call_ended'

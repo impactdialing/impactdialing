@@ -6,7 +6,9 @@ class CallAttempt < ActiveRecord::Base
 
   named_scope :for_campaign, lambda{|campaign| {:conditions => ["campaign_id = ?", campaign.id] }}
   named_scope :for_status, lambda{|status| {:conditions => ["call_attempts.status = ?", status] }}
-
+  named_scope :between, lambda{|from_date, to_date| { :conditions => { :created_at => from_date..to_date } }}
+  named_scope :without_status, lambda{|statuses| { :conditions => ['status not in (?)', statuses] }}
+  named_scope :with_status, lambda{|statuses| { :conditions => ['status in (?)', statuses] }}
 
   def ring_time
     if self.answertime!=nil && self.created_at!=nil
