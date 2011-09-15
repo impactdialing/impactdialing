@@ -81,9 +81,9 @@ describe CallerSession do
   end
 
   describe "pusher" do
+    let(:caller){ Factory(:caller) }
 
     it "publishes information to a caller in session" do
-      caller = Factory(:caller)
       campaign = Factory(:campaign, :use_web_ui => true)
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sample")
       event,data = 'event','data'
@@ -94,13 +94,24 @@ describe CallerSession do
     end
 
     it "does not publish information to a caller not using web ui" do
-      caller = Factory(:caller)
       campaign = Factory(:campaign, :use_web_ui => false)
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sample")
       event,data = 'event','data'
       Pusher.should_not_receive(:[])
       session.publish(event,data)
     end
+
+    it "pushes voter data being called by a caller" do
+      campaign = Factory(:campaign, :use_web_ui => true)
+      session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sample")
+      voter = Factory(:voter, :campaign => campaign, :caller_session => session)
+      voter.stub(:dial_predictive)
+      channel = mock
+      Pusher.should_receive(:[]).with(session.session_key).and_return(channel)
+      channel.should_receive(:trigger).with("calling",voter.to_json)
+      session.call(voter)
+    end
+
 
   end
 

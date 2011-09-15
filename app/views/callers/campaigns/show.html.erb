@@ -5,10 +5,14 @@
 
 <% content_for :javascripts do %>
     <script src="http://js.pusherapp.com/1.8/pusher.min.js" type="text/javascript"></script>
-    <%= javascript_include_tag 'jquery.ui.datetime.min','callers/caller_pusher' %>
+    <%= javascript_include_tag 'jquery.ui.datetime.min', 'callers/caller_pusher' %>
+
+    <script type="text/javascript">
+        var pusher = new Pusher('<%= Pusher.key %>');
+    </script>
 <% end %>
 
-<fieldset>
+<fieldset id="callin_data">
   <legend>Call In :</legend>
   <div>
     Campaign : <%= @campaign.name %>
@@ -29,7 +33,17 @@
 </fieldset>
 
 <fieldset>
-  <legend>Pusher</legend>
+  <legend>Lead Information</legend>
+  <div id="voter_info" class="rt">
+    When connected Lead Information will appear here
+  </div>
   <%= hidden_field_tag(:caller, @caller.id) %>
   <%= hidden_field_tag(:caller_session, nil) %>
+</fieldset>
+
+<fieldset id="call_options">
+  <legend>Call Options :</legend>
+  <div>
+    You are now called in and ready to take calls.
+  </div>
 </fieldset>

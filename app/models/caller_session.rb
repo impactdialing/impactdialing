@@ -25,6 +25,7 @@ class CallerSession < ActiveRecord::Base
   def call(voter)
     voter.update_attribute(:caller_session, self)
     voter.dial_predictive
+    self.publish("calling",voter.to_json)
   end
 
   def ask_for_campaign(attempt = 0)

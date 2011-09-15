@@ -125,4 +125,22 @@ describe CallAttempt do
     end
 
   end
+
+  describe "Pusher" do
+
+    it "pushes voter details to a call attempt being conferenced to a session" do
+      campaign = Factory(:campaign)
+      voter = Factory(:voter)
+      attempt = Factory(:call_attempt, :voter => voter)
+      session = Factory(:caller_session, :caller => Factory(:caller), :campaign => campaign)
+      channel = mock
+      Pusher.should_receive(:[]).with(session.session_key).and_return(channel)
+      channel.should_receive(:trigger).with("voter_start", anything)
+      attempt.voter.stub(:conference)
+      attempt.conference(session)
+    end
+
+
+
+  end
 end
