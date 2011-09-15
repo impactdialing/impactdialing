@@ -62,7 +62,7 @@ class CallerController < ApplicationController
   def active_session
     @caller = Caller.find(params[:id])
     active_sessions = @caller.caller_sessions.available
-    render :json => active_sessions.blank? ? {} : active_sessions.last
+    render :json => active_sessions.blank? ? {:caller_session => {:id => nil}} : active_sessions.last
   end
 
   def campaign
