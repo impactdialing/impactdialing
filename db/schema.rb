@@ -9,9 +9,9 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110829060451) do
+ActiveRecord::Schema.define(:version => 20110915102954) do
 
-  create_table "accounts", :force => true do |t|
+  create_table "billing_accounts", :force => true do |t|
     t.integer  "user_id"
     t.string   "cc"
     t.boolean  "active"

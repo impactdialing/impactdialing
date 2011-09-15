@@ -535,41 +535,41 @@ Can we count on you to vote for such-and-such?
 
   def billing
     @breadcrumb="Billing"
-    @account = @user.account || Account.new
-    @oldcc = @account.cc
-    if @account.last4.blank?
+    @billing_account = @user.billing_account || Account.new
+    @oldcc = @billing_account.cc
+    if @billing_account.last4.blank?
       @tempcc = ""
-      @account.cc = ""
+      @billing_account.cc = ""
     else
-      @tempcc = "xxxx xxxx xxxx #{@account.last4}"
-      @account.cc = "xxxx xxxx xxxx #{@account.last4}"
+      @tempcc = "xxxx xxxx xxxx #{@billing_account.last4}"
+      @billing_account.cc = "xxxx xxxx xxxx #{@billing_account.last4}"
     end
 
     if request.post?
-      @account.user_id = @user.id
-      @account.attributes = params[:account]
+      @billing_account.user_id = @user.id
+      @billing_account.attributes = params[:billing_account]
 
-      if @account.cc==@tempcc
-        @account.cc = @oldcc
+      if @billing_account.cc==@tempcc
+        @billing_account.cc = @oldcc
       else
-        if @account.cc.length > 4
-          @account.last4 = @account.cc[@account.cc.length-4,4]
+        if @billing_account.cc.length > 4
+          @billing_account.last4 = @billing_account.cc[@billing_account.cc.length-4,4]
         else
-          @account.last4 = @account.cc
+          @billing_account.last4 = @billing_account.cc
         end
-        @account.encyrpt_cc
+        @billing_account.encyrpt_cc
       end
 
-      name_arr=@account.name.split(" ")
+      name_arr=@billing_account.name.split(" ")
       fname=name_arr.shift
       lname=name_arr.join(" ").strip
 
       # test an auth to make sure this card is good.
       creditcard = ActiveMerchant::Billing::CreditCard.new(
-        :number     => @account.decrypt_cc,
-        :month      => @account.expires_month,
-        :year       => @account.expires_year,
-        :type       => @account.cardtype,
+        :number     => @billing_account.decrypt_cc,
+        :month      => @billing_account.expires_month,
+        :year       => @billing_account.expires_year,
+        :type       => @billing_account.cardtype,
         :first_name => fname,
         :last_name  => lname,
         :verification_value => params[:code]
@@ -578,15 +578,15 @@ Can we count on you to vote for such-and-such?
       if !creditcard.valid?
         if creditcard.expired?
           flash_now(:error, "The card expiration date you entered was invalid. Please try again.")
-          @account.cc = ""
+          @billing_account.cc = ""
         else
           flash_now(:error, "The card number or security code you entered was invalid. Please try again.")
-          @account.cc = ""
+          @billing_account.cc = ""
         end
         return
       end
 
-      #      p = Payment.authorize(1, creditcard, {:ip=>getIP, :zip=>@account.zip, :billing_address => @account.address1})
+      #      p = Payment.authorize(1, creditcard, {:ip=>getIP, :zip=>@billing_account.zip, :billing_address => @billing_account.address1})
       #      p.user_id = @user.id
       #      p.save
       #      if !p.success
@@ -596,10 +596,10 @@ Can we count on you to vote for such-and-such?
 
       billing_address = {
           :name => "#{@user.fname} #{@user.lname}",
-          :address1 => @account.address1 ,
-          :zip =>@account.zip,
-          :city     => @account.city,
-          :state    => @account.state,
+          :address1 => @billing_account.address1 ,
+          :zip =>@billing_account.zip,
+          :city     => @billing_account.city,
+          :state    => @billing_account.state,
           :country  => 'US'
         }
       # billing_address = {
@@ -618,7 +618,7 @@ Can we count on you to vote for such-and-such?
 
       if response.success?
         flash_message(:notice, "Account activated.")
-        @account.save
+        @billing_account.save
         @user.paid = 1
         @user.save
         redirect_to :action=>"index"
