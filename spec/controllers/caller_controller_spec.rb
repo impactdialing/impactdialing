@@ -99,7 +99,7 @@ describe CallerController do
       login_as(caller)
       session = Factory(:caller_session, :caller => caller, :session_key => 'key', :on_call => false, :available_for_call => true)
       post :active_session, :id => caller.id
-      response.body.should == {}.to_json
+      response.body.should == {:caller_session => {:id => nil}}.to_json
     end
 
   end
