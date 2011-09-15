@@ -5,7 +5,7 @@ class Campaign < ActiveRecord::Base
   has_many :caller_sessions
   has_many :voter_lists, :conditions => {:active => true}
   has_many :all_voters, :class_name => 'Voter'
-  has_many :call_attempts, :through => :all_voters
+  has_many :call_attempts
   has_and_belongs_to_many :callers
   belongs_to :script
   belongs_to :user
