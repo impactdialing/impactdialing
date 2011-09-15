@@ -110,6 +110,10 @@ class Voter < ActiveRecord::Base
     return fields.first.value
   end
 
+  def info
+
+  end
+
   private
   def new_call_attempt(mode = 'robo')
     call_attempt = self.call_attempts.create(:campaign => self.campaign, :dialer_mode => mode, :status => CallAttempt::Status::INPROGRESS)

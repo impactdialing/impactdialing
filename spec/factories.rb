@@ -45,7 +45,7 @@ Factory.define :family do |v|
 end
 
 Factory.define :caller_session do |s|
-  s.campaign_id { Factory(:campaign, :user => Factory(:user)).id }
+  s.campaign { Factory(:campaign, :user => Factory(:user))}
   s.caller_id { Factory(:caller) }
 end
 
