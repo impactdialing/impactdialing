@@ -14,12 +14,12 @@ class VoterListsController < ClientController
       return
     end
 
-    uploaded_file = params[:upload]["datafile"]
-    saved_filename = write_csv_file(uploaded_file)
+    upload = params[:upload]["datafile"]
+    csv = upload.tempfile
+    saved_filename = write_csv_file(csv)
     save_csv_filename_to_session(saved_filename)
-
-    @separator = separator_from_file_extension(uploaded_file.original_filename)
-    @csv_column_headers = FasterCSV.parse(uploaded_file.readline, :col_sep => @separator).first.compact
+    @separator = separator_from_file_extension(upload.original_filename)
+    @csv_column_headers = FasterCSV.parse(csv.readline, :col_sep => @separator).first.compact
 
     render "column_mapping", :layout => @layout
   end
@@ -77,14 +77,13 @@ class VoterListsController < ClientController
     false
   end
 
-  def write_csv_file(uploaded_file)
-    uploaded_file = params[:upload]["datafile"]
-    csv_filename = "#{uploaded_file.original_filename}_#{Time.now.to_i}_#{rand(999)}"
+  def write_csv_file(csv)
+    csv_filename = "#{csv.original_filename}_#{Time.now.to_i}_#{rand(999)}"
     File.open(temp_file_path(csv_filename), "w") do |f|
-      f.write(uploaded_file.read)
+      f.write(csv.read)
       f.flush
     end
-    uploaded_file.seek 0
+    csv.seek 0
     csv_filename
   end
 
