@@ -111,7 +111,8 @@ class Voter < ActiveRecord::Base
   end
 
   def info
-
+    #{:fields => self.attributes.reject{|k,v| (k == "created_at") ||(k == "updated_at")} }
+    {:fields => self.attributes.reject{|k,v| (k == "created_at") ||(k == "updated_at")}, :custom_fields => Hash[*self.custom_voter_field_values.collect{|cvfv| [cvfv.custom_voter_field.name, cvfv.value]}.flatten] }
   end
 
   private

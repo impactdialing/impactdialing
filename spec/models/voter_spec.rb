@@ -210,6 +210,15 @@ describe Voter do
     Voter.scheduled.should == [recent_voter]
   end
 
+  it "provides voter information with custom fields" do
+    voter = Factory(:voter, :campaign => Factory(:campaign, :user => Factory(:user)))
+    voter_no_custom = Factory(:voter, :campaign => Factory(:campaign, :user => Factory(:user)))
+    voter.apply_attribute('foo','bar')
+    voter.apply_attribute('goo','car')
+    voter.info.should == {:fields => voter.attributes.reject{|k,v| ["created_at", "updated_at"].include? k}, :custom_fields => {'foo' => 'bar', 'goo' => 'car'}}
+    voter_no_custom.info == {:fields => voter_no_custom.attributes.reject{|k,v| ["created_at", "updated_at"].include? k}, :custom_fields => {}}
+  end
+
   it "limits voters when listing them" do
     10.times { Factory(:voter) }
     Voter.limit(5).should have(5).voters
