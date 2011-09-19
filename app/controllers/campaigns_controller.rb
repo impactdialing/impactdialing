@@ -7,14 +7,14 @@ class CampaignsController < ClientController
   end
 
   def create
-    campaign = @user.campaigns.create!(:script => @user.scripts.robo.first, :robo => true)
+    campaign = @user.account.campaigns.create!(:script => @user.account.scripts.robo.first, :robo => true)
     redirect_to campaign
   end
 
   def update
     campaign = @user.all_campaigns.find(params[:id])
     campaign.attributes = params[:campaign]
-    campaign.script ||= @user.scripts.active.first
+    campaign.script ||= @user.account.scripts.active.first
     campaign.voter_lists.disable_all
     campaign.voter_lists.by_ids(params[:voter_list_ids]).enable_all
     if campaign.save
@@ -29,9 +29,9 @@ class CampaignsController < ClientController
   end
 
   def show
-    @scripts = @user.scripts.robo.active
-    @campaign = @user.campaigns.find(params[:id].to_i)
-    @callers  = @user.callers.active
+    @scripts = @user.account.scripts.robo.active
+    @campaign = account.campaigns.find(params[:id].to_i)
+    @callers  = account.callers.active
     @lists    = @campaign.voter_lists
     @voters = @campaign.all_voters.active.paginate(:page => params[:page])
     if @campaign.caller_id.blank?
@@ -42,7 +42,7 @@ class CampaignsController < ClientController
 
   #TODO: extract html message to partial
   def verify_callerid
-    @campaign = @user.campaigns.find(params[:id].to_i)
+    @campaign = account.campaigns.find(params[:id].to_i)
     @campaign.check_valid_caller!
     @campaign.save
     ret = if @campaign.caller_id.present? and (not @campaign.caller_id_verified)
@@ -72,7 +72,7 @@ class CampaignsController < ClientController
   end
 
   def dial_statistics
-    @campaign = @user.campaigns.find(params[:id])
+    @campaign = account.campaigns.find(params[:id])
   end
 
   private
@@ -86,6 +86,6 @@ class CampaignsController < ClientController
   end
 
   def active_robo_campaigns
-    @user.campaigns.active.robo.paginate :page => params[:page], :order => 'id desc'
+    account.campaigns.active.robo.paginate :page => params[:page], :order => 'id desc'
   end
 end

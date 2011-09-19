@@ -25,15 +25,15 @@ describe Campaign do
 
   it "generates its own name if one isn't provided" do
     user = Factory(:user)
-    campaign = user.campaigns.create!
+    campaign = user.account.campaigns.create!
     campaign.name.should == 'Untitled 1'
-    campaign = user.campaigns.create!
+    campaign = user.account.campaigns.create!
     campaign.name.should == 'Untitled 2'
   end
 
   it "doesn't overwrite a name that has been explicitly set" do
     user = Factory(:user)
-    campaign = user.campaigns.create!(:name => 'Titled')
+    campaign = user.account.campaigns.create!(:name => 'Titled')
     campaign.name.should == 'Titled'
   end
 
@@ -61,22 +61,22 @@ describe Campaign do
 
   describe "campaigns with caller sessions that are on call" do
     let(:user) { Factory(:user) }
-    let(:campaign) { Factory(:campaign, :user => user) }
+    let(:campaign) { Factory(:campaign, :account => user.account) }
 
     it "should give the campaign only once even if it has multiple caller sessions" do
       Factory(:caller_session, :campaign => campaign, :on_call => true)
       Factory(:caller_session, :campaign => campaign, :on_call => true)
-      user.campaigns.with_running_caller_sessions.should == [campaign]
+      user.account.campaigns.with_running_caller_sessions.should == [campaign]
     end
 
     it "should not give campaigns without on_call caller sessions" do
       Factory(:caller_session, :campaign => campaign, :on_call => false)
-      user.campaigns.with_running_caller_sessions.should be_empty
+      user.account.campaigns.with_running_caller_sessions.should be_empty
     end
 
     it "should not give another user's campaign'" do
-      Factory(:caller_session, :campaign => Factory(:campaign, :user => Factory(:user)), :on_call => true)
-      user.campaigns.with_running_caller_sessions.should be_empty
+      Factory(:caller_session, :campaign => Factory(:campaign, :account => Factory(:account)), :on_call => true)
+      user.account.campaigns.with_running_caller_sessions.should be_empty
     end
   end
 
@@ -118,7 +118,7 @@ describe Campaign do
     end
 
     it "does not start the dialer daemon for the campaign if the use has not already paid" do
-      campaign = Factory(:campaign, :user => Factory(:user, :paid => false))
+      campaign = Factory(:campaign, :account => Factory(:account, :paid => false))
       campaign.start.should be_false
     end
 
@@ -129,7 +129,7 @@ describe Campaign do
 
     [true, false].each do |exit_status|
       it "reports the status if the daemon start success was #{exit_status}" do
-        campaign = Factory(:campaign, :calls_in_progress => false, :user => Factory(:user, :paid => true))
+        campaign = Factory(:campaign, :calls_in_progress => false, :account => Factory(:account, :paid => true))
         campaign.stub(:system).and_return(exit_status)
         campaign.start.should eql(exit_status)
       end

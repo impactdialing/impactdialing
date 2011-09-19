@@ -29,14 +29,14 @@
             <%= options_for_select public_dialers, @campaign.predective_type %>
           </select>
         </p>
-        <% if !@campaign.user.recordings.blank? %>
+        <% if !@campaign.account.recordings.blank? %>
             <p><label> <%= f.check_box :use_recordings, :onclick=>"doRecord();" %> &nbsp; Leave voicemail</label></p>
 
             <div id="recordingsdiv"
                  <% if  !@campaign.use_recordings? %> style="display:none;"
                  <% end %>>
               <p>Recording:</p>
-              <%= f.collection_select(:recording_id, Recording.find_all_by_user_id_and_active(@user.id, 1), :id, :name, {:prompt => false}, {:class=>"field", :onchange=>"updatePreview();"}) %>
+              <%= f.collection_select(:recording_id, @account.recordings.active, :id, :name, {:prompt => false}, {:class=>"field", :onchange=>"updatePreview();"}) %>
               <div id="sndPreview"></div>
             </div>
         <% end %>
@@ -176,7 +176,7 @@
         }
     }
 
-    <% if !@campaign.user.recordings.blank? %>
+    <% if !@campaign.account.recordings.blank? %>
     function updatePreview() {
         recording_id = $('campaign_recording_id').value;
     <%@user.recordings.each do |recording| %>

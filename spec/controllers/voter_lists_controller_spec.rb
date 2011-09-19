@@ -12,7 +12,7 @@ describe VoterListsController do
   describe "voters list" do
     let(:csv_file_upload) { {"datafile" => fixture_file_upload("files/valid_voters_list.csv")} }
     before :each do
-      @campaign = Factory(:campaign, :user_id => session[:user])
+      @campaign = Factory(:campaign, :account => @current_user.account)
     end
 
     it "needs an uploaded file" do
@@ -73,7 +73,7 @@ describe VoterListsController do
             end
 
             it "should not save a list if the user already has a list with the same name" do
-              Factory(:voter_list, :user_id => @current_user.id, :campaign_id => @campaign.id, :name => "abcd")
+              Factory(:voter_list, :account => @current_user.account, :campaign_id => @campaign.id, :name => "abcd")
               import :voter_list_name => "abcd"
               response.flash.now[:error].first.should include "Name for this voter list is already taken"
               response.should render_template "column_mapping"

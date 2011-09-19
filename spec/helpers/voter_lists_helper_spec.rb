@@ -29,7 +29,7 @@ describe VoterListsHelper do
 
     it "returns a list of all custom fields along with the others" do
       custom_field = "baz"
-      Factory(:custom_voter_field, :name => "baz", :user => Factory(:user))
+      Factory(:custom_voter_field, :name => "baz", :account => Factory(:account))
       helper.system_column_headers("foo").should == [["Not available", nil], ["foo", "foo"], ["#{custom_field} (Custom)", custom_field]]
     end
   end

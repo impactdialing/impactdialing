@@ -24,7 +24,7 @@ class CallinController < ApplicationController
 
   def session_complete
     if(cookies[:session]==nil || cookies[:session]=="0") && params[:session].blank?
-      logger.info "NO SESSION COOKIE"  
+      logger.info "NO SESSION COOKIE"
       @session=CallerSession.find_by_sid(params[:CallSid]) if !params[:CallSid].blank?
       @session=CallerSession.find_by_sid(params[:CallGuid]) if !params[:CallGuid].blank?
     else
@@ -35,8 +35,8 @@ class CallinController < ApplicationController
       end
     end
     if @session.nil?
-      logger.info "BAILING ON SESSION_COMPLETE"  
-      return 
+      logger.info "BAILING ON SESSION_COMPLETE"
+      return
     end
     #return if(cookies[:session]==nil || cookies[:session]=="0") && params[:session].blank?
     #remove this caller
@@ -166,7 +166,7 @@ class CallinController < ApplicationController
       @play="#{APP_URL}/wav/enter_campaign_id.wav"
     else
       # response with PIN
-      c = Campaign.find_by_group_id_and_active_and_user_id(params[:Digits], true, @caller.user_id) if params[:session]!="0"
+      c = @caller.account.campaigns.active.find_by_group_id(params[:Digits]) if params[:session] != '0'
       if params[:session]=="0" || c.blank?
         #        @say="We could not find that campain, try again."
         @play="#{APP_URL}/wav/invalid_credentials.wav"
@@ -583,7 +583,7 @@ class CallinController < ApplicationController
       @hangup=true
       render :template => 'callin/index.xml.builder', :layout => false
       return
-      
+
       # no longer retry voters if no callers available
       # @anyCaller = CallerSession.find_by_campaign_id_and_on_call(@campaign.id, true)
       # if @anyCaller==nil

@@ -7,7 +7,7 @@
 		<p>
 			<label>Select Voter List <span>(Required Field)</span></label>
 			<select name="voterList" id="voterList" onchange="checklist();">
-				 <% @lists = VoterList.find_all_by_user_id_and_active_and_campaign_id(@user.id,true, @campaign.id).each do |l| %>
+				 <% @lists = @campaign.voter_lists.each do |l| %>
 					<option value="<%= l.id %>" <% if l.id ==@voter.voter_list_id %>selected<% end %>><%= l.name %></option>
 				<% end %>
 				<option value="0">New List...</option>

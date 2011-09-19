@@ -41,7 +41,7 @@ class VoterListsController < ClientController
     @voter_list = VoterList.new
     @voter_list.name = params[:voter_list_name]
     @voter_list.campaign_id = params[:campaign_id]
-    @voter_list.user_id = session[:user]
+    @voter_list.account_id = account.id
     unless @voter_list.valid?
       flash_now(:error, @voter_list.errors.full_messages.join("; "))
       render "column_mapping", :layout => @layout

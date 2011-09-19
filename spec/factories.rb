@@ -10,8 +10,10 @@ Factory.sequence :phonenumber do |n|
   "#{(10**10)+n}"
 end
 
+Factory.define :account do end
 
 Factory.define :user do |u|
+  u.account { Factory(:account) }
   u.email { Factory.next(:email) }
   u.new_password 'password'
 end
@@ -32,7 +34,7 @@ Factory.define :voter_list do |v|
   v.enabled { true }
   v.campaign_id { Factory(:campaign).id }
   v.name { Factory.next(:name) }
-  v.user_id { Factory(:user).id }
+  v.account { Factory(:account) }
 end
 
 Factory.define :voter do |v|
@@ -46,7 +48,7 @@ Factory.define :family do |v|
 end
 
 Factory.define :caller_session do |s|
-  s.campaign_id { Factory(:campaign, :user => Factory(:user)).id }
+  s.campaign { Factory(:campaign, :account => Factory(:account)) }
   s.caller_id { Factory(:caller) }
 end
 

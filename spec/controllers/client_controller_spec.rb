@@ -13,6 +13,7 @@ describe ClientController do
 
   context "when logged in" do
     let(:user) { Factory(:user) }
+
     before :each do
       login_as user
     end
@@ -26,8 +27,8 @@ describe ClientController do
 
     describe "reports" do
       it "shows only manual campaigns" do
-        campaign = Factory(:campaign, :user => user, :robo => false)
-        Factory(:campaign, :user => user, :robo => true)
+        campaign = Factory(:campaign, :account => user.account, :robo => false)
+        Factory(:campaign, :account => user.account, :robo => true)
         get :reports
         assigns(:campaigns).should == [campaign]
       end
@@ -35,8 +36,8 @@ describe ClientController do
 
     describe "fields" do
       it "shows original and custom fields" do
-        field = Factory(:custom_voter_field, :user => user, :name => "Foo")
-        script = Factory(:script, :user => user)
+        field = Factory(:custom_voter_field, :account => user.account, :name => "Foo")
+        script = Factory(:script, :account => user.account)
         get :script_add, :id => script.id
         assigns(:fields).should include(field.name)
       end
@@ -48,15 +49,15 @@ describe ClientController do
     end
 
     it "lists all manual scripts" do
-      robo_script = Factory(:script, :user => user, :robo => true)
-      manual_script = Factory(:script, :user => user, :robo => false)
+      robo_script = Factory(:script, :account => user.account, :robo => true)
+      manual_script = Factory(:script, :account => user.account, :robo => false)
       get :scripts
       assigns(:scripts).should == [manual_script]
     end
 
     it "deleting a script redirects to the referer" do
       request.env['HTTP_REFERER'] = 'http://referer/'
-      entity = Factory(:script, :user => user, :active => true)
+      entity = Factory(:script, :account => user.account, :active => true)
       post "script_delete", :id => entity.id
       entity.reload.active.should be_false
       response.should redirect_to :back

@@ -97,7 +97,7 @@ describe Voter do
   end
 
   describe "voter attributes" do
-    let(:voter){ Factory(:voter, :campaign => Factory(:campaign, :user=> Factory(:user)), :Phone => '384756923349') }
+    let(:voter){ Factory(:voter, :campaign => Factory(:campaign, :account => Factory(:account)), :Phone => '384756923349') }
 
     it "populates original attributes" do
       voter.apply_attribute('Phone', '0123456789')
@@ -139,7 +139,7 @@ describe Voter do
 
   describe "voter attributes" do
 
-    let(:voter){ Factory(:voter, :campaign => Factory(:campaign, :user=> Factory(:user)), :Phone => '384756923349') }
+    let(:voter){ Factory(:voter, :campaign => Factory(:campaign, :account=> Factory(:account)), :Phone => '384756923349') }
 
     it "populates original attributes" do
       voter.apply_attribute('Phone', '0123456789')

@@ -10,10 +10,10 @@ describe ReportsController do
     end
 
     it "lists all active robo campaigns belonging to a user" do
-      Factory(:campaign, :active => false, :user => user)
-      Factory(:campaign, :active => true, :robo => false, :user => user)
-      Factory(:campaign, :active => true, :user => Factory(:user))
-      campaign = Factory(:campaign, :active => true, :robo => true, :user => user)
+      Factory(:campaign, :active => false, :account => user.account)
+      Factory(:campaign, :active => true, :robo => false, :account => user.account)
+      Factory(:campaign, :active => true, :account => Factory(:account))
+      campaign = Factory(:campaign, :active => true, :robo => true, :account => user.account)
       get :index
       assigns(:campaigns).should == [campaign]
     end
@@ -22,7 +22,7 @@ describe ReportsController do
 
       let(:recording_count) { 2 }
       let(:script) { Factory(:script) }
-      let(:campaign) { Factory(:campaign, :active => true, :user => user, :script => script) }
+      let(:campaign) { Factory(:campaign, :active => true, :account => user.account, :script => script) }
       let(:recording1) { Factory(:robo_recording, :script => script, :name => "recording1") }
       let(:recording2) { Factory(:robo_recording, :script => script, :name => "recording2") }
 

@@ -9,31 +9,31 @@ describe CampaignsController do
   end
 
   it "creates a new robo campaign" do
-    manual_script = Factory(:script, :user => user, :robo => false)
-    robo_script = Factory(:script, :user => user, :robo => true)
+    manual_script = Factory(:script, :account => user.account, :robo => false)
+    robo_script = Factory(:script, :account => user.account, :robo => true)
     lambda {
       post :create
-    }.should change(user.campaigns.active.robo, :size).by(1)
-    user.campaigns.active.robo.last.script.should == robo_script
-    response.should redirect_to campaign_path(user.campaigns.last)
+    }.should change(user.account.campaigns.active.robo, :size).by(1)
+    user.account.campaigns.active.robo.last.script.should == robo_script
+    response.should redirect_to campaign_path(user.account.campaigns.last)
   end
 
   it "lists robo campaigns" do
-    robo_campaign = Factory(:campaign, :user => user, :robo => true)
-    manual_campaign = Factory(:campaign, :user => user, :robo => false)
+    robo_campaign = Factory(:campaign, :account => user.account, :robo => true)
+    manual_campaign = Factory(:campaign, :account => user.account, :robo => false)
     get :index
     assigns(:campaigns).should == [robo_campaign]
   end
 
   it "renders a campaign" do
-    get :show, :id => Factory(:campaign, :user => user).id
+    get :show, :id => Factory(:campaign, :account => user.account).id
     response.code.should == '200'
   end
 
   it "only provides robo scritps to select for a campaign" do
-    robo_script = Factory(:script, :user => user, :robo => true)
-    manual_script = Factory(:script, :user => user, :robo => false)
-    get :show, :id => Factory(:campaign, :user => user).id
+    robo_script = Factory(:script, :account => user.account, :robo => true)
+    manual_script = Factory(:script, :account => user.account, :robo => false)
+    get :show, :id => Factory(:campaign, :account => user.account).id
     assigns(:scripts).should == [robo_script]
   end
 
@@ -45,7 +45,7 @@ describe CampaignsController do
   end
 
   describe "update a campaign" do
-    let(:campaign) { Factory(:campaign, :user => user) }
+    let(:campaign) { Factory(:campaign, :account => user.account) }
 
     it "updates the campaign attributes" do
       post :update, :id => campaign.id, :campaign => {:name => "an impactful campaign"}
@@ -53,7 +53,7 @@ describe CampaignsController do
     end
 
     it "assigns one of the scripts of the current user" do
-      script = Factory(:script, :user => user)
+      script = Factory(:script, :account => user.account)
       post :update, :id => campaign.id, :campaign => {}
       campaign.reload.script.should == script
     end
@@ -85,7 +85,7 @@ describe CampaignsController do
 
   describe "caller id verification" do
     before :each do
-      @campaign = Factory(:campaign, :user => user)
+      @campaign = Factory(:campaign, :account => user.account)
       @caller_id_object = mock
       @caller_id_object.stub!(:validate)
       @campaign.stub!(:caller_id_object).and_return(@caller_id_object)
@@ -114,11 +114,11 @@ describe CampaignsController do
 
   describe "dial statistics" do
     before :each do
-      @campaign = Factory(:campaign, :user => user)
+      @campaign = Factory(:campaign, :account => user.account)
     end
 
     it "renders dial statistics for a campaign" do
-      campaign = Factory(:campaign, :user => user)
+      campaign = Factory(:campaign, :account => user.account)
       get :dial_statistics, :id => campaign.id
       assigns(:campaign).should == campaign
       response.code.should == '200'
