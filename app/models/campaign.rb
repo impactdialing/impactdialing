@@ -395,6 +395,11 @@ class Campaign < ActiveRecord::Base
     self.all_voters.count - voters_dialed
   end
 
+  module Type
+    PREVIEW = "preview"
+    PREDICTIVE = "predictive"
+  end
+
   private
   def dial_voters
     self.voter_lists.each do |voter_list|

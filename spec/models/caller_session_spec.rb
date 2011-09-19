@@ -112,7 +112,27 @@ describe CallerSession do
       session.call(voter)
     end
 
+    it "spec_name" do
+      foo = Factory(:caller_session, :caller => caller,  :session_key => "sample")
+      foo.should_receive(:end_call).with('caller_connected',anything())
+    end
 
+    it "pushes voter information when a caller is connected on preview campaign" do
+      campaign = Factory(:campaign, :use_web_ui => true, :predictive_type => 'preview')
+      session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sample")
+      2.times{Factory(:voter, :campaign => campaign)}
+      channel = mock
+      Pusher.should_receive(:[]).with(session.session_key).and_return(channel)
+      channel.should_receive(:trigger).with("caller_connected",anything)
+      session.start
+    end
+
+    it "should not push anything when a caller is connected on a non preview campaign" do
+      campaign = Factory(:campaign, :use_web_ui => true, :predictive_type => 'predictive')
+      session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sample")
+      2.times{Factory(:voter, :campaign => campaign)}
+      Pusher.should_not_receive(:[]).with(session.session_key)
+      session.start
+    end
   end
-
 end

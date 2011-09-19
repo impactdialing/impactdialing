@@ -2,10 +2,14 @@ var channel = null;
 
 $(document).ready(function() {
     setInterval(function() {
-        if (!$("#caller_session").val()) {
+        if ($("#caller_session").val()) {
+           //do nothing if the caller session context already exists
+        } else {
             get_session();
-            $("#callin_data").hide();
-            $("#called_in").show();
+            if (current_session()) {
+                $("#callin_data").hide();
+                $("#called_in").show();
+            }
         }
     }, 5000); //end setInterval
 })
