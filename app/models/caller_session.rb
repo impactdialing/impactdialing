@@ -53,6 +53,8 @@ class CallerSession < ActiveRecord::Base
       end
     end.response
     update_attributes(:on_call => true, :available_for_call => true)
+    first_voter = self.campaign.all_voters.to_be_dialed.first
+    self.publish("caller_connected", first_voter ? first_voter.info : {}) if self.campaign.predictive_type == Campaign::Type::PREVIEW
     response
   end
 
@@ -65,4 +67,7 @@ class CallerSession < ActiveRecord::Base
     Pusher[self.session_key].trigger(event,data)
   end
 
+  def end_call(*args)
+    #publish(*args)
+  end
 end
