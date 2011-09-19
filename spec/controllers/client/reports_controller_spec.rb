@@ -10,7 +10,7 @@ describe Client::ReportsController do
   describe 'usage report' do
     describe 'call attempts' do
       before(:each) do
-        campaign = Factory(:campaign, :user => user)
+        campaign = Factory(:campaign, :account => user.account)
         time_now = Time.now
         Factory(:call_attempt, :tDuration => 10.minutes + 2.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => campaign).tap{|ca| ca.update_attribute(:created_at, 5.minutes.ago)}
         Factory(:call_attempt, :tDuration => 1.minutes, :status => CallAttempt::Status::VOICEMAIL, :campaign => campaign).tap{|ca| ca.update_attribute(:created_at, 5.minutes.ago)}
@@ -38,7 +38,7 @@ describe Client::ReportsController do
 
     describe 'caller sessions' do
       before(:each) do
-        campaign = Factory(:campaign, :user => user)
+        campaign = Factory(:campaign, :account => user.account)
         time_now = Time.now
         Factory(:caller_session, :tDuration => 10.minutes + 2.seconds, :campaign => campaign).tap{|ca| ca.update_attribute(:created_at, 5.minutes.ago)}
         Factory(:caller_session, :tDuration => 101.minutes + 57.seconds, :campaign => campaign).tap{|ca| ca.update_attribute(:created_at, 5.minutes.ago)}

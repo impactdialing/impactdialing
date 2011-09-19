@@ -2,12 +2,12 @@ require 'ostruct'
 
 class VoterList < ActiveRecord::Base
   belongs_to :campaign
-  belongs_to :user
+  belongs_to :account
   has_many :voters, :conditions => {:active => true}
 
   validates_presence_of :name
   validates_length_of :name, :minimum => 3
-  validates_uniqueness_of :name, :case_sensitive => false, :scope => :user_id, :message => "for this voter list is already taken"
+  validates_uniqueness_of :name, :case_sensitive => false, :scope => :account_id, :message => "for this voter list is already taken"
 
   named_scope :by_ids, lambda { |ids| {:conditions => {:id => ids}} }
 
@@ -46,7 +46,7 @@ class VoterList < ActiveRecord::Base
       end
 
       lead.voter_list_id = self.id
-      lead.user_id = self.user_id
+      lead.account_id = self.account_id
       lead.campaign_id = self.campaign_id
 
       csv_headers.each_with_index do |csv_column_title, column_location|

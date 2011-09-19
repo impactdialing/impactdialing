@@ -6,10 +6,10 @@ module Client
       check_warning
       @breadcrumb=[{"Campaigns" => client_campaigns_path}, @campaign.name]
 
-      @callers = @user.callers.active
+      @callers = account.callers.active
       @lists = @campaign.voter_lists
       @voters = @campaign.all_voters.active.paginate(:page => params[:page])
-      @scripts = @user.scripts.manual.active
+      @scripts = @user.account.scripts.manual.active
 
       unless @campaign.caller_id
         flash_now(:warning, "When you make calls with this campaign, you need a phone number to use for the Caller ID. Enter the phone number you want to use for your Caller ID and click Verify. To prevent abuse, the system will call that number and ask you to enter a validation code that will appear on your screen. Until you do this, you can't make calls with this campaign.")
@@ -20,7 +20,7 @@ module Client
 
     def index
       @breadcrumb="Campaigns"
-      @campaigns = @user.campaigns.active.manual.paginate :page => params[:page], :order => 'id desc'
+      @campaigns = account.campaigns.active.manual.paginate :page => params[:page], :order => 'id desc'
       render 'campaigns/index'
     end
 
@@ -42,7 +42,7 @@ module Client
     end
 
     def create
-      campaign = @user.campaigns.create(:predective_type => 'algorithm1', :script => @user.scripts.first, :callers => @user.callers.active)
+      campaign = account.campaigns.create(:predective_type => 'algorithm1', :script => @user.account.scripts.first, :callers => account.callers.active)
       redirect_to campaign
     end
 

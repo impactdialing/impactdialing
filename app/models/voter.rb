@@ -3,6 +3,7 @@ class Voter < ActiveRecord::Base
 
   belongs_to :voter_list
   belongs_to :campaign
+  belongs_to :account
   has_many :families
   has_many :call_attempts
   has_many :custom_voter_field_values
@@ -110,8 +111,8 @@ class Voter < ActiveRecord::Base
     if self.has_attribute? attribute
       self[attribute] = value
     else
-      custom_attribute = self.campaign.user.custom_voter_fields.find_by_name(attribute)
-      custom_attribute ||= CustomVoterField.create(:name => attribute, :user => self.campaign.user) unless attribute.blank?
+      custom_attribute = self.campaign.account.custom_voter_fields.find_by_name(attribute)
+      custom_attribute ||= CustomVoterField.create(:name => attribute, :account => self.campaign.account) unless attribute.blank?
       CustomVoterFieldValue.create(:voter => self, :custom_voter_field => custom_attribute, :value => value)
     end
   end

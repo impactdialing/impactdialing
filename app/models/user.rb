@@ -4,13 +4,15 @@ class User < ActiveRecord::Base
       :with => /^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i
   validates_presence_of :email, :on => :create, :message => "can't be blank"
 
-  has_many :campaigns, :conditions => {:active => true}
-  has_many :all_campaigns, :class_name => 'Campaign'
-  has_many :recordings
-  has_many :custom_voter_fields
-  has_one :billing_account
-  has_many :scripts
-  has_many :callers
+  belongs_to :account
+
+  has_many :campaigns, :conditions => {:active => true}, :through => :account
+  has_many :all_campaigns, :class_name => 'Campaign', :through => :account
+  has_many :recordings, :through => :account
+  has_many :custom_voter_fields, :through => :account
+  has_one :billing_account, :through => :account
+  has_many :scripts, :through => :account
+  has_many :callers, :through => :account
 
   attr_accessor :new_password
   validates_presence_of :new_password, :on => :create, :message => "can't be blank"

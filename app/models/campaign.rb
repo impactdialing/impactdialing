@@ -8,7 +8,7 @@ class Campaign < ActiveRecord::Base
   has_many :call_attempts
   has_and_belongs_to_many :callers
   belongs_to :script
-  belongs_to :user
+  belongs_to :account
   belongs_to :recording
 
   named_scope :robo, :conditions => {:robo => true }
@@ -24,7 +24,7 @@ class Campaign < ActiveRecord::Base
   @@per_page = 25
 
   def before_validation_on_create
-    self.name = "Untitled #{user.campaigns.count + 1}" if self.name.blank?
+    self.name = "Untitled #{account.campaigns.count + 1}" if self.name.blank?
   end
 
   # TODO: remove
@@ -369,9 +369,9 @@ class Campaign < ActiveRecord::Base
   end
 
   def start
-    return false if self.calls_in_progress? or (not self.user.paid)
+    return false if self.calls_in_progress? or (not self.account.paid)
     daemon = "#{Rails.root.join('script', "dialer_control.rb start -- #{self.id}")}"
-    logger.info "[dialer] User id:#{self.user.id} started campaign id:#{self.id} name:#{self.name}"
+    logger.info "[dialer] Account id:#{self.account.id} started campaign id:#{self.id} name:#{self.name}"
     update_attribute(:calls_in_progress, true)
     system(daemon)
   end

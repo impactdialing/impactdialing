@@ -37,11 +37,10 @@ class AdminController < ApplicationController
   end
 
   def report
-#    @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
     set_report_date_range
-    sql="select distinct ca.campaign_id , name, email, c.user_id from caller_sessions ca
+    sql="select distinct ca.campaign_id , name, email, c.account_id from caller_sessions ca
       join campaigns c on c.id=ca.campaign_id
-      join users u on u.id=c.user_id where
+      join accounts a on a.id=c.account_id where
       ca.created_at > '#{@from_date.strftime("%Y-%m-%d")}'
       and ca.created_at  < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'
     "
@@ -61,7 +60,7 @@ class AdminController < ApplicationController
       select count(*),  sum(ceil(tDuration/60)), sum(tPrice)
       from caller_sessions ca
       join campaigns c on c.id=ca.campaign_id
-      join users u on u.id=c.user_id
+      join accounts a on a.id=c.account_id
       where
       ca.created_at > '#{@from_date.strftime("%Y-%m-%d")}'
       and ca.created_at  < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'

@@ -1,12 +1,12 @@
 class Recording < ActiveRecord::Base
   validates_presence_of :file_file_name, :message => "File can't be blank"
   validates_presence_of :name
-  belongs_to :user
+  belongs_to :account
 
   has_attached_file :file,
                     :storage => :s3,
                     :s3_credentials => Rails.root.join('config', 'amazon_s3.yml').to_s,
-                    :path => "/#{Rails.env}/uploads/:user_id/:id.:extension",
+                    :path => "/#{Rails.env}/uploads/:account_id/:id.:extension",
                     :bucket => 'impactdialingapp'
 
   def validate
