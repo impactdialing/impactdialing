@@ -48,6 +48,8 @@ ActionController::Routing::Routes.draw do |map|
     end
 
     client.report_usage 'reports/usage', :action => 'usage', :controller => 'reports'
+
+    client.resource :account, :only => [:show, :update]
   end
 
   map.resources :campaigns, :member => { :verify_callerid => :post }, :path_prefix => 'client', :only => [] do |campaign|

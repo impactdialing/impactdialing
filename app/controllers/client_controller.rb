@@ -80,10 +80,7 @@ class ClientController < ApplicationController
         @user.lname=name_arr.join(" ").strip
       end
 
-      if false && @user.new_record? && params[:tos].blank?
-        flash_now(:error, "You must agree to the Terms of Service to create an account.")
-        return
-      elsif !@user.new_record? and (not @user.authenticate_with?(params[:exist_pw]))
+      if !@user.new_record? and (not @user.authenticate_with?(params[:exist_pw]))
         flash_now(:error, "Current password incorrect")
         return
       end
@@ -98,39 +95,8 @@ class ClientController < ApplicationController
         @caller.account_id = @user.account.id
         @caller.save
 
-        if account.scripts.find_by_name('Voter ID Example') == nil
-          @script = Script.new
-          @script.name = "Voter ID Example"
-          @rs={}
-          @rs["keypad_1"]="Strong supportive"
-          @rs["keypad_2"]="Lean supportive"
-          @rs["keypad_3"]="Undecided"
-          @rs["keypad_4"]="Lean opposed"
-          @rs["keypad_5"]="Strong opposed"
-          @rs["keypad_6"]="Refused"
-          @rs["keypad_7"]="Not home/call back"
-          @rs["keypad_8"]="Language barrier"
-          @rs["keypad_9"]="Wrong number"
-          @rs["name"]="How supportive was the voter?"
-          #      @rs.incompletes=["7"].to_json
-          @script.result_set_1 = @rs.to_json
-          @script.incompletes='{"5":[],"6":[],"1":["7"],"7":[],"2":[],"8":[],"3":[],"9":[],"4":[],"10":[]}'
-          @script.name = "Political Example Script"
-          @script.note_1 = "Email"
-          @numResults = 1
-          @numNotes = 1
-          @script.voter_fields='["CustomID","FirstName","MiddleName","LastName","Suffix","Age","Gender","Email"]'
-          @script.script = <<-EOS
-Hi, is ___ there?
-
-My name's ___ and I'm a volunteer with the such-and-such campaign.
-
-I'm voting for such-and-such because...
-
-Can we count on you to vote for such-and-such?
-          EOS
-          @script.active = 1
-          @script.account_id = account.id
+        if account.scripts.find_by_name('Political Example Script') == nil
+          @script = Script.political_example(account)
           @script.save
         end
 
