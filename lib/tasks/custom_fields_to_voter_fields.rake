@@ -1,7 +1,7 @@
 desc "Update twilio call data"
 
 task :custom_fields_to_voter_fields => :environment do
-  c = Campaign.find(1)
+  c = Campaign.find(674)
   c.all_voters.each do |voter|
     first_name_field = CustomVoterFieldValue.voter_fields(voter,CustomVoterField.find_by_name("fname")).first
     first_name = first_name_field ? first_name_field.value : nil
