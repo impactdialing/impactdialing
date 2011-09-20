@@ -98,6 +98,8 @@ class ClientController < ApplicationController
         if account.scripts.find_by_name('Political Example Script') == nil
           @script = Script.political_example(account)
           @script.save
+          @numResults = 1
+          @numNotes = 1
         end
 
         if session[:user].blank?

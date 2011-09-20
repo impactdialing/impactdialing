@@ -64,10 +64,10 @@ class Script < ActiveRecord::Base
       'keypad_9' => 'Wrong number',
       'name' => 'How supportive was the voter?'
     }
-    @script = Script.new(:name => 'Political Example Script', :note_1 => 'Email', :numResults => 1, :numNotes => 1, :active => 1, :account_id => account.id, :result_set_1 => @rs.to_json)
-    @script.incompletes='{"5":[],"6":[],"1":["7"],"7":[],"2":[],"8":[],"3":[],"9":[],"4":[],"10":[]}'
-    @script.voter_fields='["CustomID","FirstName","MiddleName","LastName","Suffix","Age","Gender","Email"]'
-    @script.script = <<-EOS
+    Script.new(:name => 'Political Example Script', :note_1 => 'Email', :active => 1, :account_id => account.id, :result_set_1 => @rs.to_json).tap do |script|
+      script.incompletes='{"5":[],"6":[],"1":["7"],"7":[],"2":[],"8":[],"3":[],"9":[],"4":[],"10":[]}'
+      script.voter_fields='["CustomID","FirstName","MiddleName","LastName","Suffix","Age","Gender","Email"]'
+      script.script = <<-EOS
 Hi, is ___ there?
 
 My name's ___ and I'm a volunteer with the such-and-such campaign.
@@ -75,6 +75,7 @@ My name's ___ and I'm a volunteer with the such-and-such campaign.
 I'm voting for such-and-such because...
 
 Can we count on you to vote for such-and-such?
-    EOS
+      EOS
+    end
   end
 end
