@@ -112,11 +112,6 @@ describe CallerSession do
       session.call(voter)
     end
 
-    it "spec_name" do
-      foo = Factory(:caller_session, :caller => caller,  :session_key => "sample")
-      foo.should_receive(:end_call).with('caller_connected',anything())
-    end
-
     it "pushes voter information when a caller is connected on preview campaign" do
       campaign = Factory(:campaign, :use_web_ui => true, :predictive_type => 'preview')
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sample")
