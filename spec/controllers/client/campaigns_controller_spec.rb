@@ -1,10 +1,6 @@
 require "spec_helper"
 
 describe Client::CampaignsController do
-  before(:each) do
-    request.env['HTTP_REFERER'] = 'http://referer/'
-  end
-
   let(:campaign) { Factory(:campaign) }
   let(:user) { Factory(:user) }
 

@@ -50,6 +50,8 @@ ActionController::Routing::Routes.draw do |map|
     client.report_usage 'reports/usage', :action => 'usage', :controller => 'reports'
 
     client.resource :account, :only => [:show, :update]
+    client.resources :users, :only => [:create, :destroy]
+    client.user_invite 'user_invite', :action => 'invite', :controller => 'users', :conditions => { :method => :post }
   end
 
   map.resources :campaigns, :member => { :verify_callerid => :post }, :path_prefix => 'client', :only => [] do |campaign|

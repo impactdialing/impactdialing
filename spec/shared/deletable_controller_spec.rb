@@ -1,10 +1,9 @@
 shared_examples_for 'all controllers of deletable entities' do
   it "can restore a deleted entity" do
-    request.env['HTTP_REFERER'] = 'http://referer'
     entity = Factory(type_name, :active => false)
     put :restore, "#{type_name}_id" => entity.id
     entity.reload.should be_active
-    response.should redirect_to('http://referer')
+    response.should redirect_to(:back)
   end
 
   it "lists deleted entities" do
