@@ -17,6 +17,10 @@ class ClientController < ApplicationController
     end
   end
 
+  def current_user
+    @user
+  end
+
   def account
     @user.try(:account)
   end

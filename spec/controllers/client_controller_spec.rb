@@ -56,7 +56,6 @@ describe ClientController do
     end
 
     it "deleting a script redirects to the referer" do
-      request.env['HTTP_REFERER'] = 'http://referer/'
       entity = Factory(:script, :account => user.account, :active => true)
       post "script_delete", :id => entity.id
       entity.reload.active.should be_false

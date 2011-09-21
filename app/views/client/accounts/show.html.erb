@@ -5,7 +5,7 @@
   <div><%= link_to 'Revoke access', 'javascript:void(0)', :onclick => 'alert("to be implemented")' %>
 <% end %>
 
-<% form_tag 'add_administrators' do %>
+<% form_tag client_user_invite_path do %>
   <div>Invite another administrator:</div>
   <%= text_field_tag :email %>
   <%= submit_tag 'Send invitation' %>

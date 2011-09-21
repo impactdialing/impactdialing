@@ -61,6 +61,9 @@ Spork.prefork do
     # == Notes
     #
     # For more information take a look at Spec::Runner::Configuration and Spec::Runner
+    config.before(:each) do
+      request.env['HTTP_REFERER'] = 'http://referer' if respond_to?(:request)
+    end
   end
 
   def login_as(user)
