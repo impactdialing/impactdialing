@@ -29,8 +29,8 @@
           <tr id="result_<%= num %>_<%= i %>" <% if thisJSON["keypad_#{i}"].blank? && i!=1 %>style="display:none;" <% else %> <% @lastone[i-i]=i %> <% end %>>
             <th scope="row"><input  type="text" name="text_<%= num %>_<%= i %>"  id="text_<%= num %>_<%= i %>" size="20" class="field" value="<%= thisJSON["keypad_#{i}"] %>" ></th>
             <td><input type="text" name="keypad_<%= num %>_<%= i %>" id="keypad_<%= num %>_<%= i %>" size="3" maxlength="2" class="field" value="<%= i %>" onchange="checkNum(this)"></td>
-            <td>	<input type="checkbox" name="incomplete_<%= num %>_[]" value="<%= i %>" class="field" <% if !@incompletes.nil? && @incompletes[num.to_s]!=nil && @incompletes[num.to_s].index(i.to_s) %>checked<% end %>></td>
-            <td><a href="javascript:var x=$('text_<%= num %>_<%= i %>').value='';var x=$('keypad<%= i %>').value='';" class="ico del">&nbsp</a></td>
+            <td><input type="checkbox" name="incomplete_<%= num %>_[]" value="<%= i %>" class="field" <% if !@incompletes.nil? && @incompletes[num.to_s]!=nil && @incompletes[num.to_s].index(i.to_s) %>checked<% end %>></td>
+            <td><a href='javascript:void(0)' onclic="var x=$('text_<%= num %>_<%= i %>').value='';var x=$('keypad<%= i %>').value='';" class="ico del">&nbsp</a></td>
           </tr>
         <% else %>
           <%# limit to 20 rows %>
@@ -40,7 +40,7 @@
       <% end %>
     </table>
 
-    <p class="actions"><a href="javascript:dlastone(<%= num %>);" class="action secondary">New result</a></p>
+    <p class="actions"><a href="javascript:void(0)" class="action secondary" onclick="dlastone(<%= num %>)">New result</a></p>
   </fieldset>
 
 </div>
