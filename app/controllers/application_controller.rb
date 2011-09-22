@@ -289,6 +289,7 @@ class ApplicationController < ActionController::Base
       flash[where] = [error_message]
     end
   end
+
   def flash_now(where, error_message)
     if flash.now[where] and flash.now[where].class == Array
       flash.now[where] = flash.now[where].concat [error_message]  # should not use <<. rails flash does not 'keep' them.

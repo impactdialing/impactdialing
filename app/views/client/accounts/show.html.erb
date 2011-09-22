@@ -2,7 +2,7 @@
 
 <% @account.users.each do |user| %>
   <div><%= user.email %></div>
-  <div><%= link_to 'Revoke access', 'javascript:void(0)', :onclick => 'alert("to be implemented")' %>
+  <div><%= link_to 'Delete user', client_user_path(user), :confirm => 'Are you sure?', :method => :delete %>
 <% end %>
 
 <% form_tag client_user_invite_path do %>
