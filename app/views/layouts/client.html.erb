@@ -77,6 +77,7 @@
   <ul class="clearfix">
     <li class='divider'><a href="/client">Help</a></li>
     <li class='divider'><a href="/client/user_add">Account</a></li>
+    <li class='divider'><%= link_to "Users", client_account_path %></li>
     <li><a href="/client/logout">Log out</a></li>
   </ul>
 <% elsif logged_in_as_caller? %>
@@ -97,7 +98,6 @@
     <li><a href="/client/campaigns" <% if @actionName.index("upload") || @actionName.index("campaign") %>class="active"<% end %>><span>Campaigns</span></a></li>
     <li><a href="/client/monitor" <% if @actionName.index("monitor") %>class="active"<% end %>><span>Monitor</span></a></li>
     <li><a href="/client/reports" <% if @actionName.index("report") %>class="active"<% end %>><span>Reports</span></a></li>
-    <%= content_tag :li, (link_to "Account", client_account_path, :class => (@controllerName.index('accounts') ? 'active' : '')) %>
     <li><a href="/broadcast"><span>Go to Voice Broadcasting</span></a></li>
   </ul>
   </nav>
