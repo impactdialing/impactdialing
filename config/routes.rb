@@ -30,6 +30,7 @@ ImpactDialing::Application.routes.draw do
     member { post :assign_campaign }
     member { post :end_session }
     member { post :active_session }
+    member { post :preview_voter }
   end
 
   post :receive_call, :to => 'callin#create'

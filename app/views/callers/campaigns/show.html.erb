@@ -5,12 +5,27 @@
 
 <% content_for :javascripts do %>
     <script src="http://js.pusherapp.com/1.8/pusher.min.js" type="text/javascript"></script>
-    <%= javascript_include_tag 'jquery.ui.datetime.min', 'callers/caller_pusher' %>
+    <%= javascript_include_tag 'jquery.ui.datetime.min', 'callers/caller_pusher', 'ICanHaz.min.js' %>
 
     <script type="text/javascript">
         var pusher = new Pusher('<%= Pusher.key %>');
     </script>
+
+    <script id="voter" type="text/html">
+      {{#fields}}
+      <li><b>Name</b> : {{FirstName}} {{MiddleName}} {{LastName}}</li>
+      <li><b>Gender</b> : {{Gender}}</li>
+      <li><b>Age</b> : {{Age}}</li>
+      {{/fields}}
+      {{#custom_fields}}
+      <li>{{.}}</li>
+      {{/custom_fields}}
+    </script>
 <% end %>
+
+<%= hidden_field_tag(:caller, @caller.id) %>
+<%= hidden_field_tag(:caller_session, nil) %>
+<%= hidden_field_tag(:current_voter, nil) %>
 
 <fieldset id="callin_data">
   <legend>Call In :</legend>
@@ -27,11 +42,10 @@
 
 <fieldset>
   <legend>Lead Information</legend>
-  <div id="voter_info" class="rt">
+  <div id="voter_info_message" class="rt">
     When connected Lead Information will appear here
   </div>
-  <%= hidden_field_tag(:caller, @caller.id) %>
-  <%= hidden_field_tag(:caller_session, nil) %>
+  <ul id="voter_info" class="clearfix"></ul>
 </fieldset>
 
 <fieldset>
@@ -41,9 +55,8 @@
   <% end %>
 </fieldset>
 
-<fieldset id="call_options">
-  <legend>Call Options :</legend>
-  <div>
-    You are now called in and ready to take calls.
-  </div>
-</fieldset>
+<div id="statusdiv" style="float:right; padding-bottom:10px;">Status: Not connected.</div>
+<div class="actions">
+  <a href="javascript:skip();" class="action secondary">Skip</a>
+  <a href="javascript:alert('call this voter');" class="action secondary">Call</a>
+</div>
