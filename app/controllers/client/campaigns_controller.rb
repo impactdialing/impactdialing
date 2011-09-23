@@ -3,6 +3,10 @@ module Client
     layout 'client'
 
     def show
+      if @campaign.robo
+        redirect_to broadcast_campaign_path(@campaign)
+        return
+      end
       check_warning
       @breadcrumb=[{"Campaigns" => client_campaigns_path}, @campaign.name]
 
@@ -43,7 +47,7 @@ module Client
 
     def create
       campaign = account.campaigns.create(:predective_type => 'algorithm1', :script => @user.account.scripts.first, :callers => account.callers.active)
-      redirect_to campaign
+      redirect_to client_campaign_path(campaign)
     end
 
     def clear_calls

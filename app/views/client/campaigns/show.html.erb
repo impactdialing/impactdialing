@@ -2,7 +2,7 @@
 
 <div id="callerid"></div>
 
-<%= form_for :campaign, :url => {:action => "campaign_add", :id=>@campaign.id}, :html => {:name => 'callerForm', :id => 'callerForm'} do |f| %>
+<% form_for(:campaign, :url => {:action => "campaign_add", :id=>@campaign.id}, :html => {:name => 'callerForm', :id => 'callerForm'})do |f| %>
     <fieldset>
       <legend>Campaign options</legend>
       <fieldset>
@@ -133,7 +133,7 @@
 <% end %>
 <fieldset>
   <legend>Add Lists</legend>
-  <%= render :partial => "voter_lists/new", :locals => { :path => campaign_client_voter_lists_path(@campaign) } %>
+  <%= render :partial => "voter_lists/new", :locals => { :path => client_voter_lists_path(@campaign) } %>
 </fieldset>
 
 <script>

@@ -26,22 +26,15 @@ describe CampaignsController do
   end
 
   it "renders a campaign" do
-    get :show, :id => Factory(:campaign, :account => user.account).id
+    get :show, :id => Factory(:campaign, :account => user.account, :robo => true).id
     response.code.should == '200'
   end
 
   it "only provides robo scritps to select for a campaign" do
     robo_script = Factory(:script, :account => user.account, :robo => true)
     manual_script = Factory(:script, :account => user.account, :robo => false)
-    get :show, :id => Factory(:campaign, :account => user.account).id
+    get :show, :id => Factory(:campaign, :account => user.account, :robo => true).id
     assigns(:scripts).should == [robo_script]
-  end
-
-  describe "create a campaign" do
-    it "creates a campaign" do
-      lambda { post :create }.should change(Campaign, :count)
-      response.should redirect_to(campaign_path(Campaign.first))
-    end
   end
 
   describe "update a campaign" do
@@ -94,7 +87,7 @@ describe CampaignsController do
 
     it "should render 'not verified' if caller id not verified" do
       @caller_id_object.stub!(:validate)
-      Campaign.should_receive(:find).with(@campaign.id, anything).and_return(@campaign)
+      Campaign.should_receive(:find).and_return(@campaign)
       @caller_id_object.should_receive(:validate).and_return(false)
       post :verify_callerid, :id => @campaign.id
       response.body.should include "not verified"
@@ -102,7 +95,7 @@ describe CampaignsController do
 
     it "should render nothing if caller id is verified" do
       @caller_id_object.stub!(:validate).and_return(true)
-      Campaign.should_receive(:find).with(@campaign.id, anything).and_return(@campaign)
+      Campaign.should_receive(:find).and_return(@campaign)
       post :verify_callerid, :id => @campaign.id
       response.body.should be_blank
     end
