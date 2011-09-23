@@ -102,14 +102,9 @@ class AdminController < ApplicationController
   end
 
   def toggle_paid
-    user = User.find(params[:id])
-    if user.paid==true
-      user.paid=false
-    else
-      user.paid=true
-    end
-    user.save
-    redirect_to :action=>"users"
+    account = User.find(params[:id]).account
+    account.update_attribute(:paid, !account.paid)
+    redirect_to :back
   end
 
   def login
