@@ -4,9 +4,9 @@
 en:
   caller_id_blank: "When you make calls with this campaign, you need a phone number to use for the Caller ID. Enter the phone number you want to use for your Caller ID and click Verify. To prevent abuse, the system will call that number and ask you to enter a validation code that will appear on your screen. Until you do this, you can't make calls with this campaign."
   # inviting a new administrators
-  admin_invite_subject: "Invited to %{domain} by %{user}"
-  admin_invite_body_html: "Click here to reset your password<br/> %{link}"
-  admin_invite_body_text: "Click here to reset your password %{link}"
+  admin_invite_subject: "Set your password for %{title}"
+  admin_invite_body_html: "Click here to set your password<br/> %{link}"
+  admin_invite_body_text: "Click here to set your password %{link}"
   white_labeling:
     impactdialing:
       title: "Impact Dialing"

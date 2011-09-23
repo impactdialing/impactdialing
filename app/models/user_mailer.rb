@@ -1,5 +1,6 @@
 class UserMailer
   include ActionController::UrlWriter
+  include WhiteLabeling
 
   def initialize
     @uakari = Uakari.new(MAILCHIMP_API_KEY)
@@ -7,19 +8,18 @@ class UserMailer
 
   def deliver_invitation(new_user, current_user)
     link = reset_password_url(:host => HOST, :port => PORT, :reset_code => new_user.password_reset_code)
-    email_text = "Click here to reset your password<br/> #{ link }"
+    title =
     @uakari.send_email({
       :track_opens => true,
       :track_clicks => true,
       :message => {
-        :subject => "Invited to #{I18n.t(:title)} by #{current_user.email}",
-        :html => I18n.t(:admin_invite_body_html, :domain => I18n.t(:title), :link => link),
-        :text => I18n.t(:admin_invite_body_text, :domain => I18n.t(:title), :link => link),
+        :subject => I18n.t(:admin_invite_subject, :title => white_labeled_title(current_user.domain)),
+        :html => I18n.t(:admin_invite_body_html, :title => white_labeled_title(current_user.domain), :link => link),
+        :text => I18n.t(:admin_invite_body_text, :title => white_labeled_title(current_user.domain), :link => link),
         :from_name => I18n.t(:title),
         :from_email => current_user.email,
         :to_email => [new_user.email]
       }
     })
-    RAILS_DEFAULT_LOGGER.info email_text
   end
 end

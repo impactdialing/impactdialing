@@ -1,5 +1,7 @@
 # Methods added to this helper will be available to all templates in the application.
 module ApplicationHelper
+  include WhiteLabeling
+
   def cms(key)
     s = Seo.find_by_crmkey_and_active_and_version(key, 1, session[:seo_version])
     s = Seo.find_by_crmkey_and_active_and_version(key, 1, nil) if s.blank?
@@ -77,17 +79,8 @@ module ApplicationHelper
   end
 
   ['title', 'full_title', 'phone', 'email', ].each do |value|
-    define_method(value)do
-      I18n.t("white_labeling.#{domain}.#{value}")
-    end
-  end
-
-  def domain
-    d = request.domain.downcase.gsub(/\..+$/, '')
-    if I18n.t("white_labeling.#{d}", :default => '').blank?
-      'impactdialing'
-    else
-      d
+    define_method("white_labeled_#{value}") do
+      send(value, request.domain)
     end
   end
 
