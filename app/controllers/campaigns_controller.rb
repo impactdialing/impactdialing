@@ -1,6 +1,8 @@
 class CampaignsController < ClientController
   layout 'v2'
   include DeletableController
+  before_filter :load_campaign, :except => [:create, :control, :index, :deleted]
+  before_filter :setup_campaigns_paths
 
   def type_name
     'campaign'
@@ -12,16 +14,15 @@ class CampaignsController < ClientController
   end
 
   def update
-    campaign = @user.all_campaigns.find(params[:id])
-    campaign.attributes = params[:campaign]
-    campaign.script ||= @user.account.scripts.active.first
-    campaign.voter_lists.disable_all
-    campaign.voter_lists.by_ids(params[:voter_list_ids]).enable_all
-    if campaign.save
+    @campaign.attributes = params[:campaign]
+    @campaign.script ||= @user.account.scripts.active.first
+    @campaign.voter_lists.disable_all
+    @campaign.voter_lists.by_ids(params[:voter_list_ids]).enable_all
+    if @campaign.save
       flash_message(:notice, "Campaign saved")
-      generate_validation_token_for_caller_id(campaign) if campaign.caller_id.present? and (not campaign.caller_id_verified)
+      generate_validation_token_for_caller_id(@campaign) if @campaign.caller_id.present? and (not @campaign.caller_id_verified)
     end
-    redirect_to campaign_path(campaign)
+    redirect_to campaign_path(@campaign)
   end
 
   def index
@@ -29,8 +30,11 @@ class CampaignsController < ClientController
   end
 
   def show
+    unless @campaign.robo?
+      redirect_to client_campaign_path(@campaign)
+      return
+    end
     @scripts = @user.account.scripts.robo.active
-    @campaign = account.campaigns.find(params[:id].to_i)
     @callers  = account.callers.active
     @lists    = @campaign.voter_lists
     @voters = @campaign.all_voters.active.paginate(:page => params[:page])
@@ -42,7 +46,6 @@ class CampaignsController < ClientController
 
   #TODO: extract html message to partial
   def verify_callerid
-    @campaign = account.campaigns.find(params[:id].to_i)
     @campaign.check_valid_caller!
     @campaign.save
     ret = if @campaign.caller_id.present? and (not @campaign.caller_id_verified)
@@ -60,19 +63,13 @@ class CampaignsController < ClientController
   end
 
   def start
-    @campaign = Campaign.find(params[:id])
     @campaign.start
     redirect_to control_campaigns_path
   end
 
   def stop
-    @campaign = Campaign.find(params[:id])
     @campaign.stop
     redirect_to control_campaigns_path
-  end
-
-  def dial_statistics
-    @campaign = account.campaigns.find(params[:id])
   end
 
   private
@@ -87,5 +84,12 @@ class CampaignsController < ClientController
 
   def active_robo_campaigns
     account.campaigns.active.robo.paginate :page => params[:page], :order => 'id desc'
+  end
+
+  def load_campaign
+    @campaign = account.all_campaigns.find(params[:campaign_id] || params[:id])
+  end
+
+  def setup_campaigns_paths
   end
 end

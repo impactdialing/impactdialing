@@ -1,6 +1,6 @@
 shared_examples_for 'all controllers of deletable entities' do
   it "can restore a deleted entity" do
-    entity = Factory(type_name, :active => false)
+    entity = Factory(type_name, :account => user.account, :active => false)
     put :restore, "#{type_name}_id" => entity.id
     entity.reload.should be_active
     response.should redirect_to(:back)

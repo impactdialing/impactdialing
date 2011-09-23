@@ -76,15 +76,17 @@ describe CallAttempt do
   end
 
   describe 'status filtering' do
-    let(:wanted_attempt) { Factory(:call_attempt, :status => 'foo') }
-    let(:unwanted_attempt) { Factory(:call_attempt, :status => 'bar') }
+    before(:each) do
+      @wanted_attempt = Factory(:call_attempt, :status => 'foo')
+      @unwanted_attempt = Factory(:call_attempt, :status => 'bar')
+    end
 
     it "filters out attempts of certain statuses" do
-      CallAttempt.without_status(['bar']).should == [wanted_attempt]
+      CallAttempt.without_status(['bar']).should == [@wanted_attempt]
     end
 
     it "filters out attempts of everything but certain statuses" do
-      CallAttempt.with_status(['foo']).should == [wanted_attempt]
+      CallAttempt.with_status(['foo']).should == [@wanted_attempt]
     end
   end
 end
