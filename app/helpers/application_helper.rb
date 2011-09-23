@@ -79,9 +79,13 @@ module ApplicationHelper
   end
 
   ['title', 'full_title', 'phone', 'email', ].each do |value|
-    define_method("white_labeled_#{value}") do
-      send(value, request.domain)
+    define_method(value) do
+      send("white_labeled_#{value}", request.domain)
     end
+  end
+
+  def domain
+    correct_domain(request.domain)
   end
 
   def link_to_remove_fields(name, f, opts = {})
