@@ -13,7 +13,7 @@ class Campaign < ActiveRecord::Base
 
   named_scope :robo, :conditions => {:robo => true }
   named_scope :manual, :conditions => {:robo => false }
-  named_scope :for_user, lambda {|user| { :conditions => ["user_id = ?", user.id] }}
+  named_scope :for_account, lambda {|account| { :conditions => ["account_id = ?", account.id] }}
   named_scope :with_running_caller_sessions, {
       :select     => "distinct campaigns.*",
       :joins      => "inner join caller_sessions on (caller_sessions.campaign_id = campaigns.id)",
@@ -290,7 +290,7 @@ class Campaign < ActiveRecord::Base
 
   def voters(status=nil,include_call_retries=true,limit=300)
     #return testVoters if self.name=="Load Test"
-    return [] if  !self.user.paid
+    return [] if  !self.account.paid
     return [] if self.caller_id.blank? || !self.caller_id_verified
     voters_returned=[]
     voter_ids=[]
