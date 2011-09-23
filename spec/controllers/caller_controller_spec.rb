@@ -26,16 +26,42 @@ describe CallerController do
   end
 
   describe "preview dial" do
+    let(:campaign) { Factory(:campaign) }
+    let(:caller) { Factory(:caller) }
+
+    before(:each) do
+      login_as(caller)
+    end
 
     it "connects to twilio before making a call" do
       session_key = "sdklsjfg923784"
-      caller = Factory(:caller)
-      login_as(caller)
       session = Factory(:caller_session, :caller=> caller, :session_key => session_key)
       CallerSession.stub(:find_by_session_key).with(session_key).and_return(session)
       session.stub(:call)
       Twilio.should_receive(:connect).with(anything, anything)
       get :preview_dial, :key => session_key, :voter_id => Factory(:voter).id
+    end
+
+    it "skips to the next voter to preview" do
+      session_key = "sdklsjfg923784"
+      voter = Factory(:voter, :campaign => campaign)
+      next_voter = Factory(:voter, :campaign => campaign)
+      session = Factory(:caller_session, :campaign => campaign, :caller => caller, :session_key => session_key)
+      channel = mock
+      Pusher.should_receive(:[]).with(session_key).and_return(channel)
+      channel.should_receive(:trigger).with('voter_changed', next_voter.info)
+      post :preview_voter, :id => caller.id, :session_id => session.id, :voter_id => voter.id
+    end
+
+    it "skips to the first undialed voter if the current voter context is the last" do
+      session_key = "sdklsjfg923784"
+      first_voter = Factory(:voter, :campaign => campaign)
+      last_voter = Factory(:voter, :campaign => campaign)
+      session = Factory(:caller_session, :campaign => campaign, :caller => caller, :session_key => session_key)
+      channel = mock
+      Pusher.should_receive(:[]).with(session_key).and_return(channel)
+      channel.should_receive(:trigger).with('voter_changed', first_voter.info)
+      post :preview_voter, :id => caller.id, :session_id => session.id, :voter_id => last_voter.id
     end
 
   end
@@ -93,7 +119,7 @@ describe CallerController do
       session = Factory(:caller_session, :caller => caller, :session_key => 'key', :on_call => true, :available_for_call => true)
       post :active_session, :id => caller.id
       response.body.should == session.to_json
-      end
+    end
 
     it "returns no session if the caller is not connected" do
       login_as(caller)

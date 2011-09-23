@@ -65,6 +65,14 @@ class CallerController < ApplicationController
     render :json => active_sessions.blank? ? {:caller_session => {:id => nil}} : active_sessions.last
   end
 
+  def preview_voter
+    session = @caller.caller_sessions.find(params[:session_id])
+    voter = session.campaign.all_voters.to_be_dialed.find(:first, :conditions => "voters.id > #{params[:voter_id]}")
+    voter ||= session.campaign.all_voters.to_be_dialed.first
+    session.publish('voter_changed', voter.info)
+    render :nothing => true
+  end
+
   def campaign
     require "hpricot"
     require "open-uri"

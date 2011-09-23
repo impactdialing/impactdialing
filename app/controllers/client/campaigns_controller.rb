@@ -8,7 +8,7 @@ module Client
 
       @callers = @user.callers.active
       @lists = @campaign.voter_lists
-      @voters = @campaign.all_voters.active.paginate(:page => params[:page])
+      @voters = @campaign.all_voters.active.default_order.paginate(:page => params[:page])
       @scripts = @user.scripts.manual.active
 
       unless @campaign.caller_id
