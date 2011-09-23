@@ -14,3 +14,5 @@ lib/*.pid
 spec/fixtures/test_tmp/
 coverage_unit/
 coverage_controller/
+spec/fixtures/test_tmp/
+bin/*

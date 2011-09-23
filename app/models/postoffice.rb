@@ -11,7 +11,11 @@ class Postoffice < ActionMailer::Base
 
   def feedback(issue)
     @subject = "ImpactDialing.com feedback"
-    @recipients = "beans@beanserver.net, michael@impactdialing.com"
+    if RAILS_ENV == 'production'
+      @recipients = "beans@beanserver.net, michael@impactdialing.com"
+    else
+      @recipients = "beans@beanserver.net"
+    end
     @from = 'no-reply@impactdialing.com'
     @sent_on = Time.now
     @body["issue"] = issue
