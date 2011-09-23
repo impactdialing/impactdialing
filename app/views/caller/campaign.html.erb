@@ -121,8 +121,11 @@
 <textarea id="dbx" rows="10" cols="90" style="overflow:auto; font-size:10px; display:none;"></textarea>
 
 <script>
+
     function feedback() {
-        var info = prompt("Please enter a description of the issue:", "");
+        var info = prompt("Thanks for reporting a bug. PLEASE WRITE A DESCRIPTION of what went wrong, or it is unlikely we will be able to solve the problem. Thank you!", "");
+		if (info=='')
+			return false;
         info = document.getElementById('dbx').value + '<p>' + info + "</p><p>" + BrowserDetect.browser + ' ' + BrowserDetect.version + ' ' + BrowserDetect.OS + ' ' + horizontal + 'x' + vertical + '</p>';
         var flash = '';
         for (var i in FlashDetect) {

@@ -139,7 +139,7 @@ class Voter < ActiveRecord::Base
     else
       custom_attribute = self.campaign.user.custom_voter_fields.find_by_name(attribute)
       custom_attribute ||= CustomVoterField.create(:name => attribute, :user => self.campaign.user) unless attribute.blank?
-      CustomVoterFieldValue.create(:voter => self, :custom_voter_field => custom_attribute, :value => value)
+      self.custom_voter_field_values.create(:voter => self, :custom_voter_field => custom_attribute, :value => value)
     end
   end
 

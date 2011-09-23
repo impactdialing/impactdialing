@@ -3,12 +3,15 @@
 <% @json_fields.each do |f| %>
 	<% num=f[f.length-1,1] %>
 	<% if f.index("result") #no notes %>
-		<% this_result_set = JSON.parse(eval("@script.result_set_#{num}" )) %>
-		<% name = this_result_set["name"] %>
-		<% if name.blank? %>
-			<h3><%=f%></h3>
-		<% else %>
-			<h3><%=name%></h3>
+		<% script_json=eval("@script.result_set_#{num}") %>
+		<% if !script_json.blank? %>
+			<% this_result_set = JSON.parse(script_json) %>
+			<% name = this_result_set["name"] %>
+			<% if name.blank? %>
+				<h3><%=f%></h3>
+			<% else %>
+				<h3><%=name%></h3>
+			<% end %>
 		<% end %>
 
 	   <table width="100%" border="0" cellspacing="0" cellpadding="0">

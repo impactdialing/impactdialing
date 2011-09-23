@@ -277,7 +277,8 @@ class CallinController < ApplicationController
       elsif params[:Digits]=="#"
         #@say= "Impact Dialing eliminates unanswered phone calls, allowing you to spend your time talking to people instead of waiting for someone to pick up. When you're ready to start taking calls, press the star key. You'll hear a brief period of silence while Impact Dialing finds a someone who answers the phone. When you've been connected to someone, you'll hear this sound: bee-doop. You usually won't hear the person say hello, so start talking immediately. At the end of the conversation, do not hang up the phone. Instead, press star to end the call, and then enter the call result on your phone's keypad. Then press star to submit the result and keep taking calls, or press pound to submit the result and hang up. You will now be connected to the system. In a moment Impact Dialing will deliver you a call. Begin taking calls.  After a call: say Please enter your call result. Then press star to submit and keep taking calls, or press pound to submit and hang up."
         @play="#{APP_URL}/wav/instructions.wav"
-        render :template => 'callin/start_conference.xml.builder', :layout => false
+        @repeatRedirect="#{APP_URL}/callin/get_ready?session=#{params[:session]}&campaign=#{params[:campaign]}"
+        render :template => 'callin/index.xml.builder', :layout => false
         return
       else
         #        @say="Press star to begin taking calls.  Press pound for instructions."
