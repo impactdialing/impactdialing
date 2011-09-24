@@ -25,7 +25,20 @@ class CallerSession < ActiveRecord::Base
   def call(voter)
     voter.update_attribute(:caller_session, self)
     voter.dial_predictive
-    self.publish("calling",voter.to_json)
+    self.publish("calling",voter.info)
+  end
+
+  def preview_dial(voter)
+    attempt = voter.call_attempts.create(:campaign => self.campaign, :dialer_mode => Campaign::Type::PREVIEW, :status => CallAttempt::Status::INPROGRESS, :caller_session => self)
+    voter.update_attributes(:last_call_attempt => attempt, :last_call_attempt_time => Time.now, :caller_session => self)
+    response = Twilio::Call.make(
+        self.campaign.caller_id,
+        voter.Phone,
+        connect_call_attempt_url(attempt, :host => Settings.host, :port =>Settings.port),
+        'IfMachine' => self.campaign.use_recordings? ? 'Continue' : 'Hangup' ,
+        'Timeout' => campaign.answer_detection_timeout || "20"
+    )
+    attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])
   end
 
   def ask_for_campaign(attempt = 0)
@@ -60,6 +73,7 @@ class CallerSession < ActiveRecord::Base
 
   def end
     self.update_attributes(:on_call => false, :available_for_call => false, :endtime => Time.now)
+    self.publish("caller_disconnected",{})
   end
 
   def publish(event,data)

@@ -67,9 +67,9 @@ class CallerController < ApplicationController
 
   def preview_voter
     session = @caller.caller_sessions.find(params[:session_id])
-    voter = session.campaign.all_voters.to_be_dialed.find(:first, :conditions => "voters.id > #{params[:voter_id]}")
+    voter = session.campaign.all_voters.to_be_dialed.find(:first, :conditions => "voters.id > #{params[:voter_id]}") if params[:voter_id]
     voter ||= session.campaign.all_voters.to_be_dialed.first
-    session.publish('voter_changed', voter.info)
+    session.publish('voter_push', voter.info)
     render :nothing => true
   end
 

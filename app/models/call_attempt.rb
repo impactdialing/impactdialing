@@ -3,6 +3,7 @@ class CallAttempt < ActiveRecord::Base
   belongs_to :voter
   belongs_to :campaign
   belongs_to :caller
+  belongs_to :caller_session
   has_many :call_responses
 
   scope :for_campaign, lambda { |campaign| {:conditions => ["campaign_id = ?", campaign.id]} }

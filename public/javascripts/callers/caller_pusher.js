@@ -1,6 +1,8 @@
 var channel = null;
 
 $(document).ready(function() {
+    $("#actions").hide();
+
     setInterval(function() {
         if ($("#caller_session").val()) {
             //do nothing if the caller session context already exists
@@ -26,6 +28,7 @@ function get_session() {
         success : function(json) {
             set_session(json.caller_session.id);
             subscribe(json.caller_session.session_key);
+            get_voter();
         }
     })
 }
@@ -34,11 +37,19 @@ function current_session() {
     $("#caller_session").val();
 }
 
-function set_voter(voter_id) {
-    $("#current_voter").val(voter_id)
+function get_voter() {
+    $.ajax({
+        url : "/caller/" + $("#caller_session").val() + "/preview_voter",
+        data : {id : $("#caller").val(), session_id : $("#caller_session").val() },
+        type : "POST",
+        success : function(response) {
+            // pushes 'voter_push' event to browsers
+        }
+    })
 }
 
-function skip() {
+
+function next_voter() {
     $.ajax({
         url : "/caller/" + $("#caller_session").val() + "/preview_voter",
         data : {id : $("#caller").val(), voter_id : $("#current_voter").val(), session_id : $("#caller_session").val() },
@@ -49,6 +60,14 @@ function skip() {
     })
 }
 
+function show_actions() {
+    $("#actions").show();
+}
+
+function hide_actions() {
+    $("#actions").show();
+}
+
 function subscribe(session_key) {
     channel = pusher.subscribe(session_key);
 
@@ -57,27 +76,47 @@ function subscribe(session_key) {
     });
 
     channel.bind('caller_connected', function(data) {
-        bind_voter(data);
+        alert(data);
+        set_voter(data);
         $("#voter_info_message").hide();
         $("#callin_data").hide();
     });
 
-    channel.bind('voter_changed', function(data) {
-        bind_voter(data);
+    channel.bind('voter_push', function(data) {
+        set_voter(data);
     });
 
-    function bind_voter(data){
-        alert(data.fields.FirstName);
-        set_voter(data.fields.id);
+    channel.bind('caller_disconnected', function(data)){
+        clear_voter();
+        $('#voter_info').empty();
+    }
+
+    function set_voter(data) {
+        $("#current_voter").val(data.fields.id);
+        bind_voter(data);
+        show_actions();
+    }
+
+    function clear_voter(){
+        $("#current_voter").val(null);
+        $('#voter_info').empty();
+        hide_actions();
+    }
+
+    function bind_voter(data) {
+        data.custom_fields = parse_custom_fields(data);
+        var voter = ich.voter(data); //using ICanHaz a moustache. js like thingamagic
+        $('#voter_info').empty();
+        $('#voter_info').append(voter);
+    }
+
+    function parse_custom_fields(data) {
         var custom_fields = new Array();
         $.each(data.custom_fields, function(key, value) {
             if (value) {
                 custom_fields.push(key + " : " + value);
             }
         });
-        data.custom_fields = custom_fields;
-        var voter = ich.voter(data) //using ICanHaz a moustache like js like thingy
-        $('#voter_info').empty();
-        $('#voter_info').append(voter);
+        return custom_fields;
     }
 }
