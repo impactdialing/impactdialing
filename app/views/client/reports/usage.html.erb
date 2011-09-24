@@ -1,4 +1,4 @@
-<%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@campaign.name} Usage Report"} %>
+<%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@campaign.name} Usage"} %>
 <div class="content clearfix">
 <div role="main">
 <p>Two sets of metrics are provided for you below. First, you can see how much time your callers actually spent on the phone; each call is rounded to the nearest second. Next, you can see how much time you are being billed for; each call is rounded to the nearest minute. If your callers are using our browser phone, you will not be billed for their minutes.</p>
@@ -43,7 +43,7 @@
 </div>
 </div>
 
-<h2>Report Date Range:</h2>
+<h3>Date range:</h3>
 <% form_tag (client_report_usage_path(:id => params[:id])) do %>
   <table>
     <tr>

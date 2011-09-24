@@ -1,12 +1,23 @@
-<h3>Administrators</h3>
+<h1>Users</h1>
 
-<% @account.users.each do |user| %>
-  <div><%= user.email %></div>
-  <div><%= link_to 'Delete user', client_user_path(user), :confirm => 'Are you sure?', :method => :delete %>
-<% end %>
+<table>
+	<tr>
+      <th>Email</th>
+      <th width="55" class="ac"></th>
+	</tr>
+	<% @account.users.each do |user| %>
+      <tr class="<%= cycle("odd","even") %>">
+	<td><%= user.email %></td>
+	<td width="55"><%= link_to 'Delete user', client_user_path(user), :confirm => 'Are you sure you want to delete this user?', :method => :delete, :class => 'ico del'%></td>
+	<% end %>
+</table>
+
+<fieldset>
+	<legend>Invite a new user</legend>
 
 <% form_tag client_user_invite_path do %>
-  <div>Invite another administrator:</div>
   <%= text_field_tag :email %>
   <%= submit_tag 'Send invitation' %>
 <% end %>
+
+</fieldset>

@@ -1,4 +1,4 @@
-<%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@campaign.name} Answered Calls Report"} %>
+<%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@campaign.name} Answered calls"} %>
 
 <% @json_fields.each do |f| %>
 	<% num=f[f.length-1,1] %>
@@ -66,7 +66,7 @@
 -->
 
 
-	<h2>Report Date Range:</h2>
+	<h3>Date range:</h3>
 	<% form_tag ("/client/report_overview_old?id=#{ params[:id]}&type=#{params[:type]}") do %> 
 	  
 	<table>
