@@ -25,7 +25,7 @@ describe CallAttemptsController do
       available_caller.reload.voter_in_progress.should == voter
       response.body.should == Twilio::TwiML::Response.new do |r|
         r.Dial :hangupOnStar => 'false' do |d|
-          d.Conference "session#{available_caller.id}", :wait_url => "", :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
+          d.Conference available_caller.session_key, :wait_url => "", :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
         end
       end.text
     end
@@ -37,7 +37,7 @@ describe CallAttemptsController do
       post :connect, :id => call_attempt.id
       response.body.should == Twilio::TwiML::Response.new do |r|
         r.Dial :hangupOnStar => 'false' do |d|
-          d.Conference "session#{available_caller.id}", :wait_url => "", :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
+          d.Conference available_caller.session_key, :wait_url => "", :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
         end
       end.text
     end

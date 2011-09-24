@@ -30,7 +30,7 @@ describe Voter do
 
     voter.conference(caller).should == Twilio::TwiML::Response.new do |r|
       r.Dial :hangupOnStar => 'false' do |d|
-        d.Conference "session#{caller.id}", :wait_url => "", :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
+        d.Conference caller.session_key, :wait_url => "", :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
       end
     end.text
     caller.voter_in_progress.should == voter
@@ -213,10 +213,10 @@ describe Voter do
   it "provides voter information with custom fields" do
     voter = Factory(:voter, :campaign => Factory(:campaign, :user => Factory(:user)))
     voter_no_custom = Factory(:voter, :campaign => Factory(:campaign, :user => Factory(:user)))
-    voter.apply_attribute('foo','bar')
-    voter.apply_attribute('goo','car')
-    voter.info.should == {:fields => voter.attributes.reject{|k,v| ["created_at", "updated_at"].include? k}, :custom_fields => {'foo' => 'bar', 'goo' => 'car'}}
-    voter_no_custom.info == {:fields => voter_no_custom.attributes.reject{|k,v| ["created_at", "updated_at"].include? k}, :custom_fields => {}}
+    voter.apply_attribute('foo', 'bar')
+    voter.apply_attribute('goo', 'car')
+    voter.info.should == {:fields => voter.attributes.reject { |k, v| ["created_at", "updated_at"].include? k }, :custom_fields => {'foo' => 'bar', 'goo' => 'car'}}
+    voter_no_custom.info == {:fields => voter_no_custom.attributes.reject { |k, v| ["created_at", "updated_at"].include? k }, :custom_fields => {}}
   end
 
   it "limits voters when listing them" do

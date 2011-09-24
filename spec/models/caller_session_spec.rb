@@ -12,9 +12,9 @@ describe CallerSession do
 
   it "lists available caller sessions" do
     call1 = Factory(:caller_session, :available_for_call=> true, :on_call=>true)
-    call2 = Factory(:caller_session, :available_for_call=> false, :on_call=>false)
-    call3 = Factory(:caller_session, :available_for_call=> true, :on_call=>false)
-    call4 = Factory(:caller_session, :available_for_call=> false, :on_call=>false)
+    Factory(:caller_session, :available_for_call=> false, :on_call=>false)
+    Factory(:caller_session, :available_for_call=> true, :on_call=>false)
+    Factory(:caller_session, :available_for_call=> false, :on_call=>false)
     CallerSession.available.should == [call1]
   end
 
@@ -80,6 +80,24 @@ describe CallerSession do
     end
   end
 
+  describe "preview dialing" do
+    let(:campaign) { Factory(:campaign, :robo => false, :predictive_type => 'preview') }
+    let(:voter) { Factory(:voter, :campaign => campaign) }
+    let(:caller) { Factory(:caller) }
+
+    it "dials a voter for a caller session" do
+      caller_session = Factory(:caller_session, :campaign => campaign, :caller => caller)
+      call_attempt = Factory(:call_attempt, :campaign => campaign, :dialer_mode => Campaign::Type::PREVIEW, :status => CallAttempt::Status::INPROGRESS, :caller_session => caller_session)
+      voter.stub_chain(:call_attempts,:create).and_return(call_attempt)
+      Twilio::Call.stub!(:make).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
+      Twilio::Call.should_receive(:make).with(anything, voter.Phone, connect_call_attempt_url(call_attempt, :host => Settings.host, :port =>Settings.port), anything)
+      caller_session.preview_dial(voter)
+      voter.caller_session.should == caller_session
+      call_attempt.sid.should == "sid"
+    end
+
+  end
+
   describe "pusher" do
     let(:caller){ Factory(:caller) }
 
@@ -108,7 +126,7 @@ describe CallerSession do
       voter.stub(:dial_predictive)
       channel = mock
       Pusher.should_receive(:[]).with(session.session_key).and_return(channel)
-      channel.should_receive(:trigger).with("calling",voter.to_json)
+      channel.should_receive(:trigger).with("calling",voter.info)
       session.call(voter)
     end
 
@@ -128,6 +146,16 @@ describe CallerSession do
       2.times{Factory(:voter, :campaign => campaign)}
       Pusher.should_not_receive(:[]).with(session.session_key)
       session.start
+    end
+
+    it "should push 'caller_disconnected' when the caller session ends" do
+      campaign = Factory(:campaign, :use_web_ui => true, :predictive_type => 'preview')
+      session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sample", :on_call=> true, :available_for_call => true)
+      2.times{Factory(:voter, :campaign => campaign)}
+      channel = mock
+      Pusher.should_receive(:[]).with(session.session_key).and_return(channel)
+      channel.should_receive(:trigger).with("caller_disconnected",anything)
+      session.end
     end
   end
 end

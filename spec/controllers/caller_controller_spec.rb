@@ -33,6 +33,17 @@ describe CallerController do
       login_as(caller)
     end
 
+    it "pushes a preview voter to the caller" do
+      session_key = "sdklsjfg923784"
+      voter = Factory(:voter, :campaign => campaign)
+      next_voter = Factory(:voter, :campaign => campaign)
+      session = Factory(:caller_session, :campaign => campaign, :caller => caller, :session_key => session_key)
+      channel = mock
+      Pusher.should_receive(:[]).with(session_key).and_return(channel)
+      channel.should_receive(:trigger).with('voter_push', voter.info)
+      post :preview_voter, :id => caller.id, :session_id => session.id
+    end
+
     it "connects to twilio before making a call" do
       session_key = "sdklsjfg923784"
       session = Factory(:caller_session, :caller=> caller, :session_key => session_key)
@@ -49,7 +60,7 @@ describe CallerController do
       session = Factory(:caller_session, :campaign => campaign, :caller => caller, :session_key => session_key)
       channel = mock
       Pusher.should_receive(:[]).with(session_key).and_return(channel)
-      channel.should_receive(:trigger).with('voter_changed', next_voter.info)
+      channel.should_receive(:trigger).with('voter_push', next_voter.info)
       post :preview_voter, :id => caller.id, :session_id => session.id, :voter_id => voter.id
     end
 
@@ -60,7 +71,7 @@ describe CallerController do
       session = Factory(:caller_session, :campaign => campaign, :caller => caller, :session_key => session_key)
       channel = mock
       Pusher.should_receive(:[]).with(session_key).and_return(channel)
-      channel.should_receive(:trigger).with('voter_changed', first_voter.info)
+      channel.should_receive(:trigger).with('voter_push', first_voter.info)
       post :preview_voter, :id => caller.id, :session_id => session.id, :voter_id => last_voter.id
     end
 
