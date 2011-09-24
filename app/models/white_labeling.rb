@@ -6,6 +6,7 @@ module WhiteLabeling
   end
 
   def correct_domain(domain)
+    domain = 'localhost' unless domain
     d = domain.downcase.gsub(/\..+$/, '')
     if I18n.t("white_labeling.#{d}", :default => '').blank?
       'impactdialing'

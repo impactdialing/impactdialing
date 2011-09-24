@@ -8,7 +8,6 @@ class UserMailer
 
   def deliver_invitation(new_user, current_user)
     link = reset_password_url(:host => HOST, :port => PORT, :reset_code => new_user.password_reset_code)
-    title =
     @uakari.send_email({
       :track_opens => true,
       :track_clicks => true,
@@ -16,8 +15,8 @@ class UserMailer
         :subject => I18n.t(:admin_invite_subject, :title => white_labeled_title(current_user.domain)),
         :html => I18n.t(:admin_invite_body_html, :title => white_labeled_title(current_user.domain), :link => link),
         :text => I18n.t(:admin_invite_body_text, :title => white_labeled_title(current_user.domain), :link => link),
-        :from_name => I18n.t(:title),
-        :from_email => current_user.email,
+        :from_name => white_labeled_title(current_user.domain),
+        :from_email => 'email@impactdialing.com',
         :to_email => [new_user.email]
       }
     })
