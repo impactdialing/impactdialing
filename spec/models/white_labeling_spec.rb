@@ -13,4 +13,8 @@ describe WhiteLabeling do
   it "defaults to impactdialing if the actual domain doesn't match" do
     correct_domain("example.com").should == 'impactdialing'
   end
+
+  it "defaults to impactdialing if the domain isn't set" do
+    correct_domain(nil).should == 'impactdialing'
+  end
 end
