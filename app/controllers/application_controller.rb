@@ -1,3 +1,4 @@
+
 # Filters added to this controller apply to all controllers in the application.
 # Likewise, all the methods added will be available for all controllers.
 
@@ -54,7 +55,7 @@ class ApplicationController < ActionController::Base
   def unpaid_text
     return "" if @user==nil
     warning=""
-    if !account.paid?
+    unless @user.account.paid?
       #warning= "Your account is not funded and cannot make calls. For a free trial or to fund your account, email <a href=\"mailto:info@impactdialing.com\">info@impactdialing.com</a> or call (415) 347-5723."
 #      warning= "Your account is not funded and cannot make calls. Click here to<a href=\"/client/billing\"> activate your account</a>, or email <a href=\"mailto:info@impactdialing.com\">info@impactdialing.com</a> or call (415) 347-5723."
       warning= "Before you can make calls, you need to verify a credit card number that we can bill. Until then, you can try out as much as you like, except for actually calling. #{billing_link(self.active_layout.instance_variable_get(:@template_path))} "
