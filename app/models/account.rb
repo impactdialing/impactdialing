@@ -4,7 +4,7 @@ class Account < ActiveRecord::Base
   has_many :all_campaigns, :class_name => 'Campaign'
   has_many :recordings
   has_many :custom_voter_fields
-  has_many :billing_accounts
+  has_one :billing_account
   has_many :scripts
   has_many :callers
   has_many :voter_lists

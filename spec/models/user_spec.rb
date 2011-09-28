@@ -1,15 +1,12 @@
 require "spec_helper"
 
 describe User do
-  before(:each) do
-    Factory(:user)
-  end
+  let(:user) { Factory(:user) }
 
   it { should validate_uniqueness_of(:email).with_message(/is already in use/) }
 
   it "creates a reset code" do
     Digest::SHA2.stub!(:hexdigest).and_return('reset code')
-    user = Factory(:user)
     user.create_reset_code
     user.password_reset_code.should == 'reset code'
   end
@@ -27,10 +24,16 @@ describe User do
 
     User.authenticate("user@user.com", "abracadabra").should == user
   end
+
   it "authenticates a User object with password" do
-    user = Factory(:user)
     user.new_password = "xyzzy123"
     user.save
     user.authenticate_with?("xyzzy123").should be_true
+  end
+
+  it "finds the billing_account through account" do
+    billing_account = Factory(:billing_account)
+    user.account.update_attribute(:billing_account, billing_account)
+    user.billing_account.should == billing_account
   end
 end
