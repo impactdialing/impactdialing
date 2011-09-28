@@ -116,7 +116,38 @@ class ClientController < ApplicationController
         flash_message(:notice, message)
       end
     end
+  end
 
+  def campaigns
+    @breadcrumb="Campaigns"
+    @campaigns = Campaign.active.manual.for_user(@user).paginate :page => params[:page], :order => 'id desc'
+  end
+
+  def campaign_new
+    campaign = Campaign.new(:user_id => @user.id, :predective_type => 'algorithm1')
+    campaign.user_id = @user.id
+    count = Campaign.find_all_by_user_id(@user.id)
+    campaign.name="Untitled #{count.length+1}"
+    script = Script.find_by_user_id(@user.id)
+    campaign.script_id = script.id if script!=nil
+    campaign.save
+    callers = Caller.find_all_by_user_id_and_active(@user.id,1)
+    callers.each do |caller|
+      campaign.callers << caller
+    end
+    #flash[:notice]="Campaign created."
+    redirect_to :action=>"campaign_view", :id=>campaign.id
+    return
+  end
+
+  def campaign_delete
+    @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id)
+    if !@campaign.blank?
+      @campaign.active = false
+      @campaign.save
+    end
+    flash_message(:notice, "Campaign deleted")
+    redirect_to :back
   end
 
   def check_warning
