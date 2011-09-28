@@ -166,7 +166,9 @@ class CallinController < ApplicationController
       @play="#{APP_URL}/wav/enter_campaign_id.wav"
     else
       # response with PIN
-      c = @caller.account.campaigns.active.find_by_group_id(params[:Digits]) if params[:session] != '0'
+      logger.info "PARAMS : #{params.inspect}, CALLER => #{@caller.inspect}"
+      c = Campaign.find_by_group_id_and_active_and_account_id(params[:Digits], true, @caller.account_id) if params[:session]!="0"
+      #c = @caller.account.campaigns.active.find_by_group_id(params[:Digits]) if params[:session] != '0'
       if params[:session]=="0" || c.blank?
         #        @say="We could not find that campain, try again."
         @play="#{APP_URL}/wav/invalid_credentials.wav"
