@@ -3,6 +3,8 @@ class Recording < ActiveRecord::Base
   validates_presence_of :name
   belongs_to :account
 
+  named_scope :active, :conditions => ["recordings.active = ? ", true]
+
   has_attached_file :file,
                     :storage => :s3,
                     :s3_credentials => Rails.root.join('config', 'amazon_s3.yml').to_s,
