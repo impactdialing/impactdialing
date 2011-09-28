@@ -2,6 +2,9 @@ require "spec_helper"
 
 describe User do
   let(:user) { Factory(:user) }
+  before(:each) do
+    user
+  end
 
   it { should validate_uniqueness_of(:email).with_message(/is already in use/) }
 
