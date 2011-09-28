@@ -39,9 +39,9 @@ task :staging do
   set :server_name, "ec2-174-129-172-31.compute-1.amazonaws.com"
   set :rails_env, 'staging'
   set :branch, "client_rewrite"
-  role :web, 'staging.impactdialing.com'
-  role :app, 'staging.impactdialing.com'
-  role :db, 'staging.impactdialing.com', :primary => true
+  role :web, 'ec2-174-129-172-31.compute-1.amazonaws.com'
+  role :app, 'ec2-174-129-172-31.compute-1.amazonaws.com'
+  role :db, 'ec2-174-129-172-31.compute-1.amazonaws.com', :primary => true
 end
 
 task :production do
