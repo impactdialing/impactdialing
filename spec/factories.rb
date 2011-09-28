@@ -18,6 +18,10 @@ Factory.define :user do |u|
   u.new_password 'password'
 end
 
+Factory.define :billing_account do |b|
+
+end
+
 Factory.define :campaign do |c|
   c.name 'a campaign'
 end
