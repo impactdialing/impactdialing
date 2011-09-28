@@ -407,7 +407,7 @@ class ClientController < ApplicationController
 
   def billing
     @breadcrumb="Billing"
-    @billing_account = @user.billing_account || Account.new
+    @billing_account = @user.billing_account || BillingAccount.new
     @oldcc = @billing_account.cc
     if @billing_account.last4.blank?
       @tempcc = ""
