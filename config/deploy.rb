@@ -38,13 +38,14 @@ end
 task :staging do
   set :server_name, "ec2-174-129-172-31.compute-1.amazonaws.com"
   set :rails_env, 'staging'
-  role :web, 'staging.impactdialing.com'
-  role :app, 'staging.impactdialing.com'
-  role :db, 'staging.impactdialing.com', :primary => true
+  role :web, 'ec2-174-129-172-31.compute-1.amazonaws.com'
+  role :app, 'ec2-174-129-172-31.compute-1.amazonaws.com'
+  role :db, 'ec2-174-129-172-31.compute-1.amazonaws.com', :primary => true
 end
 
 task :production do
   set :rails_env, 'production'
+  set :branch, "client_rewrite"
   role :web, 'ec2-107-20-17-151.compute-1.amazonaws.com', 'ec2-184-73-34-159.compute-1.amazonaws.com'
   role :app, 'ec2-107-20-17-151.compute-1.amazonaws.com', 'ec2-184-73-34-159.compute-1.amazonaws.com'
   role :db, 'ec2-107-20-17-151.compute-1.amazonaws.com', :primary => true #use an app server for migrations
