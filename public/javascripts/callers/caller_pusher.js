@@ -26,9 +26,11 @@ function get_session() {
         data : {id : $("#caller").val()},
         type : "POST",
         success : function(json) {
-            set_session(json.caller_session.id);
-            subscribe(json.caller_session.session_key);
-            get_voter();
+            if (json.caller_session.id) {
+                set_session(json.caller_session.id);
+                subscribe(json.caller_session.session_key);
+                get_voter();
+            }
         }
     })
 }
@@ -60,12 +62,27 @@ function next_voter() {
     })
 }
 
+function call_voter() {
+    $.ajax({
+        url : "/caller/" + $("#caller_session").val() + "/call_voter",
+        data : {id : $("#caller").val(), voter_id : $("#current_voter").val(), session_id : $("#caller_session").val() },
+        type : "POST",
+        success : function(response) {
+            // pushes 'calling_voter'' event to browsers
+        }
+    })
+}
+
 function show_actions() {
     $("#actions").show();
 }
 
 function hide_actions() {
     $("#actions").show();
+}
+
+function set_message(text) {
+    $("#statusdiv").replaceData(text);
 }
 
 function subscribe(session_key) {
@@ -80,16 +97,22 @@ function subscribe(session_key) {
         set_voter(data);
         $("#voter_info_message").hide();
         $("#callin_data").hide();
+        set_message("Call connected");
     });
 
     channel.bind('voter_push', function(data) {
         set_voter(data);
     });
 
-    channel.bind('caller_disconnected', function(data)){
+    channel.bind('calling_voter', function(data) {
+        set_voter(data);
+        set_message('Call in progress');
+    });
+
+    channel.bind('caller_disconnected', function(data) {
         clear_voter();
         $('#voter_info').empty();
-    }
+    });
 
     function set_voter(data) {
         $("#current_voter").val(data.fields.id);
@@ -97,7 +120,7 @@ function subscribe(session_key) {
         show_actions();
     }
 
-    function clear_voter(){
+    function clear_voter() {
         $("#current_voter").val(null);
         $('#voter_info').empty();
         hide_actions();

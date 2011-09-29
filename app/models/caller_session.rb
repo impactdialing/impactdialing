@@ -31,6 +31,7 @@ class CallerSession < ActiveRecord::Base
   def preview_dial(voter)
     attempt = voter.call_attempts.create(:campaign => self.campaign, :dialer_mode => Campaign::Type::PREVIEW, :status => CallAttempt::Status::INPROGRESS, :caller_session => self)
     voter.update_attributes(:last_call_attempt => attempt, :last_call_attempt_time => Time.now, :caller_session => self)
+    Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
     response = Twilio::Call.make(
         self.campaign.caller_id,
         voter.Phone,
@@ -38,6 +39,7 @@ class CallerSession < ActiveRecord::Base
         'IfMachine' => self.campaign.use_recordings? ? 'Continue' : 'Hangup' ,
         'Timeout' => campaign.answer_detection_timeout || "20"
     )
+    self.publish('calling_voter',voter.info)
     attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])
   end
 
