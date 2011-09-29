@@ -73,6 +73,13 @@ class CallerController < ApplicationController
     render :nothing => true
   end
 
+  def call_voter
+    session = @caller.caller_sessions.find(params[:session_id])
+    voter = Voter.find(params[:voter_id])
+    session.preview_dial(voter)
+    render :nothing => true
+  end
+
   def campaign
     require "hpricot"
     require "open-uri"
