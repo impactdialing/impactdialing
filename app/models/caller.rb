@@ -31,7 +31,7 @@ class Caller < ActiveRecord::Base
         :url => caller_ready_callers_campaign_url(:id=>campaign.id, :caller_sid => session.sid, :host => APP_HOST)
     )
     #raise response.inspect
-    session.update_attribute(:sid, response["TwilioResponse"]["Call"]["Sid"])
+    session.update_attribute(:sid, response.sid)
     session
   end
 
