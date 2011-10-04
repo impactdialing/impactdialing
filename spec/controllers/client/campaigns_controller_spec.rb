@@ -16,7 +16,7 @@ describe Client::CampaignsController do
     voter.reload
     voter.result.should be_nil
     voter.status.should == 'not called'
-    response.should redirect_to(:back)
+    response.should redirect_to(client_campaign_path(campaign))
   end
 
   it "a non admin can't clear calls" do
