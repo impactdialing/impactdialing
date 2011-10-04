@@ -516,14 +516,14 @@ class Campaign < ActiveRecord::Base
     if ratio_dial?
       dial_ratio=get_dial_ratio(stats[:answer_pct] * 100).to_i
       max_calls=callers.length * dial_ratio
-      new_calls = calls_in_progress.length - max_calls
+      new_calls = call_attempts_in_progress.length - max_calls
     else
       short_to_dial=determine_short_to_dial(stats)
       max_calls=determine_pool_size(stats,short_to_dial)
-      new_calls = calls_in_progress.length
+      new_calls = call_attempts_in_progress.length
     end
 
-    DIALER_LOGGER.info "#{self.name}: Callers logged in: #{callers.length}, Callers on call: #{callers_on_call.length}, Callers not on call:  #{callers_not_on_call}, Calls in progress: #{calls_in_progress.length}, Answer pct: #{(stats[:answer_pct] * 100).to_i}"
+    DIALER_LOGGER.info "#{self.name}: Callers logged in: #{callers.length}, Callers on call: #{callers_on_call.length}, Callers not on call:  #{callers_not_on_call}, Calls in progress: #{call_attempts_in_progress.length}, Answer pct: #{(stats[:answer_pct] * 100).to_i}"
     DIALER_LOGGER.info "#{new_calls} newcalls #{max_calls} maxcalls"
 
     voter_ids=choose_voters_to_dial(new_calls,max_calls) #TODO check logic
