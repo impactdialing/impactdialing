@@ -51,10 +51,14 @@ module Client
     end
 
     def clear_calls
-      campaign = Campaign.find(params[:campaign_id])
-      campaign.clear_calls
-      flash_message(:notice, "Calls cleared")
-      redirect_to :back
+      if current_user.admin?
+        campaign = Campaign.find(params[:campaign_id])
+        campaign.clear_calls
+        flash_message(:notice, "Calls cleared")
+        redirect_to :back
+      else
+        render :text => 'unauthorized', :status => :unauthorized
+      end
     end
   end
 end

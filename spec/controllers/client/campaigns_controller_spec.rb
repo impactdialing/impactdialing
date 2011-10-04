@@ -8,14 +8,25 @@ describe Client::CampaignsController do
     login_as user
   end
 
-  it "clears calls" do
-    campaign = Factory(:campaign, :account => account)
+  it "only an admin clears calls" do
+    login_as (admin_user = Factory(:admin_user))
+    campaign = Factory(:campaign, :account => admin_user.account)
     voter = Factory(:voter, :campaign => campaign, :result => 'foo', :status => 'bar')
     put :clear_calls, :campaign_id => campaign.id
     voter.reload
     voter.result.should be_nil
     voter.status.should == 'not called'
     response.should redirect_to(:back)
+  end
+
+  it "a non admin can't clear calls" do
+    campaign = Factory(:campaign, :account => account)
+    voter = Factory(:voter, :campaign => campaign, :result => 'foo', :status => 'bar')
+    put :clear_calls, :campaign_id => campaign.id
+    voter.reload
+    voter.result.should == 'foo'
+    voter.status.should == 'bar'
+    response.should be_unauthorized
   end
 
   it "creates a new robo campaign" do
