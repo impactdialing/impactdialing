@@ -80,6 +80,7 @@ GEM
     ruby-hmac (0.4.0)
     settingslogic (2.0.6)
     shoulda (2.11.3)
+    shoulda-matchers (1.0.0.beta3)
     signature (0.1.2)
       ruby-hmac
     spork (0.8.5)
@@ -123,6 +124,7 @@ DEPENDENCIES
   ruby-debug (~> 0.10.4)
   settingslogic (~> 2.0.6)
   shoulda (~> 2.11.3)
+  shoulda-matchers (= 1.0.0.beta3)
   spork (~> 0.8.5)
   twilio (~> 3.0.1)
   twilio-ruby (~> 3.2.0)

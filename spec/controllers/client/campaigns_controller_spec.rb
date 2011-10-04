@@ -26,7 +26,7 @@ describe Client::CampaignsController do
     voter.reload
     voter.result.should == 'foo'
     voter.status.should == 'bar'
-    response.should be_unauthorized
+    response.code.should == '401'
   end
 
   it "creates a new robo campaign" do

@@ -20,4 +20,9 @@ describe Caller do
     inactive_caller = Factory(:caller, :active => false)
     Caller.active.should == [active_caller]
   end
+
+  it do
+    Factory(:caller)
+    should validate_uniqueness_of :email
+  end
 end

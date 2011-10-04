@@ -34,6 +34,7 @@ Factory.define :script do |s|
 end
 
 Factory.define :caller do |s|
+  s.email { Factory.next(:email) }
   s.name 'a caller'
 end
 

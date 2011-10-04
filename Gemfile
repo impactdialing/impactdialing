@@ -37,4 +37,5 @@ group :test do
   gem 'rspec', '~> 1.3.1'
   gem 'shoulda', '~> 2.11.3'
   gem 'rcov', '~> 0.9.9'
+  gem 'shoulda-matchers', '1.0.0.beta3'
 end
