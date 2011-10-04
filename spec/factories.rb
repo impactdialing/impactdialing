@@ -18,8 +18,11 @@ Factory.define :user do |u|
   u.new_password 'password'
 end
 
-Factory.define :billing_account do |b|
+Factory.define :admin_user, :parent => :user do |u|
+  u.email 'michael@impactdialing.com'
+end
 
+Factory.define :billing_account do |b|
 end
 
 Factory.define :campaign do |c|
