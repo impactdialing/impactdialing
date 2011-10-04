@@ -1,9 +1,9 @@
 class TwilioLib
   require 'net/http'
 
-  DEFAULT_SERVER = "api.twilio.com"
-  DEFAULT_PORT = 443
-  DEFAULT_ROOT= "/2008-08-01/Accounts/"
+  DEFAULT_SERVER = "api.twilio.com" unless const_defined?('DEFAULT_SERVER')
+  DEFAULT_PORT = 443 unless const_defined?('DEFAULT_PORT')
+  DEFAULT_ROOT= "/2008-08-01/Accounts/" unless const_defined?('DEFAULT_ROOT')
 
   def accountguid
   end

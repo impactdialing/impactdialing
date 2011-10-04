@@ -2,8 +2,11 @@ class CallerSession < ActiveRecord::Base
   include ActionController::UrlWriter
   belongs_to :caller
   belongs_to :campaign
+
   scope :on_call, :conditions => {:on_call => true}
   scope :available, :conditions => {:available_for_call => true, :on_call => true}
+  scope :not_on_call, :conditions => {:on_call => false}
+  scope :held_for_duration, lambda{|minutes| {:conditions => ["hold_time_start <= ?", minutes.ago]}}
   has_one :voter_in_progress, :class_name => 'Voter'
   unloadable
 

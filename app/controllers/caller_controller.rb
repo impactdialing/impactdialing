@@ -80,6 +80,16 @@ class CallerController < ApplicationController
     render :nothing => true
   end
 
+  def ping
+    #sleep 2.5
+    send_rt(params[:key], 'ping', params[:num])
+    render :text=>"pong"
+  end
+
+  def network_test
+    @rand=rand
+  end
+
   def campaign
     require "hpricot"
     require "open-uri"

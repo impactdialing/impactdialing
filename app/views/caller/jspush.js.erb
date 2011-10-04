@@ -13,6 +13,7 @@ function dialTimedOut() {
                 //	$("#result").html(result);
             }
     );
+	logit("Dial timed out");
     $('#statusdiv').html("Status: Not Connected");
     $('#actiondiv').html('<%= escape_javascript @start_action_div_contents %>');
     $('#voter_info').hide();
@@ -23,14 +24,22 @@ function dialTimedOut() {
 
 
 $(document).ready(function() {
+	logit("page ready");
 	 goclient();
     <%# make call or re-establish session %>
     t = setTimeout("dialTimedOut()", 60000);
     <% if @on_call!=nil %>
+	logit("reconnecting session");
     $('#statusdiv').html("Status: Reconnecting to your session");
     $("#actiondiv").html(ajax_load);
     <% else %>
-    $('#statusdiv').html("Status: Dialing your phone");
+	if (typeof(Twilio) != "undefined"){
+    	$('#statusdiv').html("Status: Connecting Browser phone");
+		logit("Connecting Browser phone");
+	} else {
+    	$('#statusdiv').html("Status: Dialing your phone");
+		logit("dialing phone");
+	}
     <% end %>
     $("#actiondiv").html(ajax_load);
     $('#caller_buttons').effect("highlight", {"color":"#3c5b7b"}, 2000);
@@ -44,22 +53,27 @@ $(document).ready(function() {
     };
     <% end %>
 
-    pusher.bind('pusher:connection_established',
-            function(ev) {
-                socketId = ev.socket_id;
+    pusher.bind('pusher:connection_established', function(ev) {
+		logit("browser push connection established");
+	            socketId = ev.socket_id;
                 <% if @on_call!=nil %>
                 <% render :partial => 'get_reconnect_key_value' %>
                 var url = '/caller/reconnect_rt?key=' + sk + '&k=<%= @k %>&v=<%= escape_javascript @v %>';
                 $.ajax({
                     type: 'GET',
                     dataType: 'script',
-                    url: url
+                    url: url,
+			        error: function(XMLHttpRequest, textStatus, errorThrown)
+			        {
+						logErr(urltextStatus);
+					}
                 });
                 <% end %>
             }
     );
 
     pusher.bind('pusher:connection_failed', function(ev) {
+		logit('browser push connection failed');
         $('#voter_info').hide();
         $('#previewInfo').hide();
         $('#response').hide();
@@ -74,8 +88,21 @@ $(document).ready(function() {
         alert(data);
     });
 
+
+    channel.bind('confirm', function(data) {
+		logit("confirm prompt");
+		clearTimeout(t);
+		$('#statusdiv').html("Status: Confirm to start taking calls");
+		$('#actiondiv').html('<input type="button" class="button" value="Click here to start taking calls" onclick="imready();">');
+ 		$('#caller_buttons').effect("highlight", {"color":"#3c5b7b"}, 2000);
+	});
+
+
+
     channel.bind('waiting', function(data) {
+		logit("waiting");
         clearTimeout(t);
+		logit(JSON.stringify(data));
         currAttempt = 'waiting';
         <% @campaign.script.notes_used.each do |n| %>
         $("#note<%=n%>").val('');
@@ -86,7 +113,11 @@ $(document).ready(function() {
             $.ajax({
                 type: 'GET',
                 dataType: 'script',
-                url: url
+                url: url,
+		        error: function(XMLHttpRequest, textStatus, errorThrown)
+		        {
+					logErr(urltextStatus);
+				}
             });
             $('#voter_info').hide();
             $('#response').hide();
@@ -114,9 +145,11 @@ $(document).ready(function() {
     });
 
     channel.bind('voter_start', function(data) {
+		logit("voter start");
 		clearTimeout(t);
 //		voter_data = JSON.parse(data);
-        voter_data = data;
+		logit(JSON.stringify(data));
+		voter_data = data;
         var voter_out = "";
         var attempt_id = '';
         var family = [];
@@ -169,6 +202,7 @@ $(document).ready(function() {
 
     channel.bind('hangup', function(data) {
 	 	clearTimeout(t);
+		logit('hangup called');
         $('#voter_info').hide();
         $('#previewInfo').hide();
         $('#response').hide();
@@ -211,6 +245,7 @@ function processresult(attempt_id, hangup, isFam) {
     }
 
     var jsonUrl = "/caller/submit_result/?key=<%= @session.session_key %>&attempt=" + attempt_id <% @campaign.script.result_sets_used.each do |r| %> + "&disposition<%= r %>=" + escape($("#disposition<%=r%>").val()) <% end %> <% @campaign.script.notes_used.each do |n| %> + "&note<%= n %>=" + escape($("#note<%=n%>").val()) <% end %> + "&hangup=" + hangup + "&family=" + familychoice;
+	logit("result " + jsonUrl);
     $("#actiondiv").html(ajax_load);
     resetBoxes();
     $('#response').hide();
@@ -236,6 +271,7 @@ function resetBoxes() {
 <% end %>
 }
 function imdone() {
+	logit("imdone");
     var jsonUrl = "/caller/session_end/<%= @session.session_key %>";
     $("#actiondiv").html(ajax_load);
     $.getJSON(jsonUrl, {},
@@ -248,6 +284,7 @@ function imdone() {
 
 
 function imready() {
+	logit("imready");
     var jsonUrl = "/caller/session_ready/<%= @session.session_key %>";
     $("#actiondiv").html(ajax_load);
 	if (typeof(Twilio) != "undefined"){
@@ -262,6 +299,7 @@ function imready() {
 }
 
 function dropcall(attempt_id) {
+	logit("drop call " + attempt_id);
     var jsonUrl = "/caller/drop_call?session=<%= @session.session_key %>&attempt=" + attempt_id;
 //	$("#actiondiv").html(ajax_load);
     $.getJSON(jsonUrl, {},
@@ -312,7 +350,11 @@ function dialVoter(vid) {
     $.ajax({
         type: 'GET',
         dataType: 'script',
-        url: url
+        url: url,
+        error: function(XMLHttpRequest, textStatus, errorThrown)
+        {
+			logErr(urltextStatus);
+		}
     });
 
 //	document.location.href='/caller/preview_dial?key=<%= params[:key] %>&voter_id=' + vid;
@@ -323,7 +365,11 @@ function dpoll() {
     $.ajax({
         type: 'GET',
         dataType: 'script',
-        url: url
+        url: url,
+        error: function(XMLHttpRequest, textStatus, errorThrown)
+        {
+			logErr(urltextStatus);
+		}
     });
     setTimeout("dpoll()", 20000);
 }
@@ -331,4 +377,30 @@ function dpoll() {
 
 function update_schedule_form(call_attempt_id) {
     $('#current_call_attempt_id').val(call_attempt_id)
+}
+
+function getDate(){
+	str='';
+	var currentTime = new Date()
+	var hours = currentTime.getHours()
+	var minutes = currentTime.getMinutes()
+	var secs = currentTime.getSeconds()
+	if (minutes < 10){
+	minutes = "0" + minutes
+	}
+	str = str + hours + ":" + minutes + ":" + secs + " ";
+	if(hours > 11){
+	str = str +"PM";
+	} else {
+		str = str + "AM";
+	}
+	return str;
+}
+
+function logErr(url,msg){
+	alert('Ajax error ' + msg);
+	document.getElementById('dbx').innerHTML=document.getElementById('dbx').innerHTML +  getDate() + ' Ajax error ' + url + ' ' + msg + '<br/>';
+}
+function logit(msg){
+	document.getElementById('dbx').innerHTML=document.getElementById('dbx').innerHTML +  getDate() + ' ' + msg + '<br/>';
 }

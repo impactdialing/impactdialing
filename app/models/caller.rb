@@ -41,23 +41,22 @@ class Caller < ActiveRecord::Base
             end
       xml.response
     end
-
   end
 
-def callin(campaign, phone)
-  session = CallerSession.create(:caller => self, :campaign => campaign)
-  response = TwilioClient.instance.account.calls.create(
-      :from =>APP_NUMBER,
-      :to => phone,
-      :url => caller_ready_callers_campaign_url(:id=>campaign.id, :caller_sid => session.sid, :host => Settings.host)
-  )
-  #raise response.inspect
-  session.update_attribute(:sid, response["TwilioResponse"]["Call"]["Sid"])
-  session
-end
+  def callin(campaign, phone)
+    session = CallerSession.create(:caller => self, :campaign => campaign)
+    response = TwilioClient.instance.account.calls.create(
+        :from =>APP_NUMBER,
+        :to => phone,
+        :url => caller_ready_callers_campaign_url(:id=>campaign.id, :caller_sid => session.sid, :host => APP_HOST)
+    )
+    #raise response.inspect
+    session.update_attribute(:sid, response.sid)
+    session
+  end
 
-def phone
-  #required for the form field.
-end
+  def phone
+    #required for the form field.
+  end
 
 end

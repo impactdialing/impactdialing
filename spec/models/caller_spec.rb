@@ -29,7 +29,7 @@ describe Caller do
     sid = "gogaruko"
     caller = Factory(:caller, :user => user)
     campaign = Factory(:campaign, :user => user)
-    TwilioClient.stub_chain(:instance, :account, :calls, :create).and_return({"TwilioResponse" => {"Call" => {"Sid" => sid}}})
+    TwilioClient.stub_chain(:instance, :account, :calls, :create).and_return(mock(:response, :sid => sid))
     session = caller.callin(campaign, 5463459043)
     session.sid.should == sid
     session.campaign.should == campaign

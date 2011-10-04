@@ -1,8 +1,0 @@
-#!/usr/bin/env ruby
-#
-# Stub executable for dialer-dameon
-#
-
-require File.expand_path('../../config/environment',  __FILE__)
-
-DaemonKit::Application.exec( DAEMON_ROOT + '/libexec/dialer-dameon-daemon.rb' )
