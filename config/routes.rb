@@ -56,7 +56,7 @@ ActionController::Routing::Routes.draw do |map|
 
   map.resources :campaigns, :member => { :verify_callerid => :post }, :path_prefix => 'client', :only => [] do |campaign|
     campaign.resources :voter_lists, :collection => { :import => :post }, :except => [:new, :show], :name_prefix => 'client_'
-    campaign.clear_calls 'clear_calls', :controller => 'client/campaigns', :action => 'clear_calls', :conditions => { :method => :put }
+    campaign.clear_calls 'clear_calls', :controller => 'client/campaigns', :action => 'clear_calls'
   end
 
   map.resources :call_attempts, :only => [:create, :update]
