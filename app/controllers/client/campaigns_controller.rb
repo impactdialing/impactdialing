@@ -55,7 +55,7 @@ module Client
         campaign = Campaign.find(params[:campaign_id])
         campaign.clear_calls
         flash_message(:notice, "Calls cleared")
-        redirect_to :back
+        redirect_to client_campaign_path(campaign)
       else
         render :text => 'unauthorized', :status => :unauthorized
       end
