@@ -13,3 +13,4 @@ test/
 spec/fixtures/test_tmp/
 coverage_unit/
 coverage_controller/
+bin/
