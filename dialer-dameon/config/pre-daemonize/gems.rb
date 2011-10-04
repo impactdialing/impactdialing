@@ -1,7 +1,0 @@
-require 'rubygems'
-require 'mysql' 
-require 'active_record' 
-require 'net/http'
-require 'net/https'
-#require 'memcache'
-require 'actionmailer'
