@@ -1,6 +1,54 @@
 require "spec_helper"
 require "lib/twilio_lib"
 
+
+describe "predictive_dialer" do
+
+  it "does not dial when dials are already in progress" do
+    campaign = Factory(:campaign, :calls_in_progress => true, :predictive_type => 'predictive')
+    campaign.should_not_receive(:dial_predictive_voters)
+    campaign.predictive_dial
+  end
+
+  it "does not dial when a campaign uses preview dialing" do
+    campaign = Factory(:campaign, :calls_in_progress => false, :predictive_type => 'preview')
+    campaign.should_not_receive(:dial_predictive_voters)
+    campaign.predictive_dial
+  end
+
+  it "predictive dial dials voters" do
+    campaign = Factory(:campaign, :calls_in_progress => false, :predictive_type => 'predictive')
+    campaign.should_receive(:dial_predictive_voters)
+    campaign.predictive_dial
+  end
+
+  it "set calls_in_progress before dialing predictive voters, and unsets it after" do
+    campaign = Factory(:campaign, :calls_in_progress => false, :predictive_type => 'predictive')
+    def campaign.dial_predictive_voters
+      calls_in_progress.should == true
+    end
+    campaign.predictive_dial
+    campaign.calls_in_progress.should == false
+  end
+
+  it "should determine the campaign dial strategy"
+  it "should determine the number of short calls to dial"
+  it "should not add more short callers to the pool than the number of short calls to dial"
+  it "should add idle callers to the dial pool"
+  it "should add callers with calls over the long threshold to the dial pool"
+  it "should properly choose the next voters to dial" #scheudled, not called
+  it "should not have more voters chosen than the max dials"
+
+  #canned scenarios where we back into / prove our new calls / max calls
+
+end
+
+describe "ratio_dialer" do
+  it "should get the dial ratio based on predictive type"
+  it "should set the dial ratio to 2 if no recent calls have been answered"
+end
+
+
 describe Campaign do
 
   it "restoring makes it active" do
@@ -145,6 +193,14 @@ describe Campaign do
       campaign = Factory(:campaign, :calls_in_progress => true)
       campaign.stop
       campaign.calls_in_progress.should be_false
+    end
+
+    it "lists the call attempts in progress" do
+      campaign = Factory(:campaign)
+      ended_call_attempt = Factory(:call_attempt, :call_end => 1.day.ago, :campaign => campaign)
+      continuing_call_attempt_on_campaign = Factory(:call_attempt, :call_end => nil, :campaign => campaign)
+      continuing_call_attempt_on_something_else = Factory(:call_attempt, :call_end => nil, :campaign => Factory(:campaign))
+      campaign.call_attempts_in_progress.should == [continuing_call_attempt_on_campaign]
     end
 
     describe "number of dialed voters" do

@@ -9,8 +9,10 @@ tmp
 *.DS_Store
 public/.DS_Store
 test/
+lib/*.pid
 *.rails2
 spec/fixtures/test_tmp/
 coverage_unit/
 coverage_controller/
 bin/
+spec/fixtures/test_tmp/

@@ -46,19 +46,6 @@ $l.progname = "campaign_dialer"
 $l
 
 
-module DaemonKit
-  def self.logger
-    $l
-  end
-  def self.env
-    $environment
-  end
-end
-
-require "#{root_path}/config/pre-daemonize/gems.rb"
-require "#{root_path}/config/post-daemonize/database_setup.rb"
-require "#{root_path}/lib/dialer-dameon.rb"
-
 def chunk_array(array, pieces=2)
   len = array.length;
   mid = (len/pieces)
@@ -74,10 +61,10 @@ def chunk_array(array, pieces=2)
 end
 
 campaigns_dialed=[]
-DaemonKit.logger.info "voter_list: #{voter_list}"
+Rails.logger.info "voter_list: #{voter_list}"
 
 def dial_voters(voter_list)
-  DaemonKit.logger.info "start thread voter_list: #{voter_list.inspect}"
+  Rails.logger.info "start thread voter_list: #{voter_list.inspect}"
   #  puts "start thread voter_list: #{voter_list}"
   begin
     voter_list.each do |voter_id|
@@ -85,16 +72,16 @@ def dial_voters(voter_list)
       voter=Voter.find(voter_id)
       campaign=Campaign.find(voter.campaign_id)
       Thread.current["campaign"] = campaign
-      DaemonKit.logger.info "calling: #{voter.Phone} (#{voter.id})"
+      Rails.logger.info "calling: #{voter.Phone} (#{voter.id})"
       voter.status='Call attempt in progress'
       voter.save
       d = Dialer.startcall(voter, campaign)
-      DaemonKit.logger.info "done dialing (#{voter.id})"
+      Rails.logger.info "done dialing (#{voter.id})"
       campaign
     end
   rescue Exception => e
-    DaemonKit.logger.info "Rescued in thread - #{ e } (#{ e.class })!"
-    DaemonKit.logger.info e.backtrace
+    Rails.logger.info "Rescued in thread - #{ e } (#{ e.class })!"
+    Rails.logger.info e.backtrace
   end
 end
 
@@ -114,15 +101,15 @@ threads.each do |t|
   t.join
   if t["campaign"]!=nil
     campaigns_dialed<< t["campaign"] if !campaigns_dialed.index(t["campaign"])
-    DaemonKit.logger.info "end thread #{t["campaign"].id}"
+    Rails.logger.info "end thread #{t["campaign"].id}"
   else
-    DaemonKit.logger.info "end thread NO CAMPAIGN"
+    Rails.logger.info "end thread NO CAMPAIGN"
   end
   #  puts "end thread #{campaign.id}"
 end
 
 
-DaemonKit.logger.info "ALL THREADS JOINED"
+Rails.logger.info "ALL THREADS JOINED"
 
 campaigns_dialed.each do |campaign|
   campaign.calls_in_progress=false
@@ -130,4 +117,4 @@ campaigns_dialed.each do |campaign|
 end
 
 
-DaemonKit.logger.info "EXITING WITH SUCCESS"
+Rails.logger.info "EXITING WITH SUCCESS"
