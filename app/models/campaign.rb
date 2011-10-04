@@ -368,47 +368,39 @@ class Campaign < ActiveRecord::Base
       number
     end
   end
-  
-  def off_hours?
-    off_hours=Time.now.hour > 0 && Time.now.hour < 6 && Rails.env!="development" # ends 10pm PST starts 6am eastern
-    DIALER_LOGGER.info "It's off hours, bailing" if off_hours
-    return false #disabled
-  end
-  
+
   def dialing?
-    if self.predictive_type=="preview" || self.calls_in_progress? || off_hours?
-      DIALER_LOGGER.info "SKIP #{self.name} dials in progress #{self.calls_in_progress?} hours off #{off_hours?} #{self.predictive_type}"
-      return true
+    (predictive_type == 'preview' || calls_in_progress?).tap do
+      DIALER_LOGGER.info "SKIP #{self.name} dials in progress #{self.calls_in_progress?} #{self.predictive_type}"
     end
-    return false
   end
-  
+
   def predictive_dial
     return if dialing?
     DIALER_LOGGER.info "Working on campaign #{self.name}"
-    #update_attribute(:calls_in_progress, true)
-    dial_predictive_voters()
-    #update_attribute(:calls_in_progress, false)
+    update_attribute(:calls_in_progress, true)
+    dial_predictive_voters
+    update_attribute(:calls_in_progress, false)
   end
-  
+
   def callers
     CallerSession.find_all_by_campaign_id_and_on_call(self.id, 1)
   end
-  
+
   def callers_on_call
     CallerSession.find_all_by_campaign_id_and_on_call_and_available_for_call(self.id, 1, 0)
   end
-  
+
   def call_attempts_in_progress
     CallAttempt.find_all_by_campaign_id(self.id, :conditions=>"call_end is NULL")
-  end  
-  
+  end
+
   def callers_not_on_call
     callers.length - callers_on_call.length
   end
-  
+
   def get_dial_ratio(answer_pct)
-    
+
     if answer_pct <= self.ratio_4
       ratio_dial=4
     elsif answer_pct <= self.ratio_3
@@ -434,7 +426,7 @@ class Campaign < ActiveRecord::Base
       ratio_dial=2
     end
   end
-  
+
   def num_short_calls_in_progress(short_threshold)
     #number of calls in progress of length less than stats[:short_time]
     short_counter=0
@@ -449,28 +441,28 @@ class Campaign < ActiveRecord::Base
     end
 
   end
-  
+
   def determine_short_to_dial(stats)
-    
+
     short_counter = num_short_calls_in_progress(stats[:short_time])
-    
+
     if stats[:ratio_short]>0 && short_counter > 0
       max_short=(1/stats[:ratio_short]).round
       short_to_dial = (short_counter/max_short).to_f.ceil
     else
       short_to_dial=0
     end
-    
+
     short_to_dial
   end
-  
+
   def determine_pool_size(stats,short_to_dial)
-    
+
     #determine the how many new lines to dial based on short/long thresholds
-    
+
     pool_size=0
     done_short=0
-    
+
     callers.each do |session|
        if session.attempt_in_progress.blank?
          # caller waiting idle
@@ -498,7 +490,7 @@ class Campaign < ActiveRecord::Base
      end
      pool_size
   end
-  
+
   def choose_voters_to_dial(new_calls,max_calls)
     #voter_ids = self.voters.scheduled.limit(max_calls - new_calls)
     voter_ids = self.voters("not called")
@@ -512,17 +504,17 @@ class Campaign < ActiveRecord::Base
     end
     voter_ids
   end
-  
+
   def ratio_dial?
     predictive_type=="" || predictive_type.index("power_")==0 || predictive_type.index("robo,")==0
   end
-  
+
   def dial_predictive_voters
 
     stats = call_stats(10)
 
     if ratio_dial?
-      dial_ratio=get_dial_ratio (stats[:answer_pct] * 100).to_i
+      dial_ratio=get_dial_ratio(stats[:answer_pct] * 100).to_i
       max_calls=callers.length * dial_ratio
       new_calls = calls_in_progress.length - max_calls
     else
@@ -535,10 +527,10 @@ class Campaign < ActiveRecord::Base
     DIALER_LOGGER.info "#{new_calls} newcalls #{max_calls} maxcalls"
 
     voter_ids=choose_voters_to_dial(new_calls,max_calls) #TODO check logic
-    DIALER_LOGGER.info ("voters to dial #{voter_ids}")
+    DIALER_LOGGER.info("voters to dial #{voter_ids}")
     #ring_predictive_voters(voter_ids)
   end
-  
+
   def ring_predictive_voters(voter_ids)
     voter_ids.each do |voter|
       voter.dial_predictive
