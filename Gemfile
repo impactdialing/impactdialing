@@ -3,7 +3,7 @@ source :rubygems
 gem 'rails', '3.0.10'
 
 gem 'will_paginate', '~> 2.3.11'
-gem 'mysql', '~> 2.8.1'
+gem 'mysql2', '~> 0.2.0'
 gem 'memcache-client', '~> 1.8.5', :require => 'memcache'
 gem 'fastercsv', '~> 1.5.4'
 gem "newrelic_rpm", '~> 3.0.1'
