@@ -1,4 +1,4 @@
-require "lib/twilio_lib"
+require "twilio_lib"
 
 class Campaign < ActiveRecord::Base
   include Deletable
@@ -366,6 +366,182 @@ class Campaign < ActiveRecord::Base
       str
     rescue
       number
+    end
+  end
+  
+  def off_hours?
+    off_hours=Time.now.hour > 0 && Time.now.hour < 6 && Rails.env!="development" # ends 10pm PST starts 6am eastern
+    DIALER_LOGGER.info "It's off hours, bailing" if off_hours
+    return false #disabled
+  end
+  
+  def dialing?
+    if self.predictive_type=="preview" || self.calls_in_progress? || off_hours?
+      DIALER_LOGGER.info "SKIP #{self.name} dials in progress #{self.calls_in_progress?} hours off #{off_hours?} #{self.predictive_type}"
+      return true
+    end
+    return false
+  end
+  
+  def predictive_dial
+    return if dialing?
+    DIALER_LOGGER.info "Working on campaign #{self.name}"
+    #update_attribute(:calls_in_progress, true)
+    dial_predictive_voters()
+    #update_attribute(:calls_in_progress, false)
+  end
+  
+  def callers
+    CallerSession.find_all_by_campaign_id_and_on_call(self.id, 1)
+  end
+  
+  def callers_on_call
+    CallerSession.find_all_by_campaign_id_and_on_call_and_available_for_call(self.id, 1, 0)
+  end
+  
+  def call_attempts_in_progress
+    CallAttempt.find_all_by_campaign_id(self.id, :conditions=>"call_end is NULL")
+  end  
+  
+  def callers_not_on_call
+    callers.length - callers_on_call.length
+  end
+  
+  def get_dial_ratio(answer_pct)
+    
+    if answer_pct <= self.ratio_4
+      ratio_dial=4
+    elsif answer_pct <= self.ratio_3
+      ratio_dial=3
+    elsif answer_pct <= self.ratio_2
+      ratio_dial=2
+    else
+      ratio_dial=1
+    end
+
+    if self.predictive_type.index("power_")!=nil
+      ratio_dial = self.predictive_type[6, 1].to_i
+      DIALER_LOGGER.info "ratio_dial: #{ratio_dial}, #{callers.length}, #{campaign.predictive_type.index("power_")}"
+    end
+    if campaign.predictive_type.index("robo,")!=nil
+      ratio_dial = 5
+      DIALER_LOGGER.info "ratio_dial: #{ratio_dial}, #{callers.length}, #{campaign.predictive_type.index("robo")}"
+    end
+
+    ratio_dial=self.ratio_override if self.ratio_override!=nil && !self.ratio_override.blank? && self.ratio_override > 0
+
+    if answer_pct==0
+      ratio_dial=2
+    end
+  end
+  
+  def num_short_calls_in_progress(short_threshold)
+    #number of calls in progress of length less than stats[:short_time]
+    short_counter=0
+
+    callers_on_call.each do |session|
+      if !session.attempt_in_progress.blank?
+        attempt = CallAttempt.find(session.attempt_in_progress)
+        if attempt.duration!=nil && attempt.duration < short_threshold
+          short_counter+=1
+        end
+      end
+    end
+
+  end
+  
+  def determine_short_to_dial(stats)
+    
+    short_counter = num_short_calls_in_progress(stats[:short_time])
+    
+    if stats[:ratio_short]>0 && short_counter > 0
+      max_short=(1/stats[:ratio_short]).round
+      short_to_dial = (short_counter/max_short).to_f.ceil
+    else
+      short_to_dial=0
+    end
+    
+    short_to_dial
+  end
+  
+  def determine_pool_size(stats,short_to_dial)
+    
+    #determine the how many new lines to dial based on short/long thresholds
+    
+    pool_size=0
+    done_short=0
+    
+    callers.each do |session|
+       if session.attempt_in_progress.blank?
+         # caller waiting idle
+         pool_size = pool_size + stats[:dials_needed]
+         #DIALER_LOGGER.info "empty to pool, session #{session.id} attempt_in_progress is blank"
+       else
+         attempt = CallAttempt.find(session.attempt_in_progress)
+         if attempt.duration!=nil &&
+           if attempt.duration < stats[:short_time] && done_short<short_to_dial
+             if attempt.duration > stats[:short_new_call_time_threshold]
+              #when stats[:short_new_call_caller_threshold] callers are on calls of length less than stats[:short_time]s, dial  stats[:dials_needed] lines at stats[:short_new_call_time_threshold]) seconds after the last call began.
+               pool_size = pool_size + stats[:dials_needed]
+               done_short+=1
+               DIALER_LOGGER.info "short to pool, duration #{attempt.duration}, done_short=#{done_short}, short_to_dial=#{short_to_dial}"
+             end
+           else
+             # if a call passes length 15s, dial stats[:dials_needed] lines at stats[:short_new_long_time_threshold]sinto the call.
+             if attempt.duration > stats[:long_new_call_time_threshold]
+               DIALER_LOGGER.info "LONG TO POOL, session #{session.id}, attempt.duration #{attempt.duration}, thresh #{stats[:long_new_call_time_threshold]}"
+               pool_size = pool_size + stats[:dials_needed]
+             end
+           end
+         end
+       end
+     end
+     pool_size
+  end
+  
+  def choose_voters_to_dial(new_calls,max_calls)
+    #voter_ids = self.voters.scheduled.limit(max_calls - new_calls)
+    voter_ids = self.voters("not called")
+    new_calls = new_calls + voter_ids.size
+    voters.each do |voter|
+      break if new_calls.to_i >= max_calls.to_i
+      unless voter_ids.include?(voter)
+        voter_ids << voter
+        new_calls+=1
+      end
+    end
+    voter_ids
+  end
+  
+  def ratio_dial?
+    predictive_type=="" || predictive_type.index("power_")==0 || predictive_type.index("robo,")==0
+  end
+  
+  def dial_predictive_voters
+
+    stats = call_stats(10)
+
+    if ratio_dial?
+      dial_ratio=get_dial_ratio (stats[:answer_pct] * 100).to_i
+      max_calls=callers.length * dial_ratio
+      new_calls = calls_in_progress.length - max_calls
+    else
+      short_to_dial=determine_short_to_dial(stats)
+      max_calls=determine_pool_size(stats,short_to_dial)
+      new_calls = calls_in_progress.length
+    end
+
+    DIALER_LOGGER.info "#{self.name}: Callers logged in: #{callers.length}, Callers on call: #{callers_on_call.length}, Callers not on call:  #{callers_not_on_call}, Calls in progress: #{calls_in_progress.length}, Answer pct: #{(stats[:answer_pct] * 100).to_i}"
+    DIALER_LOGGER.info "#{new_calls} newcalls #{max_calls} maxcalls"
+
+    voter_ids=choose_voters_to_dial(new_calls,max_calls) #TODO check logic
+    DIALER_LOGGER.info ("voters to dial #{voter_ids}")
+    #ring_predictive_voters(voter_ids)
+  end
+  
+  def ring_predictive_voters(voter_ids)
+    voter_ids.each do |voter|
+      voter.dial_predictive
     end
   end
 
