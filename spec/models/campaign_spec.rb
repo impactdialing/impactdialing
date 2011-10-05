@@ -55,8 +55,19 @@ describe "predictive_dialer" do
     campaign = Factory(:campaign, :user => user, :caller_id => "12345", :caller_id_verified => true)
     campaign.caller_id_verified=true
     voter_list = Factory(:voter_list, :campaign => campaign, :active => true)
-    voter = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list)
+    voter = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list, :user => user)
     campaign.choose_voters_to_dial(1).should == [voter]
+  end
+  
+  it "excludes blocked numbers" do
+    user = Factory(:user, :paid => true)
+    campaign = Factory(:campaign, :user => user, :caller_id => '12345')
+    campaign.caller_id_verified=true
+    voter_list = Factory(:voter_list, :campaign => campaign, :active => true)
+    unblocked_voter = Factory(:voter, :campaign => campaign, :status => 'not called', :voter_list => voter_list, :user => user)
+    blocked_voter = Factory(:voter, :campaign => campaign, :status => 'not called', :voter_list => voter_list, :user => user)
+    Factory(:blocked_number, :number => blocked_voter.Phone, :user => user)
+    campaign.choose_voters_to_dial(10).should == [unblocked_voter]
   end
   
   #canned scenarios where we back into / prove our new calls / max calls

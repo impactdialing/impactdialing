@@ -19,13 +19,14 @@ class Voter < ActiveRecord::Base
 
   default_scope :order => 'LastName, FirstName, Phone'
 
-  scope :by_status, lambda { |status| {:conditions => ["status = ? ", status]} }
-  scope :active, :conditions => ["active = ?", true]
+  scope :by_status, lambda { |status| where(:status => status) }
+  scope :active, where(:active => true)
   scope :to_be_dialed, :include => [:call_attempts], :conditions => ["(call_attempts.id is null and call_back is false) OR call_attempts.status IN (?)", CallAttempt::Status::ALL - [CallAttempt::Status::SUCCESS]]
   scope :randomly, :order => 'rand()'
-  scope :to_callback, :conditions => ["call_back is true"]
+  scope :to_callback, where(:call_back => true)
   scope :scheduled, :conditions => {:scheduled_date => (10.minutes.ago..10.minutes.from_now), :status => CallAttempt::Status::SCHEDULED}
   scope :limit, lambda { |n| {:limit => n} }
+  scope :without, lambda { |numbers| where('Phone not in (?)', numbers) } 
 
   before_validation :sanitize_phone
 
@@ -159,6 +160,10 @@ class Voter < ActiveRecord::Base
     fields = CustomVoterFieldValue.voter_fields(self, CustomVoterField.find_by_name(attribute))
     return if fields.empty?
     return fields.first.value
+  end
+  
+  def blocked?
+    user.blocked_numbers.map(&:number).include?(self.Phone)
   end
 
   module Status

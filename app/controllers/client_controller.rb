@@ -15,6 +15,10 @@ class ClientController < ApplicationController
       logout
     end
   end
+  
+  def current_user
+    @user
+  end
 
   def redirect_to_login
     redirect_to login_path
