@@ -163,7 +163,7 @@ class Voter < ActiveRecord::Base
   end
   
   def blocked?
-    user.blocked_numbers.map(&:number).include?(self.Phone)
+    user.blocked_numbers.for_campaign(campaign).map(&:number).include?(self.Phone)
   end
 
   module Status
