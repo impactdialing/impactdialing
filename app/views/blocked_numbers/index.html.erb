@@ -1,18 +1,31 @@
+<% content_for :javascripts do%>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js"></script>
+	<%= javascript_include_tag 'blocked_numbers' %>
+<% end %>
+
 <table>
 	<tr>
 		<td>Phone</td>
 		<td>DNC level</td>
+		<td>Delete</td>
 	</tr>
 	<% @blocked_numbers.each do |blocked_number| %>
 		<tr>
 			<td><%= blocked_number.number %></td>
-			<td>System</td>
+			<td><%= blocked_number.campaign ? blocked_number.campaign.name : 'System' %></td>
+			<td>
+				<%= form_tag blocked_number_path(blocked_number), :method => :delete, :id => "delete_form_#{blocked_number.id}" do %>
+					<%= link_to "delete", "javascript:void(0)", :onclick => "delete_blocked_number('#delete_form_#{blocked_number.id}')" %>
+				<% end %>
+			</td>
 		</tr>
 	<% end %>
 </table>
 
+<h3>Add Number</h3>
 <%= form_for BlockedNumber.new do |f| %>
 	<%= f.label :number %>
 	<%= f.text_field :number %>
-	<%= f.submit %>
+	<%= f.select :campaign_id, [["System", nil]] + @campaigns.map{|c| [c.name, c.id]} %>
+	<%= f.submit "Add" %>
 <% end %>

@@ -23,4 +23,13 @@ describe BlockedNumber do
     blocked_number.should_not be_valid
     blocked_number.number.should == '123a456a7890'
   end
+
+  it "selects system and campaign blocked numbers" do
+    campaign  = Factory(:campaign)
+    system_blocked_number = Factory(:blocked_number, :number => "1111111111", :campaign => nil)
+    this_campaign_blocked_number = Factory(:blocked_number, :number => "1111111112", :campaign => campaign )
+    other_campaign_blocked_number = Factory(:blocked_number, :number => "1111111113", :campaign => Factory(:campaign) )
+    BlockedNumber.for_campaign(campaign).should == [system_blocked_number, this_campaign_blocked_number]
+  end
+  
 end

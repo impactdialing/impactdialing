@@ -85,7 +85,7 @@ ImpactDialing::Application.routes.draw do
         collection { post :import }
       end
     end
-    resources :blocked_numbers, :only => [:index, :create]
+    resources :blocked_numbers, :only => [:index, :create, :destroy]
   end
 
   scope 'caller' do

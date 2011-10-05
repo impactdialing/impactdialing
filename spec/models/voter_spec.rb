@@ -256,14 +256,24 @@ describe Voter do
   end
 
   describe 'blocked?' do
-    let(:voter) { Factory(:voter, :user => Factory(:user), :Phone => '1234567890') }
+    let(:voter) { Factory(:voter, :user => Factory(:user), :Phone => '1234567890', :campaign => Factory(:campaign)) }
     
-    it "knows when it is blocked" do
+    it "knows when it isn't blocked" do
       voter.should_not be_blocked
     end
     
-    it "knows when it isn't blocked" do
+    it "knows when it is blocked system-wide" do
       voter.user.blocked_numbers.create(:number => voter.Phone)
+      voter.should be_blocked
+    end
+    
+    it "doesn't care if it blocked for a different campaign" do
+      voter.user.blocked_numbers.create(:number => voter.Phone, :campaign => Factory(:campaign))
+      voter.should_not be_blocked
+    end
+    
+    it "knows when it is blocked for its campaign" do
+      voter.user.blocked_numbers.create(:number => voter.Phone, :campaign => voter.campaign)
       voter.should be_blocked
     end
   end
