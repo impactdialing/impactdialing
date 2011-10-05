@@ -124,14 +124,14 @@ class ClientController < ApplicationController
   end
 
   def campaign_new
-    campaign = Campaign.new(:user_id => @user.id, :predective_type => 'algorithm1')
-    campaign.user_id = @user.id
-    count = Campaign.find_all_by_user_id(@user.id)
+    campaign = Campaign.new(:account_id => account.id, :predective_type => 'algorithm1')
+    campaign.account_id = account.id
+    count = account.campaigns
     campaign.name="Untitled #{count.length+1}"
-    script = Script.find_by_user_id(@user.id)
+    script = account.scripts
     campaign.script_id = script.id if script!=nil
     campaign.save
-    callers = Caller.find_all_by_user_id_and_active(@user.id,1)
+    callers = account.callers.active
     callers.each do |caller|
       campaign.callers << caller
     end
@@ -141,7 +141,7 @@ class ClientController < ApplicationController
   end
 
   def campaign_delete
-    @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id)
+    @campaign = account.campaigns.find_by_id(params[:id])
     if !@campaign.blank?
       @campaign.active = false
       @campaign.save
