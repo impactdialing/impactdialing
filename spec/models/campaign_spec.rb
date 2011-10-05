@@ -31,14 +31,34 @@ describe "predictive_dialer" do
     campaign.calls_in_progress.should == false
   end
 
-  it "should determine the campaign dial strategy"
-  it "should determine the number of short calls to dial"
-  it "should not add more short callers to the pool than the number of short calls to dial"
-  it "should add idle callers to the dial pool"
-  it "should add callers with calls over the long threshold to the dial pool"
-  it "should properly choose the next voters to dial" #scheudled, not called
-  it "should not have more voters chosen than the max dials"
+  it "determines the campaign dial strategy" do
+    Factory(:campaign, :predictive_type => 'predictive').should_not be_ratio_dial
+    Factory(:campaign, :predictive_type => 'power_2').should be_ratio_dial
+  end
+  
+  it "should determine the number of short calls to dial" do
+    Factory(:campaign).determine_short_to_dial.should == 0
+  end
+  
+  #it "should not add more short callers to the pool than the number of short calls to dial"
 
+  it "should add idle callers to the dial pool" do 
+    campaign = Factory(:campaign) 
+    caller_session = Factory(:caller_session, :on_call => true, :available_for_call => true, :campaign => campaign) 
+    campaign.determine_pool_size(0).should == campaign.call_stats(10)[:dials_needed]
+  end
+
+  it "should add callers with calls over the long threshold to the dial pool"
+  
+  it "should properly choose the next voters to dial" do
+    user = Factory(:user, :paid=>true)
+    campaign = Factory(:campaign, :user => user, :caller_id => "12345", :caller_id_verified => true)
+    campaign.caller_id_verified=true
+    voter_list = Factory(:voter_list, :campaign => campaign, :active => true)
+    voter = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list)
+    campaign.choose_voters_to_dial(1).should == [voter]
+  end
+  
   #canned scenarios where we back into / prove our new calls / max calls
 
 end

@@ -112,15 +112,25 @@ class Voter < ActiveRecord::Base
   end
 
   def dial_predictive
+    @client = Twilio::REST::Client.new TWILIO_ACCOUNT, TWILIO_AUTH
     call_attempt = new_call_attempt(self.campaign.predictive_type)
-    response = Twilio::Call.make(
-        self.campaign.caller_id,
-        self.Phone,
-        connect_call_attempt_url(call_attempt, :host => Settings.host, :port =>Settings.port),
-        'IfMachine' => self.campaign.use_recordings? ? 'Continue' : 'Hangup' ,
-        'Timeout' => campaign.answer_detection_timeout || "20"
+    
+    @call = @client.account.calls.create(
+      :from => campaign.caller_id,
+      :to => self.Phone,
+      :url => connect_call_attempt_url(call_attempt, :host => Settings.host, :port =>Settings.port),
+      'IfMachine' => self.campaign.use_recordings? ? 'Continue' : 'Hangup' ,
+      'Timeout' => campaign.answer_detection_timeout || "20"
     )
-    call_attempt.update_attributes(:status => CallAttempt::Status::INPROGRESS, :sid => response["TwilioResponse"]["Call"]["Sid"])
+        # 
+        # response = Twilio::Call.make(
+        #     self.campaign.caller_id,
+        #     self.Phone,
+        #     connect_call_attempt_url(call_attempt, :host => Settings.host, :port =>Settings.port),
+        #     'IfMachine' => self.campaign.use_recordings? ? 'Continue' : 'Hangup' ,
+        #     'Timeout' => campaign.answer_detection_timeout || "20"
+        # )
+    call_attempt.update_attributes(:status => CallAttempt::Status::INPROGRESS, :sid => @call.sid)
   end
 
   def conference(session)
