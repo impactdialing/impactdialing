@@ -75,7 +75,7 @@ describe VoterListsController do
             it "should not save a list if the user already has a list with the same name" do
               Factory(:voter_list, :account => @current_user.account, :campaign_id => @campaign.id, :name => "abcd")
               import :voter_list_name => "abcd"
-              response.flash.now[:error].first.should include "Name for this voter list is already taken"
+              response.flash.now[:error].first.should include "Name for this list is already taken."
               response.should render_template "column_mapping"
             end
           end

@@ -7,7 +7,7 @@ class VoterList < ActiveRecord::Base
 
   validates_presence_of :name
   validates_length_of :name, :minimum => 3
-  validates_uniqueness_of :name, :case_sensitive => false, :scope => :account_id, :message => "for this voter list is already taken"
+  validates_uniqueness_of :name, :case_sensitive => false, :scope => :account_id, :message => "for this list is already taken."
 
   named_scope :by_ids, lambda { |ids| {:conditions => {:id => ids}} }
 
@@ -45,10 +45,6 @@ class VoterList < ActiveRecord::Base
         next
       end
 
-      lead.voter_list_id = self.id
-      lead.account_id = self.account_id
-      lead.campaign_id = self.campaign_id
-
       csv_headers.each_with_index do |csv_column_title, column_location|
         system_column = csv_to_system_map.system_column_for csv_column_title
         lead.apply_attribute(system_column, voter_info[column_location]) if system_column
@@ -83,13 +79,13 @@ class VoterList < ActiveRecord::Base
         existing_voter_entry = existing_voter_entry.first
         existing_voter_entry.num_family += 1
         existing_voter_entry.save
-        lead = Family.new
+        lead = Family.new(:Phone => phone_number, :voter_list_id => id, :account_id => account_id, :campaign_id => campaign_id)
         lead.voter_id = existing_voter_entry.id
       else
         return nil
       end
     else
-      lead = Voter.create(:Phone => phone_number, :voter_list => self)
+      lead = Voter.create(:Phone => phone_number, :voter_list => self, :account_id => account_id, :campaign_id => campaign_id)
     end
     lead
   end
