@@ -1,0 +1,18 @@
+<table>
+	<tr>
+		<td>Phone</td>
+		<td>DNC level</td>
+	</tr>
+	<% @blocked_numbers.each do |blocked_number| %>
+		<tr>
+			<td><%= blocked_number.number %></td>
+			<td>System</td>
+		</tr>
+	<% end %>
+</table>
+
+<%= form_for BlockedNumber.new do |f| %>
+	<%= f.label :number %>
+	<%= f.text_field :number %>
+	<%= f.submit %>
+<% end %>

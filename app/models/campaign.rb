@@ -478,7 +478,7 @@ class Campaign < ActiveRecord::Base
 
   def choose_voters_to_dial(num_voters)
     scheduled_voter_ids = self.all_voters.scheduled.limit(num_voters)
-    (scheduled_voter_ids + self.voters('not called')).uniq[0..num_voters]
+    (scheduled_voter_ids + self.voters('not called')).reject(&:blocked?).uniq[0..num_voters]
   end
 
   def ratio_dial?

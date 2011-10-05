@@ -75,3 +75,8 @@ end
 
 Factory.define :custom_voter_field_value do |cvfv|
 end
+
+Factory.define :blocked_number do |b|
+  b.user_id { Factory(:user).id }  
+  b.number '1234567890'
+end

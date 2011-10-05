@@ -35,7 +35,7 @@ Spork.prefork do
   include ActionDispatch::TestProcess
 
   def login_as(user)
-    @controller.stub!(:current_user).and_return(user)
+    @controller.stub(:current_user).and_return(user)
     session[:user] = user.id
     session[:caller] = user.id
   end
