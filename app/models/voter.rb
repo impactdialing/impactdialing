@@ -18,15 +18,15 @@ class Voter < ActiveRecord::Base
   }
 
   scope :default_order, :order => 'LastName, FirstName, Phone'
+
+  scope :by_status, lambda { |status| where(:status => status) }
   scope :active, where(:active => true)
-
-  scope :by_status, lambda { |status| {:conditions => ["status = ? ", status]} }
-
   scope :to_be_dialed, :include => [:call_attempts], :conditions => ["(call_attempts.id is null and call_back is false) OR call_attempts.status IN (?)", CallAttempt::Status::ALL - [CallAttempt::Status::SUCCESS]]
   scope :randomly, :order => 'rand()'
-  scope :to_callback, :conditions => ["call_back is true"]
+  scope :to_callback, where(:call_back => true)
   scope :scheduled, :conditions => {:scheduled_date => (10.minutes.ago..10.minutes.from_now), :status => CallAttempt::Status::SCHEDULED}
   scope :limit, lambda { |n| {:limit => n} }
+  scope :without, lambda { |numbers| where('Phone not in (?)', numbers) }
 
   before_validation :sanitize_phone
 
@@ -113,15 +113,25 @@ class Voter < ActiveRecord::Base
   end
 
   def dial_predictive
+    @client = Twilio::REST::Client.new TWILIO_ACCOUNT, TWILIO_AUTH
     call_attempt = new_call_attempt(self.campaign.predictive_type)
-    response = Twilio::Call.make(
-        self.campaign.caller_id,
-        self.Phone,
-        connect_call_attempt_url(call_attempt, :host => Settings.host, :port =>Settings.port),
-        'IfMachine' => self.campaign.use_recordings? ? 'Continue' : 'Hangup' ,
-        'Timeout' => campaign.answer_detection_timeout || "20"
+
+    @call = @client.account.calls.create(
+      :from => campaign.caller_id,
+      :to => self.Phone,
+      :url => connect_call_attempt_url(call_attempt, :host => Settings.host, :port =>Settings.port),
+      'IfMachine' => self.campaign.use_recordings? ? 'Continue' : 'Hangup' ,
+      'Timeout' => campaign.answer_detection_timeout || "20"
     )
-    call_attempt.update_attributes(:status => CallAttempt::Status::INPROGRESS, :sid => response["TwilioResponse"]["Call"]["Sid"])
+        #
+        # response = Twilio::Call.make(
+        #     self.campaign.caller_id,
+        #     self.Phone,
+        #     connect_call_attempt_url(call_attempt, :host => Settings.host, :port =>Settings.port),
+        #     'IfMachine' => self.campaign.use_recordings? ? 'Continue' : 'Hangup' ,
+        #     'Timeout' => campaign.answer_detection_timeout || "20"
+        # )
+    call_attempt.update_attributes(:status => CallAttempt::Status::INPROGRESS, :sid => @call.sid)
   end
 
   def conference(session)
@@ -149,6 +159,10 @@ class Voter < ActiveRecord::Base
     fields = CustomVoterFieldValue.voter_fields(self, CustomVoterField.find_by_name(attribute))
     return if fields.empty?
     return fields.first.value
+  end
+
+  def blocked?
+    user.blocked_numbers.for_campaign(campaign).map(&:number).include?(self.Phone)
   end
 
   def info
