@@ -32,6 +32,12 @@ class CampaignsController < ClientController
     redirect_to campaign_path(@campaign)
   end
 
+  def destroy
+    @campaign.update_attribute(:active, false)
+    flash_message(:notice, "Campaign deleted")
+    redirect_to :back
+  end
+
   def index
     @campaigns = active_robo_campaigns
   end
