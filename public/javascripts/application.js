@@ -18,3 +18,8 @@ function add_fields(link, association, content) {
         before: content.replace(regexp, new_id)
     });
 }
+
+function delete_entity(form_id){
+	if (confirm('Are you sure?'))
+		$(form_id).submit();
+}

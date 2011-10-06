@@ -111,6 +111,13 @@ describe CampaignsController do
     end
   end
 
+  it "deletes a campaign" do
+    campaign = Factory(:campaign, :user => user, :robo => true)
+    request.env['HTTP_REFERER'] = 'http://referer' if respond_to?(:request)
+    delete :destroy, :id => campaign.id
+    campaign.reload.should_not be_active
+  end
+
   describe "dial statistics" do
     before :each do
       @campaign = Factory(:campaign, :user => user)
