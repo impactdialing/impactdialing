@@ -98,60 +98,56 @@ describe Voter do
   describe "predictive dialing" do
     let(:campaign) { Factory(:campaign, :robo => false, :predictive_type => 'algorithm1') }
     let(:voter) { Factory(:voter, :campaign => campaign) }
+    let(:client) { mock(:client).tap{|client| Twilio::REST::Client.stub(:new).and_return(client) } }
 
-    it "is dialed" do
-      Twilio::Call.stub!(:make).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
-      voter.dial_predictive
-      call_attempt = voter.call_attempts.last
-      call_attempt.sid.should == "sid"
-      call_attempt.status.should == CallAttempt::Status::INPROGRESS
-    end
+    context 'making calls' do
+      before(:each) do
+        client.stub_chain(:account, :calls, :create).and_return(mock(:call, :sid => 'sid'))
+      end
+      
+      it "is dialed" do
+        voter.dial_predictive
+        call_attempt = voter.call_attempts.last
+        call_attempt.sid.should == "sid"
+        call_attempt.status.should == CallAttempt::Status::INPROGRESS
+      end
 
-    it "updates voter attributes" do
-      Twilio::Call.stub!(:make).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
-      voter.dial_predictive
-      call_attempt = voter.call_attempts.last
-      voter.last_call_attempt.should == call_attempt
-      time_now = Time.now
-      Time.stub!(:now).and_return(time_now)
-      DateTime.parse(voter.last_call_attempt_time.to_s).should == DateTime.parse(time_now.utc.to_s)
-    end
+      it "updates voter attributes" do
+        voter.dial_predictive
+        call_attempt = voter.call_attempts.last
+        voter.last_call_attempt.should == call_attempt
+        time_now = Time.now
+        Time.stub!(:now).and_return(time_now)
+        DateTime.parse(voter.last_call_attempt_time.to_s).should == DateTime.parse(time_now.utc.to_s)
+      end
 
-    it "updates the call_attempts campaign" do
-      Twilio::Call.stub!(:make).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
-      voter.dial_predictive
-      call_attempt = voter.call_attempts.last
-      call_attempt.campaign.should == voter.campaign
+      it "updates the call_attempts campaign" do
+        voter.dial_predictive
+        call_attempt = voter.call_attempts.last
+        call_attempt.campaign.should == voter.campaign
+      end
     end
 
     it "dials the voter and hangs up on answering machine when not using recordings" do
+      client.stub_chain(:account, :calls, :create).with({:from => anything, :to => anything, :url => anything, 'IfMachine' => 'Hangup', 'Timeout' => 20}).and_return(mock(:call, :sid => 'sid'))
       campaign.use_recordings = false
-      Twilio::Call.should_receive(:make).with(anything, anything, anything, {'IfMachine' => 'Hangup', 'Timeout' => 20}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
       voter.dial_predictive
     end
 
     it "dials the voter and continues on answering machine when using recordings" do
+      client.stub_chain(:account, :calls, :create).with({:from => anything, :to => anything, :url => anything, 'IfMachine' => 'Continue', 'Timeout' => 20}).and_return(mock(:call, :sid => 'sid'))
       campaign.use_recordings = true
       voter.campaign = campaign
-      Twilio::Call.should_receive(:make).with(anything, anything, anything, {'IfMachine' => 'Continue', 'Timeout' => 20}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
       voter.dial_predictive
     end
 
     it "dials the voter with the campaigns answer detection timeout" do
       campaign.use_recordings = true
       campaign.answer_detection_timeout = "10"
+      client.stub_chain(:account, :calls, :create).with({:from => anything, :to => anything, :url => anything, 'IfMachine' => 'Continue', 'Timeout' => campaign.answer_detection_timeout}).and_return(mock(:call, :sid => 'sid'))
       voter.campaign = campaign
-      Twilio::Call.should_receive(:make).with(anything, anything, anything, {'IfMachine' => 'Continue', 'Timeout' => campaign.answer_detection_timeout}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
       voter.dial_predictive
     end
-
-    it "dials with answer detection timeout defaults" do
-      campaign.use_recordings = true
-      voter.campaign = campaign
-      Twilio::Call.should_receive(:make).with(anything, anything, anything, {'IfMachine' => 'Continue', 'Timeout' => 20}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
-      voter.dial_predictive
-    end
-
   end
 
   describe "to be dialed" do
@@ -260,5 +256,34 @@ describe Voter do
       voter.get_attribute(attribute).should == value
     end
 
+  end
+  
+  it "excludes specific numbers" do
+    unblocked_voter = Factory(:voter, :Phone => "1234567890")
+    blocked_voter = Factory(:voter, :Phone => "0123456789")
+    Voter.without(['0123456789']).should == [unblocked_voter] 
+  end
+
+  describe 'blocked?' do
+    let(:voter) { Factory(:voter, :user => Factory(:user), :Phone => '1234567890', :campaign => Factory(:campaign)) }
+    
+    it "knows when it isn't blocked" do
+      voter.should_not be_blocked
+    end
+    
+    it "knows when it is blocked system-wide" do
+      voter.user.blocked_numbers.create(:number => voter.Phone)
+      voter.should be_blocked
+    end
+    
+    it "doesn't care if it blocked for a different campaign" do
+      voter.user.blocked_numbers.create(:number => voter.Phone, :campaign => Factory(:campaign))
+      voter.should_not be_blocked
+    end
+    
+    it "knows when it is blocked for its campaign" do
+      voter.user.blocked_numbers.create(:number => voter.Phone, :campaign => voter.campaign)
+      voter.should be_blocked
+    end
   end
 end
