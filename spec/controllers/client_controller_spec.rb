@@ -1,6 +1,10 @@
 require "spec_helper"
 
 describe ClientController do
+  before(:each) do
+    request.env['HTTP_REFERER'] = 'http://referer'
+  end
+
   describe "when not logged in" do
     it "creates a new user with the appropriate domain" do
       request.stub!(:domain).and_return('domain.com')

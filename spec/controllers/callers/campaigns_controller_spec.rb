@@ -1,29 +1,30 @@
 require "spec_helper"
 
 describe Callers::CampaignsController do
-  let(:user) { Factory(:user) }
-  let(:caller) { Factory(:caller, :user => user) }
-  let(:campaign) { Factory(:campaign, :user => user) }
+  let(:account) { Factory(:account) }
+  let(:user) { Factory(:user, :account => account) }
+  let(:caller) { Factory(:caller, :account => account) }
+  let(:campaign) { Factory(:campaign, :account => account) }
 
   before(:each) do
     login_as(caller)
   end
 
   it "lists all active campaigns with a web ui" do
-    user.campaigns << Factory(:campaign, :active => false)
-    user.campaigns << Factory(:campaign, :active => false, :use_web_ui => true)
-    user.campaigns << Factory(:campaign, :active => true, :use_web_ui => false)
+    account.campaigns << Factory(:campaign, :active => false)
+    account.campaigns << Factory(:campaign, :active => false, :use_web_ui => true)
+    account.campaigns << Factory(:campaign, :active => true, :use_web_ui => false)
     campaign1 = Factory(:campaign, :active => true, :use_web_ui => true)
-    user.campaigns << campaign1
+    account.campaigns << campaign1
     caller.save
     get :index
     assigns(:campaigns).should == [campaign1]
   end
 
   it "finds a callers campaign" do
-    user.campaigns << Factory(:campaign, :active => false)
+    account.campaigns << Factory(:campaign, :active => false)
     campaign1 = Factory(:campaign, :active => true, :use_web_ui => true)
-    user.campaigns << campaign1
+    account.campaigns << campaign1
     caller.save
     get :show, :id => campaign1.id
     assigns(:campaign).should == campaign1

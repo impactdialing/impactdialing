@@ -3,7 +3,7 @@ class Caller < ActiveRecord::Base
   include Deletable
   validates_presence_of :name, :on => :create, :message => "can't be blank"
   validates_format_of :email, :allow_blank => true, :with => /^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i, :message => "Invalid email"
-  has_many :campaigns, :through => :user
+  has_many :campaigns, :through => :account
   belongs_to :account
   has_many :caller_sessions
   before_create :create_uniq_pin

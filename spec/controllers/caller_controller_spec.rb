@@ -2,14 +2,15 @@ require "spec_helper"
 
 describe CallerController do
   describe 'index' do
-    let(:user) { Factory(:user) }
-    let(:caller) { Factory(:caller, :user => user) }
+    let(:account) { Factory(:account) }
+    let(:user) { Factory(:user, :account => account) }
+    let(:caller) { Factory(:caller, :account => account) }
     before(:each) do
       login_as(caller)
     end
 
     it "doesn't list deleted campaigns" do
-      user.campaigns = [(Factory(:campaign, :active => false)), Factory(:campaign, :active => true)]
+      account.campaigns = [(Factory(:campaign, :active => false)), Factory(:campaign, :active => true)]
       caller.save!
       get :index
       assigns(:campaigns).should have(1).thing
@@ -19,7 +20,7 @@ describe CallerController do
     it "lists all campaigns for web ui" do
       Factory(:campaign, :use_web_ui => false)
       campaign = Factory(:campaign, :use_web_ui => true)
-      user.update_attribute(:campaigns, [campaign])
+      account.update_attribute(:campaigns, [campaign])
       get :index
       assigns(:campaigns).should == [campaign]
     end
@@ -99,12 +100,13 @@ describe CallerController do
   end
 
   describe "calling in" do
-    let(:user) { Factory(:user) }
-    let(:caller) { Factory(:caller, :user => user) }
+    let(:account) { Factory(:account) }
+    let(:user) { Factory(:user, :account => account) }
+    let(:caller) { Factory(:caller, :account => account) }
 
     it "allocates a campaign to a caller" do
       pin = '1234'
-      campaign = Factory(:campaign, :campaign_id => pin, :user => user)
+      campaign = Factory(:campaign, :campaign_id => pin, :account => account)
       session = Factory(:caller_session, :caller => caller, :campaign => nil)
       CallerSession.stub(:find).and_return(session)
       session.stub(:start).and_return(:nothing)
@@ -115,7 +117,7 @@ describe CallerController do
 
     it "creates a conference for a caller" do
       pin = '1234'
-      campaign = Factory(:campaign, :campaign_id => pin, :user => user)
+      campaign = Factory(:campaign, :campaign_id => pin, :account => account)
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => 'key')
 
       post :assign_campaign, :session => session.id, :Digits => pin
@@ -123,7 +125,7 @@ describe CallerController do
     end
 
     it "asks for campaign pin again when incorrect" do
-      campaign = Factory(:campaign, :user => user)
+      campaign = Factory(:campaign, :account => account)
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => 'key')
 
       post :assign_campaign, :session => session.id, :Digits => '1234', :attempt => 1
@@ -132,7 +134,7 @@ describe CallerController do
 
     it "does not allow a caller from one user to log onto a campaign of another user" do
       cpin = '1234'
-      Factory(:campaign, :user => Factory(:user), :campaign_id => cpin)
+      Factory(:campaign, :account => Factory(:account), :campaign_id => cpin)
       session = Factory(:caller_session, :caller => caller, :session_key => 'key')
       post :assign_campaign, :session => session.id, :Digits => '1234', :attempt => 1
       response.body.should == session.ask_for_campaign(1)
