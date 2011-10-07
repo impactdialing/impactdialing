@@ -3,7 +3,8 @@ require "spec_helper"
 describe AdminController do
   context 'when logged in' do
     before(:each) do
-      @controller.stub(:authenticate).and_return(true)
+      @controller.should_receive(:authenticate).and_return(true)
+      request.env['HTTP_REFERER'] = 'http://referer'
     end
 
     [true, false].each do |old_paid|

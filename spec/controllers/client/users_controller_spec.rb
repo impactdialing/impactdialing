@@ -1,6 +1,10 @@
 require "spec_helper"
 
 describe Client::UsersController do
+  before(:each) do
+    request.env['HTTP_REFERER'] = 'http://referer'
+  end
+
   it "resets a user's password" do
     user = Factory(:user)
     user.create_reset_code

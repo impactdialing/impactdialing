@@ -1,4 +1,8 @@
 shared_examples_for 'all controllers of deletable entities' do
+  before(:each) do
+    request.env['HTTP_REFERER'] = 'http://referer'
+  end
+
   it "can restore a deleted entity" do
     entity = Factory(type_name, :account => user.account, :active => false)
     put :restore, "#{type_name}_id" => entity.id
