@@ -2,6 +2,7 @@ class Family < ActiveRecord::Base
   belongs_to :voter, :class_name => "Voter", :foreign_key => "voter_id"
   validates_presence_of :Phone
   validates_length_of :Phone, :minimum => 10
+  belongs_to :client
 
   before_validation :sanitize_phone
 

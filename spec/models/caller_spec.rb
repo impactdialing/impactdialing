@@ -27,8 +27,8 @@ describe Caller do
   it "calls in to the campaign" do
     Twilio::REST::Client
     sid = "gogaruko"
-    caller = Factory(:caller, :user => user)
-    campaign = Factory(:campaign, :user => user)
+    caller = Factory(:caller, :account => user.account)
+    campaign = Factory(:campaign, :account => user.account)
     TwilioClient.stub_chain(:instance, :account, :calls, :create).and_return(mock(:response, :sid => sid))
     session = caller.callin(campaign, 5463459043)
     session.sid.should == sid
@@ -51,4 +51,8 @@ describe Caller do
     end.response
   end
 
+  it do
+    Factory(:caller)
+    should validate_uniqueness_of :email
+  end
 end

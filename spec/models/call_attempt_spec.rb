@@ -150,8 +150,28 @@ describe CallAttempt do
       attempt.voter.stub(:conference)
       attempt.conference(session)
     end
+  end
 
+  it "lists attempts between two dates" do
+    too_old = Factory(:call_attempt).tap{|ca| ca.update_attribute(:created_at, 10.minutes.ago)}
+    too_new = Factory(:call_attempt).tap{|ca| ca.update_attribute(:created_at, 10.minutes.from_now)}
+    just_right = Factory(:call_attempt).tap{|ca| ca.update_attribute(:created_at, 8.minutes.ago)}
+    another_just_right = Factory(:call_attempt).tap{|ca| ca.update_attribute(:created_at, 8.minutes.from_now)}
+    CallAttempt.between(9.minutes.ago, 9.minutes.from_now)
+  end
 
+  describe 'status filtering' do
+    before(:each) do
+      @wanted_attempt = Factory(:call_attempt, :status => 'foo')
+      @unwanted_attempt = Factory(:call_attempt, :status => 'bar')
+    end
 
+    it "filters out attempts of certain statuses" do
+      CallAttempt.without_status(['bar']).should == [@wanted_attempt]
+    end
+
+    it "filters out attempts of everything but certain statuses" do
+      CallAttempt.with_status(['foo']).should == [@wanted_attempt]
+    end
   end
 end

@@ -35,53 +35,53 @@ describe "predictive_dialer" do
     Factory(:campaign, :predictive_type => 'predictive').should_not be_ratio_dial
     Factory(:campaign, :predictive_type => 'power_2').should be_ratio_dial
   end
-  
+
   it "should determine the number of short calls to dial" do
     Factory(:campaign).determine_short_to_dial.should == 0
   end
-  
+
   #it "should not add more short callers to the pool than the number of short calls to dial"
 
-  it "should add idle callers to the dial pool" do 
-    campaign = Factory(:campaign) 
-    caller_session = Factory(:caller_session, :on_call => true, :available_for_call => true, :campaign => campaign) 
+  it "should add idle callers to the dial pool" do
+    campaign = Factory(:campaign)
+    caller_session = Factory(:caller_session, :on_call => true, :available_for_call => true, :campaign => campaign)
     campaign.determine_pool_size(0).should == campaign.call_stats(10)[:dials_needed]
   end
 
   it "should add callers with calls over the long threshold to the dial pool"
-  
+
   it "should properly choose the next voters to dial" do
-    user = Factory(:user, :paid=>true)
-    campaign = Factory(:campaign, :user => user, :caller_id => "12345", :caller_id_verified => true)
+    account = Factory(:account, :paid=>true)
+    campaign = Factory(:campaign, :account => account, :caller_id => "12345", :caller_id_verified => true)
     campaign.caller_id_verified=true
     voter_list = Factory(:voter_list, :campaign => campaign, :active => true)
-    voter = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list, :user => user)
+    voter = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list, :account => account)
     campaign.choose_voters_to_dial(1).should == [voter]
   end
-  
+
   it "excludes system blocked numbers" do
-    user = Factory(:user, :paid => true)
-    campaign = Factory(:campaign, :user => user, :caller_id => '12345')
+    account = Factory(:account, :paid => true)
+    campaign = Factory(:campaign, :account => account, :caller_id => '12345')
     campaign.caller_id_verified=true
     voter_list = Factory(:voter_list, :campaign => campaign, :active => true)
-    unblocked_voter = Factory(:voter, :campaign => campaign, :status => 'not called', :voter_list => voter_list, :user => user)
-    blocked_voter = Factory(:voter, :campaign => campaign, :status => 'not called', :voter_list => voter_list, :user => user)
-    Factory(:blocked_number, :number => blocked_voter.Phone, :user => user, :campaign=>nil)
+    unblocked_voter = Factory(:voter, :campaign => campaign, :status => 'not called', :voter_list => voter_list, :account => account)
+    blocked_voter = Factory(:voter, :campaign => campaign, :status => 'not called', :voter_list => voter_list, :account => account)
+    Factory(:blocked_number, :number => blocked_voter.Phone, :account => account, :campaign=>nil)
     campaign.choose_voters_to_dial(10).should == [unblocked_voter]
   end
 
   it "excludes campaign blocked numbers" do
-    user = Factory(:user, :paid => true)
-    campaign = Factory(:campaign, :user => user, :caller_id => '12345')
+    account = Factory(:account, :paid => true)
+    campaign = Factory(:campaign, :account => account, :caller_id => '12345')
     campaign.caller_id_verified=true
     voter_list = Factory(:voter_list, :campaign => campaign, :active => true)
-    unblocked_voter = Factory(:voter, :campaign => campaign, :status => 'not called', :voter_list => voter_list, :user => user)
-    blocked_voter = Factory(:voter, :campaign => campaign, :status => 'not called', :voter_list => voter_list, :user => user)
-    Factory(:blocked_number, :number => blocked_voter.Phone, :user => user, :campaign=>campaign)
-    Factory(:blocked_number, :number => unblocked_voter.Phone, :user => user, :campaign=>Factory(:campaign))
+    unblocked_voter = Factory(:voter, :campaign => campaign, :status => 'not called', :voter_list => voter_list, :account => account)
+    blocked_voter = Factory(:voter, :campaign => campaign, :status => 'not called', :voter_list => voter_list, :account => account)
+    Factory(:blocked_number, :number => blocked_voter.Phone, :account => account, :campaign=>campaign)
+    Factory(:blocked_number, :number => unblocked_voter.Phone, :account => account, :campaign=>Factory(:campaign))
     campaign.choose_voters_to_dial(10).should == [unblocked_voter]
   end
-  
+
   #canned scenarios where we back into / prove our new calls / max calls
 
 end
@@ -97,7 +97,7 @@ describe Campaign do
   it "restoring makes it active" do
     campaign = Factory(:campaign, :active => false)
     campaign.restore
-    campaign.active?.should == true
+    campaign.should be_active
   end
 
   it "sorts by the updated date" do
@@ -116,15 +116,15 @@ describe Campaign do
 
   it "generates its own name if one isn't provided" do
     user = Factory(:user)
-    campaign = user.campaigns.create!
+    campaign = user.account.campaigns.create!
     campaign.name.should == 'Untitled 1'
-    campaign = user.campaigns.create!
+    campaign = user.account.campaigns.create!
     campaign.name.should == 'Untitled 2'
   end
 
   it "doesn't overwrite a name that has been explicitly set" do
     user = Factory(:user)
-    campaign = user.campaigns.create!(:name => 'Titled')
+    campaign = user.account.campaigns.create!(:name => 'Titled')
     campaign.name.should == 'Titled'
   end
 
@@ -158,22 +158,22 @@ describe Campaign do
 
   describe "campaigns with caller sessions that are on call" do
     let(:user) { Factory(:user) }
-    let(:campaign) { Factory(:campaign, :user => user) }
+    let(:campaign) { Factory(:campaign, :account => user.account) }
 
     it "should give the campaign only once even if it has multiple caller sessions" do
       Factory(:caller_session, :campaign => campaign, :on_call => true)
       Factory(:caller_session, :campaign => campaign, :on_call => true)
-      user.campaigns.with_running_caller_sessions.should == [campaign]
+      user.account.campaigns.with_running_caller_sessions.should == [campaign]
     end
 
     it "should not give campaigns without on_call caller sessions" do
       Factory(:caller_session, :campaign => campaign, :on_call => false)
-      user.campaigns.with_running_caller_sessions.should be_empty
+      user.account.campaigns.with_running_caller_sessions.should be_empty
     end
 
     it "should not give another user's campaign'" do
-      Factory(:caller_session, :campaign => Factory(:campaign, :user => Factory(:user)), :on_call => true)
-      user.campaigns.with_running_caller_sessions.should be_empty
+      Factory(:caller_session, :campaign => Factory(:campaign, :account => Factory(:account)), :on_call => true)
+      user.account.campaigns.with_running_caller_sessions.should be_empty
     end
   end
 
@@ -215,7 +215,7 @@ describe Campaign do
     end
 
     it "does not start the dialer daemon for the campaign if the use has not already paid" do
-      campaign = Factory(:campaign, :user => Factory(:user, :paid => false))
+      campaign = Factory(:campaign, :account => Factory(:account, :paid => false))
       campaign.start.should be_false
     end
 
@@ -226,7 +226,7 @@ describe Campaign do
 
     [true, false].each do |exit_status|
       it "reports the status if the daemon start success was #{exit_status}" do
-        campaign = Factory(:campaign, :calls_in_progress => false, :user => Factory(:user, :paid => true))
+        campaign = Factory(:campaign, :calls_in_progress => false, :account => Factory(:account, :paid => true))
         campaign.stub(:system).and_return(exit_status)
         campaign.start.should eql(exit_status)
       end
@@ -293,5 +293,18 @@ describe Campaign do
         }.should change(campaign, :voters_remaining).by(-1)
       end
     end
+  end
+
+  it "clears calls" do
+    campaign = Factory(:campaign)
+    voters = 3.times.map{ Factory(:voter, :campaign => campaign, :result => 'foo', :status => 'bar') }
+    voter_on_another_campaign = Factory(:voter, :result => 'hello', :status => 'world')
+    campaign.clear_calls
+    voters.each(&:reload).each do |voter|
+      voter.result.should be_nil
+      voter.status.should == 'not called'
+    end
+    voter_on_another_campaign.result.should == 'hello'
+    voter_on_another_campaign.status.should == 'world'
   end
 end

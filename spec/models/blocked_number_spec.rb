@@ -2,14 +2,14 @@ require 'spec_helper'
 
 describe BlockedNumber do
   it { should validate_presence_of(:number) }
-  it { should validate_presence_of(:user) }
+  it { should validate_presence_of(:account) }
   it { should validate_numericality_of(:number)  }
-  
+
   it "ensures the number is at least 10 characters" do
     BlockedNumber.new(:number => '123456789').should have(1).error_on(:number)
-    BlockedNumber.new(:number => '1234567890').should have(0).errors_on(:number)    
-  end  
-  
+    BlockedNumber.new(:number => '1234567890').should have(0).errors_on(:number)
+  end
+
   ['-', '(', ')', '+', ' '].each do |symbol|
     it "strips #{symbol} from the number" do
       blocked_number = Factory.build(:blocked_number, :number => "123#{symbol}456#{symbol}7890")
@@ -17,7 +17,7 @@ describe BlockedNumber do
       blocked_number.reload.number.should == '1234567890'
     end
   end
-  
+
   it "doesn't strip alphabetic characters" do
     blocked_number = Factory.build(:blocked_number, :number => "123a456a7890")
     blocked_number.should_not be_valid
@@ -31,5 +31,5 @@ describe BlockedNumber do
     other_campaign_blocked_number = Factory(:blocked_number, :number => "1111111113", :campaign => Factory(:campaign) )
     BlockedNumber.for_campaign(campaign).should == [system_blocked_number, this_campaign_blocked_number]
   end
-  
+
 end

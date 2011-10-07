@@ -2,8 +2,8 @@
 	<h1>Billing information</h1>
 	<div class="table">
 		 <div class="form">
-			<%= error_messages_for :account, :header_message => "Please review and correct the following errors:" %>
-			<%= form_for :account, @account do |f| -%>
+			<%= error_messages_for :billing_account, :header_message => "Please review and correct the following errors:" %>
+			<% form_for :billing_account, @billing_account do |f| -%>
 			<fieldset>
 				<h5>We use industry standard encryption to protect your credit card information.</h5>
 
@@ -11,23 +11,23 @@
 
 				<p><label for="last_name">Card type:</label>
 				<% if BILLING_GW.class.to_s=="ActiveMerchant::Billing::BogusGateway" %>
-					<%= select( "account", "cardtype", { "Bogus" => "bogus"}) %>
+					<%= select( "billing_account", "cardtype", { "Bogus" => "bogus"}) %>
 				<% else %>
-					<%= select( "account", "cardtype", { "Visa" => "visa", "Mastercard" => "master"}) %>
+					<%= select( "billing_account", "cardtype", { "Visa" => "visa", "Mastercard" => "master"}) %>
 				<% end %>
 				</p>
 
 				<p><label for="email">Card number:</label>
 				<% if !@tempcc.blank?
-					@account.cc = @tempcc # restore unencrypted card number to view
+					@billing_account.cc = @tempcc # restore unencrypted card number to view
 				end %>
 				<%= f.text_field :cc %></p>
 
 				<p><label for="password">Card expiration:</label>
 
 
-					<%= select( "account", "expires_month", 1..12) %>
-					<%= select( "account", "expires_year", Time.now.year..2040) %>
+					<%= select( "billing_account", "expires_month", 1..12) %>
+					<%= select( "billing_account", "expires_year", Time.now.year..2040) %>
 				</p>
 				<p><label for="zip">Card security code:</label>
 				<input type="text" name="code" value="<%= params[:code] %>">

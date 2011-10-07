@@ -1,5 +1,5 @@
 <div class="box" style="width:600px;">
-	<%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@campaign.name} Dials Report"} %>
+	<%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@campaign.name} Dials"} %>
 	<div class="box-content">
 
 
@@ -90,7 +90,7 @@
 	</div>
 </div>
 
-<h2>Report Date Range:</h2>
+<h3>Date range:</h3>
 <% form_tag ("/client/report_overview?id=#{ params[:id]}") do %> 
   
 <table>

@@ -104,7 +104,7 @@ describe Voter do
       before(:each) do
         client.stub_chain(:account, :calls, :create).and_return(mock(:call, :sid => 'sid'))
       end
-      
+
       it "is dialed" do
         voter.dial_predictive
         call_attempt = voter.call_attempts.last
@@ -178,7 +178,7 @@ describe Voter do
   end
 
   describe "voter attributes" do
-    let(:voter) { Factory(:voter, :campaign => Factory(:campaign, :user=> Factory(:user)), :Phone => '384756923349') }
+    let(:voter){ Factory(:voter, :campaign => Factory(:campaign, :account => Factory(:account)), :Phone => '384756923349') }
 
     it "populates original attributes" do
       voter.apply_attribute('Phone', '0123456789')
@@ -214,8 +214,8 @@ describe Voter do
   end
 
   it "provides voter information with custom fields" do
-    voter = Factory(:voter, :campaign => Factory(:campaign, :user => Factory(:user)))
-    voter_no_custom = Factory(:voter, :campaign => Factory(:campaign, :user => Factory(:user)))
+    voter = Factory(:voter, :campaign => Factory(:campaign, :account => Factory(:account)))
+    voter_no_custom = Factory(:voter, :campaign => Factory(:campaign, :account => Factory(:account)))
     voter.apply_attribute('foo', 'bar')
     voter.apply_attribute('goo', 'car')
     voter.info.should == {:fields => voter.attributes.reject { |k, v| ["created_at", "updated_at"].include? k }, :custom_fields => {'foo' => 'bar', 'goo' => 'car'}}
@@ -228,8 +228,7 @@ describe Voter do
   end
 
   describe "voter attributes" do
-
-    let(:voter) { Factory(:voter, :campaign => Factory(:campaign, :user=> Factory(:user)), :Phone => '384756923349') }
+    let(:voter) { Factory(:voter, :campaign => Factory(:campaign, :account=> Factory(:account)), :Phone => '384756923349') }
 
     it "populates original attributes" do
       voter.apply_attribute('Phone', '0123456789')
@@ -257,32 +256,32 @@ describe Voter do
     end
 
   end
-  
+
   it "excludes specific numbers" do
     unblocked_voter = Factory(:voter, :Phone => "1234567890")
     blocked_voter = Factory(:voter, :Phone => "0123456789")
-    Voter.without(['0123456789']).should == [unblocked_voter] 
+    Voter.without(['0123456789']).should == [unblocked_voter]
   end
 
   describe 'blocked?' do
-    let(:voter) { Factory(:voter, :user => Factory(:user), :Phone => '1234567890', :campaign => Factory(:campaign)) }
-    
+    let(:voter) { Factory(:voter, :account => Factory(:account), :Phone => '1234567890', :campaign => Factory(:campaign)) }
+
     it "knows when it isn't blocked" do
       voter.should_not be_blocked
     end
-    
+
     it "knows when it is blocked system-wide" do
-      voter.user.blocked_numbers.create(:number => voter.Phone)
+      voter.account.blocked_numbers.create(:number => voter.Phone)
       voter.should be_blocked
     end
-    
+
     it "doesn't care if it blocked for a different campaign" do
-      voter.user.blocked_numbers.create(:number => voter.Phone, :campaign => Factory(:campaign))
+      voter.account.blocked_numbers.create(:number => voter.Phone, :campaign => Factory(:campaign))
       voter.should_not be_blocked
     end
-    
+
     it "knows when it is blocked for its campaign" do
-      voter.user.blocked_numbers.create(:number => voter.Phone, :campaign => voter.campaign)
+      voter.account.blocked_numbers.create(:number => voter.Phone, :campaign => voter.campaign)
       voter.should be_blocked
     end
   end

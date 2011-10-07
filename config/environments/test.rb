@@ -1,3 +1,6 @@
+HOST = 'localhost'
+PORT = 3000
+
 ImpactDialing::Application.configure do
   # Settings specified here will take precedence over those in config/environment.rb
 

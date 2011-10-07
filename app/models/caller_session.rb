@@ -7,6 +7,7 @@ class CallerSession < ActiveRecord::Base
   scope :available, :conditions => {:available_for_call => true, :on_call => true}
   scope :not_on_call, :conditions => {:on_call => false}
   scope :held_for_duration, lambda{|minutes| {:conditions => ["hold_time_start <= ?", minutes.ago]}}
+  scope :between, lambda{|from_date, to_date| { :conditions => { :created_at => from_date..to_date } }}
   has_one :voter_in_progress, :class_name => 'Voter'
   unloadable
 
@@ -15,7 +16,6 @@ class CallerSession < ActiveRecord::Base
     self.tDuration/60.ceil
   end
 
-  #  def end_call(account,auth,appurl)
   def end_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH, appurl=APP_URL)
     t = TwilioLib.new(account, auth)
     a=t.call("POST", "Calls/#{self.sid}", {'CurrentUrl'=>"#{appurl}/callin/callerEndCall?session=#{self.id}"})
@@ -60,7 +60,7 @@ class CallerSession < ActiveRecord::Base
         else
           v.say "Incorrect campaign Id."
           v.hangup
-      end
+        end
     end.response
   end
 

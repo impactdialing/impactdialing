@@ -1,41 +1,18 @@
 class Account < ActiveRecord::Base
-  belongs_to :user
-#  validates_presence_of :cc
+  has_many :users
+  has_many :campaigns, :conditions => {:active => true}
+  has_many :all_campaigns, :class_name => 'Campaign'
+  has_many :recordings
+  has_many :custom_voter_fields
+  has_one :billing_account
+  has_many :scripts
+  has_many :callers
+  has_many :voter_lists
+  has_many :voters
+  has_many :families
+  has_many :blocked_numbers
 
-  def encyrpt_cc
-    pub_key =  Crypto::Key.from_file('rsa_key.pub')
-    begin
-      self.cc = pub_key.encrypt(cc) if !self.cc.blank?
-    rescue
-      begin
-        #success here means it's aready encypted
-        test = self.decrypt_cc
-        self.cc
-      rescue
-        #couldnt encrypt or decrypt, we've got issues
-        raise "Could not encrypt cc #{self.cc}"
-      end
-    end
+  def new_billing_account
+    BillingAccount.create(:account => self)
   end
-  
-  def decrypt_cc
-     priv_key = Crypto::Key.from_file('rsa_key')
-     if !self.cc.blank?
-       priv_key.decrypt(self.cc) 
-     else
-       ""
-     end
-  end
-  
-  def first_name
-    name_arr=self.name.split(" ")
-    name_arr.shift
-  end
-
-  def last_name
-    name_arr=self.name.split(" ")
-    name_arr.join(" ").strip
-  end    
-
-
 end

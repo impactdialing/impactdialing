@@ -6,7 +6,7 @@ class CampaignsController < ClientController
 
   def verify_campaign_ownership
     @campaign = Campaign.find(params[:id])
-    if @campaign.user != @user
+    if @campaign.account != account
       render :nothing, :status => :unauthorized
     end
   end
@@ -16,13 +16,13 @@ class CampaignsController < ClientController
   end
 
   def create
-    campaign = @user.campaigns.create!(:script => @user.scripts.robo.first, :robo => true)
+    campaign = @user.account.campaigns.create!(:script => @user.account.scripts.robo.first, :robo => true)
     redirect_to campaign
   end
 
   def update
     @campaign.attributes = params[:campaign]
-    @campaign.script ||= @user.scripts.active.first
+    @campaign.script ||= account.scripts.active.first
     @campaign.voter_lists.disable_all
     @campaign.voter_lists.by_ids(params[:voter_list_ids]).enable_all
     if @campaign.save
@@ -43,9 +43,13 @@ class CampaignsController < ClientController
   end
 
   def show
-    @scripts = @user.scripts.robo.active
-    @callers = @user.callers.active
-    @lists = @campaign.voter_lists
+    unless @campaign.robo?
+      redirect_to client_campaign_path(@campaign)
+      return
+    end
+    @scripts = @user.account.scripts.robo.active
+    @callers  = account.callers.active
+    @lists    = @campaign.voter_lists
     @voters = @campaign.all_voters.active.paginate(:page => params[:page])
     if @campaign.caller_id.blank?
       flash_now(:warning, t(:caller_id_blank))
@@ -95,7 +99,14 @@ class CampaignsController < ClientController
   end
 
   def active_robo_campaigns
-    @user.campaigns.active.robo.paginate :page => params[:page], :order => 'id desc'
+    account.campaigns.active.robo.paginate :page => params[:page], :order => 'id desc'
+  end
+
+  def load_campaign
+    @campaign = account.all_campaigns.find(params[:campaign_id] || params[:id])
+  end
+
+  def setup_campaigns_paths
   end
 
   def setup_campaigns_paths

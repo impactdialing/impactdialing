@@ -3,6 +3,10 @@
 
 en:
   caller_id_blank: "When you make calls with this campaign, you need a phone number to use for the Caller ID. Enter the phone number you want to use for your Caller ID and click Verify. To prevent abuse, the system will call that number and ask you to enter a validation code that will appear on your screen. Until you do this, you can't make calls with this campaign."
+  # inviting a new administrators
+  admin_invite_subject: "Set your password for %{title}"
+  admin_invite_body_html: "Click here to set your password<br/> %{link}"
+  admin_invite_body_text: "Click here to set your password %{link}"
   white_labeling:
     impactdialing:
       title: "Impact Dialing"
@@ -20,17 +24,17 @@ en:
       phone: "(202) 393-4626"
       email: "info@stonesphones.com"
     cosalesforce:
-        title: "Commission-Only Sales Force"
-        full_title: "Commission-Only Sales Force, LLC"
-        phone: "(505) 926-1675"
-        email: "callersupport@cosalesforce.com"
+      title: "Commission-Only Sales Force"
+      full_title: "Commission-Only Sales Force, LLC"
+      phone: "(505) 926-1675"
+      email: "callersupport@cosalesforce.com"
     frontporchstrategies:
-            title: "Front Porch Strategies"
-            full_title: "Matthew D. Parker & Associates, LLC dba Front Porch Strategies"
-            phone: "(614) 342-0743"
-            email: "operations@frontporchstrategies.us"
+      title: "Front Porch Strategies"
+      full_title: "Matthew D. Parker & Associates, LLC dba Front Porch Strategies"
+      phone: "(614) 342-0743"
+      email: "operations@frontporchstrategies.us"
     mycxn:
-            title: "ConnexxNow"
-            full_title: "ConnexxNow, LLC"
-            phone: "(415) 347-5723"
-            email: "connexxnow@impactdialing.com"
+      title: "ConnexxNow"
+      full_title: "ConnexxNow, LLC"
+      phone: "(415) 347-5723"
+      email: "connexxnow@impactdialing.com"
