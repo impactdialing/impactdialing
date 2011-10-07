@@ -42,7 +42,7 @@ describe CallerSession do
       session = Factory(:caller_session, :caller => caller)
       session.ask_for_campaign.should == Twilio::Verb.new do |v|
         v.gather(:numDigits => 5, :timeout => 10, :action => assign_campaign_caller_url(session.caller, :session => session, :host => Settings.host, :attempt => 1), :method => "POST") do
-          v.say "Please enter your campaign id."
+          v.say "Please enter your campaign pin."
         end
       end.response
     end
@@ -59,7 +59,7 @@ describe CallerSession do
     it "hangs up on three incorrect campaign contexts" do
       session = Factory(:caller_session, :caller => caller)
       session.ask_for_campaign(3).should == Twilio::Verb.new do |v|
-        v.say "Incorrect campaign Id."
+        v.say "Incorrect campaign pin."
         v.hangup
       end.response
     end
