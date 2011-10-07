@@ -77,6 +77,7 @@
   <ul class="clearfix">
     <li class='divider'><a href="/client">Help</a></li>
     <li class='divider'><a href="/client/user_add">Account</a></li>
+    <li class='divider'><%= link_to "Users", client_account_path %></li>
     <li><a href="/client/logout">Log out</a></li>
   </ul>
 <% elsif logged_in_as_caller? %>
@@ -89,17 +90,17 @@
 </header>
 
 <% if client_controller?(@controllerName) %>
-<nav role="navigation" class="clearfix">
-<ul class="clearfix">
-	<!--<li><a href="/client" <% if @actionName=="index" %>class="active"<% end %>><span>Welcome</span></a></li>-->
-	<li><a href="/client/callers" <% if @actionName.index("caller") %>class="active"<% end %>><span>Callers</span></a></li>
-	<li><a href="/client/scripts" <% if @actionName.index("script") %>class="active"<% end %>><span>Scripts</span></a></li>
-	<li><a href="/client/campaigns" <% if @actionName.index("upload") || @actionName.index("campaign") %>class="active"<% end %>><span>Campaigns</span></a></li>
-	<li><a href="/client/monitor" <% if @actionName.index("monitor") %>class="active"<% end %>><span>Monitor</span></a></li>
-	<li><a href="/client/reports" <% if @actionName.index("report") %>class="active"<% end %>><span>Reports</span></a></li>
-	<li><a href="/broadcast"><span>Go to Voice Broadcasting</span></a></li>
-</ul>
-</nav>
+  <nav role="navigation" class="clearfix">
+  <ul class="clearfix">
+    <!--<li><a href="/client" <% if @actionName=="index" %>class="active"<% end %>><span>Welcome</span></a></li>-->
+    <li><a href="/client/callers" <% if @actionName.index("caller") %>class="active"<% end %>><span>Callers</span></a></li>
+    <li><a href="/client/scripts" <% if @actionName.index("script") %>class="active"<% end %>><span>Scripts</span></a></li>
+    <li><a href="/client/campaigns" <% if @actionName.index("upload") || @actionName.index("campaign") %>class="active"<% end %>><span>Campaigns</span></a></li>
+    <li><a href="/client/monitor" <% if @actionName.index("monitor") %>class="active"<% end %>><span>Monitor</span></a></li>
+    <li><a href="/client/reports" <% if @actionName.index("report") %>class="active"<% end %>><span>Reports</span></a></li>
+    <li><a href="/broadcast"><span>Go to Voice Broadcasting</span></a></li>
+  </ul>
+  </nav>
 <% end %>
 
 <%= render :partial => "shared/client_flash_messages", :locals => {:display => [:notice, :error, :warning]} %>

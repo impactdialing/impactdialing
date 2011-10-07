@@ -1,4 +1,4 @@
-<h1>Password recovery</h1>
+<h1>Reset password</h1>
 				<fieldset>
 
 				<%= form_tag("/client/forgot", :id=>"loginForm") do |f| %>
@@ -6,10 +6,8 @@
 			        <label>Email</label>
 					<input type="text" name="email" class="field" value="<%= params[:email] %>" />
 			      </p>
-
-				</fieldset>
-
 				<div class="buttons">
-				<button type="submit">Recover</button>
+				<button type="submit">Reset</button>
 				</div>
+				</fieldset>
 		<% end %>

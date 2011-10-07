@@ -27,4 +27,26 @@ describe Client::UsersController do
     user.authenticate_with?("xyzzy").should be_true
     flash[:error].should_not be_blank
   end
+
+  it "invites a new user to the current user's account" do
+    user = Factory(:user).tap{|u| login_as u}
+    mailer = mock(UserMailer)
+    UserMailer.stub(:new).and_return(mailer)
+    mailer.should_receive(:deliver_invitation).with(anything, user)
+    lambda {
+      post :invite, :email => 'foo@bar.com'
+    }.should change(user.account.users.reload, :count).by(1)
+    user.account.users.reload.last.email.should == 'foo@bar.com'
+    response.should redirect_to(:back)
+  end
+
+  it "deletes user" do
+    account = Factory(:account)
+    user = Factory(:user, :email => 'foo@bar.com', :account => account)
+    current_user = Factory(:user, :account => account).tap{|u| login_as u}
+    post :destroy, :id => user.id
+    User.find_by_id(user.id).should_not be
+    response.should redirect_to(:back)
+    flash[:notice].should == ['foo@bar.com was deleted']
+  end
 end

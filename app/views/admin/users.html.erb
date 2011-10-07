@@ -20,7 +20,7 @@
 		<td><%= u.email %></td>
 		<td><%= u.phone %></td>
 		<td><%= u.created_at %></td>
-		<td><%= u.paid %> </td>
+		<td><%= u.account.paid %> </td>
 		<td><%= u.domain %> </td>
 		<td><a href="/admin/toggle_paid/<%= u.id %>">toggle paid</a></td>
 		<td><a href="/admin/charge/<%= u.id %>">charge</a></td>

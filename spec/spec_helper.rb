@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'spork'
+require 'spork/ext/ruby-debug'
 
 Spork.prefork do
   # This file is copied to spec/ when you run 'rails generate rspec:install'
@@ -29,6 +30,13 @@ Spork.prefork do
     # instead of true.
     config.use_transactional_fixtures = true
     config.fixture_path = Rails.root.join('spec/fixtures')
+    #
+    # == Notes
+    #
+    # For more information take a look at Spec::Runner::Configuration and Spec::Runner
+    config.before(:each) do
+      request.env['HTTP_REFERER'] = 'http://referer' if respond_to?(:request) && request
+    end
   end
 
   require "factories"

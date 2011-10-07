@@ -1,3 +1,7 @@
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js" %>
+<% end %>
+
 <h1>Campaigns</h1>
 <% if @campaigns.length==0 %>
   <div class="form">
@@ -21,14 +25,12 @@
         </td>
       </tr>
     <% end %>
-
   </table>
-
   <p><%= page_entries_info @campaigns %> <%= will_paginate @campaigns %></p>
-
 <% end %>
+
 <p class="actions">
-  <%= form_tag @campaigns_path, :id => 'campaign_create_form' do %>
+  <% form_tag @campaigns_path, :id => 'campaign_create_form' do %>
     <%= link_to "Add a new campaign", 'javascript:void(0)', :class => "action primary", :onclick => "$('#campaign_create_form').submit()" %>
   <% end %>
 </p>

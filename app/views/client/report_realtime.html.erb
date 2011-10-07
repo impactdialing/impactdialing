@@ -3,7 +3,7 @@
 <div class="box" style="width:600px;">
 	<%= render :partial => 'shared/boxtop', :locals=>{:title=>"Choose a campaign"} %>
 	<div class="box-content">
-		<% @user.campaigns.each do |c| %>
+		<% @account.campaigns.each do |c| %>
 		<a href="/client/reports/<%= c.id %>"><%= c.name %></a><br/>
 		<% end %>
 	</div>

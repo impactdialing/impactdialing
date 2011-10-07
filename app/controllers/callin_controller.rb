@@ -39,7 +39,7 @@ class CallinController < ApplicationController
 
 
   def session_complete
-    if (cookies[:session]==nil || cookies[:session]=="0") && params[:session].blank?
+    if(cookies[:session]==nil || cookies[:session]=="0") && params[:session].blank?
       logger.info "NO SESSION COOKIE"
       @session=CallerSession.find_by_sid(params[:CallSid]) if !params[:CallSid].blank?
       @session=CallerSession.find_by_sid(params[:CallGuid]) if !params[:CallGuid].blank?
@@ -182,7 +182,9 @@ class CallinController < ApplicationController
       @play="#{APP_URL}/wav/enter_campaign_id.wav"
     else
       # response with PIN
-      c = Campaign.find_by_group_id_and_active_and_user_id(params[:Digits], true, @caller.user_id) if params[:session]!="0"
+      logger.info "PARAMS : #{params.inspect}, CALLER => #{@caller.inspect}"
+      c = Campaign.find_by_group_id_and_active_and_account_id(params[:Digits], true, @caller.account_id) if params[:session]!="0"
+      #c = @caller.account.campaigns.active.find_by_group_id(params[:Digits]) if params[:session] != '0'
       if params[:session]=="0" || c.blank?
         #        @say="We could not find that campain, try again."
         @play="#{APP_URL}/wav/invalid_credentials.wav"

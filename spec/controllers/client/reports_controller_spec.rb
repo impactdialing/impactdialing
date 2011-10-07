@@ -8,25 +8,50 @@ describe Client::ReportsController do
   end
 
   describe 'usage report' do
-    before(:each) do
-      campaign = Factory(:campaign)
-      time_now = Time.now
-      Factory(:call_attempt, :call_start => time_now, :call_end => time_now + 10.minutes, :status => CallAttempt::Status::SUCCESS, :campaign => campaign)
-      Factory(:call_attempt, :call_start => time_now, :call_end => time_now + 101.minutes, :status => CallAttempt::Status::SUCCESS, :campaign => campaign)
-      Factory(:call_attempt, :call_start => time_now, :call_end => time_now + 20.minutes, :status => CallAttempt::Status::VOICEMAIL, :campaign => campaign)
-      Factory(:call_attempt, :call_start => time_now, :call_end => time_now + 30.minutes, :status => CallAttempt::Status::VOICEMAIL, :campaign => campaign)
-      get :usage, :id => campaign.id
+    describe 'call attempts' do
+      before(:each) do
+        campaign = Factory(:campaign, :account => user.account)
+        time_now = Time.now
+        Factory(:call_attempt, :tDuration => 10.minutes + 2.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => campaign).tap{|ca| ca.update_attribute(:created_at, 5.minutes.ago)}
+        Factory(:call_attempt, :tDuration => 1.minutes, :status => CallAttempt::Status::VOICEMAIL, :campaign => campaign).tap{|ca| ca.update_attribute(:created_at, 5.minutes.ago)}
+        Factory(:call_attempt, :tDuration => 101.minutes + 57.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => campaign).tap{|ca| ca.update_attribute(:created_at, 5.minutes.ago)}
+        Factory(:call_attempt, :tDuration => 1.minutes, :status => CallAttempt::Status::ABANDONED, :campaign => campaign).tap{|ca| ca.update_attribute(:created_at, 5.minutes.ago)}
+        get :usage, :id => campaign.id
+      end
+
+      it "seconds" do
+        assigns(:utilised_call_attempts_seconds).should == 113.minutes + 59.seconds
+      end
+
+      it "minutes" do
+        assigns(:utilised_call_attempts_minutes).should == 115
+      end
+
+      it "billable seconds" do
+        assigns(:billable_call_attempts_seconds).should == 111.minutes + 59.seconds
+      end
+
+      it "billable minutes" do
+        assigns(:billable_call_attempts_minutes).should == 113
+      end
     end
 
-    it "reports call minutes" do
-      assigns(:call_minutes).should == 111
+    describe 'caller sessions' do
+      before(:each) do
+        campaign = Factory(:campaign, :account => user.account)
+        time_now = Time.now
+        Factory(:caller_session, :tDuration => 10.minutes + 2.seconds, :campaign => campaign).tap{|ca| ca.update_attribute(:created_at, 5.minutes.ago)}
+        Factory(:caller_session, :tDuration => 101.minutes + 57.seconds, :campaign => campaign).tap{|ca| ca.update_attribute(:created_at, 5.minutes.ago)}
+        get :usage, :id => campaign.id
+      end
+
+      it "seconds" do
+        assigns(:caller_sessions_seconds).should == 111.minutes + 59.seconds
+      end
+
+      it "minutes" do
+        assigns(:caller_sessions_minutes).should == 113
+      end
     end
-
-    it "reports voicemail minutes" do
-      assigns(:voicemail_minutes).should == 50
-    end
-
-
   end
-
 end
