@@ -163,7 +163,7 @@ class CallinController < ApplicationController
     if params[:Digits].blank?
       # initial call-in
       #      @say="Now enter your campaign ID"
-      @play="#{APP_URL}/wav/enter_campaign_id.wav"
+      @play="#{APP_URL}/wav/enter_campaign_id.wav?r=1"
     else
       # response with PIN
       c = Campaign.find_by_group_id_and_active_and_user_id(params[:Digits], true, @caller.user_id) if params[:session]!="0"
