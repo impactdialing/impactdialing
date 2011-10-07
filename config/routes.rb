@@ -89,6 +89,7 @@ ImpactDialing::Application.routes.draw do
     [:campaigns, :scripts].each do |type_plural|
       resources type_plural, :only => [:index, :show], :name_prefix => 'client'
     end
+    resource :account, :only => [:show, :update]
   end
 
   scope 'client' do
@@ -100,16 +101,12 @@ ImpactDialing::Application.routes.draw do
       end
     end
     resources :blocked_numbers, :only => [:index, :create, :destroy]
+    resources :users, :only => [:create, :destroy]
+    post 'user_invite', :to => 'users#invite', :as => 'user_invite'
   end
 
   scope 'caller' do
     match '/', :to => 'caller#index', :as => 'caller_root'
-  end
-
-  scope 'client' do
-    resource :account, :only => [:show, :update]
-    resources :users, :only => [:create, :destroy]
-    post 'user_invite', :to => 'users#invite', :as => 'user_invite'
   end
 
   resources :campaigns, :path_prefix => 'client', :only => [] do
