@@ -44,15 +44,6 @@
         <p class="actions">
           <a href='/client/recording_add?campaign_id=<%= @campaign.id %>' class="action secondary">Manage voicemails</a>
         </p>
-
-        <p>Call-in number:
-          <% if Rails.env =="development" %>
-              <%= number_to_phone(APP_NUMBER, :area_code => true) %>
-          <% else %>
-              <%= number_to_phone(@campaign.callin_number, :area_code => true) %>
-          <% end %>
-        </p>
-
         <p>Campaign ID:  <%= @campaign.group_id %></p>
       </fieldset>
       <fieldset>
