@@ -40,7 +40,7 @@ class VoterList < ActiveRecord::Base
     voters_list.each do |voter_info|
       phone_number = Voter.sanitize_phone(voter_info[csv_phone_column_location])
 
-      lead = new_lead(phone_number)
+      lead = Voter.create(:Phone => phone_number, :voter_list => self, :account_id => account_id, :campaign_id => campaign_id)
       unless lead
         result[:failedCount] +=1
         next
