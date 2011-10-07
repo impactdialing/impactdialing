@@ -1,8 +1,8 @@
 require "spec_helper"
 
 describe CampaignsController do
-  let(:user) { Factory(:user) }
   let(:account) { Factory(:account) }
+  let(:user) { Factory(:user, :account => account) }
   let(:another_users_campaign) { Factory(:campaign, :account => Factory(:account)) }
 
   before(:each) do
@@ -73,7 +73,8 @@ describe CampaignsController do
     end
 
     it "can update only campaigns owned by the user'" do
-      lambda { post :update, :id => another_users_campaign.id }.should raise_exception
+      post :update, :id => another_users_campaign.id
+      response.status.should == 401
     end
   end
 
@@ -102,7 +103,8 @@ describe CampaignsController do
     end
 
     it "can verify caller id only for campaigns owned by the user'" do
-      lambda { post :verify_callerid, :id => another_users_campaign.id }.should raise_exception
+      post :verify_callerid, :id => another_users_campaign.id
+      response.status.should == 401
     end
   end
 
@@ -111,6 +113,7 @@ describe CampaignsController do
     request.env['HTTP_REFERER'] = 'http://referer' if respond_to?(:request)
     delete :destroy, :id => campaign.id
     campaign.reload.should_not be_active
+    response.should redirect_to(:back)
   end
 
   describe "dial statistics" do

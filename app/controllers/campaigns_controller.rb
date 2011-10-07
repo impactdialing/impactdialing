@@ -7,7 +7,7 @@ class CampaignsController < ClientController
   def verify_campaign_ownership
     @campaign = Campaign.find(params[:id])
     if @campaign.account != account
-      render :nothing, :status => :unauthorized
+      render :text => 'nothing', :status => :unauthorized
     end
   end
 
