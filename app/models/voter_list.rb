@@ -89,7 +89,7 @@ class VoterList < ActiveRecord::Base
         return nil
       end
     else
-      lead = Voter.create(:Phone => phone_number, :voter_list => self)
+      lead = Voter.create(:Phone => phone_number, :voter_list => self, :user_id => user_id, :campaign_id => campaign_id)
     end
     lead
   end
