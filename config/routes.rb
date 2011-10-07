@@ -69,11 +69,11 @@ ImpactDialing::Application.routes.draw do
     match '/login', :to => 'broadcast#login', :as => 'broadcast_login'
   end
 
-  namespace 'broadcast' do |broadcast|
+  namespace 'broadcast' do
     resources :campaigns, :only => [:show, :index]
   end
 
-  namespace 'client' do |client|
+  namespace 'client' do
     match 'client/campaign_new', :to => 'client#campaign_new', :as => 'campaign_new'
 
     resources :campaigns, :only => [:show, :index, :create]
@@ -112,7 +112,7 @@ ImpactDialing::Application.routes.draw do
     post 'user_invite', :to => 'users#invite', :as => 'user_invite'
   end
 
-  resources :campaigns, :path_prefix => 'client', :only => [] do |campaign|
+  resources :campaigns, :path_prefix => 'client', :only => [] do
     member do
       post :verify_callerid
     end
