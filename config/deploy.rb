@@ -38,6 +38,7 @@ end
 task :staging do
   set :server_name, "ec2-174-129-172-31.compute-1.amazonaws.com"
   set :rails_env, 'staging'
+  set :branch, "temp_production"
   role :web, 'ec2-174-129-172-31.compute-1.amazonaws.com'
   role :app, 'ec2-174-129-172-31.compute-1.amazonaws.com'
   role :db, 'ec2-174-129-172-31.compute-1.amazonaws.com', :primary => true
