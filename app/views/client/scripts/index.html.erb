@@ -1,0 +1,29 @@
+<h1>Scripts</h1>
+<% if @scripts.length==0 %>
+    <div class="form">
+      <label>No scripts entered.</label>
+    </div>
+<% else %>
+    <div class="table">
+      <table>
+        <tr>
+          <th>Name</th>
+          <th>Date Added</th>
+          <th width="55" class="ac"></th>
+        </tr>
+        <% @scripts.each do |c| %>
+            <tr class="<%= cycle("odd", "even") %>">
+              <td><h3><%= link_to c.name, script_path(c) %></h3></td>
+              <td><%= c.created_at.strftime("%m/%d/%Y") %></td>
+              <td><%= button_to "Delete", client_script_path(c), :confirm => "Are you sure?", :method => :delete, :class=>"ico_del" %></td>
+            </tr>
+        <% end %>
+
+      </table>
+    </div>
+
+    <p><%= page_entries_info @scripts %> <%= will_paginate @scripts %></p>
+
+<% end %>
+<p class="actions"><%= link_to 'Add new script', new_client_script_path, :class => 'action primary' %></p>
+<p class="actions"><%= link_to 'View deleted scripts', client_deleted_scripts_path, :class => 'action secondary' %></p>

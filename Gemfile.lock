@@ -1,3 +1,9 @@
+GIT
+  remote: git://github.com/madebydna/nested_form.git
+  revision: bce54d4741ef698de7bcdc97cb86010812dbf81f
+  specs:
+    nested_form (0.0.0)
+
 GEM
   remote: http://rubygems.org/
   specs:
@@ -172,6 +178,7 @@ DEPENDENCIES
   memcache-client (~> 1.8.5)
   mongrel (~> 1.2.0.pre2)
   mysql
+  nested_form!
   newrelic_rpm (~> 3.0.1)
   nokogiri (~> 1.4.4)
   paperclip (= 2.3.16)
