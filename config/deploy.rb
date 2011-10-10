@@ -38,10 +38,10 @@ end
 task :staging do
   set :server_name, "ec2-174-129-172-31.compute-1.amazonaws.com"
   set :rails_env, 'staging'
-  set :branch, "predictive"
-  role :web, 'staging.impactdialing.com'
-  role :app, 'staging.impactdialing.com'
-  role :db, 'staging.impactdialing.com', :primary => true
+  set :branch, "temp_production"
+  role :web, 'ec2-174-129-172-31.compute-1.amazonaws.com'
+  role :app, 'ec2-174-129-172-31.compute-1.amazonaws.com'
+  role :db, 'ec2-174-129-172-31.compute-1.amazonaws.com', :primary => true
 end
 
 task :production do

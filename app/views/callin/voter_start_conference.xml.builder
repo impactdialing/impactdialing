@@ -8,7 +8,7 @@ xml.Response("version"=>"1.0") do |response|
     }
   end
 
-  xml.Dial("hangupOnStar"=>"false") do |d|
+  xml.Dial("record"=>"true", "hangupOnStar"=>"false") do |d|
     d.Conference("session#{@available_caller_session.id}", "waitUrl"=>"","beep"=>false, "endConferenceOnExit"=>"true", "maxParticipants"=>"2")
   end
 end
