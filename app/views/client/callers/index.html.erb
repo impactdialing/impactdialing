@@ -1,0 +1,34 @@
+<h1>Callers</h1>
+	<% if @callers.length==0 %>
+		<div class="form">
+	      <label>No callers entered.</label>
+		</div>
+	<% else %>
+  <div class="table">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+      <tr>
+        <th>Name</th>
+        <th>Date Added</th>
+        <th width="55" class="ac"></th>
+      </tr>
+	<% @callers.each do |c| %>
+      <tr class="<%= cycle("odd","even") %>">
+        <td><h3><%= link_to "#{c.name}", client_caller_path(c.id)%></h3></td>
+        <td><%= c.created_at.strftime("%m/%d/%Y") %></td>
+        <td><%= button_to "Delete", { :action => "delete", :id => c.id },
+                  :confirm => "Are you sure you want to delete this caller?", :method => :delete , :class=> "ico del" %></td>
+      </tr>
+	<% end %>
+
+    </table>
+	<% end %>
+
+</div>
+
+<p><%= page_entries_info @callers %> <%= will_paginate @callers %></p>
+<p class="actions">
+    <%= link_to 'Add new caller', new_client_caller_path, :class => 'action primary' %>
+</p>
+<p class="actions">
+  <%= link_to 'View deleted callers', client_deleted_callers_path, :class => 'action secondary' %>
+</p>

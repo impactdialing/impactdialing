@@ -299,6 +299,10 @@ text-indent : -9999px; }
 .del {
 background : transparent url(../img/icon-del.png) no-repeat 0 0; }
 
+input.del {
+border: none
+}
+
 .dl {
 background : transparent url(../img/icon-dl.png) no-repeat 0 0; }
 
