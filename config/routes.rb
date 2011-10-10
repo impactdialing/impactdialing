@@ -80,14 +80,11 @@ ImpactDialing::Application.routes.draw do
   end
 
   namespace 'client' do
-    ['campaigns', 'scripts', 'callers'].each do |type_plural|
+    [:campaigns, :scripts, :callers].each do |type_plural|
       get "/deleted_#{type_plural}", :to => "#{type_plural}#deleted", :as => "deleted_#{type_plural}"
       resources type_plural, :only => [:index, :show, :destroy, :create, :new] do
         put 'restore', :to => "#{type_plural}#restore"
       end
-    end
-    [:campaigns, :scripts].each do |type_plural|
-      resources type_plural, :only => [:index, :show], :name_prefix => 'client'
     end
     resource :account, :only => [:show, :update]
     resources :callers

@@ -1,0 +1,28 @@
+<h1><%= @script.new_record? ? "New script" : "Edit script" %></h1>
+<%= error_messages_for :script %>
+
+<%= nested_form_for [:client, @script] do |f| %>
+    <%= f.hidden_field :robo %>
+    <p>
+      <label>Script name</label>
+      <%= f.text_field :name, {:class => "field"} %>
+      <%= f.fields_for :questions do |q| %>
+          <%= q.label :text, "Question" %>
+          <%= q.text_field :text %>
+        <div>
+          <%= q.fields_for :possible_responses do |r| %>
+              <%= r.text_field :value %>
+              <%= r.text_field :keypad %>
+              <%= r.link_to_remove "Remove response" %>
+          <% end %>
+          <%= q.link_to_add "Add response", :possible_responses %>
+        </div>
+
+
+        <%= q.link_to_remove "Remove Question" %>
+
+    <% end %>
+    <%= f.link_to_add "Add a question", :questions %>
+    </p>
+    <%= f.submit 'Save' %>
+<% end %>

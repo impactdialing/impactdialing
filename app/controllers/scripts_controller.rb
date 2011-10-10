@@ -19,8 +19,8 @@ class ScriptsController < ClientController
   end
 
   def new_script
-    @fields = ["CustomID","FirstName","MiddleName","LastName","Suffix","Age","Gender","Phone","Email"]
-    @breadcrumb=[{"Scripts"=>"/client/scripts"},"Add Script"]
+    @fields = ["CustomID", "FirstName", "MiddleName", "LastName", "Suffix", "Age", "Gender", "Phone", "Email"]
+    @breadcrumb=[{"Scripts"=>"/client/scripts"}, "Add Script"]
     @label = 'New Script'
     @script = @user.account.scripts.new(:name => 'Untitled Script', :robo=>true)
     @incompletes = {}
@@ -31,6 +31,10 @@ class ScriptsController < ClientController
 
   def new
     @script.robo_recordings.build
+  end
+
+  def create
+    #before filter apply_changes triggered here
   end
 
   def apply_changes
@@ -51,18 +55,18 @@ class ScriptsController < ClientController
         this_result = params["text_#{r}_#{i}"]
         this_keypadval = params["keypad_#{r}_#{i}"]
         if !this_result.blank? && !this_keypadval.blank?
-          this_results["keypad_#{i}"] =  this_result
+          this_results["keypad_#{i}"] = this_result
         else
           this_results["keypad_#{i}"] = nil
         end
       end
       logger.info "Done with #{r}: #{this_results.inspect}"
-      @script.attributes =   { "result_set_#{r}" => this_results.to_json }
+      @script.attributes = {"result_set_#{r}" => this_results.to_json}
     end
 
     for i in 1..NUM_RESULT_FIELDS do
       this_note = params["note_#{i}"]
-      @script.attributes = { "note_#{i}" => this_note.blank? ? nil : this_note }
+      @script.attributes = {"note_#{i}" => this_note.blank? ? nil : this_note}
     end
 
     all_incompletes={}
@@ -84,8 +88,8 @@ class ScriptsController < ClientController
   end
 
   def show
-    @fields = ["CustomID","FirstName","MiddleName","LastName","Suffix","Age","Gender","Phone","Email"]
-    @breadcrumb=[{"Scripts"=>"/client/scripts"},"Edit Script"]
+    @fields = ["CustomID", "FirstName", "MiddleName", "LastName", "Suffix", "Age", "Gender", "Phone", "Email"]
+    @breadcrumb=[{"Scripts"=>"/client/scripts"}, "Edit Script"]
     @label = "Add script"
 
     @numResults = 0
