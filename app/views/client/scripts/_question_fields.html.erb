@@ -1,0 +1,13 @@
+<%= q.label :text, "Question" %>
+<%= q.text_field :text %>
+<div>
+  <%= q.fields_for :possible_responses do |r| %>
+      <%= r.text_field :value %>
+      <%= r.text_field :keypad %>
+      <%= r.link_to_remove "Remove response" %>
+  <% end %>
+  <%= q.link_to_add "Add response", :possible_responses %>
+</div>
+
+
+<%= q.link_to_remove "Remove Question" %>
