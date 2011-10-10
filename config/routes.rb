@@ -82,7 +82,7 @@ ImpactDialing::Application.routes.draw do
   namespace 'client' do
     ['campaigns', 'scripts', 'callers'].each do |type_plural|
       get "/deleted_#{type_plural}", :to => "#{type_plural}#deleted", :as => "deleted_#{type_plural}"
-      resources type_plural, :only => [:index, :show, :destroy, :create] do
+      resources type_plural, :only => [:index, :show, :destroy, :create, :new] do
         put 'restore', :to => "#{type_plural}#restore"
       end
     end
@@ -90,6 +90,7 @@ ImpactDialing::Application.routes.draw do
       resources type_plural, :only => [:index, :show], :name_prefix => 'client'
     end
     resource :account, :only => [:show, :update]
+    resources :callers
   end
 
   scope 'client' do
@@ -102,6 +103,7 @@ ImpactDialing::Application.routes.draw do
     end
     resources :blocked_numbers, :only => [:index, :create, :destroy]
     resources :users, :only => [:create, :destroy]
+    
     post 'user_invite', :to => 'users#invite', :as => 'user_invite'
   end
 

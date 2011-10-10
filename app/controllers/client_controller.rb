@@ -200,52 +200,6 @@ class ClientController < ApplicationController
     redirect_to_login
   end
 
-  def callers
-    @breadcrumb="Callers"
-    @callers = Caller.where(:active => true, :account_id => account.id).order(:name).paginate(:page => params[:page])
-  end
-
-  def caller_add
-    @breadcrumb=[{"Callers"=>"/client/callers"},"Add Caller"]
-    @caller = account.callers.find_by_id(params[:id]) || Caller.new
-    if @caller.new_record?
-      @label="Add caller"
-    else
-      @label="Edit caller"
-    end
-    if request.post?
-      @caller.update_attributes(params[:callers])
-      if @caller.valid?
-        @caller.account_id = account.id
-        @caller.save
-
-        # add to campaigns with all callers
-        all_callers = account.callers.active
-        all_campaings = account.campaigns.active
-        all_campaings.each do |campaign|
-          if campaign.callers.length >= (all_callers.length)-1
-            campaign.callers << @caller
-          end
-        end
-        flash_message(:notice, "Caller saved")
-        redirect_to :action=>"callers"
-        return
-      end
-    end
-
-  end
-
-  def caller_delete
-    @caller = account.callers.find_by_id(params[:id])
-    if !@caller.blank?
-      @caller.active = false
-      @caller.save
-    end
-    flash_message(:notice, "Caller deleted")
-    redirect_to :action=>"callers"
-    return
-  end
-
   def call_now
     campaign = Campaign.find(params[:id])
     if !phone_number_valid(params[:num])
