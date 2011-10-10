@@ -12,9 +12,9 @@
 
         <p><label for="">Caller ID</label><br>
           <%= f.text_field :caller_id, {:class=>"field size3"} %></p>
-	      <div class="buttons">
-	        <button type="submit">Verify this Caller ID</button>
-	      </div>
+          <div class="buttons">
+            <button type="submit">Verify this Caller ID</button>
+          </div>
 
         <p><label for="">Script</label><br>
           <%= f.collection_select(:script_id, @scripts, :id, :name, {:prompt => true}, {:class=>"field"}) %>
@@ -29,30 +29,21 @@
             <%= options_for_select public_dialers, @campaign.predictive_type %>
           </select>
         </p>
-        <% if !@campaign.user.recordings.blank? %>
+        <% if !@campaign.account.recordings.blank? %>
             <p><label> <%= f.check_box :use_recordings, :onclick=>"doRecord();" %> &nbsp; Leave voicemail</label></p>
 
             <div id="recordingsdiv"
                  <% if  !@campaign.use_recordings? %> style="display:none;"
                  <% end %>>
               <p>Recording:</p>
-              <%= f.collection_select(:recording_id, Recording.find_all_by_user_id_and_active(@user.id, 1), :id, :name, {:prompt => false}, {:class=>"field", :onchange=>"updatePreview();"}) %>
+              <%= f.collection_select(:recording_id, @account.recordings.active, :id, :name, {:prompt => false}, {:class=>"field", :onchange=>"updatePreview();"}) %>
               <div id="sndPreview"></div>
             </div>
         <% end %>
-        <!--		<p><input type="button" class="button" value="Manage Recordings" onclick="document.location.href='/client/recording_add?campaign_id=<%= @campaign.id %>';"/></p>-->
+        <!--     <p><input type="button" class="button" value="Manage Recordings" onclick="document.location.href='/client/recording_add?campaign_id=<%= @campaign.id %>';"/></p>-->
         <p class="actions">
           <a href='/client/recording_add?campaign_id=<%= @campaign.id %>' class="action secondary">Manage voicemails</a>
         </p>
-
-        <p>Call-in number:
-          <% if Rails.env =="development" %>
-              <%= number_to_phone(APP_NUMBER, :area_code => true) %>
-          <% else %>
-              <%= number_to_phone(@campaign.callin_number, :area_code => true) %>
-          <% end %>
-        </p>
-
         <p>Campaign ID:  <%= @campaign.group_id %></p>
       </fieldset>
       <fieldset>
@@ -176,7 +167,7 @@
         }
     }
 
-    <% if !@campaign.user.recordings.blank? %>
+    <% if !@campaign.account.recordings.blank? %>
     function updatePreview() {
         recording_id = $('campaign_recording_id').value;
     <%@user.recordings.each do |recording| %>

@@ -37,11 +37,10 @@ class AdminController < ApplicationController
   end
 
   def report
-#    @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
     set_report_date_range
-    sql="select distinct ca.campaign_id , name, email, c.user_id from caller_sessions ca
+    sql="select distinct ca.campaign_id , name, email, c.account_id from caller_sessions ca
       join campaigns c on c.id=ca.campaign_id
-      join users u on u.id=c.user_id where
+      join accounts a on a.id=c.account_id where
       ca.created_at > '#{@from_date.strftime("%Y-%m-%d")}'
       and ca.created_at  < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'
     "
@@ -61,7 +60,7 @@ class AdminController < ApplicationController
       select count(*),  sum(ceil(tDuration/60)), sum(tPrice)
       from caller_sessions ca
       join campaigns c on c.id=ca.campaign_id
-      join users u on u.id=c.user_id
+      join accounts a on a.id=c.account_id
       where
       ca.created_at > '#{@from_date.strftime("%Y-%m-%d")}'
       and ca.created_at  < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'
@@ -103,14 +102,9 @@ class AdminController < ApplicationController
   end
 
   def toggle_paid
-    user = User.find(params[:id])
-    if user.paid==true
-      user.paid=false
-    else
-      user.paid=true
-    end
-    user.save
-    redirect_to :action=>"users"
+    account = User.find(params[:id]).account
+    account.update_attribute(:paid, !account.paid)
+    redirect_to :back
   end
 
   def login
@@ -275,54 +269,54 @@ Can we count on you to vote for such-and-such?"
         redirect_to :action=>"cms"
       end
     end
-    
+
     def charge
       @user=User.find(params[:id])
-      @account=Account.find_by_user_id(params[:id])
-      if @account.nil?
+      @billing_account=BillingAccount.find_by_user_id(params[:id])
+      if @billing_account.nil?
         render :text=>"User has not entered credit card info"
         return
       end
-      
+
       if request.post?
-        @success = charge_account(@account, params[:tocharge].to_f) 
+        @success = charge_account(@billing_account, params[:tocharge].to_f)
       end
 
     end
 
 
 
-    def charge_account(account, amount) 
-      
+    def charge_account(billing_account, amount)
+
        creditcard = ActiveMerchant::Billing::CreditCard.new(
-         :number     => account.decrypt_cc,
-         :month      => account.expires_month,
-         :year       => account.expires_year,
-         :type       => account.cardtype,
-         :first_name => account.first_name,
-         :last_name  => account.last_name
+         :number     => billing_account.decrypt_cc,
+         :month      => billing_account.expires_month,
+         :year       => billing_account.expires_year,
+         :type       => billing_account.cardtype,
+         :first_name => billing_account.first_name,
+         :last_name  => billing_account.last_name
        )
 
        billing_address = {
            :name => "#{@user.fname} #{@user.lname}",
-           :address1 => @account.address1 ,
-           :zip =>@account.zip,
-           :city     => @account.city,
-           :state    => @account.state,
+           :address1 => @billing_account.address1 ,
+           :zip =>@billing_account.zip,
+           :city     => @billing_account.city,
+           :state    => @billing_account.state,
            :country  => 'US'
          }
        options = {:address => {}, :address1 => billing_address, :billing_address => billing_address, :ip=>"127.0.0.1", :order_id=>""}
        @response = BILLING_GW.authorize(amount.to_f*100, creditcard,options)
-         
-       if @response.message == 'APPROVED' 
-         BILLING_GW.capture(@amount,  @response.authorization) 
+
+       if @response.message == 'APPROVED'
+         BILLING_GW.capture(@amount,  @response.authorization)
          true
-      else 
+      else
         false
-      end 
+      end
 
     end
-    
+
     def log
       if params[:id]
         @reqs=Dump.find_all_by_guid(params[:id], :order=>"first_line")

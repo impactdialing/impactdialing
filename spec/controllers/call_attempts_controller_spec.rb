@@ -11,8 +11,9 @@ describe CallAttemptsController do
   end
 
   describe "calling in" do
-    let(:user) { Factory(:user) }
-    let(:campaign) { Factory(:campaign, :user => user, :robo => false) }
+    let(:account) { Factory(:account) }
+    let(:user) { Factory(:user, :account => account) }
+    let(:campaign) { Factory(:campaign, :account => account, :robo => false) }
     let(:voter) { Factory(:voter) }
     let(:call_attempt) { Factory(:call_attempt, :voter => voter, :campaign => campaign) }
 

@@ -1,5 +1,7 @@
 # Methods added to this helper will be available to all templates in the application.
 module ApplicationHelper
+  include WhiteLabeling
+
   def cms(key)
     s = Seo.find_by_crmkey_and_active_and_version(key, 1, session[:seo_version])
     s = Seo.find_by_crmkey_and_active_and_version(key, 1, nil) if s.blank?
@@ -73,22 +75,17 @@ module ApplicationHelper
   end
 
   def client_controller?(controllerName)
-    ['client', 'voter_lists', 'monitor', 'client/campaigns', 'client/scripts', 'client/callers', 'client/reports', 'campaigns', 'scripts', 'broadcast', 'reports', 'home', 'blocked_numbers'].include?(controllerName)
+    ['client/accounts', 'client', 'voter_lists', 'monitor', 'client/campaigns', 'client/scripts', 'client/callers', 'client/reports', 'campaigns', 'scripts', 'broadcast', 'reports', 'home', 'blocked_numbers'].include?(controllerName)
   end
 
   ['title', 'full_title', 'phone', 'email', ].each do |value|
-    define_method(value)do
-      I18n.t("white_labeling.#{domain}.#{value}")
+    define_method(value) do
+      send("white_labeled_#{value}", request.domain)
     end
   end
 
   def domain
-    d = request.domain.downcase.gsub(/\..+$/, '')
-    if I18n.t("white_labeling.#{d}", :default => '').blank?
-      'impactdialing'
-    else
-      d
-    end
+    correct_domain(request.domain)
   end
 
   def link_to_remove_fields(name, f, opts = {})

@@ -1,17 +1,17 @@
 <div class="box" >
-	<%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@campaign.name} Download Report"} %>
+	<%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@campaign.name} Download"} %>
 	<div class="box-content">
 		<%= form_tag ("/client/report_download?id=#{ params[:id]}") do %>
 		<input type="hidden" name="from_date" value="<%= @from_date %>">
 		<input type="hidden" name="to_date" value="<%= @to_date %>">
 		<input type="hidden" name="download" value="1">
-		<input type="submit" class="button" value="Download results">
+		<div class="buttons"><button type="submit">Download</button></div>
 		<% end %>
 
 	</div>
 
-<h2>Report Date Range:</h2>
-	<%= form_tag ("/client/report_download?id=#{ params[:id]}") do %>
+<h3>Date range:</h3>
+	<% form_tag ("/client/report_download?id=#{ params[:id]}") do %>
 
 	<table>
 		<tr>

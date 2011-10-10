@@ -7,15 +7,15 @@ class Campaign < ActiveRecord::Base
   has_many :caller_sessions
   has_many :voter_lists, :conditions => {:active => true}
   has_many :all_voters, :class_name => 'Voter'
-  has_many :call_attempts, :through => :all_voters
+  has_many :call_attempts
   has_and_belongs_to_many :callers
   belongs_to :script
-  belongs_to :user
+  belongs_to :account
   belongs_to :recording
 
   scope :robo, :conditions => {:robo => true }
   scope :manual, :conditions => {:robo => false }
-  scope :for_user, lambda {|user| { :conditions => ["user_id = ?", user.id] }}
+  scope :for_account, lambda {|account| { :conditions => ["account_id = ?", account.id] }}
   scope :with_running_caller_sessions, {
       :select     => "distinct campaigns.*",
       :joins      => "inner join caller_sessions on (caller_sessions.campaign_id = campaigns.id)",
@@ -28,11 +28,11 @@ class Campaign < ActiveRecord::Base
   cattr_reader :per_page
   @@per_page = 25
 
-  before_validation(:set_untitled_name, :on => :create)
   before_save :before_save_campaign
+  before_validation(:set_untitled_name, :on => :create)
 
   def set_untitled_name
-    self.name = "Untitled #{user.campaigns.count + 1}" if self.name.blank?
+    self.name = "Untitled #{account.campaigns.count + 1}" if self.name.blank?
   end
 
   # TODO: remove
@@ -297,7 +297,7 @@ class Campaign < ActiveRecord::Base
 
   def voters(status=nil,include_call_retries=true,limit=300)
     #return testVoters if self.name=="Load Test"
-    return [] if  !self.user.paid
+    return [] if  !self.account.paid
     return [] if self.caller_id.blank? || !self.caller_id_verified
     voters_returned=[]
     voter_ids=[]
@@ -427,7 +427,7 @@ class Campaign < ActiveRecord::Base
 
   def determine_short_to_dial
     stats = call_stats(10)
-    
+
     short_counter = num_short_calls_in_progress(stats[:short_time])
 
     if stats[:ratio_short]>0 && short_counter > 0
@@ -515,9 +515,9 @@ class Campaign < ActiveRecord::Base
   end
 
   def start
-    return false if self.calls_in_progress? or (not self.user.paid)
+    return false if self.calls_in_progress? or (not self.account.paid)
     daemon = "#{Rails.root.join('script', "dialer_control.rb start -- #{self.id}")}"
-    logger.info "[dialer] User id:#{self.user.id} started campaign id:#{self.id} name:#{self.name}"
+    logger.info "[dialer] Account id:#{self.account.id} started campaign id:#{self.id} name:#{self.name}"
     update_attribute(:calls_in_progress, true)
     system(daemon)
   end
@@ -539,6 +539,10 @@ class Campaign < ActiveRecord::Base
     PREDICTIVE = "predictive"
   end
 
+  def clear_calls
+    all_voters.update_all(:result => nil, :status => 'not called')
+  end
+
   private
   def dial_voters
     self.voter_lists.each do |voter_list|
@@ -546,5 +550,4 @@ class Campaign < ActiveRecord::Base
       voter_list.dial if voter_list.enabled
     end
   end
-
 end

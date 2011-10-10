@@ -5,7 +5,7 @@ module DeletableController
   end
 
   def load_deleted
-    self.instance_variable_set("@#{type_name.pluralize}", class_constant.deleted.for_user(@user).paginate(:page => params[:page], :order => 'id desc'))
+    self.instance_variable_set("@#{type_name.pluralize}", class_constant.deleted.for_account(@user.account).paginate(:page => params[:page], :order => 'id desc'))
   end
 
   def restore

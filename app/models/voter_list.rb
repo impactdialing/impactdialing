@@ -2,13 +2,14 @@ require 'ostruct'
 
 class VoterList < ActiveRecord::Base
   belongs_to :campaign
-  belongs_to :user
+  belongs_to :account
   has_many :voters, :conditions => {:active => true}
 
   validates_presence_of :name
   validates_length_of :name, :minimum => 3
-  validates_uniqueness_of :name, :case_sensitive => false, :scope => :user_id, :message => "for this voter list is already taken"
+  validates_uniqueness_of :name, :case_sensitive => false, :scope => :account_id, :message => "for this list is already taken."
 
+  scope :active, where(:active => true)
   scope :by_ids, lambda { |ids| {:conditions => {:id => ids}} }
 
   VOTER_DATA_COLUMNS = ["Phone", "ID", "LastName", "FirstName", "MiddleName", "Suffix", "Email", "Age", "Gender"]
@@ -39,7 +40,11 @@ class VoterList < ActiveRecord::Base
     voters_list.each do |voter_info|
       phone_number = Voter.sanitize_phone(voter_info[csv_phone_column_location])
 
-      lead = Voter.create(:Phone => phone_number, :voter_list => self, :user => self.user, :campaign => self.campaign)
+      lead = Voter.create(:Phone => phone_number, :voter_list => self, :account_id => account_id, :campaign_id => campaign_id)
+      unless lead
+        result[:failedCount] +=1
+        next
+      end
 
       csv_headers.each_with_index do |csv_column_title, column_location|
         system_column = csv_to_system_map.system_column_for csv_column_title
@@ -75,13 +80,13 @@ class VoterList < ActiveRecord::Base
         existing_voter_entry = existing_voter_entry.first
         existing_voter_entry.num_family += 1
         existing_voter_entry.save
-        lead = Family.new
+        lead = Family.new(:Phone => phone_number, :voter_list_id => id, :account_id => account_id, :campaign_id => campaign_id)
         lead.voter_id = existing_voter_entry.id
       else
         return nil
       end
     else
-      lead = Voter.create(:Phone => phone_number, :voter_list => self)
+      lead = Voter.create(:Phone => phone_number, :voter_list => self, :account_id => account_id, :campaign_id => campaign_id)
     end
     lead
   end

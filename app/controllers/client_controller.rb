@@ -11,13 +11,22 @@ class ClientController < ApplicationController
     redirect_to_login and return if session[:user].blank?
     begin
       @user = User.find(session[:user])
+      @account = @user.account
     rescue
       logout
     end
   end
-  
+
   def current_user
     @user
+  end
+
+  def current_user
+    @user
+  end
+
+  def account
+    @user.try(:account)
   end
 
   def redirect_to_login
@@ -65,7 +74,7 @@ class ClientController < ApplicationController
     @title = "My Account"
 
     if session[:user].blank?
-      @user = User.new
+      @user = User.new(:account => Account.new)
     else
       @user = User.find(session[:user])
     end
@@ -79,10 +88,7 @@ class ClientController < ApplicationController
         @user.lname=name_arr.join(" ").strip
       end
 
-      if false && @user.new_record? && params[:tos].blank?
-        flash_now(:error, "You must agree to the Terms of Service to create an account.")
-        return
-      elsif !@user.new_record? and (not @user.authenticate_with?(params[:exist_pw]))
+      if !@user.new_record? and (not @user.authenticate_with?(params[:exist_pw]))
         flash_now(:error, "Current password incorrect")
         return
       end
@@ -94,136 +100,14 @@ class ClientController < ApplicationController
         @caller = Caller.new
         @caller.name = "Default Caller"
         @caller.multi_user = true
-        @caller.user_id = @user.id
+        @caller.account_id = @user.account.id
         @caller.save
 
-        if Script.find_by_name_and_user_id("Voter ID Example",@user.id)==nil
-          @script = Script.new
-          @script.name = "Voter ID Example"
-          @rs={}
-          @rs["keypad_1"]="Strong supportive"
-          @rs["keypad_2"]="Lean supportive"
-          @rs["keypad_3"]="Undecided"
-          @rs["keypad_4"]="Lean opposed"
-          @rs["keypad_5"]="Strong opposed"
-          @rs["keypad_6"]="Refused"
-          @rs["keypad_7"]="Not home/call back"
-          @rs["keypad_8"]="Language barrier"
-          @rs["keypad_9"]="Wrong number"
-          @rs["name"]="How supportive was the voter?"
-          #      @rs.incompletes=["7"].to_json
-          @script.result_set_1 = @rs.to_json
-          @script.incompletes='{"5":[],"6":[],"1":["7"],"7":[],"2":[],"8":[],"3":[],"9":[],"4":[],"10":[]}'
-          @script.name = "Political Example Script"
-          @script.note_1 = "Email"
+        if account.scripts.find_by_name('Political Example Script') == nil
+          @script = Script.political_example(account)
+          @script.save
           @numResults = 1
           @numNotes = 1
-          @script.voter_fields='["CustomID","FirstName","MiddleName","LastName","Suffix","Age","Gender","Email"]'
-          @script.script = <<-EOS
-Hi, is ___ there?
-
-My name's ___ and I'm a volunteer with the such-and-such campaign.
-
-I'm voting for such-and-such because...
-
-Can we count on you to vote for such-and-such?
-          EOS
-          @script.active = 1
-          @script.user_id = @user.id
-          @script.save
-        end
-
-        if false && Script.find_by_name_and_user_id("Voter ID Example",@user.id)==nil
-          @script = Script.new
-          @script.name = "Voter ID Example"
-          @script.keypad_1 = "Strong supportive"
-          @script.keypad_2 = "Lean supportive"
-          @script.keypad_3 = "Undecided"
-          @script.keypad_4 = "Lean opposed"
-          @script.keypad_5 = "Strong opposed"
-          @script.keypad_6 = "Refused"
-          @script.keypad_7 = "Not home/call back"
-          @script.keypad_8 = "Language barrier"
-          @script.keypad_9 = "Wrong number"
-          @script.incompletes = ["7"].to_json
-          @script.script = "Hi, is ___ there?
-
-          My name's ___ and I'm a volunteer with the such-and-such campaign.
-
-          I'm voting for such-and-such because...
-
-          Can we count on you to vote for such-and-such?"
-          @script.active = 1
-          @script.user_id = @user.id
-          @script.save
-        end
-
-        # @script = Script.new
-        #       @script.name="GOTV Example"
-        #       @script.keypad_1="Will vote early"
-        #       @script.keypad_2="Will vote on election day"
-        #       @script.keypad_3="Already voted"
-        #       @script.keypad_4="Will not vote"
-        #       @script.keypad_5="Not a supporter"
-        #       @script.keypad_6="Refused"
-        #       @script.keypad_7="Not home/call back"
-        #       @script.keypad_8="Language barrier"
-        #       @script.keypad_9="Wrong number"
-        #       @script.incompletes=["7"].to_json
-        #       @script.script="Hi, I'm a volunteer with the such-and-such campaign.
-        #
-        #       I'm voting for such-and-such because...
-        #
-        #       Can we count on you to vote for such-and-such?"
-        #       @script.active = 1
-        #       @script.user_id = @user.id
-        #       @script.save
-
-        if false && Script.find_by_name_and_user_id("Fundraising Example",@user.id)==nil
-          @script = Script.new
-          @script.name="Fundraising Example"
-          @script.keypad_1="Gave money"
-          @script.keypad_2="Requested remit"
-          @script.keypad_3="Will give later"
-          @script.keypad_4="Won't give again"
-          @script.keypad_5="Refused to talk"
-          @script.keypad_6="Not home"
-          @script.keypad_7="Call back"
-          @script.keypad_8="Wrong number"
-          @script.incompletes=["7","6"].to_json
-          @script.script= <<-EOS
-          Hi, is ___ there?
-
-          My name's ___, and I'm calling from the Organization to Make the World Better.
-
-          Will you donate to help our work?
-          EOS
-          @script.active = 1
-          @script.user_id = @user.id
-          @script.save
-        end
-
-        if false && Script.find_by_name_and_user_id("Sales Example",@user.id)==nil
-          @script = Script.new
-          @script.name="Sales Example"
-          @script.keypad_1="Bought the product"
-          @script.keypad_2="Wants more info"
-          @script.keypad_3="Not interested"
-          @script.keypad_4="Refused to talk"
-          @script.keypad_5="Not home"
-          @script.keypad_6="Call back"
-          @script.keypad_7="Wrong number"
-          @script.incompletes=["5","6"].to_json
-          @script.script= <<-EOS
-          Hi, is ___ there?
-
-          Hi! My name's ___. I'm calling from Widgets, Inc. We have some great new widgets in stock.
-
-          Do you want to buy a widget?
-          EOS
-          @script.active = 1
-          @script.user_id = @user.id
-          @script.save
         end
 
         if session[:user].blank?
@@ -236,7 +120,38 @@ Can we count on you to vote for such-and-such?
         flash_message(:notice, message)
       end
     end
+  end
 
+  def campaigns
+    @breadcrumb="Campaigns"
+    @campaigns = Campaign.active.manual.for_user(@user).paginate :page => params[:page], :order => 'id desc'
+  end
+
+  def campaign_new
+    campaign = Campaign.new(:account_id => account.id, :predictive_type => 'algorithm1')
+    campaign.account_id = account.id
+    count = account.campaigns
+    campaign.name="Untitled #{count.length+1}"
+    script = account.scripts
+    campaign.script_id = script.id if script!=nil
+    campaign.save
+    callers = account.callers.active
+    callers.each do |caller|
+      campaign.callers << caller
+    end
+    #flash[:notice]="Campaign created."
+    redirect_to :action=>"campaign_view", :id=>campaign.id
+    return
+  end
+
+  def campaign_delete
+    @campaign = account.campaigns.find_by_id(params[:id])
+    if !@campaign.blank?
+      @campaign.active = false
+      @campaign.save
+    end
+    flash_message(:notice, "Campaign deleted")
+    redirect_to :back
   end
 
   def check_warning
@@ -287,12 +202,12 @@ Can we count on you to vote for such-and-such?
 
   def callers
     @breadcrumb="Callers"
-    @callers = Caller.where(:active => true, :user_id => @user.id).order(:name).paginate(:page => params[:page])
+    @callers = Caller.where(:active => true, :account_id => account.id).order(:name).paginate(:page => params[:page])
   end
 
   def caller_add
     @breadcrumb=[{"Callers"=>"/client/callers"},"Add Caller"]
-    @caller = Caller.find_by_id_and_user_id(params[:id],@user.id) || Caller.new
+    @caller = account.callers.find_by_id(params[:id]) || Caller.new
     if @caller.new_record?
       @label="Add caller"
     else
@@ -301,12 +216,12 @@ Can we count on you to vote for such-and-such?
     if request.post?
       @caller.update_attributes(params[:callers])
       if @caller.valid?
-        @caller.user_id = @user.id
+        @caller.account_id = account.id
         @caller.save
 
         # add to campaigns with all callers
-        all_callers = Caller.find_all_by_user_id_and_active(@user.id,1)
-        all_campaings = Campaign.find_all_by_user_id_and_active(@user.id,1)
+        all_callers = account.callers.active
+        all_campaings = account.campaigns.active
         all_campaings.each do |campaign|
           if campaign.callers.length >= (all_callers.length)-1
             campaign.callers << @caller
@@ -321,7 +236,7 @@ Can we count on you to vote for such-and-such?
   end
 
   def caller_delete
-    @caller = Caller.find_by_id_and_user_id(params[:id],@user.id)
+    @caller = account.callers.find_by_id(params[:id])
     if !@caller.blank?
       @caller.active = false
       @caller.save
@@ -351,7 +266,7 @@ Can we count on you to vote for such-and-such?
 
   def campaign_add
     @breadcrumb=[{"Campaigns"=>"/client/campaigns"},"Add Campaign"]
-    @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id) || Campaign.new
+    @campaign = account.campaigns.find_by_id(params[:id]) || Campaign.new
     if @campaign.new_record?
       @label="Add campaign"
     else
@@ -373,9 +288,9 @@ Can we count on you to vote for such-and-such?
           puts @doc
           code= (@doc/"ValidationCode").inner_html
         end
-        @campaign.user_id = @user.id
+        @campaign.account_id = account.id
         if @campaign.script_id.blank?
-          s = Script.find_by_user_id_and_active(@user.id,1)
+          s = account.scripts.active.first
           @campaign.script_id = s.id if s!=nil
         end
         @campaign.save
@@ -393,7 +308,7 @@ Can we count on you to vote for such-and-such?
           end
         end
         if newrecord
-          callers = Caller.find_all_by_user_id_and_active(@user.id,1)
+          callers = account.callers.active
           callers.each do |caller|
             @campaign.callers << caller
           end
@@ -422,18 +337,6 @@ Can we count on you to vote for such-and-such?
       end
       @recording.save!
 
-      #path = File.join("/tmp/", name)
-      #File.open(path, "wb") { |f| f.write(params[:upload]['datafile'].read) }
-      #bytes = File.size(path)
-      #if bytes > 1048576*15 #15MB
-        #flash_now(:error, "Uploaded file is too large (max 15MB)")
-        #return
-      #end
-      #r = Recording.new
-      #r.user_id = @user.id
-      #r.name = params[:filename]
-      #r.save
-      #save_s3(path,r)
       flash_message(:notice, "Recording saved.")
       redirect_to client_campaign_path(params[:campaign_id])
       return
@@ -500,41 +403,41 @@ Can we count on you to vote for such-and-such?
 
   def billing
     @breadcrumb="Billing"
-    @account = @user.account || Account.new
-    @oldcc = @account.cc
-    if @account.last4.blank?
+    @billing_account = @user.billing_account || @user.account.new_billing_account
+    @oldcc = @billing_account.cc
+    if @billing_account.last4.blank?
       @tempcc = ""
-      @account.cc = ""
+      @billing_account.cc = ""
     else
-      @tempcc = "xxxx xxxx xxxx #{@account.last4}"
-      @account.cc = "xxxx xxxx xxxx #{@account.last4}"
+      @tempcc = "xxxx xxxx xxxx #{@billing_account.last4}"
+      @billing_account.cc = "xxxx xxxx xxxx #{@billing_account.last4}"
     end
 
     if request.post?
-      @account.user_id = @user.id
-      @account.attributes = params[:account]
+      @billing_account.account_id = account.id
+      @billing_account.attributes = params[:billing_account]
 
-      if @account.cc==@tempcc
-        @account.cc = @oldcc
+      if @billing_account.cc==@tempcc
+        @billing_account.cc = @oldcc
       else
-        if @account.cc.length > 4
-          @account.last4 = @account.cc[@account.cc.length-4,4]
+        if @billing_account.cc.length > 4
+          @billing_account.last4 = @billing_account.cc[@billing_account.cc.length-4,4]
         else
-          @account.last4 = @account.cc
+          @billing_account.last4 = @billing_account.cc
         end
-        @account.encyrpt_cc
+        @billing_account.encyrpt_cc
       end
 
-      name_arr=@account.name.split(" ")
+      name_arr=@billing_account.name.split(" ")
       fname=name_arr.shift
       lname=name_arr.join(" ").strip
 
       # test an auth to make sure this card is good.
       creditcard = ActiveMerchant::Billing::CreditCard.new(
-        :number     => @account.decrypt_cc,
-        :month      => @account.expires_month,
-        :year       => @account.expires_year,
-        :type       => @account.cardtype,
+        :number     => @billing_account.decrypt_cc,
+        :month      => @billing_account.expires_month,
+        :year       => @billing_account.expires_year,
+        :type       => @billing_account.cardtype,
         :first_name => fname,
         :last_name  => lname,
         :verification_value => params[:code]
@@ -543,47 +446,29 @@ Can we count on you to vote for such-and-such?
       if !creditcard.valid?
         if creditcard.expired?
           flash_now(:error, "The card expiration date you entered was invalid. Please try again.")
-          @account.cc = ""
+          @billing_account.cc = ""
         else
           flash_now(:error, "The card number or security code you entered was invalid. Please try again.")
-          @account.cc = ""
+          @billing_account.cc = ""
         end
         return
       end
 
-      #      p = Payment.authorize(1, creditcard, {:ip=>getIP, :zip=>@account.zip, :billing_address => @account.address1})
-      #      p.user_id = @user.id
-      #      p.save
-      #      if !p.success
-      #        flash[:notice]="We had a problem authorizing that credit card.  Please try again"
-      #        return
-      #      end
-
       billing_address = {
           :name => "#{@user.fname} #{@user.lname}",
-          :address1 => @account.address1 ,
-          :zip =>@account.zip,
-          :city     => @account.city,
-          :state    => @account.state,
+          :address1 => @billing_account.address1 ,
+          :zip =>@billing_account.zip,
+          :city     => @billing_account.city,
+          :state    => @billing_account.state,
           :country  => 'US'
         }
-      # billing_address = {
-      #     :name     => "John Smith",
-      #     :address1 => '123 First St.',
-      #     :address2 => '',
-      #     :city     => 'Los Angeles',
-      #     :state    => 'CA',
-      #     :country  => 'US',
-      #     :zip      => '90068',
-      #     :phone    => '310-555-1234'
-      # }
       options = {:address => {}, :address1 => billing_address, :billing_address => billing_address, :ip=>"127.0.0.1", :order_id=>""}
       response = BILLING_GW.authorize(1, creditcard,options)
       logger.info response.inspect
 
       if response.success?
         flash_message(:notice, "Account activated.")
-        @account.save
+        @billing_account.save
         @user.paid = 1
         @user.save
         redirect_to :action=>"index"
@@ -597,7 +482,7 @@ Can we count on you to vote for such-and-such?
   end
 
   def campaign_caller_id_verified
-    @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id)
+    @campaign = account.campaigns.find_by_id(params[:id])
     @campaign.check_valid_caller_id_and_save
     ret=""
     if !@campaign.caller_id.blank? && !@campaign.caller_id_verified
@@ -611,7 +496,7 @@ Can we count on you to vote for such-and-such?
   def campaign_hash_delete
     #    cache_delete("avail_campaign_hash")
     ActiveRecord::Base.connection.execute("update caller_sessions set available_for_call=0")
-    @campaign = Campaign.find_all_by_user_id_and_id(@user.id,params[:id])
+    @campaign = account.campaigns.find_by_id(params[:id])
     @campaign.end_all_calls(TWILIO_ACCOUNT,TWILIO_AUTH,APP_URL)
     @sessions = CallerSession.find_all_by_campaign_id_and_on_call(params[:id],1)
     @sessions.each do |sess|
@@ -625,7 +510,7 @@ Can we count on you to vote for such-and-such?
   end
 
   def voter_delete
-    @voter = Voter.find_by_id_and_user_id(params[:id],@user.id)
+    @voter = account.voters.find_by_id(params[:id])
     if !@voter.blank?
       @voter.active = false
       @voter.save
@@ -637,7 +522,7 @@ Can we count on you to vote for such-and-such?
 
   def voter_add
     @campaign = Campaign.find(params[:campaign_id])
-    @voter = Voter.find_by_id_and_user_id(params[:id],@user.id) || Voter.new
+    @voter = account.voters.find_by_id(params[:id]) || Voter.new
     if @voter.new_record?
       @label="Add Voter"
     else
@@ -649,7 +534,7 @@ Can we count on you to vote for such-and-such?
         flash_now(:error, "List name cannot be blank")
         return
         elseif params[:voterList]=="0"
-        l = VoterList.find_by_name_and_user_id(params[:new_list_name], @user.id)
+        l = account.voter_lists.find_by_name(params[:new_list_name])
         if !l.blank?
           flash_now(:error, "List name cannot be blank")
           return
@@ -659,14 +544,14 @@ Can we count on you to vote for such-and-such?
         list = VoterList.new
         list.campaign_id = @campaign.id
         list.name = params[:new_list_name]
-        list.user_id = @user.id
+        list.account_id = account.id
         list.save
       else
         list = VoterList.find(params[:voterList])
       end
 
       @voter.voter_list_id = list.id
-      @voter.user_id = @user.id
+      @voter.account_id = account.id
       @voter.campaign_id = @campaign.id
       @voter.update_attributes(params[:voter])
       if @voter.valid?
@@ -689,7 +574,7 @@ Can we count on you to vote for such-and-such?
 
   def scripts
     @breadcrumb="Scripts"
-    @scripts = @user.scripts.active.manual.paginate :page => params[:page], :order => 'name'
+    @scripts = @user.account.scripts.active.manual.paginate :page => params[:page], :order => 'name'
   end
 
   def script_add
@@ -698,8 +583,8 @@ Can we count on you to vote for such-and-such?
     else
       @breadcrumb=[{"Scripts"=>"/client/scripts"},"Edit Script"]
     end
-    @script = Script.find_by_id_and_user_id(params[:id],@user.id)
-    @fields = ["CustomID","FirstName","MiddleName","LastName","Suffix","Age","Gender","Phone","Email"].concat(@script ? @script.user.custom_voter_fields.map(&:name) : [])
+    @script = account.scripts.find_by_id(params[:id])
+    @fields = ["CustomID","FirstName","MiddleName","LastName","Suffix","Age","Gender","Phone","Email"].concat(@script ? @script.account.custom_voter_fields.map(&:name) : [])
     @numResults = 0
     if @script!=nil
       for i in 1..NUM_RESULT_FIELDS do
@@ -800,7 +685,7 @@ Can we count on you to vote for such-and-such?
           @script.voter_fields = nil
         end
 
-        @script.user_id = @user.id
+        @script.account_id = account.id
         @script.save
         flash_message(:notice, "Script saved")
         redirect_to :action=>"scripts"
@@ -811,17 +696,17 @@ Can we count on you to vote for such-and-such?
   end
 
   def voter_view
-    @campaign = Campaign.find_by_id_and_user_id(params[:campaign_id],@user.id)
+    @campaign = Campaign.find_by_id_and_account_id(params[:campaign_id],account.id)
     @breadcrumb=[{"Campaigns"=>client_campaigns_path},{@campaign.name => client_campaign_path(@campaign)},"View Voters"]
-    #@voters = Voter.find_all_by_campaign_id_and_active_and_user_id(params[:campaign_id],1,@user.id)
-    #    @voters = Voter.paginate :page => params[:page], :conditions =>"active=1 and campaign_id=#{@campaign.id}", :order => 'LastName,FirstName,Phone'
+    @campaign = account.campaigns.find_by_id(params[:campaign_id])
+    @breadcrumb=[{"Campaigns"=>"/client/campaigns"},{"#{@campaign.name}"=>client_campaign_path(@campaign)},"View Voters"]
     @voters = Voter.paginate :page => params[:page], :conditions =>"active=1 and campaign_id=#{@campaign.id} and voter_list_id in (#{@campaign.voter_lists.collect{|c| c.id.to_s + ","}}0)", :order => 'LastName,FirstName,Phone'
   end
 
   def reports
     if params[:id].blank?
       @breadcrumb = "Reports"
-      @campaigns = @user.campaigns.manual
+      @campaigns = account.campaigns.manual
     else
       @campaign = Campaign.find(params[:id])
       @breadcrumb=[{"Reports"=>"/client/reports"},@campaign.name]
@@ -858,7 +743,7 @@ Can we count on you to vote for such-and-such?
     if params[:id].blank?
       @breadcrumb = "Reports"
     else
-      @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
+      @campaign= account.campaigns.find_by_id(params[:id])
       if @campaign.blank?
         render :text=>"Unauthorized"
         return
@@ -876,7 +761,7 @@ Can we count on you to vote for such-and-such?
     else
       @timeframe = params[:timeframe].to_i
     end
-    @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
+    @campaign = account.campaigns.find_by_id(params[:id])
     if @campaign.blank?
       render :text=>"Unauthorized"
       return
@@ -898,80 +783,13 @@ Can we count on you to vote for such-and-such?
     #   cache_delete("avail_campaign_hash")
     # end
     # @avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
-    @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id)
+    @campaign = account.campaigns.find_by_id(params[:id])
     render :layout=>false
     #    end
   end
 
-  def report_usage
-    @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
-    if @campaign.blank?
-      render :text=>"Unauthorized"
-      return
-    end
-
-    set_report_date_range
-
-    calls_util_sql="
-    select sum(tDuration) as total_seconds,  sum(ceil(tDuration/60)) as total_mins
-    from call_attempts ca
-    where
-    ca.campaign_id=#{params[:id]}
-    and created_at > '#{@from_date.strftime("%Y-%m-%d")}'
-    and created_at < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'
-    "
-    caller_util_sql="
-    select sum(tDuration) as total_seconds,  sum(ceil(tDuration/60)) as total_mins
-    from caller_sessions ca
-    where
-    ca.campaign_id=#{params[:id]}
-    and created_at > '#{@from_date.strftime("%Y-%m-%d")}'
-    and created_at < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'
-    "
-    @calls_util = ActiveRecord::Base.connection.execute(calls_util_sql)
-    @caller_util = ActiveRecord::Base.connection.execute(caller_util_sql)
-
-    calls_bill_sql="
-    select sum(tDuration) as total_seconds,  sum(ceil(tDuration/60)) as total_mins
-    from call_attempts ca
-    where
-    ca.campaign_id=#{params[:id]}
-    and status <> 'Message delivered'
-    and status <> 'Call abandoned'
-    and created_at > '#{@from_date.strftime("%Y-%m-%d")}'
-    and created_at < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'
-    "
-
-    vm_bill_sql="
-    select sum(tDuration) as total_seconds,  sum(ceil(tDuration/60)) as total_mins
-    from call_attempts ca
-    where
-    ca.campaign_id=#{params[:id]}
-    and status = 'Message delivered'
-    and created_at > '#{@from_date.strftime("%Y-%m-%d")}'
-    and created_at < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'
-    "
-
-    abandon_bill_sql="
-    select sum(tDuration) as total_seconds,  sum(ceil(tDuration/60)) as total_mins
-    from call_attempts ca
-    where
-    ca.campaign_id=#{params[:id]}
-    and status= 'Call abandoned'
-    and created_at > '#{@from_date.strftime("%Y-%m-%d")}'
-    and created_at < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'
-    "
-
-    @calls_bill = ActiveRecord::Base.connection.execute(calls_bill_sql)
-    @vm_bill = ActiveRecord::Base.connection.execute(vm_bill_sql)
-    @abandon_bill = ActiveRecord::Base.connection.execute(abandon_bill_sql)
-
-
-
-  end
-
   def report_overview
-    @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
+    @campaign = account.campaigns.find_by_id(params[:id])
     if @campaign.blank?
       render :text=>"Unauthorized"
       return
@@ -1029,7 +847,7 @@ Can we count on you to vote for such-and-such?
   end
 
   def report_overview_old
-    @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
+    @campaign = account.campaigns.find_by_id(params[:id])
     if @campaign.blank?
       render :text=>"Unauthorized"
       return
@@ -1104,7 +922,7 @@ Can we count on you to vote for such-and-such?
   #   @avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
   # end
   def script_delete
-    @script = Script.find_by_id_and_user_id(params[:id],@user.id)
+    @script = account.scripts.find_by_id(params[:id])
     if !@script.blank?
       @script.active=false
       @script.save
@@ -1114,7 +932,7 @@ Can we count on you to vote for such-and-such?
   end
 
   def report_caller
-    @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
+    @campaign = account.campaigns.find_by_id(params[:id])
     if @campaign.blank?
       render :text=>"Unauthorized"
       return
@@ -1132,13 +950,12 @@ Can we count on you to vote for such-and-such?
       @callers<< Caller.find(caller_session.caller_id)
     end
 
-    #{}find_all_by_user_id(@user.id)
     @responses = Voter.all(:select=>"distinct result", :conditions=>"campaign_id = #{@campaign.id} and result is not null and result_date > '#{@from_date.strftime("%Y-%m-%d")}' and result_date < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'")
     @num_responses = Voter.all(:conditions=>"campaign_id = #{@campaign.id} and result is not null and result_date > '#{@from_date.strftime("%Y-%m-%d")}' and result_date < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'").length
   end
 
   def report_caller_overview
-    @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
+    @campaign = account.campaigns.find_by_id(params[:id])
     if @campaign.blank?
       render :text=>"Unauthorized"
       return
@@ -1160,7 +977,7 @@ Can we count on you to vote for such-and-such?
 
   def report_login
 
-    @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
+    @campaign = account.campaigns.find_by_id(params[:id])
     if @campaign.blank?
       render :text=>"Unauthorized"
       return
@@ -1175,7 +992,7 @@ Can we count on you to vote for such-and-such?
   end
 
   def report_download
-    @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
+    @campaign = account.campaigns.find_by_id(params[:id])
     if @campaign.blank?
       render :text=>"Unauthorized"
       return
@@ -1280,7 +1097,7 @@ Can we count on you to vote for such-and-such?
     if params[:id].blank?
       @breadcrumb = "Reports"
     else
-      @campaign=Campaign.find_by_id_and_user_id(params[:id].to_i,@user.id)
+      @campaign = account.campaigns.find_by_id(params[:id])
       if @campaign.blank?
         render :text=>"Unauthorized"
         return
@@ -1300,7 +1117,7 @@ Can we count on you to vote for such-and-such?
     #   cache_delete("avail_campaign_hash")
     # end
     # @avail_campaign_hash = cache_get("avail_campaign_hash") {{}}
-    @campaign = Campaign.find_by_id_and_user_id(params[:id],@user.id)
+    @campaign = account.campaigns.find_by_id(params[:id])
     if @campaign.nil?
       render :text=>"Campaign not found or access not permitted"
       return
@@ -1332,7 +1149,7 @@ Can we count on you to vote for such-and-such?
   end
 
   def monitor
-    @logged_in_campaigns = Campaign.all(:conditions=>"id in (select distinct campaign_id from caller_sessions where on_call=1 and user_id=#{@user.id})")
+    @logged_in_campaigns = Campaign.all(:conditions=>"id in (select distinct campaign_id from caller_sessions where on_call=1 and account_id=#{account.id})")
     #        @logged_in_callers = CallerSession.find_all_by_on_call(1)
     #        @ready_to_dial = CallAttempt.find_all_by_status("Call ready to dial", :conditions=>"call_end is null")
   end

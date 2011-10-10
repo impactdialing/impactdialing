@@ -1,51 +1,45 @@
 require "spec_helper"
 
 describe CampaignsController do
-  let(:user) { Factory(:user) }
-  let(:another_users_campaign) { Factory(:campaign, :user => Factory(:user)) }
+  let(:account) { Factory(:account) }
+  let(:user) { Factory(:user, :account => account) }
+  let(:another_users_campaign) { Factory(:campaign, :account => Factory(:account)) }
 
   before(:each) do
     login_as user
   end
 
   it "creates a new robo campaign" do
-    manual_script = Factory(:script, :user => user, :robo => false)
-    robo_script = Factory(:script, :user => user, :robo => true)
+    manual_script = Factory(:script, :account => user.account, :robo => false)
+    robo_script = Factory(:script, :account => user.account, :robo => true)
     lambda {
       post :create
-    }.should change(user.campaigns.active.robo, :size).by(1)
-    user.campaigns.active.robo.last.script.should == robo_script
-    response.should redirect_to campaign_path(user.campaigns.last)
+    }.should change(user.account.campaigns.active.robo, :size).by(1)
+    user.account.campaigns.active.robo.last.script.should == robo_script
+    response.should redirect_to campaign_path(user.account.campaigns.last)
   end
 
   it "lists robo campaigns" do
-    robo_campaign = Factory(:campaign, :user => user, :robo => true)
-    manual_campaign = Factory(:campaign, :user => user, :robo => false)
+    robo_campaign = Factory(:campaign, :account => user.account, :robo => true)
+    manual_campaign = Factory(:campaign, :account => user.account, :robo => false)
     get :index
     assigns(:campaigns).should == [robo_campaign]
   end
 
   it "renders a campaign" do
-    get :show, :id => Factory(:campaign, :user => user).id
+    get :show, :id => Factory(:campaign, :account => user.account, :robo => true).id
     response.code.should == '200'
   end
 
   it "only provides robo scritps to select for a campaign" do
-    robo_script = Factory(:script, :user => user, :robo => true)
-    manual_script = Factory(:script, :user => user, :robo => false)
-    get :show, :id => Factory(:campaign, :user => user).id
+    robo_script = Factory(:script, :account => user.account, :robo => true)
+    manual_script = Factory(:script, :account => user.account, :robo => false)
+    get :show, :id => Factory(:campaign, :account => user.account, :robo => true).id
     assigns(:scripts).should == [robo_script]
   end
 
-  describe "create a campaign" do
-    it "creates a campaign" do
-      lambda { post :create }.should change(Campaign, :count)
-      response.should redirect_to(campaign_path(Campaign.first))
-    end
-  end
-
   describe "update a campaign" do
-    let(:campaign) { Factory(:campaign, :user => user) }
+    let(:campaign) { Factory(:campaign, :account => user.account) }
 
     it "updates the campaign attributes" do
       post :update, :id => campaign.id, :campaign => {:name => "an impactful campaign"}
@@ -53,7 +47,7 @@ describe CampaignsController do
     end
 
     it "assigns one of the scripts of the current user" do
-      script = Factory(:script, :user => user)
+      script = Factory(:script, :account => user.account)
       post :update, :id => campaign.id, :campaign => {}
       campaign.reload.script.should == script
     end
@@ -79,13 +73,14 @@ describe CampaignsController do
     end
 
     it "can update only campaigns owned by the user'" do
-      lambda { post :update, :id => another_users_campaign.id }.should raise_exception
+      post :update, :id => another_users_campaign.id
+      response.status.should == 401
     end
   end
 
   describe "caller id verification" do
     before :each do
-      @campaign = Factory(:campaign, :user => user)
+      @campaign = Factory(:campaign, :account => user.account)
       @caller_id_object = mock
       @caller_id_object.stub!(:validate)
       @campaign.stub!(:caller_id_object).and_return(@caller_id_object)
@@ -93,7 +88,8 @@ describe CampaignsController do
     end
 
     it "should render 'not verified' if caller id not verified" do
-      Campaign.should_receive(:find).with(@campaign.id).and_return(@campaign)
+      @caller_id_object.stub!(:validate)
+      Campaign.should_receive(:find).and_return(@campaign)
       @caller_id_object.should_receive(:validate).and_return(false)
       post :verify_callerid, :id => @campaign.id
       response.body.should include "not verified"
@@ -101,30 +97,32 @@ describe CampaignsController do
 
     it "should render nothing if caller id is verified" do
       @caller_id_object.stub!(:validate).and_return(true)
-      Campaign.should_receive(:find).with(@campaign.id).and_return(@campaign)
+      Campaign.should_receive(:find).and_return(@campaign)
       post :verify_callerid, :id => @campaign.id
       response.body.should be_blank
     end
 
     it "can verify caller id only for campaigns owned by the user'" do
-      lambda { post :verify_callerid, :id => another_users_campaign.id }.should raise_exception
+      post :verify_callerid, :id => another_users_campaign.id
+      response.status.should == 401
     end
   end
 
   it "deletes a campaign" do
-    campaign = Factory(:campaign, :user => user, :robo => true)
+    campaign = Factory(:campaign, :account => account, :robo => true)
     request.env['HTTP_REFERER'] = 'http://referer' if respond_to?(:request)
     delete :destroy, :id => campaign.id
     campaign.reload.should_not be_active
+    response.should redirect_to(:back)
   end
 
   describe "dial statistics" do
     before :each do
-      @campaign = Factory(:campaign, :user => user)
+      @campaign = Factory(:campaign, :account => user.account)
     end
 
     it "renders dial statistics for a campaign" do
-      campaign = Factory(:campaign, :user => user)
+      campaign = Factory(:campaign, :account => user.account)
       get :dial_statistics, :id => campaign.id
       assigns(:campaign).should == campaign
       response.code.should == '200'

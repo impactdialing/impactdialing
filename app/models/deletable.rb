@@ -19,7 +19,7 @@ module Deletable
     receiver.scope :by_updated, lambda { { :order => ['updated_at desc'] } }
     receiver.scope :deleted, lambda { { :conditions => {:active => false} } }
     receiver.scope :active, lambda { { :conditions => {:active => true} } }
-    receiver.scope :for_user, lambda {|user| { :conditions => ["user_id = ?", user.id] }}
+    receiver.scope :for_account, lambda {|account| { :conditions => ["account_id = ?", account.id] }}
   end
 end
 

@@ -74,21 +74,21 @@
   </div>
 
 <br/>
-     <%= render :partial => "shared/client_flash_messages", :locals => {:display => [:warning]} %>
+<%= render :partial => "shared/client_flash_messages", :locals => {:display => [:warning]} %>
 <% if @user.admin? %>
-<a href="/client/campaign_clear_calls/<%=  @campaign.id%>" class="button"><span>Clear Campaign Calls</span></a>
-<div class="cl">&nbsp;</div><br/>
-<a href="/client/campaign_add/<%=  @campaign.id%>" class="button"><span>Edit Predective Properties</span></a>
-<div class="cl">&nbsp;</div><br/>
-<a href="/client/campaign_hash_delete/<%=  @campaign.id%>" class="button"><span>Reset Dialer</span></a>
-<div class="cl">&nbsp;</div>
+  <a href="<%= campaign_clear_calls_path(@campaign) %>" class="button"><span>Clear Campaign Calls</span></a>
+  <div class="cl">&nbsp;</div><br/>
+  <a href="/client/campaign_add/<%= @campaign.id%>" class="button"><span>Edit Predective Properties</span></a>
+  <div class="cl">&nbsp;</div><br/>
+  <a href="/client/campaign_hash_delete/<%= @campaign.id%>" class="button"><span>Reset Dialer</span></a>
+  <div class="cl">&nbsp;</div>
 <% end %>
 </div>
 <!-- End Container -->
 <!-- Footer -->
 <div id="footer">
   <div class="shell"> <span class="left">&copy; 2010 Impact Dialing</span>
-	 </div>
+  </div>
 </div>
 <%= @floatSidebar %>
 <!-- End Footer -->

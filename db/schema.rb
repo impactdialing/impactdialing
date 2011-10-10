@@ -10,10 +10,16 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20111010062315) do
+ActiveRecord::Schema.define(:version => 20111007171947) do
 
   create_table "accounts", :force => true do |t|
-    t.integer  "user_id"
+    t.boolean  "paid"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "billing_accounts", :force => true do |t|
+    t.integer  "account_id"
     t.string   "cc"
     t.boolean  "active"
     t.datetime "created_at"
@@ -38,7 +44,7 @@ ActiveRecord::Schema.define(:version => 20111010062315) do
 
   create_table "blocked_numbers", :force => true do |t|
     t.string   "number"
-    t.integer  "user_id"
+    t.integer  "account_id"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "campaign_id"
@@ -129,7 +135,7 @@ ActiveRecord::Schema.define(:version => 20111010062315) do
     t.string   "name"
     t.string   "email"
     t.string   "pin"
-    t.integer  "user_id"
+    t.integer  "account_id"
     t.boolean  "multi_user", :default => true
     t.boolean  "active",     :default => true
     t.datetime "created_at"
@@ -147,7 +153,7 @@ ActiveRecord::Schema.define(:version => 20111010062315) do
     t.string   "group_id"
     t.string   "name"
     t.string   "keypad_0"
-    t.integer  "user_id"
+    t.integer  "account_id"
     t.integer  "script_id"
     t.boolean  "active",                   :default => true
     t.datetime "created_at"
@@ -183,8 +189,8 @@ ActiveRecord::Schema.define(:version => 20111010062315) do
   end
 
   create_table "custom_voter_fields", :force => true do |t|
-    t.string  "name",    :null => false
-    t.integer "user_id"
+    t.string  "name",       :null => false
+    t.integer "account_id"
   end
 
   create_table "dumps", :force => true do |t|
@@ -217,7 +223,7 @@ ActiveRecord::Schema.define(:version => 20111010062315) do
     t.string   "Email"
     t.string   "result"
     t.integer  "campaign_id"
-    t.integer  "user_id"
+    t.integer  "account_id"
     t.boolean  "active",                 :default => true
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -262,7 +268,7 @@ ActiveRecord::Schema.define(:version => 20111010062315) do
   end
 
   create_table "recordings", :force => true do |t|
-    t.integer  "user_id"
+    t.integer  "account_id"
     t.integer  "active",            :default => 1
     t.string   "name"
     t.datetime "created_at"
@@ -286,7 +292,7 @@ ActiveRecord::Schema.define(:version => 20111010062315) do
     t.string   "name"
     t.text     "script"
     t.boolean  "active",        :default => true
-    t.integer  "user_id"
+    t.integer  "account_id"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.text     "keypad_1"
@@ -397,17 +403,17 @@ ActiveRecord::Schema.define(:version => 20111010062315) do
     t.boolean  "active",              :default => true
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.boolean  "paid",                :default => false
     t.string   "hashed_password"
     t.string   "salt"
     t.string   "password_reset_code"
     t.string   "domain"
     t.string   "phone"
+    t.integer  "account_id"
   end
 
   create_table "voter_lists", :force => true do |t|
     t.string   "name"
-    t.string   "user_id"
+    t.string   "account_id"
     t.boolean  "active",      :default => true
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -415,7 +421,7 @@ ActiveRecord::Schema.define(:version => 20111010062315) do
     t.boolean  "enabled",     :default => true
   end
 
-  add_index "voter_lists", ["user_id", "name"], :name => "index_voter_lists_on_user_id_and_name", :unique => true
+  add_index "voter_lists", ["account_id", "name"], :name => "index_voter_lists_on_user_id_and_name", :unique => true
 
   create_table "voters", :force => true do |t|
     t.string   "Phone"
@@ -428,7 +434,7 @@ ActiveRecord::Schema.define(:version => 20111010062315) do
     t.string   "result"
     t.integer  "caller_session_id"
     t.integer  "campaign_id"
-    t.integer  "user_id"
+    t.integer  "account_id"
     t.boolean  "active",                 :default => true
     t.datetime "created_at"
     t.datetime "updated_at"
