@@ -69,6 +69,16 @@ ImpactDialing::Application.routes.draw do
     match '/login', :to => 'broadcast#login', :as => 'broadcast_login'
   end
 
+  namespace 'broadcast' do
+    resources :campaigns, :only => [:show, :index]
+  end
+
+  namespace 'client' do
+    match 'client/campaign_new', :to => 'client#campaign_new', :as => 'campaign_new'
+
+    resources :campaigns, :only => [:show, :index, :create]
+  end
+
   namespace 'client' do
     [:campaigns, :scripts, :callers].each do |type_plural|
       get "/deleted_#{type_plural}", :to => "#{type_plural}#deleted", :as => "deleted_#{type_plural}"
@@ -76,6 +86,13 @@ ImpactDialing::Application.routes.draw do
         put 'restore', :to => "#{type_plural}#restore"
       end
     end
+#<<<<<<< HEAD
+#=======
+#    [:campaigns, :scripts].each do |type_plural|
+#      resources type_plural, :only => [:index, :show], :name_prefix => 'client'
+#    end
+    resource :account, :only => [:show, :update]
+#>>>>>>> 2e3962a7b045d91e2a7dcafff1351cabfdef6151
   end
 
   scope 'client' do
@@ -87,10 +104,20 @@ ImpactDialing::Application.routes.draw do
       end
     end
     resources :blocked_numbers, :only => [:index, :create, :destroy]
+    resources :users, :only => [:create, :destroy]
+    post 'user_invite', :to => 'users#invite', :as => 'user_invite'
   end
 
   scope 'caller' do
     match '/', :to => 'caller#index', :as => 'caller_root'
+  end
+
+  resources :campaigns, :path_prefix => 'client', :only => [] do
+    member do
+      post :verify_callerid
+    end
+    resources :voter_lists, :collection => { :import => :post }, :except => [:new, :show], :name_prefix => 'client'
+    match 'clear_calls', :to => 'client/campaigns#clear_calls', :as => 'clear_calls'
   end
 
   resources :call_attempts, :only => [:create, :update] do
@@ -107,10 +134,11 @@ ImpactDialing::Application.routes.draw do
   match '/caller/login', :to => 'caller#login', :as => :caller_login
 
   match '/client/reports', :to => 'client#reports', :as => 'report'
-  match '/client/reports/usage', :to => 'client/reports#usage', :as => 'report_usage'
   match '/twilio_callback', :to => 'twilio#callback', :as => :twilio_callback
   match '/twilio_report_error', :to => 'twilio#report_error', :as => :twilio_report_error
   match '/twilio_call_ended', :to => 'twilio#call_ended', :as => :twilio_call_ended
+
+  resource :call_attempts, :only => :create
 
   match ':controller/:action/:id'
   match ':controller/:action'

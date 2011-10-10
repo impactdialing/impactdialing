@@ -10,7 +10,6 @@ module Client
         flash_message(:error, INVALID_RESET_TOKEN)
         redirect_to root_path
       end
-
     end
 
     def update_password
@@ -24,6 +23,31 @@ module Client
         flash_message(:error, INVALID_RESET_TOKEN)
       end
       redirect_to root_path
+    end
+
+    def invite
+      if account.users.find_by_email(params[:email])
+        flash_message(:error, "#{params[:email]} has already been invited.")
+      elsif User.find_by_email(params[:email])
+        flash_message(:error, "#{params[:email]} is already part of a different account.")
+      else
+        random_password = rand(Time.now)
+        new_user = account.users.create!(:email => params[:email], :new_password => random_password.to_s)
+        new_user.create_reset_code
+        UserMailer.new.deliver_invitation(new_user, @user)
+      end
+      redirect_to :back
+    end
+
+    def destroy
+      user_to_be_deleted = account.users.find_by_id(params[:id])
+      if current_user == user_to_be_deleted
+        flash_message(:error, "You can't delete yourself")
+      else
+        flash_message(:notice, "#{user_to_be_deleted.email} was deleted")
+        user_to_be_deleted.destroy
+      end
+      redirect_to :back
     end
   end
 end

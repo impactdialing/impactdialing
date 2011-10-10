@@ -1,9 +1,61 @@
-<h3>  Call Usage (in minutes)</h3>
-<dl>
-  <dt>Calls</dt>
-  <dd><%= @call_minutes %></dd>
+<%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@campaign.name} Usage"} %>
+<div class="content clearfix">
+<div role="main">
+<p>Two sets of metrics are provided for you below. First, you can see how much time your callers actually spent on the phone; each call is rounded to the nearest second. Next, you can see how much time you are being billed for; each call is rounded to the nearest minute. If your callers are using our browser phone, you will not be billed for their minutes.</p>
+<table>
+	<tr>
+		<th>Utilization (1-second increments)</th>
+		<th>Minutes</th>
+	</tr>
+	<tr>
+		<td>Callers</td>
+    <td><%= @caller_sessions_seconds %></td>
+	</tr>
 
-  <dt>Voicemails</dt>
-  <dd><%= @voicemail_minutes %></dd>
-</dl>
+  <tr>
+    <td>Calls</td>
+    <td><%= @utilised_call_attempts_seconds %></td>
+  </tr>
+	<tr>
+		<td colspan="2">&nbsp;</td>
+	</tr>
+	<tr>
+		<th>Billable time (1-minute increments)</th>
+		<th>Minutes</th>
+	</tr>
+	<tr>
+		<td>Callers</td>
+    <td><%= @caller_sessions_minutes %></td>
+	</tr>
+	<tr>
+		<td>Calls</td>
+    <td><%= @billable_call_attempts_minutes %></td>
+	</tr>
+	<tr>
+		<td>Voicemails</td>
+    <td><%= @billable_voicemail_minutes %></td>
+	</tr>
+	<tr>
+		<td>Abandoned calls</td>
+    <td><%= @billable_abandoned_minutes %></td>
+	</tr>
+</table>
+</div>
+</div>
 
+<h3>Date range:</h3>
+<% form_tag (client_report_usage_path(:id => params[:id])) do %>
+  <table>
+    <tr>
+      <td>From:</td>
+      <td> <%= unobtrusive_date_text_picker_tag :from_date,@from_date %> </td>
+    </tr>
+    <tr>
+      <td>To:</td>
+      <td>
+        <%= unobtrusive_date_text_picker_tag :to_date,@to_date %>
+        <input type="submit" class="button" value="update" size="4">
+      </td>
+    </tr>
+  </table>
+<% end %>

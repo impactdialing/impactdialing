@@ -3,11 +3,11 @@ class Voter < ActiveRecord::Base
 
   belongs_to :voter_list
   belongs_to :campaign
+  belongs_to :account
   has_many :families
   has_many :call_attempts
   has_many :custom_voter_field_values
   belongs_to :last_call_attempt, :class_name => "CallAttempt"
-  belongs_to :user
   belongs_to :caller_session
 
   validates_presence_of :Phone
@@ -62,13 +62,13 @@ class Voter < ActiveRecord::Base
       caller_num=APP_NUMBER
     end
     c = CallAttempt.new
-    c.dialer_mode=campaign.predective_type
+    c.dialer_mode=campaign.predictive_type
     c.voter_id =self.id
     c.campaign_id=campaign.id
     c.status ="Call ready to dial"
     c.save
 
-    if campaign.predective_type=="preview"
+    if campaign.predictive_type=="preview"
       a=t.call("POST", "Calls", {'Timeout'=>"20", 'Caller' => caller_num, 'Called' => self.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{self.id}&attempt=#{c.id}&selected_session=#{session.id}"})
     elsif campaign.use_answering
       if campaign.use_recordings
@@ -147,8 +147,8 @@ class Voter < ActiveRecord::Base
     if self.has_attribute? attribute
       self[attribute] = value
     else
-      custom_attribute = self.campaign.user.custom_voter_fields.find_by_name(attribute)
-      custom_attribute ||= CustomVoterField.create(:name => attribute, :user => self.campaign.user) unless attribute.blank?
+      custom_attribute = self.campaign.account.custom_voter_fields.find_by_name(attribute)
+      custom_attribute ||= CustomVoterField.create(:name => attribute, :account => self.campaign.account) unless attribute.blank?
       self.custom_voter_field_values.create(:voter => self, :custom_voter_field => custom_attribute, :value => value)
     end
   end
@@ -162,7 +162,7 @@ class Voter < ActiveRecord::Base
   end
 
   def blocked?
-    user.blocked_numbers.for_campaign(campaign).map(&:number).include?(self.Phone)
+    account.blocked_numbers.for_campaign(campaign).map(&:number).include?(self.Phone)
   end
 
   def info

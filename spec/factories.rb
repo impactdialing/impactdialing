@@ -10,9 +10,19 @@ Factory.sequence :phonenumber do |n|
   "#{(10**10)+n}"
 end
 
+Factory.define :account do end
+
 Factory.define :user do |u|
+  u.account { Factory(:account) }
   u.email { Factory.next(:email) }
   u.new_password 'password'
+end
+
+Factory.define :admin_user, :parent => :user do |u|
+  u.email 'michael@impactdialing.com'
+end
+
+Factory.define :billing_account do |b|
 end
 
 Factory.define :campaign do |c|
@@ -24,6 +34,7 @@ Factory.define :script do |s|
 end
 
 Factory.define :caller do |s|
+  s.email { Factory.next(:email) }
   s.name 'a caller'
 end
 
@@ -31,7 +42,7 @@ Factory.define :voter_list do |v|
   v.enabled { true }
   v.campaign_id { Factory(:campaign).id }
   v.name { Factory.next(:name) }
-  v.user_id { Factory(:user).id }
+  v.account { Factory(:account) }
 end
 
 Factory.define :voter do |v|
@@ -45,7 +56,7 @@ Factory.define :family do |v|
 end
 
 Factory.define :caller_session do |s|
-  s.campaign { Factory(:campaign, :user => Factory(:user))}
+  s.campaign { Factory(:campaign, :account => Factory(:account)) }
   s.caller_id { Factory(:caller) }
 end
 
@@ -77,6 +88,6 @@ Factory.define :custom_voter_field_value do |cvfv|
 end
 
 Factory.define :blocked_number do |b|
-  b.user_id { Factory(:user).id }  
+  b.account_id { Factory(:account).id }
   b.number '1234567890'
 end

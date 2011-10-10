@@ -26,7 +26,7 @@ module Client
     end
 
     def destroy
-      @script = @user.scripts.manual.find(params[:id])
+      @script = @user.account.scripts.manual.find(params[:id])
       @script.update_attributes(:active => false)
       flash_message(:notice, "Script deleted")
       redirect_to client_scripts_path

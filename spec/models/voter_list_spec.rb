@@ -9,8 +9,8 @@ describe VoterList do
 
   it "validates the uniqueness of name in a case insensitive manner" do
     user = Factory(:user)
-    Factory(:voter_list, :name => 'same', :user => user)
-    Factory.build(:voter_list, :name => 'Same', :user => user).should have(1).error_on(:name)
+    Factory(:voter_list, :name => 'same', :account => user.account)
+    Factory.build(:voter_list, :name => 'Same', :account => user.account).should have(1).error_on(:name)
   end
 
   describe "enable and disable voter lists" do
@@ -40,8 +40,8 @@ describe VoterList do
       temp_filename
     }
     let(:user) { Factory(:user) }
-    let(:campaign) { Factory(:campaign, :user => user) }
-    let(:voter_list) { Factory(:voter_list, :campaign => campaign, :user_id => user.id) }
+    let(:campaign) { Factory(:campaign, :account => user.account) }
+    let(:voter_list) { Factory(:voter_list, :campaign => campaign, :account => user.account) }
 
     describe "import from csv" do
       USER_MAPPINGS = CsvMapping.new({
@@ -77,7 +77,7 @@ describe VoterList do
 
         voter = Voter.find_by_Email("foo@bar.com")
         voter.campaign_id.should == campaign.id
-        voter.user_id.should == user.id
+        voter.account_id.should == user.account.id
         voter.voter_list_id.should == voter_list.id
 
           # check some values from the csv fixture
@@ -90,8 +90,28 @@ describe VoterList do
         voter.Suffix.should be_blank
       end
 
-      it "should add the same phone is repeated in another voters list for the same campaign" do
-        another_voter_list = Factory(:voter_list, :campaign => campaign, :user_id => user.id)
+      it "should add a family member when two voters in the same voters list have same phone number" do
+        pending "family functionality has been turned off" do
+          Family.count.should == 1
+          Voter.first.num_family.should == 2
+
+          family_member = Family.first
+          family_member.campaign_id.should == campaign.id
+          family_member.account_id.should == user.account.id
+          family_member.voter_list_id.should == voter_list.id
+
+          # check some values from the csv fixture
+          family_member.Phone.should == "1234567895"
+          family_member.FirstName.should == "Chocolate"
+          family_member.LastName.should == "Bar"
+          family_member.Email.should == "choco@bar.com"
+          family_member.MiddleName.should be_blank
+          family_member.Suffix.should be_blank
+        end
+      end
+
+      it "should ignore the same phone is repeated in another voters list for the same campaign" do
+        another_voter_list = Factory(:voter_list, :campaign => campaign, :account => user.account)
         another_voter_list.import_leads(
             USER_MAPPINGS,
             csv_file_upload,
@@ -103,8 +123,8 @@ describe VoterList do
       end
       it "should add even if the same phone is repeated in a different campaign" do
         another_voter_list = Factory(:voter_list,
-                                     :campaign => Factory(:campaign, :user => user),
-                                     :user_id => user.id)
+                                     :campaign => Factory(:campaign, :account => user.account),
+                                     :account => user.account)
         another_voter_list.import_leads(
             USER_MAPPINGS,
             csv_file_upload,
@@ -129,7 +149,7 @@ describe VoterList do
 
       it "creates custom fields when they do not exist" do
         custom_field = "Custom"
-        voter_list = Factory(:voter_list, :campaign => Factory(:campaign, :user => user), :user_id => user.id)
+        voter_list = Factory(:voter_list, :campaign => Factory(:campaign, :account => user.account), :account => user.account)
         voter_list.import_leads(mappings, csv_file, ",").should == {:successCount => 2, :failedCount => 0}
         CustomVoterField.find_by_name(custom_field).should_not be_nil
         CustomVoterField.all.size.should == 1

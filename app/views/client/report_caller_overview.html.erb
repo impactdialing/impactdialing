@@ -1,5 +1,5 @@
 <div class="box" >
-	<%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@campaign.name} Caller Usage Report"} %>
+	<%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@campaign.name} Caller usage"} %>
 	<div class="box-content">
 		<div class="table">
 		    <table width="100%" border="0" cellspacing="0" cellpadding="0">
@@ -8,7 +8,7 @@
 			        <th>Total logged-in time</th>
 					<th>Total talk time</th>
 					<th>Total answered calls</th>
-					<th>Last Login</th>
+					<th>Last login</th>
 			      </tr>
 				<% @callers.each do |caller| %>
 					<% logintime=0 %>
@@ -61,8 +61,8 @@
 
 	</div>
 	<div class="box-content">
-	Report Date Range:
-	<%= form_tag ("/client/report_caller_overview?id=#{ params[:id]}") do %>
+	<h3>Date range:</h3>
+	<% form_tag ("/client/report_caller_overview?id=#{ params[:id]}") do %>
 
 	<table>
 		<tr>
