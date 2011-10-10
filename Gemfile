@@ -3,7 +3,7 @@ source :rubygems
 gem 'rails', '3.0.10'
 
 gem 'will_paginate', '~> 2.3.11'
-gem 'mysql2', '~> 0.2.0'
+gem 'mysql'
 gem 'memcache-client', '~> 1.8.5', :require => 'memcache'
 gem 'fastercsv', '~> 1.5.4'
 gem "newrelic_rpm", '~> 3.0.1'
@@ -22,6 +22,7 @@ gem 'settingslogic', '~> 2.0.6'
 gem "twilio-ruby", '~> 3.3.0'
 gem 'dynamic_form', '~> 1.1.4'
 gem 'in_place_editing', '~> 1.1.1'
+gem "nested_form", :git => "git://github.com/madebydna/nested_form.git"
 gem 'rspec'
 
 group :development, :test do

@@ -54,6 +54,7 @@ describe Client::CampaignsController do
     response.should redirect_to 'http://referer'
   end
 
+
   it "creates a new campaign" do
     script = Factory(:script, :account => account)
     callers = 3.times.map{Factory(:caller, :account => account)}
@@ -63,7 +64,7 @@ describe Client::CampaignsController do
     campaign = account.campaigns.last
     campaign.predictive_type.should == 'algorithm1'
     campaign.script.should == script
-    campaign.callers.should == callers
+    campaign.account.callers.should == callers
   end
 
   it "only an admin clears calls" do
