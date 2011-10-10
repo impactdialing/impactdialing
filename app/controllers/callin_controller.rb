@@ -163,7 +163,7 @@ class CallinController < ApplicationController
     if params[:Digits].blank?
       # initial call-in
       #      @say="Now enter your campaign ID"
-      @play="#{APP_URL}/wav/enter_campaign_id.wav"
+      @play="#{APP_URL}/wav/enter_campaign_id.wav?r=1"
     else
       # response with PIN
       logger.info "PARAMS : #{params.inspect}, CALLER => #{@caller.inspect}"
