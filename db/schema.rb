@@ -10,12 +10,18 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20111007171947) do
+ActiveRecord::Schema.define(:version => 20111010062315) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "paid"
     t.datetime "created_at"
     t.datetime "updated_at"
+  end
+
+  create_table "answers", :force => true do |t|
+    t.integer "voter_id",             :null => false
+    t.integer "question_id",          :null => false
+    t.integer "possible_response_id", :null => false
   end
 
   create_table "billing_accounts", :force => true do |t|
@@ -34,12 +40,6 @@ ActiveRecord::Schema.define(:version => 20111007171947) do
     t.string   "state"
     t.string   "country"
     t.string   "name"
-  end
-
-  create_table "answers", :force => true do |t|
-    t.integer "voter_id",             :null => false
-    t.integer "question_id",          :null => false
-    t.integer "possible_response_id", :null => false
   end
 
   create_table "blocked_numbers", :force => true do |t|
