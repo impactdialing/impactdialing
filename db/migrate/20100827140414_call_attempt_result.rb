@@ -2,7 +2,7 @@ class CallAttemptResult < ActiveRecord::Migration
   def self.up
     add_column :call_attempts, :result, :string
     add_column :call_attempts, :result_digit, :string
-    voters = Voter.all (:conditions=>"result is not null")
+    voters = Voter.all(:conditions=>"result is not null")
     voters.each do |voter|
       attempt = CallAttempt.find_by_voter_id(voter.id, :order=>"id desc", :limit=>1)
       if attempt!=nil
