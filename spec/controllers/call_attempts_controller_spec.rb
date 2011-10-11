@@ -10,6 +10,25 @@ describe CallAttemptsController do
     response.should be_ok
   end
 
+  describe "gathering responses" do
+    let(:account) { Factory(:account) }
+    let(:user) { Factory(:user, :account => account) }
+    let(:campaign) { Factory(:campaign, :account => account, :robo => false, :use_web_ui => true) }
+    let(:voter) { Factory(:voter) }
+    let(:call_attempt) { Factory(:call_attempt, :voter => voter, :campaign => campaign) }
+
+    it "collects voter responses" do
+      script = Factory(:script, :robo => false)
+      question1 = Factory(:question, :script => script)
+      response1 = Factory(:possible_response, :question => question1)
+      question2 = Factory(:question, :script => script)
+      response2 = Factory(:possible_response, :question => question2)
+      answer = {"0"=>{"name" => "sefrg", "value"=>response1.id}, "1"=>{"name" => "abc", "value"=>response2.id}}
+      post :voter_response, :id => call_attempt.id, :voter_id => voter.id , :answers => answer
+      voter.answers.count.should == 2
+    end
+  end
+
   describe "calling in" do
     let(:account) { Factory(:account) }
     let(:user) { Factory(:user, :account => account) }
@@ -26,7 +45,7 @@ describe CallAttemptsController do
       available_caller.reload.voter_in_progress.should == voter
       response.body.should == Twilio::TwiML::Response.new do |r|
         r.Dial :hangupOnStar => 'false' do |d|
-          d.Conference available_caller.session_key, :wait_url => "", :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
+          d.Conference available_caller.session_key, :wait_url => "", :beep => false, :endConferenceOnExit => false, :maxParticipants => 2
         end
       end.text
     end
@@ -38,7 +57,7 @@ describe CallAttemptsController do
       post :connect, :id => call_attempt.id
       response.body.should == Twilio::TwiML::Response.new do |r|
         r.Dial :hangupOnStar => 'false' do |d|
-          d.Conference available_caller.session_key, :wait_url => "", :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
+          d.Conference available_caller.session_key, :wait_url => "", :beep => false, :endConferenceOnExit => false, :maxParticipants => 2
         end
       end.text
     end
@@ -98,7 +117,7 @@ describe CallAttemptsController do
       Factory(:custom_voter_field_value, :voter => voter, :custom_voter_field => custom_field, :value => 'value')
       session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller), :session_key => session_key)
       pusher_session = mock
-      pusher_session.should_receive(:trigger).with('voter_start', {:attempt_id=> call_attempt.id, :voter => voter.info })
+      pusher_session.should_receive(:trigger).with('voter_connected', {:attempt_id=> call_attempt.id, :voter => voter.info })
       Pusher.stub(:[]).with(session_key).and_return(pusher_session)
       post :connect, :id => call_attempt.id
     end
