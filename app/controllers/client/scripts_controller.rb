@@ -22,7 +22,8 @@ module Client
     end
 
     def show
-
+      @script = @user.account.scripts.find(params[:id])
+      render :new
     end
 
     def destroy
