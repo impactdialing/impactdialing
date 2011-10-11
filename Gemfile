@@ -37,6 +37,6 @@ end
 group :test do
   gem 'factory_girl', '~> 1.3.3'
   gem 'shoulda', '~> 2.11.3'
-  gem 'rcov', '~> 0.9.9'
+  gem 'simplecov'
   gem 'spork', '~> 0.9.0.rc9'
 end
