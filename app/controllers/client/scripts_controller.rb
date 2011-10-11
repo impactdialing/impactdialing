@@ -17,7 +17,7 @@ module Client
     end
 
     def create
-      @script = @user.scripts.create(params[:script])
+      @script = @user.account.scripts.create(params[:script])
       redirect_to @script
     end
 
