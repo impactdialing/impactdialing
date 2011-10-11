@@ -31,7 +31,7 @@ class VoterList < ActiveRecord::Base
     result = {:successCount => 0,
               :failedCount => 0}
 
-    voters_list = FasterCSV.parse(File.read(csv_filename), :col_sep => separator)
+    voters_list = CSV.parse(File.read(csv_filename), :col_sep => separator)
     csv_headers = voters_list.delete_at(0)
 
     csv_to_system_map.remap_system_column! "ID", :to => "CustomID"

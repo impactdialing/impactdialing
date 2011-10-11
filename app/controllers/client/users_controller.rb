@@ -31,7 +31,7 @@ module Client
       elsif User.find_by_email(params[:email])
         flash_message(:error, "#{params[:email]} is already part of a different account.")
       else
-        random_password = rand(Time.now)
+        random_password = rand(Time.now.to_i)
         new_user = account.users.create!(:email => params[:email], :new_password => random_password.to_s)
         new_user.create_reset_code
         UserMailer.new.deliver_invitation(new_user, @user)
