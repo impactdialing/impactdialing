@@ -998,7 +998,7 @@ class ClientController < ApplicationController
       end
       attempts.data_seek(0)
 
-      csv_string = FasterCSV.generate do |csv|
+      csv_string = CSV.generate do |csv|
         #            csv << ["result", "result digit" , "voter phone", "voter id", "voter last", "voter first", "voter middle", "voter suffix", "voter email","caller pin", "caller name",  "caller email","status", "call start", "call end", "number attempts"]
         #csv << ["id", "LastName", "FirstName", "MiddleName", "Suffix", "Phone", "Result", "Caller Name", "Status", "Call Start", "Call End", "Number Calls"] + json_fields #+ ["fam_id", "fam_LastName", "fam_FirstName", "fam_MiddleName", "fam_Suffix", "fam_Email"]
         csv << ["id", "LastName", "FirstName", "MiddleName", "Suffix", "Phone", "Caller Name", "Caller Phone", "Status", "Call Start", "Call End", "Number Calls"] + json_fields #+ ["fam_id", "fam_LastName", "fam_FirstName", "fam_MiddleName", "fam_Suffix", "fam_Email"]
@@ -1137,7 +1137,7 @@ class ClientController < ApplicationController
     end
 
     render :text => Proc.new { |response, output|
-      csv = FasterCSV.new(output, :row_sep => "\r\n")
+      csv = CSV.new(output, :row_sep => "\r\n")
       yield csv
     }
   end

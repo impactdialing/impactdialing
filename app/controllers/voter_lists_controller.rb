@@ -19,7 +19,7 @@ class VoterListsController < ClientController
     saved_filename = write_csv_file(csv,upload)
     save_csv_filename_to_session(saved_filename)
     @separator = separator_from_file_extension(upload.original_filename)
-    @csv_column_headers = FasterCSV.parse(upload.open.readline, :col_sep => @separator).first.compact
+    @csv_column_headers = CSV.parse(upload.open.readline, :col_sep => @separator).first.compact
 
     render "column_mapping", :layout => @layout
   end
@@ -54,7 +54,7 @@ class VoterListsController < ClientController
                                         uploaded_filename,
                                         @separator)
       flash_message(:notice, "Upload completed. #{result[:successCount]} out of #{result[:successCount]+result[:failedCount]} rows imported successfully.")
-    rescue FasterCSV::MalformedCSVError => err
+    rescue CSV::MalformedCSVError => err
       @voter_list.destroy
       flash_message(:error, "Invalid CSV file. Could not import.")
     ensure

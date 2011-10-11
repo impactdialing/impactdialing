@@ -8,7 +8,7 @@ gem 'memcache-client', '~> 1.8.5', :require => 'memcache'
 gem 'fastercsv', '~> 1.5.4'
 gem "newrelic_rpm", '~> 3.0.1'
 gem 'hoptoad_notifier', '~> 2.4.11'
-gem 'json', '~> 1.5.1'
+gem 'json', '~> 1.6.1'
 gem 'nokogiri', '~> 1.4.4'
 gem "activemerchant", '~> 1.15.0', :require => "active_merchant"
 gem 'hpricot', '~> 0.8.4'
@@ -26,7 +26,7 @@ gem "nested_form", :git => "git://github.com/madebydna/nested_form.git"
 gem 'rspec'
 
 group :development, :test do
-  gem 'ruby-debug', '~> 0.10.4'
+  gem 'ruby-debug19'
   gem 'rspec-rails', '~> 2.6.1'
 end
 

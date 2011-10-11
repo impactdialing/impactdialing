@@ -66,13 +66,5 @@ describe ClientController do
       response.should redirect_to :back
     end
 
-    describe 'callers' do
-      render_views
-
-      it "shows" do
-        get :callers
-        response.code.should == '200'
-      end
-    end
   end
 end

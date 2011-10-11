@@ -1,5 +1,5 @@
 require "spec_helper"
-require "lib/twilio_lib"
+require "#{RAILS_ROOT}/lib/twilio_lib"
 
 
 describe "predictive_dialer" do

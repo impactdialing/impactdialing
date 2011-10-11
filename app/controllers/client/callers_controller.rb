@@ -48,7 +48,5 @@ module Client
       redirect_to :action=>"index"      
     end
     
-    def deleted_callers
-    end
   end
 end
