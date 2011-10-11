@@ -9,6 +9,7 @@ class Voter < ActiveRecord::Base
   has_many :custom_voter_field_values
   belongs_to :last_call_attempt, :class_name => "CallAttempt"
   belongs_to :caller_session
+  has_many :answers
 
   validates_presence_of :Phone
   validates_length_of :Phone, :minimum => 10

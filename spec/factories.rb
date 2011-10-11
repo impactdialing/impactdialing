@@ -91,3 +91,14 @@ Factory.define :blocked_number do |b|
   b.account_id { Factory(:account).id }
   b.number '1234567890'
 end
+
+Factory.define :question do |q|
+  q.text "question text"
+end
+
+Factory.define :possible_response do |pr|
+end
+
+Factory.define :answer do |a|
+end
+
