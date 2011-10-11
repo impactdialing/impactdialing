@@ -3,6 +3,8 @@
 	<%= javascript_include_tag 'blocked_numbers' %>
 <% end %>
 
+<h1>Do Not Call list</h1>
+
 <table>
 	<tr>
 		<td>Phone</td>
@@ -22,10 +24,15 @@
 	<% end %>
 </table>
 
-<h3>Add Number</h3>
+<fieldset>
+  <legend>Add number</legend>
 <%= form_for BlockedNumber.new do |f| %>
-	<%= f.label :number %>
-	<%= f.text_field :number %>
-	<%= f.select :campaign_id, [["System", nil]] + @campaigns.map{|c| [c.name, c.id]} %>
-	<%= f.submit "Add" %>
+	<p><%= f.label :number %><br>
+	<%= f.text_field :number %></p>
+	<p><%= f.label :level %><br>
+	<%= f.select :campaign_id, [["System", nil]] + @campaigns.map{|c| [c.name, c.id]} %></p>
+	<div class="buttons">
+		<%= button_tag "Add" %>
+	</div>
 <% end %>
+</fieldset>
