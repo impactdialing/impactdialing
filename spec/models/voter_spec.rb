@@ -37,7 +37,7 @@ describe Voter do
 
     voter.conference(caller).should == Twilio::TwiML::Response.new do |r|
       r.Dial :hangupOnStar => 'false' do |d|
-        d.Conference caller.session_key, :wait_url => "", :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
+        d.Conference caller.session_key, :wait_url => "", :beep => false, :endConferenceOnExit => false, :maxParticipants => 2
       end
     end.text
     caller.voter_in_progress.should == voter

@@ -138,7 +138,7 @@ class Voter < ActiveRecord::Base
     session.update_attributes(:voter_in_progress => self)
     Twilio::TwiML::Response.new do |r|
       r.Dial :hangupOnStar => 'false' do |d|
-        d.Conference session.session_key, :wait_url => "", :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
+        d.Conference session.session_key, :wait_url => "", :beep => false, :endConferenceOnExit => false, :maxParticipants => 2
       end
     end.text
   end
