@@ -19,6 +19,7 @@ task :update_twilio_stats => :environment do
   sessions.each do |session|
     TwilioLib.new.update_twilio_stats_by_model session
   end
+  Rake::Task['destory_phantoms'].execute
 end
 
 task :destory_phantoms => :environment do
