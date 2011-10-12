@@ -45,10 +45,6 @@ class VoterList < ActiveRecord::Base
         next
       end
 
-      lead.voter_list_id = self.id
-      lead.user_id = self.user_id
-      lead.campaign_id = self.campaign_id
-
       csv_headers.each_with_index do |csv_column_title, column_location|
         system_column = csv_to_system_map.system_column_for csv_column_title
         lead.apply_attribute(system_column, voter_info[column_location]) if system_column
@@ -56,6 +52,8 @@ class VoterList < ActiveRecord::Base
 
       unless lead.save
         result[:failedCount] +=1
+        puts lead.errors.full_messages
+        Rails.logger.info lead.errors.full_messages
       else
         result[:successCount] +=1
       end
