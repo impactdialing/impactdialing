@@ -135,7 +135,7 @@ describe CallAttempt do
       session = Factory(:caller_session, :caller => Factory(:caller), :campaign => campaign)
       channel = mock
       Pusher.should_receive(:[]).with(session.session_key).and_return(channel)
-      channel.should_receive(:trigger).with("voter_start", anything)
+      channel.should_receive(:trigger).with("voter_connected", anything)
       attempt.voter.stub(:conference)
       attempt.conference(session)
     end
@@ -146,9 +146,20 @@ describe CallAttempt do
       session = Factory(:caller_session, :caller => Factory(:caller), :campaign => Factory(:campaign))
       channel = mock
       Pusher.should_receive(:[]).with(anything).and_return(channel)
-      channel.should_receive(:trigger).with("voter_start", { :attempt_id => attempt.id, :voter => voter.info } )
+      channel.should_receive(:trigger).with("voter_connected", { :attempt_id => attempt.id, :voter => voter.info } )
       attempt.voter.stub(:conference)
       attempt.conference(session)
+    end
+
+    it "pushes 'voter_disconnected' event when a call_attempt ends" do
+      pending
+      voter = Factory(:voter)
+      attempt = Factory(:call_attempt, :voter => voter)
+      session = Factory(:caller_session, :caller => Factory(:caller), :campaign => Factory(:campaign, :use_web_ui => true))
+      channel = mock
+      Pusher.should_receive(:[]).with(anything).and_return(channel)
+      channel.should_receive(:trigger).with("voter_disconnected", { :attempt_id => attempt.id, :voter => voter.info } )
+      attempt.hangup(session)
     end
   end
 
