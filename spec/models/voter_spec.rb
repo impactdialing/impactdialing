@@ -123,6 +123,13 @@ describe Voter do
       voter.apply_attribute(attribute,value)
       voter.get_attribute(attribute).should == value
     end
+
+    it "fails to update if it fails to validate" do
+      original_number = voter.Phone
+      attribute, value = 'Phone', '12345'
+      voter.apply_attribute(attribute, value).should be_false
+      voter.reload.get_attribute(attribute).should == original_number
+    end
   end
 
   it "lists scheduled voters" do
