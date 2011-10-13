@@ -81,8 +81,7 @@ class VoterList < ActiveRecord::Base
         existing_voter_entry = existing_voter_entry.first
         existing_voter_entry.num_family += 1
         existing_voter_entry.save
-        lead = Family.new
-        lead.voter_id = existing_voter_entry.id
+        lead = Family.create(:voter => existing_voter_entry, :voter_list_id => id, :user_id => user_id, :campaign_id => campaign_id)
       else
         return nil
       end
