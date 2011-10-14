@@ -23,7 +23,7 @@ class CallinController < ApplicationController
 
 
   def session_complete
-    if(cookies[:session]==nil || cookies[:session]=="0") && params[:session].blank?
+    if(cookies[:session].blank? || cookies[:session]=="0") && params[:session].blank?
       logger.info "NO SESSION COOKIE"  
       @session=CallerSession.find_by_sid(params[:CallSid]) if !params[:CallSid].blank?
       @session=CallerSession.find_by_sid(params[:CallGuid]) if !params[:CallGuid].blank?
