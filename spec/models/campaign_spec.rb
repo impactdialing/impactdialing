@@ -241,7 +241,8 @@ describe Campaign do
 
     [true, false].each do |exit_status|
       it "reports the status if the daemon start success was #{exit_status}" do
-        campaign = Factory(:campaign, :calls_in_progress => false, :account => Factory(:account, :paid => true))
+        script = Factory(:script, :robo_recordings => [Factory(:robo_recording)])
+        campaign = Factory(:campaign, :script => script, :calls_in_progress => false, :account => Factory(:account, :paid => true))
         campaign.stub(:system).and_return(exit_status)
         campaign.start.should eql(exit_status)
       end
