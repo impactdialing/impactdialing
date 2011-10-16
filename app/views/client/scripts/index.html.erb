@@ -13,7 +13,7 @@
         </tr>
         <% @scripts.each do |c| %>
             <tr class="<%= cycle("odd", "even") %>">
-              <td><h3><%= link_to c.name, script_path(c) %></h3></td>
+              <td><h3><%= link_to c.name, client_script_path(c) %></h3></td>
               <td><%= c.created_at.strftime("%m/%d/%Y") %></td>
               <td><%= button_to "Delete", client_script_path(c), :confirm => "Are you sure?", :method => :delete, :class=>"ico_del" %></td>
             </tr>
