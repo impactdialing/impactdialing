@@ -6,17 +6,32 @@
     <p>
       <label>Script name</label>
       <%= f.text_field :name, {:class => "field"} %>
+
       <%= f.fields_for :questions do |q| %>
-          <%= q.label :text, "Question" %>
+        <fieldset>
+          <legend>Question</legend>
           <%= q.text_field :text %>
-        <div>
-          <%= q.fields_for :possible_responses do |r| %>
-              <%= r.text_field :value %>
-              <%= r.text_field :keypad %>
-              <%= r.link_to_remove "Remove response" %>
-          <% end %>
-          <%= q.link_to_add "Add response", :possible_responses %>
-        </div>
+          <fieldset>
+            <legend>Responses</legend>
+            <%= q.fields_for :possible_responses do |r| %>
+                <table>
+                  <tr>
+                    <td>
+                      <%= r.text_field :value %>
+                    </td>
+                    <td>
+                      <%= r.text_field :keypad %>
+                    </td>
+                    <td>
+                      <%= r.link_to_remove "Remove response" %>
+                    </td>
+                  </tr>
+                </table>
+            <% end %>
+            <%= q.link_to_add "Add response", :possible_responses %>
+          </fieldset>
+          <%= q.link_to_remove "Remove this question" %>
+        </fieldset>
 
 
         <%= q.link_to_remove "Remove Question" %>

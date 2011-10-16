@@ -15,30 +15,29 @@
           </div>
       <% end %>
       <p><%= f.file_field :file %></p>
+
       <p>You can upload MP3, WAV, AIFF, GSM, and μ-law files.</p>
     </fieldset>
     <!--DO NOT EDIT-->
     <fieldset>
       <legend>Responses</legend>
-      <table>
-        <tr>
-          <th width="30%">Response</th>
-          <th width="30%">Keypad</th>
-          <th width="30%">Delete</th>
-        </tr>
-      </table>
+      <div class="fields">
+        <table class="fields">
+          <tr>
+            <th width="30%">Response</th>
+            <th width="30%">Keypad</th>
+            <th>Delete</th>
+          </tr>
+        </table>
+      </div>
 
       <%= f.fields_for :recording_responses do |response_form| %>
           <%= render :partial=>"recording_response_fields", :locals => {:f => response_form} %>
       <% end %>
-      </table>
-
-      <div class="fields">
-        <%= link_to_add_fields "Add response", f, :recording_responses, :class => 'action secondary' %>
-      </div>
+      <%= f.link_to_add "Add response", :recording_responses %>
     </fieldset>
 
-    <%= link_to_remove_fields "Remove this recording", f %>
+    <%= f.link_to_remove "Remove this recording" %>
     <!--DO NOT EDIT-->
   </fieldset>
 </div>
