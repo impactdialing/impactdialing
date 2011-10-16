@@ -1,7 +1,7 @@
 <h1><%= @script.new_record? ? "New script" : "Edit script" %></h1>
 <%= error_messages_for :script %>
 
-<%= form_for @script, :html => {:name => 'callerForm', :id => 'callerForm', :multipart => true} do |f| %>
+<%= nested_form_for @script, :html => {:name => 'callerForm', :id => 'callerForm', :multipart => true} do |f| %>
     <%= f.hidden_field :robo %>
     <p>
       <label>Script name</label>
@@ -11,7 +11,7 @@
         <%= render :partial => "robo_recording_fields", :locals => {:f => recording} %>
     <% end %>
 
-    <p class="actions"><%= link_to_add_fields "Add recording", f, :robo_recordings, :class => 'action secondary' %></p>
+    <p class="actions"><%= f.link_to_add "Add recording", :robo_recordings %></p>
 
     <%= button_tag 'Save' %>
 <% end %>
