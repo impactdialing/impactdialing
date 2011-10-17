@@ -89,6 +89,11 @@ ImpactDialing::Application.routes.draw do
     resource :account, :only => [:show, :update]
     resources :callers
     resources :campaigns
+    resources :reports do
+      collection do
+        get :usage
+      end
+    end
   end
 
   scope 'client' do
@@ -101,7 +106,7 @@ ImpactDialing::Application.routes.draw do
     end
     resources :blocked_numbers, :only => [:index, :create, :destroy]
     resources :users, :only => [:create, :destroy]
-    
+
     post 'user_invite', :to => 'users#invite', :as => 'user_invite'
   end
 
@@ -113,12 +118,13 @@ ImpactDialing::Application.routes.draw do
     member do
       post :verify_callerid
     end
-    resources :voter_lists, :collection => { :import => :post }, :except => [:new, :show], :name_prefix => 'client'
+    resources :voter_lists, :collection => {:import => :post}, :except => [:new, :show], :name_prefix => 'client'
     match 'clear_calls', :to => 'client/campaigns#clear_calls', :as => 'clear_calls'
   end
 
   resources :call_attempts, :only => [:create, :update] do
     member { post :connect }
+    member { post :voter_response }
   end
 
   resources :users do

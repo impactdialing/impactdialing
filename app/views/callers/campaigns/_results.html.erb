@@ -1,14 +1,16 @@
 <fieldset>
   <legend>Results</legend>
   <div id="result_instruction"><em>When connected, call result options will appear here.</em></div>
-  <div id="response" class="rt" style="font-size:1em;">
+  <div id="response_panel" class="rt" style="font-size : 1em;">
 
-    <% @campaign.script.questions.each do |question| %>
-        <div>
-          <%= question.text %>
-          <%= select :question, :possible_response, question.possible_responses.collect{|pr| [pr.value, pr.id]} %>
-        </div>
-    <% end %>
+    <form id="voter_responses">
+      <% @campaign.script.questions.each do |question| %>
+          <div>
+            <%= question.text %>
+            <%= select :question, nil, question.possible_responses.collect { |pr| [pr.value, pr.id] }, {:include_blank => true} %>
+          </div>
+      <% end %>
+    </form>
 
 
   </div>

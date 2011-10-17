@@ -9,6 +9,7 @@ class Voter < ActiveRecord::Base
   has_many :custom_voter_field_values
   belongs_to :last_call_attempt, :class_name => "CallAttempt"
   belongs_to :caller_session
+  has_many :answers
 
   validates_presence_of :Phone
   validates_length_of :Phone, :minimum => 10
@@ -138,7 +139,7 @@ class Voter < ActiveRecord::Base
     session.update_attributes(:voter_in_progress => self)
     Twilio::TwiML::Response.new do |r|
       r.Dial :hangupOnStar => 'false' do |d|
-        d.Conference session.session_key, :wait_url => "", :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
+        d.Conference session.session_key, :wait_url => "", :beep => false, :endConferenceOnExit => false, :maxParticipants => 2
       end
     end.text
   end

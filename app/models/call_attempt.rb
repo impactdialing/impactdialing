@@ -64,7 +64,7 @@ class CallAttempt < ActiveRecord::Base
 
   def conference(session)
     self.update_attribute(:caller , session.caller)
-    Pusher[session.session_key].trigger('voter_start',{:attempt_id => self.id, :voter => self.voter.info })
+    Pusher[session.session_key].trigger('voter_connected',{:attempt_id => self.id, :voter => self.voter.info })
     self.voter.conference(session)
   end
 
