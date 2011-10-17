@@ -11,5 +11,10 @@ describe Client::CallersController do
     'caller'
   end
 
+  it "lists callers" do
+    get :index
+    response.code.should == '200'
+  end
+
   it_should_behave_like 'all controllers of deletable entities'
 end

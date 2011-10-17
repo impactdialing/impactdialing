@@ -12,7 +12,7 @@ class CsvMapping
   end
 
   def csv_index_for(system_column_title)
-    @mapping.index(system_column_title)
+    @mapping.key(system_column_title)
   end
 
   def system_column_for(csv_column_title)
@@ -37,7 +37,7 @@ class CsvMapping
 
   def remap_system_column!(source_field, hash)
     destination_field = hash[:to]
-    index = @mapping.index source_field
+    index = @mapping.key source_field
     if index
       @mapping[index] = destination_field
     end

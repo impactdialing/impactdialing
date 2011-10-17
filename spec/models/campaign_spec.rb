@@ -224,9 +224,25 @@ describe Campaign do
       campaign.start.should be_false
     end
 
+    it "starts the dialer daemon for the campaign if there are recordings to play" do
+      script = Factory(:script)
+      script.robo_recordings = [Factory(:robo_recording)]
+      campaign = Factory(:campaign, :script => script, :account => Factory(:account, :paid => true))
+      campaign.should_receive("system")
+      campaign.start.should be_nil
+    end
+
+    it "does not start the dialer daemon for the campaign if its script has nothing to play" do
+      script = Factory(:script)
+      script.robo_recordings.size.should == 0
+      campaign = Factory(:campaign, :script => script, :account => Factory(:account, :paid => true))
+      campaign.start.should be_false
+    end
+
     [true, false].each do |exit_status|
       it "reports the status if the daemon start success was #{exit_status}" do
-        campaign = Factory(:campaign, :calls_in_progress => false, :account => Factory(:account, :paid => true))
+        script = Factory(:script, :robo_recordings => [Factory(:robo_recording)])
+        campaign = Factory(:campaign, :script => script, :calls_in_progress => false, :account => Factory(:account, :paid => true))
         campaign.stub(:system).and_return(exit_status)
         campaign.start.should eql(exit_status)
       end

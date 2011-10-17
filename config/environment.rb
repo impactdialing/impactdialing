@@ -5,3 +5,4 @@ require File.expand_path('../application', __FILE__)
 ImpactDialing::Application.initialize!
 APP_URL="http://#{APP_HOST}"
 DIALER_LOGGER = Logger.new(Rails.root.join("log", "predictive_dialer_#{Rails.env}.log"))
+require "csv"

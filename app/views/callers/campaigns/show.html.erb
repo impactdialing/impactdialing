@@ -25,7 +25,9 @@
 
 <%= hidden_field_tag(:caller, @caller.id) %>
 <%= hidden_field_tag(:caller_session, nil) %>
+<%= hidden_field_tag(:current_call_attempt, nil) %>
 <%= hidden_field_tag(:current_voter, nil) %>
+
 
 <fieldset id="callin_data">
   <legend>Call In :</legend>
@@ -56,9 +58,4 @@
 </fieldset>
 
 <%= render 'results'%>
-
-<div id="statusdiv" style="float:right; padding-bottom:10px;">Status: Not connected.</div>
-<div id="actions" class="actions">
-  <a href="javascript:next_voter();" class="action secondary">Skip</a>
-  <a href="javascript:call_voter();" class="action secondary">Call</a>
-</div>
+<%= render 'actions'%>

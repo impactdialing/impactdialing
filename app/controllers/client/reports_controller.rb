@@ -1,5 +1,16 @@
 module Client
   class ReportsController < ClientController
+
+    def index
+      if params[:id].blank?
+        @breadcrumb = "Reports"
+        @campaigns = account.campaigns.manual
+      else
+        @campaign = Campaign.find(params[:id])
+        @breadcrumb=[{"Reports"=>"/client/reports"}, @campaign.name]
+      end
+    end
+
     def usage
       @campaign = @user.all_campaigns.find(params[:id])
 

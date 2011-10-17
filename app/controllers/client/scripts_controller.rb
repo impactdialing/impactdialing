@@ -17,12 +17,13 @@ module Client
     end
 
     def create
-      @script = @user.scripts.create(params[:script])
+      @script = @user.account.scripts.create(params[:script])
       redirect_to @script
     end
 
     def show
-
+      @script = @user.account.scripts.find(params[:id])
+      render :new
     end
 
     def destroy

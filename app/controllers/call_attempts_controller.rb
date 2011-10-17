@@ -43,4 +43,14 @@ class CallAttemptsController < ApplicationController
     call_attempt.update_attribute('status', CallAttempt::Status::SCHEDULED) if params[:call_attempt][:scheduled_date]
     render :text => 'Call Attempt updated', :status => :ok
   end
+
+  def voter_response
+    @call_attempt = CallAttempt.find(params[:id])
+    @voter = Voter.find(params[:voter_id])
+    params[:answers].each_value do |answer|
+      voters_response = PossibleResponse.find(answer["value"])
+      @voter.answers.create(:possible_response => voters_response, :question => voters_response.question)
+    end
+    render :nothing => true
+  end
 end
