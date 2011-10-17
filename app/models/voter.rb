@@ -1,5 +1,6 @@
 class Voter < ActiveRecord::Base
   include ActionController::UrlWriter
+  include CallAttempt::Status
 
   belongs_to :voter_list
   belongs_to :campaign
@@ -128,7 +129,7 @@ class Voter < ActiveRecord::Base
   private
   def new_call_attempt
     call_attempt = self.call_attempts.create(:campaign => self.campaign, :dialer_mode => 'robo', :status => CallAttempt::Status::INPROGRESS )
-    self.update_attributes!(:last_call_attempt => call_attempt)
+    self.update_attributes!(:last_call_attempt => call_attempt, :status => Voter::INPROGRESS)
     call_attempt
   end
 end

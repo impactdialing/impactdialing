@@ -39,6 +39,11 @@ describe Voter do
       voter.dial
     end
 
+    it "new call attempt changes the status of the voter being dialed" do
+      voter.send(:new_call_attempt)
+      voter.reload.status.should == Voter::INPROGRESS
+    end
+
     it "records a call attempt for a dialed voter" do
       Twilio::Call.stub!(:make).and_return({"TwilioResponse" => {"Call" => {"Sid" => "abcd"}}})
       lambda {
@@ -90,14 +95,14 @@ describe Voter do
     end
 
     it "excludes voters with a status of a successful call" do
-      voter = Factory(:voter)
+      voter = Factory(:voter, :call_back => false)
       Factory(:call_attempt, :voter => voter, :status => CallAttempt::Status::SUCCESS)
       Voter.to_be_dialed.should be_empty
     end
   end
 
   describe "voter attributes" do
-    let(:voter){ Factory(:voter, :campaign => Factory(:campaign, :account => Factory(:account)), :Phone => '384756923349') }
+    let(:voter) { Factory(:voter, :campaign => Factory(:campaign, :account => Factory(:account)), :Phone => '384756923349') }
 
     it "populates original attributes" do
       voter.apply_attribute('Phone', '0123456789')
@@ -109,18 +114,18 @@ describe Voter do
       voter.apply_attribute(attribute, value)
       field = CustomVoterField.find_by_name(attribute)
       field.should_not be_nil
-      CustomVoterFieldValue.voter_fields(voter,field).first.value.should == value
+      CustomVoterFieldValue.voter_fields(voter, field).first.value.should == value
     end
 
     it "returns value of original attributes" do
       attribute, value = 'Phone', '2947832874'
-      voter.apply_attribute(attribute,value)
+      voter.apply_attribute(attribute, value)
       voter.get_attribute(attribute).should == value
     end
 
     it "returns value of custom attributes" do
       attribute, value = 'Custom', 'abcde'
-      voter.apply_attribute(attribute,value)
+      voter.apply_attribute(attribute, value)
       voter.get_attribute(attribute).should == value
     end
   end
@@ -133,13 +138,13 @@ describe Voter do
   end
 
   it "limits voters when listing them" do
-    10.times{Factory(:voter)}
+    10.times { Factory(:voter) }
     Voter.limit(5).should have(5).voters
   end
 
   describe "voter attributes" do
 
-    let(:voter){ Factory(:voter, :campaign => Factory(:campaign, :account=> Factory(:account)), :Phone => '384756923349') }
+    let(:voter) { Factory(:voter, :campaign => Factory(:campaign, :account=> Factory(:account)), :Phone => '384756923349') }
 
     it "populates original attributes" do
       voter.apply_attribute('Phone', '0123456789')
@@ -147,22 +152,22 @@ describe Voter do
     end
 
     it "populates custom attributes" do
-      attribute , value = 'Custom' , 'foo'
+      attribute, value = 'Custom', 'foo'
       voter.apply_attribute(attribute, value)
       field = CustomVoterField.find_by_name(attribute)
       field.should_not be_nil
-      CustomVoterFieldValue.voter_fields(voter,field).first.value.should == value
+      CustomVoterFieldValue.voter_fields(voter, field).first.value.should == value
     end
 
     it "returns value of original attributes" do
-      attribute , value = 'Phone' , '2947832874'
-      voter.apply_attribute(attribute,value)
+      attribute, value = 'Phone', '2947832874'
+      voter.apply_attribute(attribute, value)
       voter.get_attribute(attribute).should == value
     end
 
     it "returns value of custom attributes" do
-      attribute , value = 'Custom' , 'abcde'
-      voter.apply_attribute(attribute,value)
+      attribute, value = 'Custom', 'abcde'
+      voter.apply_attribute(attribute, value)
       voter.get_attribute(attribute).should == value
     end
 
