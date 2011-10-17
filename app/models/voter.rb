@@ -85,14 +85,12 @@ class Voter < ActiveRecord::Base
   end
 
   def dial
+    return false if status == Voter::SUCCESS
     message = "#{self.Phone} for campaign id:#{self.campaign_id}"
     logger.info "[dialer] Dialling #{message} "
     call_attempt = new_call_attempt
     callback_params = {:call_attempt_id => call_attempt.id, :host => Settings.host, :port => Settings.port}
-    response = Twilio::Call.make(
-        self.campaign.caller_id,
-        self.Phone,
-        twilio_callback_url(callback_params),
+    response = Twilio::Call.make(campaign.caller_id, self.Phone, twilio_callback_url(callback_params),
         'FallbackUrl'    => twilio_report_error_url(callback_params),
         'StatusCallback' => twilio_call_ended_url(callback_params),
         'Timeout'        => '20',

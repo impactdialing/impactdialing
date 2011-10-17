@@ -99,6 +99,13 @@ describe Voter do
       Factory(:call_attempt, :voter => voter, :status => CallAttempt::Status::SUCCESS)
       Voter.to_be_dialed.should be_empty
     end
+
+    it "excludes voters with a successful call_attempt" do
+      voter = Factory(:voter, :call_back => false, :status => Voter::SUCCESS, :campaign => Factory(:campaign))
+      Twilio::Call.stub(:make).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
+      Factory(:call_attempt, :voter => voter, :status => CallAttempt::Status::SUCCESS)
+      voter.dial.should == false
+    end
   end
 
   describe "voter attributes" do
