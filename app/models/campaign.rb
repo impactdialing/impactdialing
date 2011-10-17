@@ -2,7 +2,6 @@ require "twilio_lib"
 
 class Campaign < ActiveRecord::Base
   include Deletable
-  require "fastercsv"
   validates_presence_of :name, :on => :create, :message => "can't be blank"
   has_many :caller_sessions
   has_many :voter_lists, :conditions => {:active => true}
@@ -87,6 +86,14 @@ class Campaign < ActiveRecord::Base
   def check_valid_caller!
     self.caller_id_verified = self.caller_id_object.validate
   end
+  
+  def disable_voter_list
+    campaign.voter_lists.each do |voter_list|
+      voter_list.enabled = false
+      voter_list.save
+    end    
+  end
+  
 
   def recent_attempts(mins=10)
     attempts = CallAttempt.find_all_by_campaign_id(self.id, :conditions=>"call_start > DATE_SUB(now(),INTERVAL #{mins} MINUTE)", :order=>"id desc")
@@ -527,11 +534,28 @@ class Campaign < ActiveRecord::Base
   end
 
   def voters_dialed
-    self.call_attempts.count('voter_id', :distinct => true)
+    call_attempts.count('voter_id', :distinct => true)
   end
 
   def voters_remaining
-    self.all_voters.count - voters_dialed
+    all_voters.count - voters_dialed
+  end
+  
+  def update_campaign_with_account_information(account)
+    account_id = account.id
+    if script_id.blank?
+      script = account.scripts.active.first
+      script_id = script.id unless script.nil?
+    end    
+  end
+  
+  def verify_caller_id
+    require 'rubygems'
+    require 'hpricot'    
+    t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+    a = t.call("POST", "OutgoingCallerIds", {'PhoneNumber'=>caller_id, 'FriendlyName' => "Campaign #{id}"})
+    @doc = Hpricot::XML(a)
+    (@doc/"ValidationCode").inner_html    
   end
 
   module Type

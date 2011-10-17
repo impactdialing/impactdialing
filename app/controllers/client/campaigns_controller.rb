@@ -1,6 +1,10 @@
 module Client
   class CampaignsController < ::CampaignsController
     layout 'client'
+    
+     def new
+      @campaign = Campaign.new
+     end
 
     def show
       if @campaign.robo
@@ -44,10 +48,38 @@ module Client
       @deleted_campaigns_path = client_deleted_campaigns_path
       @campaigns_path = client_campaigns_path
     end
+    
+    def update
+      @campaign = account.campaigns.find_by_id(params[:id])
+      if @campaign.update_attributes(params[:campaign])      
+        flash_message(:notice, "Campaign updated")
+        redirect_to :action=>"index"          
+      else
+        render :action=>"new"    
+      end      
+    end
 
     def create
-      campaign = account.campaigns.create(:predictive_type => 'algorithm1', :script => account.scripts.first, :callers => account.callers.active)
-      redirect_to client_campaign_path(campaign)
+      @campaign =  Campaign.new(params[:campaign])
+      code=""
+      if @campaign.valid?        
+        code = @campaign.verify_caller_id if (!@campaign.caller_id_verified || !@campaign.caller_id.blank?)      
+        @campaign.update_campaign_with_account_information(account)
+        @campaign.save
+        if params[:listsSent]
+          @campaign.disable_voter_list          
+          params[:voter_list_ids].each{ |id| enable_voter_list(id) } unless params[:voter_list_ids].blank?
+        end
+        account.callers.active.each { |caller| @campaign.callers << caller }        
+        if code.blank?
+          flash_message(:notice, "Campaign saved")
+        else
+          flash_message(:notice, "Campaign saved.  <font color=red>Enter code #{code} when called.</font>")
+        end
+        redirect_to client_campaign_path(@campaign)
+      else
+        render :action=>"new"  
+      end      
     end
 
     def clear_calls

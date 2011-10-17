@@ -2,8 +2,9 @@
 
 <div id="callerid"></div>
 
-<%= form_for :campaign, :url => {:action => "campaign_add", :id=>@campaign.id}, :html => {:name => 'callerForm', :id => 'callerForm'} do |f| %>
+<%= form_for @campaign,  url:  "#{client_campaigns_path}/#{@campaign.id}", :method=> :put, :html => {:name => 'callerForm', :id => 'callerForm'} do |f| %>
     <fieldset>
+    <%= hidden_field_tag :id, @campaign.id,{:class=>"field"} %>
 	  <legend>Campaign options</legend>
       <fieldset>
         <legend>Basic settings</legend>
@@ -69,7 +70,7 @@
               </tr>
               <% @callers.each do |l| %>
                   <tr>
-                    <td><%= check_box_tag "campaign[caller_ids][]", "#{l.id}", callerInCampaign(l), :onclick=>"someCallers();" -%> <%= l.name %></td>
+                    <td><%= check_box_tag "campaign[caller_ids]", "#{l.id}", callerInCampaign(l), :onclick=>"someCallers();" -%> <%= l.name %></td>
                     <td></td>
                     <td><%= l.pin %></td>
                     <% if @campaign.predictive_type.index("robo,") %>
