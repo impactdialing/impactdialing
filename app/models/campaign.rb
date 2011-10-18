@@ -7,7 +7,8 @@ class Campaign < ActiveRecord::Base
   has_many :voter_lists, :conditions => {:active => true}
   has_many :all_voters, :class_name => 'Voter'
   has_many :call_attempts
-  has_and_belongs_to_many :callers
+  has_many :callers_campaigns, :foreign_key => :campaign_id
+  has_many :callers, :through => :caller_campaigns
   belongs_to :script
   belongs_to :account
   belongs_to :recording
@@ -407,8 +408,6 @@ class Campaign < ActiveRecord::Base
   end
 
   def get_dial_ratio
-
-
 
     if self.predictive_type.index("power_")!=nil
       ratio_dial = self.predictive_type[6, 1].to_i

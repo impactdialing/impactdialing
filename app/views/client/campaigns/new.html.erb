@@ -67,7 +67,7 @@
               </tr>
               <% @callers.each do |l| %>
                   <tr>
-                    <td><%= check_box_tag "campaign[caller_ids][]", "#{l.id}", callerInCampaign(l), :onclick=>"someCallers();", id: "campaign_caller_id_#{l.id}" -%> <%= l.name %></td>
+                    <td><%= check_box_tag "campaign[caller_ids]", "#{l.id}", callerInCampaign(l), :onclick=>"someCallers();" -%> <%= l.name %></td>
                     <td></td>
                     <td><%= l.pin %></td>
                     <% if @campaign.predictive_type.index("robo,") %>
