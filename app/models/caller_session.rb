@@ -67,7 +67,7 @@ class CallerSession < ActiveRecord::Base
   def start
     response = Twilio::Verb.new do |v|
       v.dial(:hangupOnStar => true, :action => end_session_caller_url(self.caller, :host => Settings.host, :session => self.id, :campaign => self.campaign.id)) do
-        v.conference(self.session_key, :endConferenceOnExit => false, :beep => true, :waitUrl => hold_call_url(:host => Settings.host), :waitMethod => "GET")
+        v.conference(self.session_key, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host), :waitMethod => 'GET')
       end
     end.response
     update_attributes(:on_call => true, :available_for_call => true)
