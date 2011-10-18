@@ -17,6 +17,14 @@ describe CallerController do
       assigns(:campaigns)[0].should be_active
     end
 
+    it "doesn't list robo campaigns" do
+      account.campaigns = [(Factory(:campaign, :active => true, :robo => false)), Factory(:campaign, :active => true, :robo => true)]
+      caller.save!
+      get :index
+      assigns(:campaigns).should have(1).thing
+      assigns(:campaigns)[0].should be_active
+    end
+
     it "lists all campaigns for web ui" do
       Factory(:campaign, :use_web_ui => false)
       campaign = Factory(:campaign, :use_web_ui => true)

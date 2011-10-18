@@ -5,7 +5,7 @@ class CallerController < ApplicationController
   before_filter :connect_to_twilio, :only => [:preview_dial]
 
   def index
-    @campaigns = @caller.campaigns.active.collect{|c| c if c.use_web_ui? }
+    @campaigns = @caller.campaigns.manual.active.collect{|c| c if c.use_web_ui? }
   end
 
 
