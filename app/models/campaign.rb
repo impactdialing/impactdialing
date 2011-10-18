@@ -76,16 +76,7 @@ class Campaign < ActiveRecord::Base
   end
 
   def before_save_campaign
-    self.check_valid_caller!
-    true
-  end
-
-  def caller_id_object
-    CallerIdObject.new(caller_id, 'FriendlyName' => "Campaign #{self.id}")
-  end
-
-  def check_valid_caller!
-    self.caller_id_verified = self.caller_id_object.validate
+    #generate a new campaign_id
   end
 
   def recent_attempts(mins=10)
