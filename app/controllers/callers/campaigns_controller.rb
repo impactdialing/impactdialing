@@ -3,7 +3,7 @@ module Callers
     layout 'caller'
 
     def index
-      @campaigns = @caller.campaigns.active.using_web_ui
+      @campaigns = @caller.campaigns.manual.active.using_web_ui
     end
 
     def show

@@ -10,11 +10,12 @@ describe Callers::CampaignsController do
     login_as(caller)
   end
 
-  it "lists all active campaigns with a web ui" do
+  it "lists all manual active campaigns with a web ui" do
     account.campaigns << Factory(:campaign, :active => false)
-    account.campaigns << Factory(:campaign, :active => false, :use_web_ui => true)
-    account.campaigns << Factory(:campaign, :active => true, :use_web_ui => false)
-    campaign1 = Factory(:campaign, :active => true, :use_web_ui => true)
+    account.campaigns << Factory(:campaign, :active => false,:robo => false, :use_web_ui => true)
+    account.campaigns << Factory(:campaign, :active => true, :robo => false, :use_web_ui => false)
+    account.campaigns << Factory(:campaign, :active => true, :robo => true, :use_web_ui => true)
+    campaign1 = Factory(:campaign, :active => true, :robo => false, :use_web_ui => true)
     account.campaigns << campaign1
     caller.save
     get :index
