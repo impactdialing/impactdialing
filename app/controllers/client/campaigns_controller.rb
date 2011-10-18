@@ -3,14 +3,18 @@ module Client
     layout 'client'
     
      def new
-      @campaign = Campaign.new
+       @campaign = Campaign.new(:account_id => account.id, :predictive_type => 'algorithm1')
+       @campaign.save
+       @callers = account.callers.active
+       @lists = @campaign.voter_lists
+       @voters = @campaign.all_voters.active.default_order.paginate(:page => params[:page])
+       @scripts = account.scripts.manual.active
+
+       @show_voter_buttons = @user.show_voter_buttons
+       @voter_list = @campaign.voter_lists.new
      end
 
     def show
-      if @campaign.robo
-        redirect_to broadcast_campaign_path(@campaign)
-        return
-      end
       check_warning
       @breadcrumb=[{"Campaigns" => client_campaigns_path}, @campaign.name]
 
@@ -19,9 +23,6 @@ module Client
       @voters = @campaign.all_voters.active.default_order.paginate(:page => params[:page])
       @scripts = account.scripts.manual.active
 
-      unless @campaign.caller_id
-        flash_now(:warning, "When you make calls with this campaign, you need a phone number to use for the Caller ID. Enter the phone number you want to use for your Caller ID and click Verify. To prevent abuse, the system will call that number and ask you to enter a validation code that will appear on your screen. Until you do this, you can't make calls with this campaign.")
-      end
       @show_voter_buttons = @user.show_voter_buttons
       @voter_list = @campaign.voter_lists.new
     end
@@ -51,6 +52,7 @@ module Client
     
     def update
       @campaign = account.campaigns.find_by_id(params[:id])
+
       if @campaign.update_attributes(params[:campaign])      
         flash_message(:notice, "Campaign updated")
         redirect_to :action=>"index"          
