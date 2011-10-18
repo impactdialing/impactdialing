@@ -52,18 +52,6 @@ describe CampaignsController do
       campaign.reload.script.should == script
     end
 
-    it "validates the caller id" do
-      phone_number = "1234567890"
-      validation_code = "xyzzyspoonshift1"
-      caller_id_object = mock
-      caller_id_object.should_receive(:validate).and_return(false)
-      caller_id_object.should_receive(:validation_code).and_return("xyzzyspoonshift1")
-      campaign.stub!(:caller_id_object).and_return(caller_id_object)
-      Campaign.should_receive(:find).with(campaign.id).and_return(campaign)
-      post :update, :id => campaign.id, :campaign => {:name => "an impactful campaign", :caller_id => phone_number}
-      flash[:notice].join.should include validation_code
-    end
-
     it "disables voters list which are not to be called" do
       voter_list1 = Factory(:voter_list, :campaign => campaign, :enabled => true)
       voter_list2 = Factory(:voter_list, :campaign => campaign, :enabled => false)
@@ -74,36 +62,6 @@ describe CampaignsController do
 
     it "can update only campaigns owned by the user'" do
       post :update, :id => another_users_campaign.id
-      response.status.should == 401
-    end
-  end
-
-  describe "caller id verification" do
-    before :each do
-      @campaign = Factory(:campaign, :account => user.account)
-      @caller_id_object = mock
-      @caller_id_object.stub!(:validate)
-      @campaign.stub!(:caller_id_object).and_return(@caller_id_object)
-      @campaign.update_attribute(:caller_id, "0123456789")
-    end
-
-    it "should render 'not verified' if caller id not verified" do
-      @caller_id_object.stub!(:validate)
-      Campaign.should_receive(:find).and_return(@campaign)
-      @caller_id_object.should_receive(:validate).and_return(false)
-      post :verify_callerid, :id => @campaign.id
-      response.body.should include "not verified"
-    end
-
-    it "should render nothing if caller id is verified" do
-      @caller_id_object.stub!(:validate).and_return(true)
-      Campaign.should_receive(:find).and_return(@campaign)
-      post :verify_callerid, :id => @campaign.id
-      response.body.should be_blank
-    end
-
-    it "can verify caller id only for campaigns owned by the user'" do
-      post :verify_callerid, :id => another_users_campaign.id
       response.status.should == 401
     end
   end
