@@ -41,6 +41,11 @@ class CallerController < ApplicationController
     end
   end
 
+  def hold_session
+    session = CallerSession.find(params[:id])
+    render :xml => session.hold
+  end
+
   def assign_campaign
     @session = CallerSession.find(params[:session])
     @campaign = @session.caller.account.campaigns.find_by_campaign_id(params[:Digits])
