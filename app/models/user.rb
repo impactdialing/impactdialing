@@ -87,7 +87,7 @@ class User < ActiveRecord::Base
               :subject => subject,
               :html => emailText,
               :text => emailText,
-              :from_name => 'Impact Dialing',
+              :from_name => 'Michael Kaiser-Nyman, Impact Dialing',
               :from_email => 'email@impactdialing.com',
               :to_email => [self.email],
               :bcc_email=>['michael@impactdialing.com','brian@impactdialing.com']
