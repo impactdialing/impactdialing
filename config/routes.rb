@@ -29,7 +29,6 @@ ImpactDialing::Application.routes.draw do
     collection { get :login }
     member { post :assign_campaign }
     member { post :end_session }
-    member { post :hold_session }
     member { post :active_session }
     member { post :preview_voter }
     member { post :call_voter }
@@ -125,6 +124,7 @@ ImpactDialing::Application.routes.draw do
 
   resources :call_attempts, :only => [:create, :update] do
     member { post :connect }
+    member { post :disconnect }
     member { post :voter_response }
   end
 

@@ -170,14 +170,6 @@ describe CallerController do
       response.body.should == {:caller_session => {:id => nil}}.to_json
     end
 
-    it "puts the caller on hold" do
-      login_as(caller)
-      caller = Factory(:caller_session, :caller => Factory(:caller))
-      get :hold_session, :id => caller.id
-      response.body.should == caller.hold
-    end
-
   end
-
 
 end

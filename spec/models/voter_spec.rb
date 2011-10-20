@@ -34,12 +34,8 @@ describe Voter do
     voter = Factory(:voter)
     caller = Factory(:caller_session)
 
-    voter.conference(caller).should == Twilio::TwiML::Response.new do |r|
-      r.Dial :hangupOnStar => 'false', :action => hold_session_caller_path(caller, :host => Settings.host)  do |d|
-        d.Conference caller.session_key, :wait_url => "", :beep => false, :endConferenceOnExit => false, :maxParticipants => 2
-      end
-    end.text
-    caller.voter_in_progress.should == voter
+    voter.conference(caller)
+    caller.reload.voter_in_progress.should == voter
   end
 
   describe "Dialing" do

@@ -36,17 +36,22 @@ describe Caller do
   end
 
   it "asks for pin" do
-    Caller.ask_for_pin.should == Twilio::Verb.new do |v|
-      v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.host, :attempt => 1), :method => "POST") do
-        v.say "Please enter your pin."
-      end
-    end.response
+    Caller.ask_for_pin.should ==
+        Twilio::Verb.new do |v|
+          3.times do
+            v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.host, :attempt => 1), :method => "POST") do
+              v.say "Please enter your pin."
+            end
+          end
+        end.response
   end
 
   it "asks for pin again" do
     Caller.ask_for_pin(1).should == Twilio::Verb.new do |v|
-      v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.host, :attempt => 2), :method => "POST") do
-        v.say "Incorrect Pin. Please enter your pin."
+      3.times do
+        v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.host, :attempt => 2), :method => "POST") do
+          v.say "Incorrect Pin. Please enter your pin."
+        end
       end
     end.response
   end

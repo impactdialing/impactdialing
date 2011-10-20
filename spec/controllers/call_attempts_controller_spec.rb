@@ -44,7 +44,7 @@ describe CallAttemptsController do
       call_attempt.reload.caller.should == available_caller.caller
       available_caller.reload.voter_in_progress.should == voter
       response.body.should == Twilio::TwiML::Response.new do |r|
-        r.Dial :hangupOnStar => 'false', :action => hold_session_caller_path(available_caller, :host => Settings.host) do |d|
+        r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(call_attempt, :host => Settings.host) do |d|
           d.Conference available_caller.session_key, :wait_url => "", :beep => false, :endConferenceOnExit => false, :maxParticipants => 2
         end
       end.text
@@ -56,7 +56,7 @@ describe CallAttemptsController do
       voter.update_attribute(:caller_session, available_caller)
       post :connect, :id => call_attempt.id
       response.body.should == Twilio::TwiML::Response.new do |r|
-        r.Dial :hangupOnStar => 'false', :action => hold_session_caller_path(available_caller, :host => Settings.host) do |d|
+        r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(call_attempt, :host => Settings.host) do |d|
           d.Conference available_caller.session_key, :wait_url => "", :beep => false, :endConferenceOnExit => false, :maxParticipants => 2
         end
       end.text
@@ -101,6 +101,12 @@ describe CallAttemptsController do
       call_attempt.voter.status.should == CallAttempt::Status::BUSY
       voter.reload.call_back.should be_true
       call_attempt.call_end.should_not be_nil
+    end
+
+    it "puts the caller back on hold when a voter is disconnected" do
+      call_attempt.update_attributes(:caller_session => Factory(:caller_session))
+      post :disconnect, :id => call_attempt.id
+      response.body.should == call_attempt.disconnect
     end
 
     it "updates the details of a call failed" do
