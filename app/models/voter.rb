@@ -1,5 +1,6 @@
 class Voter < ActiveRecord::Base
   include ActionController::UrlWriter
+  include CallAttempt::Status
 
   belongs_to :voter_list
   belongs_to :campaign
@@ -83,14 +84,12 @@ class Voter < ActiveRecord::Base
   end
 
   def dial
+    return false if status == Voter::SUCCESS
     message = "#{self.Phone} for campaign id:#{self.campaign_id}"
     logger.info "[dialer] Dialling #{message} "
     call_attempt = new_call_attempt
     callback_params = {:call_attempt_id => call_attempt.id, :host => Settings.host, :port => Settings.port}
-    response = Twilio::Call.make(
-        self.campaign.caller_id,
-        self.Phone,
-        twilio_callback_url(callback_params),
+    response = Twilio::Call.make(campaign.caller_id, self.Phone, twilio_callback_url(callback_params),
         'FallbackUrl'    => twilio_report_error_url(callback_params),
         'StatusCallback' => twilio_call_ended_url(callback_params),
         'Timeout'        => '20',
@@ -127,7 +126,7 @@ class Voter < ActiveRecord::Base
   private
   def new_call_attempt
     call_attempt = self.call_attempts.create(:campaign => self.campaign, :dialer_mode => 'robo', :status => CallAttempt::Status::INPROGRESS )
-    self.update_attributes!(:last_call_attempt => call_attempt)
+    self.update_attributes!(:last_call_attempt => call_attempt, :status => Voter::INPROGRESS)
     call_attempt
   end
 end
