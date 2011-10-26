@@ -15,6 +15,16 @@ class TwilioLib
     @http_user = accountguid
     @http_password = authtoken
   end
+  
+  def account_status_suspended?
+    http = Net::HTTP.new(@server, "5000")
+    http.use_ssl = true
+    req = Net::HTTP::Get.new("#{@root}.json")
+    req.basic_auth @http_user, @http_password
+    response = http.start{http.request(req)}
+    result = JSON.parse(response.body)
+    result['TwilioResponse']['Account']['StatusText'] == 'suspended'
+  end
 
 
   def call(http_method, service_method, params = {})
