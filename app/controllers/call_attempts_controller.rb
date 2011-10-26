@@ -37,6 +37,11 @@ class CallAttemptsController < ApplicationController
     render :xml => response
   end
 
+  def disconnect
+    call_attempt = CallAttempt.find(params[:id])
+    render :xml => call_attempt.disconnect
+  end
+
   def update
     call_attempt = CallAttempt.find(params[:id])
     call_attempt.update_attributes(params[:call_attempt])

@@ -6,8 +6,10 @@ describe CallinController do
     it "prompts for PIN for a caller " do
       post :create
       resp = Twilio::Verb.new do |v|
-        v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.host, :attempt => 1), :method => "POST") do
-          v.say "Please enter your pin."
+        3.times do
+          v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.host, :attempt => 1), :method => "POST") do
+            v.say "Please enter your pin."
+          end
         end
       end.response
       response.body.should == resp
@@ -40,8 +42,10 @@ describe CallinController do
       Caller.stub(:find_by_pin).and_return(nil)
       post :identify, :Digits => pin, :attempt => "1"
       response.body.should == Twilio::Verb.new do |v|
-        v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.host, :attempt => 2), :method => "POST") do
-          v.say "Incorrect Pin. Please enter your pin."
+        3.times do
+          v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.host, :attempt => 2), :method => "POST") do
+            v.say "Incorrect Pin. Please enter your pin."
+          end
         end
       end.response
     end
