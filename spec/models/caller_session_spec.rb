@@ -86,6 +86,11 @@ describe CallerSession do
       session.on_call.should be_false
       session.endtime.should == time_now
     end
+
+    it "puts the caller on hold" do
+      session = Factory(:caller_session)
+      session.hold.should == Twilio::Verb.new{|v| v.play "#{Settings.host}/wav/hold.mp3"; v.redirect; }.response
+    end
   end
 
   describe "preview dialing" do

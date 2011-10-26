@@ -124,24 +124,11 @@ class Voter < ActiveRecord::Base
       'IfMachine' => self.campaign.use_recordings? ? 'Continue' : 'Hangup' ,
       'Timeout' => campaign.answer_detection_timeout || "20"
     )
-        #
-        # response = Twilio::Call.make(
-        #     self.campaign.caller_id,
-        #     self.Phone,
-        #     connect_call_attempt_url(call_attempt, :host => Settings.host, :port =>Settings.port),
-        #     'IfMachine' => self.campaign.use_recordings? ? 'Continue' : 'Hangup' ,
-        #     'Timeout' => campaign.answer_detection_timeout || "20"
-        # )
     call_attempt.update_attributes(:status => CallAttempt::Status::INPROGRESS, :sid => @call.sid)
   end
 
   def conference(session)
     session.update_attributes(:voter_in_progress => self)
-    Twilio::TwiML::Response.new do |r|
-      r.Dial :hangupOnStar => 'false' do |d|
-        d.Conference session.session_key, :wait_url => "", :beep => false, :endConferenceOnExit => false, :maxParticipants => 2
-      end
-    end.text
   end
 
   def apply_attribute(attribute, value)

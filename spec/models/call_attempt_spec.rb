@@ -78,10 +78,14 @@ describe CallAttempt do
     end
 
     it "conferences a call_attempt to a caller_session" do
-      session = Factory(:caller_session, :caller => Factory(:caller))
+      session = Factory(:caller_session, :caller => Factory(:caller), :session_key => "example_key")
       voter = Factory(:voter)
       call_attempt = Factory(:call_attempt, :voter => voter)
-      call_attempt.conference(session).should == voter.conference(session)
+      call_attempt.conference(session).should == Twilio::TwiML::Response.new do |r|
+        r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(call_attempt, :host => Settings.host) do |d|
+          d.Conference session.session_key, :wait_url => "", :beep => false, :endConferenceOnExit => false, :maxParticipants => 2
+        end
+      end.text
     end
 
     it "connects a successful call attempt to a caller_session when available" do
@@ -89,7 +93,7 @@ describe CallAttempt do
       voter = Factory(:voter, :campaign => campaign)
       caller_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller))
       call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign)
-      call_attempt.connect_to_caller.should == voter.conference(caller_session)
+      call_attempt.connect_to_caller.should == call_attempt.conference(caller_session)
       call_attempt.caller.should == caller_session.caller
     end
 
@@ -99,7 +103,7 @@ describe CallAttempt do
       Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller))
       caller_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller))
       call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign)
-      call_attempt.connect_to_caller(caller_session).should == voter.conference(caller_session)
+      call_attempt.connect_to_caller(caller_session).should == call_attempt.conference(caller_session)
       call_attempt.caller.should == caller_session.caller
     end
 
@@ -124,6 +128,14 @@ describe CallAttempt do
       call_attempt.call_end.should_not be_nil
     end
 
+    it "disconnects the voter from the caller" do
+      campaign = Factory(:campaign)
+      voter = Factory(:voter, :campaign => campaign)
+      caller_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller))
+      call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign, :caller_session => caller_session)
+      call_attempt.disconnect.should == caller_session.hold
+      call_attempt.reload.status.should == CallAttempt::Status::SUCCESS
+    end
   end
 
   describe "Pusher" do
@@ -146,28 +158,27 @@ describe CallAttempt do
       session = Factory(:caller_session, :caller => Factory(:caller), :campaign => Factory(:campaign))
       channel = mock
       Pusher.should_receive(:[]).with(anything).and_return(channel)
-      channel.should_receive(:trigger).with("voter_connected", { :attempt_id => attempt.id, :voter => voter.info } )
+      channel.should_receive(:trigger).with("voter_connected", {:attempt_id => attempt.id, :voter => voter.info})
       attempt.voter.stub(:conference)
       attempt.conference(session)
     end
 
     it "pushes 'voter_disconnected' event when a call_attempt ends" do
-      pending
       voter = Factory(:voter)
-      attempt = Factory(:call_attempt, :voter => voter)
       session = Factory(:caller_session, :caller => Factory(:caller), :campaign => Factory(:campaign, :use_web_ui => true))
+      attempt = Factory(:call_attempt, :voter => voter, :caller_session => session)
       channel = mock
       Pusher.should_receive(:[]).with(anything).and_return(channel)
-      channel.should_receive(:trigger).with("voter_disconnected", { :attempt_id => attempt.id, :voter => voter.info } )
-      attempt.hangup(session)
+      channel.should_receive(:trigger).with("voter_disconnected", {:attempt_id => attempt.id, :voter => attempt.voter.info})
+      attempt.disconnect
     end
   end
 
   it "lists attempts between two dates" do
-    too_old = Factory(:call_attempt).tap{|ca| ca.update_attribute(:created_at, 10.minutes.ago)}
-    too_new = Factory(:call_attempt).tap{|ca| ca.update_attribute(:created_at, 10.minutes.from_now)}
-    just_right = Factory(:call_attempt).tap{|ca| ca.update_attribute(:created_at, 8.minutes.ago)}
-    another_just_right = Factory(:call_attempt).tap{|ca| ca.update_attribute(:created_at, 8.minutes.from_now)}
+    too_old = Factory(:call_attempt).tap { |ca| ca.update_attribute(:created_at, 10.minutes.ago) }
+    too_new = Factory(:call_attempt).tap { |ca| ca.update_attribute(:created_at, 10.minutes.from_now) }
+    just_right = Factory(:call_attempt).tap { |ca| ca.update_attribute(:created_at, 8.minutes.ago) }
+    another_just_right = Factory(:call_attempt).tap { |ca| ca.update_attribute(:created_at, 8.minutes.from_now) }
     CallAttempt.between(9.minutes.ago, 9.minutes.from_now)
   end
 

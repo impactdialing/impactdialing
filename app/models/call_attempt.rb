@@ -8,9 +8,9 @@ class CallAttempt < ActiveRecord::Base
 
   scope :for_campaign, lambda { |campaign| {:conditions => ["campaign_id = ?", campaign.id]} }
   scope :for_status, lambda { |status| {:conditions => ["call_attempts.status = ?", status]} }
-  scope :between, lambda{|from_date, to_date| { :conditions => { :created_at => from_date..to_date } }}
-  scope :without_status, lambda{|statuses| { :conditions => ['status not in (?)', statuses] }}
-  scope :with_status, lambda{|statuses| { :conditions => ['status in (?)', statuses] }}
+  scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
+  scope :without_status, lambda { |statuses| {:conditions => ['status not in (?)', statuses]} }
+  scope :with_status, lambda { |statuses| {:conditions => ['status in (?)', statuses]} }
 
   def ring_time
     if self.answertime!=nil && self.created_at!=nil
@@ -63,9 +63,14 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def conference(session)
-    self.update_attribute(:caller , session.caller)
-    Pusher[session.session_key].trigger('voter_connected',{:attempt_id => self.id, :voter => self.voter.info })
+    self.update_attribute(:caller, session.caller)
+    Pusher[session.session_key].trigger('voter_connected', {:attempt_id => self.id, :voter => self.voter.info})
     self.voter.conference(session)
+    Twilio::TwiML::Response.new do |r|
+      r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(self, :host => Settings.host) do |d|
+        d.Conference session.session_key, :wait_url => "", :beep => false, :endConferenceOnExit => false, :maxParticipants => 2
+      end
+    end.text
   end
 
   def wait(time)
@@ -73,6 +78,12 @@ class CallAttempt < ActiveRecord::Base
       r.Pause :length => time
       r.Redirect "#{connect_call_attempt_path(:id => self.id)}"
     end.text
+  end
+
+  def disconnect
+    update_attribute(:status, CallAttempt::Status::SUCCESS)
+    Pusher[caller_session.session_key].trigger('voter_disconnected', {:attempt_id => self.id, :voter => self.voter.info})
+    caller_session.hold
   end
 
   def hangup
