@@ -4,7 +4,14 @@ class CallinController < ApplicationController
   after_filter :send_pusher
 
   def create
-    render :xml => Caller.ask_for_pin
+    if account_status_suspended?
+      Twilio::Verb.new do |v|
+        v.say "Your account has insufficent funds"
+        v.hangup
+      end
+    else
+      render :xml => Caller.ask_for_pin
+   end
   end
 
   def identify
