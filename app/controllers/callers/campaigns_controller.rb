@@ -1,7 +1,7 @@
 module Callers
   class CampaignsController < ::CallerController
     layout 'caller'
-
+    
     def index
       @campaigns = @caller.campaigns.manual.active.using_web_ui
     end
