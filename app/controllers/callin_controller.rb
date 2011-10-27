@@ -4,7 +4,7 @@ class CallinController < ApplicationController
   after_filter :send_pusher
 
   def create
-    if account_status_suspended?
+    unless account.paid
       Twilio::Verb.new do |v|
         v.say "Your account has insufficent funds"
         v.hangup

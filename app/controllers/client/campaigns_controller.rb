@@ -51,8 +51,7 @@ module Client
     end
     
     def update
-      @campaign = account.campaigns.find_by_id(params[:id])
-
+      @campaign = Campaign.find_by_id(params[:id])
       if @campaign.update_attributes(params[:campaign])      
         flash_message(:notice, "Campaign updated")
         redirect_to :action=>"index"          

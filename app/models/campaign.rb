@@ -7,7 +7,7 @@ class Campaign < ActiveRecord::Base
   has_many :voter_lists, :conditions => {:active => true}
   has_many :all_voters, :class_name => 'Voter'
   has_many :call_attempts
-  has_many :callers_campaigns, :foreign_key => :campaign_id
+  has_many :caller_campaigns
   has_many :callers, :through => :caller_campaigns
   belongs_to :script
   belongs_to :account
@@ -382,7 +382,7 @@ class Campaign < ActiveRecord::Base
     update_attribute(:calls_in_progress, false)
   end
 
-  def callers
+  def callers123
     CallerSession.find_all_by_campaign_id_and_on_call(self.id, 1)
   end
 
