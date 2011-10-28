@@ -1,5 +1,5 @@
 default: &default_settings
-  host: 3fg3.localtunnel.com
+  host: 3u48.localtunnel.com
   port: 3000
 
 development:
