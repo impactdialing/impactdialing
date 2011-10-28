@@ -105,6 +105,7 @@ describe VoterList do
         family_member.MiddleName.should be_blank
         family_member.Suffix.should be_blank
       end
+
       it "should ignore the same phone is repeated in another voters list for the same campaign" do
         another_voter_list = Factory(:voter_list, :campaign => campaign, :account => user.account)
         another_voter_list.import_leads(
@@ -116,6 +117,7 @@ describe VoterList do
                 :failedCount => 2
             }
       end
+
       it "should add even if the same phone is repeated in a different campaign" do
         another_voter_list = Factory(:voter_list,
                                      :campaign => Factory(:campaign, :account => user.account),

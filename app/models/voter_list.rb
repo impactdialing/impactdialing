@@ -52,6 +52,8 @@ class VoterList < ActiveRecord::Base
 
       unless lead.save
         result[:failedCount] +=1
+        puts lead.errors.full_messages
+        Rails.logger.info lead.errors.full_messages
       else
         result[:successCount] +=1
       end
@@ -79,8 +81,7 @@ class VoterList < ActiveRecord::Base
         existing_voter_entry = existing_voter_entry.first
         existing_voter_entry.num_family += 1
         existing_voter_entry.save
-        lead = Family.new(:Phone => phone_number, :voter_list_id => id, :account_id => account_id, :campaign_id => campaign_id)
-        lead.voter_id = existing_voter_entry.id
+        lead = Family.new(:voter => existing_voter_entry, :Phone => phone_number, :voter_list_id => id, :account_id => account_id, :campaign_id => campaign_id)
       else
         return nil
       end

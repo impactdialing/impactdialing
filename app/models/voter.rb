@@ -108,7 +108,7 @@ class Voter < ActiveRecord::Base
 
   def apply_attribute(attribute,value)
     if self.has_attribute? attribute
-      self[attribute] = value
+      self.update_attributes(attribute => value)
     else
       custom_attribute = self.campaign.account.custom_voter_fields.find_by_name(attribute)
       custom_attribute ||= CustomVoterField.create(:name => attribute, :account => self.campaign.account) unless attribute.blank?
