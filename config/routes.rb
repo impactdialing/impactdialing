@@ -118,6 +118,7 @@ ImpactDialing::Application.routes.draw do
 
   resources :call_attempts, :only => [:create, :update] do
     member { post :connect }
+    member { post :end }
     member { post :disconnect }
     member { post :voter_response }
   end

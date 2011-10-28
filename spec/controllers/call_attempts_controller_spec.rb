@@ -60,8 +60,8 @@ describe CallAttemptsController do
       call_attempt.reload.caller.should == available_caller.caller
       available_caller.reload.voter_in_progress.should == voter
       response.body.should == Twilio::TwiML::Response.new do |r|
-        r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(call_attempt, :host => Settings.host) do |d|
-          d.Conference available_caller.session_key, :wait_url => "", :beep => false, :endConferenceOnExit => false, :maxParticipants => 2
+        r.Dial :hangupOnStar => 'true', :action => disconnect_call_attempt_path(call_attempt, :host => Settings.host) do |d|
+          d.Conference available_caller.session_key, :wait_url => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
         end
       end.text
     end
@@ -72,8 +72,8 @@ describe CallAttemptsController do
       voter.update_attribute(:caller_session, available_caller)
       post :connect, :id => call_attempt.id
       response.body.should == Twilio::TwiML::Response.new do |r|
-        r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(call_attempt, :host => Settings.host) do |d|
-          d.Conference available_caller.session_key, :wait_url => "", :beep => false, :endConferenceOnExit => false, :maxParticipants => 2
+        r.Dial :hangupOnStar => 'true', :action => disconnect_call_attempt_path(call_attempt, :host => Settings.host) do |d|
+          d.Conference available_caller.session_key, :wait_url => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
         end
       end.text
     end
@@ -85,16 +85,16 @@ describe CallAttemptsController do
     end
 
     it "plays a voice mail to a voters answering the campaign uses recordings" do
-      campaign = Factory(:campaign, :use_recordings => true, :recording => Factory(:recording, :file_file_name => 'abc.mp3'))
+      campaign = Factory(:campaign, :use_recordings => true, :recording => Factory(:recording, :file_file_name => 'abc.mp3', :account => Factory(:account)))
       call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign)
-      post :connect, :id => call_attempt.id, :DialStatus => "answered-machine"
+      post :connect, :id => call_attempt.id, :DialCallStatus => "answered-machine"
       call_attempt.reload.status.should == CallAttempt::Status::VOICEMAIL
       call_attempt.voter.status.should == CallAttempt::Status::VOICEMAIL
       call_attempt.call_end.should_not be_nil
     end
 
     it "hangs up on the voters answering machine when the campaign does not use recordings" do
-      post :connect, :id => call_attempt.id, :DialStatus => "hangup-machine"
+      post :end, :id => call_attempt.id, :DialCallStatus => "hangup-machine"
 
       response.body.should == Twilio::TwiML::Response.new { |r| r.Hangup }.text
       call_attempt.reload.status.should == CallAttempt::Status::HANGUP
@@ -104,7 +104,7 @@ describe CallAttemptsController do
     end
 
     it "updates the details of a call not answered" do
-      post :connect, :id => call_attempt.id, :DialStatus => "no-answer"
+      post :end, :id => call_attempt.id, :DialCallStatus => "no-answer"
       call_attempt.reload.status.should == CallAttempt::Status::NOANSWER
       call_attempt.voter.status.should == CallAttempt::Status::NOANSWER
       voter.reload.call_back.should be_true
@@ -112,7 +112,7 @@ describe CallAttemptsController do
     end
 
     it "updates the details of a busy voter" do
-      post :connect, :id => call_attempt.id, :DialStatus => "busy"
+      post :end, :id => call_attempt.id, :DialCallStatus => "busy"
       call_attempt.reload.status.should == CallAttempt::Status::BUSY
       call_attempt.voter.status.should == CallAttempt::Status::BUSY
       voter.reload.call_back.should be_true
@@ -126,7 +126,7 @@ describe CallAttemptsController do
     end
 
     it "updates the details of a call failed" do
-      post :connect, :id => call_attempt.id, :DialStatus => "fail"
+      post :end, :id => call_attempt.id, :DialCallStatus => "fail"
       call_attempt.reload.status.should == CallAttempt::Status::FAILED
       call_attempt.voter.status.should == CallAttempt::Status::FAILED
       voter.reload.call_back.should be_true
@@ -143,6 +143,8 @@ describe CallAttemptsController do
       Pusher.stub(:[]).with(session_key).and_return(pusher_session)
       post :connect, :id => call_attempt.id
     end
+
+    it "notifies "
 
   end
 end
