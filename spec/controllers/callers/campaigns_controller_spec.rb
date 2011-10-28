@@ -11,21 +11,21 @@ describe Callers::CampaignsController do
   end
 
   it "lists all manual active campaigns with a web ui" do
-    account.campaigns << Factory(:campaign, :active => false)
-    account.campaigns << Factory(:campaign, :active => false,:robo => false, :use_web_ui => true)
-    account.campaigns << Factory(:campaign, :active => true, :robo => false, :use_web_ui => false)
-    account.campaigns << Factory(:campaign, :active => true, :robo => true, :use_web_ui => true)
+    caller.campaigns << Factory(:campaign, :active => false)
+    caller.campaigns << Factory(:campaign, :active => false,:robo => false, :use_web_ui => true)
+    caller.campaigns << Factory(:campaign, :active => true, :robo => false, :use_web_ui => false)
+    caller.campaigns << Factory(:campaign, :active => true, :robo => true, :use_web_ui => true)
     campaign1 = Factory(:campaign, :active => true, :robo => false, :use_web_ui => true)
-    account.campaigns << campaign1
+    caller.campaigns << campaign1
     caller.save
     get :index
     assigns(:campaigns).should == [campaign1]
   end
 
   it "finds a callers campaign" do
-    account.campaigns << Factory(:campaign, :active => false)
+    caller.campaigns << Factory(:campaign, :active => false)
     campaign1 = Factory(:campaign, :active => true, :use_web_ui => true)
-    account.campaigns << campaign1
+    caller.campaigns << campaign1
     caller.save
     get :show, :id => campaign1.id
     assigns(:campaign).should == campaign1

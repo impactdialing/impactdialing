@@ -382,7 +382,7 @@ class Campaign < ActiveRecord::Base
     update_attribute(:calls_in_progress, false)
   end
 
-  def callers123
+  def callers_to_dial
     CallerSession.find_all_by_campaign_id_and_on_call(self.id, 1)
   end
 
@@ -445,7 +445,7 @@ class Campaign < ActiveRecord::Base
     pool_size=0
     done_short=0
 
-    callers.each do |session|
+    callers_to_dial.each do |session|
        if session.attempt_in_progress.blank?
          # caller waiting idle
          pool_size = pool_size + stats[:dials_needed]

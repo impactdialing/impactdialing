@@ -25,6 +25,9 @@ module Client
 
       @show_voter_buttons = @user.show_voter_buttons
       @voter_list = @campaign.voter_lists.new
+      if (@campaign.robo)
+        redirect_to broadcast_campaign_path(@campaign)
+      end
     end
 
     def index
@@ -62,11 +65,15 @@ module Client
 
     def create
       @campaign =  Campaign.new(params[:campaign])
+      @campaign.account = account
       code=""
       if @campaign.valid?        
         code = @campaign.verify_caller_id if (!@campaign.caller_id_verified || !@campaign.caller_id.blank?)      
-        @campaign.update_campaign_with_account_information(account)
-        @campaign.save
+        if @campaign.script_id.blank?
+          script = account.scripts.active.first
+          @campaign.script_id = script.id unless script.nil?
+          @campaign.save
+        end            
         if params[:listsSent]
           @campaign.disable_voter_list          
           params[:voter_list_ids].each{ |id| enable_voter_list(id) } unless params[:voter_list_ids].blank?

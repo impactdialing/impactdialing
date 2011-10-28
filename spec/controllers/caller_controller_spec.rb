@@ -10,7 +10,7 @@ describe CallerController do
     end
 
     it "doesn't list deleted campaigns" do
-      account.campaigns = [(Factory(:campaign, :active => false)), Factory(:campaign, :active => true)]
+      caller.campaigns = [(Factory(:campaign, :active => false)), Factory(:campaign, :active => true)]
       caller.save!
       get :index
       assigns(:campaigns).should have(1).thing
@@ -18,7 +18,7 @@ describe CallerController do
     end
 
     it "doesn't list robo campaigns" do
-      account.campaigns = [(Factory(:campaign, :active => true, :robo => false)), Factory(:campaign, :active => true, :robo => true)]
+      caller.campaigns = [(Factory(:campaign, :active => true, :robo => false)), Factory(:campaign, :active => true, :robo => true)]
       caller.save!
       get :index
       assigns(:campaigns).should have(1).thing
@@ -28,9 +28,10 @@ describe CallerController do
     it "lists all campaigns for web ui" do
       Factory(:campaign, :use_web_ui => false)
       campaign = Factory(:campaign, :use_web_ui => true)
-      account.update_attribute(:campaigns, [campaign])
+      caller.campaigns << campaign
+      caller.save!
       get :index
-      assigns(:campaigns).should == [campaign]
+      assigns(:campaigns).should eq([campaign])
     end
   end
 
