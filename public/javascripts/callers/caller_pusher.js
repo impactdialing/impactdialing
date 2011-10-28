@@ -1,8 +1,11 @@
 var channel = null;
 
 $(document).ready(function() {
-    $("#actions").hide();
-
+    $("#skip_voter").hide();
+	$("#call_voter").hide();
+	$("#hangup_call").hide();	
+	$("#submit_call").hide();		
+	
     setInterval(function() {
         if ($("#caller_session").val()) {
             //do nothing if the caller session context already exists
@@ -86,13 +89,7 @@ function send_voter_response(){
 
 }
 
-function show_actions() {
-    $("#actions").show();
-}
 
-function hide_actions() {
-    $("#actions").show();
-}
 
 function show_response_panel(){
     $("#response_panel").show();
@@ -127,17 +124,30 @@ function subscribe(session_key) {
     });
 
     channel.bind('voter_disconnected', function(data) {
-        alert("voter disconnected");
+		$("#skip_voter").hide();
+		$("#call_voter").hide();
+		$("#hangup_call").hide();			
+		$("#submit_call").show();		
     });
 
     channel.bind('voter_connected', function(data) {
         show_response_panel();
         set_call_attempt(data.attempt_id);
+		$("#skip_voter").hide();
+		$("#call_voter").hide();
+		$("#hangup_call").show();		
+		$("#submit_call").hide();		    
+		
+
     });
 
     channel.bind('calling_voter', function(data) {
         set_voter(data);
         set_message('Call in progress');
+		$("#skip_voter").hide();
+		$("#call_voter").hide();
+		$("#hangup_call").show();		    
+		$("#submit_call").hide();		            
     });
 
     channel.bind('caller_disconnected', function(data) {
@@ -153,14 +163,23 @@ function subscribe(session_key) {
     function set_voter(data) {
         $("#current_voter").val(data.fields.id);
         bind_voter(data);
-        show_actions();
+        $("#skip_voter").show();
+		$("#call_voter").show();	    
+		$("#hangup_call").hide();		    
+		$("#submit_call").hide();		            
+		
     }
 
     function clear_voter() {
         $("#current_voter").val(null);
         $('#voter_info').empty();
-        hide_actions();
+		$("#skip_voter").hide();
+		$("#call_voter").hide();
+		$("#hangup_call").hide();		    
+		$("#submit_call").hide();		            
+
     }
+
 
     function bind_voter(data) {
         data.custom_fields = parse_custom_fields(data);
