@@ -35,11 +35,6 @@ describe Client::CampaignsController do
       assigns(:voters).map(&:Phone).should == ['1111111111', '2222222222', '0000000000', '3333333333']
     end
 
-    it "warns the user if there is no caller id" do
-      unverified_campaign = Factory(:campaign, :account => account, :caller_id => nil)
-      get :show, :id => unverified_campaign.id
-      flash[:warning].should include("When you make calls with this campaign, you need a phone number to use for the Caller ID. Enter the phone number you want to use for your Caller ID and click Verify. To prevent abuse, the system will call that number and ask you to enter a validation code that will appear on your screen. Until you do this, you can't make calls with this campaign.")
-    end
 
     after(:each) do
       response.should be_ok
@@ -62,7 +57,7 @@ describe Client::CampaignsController do
       post :create
     }.should change {account.reload.campaigns.size} .by(1)
     campaign = account.campaigns.last
-    campaign.predictive_type.should == 'algorithm1'
+    campaign.predictive_type.should == 'preview'
     campaign.script.should == script
     campaign.account.callers.should == callers
   end
