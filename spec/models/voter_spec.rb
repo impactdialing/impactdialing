@@ -124,13 +124,13 @@ describe Voter do
     end
 
     it "dials the voter and hangs up on answering machine when not using recordings" do
-      client.stub_chain(:account, :calls, :create).with({:from => anything, :to => anything, :url => anything, 'IfMachine' => 'Hangup', 'Timeout' => 20}).and_return(mock(:call, :sid => 'sid'))
+      client.stub_chain(:account, :calls, :create).with({:from => anything, :to => anything, :url => anything,'StatusCallback' => anything , 'IfMachine' => 'Hangup', 'Timeout' => 20}).and_return(mock(:call, :sid => 'sid'))
       campaign.use_recordings = false
       voter.dial_predictive
     end
 
     it "dials the voter and continues on answering machine when using recordings" do
-      client.stub_chain(:account, :calls, :create).with({:from => anything, :to => anything, :url => anything, 'IfMachine' => 'Continue', 'Timeout' => 20}).and_return(mock(:call, :sid => 'sid'))
+      client.stub_chain(:account, :calls, :create).with({:from => anything, :to => anything, :url => anything, 'StatusCallback' => anything, 'IfMachine' => 'Continue', 'Timeout' => 20}).and_return(mock(:call, :sid => 'sid'))
       campaign.use_recordings = true
       voter.campaign = campaign
       voter.dial_predictive
@@ -139,7 +139,7 @@ describe Voter do
     it "dials the voter with the campaigns answer detection timeout" do
       campaign.use_recordings = true
       campaign.answer_detection_timeout = "10"
-      client.stub_chain(:account, :calls, :create).with({:from => anything, :to => anything, :url => anything, 'IfMachine' => 'Continue', 'Timeout' => campaign.answer_detection_timeout}).and_return(mock(:call, :sid => 'sid'))
+      client.stub_chain(:account, :calls, :create).with({:from => anything, :to => anything, :url => anything, 'StatusCallback' => anything, 'IfMachine' => 'Continue', 'Timeout' => campaign.answer_detection_timeout}).and_return(mock(:call, :sid => 'sid'))
       voter.campaign = campaign
       voter.dial_predictive
     end
