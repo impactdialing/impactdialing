@@ -63,6 +63,7 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def conference(session)
+    session.update_attribute(:attempt_in_progress, self)
     self.update_attribute(:caller, session.caller)
     session.publish('voter_connected', {:attempt_id => self.id, :voter => self.voter.info})
     self.voter.conference(session)
