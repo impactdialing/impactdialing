@@ -82,8 +82,8 @@ describe CallAttempt do
       voter = Factory(:voter)
       call_attempt = Factory(:call_attempt, :voter => voter)
       call_attempt.conference(session).should == Twilio::TwiML::Response.new do |r|
-        r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(call_attempt, :host => Settings.host) do |d|
-          d.Conference session.session_key, :wait_url => "", :beep => false, :endConferenceOnExit => false, :maxParticipants => 2
+        r.Dial :hangupOnStar => 'true', :action => disconnect_call_attempt_path(call_attempt, :host => Settings.host) do |d|
+          d.Conference session.session_key, :wait_url => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
         end
       end.text
     end
