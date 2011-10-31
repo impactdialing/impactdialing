@@ -77,7 +77,7 @@ GEM
       mime-types (~> 1.16)
       treetop (~> 1.4.8)
     memcache-client (1.8.5)
-    mime-types (1.16)
+    mime-types (1.17.2)
     mongrel (1.2.0.pre2)
       daemons (~> 1.0.10)
       gem_plugin (~> 0.2.3)
@@ -91,7 +91,7 @@ GEM
       cocaine (>= 0.0.2)
       mime-types
     polyglot (0.3.2)
-    pusher (0.8.3)
+    pusher (0.8.4)
       crack (~> 0.1.0)
       multi_json (~> 1.0)
       ruby-hmac (~> 0.4.0)
@@ -115,8 +115,8 @@ GEM
       rake (>= 0.8.7)
       rdoc (~> 3.4)
       thor (~> 0.14.4)
-    rake (0.9.2)
-    rdoc (3.10)
+    rake (0.9.2.2)
+    rdoc (3.11)
       json (~> 1.4)
     rspec (2.6.0)
       rspec-core (~> 2.6.0)
@@ -146,7 +146,7 @@ GEM
     shoulda (2.11.3)
     signature (0.1.2)
       ruby-hmac
-    simplecov (0.5.3)
+    simplecov (0.5.4)
       multi_json (~> 1.0.3)
       simplecov-html (~> 0.5.3)
     simplecov-html (0.5.3)
@@ -163,12 +163,12 @@ GEM
       jwt (>= 0.1.2)
       multi_json (>= 1.0.3)
     tzinfo (0.3.30)
-    uakari (0.2.4)
+    uakari (0.2.5)
       actionmailer (>= 3.0.0)
       httparty (> 0.6.0)
       json (>= 1.4.0)
     will_paginate (2.3.16)
-    xml-simple (1.1.0)
+    xml-simple (1.1.1)
 
 PLATFORMS
   ruby

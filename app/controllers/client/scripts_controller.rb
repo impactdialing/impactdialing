@@ -25,6 +25,16 @@ module Client
       @script = @user.account.scripts.find(params[:id])
       render :new
     end
+    
+    def update      
+      script = account.scripts.find_by_id(params[:id])
+      if script.update_attributes(params[:script])
+        flash_message(:notice, "Script sucessfully updated")
+        redirect_to :action=>"index"          
+      else
+        render :action=>"new"   
+      end
+    end
 
     def destroy
       @script = @user.account.scripts.manual.find(params[:id])
