@@ -22,7 +22,7 @@ gem 'settingslogic', '~> 2.0.6'
 gem "twilio-ruby", '~> 3.3.0'
 gem 'dynamic_form', '~> 1.1.4'
 gem 'in_place_editing', '~> 1.1.1'
-gem "nested_form", :git => "git://github.com/madebydna/nested_form.git"
+gem "nested_form", '~>0.1.1'
 gem 'rspec'
 
 group :development, :test do
