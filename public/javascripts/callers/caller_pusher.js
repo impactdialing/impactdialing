@@ -86,8 +86,20 @@ function send_voter_response(){
             // pushes 'voter_push' event to browsers
         }
     });
-
 }
+function disconnect_caller(){
+    $.ajax({
+        url : "/caller/end_session",
+		data : {id : $("#caller").val(), voter_id : $("#current_voter").val(), session_id : $("#caller_session").val() },
+        type : "POST",
+        success : function(response) {
+            // pushes 'calling_voter'' event to browsers
+        }
+    })
+  	
+}
+
+
 
 
 
