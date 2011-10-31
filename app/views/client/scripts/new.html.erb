@@ -19,28 +19,30 @@
             <%= q.text_field :text%>
           <fieldset>
             <legend>Responses</legend>
+            <table>
+              <tr>
+                <th width = 30%>Response</th>
+                <th width = 30%>Key pad</th>
+                <th width = 30%>Delete</th>
+              </tr>
+            </table>
               <%= q.fields_for :possible_responses do |r| %>
-                  <table>
-                    <tr>
-                      <th>Response</th>
-                      <th>Key pad</th>
-                      <th>Delete</th>
-                    </tr>
-                    <tr>
-                      <td>
-                        <%= r.text_field :value %>
-                      </td>
-                      <td>
-                        <%= r.text_field :keypad %>
-                      </td>
-                      <td>
-                        <%= r.link_to_remove "Remove"%>
-                      
-                      </td>
-                    </tr>
-                  </table>
-                <% end %>
-              <%= q.link_to_add "Add response", :possible_responses %>
+                <table>
+                  <tr>
+                    <td width = 30%>
+                      <%= r.text_field :value %>
+                    </td>
+                    <td width = 30%>
+                      <%= r.text_field :keypad %>
+                    </td>
+                    <td width = 30%>
+                      <%= r.link_to_remove "Remove"%>
+                    
+                    </td>
+                  </tr>
+                </table>
+              <% end %>
+            <%= q.link_to_add "Add response", :possible_responses %>
             
             </fieldset>
             <%= q.link_to_remove "Remove this question" %>
