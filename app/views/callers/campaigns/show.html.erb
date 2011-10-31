@@ -5,7 +5,7 @@
 
 <% content_for :javascripts do %>
     <script src="http://js.pusherapp.com/1.8/pusher.min.js" type="text/javascript"></script>
-    <%= javascript_include_tag 'jquery.ui.datetime.min', 'callers/caller_pusher', 'scripts','ICanHaz.min.js' %>
+    <%= javascript_include_tag 'jquery.ui.datetime.min', 'callers/caller_pusher', 'scripts', 'ICanHaz.min.js' %>
 
     <script type="text/javascript">
         var pusher = new Pusher('<%= Pusher.key %>');
@@ -29,15 +29,15 @@
 <%= hidden_field_tag(:current_voter, nil) %>
 
 <fieldset id="callin_data">
-  <legend>Call In :</legend>
+  <legend>Call In : <%= @campaign.name %></legend>
   <div>
-    Campaign : <%= @campaign.name %>
-  </div>
-  <div>
-    Campaign Id : <%= @campaign.campaign_id %>
+    Phone : <%= Settings.phone %>
   </div>
   <div>
     Your Pin : <%= @caller.pin %>
+  </div>
+  <div>
+    Campaign Pin : <%= @campaign.campaign_id %>
   </div>
 </fieldset>
 
@@ -56,5 +56,5 @@
   <% end %>
 </fieldset>
 
-<%= render 'results'%>
-<%= render 'actions'%>
+<%= render 'results' %>
+<%= render 'actions' %>
