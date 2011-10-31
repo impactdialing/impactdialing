@@ -32,6 +32,23 @@ end
 
 group :development do
   gem 'mongrel', '~> 1.2.0.pre2'
+  gem 'guard'
+  gem 'guard-bundler'
+  gem 'guard-rspec'
+  gem 'guard-spork'
+  gem 'guard-rails'
+end
+
+# run 'bundle install' with either '--without linux' or '--without darwin' depending on your os.
+# you only need to do this once since the options will be saved in your .bundle/config file for subsequent calls
+group :darwin do #mac notifiers
+  gem 'rb-fsevent'
+  gem 'growl_notify'
+end
+
+group :linux do #linux notifiers
+  gem 'rb-inotify'
+  gem 'libnotify'
 end
 
 group :test do

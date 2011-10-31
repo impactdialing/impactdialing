@@ -11,6 +11,8 @@ set :use_sudo, false
 set :deploy_via, :export
 set :deploy_to, "/var/www/rails/#{application}"
 set :chmod755, "app config db lib public vendor script script/* public/ disp*"
+set :bundle_without,  [:development, :test, :darwin, :linux]
+set :bundle_flags,    "--deployment --quiet --binstubs"
 
 namespace :deploy do
   task :bundle_new_release, :roles => :app do
