@@ -1,3 +1,7 @@
+<% content_for :javascripts do %>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js"></script>
+    <%= javascript_include_tag 'scripts/add_remove.js' %>
+<% end %>
 <h1><%= @script.new_record? ? "New script" : "Edit script" %></h1>
 <%= error_messages_for :script %>
 
@@ -23,7 +27,7 @@
                       <%= r.text_field :keypad %>
                     </td>
                     <td>
-                      <%= r.link_to_remove "Remove response" %>
+                      <%= r.link_to_remove "Remove response"%>                      
                     </td>
                   </tr>
                 </table>
@@ -32,9 +36,6 @@
           </fieldset>
           <%= q.link_to_remove "Remove this question" %>
         </fieldset>
-
-
-        <%= q.link_to_remove "Remove Question" %>
 
     <% end %>
     <%= f.link_to_add "Add a question", :questions %>

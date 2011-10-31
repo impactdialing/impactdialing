@@ -5,7 +5,7 @@ class Script < ActiveRecord::Base
   belongs_to :account
   has_many :robo_recordings
   has_many :questions
-  accepts_nested_attributes_for :questions
+  accepts_nested_attributes_for :questions, :allow_destroy => true
   accepts_nested_attributes_for :robo_recordings, :allow_destroy => true
 
   default_scope :order => :name

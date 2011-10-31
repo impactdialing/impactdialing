@@ -26,12 +26,18 @@ ImpactDialing::Application.routes.draw do
   end
 
   resources :caller do
-    collection { get :login }
-    member { post :assign_campaign }
-    collection { post :end_session }
-    member { post :active_session }
-    member { post :preview_voter }
-    member { post :call_voter }
+    collection do
+      get :login
+      post :end_session
+    end
+
+    member do
+      post :assign_campaign
+      post :active_session
+      post :preview_voter
+      post :call_voter
+    end
+
   end
 
   post :receive_call, :to => 'callin#create'
@@ -73,8 +79,6 @@ ImpactDialing::Application.routes.draw do
     resources :campaigns, :only => [:show, :index]
   end
 
-  
-
   namespace 'client' do
     [:campaigns, :scripts, :callers].each do |type_plural|
       get "/deleted_#{type_plural}", :to => "#{type_plural}#deleted", :as => "deleted_#{type_plural}"
@@ -91,36 +95,38 @@ ImpactDialing::Application.routes.draw do
   end
 
   scope 'client' do
-        match '/', :to => 'client#index', :as => 'client_root'
-        resources :campaigns, :only => [] do
-          member { post :verify_callerid }
-          resources :voter_lists, :except => [:new, :show], :name_prefix => 'client' do
-            collection { post :import }
-          end
-        end
-        resources :blocked_numbers, :only => [:index, :create, :destroy]
-        resources :users, :only => [:create, :destroy]
-    
-        post 'user_invite', :to => 'users#invite', :as => 'user_invite'
+    match '/', :to => 'client#index', :as => 'client_root'
+    resources :campaigns, :only => [] do
+      member { post :verify_callerid }
+      resources :voter_lists, :except => [:new, :show], :name_prefix => 'client' do
+        collection { post :import }
       end
+    end
+    resources :blocked_numbers, :only => [:index, :create, :destroy]
+    resources :users, :only => [:create, :destroy]
+
+    post 'user_invite', :to => 'users#invite', :as => 'user_invite'
+  end
 
   scope 'caller' do
     match '/', :to => 'caller#index', :as => 'caller_root'
   end
 
   resources :campaigns, :path_prefix => 'client', :only => [] do
-      member do
-        post :verify_callerid
-      end
-      resources :voter_lists, :collection => {:import => :post}, :except => [:new, :show], :name_prefix => 'client'
-      match 'clear_calls', :to => 'client/campaigns#clear_calls', :as => 'clear_calls'
+    member do
+      post :verify_callerid
     end
+    resources :voter_lists, :collection => {:import => :post}, :except => [:new, :show], :name_prefix => 'client'
+    match 'clear_calls', :to => 'client/campaigns#clear_calls', :as => 'clear_calls'
+  end
 
   resources :call_attempts, :only => [:create, :update] do
-    member { post :connect }
-    member { post :end }
-    member { post :disconnect }
-    member { post :voter_response }
+    member do
+      post :connect
+      post :end
+      post :disconnect
+      post :voter_response
+    end
   end
 
   resources :users do
