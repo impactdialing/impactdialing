@@ -16,3 +16,4 @@ coverage_controller/
 bin/
 spec/fixtures/test_tmp/
 /typescript
+.bundle
