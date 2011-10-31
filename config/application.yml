@@ -1,5 +1,5 @@
 default: &default_settings
-  host: 4ik4.localtunnel.com
+  host: 456s.localtunnel.com
   port: 3000
 
 development:
