@@ -14,7 +14,7 @@ class CallinController < ApplicationController
     if @caller
       unless @caller.account.paid
           xml =  Twilio::Verb.new do |v|
-            v.say "Your account has insufficent funds"
+            v.say "Your account is not funded. Please contact your account administrator."
             v.hangup
          end
          render :xml => xml.response
