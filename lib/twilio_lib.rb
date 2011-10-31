@@ -15,9 +15,10 @@ class TwilioLib
     @http_user = accountguid
     @http_password = authtoken
   end
-  
+
 
   def call(http_method, service_method, params = {})
+    return '' if Rails.env == 'test'
     if service_method=="IncomingPhoneNumbers/Local" && Rails.env =="development"  && !params.has_key?("SmsUrl")
       http = Net::HTTP.new(@server, "5000")
       http.use_ssl=false
@@ -25,11 +26,6 @@ class TwilioLib
       http = Net::HTTP.new(@server, @port)
       http.use_ssl=true
     end
-
-#    Rails.logger.info "#{@root}#{service_method}"
-#    Rails.logger.info "???#{service_method}???"
-
-    #return 'err'    if service_method=="IncomingPhoneNumbers/Local" && (Rails.env =="development" || Rails.env =="dynamo_dev")
 
     if service_method=="IncomingPhoneNumbers/Local" && (Rails.env =="development" || Rails.env =="dynamo_dev") && !params.has_key?("SmsUrl")
       return '<?xml version="1.0" encoding="UTF-8"?>
@@ -63,10 +59,8 @@ class TwilioLib
     Rails.logger.debug "#{DEFAULT_SERVER}#{@root}#{service_method}?#{params}" if Rails.env =="development"
 
     req.set_form_data(params)
-#    Rails.logger.info  params
     response = http.start{http.request(req)}
-    Rails.logger.info  response.body if Rails.env =="development"
-#    Rails.logger.info  response.body
+    Rails.logger.info response.body if Rails.env =="development"
     response.body
   end
 
@@ -99,9 +93,7 @@ class TwilioLib
       end
   end
 
-
   def twilio_status_lookup(code)
-
     case code
       when 0 then "Not Yet Dialed"
       when 1 then "In Progress"
@@ -110,9 +102,5 @@ class TwilioLib
       when 4 then "Failed - Application Error"
       when 5 then "Failed - No Answer"
     end
-
   end
-  
-
-
 end

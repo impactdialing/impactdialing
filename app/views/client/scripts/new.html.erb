@@ -7,38 +7,54 @@
 
 <%= nested_form_for [:client, @script] do |f| %>
     <%= f.hidden_field :robo %>
-    <p>
-      <label>Script name</label>
-      <%= f.text_field :name, {:class => "field"} %>
-
+    <fieldset>
+      <p>
+        <label>Script name</label>
+        <%= f.text_field :name, {:class => "field"} %>
+      </p>
       <%= f.fields_for :questions do |q| %>
         <fieldset>
           <legend>Question</legend>
-          <%= q.text_field :text %>
+          <p>
+            <%= q.text_field :text%>
           <fieldset>
             <legend>Responses</legend>
-            <%= q.fields_for :possible_responses do |r| %>
+            <table>
+              <tr>
+                <th width = 30%>Response</th>
+                <th width = 30%>Key pad</th>
+                <th width = 30%>Delete</th>
+              </tr>
+            </table>
+              <%= q.fields_for :possible_responses do |r| %>
                 <table>
                   <tr>
-                    <td>
+                    <td width = 30%>
                       <%= r.text_field :value %>
                     </td>
-                    <td>
+                    <td width = 30%>
                       <%= r.text_field :keypad %>
                     </td>
-                    <td>
-                      <%= r.link_to_remove "Remove response"%>                      
+                    <td width = 30%>
+                      <%= r.link_to_remove "Remove"%>
+                    
                     </td>
                   </tr>
                 </table>
-            <% end %>
+              <% end %>
             <%= q.link_to_add "Add response", :possible_responses %>
-          </fieldset>
-          <%= q.link_to_remove "Remove this question" %>
+            
+            </fieldset>
+            <%= q.link_to_remove "Remove this question" %>
+          </p>
         </fieldset>
 
     <% end %>
-    <%= f.link_to_add "Add a question", :questions %>
-    </p>
-    <%= f.submit 'Save' %>
+    <fieldset style= "border: none; margin-bottom: 0px"}>
+      <%= f.link_to_add "Add a question", :questions %>
+    </fieldset>
+    <div class= "buttons">
+      <button type="submit">Save</button>
+    </div>
+  </fieldset>
 <% end %>
