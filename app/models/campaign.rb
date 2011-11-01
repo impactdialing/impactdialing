@@ -13,12 +13,12 @@ class Campaign < ActiveRecord::Base
   belongs_to :account
   belongs_to :recording
 
-  scope :robo, :conditions => {:robo => true }
-  scope :manual, :conditions => {:robo => false }
-  scope :for_account, lambda {|account| { :conditions => ["account_id = ?", account.id] }}
+  scope :robo, :conditions => {:robo => true}
+  scope :manual, :conditions => {:robo => false}
+  scope :for_account, lambda { |account| {:conditions => ["account_id = ?", account.id]} }
   scope :with_running_caller_sessions, {
-      :select     => "distinct campaigns.*",
-      :joins      => "inner join caller_sessions on (caller_sessions.campaign_id = campaigns.id)",
+      :select => "distinct campaigns.*",
+      :joins => "inner join caller_sessions on (caller_sessions.campaign_id = campaigns.id)",
       :conditions => {"caller_sessions.on_call" => true}
   }
   scope :using_web_ui, :conditions => {:use_web_ui => true}
@@ -76,25 +76,30 @@ class Campaign < ActiveRecord::Base
   end
 
   def before_save_campaign
-    #generate a new campaign_id
+    pin = nil
+    loop do
+      pin = rand.to_s[2..6]
+      break unless Campaign.find_by_campaign_id(pin)
+    end
+    self.campaign_id = pin
   end
-  
+
   def disable_voter_list
     campaign.voter_lists.each do |voter_list|
       voter_list.enabled = false
       voter_list.save
-    end    
+    end
   end
-  
+
 
   def recent_attempts(mins=10)
     attempts = CallAttempt.find_all_by_campaign_id(self.id, :conditions=>"call_start > DATE_SUB(now(),INTERVAL #{mins} MINUTE)", :order=>"id desc")
   end
 
-  def end_all_calls(account,auth,appurl)
+  def end_all_calls(account, auth, appurl)
     in_progress = CallAttempt.find_all_by_campaign_id(self.id, :conditions=>"sid is not null and call_end is null and id > 45")
     in_progress.each do |attempt|
-      t = TwilioLib.new(account,auth)
+      t = TwilioLib.new(account, auth)
       a=t.call("POST", "Calls/#{attempt.sid}", {'CurrentUrl'=>"#{appurl}/callin/voterEndCall?attempt=#{attempt.id}"})
       attempt.call_end=Time.now
       attempt.save
@@ -102,10 +107,10 @@ class Campaign < ActiveRecord::Base
     in_progress
   end
 
-  def end_all_callers(account,auth,appurl)
+  def end_all_callers(account, auth, appurl)
     in_progress = CallerSession.find_all_by_campaign_id(self.id, :conditions=>"on_call=1")
     in_progress.each do |caller|
-      t = TwilioLib.new(account,auth)
+      t = TwilioLib.new(account, auth)
       a=t.call("POST", "Calls/#{caller.sid}", {'CurrentUrl'=>"#{appurl}/callin/callerEndCall?session=#{caller.id}"})
       if a.index("RestException")
         caller.on_call=false
@@ -115,7 +120,7 @@ class Campaign < ActiveRecord::Base
     in_progress
   end
 
-  def calls_in_ending_window(period=10,predictive_type="longest")
+  def calls_in_ending_window(period=10, predictive_type="longest")
     #calls predicted to end soon
     stats = self.call_stats(period)
     if predictive_type=="longest"
@@ -145,7 +150,7 @@ class Campaign < ActiveRecord::Base
       ringattempts=[]
       longattempts=[]
       shortattempts=[]
-		  stats[:short_time] = 15
+      stats[:short_time] = 15
 
       if mins.blank?
         attempts = CallAttempt.find_all_by_campaign_id(self.id, :order=>"id desc")
@@ -184,7 +189,7 @@ class Campaign < ActiveRecord::Base
         if attempt.duration!=nil && attempt.duration>0
           totduration = totduration + attempt.duration
           if attempt.duration <= stats[:short_time]
-            stats[:total_short]  = stats[:total_short]+1
+            stats[:total_short] = stats[:total_short]+1
             totshortduration = totshortduration + attempt.duration
             shortattempts<<attempt.duration.to_i
           else
@@ -202,9 +207,9 @@ class Campaign < ActiveRecord::Base
       end
       #    avg_hold_time
       stats[:answer_pct] = (stats[:answer].to_f + stats[:abandon].to_f)/ stats[:total].to_f if stats[:total] > 0
-      stats[:abandon_pct] = stats[:abandon].to_f / (stats[:answer].to_f + stats[:abandon].to_f ) if stats[:answer] > 0
-      stats[:avg_duration] = totduration / stats[:answer].to_f  if stats[:answer] > 0
-      stats[:avg_hold_time] = tothold/ totholddata  if totholddata> 0
+      stats[:abandon_pct] = stats[:abandon].to_f / (stats[:answer].to_f + stats[:abandon].to_f) if stats[:answer] > 0
+      stats[:avg_duration] = totduration / stats[:answer].to_f if stats[:answer] > 0
+      stats[:avg_hold_time] = tothold/ totholddata if totholddata> 0
       stats[:avg_long] = totlongduration / stats[:total_long] if stats[:total_long] > 0
       stats[:avg_short] = totshortduration / stats[:total_short] if stats[:total_short] > 0
       stats[:avg_ring_time] = totringtime/totringattempts if totringattempts >0
@@ -216,7 +221,7 @@ class Campaign < ActiveRecord::Base
 
       #new algo stuff
       if stats[:answer_plus_abandon_ct] ==nil
-        stats[:dials_needed]  = 2
+        stats[:dials_needed] = 2
       else
         dials = 1 / stats[:answer_plus_abandon_ct]
         dials = 2 if dials.infinite?
@@ -224,9 +229,9 @@ class Campaign < ActiveRecord::Base
         dials = self.max_calls_per_caller if dials > self.max_calls_per_caller
         dials = 2 if attempts.length < 50
         #      dials=1
-        stats[:dials_needed]  = dials
+        stats[:dials_needed] = dials
       end
-      stats[:avg_ring_time_adjusted] =  stats[:avg_ring_time] - (2*stats[:avg_ring_time_deviation])
+      stats[:avg_ring_time_adjusted] = stats[:avg_ring_time] - (2*stats[:avg_ring_time_deviation])
       stats[:call_length_long] = stats[:avg_long] + (2*stats[:long_deviation])
       stats[:call_length_short] = stats[:avg_short] + (2*stats[:short_deviation])
 
@@ -242,9 +247,9 @@ class Campaign < ActiveRecord::Base
       stats[:short_callers]= 1/(stats[:total_short].to_f / stats[:total_long].to_f).to_f
       #final calcs
       stats[:short_new_call_caller_threshold] = 1/(stats[:total_short].to_f / stats[:total_long].to_f).to_f
-      stats[:short_new_call_time_threshold] = ( stats[:avg_short] + (2*stats[:short_deviation]) ) - ( stats[:avg_ring_time] - (2*stats[:avg_ring_time_deviation]) )
+      stats[:short_new_call_time_threshold] = (stats[:avg_short] + (2*stats[:short_deviation])) - (stats[:avg_ring_time] - (2*stats[:avg_ring_time_deviation]))
       if self.predictive_type=="algorithm1"
-        stats[:long_new_call_time_threshold] = ( stats[:avg_long] + (2*stats[:long_deviation]))- ( stats[:avg_ring_time] - (2*stats[:avg_ring_time_deviation]))
+        stats[:long_new_call_time_threshold] = (stats[:avg_long] + (2*stats[:long_deviation]))- (stats[:avg_ring_time] - (2*stats[:avg_ring_time_deviation]))
       else
         stats[:long_new_call_time_threshold] = stats[:avg_duration]
       end
@@ -269,10 +274,10 @@ class Campaign < ActiveRecord::Base
     voters
   end
 
-  def voters_count(status=nil,include_call_retries=true)
+  def voters_count(status=nil, include_call_retries=true)
     active_lists = VoterList.find_all_by_campaign_id_and_active_and_enabled(self.id, 1, 1)
     return [] if active_lists.length==0
-    active_list_ids = active_lists.collect {|x| x.id}
+    active_list_ids = active_lists.collect { |x| x.id }
     #voters = Voter.find_all_by_voter_list_id(active_list_ids)
 
     Voter.find_all_by_active(1, :select=>"id", :conditions=>"voter_list_id in (#{active_list_ids.join(",")})  and (status='#{status}' OR (call_back=1 and last_call_attempt_time < (Now() - INTERVAL 180 MINUTE)) )")
@@ -286,7 +291,7 @@ class Campaign < ActiveRecord::Base
     begin
       count = values.size
       mean = values.inject(:+) / count.to_f
-      stddev = Math.sqrt( values.inject(0) { |sum, e| sum + (e - mean) ** 2 } / count.to_f )
+      stddev = Math.sqrt(values.inject(0) { |sum, e| sum + (e - mean) ** 2 } / count.to_f)
     rescue
 #      Rails.logger.debug("deviation error: #{values.inspect}")
       puts "deviation error: #{values.inspect}"
@@ -294,7 +299,7 @@ class Campaign < ActiveRecord::Base
     end
   end
 
-  def voters(status=nil,include_call_retries=true,limit=300)
+  def voters(status=nil, include_call_retries=true, limit=300)
     #return testVoters if self.name=="Load Test"
     return [] if  !self.account.paid
     return [] if self.caller_id.blank? || !self.caller_id_verified
@@ -303,18 +308,18 @@ class Campaign < ActiveRecord::Base
 
     active_lists = VoterList.find_all_by_campaign_id_and_active_and_enabled(self.id, 1, 1)
     return [] if active_lists.length==0
-    active_list_ids = active_lists.collect {|x| x.id}
+    active_list_ids = active_lists.collect { |x| x.id }
     #voters = Voter.find_all_by_voter_list_id(active_list_ids)
 
     voters = Voter.find_all_by_campaign_id_and_active(self.id, 1, :conditions=>"voter_list_id in (#{active_list_ids.join(",")})", :limit=>limit, :order=>"rand()")
     voters.each do |voter|
-      if !voter_ids.index(voter.id) && (voter.status==nil || voter.status==status )
+      if !voter_ids.index(voter.id) && (voter.status==nil || voter.status==status)
         voters_returned << voter
-        voter_ids  << voter.id
+        voter_ids << voter.id
 #      elsif !voter_ids.index(voter.id) && include_call_retries && voter.call_back? && voter.last_call_attempt_time!=nil && voter.last_call_attempt_time < (Time.now - 3.hours)
       elsif !voter_ids.index(voter.id) && include_call_retries && voter.call_back? && voter.last_call_attempt_time!=nil && voter.last_call_attempt_time < (Time.now - 180.minutes)
         voters_returned << voter
-        voter_ids  << voter.id
+        voter_ids << voter.id
       end
     end
 
@@ -326,10 +331,10 @@ class Campaign < ActiveRecord::Base
           voters_returned << voter
         end
       end
-      return voters_returned.sort_by{rand}
+      return voters_returned.sort_by { rand }
     end
 
-    voters_returned.sort_by{rand}
+    voters_returned.sort_by { rand }
   end
 
   def phone_format(str)
@@ -345,22 +350,22 @@ class Campaign < ActiveRecord::Base
   end
 
   def format_number_to_phone(number, options = {})
-    number       = number.to_s.strip unless number.nil?
-    options      = options.symbolize_keys
-    area_code    = options[:area_code] || nil
-    delimiter    = options[:delimiter] || "-"
-    extension    = options[:extension].to_s.strip || nil
+    number = number.to_s.strip unless number.nil?
+    options = options.symbolize_keys
+    area_code = options[:area_code] || nil
+    delimiter = options[:delimiter] || "-"
+    extension = options[:extension].to_s.strip || nil
     country_code = options[:country_code] || nil
 
     begin
       str = ""
       str << "+#{country_code}#{delimiter}" unless country_code.blank?
       str << if area_code
-               number.gsub!(/([0-9]{1,3})([0-9]{3})([0-9]{4}$)/,"(\\1) \\2#{delimiter}\\3")
-      else
-        number.gsub!(/([0-9]{0,3})([0-9]{3})([0-9]{4})$/,"\\1#{delimiter}\\2#{delimiter}\\3")
-        number.starts_with?('-') ? number.slice!(1..-1) : number
-      end
+               number.gsub!(/([0-9]{1,3})([0-9]{3})([0-9]{4}$)/, "(\\1) \\2#{delimiter}\\3")
+             else
+               number.gsub!(/([0-9]{0,3})([0-9]{3})([0-9]{4})$/, "\\1#{delimiter}\\2#{delimiter}\\3")
+               number.starts_with?('-') ? number.slice!(1..-1) : number
+             end
       str << " x #{extension}" unless extension.blank?
       str
     rescue
@@ -446,31 +451,31 @@ class Campaign < ActiveRecord::Base
     done_short=0
 
     callers_to_dial.each do |session|
-       if session.attempt_in_progress.blank?
-         # caller waiting idle
-         pool_size = pool_size + stats[:dials_needed]
-         #DIALER_LOGGER.info "empty to pool, session #{session.id} attempt_in_progress is blank"
-       else
-         attempt = CallAttempt.find(session.attempt_in_progress)
-         if attempt.duration!=nil &&
-           if attempt.duration < stats[:short_time] && done_short<short_to_dial
-             if attempt.duration > stats[:short_new_call_time_threshold]
-              #when stats[:short_new_call_caller_threshold] callers are on calls of length less than stats[:short_time]s, dial  stats[:dials_needed] lines at stats[:short_new_call_time_threshold]) seconds after the last call began.
-               pool_size = pool_size + stats[:dials_needed]
-               done_short+=1
-               DIALER_LOGGER.info "short to pool, duration #{attempt.duration}, done_short=#{done_short}, short_to_dial=#{short_to_dial}"
-             end
-           else
-             # if a call passes length 15s, dial stats[:dials_needed] lines at stats[:short_new_long_time_threshold]sinto the call.
-             if attempt.duration > stats[:long_new_call_time_threshold]
-               DIALER_LOGGER.info "LONG TO POOL, session #{session.id}, attempt.duration #{attempt.duration}, thresh #{stats[:long_new_call_time_threshold]}"
-               pool_size = pool_size + stats[:dials_needed]
-             end
-           end
-         end
-       end
-     end
-     pool_size
+      if session.attempt_in_progress.blank?
+        # caller waiting idle
+        pool_size = pool_size + stats[:dials_needed]
+        #DIALER_LOGGER.info "empty to pool, session #{session.id} attempt_in_progress is blank"
+      else
+        attempt = CallAttempt.find(session.attempt_in_progress)
+        if attempt.duration!=nil &&
+            if attempt.duration < stats[:short_time] && done_short<short_to_dial
+              if attempt.duration > stats[:short_new_call_time_threshold]
+                #when stats[:short_new_call_caller_threshold] callers are on calls of length less than stats[:short_time]s, dial  stats[:dials_needed] lines at stats[:short_new_call_time_threshold]) seconds after the last call began.
+                pool_size = pool_size + stats[:dials_needed]
+                done_short+=1
+                DIALER_LOGGER.info "short to pool, duration #{attempt.duration}, done_short=#{done_short}, short_to_dial=#{short_to_dial}"
+              end
+            else
+              # if a call passes length 15s, dial stats[:dials_needed] lines at stats[:short_new_long_time_threshold]sinto the call.
+              if attempt.duration > stats[:long_new_call_time_threshold]
+                DIALER_LOGGER.info "LONG TO POOL, session #{session.id}, attempt.duration #{attempt.duration}, thresh #{stats[:long_new_call_time_threshold]}"
+                pool_size = pool_size + stats[:dials_needed]
+              end
+            end
+        end
+      end
+    end
+    pool_size
   end
 
   def choose_voters_to_dial(num_voters)
@@ -531,22 +536,22 @@ class Campaign < ActiveRecord::Base
   def voters_remaining
     all_voters.count - voters_dialed
   end
-  
+
   def update_campaign_with_account_information(account)
     account_id = account.id
     if script_id.blank?
       script = account.scripts.active.first
       script_id = script.id unless script.nil?
-    end    
+    end
   end
-  
+
   def verify_caller_id
     require 'rubygems'
-    require 'hpricot'    
+    require 'hpricot'
     t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
     a = t.call("POST", "OutgoingCallerIds", {'PhoneNumber'=>caller_id, 'FriendlyName' => "Campaign #{id}"})
     @doc = Hpricot::XML(a)
-    (@doc/"ValidationCode").inner_html    
+    (@doc/"ValidationCode").inner_html
   end
 
   module Type

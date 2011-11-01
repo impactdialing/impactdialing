@@ -35,10 +35,6 @@ function get_session() {
     })
 }
 
-function current_session() {
-    $("#caller_session").val();
-}
-
 function get_voter() {
     $.ajax({
         url : "/caller/" + $("#caller_session").val() + "/preview_voter",
@@ -127,7 +123,8 @@ function subscribe(session_key) {
     });
 
     channel.bind('voter_disconnected', function(data) {
-        alert("voter disconnected");
+        show_response_panel();
+        set_message("Entering voter results");
     });
 
     channel.bind('voter_connected', function(data) {
