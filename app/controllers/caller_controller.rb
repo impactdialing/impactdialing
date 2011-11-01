@@ -55,12 +55,13 @@ class CallerController < ApplicationController
     end
   end
 
-  def end_session
-    
+  def end_session    
     caller = Caller.find(params[:id])
-    @session = caller.caller_sessions.find(params[:session_id])
-    @session.end
-    render :xml => Twilio::Verb.hangup
+    @session = caller.caller_sessions.find(params[:session_id])        
+    xml = @session.end.response
+    puts "ppppppppppppppppppp"
+    puts xml
+    render :xml => xml
   end
 
   def active_session
