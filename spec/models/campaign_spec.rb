@@ -122,6 +122,12 @@ describe Campaign do
     campaign.name.should == 'Untitled 2'
   end
 
+  it "generates its campaign pin" do
+    user = Factory(:user)
+    campaign = user.account.campaigns.create!
+    campaign.campaign_id.should_not be_nil
+  end
+
   it "doesn't overwrite a name that has been explicitly set" do
     user = Factory(:user)
     campaign = user.account.campaigns.create!(:name => 'Titled')
