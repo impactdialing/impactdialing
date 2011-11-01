@@ -19,6 +19,7 @@ describe CallAttemptsController do
     let(:call_attempt) { Factory(:call_attempt, :voter => voter, :campaign => campaign, :caller_session => caller_session) }
 
     it "collects voter responses" do
+      caller_session.update_attribute('attempt_in_progress', call_attempt)
       script = Factory(:script, :robo => false)
       question1 = Factory(:question, :script => script)
       response1 = Factory(:possible_response, :question => question1)
@@ -33,9 +34,10 @@ describe CallAttemptsController do
 
       post :voter_response, :id => call_attempt.id, :voter_id => voter.id, :answers => answer
       voter.answers.count.should == 2
+      caller_session.reload.attempt_in_progress.should be_nil
     end
 
-    it "triggers voter_changed Pusher event" do
+    it "triggers voter_push Pusher event" do
       channel = mock
       Voter.stub_chain(:to_be_dialed, :first).and_return(voter)
       Pusher.should_receive(:[]).with(anything).and_return(channel)

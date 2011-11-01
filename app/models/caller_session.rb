@@ -9,6 +9,7 @@ class CallerSession < ActiveRecord::Base
   scope :held_for_duration, lambda{|minutes| {:conditions => ["hold_time_start <= ?", minutes.ago]}}
   scope :between, lambda{|from_date, to_date| { :conditions => { :created_at => from_date..to_date } }}
   has_one :voter_in_progress, :class_name => 'Voter'
+  has_one :attempt_in_progress, :class_name => 'CallAttempt'
   unloadable
 
   def minutes_used
