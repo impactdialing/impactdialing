@@ -1,5 +1,5 @@
 default: &default_settings
-  host: 456s.localtunnel.com
+  host: 3gx4.localtunnel.com
   port: 3000
 
 development:

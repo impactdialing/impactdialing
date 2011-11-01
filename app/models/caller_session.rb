@@ -80,8 +80,12 @@ class CallerSession < ActiveRecord::Base
   end
 
   def end
+    xml = Twilio::Verb.new do |v|
+      v.hangup
+    end    
     self.update_attributes(:on_call => false, :available_for_call => false, :endtime => Time.now)
     self.publish("caller_disconnected",{})
+    xml
   end
 
   def publish(event,data)
