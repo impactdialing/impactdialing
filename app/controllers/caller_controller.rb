@@ -59,8 +59,6 @@ class CallerController < ApplicationController
     caller = Caller.find(params[:id])
     @session = caller.caller_sessions.find(params[:session_id])        
     xml = @session.end.response
-    puts "ppppppppppppppppppp"
-    puts xml
     render :xml => xml
   end
 
