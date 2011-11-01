@@ -42,5 +42,13 @@ module Client
       flash_message(:notice, "Script deleted")
       redirect_to client_scripts_path
     end
+    
+    def restore
+      script = account.scripts.find_by_id(params[:script_id])
+      script.restore
+      script.save
+      flash_message(:notice, "Script sucessfully restored")
+      redirect_to :action => "deleted"
+    end
   end
 end
