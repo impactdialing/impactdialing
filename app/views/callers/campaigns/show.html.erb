@@ -28,19 +28,6 @@
 <%= hidden_field_tag(:current_call_attempt, nil) %>
 <%= hidden_field_tag(:current_voter, nil) %>
 
-<fieldset id="callin_data">
-  <legend>Call In : <%= @campaign.name %></legend>
-  <div>
-    Phone : <%= Settings.phone %>
-  </div>
-  <div>
-    Your Pin : <%= @caller.pin %>
-  </div>
-  <div>
-    Campaign Pin : <%= @campaign.campaign_id %>
-  </div>
-</fieldset>
-
 <fieldset>
   <legend>Lead information</legend>
   <div id="voter_info_message" class="rt">
@@ -58,3 +45,9 @@
 
 <%= render 'results' %>
 <%= render 'actions' %>
+
+<div>
+<p>Call-in number: <%= Settings.phone %><br>
+PIN: <%= @caller.pin %><br>
+Campaign ID: <%= @campaign.campaign_id %></p>
+</div>
