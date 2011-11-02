@@ -23,7 +23,7 @@ module Client
       @voter_field_values = params[:voter_fields] || []
       if @script.save
         @user.account.scripts << @script
-        flash_message(:notice, "Script sucessfully Created")
+        flash_message(:notice, "Script saved")
         redirect_to :action=>"index"          
       else
         render :action=>"new"   
@@ -49,7 +49,7 @@ module Client
       @script = account.scripts.find_by_id(params[:id])
       params[:script][:voter_fields] =  params[:voter_fields].to_json
       if @script.update_attributes(params[:script])
-        flash_message(:notice, "Script sucessfully updated")
+        flash_message(:notice, "Script updated")
         redirect_to :action=>"index"          
       else
         render :action=>"new"   
@@ -67,7 +67,7 @@ module Client
       script = account.scripts.find_by_id(params[:script_id])
       script.restore
       script.save
-      flash_message(:notice, "Script sucessfully restored")
+      flash_message(:notice, "Script restored")
       redirect_to :action => "deleted"
     end
   end
