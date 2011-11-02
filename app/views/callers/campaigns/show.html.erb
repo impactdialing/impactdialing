@@ -13,9 +13,15 @@
 
     <script id="voter" type="text/html">
       {{#fields}}
-      <li><b>Name</b> : {{FirstName}} {{MiddleName}} {{LastName}}</li>
-      <li><b>Gender</b> : {{Gender}}</li>
-      <li><b>Age</b> : {{Age}}</li>
+      <li>ID: {{CustomID}}</li>
+      <li>First name: {{FirstName}}</li>
+      <li>Middle name: {{MiddleName}}</li>
+      <li>Last name: {{LastName}}</li>
+      <li>Suffix: {{Suffix}}</li>
+      <li>Age: {{Age}}</li>
+      <li>Gender: {{Gender}}</li>
+      <li>Phone: {{Phone}}</li>
+      <li>Email: {{Email}}</li>
       {{/fields}}
       {{#custom_fields}}
       <li>{{.}}</li>
