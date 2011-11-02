@@ -1,5 +1,5 @@
 default: &default_settings
-  host: 4dvg.localtunnel.com
+  host: 3ngz.localtunnel.com
   port: 3000
   phone: 2525732146
 

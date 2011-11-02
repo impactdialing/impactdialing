@@ -3,7 +3,7 @@ class TwilioLib
 
   DEFAULT_SERVER = "api.twilio.com" unless const_defined?('DEFAULT_SERVER')
   DEFAULT_PORT = 443 unless const_defined?('DEFAULT_PORT')
-  DEFAULT_ROOT= "/2008-08-01/Accounts/" unless const_defined?('DEFAULT_ROOT')
+  DEFAULT_ROOT= "/2010-04-01/Accounts/" unless const_defined?('DEFAULT_ROOT')
 
   def accountguid
   end
@@ -14,6 +14,17 @@ class TwilioLib
     @root = "#{DEFAULT_ROOT}#{accountguid}/"
     @http_user = accountguid
     @http_password = authtoken
+  end
+  
+  def end_call(call_id)
+      http = Net::HTTP.new(@server, @port)
+      http.use_ssl=true
+      req = Net::HTTP::Post.new("#{@root}Calls/#{call_id}?Status=completed")
+      req.basic_auth @http_user, @http_password
+      params = {'Status'=>"completed"}
+      req.set_form_data(params)
+      response = http.start{http.request(req)}
+      Rails.logger.info response.body 
   end
 
 
@@ -44,6 +55,7 @@ class TwilioLib
       '
     else
       if http_method=="POST"
+        puts "#{@root}#{service_method}?#{params}"
         req = Net::HTTP::Post.new("#{@root}#{service_method}?#{params}")
       elsif http_method=="DELETE"
         req = Net::HTTP::Delete.new("#{@root}#{service_method}?#{params}")
@@ -60,7 +72,7 @@ class TwilioLib
 
     req.set_form_data(params)
     response = http.start{http.request(req)}
-    Rails.logger.info response.body if Rails.env =="development"
+    Rails.logger.info response.body 
     response.body
   end
 

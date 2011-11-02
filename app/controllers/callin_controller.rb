@@ -9,6 +9,7 @@ class CallinController < ApplicationController
 
   def identify
     #get the caller from the digits and push voter details.
+    puts params[:Digits]
     @caller = Caller.find_by_pin(params[:Digits])
     
     if @caller
@@ -19,7 +20,8 @@ class CallinController < ApplicationController
          end
          render :xml => xml.response
          return
-       end      
+       end
+      
       @session = @caller.caller_sessions.create(:on_call => false, :available_for_call => false, :session_key => generate_session_key, :sid => params[:CallSid])
       render :xml => @session.ask_for_campaign
     else
