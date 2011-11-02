@@ -2,13 +2,13 @@ require "twilio_lib"
 
 class Campaign < ActiveRecord::Base
   include Deletable
-  require "fastercsv"
   validates_presence_of :name, :on => :create, :message => "can't be blank"
   has_many :caller_sessions
   has_many :voter_lists, :conditions => {:active => true}
   has_many :all_voters, :class_name => 'Voter'
   has_many :call_attempts
-  has_and_belongs_to_many :callers
+  has_many :caller_campaigns
+  has_many :callers, :through => :caller_campaigns
   belongs_to :script
   belongs_to :account
   belongs_to :recording
@@ -78,6 +78,14 @@ class Campaign < ActiveRecord::Base
   def before_save_campaign
     #generate a new campaign_id
   end
+  
+  def disable_voter_list
+    campaign.voter_lists.each do |voter_list|
+      voter_list.enabled = false
+      voter_list.save
+    end    
+  end
+  
 
   def recent_attempts(mins=10)
     attempts = CallAttempt.find_all_by_campaign_id(self.id, :conditions=>"call_start > DATE_SUB(now(),INTERVAL #{mins} MINUTE)", :order=>"id desc")
@@ -374,7 +382,7 @@ class Campaign < ActiveRecord::Base
     update_attribute(:calls_in_progress, false)
   end
 
-  def callers
+  def callers_to_dial
     CallerSession.find_all_by_campaign_id_and_on_call(self.id, 1)
   end
 
@@ -391,8 +399,6 @@ class Campaign < ActiveRecord::Base
   end
 
   def get_dial_ratio
-
-
 
     if self.predictive_type.index("power_")!=nil
       ratio_dial = self.predictive_type[6, 1].to_i
@@ -439,7 +445,7 @@ class Campaign < ActiveRecord::Base
     pool_size=0
     done_short=0
 
-    callers.each do |session|
+    callers_to_dial.each do |session|
        if session.attempt_in_progress.blank?
          # caller waiting idle
          pool_size = pool_size + stats[:dials_needed]
@@ -519,11 +525,28 @@ class Campaign < ActiveRecord::Base
   end
 
   def voters_dialed
-    self.call_attempts.count('voter_id', :distinct => true)
+    call_attempts.count('voter_id', :distinct => true)
   end
 
   def voters_remaining
-    self.all_voters.count - voters_dialed
+    all_voters.count - voters_dialed
+  end
+  
+  def update_campaign_with_account_information(account)
+    account_id = account.id
+    if script_id.blank?
+      script = account.scripts.active.first
+      script_id = script.id unless script.nil?
+    end    
+  end
+  
+  def verify_caller_id
+    require 'rubygems'
+    require 'hpricot'    
+    t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+    a = t.call("POST", "OutgoingCallerIds", {'PhoneNumber'=>caller_id, 'FriendlyName' => "Campaign #{id}"})
+    @doc = Hpricot::XML(a)
+    (@doc/"ValidationCode").inner_html    
   end
 
   module Type

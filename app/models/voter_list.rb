@@ -71,6 +71,12 @@ class VoterList < ActiveRecord::Base
   def voters_remaining
     voters.to_be_dialed.size
   end
+  
+  def self.enable_voter_list(id)
+    voter_list = VoterList.find(id)
+    voter_list.enabled = true
+    voter_list.save    
+  end
 
   private
   def new_lead(phone_number)

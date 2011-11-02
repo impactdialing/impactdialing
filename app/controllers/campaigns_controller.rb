@@ -5,6 +5,7 @@ class CampaignsController < ClientController
   before_filter :setup_campaigns_paths, :only => [:index]
 
   def verify_campaign_ownership
+    puts params[:campaign]
     @campaign = Campaign.find(params[:id])
     if @campaign.account != account
       render :text => 'nothing', :status => :unauthorized
@@ -51,9 +52,6 @@ class CampaignsController < ClientController
     @callers  = account.callers.active
     @lists    = @campaign.voter_lists
     @voters = @campaign.all_voters.active.paginate(:page => params[:page])
-    if @campaign.caller_id.blank?
-      flash_now(:warning, t(:caller_id_blank))
-    end
     @voter_list = @campaign.voter_lists.new
   end
 
