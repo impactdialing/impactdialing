@@ -122,6 +122,7 @@ class Voter < ActiveRecord::Base
         :from => campaign.caller_id,
         :to => self.Phone,
         :url => connect_call_attempt_url(call_attempt, :host => Settings.host, :port =>Settings.port),
+        'StatusCallback' => end_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port) ,
         'IfMachine' => self.campaign.use_recordings? ? 'Continue' : 'Hangup' ,
         'Timeout' => campaign.answer_detection_timeout || "20"
       )

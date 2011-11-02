@@ -5,6 +5,9 @@ class CallerController < ApplicationController
   before_filter :connect_to_twilio, :only => [:preview_dial]
 
   def index
+    unless @caller.account.paid
+      flash_now(:warning, "Your account is not funded. Please contact your account administrator.")
+    end
     @campaigns = @caller.campaigns.manual.active.collect{|c| c if c.use_web_ui? }
   end
 

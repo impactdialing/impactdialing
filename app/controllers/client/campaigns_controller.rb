@@ -1,12 +1,20 @@
 module Client
   class CampaignsController < ::CampaignsController
     layout 'client'
+    
+     def new
+       @campaign = Campaign.new(:account_id => account.id, :predictive_type => 'algorithm1')
+       @campaign.save
+       @callers = account.callers.active
+       @lists = @campaign.voter_lists
+       @voters = @campaign.all_voters.active.default_order.paginate(:page => params[:page])
+       @scripts = account.scripts.manual.active
+
+       @show_voter_buttons = @user.show_voter_buttons
+       @voter_list = @campaign.voter_lists.new
+     end
 
     def show
-      if @campaign.robo
-        redirect_to broadcast_campaign_path(@campaign)
-        return
-      end
       check_warning
       @breadcrumb=[{"Campaigns" => client_campaigns_path}, @campaign.name]
 
@@ -15,11 +23,11 @@ module Client
       @voters = @campaign.all_voters.active.default_order.paginate(:page => params[:page])
       @scripts = account.scripts.manual.active
 
-      unless @campaign.caller_id
-        flash_now(:warning, "When you make calls with this campaign, you need a phone number to use for the Caller ID. Enter the phone number you want to use for your Caller ID and click Verify. To prevent abuse, the system will call that number and ask you to enter a validation code that will appear on your screen. Until you do this, you can't make calls with this campaign.")
-      end
       @show_voter_buttons = @user.show_voter_buttons
       @voter_list = @campaign.voter_lists.new
+      if (@campaign.robo)
+        redirect_to broadcast_campaign_path(@campaign)
+      end
     end
 
     def index
@@ -44,10 +52,42 @@ module Client
       @deleted_campaigns_path = client_deleted_campaigns_path
       @campaigns_path = client_campaigns_path
     end
+    
+    def update
+      @campaign = Campaign.find_by_id(params[:id])
+      if @campaign.update_attributes(params[:campaign])      
+        flash_message(:notice, "Campaign updated")
+        redirect_to :action=>"index"          
+      else
+        render :action=>"new"    
+      end      
+    end
 
     def create
-      campaign = account.campaigns.create(:predictive_type => 'algorithm1', :script => account.scripts.first, :callers => account.callers.active)
-      redirect_to client_campaign_path(campaign)
+      @campaign =  Campaign.new(params[:campaign])
+      @campaign.account = account
+      code=""
+      if @campaign.valid?        
+        code = @campaign.verify_caller_id if (!@campaign.caller_id_verified || !@campaign.caller_id.blank?)      
+        if @campaign.script_id.blank?
+          script = account.scripts.active.first
+          @campaign.script_id = script.id unless script.nil?
+          @campaign.save
+        end            
+        if params[:listsSent]
+          @campaign.disable_voter_list          
+          params[:voter_list_ids].each{ |id| enable_voter_list(id) } unless params[:voter_list_ids].blank?
+        end
+        account.callers.active.each { |caller| @campaign.callers << caller }        
+        if code.blank?
+          flash_message(:notice, "Campaign saved")
+        else
+          flash_message(:notice, "Campaign saved.  <font color=red>Enter code #{code} when called.</font>")
+        end
+        redirect_to client_campaign_path(@campaign)
+      else
+        render :action=>"new"  
+      end      
     end
 
     def clear_calls

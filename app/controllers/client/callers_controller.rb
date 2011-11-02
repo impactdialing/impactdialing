@@ -21,8 +21,18 @@ module Client
       @caller = account.callers.find_by_id(params[:id])
     end
     
+    def update
+      @caller = account.callers.find_by_id(params[:id])
+      if @caller.update_attributes(params[:caller])      
+        flash_message(:notice, "Caller updated")
+        redirect_to :action=>"index"          
+      else
+        render :action=>"new"    
+      end
+    end
+    
     def create
-      @caller = account.callers.find_by_id(params[:id]) || Caller.new(params[:caller]) 
+      @caller = Caller.new(params[:caller])
         @caller.account_id = account.id
         if @caller.save
           all_callers = account.callers.active

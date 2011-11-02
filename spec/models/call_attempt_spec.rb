@@ -82,8 +82,8 @@ describe CallAttempt do
       voter = Factory(:voter)
       call_attempt = Factory(:call_attempt, :voter => voter)
       call_attempt.conference(session).should == Twilio::TwiML::Response.new do |r|
-        r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(call_attempt, :host => Settings.host) do |d|
-          d.Conference session.session_key, :wait_url => "", :beep => false, :endConferenceOnExit => false, :maxParticipants => 2
+        r.Dial :hangupOnStar => 'true', :action => disconnect_call_attempt_path(call_attempt, :host => Settings.host) do |d|
+          d.Conference session.session_key, :wait_url => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
         end
       end.text
     end
@@ -164,14 +164,13 @@ describe CallAttempt do
     end
 
     it "pushes 'voter_disconnected' event when a call_attempt ends" do
-      pending
       voter = Factory(:voter)
-      attempt = Factory(:call_attempt, :voter => voter)
       session = Factory(:caller_session, :caller => Factory(:caller), :campaign => Factory(:campaign, :use_web_ui => true))
+      attempt = Factory(:call_attempt, :voter => voter, :caller_session => session)
       channel = mock
       Pusher.should_receive(:[]).with(anything).and_return(channel)
-      channel.should_receive(:trigger).with("voter_disconnected", {:attempt_id => attempt.id, :voter => voter.info})
-      attempt.hangup(session)
+      channel.should_receive(:trigger).with("voter_disconnected", {:attempt_id => attempt.id, :voter => attempt.voter.info})
+      attempt.disconnect
     end
   end
 

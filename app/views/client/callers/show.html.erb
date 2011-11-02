@@ -1,5 +1,29 @@
 <%= error_messages_for :caller %>
 	<h1>Edit caller</h1>
-	<%= render :partial => 'caller' %>
+	<%= form_for @caller, url:  "#{client_callers_path}/#{@caller.id}", :method => :put do |f| -%>  
+  	<fieldset>
+  	  <%= hidden_field_tag :id, @caller.id,{:class=>"field"} %>
+        <p>
+          <label>Name</label>
+  		<%= f.text_field :name, {:class=>"field"} %>
+        </p>
+        <p>
+          <label>Email</label>
+  		<%= f.text_field :email, {:class=>"field"} %>
+        </p>
+        <p>
+          <label>Password</label>
+  		<%= f.text_field :password, {:class=>"field"} %>
+        </p>
+        <p>
+          <label><%= f.check_box :multi_user%> &nbsp; Shared login?</label>
+
+        </p>
+      </fieldset>
+
+  	<div class="buttons">
+  	<button type="submit">Save</button>
+  	</div>
+  <% end -%>
 
 

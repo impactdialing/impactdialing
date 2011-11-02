@@ -10,7 +10,17 @@ class CallinController < ApplicationController
   def identify
     #get the caller from the digits and push voter details.
     @caller = Caller.find_by_pin(params[:Digits])
+    
     if @caller
+      unless @caller.account.paid
+          xml =  Twilio::Verb.new do |v|
+            v.say "Your account is not funded. Please contact your account administrator."
+            v.hangup
+         end
+         render :xml => xml.response
+         return
+       end
+      
       @session = @caller.caller_sessions.create(:on_call => false, :available_for_call => false, :session_key => generate_session_key, :sid => params[:CallSid])
       render :xml => @session.ask_for_campaign
     else
