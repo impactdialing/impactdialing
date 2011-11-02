@@ -1,6 +1,5 @@
 <% content_for :javascripts do %>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js"></script>
-    <%= javascript_include_tag 'scripts/add_remove.js' %>
 <% end %>
 <h1><%= @script.new_record? ? "New script" : "Edit script" %></h1>
 <%= error_messages_for :script %>
@@ -61,12 +60,13 @@
             <fieldset>
               <legend>Note <%=  %></legend>
               <%= n.text_field :note %>
+              <p></p>              
               <%= n.link_to_remove " Delete this note", :class => "action secondary"  %><br />
             </fieldset>            
           <% end %>
         <p class = "actions"><% index=0 %>
-          <%= f.link_to_add "Add a question", :questions, :class => "action secondary", :index => "#{index= index+1}" %>
-          <%= f.link_to_add "Add a note", :notes, :class => "action secondary" %><br />
+          <%= f.link_to_add "New question", :questions, :class => "action secondary", :index => "#{index= index+1}" %>
+          <%= f.link_to_add "New note", :notes, :class => "action secondary" %><br />
         </p>
       </fieldset>
     <div class= "buttons">
