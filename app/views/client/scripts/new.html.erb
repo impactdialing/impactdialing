@@ -17,7 +17,7 @@
           <% voter_fields = ["CustomID","FirstName","MiddleName","LastName","Suffix","Age","Gender","Phone","Email"] %>
           <% voter_fields.each do |field| %>
             <li>
-              <input  type="checkbox" name="voter_field[]" value="<%= field %>" <% if @voter_field_values.index(field) %>checked<% end %>>
+              <input  type="checkbox" name="voter_fields[]" value="<%= field %>" <% if @voter_field_values.index(field) %>checked<% end %>>
                 <%= field %>
               </input>
             </li>

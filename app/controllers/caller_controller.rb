@@ -58,7 +58,8 @@ class CallerController < ApplicationController
   def hangup_on_voter
     caller = Caller.find(params[:id])
     @session = caller.caller_sessions.find(params[:session_id])        
-    @session_id.end_call
+    @session.end_running_call
+    render :nothing => true
   end
 
   def end_session    

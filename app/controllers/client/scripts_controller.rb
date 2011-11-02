@@ -14,6 +14,7 @@ module Client
 
     def new
       @script = Script.new(:robo => false, questions: [Question.new(possible_responses: [PossibleResponse.new])])
+      @voter_field_values=[]
     end
 
     def create
@@ -24,13 +25,21 @@ module Client
 
     def show
       @script = @user.account.scripts.find(params[:id])
-      @voter_field_values = eval(@script.voter_fields)
+      if @script.voter_fields!=nil
+        begin
+          @voter_field_values = eval(@script.voter_fields)
+        rescue
+          @voter_field_values=[]
+        end
+      else
+        @voter_field_values=[]
+      end
       render :new
     end
     
     def update      
       @script = account.scripts.find_by_id(params[:id])
-      params[:script][:voter_fields] =  params[:voter_field].to_json
+      params[:script][:voter_fields] =  params[:voter_fields].to_json
       if @script.update_attributes(params[:script])
         flash_message(:notice, "Script sucessfully updated")
         redirect_to :action=>"index"          
