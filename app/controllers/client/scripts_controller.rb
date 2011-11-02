@@ -17,17 +17,20 @@ module Client
     end
 
     def create
+      params[:script][:voter_fields] = params[:voter_field].to_json
       @script = @user.account.scripts.create(params[:script])
       redirect_to @script
     end
 
     def show
       @script = @user.account.scripts.find(params[:id])
+      @voter_field_values = eval(@script.voter_fields)
       render :new
     end
     
     def update      
       @script = account.scripts.find_by_id(params[:id])
+      params[:script][:voter_fields] =  params[:voter_field].to_json
       if @script.update_attributes(params[:script])
         flash_message(:notice, "Script sucessfully updated")
         redirect_to :action=>"index"          
