@@ -59,14 +59,14 @@ class CallerSession < ActiveRecord::Base
       case attempt
         when 0
           v.gather(:numDigits => 5, :timeout => 10, :action => assign_campaign_caller_url(self.caller, :session => self, :host => Settings.host, :attempt => attempt + 1), :method => "POST") do
-            v.say "Please enter your campaign pin."
+            v.say "Please enter your campaign ID."
           end
         when 1, 2
           v.gather(:numDigits => 5, :timeout => 10, :action => assign_campaign_caller_url(self.caller , :session => self, :host => Settings.host, :attempt => attempt + 1), :method => "POST") do
-            v.say "Incorrect campaign Id. Please enter your campaign Id."
+            v.say "Incorrect campaign ID. Please enter your campaign ID."
           end
         else
-          v.say "Incorrect campaign pin."
+          v.say "That campaign ID is incorrect. Please contact your campaign administrator."
           v.hangup
         end
     end.response
