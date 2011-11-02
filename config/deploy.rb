@@ -1,22 +1,24 @@
 require "bundler/capistrano"
 
 repository = "git@github.com:impactdialing/Impact-Dialing.git"
+bundle_flags = "--deployment --quiet --binstubs"
+bundle_without = [:development, :test, :darwin, :linux]
 set :application, "impactdialing"
 set :user, "rails"
 set :scm, :git
 set :scm_auth_cache, true
-set :repository,  repository
+set :repository, repository
 set :runner, 'rails'
 set :use_sudo, false
 set :deploy_via, :export
 set :deploy_to, "/var/www/rails/#{application}"
 set :chmod755, "app config db lib public vendor script script/* public/ disp*"
-set :bundle_without,  [:development, :test, :darwin, :linux]
-set :bundle_flags,    "--deployment --quiet --binstubs"
+set :bundle_without, bundle_without
+set :bundle_flags, bundle_flags
 
 namespace :deploy do
   task :bundle_new_release, :roles => :app do
-    run "cd #{deploy_to} && bundle install --without test"
+    run "cd #{deploy_to} && bundle install --without #{bundle_without.join(' ')} #{bundle_flags}"
   end
 
   task :restart, :roles => :app do
@@ -40,7 +42,7 @@ end
 task :staging do
   set :server_name, "ec2-174-129-172-31.compute-1.amazonaws.com"
   set :rails_env, 'staging'
-  set :branch, "temp_production"
+  set :branch, "predictive"
   role :web, 'ec2-174-129-172-31.compute-1.amazonaws.com'
   role :app, 'ec2-174-129-172-31.compute-1.amazonaws.com'
   role :db, 'ec2-174-129-172-31.compute-1.amazonaws.com', :primary => true
