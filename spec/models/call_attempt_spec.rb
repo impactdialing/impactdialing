@@ -82,10 +82,11 @@ describe CallAttempt do
       voter = Factory(:voter)
       call_attempt = Factory(:call_attempt, :voter => voter)
       call_attempt.conference(session).should == Twilio::TwiML::Response.new do |r|
-        r.Dial :hangupOnStar => 'true', :action => disconnect_call_attempt_path(call_attempt, :host => Settings.host) do |d|
+        r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(call_attempt, :host => Settings.host) do |d|
           d.Conference session.session_key, :wait_url => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
         end
       end.text
+      session.voter_in_progress.should == voter
     end
 
     it "connects a successful call attempt to a caller_session when available" do
@@ -134,8 +135,9 @@ describe CallAttempt do
       voter = Factory(:voter, :campaign => campaign)
       caller_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller))
       call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign, :caller_session => caller_session)
-      call_attempt.disconnect.should == caller_session.hold
+      call_attempt.disconnect
       call_attempt.reload.status.should == CallAttempt::Status::SUCCESS
+      caller_session.reload.attempt_in_progress.should be_nil
     end
   end
 
@@ -156,7 +158,7 @@ describe CallAttempt do
     it "pushes voter details" do
       voter = Factory(:voter)
       attempt = Factory(:call_attempt, :voter => voter)
-      session = Factory(:caller_session, :caller => Factory(:caller), :campaign => Factory(:campaign))
+      session = Factory(:caller_session, :caller => Factory(:caller), :campaign => Factory(:campaign), :voter_in_progress => voter)
       channel = mock
       Pusher.should_receive(:[]).with(anything).and_return(channel)
       channel.should_receive(:trigger).with("voter_connected", {:attempt_id => attempt.id, :voter => voter.info})

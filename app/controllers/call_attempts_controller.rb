@@ -26,9 +26,8 @@ class CallAttemptsController < ApplicationController
 
   def disconnect
     call_attempt = CallAttempt.find(params[:id])
-    response = call_attempt.disconnect
-    pp response
-    render :xml => response
+    call_attempt.disconnect
+    render :nothing => true
   end
 
   def end
@@ -67,8 +66,8 @@ class CallAttemptsController < ApplicationController
       voters_response = PossibleResponse.find(answer["value"])
       @voter.answers.create(:possible_response => voters_response, :question => voters_response.question)
     end
-    @call_attempt.caller_session.update_attribute(:attempt_in_progress, nil)
     Pusher[@call_attempt.caller_session.session_key].trigger("voter_push", Voter.to_be_dialed.first.info)
+    @call_attempt.caller_session.update_attribute(:voter_in_progress, nil)
     render :nothing => true
   end
 end
