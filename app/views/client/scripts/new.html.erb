@@ -15,10 +15,12 @@
       <fieldset>
         <legend>Display above script</legend>
         <ul class="clearfix">
-          <% voter_fields = ["CustomID","FirstName","MiddleName","LastName","Suffix","Age","Gender","Phone","Email"]%>
+          <% voter_fields = ["CustomID","FirstName","MiddleName","LastName","Suffix","Age","Gender","Phone","Email"] %>
           <% voter_fields.each do |field| %>
             <li>
-              <input  type="checkbox" name="voter_field[]" value="<%= field %>" <% if @voter_field_values.index(field) %>checked<% end %>><%= field %> </input>
+              <input  type="checkbox" name="voter_field[]" value="<%= field %>" <% if @voter_field_values.index(field) %>checked<% end %>>
+                <%= field %>
+              </input>
             </li>
           <% end %>
         </ul>
@@ -74,12 +76,14 @@
             <fieldset>
               <legend>Note <%=  %></legend>
               <%= n.text_field :note %>
-              <%= n.link_to_remove " Delete this note", :class => "action secondary"  %><br />
+              <p class = "actions">
+                <%= n.link_to_remove " Delete this note", :class => "action secondary"  %>
+              </p>
             </fieldset>            
           <% end %>
-        <p class = "actions"><% index=0 %>
-          <%= f.link_to_add "Add a question", :questions, :class => "action secondary", :index => "#{index= index+1}" %>
-          <%= f.link_to_add "Add a note", :notes, :class => "action secondary" %><br />
+        <p class = "actions">
+          <%= f.link_to_add "Add a question", :questions, :class => "action secondary" %>
+          <%= f.link_to_add "Add a note", :notes, :class => "action secondary" %>
         </p>
       </fieldset>
     <div class= "buttons">
