@@ -13,7 +13,7 @@ module Client
     end
 
     def new
-      @script = Script.new(:robo => false)
+      @script = Script.new(:robo => false, questions: [Question.new(possible_responses: [PossibleResponse.new])])
     end
 
     def create
@@ -27,8 +27,8 @@ module Client
     end
     
     def update      
-      script = account.scripts.find_by_id(params[:id])
-      if script.update_attributes(params[:script])
+      @script = account.scripts.find_by_id(params[:id])
+      if @script.update_attributes(params[:script])
         flash_message(:notice, "Script sucessfully updated")
         redirect_to :action=>"index"          
       else
