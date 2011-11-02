@@ -101,7 +101,7 @@ GEM
       activesupport (>= 2.3.2)
       cocaine (>= 0.0.2)
       mime-types
-    polyglot (0.3.2)
+    polyglot (0.3.3)
     pusher (0.8.4)
       crack (~> 0.1.0)
       multi_json (~> 1.0)

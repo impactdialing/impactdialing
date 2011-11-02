@@ -18,13 +18,21 @@ module Client
     end
 
     def create
-      params[:script][:voter_fields] = params[:voter_field].to_json
-      @script = @user.account.scripts.create(params[:script])
-      redirect_to @script
+      params[:script][:voter_fields] = params[:voter_fields].to_json
+      @script = Script.new(params[:script])  
+      @voter_field_values = params[:voter_fields] || []
+      if @script.save
+        @user.account.scripts << @script
+        flash_message(:notice, "Script sucessfully Created")
+        redirect_to :action=>"index"          
+      else
+        render :action=>"new"   
+      end
     end
 
     def show
       @script = @user.account.scripts.find(params[:id])
+      @script.questions << [Question.new(possible_responses: [PossibleResponse.new])]  if @script.questions.empty?
       if @script.voter_fields!=nil
         begin
           @voter_field_values = eval(@script.voter_fields)
