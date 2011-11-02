@@ -9,6 +9,7 @@ class CallerSession < ActiveRecord::Base
   scope :held_for_duration, lambda{|minutes| {:conditions => ["hold_time_start <= ?", minutes.ago]}}
   scope :between, lambda{|from_date, to_date| { :conditions => { :created_at => from_date..to_date } }}
   has_one :voter_in_progress, :class_name => 'Voter'
+  has_one :attempt_in_progress, :class_name => 'CallAttempt'
   unloadable
 
   def minutes_used
@@ -45,6 +46,7 @@ class CallerSession < ActiveRecord::Base
         'Timeout' => campaign.answer_detection_timeout || "20"}
     )
     self.publish('calling_voter',voter.info)
+    puts response
     attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])
   end
 
@@ -68,7 +70,7 @@ class CallerSession < ActiveRecord::Base
 
   def start
     response = Twilio::Verb.new do |v|
-      v.dial(:hangupOnStar => true, :action => end_session_caller_url(self.caller, :host => Settings.host, :session => self.id, :campaign => self.campaign.id)) do
+      v.dial(:hangupOnStar => true, :action => end_session_caller_index_url(:id => self.caller.id, :host => Settings.host, :session_id => self.id, :campaign => self.campaign.id)) do
         v.conference(self.session_key, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port =>Settings.port), :waitMethod => 'GET')
       end
     end.response
@@ -79,8 +81,12 @@ class CallerSession < ActiveRecord::Base
   end
 
   def end
+    xml = Twilio::Verb.new do |v|
+      v.hangup
+    end    
     self.update_attributes(:on_call => false, :available_for_call => false, :endtime => Time.now)
     self.publish("caller_disconnected",{})
+    xml
   end
 
   def publish(event,data)
