@@ -95,6 +95,7 @@ describe CallAttempt do
       call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign)
       call_attempt.connect_to_caller.should == call_attempt.conference(caller_session)
       call_attempt.caller.should == caller_session.caller
+      caller_session.attempt_in_progress.should == call_attempt
     end
 
     it "connects a successful call attempt to a specified caller_session " do

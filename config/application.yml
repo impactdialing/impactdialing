@@ -1,8 +1,10 @@
 default: &default_settings
-  host: 3fg3.localtunnel.com
+  host: 3gx4.localtunnel.com
   port: 3000
+  phone: 4157020991
 
 development:
+  phone: 4157280921
   <<: *default_settings
 
 test:
