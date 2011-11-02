@@ -13,7 +13,7 @@ module Client
     end
 
     def new
-      @script = Script.new(:robo => false)
+      @script = Script.new(:robo => false, questions: [Question.new(possible_responses: [PossibleResponse.new])])
     end
 
     def create
