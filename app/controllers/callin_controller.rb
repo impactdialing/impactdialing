@@ -9,7 +9,6 @@ class CallinController < ApplicationController
 
   def identify
     #get the caller from the digits and push voter details.
-    puts params[:Digits]
     @caller = Caller.find_by_pin(params[:Digits])
     
     if @caller

@@ -51,7 +51,6 @@ class CallerSession < ActiveRecord::Base
         'Timeout' => campaign.answer_detection_timeout || "20"}
     )
     self.publish('calling_voter',voter.info)
-    puts response
     attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])
   end
 

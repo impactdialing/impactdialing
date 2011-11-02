@@ -245,7 +245,6 @@ Can we count on you to vote for such-and-such?"
       f = File.new(Rails.root.join('result_combined.txt'))
       while (line = f.gets)
         hash = eval(line.gsub("Parameters:", "").strip)
-        puts "#{counter}: #{hash["attempt"]}"
         out << hash["attempt"]
         counter = counter + 1
       end
