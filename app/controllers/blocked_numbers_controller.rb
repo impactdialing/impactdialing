@@ -11,7 +11,7 @@ class BlockedNumbersController < ClientController
         flash_message(:error, message)
       end
     else
-      flash_message(:notice, "Do not call number added.")
+      flash_message(:notice, "Do Not Call number added")
     end
     redirect_to :back
   end
