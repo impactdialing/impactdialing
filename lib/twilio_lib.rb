@@ -55,7 +55,6 @@ class TwilioLib
       '
     else
       if http_method=="POST"
-        puts "#{@root}#{service_method}?#{params}"
         req = Net::HTTP::Post.new("#{@root}#{service_method}?#{params}")
       elsif http_method=="DELETE"
         req = Net::HTTP::Delete.new("#{@root}#{service_method}?#{params}")
