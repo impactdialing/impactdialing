@@ -7,54 +7,70 @@
 
 <%= nested_form_for [:client, @script] do |f| %>
     <%= f.hidden_field :robo %>
-    <fieldset>
+    
       <p>
         <label>Script name</label>
         <%= f.text_field :name, {:class => "field"} %>
       </p>
-      <%= f.fields_for :questions do |q| %>
-        <fieldset>
-          <legend>Question</legend>
-          <p>
-            <%= q.text_field :text%>
+      <fieldset>
+        <legend>Script</legend>
+        <%= f.text_area :script %>
+      </fieldset>
+      <fieldset>
+        <legend>Call results</legend>
+        <%= f.fields_for :questions do |q| %>
           <fieldset>
-            <legend>Responses</legend>
-            <table>
-              <tr>
-                <th width = 30%>Response</th>
-                <th width = 30%>Key pad</th>
-                <th width = 30%>Delete</th>
-              </tr>
-            </table>
-              <%= q.fields_for :possible_responses do |r| %>
+            <legend>Question <%= %></legend>
+            <p>
+              <%= q.text_field :text%>
+              <fieldset>
+                <legend>Responses</legend>
                 <table>
                   <tr>
-                    <td width = 30%>
-                      <%= r.text_field :value %>
-                    </td>
-                    <td width = 30%>
-                      <%= r.text_field :keypad %>
-                    </td>
-                    <td width = 30%>
-                      <%= r.link_to_remove "Remove"%>
-                    
-                    </td>
+                    <th width = 30%>Response</th>
+                    <th width = 30%>Key pad</th>
+                    <th width = 30%>Delete</th>
                   </tr>
                 </table>
-              <% end %>
-            <%= q.link_to_add "Add response", :possible_responses %>
+                  <%= q.fields_for :possible_responses do |r| %>
+                    <table>
+                      <tr>
+                        <td width = 30%>
+                          <%= r.text_field :value %>
+                        </td>
+                        <td width = 30%>
+                          <%= r.text_field :keypad %>
+                        </td>
+                        <td width = 30%>
+                          <%= r.link_to_remove "Remove"%>
+                    
+                        </td>
+                      </tr>
+                    </table>
+                  <% end %>
+                <%= q.link_to_add "Add response", :possible_responses %>
             
+                </fieldset>
+              <%= q.link_to_remove "Remove this question" %>
+            </p>
             </fieldset>
-            <%= q.link_to_remove "Remove this question" %>
-          </p>
-        </fieldset>
+          <% end %>
 
-    <% end %>
-    <fieldset style= "border: none; margin-bottom: 0px"}>
-      <%= f.link_to_add "Add a question", :questions %>
-    </fieldset>
+
+
+          <%= f.fields_for :notes do |n| %>
+            <fieldset>
+              <legend>Note <%=  %></legend>
+              <%= n.text_field :note %>
+              <%= n.link_to_remove "Remove note" %><br />
+            </fieldset>            
+          <% end %>
+        
+        <%= f.link_to_add "Add a question", :questions %>
+        <%= f.link_to_add "Add a note", :notes %><br />
+      </fieldset>
     <div class= "buttons">
       <button type="submit">Save</button>
     </div>
-  </fieldset>
+
 <% end %>
