@@ -92,7 +92,7 @@ GEM
       daemons (~> 1.0.10)
       gem_plugin (~> 0.2.3)
     multi_json (1.0.3)
-    mysql (2.8.1)
+    mysql2 (0.2.13)
     nested_form (0.1.1)
     newrelic_rpm (3.0.1)
     nokogiri (1.4.7)
@@ -208,7 +208,7 @@ DEPENDENCIES
   libnotify
   memcache-client (~> 1.8.5)
   mongrel (~> 1.2.0.pre2)
-  mysql
+  mysql2 (~> 0.2.13)
   nested_form (~> 0.1.1)
   newrelic_rpm (~> 3.0.1)
   nokogiri (~> 1.4.4)
