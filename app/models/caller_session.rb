@@ -54,11 +54,11 @@ class CallerSession < ActiveRecord::Base
     Twilio::Verb.new do |v|
       case attempt
         when 0
-          v.gather(:numDigits => 5, :timeout => 10, :action => assign_campaign_caller_url(self.caller, :session => self, :host => Settings.host, :attempt => attempt + 1), :method => "POST") do
+          v.gather(:numDigits => 5, :timeout => 10, :action => assign_campaign_caller_url(self.caller, :session => self, :host => Settings.host, :port =>Settings.port, :attempt => attempt + 1), :method => "POST") do
             v.say "Please enter your campaign pin."
           end
         when 1, 2
-          v.gather(:numDigits => 5, :timeout => 10, :action => assign_campaign_caller_url(self.caller , :session => self, :host => Settings.host, :attempt => attempt + 1), :method => "POST") do
+          v.gather(:numDigits => 5, :timeout => 10, :action => assign_campaign_caller_url(self.caller , :session => self, :host => Settings.host, :port =>Settings.port, :attempt => attempt + 1), :method => "POST") do
             v.say "Incorrect campaign Id. Please enter your campaign Id."
           end
         else
@@ -70,8 +70,8 @@ class CallerSession < ActiveRecord::Base
 
   def start
     response = Twilio::Verb.new do |v|
-      v.dial(:hangupOnStar => true, :action => end_session_caller_index_url(id: self.caller.id, :host => Settings.host, :session_id => self.id, :campaign => self.campaign.id)) do
-        v.conference(self.session_key, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host), :waitMethod => 'GET')
+      v.dial(:hangupOnStar => true, :action => end_session_caller_index_url(:id => self.caller.id, :host => Settings.host, :session_id => self.id, :campaign => self.campaign.id)) do
+        v.conference(self.session_key, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port =>Settings.port), :waitMethod => 'GET')
       end
     end.response
     update_attributes(:on_call => true, :available_for_call => true)
