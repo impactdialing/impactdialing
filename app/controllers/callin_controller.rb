@@ -14,13 +14,12 @@ class CallinController < ApplicationController
     if @caller
       unless @caller.account.paid
           xml =  Twilio::Verb.new do |v|
-            v.say "Your account is not funded. Please contact your account administrator."
+            v.say "Your account has insufficent funds"
             v.hangup
          end
          render :xml => xml.response
          return
-       end
-      
+       end      
       @session = @caller.caller_sessions.create(:on_call => false, :available_for_call => false, :session_key => generate_session_key, :sid => params[:CallSid])
       render :xml => @session.ask_for_campaign
     else

@@ -54,6 +54,12 @@ class CallerController < ApplicationController
       render :xml => @session.ask_for_campaign(params[:attempt])
     end
   end
+  
+  def hangup_on_voter
+    caller = Caller.find(params[:id])
+    @session = caller.caller_sessions.find(params[:session_id])        
+    @session_id.end_call
+  end
 
   def end_session    
     caller = Caller.find(params[:id])
