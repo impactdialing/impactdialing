@@ -294,7 +294,6 @@ class Campaign < ActiveRecord::Base
       stddev = Math.sqrt(values.inject(0) { |sum, e| sum + (e - mean) ** 2 } / count.to_f)
     rescue
 #      Rails.logger.debug("deviation error: #{values.inspect}")
-      puts "deviation error: #{values.inspect}"
       return 0
     end
   end

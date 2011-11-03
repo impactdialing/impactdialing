@@ -101,7 +101,7 @@ GEM
       activesupport (>= 2.3.2)
       cocaine (>= 0.0.2)
       mime-types
-    polyglot (0.3.2)
+    polyglot (0.3.3)
     pusher (0.8.4)
       crack (~> 0.1.0)
       multi_json (~> 1.0)
@@ -208,7 +208,7 @@ DEPENDENCIES
   libnotify
   memcache-client (~> 1.8.5)
   mongrel (~> 1.2.0.pre2)
-  mysql
+  mysql (~> 2.8.1)
   nested_form (~> 0.1.1)
   newrelic_rpm (~> 3.0.1)
   nokogiri (~> 1.4.4)
