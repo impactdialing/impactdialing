@@ -78,6 +78,16 @@ describe CallAttemptsController do
       end.text
     end
 
+    it "disconnects a call_attempt from a conference" do
+      call_attempt = Factory(:call_attempt, :status => CallAttempt::Status::INPROGRESS, :caller_session => Factory(:caller_session), :voter => Factory(:voter))
+      channel = mock
+      Pusher.should_receive(:[]).with(anything).and_return(channel)
+      channel.stub(:trigger)
+      post :disconnect, :id => call_attempt.id
+      response.body.should == call_attempt.hangup
+      call_attempt.reload.status.should == CallAttempt::Status::SUCCESS
+    end
+
     it "hangs up if there are no callers on call" do
       available_caller = Factory(:caller_session, :campaign => campaign, :available_for_call => false, :on_call => false)
       post :connect, :id => call_attempt.id
