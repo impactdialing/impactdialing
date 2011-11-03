@@ -76,10 +76,8 @@ class CallerController < ApplicationController
   end
 
   def end_session
-    pp params.inspect
-    caller = Caller.find(params[:id])
-    @session = caller.caller_sessions.find(params[:session])
-    render :xml => @session.end
+    session = CallerSession.find_by_sid(params[:CallSid])
+    render :xml => session.end
   end
 
   def active_session
