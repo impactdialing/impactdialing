@@ -124,7 +124,8 @@ function subscribe(session_key) {
         set_voter(data);
         $("#voter_info_message").hide();
         $("#callin_data").hide();
-        set_message("Call connected");
+        set_message("Ready for call");
+        hide_response_panel();
     });
 
     channel.bind('voter_push', function(data) {
@@ -163,6 +164,11 @@ function subscribe(session_key) {
     channel.bind('caller_disconnected', function(data) {
         clear_voter();
         hide_response_panel();
+    });
+
+    channel.bind('waiting_for_result', function(data) {
+        show_response_panel();
+        set_message('Please enter voter results');
     });
 
     function set_call_attempt(id){

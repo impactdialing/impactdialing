@@ -45,7 +45,7 @@
 <fieldset>
   <legend>Script</legend>
   <% if @campaign.script.script %>
-      <div class="rt script"> <%= @campaign.script.script.gsub("\n", "<br/>") %></div>
+      <div class="rt script"> <%=raw @campaign.script.script.gsub("\n", "<br />") %></div>  
   <% end %>
 </fieldset>
 

@@ -64,11 +64,12 @@ class CallAttempt < ActiveRecord::Base
 
   def conference(session)
     session.update_attribute(:attempt_in_progress, self)
+    session.update_attribute(:voter_in_progress, self.voter)
     self.update_attribute(:caller, session.caller)
     session.publish('voter_connected', {:attempt_id => self.id, :voter => self.voter.info})
     self.voter.conference(session)
     Twilio::TwiML::Response.new do |r|
-      r.Dial :hangupOnStar => 'true', :action => disconnect_call_attempt_path(self, :host => Settings.host) do |d|
+      r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(self, :host => Settings.host) do |d|
         d.Conference session.session_key, :wait_url => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
       end
     end.text
@@ -83,8 +84,8 @@ class CallAttempt < ActiveRecord::Base
 
   def disconnect
     update_attribute(:status, CallAttempt::Status::SUCCESS)
+    caller_session.update_attribute(:attempt_in_progress, nil)
     Pusher[caller_session.session_key].trigger('voter_disconnected', {:attempt_id => self.id, :voter => self.voter.info})
-    caller_session.hold
   end
 
   def hangup
