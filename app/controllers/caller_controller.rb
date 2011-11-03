@@ -65,15 +65,11 @@ class CallerController < ApplicationController
   def pause
     caller = Caller.find(params[:id])
     session = caller.caller_sessions.find(params[:session_id])
-    pp "attempt in progress : #{session.attempt_in_progress} ;;;; voter in progress : #{session.voter_in_progress}"
-    if(session.attempt_in_progress || session.voter_in_progress)
-      render :xml => session.voter_in_progress ? session.pause_for_results : session.start
-    else
-      render :xml => session.end
-    end
+    render :xml => session.voter_in_progress ? session.pause_for_results : session.start
   end
 
   def end_session
+    pp params.inspect
     caller = Caller.find(params[:id])
     @session = caller.caller_sessions.find(params[:session])
     render :xml => @session.end
