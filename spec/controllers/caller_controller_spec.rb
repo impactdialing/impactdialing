@@ -149,10 +149,22 @@ describe CallerController do
 
     it "terminates a callers session" do
       session = Factory(:caller_session, :caller => caller, :campaign => Factory(:campaign), :available_for_call => true, :on_call => true)
-      post :end_session, :id => caller.id, :session_id => session.id
+      post :end_session, :id => caller.id, :session => session.id
       assigns(:session).available_for_call.should be_false
       assigns(:session).on_call.should be_false
       response.body.should == Twilio::Verb.hangup
+    end
+
+    it "pauses a callers session while an attempt is in progress" do
+      session = Factory(:caller_session, :caller => caller, :campaign => Factory(:campaign), :available_for_call => false, :on_call => true, :voter_in_progress => Factory(:voter), :session_key => 'some_key')
+      post :pause, :id => caller.id, :session_id => session.id
+      response.body.should == session.pause_for_results
+    end
+
+    it "resets a callers session's conference while an attempt is in progress" do
+      session = Factory(:caller_session, :caller => caller, :campaign => Factory(:campaign), :available_for_call => false, :on_call => true, :session_key => "some_key")
+      post :pause, :id => caller.id, :session_id => session.id
+      response.body.should == session.start
     end
 
     it "finds the callers active session" do

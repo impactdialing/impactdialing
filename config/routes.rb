@@ -34,6 +34,7 @@ ImpactDialing::Application.routes.draw do
 
     member do
       post :assign_campaign
+      post :pause
       post :active_session
       post :preview_voter
       post :call_voter
@@ -42,6 +43,7 @@ ImpactDialing::Application.routes.draw do
   end
 
   post :receive_call, :to => 'callin#create'
+  post :end_caller_session, :to =>'caller/end_session'
   post :identify_caller, :to => 'callin#identify'
   get :hold_call, :to => 'callin#hold'
 

@@ -47,7 +47,7 @@ module Client
     
     def update      
       @script = account.scripts.find_by_id(params[:id])
-      params[:script][:voter_fields] =  params[:voter_fields].to_json
+      params[:script][:voter_fields] =  params[:voter_field] ? params[:voter_field].to_json : nil
       if @script.update_attributes(params[:script])
         flash_message(:notice, "Script updated")
         redirect_to :action=>"index"          

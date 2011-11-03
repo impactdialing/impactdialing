@@ -66,22 +66,15 @@ class Campaign < ActiveRecord::Base
   end
 
   def create_uniq_pin
-    uniq_pin=0
-    while uniq_pin==0 do
-      pin = rand.to_s[2..6]
-      check = Campaign.find_by_group_id(pin)
-      uniq_pin=pin if check.blank?
-    end
-    self.group_id = uniq_pin
-  end
-
-  def before_save_campaign
     pin = nil
     loop do
       pin = rand.to_s[2..6]
       break unless Campaign.find_by_campaign_id(pin)
     end
     self.campaign_id = pin
+  end
+
+  def before_save_campaign
   end
 
   def disable_voter_list
