@@ -1,8 +1,4 @@
-<% if request.get? %>
-  <h1>New campaign</h1>
-<% else %>
-  <h1>Edit campaign</h1>
-<% end %>
+<h1>New campaign</h1>
 <div id="callerid"></div>
 
 <%= form_for @campaign,  url:  "#{client_campaigns_path}/#{@campaign.id}", :html => {:name => 'callerForm', :id => 'callerForm'} do |f| %>
