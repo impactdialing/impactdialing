@@ -41,7 +41,7 @@ describe CallerSession do
     it "asks for the campaign context" do
       session = Factory(:caller_session, :caller => caller)
       session.ask_for_campaign.should == Twilio::Verb.new do |v|
-        v.gather(:numDigits => 5, :timeout => 10, :action => assign_campaign_caller_url(session.caller, :session => session, :host => Settings.host, :attempt => 1), :method => "POST") do
+        v.gather(:numDigits => 5, :timeout => 10, :action => assign_campaign_caller_url(session.caller, :session => session, :host => Settings.host, :port => Settings.port, :attempt => 1), :method => "POST") do
           v.say "Please enter your campaign ID."
         end
       end.response
@@ -50,7 +50,7 @@ describe CallerSession do
     it "asks for campaign pin context again" do
       session = Factory(:caller_session, :caller => caller)
       session.ask_for_campaign(1).should == Twilio::Verb.new do |v|
-        v.gather(:numDigits => 5, :timeout => 10, :action => assign_campaign_caller_url(session.caller, :session => session, :host => Settings.host, :attempt => 2), :method => "POST") do
+        v.gather(:numDigits => 5, :timeout => 10, :action => assign_campaign_caller_url(session.caller, :session => session, :host => Settings.host, :port => Settings.port, :attempt => 2), :method => "POST") do
           v.say "Incorrect campaign ID. Please enter your campaign ID."
         end
       end.response
@@ -68,8 +68,8 @@ describe CallerSession do
       campaign, conf_key = Factory(:campaign), "conference_key"
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => conf_key)
       session.start.should == Twilio::Verb.new do |v|
-        v.dial(:hangupOnStar => true, :action => pause_caller_url(caller, :host => Settings.host, :session_id => session)) do
-          v.conference(conf_key, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host), :waitMethod => "GET")
+        v.dial(:hangupOnStar => true, :action => pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => session)) do
+          v.conference(conf_key, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port), :waitMethod => "GET")
         end
       end.response
       session.on_call.should be_true
@@ -90,7 +90,7 @@ describe CallerSession do
 
     it "puts the caller on hold" do
       session = Factory(:caller_session)
-      session.hold.should == Twilio::Verb.new { |v| v.play "#{Settings.host}/wav/hold.mp3"; v.redirect(:method => 'GET'); }.response
+      session.hold.should == Twilio::Verb.new { |v| v.play "#{Settings.host}:#{Settings.port}/wav/hold.mp3"; v.redirect(:method => 'GET'); }.response
     end
   end
 
@@ -104,7 +104,7 @@ describe CallerSession do
       call_attempt = Factory(:call_attempt, :campaign => campaign, :dialer_mode => Campaign::Type::PREVIEW, :status => CallAttempt::Status::INPROGRESS, :caller_session => caller_session)
       voter.stub_chain(:call_attempts, :create).and_return(call_attempt)
       Twilio::Call.stub!(:make).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
-      Twilio::Call.should_receive(:make).with(anything, voter.Phone, connect_call_attempt_url(call_attempt, :host => Settings.host), anything)
+      Twilio::Call.should_receive(:make).with(anything, voter.Phone, connect_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port), anything)
 
       caller_session.preview_dial(voter)
       voter.caller_session.should == caller_session
@@ -114,7 +114,7 @@ describe CallerSession do
 
     it "pauses the voters results to be entered by the caller" do
       caller_session = Factory(:caller_session, :caller => caller)
-      caller_session.pause_for_results.should == Twilio::Verb.new { |v| v.say("Enter results."); v.pause("length" => 2); v.redirect(pause_caller_url(caller, :session_id => caller_session.id, :host => Settings.host)) }.response
+      caller_session.pause_for_results.should == Twilio::Verb.new { |v| v.say("Enter results."); v.pause("length" => 2); v.redirect(pause_caller_url(caller, :session_id => caller_session.id, :host => Settings.host, :port => Settings.port)) }.response
     end
 
   end
