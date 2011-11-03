@@ -54,7 +54,7 @@ describe Client::CampaignsController do
     script = Factory(:script, :account => account)
     callers = 3.times.map{Factory(:caller, :account => account)}
     lambda {
-      post :create
+      post :create , :campaign => {:caller_ids => []}
     }.should change {account.reload.campaigns.size} .by(1)
     campaign = account.campaigns.last
     campaign.predictive_type.should == 'preview'
@@ -87,7 +87,7 @@ describe Client::CampaignsController do
     manual_script = Factory(:script, :account => account, :robo => false)
     robo_script = Factory(:script, :account => account, :robo => true)
     lambda {
-      post :create
+      post :create , :campaign => {:caller_ids => []}
     }.should change(user.account.campaigns.active.manual, :size).by(1)
     user.account.campaigns.active.manual.last.script.should == manual_script
     response.should redirect_to client_campaign_path(user.account.campaigns.last)
