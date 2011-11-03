@@ -78,7 +78,7 @@ class Campaign < ActiveRecord::Base
   end
 
   def disable_voter_list
-    campaign.voter_lists.each do |voter_list|
+    voter_lists.each do |voter_list|
       voter_list.enabled = false
       voter_list.save
     end
