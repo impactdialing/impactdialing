@@ -124,7 +124,7 @@ class Voter < ActiveRecord::Base
         :url => connect_call_attempt_url(call_attempt, :host => Settings.host, :port =>Settings.port),
         'StatusCallback' => end_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port) ,
         'IfMachine' => self.campaign.use_recordings? ? 'Continue' : 'Hangup' ,
-        'Timeout' => campaign.answer_detection_timeout || "20"
+        'Timeout' => campaign.answer_detection_timeout || 20
       )
       call_attempt.update_attributes(:status => CallAttempt::Status::INPROGRESS, :sid => @call.sid)
       # call_attempt.sid

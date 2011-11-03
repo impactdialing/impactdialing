@@ -37,7 +37,7 @@ class Caller < ActiveRecord::Base
             else
               Twilio::Verb.new do |v|
                 3.times do
-                  v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.host, :attempt => attempt + 1), :method => "POST") do
+                  v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.host, :port => Settings.port, :attempt => attempt + 1), :method => "POST") do
                     v.say attempt == 0 ? "Please enter your pin." : "Incorrect Pin. Please enter your pin."
                   end
                 end
@@ -52,7 +52,7 @@ class Caller < ActiveRecord::Base
     response = TwilioClient.instance.account.calls.create(
         :from =>APP_NUMBER,
         :to => phone,
-        :url => caller_ready_callers_campaign_url(:id=>campaign.id, :caller_sid => session.sid, :host => Settings.host)
+        :url => caller_ready_callers_campaign_url(:id=>campaign.id, :caller_sid => session.sid, :host => Settings.host, :port => Settings.port)
     )
     #raise response.inspect
     session.update_attribute(:sid, response.sid)

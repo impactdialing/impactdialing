@@ -7,7 +7,7 @@ describe CallinController do
       post :create
       resp = Twilio::Verb.new do |v|
         3.times do
-          v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.host, :attempt => 1), :method => "POST") do
+          v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.host, :port => Settings.port,  :attempt => 1), :method => "POST") do
             v.say "Please enter your pin."
           end
         end
@@ -47,7 +47,7 @@ describe CallinController do
       post :identify, :Digits => pin, :attempt => "1"
       response.body.should == Twilio::Verb.new do |v|
         3.times do
-          v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.host, :attempt => 2), :method => "POST") do
+          v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.host, :port => Settings.port, :attempt => 2), :method => "POST") do
             v.say "Incorrect Pin. Please enter your pin."
           end
         end
