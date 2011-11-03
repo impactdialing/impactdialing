@@ -95,6 +95,7 @@ ImpactDialing::Application.routes.draw do
         get :usage
       end
     end
+    get :update_report_real
   end
 
   scope 'client' do
