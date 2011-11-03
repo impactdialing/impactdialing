@@ -22,15 +22,6 @@ class CallerSession < ActiveRecord::Base
     t.end_call("#{self.sid}")
   end
 
-  def end_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH, appurl=APP_URL)
-    t = TwilioLib.new(account, auth)
-    a=t.call("POST", "Calls/#{self.sid}", {'CurrentUrl'=>"#{appurl}/callin/callerEndCall?session=#{self.id}"})
-    if a.index("RestException")
-      self.on_call=false
-      self.save
-    end
-  end
-
   def call(voter)
     voter.update_attribute(:caller_session, self)
     voter.dial_predictive
@@ -43,6 +34,7 @@ class CallerSession < ActiveRecord::Base
 
   def preview_dial(voter)
     attempt = voter.call_attempts.create(:campaign => self.campaign, :dialer_mode => Campaign::Type::PREVIEW, :status => CallAttempt::Status::INPROGRESS, :caller_session => self)
+    update_attribute('attempt_in_progress',attempt)
     voter.update_attributes(:last_call_attempt => attempt, :last_call_attempt_time => Time.now, :caller_session => self)
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
     response = Twilio::Call.make(self.campaign.caller_id, voter.Phone, connect_call_attempt_url(attempt, :host => Settings.host),
@@ -74,31 +66,29 @@ class CallerSession < ActiveRecord::Base
 
   def start
     response = Twilio::Verb.new do |v|
-      v.dial(:hangupOnStar => true, :action => end_session_caller_index_url(id: self.caller.id, :host => Settings.host, :session_id => self.id, :campaign => self.campaign.id)) do
+      v.dial(:hangupOnStar => true, :action => pause_caller_url(self.caller, :host => Settings.host, :session_id => id)) do
         v.conference(self.session_key, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host), :waitMethod => 'GET')
       end
     end.response
-    update_attributes(:on_call => true, :available_for_call => true)
+    update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
     first_voter = self.campaign.all_voters.to_be_dialed.first
     self.publish("caller_connected", first_voter ? first_voter.info : {}) if self.campaign.predictive_type == Campaign::Type::PREVIEW
     response
   end
 
+  def pause_for_results
+    self.publish("waiting_for_result",{})
+    Twilio::Verb.new{|v| v.say("Enter results."); v.pause("length" => 2); v.redirect(pause_caller_url(caller, :host => Settings.host, :session_id => id))}.response
+  end
+
   def end
-    xml = Twilio::Verb.new do |v|
-      v.hangup
-    end    
     self.update_attributes(:on_call => false, :available_for_call => false, :endtime => Time.now)
     self.publish("caller_disconnected",{})
-    xml
+    Twilio::Verb.hangup
   end
 
   def publish(event,data)
     return unless self.campaign.use_web_ui?
     Pusher[self.session_key].trigger(event,data)
-  end
-
-  def end_call(*args)
-    #publish(*args)
   end
 end

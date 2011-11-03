@@ -1,6 +1,6 @@
 class CallerController < ApplicationController
   layout "caller"
-  before_filter :check_login, :except=>[:login, :feedback, :assign_campaign, :end_session]
+  before_filter :check_login, :except=>[:login, :feedback, :assign_campaign, :end_session, :pause]
   before_filter :redirect_to_ssl
   before_filter :connect_to_twilio, :only => [:preview_dial]
 
@@ -62,11 +62,17 @@ class CallerController < ApplicationController
     render :nothing => true
   end
 
-  def end_session    
+  def pause
     caller = Caller.find(params[:id])
-    @session = caller.caller_sessions.find(params[:session_id])        
-    xml = @session.end.response
-    render :xml => xml
+    session = caller.caller_sessions.find(params[:session_id])
+    render :xml => session.voter_in_progress ? session.pause_for_results : session.start
+  end
+
+  def end_session
+    pp params.inspect
+    caller = Caller.find(params[:id])
+    @session = caller.caller_sessions.find(params[:session])
+    render :xml => @session.end
   end
 
   def active_session

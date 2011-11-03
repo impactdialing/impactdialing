@@ -33,7 +33,7 @@ describe BlockedNumbersController do
       account.blocked_numbers.last.number.should == '1234567890'
       account.blocked_numbers.last.campaign_id.should == nil
       response.should redirect_to(:back)
-      flash[:notice].should include("Do not call number added.")
+      flash[:notice].should include("Do Not Call number added")
     end
 
     it "creates a new campaign-specific blocked number" do
@@ -43,7 +43,7 @@ describe BlockedNumbersController do
       account.blocked_numbers.last.number.should == '1234567890'
       account.blocked_numbers.last.campaign_id.should == 1
       response.should redirect_to(:back)
-      flash[:notice].should include("Do not call number added.")
+      flash[:notice].should include("Do Not Call number added")
     end
 
     it "doesn't create anything if there's a validation error" do
