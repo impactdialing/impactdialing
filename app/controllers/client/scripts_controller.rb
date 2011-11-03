@@ -24,13 +24,14 @@ module Client
 
     def show
       @script = @user.account.scripts.find(params[:id])
-      @voter_field_values = eval(@script.voter_fields)
+      puts @script.voter_fields
+      @voter_field_values = @script.voter_fields ? eval(@script.voter_fields) : nil
       render :new
     end
     
     def update      
       @script = account.scripts.find_by_id(params[:id])
-      params[:script][:voter_fields] =  params[:voter_field].to_json
+      params[:script][:voter_fields] =  params[:voter_field] ? params[:voter_field].to_json : nil
       if @script.update_attributes(params[:script])
         flash_message(:notice, "Script sucessfully updated")
         redirect_to :action=>"index"          
