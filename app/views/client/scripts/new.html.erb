@@ -66,7 +66,7 @@
                   </table>
                 <% end %>
                 <%= q.link_to_add "New result", :possible_responses, :class => "action secondary"%>
-                <%= q.link_to_remove "Delete this question", :class => "action secondary"  %>
+                <%= q.link_to_remove "Delete this question", :class => "action secondary" , append_to: '' %>
             </p>
             </fieldset>
           <% end %>
@@ -83,10 +83,10 @@
           <% end %>
         <p class = "actions">
           <%= f.link_to_add "Add a question", :questions, :class => "action secondary" %>
-          <p/>
+          
           <%= f.link_to_add "Add a note", :notes, :class => "action secondary" %>
-
         </p>
+        
       </fieldset>
     <div class= "buttons">
       <button type="submit">Save</button>

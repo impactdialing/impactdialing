@@ -5,6 +5,7 @@ $(document).ready(function() {
 	$("#call_voter").hide();
 	$("#hangup_call").hide();	
 	$("#submit_call").hide();		
+	$("#stop_calling").hide();		
 	
     setInterval(function() {
         if ($("#caller_session").val()) {
@@ -62,6 +63,17 @@ function next_voter() {
 }
 
 function call_voter() {
+    $.ajax({
+        url : "/caller/" + $("#caller_session").val() + "/call_voter",
+        data : {id : $("#caller").val(), voter_id : $("#current_voter").val(), session_id : $("#caller_session").val() },
+        type : "POST",
+        success : function(response) {
+            // pushes 'calling_voter'' event to browsers
+        }
+    })
+}
+
+function stop_calling() {
     $.ajax({
         url : "/caller/" + $("#caller_session").val() + "/call_voter",
         data : {id : $("#caller").val(), voter_id : $("#current_voter").val(), session_id : $("#caller_session").val() },
@@ -135,6 +147,7 @@ function subscribe(session_key) {
     channel.bind('voter_disconnected', function(data) {
 		$("#skip_voter").hide();
 		$("#call_voter").hide();
+		$("#stop_calling").hide();
 		$("#hangup_call").hide();			
 		$("#submit_call").show();		
         show_response_panel();
@@ -146,6 +159,7 @@ function subscribe(session_key) {
         set_call_attempt(data.attempt_id);
 		$("#skip_voter").hide();
 		$("#call_voter").hide();
+		$("#stop_calling").hide();
 		$("#hangup_call").show();		
 		$("#submit_call").hide();		    
 		
@@ -157,7 +171,8 @@ function subscribe(session_key) {
         set_message('Call in progress');
 		$("#skip_voter").hide();
 		$("#call_voter").hide();
-		$("#hangup_call").show();		    
+		$("#stop_calling").show();
+		$("#hangup_call").hide();		    
 		$("#submit_call").hide();		            
     });
 
