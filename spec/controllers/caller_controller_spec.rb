@@ -148,10 +148,11 @@ describe CallerController do
     end
 
     it "terminates a callers session" do
-      session = Factory(:caller_session, :caller => caller, :campaign => Factory(:campaign), :available_for_call => true, :on_call => true)
-      post :end_session, :id => caller.id, :session => session.id
-      assigns(:session).available_for_call.should be_false
-      assigns(:session).on_call.should be_false
+      sid = "some_sid"
+      session = Factory(:caller_session, :caller => caller, :campaign => Factory(:campaign), :available_for_call => true, :on_call => true, :sid => sid)
+      post :end_session, :CallSid => sid
+      session.reload.available_for_call.should be_false
+      session.reload.on_call.should be_false
       response.body.should == Twilio::Verb.hangup
     end
 
