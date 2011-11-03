@@ -137,6 +137,7 @@ describe CallAttempt do
       call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign, :caller_session => caller_session)
       call_attempt.disconnect
       call_attempt.reload.status.should == CallAttempt::Status::SUCCESS
+      call_attempt.voter.status.should == call_attempt.status
     end
   end
 

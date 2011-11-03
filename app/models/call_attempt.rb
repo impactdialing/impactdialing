@@ -84,6 +84,7 @@ class CallAttempt < ActiveRecord::Base
 
   def disconnect
     update_attribute(:status, CallAttempt::Status::SUCCESS)
+    voter.update_attribute(:status, CallAttempt::Status::SUCCESS)
     Pusher[caller_session.session_key].trigger('voter_disconnected', {:attempt_id => self.id, :voter => self.voter.info})
     hangup
   end
