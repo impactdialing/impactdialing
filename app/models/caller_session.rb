@@ -16,6 +16,11 @@ class CallerSession < ActiveRecord::Base
     return 0 if self.tDuration.blank?
     self.tDuration/60.ceil
   end
+  
+  def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
+    t = TwilioLib.new(account, auth)
+    t.end_call("#{self.sid}")
+  end
 
   def end_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH, appurl=APP_URL)
     t = TwilioLib.new(account, auth)
@@ -46,7 +51,6 @@ class CallerSession < ActiveRecord::Base
         'Timeout' => campaign.answer_detection_timeout || "20"}
     )
     self.publish('calling_voter',voter.info)
-    puts response
     attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])
   end
 
@@ -54,15 +58,15 @@ class CallerSession < ActiveRecord::Base
     Twilio::Verb.new do |v|
       case attempt
         when 0
-          v.gather(:numDigits => 5, :timeout => 10, :action => assign_campaign_caller_url(self.caller, :session => self, :host => Settings.host, :port =>Settings.port, :attempt => attempt + 1), :method => "POST") do
-            v.say "Please enter your campaign pin."
+          v.gather(:numDigits => 5, :timeout => 10, :action => assign_campaign_caller_url(self.caller, :session => self, :host => Settings.host, :attempt => attempt + 1), :method => "POST") do
+            v.say "Please enter your campaign ID."
           end
         when 1, 2
-          v.gather(:numDigits => 5, :timeout => 10, :action => assign_campaign_caller_url(self.caller , :session => self, :host => Settings.host, :port =>Settings.port, :attempt => attempt + 1), :method => "POST") do
-            v.say "Incorrect campaign Id. Please enter your campaign Id."
+          v.gather(:numDigits => 5, :timeout => 10, :action => assign_campaign_caller_url(self.caller , :session => self, :host => Settings.host, :attempt => attempt + 1), :method => "POST") do
+            v.say "Incorrect campaign ID. Please enter your campaign ID."
           end
         else
-          v.say "Incorrect campaign pin."
+          v.say "That campaign ID is incorrect. Please contact your campaign administrator."
           v.hangup
         end
     end.response
@@ -70,8 +74,8 @@ class CallerSession < ActiveRecord::Base
 
   def start
     response = Twilio::Verb.new do |v|
-      v.dial(:hangupOnStar => true, :action => end_session_caller_index_url(:id => self.caller.id, :host => Settings.host, :session_id => self.id, :campaign => self.campaign.id)) do
-        v.conference(self.session_key, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port =>Settings.port), :waitMethod => 'GET')
+      v.dial(:hangupOnStar => true, :action => end_session_caller_index_url(id: self.caller.id, :host => Settings.host, :session_id => self.id, :campaign => self.campaign.id)) do
+        v.conference(self.session_key, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host), :waitMethod => 'GET')
       end
     end.response
     update_attributes(:on_call => true, :available_for_call => true)

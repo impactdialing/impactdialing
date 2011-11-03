@@ -14,18 +14,34 @@ module Client
 
     def new
       @script = Script.new(:robo => false, questions: [Question.new(possible_responses: [PossibleResponse.new])])
+      @voter_field_values=[]
     end
 
     def create
-      params[:script][:voter_fields] = params[:voter_field].to_json
-      @script = @user.account.scripts.create(params[:script])
-      redirect_to @script
+      params[:script][:voter_fields] = params[:voter_fields].to_json
+      @script = Script.new(params[:script])  
+      @voter_field_values = params[:voter_fields] || []
+      if @script.save
+        @user.account.scripts << @script
+        flash_message(:notice, "Script saved")
+        redirect_to :action=>"index"          
+      else
+        render :action=>"new"   
+      end
     end
 
     def show
       @script = @user.account.scripts.find(params[:id])
-      puts @script.voter_fields
-      @voter_field_values = @script.voter_fields ? eval(@script.voter_fields) : nil
+      @script.questions << [Question.new(possible_responses: [PossibleResponse.new])]  if @script.questions.empty?
+      if @script.voter_fields!=nil
+        begin
+          @voter_field_values = eval(@script.voter_fields)
+        rescue
+          @voter_field_values=[]
+        end
+      else
+        @voter_field_values=[]
+      end
       render :new
     end
     
@@ -33,7 +49,7 @@ module Client
       @script = account.scripts.find_by_id(params[:id])
       params[:script][:voter_fields] =  params[:voter_field] ? params[:voter_field].to_json : nil
       if @script.update_attributes(params[:script])
-        flash_message(:notice, "Script sucessfully updated")
+        flash_message(:notice, "Script updated")
         redirect_to :action=>"index"          
       else
         render :action=>"new"   
@@ -51,7 +67,7 @@ module Client
       script = account.scripts.find_by_id(params[:script_id])
       script.restore
       script.save
-      flash_message(:notice, "Script sucessfully restored")
+      flash_message(:notice, "Script restored")
       redirect_to :action => "deleted"
     end
   end

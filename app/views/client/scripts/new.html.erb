@@ -1,6 +1,5 @@
 <% content_for :javascripts do %>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js"></script>
-    <%= javascript_include_tag 'scripts/add_remove.js' %>
 <% end %>
 <h1><%= @script.new_record? ? "New script" : "Edit script" %></h1>
 <%= error_messages_for :script %>
@@ -18,7 +17,6 @@
           <% voter_fields = ["CustomID","FirstName","MiddleName","LastName","Suffix","Age","Gender","Phone","Email"] %>
           <% voter_fields.each do |field| %>
             <li>
-              <%= @voter_field_values.try(:index, :field) %>
               <input  type="checkbox" name="voter_field[]" value="<%= field %>" <% if @voter_field_values.try(:index, field) %>checked<% end %>>
                 <%= field %>
               </input>
@@ -38,9 +36,10 @@
           <fieldset>
             <legend>Question <%= %></legend>
             <p>
-              <lable>Question:</lable>
+              <label>Question:</label>
               <%= q.text_field :text%>
-                <table>
+            </p>
+                 <table>
                   <tr>
                     <th width = 30%>Response</th>
                     <th width = 30%>Phones-only keypad</th>
@@ -85,6 +84,7 @@
         <p class = "actions">
           <%= f.link_to_add "Add a question", :questions, :class => "action secondary" %>
           <%= f.link_to_add "Add a note", :notes, :class => "action secondary" %>
+
         </p>
       </fieldset>
     <div class= "buttons">

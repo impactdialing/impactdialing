@@ -13,9 +13,15 @@
 
     <script id="voter" type="text/html">
       {{#fields}}
-      <li><b>Name</b> : {{FirstName}} {{MiddleName}} {{LastName}}</li>
-      <li><b>Gender</b> : {{Gender}}</li>
-      <li><b>Age</b> : {{Age}}</li>
+      <li>ID: {{CustomID}}</li>
+      <li>First name: {{FirstName}}</li>
+      <li>Middle name: {{MiddleName}}</li>
+      <li>Last name: {{LastName}}</li>
+      <li>Suffix: {{Suffix}}</li>
+      <li>Age: {{Age}}</li>
+      <li>Gender: {{Gender}}</li>
+      <li>Phone: {{Phone}}</li>
+      <li>Email: {{Email}}</li>
       {{/fields}}
       {{#custom_fields}}
       <li>{{.}}</li>
@@ -28,23 +34,10 @@
 <%= hidden_field_tag(:current_call_attempt, nil) %>
 <%= hidden_field_tag(:current_voter, nil) %>
 
-<fieldset id="callin_data">
-  <legend>Call In : <%= @campaign.name %></legend>
-  <div>
-    Phone : <%= Settings.phone %>
-  </div>
-  <div>
-    Your Pin : <%= @caller.pin %>
-  </div>
-  <div>
-    Campaign Pin : <%= @campaign.campaign_id %>
-  </div>
-</fieldset>
-
 <fieldset>
-  <legend>Lead Information</legend>
+  <legend>Lead information</legend>
   <div id="voter_info_message" class="rt">
-    When connected Lead Information will appear here
+    <em>When connected, lead information will appear here.</em>
   </div>
   <ul id="voter_info" class="clearfix"></ul>
 </fieldset>
@@ -52,9 +45,15 @@
 <fieldset>
   <legend>Script</legend>
   <% if @campaign.script.script %>
-      <div class="rt script"> <%= @campaign.script.script.gsub("\n", "<br/>") %></div>
+      <div class="rt script"> <pre><%=raw @campaign.script.script.gsub("\n", "<br />") %></pre></div>  
   <% end %>
 </fieldset>
 
 <%= render 'results' %>
 <%= render 'actions' %>
+
+<div>
+<p>Call-in number: <%= Settings.phone %><br>
+PIN: <%= @caller.pin %><br>
+Campaign ID: <%= @campaign.campaign_id %></p>
+</div>

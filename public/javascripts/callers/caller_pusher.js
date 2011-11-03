@@ -85,7 +85,7 @@ function send_voter_response(){
 }
 function disconnect_caller(){
     $.ajax({
-        url : "/caller/end_session",
+        url : "/caller/hangup_on_voter",
 		data : {id : $("#caller").val(), voter_id : $("#current_voter").val(), session_id : $("#caller_session").val() },
         type : "POST",
         success : function(response) {

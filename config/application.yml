@@ -1,10 +1,10 @@
 default: &default_settings
-  host: 3f82.localtunnel.com
+  host: 3ngz.localtunnel.com
   port: 3000
-  phone: 4157020991
+  phone: 2525732146
 
 development:
-  phone: 4157280921
+  phone: 2525732146
   <<: *default_settings
 
 test:

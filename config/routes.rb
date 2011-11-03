@@ -29,6 +29,7 @@ ImpactDialing::Application.routes.draw do
     collection do
       get :login
       post :end_session
+      post :hangup_on_voter
     end
 
     member do

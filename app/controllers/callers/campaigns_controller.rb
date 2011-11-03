@@ -7,6 +7,9 @@ module Callers
     end
 
     def show
+      unless @caller.account.paid
+        flash_now(:warning, "Your account is not funded. Please contact your account administrator.")
+      end      
       @campaign = @caller.campaigns.find(params[:id])
     end
 

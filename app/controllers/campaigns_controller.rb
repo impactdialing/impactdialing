@@ -5,7 +5,6 @@ class CampaignsController < ClientController
   before_filter :setup_campaigns_paths, :only => [:index]
 
   def verify_campaign_ownership
-    puts params[:campaign]
     @campaign = Campaign.find(params[:id])
     if @campaign.account != account
       render :text => 'nothing', :status => :unauthorized

@@ -239,7 +239,6 @@ class ClientController < ApplicationController
           require 'rubygems'
           require 'hpricot'
           @doc = Hpricot::XML(a)
-          puts @doc
           code= (@doc/"ValidationCode").inner_html
         end
         @campaign.account_id = account.id
