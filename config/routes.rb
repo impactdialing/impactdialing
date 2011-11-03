@@ -25,7 +25,7 @@ ImpactDialing::Application.routes.draw do
     end
   end
 
-  resources :caller do
+  resources :caller, :only => [:index] do
     collection do
       get :login
       post :end_session
@@ -114,6 +114,7 @@ ImpactDialing::Application.routes.draw do
 
   scope 'caller' do
     match '/', :to => 'caller#index', :as => 'caller_root'
+    match 'logout', :to => 'caller#logout', :as => 'caller_logout'
   end
 
   resources :campaigns, :path_prefix => 'client', :only => [] do
