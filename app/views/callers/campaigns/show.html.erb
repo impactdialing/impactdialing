@@ -52,8 +52,10 @@
 <%= render 'results' %>
 <%= render 'actions' %>
 
-<div>
-<p>Call-in number: <%= Settings.phone %><br>
-PIN: <%= @caller.pin %><br>
-Campaign ID: <%= @campaign.campaign_id %></p>
+<div id="callin_data">
+  <p>
+    Call-in number: <%= Settings.phone %><br>
+    PIN: <%= @caller.pin %><br>
+    Campaign ID: <%= @campaign.campaign_id %>
+  </p>
 </div>
