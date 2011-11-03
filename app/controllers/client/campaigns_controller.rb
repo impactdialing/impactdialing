@@ -3,7 +3,7 @@ module Client
     layout 'client'
     
      def new
-       @campaign = Campaign.new(:account_id => account.id, :predictive_type => 'algorithm1')
+       @campaign = Campaign.new(:account_id => account.id)
        @campaign.save
        @callers = account.callers.active
        @lists = @campaign.voter_lists
@@ -54,13 +54,30 @@ module Client
     end
     
     def update
-      @campaign = Campaign.find_by_id(params[:id])
-      if @campaign.update_attributes(params[:campaign])      
-        flash_message(:notice, "Campaign updated")
-        redirect_to :action=>"index"          
+      @campaign = Campaign.find_by_id(params[:id]) || Campaign.new(params[:campaign])
+      @campaign.account = account
+      code=""
+      if @campaign.valid?        
+        code = @campaign.verify_caller_id if (!@campaign.caller_id_verified || !@campaign.caller_id.blank?)      
+        if @campaign.script_id.blank?
+          script = account.scripts.active.first
+          @campaign.script_id = script.id unless script.nil?          
+        end            
+        @campaign.caller_ids = params[:campaign][:caller_ids]
+        @campaign.save
+        if params[:listsSent]
+          @campaign.disable_voter_list          
+          params[:voter_list_ids].each{ |id| VoterList.enable_voter_list(id) } unless params[:voter_list_ids].blank?
+        end
+        if code.blank?
+          flash_message(:notice, "Campaign saved")
+        else
+          flash_message(:notice, "Campaign saved.  <font color=red>Enter code #{code} when called.</font>")
+        end
+        redirect_to client_campaign_path(@campaign)
       else
-        render :action=>"new"    
-      end      
+        render :action=>"new"  
+      end
     end
 
     def create
@@ -72,13 +89,14 @@ module Client
         if @campaign.script_id.blank?
           script = account.scripts.active.first
           @campaign.script_id = script.id unless script.nil?
-          @campaign.save
         end            
+        @campaign.caller_ids = params[:campaign][:caller_ids]
+        @campaign.save
         if params[:listsSent]
           @campaign.disable_voter_list          
           params[:voter_list_ids].each{ |id| enable_voter_list(id) } unless params[:voter_list_ids].blank?
         end
-        account.callers.active.each { |caller| @campaign.callers << caller }        
+        # account.callers.active.each { |caller| @campaign.callers << caller }        
         if code.blank?
           flash_message(:notice, "Campaign saved")
         else
