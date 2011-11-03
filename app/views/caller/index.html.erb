@@ -5,10 +5,13 @@
 
 <fieldset>
   <legend>Select campaign</legend>
-
-  <p><label for="">Campaigns</label>
-    <%= collection_select(:campaign, :current, @campaigns, :id, :name, :id=>"current_campaigns" ) %>
-    <%= button_to_function "Go to campaign", "go_to_current_campaign()" %>
+  <% if @campaigns.present?  %>
+    <p><label for="">Campaigns</label>
+      <%= collection_select(:campaign, :current, @campaigns, :id, :name, :id=>"current_campaigns" ) %>
+      <%= button_to_function "Go to campaign", "go_to_current_campaign()" %>
+  <% else %>
+    <legend>You have no campaigns assigned to select</legend>
+  <% end %>
 </fieldset>
 
 <div role="main">
