@@ -135,6 +135,7 @@ ImpactDialing::Application.routes.draw do
   end
 
   get '/reset_password', :to => 'client/users#reset_password', :as => 'reset_password'
+  get '/client/account', :to => 'client/users#invite', :as => 'client_user_invite'
 
   match '/client/login', :to => 'client#login', :as => :login
   match '/caller/login', :to => 'caller#login', :as => :caller_login
