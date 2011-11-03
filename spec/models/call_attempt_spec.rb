@@ -167,7 +167,7 @@ describe CallAttempt do
     end
 
     it "pushes 'voter_disconnected' event when a call_attempt ends" do
-      voter = Factory(:voter)
+      voter = Factory(:voter, :status => CallAttempt::Status::SUCCESS)
       session = Factory(:caller_session, :caller => Factory(:caller), :campaign => Factory(:campaign, :use_web_ui => true))
       attempt = Factory(:call_attempt, :voter => voter, :caller_session => session)
       channel = mock
