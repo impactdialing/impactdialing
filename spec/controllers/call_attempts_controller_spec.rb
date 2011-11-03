@@ -19,7 +19,6 @@ describe CallAttemptsController do
     let(:call_attempt) { Factory(:call_attempt, :voter => voter, :campaign => campaign, :caller_session => caller_session) }
 
     it "collects voter responses" do
-      caller_session.update_attribute('attempt_in_progress', call_attempt)
       script = Factory(:script, :robo => false)
       question1 = Factory(:question, :script => script)
       response1 = Factory(:possible_response, :question => question1)
@@ -34,7 +33,6 @@ describe CallAttemptsController do
 
       post :voter_response, :id => call_attempt.id, :voter_id => voter.id, :answers => answer
       voter.answers.count.should == 2
-      caller_session.reload.attempt_in_progress.should be_nil
     end
 
     it "triggers voter_push Pusher event" do
@@ -62,7 +60,7 @@ describe CallAttemptsController do
       call_attempt.reload.caller.should == available_caller.caller
       available_caller.reload.voter_in_progress.should == voter
       response.body.should == Twilio::TwiML::Response.new do |r|
-        r.Dial :hangupOnStar => 'true', :action => disconnect_call_attempt_path(call_attempt, :host => Settings.host) do |d|
+        r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(call_attempt, :host => Settings.host) do |d|
           d.Conference available_caller.session_key, :wait_url => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
         end
       end.text
@@ -74,7 +72,7 @@ describe CallAttemptsController do
       voter.update_attribute(:caller_session, available_caller)
       post :connect, :id => call_attempt.id
       response.body.should == Twilio::TwiML::Response.new do |r|
-        r.Dial :hangupOnStar => 'true', :action => disconnect_call_attempt_path(call_attempt, :host => Settings.host) do |d|
+        r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(call_attempt, :host => Settings.host) do |d|
           d.Conference available_caller.session_key, :wait_url => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
         end
       end.text
@@ -121,12 +119,6 @@ describe CallAttemptsController do
       call_attempt.call_end.should_not be_nil
     end
 
-    it "puts the caller back on hold when a voter is disconnected" do
-      call_attempt.update_attributes(:caller_session => Factory(:caller_session))
-      post :disconnect, :id => call_attempt.id
-      response.body.should == call_attempt.disconnect
-    end
-
     it "updates the details of a call failed" do
       post :end, :id => call_attempt.id, :DialCallStatus => "fail"
       call_attempt.reload.status.should == CallAttempt::Status::FAILED
@@ -139,14 +131,12 @@ describe CallAttemptsController do
       session_key = 'foo'
       custom_field = Factory(:custom_voter_field)
       Factory(:custom_voter_field_value, :voter => voter, :custom_voter_field => custom_field, :value => 'value')
-      session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller), :session_key => session_key)
+      Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller), :session_key => session_key, :voter_in_progress => voter)
       pusher_session = mock
       pusher_session.should_receive(:trigger).with('voter_connected', {:attempt_id=> call_attempt.id, :voter => voter.info})
       Pusher.stub(:[]).with(session_key).and_return(pusher_session)
       post :connect, :id => call_attempt.id
     end
-
-    it "notifies "
 
   end
 end
