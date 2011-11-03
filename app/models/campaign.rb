@@ -471,6 +471,7 @@ class Campaign < ActiveRecord::Base
   end
 
   def choose_voters_to_dial(num_voters)
+    return [] if num_voters < 1
     scheduled_voter_ids = self.all_voters.scheduled.limit(num_voters)
     (scheduled_voter_ids + self.voters('not called')).reject(&:blocked?).uniq[0..num_voters]
   end
@@ -483,17 +484,17 @@ class Campaign < ActiveRecord::Base
     if ratio_dial?
       num_to_call= (callers.length - call_attempts_in_progress.length) * get_dial_ratio
     else
-      short_to_dial=determine_short_to_dial(stats)
+      short_to_dial=determine_short_to_dial
       max_calls=determine_pool_size(short_to_dial)
       num_to_call=max_calls-call_attempts_in_progress.length
     end
 
-    DIALER_LOGGER.info "#{self.name}: Callers logged in: #{callers.length}, Callers on call: #{callers_on_call.length}, Callers not on call:  #{callers_not_on_call}, Calls in progress: #{call_attempts_in_progress.length}, Answer pct: #{(stats[:answer_pct] * 100).to_i}"
-    DIALER_LOGGER.info "#{new_calls} newcalls #{max_calls} maxcalls"
+    DIALER_LOGGER.info "#{self.name}: Callers logged in: #{callers.length}, Callers on call: #{callers_on_call.length}, Callers not on call:  #{callers_not_on_call}, Calls in progress: #{call_attempts_in_progress.length}"
+    DIALER_LOGGER.info "num_to_call #{num_to_call}"
 
     voter_ids=choose_voters_to_dial(num_to_call) #TODO check logic
     DIALER_LOGGER.info("voters to dial #{voter_ids}")
-    #ring_predictive_voters(voter_ids)
+    ring_predictive_voters(voter_ids)
   end
 
   def ring_predictive_voters(voter_ids)
