@@ -15,7 +15,7 @@
           <%= f.text_field :caller_id, {:class=>"field size3"} %></p>
           
         <p><label for="">Script</label><br>
-          <%= f.collection_select(:script_id, @scripts, :id, :name, {:prompt => true}, {:class=>"field"}) %>
+          <%= f.collection_select(:script_id, @scripts, :id, :name, {:class=>"field"}) %>
         </p>
 
         <p><label for="">Dialing Mode</label>
