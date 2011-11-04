@@ -50,7 +50,7 @@ describe CallerController do
       session = Factory(:caller_session, :campaign => campaign, :caller => caller, :session_key => session_key)
       channel = mock
       Pusher.should_receive(:[]).with(session_key).and_return(channel)
-      channel.should_receive(:trigger).with('voter_push', voter.info)
+      channel.should_receive(:trigger).with('caller_connected', voter.info)
       post :preview_voter, :id => caller.id, :session_id => session.id
     end
 
@@ -65,23 +65,23 @@ describe CallerController do
 
     it "skips to the next voter to preview" do
       session_key = "sdklsjfg923784"
-      voter = Factory(:voter, :campaign => campaign)
-      next_voter = Factory(:voter, :campaign => campaign)
+      voter = Factory(:voter, :campaign => campaign, "FirstName"=>'first')
+      next_voter = Factory(:voter, :campaign => campaign, "FirstName"=>'last')
       session = Factory(:caller_session, :campaign => campaign, :caller => caller, :session_key => session_key)
       channel = mock
       Pusher.should_receive(:[]).with(session_key).and_return(channel)
-      channel.should_receive(:trigger).with('voter_push', next_voter.info)
+      channel.should_receive(:trigger).with('caller_connected', next_voter.info)
       post :preview_voter, :id => caller.id, :session_id => session.id, :voter_id => voter.id
     end
 
     it "skips to the first undialed voter if the current voter context is the last" do
       session_key = "sdklsjfg923784"
-      first_voter = Factory(:voter, :campaign => campaign)
-      last_voter = Factory(:voter, :campaign => campaign)
+      first_voter = Factory(:voter, :campaign => campaign, "FirstName"=>'first')
+      last_voter = Factory(:voter, :campaign => campaign, "FirstName"=>'last')      
       session = Factory(:caller_session, :campaign => campaign, :caller => caller, :session_key => session_key)
       channel = mock
       Pusher.should_receive(:[]).with(session_key).and_return(channel)
-      channel.should_receive(:trigger).with('voter_push', first_voter.info)
+      channel.should_receive(:trigger).with('caller_connected', first_voter.info)
       post :preview_voter, :id => caller.id, :session_id => session.id, :voter_id => last_voter.id
     end
 

@@ -46,8 +46,8 @@ class CallerController < ApplicationController
 
   def assign_campaign
     @session = CallerSession.find(params[:session])
-    # @campaign = @session.caller.account.campaigns.find_by_campaign_id(params[:Digits])
-        @campaign = @session.caller.account.campaigns.find_by_campaign_id('62877')
+    @campaign = @session.caller.account.campaigns.find_by_campaign_id(params[:Digits])
+        # @campaign = @session.caller.account.campaigns.find_by_campaign_id('62877')
     if @campaign
       @session.update_attributes(:campaign => @campaign)
       render :xml => @session.start
@@ -89,12 +89,12 @@ class CallerController < ApplicationController
 
   def preview_voter
     session = @caller.caller_sessions.find(params[:session_id])
-     if session.campaign.predictive_type == Campaign::Type::PREVIEW
-        first_voter = session.campaign.all_voters.to_be_dialed.first
-        session.publish('caller_connected', first_voter ? first_voter.info : {}) 
-    end
     voter = session.campaign.all_voters.to_be_dialed.find(:first, :conditions => "voters.id > #{params[:voter_id]}") if params[:voter_id]
     voter ||= session.campaign.all_voters.to_be_dialed.first
+     if session.campaign.predictive_type == Campaign::Type::PREVIEW
+        session.publish('caller_connected', voter ? voter.info : {}) 
+    end
+    
     render :nothing => true
   end
 
