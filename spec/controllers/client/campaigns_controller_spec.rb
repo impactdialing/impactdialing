@@ -49,6 +49,13 @@ describe Client::CampaignsController do
     response.should redirect_to 'http://referer'
   end
 
+  it "restore campaigns" do
+    request.env['HTTP_REFERER'] = 'http://referer'
+    campaign = Factory(:campaign, :account => account, :active => true, :robo => false)
+    put :restore, :campaign_id => campaign.id
+    campaign.reload.should be_active
+    response.should redirect_to 'http://referer'
+  end
 
   it "creates a new campaign" do
     script = Factory(:script, :account => account)

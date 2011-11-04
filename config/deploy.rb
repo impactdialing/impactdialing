@@ -31,6 +31,7 @@ namespace :deploy do
 
   task :link_configuration, :roles => :app do
     run "ln -s #{deploy_to}/shared/config/database.yml #{current_path}/config/database.yml"
+    run "ln -s #{deploy_to}/shared/config/application.yml #{current_path}/config/application.yml"
   end
 
   task :install_cron_jobs do
