@@ -6,6 +6,7 @@ describe Client::ScriptsController do
 
   before(:each) do
     login_as(user)
+    request.env['HTTP_REFERER'] = 'http://referer'
   end
 
   it "deletes a script" do
