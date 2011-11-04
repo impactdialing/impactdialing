@@ -87,7 +87,6 @@ end
 
 def publish(event,data)
   return unless self.campaign.use_web_ui?
-  puts event
   Pusher[self.session_key].trigger(event,data)
 end
 end
