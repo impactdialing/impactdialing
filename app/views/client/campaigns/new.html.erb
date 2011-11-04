@@ -139,17 +139,25 @@
     }
 
     function isAll() {
-        var f = document.forms['callerForm'].elements['campaign[caller_ids][]'];
-        var n = 0;
-        for (var i = 0; i < f.length; i++) {
-            if (f[i].checked == true)
-                n++;
-        }
-        if (n ==<%= @callers.length %>) {
+        if (checked_callers() ==<%= @callers.length %>) {
             $('listUse').checked = true;
 
         }
     }
+    function checked_callers(){
+      var f = document.forms['callerForm'].elements['campaign[caller_ids][]'];
+      var n = 0;
+      for (var i = 0; i < f.length; i++) {
+          if (f[i].checked == true)
+              n++;
+      }
+      return n;
+    }
+    
+    if(checked_callers() == 0){
+      allCallers();
+    }
+    
     <% if @callers.length!=0 %>
     isAll();
     <% end %>
