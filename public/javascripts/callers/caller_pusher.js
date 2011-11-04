@@ -192,7 +192,7 @@ function subscribe(session_key) {
 		$("#call_voter").show();
 		$("#hangup_call").hide();
 		$("#submit_call").hide();
-
+        hide_response_panel();
     }
 
     function clear_caller(){

@@ -17,5 +17,6 @@ production:
 
 staging:
   <<: *default_settings
+  phone: 8133640628
   host: staging.impactdialing.com
   port: 80

@@ -3,6 +3,7 @@
 .idea/*
 ._*
 config/database.yml
+config/application.yml
 coverage/
 tmp
 *.DS_Store
