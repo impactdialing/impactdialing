@@ -1,11 +1,8 @@
 var channel = null;
 
 $(document).ready(function() {
-    $("#skip_voter").hide();
-	$("#call_voter").hide();
-	$("#hangup_call").hide();
-	$("#submit_call").hide();
-
+	hide_all_actions();
+	
     setInterval(function() {
         if ($("#caller_session").val()) {
             //do nothing if the caller session context already exists
@@ -65,21 +62,13 @@ function call_voter() {
         data : {id : $("#caller").val(), voter_id : $("#current_voter").val(), session_id : $("#caller_session").val() },
         type : "POST",
         success : function(response) {
+		  hide_all_actions();
             // pushes 'calling_voter'' event to browsers
         }
     })
 }
 
-function stop_calling() {
-    $.ajax({
-        url : "/caller/" + $("#caller_session").val() + "/call_voter",
-        data : {id : $("#caller").val(), voter_id : $("#current_voter").val(), session_id : $("#caller_session").val() },
-        type : "POST",
-        success : function(response) {
-            // pushes 'calling_voter'' event to browsers
-        }
-    })
-}
+
 
 function send_voter_response(){
     var str = $("#voter_responses").serializeArray();
@@ -141,10 +130,8 @@ function subscribe(session_key) {
     });
 
     channel.bind('voter_disconnected', function(data) {
-		$("#skip_voter").hide();
-		$("#call_voter").hide();
-		$("#hangup_call").hide();
-		$("#submit_call").show();
+		hide_all_actions();
+
         show_response_panel();
         set_message("Entering voter results");
     });
@@ -154,17 +141,17 @@ function subscribe(session_key) {
         set_call_attempt(data.attempt_id);
 		$("#skip_voter").hide();
 		$("#call_voter").hide();
+		$("#stop_calling").hide();
 		$("#hangup_call").show();
-		$("#submit_call").hide();
+		$("#submit_and_keep_call").show();		
+		$("#submit_and_stop_call").show();		
     });
 
     channel.bind('calling_voter', function(data) {
         set_voter(data);
         set_message('Call in progress');
-		$("#skip_voter").hide();
-		$("#call_voter").hide();
-		$("#hangup_call").show();
-		$("#submit_call").hide();
+		hide_all_actions();
+
     });
 
     channel.bind('caller_disconnected', function(data) {
@@ -183,16 +170,17 @@ function subscribe(session_key) {
         $("#current_call_attempt").val(id);
     }
 
-
     function set_voter(data) {
         $("#voter_info_message").hide();
         $("#current_voter").val(data.fields.id);
         bind_voter(data);
         $("#skip_voter").show();
 		$("#call_voter").show();
-		$("#hangup_call").hide();
-		$("#submit_call").hide();
+		$("#stop_calling").show();
+		$("#submit_and_keep_call").hide();		
+		$("#submit_and_stop_call").hide();		
         hide_response_panel();
+
     }
 
     function clear_caller(){
@@ -203,10 +191,7 @@ function subscribe(session_key) {
         $("#voter_info_message").show();
         $("#current_voter").val(null);
         $('#voter_info').empty();
-		$("#skip_voter").hide();
-		$("#call_voter").hide();
-		$("#hangup_call").hide();
-		$("#submit_call").hide();
+		hide_all_actions();
 
     }
 
@@ -217,6 +202,17 @@ function subscribe(session_key) {
         $('#voter_info').empty();
         $('#voter_info').append(voter);
     }
+
+    function hide_all_actions() {
+	  	$("#skip_voter").hide();
+		$("#call_voter").hide();
+		$("#stop_calling").hide();
+		$("#hangup_call").hide();
+		$("#submit_and_keep_call").hide();		
+		$("#submit_and_stop_call").hide();		
+	
+    }
+
 
     function parse_custom_fields(data) {
         var custom_fields = new Array();
