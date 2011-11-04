@@ -185,6 +185,8 @@ function subscribe(session_key) {
         bind_voter(data);
         hide_response_panel();
         hide_all_actions();
+
+
     }
 
     function clear_caller() {

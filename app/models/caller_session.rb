@@ -64,19 +64,13 @@ class CallerSession < ActiveRecord::Base
     end.response
   end
 
-  def start
-    
+  def start    
     response = Twilio::Verb.new do |v|
       v.dial(:hangupOnStar => true, :action => pause_caller_url(self.caller, :host => Settings.host, :port => Settings.port, :session_id => id)) do
         v.conference(self.session_key, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port), :waitMethod => 'GET')
       end
     end.response
     update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)    
-    if self.campaign.predictive_type == Campaign::Type::PREVIEW
-      first_voter = self.campaign.all_voters.to_be_dialed.first
-      publish('caller_connected', first_voter ? first_voter.info : {}) 
-    end    
-    
     response
   end
 
@@ -93,6 +87,7 @@ end
 
 def publish(event,data)
   return unless self.campaign.use_web_ui?
+  puts event
   Pusher[self.session_key].trigger(event,data)
 end
 end
