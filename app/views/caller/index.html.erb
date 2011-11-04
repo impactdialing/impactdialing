@@ -6,8 +6,8 @@
 <fieldset>
   <legend>Select campaign</legend>
   <% if @campaigns.present?  %>
-    <p><%= collection_select(:campaign, :current, @campaigns, :id, :name, :id=>"current_campaigns" ) %><br>
-      <%= button_to_function "Go to campaign", "go_to_current_campaign()" %></p>
+    <p><%= collection_select(:campaign, :current, @campaigns, :id, :name, :id=>"current_campaigns" ) %>
+      <%= link_to_function "Go to campaign", "go_to_current_campaign()", :class => "action primary", :style => "margin-left: 7px" %></p>
   <% else %>
     <p>There are no campaigns assigned to you.</p>
   <% end %>
