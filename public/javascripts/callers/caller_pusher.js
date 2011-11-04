@@ -120,7 +120,7 @@ function subscribe(session_key) {
     channel = pusher.subscribe(session_key);
 
 
-    channel.bind('conference_started', function(data) {
+    channel.bind('caller_connected', function(data) {
         $("#callin_data").hide();
         set_message("Ready for calls");
         hide_response_panel();
