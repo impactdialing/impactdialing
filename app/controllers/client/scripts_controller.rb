@@ -60,15 +60,8 @@ module Client
       @script = @user.account.scripts.manual.find(params[:id])
       @script.update_attributes(:active => false)
       flash_message(:notice, "Script deleted")
-      redirect_to :back
+      redirect_to :action => "index"
     end
     
-    def restore
-      script = account.scripts.find_by_id(params[:script_id])
-      script.restore
-      script.save
-      flash_message(:notice, "Script restored")
-      redirect_to :action => "deleted"
-    end
   end
 end
