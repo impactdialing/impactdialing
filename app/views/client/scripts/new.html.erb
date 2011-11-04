@@ -2,9 +2,11 @@
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js"></script>
 <% end %>
 <h1><%= @script.new_record? ? "New script" : "Edit script" %></h1>
-<fieldset>
-  <%= error_messages_for :script %>
-</fieldset>
+<% if @script.errors.any? %>
+  <fieldset>
+    <%= error_messages_for :script %>
+  </fieldset>
+<% end %>
 <%= nested_form_for [:client, @script] do |f| %>
     <%= f.hidden_field :robo %> 
       <p>
