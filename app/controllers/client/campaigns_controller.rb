@@ -45,7 +45,7 @@ module Client
     end
     
     def restore
-      campaign = account.campaigns.find_by_id(params[:campaign_id])
+      campaign = Campaign.find_by_id(params[:campaign_id])
       campaign.restore
       campaign.save
       flash_message(:notice, "Campaign restored successfully")
