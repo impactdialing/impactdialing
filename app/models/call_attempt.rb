@@ -62,6 +62,12 @@ class CallAttempt < ActiveRecord::Base
     end.text
   end
 
+  def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
+    t = TwilioLib.new(account, auth)
+    t.end_call("#{self.sid}")
+  end
+
+
   def conference(session)
     session.update_attribute(:attempt_in_progress, self)
     session.update_attribute(:voter_in_progress, self.voter)

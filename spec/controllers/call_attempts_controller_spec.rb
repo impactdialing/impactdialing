@@ -88,6 +88,15 @@ describe CallAttemptsController do
       call_attempt.reload.status.should == CallAttempt::Status::SUCCESS
     end
 
+    it "hangs up given a call_attempts call sid" do
+      pending
+      call_attempt = Factory(:call_attempt, :sid => "some_sid")
+      CallAttempt.should_receive(:find).and_return(call_attempt)
+      #call_attempt.stub(:end_running_call).and_return(mock)
+      call_attempt.should_receive(:end_running_call)
+      post :hangup, :id => call_attempt.id
+    end
+
     it "hangs up if there are no callers on call" do
       available_caller = Factory(:caller_session, :campaign => campaign, :available_for_call => false, :on_call => false)
       post :connect, :id => call_attempt.id
