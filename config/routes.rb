@@ -96,6 +96,8 @@ ImpactDialing::Application.routes.draw do
       end
     end
     get :update_report_real
+
+    post 'user_invite', :to => 'users#invite', :as => 'user_invite'
   end
 
   scope 'client' do
@@ -108,8 +110,6 @@ ImpactDialing::Application.routes.draw do
     end
     resources :blocked_numbers, :only => [:index, :create, :destroy]
     resources :users, :only => [:create, :destroy]
-
-    post 'user_invite', :to => 'users#invite', :as => 'user_invite'
   end
 
   scope 'caller' do
@@ -139,7 +139,6 @@ ImpactDialing::Application.routes.draw do
   end
 
   get '/reset_password', :to => 'client/users#reset_password', :as => 'reset_password'
-  get '/client/account', :to => 'client/users#invite', :as => 'client_user_invite'
 
   match '/client/login', :to => 'client#login', :as => :login
   match '/caller/login', :to => 'caller#login', :as => :caller_login
