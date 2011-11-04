@@ -91,10 +91,22 @@ function send_voter_response() {
     });
 }
 
+function send_voter_response_and_disconnect() {
+    var str = $("#voter_responses").serializeArray();
+    $.ajax({
+        url : "/call_attempts/" + $("#current_call_attempt").val() + "/voter_response",
+        data : {voter_id : $("#current_voter").val(), answers : str },
+        type : "POST",
+        success : function(response) {
+            disconnect_caller();
+        }
+    });
+}
+
 function disconnect_caller() {
     $.ajax({
-        url : "/caller/hangup_on_caller",
-        data : {id : $("#caller").val(), session_id : $("#caller_session").val() },
+        url : "/caller/" + $("#caller").val() + "/stop_calling",
+        data : {session_id : $("#caller_session").val() },
         type : "POST",
         success : function(response) {
             // pushes 'calling_voter'' event to browsers
@@ -138,6 +150,7 @@ function subscribe(session_key) {
         if (!$.isEmptyObject(data)) {
             set_message("Ready for calls");
             set_voter(data);
+        	$("#stop_calling").show();
             $("#skip_voter").show();
             $("#call_voter").show();
 
