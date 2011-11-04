@@ -28,8 +28,7 @@ ImpactDialing::Application.routes.draw do
   resources :caller, :only => [:index] do
     collection do
       get :login
-      post :end_session
-      post :hangup_on_voter
+      post :end_session      
     end
 
     member do
@@ -38,6 +37,7 @@ ImpactDialing::Application.routes.draw do
       post :active_session
       post :preview_voter
       post :call_voter
+      post :stop_calling
     end
 
   end

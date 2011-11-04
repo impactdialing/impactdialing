@@ -16,6 +16,13 @@ class CallerSession < ActiveRecord::Base
     return 0 if self.tDuration.blank?
     self.tDuration/60.ceil
   end
+  
+  def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
+     t = TwilioLib.new(account, auth)
+     t.end_call("#{self.sid}")
+     self.update_attributes(:on_call => false, :available_for_call => false, :endtime => Time.now)
+     self.publish("caller_disconnected",{})     
+   end
 
 
   def call(voter)
