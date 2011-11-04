@@ -131,6 +131,7 @@ ImpactDialing::Application.routes.draw do
       post :end
       post :disconnect
       post :voter_response
+      post :hangup
     end
   end
 

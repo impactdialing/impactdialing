@@ -90,16 +90,26 @@ function send_voter_response() {
         }
     });
 }
+
 function disconnect_caller() {
     $.ajax({
-        url : "/caller/hangup_on_voter",
-        data : {id : $("#caller").val(), voter_id : $("#current_voter").val(), session_id : $("#caller_session").val() },
+        url : "/caller/hangup_on_caller",
+        data : {id : $("#caller").val(), session_id : $("#caller_session").val() },
         type : "POST",
         success : function(response) {
             // pushes 'calling_voter'' event to browsers
         }
     })
+}
 
+function disconnect_voter() {
+    $.ajax({
+        url : "/call_attempts/" + $("#current_call_attempt").val() + "/hangup",
+        type : "POST",
+        success : function(response) {
+            // pushes 'calling_voter'' event to browsers
+        }
+    })
 }
 
 function show_response_panel() {
@@ -121,17 +131,19 @@ function subscribe(session_key) {
 
 
     channel.bind('caller_connected', function(data) {
+        hide_all_actions();
         $("#callin_data").hide();
-        set_message("Ready for calls");
         hide_response_panel();
-        set_voter(data);
-        $("#skip_voter").show();
-		$("#call_voter").show();
-		$("#stop_calling").show();
-		$("#hangup_call").hide();
-		$("#submit_and_keep_call").hide();		
-		$("#submit_and_stop_call").hide();		
+        $("#stop_calling").show();
+        if (!$.isEmptyObject(data)) {
+            set_message("Ready for calls");
+            set_voter(data);
+            $("#skip_voter").show();
+            $("#call_voter").show();
 
+        }else{
+            set_message("No more voters to call!");
+        }
     });
 
     channel.bind('voter_push', function(data) {
@@ -180,13 +192,18 @@ function subscribe(session_key) {
     }
 
     function set_voter(data) {
-        $("#voter_info_message").hide();
-        $("#current_voter").val(data.fields.id);
-        bind_voter(data);
-        hide_response_panel();
-        hide_all_actions();
-
-
+        if (!$.isEmptyObject(data)) {
+            $("#voter_info_message").hide();
+            $("#current_voter").val(data.fields.id);
+            bind_voter(data);
+            hide_response_panel();
+            hide_all_actions();
+        } else {
+            hide_all_actions();
+            hide_response_panel();
+            set_message("There are no more voters to call");
+            $("#stop_calling").show();
+        }
     }
 
     function clear_caller() {
