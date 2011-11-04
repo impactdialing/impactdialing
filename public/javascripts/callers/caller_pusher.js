@@ -2,7 +2,6 @@ var channel = null;
 
 $(document).ready(function() {
 	hide_all_actions();
-	
     setInterval(function() {
         if ($("#caller_session").val()) {
             //do nothing if the caller session context already exists
