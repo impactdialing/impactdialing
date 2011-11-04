@@ -16,4 +16,11 @@ describe Recording do
     recording.should_not be_valid
     recording.errors[:base].should include("Filetype swf is not supported.  Please upload a file ending in .mp3, .wav, or .aiff")
   end
+
+  it "should return active recordings" do
+    active_recording = Factory(:recording, :active => true)
+    inactive_recording = Factory(:recording, :active => false)
+
+    Recording.active.should == [active_recording]
+  end
 end
