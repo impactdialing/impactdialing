@@ -6,7 +6,7 @@ class Recording < ActiveRecord::Base
   validate :validate_file_name
   belongs_to :account
 
-  named_scope :active, :conditions => ["recordings.active = ? ", true]
+  scope :active, where(:active => true)
 
   has_attached_file :file,
                     :storage => :s3,
