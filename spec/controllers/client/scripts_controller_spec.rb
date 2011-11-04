@@ -13,4 +13,5 @@ describe Client::ScriptsController do
     delete :destroy, :id => script.id
     script.reload.should_not be_active
   end
+  
 end

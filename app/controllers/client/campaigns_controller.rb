@@ -44,14 +44,6 @@ module Client
       redirect_to :back
     end
     
-    def restore
-      campaign = Campaign.find_by_id(params[:campaign_id])
-      campaign.restore
-      campaign.save
-      flash_message(:notice, "Campaign restored successfully")
-      redirect_to :back
-    end
-
     def deleted
       render 'campaigns/deleted'
     end
