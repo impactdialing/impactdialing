@@ -21,7 +21,7 @@ function hide_all_actions() {
 
 }
 
->>>>>>> a91b3a91b5577f06940347cd4e695da40f20301e
+
 function set_session(session_id) {
     $("#caller_session").val(session_id);
 }
@@ -185,11 +185,6 @@ function subscribe(session_key) {
         bind_voter(data);
         hide_response_panel();
         hide_all_actions();
-        $("#skip_voter").show();
-        $("#call_voter").show();
-        $("#stop_calling").show();
-
-
     }
 
     function clear_caller() {
