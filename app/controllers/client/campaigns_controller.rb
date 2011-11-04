@@ -54,17 +54,18 @@ module Client
     end
     
     def update
-      @campaign = Campaign.find_by_id(params[:id]) || Campaign.new(params[:campaign])
+      @campaign = Campaign.find_by_id(params[:id])
       @campaign.account = account
       code=""
+      @campaign.update_attributes(params[:campaign])
       if @campaign.valid?        
-        code = @campaign.verify_caller_id if (!@campaign.caller_id_verified || !@campaign.caller_id.blank?)      
+        # code = @campaign.verify_caller_id if (!@campaign.caller_id_verified || !@campaign.caller_id.blank?)      
         if @campaign.script_id.blank?
           script = account.scripts.active.first
           @campaign.script_id = script.id unless script.nil?          
         end            
-        @campaign.caller_ids = params[:campaign][:caller_ids]
         @campaign.save
+        puts @campaign.inspect
         if params[:listsSent]
           @campaign.disable_voter_list          
           params[:voter_list_ids].each{ |id| VoterList.enable_voter_list(id) } unless params[:voter_list_ids].blank?
