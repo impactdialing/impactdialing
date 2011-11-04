@@ -5,7 +5,7 @@
 
 <% content_for :javascripts do %>
     <script src="http://js.pusherapp.com/1.8/pusher.min.js" type="text/javascript"></script>
-    <%= javascript_include_tag 'jquery.ui.datetime.min', 'callers/caller_pusher', 'scripts', 'ICanHaz.min.js' %>
+    <%= javascript_include_tag 'jquery.ui.datetime.min', 'callers/caller_pusher', 'ICanHaz.min.js' %>
 
     <script type="text/javascript">
         var pusher = new Pusher('<%= Pusher.key %>');
