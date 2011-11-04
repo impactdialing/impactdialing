@@ -177,9 +177,8 @@ describe VoterList do
 
     it "gives the count of remaining voters" do
       voter_list = Factory(:voter_list)
+      Factory(:voter, :voter_list => voter_list, :status => CallAttempt::Status::SUCCESS)
       Factory(:voter, :voter_list => voter_list)
-      attempted_voter = Factory(:voter, :voter_list => voter_list)
-      Factory(:call_attempt, :voter => attempted_voter)
       voter_list.voters_remaining.should == 1
     end
   end

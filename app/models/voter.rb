@@ -22,7 +22,7 @@ class Voter < ActiveRecord::Base
 
   scope :by_status, lambda { |status| where(:status => status) }
   scope :active, where(:active => true)
-  scope :to_be_dialed, :include => [:call_attempts], :conditions => ["(call_attempts.id is null and call_back is false) OR call_attempts.status IN (?)", CallAttempt::Status::ALL - [CallAttempt::Status::SUCCESS]]
+  scope :to_be_dialed, :conditions => ["call_back is false AND status != (?)", CallAttempt::Status::SUCCESS]
   scope :randomly, :order => 'rand()'
   scope :to_callback, where(:call_back => true)
   scope :scheduled, :conditions => {:scheduled_date => (10.minutes.ago..10.minutes.from_now), :status => CallAttempt::Status::SCHEDULED}
@@ -130,7 +130,7 @@ class Voter < ActiveRecord::Base
       # call_attempt.sid
     # }
   end
- 
+
 
   def conference(session)
     session.update_attributes(:voter_in_progress => self)

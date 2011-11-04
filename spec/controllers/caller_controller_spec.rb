@@ -1,10 +1,11 @@
 require "spec_helper"
 
 describe CallerController do
+  let(:account) { Factory(:account) }
+  let(:user) { Factory(:user, :account => account) }
+  let(:caller) { Factory(:caller, :account => account) }
+
   describe 'index' do
-    let(:account) { Factory(:account) }
-    let(:user) { Factory(:user, :account => account) }
-    let(:caller) { Factory(:caller, :account => account) }
     before(:each) do
       login_as(caller)
     end
@@ -37,7 +38,6 @@ describe CallerController do
 
   describe "preview dial" do
     let(:campaign) { Factory(:campaign) }
-    let(:caller) { Factory(:caller) }
 
     before(:each) do
       login_as(caller)
@@ -103,16 +103,9 @@ describe CallerController do
       channel.should_receive(:trigger).with('calling_voter', anything)
       post :call_voter, :session_id => caller_session.id , :voter_id => voter.id
     end
-
-
-
   end
 
   describe "calling in" do
-    let(:account) { Factory(:account) }
-    let(:user) { Factory(:user, :account => account) }
-    let(:caller) { Factory(:caller, :account => account) }
-
     it "allocates a campaign to a caller" do
       campaign = Factory(:campaign, :account => account)
       session = Factory(:caller_session, :caller => caller, :campaign => nil)
@@ -181,7 +174,12 @@ describe CallerController do
       post :active_session, :id => caller.id
       response.body.should == {:caller_session => {:id => nil}}.to_json
     end
-
   end
 
+  it "logs out" do
+    login_as(caller)
+    post :logout
+    session[:caller].should_not be
+    response.should redirect_to(caller_root_path)
+  end
 end

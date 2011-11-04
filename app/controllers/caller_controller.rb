@@ -26,7 +26,7 @@ class CallerController < ApplicationController
 
   def logout
     session[:caller]=nil
-    redirect_to :controller => 'caller', :action=>"index"
+    redirect_to caller_root_path
   end
 
   def login
@@ -54,17 +54,17 @@ class CallerController < ApplicationController
       render :xml => @session.ask_for_campaign(params[:attempt])
     end
   end
-  
+
   def hangup_on_voter
     caller = Caller.find(params[:id])
-    @session = caller.caller_sessions.find(params[:session_id])        
+    @session = caller.caller_sessions.find(params[:session_id])
     @session.end_running_call
     render :nothing => true
   end
-  
+
   def stop_calling
     caller = Caller.find(params[:id])
-    @session = caller.caller_sessions.find(params[:session_id])        
+    @session = caller.caller_sessions.find(params[:session_id])
     @session.end_running_call
     render :nothing => true
   end
@@ -241,8 +241,6 @@ class CallerController < ApplicationController
     render :text=> "var x='ok';"
     return
   end
-  
-  
 
   def drop_call
     @session = CallerSession.find_by_session_key(params[:key])

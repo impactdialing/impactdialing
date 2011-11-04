@@ -26,8 +26,7 @@ class CallAttemptsController < ApplicationController
 
   def disconnect
     call_attempt = CallAttempt.find(params[:id])
-    call_attempt.disconnect
-    render :nothing => true
+    render :xml => call_attempt.disconnect
   end
 
   def end
