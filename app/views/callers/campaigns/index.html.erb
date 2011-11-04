@@ -8,7 +8,7 @@
 
   <p><label for="">Campaigns</label>
     <%= collection_select(:campaign, :current, @campaigns, :id, :name, :id=>"current_campaigns" ) %>
-    <%= button_to_function "Go to campaign", "go_to_current_campaign()" %>
+    <%= link_to_function "Go to campaign", "go_to_current_campaign()", :class => "action primary", :style => "margin-left: 7px"%>
 </fieldset>
 
 <div role="main">
