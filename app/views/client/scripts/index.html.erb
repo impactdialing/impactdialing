@@ -1,3 +1,6 @@
+<%= javascript_include_tag "application" %>
+<%= javascript_include_tag "defaults" %>
+<%= csrf_meta_tag%>
 <h1>Scripts</h1>
 <% if @scripts.length==0 %>
     <div class="form">
@@ -15,7 +18,10 @@
             <tr class="<%= cycle("odd", "even") %>">
               <td><h3><%= link_to c.name, client_script_path(c) %></h3></td>
               <td><%= c.created_at.strftime("%m/%d/%Y") %></td>
-              <td><%= button_to "Delete", client_script_path(c), :confirm => "Are you sure you want to delete this script?", :method => :delete, :class=>"ico_del" %></td>
+              <td>
+                <div style="display:none"><%= button_to "delete", client_script_path(c), :method => :delete, :id => "delete-button-#{c.id}" %></div>
+                <a href="javascript:if(confirm('Are you sure you want to delete this campaign?')) $('#delete-button-<%= c.id%>').trigger('click');" class="ico del"></a>
+              </td>  
             </tr>
         <% end %>
 

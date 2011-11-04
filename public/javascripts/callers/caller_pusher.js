@@ -179,6 +179,8 @@ function subscribe(session_key) {
 		$("#stop_calling").show();
 		$("#submit_and_keep_call").hide();		
 		$("#submit_and_stop_call").hide();		
+        hide_response_panel();
+
     }
 
     function clear_caller(){

@@ -6,11 +6,10 @@
 <fieldset>
   <legend>Select campaign</legend>
   <% if @campaigns.present?  %>
-    <p><label for="">Campaigns</label>
-      <%= collection_select(:campaign, :current, @campaigns, :id, :name, :id=>"current_campaigns" ) %>
-      <%= button_to_function "Go to campaign", "go_to_current_campaign()" %>
+    <p><%= collection_select(:campaign, :current, @campaigns, :id, :name, :id=>"current_campaigns" ) %><br>
+      <%= button_to_function "Go to campaign", "go_to_current_campaign()" %></p>
   <% else %>
-    <legend>You have no campaigns assigned to select</legend>
+    <p>There are no campaigns assigned to you.</p>
   <% end %>
 </fieldset>
 
@@ -20,13 +19,12 @@
 
   <p>First, choose your campaign above and click Go.</p>
 
-  <p>You'll see a preview of your script. When you're ready to start, enter your phone number and click Start Taking
-    Calls. Impact Dialing will call you.</p>
+  <p>You'll see a preview of your script. When you're ready to start, click Start Calling to use the browser phone (<a href="http://get.adobe.com/flashplayer/">Adobe Flash</a> and a high-speed Internet connection required) or call the call-in number and enter the PIN and Campaign ID on your screen.</p>
 
   <p>Start talking when the hold music ends - you often won't hear the "hello". Information about the person who
     answered will pop up above the script, and your call result options will appear below. If an answering machine slips
     through or you need to hang up on someone, click the End Call button. After you fill out your Call Results, either
-    choose Submit and Continue Taking Calls or Submit and Stop Taking Calls.</p>
+    choose "Submit and Keep Calling" or "Submit and Stop Calling".</p>
 
   <p>When you stop, you’ll be returned to the script preview screen. If you want to switch campaigns, click Home in the
     upper right corner to come back to this screen.</p>
@@ -40,7 +38,7 @@
     <a href="http://www.apple.com/safari/">Apple Safari</a> versions 5 or higher.</p>
 
   <p>We also support lower versions of Chrome and Safari, as well as all versions of Firefox, and Internet Explorer
-    versions 6 and higher. You must have Flash installed for these browsers to work.</p>
+    versions 6 and higher. You must have <a href="http://get.adobe.com/flashplayer/">Adobe Flash</a> installed for these browsers to work.</p>
 
 <p>Avast Antivirus users: You must disable Avast's Web Shield, as it has a bug that prevents Impact Dialing from working properly. You might consider <a href="http://support.avast.com/">contacting Avast</a> to ask that they fix the bug blocking WebSocket traffic.</p>
 </div>

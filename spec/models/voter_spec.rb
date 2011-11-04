@@ -147,27 +147,25 @@ describe Voter do
 
   describe "to be dialed" do
     it "includes voters never called" do
-      voter = Factory(:voter)
+      voter = Factory(:voter, :status => Voter::Status::NOTCALLED)
       Voter.to_be_dialed.should == [voter]
     end
 
     it "includes voters with a busy signal" do
-      voter = Factory(:voter)
+      voter = Factory(:voter, :status => CallAttempt::Status::BUSY)
       Factory(:call_attempt, :voter => voter, :status => CallAttempt::Status::BUSY)
       Voter.to_be_dialed.should == [voter]
     end
 
     (CallAttempt::Status::ALL - [CallAttempt::Status::SUCCESS]).each do |status|
       it "includes voters with a status of #{status} " do
-        voter = Factory(:voter)
-        Factory(:call_attempt, :voter => voter, :status => status)
+        voter = Factory(:voter, :status => status)
         Voter.to_be_dialed.should == [voter]
       end
     end
 
     it "excludes voters with a status of a successful call" do
-      voter = Factory(:voter)
-      Factory(:call_attempt, :voter => voter, :status => CallAttempt::Status::SUCCESS)
+      voter = Factory(:voter, :status => CallAttempt::Status::SUCCESS)
       Voter.to_be_dialed.should be_empty
     end
   end
