@@ -12,6 +12,17 @@ $(document).ready(function() {
     }, 5000); //end setInterval
 })
 
+function hide_all_actions() {
+  	$("#skip_voter").hide();
+	$("#call_voter").hide();
+	$("#stop_calling").hide();
+	$("#hangup_call").hide();
+	$("#submit_and_keep_call").hide();		
+	$("#submit_and_stop_call").hide();		
+
+}
+
+
 function set_session(session_id) {
     $("#caller_session").val(session_id);
 }
@@ -108,21 +119,25 @@ function hide_response_panel(){
 }
 
 function set_message(text) {
-    $("#statusdiv").replaceData(text);
+    $("#statusdiv").html(text);
 }
 
 function subscribe(session_key) {
     channel = pusher.subscribe(session_key);
 
-    channel.bind('test', function(data) {
-        alert(data);
-    });
 
-    channel.bind('caller_connected', function(data) {
-        $("#callin_data").hide();
-        set_message("Ready for calls");
-        hide_response_panel();
-        set_voter(data);
+    channel.bind('conference_started', function(data) {
+        // $("#callin_data").hide();
+        // set_message("Ready for calls");
+        // hide_response_panel();
+        // set_voter(data);
+        $("#skip_voter").show();
+		$("#call_voter").show();
+		$("#stop_calling").show();
+		$("#hangup_call").hide();
+		$("#submit_and_keep_call").hide();		
+		$("#submit_and_stop_call").hide();		
+
     });
 
     channel.bind('voter_push', function(data) {
@@ -174,11 +189,6 @@ function subscribe(session_key) {
         $("#voter_info_message").hide();
         $("#current_voter").val(data.fields.id);
         bind_voter(data);
-        $("#skip_voter").show();
-		$("#call_voter").show();
-		$("#stop_calling").show();
-		$("#submit_and_keep_call").hide();		
-		$("#submit_and_stop_call").hide();		
         hide_response_panel();
 
     }
@@ -203,15 +213,6 @@ function subscribe(session_key) {
         $('#voter_info').append(voter);
     }
 
-    function hide_all_actions() {
-	  	$("#skip_voter").hide();
-		$("#call_voter").hide();
-		$("#stop_calling").hide();
-		$("#hangup_call").hide();
-		$("#submit_and_keep_call").hide();		
-		$("#submit_and_stop_call").hide();		
-	
-    }
 
 
     function parse_custom_fields(data) {

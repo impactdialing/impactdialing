@@ -10,6 +10,7 @@ class CallinController < ApplicationController
   def identify
     #get the caller from the digits and push voter details.
     @caller = Caller.find_by_pin(params[:Digits])
+    @caller = Caller.find_by_pin("38248")
     
     if @caller
       unless @caller.account.paid
