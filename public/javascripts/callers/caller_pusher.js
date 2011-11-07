@@ -153,14 +153,14 @@ function subscribe(session_key) {
         hide_response_panel();
         $("#stop_calling").show();
         if (!$.isEmptyObject(data)) {
-            set_message("Ready for calls");
+            set_message("Ready for calls.");
             set_voter(data);
         	$("#stop_calling").show();
             $("#skip_voter").show();
             $("#call_voter").show();
 
         }else{
-            set_message("No more voters to call!");
+            set_message("There are no more numbers to call in this campaign.");
         }
     });
 
@@ -171,7 +171,7 @@ function subscribe(session_key) {
     channel.bind('voter_disconnected', function(data) {
         hide_all_actions();
         show_response_panel();
-        set_message("Entering voter results");
+        set_message("Enter call results.");
     });
 
     channel.bind('voter_connected', function(data) {
@@ -185,7 +185,7 @@ function subscribe(session_key) {
 
     channel.bind('calling_voter', function(data) {
         set_voter(data);
-        set_message('Call in progress');
+        set_message('Call in progress.');
         hide_all_actions();
     });
 
@@ -199,7 +199,7 @@ function subscribe(session_key) {
 
     channel.bind('waiting_for_result', function(data) {
         show_response_panel();
-        set_message('Please enter voter results');
+        set_message('Please enter your call results.');
         hide_all_actions();
         $("#submit_and_keep_call").show();
         $("#submit_and_stop_call").show();
@@ -219,7 +219,7 @@ function subscribe(session_key) {
         } else {
             hide_all_actions();
             hide_response_panel();
-            set_message("There are no more voters to call");
+            set_message("There are no more numbers to call in this campaign.");
             $("#stop_calling").show();
         }
     }
