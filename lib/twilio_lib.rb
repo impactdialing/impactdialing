@@ -15,7 +15,7 @@ class TwilioLib
     @http_user = accountguid
     @http_password = authtoken
   end
-  
+
   def end_call(call_id)
       http = Net::HTTP.new(@server, @port)
       http.use_ssl=true
@@ -24,12 +24,11 @@ class TwilioLib
       params = {'Status'=>"completed"}
       req.set_form_data(params)
       response = http.start{http.request(req)}
-      Rails.logger.info response.body 
+      Rails.logger.info response.body
   end
 
 
   def call(http_method, service_method, params = {})
-    return '' if Rails.env == 'test'
     if service_method=="IncomingPhoneNumbers/Local" && Rails.env =="development"  && !params.has_key?("SmsUrl")
       http = Net::HTTP.new(@server, "5000")
       http.use_ssl=false
@@ -70,8 +69,9 @@ class TwilioLib
     Rails.logger.debug "#{DEFAULT_SERVER}#{@root}#{service_method}?#{params}" if Rails.env =="development"
 
     req.set_form_data(params)
-    response = http.start{http.request(req)}
-    Rails.logger.info response.body 
+    request = http.request(req)
+    response = http.start{request}
+    Rails.logger.info response.body
     response.body
   end
 
