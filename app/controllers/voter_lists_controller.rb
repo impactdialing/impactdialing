@@ -53,7 +53,7 @@ class VoterListsController < ClientController
       result = @voter_list.import_leads(csv_to_system_map,
                                         uploaded_filename,
                                         @separator)
-      flash_message(:notice, "Upload completed. #{result[:successCount]} out of #{result[:successCount]+result[:failedCount]} rows imported successfully.")
+      flash_message(:notice, "Upload complete. #{result[:successCount]} out of #{result[:successCount]+result[:failedCount]} records imported successfully.")
     rescue CSV::MalformedCSVError => err
       @voter_list.destroy
       flash_message(:error, "Invalid CSV file. Could not import.")
