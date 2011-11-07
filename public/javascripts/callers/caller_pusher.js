@@ -1,3 +1,7 @@
+Pusher.log = function(message) {
+  if (window.console && window.console.log) window.console.log(message);
+};
+
 var channel = null;
 
 $(document).ready(function() {
@@ -143,6 +147,7 @@ function subscribe(session_key) {
 
 
     channel.bind('caller_connected', function(data) {
+        console.log("caller connected!!!")
         hide_all_actions();
         $("#callin_data").hide();
         hide_response_panel();
