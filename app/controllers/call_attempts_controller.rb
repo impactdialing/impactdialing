@@ -29,6 +29,12 @@ class CallAttemptsController < ApplicationController
     render :xml => call_attempt.disconnect
   end
 
+  def hangup
+    call_attempt = CallAttempt.find(params[:id])
+    call_attempt.end_running_call if call_attempt
+    render :nothing => true
+  end
+
   def end
     call_attempt = CallAttempt.find(params[:id])
     response = case params[:DialCallStatus] #using the 2010 api
@@ -65,7 +71,8 @@ class CallAttemptsController < ApplicationController
       voters_response = PossibleResponse.find(answer["value"])
       @voter.answers.create(:possible_response => voters_response, :question => voters_response.question)
     end
-    Pusher[@call_attempt.caller_session.session_key].trigger("voter_push", Voter.to_be_dialed.first.info)
+    voter = Voter.to_be_dialed.first
+    Pusher[@call_attempt.caller_session.session_key].trigger("voter_push", voter ? voter.info : {})
     @call_attempt.caller_session.update_attribute(:voter_in_progress, nil)
     render :nothing => true
   end

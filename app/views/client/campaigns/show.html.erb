@@ -13,7 +13,7 @@
 
         <p><label for="">Caller ID</label><br>
           <%= f.text_field :caller_id, {:class=>"field size3"} %></p>
-          
+
         <p><label for="">Script</label><br>
           <%= f.collection_select(:script_id, @scripts, :id, :name, {:class=>"field"}) %>
         </p>
@@ -154,8 +154,7 @@
     <% if @callers.length!=0 %>
     isAll();
     <% end %>
-    <%= remote_function(:update => "callerid",
-:url => { :action => "campaign_caller_id_verified", :id=>@campaign.id }) %>
+    <%= remote_function(:update => "callerid", :url => { :action => "campaign_caller_id_verified", :id=>@campaign.id }) %>
 
     function doRecord() {
         if ($('campaign_use_recordings').checked) {

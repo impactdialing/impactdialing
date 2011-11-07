@@ -47,6 +47,7 @@ class CallerController < ApplicationController
   def assign_campaign
     @session = CallerSession.find(params[:session])
     @campaign = @session.caller.account.campaigns.find_by_campaign_id(params[:Digits])
+        # @campaign = @session.caller.account.campaigns.find_by_campaign_id('62877')
     if @campaign
       @session.update_attributes(:campaign => @campaign)
       render :xml => @session.start
@@ -55,12 +56,6 @@ class CallerController < ApplicationController
     end
   end
 
-  def hangup_on_voter
-    caller = Caller.find(params[:id])
-    @session = caller.caller_sessions.find(params[:session_id])
-    @session.end_running_call
-    render :nothing => true
-  end
 
   def stop_calling
     caller = Caller.find(params[:id])
@@ -90,7 +85,10 @@ class CallerController < ApplicationController
     session = @caller.caller_sessions.find(params[:session_id])
     voter = session.campaign.all_voters.to_be_dialed.find(:first, :conditions => "voters.id > #{params[:voter_id]}") if params[:voter_id]
     voter ||= session.campaign.all_voters.to_be_dialed.first
-    session.publish('voter_push', voter.info)
+     if session.campaign.predictive_type == Campaign::Type::PREVIEW
+        session.publish('caller_connected', voter ? voter.info : {}) 
+    end
+    
     render :nothing => true
   end
 

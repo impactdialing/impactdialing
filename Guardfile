@@ -4,7 +4,7 @@ end
 
 guard 'rails', :port => 3000 do
   watch('Gemfile.lock')
-  watch(%r{^(config|lib)/.*})
+  watch(%r{^(config|lib)/[^(routes.rb)].*})
 end
 
 guard 'spork', :wait => 50 do

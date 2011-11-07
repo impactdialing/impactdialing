@@ -16,11 +16,14 @@ class CallerSession < ActiveRecord::Base
     return 0 if self.tDuration.blank?
     self.tDuration/60.ceil
   end
-
+  
   def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
-    t = TwilioLib.new(account, auth)
-    t.end_call("#{self.sid}")
-  end
+     t = TwilioLib.new(account, auth)
+     t.end_call("#{self.sid}")
+     self.update_attributes(:on_call => false, :available_for_call => false, :endtime => Time.now)
+     self.publish("caller_disconnected",{})     
+   end
+
 
   def call(voter)
     voter.update_attribute(:caller_session, self)
@@ -71,8 +74,6 @@ class CallerSession < ActiveRecord::Base
       end
     end.response
     update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
-    first_voter = self.campaign.all_voters.to_be_dialed.first
-    self.publish("caller_connected", first_voter ? first_voter.info : {}) if self.campaign.predictive_type == Campaign::Type::PREVIEW
     response
   end
 
