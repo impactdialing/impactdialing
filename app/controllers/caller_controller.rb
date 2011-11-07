@@ -82,6 +82,7 @@ class CallerController < ApplicationController
   end
 
   def preview_voter
+    p "PUSHER DETAILS :::::::::::::::::::::::::::::::::::::::::::: #{Pusher.app_id}"
     session = @caller.caller_sessions.find(params[:session_id])
     voter = session.campaign.all_voters.to_be_dialed.find(:first, :conditions => "voters.id > #{params[:voter_id]}") if params[:voter_id]
     voter ||= session.campaign.all_voters.to_be_dialed.first
