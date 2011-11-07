@@ -90,6 +90,7 @@ end
 
 def publish(event,data)
   return unless self.campaign.use_web_ui?
+  Rails.logger.debug("PUSHER APP ID ::::::::::::::::::::::::::::::::::::::  #{Pusher.app_id}////////////////////////////#{event}")
   Pusher[self.session_key].trigger(event,data)
 end
 end

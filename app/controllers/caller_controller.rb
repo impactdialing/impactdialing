@@ -86,6 +86,7 @@ class CallerController < ApplicationController
     voter = session.campaign.all_voters.to_be_dialed.find(:first, :conditions => "voters.id > #{params[:voter_id]}") if params[:voter_id]
     voter ||= session.campaign.all_voters.to_be_dialed.first
      if session.campaign.predictive_type == Campaign::Type::PREVIEW
+       Rails.logger.debug("Inside preview--------------------------------------------")
         session.publish('caller_connected', voter ? voter.info : {}) 
     end
     
