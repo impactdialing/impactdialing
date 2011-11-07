@@ -76,18 +76,17 @@ class CallerController < ApplicationController
   end
 
   def active_session
-    puts "Test Test Test Teest Test"
     @caller = Caller.find(params[:id])
     active_sessions = @caller.caller_sessions.available
     render :json => active_sessions.blank? ? {:caller_session => {:id => nil}} : active_sessions.last
   end
 
   def preview_voter
-    p "PUSHER DETAILS :::::::::::::::::::::::::::::::::::::::::::: #{Pusher.app_id }"
     session = @caller.caller_sessions.find(params[:session_id])
     voter = session.campaign.all_voters.to_be_dialed.find(:first, :conditions => "voters.id > #{params[:voter_id]}") if params[:voter_id]
     voter ||= session.campaign.all_voters.to_be_dialed.first
      if session.campaign.predictive_type == Campaign::Type::PREVIEW
+       Rails.logger.debug("Inside preview--------------------------------------------")
         session.publish('caller_connected', voter ? voter.info : {}) 
     end
     
