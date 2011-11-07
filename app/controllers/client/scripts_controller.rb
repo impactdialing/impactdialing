@@ -18,7 +18,7 @@ module Client
     end
 
     def create
-      params[:script][:voter_fields] = params[:voter_fields].to_json
+      params[:script][:voter_fields] =  params[:voter_field] ? params[:voter_field].to_json : nil
       @script = Script.new(params[:script])  
       @voter_field_values = params[:voter_fields] || []
       if @script.save
@@ -42,7 +42,7 @@ module Client
       else
         @voter_field_values=[]
       end
-      render :new
+      
     end
     
     def update      
