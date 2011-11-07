@@ -37,10 +37,10 @@
         <% @script.questions.each_with_index do |question, index| %>
         <%= f.fields_for :questions, question do |q| %>
           <fieldset>
-            <legend>Question 1</legend>
+            <legend>Question <%= index+1%></legend>
+            <nested_type type = 'questions'></nested_type>
             <p>
               <label>Question:</label>
-              <nested_type type = 'questions'></nested_type>
               <%= q.text_field :text%>
             </p>
                  <table>
@@ -64,33 +64,48 @@
                         <%= r.check_box :retry %>
                       </td>
                       <td width = 15%>
-                        <%= r.link_to_remove " ", :class => "ico del", :type => "possible_responses"%>
+                        <%= r.link_to_remove " ", :class => "ico del", :type => "possible_responses" %>
                       </td>
                     </tr>
                   </table>
                 <% end %>
                 <%= q.link_to_add "New result", :possible_responses, :class => "action secondary", :type => "possible_responses"%>
-                <%= q.link_to_remove "Delete this question", :class => "action secondary", :type => "questions" %>
+                <%= q.link_to_remove "Delete this question", :class => "action secondary" , :type => "questions" %>
             </p>
             </fieldset>
           <% end %>
           <% end %>
-
-          <%= f.fields_for :notes do |n| %>
-            <fieldset>
-              <legend>Note</legend>
-              <nested_type type = 'notes'></nested_type>
-              <%= n.text_field :note %>
-              <p class = "actions">
-                <%= n.link_to_remove " Delete this note", :class => "action secondary", :type => "notes"  %>
-              </p>
-            </fieldset>            
+          <% if @script.notes.present? %>
+            <% @script.notes.each_with_index do |note, index| %>
+              <%= f.fields_for :notes, note do |n| %>
+                <fieldset>
+                  <legend>Note <%= index + 1 %></legend>
+                  <nested_type type = 'notes'></nested_type>
+                  <%= n.text_field :note %>
+                  <p class = "actions">
+                    <%= n.link_to_remove " Delete this note", :class => "action secondary",:type => "notes"  %>
+                  </p>
+                </fieldset>            
+              <% end %>
+            <% end %>
+          <% else %>
+            <%= f.fields_for :notes do |n| %>
+              <fieldset>
+                <legend>Note </legend>
+                <nested_type type = 'notes'></nested_type>
+                <%= n.text_field :note %>
+                <p class = "actions">
+                  <%= n.link_to_remove " Delete this note", :class => "action secondary"  %>
+                </p>
+              </fieldset>            
+            <% end %>
           <% end %>
+          
+          
         <p class = "actions">
           <%= f.link_to_add "Add a question", :questions, :class => "action secondary", :type => "questions"%>
           
-          <%= f.link_to_add "Add a note", :notes, :class => "action secondary", :type => "notes"%>
-
+          <%= f.link_to_add "Add a note", :notes, :class => "action secondary", :type => 'notes' %>
         </p>
         
       </fieldset>
