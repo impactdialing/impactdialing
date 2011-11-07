@@ -48,7 +48,7 @@ module Client
        end
     end
     
-    def delete
+    def destroy
       @caller = account.callers.find_by_id(params[:id])
       if !@caller.blank?
         @caller.active = false
@@ -57,14 +57,6 @@ module Client
       flash_message(:notice, "Caller deleted")
       redirect_to :action=>"index"      
     end
-    
-    # def restore
-    #      caller = account.callers.find_by_id(params[:campaign_id])
-    #      caller.restore
-    #      caller.save
-    #      flash_message(:notice, "Caller restored successfully")
-    #      redirect_to :back
-    #    end
        
   end
 end
