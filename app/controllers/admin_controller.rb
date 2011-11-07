@@ -4,7 +4,7 @@ class AdminController < ApplicationController
   before_filter :authenticate
   require "nokogiri"
 
-  def status
+  def state
     if !params[:end].blank?
       cs = CallerSession.find(params[:end])
       cs.end_call
@@ -29,6 +29,7 @@ class AdminController < ApplicationController
     doc  = Nokogiri::XML(a)
     tcalls=doc.xpath("//Calls")
     @queued=tcalls.first.attributes["total"].value if tcalls.length>0
+    render 'status.html.erb'
   end
 
   def index

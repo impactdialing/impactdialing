@@ -9,6 +9,7 @@ ImpactDialing::Application.routes.draw do
   match '/homecss/css/style.css', :to => 'home#homecss'
 
   namespace 'admin' do
+    get 'status', :to => 'admin#state'
     [:campaigns, :scripts, :callers].each do |entities|
       resources entities, :only => [:index] do
         put '/restore', :controller => entities, :action => 'restore', :as => 'restore'
@@ -28,7 +29,7 @@ ImpactDialing::Application.routes.draw do
   resources :caller, :only => [:index] do
     collection do
       get :login
-      post :end_session      
+      post :end_session
     end
 
     member do
