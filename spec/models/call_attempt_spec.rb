@@ -142,6 +142,10 @@ describe CallAttempt do
       call_attempt.reload.call_end.should_not be_nil
       call_attempt.voter.status.should == call_attempt.status
     end
+
+    it "disconnects a call_attempt from a call given an sid" do
+      pending
+    end
   end
 
   describe "Pusher" do

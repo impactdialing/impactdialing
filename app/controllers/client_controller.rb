@@ -422,8 +422,7 @@ class ClientController < ApplicationController
       if response.success?
         flash_message(:notice, "Account activated.")
         @billing_account.save
-        @user.paid = 1
-        @user.save
+        account.update_attribute(:paid, true)
         redirect_to :action=>"index"
         return
       else
