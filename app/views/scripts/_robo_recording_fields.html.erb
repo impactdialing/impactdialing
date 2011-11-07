@@ -34,10 +34,10 @@
       <%= f.fields_for :recording_responses do |response_form| %>
           <%= render :partial=>"recording_response_fields", :locals => {:f => response_form} %>
       <% end %>
-      <%= f.link_to_add "Add response", :recording_responses %>
+      <%= f.link_to_add "Add response", :recording_responses, :class => "action secondary" %>
     </fieldset>
 
-    <%= f.link_to_remove "Remove this recording" %>
+    <%= f.link_to_remove "Remove this recording", :class => "action secondary" %>
     <!--DO NOT EDIT-->
   </fieldset>
 </div>
