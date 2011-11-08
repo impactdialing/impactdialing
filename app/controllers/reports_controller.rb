@@ -19,7 +19,7 @@ class ReportsController < ClientController
           @campaign.all_voters.each do |voter|
             attempt = voter.call_attempts.last
             if attempt
-              csv  << [voter.Phone, voter.call_attempts.last.status, (attempt.call_responses.collect{|call_response| call_response.recording_response.response } if attempt.call_responses.size > 0) ].flatten
+              csv  << [voter.Phone, voter.call_attempts.last.status, (attempt.call_responses.collect{|call_response| call_response.recording_response.try(:response) } if attempt.call_responses.size > 0) ].flatten
             else
               csv  << [voter.Phone, 'Not Dialed']
             end
