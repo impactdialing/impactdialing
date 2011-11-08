@@ -1,5 +1,5 @@
 Pusher.log = function(message) {
-  if (window.console && window.console.log) window.console.log(message);
+    if (window.console && window.console.log) window.console.log(message);
 };
 
 var channel = null;
@@ -82,6 +82,14 @@ function call_voter() {
     })
 }
 
+function ready_to_call(dialer) {
+    if (dialer && dialer.toLowerCase() == "preview") {
+        $("#stop_calling").show();
+        $("#skip_voter").show();
+        $("#call_voter").show();
+    }
+}
+
 
 function send_voter_response() {
     var str = $("#voter_responses").serializeArray();
@@ -155,11 +163,8 @@ function subscribe(session_key) {
         if (!$.isEmptyObject(data)) {
             set_message("Ready for calls.");
             set_voter(data);
-        	$("#stop_calling").show();
-            $("#skip_voter").show();
-            $("#call_voter").show();
 
-        }else{
+        } else {
             set_message("There are no more numbers to call in this campaign.");
         }
     });
@@ -184,7 +189,6 @@ function subscribe(session_key) {
     });
 
     channel.bind('calling_voter', function(data) {
-        set_voter(data);
         set_message('Call in progress.');
         hide_all_actions();
     });
@@ -216,6 +220,8 @@ function subscribe(session_key) {
             bind_voter(data);
             hide_response_panel();
             hide_all_actions();
+            ready_to_call(data.dialer);
+
         } else {
             hide_all_actions();
             hide_response_panel();

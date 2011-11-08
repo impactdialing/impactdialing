@@ -125,10 +125,10 @@ describe CallerSession do
     it "publishes information to a caller in session" do
       campaign = Factory(:campaign, :use_web_ui => true)
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sample")
-      event, data = 'event', 'data'
+      event, data = 'event', {}
       channel = mock
       Pusher.should_receive(:[]).with(session.session_key).and_return(channel)
-      channel.should_receive(:trigger).with(event, data)
+      channel.should_receive(:trigger).with(event, data.merge(:dialer => campaign.predictive_type))
       session.publish(event, data)
     end
 
@@ -145,9 +145,7 @@ describe CallerSession do
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sample")
       voter = Factory(:voter, :campaign => campaign, :caller_session => session)
       voter.stub(:dial_predictive)
-      channel = mock
-      Pusher.should_receive(:[]).with(session.session_key).and_return(channel)
-      channel.should_receive(:trigger).with("calling", voter.info)
+      session.should_receive(:publish).with('calling',voter.info)
       session.call(voter)
     end
 
