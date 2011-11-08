@@ -35,11 +35,14 @@ describe CallAttemptsController do
       voter.answers.count.should == 2
     end
 
-    it "triggers voter_push Pusher event" do
+    it "sends next voter to be dialed via voter_push Pusher event" do
+      Factory(:voter, :campaign => Factory(:campaign), :status => Voter::Status::NOTCALLED)
+      voter = Factory(:voter, :campaign => campaign, :status => CallAttempt::Status::SUCCESS, :call_back => false)
+      next_voter = Factory(:voter, :campaign => campaign, :status => Voter::Status::NOTCALLED, :call_back => false)
+      campaign.all_voters.size.should == 2
       channel = mock
-      Voter.stub_chain(:to_be_dialed, :first).and_return(voter)
       Pusher.should_receive(:[]).with(anything).and_return(channel)
-      channel.should_receive(:trigger).with("voter_push", Voter.to_be_dialed.first.info)
+      channel.should_receive(:trigger).with("voter_push", campaign.all_voters.to_be_dialed.first.info)
       post :voter_response, :id => call_attempt.id, :voter_id => voter.id, :answers => {}
     end
 

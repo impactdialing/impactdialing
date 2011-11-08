@@ -71,7 +71,7 @@ class CallAttemptsController < ApplicationController
       voters_response = PossibleResponse.find(answer["value"])
       @voter.answers.create(:possible_response => voters_response, :question => voters_response.question)
     end
-    voter = Voter.to_be_dialed.first
+    voter = @call_attempt.campaign.all_voters.to_be_dialed.first
     Pusher[@call_attempt.caller_session.session_key].trigger("voter_push", voter ? voter.info : {})
     @call_attempt.caller_session.update_attribute(:voter_in_progress, nil)
     render :nothing => true
