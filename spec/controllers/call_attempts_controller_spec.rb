@@ -29,7 +29,7 @@ describe CallAttemptsController do
       channel = mock
       Voter.stub_chain(:to_be_dialed, :first).and_return(voter)
       Pusher.should_receive(:[]).with(anything).and_return(channel)
-      channel.should_receive(:trigger).with("voter_push", Voter.to_be_dialed.first.info)
+      channel.should_receive(:trigger).with("voter_push", Voter.to_be_dialed.first.info.merge(:dialer => campaign.predictive_type))
 
       post :voter_response, :id => call_attempt.id, :voter_id => voter.id, :answers => answer
       voter.answers.count.should == 2
@@ -42,7 +42,7 @@ describe CallAttemptsController do
       campaign.all_voters.size.should == 2
       channel = mock
       Pusher.should_receive(:[]).with(anything).and_return(channel)
-      channel.should_receive(:trigger).with("voter_push", campaign.all_voters.to_be_dialed.first.info)
+      channel.should_receive(:trigger).with("voter_push", campaign.all_voters.to_be_dialed.first.info.merge({dialer: next_voter.campaign.predictive_type}))
       post :voter_response, :id => call_attempt.id, :voter_id => voter.id, :answers => {}
     end
 
