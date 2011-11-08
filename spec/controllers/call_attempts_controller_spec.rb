@@ -155,7 +155,7 @@ describe CallAttemptsController do
       Factory(:custom_voter_field_value, :voter => voter, :custom_voter_field => custom_field, :value => 'value')
       Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller), :session_key => session_key, :voter_in_progress => voter)
       pusher_session = mock
-      pusher_session.should_receive(:trigger).with('voter_connected', {:attempt_id=> call_attempt.id, :voter => voter.info})
+      pusher_session.should_receive(:trigger).with('voter_connected', {:attempt_id=> call_attempt.id, :voter => voter.info}.merge(:dialer => campaign.predictive_type))
       Pusher.stub(:[]).with(session_key).and_return(pusher_session)
       post :connect, :id => call_attempt.id
     end

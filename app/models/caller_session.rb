@@ -42,7 +42,7 @@ class CallerSession < ActiveRecord::Base
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
     response = Twilio::Call.make(self.campaign.caller_id, voter.Phone, connect_call_attempt_url(attempt, :host => Settings.host, :port => Settings.port),
                                  {
-                                     'StatusCallBack' => end_call_attempt_url(attempt, :host => Settings.host, :port => Settings.port)
+                                     'StatusCallBack' => end_call_attempt_url(attempt, :host => Settings.host, :port => Settings.port),
                                      #'IfMachine' => self.campaign.use_recordings? ? 'Continue' : 'Hangup',
                                      #'Timeout' => campaign.answer_detection_timeout || "20"
                                  }
@@ -93,6 +93,6 @@ class CallerSession < ActiveRecord::Base
   def publish(event, data)
     return unless self.campaign.use_web_ui?
     Rails.logger.debug("PUSHER APP ID ::::::::::::::::::::::::::::::::::::::  #{Pusher.app_id}////////////////////////////#{event}")
-    Pusher[self.session_key].trigger(event, data)
+    Pusher[self.session_key].trigger(event, data.merge!(:dialer => self.campaign.predictive_type))
   end
 end
