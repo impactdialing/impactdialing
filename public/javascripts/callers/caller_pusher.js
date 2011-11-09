@@ -160,7 +160,7 @@ function subscribe(session_key) {
         $("#callin_data").hide();
         hide_response_panel();
         $("#stop_calling").show();
-        if (!$.isEmptyObject(data)) {
+        if (!$.isEmptyObject(data.fields)) {
             set_message("Ready for calls.");
             set_voter(data);
 
@@ -184,8 +184,6 @@ function subscribe(session_key) {
         set_call_attempt(data.attempt_id);
         hide_all_actions();
         $("#hangup_call").show();
-        $("#submit_and_keep_call").show();
-        $("#submit_and_stop_call").show();
     });
 
     channel.bind('calling_voter', function(data) {
@@ -214,7 +212,7 @@ function subscribe(session_key) {
     }
 
     function set_voter(data) {
-        if (!$.isEmptyObject(data)) {
+        if (!$.isEmptyObject(data.fields)) {
             $("#voter_info_message").hide();
             $("#current_voter").val(data.fields.id);
             bind_voter(data);
