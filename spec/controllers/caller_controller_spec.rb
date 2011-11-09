@@ -155,6 +155,12 @@ describe CallerController do
       response.body.should == session.pause_for_results
     end
 
+    it "says wait message every fifth attempts when the voter is paused for results" do
+      session = Factory(:caller_session, :caller => caller, :campaign => Factory(:campaign), :available_for_call => false, :on_call => true, :voter_in_progress => Factory(:voter), :session_key => 'some_key')
+      post :pause, :id => caller.id, :session_id => session.id, :attempt => 5
+      response.body.should == session.pause_for_results(5)
+    end
+
     it "resets a callers session's conference while an attempt is in progress" do
       session = Factory(:caller_session, :caller => caller, :campaign => Factory(:campaign), :available_for_call => false, :on_call => true, :session_key => "some_key")
       post :pause, :id => caller.id, :session_id => session.id

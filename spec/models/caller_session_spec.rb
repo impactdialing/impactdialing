@@ -114,7 +114,19 @@ describe CallerSession do
 
     it "pauses the voters results to be entered by the caller" do
       caller_session = Factory(:caller_session, :caller => caller)
-      caller_session.pause_for_results.should == Twilio::Verb.new { |v| v.say("Enter results."); v.pause("length" => 2); v.redirect(pause_caller_url(caller, :session_id => caller_session.id, :host => Settings.host, :port => Settings.port)) }.response
+      caller_session.pause_for_results.should == Twilio::Verb.new { |v| v.say("Please enter your call results"); v.pause("length" => 2); v.redirect(pause_caller_url(caller, :session_id => caller_session.id, :host => Settings.host, :port => Settings.port, :attempt => 1)) }.response
+    end
+
+    it "says wait message only on every fifth pause redirect" do
+      caller_session = Factory(:caller_session, :caller => caller)
+      caller_session.pause_for_results.should == Twilio::Verb.new { |v| v.say("Please enter your call results"); v.pause("length" => 2); v.redirect(pause_caller_url(caller, :session_id => caller_session.id, :host => Settings.host, :port => Settings.port, :attempt=>1)) }.response
+      5.times do |attempt|
+        unless attempt % 5 == 0
+          caller_session.pause_for_results(attempt).should == Twilio::Verb.new { |v| v.pause("length" => 2); v.redirect(pause_caller_url(caller, :session_id => caller_session.id, :host => Settings.host, :port => Settings.port, :attempt=>attempt+1)) }.response
+        else
+          caller_session.pause_for_results(attempt).should == Twilio::Verb.new { |v| v.say("Please enter your call results"); v.pause("length" => 2); v.redirect(pause_caller_url(caller, :session_id => caller_session.id, :host => Settings.host, :port => Settings.port, :attempt => attempt +1)) }.response
+        end
+      end
     end
 
   end
