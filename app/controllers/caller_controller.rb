@@ -65,9 +65,10 @@ class CallerController < ApplicationController
   end
 
   def pause
+    pp "ATTEMPT ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::#{params[:attempt].inspect}"
     caller = Caller.find(params[:id])
     session = caller.caller_sessions.find(params[:session_id])
-    render :xml => session.voter_in_progress ? session.pause_for_results : session.start
+    render :xml => session.voter_in_progress ? session.pause_for_results(params[:attempt]) : session.start
   end
 
   def end_session

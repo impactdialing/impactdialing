@@ -109,14 +109,14 @@ describe CallAttemptsController do
     it "plays a voice mail to a voters answering the campaign uses recordings" do
       campaign = Factory(:campaign, :use_recordings => true, :recording => Factory(:recording, :file_file_name => 'abc.mp3', :account => Factory(:account)))
       call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign)
-      post :connect, :id => call_attempt.id, :DialCallStatus => "answered-machine"
+      post :connect, :id => call_attempt.id, :CallStatus => "answered-machine"
       call_attempt.reload.status.should == CallAttempt::Status::VOICEMAIL
       call_attempt.voter.status.should == CallAttempt::Status::VOICEMAIL
       call_attempt.call_end.should_not be_nil
     end
 
     it "hangs up on the voters answering machine when the campaign does not use recordings" do
-      post :end, :id => call_attempt.id, :DialCallStatus => "hangup-machine"
+      post :end, :id => call_attempt.id, :CallStatus => "hangup-machine"
 
       response.body.should == Twilio::TwiML::Response.new { |r| r.Hangup }.text
       call_attempt.reload.status.should == CallAttempt::Status::HANGUP
@@ -126,7 +126,7 @@ describe CallAttemptsController do
     end
 
     it "updates the details of a call not answered" do
-      post :end, :id => call_attempt.id, :DialCallStatus => "no-answer"
+      post :end, :id => call_attempt.id, :CallStatus => "no-answer"
       call_attempt.reload.status.should == CallAttempt::Status::NOANSWER
       call_attempt.voter.status.should == CallAttempt::Status::NOANSWER
       voter.reload.call_back.should be_true
@@ -134,7 +134,7 @@ describe CallAttemptsController do
     end
 
     it "updates the details of a busy voter" do
-      post :end, :id => call_attempt.id, :DialCallStatus => "busy"
+      post :end, :id => call_attempt.id, :CallStatus => "busy"
       call_attempt.reload.status.should == CallAttempt::Status::BUSY
       call_attempt.voter.status.should == CallAttempt::Status::BUSY
       voter.reload.call_back.should be_true
@@ -142,7 +142,7 @@ describe CallAttemptsController do
     end
 
     it "updates the details of a call failed" do
-      post :end, :id => call_attempt.id, :DialCallStatus => "fail"
+      post :end, :id => call_attempt.id, :CallStatus => "fail"
       call_attempt.reload.status.should == CallAttempt::Status::FAILED
       call_attempt.voter.status.should == CallAttempt::Status::FAILED
       voter.reload.call_back.should be_true

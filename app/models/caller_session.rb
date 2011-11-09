@@ -43,8 +43,8 @@ class CallerSession < ActiveRecord::Base
     response = Twilio::Call.make(self.campaign.caller_id, voter.Phone, connect_call_attempt_url(attempt, :host => Settings.host, :port => Settings.port),
                                  {
                                      'StatusCallback' => end_call_attempt_url(attempt, :host => Settings.host, :port => Settings.port),
-                                     'IfMachine' => self.campaign.use_recordings? ? 'Continue' : 'Hangup',
-                                     'Timeout' => campaign.answer_detection_timeout || "20"
+                                     #'IfMachine' => self.campaign.use_recordings? ? 'Continue' : 'Hangup',
+                                     #'Timeout' => campaign.answer_detection_timeout || "20"
                                  }
     )
     self.publish('calling_voter', voter.info)
@@ -79,9 +79,10 @@ class CallerSession < ActiveRecord::Base
     response
   end
 
-  def pause_for_results
+  def pause_for_results(attempt = 0)
+    attempt = attempt.to_i || 0
     self.publish("waiting_for_result", {})
-    Twilio::Verb.new { |v| v.say("Enter results."); v.pause("length" => 2); v.redirect(pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => id)) }.response
+    Twilio::Verb.new { |v| v.say("Please enter your call results")  if (attempt % 5 == 0); v.pause("length" => 2); v.redirect(pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => id, :attempt=>attempt+1)) }.response
   end
 
   def end
