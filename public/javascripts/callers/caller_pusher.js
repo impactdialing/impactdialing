@@ -184,8 +184,6 @@ function subscribe(session_key) {
         set_call_attempt(data.attempt_id);
         hide_all_actions();
         $("#hangup_call").show();
-        $("#submit_and_keep_call").show();
-        $("#submit_and_stop_call").show();
     });
 
     channel.bind('calling_voter', function(data) {
