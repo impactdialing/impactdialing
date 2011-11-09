@@ -1,4 +1,5 @@
 <h1>New campaign</h1>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js"></script>
 <div id="callerid"></div>
 
 <%= form_for @campaign,  url:  "#{client_campaigns_path}/#{@campaign.id}", :html => {:name => 'callerForm', :id => 'callerForm'} do |f| %>
@@ -46,6 +47,7 @@
             <p>No callers entered.</p>
             <a href="/client/callers" class="add-button"><span>Add callers</span></a>
         <% else %>
+          <div id="callers">
             <table width="100%" border="0" cellspacing="0" cellpadding="0">
               <tr>
                 <th>Name</th>
@@ -57,7 +59,7 @@
                 <% end %>
               </tr>
               <tr>
-                <td><input type="checkbox" value="0" id="listUse" onclick="allCallers();"> All Callers</td>
+                <td><input type="checkbox" value="0" id="selectAll"> All Callers</td>
                 <td></td>
                 <td></td>
               </tr>
@@ -77,6 +79,7 @@
                   </tr>
               <% end %>
             </table>
+          </div>
         <% end %>
       </fieldset>
       <fieldset>
@@ -122,42 +125,50 @@
 </fieldset>
 
 <script>
-    function allCallers() {
-        var f = document.forms['callerForm'].elements['campaign[caller_ids][]'];
-
-        for (var i = 0; i < f.length; i++) {
-            f[i].checked = true;
-        }
-
-    }
-    function someCallers() {
-        $('listUse').checked = false;
-        isAll();
-    }
-
-    function isAll() {
-        if (checked_callers() ==<%= @callers.length %>) {
-            $('listUse').checked = true;
-
-        }
-    }
-    function checked_callers(){
-      var f = document.forms['callerForm'].elements['campaign[caller_ids][]'];
-      var n = 0;
-      for (var i = 0; i < f.length; i++) {
-          if (f[i].checked == true)
-              n++;
-      }
-      return n;
-    }
-    
-    if(checked_callers() == 0){
-      allCallers();
-    }
-    
-    <% if @callers.length!=0 %>
-    isAll();
-    <% end %>
+    $(function () {
+     $('#selectAll').click(function () {
+      $('#callers').find(':checkbox').attr('checked', this.checked);
+     });
+    });
+    $('document').ready(function(){
+      $('#callers').find(':checkbox').attr('checked', true);
+    });
+    // function allCallers() {
+    //     var f = document.forms['callerForm'].elements['campaign[caller_ids][]'];
+    // 
+    //     for (var i = 0; i < f.length; i++) {
+    //         f[i].checked = true;
+    //     }
+    // 
+    // }
+    // function someCallers() {
+    //     $('listUse').checked = false;
+    //     isAll();
+    // }
+    // 
+    // function isAll() {
+    //     if (checked_callers() ==<%= @callers.length %>) {
+    //         $('listUse').checked = true;
+    // 
+    //     }
+    // }
+    // function checked_callers(){
+    //   var f = document.forms['callerForm'].elements['campaign[caller_ids][]'];
+    //   var n = 0;
+    //   for (var i = 0; i < f.length; i++) {
+    //       if (f[i].checked == true)
+    //           n++;
+    //   }
+    //   return n;
+    // }
+    // 
+    // if(checked_callers() == 0){
+    //   allCallers();
+    // }
+    // 
+    // <% if @callers.length!=0 %>
+    // isAll();
+    // <% end %>
     <%= remote_function(:update => "callerid",
 :url => { :action => "campaign_caller_id_verified", :id=>@campaign.id }) %>
 
