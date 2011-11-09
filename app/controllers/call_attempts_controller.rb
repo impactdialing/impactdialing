@@ -15,7 +15,7 @@ class CallAttemptsController < ApplicationController
 
   def connect
     call_attempt = CallAttempt.find(params[:id])
-    response = case params[:DialCallStatus] #using the 2010 api
+    response = case params[:CallStatus] #using the 2010 api
                  when "answered-machine"
                    call_attempt.play_recorded_message
                  else
@@ -37,8 +37,7 @@ class CallAttemptsController < ApplicationController
 
   def end
     call_attempt = CallAttempt.find(params[:id])
-    pp "PARAMS::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::#{params.inspect}"
-    response = case params[:DialCallStatus] #using the 2010 api
+    response = case params[:CallStatus] #using the 2010 api
                  when "hangup-machine"
                    call_attempt.voter.update_attributes(:status => CallAttempt::Status::HANGUP, :call_back => true)
                    call_attempt.update_attributes(:status => CallAttempt::Status::HANGUP, :call_end => Time.now)
