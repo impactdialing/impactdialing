@@ -2,7 +2,6 @@
     <link rel="stylesheet" type="text/css" media="screen" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.14/themes/smoothness/jquery-ui.css"/>
     <%= stylesheet_link_tag 'jquery.ui.datetime' %>
 <% end %>
-
 <% content_for :javascripts do %>
     <script src="http://js.pusherapp.com/1.8/pusher.min.js" type="text/javascript"></script>
     <%= javascript_include_tag 'jquery.ui.datetime.min', 'callers/caller_pusher', 'ICanHaz.min.js' %>
@@ -13,18 +12,39 @@
 
     <script id="voter" type="text/html">
       {{#fields}}
-      <li>ID: {{CustomID}}</li>
-      <li>First name: {{FirstName}}</li>
-      <li>Middle name: {{MiddleName}}</li>
-      <li>Last name: {{LastName}}</li>
-      <li>Suffix: {{Suffix}}</li>
-      <li>Age: {{Age}}</li>
-      <li>Gender: {{Gender}}</li>
-      <li>Phone: {{Phone}}</li>
-      <li>Email: {{Email}}</li>
+      <% if @selected_voter_fields.delete('CustomId') %>
+        <li>ID: {{CustomID}}</li>
+      <% end %>
+      <% if @selected_voter_fields.delete('FirstName') %>
+        <li>First name: {{FirstName}}</li>
+      <% end %>
+      <% if @selected_voter_fields.delete('MiddleName') %>
+        <li>Middle name: {{MiddleName}}</li>
+      <% end %>
+      <% if @selected_voter_fields.delete('LastName') %>
+        <li>Last name: {{LastName}}</li>
+      <% end %>
+      <% if @selected_voter_fields.delete('Suffix') %>
+        <li>Suffix: {{Suffix}}</li>
+      <% end %>
+      <% if @selected_voter_fields.delete('Age') %>
+        <li>Age: {{Age}}</li>
+      <% end %>
+      <% if @selected_voter_fields.delete('Gender') %>
+        <li>Gender: {{Gender}}</li>
+      <% end %>
+      <% if @selected_voter_fields.delete('Phone') %>
+        <li>Phone: {{Phone}}</li>
+      <% end %>
+      <% if @selected_voter_fields.delete('Email') %>
+        <li>Email: {{Email}}</li>
+      <% end %>
+      
       {{/fields}}
       {{#custom_fields}}
-      <li>{{.}}</li>
+      <% @selected_voter_fields.try(:each) do |s| %>
+      <li><%= s %>: {{<%= s %>}}</li>
+      <% end %>
       {{/custom_fields}}
     </script>
 <% end %>

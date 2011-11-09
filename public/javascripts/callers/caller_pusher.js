@@ -244,7 +244,7 @@ function subscribe(session_key) {
 
 
     function bind_voter(data) {
-        data.custom_fields = parse_custom_fields(data);
+        //data.custom_fields = parse_custom_fields(data);
         var voter = ich.voter(data); //using ICanHaz a moustache. js like thingamagic
         $('#voter_info').empty();
         $('#voter_info').append(voter);

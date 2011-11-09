@@ -11,6 +11,7 @@ module Callers
         flash_now(:warning, "Your account is not funded. Please contact your account administrator.")
       end      
       @campaign = @caller.campaigns.find(params[:id])
+      @selected_voter_fields = @campaign.script.try(:voter_fields) ? eval(@campaign.script.try(:voter_fields)) : []
     end
 
     def callin
