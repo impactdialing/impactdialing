@@ -37,6 +37,7 @@ class CallAttemptsController < ApplicationController
 
   def end
     call_attempt = CallAttempt.find(params[:id])
+    pp "PARAMS::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::#{params.inspect}"
     response = case params[:DialCallStatus] #using the 2010 api
                  when "hangup-machine"
                    call_attempt.voter.update_attributes(:status => CallAttempt::Status::HANGUP, :call_back => true)
