@@ -168,6 +168,13 @@ describe Voter do
       voter = Factory(:voter, :status => CallAttempt::Status::SUCCESS)
       Voter.to_be_dialed.should be_empty
     end
+
+    it "is ordered by the last_call_attempt_time" do
+      v1 = Factory(:voter, :status => Voter::Status::NOTCALLED)
+      v2 = Factory(:voter, :status => CallAttempt::Status::BUSY, :last_call_attempt_time => (Time.now - 2.hours))
+      v3 = Factory(:voter, :status => CallAttempt::Status::BUSY, :last_call_attempt_time => (Time.now - 1.hours))
+      Voter.to_be_dialed.should == [v1,v2,v3]
+    end
   end
 
   describe "voter attributes" do

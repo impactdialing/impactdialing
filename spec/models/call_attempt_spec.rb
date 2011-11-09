@@ -34,6 +34,15 @@ describe CallAttempt do
     call_attempt.duration_rounded_up.should == 0
   end
 
+  it "records a failed attempt" do
+    campaign = Factory(:campaign, :use_web_ui => false)
+    Factory(:voter, :campaign => campaign, :call_back => false)
+    caller_session = Factory(:caller_session, :campaign => campaign)
+    call_attempt = Factory(:call_attempt, :voter => Factory(:voter, :status => Voter::Status::NOTCALLED), :caller_session => caller_session, :campaign => campaign)
+    call_attempt.fail
+    call_attempt.voter.reload.call_back.should be_true
+  end
+
   describe 'next recording' do
     let(:script) { Factory(:script) }
     let(:campaign) { Factory(:campaign, :script => script) }
@@ -179,6 +188,17 @@ describe CallAttempt do
       Pusher.should_receive(:[]).with(anything).and_return(channel)
       channel.should_receive(:trigger).with("voter_disconnected", {:attempt_id => attempt.id, :voter => attempt.voter.info})
       attempt.disconnect
+    end
+
+    it "pushes 'voter_push' when a failed call attempt ends" do
+      campaign = Factory(:campaign, :use_web_ui => true)
+      Factory(:voter, :status => Voter::Status::NOTCALLED, :call_back => false, :campaign => campaign)
+      session = Factory(:caller_session, :caller => Factory(:caller), :campaign => campaign)
+      attempt = Factory(:call_attempt, :voter => Factory(:voter, :status => CallAttempt::Status::INPROGRESS), :caller_session => session, :campaign => campaign)
+      channel = mock
+      Pusher.should_receive(:[]).with(anything).and_return(channel)
+      channel.should_receive(:trigger).with("voter_push", campaign.all_voters.to_be_dialed.first.info.merge(:dialer => campaign.predictive_type))
+      attempt.fail
     end
   end
 

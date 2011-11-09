@@ -22,7 +22,8 @@ class Voter < ActiveRecord::Base
 
   scope :by_status, lambda { |status| where(:status => status) }
   scope :active, where(:active => true)
-  scope :to_be_dialed, :conditions => ["call_back is false AND status != (?)", CallAttempt::Status::SUCCESS]
+  scope :yet_to_call, :conditions => ["call_back is false AND status != (?)", CallAttempt::Status::SUCCESS]
+  scope :to_be_dialed, yet_to_call.order("ifnull('last_call_attempt_time', '#{Time.at(0)}') DESC")
   scope :randomly, :order => 'rand()'
   scope :to_callback, where(:call_back => true)
   scope :scheduled, :conditions => {:scheduled_date => (10.minutes.ago..10.minutes.from_now), :status => CallAttempt::Status::SCHEDULED}
