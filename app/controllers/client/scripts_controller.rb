@@ -14,6 +14,8 @@ module Client
 
     def new
       @script = Script.new(:robo => false, questions: [Question.new(possible_responses: [PossibleResponse.new])])
+      @voter_fields = ["CustomID","FirstName","MiddleName","LastName","Suffix","Age","Gender","Phone","Email"]
+      @voter_fields.concat(@user.account.custom_voter_fields.collect{ |field| field.name})
       @voter_field_values=[]
     end
 
@@ -33,6 +35,8 @@ module Client
     def show
       @script = @user.account.scripts.find(params[:id])
       @script.questions << [Question.new(possible_responses: [PossibleResponse.new])]  if @script.questions.empty?
+      @voter_fields = ["CustomID","FirstName","MiddleName","LastName","Suffix","Age","Gender","Phone","Email"]
+      @voter_fields.concat(@user.account.custom_voter_fields.collect{ |field| field.name})
       if @script.voter_fields!=nil
         begin
           @voter_field_values = eval(@script.voter_fields)
@@ -42,7 +46,6 @@ module Client
       else
         @voter_field_values=[]
       end
-      
     end
     
     def update      
