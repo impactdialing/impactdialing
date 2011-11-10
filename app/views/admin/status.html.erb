@@ -26,7 +26,7 @@
 
     <% @logged_in_campaigns.each do |k| %>
       <tr>
-        <td valign="top"><%= k.name %> <a target="_blank" href="/admin/login/<%= k.user_id %>" style="font-size:9px;">login</a></td>
+        <td valign="top"><%= k.name %> <a target="_blank" href="/admin/login/<%= k.account.users.first.id %>" style="font-size:9px;">login</a></td>
         <td>
           <%
             stats = k.call_stats(10)
