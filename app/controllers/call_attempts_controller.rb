@@ -56,15 +56,13 @@ class CallAttemptsController < ApplicationController
   end
 
   def voter_response
-    @call_attempt = CallAttempt.find(params[:id])
-    @voter = Voter.find(params[:voter_id])
-    params[:answers].each_value do |answer|
-      voters_response = PossibleResponse.find(answer["value"])
-      @voter.answers.create(:possible_response => voters_response, :question => voters_response.question)
-    end
-    voter = @call_attempt.campaign.all_voters.to_be_dialed.first
-    @call_attempt.caller_session.publish("voter_push", voter ? voter.info : {})
-    @call_attempt.caller_session.update_attribute(:voter_in_progress, nil)
+    call_attempt = CallAttempt.find(params[:id])
+    voter = Voter.find(params[:voter_id])
+    voter.capture(params[:answers])
+
+    next_voter = call_attempt.campaign.all_voters.to_be_dialed.first
+    call_attempt.caller_session.publish("voter_push", next_voter ? next_voter.info : {})
+    call_attempt.caller_session.update_attribute(:voter_in_progress, nil)
     render :nothing => true
   end
 end
