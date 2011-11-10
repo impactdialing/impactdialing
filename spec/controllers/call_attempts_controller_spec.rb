@@ -35,6 +35,24 @@ describe CallAttemptsController do
       voter.answers.count.should == 2
     end
 
+    it "retry responses should dial voter again later" do
+      script = Factory(:script, :robo => false)
+      question1 = Factory(:question, :script => script)
+      response1 = Factory(:possible_response, :question => question1)
+      question2 = Factory(:question, :script => script)
+      response2 = Factory(:possible_response, :question => question2, :retry => true)
+      answer = {"0"=>{"name" => "sefrg", "value"=>response1.id}, "1"=>{"name" => "abc", "value"=>response2.id}}
+
+      channel = mock
+      Voter.stub_chain(:to_be_dialed, :first).and_return(voter)
+      Pusher.should_receive(:[]).with(anything).and_return(channel)
+      channel.should_receive(:trigger).with("voter_push", Voter.to_be_dialed.first.info.merge(:dialer => campaign.predictive_type))
+
+      post :voter_response, :id => call_attempt.id, :voter_id => voter.id, :answers => answer
+      voter.answers.count.should == 2
+      voter.reload.status.should ==Voter::Status::RETRY
+    end
+
     it "sends next voter to be dialed via voter_push Pusher event" do
       Factory(:voter, :campaign => Factory(:campaign), :status => Voter::Status::NOTCALLED)
       voter = Factory(:voter, :campaign => campaign, :status => CallAttempt::Status::SUCCESS, :call_back => false)
