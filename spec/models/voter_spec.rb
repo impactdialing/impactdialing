@@ -21,7 +21,7 @@ describe Voter do
     voter1 = Factory(:voter, :campaign => Factory(:campaign), :status=> Voter::Status::NOTCALLED)
     voter2 = Factory(:voter, :campaign => Factory(:campaign), :status=> Voter::Status::NOTCALLED)
     Factory(:voter, :campaign => Factory(:campaign), :status=> "Random")
-    Voter.by_status(Voter::Status::NOTCALLED).should == [voter1,voter2]
+    Voter.by_status(Voter::Status::NOTCALLED).should == [voter1, voter2]
   end
 
   it "returns only active voters" do
@@ -93,7 +93,7 @@ describe Voter do
   describe "predictive dialing" do
     let(:campaign) { Factory(:campaign, :robo => false, :predictive_type => 'algorithm1') }
     let(:voter) { Factory(:voter, :campaign => campaign) }
-    let(:client) { mock(:client).tap{|client| Twilio::REST::Client.stub(:new).and_return(client) } }
+    let(:client) { mock(:client).tap { |client| Twilio::REST::Client.stub(:new).and_return(client) } }
 
     context 'making calls' do
       before(:each) do
@@ -124,7 +124,7 @@ describe Voter do
     end
 
     it "dials the voter and hangs up on answering machine when not using recordings" do
-      client.stub_chain(:account, :calls, :create).with({:from => anything, :to => anything, :url => anything,'StatusCallback' => anything , 'IfMachine' => 'Hangup', 'Timeout' => 20}).and_return(mock(:call, :sid => 'sid'))
+      client.stub_chain(:account, :calls, :create).with({:from => anything, :to => anything, :url => anything, 'StatusCallback' => anything, 'IfMachine' => 'Hangup', 'Timeout' => 20}).and_return(mock(:call, :sid => 'sid'))
       campaign.use_recordings = false
       voter.dial_predictive
     end
@@ -173,12 +173,12 @@ describe Voter do
       v1 = Factory(:voter, :status => Voter::Status::NOTCALLED)
       v2 = Factory(:voter, :status => CallAttempt::Status::BUSY, :last_call_attempt_time => (Time.now - 2.hours))
       v3 = Factory(:voter, :status => CallAttempt::Status::BUSY, :last_call_attempt_time => (Time.now - 1.hours))
-      Voter.to_be_dialed.should == [v1,v2,v3]
+      Voter.to_be_dialed.should == [v1, v2, v3]
     end
   end
 
   describe "voter attributes" do
-    let(:voter){ Factory(:voter, :campaign => Factory(:campaign, :account => Factory(:account)), :Phone => '384756923349') }
+    let(:voter) { Factory(:voter, :campaign => Factory(:campaign, :account => Factory(:account)), :Phone => '384756923349') }
 
     it "populates original attributes" do
       voter.apply_attribute('Phone', '0123456789')
@@ -283,6 +283,41 @@ describe Voter do
     it "knows when it is blocked for its campaign" do
       voter.account.blocked_numbers.create(:number => voter.Phone, :campaign => voter.campaign)
       voter.should be_blocked
+    end
+  end
+
+  describe 'answers' do
+    let(:voter) { Factory(:voter) }
+    let(:script) { Factory(:script, :robo => false) }
+    let(:question) { Factory(:question, :script => script) }
+    let(:response) { Factory(:possible_response, :question => question) }
+
+    it "captures call responses" do
+      answer = {"0"=>{"name" => "sefrg", "value"=>response.id}}
+      voter.capture(answer)
+      voter.answers.size.should == 1
+    end
+
+    it "puts voter back in the dial list if a retry response is detected" do
+      another_response = Factory(:possible_response, :question => Factory(:question, :script => script), :retry => true)
+      answer = {"0"=>{"name" => "sefrg", "value"=>response.id}, "1"=>{"name" => "abc", "value"=>another_response.id}}
+      voter.capture(answer)
+      voter.answers.size.should == 2
+      voter.reload.status.should == Voter::Status::RETRY
+      Voter.to_be_dialed.should == [voter]
+    end
+
+    it "overrides old responses with newer ones" do
+      question = Factory(:question, :script => script)
+      retry_response = Factory(:possible_response, :question => question, :retry => true)
+      valid_response = Factory(:possible_response, :question => question)
+      voter.capture(answer = {"0"=>{"name" => "sefrg", "value"=>response.id}, "1"=>{"name" => "abc", "value"=>retry_response.id}})
+      voter.answers.size.should == 2
+      voter.reload.status.should == Voter::Status::RETRY
+      Voter.to_be_dialed.should == [voter]
+
+      voter.capture(answer = {"0"=>{"name" => "lkgdf", "value"=>response.id}, "1"=>{"name" => "dkl", "value"=>valid_response.id}})
+      voter.reload.answers.size.should == 2
     end
   end
 end

@@ -116,19 +116,19 @@ class Voter < ActiveRecord::Base
 
   def dial_predictive
     # Thread.new {
-      @client = Twilio::REST::Client.new TWILIO_ACCOUNT, TWILIO_AUTH
-      call_attempt = new_call_attempt(self.campaign.predictive_type)
+    @client = Twilio::REST::Client.new TWILIO_ACCOUNT, TWILIO_AUTH
+    call_attempt = new_call_attempt(self.campaign.predictive_type)
 
-      @call = @client.account.calls.create(
+    @call = @client.account.calls.create(
         :from => campaign.caller_id,
         :to => self.Phone,
         :url => connect_call_attempt_url(call_attempt, :host => Settings.host, :port =>Settings.port),
-        'StatusCallback' => end_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port) ,
-        'IfMachine' => self.campaign.use_recordings? ? 'Continue' : 'Hangup' ,
+        'StatusCallback' => end_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port),
+        'IfMachine' => self.campaign.use_recordings? ? 'Continue' : 'Hangup',
         'Timeout' => campaign.answer_detection_timeout || 20
-      )
-      call_attempt.update_attributes(:status => CallAttempt::Status::INPROGRESS, :sid => @call.sid)
-      # call_attempt.sid
+    )
+    call_attempt.update_attributes(:status => CallAttempt::Status::INPROGRESS, :sid => @call.sid)
+    # call_attempt.sid
     # }
   end
 
@@ -159,12 +159,24 @@ class Voter < ActiveRecord::Base
     account.blocked_numbers.for_campaign(campaign).map(&:number).include?(self.Phone)
   end
 
+  def capture(answers)
+    retry_response = nil
+    answers.each_value do |answer|
+      voters_response = PossibleResponse.find(answer["value"])
+      current_response = self.answers.find_by_question_id(voters_response.question.id)
+      current_response ?  current_response.update_attributes(:possible_response => voters_response) : self.answers.create(:possible_response => voters_response, :question => voters_response.question)
+      retry_response ||= voters_response if voters_response.retry?
+    end
+    update_attributes(:status => Voter::Status::RETRY) if retry_response
+  end
+
   def info
-    {:fields => self.attributes.reject{|k,v| (k == "created_at") ||(k == "updated_at")}, :custom_fields => Hash[*self.custom_voter_field_values.collect{|cvfv| [cvfv.custom_voter_field.name, cvfv.value]}.flatten] }
+    {:fields => self.attributes.reject { |k, v| (k == "created_at") ||(k == "updated_at") }, :custom_fields => Hash[*self.custom_voter_field_values.collect { |cvfv| [cvfv.custom_voter_field.name, cvfv.value] }.flatten]}
   end
 
   module Status
     NOTCALLED = "not called"
+    RETRY = "retry"
   end
 
   private
