@@ -38,7 +38,7 @@ class AdminController < ApplicationController
 
   def report
     set_report_date_range
-    sql="select distinct ca.campaign_id , name, email, c.account_id from caller_sessions ca
+    sql="select distinct ca.campaign_id, name, c.account_id from caller_sessions ca
       join campaigns c on c.id=ca.campaign_id
       join accounts a on a.id=c.account_id where
       ca.created_at > '#{@from_date.strftime("%Y-%m-%d")}'
