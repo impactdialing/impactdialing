@@ -22,7 +22,7 @@
       <td><%= account.domain %> </td>
       <td><a href="/admin/toggle_paid/<%= account.id %>">toggle paid</a></td>
       <td><a href="/admin/charge/<%= account.id %>">charge</a></td>
-      <td><a href="/admin/login/<%= account.id %>">login</a></td>
+      <td><a href="/admin/login/<%= account.users.first.id %>">login</a></td>
     </tr>
   <% end %>
 </table>
