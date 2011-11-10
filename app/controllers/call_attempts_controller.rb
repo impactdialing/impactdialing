@@ -37,20 +37,11 @@ class CallAttemptsController < ApplicationController
 
   def end
     call_attempt = CallAttempt.find(params[:id])
+    call_attempt.voter.update_attributes(:status => CallAttempt::Status::MAP[params[:CallStatus]], :last_call_attempt_time => Time.now)
+    call_attempt.update_attributes(:status => CallAttempt::Status::MAP[params[:CallStatus]], :call_end => Time.now)
     response = case params[:CallStatus] #using the 2010 api
-                 when "hangup-machine"
-                   call_attempt.voter.update_attributes(:status => CallAttempt::Status::HANGUP, :call_back => true)
-                   call_attempt.update_attributes(:status => CallAttempt::Status::HANGUP, :call_end => Time.now)
-                   call_attempt.hangup
-                 when "no-answer"
-                   call_attempt.voter.update_attributes(:status => CallAttempt::Status::NOANSWER, :call_back => true)
-                   call_attempt.update_attributes(:status => CallAttempt::Status::NOANSWER, :call_end => Time.now)
-                 when "busy"
-                   call_attempt.voter.update_attributes(:status => CallAttempt::Status::BUSY, :call_back => true)
-                   call_attempt.update_attributes(:status => CallAttempt::Status::BUSY, :call_end => Time.now)
-                 when "fail"
-                   call_attempt.voter.update_attributes(:status => CallAttempt::Status::FAILED, :call_back => true)
-                   call_attempt.update_attributes(:status => CallAttempt::Status::FAILED, :call_end => Time.now)
+                 when "no-answer", "busy", "failed"
+                   call_attempt.fail
                  else
                    call_attempt.hangup
                end

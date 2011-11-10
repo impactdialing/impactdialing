@@ -95,6 +95,11 @@ class CallAttempt < ActiveRecord::Base
     hangup
   end
 
+  def fail
+    caller_session.publish('voter_push',self.campaign.all_voters.to_be_dialed.first.info)
+    voter.update_attributes(:call_back => true)
+  end
+
   def hangup
     Twilio::TwiML::Response.new { |r| r.Hangup }.text
   end
