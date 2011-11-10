@@ -33,7 +33,7 @@ function set_session(session_id) {
 function get_session() {
     $.ajax({
         url : "/caller/active_session",
-        data : {id : $("#caller").val()},
+        data : {id : $("#caller").val(), campaign_id : $("#campaign").val() },
         type : "POST",
         success : function(json) {
             if (json.caller_session.id) {
