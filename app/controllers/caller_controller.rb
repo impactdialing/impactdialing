@@ -52,7 +52,7 @@ class CallerController < ApplicationController
       @session.update_attributes(:campaign => @campaign)
       render :xml => @session.start
     else
-      render :xml => @session.ask_for_campaign(params[:attempt])
+      render :xml => @session.ask_for_campaign(params[:attempt].to_i)
     end
   end
 
