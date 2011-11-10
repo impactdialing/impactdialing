@@ -1,30 +1,28 @@
 <table border="1">
-	<tr>
-		<td>id</td>
-		<td>fname</td>
-		<td>lname</td>
-		<td>email</td>
-		<td>phone</td>
-		<td>created_at</td>
-		<td>paid</td>
-		<td>domain</td>
-		<td></td>
-		<td></td>
-		<td></td>
-	</tr>
-	<% @users.each do |u| %>
-	<tr>
-		<td><%= u.id %></td>
-		<td><%= u.fname %></td>
-		<td><%= u.lname %></td>
-		<td><%= u.email %></td>
-		<td><%= u.phone %></td>
-		<td><%= u.created_at %></td>
-		<td><%= u.account.paid %> </td>
-		<td><%= u.domain %> </td>
-		<td><a href="/admin/toggle_paid/<%= u.id %>">toggle paid</a></td>
-		<td><a href="/admin/charge/<%= u.id %>">charge</a></td>
-		<td><a href="/admin/login/<%= u.id %>">login</a></td>
-	</tr>
-	<% end %>
+  <tr>
+    <td>id</td>
+    <td>names</td>
+    <td>email</td>
+    <td>phone</td>
+    <td>created_at</td>
+    <td>paid</td>
+    <td>domain</td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <% @accounts.each do |account| %>
+    <tr>
+      <td><%= account.id %></td>
+      <td><%= account.users.map{|u| "#{u.fname} #{u.lname}"}.join(', ') %></td>
+      <td><%= account.users.map(&:email).join(', ') %></td>
+      <td><%= account.users.map(&:phone).join(', ') %></td>
+      <td><%= account.created_at %></td>
+      <td><%= account.paid %> </td>
+      <td><%= account.domain %> </td>
+      <td><a href="/admin/toggle_paid/<%= account.id %>">toggle paid</a></td>
+      <td><a href="/admin/charge/<%= account.id %>">charge</a></td>
+      <td><a href="/admin/login/<%= account.id %>">login</a></td>
+    </tr>
+  <% end %>
 </table>
