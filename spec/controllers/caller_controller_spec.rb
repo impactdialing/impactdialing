@@ -167,17 +167,22 @@ describe CallerController do
       response.body.should == session.start
     end
 
-    it "finds the callers active session" do
+    it "finds the campaigns callers active session" do
       login_as(caller)
-      session = Factory(:caller_session, :caller => caller, :session_key => 'key', :on_call => true, :available_for_call => true)
-      post :active_session, :id => caller.id
+      campaign = Factory(:campaign)
+      Factory(:caller_campaign,:caller => caller, :campaign => campaign)
+      session = Factory(:caller_session, :caller => caller, :session_key => 'key', :on_call => true, :available_for_call => true, :campaign => campaign)
+      Factory(:caller_session, :caller => caller, :session_key => 'other_key', :on_call => true, :available_for_call => true, :campaign => Factory(:campaign))
+      post :active_session, :id => caller.id, :campaign_id => campaign
       response.body.should == session.to_json
     end
 
     it "returns no session if the caller is not connected" do
       login_as(caller)
-      Factory(:caller_session, :caller => caller, :session_key => 'key', :on_call => false, :available_for_call => true)
-      post :active_session, :id => caller.id
+      campaign = Factory(:campaign)
+      Factory(:caller_campaign, :caller => caller, :campaign => campaign)
+      Factory(:caller_session, :caller => caller, :session_key => 'key', :on_call => false, :available_for_call => true, :campaign => campaign)
+      post :active_session, :id => caller.id, :campaign_id => campaign.id
       response.body.should == {:caller_session => {:id => nil}}.to_json
     end
   end

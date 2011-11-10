@@ -1,82 +1,82 @@
 <h1>System Status</h1>
 <table>
-	<tr>
-		<td>Calling Status:</td>
-		<td><%= @calling_status %></td>
-	</tr>
-	<tr>
-		<td>Logged in campaigns:</td>
-		<td><%= @logged_in_campaigns.length %></td>
-	</tr>
-	<tr>
-		<td>Logged in callers:</td>
-		<td><%= @logged_in_callers.length %></td>
-	</tr>
-	<tr>
-		<td>Calls in progress:</td>
-		<td><%= @all_calls %></td>
-	<tr>
-		<td>Twilio queued:</td>
-		<td><% if @queued.to_i > 100 %><font color="red"><% @errors= @errors + " #{@queued} twilio queued calls" %> <% end %> <%= @queued %></td>
-	</tr>
-	<tr>
-		<td>Stuck dials:</td>
-		<td><% if @ready_to_dial.length >7 %> <% @errors= @errors + " #{@ready_to_dial.length} stuck dials" %> <font color="red"><% end %><%= @ready_to_dial.length %></font></td>
-	</tr>
+  <tr>
+    <td>Calling Status:</td>
+    <td><%= @calling_status %></td>
+  </tr>
+  <tr>
+    <td>Logged in campaigns:</td>
+    <td><%= @logged_in_campaigns.length %></td>
+  </tr>
+  <tr>
+    <td>Logged in callers:</td>
+    <td><%= @logged_in_callers.length %></td>
+  </tr>
+  <tr>
+    <td>Calls in progress:</td>
+    <td><%= @all_calls %></td>
+    <tr>
+      <td>Twilio queued:</td>
+      <td>Temporarily disabled</td>
+    </tr>
+    <tr>
+      <td>Stuck dials:</td>
+      <td><% if @ready_to_dial.length >7 %> <% @errors= @errors + " #{@ready_to_dial.length} stuck dials" %> <font color="red"><% end %><%= @ready_to_dial.length %></font></td>
+    </tr>
 
-	<% @logged_in_campaigns.each do |k| %>
-	<tr>
-		<td valign="top"><%= k.name %> <a target="_blank" href="/admin/login/<%= k.user_id %>" style="font-size:9px;">login</a></td>
-		<td>
-		    <%
-		    stats = k.call_stats(10)
-			attempts = stats[:attempts]
-		    answer_pct = (stats[:answer_pct] * 100).to_i
-			abandon_pct = (stats[:abandon_pct] * 100).to_i
-			@errors= @errors + " #{k.name} answer_pct #{answer_pct}" if answer_pct<9 && attempts.length > 10
-			callers = CallerSession.find_all_by_campaign_id_and_on_call(k,1)
-		    callers_on_call = CallerSession.find_all_by_campaign_id_and_on_call_and_available_for_call(k,1,0)
-		    not_on_call = callers.length - callers_on_call.length
-		    calls = CallAttempt.find_all_by_campaign_id(k, :conditions=>"call_end is NULL")
-		    voters = k.voters("not called")
-			@errors= @errors + " #{k.name} abandon_pct #{abandon_pct}" if abandon_pct>65 && attempts.length > 10
-		    %>
-			 Callers logged in: <%= callers.length %>
-			<br/>Callers on call: <%= callers_on_call.length %>
-			<br/>Callers not on call: <%= not_on_call %>
-			<br/>Numbers to call: <%=  voters.length %>
-			<br/>Calls in progress: <%= calls.length %>
-			<br/><% if answer_pct < 9 %><font color="red"><% end %>Answer pct: <%= answer_pct %>  <% if answer_pct < 9 %></font><% end %>
-			<br/>Abandon pct: <%= abandon_pct %>
-			<br/>Callers:
-				<ul>
-					<% callers.each do |ca| %>
-						<li>id <%= ca.id %> <%= ca.caller.name %> <%= ca.caller.email %> started <%= ca.starttime %> from <%= ca.caller_number %> <% if !ca.available_for_call %>Not <% end %>Available <a href="/admin/status?end=<%= ca.id %>">end call</a>
+    <% @logged_in_campaigns.each do |k| %>
+      <tr>
+        <td valign="top"><%= k.name %> <a target="_blank" href="/admin/login/<%= k.user_id %>" style="font-size:9px;">login</a></td>
+        <td>
+          <%
+            stats = k.call_stats(10)
+            attempts = stats[:attempts]
+            answer_pct = (stats[:answer_pct] * 100).to_i
+            abandon_pct = (stats[:abandon_pct] * 100).to_i
+            @errors= @errors + " #{k.name} answer_pct #{answer_pct}" if answer_pct<9 && attempts.length > 10
+            callers = CallerSession.find_all_by_campaign_id_and_on_call(k,1)
+            callers_on_call = CallerSession.find_all_by_campaign_id_and_on_call_and_available_for_call(k,1,0)
+            not_on_call = callers.length - callers_on_call.length
+            calls = CallAttempt.find_all_by_campaign_id(k, :conditions=>"call_end is NULL")
+            voters = k.voters("not called")
+            @errors= @errors + " #{k.name} abandon_pct #{abandon_pct}" if abandon_pct>65 && attempts.length > 10
+          %>
+          Callers logged in: <%= callers.length %>
+          <br/>Callers on call: <%= callers_on_call.length %>
+          <br/>Callers not on call: <%= not_on_call %>
+          <br/>Numbers to call: <%=  voters.length %>
+          <br/>Calls in progress: <%= calls.length %>
+          <br/><% if answer_pct < 9 %><font color="red"><% end %>Answer pct: <%= answer_pct %>  <% if answer_pct < 9 %></font><% end %>
+          <br/>Abandon pct: <%= abandon_pct %>
+          <br/>Callers:
+          <ul>
+            <% callers.each do |ca| %>
+              <li>id <%= ca.id %> <%= ca.caller.name %> <%= ca.caller.email %> started <%= ca.starttime %> from <%= ca.caller_number %> <% if !ca.available_for_call %>Not <% end %>Available <a href="/admin/status?end=<%= ca.id %>">end call</a>
 
-							<% if ca.available_for_call %>
-								<% last_attempt = CallAttempt.find_by_caller_session_id(ca.id, :order=>"id desc", :limit=>1)  %>
-								<% if !last_attempt.blank?
-										hold_time  =  (Time.now-last_attempt.call_end).round
-										@errors= @errors + " caller #{ca.id} #{ca.caller.name} hold time #{hold_time}s" if hold_time>180
-									%>
-									Hold time: <%= hold_time %>s
-								<% end %>
-							<% end %>
-							</li>
+                <% if ca.available_for_call %>
+                  <% last_attempt = CallAttempt.find_by_caller_session_id(ca.id, :order=>"id desc", :limit=>1)  %>
+                  <% if !last_attempt.blank?
+                  hold_time  =  (Time.now-last_attempt.call_end).round
+                  @errors= @errors + " caller #{ca.id} #{ca.caller.name} hold time #{hold_time}s" if hold_time>180
+                %>
+                Hold time: <%= hold_time %>s
+              <% end %>
+            <% end %>
+          </li>
 
-					<% end %>
-				</ul>
-				<hr/>
-		</td>
-	</tr>
-	<% end -%>
+        <% end %>
+      </ul>
+      <hr/>
+    </td>
+  </tr>
+<% end -%>
 
 </table>
 <font color="red"><b><%= @errors %></b></font>
 
 <% if @errors.strip!="" && params[:sms]=="1" && Rails.env =="production"
-	t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-	a=t.call("POST", "SMS/Messages", {'From' => APP_NUMBER, 'To' => "8583829141", 'Body'=>"Alert: #{@errors[0..150]}"})
-	t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-	a=t.call("POST", "SMS/Messages", {'From' => APP_NUMBER, 'To' => "9165959543", 'Body'=>"Alert: #{@errors[0..150]}"})
+t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+a=t.call("POST", "SMS/Messages", {'From' => APP_NUMBER, 'To' => "8583829141", 'Body'=>"Alert: #{@errors[0..150]}"})
+t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+a=t.call("POST", "SMS/Messages", {'From' => APP_NUMBER, 'To' => "9165959543", 'Body'=>"Alert: #{@errors[0..150]}"})
 end %>

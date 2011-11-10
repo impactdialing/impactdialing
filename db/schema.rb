@@ -11,12 +11,13 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20111102062723) do
+ActiveRecord::Schema.define(:version => 20111110070143) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "paid"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "domain"
   end
 
   create_table "answers", :force => true do |t|
@@ -412,7 +413,6 @@ ActiveRecord::Schema.define(:version => 20111102062723) do
     t.string   "hashed_password"
     t.string   "salt"
     t.string   "password_reset_code"
-    t.string   "domain"
     t.string   "phone"
     t.integer  "account_id"
   end
