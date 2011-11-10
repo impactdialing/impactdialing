@@ -147,24 +147,18 @@ describe CallAttemptsController do
       post :end, :id => call_attempt.id, :CallStatus => "no-answer"
       call_attempt.reload.status.should == CallAttempt::Status::NOANSWER
       call_attempt.voter.status.should == CallAttempt::Status::NOANSWER
-      voter.reload.call_back.should be_true
-      call_attempt.call_end.should_not be_nil
     end
 
     it "updates the details of a busy voter" do
       post :end, :id => call_attempt.id, :CallStatus => "busy"
       call_attempt.reload.status.should == CallAttempt::Status::BUSY
       call_attempt.voter.status.should == CallAttempt::Status::BUSY
-      voter.reload.call_back.should be_true
-      call_attempt.call_end.should_not be_nil
     end
 
     it "updates the details of a call failed" do
       post :end, :id => call_attempt.id, :CallStatus => "failed"
       call_attempt.reload.status.should == CallAttempt::Status::FAILED
       call_attempt.voter.status.should == CallAttempt::Status::FAILED
-      voter.reload.call_back.should be_true
-      call_attempt.call_end.should_not be_nil
     end
 
     it "notifies pusher when a call attempt is connected" do

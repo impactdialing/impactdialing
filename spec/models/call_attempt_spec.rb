@@ -40,7 +40,6 @@ describe CallAttempt do
     caller_session = Factory(:caller_session, :campaign => campaign)
     call_attempt = Factory(:call_attempt, :voter => Factory(:voter, :status => Voter::Status::NOTCALLED), :caller_session => caller_session, :campaign => campaign)
     call_attempt.fail
-    call_attempt.voter.reload.call_back.should be_true
   end
 
   describe 'next recording' do
