@@ -170,10 +170,15 @@ describe Voter do
     end
 
     it "is ordered by the last_call_attempt_time" do
-      v1 = Factory(:voter, :status => Voter::Status::NOTCALLED)
-      v2 = Factory(:voter, :status => CallAttempt::Status::BUSY, :last_call_attempt_time => (Time.now - 2.hours))
-      v3 = Factory(:voter, :status => CallAttempt::Status::BUSY, :last_call_attempt_time => (Time.now - 1.hours))
-      Voter.to_be_dialed.should == [v1, v2, v3]
+      v1 = Factory(:voter, :status => CallAttempt::Status::BUSY, :last_call_attempt_time => 2.hours.ago)
+      v2 = Factory(:voter, :status => CallAttempt::Status::BUSY, :last_call_attempt_time => 1.hour.ago)
+      Voter.to_be_dialed.should == [v1, v2]
+    end
+
+    it "puts uncalled voters first" do
+      called_voter = Factory(:voter, :status => CallAttempt::Status::BUSY, :last_call_attempt_time => 2.hours.ago)
+      uncalled_voter = Factory(:voter, :status => Voter::Status::NOTCALLED)
+      Voter.to_be_dialed.should == [uncalled_voter, called_voter]
     end
   end
 
