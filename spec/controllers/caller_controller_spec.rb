@@ -179,8 +179,10 @@ describe CallerController do
 
     it "returns no session if the caller is not connected" do
       login_as(caller)
-      Factory(:caller_session, :caller => caller, :session_key => 'key', :on_call => false, :available_for_call => true)
-      post :active_session, :id => caller.id
+      campaign = Factory(:campaign)
+      Factory(:caller_campaign, :caller => caller, :campaign => campaign)
+      Factory(:caller_session, :caller => caller, :session_key => 'key', :on_call => false, :available_for_call => true, :campaign => campaign)
+      post :active_session, :id => caller.id, :campaign_id => campaign.id
       response.body.should == {:caller_session => {:id => nil}}.to_json
     end
   end
