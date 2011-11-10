@@ -117,6 +117,18 @@ describe CallerSession do
       caller_session.pause_for_results.should == Twilio::Verb.new { |v| v.say("Please enter your call results"); v.pause("length" => 2); v.redirect(pause_caller_url(caller, :session_id => caller_session.id, :host => Settings.host, :port => Settings.port, :attempt => 1)) }.response
     end
 
+    it "pause for results triggers pusher in the first attempt" do
+      caller_session = Factory(:caller_session, :caller => caller)
+      caller_session.should_receive(:publish)
+      caller_session.pause_for_results
+    end
+
+    it "pause for results does not send pusher events in subsequent attempts" do
+      caller_session = Factory(:caller_session, :caller => caller)
+      caller_session.should_not_receive(:publish)
+      caller_session.pause_for_results(1)
+    end
+
     it "says wait message only on every fifth pause redirect" do
       caller_session = Factory(:caller_session, :caller => caller)
       caller_session.pause_for_results.should == Twilio::Verb.new { |v| v.say("Please enter your call results"); v.pause("length" => 2); v.redirect(pause_caller_url(caller, :session_id => caller_session.id, :host => Settings.host, :port => Settings.port, :attempt=>1)) }.response
