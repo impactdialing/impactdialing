@@ -4,12 +4,14 @@ end
 
 guard 'rails', :port => 3000, :cli => '--debugger' do
   watch('Gemfile.lock')
-  watch(%r{^(config|lib)/.*})
+  watch(%r{config/.*yml})
+  watch(%r{lib/.*})
 end
 
 guard 'spork', :wait => 50 do
   watch('Gemfile')
   watch('Gemfile.lock')
+  watch('config/routes.rb')
   watch('config/application.rb')
   watch('config/environment.rb')
   watch(%r{^config/environments/.+\.rb})
