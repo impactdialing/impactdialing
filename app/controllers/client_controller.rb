@@ -74,13 +74,13 @@ class ClientController < ApplicationController
     @title = "My Account"
 
     if session[:user].blank?
-      @user = User.new(:account => Account.new)
+      @user = User.new(:account => Account.new(:domain => request.domain))
     else
       @user = User.find(session[:user])
     end
 
     if request.post?
-      @user.attributes =  params[:user].merge(:domain => request.domain)
+      @user.attributes =  params[:user]
       if params[:fullname]!=nil
         name_arr=params[:fullname].split(" ")
         fname=name_arr.shift

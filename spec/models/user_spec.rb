@@ -39,4 +39,10 @@ describe User do
     user.account.update_attribute(:billing_account, billing_account)
     user.billing_account.should == billing_account
   end
+
+  it "delegates the domain to the account" do
+    account = Factory(:account, :domain => 'foo.com')
+    user.update_attribute(:account, account)
+    user.domain.should == 'foo.com'
+  end
 end
