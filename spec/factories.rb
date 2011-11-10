@@ -102,3 +102,6 @@ end
 Factory.define :answer do |a|
 end
 
+Factory.define :caller_campaign do |cc|
+end
+
