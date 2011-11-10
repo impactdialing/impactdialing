@@ -70,7 +70,7 @@
               
               <% @callers.each do |l| %>
                   <tr>
-                    <td><%= check_box_tag "campaign[caller_ids][]", "#{l.id}", callerInCampaign(l), :onclick=>"someCallers();", id: "campaign_caller_id_#{l.id}" -%> <%= l.name %></td>
+                    <td><%= check_box_tag "campaign[caller_ids][]", "#{l.id}", callerInCampaign(l), id: "campaign_caller_id_#{l.id}" -%> <%= l.name %></td>
                     <td></td>
                     <td><%= l.pin %></td>
                     <% if @campaign.predictive_type.index("robo,") %>
@@ -136,36 +136,15 @@
    });
   });
   $('document').ready(function(){
-    $('#callers').find(':checkbox').attr('checked', true);
+    if($("input[name='campaign[caller_ids][]'][checked]").length == 0){
+      $('#callers').find(':checkbox').attr('checked', true);
+    }
+    else if($("input[name='campaign[caller_ids][]'][checked]").length == $("input[name='campaign[caller_ids][]']").length){
+      $('#selectAll').attr('checked',true)
+    }
   });
-    // function allCallers() {
-    //       var f = document.forms['callerForm'].elements['campaign[caller_ids][]'];
-    // 
-    //       for (var i = 0; i < f.length; i++) {
-    //           f[i].checked = true;
-    //       }
-    // 
-    //   }
-    //   function someCallers() {
-    //       $('listUse').checked = false;
-    //       isAll();
-    //   }
-    // 
-    //   function isAll() {
-    //       var f = document.forms['callerForm'].elements['campaign[caller_ids][]'];
-    //       var n = 0;
-    //       for (var i = 0; i < f.length; i++) {
-    //           if (f[i].checked == true)
-    //               n++;
-    //       }
-    //       if (n ==<%= @callers.length %>) {
-    //           $('listUse').checked = true;
-    // 
-    //       }
-    //   }
-    //   
-    //   allCallers();
-    //   isAll();
+  
+  
       <%= remote_function(:update => "callerid", :url => { :action => "campaign_caller_id_verified", :id=>@campaign.id }) %>
 
     function doRecord() {

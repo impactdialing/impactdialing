@@ -242,20 +242,9 @@ function subscribe(session_key) {
 
 
     function bind_voter(data) {
-        //data.custom_fields = parse_custom_fields(data);
         var voter = ich.voter(data); //using ICanHaz a moustache. js like thingamagic
         $('#voter_info').empty();
         $('#voter_info').append(voter);
     }
 
-
-    function parse_custom_fields(data) {
-        var custom_fields = new Array();
-        $.each(data.custom_fields, function(key, value) {
-            if (value) {
-                custom_fields.push(key + " : " + value);
-            }
-        });
-        return custom_fields;
-    }
 }
