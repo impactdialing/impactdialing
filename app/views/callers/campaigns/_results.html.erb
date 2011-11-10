@@ -12,7 +12,14 @@
           </div>
       <% end %>
     </form>
-
+    <form id="voter_notes_response">
+      <% @campaign.try(:script).try(:notes).try(:each) do |note| %>
+        <div>
+          <%= note.note %>
+          <input type="text" id="note_response_<%= note.id %>" >
+        </div>
+      <% end %>
+    </form>
 
   </div>
 </fieldset>
