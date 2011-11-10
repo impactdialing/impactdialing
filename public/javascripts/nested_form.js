@@ -34,13 +34,22 @@ $('form a.add_nested_fields').live('click', function() {
   var new_id  = new Date().getTime();
   content     = content.replace(regexp, new_id);
   
-  if(assoc == "questions" || assoc == "notes"){ 
-    $(this).parent().before(content);
+  // if(assoc == "questions" || assoc == "notes"){ 
+  //   $(this).parent().before(content);
+  // }
+  // else{
+  //   $(this).before(content);
+  // }
+  if(assoc == "questions"){ 
+    $(this).parent().siblings('questions').append(content);
   }
-  else{
+  else if(assoc == "notes"){
+    $(this).parent().siblings('notes').append(content);
+  }
+  else
+  {
     $(this).before(content);
   }
-  
   
   count = 1
   if($(this).attr('type') == 'notes'){
@@ -56,7 +65,7 @@ $('form a.add_nested_fields').live('click', function() {
         $(this).find('legend').text("Question "+count++);
       }
     });
-    $(this).parent().prev().find('a.add_nested_fields').trigger('click')
+    $(this).parent().siblings('questions').find('.fields:visible').last().find('a.add_nested_fields').trigger('click')
   }
   
   if($(this).attr('type') == 'possible_responses'){
@@ -110,11 +119,8 @@ $('form a.remove_nested_fields').live('click', function() {
     $.each($(this).parents('div.fields').first().siblings('div.fields:visible'), function(){
       $(this).find('input').slice(1,2).val(count++ )
     });
-    // if($(this).parents('div.fields:visible').first().siblings('div.fields:visible').length == 0){
-    //       alert("You must have at least one result set");
-    //       return false;
-    //     }
   }
   return false;
 });
 });
+
