@@ -15,5 +15,10 @@ describe AdminController do
         response.should redirect_to(:back)
       end
     end
+
+    it "generates an admin report" do
+      get :report
+      response.should be_ok
+    end
   end
 end
