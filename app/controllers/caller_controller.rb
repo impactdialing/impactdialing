@@ -83,7 +83,7 @@ class CallerController < ApplicationController
 
   def preview_voter
     session = @caller.caller_sessions.find(params[:session_id])
-    voter = session.campaign.all_voters.to_be_dialed.find(:first, :conditions => "voters.id > #{params[:voter_id]}") if params[:voter_id]
+    voter = session.campaign.all_voters.to_be_dialed.where("voters.id > #{params[:voter_id]}").first if params[:voter_id]
     voter ||= session.campaign.all_voters.to_be_dialed.first
      if session.campaign.predictive_type == Campaign::Type::PREVIEW
        Rails.logger.debug("Inside preview--------------------------------------------")
