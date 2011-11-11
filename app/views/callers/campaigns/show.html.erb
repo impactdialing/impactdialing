@@ -13,37 +13,37 @@
     <script id="voter" type="text/html">
       {{#fields}}
       <% if @selected_voter_fields.delete('CustomId') %>
-        <li>ID: {{CustomID}}</li>
+        <li>ID: <b>{{CustomID}}</b></li>
       <% end %>
       <% if @selected_voter_fields.delete('FirstName') %>
-        <li>First name: {{FirstName}}</li>
+        <li>First name: <b>{{FirstName}}</b></li>
       <% end %>
       <% if @selected_voter_fields.delete('MiddleName') %>
-        <li>Middle name: {{MiddleName}}</li>
+        <li>Middle name: <b>{{MiddleName}}</b></li>
       <% end %>
       <% if @selected_voter_fields.delete('LastName') %>
-        <li>Last name: {{LastName}}</li>
+        <li>Last name: <b>{{LastName}}</b></li>
       <% end %>
       <% if @selected_voter_fields.delete('Suffix') %>
-        <li>Suffix: {{Suffix}}</li>
+        <li>Suffix: <b>{{Suffix}}</b></li>
       <% end %>
       <% if @selected_voter_fields.delete('Age') %>
-        <li>Age: {{Age}}</li>
+        <li>Age: <b>{{Age}}</b></li>
       <% end %>
       <% if @selected_voter_fields.delete('Gender') %>
-        <li>Gender: {{Gender}}</li>
+        <li>Gender: <b>{{Gender}}</b></li>
       <% end %>
       <% if @selected_voter_fields.delete('Phone') %>
-        <li>Phone: {{Phone}}</li>
+        <li>Phone: <b>{{Phone}}</b></li>
       <% end %>
       <% if @selected_voter_fields.delete('Email') %>
-        <li>Email: {{Email}}</li>
+        <li>Email: <b>{{Email}}</b></li>
       <% end %>
       
       {{/fields}}
       {{#custom_fields}}
       <% @selected_voter_fields.try(:each) do |s| %>
-      <li><%= s %>: {{<%= s %>}}</li>
+      <li><%= s %>: <b>{{<%= s %>}}</b></li>
       <% end %>
       {{/custom_fields}}
     </script>
