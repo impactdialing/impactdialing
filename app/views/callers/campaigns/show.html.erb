@@ -55,6 +55,8 @@
 <%= hidden_field_tag(:current_voter, nil) %>
 <%= hidden_field_tag(:campaign, @campaign.id) %>
 
+<form>
+
 <fieldset>
   <legend>Lead information</legend>
   <div id="voter_info_message" class="rt">
@@ -74,6 +76,8 @@
 
 <%= render 'results' %>
 <%= render 'actions' %>
+
+</form>
 
 <div id="callin_data">
   <p>
