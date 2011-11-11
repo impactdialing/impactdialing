@@ -1,4 +1,5 @@
 $(function() {
+  
 $('form a.add_nested_fields').live('click', function() {
   // Setup
   var assoc   = $(this).attr('data-association');           // Name of child
@@ -34,12 +35,6 @@ $('form a.add_nested_fields').live('click', function() {
   var new_id  = new Date().getTime();
   content     = content.replace(regexp, new_id);
   
-  // if(assoc == "questions" || assoc == "notes"){ 
-  //   $(this).parent().before(content);
-  // }
-  // else{
-  //   $(this).before(content);
-  // }
   if(assoc == "questions"){ 
     $(this).parent().siblings('questions').append(content);
   }
@@ -69,6 +64,9 @@ $('form a.add_nested_fields').live('click', function() {
   }
   
   if($(this).attr('type') == 'possible_responses'){
+    if($(this).siblings('div.fields').length == 1){
+      $(this).siblings('div.fields').find('input').first().val('No response');
+    }
     $.each($(this).siblings('div.fields:visible'), function(){
       $(this).find('input').slice(1,2).val(count++ );
     });
