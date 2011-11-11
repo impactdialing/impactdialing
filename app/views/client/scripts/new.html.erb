@@ -1,5 +1,10 @@
 <% content_for :javascripts do %>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js"></script>
+    <script typ ="text/javascript">
+      $(function() {
+        $('#script_questions_attributes_0_possible_responses_attributes_0_value').val('No response');
+      });
+    </script>
 <% end %>
 <h1><%= @script.new_record? ? "New script" : "Edit script" %></h1>
 <% if @script.errors.any? %>
