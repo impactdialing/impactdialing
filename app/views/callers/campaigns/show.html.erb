@@ -55,6 +55,8 @@
 <%= hidden_field_tag(:current_voter, nil) %>
 <%= hidden_field_tag(:campaign, @campaign.id) %>
 
+<!-- form tag used as a hack to apply proper css styling -->
+
 <form>
 
 <fieldset>
@@ -64,6 +66,8 @@
   </div>
   <ul id="voter_info" class="clearfix"></ul>
 </fieldset>
+
+</form>
 
 <fieldset>
   <legend>Script</legend>
@@ -76,8 +80,6 @@
 
 <%= render 'results' %>
 <%= render 'actions' %>
-
-</form>
 
 <div id="callin_data">
   <p>
