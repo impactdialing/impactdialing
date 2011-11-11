@@ -176,7 +176,7 @@ function subscribe(session_key) {
     channel.bind('voter_disconnected', function(data) {
         hide_all_actions();
         show_response_panel();
-        set_message("Enter call results.");
+        set_message("Please enter your call results.");
     });
 
     channel.bind('voter_connected', function(data) {

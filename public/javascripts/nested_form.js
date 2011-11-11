@@ -86,7 +86,7 @@ $('form a.remove_nested_fields').live('click', function() {
   
   if($(this).attr('type') == 'possible_responses'){
     if($(this).parents('div.fields').first().siblings('div.fields:visible').length == 0){
-      alert("You must have at least one result set");
+      alert("You must have at least one response.");
       return false;
     }
   }
