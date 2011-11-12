@@ -31,7 +31,8 @@ class Campaign < ActiveRecord::Base
   @@per_page = 25
 
   before_save :before_save_campaign
-  before_validation(:set_untitled_name, :on => :create)
+  before_save(:set_untitled_name, :on => create)
+  #before_validation(:set_untitled_name, :on => :create)
   before_validation(:sanitize_caller_id)
 
   def set_untitled_name
