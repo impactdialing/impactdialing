@@ -1,10 +1,10 @@
 module Client
   class CampaignsController < ::CampaignsController
     layout 'client'
-    
+
      def new
        @campaign = Campaign.new(:account_id => account.id)
-       @campaign.save
+       @campaign.save(:validate => false)
        @callers = account.callers.active
        @lists = @campaign.voter_lists
        @voters = @campaign.all_voters.active.default_order.paginate(:page => params[:page])
@@ -43,7 +43,7 @@ module Client
       flash_message(:notice, "Campaign deleted")
       redirect_to :back
     end
-    
+
     def deleted
       render 'campaigns/deleted'
     end
@@ -52,50 +52,44 @@ module Client
       @deleted_campaigns_path = client_deleted_campaigns_path
       @campaigns_path = client_campaigns_path
     end
-    
+
     def update
       @campaign = Campaign.find_by_id(params[:id])
       @campaign.account = account
-      code=""
       @campaign.update_attributes(params[:campaign])
-      if @campaign.valid?        
-        # code = @campaign.verify_caller_id if (!@campaign.caller_id_verified || !@campaign.caller_id.blank?)      
-        if @campaign.script_id.blank?
-          script = account.scripts.active.first
-          @campaign.script_id = script.id unless script.nil?          
-        end            
+      @scripts = @campaign.account.scripts
+      @callers = @campaign.callers
+      @lists = @campaign.voter_lists
+      @voter_list = @campaign.voter_lists.new
+      if @campaign.valid?
+        @campaign.script ||= @campaign.account.scripts.first
         @campaign.save
-        puts @campaign.inspect
         if params[:listsSent]
-          @campaign.disable_voter_list          
-          params[:voter_list_ids].each{ |id| VoterList.enable_voter_list(id) } unless params[:voter_list_ids].blank?
+          @campaign.disable_voter_list
+          params[:voter_list_ids].each { |id| VoterList.enable_voter_list(id) } unless params[:voter_list_ids].blank?
         end
-        if code.blank?
-          flash_message(:notice, "Campaign saved")
-        else
-          flash_message(:notice, "Campaign saved.  <font color=red>Enter code #{code} when called.</font>")
-        end
+        flash_message(:notice, "Campaign saved")
         redirect_to client_campaign_path(@campaign)
       else
-        render :action=>"new"  
+        render :new
       end
     end
 
     def create
-      @campaign =  Campaign.new(params[:campaign])
+      @campaign = Campaign.new(params[:campaign])
       @campaign.account = account
       code=""
-      if @campaign.valid?        
-        code = @campaign.verify_caller_id if (!@campaign.caller_id_verified || !@campaign.caller_id.blank?)      
+      if @campaign.valid?
+        code = @campaign.verify_caller_id if (!@campaign.caller_id_verified || !@campaign.caller_id.blank?)
         if @campaign.script_id.blank?
           script = account.scripts.active.first
           @campaign.script_id = script.id unless script.nil?
-        end            
+        end
         @campaign.caller_ids = params[:campaign][:caller_ids]
         @campaign.save
         if params[:listsSent]
-          @campaign.disable_voter_list          
-          params[:voter_list_ids].each{ |id| enable_voter_list(id) } unless params[:voter_list_ids].blank?
+          @campaign.disable_voter_list
+          params[:voter_list_ids].each { |id| enable_voter_list(id) } unless params[:voter_list_ids].blank?
         end
         # account.callers.active.each { |caller| @campaign.callers << caller }        
         if code.blank?
@@ -105,8 +99,8 @@ module Client
         end
         redirect_to client_campaign_path(@campaign)
       else
-        render :action=>"new"  
-      end      
+        render :action=>"new"
+      end
     end
 
     def clear_calls
