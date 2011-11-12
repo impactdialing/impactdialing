@@ -25,14 +25,21 @@ class Campaign < ActiveRecord::Base
 
   before_create :create_uniq_pin
 
+  validates :caller_id, :numericality => true, :length => {:minimum => 10, :maximum => 10}
+
   cattr_reader :per_page
   @@per_page = 25
 
   before_save :before_save_campaign
   before_validation(:set_untitled_name, :on => :create)
+  before_validation(:sanitize_caller_id)
 
   def set_untitled_name
     self.name = "Untitled #{account.campaigns.count + 1}" if self.name.blank?
+  end
+
+  def sanitize_caller_id
+    self.caller_id = Voter.sanitize_phone(self.caller_id)
   end
 
   # TODO: remove
