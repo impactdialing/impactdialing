@@ -2,17 +2,17 @@ module Client
   class CampaignsController < ::CampaignsController
     layout 'client'
 
-     def new
-       @campaign = Campaign.new(:account_id => account.id)
-       @campaign.save(:validate => false)
-       @callers = account.callers.active
-       @lists = @campaign.voter_lists
-       @voters = @campaign.all_voters.active.default_order.paginate(:page => params[:page])
-       @scripts = account.scripts.manual.active
+    def new
+      @campaign = Campaign.new(:account_id => account.id)
+      @campaign.save(:validate => false)
+      @callers = account.callers.active
+      @lists = @campaign.voter_lists
+      @voters = @campaign.all_voters.active.default_order.paginate(:page => params[:page])
+      @scripts = account.scripts.manual.active
 
-       @show_voter_buttons = @user.show_voter_buttons
-       @voter_list = @campaign.voter_lists.new
-     end
+      @show_voter_buttons = @user.show_voter_buttons
+      @voter_list = @campaign.voter_lists.new
+    end
 
     def show
       check_warning
@@ -78,25 +78,13 @@ module Client
     def create
       @campaign = Campaign.new(params[:campaign])
       @campaign.account = account
-      code=""
-      if @campaign.valid?
-        code = @campaign.verify_caller_id if (!@campaign.caller_id_verified || !@campaign.caller_id.blank?)
-        if @campaign.script_id.blank?
-          script = account.scripts.active.first
-          @campaign.script_id = script.id unless script.nil?
-        end
-        @campaign.caller_ids = params[:campaign][:caller_ids]
-        @campaign.save
+      @campaign.script ||= @campaign.account.scripts.first
+      if @campaign.save
         if params[:listsSent]
           @campaign.disable_voter_list
           params[:voter_list_ids].each { |id| enable_voter_list(id) } unless params[:voter_list_ids].blank?
         end
-        # account.callers.active.each { |caller| @campaign.callers << caller }        
-        if code.blank?
-          flash_message(:notice, "Campaign saved")
-        else
-          flash_message(:notice, "Campaign saved.  <font color=red>Enter code #{code} when called.</font>")
-        end
+        flash_message(:notice, "Campaign saved")
         redirect_to client_campaign_path(@campaign)
       else
         render :action=>"new"

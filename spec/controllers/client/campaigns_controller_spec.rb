@@ -17,7 +17,7 @@ describe Client::CampaignsController do
   end
 
   describe 'show' do
-    let(:campaign) {Factory(:campaign, :account => account, :caller_id => 'foo')}
+    let(:campaign) {Factory(:campaign, :account => account)}
 
     it "lists the campaign's active voters" do
       inactive_voter = Factory(:voter, :active => false, :campaign => campaign)
@@ -61,7 +61,7 @@ describe Client::CampaignsController do
     script = Factory(:script, :account => account)
     callers = 3.times.map{Factory(:caller, :account => account)}
     lambda {
-      post :create , :campaign => {:caller_ids => []}
+      post :create , :campaign => {:caller_id => '0123456789'}
     }.should change {account.reload.campaigns.size} .by(1)
     campaign = account.campaigns.last
     campaign.predictive_type.should == 'preview'
@@ -94,7 +94,7 @@ describe Client::CampaignsController do
     manual_script = Factory(:script, :account => account, :robo => false)
     robo_script = Factory(:script, :account => account, :robo => true)
     lambda {
-      post :create , :campaign => {:caller_ids => []}
+      post :create , :campaign => {:caller_id => '0123456789'}
     }.should change(user.account.campaigns.active.manual, :size).by(1)
     user.account.campaigns.active.manual.last.script.should == manual_script
     response.should redirect_to client_campaign_path(user.account.campaigns.last)

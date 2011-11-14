@@ -433,18 +433,6 @@ class ClientController < ApplicationController
 
   end
 
-  def campaign_caller_id_verified
-    @campaign = account.campaigns.find_by_id(params[:id])
-    @campaign.check_valid_caller_id_and_save
-    ret=""
-    if !@campaign.caller_id.blank? && !@campaign.caller_id_verified
-      ret = "<div class='msg msg-error'> <p><strong>Your Campaign Caller ID is not verified.</strong></p> </div>"
-    else
-      ret = ""
-    end
-    render :text=>ret
-  end
-
   def campaign_hash_delete
     #    cache_delete("avail_campaign_hash")
     ActiveRecord::Base.connection.execute("update caller_sessions set available_for_call=0")

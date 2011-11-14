@@ -170,8 +170,6 @@
     // <% if @callers.length!=0 %>
     // isAll();
     // <% end %>
-    <%= remote_function(:update => "callerid",
-:url => { :action => "campaign_caller_id_verified", :id=>@campaign.id }) %>
 
     function doRecord() {
         if ($('campaign_use_recordings').checked) {
