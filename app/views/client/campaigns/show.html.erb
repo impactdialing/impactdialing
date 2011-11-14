@@ -131,6 +131,10 @@
 
 <script>
   $(function () {
+    if ($('#callers input[name^= "campaign[caller_ids]"]:checked').length == <%= @callers.length %> ){
+      $('#selectAll').attr('checked', true)
+    }
+    
    $('#selectAll').click(function () {
     $('#callers').find(':checkbox').attr('checked', this.checked);
    });
@@ -139,25 +143,12 @@
      if ($('#callers input[name^= "campaign[caller_ids]"]:checked').length == <%= @callers.length %> ){
        $('#selectAll').attr('checked', true)
      }
-     if ($('#callers input[name^= "campaign[caller_ids]"]:checked').length <= <%= @callers.length %> ){
+     if ($('#callers input[name^= "campaign[caller_ids]"]:checked').length < <%= @callers.length %> ){
        $('#selectAll').attr('checked', false)
-     }
-     
-
-   })
+     }     
+   });
    
   });
-  // $('document').ready(function(){
-  //    alert('llll')
-  //    $('#callers input[type="checkbox"]').click(function(){
-  //      alert('lll')
-  //    })
-  //      $('#callers').find(':checkbox').attr('checked', true);
-  //    }
-  //    else if($("input[name='campaign[caller_ids][]'][checked]").length == $("input[name='campaign[caller_ids][]']").length){
-  //      $('#selectAll').attr('checked',true)
-  //    }
-  //  });
   
     function doRecord() {
         if ($('campaign_use_recordings').checked) {

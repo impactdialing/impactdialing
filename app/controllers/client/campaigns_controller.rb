@@ -58,7 +58,6 @@ module Client
       @campaign.account = account
       @campaign.update_attributes(params[:campaign])
       @scripts = @campaign.account.scripts
-      @callers = @campaign.callers
       @lists = @campaign.voter_lists
       @voter_list = @campaign.voter_lists.new
       if @campaign.valid?
@@ -71,6 +70,7 @@ module Client
         flash_message(:notice, "Campaign saved")
         redirect_to client_campaign_path(@campaign)
       else
+        @callers = account.callers.active
         render :new
       end
     end
