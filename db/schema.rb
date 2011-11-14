@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20111110070143) do
+ActiveRecord::Schema.define(:version => 20111113172002) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "paid"
@@ -249,6 +249,12 @@ ActiveRecord::Schema.define(:version => 20111110070143) do
     t.integer  "user_id"
     t.datetime "created_at"
     t.datetime "updated_at"
+  end
+
+  create_table "note_responses", :force => true do |t|
+    t.integer "voter_id", :null => false
+    t.integer "note_id",  :null => false
+    t.string  "response"
   end
 
   create_table "notes", :force => true do |t|

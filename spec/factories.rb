@@ -105,3 +105,7 @@ end
 Factory.define :caller_campaign do |cc|
 end
 
+Factory.define :note do |n|
+end
+
+
