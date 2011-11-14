@@ -58,7 +58,7 @@ class CallAttemptsController < ApplicationController
   def voter_response
     call_attempt = CallAttempt.find(params[:id])
     voter = Voter.find(params[:voter_id])
-    voter.capture(params[:answers])
+    voter.capture(params)
 
     next_voter = call_attempt.campaign.all_voters.to_be_dialed.first
     call_attempt.caller_session.publish("voter_push", next_voter ? next_voter.info : {})
