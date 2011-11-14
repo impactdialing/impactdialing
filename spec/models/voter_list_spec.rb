@@ -67,6 +67,17 @@ describe VoterList do
             :failedCount => 0
         }
       end
+      
+      it "should upload all columns expect the Not Available one" do        
+        MAPPINGS = CsvMapping.new({"Phone"=>"Phone", "Name"=>"", "Email"=>"Email"})
+        @result = voter_list.import_leads(MAPPINGS,
+            "#{fixture_path}/files/missing_field_list.csv",
+            ",")
+        @result.should == {
+            :successCount => 2,
+            :failedCount => 0
+        }
+      end
 
       it "should treat a duplicate phone number as a new voter" do
         Voter.count.should == 2
