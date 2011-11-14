@@ -92,7 +92,7 @@ function ready_to_call(dialer) {
 
 
 function send_voter_response() {
-	$('#voter_responses').attr('action', "/call_attempts/" + "11"+ "/voter_response");
+	$('#voter_responses').attr('action', "/call_attempts/" + $("#current_call_attempt").val() + "/voter_response");
 	$('#voter_id').val($("#current_voter").val())
 	$('#voter_responses').submit(function() { 
 	  $(this).ajaxSubmit({}); 
@@ -108,7 +108,7 @@ function send_voter_response_and_disconnect() {
         }
     };
     var str = $("#voter_responses").serializeArray();
-	$('#voter_responses').attr('action', "/call_attempts/" + "11"+ "/voter_response");
+	$('#voter_responses').attr('action', "/call_attempts/" + $("#current_call_attempt").val() + "/voter_response");
 	$('#voter_id').val($("#current_voter").val())
 	$('#voter_responses').submit(function() { 
 	  $(this).ajaxSubmit(options); 
