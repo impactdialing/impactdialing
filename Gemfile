@@ -37,6 +37,7 @@ group :development do
   gem 'guard-rspec'
   gem 'guard-spork'
   gem 'guard-rails'
+  gem 'capistrano', '2.9.0'
 end
 
 # run 'bundle install' with either '--without linux' or '--without darwin' depending on your os.
