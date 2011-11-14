@@ -104,7 +104,7 @@ describe CallerSession do
       call_attempt = Factory(:call_attempt, :campaign => campaign, :dialer_mode => Campaign::Type::PREVIEW, :status => CallAttempt::Status::INPROGRESS, :caller_session => caller_session)
       voter.stub_chain(:call_attempts, :create).and_return(call_attempt)
       Twilio::Call.stub!(:make).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
-      Twilio::Call.should_receive(:make).with(anything, voter.Phone, connect_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port), anything)
+      Twilio::Call.should_receive(:make).with(anything, voter.Phone, connect_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port), {'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything})
 
       caller_session.preview_dial(voter)
       voter.caller_session.should == caller_session
