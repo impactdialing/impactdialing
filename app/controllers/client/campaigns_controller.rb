@@ -71,7 +71,7 @@ module Client
         redirect_to client_campaign_path(@campaign)
       else
         @callers = account.callers.active
-        render :new
+        render :show
       end
     end
 

@@ -23,12 +23,13 @@ class Campaign < ActiveRecord::Base
   before_create :create_uniq_pin
 
   validates :name, :presence => true
-  validates :caller_id, :presence => true, :numericality => {:on => :save}, :length => {:on => :save, :minimum => 10, :maximum => 10}
+  validates :caller_id, :presence => {:on => :update}, :numericality => {:on => :update}, :length => {:on => :update, :minimum => 10, :maximum => 10}
 
   cattr_reader :per_page
   @@per_page = 25
 
   before_validation :set_untitled_name
+  before_save :set_untitled_name
   before_validation :sanitize_caller_id
 
   def set_untitled_name
@@ -41,6 +42,7 @@ class Campaign < ActiveRecord::Base
 
   def create_uniq_pin
     pin = nil
+
     loop do
       pin = rand.to_s[2..6]
       break unless Campaign.find_by_campaign_id(pin)
