@@ -1,6 +1,5 @@
 class Campaign < ActiveRecord::Base
   include Deletable
-  validates_presence_of :name, :on => :create, :message => "can't be blank"
   has_many :caller_sessions
   has_many :voter_lists, :conditions => {:active => true}
   has_many :all_voters, :class_name => 'Voter'
@@ -23,15 +22,14 @@ class Campaign < ActiveRecord::Base
 
   before_create :create_uniq_pin
 
-  validates :caller_id, :numericality => true, :length => {:minimum => 10, :maximum => 10}
+  validates :name, :presence => true
+  validates :caller_id, :presence => true, :numericality => {:on => :save}, :length => {:on => :save, :minimum => 10, :maximum => 10}
 
   cattr_reader :per_page
   @@per_page = 25
 
-  before_save :before_save_campaign
-  before_save(:set_untitled_name, :on => create)
-  #before_validation(:set_untitled_name, :on => :create)
-  before_validation(:sanitize_caller_id)
+  before_validation :set_untitled_name
+  before_validation :sanitize_caller_id
 
   def set_untitled_name
     self.name = "Untitled #{account.campaigns.count + 1}" if self.name.blank?
@@ -48,9 +46,6 @@ class Campaign < ActiveRecord::Base
       break unless Campaign.find_by_campaign_id(pin)
     end
     self.campaign_id = pin
-  end
-
-  def before_save_campaign
   end
 
   def disable_voter_list
