@@ -58,7 +58,7 @@ end
 
 Factory.define :caller_session do |s|
   s.campaign { Factory(:campaign, :account => Factory(:account)) }
-  s.caller_id { Factory(:caller) }
+  s.caller_id { Factory(:caller).id }
 end
 
 Factory.define :call_attempt do |ca|
