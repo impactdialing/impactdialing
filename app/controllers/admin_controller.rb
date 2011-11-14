@@ -29,7 +29,6 @@ class AdminController < ApplicationController
     #doc  = Nokogiri::XML(a)
     #tcalls=doc.xpath("//Calls")
     #@queued=tcalls.first.attributes["total"].value if tcalls.length>0
-    render 'status.html.erb'
   end
 
   def index
