@@ -13,7 +13,7 @@ describe CampaignsController do
     manual_script = Factory(:script, :account => user.account, :robo => false)
     robo_script = Factory(:script, :account => user.account, :robo => true)
     lambda {
-      post :create
+      post :create, :caller_id => '0123456789'
     }.should change(user.account.campaigns.active.robo, :size).by(1)
     user.account.campaigns.active.robo.last.script.should == robo_script
     response.should redirect_to campaign_path(user.account.campaigns.last)
