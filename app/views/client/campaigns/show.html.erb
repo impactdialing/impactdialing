@@ -134,15 +134,30 @@
    $('#selectAll').click(function () {
     $('#callers').find(':checkbox').attr('checked', this.checked);
    });
+   
+   $('#callers input[name^= "campaign[caller_ids]"]').change(function(){
+     if ($('#callers input[name^= "campaign[caller_ids]"]:checked').length == <%= @callers.length %> ){
+       $('#selectAll').attr('checked', true)
+     }
+     if ($('#callers input[name^= "campaign[caller_ids]"]:checked').length <= <%= @callers.length %> ){
+       $('#selectAll').attr('checked', false)
+     }
+     
+
+   })
+   
   });
-  $('document').ready(function(){
-    if($("input[name='campaign[caller_ids][]'][checked]").length == 0){
-      $('#callers').find(':checkbox').attr('checked', true);
-    }
-    else if($("input[name='campaign[caller_ids][]'][checked]").length == $("input[name='campaign[caller_ids][]']").length){
-      $('#selectAll').attr('checked',true)
-    }
-  });
+  // $('document').ready(function(){
+  //    alert('llll')
+  //    $('#callers input[type="checkbox"]').click(function(){
+  //      alert('lll')
+  //    })
+  //      $('#callers').find(':checkbox').attr('checked', true);
+  //    }
+  //    else if($("input[name='campaign[caller_ids][]'][checked]").length == $("input[name='campaign[caller_ids][]']").length){
+  //      $('#selectAll').attr('checked',true)
+  //    }
+  //  });
   
   
       <%= remote_function(:update => "callerid", :url => { :action => "campaign_caller_id_verified", :id=>@campaign.id }) %>
