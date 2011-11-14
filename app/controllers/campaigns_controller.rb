@@ -16,7 +16,7 @@ class CampaignsController < ClientController
   end
 
   def create
-    campaign = @user.account.campaigns.create!(:script => @user.account.scripts.robo.first, :robo => true)
+    campaign = @user.account.campaigns.create!(:script => @user.account.scripts.robo.first, :robo => true, :caller_id => params[:caller_id])
     redirect_to campaign
   end
 
@@ -25,10 +25,7 @@ class CampaignsController < ClientController
     @campaign.script ||= account.scripts.active.first
     @campaign.voter_lists.disable_all
     @campaign.voter_lists.by_ids(params[:voter_list_ids]).enable_all
-    if @campaign.save
-      flash_message(:notice, "Campaign saved")
-      generate_validation_token_for_caller_id(@campaign) if @campaign.caller_id.present? and (not @campaign.caller_id_verified)
-    end
+    flash_message(:notice, "Campaign saved") if @campaign.save
     redirect_to campaign_path(@campaign)
   end
 
