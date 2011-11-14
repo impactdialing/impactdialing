@@ -27,6 +27,7 @@ end
 
 Factory.define :campaign do |c|
   c.name 'a campaign'
+  c.caller_id '1234567890'
 end
 
 Factory.define :script do |s|
