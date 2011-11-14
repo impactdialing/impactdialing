@@ -1,5 +1,3 @@
-require "twilio_lib"
-
 class Campaign < ActiveRecord::Base
   include Deletable
   validates_presence_of :name, :on => :create, :message => "can't be blank"
@@ -41,36 +39,6 @@ class Campaign < ActiveRecord::Base
 
   def sanitize_caller_id
     self.caller_id = Voter.sanitize_phone(self.caller_id)
-  end
-
-  # TODO: remove
-  def check_valid_caller_id_and_save
-    check_valid_caller_id
-    self.save
-  end
-
-  # TODO: remove
-  def check_valid_caller_id
-    #verify caller_Id
-    self.caller_id_verified=false
-    if !self.caller_id.blank?
-      #verify
-      t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-      a=t.call("GET", "OutgoingCallerIds", {'PhoneNumber'=>self.caller_id})
-      require 'rubygems'
-      require 'hpricot'
-      begin
-        @doc = Hpricot::XML(a)
-        code = (@doc/"Sid").inner_html
-        if code.blank?
-          self.caller_id_verified=false
-        else
-          self.caller_id_verified=true
-        end
-      rescue
-      end
-    end
-    true
   end
 
   def create_uniq_pin
