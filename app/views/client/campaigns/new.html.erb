@@ -127,49 +127,24 @@
 
 <script>
     $(function () {
-     $('#selectAll').click(function () {
-      $('#callers').find(':checkbox').attr('checked', this.checked);
-     });
-    });
-    $('document').ready(function(){
-      $('#callers').find(':checkbox').attr('checked', true);
-    });
-    // function allCallers() {
-    //     var f = document.forms['callerForm'].elements['campaign[caller_ids][]'];
-    // 
-    //     for (var i = 0; i < f.length; i++) {
-    //         f[i].checked = true;
-    //     }
-    // 
-    // }
-    // function someCallers() {
-    //     $('listUse').checked = false;
-    //     isAll();
-    // }
-    // 
-    // function isAll() {
-    //     if (checked_callers() ==<%= @callers.length %>) {
-    //         $('listUse').checked = true;
-    // 
-    //     }
-    // }
-    // function checked_callers(){
-    //   var f = document.forms['callerForm'].elements['campaign[caller_ids][]'];
-    //   var n = 0;
-    //   for (var i = 0; i < f.length; i++) {
-    //       if (f[i].checked == true)
-    //           n++;
-    //   }
-    //   return n;
-    // }
-    // 
-    // if(checked_callers() == 0){
-    //   allCallers();
-    // }
-    // 
-    // <% if @callers.length!=0 %>
-    // isAll();
-    // <% end %>
+      $('#callers input[type="checkbox"]').attr('checked', true);
+      $('#selectAll').click(function () {
+       $('#callers').find(':checkbox').attr('checked', true);
+      });
+
+
+      $('#callers input[name^= "campaign[caller_ids]"]').change(function(){
+        if ($('#callers input[name^= "campaign[caller_ids]"]:checked').length == <%= @callers.length %> ){
+          $('#selectAll').attr('checked', true)
+        }
+        if ($('#callers input[name^= "campaign[caller_ids]"]:checked').length < <%= @callers.length %> ){
+          $('#selectAll').attr('checked', false)
+        }     
+      });
+      
+      
+    });  
+    
 
     function doRecord() {
         if ($('campaign_use_recordings').checked) {
