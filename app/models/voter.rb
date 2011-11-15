@@ -122,7 +122,8 @@ class Voter < ActiveRecord::Base
     account.blocked_numbers.for_campaign(campaign).map(&:number).include?(self.Phone)
   end
 
-  def capture(response)    
+  def capture(response)
+    update_attribute(:result_date, Time.now)
     capture_answers(response["question"])
     capture_notes(response['notes'])
   end
