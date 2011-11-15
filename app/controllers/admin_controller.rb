@@ -291,12 +291,13 @@ redirect_to :controller=>"client"
       :last_name  => billing_account.last_name
     )
 
+    user = billing_account.account.users.first
     billing_address = {
-      :name => "#{@user.fname} #{@user.lname}",
-      :address1 => @billing_account.address1 ,
-      :zip =>@billing_account.zip,
-      :city     => @billing_account.city,
-      :state    => @billing_account.state,
+      :name => "#{user.fname} #{user.lname}",
+      :address1 => billing_account.address1 ,
+      :zip => billing_account.zip,
+      :city     => billing_account.city,
+      :state    => billing_account.state,
       :country  => 'US'
     }
     options = {:address => {}, :address1 => billing_address, :billing_address => billing_address, :ip=>"127.0.0.1", :order_id=>""}
