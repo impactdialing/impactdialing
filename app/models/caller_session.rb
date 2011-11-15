@@ -36,7 +36,7 @@ class CallerSession < ActiveRecord::Base
   end
 
   def preview_dial(voter)
-    attempt = voter.call_attempts.create(:campaign => self.campaign, :dialer_mode => Campaign::Type::PREVIEW, :status => CallAttempt::Status::INPROGRESS, :caller_session => self)
+    attempt = voter.call_attempts.create(:campaign => self.campaign, :dialer_mode => Campaign::Type::PREVIEW, :status => CallAttempt::Status::INPROGRESS, :caller_session => self, :caller => caller)
     update_attribute('attempt_in_progress', attempt)
     voter.update_attributes(:last_call_attempt => attempt, :last_call_attempt_time => Time.now, :caller_session => self)
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
@@ -72,7 +72,7 @@ class CallerSession < ActiveRecord::Base
   def start
     response = Twilio::Verb.new do |v|
       v.dial(:hangupOnStar => true, :action => pause_caller_url(self.caller, :host => Settings.host, :port => Settings.port, :session_id => id)) do
-        v.conference(self.session_key, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port), :waitMethod => 'GET')
+        v.conference(self.session_key, :endConferenceOnExit => true, :beep => true, :waitUrl => "")
       end
     end.response
     update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
