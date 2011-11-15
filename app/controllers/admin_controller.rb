@@ -7,7 +7,7 @@ class AdminController < ApplicationController
   def state
     if !params[:end].blank?
       cs = CallerSession.find(params[:end])
-      cs.end_call
+      cs.end_running_call
     end
     calls_to_end = CallAttempt.all(:conditions=>"tEndTime is not NULL and call_end is NULL")
     calls_to_end.each do |c|
@@ -76,7 +76,6 @@ class AdminController < ApplicationController
 
     render :layout=>"client"
   end
-
 
   def set_report_date_range
     begin
@@ -188,7 +187,6 @@ redirect_to :controller=>"client"
       redirect_to :action=>"cms"
     end
   end
-
 
   def edit_cms
     @seo = Seo.new
