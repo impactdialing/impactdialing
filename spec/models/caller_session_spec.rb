@@ -69,7 +69,7 @@ describe CallerSession do
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => conf_key)
       session.start.should == Twilio::Verb.new do |v|
         v.dial(:hangupOnStar => true, :action => pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => session)) do
-          v.conference(conf_key, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port), :waitMethod => "GET")
+          v.conference(conf_key, :endConferenceOnExit => true, :beep => true, :waitUrl => "")
         end
       end.response
       session.on_call.should be_true
