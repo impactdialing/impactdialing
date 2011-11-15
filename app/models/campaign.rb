@@ -21,6 +21,8 @@ class Campaign < ActiveRecord::Base
   scope :using_web_ui, :conditions => {:use_web_ui => true}
 
   before_create :create_uniq_pin
+  
+  attr_accessor :predictive_alpha, :predictive_beta
 
   validates :name, :presence => true
   validates :caller_id, :presence => {:on => :update}, :numericality => {:on => :update}, :length => {:on => :update, :minimum => 10, :maximum => 10}
@@ -360,6 +362,10 @@ class Campaign < ActiveRecord::Base
     CallerSession.find_all_by_campaign_id_and_on_call_and_available_for_call(self.id, 1, 0)
   end
 
+  def callers_available_for_call
+    CallerSession.find_all_by_campaign_id_and_on_call_and_available_for_call(self.id, 1, 1)
+  end
+
   def call_attempts_in_progress
     CallAttempt.find_all_by_campaign_id(self.id, :conditions=>"call_end is NULL")
   end
@@ -527,6 +533,53 @@ class Campaign < ActiveRecord::Base
 
   def clear_calls
     all_voters.update_all(:result => nil, :status => 'not called')
+  end
+  
+  # simulator dialer
+  def dials_ramping?
+    self.call_stats(10)[:attempts].length > 50 ? false : true
+  end
+
+  def dials_needed
+    stats = call_stats(10)
+    dials_made = stats[:attempts].length #number of dials made in the past 10 minutes
+    dials_answered = stats[:answer] # number of dials answered in the past 10 minutes
+    dials_needed = self.predictive_alpha * dials_answered / dials_made
+  end
+  
+  def dialer_available_callers
+    stats = call_stats(10)
+
+    mean_conversation = stats[:avg_duration] #the mean length of a conversation in the last 10 minutes
+    longest_conversation = stats[:biggest_long] #the length of the longest conversation in the last 10 minutes
+    expected_conversation = ( 1 - predictive_beta ) * mean_conversation + predictive_beta * longest_conversation
+    puts "expected_conversation: #{expected_conversation}"
+    available_callers = callers_available_for_call.length +  callers_on_call_longer_than(expected_conversation ).length - callers_on_call_longer_than(longest_conversation).length
+      
+  end
+  
+  def callers_on_call_longer_than(minute_threshold)
+    results=[]
+    callers_on_call.each do |caller|
+      results << caller if caller.attempt_in_progress!=nil && CallAttempt.find(caller.attempt_in_progress).duration > minute_threshold
+    end
+    results
+  end
+  
+  def ringing_lines
+    #TODO - mark call_attempts as ringing
+    []
+  end
+  
+  def dial_predictive_simulator
+    if dials_ramping?
+      num_to_call= callers_available_for_call.length
+    else
+      num_to_call= (dials_needed * dialer_available_callers) - ringing_lines 
+    end
+    voter_ids=choose_voters_to_dial(num_to_call) #TODO check logic
+    DIALER_LOGGER.info("predictive_simulator voters to dial #{voter_ids}")
+    ring_predictive_voters(voter_ids)
   end
 
   private
