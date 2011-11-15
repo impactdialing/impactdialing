@@ -10,6 +10,7 @@ class Voter < ActiveRecord::Base
   belongs_to :last_call_attempt, :class_name => "CallAttempt"
   belongs_to :caller_session
   has_many :answers
+  has_many :note_responses
 
   validates_presence_of :Phone
   validates_length_of :Phone, :minimum => 10
@@ -51,44 +52,6 @@ class Voter < ActiveRecord::Base
     ["Phone", "CustomID", "LastName", "FirstName", "MiddleName", "Suffix", "Email"]
   end
 
-  def call_and_connect_to_session(session)
-    require "hpricot"
-    require "open-uri"
-    campaign = session.campaign
-    self.status='Call attempt in progress'
-    self.save
-    t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-    if !campaign.caller_id.blank? && campaign.caller_id_verified
-      caller_num=campaign.caller_id
-    else
-      caller_num=APP_NUMBER
-    end
-    c = CallAttempt.new
-    c.dialer_mode=campaign.predictive_type
-    c.voter_id =self.id
-    c.campaign_id=campaign.id
-    c.status ="Call ready to dial"
-    c.save
-
-    if campaign.predictive_type=="preview"
-      a=t.call("POST", "Calls", {'Timeout'=>"20", 'Caller' => caller_num, 'Called' => self.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{self.id}&attempt=#{c.id}&selected_session=#{session.id}"})
-    elsif campaign.use_answering
-      if campaign.use_recordings
-        a=t.call("POST", "Calls", {'Timeout'=>campaign.answer_detection_timeout, 'Caller' => caller_num, 'Called' => self.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{self.id}&attempt=#{c.id}&selected_session=#{session.id}", 'IfMachine'=>'Continue'})
-      else
-        a=t.call("POST", "Calls", {'Timeout'=>campaign.answer_detection_timeout, 'Caller' => caller_num, 'Called' => self.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{self.id}&attempt=#{c.id}&selected_session=#{session.id}", 'IfMachine'=>'Hangup'})
-      end
-    else
-      a=t.call("POST", "Calls", {'Timeout'=>"15", 'Caller' => caller_num, 'Called' => self.Phone, 'Url'=>"#{APP_URL}/callin/voterFindSession?campaign=#{campaign.id}&voter=#{self.id}&attempt=#{c.id}&selected_session=#{session.id}"})
-    end
-    @doc = Hpricot::XML(a)
-    c.sid =(@doc/"Sid").inner_html
-    c.status="Call in progress"
-    c.save
-    self.last_call_attempt_id =c.id
-    self.last_call_attempt_time=Time.now
-    self.save
-  end
 
   def dial
     message = "#{self.Phone} for campaign id:#{self.campaign_id}"
@@ -159,15 +122,9 @@ class Voter < ActiveRecord::Base
     account.blocked_numbers.for_campaign(campaign).map(&:number).include?(self.Phone)
   end
 
-  def capture(answers)
-    retry_response = nil
-    answers.each_value do |answer|
-      voters_response = PossibleResponse.find(answer["value"])
-      current_response = self.answers.find_by_question_id(voters_response.question.id)
-      current_response ?  current_response.update_attributes(:possible_response => voters_response) : self.answers.create(:possible_response => voters_response, :question => voters_response.question)
-      retry_response ||= voters_response if voters_response.retry?
-    end
-    update_attributes(:status => Voter::Status::RETRY) if retry_response
+  def capture(response)    
+    capture_answers(response["question"])
+    capture_notes(response['notes'])
   end
 
   def info
@@ -184,5 +141,24 @@ class Voter < ActiveRecord::Base
     call_attempt = self.call_attempts.create(:campaign => self.campaign, :dialer_mode => mode, :status => CallAttempt::Status::INPROGRESS)
     self.update_attributes!(:last_call_attempt => call_attempt, :last_call_attempt_time => Time.now)
     call_attempt
+  end
+  
+  def capture_answers(questions)
+    retry_response = nil
+    questions.try(:each_pair) do |question_id,answer_id|
+      voters_response = PossibleResponse.find(answer_id)
+      current_response = answers.find_by_question_id(question_id)
+      current_response ?  current_response.update_attributes(:possible_response => voters_response) : answers.create(:possible_response => voters_response, :question => Question.find(question_id))
+      retry_response ||= voters_response if voters_response.retry?
+    end
+    update_attributes(:status => Voter::Status::RETRY) if retry_response    
+  end  
+  
+  def capture_notes(notes)
+    notes.try(:each_pair) do |note_id, note_res|
+      note = Note.find(note_id)
+      note_response = note_responses.find_by_note_id(note_id)
+      note_response ? note_response.update_attributes(response: note_res) : note_responses.create(response: note_res, note: Note.find(note_id))
+    end    
   end
 end

@@ -298,15 +298,15 @@ describe Voter do
     let(:response) { Factory(:possible_response, :question => question) }
 
     it "captures call responses" do
-      answer = {"0"=>{"name" => "sefrg", "value"=>response.id}}
-      voter.capture(answer)
+      response_params = {"voter_id"=>voter.id, "question"=>{question.id=>response.id}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}    
+      voter.capture(response_params)
       voter.answers.size.should == 1
     end
 
     it "puts voter back in the dial list if a retry response is detected" do
       another_response = Factory(:possible_response, :question => Factory(:question, :script => script), :retry => true)
-      answer = {"0"=>{"name" => "sefrg", "value"=>response.id}, "1"=>{"name" => "abc", "value"=>another_response.id}}
-      voter.capture(answer)
+      response_params = {"voter_id"=>voter.id, "question"=>{question.id=>response.id, another_response.question.id=>another_response.id}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}    
+      voter.capture(response_params)
       voter.answers.size.should == 2
       voter.reload.status.should == Voter::Status::RETRY
       Voter.to_be_dialed.should == [voter]
@@ -316,13 +316,39 @@ describe Voter do
       question = Factory(:question, :script => script)
       retry_response = Factory(:possible_response, :question => question, :retry => true)
       valid_response = Factory(:possible_response, :question => question)
-      voter.capture(answer = {"0"=>{"name" => "sefrg", "value"=>response.id}, "1"=>{"name" => "abc", "value"=>retry_response.id}})
+      response_params = {"voter_id"=>voter.id, "question"=>{response.question.id=>response.id, retry_response.question.id=> retry_response.id}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}    
+      voter.capture(response_params)
       voter.answers.size.should == 2
       voter.reload.status.should == Voter::Status::RETRY
       Voter.to_be_dialed.should == [voter]
-
-      voter.capture(answer = {"0"=>{"name" => "lkgdf", "value"=>response.id}, "1"=>{"name" => "dkl", "value"=>valid_response.id}})
+      response_params_again = {"voter_id"=>voter.id, "question"=>{response.question.id=>response.id, valid_response.question.id=> valid_response.id}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}    
+      voter.capture(response_params_again)
       voter.reload.answers.size.should == 2
     end
+  end
+  
+  describe "notes" do
+    let(:voter) { Factory(:voter) }
+    let(:script) { Factory(:script, :robo => false) }
+    let(:note1) {Factory(:note, note: "Question1" ,script: script)}
+    let(:note2) {Factory(:note, note: "Question2", script: script)}
+    
+    it "captures call notes" do
+      response_params = {"voter_id"=>voter.id, "notes"=>{note1.id=>"tell", note2.id=>"no"}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}    
+      voter.capture(response_params)
+      voter.note_responses.size.should == 2
+    end
+    
+    it "override old note" do
+      response_params = {"voter_id"=>voter.id, "notes"=>{note1.id=>"tell"}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}    
+      voter.capture(response_params)
+      voter.note_responses.first eq('tell')
+      
+      response_params = {"voter_id"=>voter.id, "notes"=>{note1.id=>"say"}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}    
+      voter.capture(response_params)
+      voter.note_responses.first eq('say')      
+    end
+    
+  
   end
 end

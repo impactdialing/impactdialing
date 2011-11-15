@@ -24,14 +24,13 @@ describe CallAttemptsController do
       response1 = Factory(:possible_response, :question => question1)
       question2 = Factory(:question, :script => script)
       response2 = Factory(:possible_response, :question => question2)
-      answer = {"0"=>{"name" => "sefrg", "value"=>response1.id}, "1"=>{"name" => "abc", "value"=>response2.id}}
 
       channel = mock
       Voter.stub_chain(:to_be_dialed, :first).and_return(voter)
       Pusher.should_receive(:[]).with(anything).and_return(channel)
       channel.should_receive(:trigger).with("voter_push", Voter.to_be_dialed.first.info.merge(:dialer => campaign.predictive_type))
 
-      post :voter_response, :id => call_attempt.id, :voter_id => voter.id, :answers => answer
+      post :voter_response, :id => call_attempt.id, :voter_id => voter.id, :question => {question1.id=> response1.id, question2.id=>response2.id}
       voter.answers.count.should == 2
     end
 
@@ -41,14 +40,13 @@ describe CallAttemptsController do
       response1 = Factory(:possible_response, :question => question1)
       question2 = Factory(:question, :script => script)
       response2 = Factory(:possible_response, :question => question2, :retry => true)
-      answer = {"0"=>{"name" => "sefrg", "value"=>response1.id}, "1"=>{"name" => "abc", "value"=>response2.id}}
 
       channel = mock
       Voter.stub_chain(:to_be_dialed, :first).and_return(voter)
       Pusher.should_receive(:[]).with(anything).and_return(channel)
       channel.should_receive(:trigger).with("voter_push", Voter.to_be_dialed.first.info.merge(:dialer => campaign.predictive_type))
 
-      post :voter_response, :id => call_attempt.id, :voter_id => voter.id, :answers => answer
+      post :voter_response, :id => call_attempt.id, :voter_id => voter.id, :question => {question1.id=> response1.id, question2.id=>response2.id}
       voter.answers.count.should == 2
       voter.reload.status.should ==Voter::Status::RETRY
     end
@@ -71,7 +69,8 @@ describe CallAttemptsController do
     let(:user) { Factory(:user, :account => account) }
     let(:campaign) { Factory(:campaign, :account => account, :robo => false) }
     let(:voter) { Factory(:voter, :campaign => campaign, :call_back => false) }
-    let(:call_attempt) { Factory(:call_attempt, :voter => voter, :campaign => campaign, :caller_session => Factory(:caller_session)) }
+    let(:caller_session) { caller_session = Factory(:caller_session)}
+    let(:call_attempt) { Factory(:call_attempt, :voter => voter, :campaign => campaign, :caller_session => caller_session) }
 
     it "connects the voter to an available caller" do
       Factory(:caller_session, :campaign => campaign, :available_for_call => false)
@@ -124,13 +123,21 @@ describe CallAttemptsController do
       response.body.should == Twilio::TwiML::Response.new { |r| r.Hangup }.text
     end
 
+    it "hangs up when a answering machine is detected and campaign uses no recordings" do
+      CallAttempt.stub(:find).and_return(call_attempt)
+      post :connect, :id => call_attempt.id, :AnsweredBy => 'machine'
+      response.body.should == call_attempt.hangup
+      call_attempt.reload.voter.status.should == CallAttempt::Status::VOICEMAIL
+      call_attempt.status.should == CallAttempt::Status::VOICEMAIL
+    end
+
     it "plays a voice mail to a voters answering the campaign uses recordings" do
       campaign = Factory(:campaign, :use_recordings => true, :recording => Factory(:recording, :file_file_name => 'abc.mp3', :account => Factory(:account)))
       call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign)
-      post :connect, :id => call_attempt.id, :CallStatus => "answered-machine"
-      call_attempt.reload.status.should == CallAttempt::Status::VOICEMAIL
-      call_attempt.voter.status.should == CallAttempt::Status::VOICEMAIL
-      call_attempt.call_end.should_not be_nil
+      post :connect, :id => call_attempt.id, :AnsweredBy => "machine"
+      call_attempt.reload.voter.status.should == CallAttempt::Status::VOICEMAIL
+      call_attempt.status.should == CallAttempt::Status::VOICEMAIL
+      response.body.should == call_attempt.play_recorded_message
     end
 
     #it "hangs up on the voters answering machine when the campaign does not use recordings" do
@@ -172,8 +179,16 @@ describe CallAttemptsController do
       post :connect, :id => call_attempt.id
     end
 
-    it "notifies a pusher event if call attempt is disconnected" do
-
+    it "notifies pusher when a call attempt is answered by a machine." do
+      session_key = 'foo'
+      voter = Factory(:voter, :last_call_attempt_time => Time.now)
+      session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller), :session_key => session_key, :voter_in_progress => voter)
+      call_attempt = Factory(:call_attempt, :caller_session => session, :voter => voter, :campaign => campaign)
+      next_voter = Factory(:voter, :campaign => campaign, :status => Voter::Status::NOTCALLED)
+      pusher_session = mock
+      Pusher.stub(:[]).with(session_key).and_return(pusher_session)
+      pusher_session.should_receive(:trigger).with('voter_push', next_voter.info.merge(:dialer => campaign.predictive_type))
+      post :connect, :id => call_attempt.id, :AnsweredBy => "machine"
     end
 
   end

@@ -52,7 +52,7 @@ describe "predictive_dialer" do
 
   it "should properly choose the next voters to dial" do
     account = Factory(:account, :paid=>true)
-    campaign = Factory(:campaign, :account => account, :caller_id => "12345", :caller_id_verified => true)
+    campaign = Factory(:campaign, :account => account, :caller_id => "0123456789", :caller_id_verified => true)
     campaign.caller_id_verified=true
     voter_list = Factory(:voter_list, :campaign => campaign, :active => true)
     voter = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list, :account => account)
@@ -61,7 +61,7 @@ describe "predictive_dialer" do
 
   it "excludes system blocked numbers" do
     account = Factory(:account, :paid => true)
-    campaign = Factory(:campaign, :account => account, :caller_id => '12345')
+    campaign = Factory(:campaign, :account => account)
     campaign.caller_id_verified=true
     voter_list = Factory(:voter_list, :campaign => campaign, :active => true)
     unblocked_voter = Factory(:voter, :campaign => campaign, :status => 'not called', :voter_list => voter_list, :account => account)
@@ -72,7 +72,7 @@ describe "predictive_dialer" do
 
   it "excludes campaign blocked numbers" do
     account = Factory(:account, :paid => true)
-    campaign = Factory(:campaign, :account => account, :caller_id => '12345')
+    campaign = Factory(:campaign, :account => account)
     campaign.caller_id_verified=true
     voter_list = Factory(:voter_list, :campaign => campaign, :active => true)
     unblocked_voter = Factory(:voter, :campaign => campaign, :status => 'not called', :voter_list => voter_list, :account => account)
@@ -204,21 +204,21 @@ describe Campaign do
 
   it "generates its own name if one isn't provided" do
     user = Factory(:user)
-    campaign = user.account.campaigns.create!
+    campaign = user.account.campaigns.create!(:caller_id => '0123456789')
     campaign.name.should == 'Untitled 1'
-    campaign = user.account.campaigns.create!
+    campaign = user.account.campaigns.create!(:caller_id => '0123456789')
     campaign.name.should == 'Untitled 2'
   end
 
   it "generates its campaign pin" do
     user = Factory(:user)
-    campaign = user.account.campaigns.create!
+    campaign = user.account.campaigns.create!(:caller_id => '0123456789')
     campaign.campaign_id.should_not be_nil
   end
 
   it "doesn't overwrite a name that has been explicitly set" do
     user = Factory(:user)
-    campaign = user.account.campaigns.create!(:name => 'Titled')
+    campaign = user.account.campaigns.create!(:name => 'Titled', :caller_id => '0123456789')
     campaign.name.should == 'Titled'
   end
 

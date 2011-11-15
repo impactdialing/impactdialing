@@ -43,7 +43,7 @@ class CallerSession < ActiveRecord::Base
     response = Twilio::Call.make(self.campaign.caller_id, voter.Phone, connect_call_attempt_url(attempt, :host => Settings.host, :port => Settings.port),
                                  {
                                      'StatusCallback' => end_call_attempt_url(attempt, :host => Settings.host, :port => Settings.port),
-                                     'IfMachine' => self.campaign.use_recordings? ? 'Continue' : 'Hangup',
+                                     'IfMachine' => 'Continue',
                                      'Timeout' => campaign.answer_detection_timeout || "20"
                                  }
     )
@@ -72,7 +72,7 @@ class CallerSession < ActiveRecord::Base
   def start
     response = Twilio::Verb.new do |v|
       v.dial(:hangupOnStar => true, :action => pause_caller_url(self.caller, :host => Settings.host, :port => Settings.port, :session_id => id)) do
-        v.conference(self.session_key, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port), :waitMethod => 'GET')
+        v.conference(self.session_key, :endConferenceOnExit => true, :beep => true, :waitUrl => "")
       end
     end.response
     update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
