@@ -300,6 +300,7 @@ describe Voter do
     it "captures call responses" do
       response_params = {"voter_id"=>voter.id, "question"=>{question.id=>response.id}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}    
       voter.capture(response_params)
+      voter.result_date.should_not be_nil
       voter.answers.size.should == 1
     end
 
