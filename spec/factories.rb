@@ -86,6 +86,3 @@ end
 
 Factory.define :custom_voter_field_value do |cvfv|
 end
-
-Factory.define :account do |a|
-end
