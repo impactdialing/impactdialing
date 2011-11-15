@@ -41,9 +41,9 @@ ImpactDialing::Application.configure do
 
   config.after_initialize do
     ActiveMerchant::Billing::Base.mode = :test
-    ActiveMerchant::Billing::LinkpointGateway.pem_file  = File.read(Rails.root.join('1909186423.pem'))
+    ActiveMerchant::Billing::LinkpointGateway.pem_file  = File.read(Rails.root.join('1909897530.pem'))
     ::BILLING_GW = gateway = ActiveMerchant::Billing::LinkpointGateway.new(
-      :login => "1909186423"
+      :login => "1909897530"
     )
   end
 

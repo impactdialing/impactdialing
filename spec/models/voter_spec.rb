@@ -30,6 +30,22 @@ describe Voter do
     Voter.active.should == [active_voter]
   end
 
+  it "returns voters that have responded" do
+    Factory(:voter)
+    3.times {Factory(:voter, :result_date => Time.now)}
+    Voter.answered.size.should == 3
+  end
+
+  it "returns voters that have responded within a date range" do
+    Factory(:voter)
+    v1 =Factory(:voter, :result_date => Time.now)
+    v2 = Factory(:voter, :result_date => 1.day.ago)
+    v3 = Factory(:voter, :result_date => 2.days.ago)
+    Voter.answered_within(2.days.ago, 0.days.ago).should == [v1,v2,v3]
+    Voter.answered_within(2.days.ago, 1.days.ago).should == [v2,v3]
+    Voter.answered_within(1.days.ago, 1.days.ago).should == [v2]
+  end
+
   it "conferences with a caller" do
     voter = Factory(:voter)
     caller = Factory(:caller_session)
@@ -300,6 +316,7 @@ describe Voter do
     it "captures call responses" do
       response_params = {"voter_id"=>voter.id, "question"=>{question.id=>response.id}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}    
       voter.capture(response_params)
+      voter.result_date.should_not be_nil
       voter.answers.size.should == 1
     end
 

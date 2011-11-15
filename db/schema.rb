@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20111113172002) do
+ActiveRecord::Schema.define(:version => 20111115070620) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "paid"
@@ -459,12 +459,15 @@ ActiveRecord::Schema.define(:version => 20111113172002) do
     t.datetime "result_date"
     t.integer  "last_call_attempt_id"
     t.datetime "last_call_attempt_time"
-    t.string   "Age"
-    t.string   "Gender"
     t.integer  "num_family",             :default => 1
     t.integer  "family_id_answered"
     t.text     "result_json"
     t.datetime "scheduled_date"
+    t.string   "address"
+    t.string   "city"
+    t.string   "state"
+    t.string   "zip_code"
+    t.string   "country"
   end
 
   add_index "voters", ["Phone", "voter_list_id"], :name => "index_voters_on_Phone_and_voter_list_id"

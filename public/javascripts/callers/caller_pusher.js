@@ -196,6 +196,7 @@ function subscribe(session_key) {
         clear_caller();
         clear_voter();
         hide_response_panel();
+		set_message('Status: Not connected.');
         $("#callin_data").show();
         hide_all_actions();
     });
