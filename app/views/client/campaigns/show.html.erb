@@ -4,6 +4,7 @@
 <div id="callerid"></div>
 
 <%= form_for @campaign,  url:  "#{client_campaigns_path}/#{@campaign.id}", :method=> :put, :html => {:name => 'callerForm', :id => 'callerForm'} do |f| %>
+    <%= render "shared/error_messages", :target => @campaign %>
     <fieldset>
     <%= hidden_field_tag :id, @campaign.id,{:class=>"field"} %>
 	  <legend>Campaign options</legend>
@@ -131,22 +132,25 @@
 
 <script>
   $(function () {
+    if ($('#callers input[name^= "campaign[caller_ids]"]:checked').length == <%= @callers.length %> ){
+      $('#selectAll').attr('checked', true)
+    }
+    
    $('#selectAll').click(function () {
     $('#callers').find(':checkbox').attr('checked', this.checked);
    });
-  });
-  $('document').ready(function(){
-    if($("input[name='campaign[caller_ids][]'][checked]").length == 0){
-      $('#callers').find(':checkbox').attr('checked', true);
-    }
-    else if($("input[name='campaign[caller_ids][]'][checked]").length == $("input[name='campaign[caller_ids][]']").length){
-      $('#selectAll').attr('checked',true)
-    }
+   
+   $('#callers input[name^= "campaign[caller_ids]"]').change(function(){
+     if ($('#callers input[name^= "campaign[caller_ids]"]:checked').length == <%= @callers.length %> ){
+       $('#selectAll').attr('checked', true)
+     }
+     if ($('#callers input[name^= "campaign[caller_ids]"]:checked').length < <%= @callers.length %> ){
+       $('#selectAll').attr('checked', false)
+     }     
+   });
+   
   });
   
-  
-      <%= remote_function(:update => "callerid", :url => { :action => "campaign_caller_id_verified", :id=>@campaign.id }) %>
-
     function doRecord() {
         if ($('campaign_use_recordings').checked) {
             $('recordingsdiv').style.display = 'block';

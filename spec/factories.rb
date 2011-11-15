@@ -27,6 +27,7 @@ end
 
 Factory.define :campaign do |c|
   c.name 'a campaign'
+  c.caller_id '1234567890'
 end
 
 Factory.define :script do |s|
@@ -57,7 +58,7 @@ end
 
 Factory.define :caller_session do |s|
   s.campaign { Factory(:campaign, :account => Factory(:account)) }
-  s.caller_id { Factory(:caller) }
+  s.caller_id { Factory(:caller).id }
 end
 
 Factory.define :call_attempt do |ca|
@@ -104,4 +105,8 @@ end
 
 Factory.define :caller_campaign do |cc|
 end
+
+Factory.define :note do |n|
+end
+
 

@@ -9,7 +9,6 @@ ImpactDialing::Application.routes.draw do
   match '/homecss/css/style.css', :to => 'home#homecss'
 
   namespace 'admin' do
-    get 'status', :to => 'admin#state'
     [:campaigns, :scripts, :callers].each do |entities|
       resources entities, :only => [:index] do
         put '/restore', :controller => entities, :action => 'restore', :as => 'restore'
@@ -149,6 +148,8 @@ ImpactDialing::Application.routes.draw do
   match '/twilio_callback', :to => 'twilio#callback', :as => :twilio_callback
   match '/twilio_report_error', :to => 'twilio#report_error', :as => :twilio_report_error
   match '/twilio_call_ended', :to => 'twilio#call_ended', :as => :twilio_call_ended
+
+  get 'state', :to => 'admin#state'
 
   resource :call_attempts, :only => :create
 

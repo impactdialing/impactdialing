@@ -12,7 +12,9 @@ class VoterList < ActiveRecord::Base
   scope :active, where(:active => true)
   scope :by_ids, lambda { |ids| {:conditions => {:id => ids}} }
 
-  VOTER_DATA_COLUMNS = ["Phone", "ID", "LastName", "FirstName", "MiddleName", "Suffix", "Email", "Age", "Gender"]
+  VOTER_DATA_COLUMNS = {"Phone"=> "Phone", "ID" => "ID", "LastName"=>"LastName", "FirstName"=>"FirstName",
+     "MiddleName"=>"MiddleName", "Suffix"=>"Suffix", "Email"=>"Email", "address"=>"Address","city"=>"City",
+     "state"=>"State/Province","zip_code"=>"Zip/Postal Code","country"=>"Country"}
 
   def self.disable_all
     self.all.each do |voter_list|
@@ -48,7 +50,7 @@ class VoterList < ActiveRecord::Base
 
       csv_headers.each_with_index do |csv_column_title, column_location|
         system_column = csv_to_system_map.system_column_for csv_column_title
-        lead.apply_attribute(system_column, voter_info[column_location]) if system_column
+        lead.apply_attribute(system_column, voter_info[column_location]) unless system_column.blank?
       end
 
       unless lead.save

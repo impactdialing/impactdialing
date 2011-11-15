@@ -15,9 +15,9 @@ class AdminController < ApplicationController
       c.save
     end
     if Time.now.hour > 0 && Time.now.hour < 6
-      @calling_status="<font color=red>Unavailable, off hours</font>"
+      @calling_status = "<font color=red>Unavailable, off hours</font>".html_safe
     else
-      @calling_status="Available"
+      @calling_status = "Available".html_safe
     end
     @all_calls = CallAttempt.find_all_by_call_end(nil).size
     @logged_in_campaigns = Campaign.all(:conditions=>"id in (select distinct campaign_id from caller_sessions where on_call=1)")
@@ -29,7 +29,6 @@ class AdminController < ApplicationController
     #doc  = Nokogiri::XML(a)
     #tcalls=doc.xpath("//Calls")
     #@queued=tcalls.first.attributes["total"].value if tcalls.length>0
-    render 'status.html.erb'
   end
 
   def index

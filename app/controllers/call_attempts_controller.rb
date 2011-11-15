@@ -15,9 +15,12 @@ class CallAttemptsController < ApplicationController
 
   def connect
     call_attempt = CallAttempt.find(params[:id])
-    response = case params[:CallStatus] #using the 2010 api
-                 when "answered-machine"
-                   call_attempt.play_recorded_message
+    response = case params[:AnsweredBy] #using the 2010 api
+                 when "machine"
+                   call_attempt.voter.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
+                   call_attempt.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
+                   call_attempt.caller_session.publish('voter_push', call_attempt.campaign.all_voters.to_be_dialed.first.info) if call_attempt.caller_session
+                   call_attempt.campaign.use_recordings? ? call_attempt.play_recorded_message : call_attempt.hangup
                  else
                    call_attempt.connect_to_caller(call_attempt.voter.caller_session)
                end
@@ -58,7 +61,7 @@ class CallAttemptsController < ApplicationController
   def voter_response
     call_attempt = CallAttempt.find(params[:id])
     voter = Voter.find(params[:voter_id])
-    voter.capture(params[:answers])
+    voter.capture(params)
 
     next_voter = call_attempt.campaign.all_voters.to_be_dialed.first
     call_attempt.caller_session.publish("voter_push", next_voter ? next_voter.info : {})

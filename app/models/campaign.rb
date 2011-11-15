@@ -1,8 +1,5 @@
-require "twilio_lib"
-
 class Campaign < ActiveRecord::Base
   include Deletable
-  validates_presence_of :name, :on => :create, :message => "can't be blank"
   has_many :caller_sessions
   has_many :voter_lists, :conditions => {:active => true}
   has_many :all_voters, :class_name => 'Voter'
@@ -27,56 +24,32 @@ class Campaign < ActiveRecord::Base
   
   attr_accessor :predictive_alpha, :predictive_beta
 
+  validates :name, :presence => true
+  validates :caller_id, :presence => {:on => :update}, :numericality => {:on => :update}, :length => {:on => :update, :minimum => 10, :maximum => 10}
+
   cattr_reader :per_page
   @@per_page = 25
 
-  before_save :before_save_campaign
-  before_validation(:set_untitled_name, :on => :create)
+  before_validation :set_untitled_name
+  before_save :set_untitled_name
+  before_validation :sanitize_caller_id
 
   def set_untitled_name
     self.name = "Untitled #{account.campaigns.count + 1}" if self.name.blank?
   end
 
-  # TODO: remove
-  def check_valid_caller_id_and_save
-    check_valid_caller_id
-    self.save
-  end
-
-  # TODO: remove
-  def check_valid_caller_id
-    #verify caller_Id
-    self.caller_id_verified=false
-    if !self.caller_id.blank?
-      #verify
-      t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-      a=t.call("GET", "OutgoingCallerIds", {'PhoneNumber'=>self.caller_id})
-      require 'rubygems'
-      require 'hpricot'
-      begin
-        @doc = Hpricot::XML(a)
-        code = (@doc/"Sid").inner_html
-        if code.blank?
-          self.caller_id_verified=false
-        else
-          self.caller_id_verified=true
-        end
-      rescue
-      end
-    end
-    true
+  def sanitize_caller_id
+    self.caller_id = Voter.sanitize_phone(self.caller_id)
   end
 
   def create_uniq_pin
     pin = nil
+
     loop do
       pin = rand.to_s[2..6]
       break unless Campaign.find_by_campaign_id(pin)
     end
     self.campaign_id = pin
-  end
-
-  def before_save_campaign
   end
 
   def disable_voter_list
