@@ -567,6 +567,7 @@ class Campaign < ActiveRecord::Base
   end
   
   def ringing_lines
+    #TODO - mark call_attempts as ringing
     []
   end
   
@@ -574,7 +575,7 @@ class Campaign < ActiveRecord::Base
     if dials_ramping?
       num_to_call= callers_available_for_call.length
     else
-      num_to_call= dials_needed * (dialer_available_callers - ringing_lines )
+      num_to_call= (dials_needed * dialer_available_callers) - ringing_lines 
     end
     voter_ids=choose_voters_to_dial(num_to_call) #TODO check logic
     DIALER_LOGGER.info("predictive_simulator voters to dial #{voter_ids}")
