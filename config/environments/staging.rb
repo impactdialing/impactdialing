@@ -29,9 +29,9 @@ config.log_level = :debug
 
 config.after_initialize do
 #  ActiveMerchant::Billing::Base.mode = :test
-  ActiveMerchant::Billing::LinkpointGateway.pem_file  = File.read(RAILS_ROOT + '/1359891.pem')
+  ActiveMerchant::Billing::LinkpointGateway.pem_file  = File.read(RAILS_ROOT + '/1383715.pem')
   ::BILLING_GW = gateway = ActiveMerchant::Billing::LinkpointGateway.new(
-     :login => "1359891"
+     :login => "1383715"
    )
 end
 
