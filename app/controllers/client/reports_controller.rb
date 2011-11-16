@@ -56,7 +56,7 @@ module Client
         csv << ["id", "LastName", "FirstName", "MiddleName", "Suffix", "Phone", "Called By", "Status", "Call Start", "Call End", "Number Calls", @campaign.account.custom_voter_fields.collect { |cf| cf.name }, @campaign.script.questions.collect { |q| q.text }].flatten
         @campaign.all_voters.answered_within(@from_date, @to_date).each do |v|
           custom_fields, answers, voter_details = [], [], [v.CustomID, v.LastName, v.FirstName, v.MiddleName, v.Suffix, v.Phone, v.last_call_attempt.caller.name, v.status, v.last_call_attempt.call_start, v.last_call_attempt.call_end, v.call_attempts.size]
-          @campaign.custom_voter_fields.each { |cf| custom_fields << v.custom_voter_field_values.for_field(cf).first.try(:value) }
+          @campaign.account.custom_voter_fields.each { |cf| custom_fields << v.custom_voter_field_values.for_field(cf).first.try(:value) }
           @campaign.questions.each { |q| answers << v.answers.for(q).first.try(:possible_response).try(:value) }
           csv << [voter_details, custom_fields, answers].flatten
         end
