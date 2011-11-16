@@ -1031,7 +1031,7 @@ background-image : linear-gradient(top, rgb(69,101,135), rgb(43,72,99)); }
 .cssgradients nav[role="navigation"] li:last-child a,
 .cssgradients nav[role="navigation"] li:last-child:hover a {
 color : rgb(255,255,255)!important; 
-text-shadow : none; }
+text-shadow : 0 -1px 1px black; }
 
 /* csstransitions */
 
