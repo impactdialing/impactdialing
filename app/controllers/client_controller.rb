@@ -420,7 +420,7 @@ class ClientController < ApplicationController
       logger.info response.inspect
 
       if response.success?
-        flash_message(:notice, "Account activated.")
+        flash_message(:notice, "Card verified.")
         @billing_account.save
         account.update_attribute(:paid, true)
         redirect_to :action=>"index"
