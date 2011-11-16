@@ -92,6 +92,14 @@ class CallerController < ApplicationController
     
     render :nothing => true
   end
+  
+  def start_calling
+    @caller = Caller.find(params[:id])
+    campaign = Campaign.find(params[:campaign_id])
+    @caller.callin(campaign)    
+    render nothing: true
+  end
+    
 
   def call_voter
     session = @caller.caller_sessions.find(params[:session_id])
