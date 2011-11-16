@@ -43,4 +43,5 @@ ImpactDialing::Application.configure do
   PUSHER_SECRET="blahblahblah"
   TWILIO_ACCOUNT="blahblahblah"
   TWILIO_AUTH="blahblahblah"
+  TWILIO_APP_SID="blahdahhahah"
 end

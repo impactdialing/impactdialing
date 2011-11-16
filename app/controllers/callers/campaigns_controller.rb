@@ -12,6 +12,10 @@ module Callers
       end      
       @campaign = @caller.campaigns.find(params[:id])
       @selected_voter_fields = @campaign.script.try(:voter_fields) ? eval(@campaign.script.try(:voter_fields)) : []
+      twilio_capability = Twilio::Util::Capability.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+      twilio_capability.allow_client_outgoing(TWILIO_APP_SID)
+      @token = twilio_capability.generate
+      @phone_number = Settings.phone
     end
 
     def callin
