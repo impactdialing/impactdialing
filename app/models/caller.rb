@@ -53,7 +53,6 @@ class Caller < ActiveRecord::Base
         :to => Settings.phone,
         :url => receive_call_url(:host => Settings.host, :port => Settings.port)
     )
-    puts response
   end
 
   def phone
