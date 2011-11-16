@@ -1,7 +1,9 @@
 <div class="box">
-  <%= render :partial => 'shared/boxtop', :locals=>{:title=>"Report #{@campaign.name} Download"} %>
+  <%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@campaign.name} Download"} %>
 
   <% form_tag(download_client_campaign_reports_path(@campaign,:format => 'csv'), :method => "GET") do %>
+  <div class="buttons"><button type="submit">Download</button></div>
+
       <table>
         <tr>
           <td>From:</td>
@@ -15,6 +17,5 @@
           </td>
         </tr>
       </table>
-      <div class="buttons"><button type="submit">Download</button></div>
   <% end %>
 </div>

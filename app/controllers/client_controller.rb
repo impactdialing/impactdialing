@@ -110,9 +110,9 @@ class ClientController < ApplicationController
         end
 
         if session[:user].blank?
-          message = "Your account has been created"
+          message = "Your account has been created."
         else
-          message="Your account has been updated"
+          message="Your account has been updated."
         end
         session[:user]=@user.id
         redirect_to :action=>"index"
