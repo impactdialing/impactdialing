@@ -132,6 +132,7 @@ describe VoterList do
                 :failedCount => 0
             }
       end
+
       it "should add even if the same phone is repeated in a different campaign" do
         another_voter_list = Factory(:voter_list,
                                      :campaign => Factory(:campaign, :account => user.account),

@@ -76,6 +76,11 @@ describe Voter do
       voter.dial
     end
 
+    it "new call attempt changes the status of the voter being dialed" do
+      voter.send(:new_call_attempt)
+      voter.reload.status.should == Voter::INPROGRESS
+    end
+
     it "records a call attempt for a dialed voter" do
       Twilio::Call.stub!(:make).and_return({"TwilioResponse" => {"Call" => {"Sid" => "abcd"}}})
       lambda {
@@ -185,6 +190,14 @@ describe Voter do
       Voter.to_be_dialed.should be_empty
     end
 
+    it "excludes voters with a successful call_attempt" do
+      voter = Factory(:voter, :call_back => false, :status => Voter::SUCCESS, :campaign => Factory(:campaign))
+      Twilio::Call.stub(:make).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
+      Factory(:call_attempt, :voter => voter, :status => CallAttempt::Status::SUCCESS)
+      voter.dial.should == false
+    end
+    
+
     it "is ordered by the last_call_attempt_time" do
       v1 = Factory(:voter, :status => CallAttempt::Status::BUSY, :last_call_attempt_time => 2.hours.ago)
       v2 = Factory(:voter, :status => CallAttempt::Status::BUSY, :last_call_attempt_time => 1.hour.ago)
@@ -224,6 +237,13 @@ describe Voter do
       attribute, value = 'Custom', 'abcde'
       voter.apply_attribute(attribute, value)
       voter.get_attribute(attribute).should == value
+    end
+
+    it "fails to update if it fails to validate" do
+      original_number = voter.Phone
+      attribute, value = 'Phone', '12345'
+      voter.apply_attribute(attribute, value).should be_false
+      voter.reload.get_attribute(attribute).should == original_number
     end
   end
 
