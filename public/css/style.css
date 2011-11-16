@@ -20,7 +20,7 @@ _____________________________________________________
 9.NAVIGATION — nav[role="navigation"]
 10.CONTENT
 11.MAIN — div[role="main"]
-12.COMPLIMENTARY — div[role="complementary"]
+12.COMPLIMENTARY — div[role="complementary"]
 13.CONTENTINFO — footer[role="contentinfo"]
 14.GLOBAL OBJECTS
 15.VENDOR-SPECIFIC 
@@ -197,7 +197,7 @@ content : '';
 content : none; }
 
 b, 
-strong	{ 
+strong  { 
 font-weight : 700; }
 
 i, 
@@ -298,10 +298,6 @@ text-indent : -9999px; }
 
 .del {
 background : transparent url(../img/icon-del.png) no-repeat 0 0; }
-
-input.del {
-border: none
-}
 
 .dl {
 background : transparent url(../img/icon-dl.png) no-repeat 0 0; }
@@ -1031,6 +1027,11 @@ background-image : -webkit-gradient(linear, left top, left bottom, from(rgb(69,1
 background-image : -moz-linear-gradient(top, rgb(69,101,135), rgb(43,72,99));
 background-image : -o-linear-gradient(top, rgb(69,101,135), rgb(43,72,99));
 background-image : linear-gradient(top, rgb(69,101,135), rgb(43,72,99)); }
+
+.cssgradients nav[role="navigation"] li:last-child a,
+.cssgradients nav[role="navigation"] li:last-child:hover a {
+color : rgb(255,255,255)!important; 
+text-shadow : none; }
 
 /* csstransitions */
 
