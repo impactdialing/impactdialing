@@ -33,7 +33,6 @@ module Client
     def index
       @breadcrumb="Campaigns"
       @campaigns = account.campaigns.active.manual.paginate :page => params[:page], :order => 'id desc'
-      render 'campaigns/index'
     end
 
     def destroy
