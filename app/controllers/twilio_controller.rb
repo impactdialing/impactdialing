@@ -33,6 +33,7 @@ class TwilioController < ApplicationController
     @call_attempt.update_attribute('status', CallAttempt::Status::MAP[params['CallStatus']])
     campaign = @call_attempt.campaign
     voter = @call_attempt.voter
+    voter.update_attributes(:status => Voter::MAP[params['CallStatus']])
     @log_message = "call_attempt: #{@call_attempt.id} campaign: #{campaign.name}, phone: #{voter.Phone}\n callback parameters: #{params.inspect}"
   end
 end
