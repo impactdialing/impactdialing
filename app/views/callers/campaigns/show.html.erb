@@ -113,19 +113,16 @@ Twilio.Device.setup("<%= @token %>", {'debug':true});
 Twilio.Device.connect(function (conn) {
  console.log("Successfully established call");
 });
+Twilio.Device.ready(function (device) {})
+Twilio.Device.error(function (error) {
+	alert(error.message);
+});
+
 
 function goclient() {
   console.log('goclient')
-	Twilio.Device.ready(function (device) {
 	  params = {"PhoneNumber": "<%= @phone_number %>" };
 		Twilio.Device.connect(params)
-	});
-
-
-	Twilio.Device.error(function (error) {
-		alert(error.message);
-	});
-
 
 }
 </script>
