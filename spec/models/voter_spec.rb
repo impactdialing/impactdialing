@@ -30,6 +30,22 @@ describe Voter do
     Voter.active.should == [active_voter]
   end
 
+  it "returns voters that have responded" do
+    Factory(:voter)
+    3.times {Factory(:voter, :result_date => Time.now)}
+    Voter.answered.size.should == 3
+  end
+
+  it "returns voters that have responded within a date range" do
+    Factory(:voter)
+    v1 =Factory(:voter, :result_date => Time.now)
+    v2 = Factory(:voter, :result_date => 1.day.ago)
+    v3 = Factory(:voter, :result_date => 2.days.ago)
+    Voter.answered_within(2.days.ago, 0.days.ago).should == [v1,v2,v3]
+    Voter.answered_within(2.days.ago, 1.days.ago).should == [v2,v3]
+    Voter.answered_within(1.days.ago, 1.days.ago).should == [v2]
+  end
+
   it "conferences with a caller" do
     voter = Factory(:voter)
     caller = Factory(:caller_session)
@@ -169,6 +185,14 @@ describe Voter do
       Voter.to_be_dialed.should be_empty
     end
 
+    it "excludes voters with a successful call_attempt" do
+      voter = Factory(:voter, :call_back => false, :status => Voter::SUCCESS, :campaign => Factory(:campaign))
+      Twilio::Call.stub(:make).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
+      Factory(:call_attempt, :voter => voter, :status => CallAttempt::Status::SUCCESS)
+      voter.dial.should == false
+    end
+
+
     it "is ordered by the last_call_attempt_time" do
       v1 = Factory(:voter, :status => CallAttempt::Status::BUSY, :last_call_attempt_time => 2.hours.ago)
       v2 = Factory(:voter, :status => CallAttempt::Status::BUSY, :last_call_attempt_time => 1.hour.ago)
@@ -208,6 +232,13 @@ describe Voter do
       attribute, value = 'Custom', 'abcde'
       voter.apply_attribute(attribute, value)
       voter.get_attribute(attribute).should == value
+    end
+
+    it "fails to update if it fails to validate" do
+      original_number = voter.Phone
+      attribute, value = 'Phone', '12345'
+      voter.apply_attribute(attribute, value).should be_false
+      voter.reload.get_attribute(attribute).should == original_number
     end
   end
 
@@ -298,14 +329,15 @@ describe Voter do
     let(:response) { Factory(:possible_response, :question => question) }
 
     it "captures call responses" do
-      response_params = {"voter_id"=>voter.id, "question"=>{question.id=>response.id}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}    
+      response_params = {"voter_id"=>voter.id, "question"=>{question.id=>response.id}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}
       voter.capture(response_params)
+      voter.result_date.should_not be_nil
       voter.answers.size.should == 1
     end
 
     it "puts voter back in the dial list if a retry response is detected" do
       another_response = Factory(:possible_response, :question => Factory(:question, :script => script), :retry => true)
-      response_params = {"voter_id"=>voter.id, "question"=>{question.id=>response.id, another_response.question.id=>another_response.id}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}    
+      response_params = {"voter_id"=>voter.id, "question"=>{question.id=>response.id, another_response.question.id=>another_response.id}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}
       voter.capture(response_params)
       voter.answers.size.should == 2
       voter.reload.status.should == Voter::Status::RETRY
@@ -316,39 +348,39 @@ describe Voter do
       question = Factory(:question, :script => script)
       retry_response = Factory(:possible_response, :question => question, :retry => true)
       valid_response = Factory(:possible_response, :question => question)
-      response_params = {"voter_id"=>voter.id, "question"=>{response.question.id=>response.id, retry_response.question.id=> retry_response.id}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}    
+      response_params = {"voter_id"=>voter.id, "question"=>{response.question.id=>response.id, retry_response.question.id=> retry_response.id}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}
       voter.capture(response_params)
       voter.answers.size.should == 2
       voter.reload.status.should == Voter::Status::RETRY
       Voter.to_be_dialed.should == [voter]
-      response_params_again = {"voter_id"=>voter.id, "question"=>{response.question.id=>response.id, valid_response.question.id=> valid_response.id}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}    
+      response_params_again = {"voter_id"=>voter.id, "question"=>{response.question.id=>response.id, valid_response.question.id=> valid_response.id}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}
       voter.capture(response_params_again)
       voter.reload.answers.size.should == 2
     end
   end
-  
+
   describe "notes" do
     let(:voter) { Factory(:voter) }
     let(:script) { Factory(:script, :robo => false) }
     let(:note1) {Factory(:note, note: "Question1" ,script: script)}
     let(:note2) {Factory(:note, note: "Question2", script: script)}
-    
+
     it "captures call notes" do
-      response_params = {"voter_id"=>voter.id, "notes"=>{note1.id=>"tell", note2.id=>"no"}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}    
+      response_params = {"voter_id"=>voter.id, "notes"=>{note1.id=>"tell", note2.id=>"no"}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}
       voter.capture(response_params)
       voter.note_responses.size.should == 2
     end
-    
+
     it "override old note" do
-      response_params = {"voter_id"=>voter.id, "notes"=>{note1.id=>"tell"}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}    
+      response_params = {"voter_id"=>voter.id, "notes"=>{note1.id=>"tell"}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}
       voter.capture(response_params)
       voter.note_responses.first eq('tell')
-      
-      response_params = {"voter_id"=>voter.id, "notes"=>{note1.id=>"say"}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}    
+
+      response_params = {"voter_id"=>voter.id, "notes"=>{note1.id=>"say"}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}
       voter.capture(response_params)
-      voter.note_responses.first eq('say')      
+      voter.note_responses.first eq('say')
     end
-    
-  
+
+
   end
 end

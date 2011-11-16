@@ -1,5 +1,6 @@
 class Voter < ActiveRecord::Base
   include Rails.application.routes.url_helpers
+  include CallAttempt::Status
 
   belongs_to :voter_list
   belongs_to :campaign
@@ -30,6 +31,8 @@ class Voter < ActiveRecord::Base
   scope :scheduled, :conditions => {:scheduled_date => (10.minutes.ago..10.minutes.from_now), :status => CallAttempt::Status::SCHEDULED}
   scope :limit, lambda { |n| {:limit => n} }
   scope :without, lambda { |numbers| where('Phone not in (?)', numbers) }
+  scope :answered, where('result_date is not null')
+  scope :answered_within, lambda { |from, to| where(" result_date between '#{from}' and '#{to + 1.day}' ") }
 
   before_validation :sanitize_phone
 
@@ -54,6 +57,7 @@ class Voter < ActiveRecord::Base
 
 
   def dial
+    return false if status == Voter::SUCCESS
     message = "#{self.Phone} for campaign id:#{self.campaign_id}"
     logger.info "[dialer] Dialling #{message} "
     call_attempt = new_call_attempt
@@ -102,7 +106,7 @@ class Voter < ActiveRecord::Base
 
   def apply_attribute(attribute, value)
     if self.has_attribute? attribute
-      self[attribute] = value
+      self.update_attributes(attribute => value)
     else
       custom_attribute = self.campaign.account.custom_voter_fields.find_by_name(attribute)
       custom_attribute ||= CustomVoterField.create(:name => attribute, :account => self.campaign.account) unless attribute.blank?
@@ -122,7 +126,8 @@ class Voter < ActiveRecord::Base
     account.blocked_numbers.for_campaign(campaign).map(&:number).include?(self.Phone)
   end
 
-  def capture(response)    
+  def capture(response)
+    update_attribute(:result_date, Time.now)
     capture_answers(response["question"])
     capture_notes(response['notes'])
   end
@@ -142,23 +147,23 @@ class Voter < ActiveRecord::Base
     self.update_attributes!(:last_call_attempt => call_attempt, :last_call_attempt_time => Time.now)
     call_attempt
   end
-  
+
   def capture_answers(questions)
     retry_response = nil
-    questions.try(:each_pair) do |question_id,answer_id|
+    questions.try(:each_pair) do |question_id, answer_id|
       voters_response = PossibleResponse.find(answer_id)
       current_response = answers.find_by_question_id(question_id)
-      current_response ?  current_response.update_attributes(:possible_response => voters_response) : answers.create(:possible_response => voters_response, :question => Question.find(question_id))
+      current_response ? current_response.update_attributes(:possible_response => voters_response) : answers.create(:possible_response => voters_response, :question => Question.find(question_id))
       retry_response ||= voters_response if voters_response.retry?
     end
-    update_attributes(:status => Voter::Status::RETRY) if retry_response    
-  end  
-  
+    update_attributes(:status => Voter::Status::RETRY) if retry_response
+  end
+
   def capture_notes(notes)
     notes.try(:each_pair) do |note_id, note_res|
       note = Note.find(note_id)
       note_response = note_responses.find_by_note_id(note_id)
       note_response ? note_response.update_attributes(response: note_res) : note_responses.create(response: note_res, note: Note.find(note_id))
-    end    
+    end
   end
 end

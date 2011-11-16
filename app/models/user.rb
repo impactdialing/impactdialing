@@ -78,11 +78,11 @@ class User < ActiveRecord::Base
       <p>Also, I love hearing from our current and prospective clients. Whether it's a question, feature request, or just a note about how you're using Impact Dialing, let me know at twitter.com/impactdialing or facebook.com/impactdialing. Or, if you prefer, reply to this email. </p>
       <p>--<br/>
       Michael Kaiser-Nyman<br/>
-      Founder & CEO, Impact Dialing<br/>
+      CEO & Founder, Impact Dialing<br/>
       (415) 347-5723</p>
 
-      <p>P.S. Don't wait until it's too late - start your 2-week free trial now at admin.impactdialing.com.</p>"
-      subject="Test drive Impact Dialing until " + (Date.today + 14).strftime("%B %e")
+      <p>P.S. Don't wait until it's too late - start your 30-day trial now at admin.impactdialing.com.</p>"
+      subject="Test drive Impact Dialing until " + (Date.today + 30).strftime("%B %e")
       u = Uakari.new(MAILCHIMP_API_KEY)
 
       response = u.send_email({
@@ -92,7 +92,7 @@ class User < ActiveRecord::Base
               :subject => subject,
               :html => emailText,
               :text => emailText,
-              :from_name => 'Impact Dialing',
+              :from_name => 'Michael Kaiser-Nyman, Impact Dialing',
               :from_email => 'email@impactdialing.com',
               :to_email => [self.email],
               :bcc_email=>['michael@impactdialing.com','brian@impactdialing.com']
