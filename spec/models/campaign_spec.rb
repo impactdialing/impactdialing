@@ -277,14 +277,18 @@ describe Campaign do
       @manual_campaign = Factory(:campaign, :robo => false)
     end
 
-    it "which are robo" do Campaign.robo.should == [@robo_campaign] end
-    it "which are manual" do Campaign.manual.should == [@manual_campaign] end
+    it "which are robo" do
+      Campaign.robo.should == [@robo_campaign]
+    end
+    it "which are manual" do
+      Campaign.manual.should == [@manual_campaign]
+    end
   end
 
   describe "dialing" do
     it "dials its voter list" do
       campaign = Factory(:campaign)
-      lists = 2.times.map{Factory(:voter_list, :campaign => campaign).tap{|list| list.should_receive(:dial)}}
+      lists = 2.times.map { Factory(:voter_list, :campaign => campaign).tap { |list| list.should_receive(:dial) } }
       campaign.stub!(:voter_lists).and_return(lists)
       campaign.dial
     end
@@ -300,7 +304,7 @@ describe Campaign do
     end
 
     it "sets the calls in progress flag when it starts dialing" do
-      Campaign.send(:define_method,:dial_voters) do
+      Campaign.send(:define_method, :dial_voters) do
         self.calls_in_progress?.should == true
       end
       campaign = Factory(:campaign)
@@ -407,7 +411,7 @@ describe Campaign do
 
   it "clears calls" do
     campaign = Factory(:campaign)
-    voters = 3.times.map{ Factory(:voter, :campaign => campaign, :result => 'foo', :status => 'bar') }
+    voters = 3.times.map { Factory(:voter, :campaign => campaign, :result => 'foo', :status => 'bar') }
     voter_on_another_campaign = Factory(:voter, :result => 'hello', :status => 'world')
     campaign.clear_calls
     voters.each(&:reload).each do |voter|

@@ -47,16 +47,13 @@ class Caller < ActiveRecord::Base
     end
   end
 
-  def callin(campaign, phone)
-    session = CallerSession.create(:caller => self, :campaign => campaign)
+  def callin(campaign)    
     response = TwilioClient.instance.account.calls.create(
         :from =>APP_NUMBER,
-        :to => phone,
-        :url => caller_ready_callers_campaign_url(:id=>campaign.id, :caller_sid => session.sid, :host => Settings.host, :port => Settings.port)
+        :to => Settings.phone,
+        :url => receive_call_url(:host => Settings.host, :port => Settings.port)
     )
-    #raise response.inspect
-    session.update_attribute(:sid, response.sid)
-    session
+    puts response
   end
 
   def phone
