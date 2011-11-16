@@ -26,8 +26,11 @@
   <legend>Invite a new user</legend>
 
   <% form_tag client_user_invite_path do %>
-    <%= text_field_tag :email %>
-    <%= submit_tag 'Send invitation' %>
+    <p><label for="">Email</label><br>
+     <%= text_field_tag :email %></p>
+    <div class="buttons">
+        <button type="submit">Send invitation</button>
+      </div>
   <% end %>
 
 </fieldset>
