@@ -92,6 +92,11 @@
 <%= render 'results' %>
 <%= render 'actions' %>
 
+<div id="start_calling" style="display:none">
+  <a class="action primary" href="#" onclick="javascript:dial_in_caller();" style="margin-left: 7px">Start Calling</a>
+</div>
+</br>
+
 <div id="callin_data">
   <p>
     Call-in number: <%= Settings.phone %><br>
