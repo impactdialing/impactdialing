@@ -38,6 +38,7 @@ ImpactDialing::Application.routes.draw do
       post :preview_voter
       post :call_voter
       post :stop_calling
+      post :start_calling
     end
 
   end
