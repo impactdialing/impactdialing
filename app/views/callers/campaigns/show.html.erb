@@ -110,9 +110,14 @@
 <script>
 Twilio.Device.setup("<%= @token %>", {'debug':true});
 
+Twilio.Device.connect(function (conn) {
+ console.log("Successfully established call");
+});
+
 function goclient() {
 	Twilio.Device.ready(function (device) {
-		setTimeout("connection = Twilio.Device.connect(<%= @params %>)",1000);
+	  params = {"PhoneNumber": "<%= @phone_number %>" };
+		Twilio.Device.connect(params)
 	});
 
 
