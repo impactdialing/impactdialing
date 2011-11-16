@@ -138,6 +138,21 @@ function disconnect_voter() {
     })
 }
 
+function dial_in_caller(){  
+  	
+  $.ajax({
+      url : "/caller/" + $("#caller").val() + "/start_calling",
+	data : {campaign_id : $("#campaign").val() },
+      type : "POST",
+      success : function(response) {
+          $('#start_calling').hide();
+      }
+  })
+
+	
+	
+}
+
 function show_response_panel() {
     $("#response_panel").show();
     $("#result_instruction").hide();
