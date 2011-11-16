@@ -1,5 +1,5 @@
 <div class="box">
-  <%= render :partial => 'shared/boxtop', :locals => {:title => "Add voicemail"} %>
+  <%= render :partial => 'shared/boxtop', :locals => {:title => "Add voicemail message"} %>
 
 
 <fieldset>
@@ -9,6 +9,7 @@
       <%= hidden_field_tag :campaign_id, params[:campaign_id] %>
       <p><label for="upload_file">Name</label><br>
         <%= f.text_field :name %></p>
+		<p>You can upload an MP3, WAV, or AIFF file.</p>
         <%= f.file_field :file %>
       </div>
 		<div class="buttons">
