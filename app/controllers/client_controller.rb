@@ -290,12 +290,14 @@ class ClientController < ApplicationController
         return
       end
       @recording.save!
+      campaign = Campaign.find(params[:campaign_id])
+      campaign.update_attribute(:recording, @recording)
 
       flash_message(:notice, "Recording saved.")
       redirect_to client_campaign_path(params[:campaign_id])
       return
     else
-      @recording = @user.recordings.new
+      @recording = @account.recordings.new
     end
   end
 
