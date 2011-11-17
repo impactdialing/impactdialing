@@ -120,6 +120,10 @@ Twilio.Device.error(function (error) {
 	alert(error.message);
 });
 
+Twilio.Device.connect(function (conn) {
+  $("#start_calling").hide();
+});
+
 
 function goclient() {
 	  params = {"PhoneNumber": "<%= @phone_number %>", 'campaign_id': "<%= @campaign.id %>", 'caller_id': "<%= @caller.id %>" };
