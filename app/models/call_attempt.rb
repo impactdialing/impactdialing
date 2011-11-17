@@ -58,10 +58,12 @@ class CallAttempt < ActiveRecord::Base
   def play_recorded_message
     update_attributes(:status => CallAttempt::Status::VOICEMAIL, :call_end => Time.now)
     voter.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
-    Twilio::TwiML::Response.new do |r|
+    response = Twilio::TwiML::Response.new do |r|
       r.Play self.campaign.recording.file.url
       r.Hangup
     end.text
+    p response
+    response
   end
 
   def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)

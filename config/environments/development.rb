@@ -9,7 +9,7 @@ ImpactDialing::Application.configure do
   #TWILIO_ACCOUNT="ACc0208d4be3e204d5812af2813683243a"
   #TWILIO_AUTH="4e179c64daa7c9f5108bd6623c98aea6"
   #APP_NUMBER="5104048117"
-  APP_HOST = '464r.localtunnel.com'
+  APP_HOST = '3g8x.localtunnel.com'
   TEST_CALLER_NUMBER="4155130942"
   TEST_VOTER_NUMBER="4155130242"
 

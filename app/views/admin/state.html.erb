@@ -51,7 +51,7 @@
           <br/>Callers:
           <ul>
             <% callers.each do |ca| %>
-              <li>id <%= ca.id %> <%= ca.caller.name %> <%= ca.caller.email %> started <%= ca.starttime %> from <%= ca.caller_number %> <% if !ca.available_for_call %>Not <% end %>Available <a href="/admin/state?end=<%= ca.id %>">end call</a>
+              <li>id <%= ca.id %> <%= ca.caller.name %> <%= ca.caller.email %> started <%= ca.starttime %> from <%= ca.caller_number %> <% if !ca.available_for_call %>Not <% end %>Available <%= link_to 'end call', admin_status_path(:end => ca.id) %>
                 <% if ca.available_for_call %>
                   <% last_attempt = CallAttempt.find_by_caller_session_id(ca.id, :order=>"id desc", :limit=>1)  %>
                   <% if !last_attempt.blank?
