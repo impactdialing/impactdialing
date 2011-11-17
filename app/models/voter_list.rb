@@ -27,6 +27,11 @@ class VoterList < ActiveRecord::Base
       voter_list.update_attribute(:enabled, true)
     end
   end
+  
+  def self.active_voter_list_ids(campaign_id)
+    active_lists = VoterList.find_all_by_campaign_id_and_active_and_enabled(campaign_id, 1, 1)
+    active_lists.collect { |x| x.id }    
+  end
 
   def import_leads(csv_to_system_map, csv_filename, separator)
 
