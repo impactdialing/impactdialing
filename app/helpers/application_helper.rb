@@ -103,4 +103,8 @@ module ApplicationHelper
   def button_tag(value, opts = {})
     content_tag :button, value, { :type => :submit }.merge(opts)
   end
+
+  def in_production?
+    Rails.env == 'production' || Rails.env == 'staging'
+  end
 end

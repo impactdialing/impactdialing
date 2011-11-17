@@ -184,4 +184,5 @@ class Voter < ActiveRecord::Base
       note_response ? note_response.update_attributes(response: note_res) : note_responses.create(response: note_res, note: Note.find(note_id))
     end
   end
+  
 end

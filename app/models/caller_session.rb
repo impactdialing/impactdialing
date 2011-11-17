@@ -1,3 +1,5 @@
+require Rails.root.join("lib/twilio_lib")
+
 class CallerSession < ActiveRecord::Base
   include Rails.application.routes.url_helpers
   belongs_to :caller
@@ -18,7 +20,7 @@ class CallerSession < ActiveRecord::Base
   end
 
   def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
-    t = TwilioLib.new(account, auth)
+    t = ::TwilioLib.new(account, auth)
     t.end_call("#{self.sid}")
     self.update_attributes(:on_call => false, :available_for_call => false, :endtime => Time.now)
     self.publish("caller_disconnected", {})

@@ -1,3 +1,5 @@
+require Rails.root.join("lib/twilio_lib")
+
 class ClientController < ApplicationController
   before_filter :check_login, :except => [:login,:user_add, :forgot]
   before_filter :check_paid
@@ -110,9 +112,9 @@ class ClientController < ApplicationController
         end
 
         if session[:user].blank?
-          message = "Your account has been created"
+          message = "Your account has been created."
         else
-          message="Your account has been updated"
+          message="Your account has been updated."
         end
         session[:user]=@user.id
         redirect_to :action=>"index"
@@ -278,7 +280,7 @@ class ClientController < ApplicationController
 
   def recording_add
     if request.post?
-      @recording = @user.recordings.new(params[:recording])
+      @recording = @account.recordings.new(params[:recording])
       if params[:recording][:file].blank?
         flash_now(:error, "No file uploaded")
         return
@@ -419,7 +421,7 @@ class ClientController < ApplicationController
       logger.info response.inspect
 
       if response.success?
-        flash_message(:notice, "Account activated.")
+        flash_message(:notice, "Card verified.")
         @billing_account.save
         account.update_attribute(:paid, true)
         redirect_to :action=>"index"

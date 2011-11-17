@@ -1,9 +1,7 @@
 require "spec_helper"
-require "#{RAILS_ROOT}/lib/twilio_lib"
-
+require Rails.root.join("lib/twilio_lib")
 
 describe "predictive_dialer" do
-
   it "does not dial when dials are already in progress" do
     campaign = Factory(:campaign, :calls_in_progress => true, :predictive_type => 'predictive')
     campaign.should_not_receive(:dial_predictive_voters)
@@ -101,17 +99,17 @@ describe "simulatation_dialer" do
     caller_session = Factory(:caller_session, :on_call => true, :available_for_call => true, :campaign => campaign)
     (1..10).each do |i|
       call_attempt = Factory(:call_attempt, :caller_session => caller_session, :voter => Factory(:voter), :campaign => campaign, :call_start=>Time.now, :status=>"Call in progress")
-    end    
+    end
     campaign.should be_dials_ramping
 
     campaign = Factory(:campaign)
     caller_session = Factory(:caller_session, :on_call => true, :available_for_call => true, :campaign => campaign)
     (1..60).each do |i|
       call_attempt = Factory(:call_attempt, :caller_session => caller_session, :voter => Factory(:voter), :campaign => campaign, :call_start=>Time.now, :status=>"Call in progress")
-    end    
+    end
     campaign.should_not be_dials_ramping
   end
-  
+
   it "calculates callers_on_call_longer_than" do
     campaign = Factory(:campaign, :predictive_alpha=>0.8, :predictive_beta=>0.2)
     caller_session = Factory(:caller_session, :on_call => true, :available_for_call => false, :campaign => campaign)
@@ -132,13 +130,13 @@ describe "simulatation_dialer" do
     caller_session = Factory(:caller_session, :on_call => true, :available_for_call => true, :campaign => campaign)
     (1..25).each do |i|
       short_call_attempt = Factory(:call_attempt, :caller_session => caller_session, :voter => Factory(:voter), :campaign => campaign, :call_start=>Time.now-30, :status=>"Call completed with success.",  :call_end=>Time.now)
-    end 
+    end
     (1..25).each do |i|
       lon_call_attempt = Factory(:call_attempt, :caller_session => caller_session, :voter => Factory(:voter), :campaign => campaign, :call_start=>Time.now-600, :status=>"Call completed with success.",  :call_end=>Time.now)
-    end 
+    end
     (1..2).each do |i|
       longer_than_expected_call_attempt = Factory(:call_attempt, :caller_session => caller_session, :voter => Factory(:voter), :campaign => campaign, :call_start=>Time.now-1400, :status=>"Call completed with success.",  :call_end=>Time.now)
-    end 
+    end
     (1..10).each do |i|
       free_caller_session = Factory(:caller_session, :on_call => true, :available_for_call => true, :campaign => campaign)
     end
@@ -149,17 +147,17 @@ describe "simulatation_dialer" do
     # stats = campaign.call_stats(10)
     # puts stats[:avg_duration]
     # puts stats[:biggest_long]
-    # puts campaign.dialer_available_callers 
+    # puts campaign.dialer_available_callers
     campaign.dialer_available_callers.should==11
   end
-  
+
   it "determines dials needed" do
     #  α * dials_answered / dials_made
     campaign = Factory(:campaign, :predictive_alpha=>0.8, :predictive_beta=>0.2)
     caller_session = Factory(:caller_session, :on_call => true, :available_for_call => true, :campaign => campaign)
     (1..25).each do |i|
       answered_call_attempt = Factory(:call_attempt, :caller_session => caller_session, :voter => Factory(:voter), :campaign => campaign, :call_start=>Time.now-30, :status=>"Call completed with success.",  :call_end=>Time.now)
-    end 
+    end
     # since all dials are answered it should be equal to alpha
     campaign.dials_needed.should==campaign.predictive_alpha
 
@@ -167,10 +165,10 @@ describe "simulatation_dialer" do
     caller_session_2 = Factory(:caller_session, :on_call => true, :available_for_call => true, :campaign => campaign_2)
     (1..25).each do |i|
       answered_call_attempt = Factory(:call_attempt, :caller_session => caller_session_2, :voter => Factory(:voter), :campaign => campaign_2, :call_start=>Time.now-30, :status=>"Call completed with success.",  :call_end=>Time.now)
-    end 
+    end
     (1..25).each do |i|
       busy_call_attempt = Factory(:call_attempt, :caller_session => caller_session_2, :voter => Factory(:voter), :campaign => campaign_2, :call_start=>Time.now, :status=>"Busy",  :call_end=>Time.now)
-    end 
+    end
 
     # since half dials are answered it should be equal to alpha/2
     campaign_2.dials_needed.should==campaign.predictive_alpha/2

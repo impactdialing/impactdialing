@@ -1,3 +1,5 @@
+require Rails.root.join("lib/twilio_lib")
+
 class Campaign < ActiveRecord::Base
   include Deletable
   has_many :caller_sessions
@@ -21,7 +23,7 @@ class Campaign < ActiveRecord::Base
   scope :using_web_ui, :conditions => {:use_web_ui => true}
 
   before_create :create_uniq_pin
-  
+
   attr_accessor :predictive_alpha, :predictive_beta
 
   validates :name, :presence => true
@@ -509,7 +511,7 @@ class Campaign < ActiveRecord::Base
   def clear_calls
     all_voters.update_all(:result => nil, :status => 'not called')
   end
-  
+
   # simulator dialer
   def dials_ramping?
     self.call_stats(10)[:attempts].length > 50 ? false : true
@@ -521,18 +523,16 @@ class Campaign < ActiveRecord::Base
     dials_answered = stats[:answer] # number of dials answered in the past 10 minutes
     dials_needed = self.predictive_alpha * dials_answered / dials_made
   end
-  
+
   def dialer_available_callers
     stats = call_stats(10)
 
     mean_conversation = stats[:avg_duration] #the mean length of a conversation in the last 10 minutes
     longest_conversation = stats[:biggest_long] #the length of the longest conversation in the last 10 minutes
     expected_conversation = ( 1 - predictive_beta ) * mean_conversation + predictive_beta * longest_conversation
-    puts "expected_conversation: #{expected_conversation}"
     available_callers = callers_available_for_call.length +  callers_on_call_longer_than(expected_conversation ).length - callers_on_call_longer_than(longest_conversation).length
-      
   end
-  
+
   def callers_on_call_longer_than(minute_threshold)
     results=[]
     callers_on_call.each do |caller|
@@ -540,17 +540,17 @@ class Campaign < ActiveRecord::Base
     end
     results
   end
-  
+
   def ringing_lines
     #TODO - mark call_attempts as ringing
     []
   end
-  
+
   def dial_predictive_simulator
     if dials_ramping?
       num_to_call= callers_available_for_call.length
     else
-      num_to_call= (dials_needed * dialer_available_callers) - ringing_lines 
+      num_to_call= (dials_needed * dialer_available_callers) - ringing_lines
     end
     voter_ids=choose_voters_to_dial(num_to_call) #TODO check logic
     DIALER_LOGGER.info("predictive_simulator voters to dial #{voter_ids}")

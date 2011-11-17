@@ -154,7 +154,7 @@ ImpactDialing::Application.routes.draw do
   match '/twilio_report_error', :to => 'twilio#report_error', :as => :twilio_report_error
   match '/twilio_call_ended', :to => 'twilio#call_ended', :as => :twilio_call_ended
 
-  get 'state', :to => 'admin#state'
+  get 'admin/status', :to => 'admin#state'
 
   resource :call_attempts, :only => :create
 
