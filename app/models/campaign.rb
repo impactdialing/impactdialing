@@ -555,9 +555,7 @@ class Campaign < ActiveRecord::Base
     mean_conversation = stats[:avg_duration] #the mean length of a conversation in the last 10 minutes
     longest_conversation = stats[:biggest_long] #the length of the longest conversation in the last 10 minutes
     expected_conversation = ( 1 - predictive_beta ) * mean_conversation + predictive_beta * longest_conversation
-    puts "expected_conversation: #{expected_conversation}"
     available_callers = callers_available_for_call.length +  callers_on_call_longer_than(expected_conversation ).length - callers_on_call_longer_than(longest_conversation).length
-
   end
 
   def callers_on_call_longer_than(minute_threshold)
