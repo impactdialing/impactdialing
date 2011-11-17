@@ -175,6 +175,7 @@ function subscribe(session_key) {
     channel.bind('caller_connected', function(data) {
 	    console.log('caller_connected' + data)
         hide_all_actions();
+		$("#start_calling").hide();
         $("#callin_data").hide();
         hide_response_panel();
         $("#stop_calling").show();
@@ -189,6 +190,7 @@ function subscribe(session_key) {
 
     channel.bind('voter_push', function(data) {
         set_voter(data);
+		$("#start_calling").hide();
     });
 
     channel.bind('voter_disconnected', function(data) {
