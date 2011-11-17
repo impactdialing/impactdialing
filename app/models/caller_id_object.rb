@@ -1,3 +1,5 @@
+require Rails.root.join("lib/twilio_lib")
+
 class CallerIdObject
   def initialize(phone, friendly_name)
     @number        = PhoneNumber.new(phone)
@@ -8,7 +10,7 @@ class CallerIdObject
   def twilio
     @twilio   ||= TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
   end
-  
+
   def valid?
     @valid
   end
@@ -23,7 +25,7 @@ class CallerIdObject
 
   def validate
     return false unless @number.valid?
-    
+
     api_result = twilio.call("GET", "OutgoingCallerIds", {'PhoneNumber'=>@number})
     @valid     =
         begin
