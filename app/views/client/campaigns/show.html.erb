@@ -157,8 +157,8 @@
 
     <% if !@campaign.account.recordings.blank? %>
     function updatePreview() {
-        recording_id = $('campaign_recording_id').value;
-    <%@user.recordings.each do |recording| %>
+        recording_id = $("#campaign_recording_id").val();
+    <%@account.recordings.each do |recording| %>
         if (recording_id ==<%= recording.id %>) {
             path = '<%= recording.file.url %>';
             name = '<%= escape_javascript recording.name %>';
