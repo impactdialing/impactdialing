@@ -126,7 +126,8 @@ describe CallAttempt do
     end
 
     it "plays a recorded message to the voters answering machine and hangs up" do
-      campaign = Factory(:campaign, :use_recordings => true, :recording => Factory(:recording, :file_file_name => 'abc.mp3'))
+      account = Factory(:account)
+      campaign = Factory(:campaign, :use_recordings => true, :account => account, :recording => Factory(:recording, :file_file_name => 'abc.mp3', :account => account))
       voter = Factory(:voter, :campaign => campaign)
       call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign)
       call_attempt.play_recorded_message.should == Twilio::TwiML::Response.new do |r|
