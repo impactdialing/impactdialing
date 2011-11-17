@@ -123,6 +123,7 @@ function disconnect_caller() {
         data : {session_id : $("#caller_session").val() },
         type : "POST",
         success : function(response) {
+			$("#start_calling").show();
             // pushes 'calling_voter'' event to browsers
         }
     })
@@ -172,6 +173,7 @@ function subscribe(session_key) {
 
 
     channel.bind('caller_connected', function(data) {
+	    console.log('caller_connected' + data)
         hide_all_actions();
         $("#callin_data").hide();
         hide_response_panel();

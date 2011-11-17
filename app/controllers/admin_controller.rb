@@ -1,3 +1,5 @@
+require Rails.root.join("lib/twilio_lib")
+
 class AdminController < ApplicationController
   layout "basic"
   USER_NAME, PASSWORD = "impact", "Mb<3Ad4F@2tCallz"
