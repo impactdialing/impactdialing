@@ -280,7 +280,7 @@ class ClientController < ApplicationController
 
   def recording_add
     if request.post?
-      @recording = @user.recordings.new(params[:recording])
+      @recording = @account.recordings.new(params[:recording])
       if params[:recording][:file].blank?
         flash_now(:error, "No file uploaded")
         return
