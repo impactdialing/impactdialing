@@ -159,6 +159,21 @@ describe Voter do
       voter.campaign = campaign
       voter.dial_predictive
     end
+    
+    it "checks, whether voter is called or not" do
+      voter1 = Factory(:voter, :status => "not called")
+      voter2 = Factory(:voter, :status => "success")
+      voter1.not_yet_called?("not called").should be_true
+      voter2.not_yet_called?("not called").should be_false
+    end
+    
+    it "checks, call attemp made before 3 hours or not" do
+      voter1 = Factory(:voter, :last_call_attempt_time => 4.hours.ago, :call_back => true)
+      voter2 = Factory(:voter, :last_call_attempt_time => 2.hours.ago, :call_back => true)
+      voter1.call_attempted__before?(3.hours).should be_true
+      voter2.call_attempted__before?(3.hours).should be_false
+      voter2.call_attempted__before?(10.minutes).should be_true
+    end
   end
 
   describe "to be dialed" do

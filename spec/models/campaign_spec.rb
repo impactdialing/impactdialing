@@ -79,6 +79,8 @@ describe "predictive_dialer" do
     Factory(:blocked_number, :number => unblocked_voter.Phone, :account => account, :campaign=>Factory(:campaign))
     campaign.choose_voters_to_dial(10).should == [unblocked_voter]
   end
+  
+
 
   #canned scenarios where we back into / prove our new calls / max calls
 

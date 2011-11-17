@@ -135,6 +135,24 @@ class Voter < ActiveRecord::Base
   def info
     {:fields => self.attributes.reject { |k, v| (k == "created_at") ||(k == "updated_at") }, :custom_fields => Hash[*self.custom_voter_field_values.collect { |cvfv| [cvfv.custom_voter_field.name, cvfv.value] }.flatten]}
   end
+  
+  def not_yet_called?(call_status)
+    status==nil || status==call_status
+  end
+  
+  def call_attempted__before?(time)
+    call_back? && last_call_attempt_time!=nil && last_call_attempt_time < (Time.now - time)
+  end
+  
+  def self.to_be_called(campaign_id, active_list_ids,status)
+    voters = Voter.find_all_by_campaign_id_and_active(campaign_id, 1, :conditions=>"voter_list_id in (#{active_list_ids.join(",")})", :limit=>300, :order=>"rand()")
+    voters.select {|voter| voter.not_yet_called?(status) || (voter.call_attempted__before?(3.hours))}
+  end
+  
+  def self.just_called_voters_call_back(campaign_id)
+    uncalled = Voter.find_all_by_campaign_id_and_active_and_call_back(campaign_id, 1, 1, :conditions=>"voter_list_id in (select id from voter_lists where campaign_id=#{campaign_id} and active=1 and enabled=1)")
+    uncalled.select { |voter| voter.call_attempted__before?(10.minutes) }    
+  end
 
   module Status
     NOTCALLED = "not called"
