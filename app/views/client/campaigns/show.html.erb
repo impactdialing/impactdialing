@@ -152,11 +152,7 @@
   });
   
     function doRecord() {
-        if ($('campaign_use_recordings').checked) {
-            $('recordingsdiv').style.display = 'block';
-        } else {
-            $('recordingsdiv').style.display = 'none';
-        }
+        $("#recordingsdiv").toggle($("#campaign_use_recordings").checked);
     }
 
     <% if !@campaign.account.recordings.blank? %>
