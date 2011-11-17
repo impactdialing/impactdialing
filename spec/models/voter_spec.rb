@@ -174,6 +174,38 @@ describe Voter do
       voter2.call_attempted__before?(3.hours).should be_false
       voter2.call_attempted__before?(10.minutes).should be_true
     end
+    
+    it "returns all the voters to be call" do
+      campaign = Factory(:campaign)
+      voter_list1 = Factory(:voter_list)
+      voter_list2 = Factory(:voter_list)
+      active_list_ids = [voter_list1.id, voter_list2.id]
+      status = "not called"
+      voter1 = Factory(:voter, :campaign => campaign, :voter_list => voter_list1)
+      voter2 = Factory(:voter, :campaign => campaign, :voter_list => voter_list1)
+      voter3 = Factory(:voter, :campaign => campaign, :voter_list => voter_list2)
+      voter4 = Factory(:voter, :voter_list => voter_list1)
+      voter5 = Factory(:voter, :campaign => campaign)
+      Voter.to_be_called(campaign.id, active_list_ids, status).length.should == 3
+    end
+    
+    it "return voters, to whoom called just now, but not replied " do
+      campaign = Factory(:campaign)
+      voter_list1 = Factory(:voter_list)
+      voter_list2 = Factory(:voter_list)
+      active_list_ids = [voter_list1.id, voter_list2.id]
+      status = "not called"
+      voter1 = Factory(:voter, :campaign => campaign, :call_back => true, :voter_list => voter_list1, :last_call_attempt_time => 2.hours.ago)
+      voter2 = Factory(:voter, :campaign => campaign, :call_back => true, :voter_list => voter_list2, :last_call_attempt_time => 1.hours.ago)
+      voter3 = Factory(:voter, :campaign => campaign, :call_back => true, :voter_list => voter_list2, :last_call_attempt_time => 30.minutes.ago)
+      voter4 = Factory(:voter, :campaign => campaign, :call_back => false, :voter_list => voter_list2, :last_call_attempt_time => 50.minutes.ago)
+      voter5 = Factory(:voter, :campaign => campaign, :call_back => true, :voter_list => voter_list2, :last_call_attempt_time => 8.minutes.ago)
+      voter6 = Factory(:voter, :campaign => campaign, :call_back => true, :voter_list => voter_list2, :last_call_attempt_time => 1.minutes.ago)
+      voter7 = Factory(:voter, :voter_list => voter_list1)
+      voter8 = Factory(:voter, :campaign => campaign)
+      Voter.just_called_voters_call_back(campaign.id, active_list_ids).should == [voter1, voter2, voter3]
+    end
+    
   end
 
   describe "to be dialed" do

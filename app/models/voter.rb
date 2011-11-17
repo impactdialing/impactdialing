@@ -144,13 +144,13 @@ class Voter < ActiveRecord::Base
     call_back? && last_call_attempt_time!=nil && last_call_attempt_time < (Time.now - time)
   end
   
-  def self.to_be_called(campaign_id, active_list_ids,status)
+  def self.to_be_called(campaign_id, active_list_ids, status)
     voters = Voter.find_all_by_campaign_id_and_active(campaign_id, 1, :conditions=>"voter_list_id in (#{active_list_ids.join(",")})", :limit=>300, :order=>"rand()")
     voters.select {|voter| voter.not_yet_called?(status) || (voter.call_attempted__before?(3.hours))}
   end
   
-  def self.just_called_voters_call_back(campaign_id)
-    uncalled = Voter.find_all_by_campaign_id_and_active_and_call_back(campaign_id, 1, 1, :conditions=>"voter_list_id in (select id from voter_lists where campaign_id=#{campaign_id} and active=1 and enabled=1)")
+  def self.just_called_voters_call_back(campaign_id, active_list_ids)
+    uncalled = Voter.find_all_by_campaign_id_and_active_and_call_back(campaign_id, 1, 1, :conditions=>"voter_list_id in (#{active_list_ids.join(",")})")
     uncalled.select { |voter| voter.call_attempted__before?(10.minutes) }    
   end
 

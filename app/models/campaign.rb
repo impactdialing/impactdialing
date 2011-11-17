@@ -276,7 +276,7 @@ class Campaign < ActiveRecord::Base
     return voters_returned if active_list_ids.empty?
     
     voters_returned.concat(Voter.to_be_called(id,active_list_ids,status))    
-    voters_returned.concat(Voter.just_called_voters_call_back(self.id)) if voters_returned.empty? && include_call_retries
+    voters_returned.concat(Voter.just_called_voters_call_back(self.id, active_list_ids)) if voters_returned.empty? && include_call_retries
     
     voters_returned.uniq.sort_by { rand }
   end
