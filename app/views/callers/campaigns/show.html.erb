@@ -124,7 +124,7 @@ Twilio.Device.error(function (error) {
 
 function goclient() {
   console.log('goclient')
-	  params = {"PhoneNumber": "<%= @phone_number %>" };
+	  params = {"PhoneNumber": "<%= @phone_number %>", 'Digits':'*' };
 		Twilio.Device.connect(params)
 
 }
