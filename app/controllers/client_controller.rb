@@ -110,9 +110,9 @@ class ClientController < ApplicationController
         end
 
         if session[:user].blank?
-          message = "Your account has been created"
+          message = "Your account has been created."
         else
-          message="Your account has been updated"
+          message="Your account has been updated."
         end
         session[:user]=@user.id
         redirect_to :action=>"index"
@@ -419,7 +419,7 @@ class ClientController < ApplicationController
       logger.info response.inspect
 
       if response.success?
-        flash_message(:notice, "Account activated.")
+        flash_message(:notice, "Card verified.")
         @billing_account.save
         account.update_attribute(:paid, true)
         redirect_to :action=>"index"

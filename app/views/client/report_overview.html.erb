@@ -1,8 +1,6 @@
 <div class="box" style="width:600px;">
 	<%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@campaign.name} Dials"} %>
 	<div class="box-content">
-
-
 		<div class="table">
 		    <table width="100%" border="0" cellspacing="0" cellpadding="0">
 		      <tr>
@@ -26,10 +24,6 @@
 			</tr>
 				<% end %>
 		    </table>
-
-		    <div class="pagging">
-		   		<div class="left"><%= @total %> dials total</div>
-		    </div>
 
 		</div>
 

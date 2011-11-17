@@ -92,14 +92,16 @@
 <%= render 'results' %>
 <%= render 'actions' %>
 
-<div id="start_calling" style="display:none">
-  <a class="action primary" href="#" onclick="javascript:goclient();" style="margin-left: 7px">Start Calling</a>
+<div id="start_calling">
+  <a class="action primary" href="#" onclick="javascript:goclient();">Start calling (not yet functional)</a>
 </div>
-</br>
+
+<br>
 
 <div id="callin_data">
   <p>
-    Call-in number: <%= Settings.phone %><br>
+	<b>Or, dial in: (this is functional)</b><br>
+    Dial-in number: <%= Settings.phone %><br>
     PIN: <%= @caller.pin %><br>
     Campaign ID: <%= @campaign.campaign_id %>
   </p>

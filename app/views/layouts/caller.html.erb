@@ -85,7 +85,7 @@
 <header role="banner" class="clearfix">
   <h1 class="<%= domain %>"><a href="
     <% if client_controller?(@controllerName) %>/client
-    <% else %>/caller
+    <% else %>/caller/
     <% end %>"><%= title %></a></h1>
 
   <% if logged_in_as_client? %>
@@ -96,7 +96,7 @@
       </ul>
   <% elsif logged_in_as_caller? %>
       <ul class='clearfix'>
-        <li class='divider'><a href="/caller" class='divider'>Home</a></li>
+        <li class='divider'><a href="/caller/" class='divider'>Home</a></li>
         <li><a href="/caller/logout">Log out</a></li>
       </ul>
   <% end %>
