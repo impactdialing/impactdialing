@@ -123,6 +123,7 @@ function disconnect_caller() {
         data : {session_id : $("#caller_session").val() },
         type : "POST",
         success : function(response) {
+			$("#start_calling").show();
             // pushes 'calling_voter'' event to browsers
         }
     })

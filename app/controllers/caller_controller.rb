@@ -97,11 +97,10 @@ class CallerController < ApplicationController
   end
 
   def start_calling
-    puts params[:caller_id] + params[:campaign_id]
     @caller = Caller.find(params[:caller_id])
     @campaign = Campaign.find(params[:campaign_id])
     @session = @caller.caller_sessions.create(on_call: false, available_for_call: false,
-              session_key: generate_session_key, sid:  params[:CallSid],campaign: @campaign )    
+              session_key: generate_session_key, sid:  params[:CallSid] , campaign: @campaign )    
      render :xml => @session.start
   end
 
