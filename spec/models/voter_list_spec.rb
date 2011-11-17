@@ -12,6 +12,15 @@ describe VoterList do
     Factory(:voter_list, :name => 'same', :account => user.account)
     Factory.build(:voter_list, :name => 'Same', :account => user.account).should have(1).error_on(:name)
   end
+  
+  it "returns all the active voter list ids of a campaign" do
+    campaign = Factory(:campaign)
+    v1 = Factory(:voter_list, :id => 123, :campaign => campaign, :active => true, :enabled => true)
+    v2 = Factory(:voter_list, :id => 1234, :campaign => campaign, :active => true, :enabled => true)
+    v4 = Factory(:voter_list, :id => 123456, :campaign => campaign, :active => false, :enabled => true)
+    v5 = Factory(:voter_list, :id => 1234567, :active => true, :enabled => true)
+    VoterList.active_voter_list_ids(campaign.id).should == [123,1234]
+  end
 
   describe "enable and disable voter lists" do
     let(:campaign) { Factory(:campaign) }
