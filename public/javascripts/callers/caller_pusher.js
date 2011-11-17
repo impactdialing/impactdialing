@@ -189,6 +189,7 @@ function subscribe(session_key) {
 
     channel.bind('voter_push', function(data) {
         set_voter(data);
+		$("#start_calling").hide();
     });
 
     channel.bind('voter_disconnected', function(data) {
