@@ -1,3 +1,5 @@
+require Rails.root.join("lib/twilio_lib")
+
 class CallAttempt < ActiveRecord::Base
   include Rails.application.routes.url_helpers
   belongs_to :voter
