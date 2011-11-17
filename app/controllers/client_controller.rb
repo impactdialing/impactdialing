@@ -429,7 +429,7 @@ class ClientController < ApplicationController
         redirect_to :action=>"index"
         return
       else
-        flash_now(:error, "There was a problem validating your credit card.  Please email <a href='mailto:info@impactdialing.com'>info@impactdialing.com</a> for further support.")
+        flash_now(:error, "There was a problem validating your credit card.  Please email info@impactdialing.com for further support.")
       end
 
     end
