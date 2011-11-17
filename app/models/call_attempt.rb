@@ -62,7 +62,7 @@ class CallAttempt < ActiveRecord::Base
       r.Play self.campaign.recording.file.url
       r.Hangup
     end.text
-    pp response
+    p response
     response
   end
 
