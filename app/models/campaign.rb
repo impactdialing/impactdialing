@@ -267,41 +267,16 @@ class Campaign < ActiveRecord::Base
   end
 
   def voters(status=nil, include_call_retries=true, limit=300)
-    #return testVoters if self.name=="Load Test"
-    return [] if  !self.account.paid
-    return [] if self.caller_id.blank? || !self.caller_id_verified
-    voters_returned=[]
-    voter_ids=[]
-
-    active_lists = VoterList.find_all_by_campaign_id_and_active_and_enabled(self.id, 1, 1)
-    return [] if active_lists.length==0
-    active_list_ids = active_lists.collect { |x| x.id }
-    #voters = Voter.find_all_by_voter_list_id(active_list_ids)
-
-    voters = Voter.find_all_by_campaign_id_and_active(self.id, 1, :conditions=>"voter_list_id in (#{active_list_ids.join(",")})", :limit=>limit, :order=>"rand()")
-    voters.each do |voter|
-      if !voter_ids.index(voter.id) && (voter.status==nil || voter.status==status)
-        voters_returned << voter
-        voter_ids << voter.id
-#      elsif !voter_ids.index(voter.id) && include_call_retries && voter.call_back? && voter.last_call_attempt_time!=nil && voter.last_call_attempt_time < (Time.now - 3.hours)
-      elsif !voter_ids.index(voter.id) && include_call_retries && voter.call_back? && voter.last_call_attempt_time!=nil && voter.last_call_attempt_time < (Time.now - 180.minutes)
-        voters_returned << voter
-        voter_ids << voter.id
-      end
-    end
-
-    if voters_returned.length==0 && include_call_retries
-      # no one left, so call everyone we missed over 10 minutes
-      uncalled = Voter.find_all_by_campaign_id_and_active_and_call_back(self.id, 1, 1, :conditions=>"voter_list_id in (select id from voter_lists where campaign_id=#{self.id} and active=1 and enabled=1)")
-      uncalled.each do |voter|
-        if voter.last_call_attempt_time!=nil && voter.last_call_attempt_time < Time.now - 10.minutes # && (voter.status==nil || voter.status==status )
-          voters_returned << voter
-        end
-      end
-      return voters_returned.sort_by { rand }
-    end
-
-    voters_returned.sort_by { rand }
+    voters_returned = []
+    return voters_returned if !self.account.paid || self.caller_id.blank?    
+    
+    active_list_ids = VoterList.active_voter_list_ids(self.id)    
+    return voters_returned if active_list_ids.empty?
+    
+    voters_returned.concat(Voter.to_be_called(id,active_list_ids,status))    
+    voters_returned.concat(Voter.just_called_voters_call_back(self.id)) if voters_returned.empty? && include_call_retries
+    
+    voters_returned.uniq.sort_by { rand }
   end
 
   def phone_format(str)
