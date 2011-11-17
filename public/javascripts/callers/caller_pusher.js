@@ -172,6 +172,7 @@ function subscribe(session_key) {
 
 
     channel.bind('caller_connected', function(data) {
+	    console.log('caller_connected' + data)
         hide_all_actions();
         $("#callin_data").hide();
         hide_response_panel();
