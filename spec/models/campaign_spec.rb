@@ -80,7 +80,9 @@ describe "predictive_dialer" do
     campaign.choose_voters_to_dial(10).should == [unblocked_voter]
   end
   
-
+  it "should return voters to be call" do
+    
+  end
 
   #canned scenarios where we back into / prove our new calls / max calls
 
