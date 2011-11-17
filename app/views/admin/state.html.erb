@@ -73,7 +73,7 @@
 </table>
 <font color="red"><b><%= @errors %></b></font>
 
-<% if @errors.strip!="" && params[:sms]=="1" && Rails.env =="production"
+<% if @errors.strip!="" && params[:sms]=="1" && in_production?
 t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
 a=t.call("POST", "SMS/Messages", {'From' => APP_NUMBER, 'To' => "8583829141", 'Body'=>"Alert: #{@errors[0..150]}"})
 t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)

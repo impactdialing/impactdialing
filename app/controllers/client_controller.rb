@@ -1,3 +1,5 @@
+require Rails.root.join("lib/twilio_lib")
+
 class ClientController < ApplicationController
   before_filter :check_login, :except => [:login,:user_add, :forgot]
   before_filter :check_paid

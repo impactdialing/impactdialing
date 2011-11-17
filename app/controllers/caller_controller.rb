@@ -1,3 +1,5 @@
+require Rails.root.join("lib/twilio_lib")
+
 class CallerController < ApplicationController
   layout "caller"
   before_filter :check_login, :except=>[:login, :feedback, :assign_campaign, :end_session, :pause]
@@ -87,19 +89,19 @@ class CallerController < ApplicationController
     voter ||= session.campaign.all_voters.to_be_dialed.first
      if session.campaign.predictive_type == Campaign::Type::PREVIEW
        Rails.logger.debug("Inside preview--------------------------------------------")
-        session.publish('caller_connected', voter ? voter.info : {}) 
+        session.publish('caller_connected', voter ? voter.info : {})
     end
-    
+
     render :nothing => true
   end
-  
+
   def start_calling
     @caller = Caller.find(params[:id])
     campaign = Campaign.find(params[:campaign_id])
-    @caller.callin(campaign)    
+    @caller.callin(campaign)
     render nothing: true
   end
-    
+
 
   def call_voter
     session = @caller.caller_sessions.find(params[:session_id])
