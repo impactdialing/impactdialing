@@ -15,7 +15,9 @@ class ApplicationController < ActionController::Base
     @cont = controller_name
     @act = action_name
     flash.keep
-    if controller_name=="caller"
+    if request.subdomain == 'staging'
+      redirect_to URI.join("https://staging.#{request.domain}", request.fullpath).to_s
+    elsif controller_name=="caller"
       redirect_to "https://caller.#{request.domain}/#{@cont}/#{@act}/#{params[:id]}"
     elsif controller_name == 'broadcast'
       redirect_to "https://broadcast.#{request.domain}#{request.path}"
