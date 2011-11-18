@@ -20,6 +20,7 @@ guard 'spork', :wait => 50 do
 end
 
 guard :rspec, :version => 2, :bundler => false, :all_after_pass => false, :all_on_start => false, :keep_failed => false do
+  watch('.rspec')                                                            { "spec" }
   watch('spec/spec_helper.rb')                                               { "spec" }
   watch('app/controllers/application_controller.rb')                         { "spec/controllers" }
   watch('config/routes.rb')                                                  { "spec/controllers" }
