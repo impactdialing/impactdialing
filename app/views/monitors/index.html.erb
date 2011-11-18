@@ -1,0 +1,89 @@
+<script type="text/javascript" src="http://static.twilio.com/libs/twiliojs/1.0/twilio.js"></script>
+<script type="text/javascript">
+
+  Twilio.Device.setup("<%= @token %>", {'debug':true});
+
+  Twilio.Device.connect(function (conn) {
+    console.log("Successfully established call");
+  });
+  Twilio.Device.ready(function (device) {})
+  Twilio.Device.error(function (error) {
+    alert(error.message);
+  });
+  
+  function monitor(session_id, action) {
+    params = {'session_id': session_id, 'type': action};
+    Twilio.Device.connect(params)
+  }
+
+
+    var num = '';
+    function eavesdrop(sess, type) {
+        if (num == '') {
+            num = prompt("Enter your phone number:", "Type your phone number here");
+        }
+    <%= remote_function(:url => { :action => 'eavesdrop_call'} , :with =>	"'session_id='+ sess + '&num=' + num + '&type=' + type") %>
+    }
+</script>
+
+<h1>Monitor</h1>
+<div class="box">
+  <%= render :partial => 'shared/boxtop', :locals=>{:title=>"Active Campaigns"} %>
+  <% if @campaigns.empty? %>
+      <div class="form">
+        <label>No campaigns active.</label>
+      </div>
+  <% else %>
+      <div class="table">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+          <tr>
+            <th>Name</th>
+            <th>Callers Logged In</th>
+            <th>#'s remaining</th>
+          </tr>
+          <% @campaigns.each do |c| %>
+              <tr class="<%= cycle("odd", "even") %>">
+                <td><h3><%= link_to c.name, campaign_path(c) %></h3></td>
+                <td><%= c.caller_sessions.on_call.length %></td>
+                <td><%= c.voters_count("not called", false).length %></td>
+              </tr>
+          <% end %>
+        </table>
+      </div>
+  <% end %>
+</div>
+
+<% if @campaigns.length > 0 %>
+    <div class="box">
+      <%= render :partial => 'shared/boxtop', :locals=>{:title=>"Active Callers"} %>
+      <div class="table">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+          <tr>
+            <th>Caller</th>
+            <th>Campaign</th>
+            <th>Phone Number</th>
+            <th></th>
+            <th></th>
+          </tr>
+          <% @campaigns.each do |c| %>
+              <% c.caller_sessions.on_call.each do |session| %>
+                  <tr class="<%= cycle("odd", "even") %> ">
+                    <td><%= session.caller.name %></td>
+                    <td><%= session.campaign.name %></td>
+                    <% if session.voter_in_progress!=nil %>
+                        <% voter = Voter.find(session.voter_in_progress) %>
+                        <td><%= voter.Phone %></td>
+                        <td>
+                          <input type="button" value="New Eavesdrop" class="button" onclick="monitor(<%= session.id %>,'eavesdrop');">
+                        </td>
+                        <td>
+                          <input type="button" value="Break In" class="button" onclick="monitor(<%= session.id %>,'breakin');">
+                        </td>
+                    <% end %>
+                  </tr>
+              <% end %>
+          <% end %>
+        </table>
+      </div>
+    </div>
+<% end %>
