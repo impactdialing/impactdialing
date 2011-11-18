@@ -10,7 +10,7 @@ class ApplicationController < ActionController::Base
   helper_method :phone_format, :phone_number_valid
 
   def redirect_to_ssl
-    return true if Rails.env == 'development' || testing? || Rails.env == 'staging' || action_name=="monitor" || request.domain.index("amazonaws")
+    return true if Rails.env == 'development' || testing? || action_name=="monitor" || request.domain.index("amazonaws")
     return true if ssl?
     @cont = controller_name
     @act = action_name
