@@ -15,15 +15,25 @@
     params = {'session_id': session_id, 'type': action};
     Twilio.Device.connect(params)
   }
+  function stop_monitor(session){
+    $.ajax({
+        url : "/client/monitors/stop",
+        data : {session_id : session},
+        type : "GET",
+        success : function(response) {}
+    })  
+  }
+  
+  $(function() {
+    $('.eavesdrop').onclick(function(){
+      
+    })
+    $('.breakin').onclick(function(){
 
+    })
+    
+  }
 
-    var num = '';
-    function eavesdrop(sess, type) {
-        if (num == '') {
-            num = prompt("Enter your phone number:", "Type your phone number here");
-        }
-    <%= remote_function(:url => { :action => 'eavesdrop_call'} , :with =>	"'session_id='+ sess + '&num=' + num + '&type=' + type") %>
-    }
 </script>
 
 <h1>Monitor</h1>
@@ -74,10 +84,14 @@
                         <% voter = Voter.find(session.voter_in_progress) %>
                         <td><%= voter.Phone %></td>
                         <td>
-                          <input type="button" value="New Eavesdrop" class="button" onclick="monitor(<%= session.id %>,'eavesdrop');">
+                          <input type="button" value="New Eavesdrop" class="eavesdrop" onclick="javascript:monitor(<%= session.id %>,'eavesdrop');">
                         </td>
                         <td>
-                          <input type="button" value="Break In" class="button" onclick="monitor(<%= session.id %>,'breakin');">
+                          <input type="button" value="Break In" class="breakin" onclick="javascript:monitor(<%= session.id %>,'breakin');">
+                        </td>
+                        
+                        <td>
+                          <input type="button" value="Stop Monitor" class="stop_monitor" onclick="javascript:stop_monitor(<%= session.id %>);">
                         </td>
                     <% end %>
                   </tr>

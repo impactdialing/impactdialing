@@ -88,6 +88,11 @@ class CallerSession < ActiveRecord::Base
         v.conference(self.session_key, :endConferenceOnExit => false, :beep => false, :waitUrl => "#{APP_URL}/callin/hold",:waitMethod =>"GET",:muted => mute_type)
       end
     end.response
+    if self.moderator.present?
+      self.moderator.update_attributes(:call_sid => @call_sid)
+    else
+      self.moderator.create!(:call_sid => @call_sid)
+    end
     response
   end
 
