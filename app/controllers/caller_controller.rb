@@ -38,7 +38,7 @@ class CallerController < ApplicationController
     if !params[:email].blank?
       @caller = Caller.find_by_email_and_password(params[:email], params[:password])
       if @caller.blank?
-        flash_now(:error, "Invalid Login")
+        flash_now(:error, "Wrong email or password.")
       else
         session[:caller]=@caller.id
         redirect_to :action=>"index"
