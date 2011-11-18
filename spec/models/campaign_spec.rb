@@ -80,8 +80,18 @@ describe "predictive_dialer" do
     campaign.choose_voters_to_dial(10).should == [unblocked_voter]
   end
   
+  it "should return zero voters, if active_voter_list_ids is empty" do
+    campaign = Factory(:campaign, :account => Factory(:account, :paid => true))
+    VoterList.should_receive(:active_voter_list_ids).with(campaign.id).and_return([])
+    campaign.voters("not called").should == []
+  end
+  
   it "should return voters to be call" do
-    
+    campaign = Factory(:campaign, :account => Factory(:account, :paid => true))
+    VoterList.should_receive(:active_voter_list_ids).with(campaign.id).and_return([12, 123])
+    Voter.should_receive(:to_be_called).with(campaign.id, [12, 123], "not called").and_return(["v1", "v2", "v3", "v2"])
+    Voter.should_not_receive(:just_called_voters_call_back).with(campaign.id, [12, 123])
+    campaign.voters("not called").length.should == 3
   end
 
   #canned scenarios where we back into / prove our new calls / max calls
