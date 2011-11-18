@@ -219,7 +219,7 @@ function subscribe(session_key) {
 		set_message('Status: Not connected.');
         $("#callin_data").show();
         hide_all_actions();
-		$("#stop_calling").show();
+		$("#start_calling").show();
     });
 
     channel.bind('waiting_for_result', function(data) {
