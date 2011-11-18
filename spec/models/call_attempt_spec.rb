@@ -94,6 +94,7 @@ describe CallAttempt do
           d.Conference session.session_key, :wait_url => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
         end
       end.text
+      call_attempt.reload.call_start.should_not be_nil
       session.voter_in_progress.should == voter
     end
 
