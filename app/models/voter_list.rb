@@ -27,7 +27,7 @@ class VoterList < ActiveRecord::Base
       voter_list.update_attribute(:enabled, true)
     end
   end
-  
+
   def self.active_voter_list_ids(campaign_id)
     active_lists = VoterList.find_all_by_campaign_id_and_active_and_enabled(campaign_id, 1, 1)
     active_lists.collect { |x| x.id }
@@ -60,7 +60,6 @@ class VoterList < ActiveRecord::Base
 
       unless lead.save
         result[:failedCount] +=1
-        puts lead.errors.full_messages
         Rails.logger.info lead.errors.full_messages
       else
         result[:successCount] +=1
@@ -80,11 +79,11 @@ class VoterList < ActiveRecord::Base
   def voters_remaining
     voters.to_be_dialed.size
   end
-  
+
   def self.enable_voter_list(id)
     voter_list = VoterList.find(id)
     voter_list.enabled = true
-    voter_list.save    
+    voter_list.save
   end
 
   private
