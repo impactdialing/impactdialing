@@ -170,6 +170,7 @@ function set_message(text) {
 
 function subscribe(session_key) {
     channel = pusher.subscribe(session_key);
+    console.log(channel)
 
 
     channel.bind('caller_connected', function(data) {
@@ -218,6 +219,7 @@ function subscribe(session_key) {
 		set_message('Status: Not connected.');
         $("#callin_data").show();
         hide_all_actions();
+		$("#stop_calling").show();
     });
 
     channel.bind('waiting_for_result', function(data) {
