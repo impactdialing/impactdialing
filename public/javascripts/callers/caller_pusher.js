@@ -40,8 +40,7 @@ function get_session() {
                 set_session(json.caller_session.id);
                 subscribe(json.caller_session.session_key);
                 $("#callin_data").hide();
-                $("#called_in").show();
-                get_voter();
+                $("#called_in").show();                
             }
         }
     })
@@ -188,6 +187,7 @@ function subscribe(session_key) {
             set_message("There are no more numbers to call in this campaign.");
         }
     });
+	get_voter();
 
     channel.bind('voter_push', function(data) {
         set_voter(data);
@@ -228,7 +228,7 @@ function subscribe(session_key) {
         hide_all_actions();
         $("#submit_and_keep_call").show();
         $("#submit_and_stop_call").show();
-    });
+    });	
 
     function set_call_attempt(id) {
         $("#current_call_attempt").val(id);
