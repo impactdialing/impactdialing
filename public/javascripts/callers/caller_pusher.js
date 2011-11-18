@@ -40,7 +40,8 @@ function get_session() {
                 set_session(json.caller_session.id);
                 subscribe(json.caller_session.session_key);
                 $("#callin_data").hide();
-                $("#called_in").show();                
+                $("#called_in").show();          
+				setTimeout(get_voter(), 3000);
             }
         }
     })
@@ -187,7 +188,6 @@ function subscribe(session_key) {
             set_message("There are no more numbers to call in this campaign.");
         }
     });
-	get_voter();
 
     channel.bind('voter_push', function(data) {
         set_voter(data);
