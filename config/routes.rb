@@ -116,7 +116,10 @@ ImpactDialing::Application.routes.draw do
     resources :blocked_numbers, :only => [:index, :create, :destroy]
     resources :users, :only => [:create, :destroy]
     resources :monitors do
-      collection { post :start}
+      collection do
+        post :start
+        get :stop
+      end
     end
   end
 

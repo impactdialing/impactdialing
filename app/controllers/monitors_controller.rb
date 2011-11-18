@@ -9,20 +9,20 @@ class MonitorsController < ClientController
   end
   
   def start
-    
     @call_sid = params[:CallSid]
-    
-    #Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    #Twilio.conference.mute_par
     session = CallerSession.find(params[:session_id])    
-    if params[:type]=="breakin"
-      mute_type = false
-    else
-      mute_type = true
-    end
+    mute_type = params[:type]=="breakin" ? false : true
     render :xml => session.join_conference(mute_type)
   end
   
   def switch_mode
+    session = CallerSession.find(params[:session_id])
+    render :xml => session.moderator.switch_monitor_mode(session)
   end
+  
+  def stop
+    session = CallerSession.find(params[:session_id])
+    render :xml => session.moderator.stop_monitor(session)
+  end
+  
 end
