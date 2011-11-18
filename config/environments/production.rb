@@ -24,6 +24,8 @@ ImpactDialing::Application.configure do
   # See everything in the log (default is :info)
   config.log_level = :debug
 
+  config.active_support.deprecation = :log
+
   config.after_initialize do
     #  ActiveMerchant::Billing::Base.mode = :test
     ActiveMerchant::Billing::LinkpointGateway.pem_file  = File.read(Rails.root.join('1383715.pem'))
