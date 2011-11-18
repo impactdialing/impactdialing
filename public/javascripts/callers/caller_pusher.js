@@ -40,8 +40,13 @@ function get_session() {
                 set_session(json.caller_session.id);
                 subscribe(json.caller_session.session_key);
                 $("#callin_data").hide();
-                $("#called_in").show();          
-				setTimeout(get_voter(), 3000);
+                $("#called_in").show();    
+				setInterval(function() {
+			        if (channel == null) {
+			        } else {
+			            get_voter();
+			        }
+			    }, 5000);     
             }
         }
     })
