@@ -40,8 +40,9 @@ function get_session() {
                 set_session(json.caller_session.id);
                 subscribe(json.caller_session.session_key);
                 $("#callin_data").hide();
-                $("#called_in").show();
-                get_voter();
+				$('#start_calling').hide();
+                $("#called_in").show();          
+				setTimeout(get_voter(), 3000);
             }
         }
     })
@@ -170,6 +171,7 @@ function set_message(text) {
 
 function subscribe(session_key) {
     channel = pusher.subscribe(session_key);
+    console.log(channel)
 
 
     channel.bind('caller_connected', function(data) {
@@ -218,6 +220,7 @@ function subscribe(session_key) {
 		set_message('Status: Not connected.');
         $("#callin_data").show();
         hide_all_actions();
+		$("#start_calling").show();
     });
 
     channel.bind('waiting_for_result', function(data) {
@@ -226,7 +229,7 @@ function subscribe(session_key) {
         hide_all_actions();
         $("#submit_and_keep_call").show();
         $("#submit_and_stop_call").show();
-    });
+    });	
 
     function set_call_attempt(id) {
         $("#current_call_attempt").val(id);
