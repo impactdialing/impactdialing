@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20111115070620) do
+ActiveRecord::Schema.define(:version => 20111118125613) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "paid"
@@ -247,6 +247,13 @@ ActiveRecord::Schema.define(:version => 20111115070620) do
     t.string   "name"
     t.integer  "group_id"
     t.integer  "user_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "moderators", :force => true do |t|
+    t.integer  "caller_session_id"
+    t.string   "call_sid"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
