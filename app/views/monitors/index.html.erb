@@ -1,4 +1,5 @@
 <script type="text/javascript" src="http://static.twilio.com/libs/twiliojs/1.0/twilio.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js"></script>
 <script type="text/javascript">
 
   Twilio.Device.setup("<%= @token %>", {'debug':true});
@@ -15,26 +16,41 @@
     params = {'session_id': session_id, 'type': action};
     Twilio.Device.connect(params)
   }
-  function stop_monitor(session){
+  function stop_monitoring(){
+    Twilio.Device.disconnectAll(); 
+  }
+  
+  function switch_mode(session, mode){
     $.ajax({
-        url : "/client/monitors/stop",
-        data : {session_id : session},
+        url : "/client/monitors/switch_mode",
+        data : {session_id : session,type : mode},
         type : "GET",
         success : function(response) {}
     })  
   }
   
   $(function() {
-    $('.eavesdrop').onclick(function(){
+    $('.monitor').click(function(){
       
-    })
-    $('.breakin').onclick(function(){
+      if($(this).parent().parent().attr("on_call")){
+        switch_mode($(this).attr("session_id"), $(this).attr("type"));
+      }
+      else{
+        $.each($(this).parent().parent().siblings(), function(){
+          if($(this).attr("on_call")){
+            stop_monitoring();
+            $(this).removeAttr("on_call");
+          }
+        });
 
+        monitor($(this).attr("session_id"), $(this).attr("action"));
+        $(this).parent().parent().attr("on_call","true")
+      }
     })
     
-  }
+  });
 
-</script>
+</script> 
 
 <h1>Monitor</h1>
 <div class="box">
@@ -84,20 +100,18 @@
                         <% voter = Voter.find(session.voter_in_progress) %>
                         <td><%= voter.Phone %></td>
                         <td>
-                          <input type="button" value="New Eavesdrop" class="eavesdrop" onclick="javascript:monitor(<%= session.id %>,'eavesdrop');">
+                          <input type="button" value="New Eavesdrop" class="monitor" action="eavesdrop" session_id="<%= session.id %>" >
                         </td>
                         <td>
-                          <input type="button" value="Break In" class="breakin" onclick="javascript:monitor(<%= session.id %>,'breakin');">
+                          <input type="button" value="Break In" class="monitor" action="breakin" session_id="<%= session.id %>" >
                         </td>
                         
-                        <td>
-                          <input type="button" value="Stop Monitor" class="stop_monitor" onclick="javascript:stop_monitor(<%= session.id %>);">
-                        </td>
                     <% end %>
                   </tr>
               <% end %>
           <% end %>
         </table>
+        <input type="button" value="Stop Monitor" class="stop_monitor" onclick="javascript:stop_monitoring();">
       </div>
     </div>
 <% end %>

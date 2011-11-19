@@ -91,7 +91,7 @@ class CallerSession < ActiveRecord::Base
     if self.moderator.present?
       self.moderator.update_attributes(:call_sid => @call_sid)
     else
-      self.moderator.create!(:call_sid => @call_sid)
+      Moderator.create!(:caller_session_id => self.id, :call_sid => @call_sid)
     end
     response
   end

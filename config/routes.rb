@@ -119,6 +119,7 @@ ImpactDialing::Application.routes.draw do
       collection do
         post :start
         get :stop
+        get :switch_mode
       end
     end
   end
