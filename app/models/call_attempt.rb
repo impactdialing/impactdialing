@@ -72,8 +72,7 @@ class CallAttempt < ActiveRecord::Base
 
 
   def conference(session)
-    session.update_attributes(:attempt_in_progress => self)
-    self.update_attributes(:caller => session.caller, :call_start => Time.now)
+    self.update_attributes(:caller => session.caller, :call_start => Time.now, :caller_session => session)
     session.publish('voter_connected', {:attempt_id => self.id, :voter => self.voter.info})
     voter.conference(session)
     Twilio::TwiML::Response.new do |r|
