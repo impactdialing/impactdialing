@@ -132,7 +132,9 @@ function goclient() {
 		Twilio.Device.connect(params)
 }
 $(window).bind("beforeunload", function() {
-  Twilio.Device.disconnect();
+  Twilio.Device.disconnect(function(){
+    console.log("disconnected")
+  });
 });
 
 </script>
