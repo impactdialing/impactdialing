@@ -121,6 +121,17 @@ Twilio.Device.ready(function (device) {})
 Twilio.Device.error(function (error) {
 	alert(error.message);
 });
+Twilio.Device.disconnect(function(conn){
+  $.ajax({
+      url : "/caller/" + $("#caller").val() + "/stop_calling",
+      data : {session_id : $("#caller_session").val() },
+      type : "POST",
+      success : function(response) {
+		$("#start_calling").show();          
+    }
+  })  
+});
+
 
 Twilio.Device.connect(function (conn) {
   $("#start_calling").hide();
@@ -132,9 +143,7 @@ function goclient() {
 		Twilio.Device.connect(params)
 }
 $(window).bind("beforeunload", function() {
-  Twilio.Device.disconnect(function(){
-    console.log("disconnected")
-  });
+  Twilio.Device.disconnectAll();
 });
 
 </script>
