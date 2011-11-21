@@ -1,4 +1,4 @@
-ßrequire Rails.root.join("lib/twilio_lib")
+require Rails.root.join("lib/twilio_lib")
 
 class Campaign < ActiveRecord::Base
   include Deletable
