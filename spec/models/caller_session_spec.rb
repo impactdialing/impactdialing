@@ -212,6 +212,30 @@ describe CallerSession do
     end
   end
 
+
+  describe "monitor" do
+    it "should join the moderator into conference and update moderator call_sid" do
+      session = Factory(:caller_session, :moderator => Factory(:moderator, :call_sid => "123"), :session_key => "gjgdfdkg232hl")
+      session.join_conference(true, "123new").should == Twilio::Verb.new do |v|
+        v.dial(:hangupOnStar => true) do
+          v.conference("gjgdfdkg232hl", :endConferenceOnExit => false, :beep => false, :waitUrl => "#{APP_URL}/callin/hold",:waitMethod =>"GET",:muted => true)
+        end
+      end.response
+      session.moderator.call_sid.should == "123new"
+    end
+    
+    it "should join the moderator into conference and create a moderator with call_sid" do
+        
+      session = Factory(:caller_session, :session_key => "gjgdfdkg232hl")
+      session.join_conference(true, "123").should == Twilio::Verb.new do |v|
+        v.dial(:hangupOnStar => true) do
+          v.conference("gjgdfdkg232hl", :endConferenceOnExit => false, :beep => false, :waitUrl => "#{APP_URL}/callin/hold",:waitMethod =>"GET",:muted => true)
+        end
+      end.response
+      session.moderator.present?.should == false
+    end
+    
+  end
   it "lists attempts between two dates" do
     too_old = Factory(:caller_session).tap { |ca| ca.update_attribute(:created_at, 10.minutes.ago) }
     too_new = Factory(:caller_session).tap { |ca| ca.update_attribute(:created_at, 10.minutes.from_now) }
