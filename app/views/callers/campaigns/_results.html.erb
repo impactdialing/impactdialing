@@ -1,23 +1,17 @@
 <fieldset>
   <legend>Results</legend>
   <div id="result_instruction" style="color: #A0A0A0"><em>When connected, call result options will appear here.</em></div>
-
   <div id="response_panel" class="rt" style="font-size : 1em; display: none;">
     <form id="voter_responses" method="post">
       <input type="hidden" id="voter_id" name="voter_id" >
       <% @campaign.script.try(:questions).try(:each) do |question| %>
-          <div>
-            <%= question.text %>
-            <%= select :question,  question.id, question.possible_responses.collect { |pr| [pr.value, pr.id] }, {:include_blank => true} %>
-          </div>
+          <p><label for><%= question.text %><br>
+            <%= select :question,  question.id, question.possible_responses.collect { |pr| [pr.value, pr.id] }, {:include_blank => true} %></p>
       <% end %>
       <% @campaign.try(:script).try(:notes).try(:each) do |note| %>
-        <div>
-          <%= note.note %>
-          <input type="text" id="note_response_<%= note.id %>"  name="notes[<%= note.id %>]">
-        </div>
+          <p><label for><%= note.note %></label><br>
+          <input type="text" id="note_response_<%= note.id %>"  name="notes[<%= note.id %>]"></p>
       <% end %>
     </form>
-
   </div>
 </fieldset>
