@@ -22,12 +22,8 @@ class ClientController < ApplicationController
     @user
   end
 
-  def current_user
-    @user
-  end
-
   def account
-    @user.try(:account)
+    current_user.try(:account)
   end
 
   def redirect_to_login
