@@ -70,7 +70,11 @@ class CallerController < ApplicationController
   def pause
     caller = Caller.find(params[:id])
     session = caller.caller_sessions.find(params[:session_id])
-    render :xml => session.voter_in_progress ? session.pause_for_results(params[:attempt]) : session.start
+    if session.disconnected?
+      render :xml => Twilio::Verb.hangup
+    else
+      render :xml => session.voter_in_progress ? session.pause_for_results(params[:attempt]) : session.start
+    end
   end
 
   def end_session

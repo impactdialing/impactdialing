@@ -351,7 +351,6 @@ class Campaign < ActiveRecord::Base
   end
 
   def get_dial_ratio
-
     if self.predictive_type.index("power_")!=nil
       ratio_dial = self.predictive_type[6, 1].to_i
       DIALER_LOGGER.info "ratio_dial: #{ratio_dial}, #{callers.length}, #{campaign.predictive_type.index("power_")}"

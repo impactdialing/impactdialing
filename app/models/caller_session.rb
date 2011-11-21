@@ -107,6 +107,10 @@ class CallerSession < ActiveRecord::Base
     self.publish("caller_disconnected", {})
     Twilio::Verb.hangup
   end
+  
+  def disconnected?
+    !available_for_call && !on_call
+  end
 
   def publish(event, data)
     return unless self.campaign.use_web_ui?
