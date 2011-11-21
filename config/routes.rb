@@ -74,7 +74,6 @@ ImpactDialing::Application.routes.draw do
     get '/deleted_campaigns', :to => 'broadcast/campaigns#deleted', :as => :broadcast_deleted_campaigns
     resources :scripts
     match 'monitor', :to => 'monitor#index'
-
     match '/', :to => 'broadcast#index', :as => 'broadcast_root'
     match '/login', :to => 'broadcast#login', :as => 'broadcast_login'
   end
@@ -116,6 +115,13 @@ ImpactDialing::Application.routes.draw do
     end
     resources :blocked_numbers, :only => [:index, :create, :destroy]
     resources :users, :only => [:create, :destroy]
+    resources :monitors do
+      collection do
+        post :start
+        get :stop
+        get :switch_mode
+      end
+    end
   end
 
   scope 'caller' do
