@@ -1,4 +1,4 @@
-require Rails.root.join("lib/twilio_lib")
+ßrequire Rails.root.join("lib/twilio_lib")
 
 class Campaign < ActiveRecord::Base
   include Deletable
@@ -325,7 +325,6 @@ class Campaign < ActiveRecord::Base
 
   def predictive_dial
     return if dialing?
-    DIALER_LOGGER.info "Working on campaign #{self.name}"
     update_attribute(:calls_in_progress, true)
     dial_predictive_voters
     update_attribute(:calls_in_progress, false)
