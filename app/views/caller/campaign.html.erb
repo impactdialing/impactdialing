@@ -88,7 +88,7 @@
 	<img src="/images/report_bug.png" onclick="feedback();">
 
     <% if !@session.blank? %>
-        <script src="http://js.pusherapp.com/1.8/pusher.min.js" type="text/javascript"></script>
+        <script src="http://js.pusherapp.com/1.9/pusher.min.js" type="text/javascript"></script>
         <script type="text/javascript" src="/caller/jspush/<%= @session.session_key %>"></script>
 
 		<% if params[:client]=="1" %>
