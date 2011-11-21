@@ -184,6 +184,12 @@ describe CallerController do
       post :pause, :id => caller.id, :session_id => session.id
       response.body.should == session.start
     end
+    
+    it "hangups if caller is disconnected" do
+      session = Factory(:caller_session, :caller => caller, :campaign => Factory(:campaign), :available_for_call => false, :on_call => false, :session_key => "some_key")
+      post :pause, :id => caller.id, :session_id => session.id
+      response.body.should == Twilio::Verb.hangup
+    end
 
     it "finds the campaigns callers active session" do
       login_as(caller)

@@ -10,6 +10,8 @@ ImpactDialing::Application.configure do
   PUSHER_APP_ID="7054"
   PUSHER_KEY="e6c025759382ac4172ad"
   PUSHER_SECRET="feb564060d2c27aa9d2b"
+  
+  MONITOR_TWILIO_APP_SID="AP00cfdf8773e2425bb4748ada7478c0fd"
 
   # Settings specified here will take precedence over those in config/environment.rb
 
