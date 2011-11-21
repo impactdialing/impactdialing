@@ -1,5 +1,5 @@
 class MonitorsController < ClientController
-  layout 'v2'
+  layout 'client'
   
   def index
     @campaigns = account.campaigns.with_running_caller_sessions
@@ -9,15 +9,15 @@ class MonitorsController < ClientController
   end
   
   def start
-    @call_sid = params[:CallSid]
     session = CallerSession.find(params[:session_id])    
     mute_type = params[:type]=="breakin" ? false : true
-    render xml:  session.join_conference(mute_type)
+    render xml:  session.join_conference(mute_type, params[:CallSid])
   end
   
   def switch_mode
+    type = params[:type]
     session = CallerSession.find(params[:session_id])
-    session.moderator.switch_monitor_mode(session)
+    session.moderator.switch_monitor_mode(session, type)
     render nothing: true
   end
   
