@@ -137,6 +137,7 @@ $(window).bind("beforeunload", function() {
       url : "/caller/" + $("#caller").val() + "/stop_calling",
       data : {session_id : $("#caller_session").val() },
       type : "POST",
+      async : false,
       success : function(response) {
 		$("#start_calling").show();          
     }

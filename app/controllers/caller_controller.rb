@@ -64,7 +64,6 @@ class CallerController < ApplicationController
     caller = Caller.find(params[:id])
     @session = caller.caller_sessions.find(params[:session_id])
     @session.end_running_call
-    @session.update_attributes(:on_call => false, :available_for_call => false)
     render :nothing => true
   end
 
