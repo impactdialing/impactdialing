@@ -21,72 +21,15 @@
 					</td>
 					<td><%= r[0] %></td>
 					<td><%= ((r[0].to_f/@total)*100).to_i %>%</td>
-			</tr>
+				</tr>
 				<% end %>
 		    </table>
-
 		</div>
-
-		<br/>
-
-<!--  Old Overview Report with Penetration and Minutes
-
-			<% if @totalvoters>0 %>
-			<div class="table">
-			    <table width="100%" border="0" cellspacing="0" cellpadding="0">
-			      <tr>
-			        <th width="300">Penetration</th>
-			        <th>Numbers</th>
-			        <th>Percentage</th>
-			      </tr>
-
-					<tr class="odd">
-						<td>Remaining Numbers</td>
-						<td><%= @voters_to_call.length %></td>
-						<td><%=((@voters_to_call.length.to_f/@totalvoters.to_f)*100).to_i  %>%</td>
-					</tr>
-					<tr class="event">
-						<td>Finished Numbers</td>
-						<td><%= @voters_called.length %></td>
-						<td><%=((@voters_called.length.to_f/@totalvoters.to_f)*100).to_i  %>%</td>
-					</tr>
-			    </table>
-
-			</div>
-			<br/>
-			<% end %>
-
-			<div class="table">
-			    <table width="100%" border="0" cellspacing="0" cellpadding="0">
-			      <tr>
-			        <th width="300">Minutes</th>
-			        <th>Minutes</th>
-			      </tr>
-					<tr class="event">
-						<td>Lead Talk Time</td>
-						<td><%= @talkmins %></td>
-					</tr>
-					<tr class="odd">
-						<td>Caller Talk Time</td>
-						<td><%= @callerMins  %></td>
-					</tr>
-			    </table>
-
-
-			    <div class="pagging">
-			   		<div class="left"><%= @callerMins + @talkmins%> total minutes</div>
-			    </div>
-			</div>
-
-
--->
-
 	</div>
 </div>
 
 <h3>Date range:</h3>
 <% form_tag ("/client/report_overview?id=#{ params[:id]}") do %> 
-  
 <table>
 	<tr>
 		<td>From:</td>
@@ -96,8 +39,8 @@
 		<td>
 			To:</td>
 		<td>  <%= unobtrusive_date_text_picker_tag :to_date,@to_date %> 
-			<input type="submit" class="button" value="update" size="4">
 			</td>
 	</tr>
 </table>
+<div class="buttons"><button type="submit">Update date range</button></div>
 <% end %>
