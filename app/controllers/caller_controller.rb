@@ -75,7 +75,7 @@ class CallerController < ApplicationController
 
   def end_session
     session = CallerSession.find_by_sid(params[:CallSid])
-    render :xml => session.end
+    render :xml => session.try(:end) || Twilio::Verb.hangup
   end
 
   def active_session
