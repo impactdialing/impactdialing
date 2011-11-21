@@ -1,3 +1,5 @@
+PROTOCOL = Rails.env == 'development' ? 'http://' : 'https://'
+
 ImpactDialing::Application.routes.draw do
   root :to => "home#index"
 
@@ -25,7 +27,7 @@ ImpactDialing::Application.routes.draw do
     end
   end
 
-  resources :caller, :protocol => 'http://', :only => [:index] do
+  resources :caller, :protocol => PROTOCOL, :only => [:index] do
     collection do
       get :login
       post :end_session
@@ -43,10 +45,10 @@ ImpactDialing::Application.routes.draw do
 
   end
 
-  post :receive_call, :to => 'callin#create', :protocol => 'https://'
+  post :receive_call, :to => 'callin#create', :protocol => PROTOCOL
   post :end_caller_session, :to =>'caller/end_session'
-  post :identify_caller, :to => 'callin#identify', :protocol => 'https://'
-  get :hold_call, :to => 'callin#hold', :protocol => 'https://'
+  post :identify_caller, :to => 'callin#identify', :protocol => PROTOCOL
+  get :hold_call, :to => 'callin#hold', :protocol => PROTOCOL
 
   #broadcast
   scope 'broadcast' do
@@ -135,7 +137,7 @@ ImpactDialing::Application.routes.draw do
     match 'clear_calls', :to => 'client/campaigns#clear_calls', :as => 'clear_calls'
   end
 
-  resources :call_attempts, :protocol => 'https://', :only => [:create, :update] do
+  resources :call_attempts, :protocol => PROTOCOL, :only => [:create, :update] do
     member do
       post :connect
       post :end
@@ -155,9 +157,9 @@ ImpactDialing::Application.routes.draw do
   match '/caller/login', :to => 'caller#login', :as => :caller_login
 
   match '/client/reports', :to => 'client#reports', :as => 'report'
-  match '/twilio_callback', :to => 'twilio#callback', :as => :twilio_callback, :protocol => 'https://'
-  match '/twilio_report_error', :to => 'twilio#report_error', :as => :twilio_report_error, :protocol => 'https://'
-  match '/twilio_call_ended', :to => 'twilio#call_ended', :as => :twilio_call_ended, :protocol => 'https://'
+  match '/twilio_callback', :to => 'twilio#callback', :as => :twilio_callback, :protocol => PROTOCOL
+  match '/twilio_report_error', :to => 'twilio#report_error', :as => :twilio_report_error, :protocol => PROTOCOL
+  match '/twilio_call_ended', :to => 'twilio#call_ended', :as => :twilio_call_ended, :protocol => PROTOCOL
 
   get 'admin/status', :to => 'admin#state'
 
