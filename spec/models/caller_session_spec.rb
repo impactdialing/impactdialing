@@ -243,4 +243,31 @@ describe CallerSession do
     another_just_right = Factory(:caller_session).tap { |ca| ca.update_attribute(:created_at, 8.minutes.from_now) }
     CallerSession.between(9.minutes.ago, 9.minutes.from_now)
   end
+  
+  describe "disconnected" do
+     it "should say session is disconnected when caller is not available and not on call" do
+       session = Factory(:caller_session, session_key: "gjgdfdkg232hl", available_for_call: false, on_call:false)
+       session.disconnected?.should be_true
+     end
+     
+     it "should say session is connected when caller is  available and not on call" do
+       session = Factory(:caller_session, session_key: "gjgdfdkg232hl", available_for_call: true, on_call:false)
+       session.disconnected?.should be_false
+     end
+     
+     it "should say session is connected when caller is not available and  on call" do
+       session = Factory(:caller_session, session_key: "gjgdfdkg232hl", available_for_call: false, on_call:true)
+       session.disconnected?.should be_false
+     end
+     
+     it "should say session is connected when caller is  available and  on call" do
+       session = Factory(:caller_session, session_key: "gjgdfdkg232hl", available_for_call: true, on_call:true)
+       session.disconnected?.should be_false
+     end
+     
+     
+     
+    
+    
+  end
 end
