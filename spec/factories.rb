@@ -109,4 +109,7 @@ end
 Factory.define :note do |n|
 end
 
+Factory.define :moderator do |n|
+end
+
 
