@@ -25,7 +25,7 @@ ImpactDialing::Application.routes.draw do
     end
   end
 
-  resources :caller, :only => [:index] do
+  resources :caller, :protocol => 'http://', :only => [:index] do
     collection do
       get :login
       post :end_session
@@ -43,10 +43,10 @@ ImpactDialing::Application.routes.draw do
 
   end
 
-  post :receive_call, :to => 'callin#create'
+  post :receive_call, :to => 'callin#create', :protocol => 'https://'
   post :end_caller_session, :to =>'caller/end_session'
-  post :identify_caller, :to => 'callin#identify'
-  get :hold_call, :to => 'callin#hold'
+  post :identify_caller, :to => 'callin#identify', :protocol => 'https://'
+  get :hold_call, :to => 'callin#hold', :protocol => 'https://'
 
   #broadcast
   scope 'broadcast' do
@@ -135,8 +135,7 @@ ImpactDialing::Application.routes.draw do
     match 'clear_calls', :to => 'client/campaigns#clear_calls', :as => 'clear_calls'
   end
 
-
-  resources :call_attempts, :only => [:create, :update] do
+  resources :call_attempts, :protocol => 'https://', :only => [:create, :update] do
     member do
       post :connect
       post :end
@@ -156,9 +155,9 @@ ImpactDialing::Application.routes.draw do
   match '/caller/login', :to => 'caller#login', :as => :caller_login
 
   match '/client/reports', :to => 'client#reports', :as => 'report'
-  match '/twilio_callback', :to => 'twilio#callback', :as => :twilio_callback
-  match '/twilio_report_error', :to => 'twilio#report_error', :as => :twilio_report_error
-  match '/twilio_call_ended', :to => 'twilio#call_ended', :as => :twilio_call_ended
+  match '/twilio_callback', :to => 'twilio#callback', :as => :twilio_callback, :protocol => 'https://'
+  match '/twilio_report_error', :to => 'twilio#report_error', :as => :twilio_report_error, :protocol => 'https://'
+  match '/twilio_call_ended', :to => 'twilio#call_ended', :as => :twilio_call_ended, :protocol => 'https://'
 
   get 'admin/status', :to => 'admin#state'
 
