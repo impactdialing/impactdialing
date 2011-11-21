@@ -64,6 +64,7 @@ class CallerController < ApplicationController
     caller = Caller.find(params[:id])
     @session = caller.caller_sessions.find(params[:session_id])
     @session.end_running_call
+    @session.update_attributes(:on_call => false, :available_for_call => false)
     render :nothing => true
   end
 
@@ -75,7 +76,7 @@ class CallerController < ApplicationController
 
   def end_session
     session = CallerSession.find_by_sid(params[:CallSid])
-    render :xml => session.end
+    render :xml => session.try(:end) || Twilio::Verb.hangup
   end
 
   def active_session

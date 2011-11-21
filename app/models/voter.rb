@@ -82,6 +82,7 @@ class Voter < ActiveRecord::Base
   end
 
   def dial_predictive
+    
     # Thread.new {
     @client = Twilio::REST::Client.new TWILIO_ACCOUNT, TWILIO_AUTH
     call_attempt = new_call_attempt(self.campaign.predictive_type)

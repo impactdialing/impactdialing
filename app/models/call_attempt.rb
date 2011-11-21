@@ -52,6 +52,10 @@ class CallAttempt < ActiveRecord::Base
 
   def connect_to_caller(caller_session = nil)
     caller_session ||= self.campaign.caller_sessions.available.first
+    if caller_session && campaign.predictive_type == Campaign::Type::PREDICTIVE
+      self.update_attributes(caller_session: caller_session)
+      caller_session.publish('voter_push', voter.info)
+    end
     caller_session ? conference(caller_session) : hangup
   end
 
@@ -97,7 +101,7 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def fail
-    caller_session.publish('voter_push',self.campaign.all_voters.to_be_dialed.first.info)
+    caller_session.publish('voter_push',self.campaign.all_voters.to_be_dialed.first.info) if caller_session
     voter.update_attributes(:call_back => false)
   end
 

@@ -3,6 +3,7 @@
     <%= stylesheet_link_tag 'jquery.ui.datetime' %>
 <% end %>
 <% content_for :javascripts do %>
+
     <script src="http://js.pusherapp.com/1.9/pusher.min.js" type="text/javascript"></script>
     <%= javascript_include_tag 'jquery.ui.datetime.min', 'callers/caller_pusher', 'ICanHaz.min.js', 'jquery.form.js' %>
 
@@ -109,6 +110,8 @@
 
 <script type="text/javascript" src="http://static.twilio.com/libs/twiliojs/1.0/twilio.js"></script>
 <script type="text/javascript">
+
+
 Twilio.Device.setup("<%= @token %>", {'debug':true});
 
 Twilio.Device.connect(function (conn) {
@@ -119,6 +122,7 @@ Twilio.Device.error(function (error) {
 	alert(error.message);
 });
 
+
 Twilio.Device.connect(function (conn) {
   $("#start_calling").hide();
 });
@@ -128,4 +132,16 @@ function goclient() {
 	  params = {"PhoneNumber": "<%= @phone_number %>", 'campaign_id': "<%= @campaign.id %>", 'caller_id': "<%= @caller.id %>" };
 		Twilio.Device.connect(params)
 }
+$(window).bind("beforeunload", function() {
+  $.ajax({
+      url : "/caller/" + $("#caller").val() + "/stop_calling",
+      data : {session_id : $("#caller_session").val() },
+      type : "POST",
+      success : function(response) {
+		$("#start_calling").show();          
+    }
+  })  
+  
+});
+
 </script>
