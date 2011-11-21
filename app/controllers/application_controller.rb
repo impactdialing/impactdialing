@@ -10,14 +10,12 @@ class ApplicationController < ActionController::Base
   helper_method :phone_format, :phone_number_valid
 
   def redirect_to_ssl
-    return true if Rails.env == 'development' || testing? || action_name=="monitor" || request.domain.index("amazonaws")
+    return true if Rails.env == 'development' || testing? || staging? || action_name=="monitor" || request.domain.index("amazonaws")
     return true if ssl?
     @cont = controller_name
     @act = action_name
     flash.keep
-    if request.subdomain == 'staging'
-      redirect_to URI.join("https://staging.#{request.domain}", request.fullpath).to_s
-    elsif controller_name=="caller"
+    if controller_name=="caller"
       redirect_to "https://caller.#{request.domain}/#{@cont}/#{@act}/#{params[:id]}"
     elsif controller_name == 'broadcast'
       redirect_to "https://broadcast.#{request.domain}#{request.path}"
@@ -28,6 +26,10 @@ class ApplicationController < ActionController::Base
 
   def testing?
     Rails.env == 'test'
+  end
+
+  def staging?
+    Rails.env == 'staging'
   end
 
   def ssl?

@@ -26,6 +26,8 @@ class TwilioLib
       response = http.start{http.request(req)}
       Rails.logger.info response.body
   end
+  
+  
 
 
   def call(http_method, service_method, params = {})

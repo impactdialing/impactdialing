@@ -12,6 +12,7 @@ class CallerSession < ActiveRecord::Base
   scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
   has_one :voter_in_progress, :class_name => 'Voter'
   has_one :attempt_in_progress, :class_name => 'CallAttempt'
+  has_one :moderator
   unloadable
 
   def minutes_used
@@ -78,6 +79,20 @@ class CallerSession < ActiveRecord::Base
       end
     end.response
     update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
+    response
+  end
+  
+  def join_conference(mute_type)
+    response = Twilio::Verb.new do |v|
+      v.dial(:hangupOnStar => true) do
+        v.conference(self.session_key, :endConferenceOnExit => false, :beep => false, :waitUrl => "#{APP_URL}/callin/hold",:waitMethod =>"GET",:muted => mute_type)
+      end
+    end.response
+    if self.moderator.present?
+      self.moderator.update_attributes(:call_sid => @call_sid)
+    else
+      Moderator.create!(:caller_session_id => self.id, :call_sid => @call_sid)
+    end
     response
   end
 
