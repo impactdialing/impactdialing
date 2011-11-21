@@ -12,12 +12,16 @@
     alert(error.message);
   });
   
-  function monitor(session_id, action) {
+  function monitor(session_id, action, status) {
     params = {'session_id': session_id, 'type': action};
-    Twilio.Device.connect(params)
+    Twilio.Device.connect(params, function(){
+      $('status').text(status)
+    })
   }
   function stop_monitoring(){
-    Twilio.Device.disconnectAll(); 
+    Twilio.Device.disconnectAll(function(){
+      $('status').text("You are monitoring nothing")
+    }); 
   }
   
   function switch_mode(session, mode){
@@ -34,6 +38,7 @@
       
       if($(this).parent().parent().attr("on_call")){
         switch_mode($(this).attr("session_id"), $(this).attr("action"));
+        $('status').text("Your currently "+$(this).attr("action") + " on "+$(this).parent().prevAll('td.caller_name').text())
       }
       else{
         $.each($(this).parent().parent().siblings(), function(){
@@ -42,8 +47,9 @@
             $(this).removeAttr("on_call");
           }
         });
-
-        monitor($(this).attr("session_id"), $(this).attr("action"));
+        console.log($(this).parent().prevAll('td.caller_name').text())
+        status = "Your currently "+$(this).attr("action") + " on "+$(this).parent().prevAll('td.caller_name').text();
+        monitor($(this).attr("session_id"), $(this).attr("action"), status);
         $(this).parent().parent().attr("on_call","true")
       }
     })
@@ -109,7 +115,7 @@ input.monitor,.stop_monitor{
           <% @campaigns.each do |c| %>
               <% c.caller_sessions.on_call.each do |session| %>
                   <tr class="<%= cycle("odd", "even") %> ">
-                    <td><%= session.caller.name %></td>
+                    <td class="caller_name"><%= session.caller.name %></td>
                     <td><%= session.campaign.name %></td>
                     <% if session.voter_in_progress!=nil %>
                         <% voter = Voter.find(session.voter_in_progress) %>
@@ -127,6 +133,7 @@ input.monitor,.stop_monitor{
           <% end %>
         </table>
         <input type="button" value="Stop Monitor" class="stop_monitor" onclick="javascript:stop_monitoring();">
+        <status style="float : right;"></status>
       </div>
     </div>
 <% end %>
