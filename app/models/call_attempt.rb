@@ -97,7 +97,7 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def fail
-    caller_session.publish('voter_push',self.campaign.all_voters.to_be_dialed.first.info)
+    caller_session.publish('voter_push',self.campaign.all_voters.to_be_dialed.first.info) if caller_session
     voter.update_attributes(:call_back => false)
   end
 
