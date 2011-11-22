@@ -3,6 +3,7 @@ Pusher.log = function(message) {
 };
 
 var channel = null;
+var pusher = new Pusher('<%= PUSHER_KEY %>');
 
 $(document).ready(function() {
     hide_all_actions();
