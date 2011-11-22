@@ -1,7 +1,7 @@
 <%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@campaign.name} Usage"} %>
 <div class="content clearfix">
 <div role="main">
-<p>Two sets of metrics are provided for you below. First, you can see how much time your callers actually spent on the phone; each call is rounded to the nearest second. Next, you can see how much time you are being billed for; each call is rounded to the nearest minute. If your callers are using our browser phone, you will not be billed for their minutes.</p>
+<p>Two sets of metrics are provided for you below. First, you can see how much time your callers actually spent on the phone; each call is rounded to the nearest second. Next, you can see how much time you are being billed for; each call is rounded to the nearest minute. You caller time is only billed when your callers dial in, instead of using a headset on their computer.</p>
 <table>
 	<tr>
 		<th>Utilization (1-second increments)</th>
@@ -54,8 +54,8 @@
       <td>To:</td>
       <td>
         <%= unobtrusive_date_text_picker_tag :to_date,@to_date %>
-        <input type="submit" class="button" value="update" size="4">
       </td>
     </tr>
   </table>
+<div class="buttons"><button type="submit">Update</button></div>
 <% end %>
