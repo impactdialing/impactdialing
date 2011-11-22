@@ -4,7 +4,9 @@ class Moderator < ActiveRecord::Base
   def switch_monitor_mode(session, type)
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
     conferences = Twilio::Conference.list({"FriendlyName" => session.session_key})
-    conference_sid = conferences.parsed_response['TwilioResponse']['Conferences']['Conference']['Sid']
+    confs = conferences.parsed_response['TwilioResponse']['Conferences']['Conference']
+    conference_sid = ""
+    conference_sid = confs.class == Array ? confs.last['Sid'] : confs['Sid']
     
     if type == "breakin"
       Twilio::Conference.unmute_participant(conference_sid, call_sid)
