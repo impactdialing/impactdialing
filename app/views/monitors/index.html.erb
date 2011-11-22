@@ -1,5 +1,5 @@
 <script type="text/javascript" src="http://static.twilio.com/libs/twiliojs/1.0/twilio.js"></script>
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js"></script>
+<%= javascript_include_tag "http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js" %>
 <script type="text/javascript">
 
   Twilio.Device.setup("<%= @token %>", {'debug':true});
@@ -11,7 +11,7 @@
   Twilio.Device.error(function (error) {
     alert(error.message);
   });
-  
+
   function monitor(session_id, action, status) {
     params = {'session_id': session_id, 'type': action};
     $('status').text(status)
@@ -19,23 +19,23 @@
   }
   function stop_monitoring(){
     $('status').text("You are monitoring nothing")
-    Twilio.Device.disconnectAll(); 
+    Twilio.Device.disconnectAll();
   }
-  
+
   function switch_mode(session, mode){
     $.ajax({
         url : "/client/monitors/switch_mode",
         data : {session_id : session,type : mode},
         type : "GET",
-        success : function(response) { 
+        success : function(response) {
           $('status').text(response)
           }
-    })  
+    })
   }
-  
+
   $(function() {
     $('.monitor').click(function(){
-      
+
       if($(this).parent().parent().attr("on_call")){
         switch_mode($(this).attr("session_id"), $(this).attr("action"));
       }
@@ -52,7 +52,7 @@
         $(this).parent().parent().attr("on_call","true")
       }
     })
-    
+
   });
 
 </script>
@@ -70,7 +70,7 @@ input.monitor,.stop_monitor{
   padding: 6px 24px 7px;
   font-size: 0.875em;
 }
-</style> 
+</style>
 
 <h1>Monitor</h1>
 <div class="box">
@@ -125,7 +125,7 @@ input.monitor,.stop_monitor{
                         <td>
                           <input type="button" value="Break In" class="monitor" action="breakin" session_id="<%= session.id %>" >
                         </td>
-                        
+
                     <% end %>
                   </tr>
               <% end %>
