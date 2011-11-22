@@ -1,5 +1,5 @@
 <% content_for :javascripts do%>
-	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js"></script>
+  <%= javascript_include_tag "http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js" %>
 <% end %>
 
 <% if params[:id].blank? %>
