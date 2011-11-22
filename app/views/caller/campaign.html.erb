@@ -1,5 +1,5 @@
 <% content_for :stylesheets do %>
-    <link rel="stylesheet" type="text/css" media="screen" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.14/themes/smoothness/jquery-ui.css" />
+    <link rel="stylesheet" type="text/css" media="screen" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.14/themes/smoothness/jquery-ui.css" />
     <%= stylesheet_link_tag 'jquery.ui.datetime' %>
 <% end %>
 <% content_for :javascripts do %>
@@ -88,11 +88,11 @@
 	<img src="/images/report_bug.png" onclick="feedback();">
 
     <% if !@session.blank? %>
-        <script src="http://js.pusherapp.com/1.9/pusher.min.js" type="text/javascript" ></script>
+      <%= pusher_js %>
         <script type="text/javascript" src="/caller/jspush/<%= @session.session_key %>"></script>
 
 		<% if params[:client]=="1" %>
-		<script type="text/javascript" src="http://static.twilio.com/libs/twiliojs/1.0/twilio.js"></script>
+      <%= javascript_include_tag "https://static.twilio.com/libs/twiliojs/1.0/twilio.js" %>
 		<script>
 		Twilio.Device.setup("<%= @token %>", {'debug':true});
 
