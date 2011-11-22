@@ -192,6 +192,7 @@ function subscribe(session_key) {
     });
 
     channel.bind('voter_push', function(data) {
+	    console.log('voter data pushed')
         set_voter(data);
 		$("#start_calling").hide();
     });
