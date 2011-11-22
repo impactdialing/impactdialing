@@ -1,5 +1,7 @@
 <b>Network Test</b>
-<br/><script src="http://js.pusherapp.com/1.9/pusher.min.js" type="text/javascript" ></script><input type="button" value="Click to Begin" onclick="start();">
+<br/>
+<%= pusher_js %>
+<input type="button" value="Click to Begin" onclick="start();">
 <br/>
 <br/>
 
@@ -12,7 +14,7 @@ var num_tests=10;
 var num=0;
 var push_success=0;
 function start(){
-	ajax_ping();	
+	ajax_ping();
 }
 
 function ajax_ping()
@@ -61,7 +63,7 @@ $(document).ready(function() {
 	pusher.bind('pusher:connection_established', function(ev) {
 //		$('#results').append('push connection established <br/>');
 	});
-	
+
 	channel.bind('ping', function(data) {
 		$('#results').append('push ' + data + '/' + num_tests + ' received<br/>');
 		push_success=push_success+1;
