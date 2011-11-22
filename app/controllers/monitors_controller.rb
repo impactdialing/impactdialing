@@ -9,7 +9,11 @@ class MonitorsController < ClientController
   end
   
   def start
-    session = CallerSession.find(params[:session_id])    
+    session = CallerSession.find(params[:session_id])
+    puts session.voter_in_progress.call_attempts.last.status
+    unless session.voter_in_progress.call_attempts.last.status == "Call in progress"
+      session.publish('no_voter_on_call', {})
+    end
     mute_type = params[:type]=="breakin" ? false : true
     render xml:  session.join_conference(mute_type, params[:CallSid])
   end
@@ -18,7 +22,7 @@ class MonitorsController < ClientController
     type = params[:type]
     session = CallerSession.find(params[:session_id])
     session.moderator.switch_monitor_mode(session, type)
-    render nothing: true
+    render text: "Your currently "+ type + " on "+ session.caller.name
   end
   
   def stop

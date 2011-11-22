@@ -232,6 +232,10 @@ function subscribe(session_key) {
         $("#submit_and_keep_call").show();
         $("#submit_and_stop_call").show();
     });	
+    
+    channel.bind('no_voter_on_call', function(data){
+      $('status').text("Currently no voter is connected, You can monitor when voter connected")
+    });
 
     function set_call_attempt(id) {
         $("#current_call_attempt").val(id);
