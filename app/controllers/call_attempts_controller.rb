@@ -15,6 +15,7 @@ class CallAttemptsController < ApplicationController
 
   def connect
     call_attempt = CallAttempt.find(params[:id])
+    DIALER_LOGGER.info "callconnect: #{params[:AnsweredBy]}"
     response = case params[:AnsweredBy] #using the 2010 api
                  when "machine"
                    call_attempt.voter.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
@@ -39,6 +40,7 @@ class CallAttemptsController < ApplicationController
   end
 
   def end
+    DIALER_LOGGER.info "callstatus: #{params[:CallStatus]}"
     call_attempt = CallAttempt.find(params[:id])
     call_attempt.voter.update_attributes(:status => CallAttempt::Status::MAP[params[:CallStatus]], :last_call_attempt_time => Time.now)
     call_attempt.update_attributes(:status => CallAttempt::Status::MAP[params[:CallStatus]], :call_end => Time.now)
