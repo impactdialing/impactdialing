@@ -427,7 +427,7 @@ class Campaign < ActiveRecord::Base
   def choose_voters_to_dial(num_voters)
     return [] if num_voters < 1
     scheduled_voter_ids = self.all_voters.scheduled.limit(num_voters)
-    (scheduled_voter_ids + self.voters('not called')).reject(&:blocked?).uniq[0..num_voters]
+    (scheduled_voter_ids + self.voters('not called')).reject(&:blocked?).uniq[0..num_voters-1]
   end
 
   def ratio_dial?
@@ -436,7 +436,7 @@ class Campaign < ActiveRecord::Base
 
   def dial_predictive_voters
     if ratio_dial?
-      num_to_call= (callers.length - call_attempts_in_progress.length) * get_dial_ratio
+      num_to_call= (callers.length * get_dial_ratio) - call_attempts_in_progress.length
     else
       short_to_dial=determine_short_to_dial
       max_calls=determine_pool_size(short_to_dial)
@@ -503,7 +503,7 @@ class Campaign < ActiveRecord::Base
 
   module Type
     PREVIEW = "preview"
-    PREDICTIVE = "predictive"
+    PREDICTIVE = "algorithm1"
   end
 
   def clear_calls

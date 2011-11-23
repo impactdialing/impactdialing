@@ -22,7 +22,7 @@ class CallAttemptsController < ApplicationController
                    call_attempt.caller_session.publish('voter_push', call_attempt.campaign.all_voters.to_be_dialed.first.info) if call_attempt.caller_session
                    call_attempt.campaign.use_recordings? ? call_attempt.play_recorded_message : call_attempt.hangup
                  else
-                   call_attempt.connect_to_caller(call_attempt.voter.caller_session)
+                   call_attempt.connect_to_caller
                end
     render :xml => response
   end
