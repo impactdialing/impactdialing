@@ -117,8 +117,9 @@ describe Voter do
       end
 
       it "is dialed" do
+        caller_session = Factory(:caller_session, :available_for_call => true, :on_call => true, campaign: campaign)
         voter.dial_predictive
-        call_attempt = voter.call_attempts.last
+        call_attempt = CallAttempt.first
         call_attempt.sid.should == "sid"
         call_attempt.status.should == CallAttempt::Status::INPROGRESS
       end

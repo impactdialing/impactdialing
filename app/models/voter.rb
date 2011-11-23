@@ -82,20 +82,33 @@ class Voter < ActiveRecord::Base
   end
 
   def dial_predictive
-    
+    puts "Eneterdd dia predictive ######"
     # Thread.new {
     @client = Twilio::REST::Client.new TWILIO_ACCOUNT, TWILIO_AUTH
     call_attempt = new_call_attempt(self.campaign.predictive_type)
+    caller_session = call_attempt.campaign.caller_sessions.available.first
+    puts "connect to _caller #{caller_session.inspect} , #{campaign.predictive_type}"
+    DIALER_LOGGER.info "connect to _caller #{caller_session.inspect} , #{campaign.predictive_type}"
+    unless caller_session.nil?
+      DIALER_LOGGER.info "Pushing data for #{info.inspect}"
+      puts "Pushing data for #{info.inspect}"
+      puts "#########"
+      puts "#{caller_session}"
+      call_attempt.update_attributes(caller_session: caller_session)
+      caller_session.update_attributes(:on_call => true, :available_for_call => false)
+      caller_session.publish('voter_push', info)
+    
 
-    @call = @client.account.calls.create(
-        :from => campaign.caller_id,
-        :to => self.Phone,
-        :url => connect_call_attempt_url(call_attempt, :host => Settings.host, :port =>Settings.port),
-        'StatusCallback' => end_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port),
-        'IfMachine' => self.campaign.use_recordings? ? 'Continue' : 'Hangup',
-        'Timeout' => campaign.answer_detection_timeout || 20
-    )
-    call_attempt.update_attributes(:status => CallAttempt::Status::INPROGRESS, :sid => @call.sid)
+      @call = @client.account.calls.create(
+          :from => campaign.caller_id,
+          :to => self.Phone,
+          :url => connect_call_attempt_url(call_attempt, :host => Settings.host, :port =>Settings.port),
+          'StatusCallback' => end_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port),
+          'IfMachine' => self.campaign.use_recordings? ? 'Continue' : 'Hangup',
+          'Timeout' => campaign.answer_detection_timeout || 20
+      )
+      call_attempt.update_attributes(:status => CallAttempt::Status::INPROGRESS, :sid => @call.sid)
+    end
     # call_attempt.sid
     # }
   end
