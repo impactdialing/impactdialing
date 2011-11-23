@@ -82,7 +82,7 @@ input.monitor,.stop_monitor{
 <h1>Monitor</h1>
 <monitor_session><%= @user.id %></monitor_session>
 <div class="box">
-  <%= render :partial => 'shared/boxtop', :locals=>{:title=>"Active campaigns"} %>
+  <h2>Campaigns</h2>
   <% if @campaigns.empty? %>
       <div class="form">
         <label>No campaigns active.</label>
@@ -109,7 +109,7 @@ input.monitor,.stop_monitor{
 
 <% if @campaigns.length > 0 %>
     <div class="box">
-      <%= render :partial => 'shared/boxtop', :locals=>{:title=>"Active callers"} %>
+      <h2>Callers</h2>
       <div class="table">
         <table width="100%" border="0" cellspacing="0" cellpadding="0">
           <tr>
