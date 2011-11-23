@@ -74,14 +74,15 @@ describe CallAttemptsController do
 
     it "connects the voter to an available caller" do
       Factory(:caller_session, :campaign => campaign, :available_for_call => false)
-      available_caller = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller))
+      available_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller))
+      call_attempt.update_attributes(caller_session: available_session)
       post :connect, :id => call_attempt.id
 
-      call_attempt.reload.caller.should == available_caller.caller
-      available_caller.reload.voter_in_progress.should == voter
+      call_attempt.reload.caller.should == available_session.caller
+      available_session.reload.voter_in_progress.should == voter
       response.body.should == Twilio::TwiML::Response.new do |r|
         r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(call_attempt, :host => Settings.host) do |d|
-          d.Conference available_caller.session_key, :wait_url => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
+          d.Conference available_session.session_key, :wait_url => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
         end
       end.text
     end
@@ -89,7 +90,7 @@ describe CallAttemptsController do
     it "connects a voter to a specified caller" do
       Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => false)
       available_caller = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => false)
-      voter.update_attribute(:caller_session, available_caller)
+      call_attempt.update_attribute(:caller_session, available_caller)
       post :connect, :id => call_attempt.id
       response.body.should == Twilio::TwiML::Response.new do |r|
         r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(call_attempt, :host => Settings.host) do |d|
@@ -118,7 +119,8 @@ describe CallAttemptsController do
     end
 
     it "hangs up if there are no callers on call" do
-      available_caller = Factory(:caller_session, :campaign => campaign, :available_for_call => false, :on_call => false)
+      available_caller_session = Factory(:caller_session, :campaign => campaign, :available_for_call => false, :on_call => false)
+      call_attempt.update_attributes(caller_session: available_caller_session)
       post :connect, :id => call_attempt.id
       response.body.should == Twilio::TwiML::Response.new { |r| r.Hangup }.text
     end
@@ -172,7 +174,7 @@ describe CallAttemptsController do
       session_key = 'foo'
       custom_field = Factory(:custom_voter_field)
       Factory(:custom_voter_field_value, :voter => voter, :custom_voter_field => custom_field, :value => 'value')
-      Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller), :session_key => session_key, :voter_in_progress => voter)
+      call_attempt.update_attributes(caller_session: Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller), :session_key => session_key, :voter_in_progress => voter))
       pusher_session = mock
       pusher_session.should_receive(:trigger).with('voter_connected', {:attempt_id=> call_attempt.id, :voter => voter.info}.merge(:dialer => campaign.predictive_type))
       Pusher.stub(:[]).with(session_key).and_return(pusher_session)

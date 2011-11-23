@@ -353,7 +353,7 @@ class Campaign < ActiveRecord::Base
   def get_dial_ratio
     if self.predictive_type.index("power_")!=nil
       ratio_dial = self.predictive_type[6, 1].to_i
-      DIALER_LOGGER.info "ratio_dial: #{ratio_dial}, #{callers.length}, #{campaign.predictive_type.index("power_")}"
+      DIALER_LOGGER.info "ratio_dial: #{ratio_dial}, #{callers.length}, #{predictive_type.index("power_")}"
     end
 
   end
@@ -370,14 +370,16 @@ class Campaign < ActiveRecord::Base
         end
       end
     end
-
+    short_counter
   end
 
   def determine_short_to_dial
     stats = call_stats(10)
 
     short_counter = num_short_calls_in_progress(stats[:short_time])
-
+    puts "yyyyyyyyyyyyyyyyyy"
+    puts stats[:ratio_short]
+    puts short_counter
     if stats[:ratio_short]>0 && short_counter > 0
       max_short=(1/stats[:ratio_short]).round
       short_to_dial = (short_counter/max_short).to_f.ceil
@@ -427,7 +429,7 @@ class Campaign < ActiveRecord::Base
   def choose_voters_to_dial(num_voters)
     return [] if num_voters < 1
     scheduled_voter_ids = self.all_voters.scheduled.limit(num_voters)
-    (scheduled_voter_ids + self.voters('not called')).reject(&:blocked?).uniq[0..num_voters]
+    (scheduled_voter_ids + self.voters('not called')).reject(&:blocked?).uniq[0..num_voters-1]
   end
 
   def ratio_dial?
@@ -436,7 +438,7 @@ class Campaign < ActiveRecord::Base
 
   def dial_predictive_voters
     if ratio_dial?
-      num_to_call= (callers.length - call_attempts_in_progress.length) * get_dial_ratio
+      num_to_call= (callers.length * get_dial_ratio) - call_attempts_in_progress.length 
     else
       short_to_dial=determine_short_to_dial
       max_calls=determine_pool_size(short_to_dial)
@@ -452,7 +454,7 @@ class Campaign < ActiveRecord::Base
   end
 
   def ring_predictive_voters(voter_ids)
-    voter_ids.each do |voter|
+    voter_ids.each do |voter|      
       voter.dial_predictive
     end
   end
@@ -503,7 +505,7 @@ class Campaign < ActiveRecord::Base
 
   module Type
     PREVIEW = "preview"
-    PREDICTIVE = "predictive"
+    PREDICTIVE = "algorithm1"
   end
 
   def clear_calls
