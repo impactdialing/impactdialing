@@ -141,8 +141,36 @@ describe CallerSession do
         end
       end
     end
+  end
+
+  describe "phone responses" do
+    let(:script) { Factory(:script) }
+    let(:campaign) { Factory(:campaign, :robo => false, :predictive_type => 'preview', :script => script) }
+    let(:voter) { Factory(:voter, :campaign => campaign) }
+    let(:caller) { Factory(:caller) }
+
+    it "reads questions and possible voter responses to the caller" do
+      pending
+      question = Factory(:question, :text => "question?", :script => script)
+      script.questions << question
+      question.possible_responses << Factory(:possible_response, :question => question, :keypad => 1, :value => "response1")
+      question.possible_responses << Factory(:possible_response, :question => question, :keypad => 2, :value => "response2")
+      caller_session = Factory(:caller_session, :caller => caller, :voter_in_progress => voter)
+      caller_session.collect_response.should == Twilio::Verb.new do |v|
+        q = voter.unresponded_questions.first
+        v.gather(:timeout => 10, :action => collect_response_caller_url(self.caller, :session => self, :host => Settings.host, :port => Settings.port), :method => "POST") do
+          v.say q.text
+          q.possible_responses.each do |pr|
+            v.say "press #{pr.keypad} for #{pr.value}"
+          end
+        end.response
+
+      end
+
+    end
 
   end
+
 
   describe "pusher" do
     let(:caller) { Factory(:caller) }
@@ -170,7 +198,7 @@ describe CallerSession do
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sample")
       voter = Factory(:voter, :campaign => campaign, :caller_session => session)
       voter.stub(:dial_predictive)
-      session.should_receive(:publish).with('calling',voter.info)
+      session.should_receive(:publish).with('calling', voter.info)
       session.call(voter)
     end
 
@@ -218,23 +246,23 @@ describe CallerSession do
       session = Factory(:caller_session, :moderator => Factory(:moderator, :call_sid => "123"), :session_key => "gjgdfdkg232hl")
       session.join_conference(true, "123new").should == Twilio::Verb.new do |v|
         v.dial(:hangupOnStar => true) do
-          v.conference("gjgdfdkg232hl", :endConferenceOnExit => false, :beep => false, :waitUrl => "#{APP_URL}/callin/hold",:waitMethod =>"GET",:muted => true)
+          v.conference("gjgdfdkg232hl", :endConferenceOnExit => false, :beep => false, :waitUrl => "#{APP_URL}/callin/hold", :waitMethod =>"GET", :muted => true)
         end
       end.response
       session.moderator.call_sid.should == "123new"
     end
-    
+
     it "should join the moderator into conference and create a moderator with call_sid" do
-        
+
       session = Factory(:caller_session, :session_key => "gjgdfdkg232hl")
       session.join_conference(true, "123").should == Twilio::Verb.new do |v|
         v.dial(:hangupOnStar => true) do
-          v.conference("gjgdfdkg232hl", :endConferenceOnExit => false, :beep => false, :waitUrl => "#{APP_URL}/callin/hold",:waitMethod =>"GET",:muted => true)
+          v.conference("gjgdfdkg232hl", :endConferenceOnExit => false, :beep => false, :waitUrl => "#{APP_URL}/callin/hold", :waitMethod =>"GET", :muted => true)
         end
       end.response
       session.moderator.present?.should == false
     end
-    
+
   end
   it "lists attempts between two dates" do
     too_old = Factory(:caller_session).tap { |ca| ca.update_attribute(:created_at, 10.minutes.ago) }
@@ -243,31 +271,28 @@ describe CallerSession do
     another_just_right = Factory(:caller_session).tap { |ca| ca.update_attribute(:created_at, 8.minutes.from_now) }
     CallerSession.between(9.minutes.ago, 9.minutes.from_now)
   end
-  
+
   describe "disconnected" do
-     it "should say session is disconnected when caller is not available and not on call" do
-       session = Factory(:caller_session, session_key: "gjgdfdkg232hl", available_for_call: false, on_call:false)
-       session.disconnected?.should be_true
-     end
-     
-     it "should say session is connected when caller is  available and not on call" do
-       session = Factory(:caller_session, session_key: "gjgdfdkg232hl", available_for_call: true, on_call:false)
-       session.disconnected?.should be_false
-     end
-     
-     it "should say session is connected when caller is not available and  on call" do
-       session = Factory(:caller_session, session_key: "gjgdfdkg232hl", available_for_call: false, on_call:true)
-       session.disconnected?.should be_false
-     end
-     
-     it "should say session is connected when caller is  available and  on call" do
-       session = Factory(:caller_session, session_key: "gjgdfdkg232hl", available_for_call: true, on_call:true)
-       session.disconnected?.should be_false
-     end
-     
-     
-     
-    
-    
+    it "should say session is disconnected when caller is not available and not on call" do
+      session = Factory(:caller_session, session_key: "gjgdfdkg232hl", available_for_call: false, on_call: false)
+      session.disconnected?.should be_true
+    end
+
+    it "should say session is connected when caller is  available and not on call" do
+      session = Factory(:caller_session, session_key: "gjgdfdkg232hl", available_for_call: true, on_call: false)
+      session.disconnected?.should be_false
+    end
+
+    it "should say session is connected when caller is not available and  on call" do
+      session = Factory(:caller_session, session_key: "gjgdfdkg232hl", available_for_call: false, on_call: true)
+      session.disconnected?.should be_false
+    end
+
+    it "should say session is connected when caller is  available and  on call" do
+      session = Factory(:caller_session, session_key: "gjgdfdkg232hl", available_for_call: true, on_call: true)
+      session.disconnected?.should be_false
+    end
+
+
   end
 end
