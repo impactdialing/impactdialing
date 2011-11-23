@@ -1,6 +1,6 @@
 <h1>Edit campaign</h1>
 
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js"></script>
+<%= javascript_include_tag "https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js" %>
 <div id="callerid"></div>
 
 <%= form_for @campaign,  url:  "#{client_campaigns_path}/#{@campaign.id}", :method=> :put, :html => {:name => 'callerForm', :id => 'callerForm'} do |f| %>
@@ -68,7 +68,7 @@
                 <td></td>
                 <td></td>
               </tr>
-              
+
               <% @callers.each do |l| %>
                   <tr>
                     <td><%= check_box_tag "campaign[caller_ids][]", "#{l.id}", callerInCampaign(l), id: "campaign_caller_id_#{l.id}" -%> <%= l.name %></td>
@@ -135,22 +135,22 @@
     if ($('#callers input[name^= "campaign[caller_ids]"]:checked').length == <%= @callers.length %> ){
       $('#selectAll').attr('checked', true)
     }
-    
+
    $('#selectAll').click(function () {
     $('#callers').find(':checkbox').attr('checked', this.checked);
    });
-   
+
    $('#callers input[name^= "campaign[caller_ids]"]').change(function(){
      if ($('#callers input[name^= "campaign[caller_ids]"]:checked').length == <%= @callers.length %> ){
        $('#selectAll').attr('checked', true)
      }
      if ($('#callers input[name^= "campaign[caller_ids]"]:checked').length < <%= @callers.length %> ){
        $('#selectAll').attr('checked', false)
-     }     
+     }
    });
-   
+
   });
-  
+
     function doRecord() {
         $("#recordingsdiv").toggle($("#campaign_use_recordings").checked);
     }

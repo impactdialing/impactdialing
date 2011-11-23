@@ -36,6 +36,7 @@ ImpactDialing::Application.routes.draw do
     member do
       post :assign_campaign
       post :pause
+      post :collect_response
       post :active_session
       post :preview_voter
       post :call_voter
@@ -111,7 +112,7 @@ ImpactDialing::Application.routes.draw do
     match '/', :to => 'client#index', :as => 'client_root'
     resources :campaigns, :only => [] do
       member { post :verify_callerid }
-      resources :voter_lists, :except => [:new, :show], :name_prefix => 'client' do
+      resources :voter_lists, :except => [:new, :show, :index], :name_prefix => 'client' do
         collection { post :import }
       end
     end
