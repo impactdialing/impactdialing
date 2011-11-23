@@ -82,7 +82,7 @@ input.monitor,.stop_monitor{
 <h1>Monitor</h1>
 <monitor_session><%= @user.id %></monitor_session>
 <div class="box">
-  <%= render :partial => 'shared/boxtop', :locals=>{:title=>"Active Campaigns"} %>
+  <%= render :partial => 'shared/boxtop', :locals=>{:title=>"Active campaigns"} %>
   <% if @campaigns.empty? %>
       <div class="form">
         <label>No campaigns active.</label>
@@ -92,8 +92,8 @@ input.monitor,.stop_monitor{
         <table width="100%" border="0" cellspacing="0" cellpadding="0">
           <tr>
             <th>Name</th>
-            <th>Callers Logged In</th>
-            <th>#'s remaining</th>
+            <th>Callers logged in</th>
+            <th>Numbers remaining</th>
           </tr>
           <% @campaigns.each do |c| %>
               <tr class="<%= cycle("odd", "even") %>">
@@ -109,13 +109,12 @@ input.monitor,.stop_monitor{
 
 <% if @campaigns.length > 0 %>
     <div class="box">
-      <%= render :partial => 'shared/boxtop', :locals=>{:title=>"Active Callers"} %>
+      <%= render :partial => 'shared/boxtop', :locals=>{:title=>"Active callers"} %>
       <div class="table">
         <table width="100%" border="0" cellspacing="0" cellpadding="0">
           <tr>
             <th>Caller</th>
             <th>Campaign</th>
-            <th>Phone Number</th>
             <th></th>
             <th></th>
           </tr>
@@ -126,20 +125,18 @@ input.monitor,.stop_monitor{
                     <td><%= session.campaign.name %></td>
                     <% if session.voter_in_progress!=nil %>
                         <% voter = Voter.find(session.voter_in_progress) %>
-                        <td><%= voter.Phone %></td>
                         <td>
                           <input type="button" value="Eavesdrop" class="monitor" action="eavesdrop" session_id="<%= session.id %>" >
                         </td>
                         <td>
-                          <input type="button" value="Break In" class="monitor" action="breakin" session_id="<%= session.id %>" >
+                          <input type="button" value="Break in" class="monitor" action="breakin" session_id="<%= session.id %>" >
                         </td>
-
                     <% end %>
                   </tr>
               <% end %>
           <% end %>
         </table>
-        <input type="button" value="Stop Monitor" class="stop_monitor" onclick="javascript:stop_monitoring();">
+        <input type="button" value="Stop monitoring" class="stop_monitor" onclick="javascript:stop_monitoring();">
         <status style="float : right;"></status>
       </div>
     </div>
