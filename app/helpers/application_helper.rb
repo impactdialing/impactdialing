@@ -75,7 +75,7 @@ module ApplicationHelper
   end
 
   def client_controller?(controllerName)
-    ['client/accounts', 'client', 'voter_lists', 'monitor', 'client/campaigns', 'client/scripts', 'client/callers', 'client/reports', 'campaigns', 'scripts', 'broadcast', 'reports', 'home', 'blocked_numbers'].include?(controllerName)
+    ['client/accounts', 'client', 'voter_lists', 'monitor', 'client/campaigns', 'client/scripts', 'client/callers', 'client/reports', 'campaigns', 'scripts', 'broadcast', 'reports', 'home', 'blocked_numbers', 'monitors'].include?(controllerName)
   end
 
   ['title', 'full_title', 'phone', 'email', ].each do |value|
@@ -106,5 +106,9 @@ module ApplicationHelper
 
   def in_production?
     Rails.env == 'production' || Rails.env == 'staging'
+  end
+
+  def pusher_js
+    javascript_include_tag("https://d3ds63zw57jt09.cloudfront.net/1.9/pusher.min.js")
   end
 end

@@ -52,8 +52,10 @@ class CallAttempt < ActiveRecord::Base
 
   def connect_to_caller(caller_session = nil)
     caller_session ||= self.campaign.caller_sessions.available.first
+    Rails.logger.debug "connect to _caller #{caller_session.inspect} , #{campaign.predictive_type}"
     if caller_session && campaign.predictive_type == Campaign::Type::PREDICTIVE
-      self.update_attributes(caller_session: caller_session)
+      Rails.logger.debug "Pushing data for #{voter.info.inspect}"
+      update_attributes(caller_session: caller_session)
       caller_session.publish('voter_push', voter.info)
     end
     caller_session ? conference(caller_session) : hangup
