@@ -43,7 +43,7 @@ function get_session() {
                 $("#callin_data").hide();
 				$('#start_calling').hide();
                 $("#called_in").show();          
-				setTimeout(get_voter(), 3000);
+				get_voter();
             }
         }
     })

@@ -103,6 +103,7 @@ describe CallAttempt do
       voter = Factory(:voter, :campaign => campaign)
       caller_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller))
       call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign)
+      call_attempt.update_attributes(caller_session: caller_session)
       call_attempt.connect_to_caller.should == call_attempt.conference(caller_session)
       call_attempt.caller.should == caller_session.caller
       caller_session.attempt_in_progress.should == call_attempt
@@ -114,7 +115,9 @@ describe CallAttempt do
       Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller))
       caller_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller))
       call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign)
-      call_attempt.connect_to_caller(caller_session).should == call_attempt.conference(caller_session)
+      call_attempt.update_attributes(caller_session: caller_session)
+      call_attempt.connect_to_caller.should == call_attempt.conference(caller_session)
+
       call_attempt.caller.should == caller_session.caller
     end
 
@@ -123,6 +126,7 @@ describe CallAttempt do
       voter = Factory(:voter, :campaign => campaign)
       caller_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller))
       call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign)
+      call_attempt.update_attributes(caller_session: caller_session)
       call_attempt.connect_to_caller
       call_attempt.reload.caller_session.should == caller_session
       caller_session.attempt_in_progress.should == call_attempt
