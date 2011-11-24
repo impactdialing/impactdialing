@@ -171,8 +171,8 @@ function show_response_panel() {
     $("#result_instruction").hide();
 }
 
+
 function hide_response_panel() {
-    show_scheduler();
     $("#response_panel").hide();
     $("#result_instruction").show();
 }
