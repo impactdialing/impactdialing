@@ -28,17 +28,6 @@ class CallinController < ApplicationController
 
   def hold
     render :template => 'callin/hold.xml.builder', :layout => false
-    return
-  end
-
-  def monitorEavesdrop
-    if params[:type]=="0"
-      @muted="true"
-    else
-      @muted="false"
-    end
-    render :template => 'callin/start_eavesdrop_conference.xml.builder', :layout => false
-    return
   end
 
 end
