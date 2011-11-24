@@ -1,0 +1,15 @@
+From 2d30f1913f6560a308e6f35abef0aaf0beeff4e4 Mon Sep 17 00:00:00 2001
+From: Sreehari <sree0514@gmail.com>
+Date: Thu, 24 Nov 2011 00:45:17 +0530
+Subject: [PATCH] Predictive dial
+
+---
+ 0 files changed, 0 insertions(+), 0 deletions(-)
+ create mode 100644 predictive.patch
+
+diff --git a/predictive.patch b/predictive.patch
+new file mode 100644
+index 0000000..e69de29
+-- 
+1.7.3.4
+
