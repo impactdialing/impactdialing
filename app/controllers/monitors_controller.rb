@@ -2,7 +2,6 @@ class MonitorsController < ClientController
   layout 'client'
 
   def index
-    puts @user.id.to_s
     @campaigns = account.campaigns.with_running_caller_sessions
     twilio_capability = Twilio::Util::Capability.new(TWILIO_ACCOUNT, TWILIO_AUTH)
     twilio_capability.allow_client_outgoing(MONITOR_TWILIO_APP_SID)
