@@ -266,7 +266,7 @@ function subscribe(session_key) {
 	channel.bind('predictive_successful_voter_response', function(data){
 	 clear_voter();
 	 hide_response_panel();
-   	 set_message("Dialing Voters.");
+   	 set_message("Dialing.");
 	});
 
     function set_call_attempt(id) {
