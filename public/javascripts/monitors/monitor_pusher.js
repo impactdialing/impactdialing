@@ -9,14 +9,13 @@ $(document).ready(function() {
   //         }
   //     }
   // })
+
+  $('.stop_monitor').hide()
   monitor_session = $('monitor_session').text()
   channel = pusher.subscribe(monitor_session);
   console.log(channel)
   channel.bind('no_voter_on_call', function(data){
-    alert("xfdf")
     $('status').text("Currently no voter is connected, You can monitor when voter connected")
   });
-  
-  
   
 });

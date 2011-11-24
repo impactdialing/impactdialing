@@ -22,11 +22,14 @@
   function monitor(session_id, action, status) {
     params = {'session_id': session_id, 'type': action, monitor_session : $('monitor_session').text()};
     $('status').text(status)
+    $('.stop_monitor').show();
     Twilio.Device.connect(params)
   }
   function stop_monitoring(){
     $('status').text("You are monitoring nothing")
+    $('.stop_monitor').hide();
     Twilio.Device.disconnectAll();
+    return false;
   }
 
   function switch_mode(session, mode){
@@ -58,29 +61,15 @@
         monitor($(this).attr("session_id"), $(this).attr("action"), status);
         $(this).parent().parent().attr("on_call","true")
       }
+      return false;
     })
 
   });
 
 </script>
-<style type = "text/css">
-input.monitor,.stop_monitor{
-  background-image: -moz-linear-gradient(center top , #456587, #2B4863);
-  -moz-transition: opacity 0.15s linear 0s;
-  /*box-shadow: 0 1px 1px rgba(0, 0, 0, 0.9), 0 1px 2px #5179A2 inset, 0 -2px 2px #446485 inset;*/
-  border-radius: 24px 24px 24px 24px;
-  background-color: #456587;
-  color: #FFFFFF;
-  display: inline-block;
-  font-weight: 400;
-  text-shadow: 0 -1px 1px #000000;
-  padding: 6px 24px 7px;
-  font-size: 0.875em;
-}
-</style>
 
 <h1>Monitor</h1>
-<monitor_session><%= @user.id %></monitor_session>
+<monitor_session style="display:none"><%= @user.id %></monitor_session>
 <div class="box">
   <%= render :partial => 'shared/boxtop', :locals=>{:title=>"Active Campaigns"} %>
   <% if @campaigns.empty? %>
@@ -122,24 +111,27 @@ input.monitor,.stop_monitor{
           <% @campaigns.each do |c| %>
               <% c.caller_sessions.on_call.each do |session| %>
                   <tr class="<%= cycle("odd", "even") %> ">
-                    <td class="caller_name"><%= session.caller.name %></td>
+                    <td class="caller_name"><%= session.caller.email %></td>
                     <td><%= session.campaign.name %></td>
+                    <td>
                     <% if session.voter_in_progress!=nil %>
                         <% voter = Voter.find(session.voter_in_progress) %>
-                        <td><%= voter.Phone %></td>
-                        <td>
-                          <input type="button" value="Eavesdrop" class="monitor" action="eavesdrop" session_id="<%= session.id %>" >
-                        </td>
-                        <td>
-                          <input type="button" value="Break In" class="monitor" action="breakin" session_id="<%= session.id %>" >
-                        </td>
-
+                        <%= voter.Phone %>
                     <% end %>
+                    </td>
+                    <td>
+                      <a class ="action secondary monitor" href="#" action="eavesdrop" session_id="<%= session.id %>">Eavesdrop</a>
+                    </td>
+                    <td>
+                      <a class ="action secondary monitor" href="#" action="breakin" session_id="<%= session.id %>">Break In</a>
+                      <!-- <input type="button" value="Break In" class="monitor" action="breakin" session_id="<%= session.id %>" > -->
+                    </td>
                   </tr>
               <% end %>
           <% end %>
         </table>
-        <input type="button" value="Stop Monitor" class="stop_monitor" onclick="javascript:stop_monitoring();">
+        <a class ="action secondary stop_monitor" href="#" onclick="javascript:stop_monitoring();">Stop Monitor</a>
+        <!-- <input type="button" value="Stop Monitor" class="stop_monitor" onclick="javascript:stop_monitoring();"> -->
         <status style="float : right;"></status>
       </div>
     </div>
