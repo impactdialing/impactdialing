@@ -10,7 +10,7 @@ class MonitorsController < ClientController
 
   def start
     session = CallerSession.find(params[:session_id])
-    unless session.voter_in_progress.call_attempts.last.status == "Call in progress"
+    unless session.voter_in_progress.call_attempts.last.status == "Call in progress."
       Pusher[params[:monitor_session]].trigger('no_voter_on_call',{})
     end
     mute_type = params[:type]=="breakin" ? false : true
@@ -21,7 +21,7 @@ class MonitorsController < ClientController
     type = params[:type]
     session = CallerSession.find(params[:session_id])
     session.moderator.switch_monitor_mode(session, type)
-    render text: "You're currently "+ type + " on "+ session.caller.name
+    render text: "Monitoring in "+ type + " mode on "+ session.caller.name + "."
   end
 
   def stop

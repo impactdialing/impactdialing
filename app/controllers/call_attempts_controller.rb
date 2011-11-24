@@ -15,13 +15,16 @@ class CallAttemptsController < ApplicationController
 
   def connect
     call_attempt = CallAttempt.find(params[:id])
+    DIALER_LOGGER.info "callconnect: #{params[:AnsweredBy]}"
     response = case params[:AnsweredBy] #using the 2010 api
                  when "machine"
                    call_attempt.voter.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
                    call_attempt.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
-                   call_attempt.caller_session.publish('voter_push', call_attempt.campaign.all_voters.to_be_dialed.first.info) if call_attempt.caller_session
+                   if call_attempt.caller_session && call_attempt.campaign.predictive_type == Campaign::Type::PREVIEW
+                     call_attempt.caller_session.publish('voter_push', call_attempt.campaign.all_voters.to_be_dialed.first.info) 
+                   end
                    call_attempt.campaign.use_recordings? ? call_attempt.play_recorded_message : call_attempt.hangup
-                 else
+                 else      
                    call_attempt.connect_to_caller
                end
     render :xml => response
@@ -39,6 +42,7 @@ class CallAttemptsController < ApplicationController
   end
 
   def end
+    DIALER_LOGGER.info "callstatus: #{params[:CallStatus]}"
     call_attempt = CallAttempt.find(params[:id])
     call_attempt.voter.update_attributes(:status => CallAttempt::Status::MAP[params[:CallStatus]], :last_call_attempt_time => Time.now)
     call_attempt.update_attributes(:status => CallAttempt::Status::MAP[params[:CallStatus]], :call_end => Time.now)
@@ -53,18 +57,22 @@ class CallAttemptsController < ApplicationController
 
   def update
     call_attempt = CallAttempt.find(params[:id])
-    call_attempt.update_attributes(params[:call_attempt])
-    call_attempt.update_attribute('status', CallAttempt::Status::SCHEDULED) if params[:call_attempt][:scheduled_date]
-    render :text => 'Call Attempt updated', :status => :ok
+    call_attempt.update_attributes(:scheduled_date => params[:call_attempt][:scheduled_date], :status => CallAttempt::Status::SCHEDULED)
+    call_attempt.voter.update_attributes(:scheduled_date => params[:call_attempt][:scheduled_date], :status => CallAttempt::Status::SCHEDULED)
+
+    next_voter = call_attempt.campaign.all_voters.to_be_dialed.first
+    call_attempt.caller_session.publish("voter_push", next_voter ? next_voter.info : {})
+    render :nothing => true
   end
 
   def voter_response
     call_attempt = CallAttempt.find(params[:id])
     voter = Voter.find(params[:voter_id])
     voter.capture(params)
-
-    next_voter = call_attempt.campaign.all_voters.to_be_dialed.first
-    call_attempt.caller_session.publish("voter_push", next_voter ? next_voter.info : {})
+    if call_attempt.campaign.predictive_type == Campaign::Type::PREVIEW
+      next_voter = call_attempt.campaign.all_voters.to_be_dialed.first
+      call_attempt.caller_session.publish("voter_push", next_voter ? next_voter.info : {})
+    end  
     call_attempt.caller_session.update_attribute(:voter_in_progress, nil)
     render :nothing => true
   end

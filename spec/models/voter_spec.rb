@@ -32,7 +32,7 @@ describe Voter do
 
   it "returns voters that have responded" do
     Factory(:voter)
-    3.times {Factory(:voter, :result_date => Time.now)}
+    3.times { Factory(:voter, :result_date => Time.now) }
     Voter.answered.size.should == 3
   end
 
@@ -41,8 +41,8 @@ describe Voter do
     v1 =Factory(:voter, :result_date => Time.now)
     v2 = Factory(:voter, :result_date => 1.day.ago)
     v3 = Factory(:voter, :result_date => 2.days.ago)
-    Voter.answered_within(2.days.ago, 0.days.ago).should == [v1,v2,v3]
-    Voter.answered_within(2.days.ago, 1.days.ago).should == [v2,v3]
+    Voter.answered_within(2.days.ago, 0.days.ago).should == [v1, v2, v3]
+    Voter.answered_within(2.days.ago, 1.days.ago).should == [v2, v3]
     Voter.answered_within(1.days.ago, 1.days.ago).should == [v2]
   end
 
@@ -125,6 +125,7 @@ describe Voter do
       end
 
       it "updates voter attributes" do
+        caller_session = Factory(:caller_session, :available_for_call => true, :on_call => true, campaign: campaign)
         voter.dial_predictive
         call_attempt = voter.call_attempts.last
         voter.last_call_attempt.should == call_attempt
@@ -134,6 +135,7 @@ describe Voter do
       end
 
       it "updates the call_attempts campaign" do
+        caller_session = Factory(:caller_session, :available_for_call => true, :on_call => true, campaign: campaign)
         voter.dial_predictive
         call_attempt = voter.call_attempts.last
         call_attempt.campaign.should == voter.campaign
@@ -160,14 +162,14 @@ describe Voter do
       voter.campaign = campaign
       voter.dial_predictive
     end
-    
+
     it "checks, whether voter is called or not" do
       voter1 = Factory(:voter, :status => "not called")
       voter2 = Factory(:voter, :status => "success")
       voter1.not_yet_called?("not called").should be_true
       voter2.not_yet_called?("not called").should be_false
     end
-    
+
     it "checks, call attemp made before 3 hours or not" do
       voter1 = Factory(:voter, :last_call_attempt_time => 4.hours.ago, :call_back => true)
       voter2 = Factory(:voter, :last_call_attempt_time => 2.hours.ago, :call_back => true)
@@ -175,7 +177,7 @@ describe Voter do
       voter2.call_attempted__before?(3.hours).should be_false
       voter2.call_attempted__before?(10.minutes).should be_true
     end
-    
+
     it "returns all the voters to be call" do
       campaign = Factory(:campaign)
       voter_list1 = Factory(:voter_list)
@@ -189,7 +191,7 @@ describe Voter do
       voter5 = Factory(:voter, :campaign => campaign)
       Voter.to_be_called(campaign.id, active_list_ids, status).length.should == 3
     end
-    
+
     it "return voters, to whoom called just now, but not replied " do
       campaign = Factory(:campaign)
       voter_list1 = Factory(:voter_list)
@@ -206,7 +208,7 @@ describe Voter do
       voter8 = Factory(:voter, :campaign => campaign)
       Voter.just_called_voters_call_back(campaign.id, active_list_ids).should == [voter1, voter2, voter3]
     end
-    
+
   end
 
   describe "to be dialed" do
@@ -405,13 +407,24 @@ describe Voter do
       voter.capture(response_params_again)
       voter.reload.answers.size.should == 2
     end
+
+    it "returns all unanswered questions" do
+      script = Factory(:script)
+      campaign = Factory(:campaign, :script => script)
+      voter = Factory(:voter, :campaign => campaign)
+      answered_question = Factory(:question, :script => script)
+      response = Factory(:possible_response, :question => answered_question)
+      Factory(:answer, :voter => voter, :question => answered_question, :possible_response => response)
+      pending_question = Factory(:question, :script => script)
+      voter.unresponded_questions.should == [pending_question]
+    end
   end
 
   describe "notes" do
     let(:voter) { Factory(:voter) }
     let(:script) { Factory(:script, :robo => false) }
-    let(:note1) {Factory(:note, note: "Question1" ,script: script)}
-    let(:note2) {Factory(:note, note: "Question2", script: script)}
+    let(:note1) { Factory(:note, note: "Question1", script: script) }
+    let(:note2) { Factory(:note, note: "Question2", script: script) }
 
     it "captures call notes" do
       response_params = {"voter_id"=>voter.id, "notes"=>{note1.id=>"tell", note2.id=>"no"}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}
