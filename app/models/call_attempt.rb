@@ -51,9 +51,13 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def connect_to_caller
-    # caller_session ||= self.campaign.caller_sessions.available.first
-    caller_session.nil? || caller_session.disconnected? ? hangup : conference(caller_session)
-  end
+    if caller_session.nil? || caller_session.disconnected?
+      hangup
+    else
+      caller_session.update_attributes(:on_call => true, :available_for_call => false)
+      conference(caller_session)      
+    end
+   end
 
   def play_recorded_message
     update_attributes(:status => CallAttempt::Status::VOICEMAIL, :call_end => Time.now)

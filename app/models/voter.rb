@@ -84,20 +84,17 @@ class Voter < ActiveRecord::Base
   def dial_predictive
     puts "Eneterdd dia predictive ######"
     # Thread.new {
-    @client = Twilio::REST::Client.new TWILIO_ACCOUNT, TWILIO_AUTH
-    call_attempt = new_call_attempt(self.campaign.predictive_type)
-    caller_session = call_attempt.campaign.caller_sessions.available.first
+    @client = Twilio::REST::Client.new TWILIO_ACCOUNT, TWILIO_ACCOUNT_AUTH    
+    caller_session = campaign.caller_sessions.available.first
     puts "connect to _caller #{caller_session.inspect} , #{campaign.predictive_type}"
     DIALER_LOGGER.info "connect to _caller #{caller_session.inspect} , #{campaign.predictive_type}"
-    unless caller_session.nil?
+    unless caller_session.nil?      
       DIALER_LOGGER.info "Pushing data for #{info.inspect}"
       puts "Pushing data for #{info.inspect}"
       puts "#########"
       puts "#{caller_session}"
+      call_attempt = new_call_attempt(self.campaign.predictive_type)
       call_attempt.update_attributes(caller_session: caller_session)
-      caller_session.update_attributes(:on_call => true, :available_for_call => false)
-      caller_session.publish('voter_push', info)
-    
 
       @call = @client.account.calls.create(
           :from => campaign.caller_id,
@@ -149,28 +146,36 @@ class Voter < ActiveRecord::Base
   def info
     {:fields => self.attributes.reject { |k, v| (k == "created_at") ||(k == "updated_at") }, :custom_fields => Hash[*self.custom_voter_field_values.collect { |cvfv| [cvfv.custom_voter_field.name, cvfv.value] }.flatten]}
   end
-  
+
   def not_yet_called?(call_status)
     status==nil || status==call_status
   end
-  
+
   def call_attempted__before?(time)
     call_back? && last_call_attempt_time!=nil && last_call_attempt_time < (Time.now - time)
   end
-  
+
   def self.to_be_called(campaign_id, active_list_ids, status)
     voters = Voter.find_all_by_campaign_id_and_active(campaign_id, 1, :conditions=>"voter_list_id in (#{active_list_ids.join(",")})", :limit=>300, :order=>"rand()")
     voters.select {|voter| voter.not_yet_called?(status) || (voter.call_attempted__before?(3.hours))}
   end
-  
+
   def self.just_called_voters_call_back(campaign_id, active_list_ids)
     uncalled = Voter.find_all_by_campaign_id_and_active_and_call_back(campaign_id, 1, 1, :conditions=>"voter_list_id in (#{active_list_ids.join(",")})")
-    uncalled.select { |voter| voter.call_attempted__before?(10.minutes) }    
+    uncalled.select { |voter| voter.call_attempted__before?(10.minutes) }
   end
 
   module Status
     NOTCALLED = "not called"
     RETRY = "retry"
+  end
+
+  def unresponded_questions
+    unresponded = []
+    campaign.script.questions.each do |question|
+      unresponded << question if answers.for(question).blank?
+    end
+    unresponded
   end
 
   private
@@ -198,5 +203,7 @@ class Voter < ActiveRecord::Base
       note_response ? note_response.update_attributes(response: note_res) : note_responses.create(response: note_res, note: Note.find(note_id))
     end
   end
-  
+
+
+
 end

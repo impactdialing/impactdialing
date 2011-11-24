@@ -355,7 +355,7 @@ class Campaign < ActiveRecord::Base
       ratio_dial = self.predictive_type[6, 1].to_i
       DIALER_LOGGER.info "ratio_dial: #{ratio_dial}, #{callers.length}, #{predictive_type.index("power_")}"
     end
-
+    ratio_dial
   end
 
   def num_short_calls_in_progress(short_threshold)
@@ -438,7 +438,7 @@ class Campaign < ActiveRecord::Base
 
   def dial_predictive_voters
     if ratio_dial?
-      num_to_call= (callers.length * get_dial_ratio) - call_attempts_in_progress.length 
+      num_to_call= (callers_to_dial.length * get_dial_ratio) - call_attempts_in_progress.length
     else
       short_to_dial=determine_short_to_dial
       max_calls=determine_pool_size(short_to_dial)
