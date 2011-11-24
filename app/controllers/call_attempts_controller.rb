@@ -20,9 +20,11 @@ class CallAttemptsController < ApplicationController
                  when "machine"
                    call_attempt.voter.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
                    call_attempt.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
-                   call_attempt.caller_session.publish('voter_push', call_attempt.campaign.all_voters.to_be_dialed.first.info) if call_attempt.caller_session
+                   if call_attempt.caller_session && call_attempt.campaign.predictive_type == Campaign::Type::PREVIEW
+                     call_attempt.caller_session.publish('voter_push', call_attempt.campaign.all_voters.to_be_dialed.first.info) 
+                   end
                    call_attempt.campaign.use_recordings? ? call_attempt.play_recorded_message : call_attempt.hangup
-                 else
+                 else      
                    call_attempt.connect_to_caller
                end
     render :xml => response

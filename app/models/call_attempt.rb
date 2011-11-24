@@ -51,7 +51,12 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def connect_to_caller
-    caller_session.nil? || caller_session.disconnected? ? hangup : conference(caller_session)
+    if caller_session.nil? || caller_session.disconnected?
+      hangup
+    else
+      caller_session.update_attributes(:on_call => true, :available_for_call => false)
+      conference(caller_session)      
+    end
    end
 
   def play_recorded_message
