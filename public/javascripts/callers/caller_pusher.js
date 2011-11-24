@@ -221,6 +221,8 @@ function subscribe(session_key) {
         hide_all_actions();
         show_response_panel();
         set_message("Please enter your call results.");
+        $("#submit_and_keep_call").show();
+        $("#submit_and_stop_call").show();
     });
 
     channel.bind('voter_connected', function(data) {
