@@ -257,6 +257,12 @@ function subscribe(session_key) {
       $('status').text("Currently no voter is connected, You can monitor when voter connected")
     });
 
+	channel.bind('predictive_successful_voter_response', function(data){
+	 hide_all_actions();
+	 hide_response_panel();
+   	 set_message("Dialing Voters.");
+	});
+
     function set_call_attempt(id) {
         $("#current_call_attempt").val(id);
     }
