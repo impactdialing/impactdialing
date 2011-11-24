@@ -13,7 +13,7 @@
       </tr>
 	<% @callers.each do |c| %>
       <tr class="<%= cycle("odd","even") %>">
-        <td><h3><%= link_to "#{c.name}", client_caller_path(c.id)%></h3></td>
+        <td><h3><%= link_to "#{c.email}", client_caller_path(c.id)%></h3></td>
         <td><%= c.created_at.strftime("%m/%d/%Y") %></td>
         <td>
           <div style="display:none;">
