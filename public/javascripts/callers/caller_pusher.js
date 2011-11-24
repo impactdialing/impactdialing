@@ -229,6 +229,8 @@ function subscribe(session_key) {
         show_response_panel();
         set_call_attempt(data.attempt_id);
         hide_all_actions();
+        set_voter(data);
+		set_message("Status: Connected")
         $("#hangup_call").show();
     });
 
