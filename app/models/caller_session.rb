@@ -51,7 +51,6 @@ class CallerSession < ActiveRecord::Base
                                  }
     )
     self.publish('calling_voter', voter.info)
-    update_attributes(available_for_call: false)
     attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])
   end
 
