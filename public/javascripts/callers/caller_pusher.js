@@ -228,11 +228,11 @@ function subscribe(session_key) {
     channel.bind('voter_connected', function(data) {
 		set_call_attempt(data.attempt_id);
 		hide_all_actions();
-        show_response_panel();
 		if(data.dialer && data.dialer != 'preview') {
-	        set_voter(data.voter);
+	        set_voter(data.voter);	
 			set_message("Status: Connected")
 		}
+		show_response_panel();
         $("#hangup_call").show();
     });
 
