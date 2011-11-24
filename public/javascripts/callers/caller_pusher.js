@@ -14,6 +14,8 @@ $(document).ready(function() {
             get_session();
         }
     }, 5000); //end setInterval
+
+    $('#scheduled_date').datetime({ inline: true });
 })
 
 function hide_all_actions() {
@@ -93,30 +95,39 @@ function ready_to_call(dialer) {
 }
 
 
+function schedule_for_later() {
+    hide_all_actions();
+    $.post("/call_attempts/"+$('#current_call_attempt').val(),
+        {_method: 'PUT', call_attempt : { scheduled_date : $('#scheduled_date').val()}},
+        function(response) {
+        }
+    );
+}
+
 function send_voter_response() {
-	$('#voter_responses').attr('action', "/call_attempts/" + $("#current_call_attempt").val() + "/voter_response");
-	$('#voter_id').val($("#current_voter").val())
-	$('#voter_responses').submit(function() { 
-	  $(this).ajaxSubmit({}); 
-	  return false; 
-	  });
-	$("#voter_responses").trigger("submit")
+    $('#voter_responses').attr('action', "/call_attempts/" + $("#current_call_attempt").val() + "/voter_response");
+    $('#voter_id').val($("#current_voter").val())
+    $('#voter_responses').submit(function() {
+        $(this).ajaxSubmit({});
+        return false;
+    });
+    $("#voter_responses").trigger("submit")
 }
 
 function send_voter_response_and_disconnect() {
-	var options = { 
-        success:  function(){
-		  disconnect_caller();
+    var options = {
+        success:  function() {
+            disconnect_caller();
         }
     };
     var str = $("#voter_responses").serializeArray();
-	$('#voter_responses').attr('action', "/call_attempts/" + $("#current_call_attempt").val() + "/voter_response");
-	$('#voter_id').val($("#current_voter").val())
-	$('#voter_responses').submit(function() { 
-	  $(this).ajaxSubmit(options); 
-	  return false; 
-	  });
-	$("#voter_responses").trigger("submit")
+    $('#voter_responses').attr('action', "/call_attempts/" + $("#current_call_attempt").val() + "/voter_response");
+    $('#voter_id').val($("#current_voter").val())
+    $('#voter_responses').submit(function() {
+        $(this).ajaxSubmit(options);
+        return false;
+    });
+    $("#voter_responses").trigger("submit")
 }
 
 function disconnect_caller() {
@@ -125,7 +136,7 @@ function disconnect_caller() {
         data : {session_id : $("#caller_session").val() },
         type : "POST",
         success : function(response) {
-			$("#start_calling").show();
+            $("#start_calling").show();
             // pushes 'calling_voter'' event to browsers
         }
     })
@@ -141,25 +152,25 @@ function disconnect_voter() {
     })
 }
 
-function dial_in_caller(){  
-  	
-  $.ajax({
-      url : "/caller/" + $("#caller").val() + "/start_calling",
-	data : {campaign_id : $("#campaign").val() },
-      type : "POST",
-      success : function(response) {
-          $('#start_calling').hide();
-      }
-  })
+function dial_in_caller() {
 
-	
-	
+    $.ajax({
+        url : "/caller/" + $("#caller").val() + "/start_calling",
+        data : {campaign_id : $("#campaign").val() },
+        type : "POST",
+        success : function(response) {
+            $('#start_calling').hide();
+        }
+    })
+
+
 }
 
 function show_response_panel() {
     $("#response_panel").show();
     $("#result_instruction").hide();
 }
+
 
 function hide_response_panel() {
     $("#response_panel").hide();
@@ -170,15 +181,23 @@ function set_message(text) {
     $("#statusdiv").html(text);
 }
 
+function collapse_scheduler() {
+    $("#callback_info").hide();
+}
+
+function expand_scheduler() {
+    $("#callback_info").show();
+}
+
 function subscribe(session_key) {
     channel = pusher.subscribe(session_key);
     console.log(channel)
 
 
     channel.bind('caller_connected', function(data) {
-	    console.log('caller_connected' + data)
+        console.log('caller_connected' + data)
         hide_all_actions();
-		$("#start_calling").hide();
+        $("#start_calling").hide();
         $("#callin_data").hide();
         hide_response_panel();
         $("#stop_calling").show();
@@ -192,9 +211,9 @@ function subscribe(session_key) {
     });
 
     channel.bind('voter_push', function(data) {
-	    console.log('voter data pushed')
+        console.log('voter data pushed')
         set_voter(data);
-		$("#start_calling").hide();
+        $("#start_calling").hide();
     });
 
     channel.bind('voter_disconnected', function(data) {
@@ -219,10 +238,10 @@ function subscribe(session_key) {
         clear_caller();
         clear_voter();
         hide_response_panel();
-		set_message('Status: Not connected.');
+        set_message('Status: Not connected.');
         $("#callin_data").show();
         hide_all_actions();
-		$("#start_calling").show();
+        $("#start_calling").show();
     });
 
     channel.bind('waiting_for_result', function(data) {
