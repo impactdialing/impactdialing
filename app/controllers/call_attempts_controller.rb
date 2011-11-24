@@ -64,9 +64,10 @@ class CallAttemptsController < ApplicationController
     call_attempt = CallAttempt.find(params[:id])
     voter = Voter.find(params[:voter_id])
     voter.capture(params)
-
-    next_voter = call_attempt.campaign.all_voters.to_be_dialed.first
-    call_attempt.caller_session.publish("voter_push", next_voter ? next_voter.info : {})
+    if call_attempt.campaign.predictive_type == Campaign::Type::PREVIEW
+      next_voter = call_attempt.campaign.all_voters.to_be_dialed.first
+      call_attempt.caller_session.publish("voter_push", next_voter ? next_voter.info : {})
+    end  
     call_attempt.caller_session.update_attribute(:voter_in_progress, nil)
     render :nothing => true
   end
