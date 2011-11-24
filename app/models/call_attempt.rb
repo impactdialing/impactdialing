@@ -51,7 +51,7 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def connect_to_caller
-    if caller_session.nil? || caller_session.disconnected? || caller_session.on_call
+    if caller_session.nil? || caller_session.disconnected? || !caller_session.available_for_call
       hangup
     else
       caller_session.update_attributes(:on_call => true, :available_for_call => false)
