@@ -125,7 +125,6 @@ describe CallAttemptsController do
     it "hangs up if there are no callers on call" do
       available_caller_session = Factory(:caller_session, :campaign => campaign, :available_for_call => false, :on_call => false)
       call_attempt.update_attributes(caller_session: available_caller_session)
-      
       post :connect, :id => call_attempt.id
       response.body.should == Twilio::TwiML::Response.new { |r| r.Hangup }.text
     end

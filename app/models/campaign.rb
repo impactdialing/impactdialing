@@ -370,14 +370,16 @@ class Campaign < ActiveRecord::Base
         end
       end
     end
-
+    short_counter
   end
 
   def determine_short_to_dial
     stats = call_stats(10)
 
     short_counter = num_short_calls_in_progress(stats[:short_time])
-
+    puts "yyyyyyyyyyyyyyyyyy"
+    puts stats[:ratio_short]
+    puts short_counter
     if stats[:ratio_short]>0 && short_counter > 0
       max_short=(1/stats[:ratio_short]).round
       short_to_dial = (short_counter/max_short).to_f.ceil
@@ -452,7 +454,7 @@ class Campaign < ActiveRecord::Base
   end
 
   def ring_predictive_voters(voter_ids)
-    voter_ids.each do |voter|
+    voter_ids.each do |voter|      
       voter.dial_predictive
     end
   end
