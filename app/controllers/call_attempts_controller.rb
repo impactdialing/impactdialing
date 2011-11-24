@@ -57,9 +57,12 @@ class CallAttemptsController < ApplicationController
 
   def update
     call_attempt = CallAttempt.find(params[:id])
-    call_attempt.update_attributes(params[:call_attempt])
-    call_attempt.update_attribute('status', CallAttempt::Status::SCHEDULED) if params[:call_attempt][:scheduled_date]
-    render :text => 'Call Attempt updated', :status => :ok
+    call_attempt.update_attributes(:scheduled_date => params[:call_attempt][:scheduled_date], :status => CallAttempt::Status::SCHEDULED)
+    call_attempt.voter.update_attributes(:scheduled_date => params[:call_attempt][:scheduled_date], :status => CallAttempt::Status::SCHEDULED)
+
+    next_voter = call_attempt.campaign.all_voters.to_be_dialed.first
+    call_attempt.caller_session.publish("voter_push", next_voter ? next_voter.info : {})
+    render :nothing => true
   end
 
   def voter_response
