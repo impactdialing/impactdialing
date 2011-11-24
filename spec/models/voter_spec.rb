@@ -125,6 +125,7 @@ describe Voter do
       end
 
       it "updates voter attributes" do
+        caller_session = Factory(:caller_session, :available_for_call => true, :on_call => true, campaign: campaign)
         voter.dial_predictive
         call_attempt = voter.call_attempts.last
         voter.last_call_attempt.should == call_attempt
@@ -134,6 +135,7 @@ describe Voter do
       end
 
       it "updates the call_attempts campaign" do
+        caller_session = Factory(:caller_session, :available_for_call => true, :on_call => true, campaign: campaign)
         voter.dial_predictive
         call_attempt = voter.call_attempts.last
         call_attempt.campaign.should == voter.campaign

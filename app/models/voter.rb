@@ -84,16 +84,16 @@ class Voter < ActiveRecord::Base
   def dial_predictive
     puts "Eneterdd dia predictive ######"
     # Thread.new {
-    @client = Twilio::REST::Client.new TWILIO_ACCOUNT, TWILIO_AUTH
-    call_attempt = new_call_attempt(self.campaign.predictive_type)
-    caller_session = call_attempt.campaign.caller_sessions.available.first
+    @client = Twilio::REST::Client.new TWILIO_ACCOUNT, TWILIO_AUTH    
+    caller_session = campaign.caller_sessions.available.first
     puts "connect to _caller #{caller_session.inspect} , #{campaign.predictive_type}"
     DIALER_LOGGER.info "connect to _caller #{caller_session.inspect} , #{campaign.predictive_type}"
-    unless caller_session.nil?
+    unless caller_session.nil?      
       DIALER_LOGGER.info "Pushing data for #{info.inspect}"
       puts "Pushing data for #{info.inspect}"
       puts "#########"
       puts "#{caller_session}"
+      call_attempt = new_call_attempt(self.campaign.predictive_type)
       call_attempt.update_attributes(caller_session: caller_session)
       caller_session.update_attributes(:on_call => true, :available_for_call => false)
       caller_session.publish('voter_push', info)
