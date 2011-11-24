@@ -226,9 +226,9 @@ function subscribe(session_key) {
     });
 
     channel.bind('voter_connected', function(data) {
+		set_call_attempt(data.attempt_id);
+		hide_all_actions();
         show_response_panel();
-        set_call_attempt(data.attempt_id);
-        hide_all_actions();
 		if(data.dialer && data.dialer != 'preview') {
 	        set_voter(data.voter);
 			set_message("Status: Connected")
@@ -264,7 +264,7 @@ function subscribe(session_key) {
     });
 
 	channel.bind('predictive_successful_voter_response', function(data){
-	 hide_all_actions();
+	 clear_voter();
 	 hide_response_panel();
    	 set_message("Dialing Voters.");
 	});
