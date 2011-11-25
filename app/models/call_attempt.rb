@@ -51,7 +51,7 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def connect_to_caller
-    if caller_session.nil? || caller_session.disconnected?
+    if caller_session.nil? || caller_session.disconnected? || !caller_session.available_for_call
       hangup
     else
       caller_session.update_attributes(:on_call => true, :available_for_call => false)
@@ -78,6 +78,7 @@ class CallAttempt < ActiveRecord::Base
   def conference(session)
     self.update_attributes(:caller => session.caller, :call_start => Time.now, :caller_session => session)
     session.publish('voter_connected', {:attempt_id => self.id, :voter => self.voter.info})
+    Moderator.voter_connected(session.caller, 'voter_connected', {:caller_id => session.caller.id, :voter_phone => voter.Phone})
     voter.conference(session)
     Twilio::TwiML::Response.new do |r|
       r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(self, :host => Settings.host) do |d|
@@ -101,7 +102,9 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def fail
-    caller_session.publish('voter_push',self.campaign.all_voters.to_be_dialed.first.info) if caller_session
+    if caller_session && campaign.predictive_type == Campaign::Type::PREVIEW
+     caller_session.publish('voter_push',self.campaign.all_voters.to_be_dialed.first.info) 
+    end
     voter.update_attributes(:call_back => false)
   end
 

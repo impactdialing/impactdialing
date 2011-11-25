@@ -16,4 +16,6 @@ class Account < ActiveRecord::Base
   def new_billing_account
     BillingAccount.create(:account => self)
   end
+  
+  
 end

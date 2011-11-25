@@ -83,7 +83,7 @@ class Voter < ActiveRecord::Base
 
   def dial_predictive
     # Thread.new {
-    @client = Twilio::REST::Client.new TWILIO_ACCOUNT, TWILIO_ACCOUNT_AUTH    
+    @client = Twilio::REST::Client.new TWILIO_ACCOUNT, TWILIO_AUTH    
     caller_session = campaign.caller_sessions.available.first
     DIALER_LOGGER.info "connect to _caller #{caller_session.inspect} , #{campaign.predictive_type}"
     unless caller_session.nil?      

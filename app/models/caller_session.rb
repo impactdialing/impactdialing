@@ -51,7 +51,6 @@ class CallerSession < ActiveRecord::Base
                                  }
     )
     self.publish('calling_voter', voter.info)
-    update_attributes(available_for_call: false)
     attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])
   end
 
@@ -76,7 +75,7 @@ class CallerSession < ActiveRecord::Base
   def start
     response = Twilio::Verb.new do |v|
       v.dial(:hangupOnStar => true, :action => pause_caller_url(self.caller, :host => Settings.host, :port => Settings.port, :session_id => id)) do
-        v.conference(self.session_key, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port), :waitMethod => 'GET')
+        v.conference(self.session_key, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
       end
     end.response
     update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
@@ -113,6 +112,7 @@ class CallerSession < ActiveRecord::Base
   def disconnected?
     !available_for_call && !on_call
   end
+  
 
   def publish(event, data)
     return unless self.campaign.use_web_ui?

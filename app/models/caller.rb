@@ -1,7 +1,6 @@
 class Caller < ActiveRecord::Base
   include Rails.application.routes.url_helpers
   include Deletable
-  validates_presence_of :name, :on => :create, :message => "can't be blank"
   validates_format_of :email, :allow_blank => true, :with => /^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i, :message => "Invalid email"
   has_many :caller_campaigns
   has_many :campaigns, :through => :caller_campaigns
@@ -60,7 +59,7 @@ class Caller < ActiveRecord::Base
   end
   
   def info
-    self.attributes.reject { |k, v| (k == "created_at") ||(k == "updated_at") }
+    attributes.reject { |k, v| (k == "created_at") ||(k == "updated_at") }
   end
 
 end

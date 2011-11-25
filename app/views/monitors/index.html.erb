@@ -18,8 +18,23 @@
   Twilio.Device.error(function (error) {
     alert(error.message);
   });
+  
+  
+  function de_activate_monitor(){
+    $.ajax({
+        url : "/client/monitors/stop",
+        data : {monitor_session : $('monitor_session').text()},
+        type : "GET",
+        async : false,
+        success : function(response) {}
+      });
+  }
+  
+  $(window).bind("beforeunload", function(){
+      de_activate_monitor();
+    })
 
-  function monitor(session_id, action, status) {
+  function monitor(session_id, action, status){
     params = {'session_id': session_id, 'type': action, monitor_session : $('monitor_session').text()};
     $('status').text(status)
     $('.stop_monitor').show();
@@ -28,9 +43,12 @@
   function stop_monitoring(){
     $('status').text("You are monitoring nothing")
     $('.stop_monitor').hide();
+    
     Twilio.Device.disconnectAll();
     return false;
   }
+  
+
 
   function switch_mode(session, mode){
     $.ajax({
@@ -68,11 +86,10 @@
 </script>
 
 <script id="caller" type="text/html">
-
-  <tr class="<%= cycle("odd", "even") %> ">
+  <tr attr_id={{id}} class="caller <%= cycle("odd", "even") %> ">
       <td class="caller_name">{{email}}</td>
       <td>{{campaign_name}}</td>
-      <td></td>
+      <td class="voter_phone"></td>
       <td>
         <a class ="action secondary monitor" href="#" action="eavesdrop" session_id={{session_id}}>Eavesdrop</a>
       </td>
@@ -80,6 +97,15 @@
         <a class ="action secondary monitor" href="#" action="breakin" session_id={{session_id}}>Break In</a>
       </td>
   </tr>
+</script>
+<script id="campaign" type="text/html">
+  {{#campaign_fields}}
+    <tr attr_id={{id}} class="campaign <%= cycle("odd", "even") %>">
+       <td><h3><a href={{path}} >{{campaign_name}}</a></h3></td> 
+       <td class="callers_logged_in">{{callers_logged_in}}</td>
+       <td class="voters_count">{{voters_count}}</td>
+    </tr>
+  {{/campaign_fields}}
 
 </script>
 
@@ -92,24 +118,26 @@
       <div class="form">
         <label>No campaigns active.</label>
       </div>
-  <% else %>
+  <% end %>
       <div class="table">
-        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+        <table id="campaign_table" width="100%" border="0" cellspacing="0" cellpadding="0">
           <tr>
             <th>Name</th>
             <th>Callers logged in</th>
             <th>Numbers remaining</th>
           </tr>
+          <% if @campaigns.present? %>
           <% @campaigns.each do |c| %>
-              <tr class="<%= cycle("odd", "even") %>">
+              <tr attr_id="<%= c.id %>" class="campaign <%= cycle("odd", "even") %>">
                 <td><h3><%= link_to c.name, campaign_path(c) %></h3></td>
-                <td><%= c.caller_sessions.on_call.length %></td>
-                <td><%= c.voters_count("not called", false).length %></td>
+                <td class="callers_logged_in"><%= c.caller_sessions.on_call.length %></td>
+                <td class="voters_count"><%= c.voters_count("not called", false).length %></td>
               </tr>
+          <% end %>
           <% end %>
         </table>
       </div>
-  <% end %>
+  <% #end %>
 </div>
 <h2>Callers</h2>
 <% #if @campaigns.length > 0 %>
@@ -125,21 +153,20 @@
             <th></th>
           </tr>
           <% @campaigns.each do |c| %>
-              <% c.caller_sessions.on_call.each do |session| %>
-                  <tr class="<%= cycle("odd", "even") %> ">
-                    <td class="caller_name"><%= session.caller.email %></td>
-                    <td><%= session.campaign.name %></td>
-                    <td>
-                    <% if session.voter_in_progress!=nil %>
-                        <% voter = Voter.find(session.voter_in_progress) %>
+              <% c.caller_sessions.on_call.each do |caller_session| %>
+                  <tr attr_id="<%= caller_session.caller.id %>" class="caller <%= cycle("odd", "even") %> ">
+                    <td class="caller_name"><%= caller_session.caller.email %></td>
+                    <td><%= caller_session.campaign.name %></td>
+                    <td class="voter_phone">
+                    <% if caller_session.voter_in_progress!=nil %>
+                        <% voter = Voter.find(caller_session.voter_in_progress) %>
                         <%= voter.Phone %>
                      <% end %>
                     <td>
-                      <a class ="action secondary monitor" href="#" action="eavesdrop" session_id="<%= session.id %>">Eavesdrop</a>
+                      <a class ="action secondary monitor" href="#" action="eavesdrop" session_id="<%= caller_session.id %>">Eavesdrop</a>
                     </td>
                     <td>
-                      <a class ="action secondary monitor" href="#" action="breakin" session_id="<%= session.id %>">Break In</a>
-                      <!-- <input type="button" value="Break In" class="monitor" action="breakin" session_id="<%= session.id %>" > -->
+                      <a class ="action secondary monitor" href="#" action="breakin" session_id="<%= caller_session.id %>">Break In</a>
                     </td>
                   </tr>
               <% end %>

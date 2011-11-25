@@ -377,7 +377,6 @@ class Campaign < ActiveRecord::Base
     stats = call_stats(10)
 
     short_counter = num_short_calls_in_progress(stats[:short_time])
-    puts "yyyyyyyyyyyyyyyyyy"
     puts stats[:ratio_short]
     puts short_counter
     if stats[:ratio_short]>0 && short_counter > 0

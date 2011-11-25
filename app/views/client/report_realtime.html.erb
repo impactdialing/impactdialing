@@ -35,10 +35,14 @@ Load testin':
 <br/><br/>
 <% end %>
 
-<div id="status">Loading...</div>
-<%= periodically_call_remote(:url => { :action => 'update_report', :id=>params[:id], :timeframe=>params[:timeframe] }, :update => 'status',  :frequency => '30')  %>
-<script>
-<%= remote_function(:url => { :action => 'update_report', :id=>params[:id] , :timeframe=>params[:timeframe]}, :update => 'status')  %>
-</script>
+  <div id="status">Loading...</div>
+  <script type='text/javascript'>
+    $(document).ready(function(){
+        $('#status').load('<%= client_update_report_real_path(:id => params[:id], :timeframe => params[:timeframe]) %>')
+        setInterval(function(){
+          $('#status').load('<%= client_update_report_real_path(:id => params[:id], :timeframe => params[:timeframe]) %>')
+          }, 30000)
+        })
+  </script>
 <% end %>
 

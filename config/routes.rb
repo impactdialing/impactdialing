@@ -104,7 +104,7 @@ ImpactDialing::Application.routes.draw do
       end
     end
     get :update_report_real
-
+    resources :users, :only => [:create, :destroy]
     post 'user_invite', :to => 'users#invite', :as => 'user_invite'
   end
 
@@ -117,7 +117,6 @@ ImpactDialing::Application.routes.draw do
       end
     end
     resources :blocked_numbers, :only => [:index, :create, :destroy]
-    resources :users, :only => [:create, :destroy]
     resources :monitors do
       collection do
         post :start

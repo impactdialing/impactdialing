@@ -1,7 +1,7 @@
 require Rails.root.join("lib/twilio_lib")
 
 class ClientController < ApplicationController
-  before_filter :check_login, :except => [:login,:user_add, :forgot]
+  before_filter :check_login, :except => [:login,:user_add, :forgot, :start]
   before_filter :check_paid
   before_filter :redirect_to_ssl
 
@@ -9,7 +9,6 @@ class ClientController < ApplicationController
   in_place_edit_for :campaign, :name
 
   def check_login
-    puts "dfdfdfdfdfd #{session[:user]}"
     redirect_to_login and return if session[:user].blank?
     begin
       @user = User.find(session[:user])
