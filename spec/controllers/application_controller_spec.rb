@@ -11,14 +11,15 @@ describe ApplicationController do
     controller.redirect_to_ssl.should_not be
   end
 
-  it "redirects to the https version of broadcast in staging" do
-    controller.stub(:testing?).and_return(false)
-    controller.stub(:staging?).and_return(true)
-    request.stub(:subdomain).and_return('staging')
-    request.stub(:domain).and_return('somedomain.com')
-    request.stub(:path).and_return('/some_path')
-    request.env['HTTPS'] = 'off'
-    controller.should_receive(:redirect_to).with('https://staging.somedomain.com/some_path')
-    controller.redirect_to_ssl.should_not be
+  ['staging', 'preprod'].each do |env|
+    it "redirects to the https version of broadcast in #{env}" do
+      controller.stub(:testing?).and_return(false)
+      request.stub(:subdomain).and_return(env)
+      request.stub(:domain).and_return('somedomain.com')
+      request.stub(:path).and_return('/some_path')
+      request.env['HTTPS'] = 'off'
+      controller.should_receive(:redirect_to).with("https://#{env}.somedomain.com/some_path")
+      controller.redirect_to_ssl.should_not be
+    end
   end
 end
