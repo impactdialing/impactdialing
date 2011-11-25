@@ -102,7 +102,7 @@ class AdminController < ApplicationController
   end
 
   def toggle_paid
-    account = User.find(params[:id]).account
+    account = Account.find(params[:id])
     account.update_attribute(:paid, !account.paid)
     redirect_to :back
   end

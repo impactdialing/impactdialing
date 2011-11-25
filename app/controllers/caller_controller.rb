@@ -95,8 +95,7 @@ class CallerController < ApplicationController
 
   def preview_voter
     caller_session = @caller.caller_sessions.find(params[:session_id])
-    voter = caller_session.campaign.all_voters.to_be_dialed.where("voters.id > #{params[:voter_id]}").first if params[:voter_id]
-    voter ||= caller_session.campaign.all_voters.to_be_dialed.first     
+    voter = caller_session.campaign.next_voter_in_dial_queue(params[:voter_id])
     caller_session.publish('caller_connected', voter ? voter.info : {}) if caller_session.campaign.predictive_type == Campaign::Type::PREVIEW
     render :nothing => true
   end
