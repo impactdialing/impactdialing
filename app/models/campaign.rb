@@ -494,15 +494,6 @@ class Campaign < ActiveRecord::Base
     end
   end
 
-  def verify_caller_id
-    require 'rubygems'
-    require 'hpricot'
-    t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-    a = t.call("POST", "OutgoingCallerIds", {'PhoneNumber'=>caller_id, 'FriendlyName' => "Campaign #{id}"})
-    @doc = Hpricot::XML(a)
-    (@doc/"ValidationCode").inner_html
-  end
-
   module Type
     PREVIEW = "preview"
     PREDICTIVE = "algorithm1"
