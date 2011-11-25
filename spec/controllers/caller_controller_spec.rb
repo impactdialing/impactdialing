@@ -122,32 +122,37 @@ describe CallerController do
       session = Factory(:caller_session, :caller => caller, :campaign => nil)
       CallerSession.stub(:find).and_return(session)
       session.stub(:start).and_return(:nothing)
-
-      post :assign_campaign, :session_id => session, :Digits => campaign.reload.campaign_id
+      Moderator.stub!(:caller_connected_to_campaign).with(caller, campaign, session)
+      
+      post :assign_campaign, :id =>caller.id, :session_id => session, :Digits => campaign.reload.campaign_id
       assigns(:session).campaign.should == campaign
     end
 
     it "creates a conference for a caller" do
       campaign = Factory(:campaign, :account => account)
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => 'key')
-
-      post :assign_campaign, :session => session.id, :Digits => campaign.reload.campaign_id
+      Moderator.stub!(:caller_connected_to_campaign).with(caller, campaign, session)
+      
+      post :assign_campaign, :id =>caller.id, :session => session.id, :Digits => campaign.reload.campaign_id
       response.body.should == session.start
     end
 
     it "asks for campaign pin again when incorrect" do
       campaign = Factory(:campaign, :account => account)
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => 'key')
-
-      post :assign_campaign, :session => session.id, :Digits => '1234', :attempt => 1
+      Moderator.stub!(:caller_connected_to_campaign).with(caller, campaign, session)
+      
+      post :assign_campaign, :id =>caller.id, :session => session.id, :Digits => '1234', :attempt => 1
       response.body.should == session.ask_for_campaign(1)
     end
 
     it "does not allow a caller from one user to log onto a campaign of another user" do
       cpin = '1234'
-      Factory(:campaign, :account => Factory(:account), :campaign_id => cpin)
+      campaign = Factory(:campaign, :account => Factory(:account), :campaign_id => cpin)
       session = Factory(:caller_session, :caller => caller, :session_key => 'key')
-      post :assign_campaign, :session => session.id, :Digits => '1234', :attempt => 1
+      Moderator.stub!(:caller_connected_to_campaign).with(caller, campaign, session)
+      
+      post :assign_campaign, :id =>caller.id ,:session => session.id, :Digits => '1234', :attempt => 1
       response.body.should == session.ask_for_campaign(1)
     end
 

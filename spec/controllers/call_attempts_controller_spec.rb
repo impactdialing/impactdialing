@@ -81,6 +81,7 @@ describe CallAttemptsController do
       Factory(:caller_session, :campaign => campaign, :available_for_call => false)
       available_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller))
       call_attempt.update_attributes(caller_session: available_session)
+      Moderator.stub!(:voter_connected).with(available_session.caller, 'voter_connected', {:caller_id => available_session.caller.id, :voter_phone => voter.Phone})
       post :connect, :id => call_attempt.id
 
       call_attempt.reload.caller.should == available_session.caller
@@ -96,6 +97,7 @@ describe CallAttemptsController do
       Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => false)
       available_caller = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => false)
       call_attempt.update_attribute(:caller_session, available_caller)
+      Moderator.stub!(:voter_connected).with(available_caller.caller, 'voter_connected', {:caller_id => available_caller.caller.id, :voter_phone => voter.Phone})
       post :connect, :id => call_attempt.id
       response.body.should == Twilio::TwiML::Response.new do |r|
         r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(call_attempt, :host => Settings.host) do |d|
@@ -179,10 +181,12 @@ describe CallAttemptsController do
       session_key = 'foo'
       custom_field = Factory(:custom_voter_field)
       Factory(:custom_voter_field_value, :voter => voter, :custom_voter_field => custom_field, :value => 'value')
-      call_attempt.update_attributes(caller_session: Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller), :session_key => session_key, :voter_in_progress => voter))
+      caller_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller), :session_key => session_key, :voter_in_progress => voter)
+      call_attempt.update_attributes(caller_session: caller_session)
       pusher_session = mock
       pusher_session.should_receive(:trigger).with('voter_connected', {:attempt_id=> call_attempt.id, :voter => voter.info}.merge(:dialer => campaign.predictive_type))
       Pusher.stub(:[]).with(session_key).and_return(pusher_session)
+      Moderator.stub!(:voter_connected).with(caller_session.caller, 'voter_connected', {:caller_id => caller_session.caller.id, :voter_phone => voter.Phone})
       post :connect, :id => call_attempt.id
     end
 
