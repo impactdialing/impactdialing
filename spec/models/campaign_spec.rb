@@ -22,9 +22,11 @@ describe "predictive_dialer" do
 
   it "set calls_in_progress before dialing predictive voters, and unsets it after" do
     campaign = Factory(:campaign, :calls_in_progress => false, :predictive_type => 'predictive')
+
     def campaign.dial_predictive_voters
       calls_in_progress.should == true
     end
+
     campaign.predictive_dial
     campaign.calls_in_progress.should == false
   end
@@ -79,13 +81,13 @@ describe "predictive_dialer" do
     Factory(:blocked_number, :number => unblocked_voter.Phone, :account => account, :campaign=>Factory(:campaign))
     campaign.choose_voters_to_dial(10).should == [unblocked_voter]
   end
-  
+
   it "should return zero voters, if active_voter_list_ids is empty" do
     campaign = Factory(:campaign, :account => Factory(:account, :paid => true))
     VoterList.should_receive(:active_voter_list_ids).with(campaign.id).and_return([])
     campaign.voters("not called").should == []
   end
-  
+
   it "should return voters to be call" do
     campaign = Factory(:campaign, :account => Factory(:account, :paid => true))
     VoterList.should_receive(:active_voter_list_ids).with(campaign.id).and_return([12, 123])
@@ -141,13 +143,13 @@ describe "simulatation_dialer" do
     campaign = Factory(:campaign, :predictive_alpha=>0.8, :predictive_beta=>0.2)
     caller_session = Factory(:caller_session, :on_call => true, :available_for_call => true, :campaign => campaign)
     (1..25).each do |i|
-      short_call_attempt = Factory(:call_attempt, :caller_session => caller_session, :voter => Factory(:voter), :campaign => campaign, :call_start=>Time.now-30, :status=>"Call completed with success.",  :call_end=>Time.now)
+      short_call_attempt = Factory(:call_attempt, :caller_session => caller_session, :voter => Factory(:voter), :campaign => campaign, :call_start=>Time.now-30, :status=>"Call completed with success.", :call_end=>Time.now)
     end
     (1..25).each do |i|
-      lon_call_attempt = Factory(:call_attempt, :caller_session => caller_session, :voter => Factory(:voter), :campaign => campaign, :call_start=>Time.now-600, :status=>"Call completed with success.",  :call_end=>Time.now)
+      lon_call_attempt = Factory(:call_attempt, :caller_session => caller_session, :voter => Factory(:voter), :campaign => campaign, :call_start=>Time.now-600, :status=>"Call completed with success.", :call_end=>Time.now)
     end
     (1..2).each do |i|
-      longer_than_expected_call_attempt = Factory(:call_attempt, :caller_session => caller_session, :voter => Factory(:voter), :campaign => campaign, :call_start=>Time.now-1400, :status=>"Call completed with success.",  :call_end=>Time.now)
+      longer_than_expected_call_attempt = Factory(:call_attempt, :caller_session => caller_session, :voter => Factory(:voter), :campaign => campaign, :call_start=>Time.now-1400, :status=>"Call completed with success.", :call_end=>Time.now)
     end
     (1..10).each do |i|
       free_caller_session = Factory(:caller_session, :on_call => true, :available_for_call => true, :campaign => campaign)
@@ -168,7 +170,7 @@ describe "simulatation_dialer" do
     campaign = Factory(:campaign, :predictive_alpha=>0.8, :predictive_beta=>0.2)
     caller_session = Factory(:caller_session, :on_call => true, :available_for_call => true, :campaign => campaign)
     (1..25).each do |i|
-      answered_call_attempt = Factory(:call_attempt, :caller_session => caller_session, :voter => Factory(:voter), :campaign => campaign, :call_start=>Time.now-30, :status=>"Call completed with success.",  :call_end=>Time.now)
+      answered_call_attempt = Factory(:call_attempt, :caller_session => caller_session, :voter => Factory(:voter), :campaign => campaign, :call_start=>Time.now-30, :status=>"Call completed with success.", :call_end=>Time.now)
     end
     # since all dials are answered it should be equal to alpha
     campaign.dials_needed.should==campaign.predictive_alpha
@@ -176,10 +178,10 @@ describe "simulatation_dialer" do
     campaign_2 = Factory(:campaign, :predictive_alpha=>0.8, :predictive_beta=>0.2)
     caller_session_2 = Factory(:caller_session, :on_call => true, :available_for_call => true, :campaign => campaign_2)
     (1..25).each do |i|
-      answered_call_attempt = Factory(:call_attempt, :caller_session => caller_session_2, :voter => Factory(:voter), :campaign => campaign_2, :call_start=>Time.now-30, :status=>"Call completed with success.",  :call_end=>Time.now)
+      answered_call_attempt = Factory(:call_attempt, :caller_session => caller_session_2, :voter => Factory(:voter), :campaign => campaign_2, :call_start=>Time.now-30, :status=>"Call completed with success.", :call_end=>Time.now)
     end
     (1..25).each do |i|
-      busy_call_attempt = Factory(:call_attempt, :caller_session => caller_session_2, :voter => Factory(:voter), :campaign => campaign_2, :call_start=>Time.now, :status=>"Busy",  :call_end=>Time.now)
+      busy_call_attempt = Factory(:call_attempt, :caller_session => caller_session_2, :voter => Factory(:voter), :campaign => campaign_2, :call_start=>Time.now, :status=>"Busy", :call_end=>Time.now)
     end
 
     # since half dials are answered it should be equal to alpha/2
@@ -260,6 +262,30 @@ describe Campaign do
     active_voterlist = Factory(:voter_list, :campaign => campaign, :active => true)
     inactive_voterlist = Factory(:voter_list, :campaign => campaign, :active => false)
     campaign.voter_lists.should == [active_voterlist]
+  end
+
+  describe "next voter to be dialed" do
+    it "returns uncalled voter before called voter" do
+      campaign = Factory(:campaign)
+      Factory(:voter, :status => CallAttempt::Status::SUCCESS, :last_call_attempt_time => 2.hours.ago, :campaign => campaign)
+      uncalled_voter = Factory(:voter, :status => Voter::Status::NOTCALLED, :campaign => campaign)
+      campaign.next_voter_in_dial_queue.should == uncalled_voter
+    end
+
+    it "returns any scheduled voter within a ten minute window before an uncalled voter" do
+      campaign = Factory(:campaign)
+      scheduled_voter = Factory(:voter, :status => CallAttempt::Status::SCHEDULED, :last_call_attempt_time => 2.hours.ago, :scheduled_date => 1.minute.from_now, :campaign => campaign)
+      Factory(:voter, :status => Voter::Status::NOTCALLED, :campaign => campaign)
+      campaign.next_voter_in_dial_queue.should == scheduled_voter
+    end
+
+    it "returns voter with respect to a current voter" do
+      campaign = Factory(:campaign)
+      uncalled_voter = Factory(:voter, :status => Voter::Status::NOTCALLED, :campaign => campaign)
+      current_voter = Factory(:voter, :status => Voter::Status::NOTCALLED, :campaign => campaign)
+      next_voter = Factory(:voter, :status => Voter::Status::NOTCALLED, :campaign => campaign)
+      campaign.next_voter_in_dial_queue(current_voter.id).should == next_voter
+    end
   end
 
   describe "campaigns with caller sessions that are on call" do

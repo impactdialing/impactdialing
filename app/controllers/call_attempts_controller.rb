@@ -21,7 +21,7 @@ class CallAttemptsController < ApplicationController
                    call_attempt.voter.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
                    call_attempt.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
                    if call_attempt.caller_session && call_attempt.campaign.predictive_type == Campaign::Type::PREVIEW
-                     call_attempt.caller_session.publish('voter_push', call_attempt.campaign.all_voters.to_be_dialed.first.info) 
+                     call_attempt.caller_session.publish('voter_push', call_attempt.campaign.next_voter_in_dial_queue.info)
                    end
                    call_attempt.campaign.use_recordings? ? call_attempt.play_recorded_message : call_attempt.hangup
                  else      
@@ -58,12 +58,10 @@ class CallAttemptsController < ApplicationController
   def update
     call_attempt = CallAttempt.find(params[:id])
     call_attempt.update_attributes(:scheduled_date => params[:call_attempt][:scheduled_date], :status => CallAttempt::Status::SCHEDULED)
-    call_attempt.voter.update_attributes(:scheduled_date => params[:call_attempt][:scheduled_date], :status => CallAttempt::Status::SCHEDULED)
+    call_attempt.voter.update_attributes(:scheduled_date => params[:call_attempt][:scheduled_date], :status => CallAttempt::Status::SCHEDULED, :call_back => true)
 
-    next_voter = call_attempt.campaign.all_voters.to_be_dialed.first
-    if call_attempt.campaign.predictive_type == Campaign::Type::PREVIEW
-      call_attempt.caller_session.publish("voter_push", next_voter ? next_voter.info : {})
-    end
+    next_voter = call_attempt.campaign.next_voter_in_dial_queue
+    call_attempt.caller_session.publish("voter_push", next_voter ? next_voter.info : {}) if call_attempt.campaign.predictive_type == Campaign::Type::PREVIEW
     render :nothing => true
   end
 
@@ -72,7 +70,7 @@ class CallAttemptsController < ApplicationController
     voter = Voter.find(params[:voter_id])
     voter.capture(params)
     if call_attempt.campaign.predictive_type == Campaign::Type::PREVIEW
-      next_voter = call_attempt.campaign.all_voters.to_be_dialed.first
+      next_voter = call_attempt.campaign.next_voter_in_dial_queue
       call_attempt.caller_session.publish("voter_push", next_voter ? next_voter.info : {})
     else
       call_attempt.caller_session.publish("predictive_successful_voter_response", {})
