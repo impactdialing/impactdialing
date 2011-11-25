@@ -105,7 +105,7 @@ module ApplicationHelper
   end
 
   def in_production?
-    Rails.env == 'production' || Rails.env == 'staging'
+    ['production', 'staging', 'preproduction'].include?(Rails.env)
   end
 
   def pusher_js

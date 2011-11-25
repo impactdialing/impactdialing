@@ -477,6 +477,12 @@ class Campaign < ActiveRecord::Base
     update_attribute(:calls_in_progress, false)
   end
 
+  def next_voter_in_dial_queue(current_voter_id = nil)
+    voter =  all_voters.scheduled.first
+    voter||= all_voters.to_be_dialed.where("voters.id > #{current_voter_id}").first if current_voter_id
+    voter||= all_voters.to_be_dialed.first
+  end
+
   def voters_dialed
     call_attempts.count('voter_id', :distinct => true)
   end
@@ -491,15 +497,6 @@ class Campaign < ActiveRecord::Base
       script = account.scripts.active.first
       script_id = script.id unless script.nil?
     end
-  end
-
-  def verify_caller_id
-    require 'rubygems'
-    require 'hpricot'
-    t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-    a = t.call("POST", "OutgoingCallerIds", {'PhoneNumber'=>caller_id, 'FriendlyName' => "Campaign #{id}"})
-    @doc = Hpricot::XML(a)
-    (@doc/"ValidationCode").inner_html
   end
 
   module Type

@@ -10,6 +10,7 @@ describe CallAttemptsController do
     call_attempt.reload.scheduled_date.to_s.should == scheduled_date.to_s
     call_attempt.status.should == CallAttempt::Status::SCHEDULED
     call_attempt.voter.scheduled_date.to_s.should == scheduled_date.to_s
+    call_attempt.voter.call_back.should be_true
     call_attempt.voter.status.should == CallAttempt::Status::SCHEDULED
 
   end

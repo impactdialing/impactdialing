@@ -249,7 +249,7 @@ describe Voter do
       Voter.to_be_dialed.should == [v1, v2]
     end
 
-    it "puts uncalled voters first" do
+    it "prioritizes uncalled voters over called voters" do
       called_voter = Factory(:voter, :status => CallAttempt::Status::BUSY, :last_call_attempt_time => 2.hours.ago)
       uncalled_voter = Factory(:voter, :status => Voter::Status::NOTCALLED)
       Voter.to_be_dialed.should == [uncalled_voter, called_voter]
@@ -293,8 +293,8 @@ describe Voter do
   end
 
   it "lists scheduled voters" do
-    recent_voter = Factory(:voter, :scheduled_date => 2.minutes.ago, :status => CallAttempt::Status::SCHEDULED)
-    really_old_voter = Factory(:voter, :scheduled_date => 2.hours.ago, :status => CallAttempt::Status::SCHEDULED)
+    recent_voter = Factory(:voter, :scheduled_date => 2.minutes.ago, :status => CallAttempt::Status::SCHEDULED, :call_back => true)
+    really_old_voter = Factory(:voter, :scheduled_date => 2.hours.ago, :status => CallAttempt::Status::SCHEDULED, :call_back => true)
     recent_but_unscheduled_voter = Factory(:voter, :scheduled_date => 1.minute.ago, :status => nil)
     Voter.scheduled.should == [recent_voter]
   end

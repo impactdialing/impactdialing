@@ -15,8 +15,8 @@ class ApplicationController < ActionController::Base
     @cont = controller_name
     @act = action_name
     flash.keep
-    if request.subdomain == 'staging'
-      redirect_to URI.join("https://staging.#{request.domain}", request.fullpath).to_s
+    if ['staging', 'preprod'].include?(request.subdomain)
+      redirect_to URI.join("https://#{request.subdomain}.#{request.domain}", request.fullpath).to_s
     elsif controller_name=="caller"
       redirect_to "https://caller.#{request.domain}/#{@cont}/#{@act}/#{params[:id]}"
     elsif controller_name == 'broadcast'
@@ -28,10 +28,6 @@ class ApplicationController < ActionController::Base
 
   def testing?
     Rails.env == 'test'
-  end
-
-  def staging?
-    Rails.env == 'staging'
   end
 
   def ssl?
