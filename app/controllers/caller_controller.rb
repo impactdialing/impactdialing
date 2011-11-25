@@ -49,13 +49,11 @@ class CallerController < ApplicationController
 
   def assign_campaign
     @session = CallerSession.find(params[:session])
+    caller = Caller.find(params[:id])
     @campaign = @session.caller.account.campaigns.find_by_campaign_id(params[:Digits])
-        # @campaign = @session.caller.account.campaigns.find_by_campaign_id('62877')
     if @campaign
       @session.update_attributes(:campaign => @campaign)
-      @session.caller.account.moderators.active.each do |moderator|
-        Pusher[moderator.session].trigger('caller_session_started', @session.caller.info.merge!(:campaign_name => @campaign.name, :session_id => @session.id))
-      end
+      Moderator.caller_connected_to_campaign(caller, @campaign,@session)
       render :xml => @session.start
     else
       render :xml => @session.ask_for_campaign(params[:attempt].to_i)

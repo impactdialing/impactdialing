@@ -23,4 +23,15 @@ class Moderator < ActiveRecord::Base
     Twilio::Conference.kick_participant(session.session_key, call_sid)
   end
   
+  def self.caller_connected_to_campaign(caller, campaign, caller_session)
+    caller_info = caller.info
+    data = caller_info.merge(:campaign_name => campaign.name, :session_id => caller_session.id, :campaign_fields => {:id => campaign.id, :callers_logged_in => campaign.caller_sessions.on_call.length+1,
+       :voters_count => campaign.voters_count("not called", false).length, :path => Rails.application.routes.url_helpers.client_campaign_path(campaign) })
+    caller.account.moderators.active.each {|moderator| Pusher[moderator.session].trigger('caller_session_started', data)}    
+  end
+  
+  def self.voter_connected(caller, event, data)
+    caller.account.moderators.active.each {|moderator| Pusher[moderator.session].trigger(event, data)}
+  end
+  
 end

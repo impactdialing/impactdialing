@@ -56,15 +56,15 @@ function eavesdrop(sess,type){
 		<th></th>-->
       </tr>
 	<% @logged_in_campaigns.each do |c| %>
-	<% CallerSession.find_all_by_on_call_and_campaign_id(1, c.id).each do |session| %>
+	<% CallerSession.find_all_by_on_call_and_campaign_id(1, c.id).each do |caller_session| %>
       <tr class="<%= cycle("odd","even") %>">
-        <td><%= session.caller.name %></td>
-        <td><%= session.campaign.name %></td>
-		<% if session.voter_in_progress!=nil %>
-			<% voter = Voter.find(session.voter_in_progress) %>
+        <td><%= caller_session.caller.name %></td>
+        <td><%= caller_session.campaign.name %></td>
+		<% if caller_session.voter_in_progress!=nil %>
+			<% voter = Voter.find(caller_session.voter_in_progress) %>
 			<td><%= voter.Phone %></td>
-			<td><input type="button" value="Eavesdrop" class="button" onclick="eavesdrop(<%= session.id %>,0);"></td>
-			<td><input type="button" value="Break In" class="button" onclick="eavesdrop(<%= session.id %>,1);"></td>
+			<td><input type="button" value="Eavesdrop" class="button" onclick="eavesdrop(<%= caller_session.id %>,0);"></td>
+			<td><input type="button" value="Break In" class="button" onclick="eavesdrop(<%= caller_session.id %>,1);"></td>
 			<!--<td><input type="button" value="Take Over" class="button" onclick="eavesdrop(<%= session.id %>,2);"></td>
 			<td>Record</td>-->
 		<% end %>

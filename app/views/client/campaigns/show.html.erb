@@ -55,7 +55,7 @@
           <div id="callers">
             <table width="100%" border="0" cellspacing="0" cellpadding="0">
               <tr>
-                <th>Name</th>
+                <th>Email</th>
                 <th>&nbsp;</th>
                 <th>PIN</th>
                 <% if @campaign.predictive_type.index("robo,") %>
@@ -71,7 +71,7 @@
 
               <% @callers.each do |l| %>
                   <tr>
-                    <td><%= check_box_tag "campaign[caller_ids][]", "#{l.id}", callerInCampaign(l), id: "campaign_caller_id_#{l.id}" -%> <%= l.name %></td>
+                    <td><%= check_box_tag "campaign[caller_ids][]", "#{l.id}", callerInCampaign(l), id: "campaign_caller_id_#{l.id}" -%> <%= l.email %></td>
                     <td></td>
                     <td><%= l.pin %></td>
                     <% if @campaign.predictive_type.index("robo,") %>

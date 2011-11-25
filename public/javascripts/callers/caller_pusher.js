@@ -221,12 +221,18 @@ function subscribe(session_key) {
         hide_all_actions();
         show_response_panel();
         set_message("Please enter your call results.");
+        $("#submit_and_keep_call").show();
+        $("#submit_and_stop_call").show();
     });
 
     channel.bind('voter_connected', function(data) {
-        show_response_panel();
-        set_call_attempt(data.attempt_id);
-        hide_all_actions();
+		set_call_attempt(data.attempt_id);
+		hide_all_actions();
+		if(data.dialer && data.dialer != 'preview') {
+	        set_voter(data.voter);	
+			set_message("Status: Connected")
+		}
+		show_response_panel();
         $("#hangup_call").show();
     });
 
@@ -256,6 +262,12 @@ function subscribe(session_key) {
     channel.bind('no_voter_on_call', function(data){
       $('status').text("Currently no voter is connected, You can monitor when voter connected")
     });
+
+	channel.bind('predictive_successful_voter_response', function(data){
+	 clear_voter();
+	 hide_response_panel();
+   	 set_message("Dialing.");
+	});
 
     function set_call_attempt(id) {
         $("#current_call_attempt").val(id);
