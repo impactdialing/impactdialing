@@ -53,8 +53,6 @@ class CampaignsController < ClientController
 
   #TODO: extract html message to partial
   def verify_callerid
-    @campaign.check_valid_caller!
-    @campaign.save
     if @campaign.caller_id.present? and (not @campaign.caller_id_verified)
       ret = "<div class='msg msg-error'> <p><strong>Your Campaign Caller ID is not verified.</strong></p> </div>".html_safe
     end
