@@ -3,6 +3,7 @@ require "bundler/capistrano"
 repository = "git@github.com:impactdialing/Impact-Dialing.git"
 bundle_flags = "--deployment --quiet --binstubs"
 bundle_without = [:development, :test, :darwin, :linux]
+preproduction = 'ec2-107-20-99-7.compute-1.amazonaws.com'
 set :application, "impactdialing"
 set :user, "rails"
 set :scm, :git
@@ -47,6 +48,14 @@ task :staging do
   role :web, 'ec2-174-129-172-31.compute-1.amazonaws.com'
   role :app, 'ec2-174-129-172-31.compute-1.amazonaws.com'
   role :db, 'ec2-174-129-172-31.compute-1.amazonaws.com', :primary => true
+end
+
+task :preproduction do
+  set :rails_env, 'production'
+  set :branch, 'predictive'
+  role :web, preproduction
+  role :app, preproduction
+  role :db, preproduction, :primary => true #use an app server for migrations
 end
 
 task :production do
