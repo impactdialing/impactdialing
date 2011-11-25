@@ -25,8 +25,8 @@ module Callers
     end
 
     def caller_ready
-      session = CallerSession.find_by_sid(params[:caller_sid])
-      session.update_attributes(:available_for_call => true, :on_call => true)
+      caller_session = CallerSession.find_by_sid(params[:caller_sid])
+      caller_session.update_attributes(:available_for_call => true, :on_call => true)
       render :nothing => true
     end
   end

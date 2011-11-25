@@ -11,6 +11,7 @@ class Account < ActiveRecord::Base
   has_many :voters
   has_many :families
   has_many :blocked_numbers
+  has_many :moderators
 
   def new_billing_account
     BillingAccount.create(:account => self)

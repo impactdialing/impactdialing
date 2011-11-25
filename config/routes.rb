@@ -123,6 +123,7 @@ ImpactDialing::Application.routes.draw do
         post :start
         get :stop
         get :switch_mode
+        get :monitor_session
       end
     end
   end

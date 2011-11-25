@@ -1,5 +1,8 @@
 class Moderator < ActiveRecord::Base
   belongs_to :caller_session
+  belongs_to :account
+  
+  scope :active, :conditions => {:active => true}
   
   def switch_monitor_mode(session, type)
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)

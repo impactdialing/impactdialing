@@ -1,7 +1,7 @@
 require Rails.root.join("lib/twilio_lib")
 
 class ClientController < ApplicationController
-  before_filter :check_login, :except => [:login,:user_add, :forgot, :start]
+  before_filter :check_login, :except => [:login,:user_add, :forgot]
   before_filter :check_paid
   before_filter :redirect_to_ssl
 
@@ -9,11 +9,13 @@ class ClientController < ApplicationController
   in_place_edit_for :campaign, :name
 
   def check_login
+    puts "dfdfdfdfdfd #{session[:user]}"
     redirect_to_login and return if session[:user].blank?
     begin
       @user = User.find(session[:user])
       @account = @user.account
-    rescue
+    rescue exception => e
+      puts e
       logout
     end
   end
@@ -1087,19 +1089,7 @@ class ClientController < ApplicationController
     @to_date = DateTime.now if @to_date==nil
   end
 
-  def monitor
-    @logged_in_campaigns = Campaign.all(:conditions=>"id in (select distinct campaign_id from caller_sessions where on_call=1 and account_id=#{account.id})")
-    #        @logged_in_callers = CallerSession.find_all_by_on_call(1)
-    #        @ready_to_dial = CallAttempt.find_all_by_status("Call ready to dial", :conditions=>"call_end is null")
-  end
 
-  def eavesdrop_call
-    t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-    # a = t.call("POST", "Calls/#{caller.sid}", {'CurrentUrl'=>"#{appurl}/callin/callerEndCall?session=#{caller.id}"})
-    session=CallerSession.find(params[:session_id])
-    a = t.call("POST", "Calls", {'Timeout'=>"20", 'Caller' => session.campaign.caller_id, 'Called' => params[:num], 'Url'=>"#{APP_URL}/callin/monitorEavesdrop?session=#{session.id}&type=#{params[:type]}"})
-    render :text=>""
-  end
 
   def policies
     render 'home/policies'
