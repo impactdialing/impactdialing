@@ -21,6 +21,7 @@ function subscribe_and_bind_events_monitoring(session_id){
   
   channel.bind('caller_session_started', function(data){
     if (!$.isEmptyObject(data)) {
+      $('div.form').hide();
       var caller = ich.caller(data);
       $('#caller_table').children().append(caller);
       bind_voter_connected(channel)
