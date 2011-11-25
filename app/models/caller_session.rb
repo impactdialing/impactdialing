@@ -83,17 +83,14 @@ class CallerSession < ActiveRecord::Base
     response
   end
   
-  def join_conference(mute_type, call_sid)
+  def join_conference(mute_type, call_sid, monitor_session)
     response = Twilio::Verb.new do |v|
       v.dial(:hangupOnStar => true) do
         v.conference(self.session_key, :endConferenceOnExit => false, :beep => false, :waitUrl => "#{APP_URL}/callin/hold",:waitMethod =>"GET",:muted => mute_type)
       end
     end.response
-    if self.moderator.present?
-      self.moderator.update_attributes(:call_sid => call_sid)
-    else
-      Moderator.create!(:caller_session_id => self.id, :call_sid => call_sid)
-    end
+    moderator = Moderator.find_by_session(monitor_session)
+    moderator.update_attributes(:caller_session_id => self.id, :call_sid => call_sid)
     response
   end
 

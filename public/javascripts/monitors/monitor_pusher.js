@@ -1,3 +1,19 @@
+function subscribe_and_bind_events_monitoring(session_id){
+  channel = pusher.subscribe(session_id);  
+  console.log(channel)  
+  channel.bind('no_voter_on_call', function(data){
+    $('status').text("Currently no voter is connected, You can monitor when voter connected")
+  });
+  
+  channel.bind('caller_session_started', function(data){
+    if (!$.isEmptyObject(data)) {
+      var caller = ich.caller(data);
+      $('#caller_table').children().append(caller);
+    }
+  });
+  
+}
+
 $(document).ready(function() {
   // $.ajax({
   //     url : "/monitor/active_session",
@@ -11,11 +27,24 @@ $(document).ready(function() {
   // })
 
   $('.stop_monitor').hide()
-  monitor_session = $('monitor_session').text()
-  channel = pusher.subscribe(monitor_session);
-  console.log(channel)
-  channel.bind('no_voter_on_call', function(data){
-    $('status').text("Currently no voter is connected, You can monitor when voter connected")
-  });
+
+  if($('monitor_session').text()){
+    monitor_session = $('monitor_session').text();
+    subscribe_and_bind_events_monitoring(monitor_session);
+  }
+  else{
+    $.ajax({
+        url : "/client/monitors/monitor_session",
+        type : "GET",
+        success : function(response) {
+           monitor_session = response;
+           $('monitor_session').text(monitor_session)
+           subscribe_and_bind_events_monitoring(monitor_session);
+        }
+    });
+    
+  }
+  
   
 });
+

@@ -58,5 +58,9 @@ class Caller < ActiveRecord::Base
   def phone
     #required for the form field.
   end
+  
+  def info
+    self.attributes.reject { |k, v| (k == "created_at") ||(k == "updated_at") }
+  end
 
 end

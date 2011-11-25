@@ -1,7 +1,7 @@
 <script type="text/javascript" src="https://static.twilio.com/libs/twiliojs/1.0/twilio.js"></script>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js"></script>
 <script src="https://d3ds63zw57jt09.cloudfront.net/1.9/pusher.min.js" type="text/javascript" ></script>
-<%= javascript_include_tag 'monitors/monitor_pusher' %>
+<%= javascript_include_tag 'monitors/monitor_pusher', 'ICanHaz.min.js' %>
 
   <script type="text/javascript">
       var pusher = new Pusher('<%= Pusher.key %>');
@@ -44,8 +44,7 @@
   }
 
   $(function() {
-    $('.monitor').click(function(){
-
+    $('.monitor').live('click', function(){
       if($(this).parent().parent().attr("on_call")){
         switch_mode($(this).attr("session_id"), $(this).attr("action"));
       }
@@ -68,8 +67,25 @@
 
 </script>
 
+<script id="caller" type="text/html">
+
+  <tr class="<%= cycle("odd", "even") %> ">
+      <td class="caller_name">{{email}}</td>
+      <td>{{campaign_name}}</td>
+      <td></td>
+      <td>
+        <a class ="action secondary monitor" href="#" action="eavesdrop" session_id={{session_id}}>Eavesdrop</a>
+      </td>
+      <td>
+        <a class ="action secondary monitor" href="#" action="breakin" session_id={{session_id}}>Break In</a>
+      </td>
+  </tr>
+
+</script>
+
+
 <h1>Monitor</h1>
-<monitor_session style="display:none"><%= @user.id %></monitor_session>
+<monitor_session style="display:none"></monitor_session>
 <div class="box">
   <h2>Campaigns</h2>
   <% if @campaigns.empty? %>
@@ -95,15 +111,16 @@
       </div>
   <% end %>
 </div>
-
-<% if @campaigns.length > 0 %>
+<h2>Callers</h2>
+<% #if @campaigns.length > 0 %>
     <div class="box">
-      <h2>Callers</h2>
+      
       <div class="table">
-        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+        <table id="caller_table" width="100%" border="0" cellspacing="0" cellpadding="0">
           <tr>
             <th>Caller</th>
             <th>Campaign</th>
+            <th>Phone</th>
             <th></th>
             <th></th>
           </tr>
@@ -117,12 +134,6 @@
                         <% voter = Voter.find(session.voter_in_progress) %>
                         <%= voter.Phone %>
                      <% end %>
-                    <td>
-                      <input type="button" value="Eavesdrop" class="monitor" action="eavesdrop" session_id="<%= session.id %>" >
-                    </td>
-                    <td>
-                      <input type="button" value="Break in" class="monitor" action="breakin" session_id="<%= session.id %>" >
-                    </td>
                     <td>
                       <a class ="action secondary monitor" href="#" action="eavesdrop" session_id="<%= session.id %>">Eavesdrop</a>
                     </td>
@@ -139,4 +150,4 @@
         <status style="float : right;"></status>
       </div>
     </div>
-<% end %>
+<% #end %>

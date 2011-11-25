@@ -53,6 +53,9 @@ class CallerController < ApplicationController
         # @campaign = @session.caller.account.campaigns.find_by_campaign_id('62877')
     if @campaign
       @session.update_attributes(:campaign => @campaign)
+      @session.caller.account.moderators.active.each do |moderator|
+        Pusher[moderator.session].trigger('caller_session_started', @session.caller.info.merge!(:campaign_name => @campaign.name, :session_id => @session.id))
+      end
       render :xml => @session.start
     else
       render :xml => @session.ask_for_campaign(params[:attempt].to_i)
@@ -69,11 +72,11 @@ class CallerController < ApplicationController
 
   def pause
     caller = Caller.find(params[:id])
-    session = caller.caller_sessions.find(params[:session_id])
-    if session.disconnected?
+    caller_session = caller.caller_sessions.find(params[:session_id])
+    if caller_session.disconnected?
       render :xml => Twilio::Verb.hangup
     else
-      render :xml => session.voter_in_progress ? session.pause_for_results(params[:attempt]) : session.start
+      render :xml => caller_session.voter_in_progress ? caller_session.pause_for_results(params[:attempt]) : caller_session.start
     end
   end
 
@@ -82,8 +85,8 @@ class CallerController < ApplicationController
   end
 
   def end_session
-    session = CallerSession.find_by_sid(params[:CallSid])
-    render :xml => session.try(:end) || Twilio::Verb.hangup
+    caller_session = CallerSession.find_by_sid(params[:CallSid])
+    render :xml => caller_session.try(:end) || Twilio::Verb.hangup
   end
 
   def active_session
@@ -93,10 +96,10 @@ class CallerController < ApplicationController
   end
 
   def preview_voter
-    session = @caller.caller_sessions.find(params[:session_id])
-    voter = session.campaign.all_voters.to_be_dialed.where("voters.id > #{params[:voter_id]}").first if params[:voter_id]
-    voter ||= session.campaign.all_voters.to_be_dialed.first     
-    session.publish('caller_connected', voter ? voter.info : {}) if session.campaign.predictive_type == Campaign::Type::PREVIEW
+    caller_session = @caller.caller_sessions.find(params[:session_id])
+    voter = caller_session.campaign.all_voters.to_be_dialed.where("voters.id > #{params[:voter_id]}").first if params[:voter_id]
+    voter ||= caller_session.campaign.all_voters.to_be_dialed.first     
+    caller_session.publish('caller_connected', voter ? voter.info : {}) if caller_session.campaign.predictive_type == Campaign::Type::PREVIEW
     render :nothing => true
   end
 
@@ -110,9 +113,9 @@ class CallerController < ApplicationController
 
 
   def call_voter
-    session = @caller.caller_sessions.find(params[:session_id])
+    caller_session = @caller.caller_sessions.find(params[:session_id])
     voter = Voter.find(params[:voter_id])
-    session.preview_dial(voter)
+    caller_session.preview_dial(voter)
     render :nothing => true
   end
 
