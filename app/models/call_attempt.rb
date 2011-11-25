@@ -101,9 +101,7 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def fail
-    if caller_session && campaign.predictive_type == Campaign::Type::PREVIEW
-     caller_session.publish('voter_push',self.campaign.all_voters.to_be_dialed.first.info) 
-    end
+    caller_session.publish('voter_push',self.campaign.next_voter_in_dial_queue.info) if caller_session && campaign.predictive_type == Campaign::Type::PREVIEW
     voter.update_attributes(:call_back => false)
   end
 
