@@ -13,8 +13,7 @@ class ClientController < ApplicationController
     begin
       @user = User.find(session[:user])
       @account = @user.account
-    rescue exception => e
-      puts e
+    rescue 
       logout
     end
   end

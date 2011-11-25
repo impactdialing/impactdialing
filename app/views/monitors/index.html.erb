@@ -43,13 +43,13 @@
   function stop_monitoring(){
     $('status').text("You are monitoring nothing")
     $('.stop_monitor').hide();
-    
+    $.each($('tr.caller'), function(){
+      $(this).removeAttr("on_call");
+    });
     Twilio.Device.disconnectAll();
     return false;
   }
   
-
-
   function switch_mode(session, mode){
     $.ajax({
         url : "/client/monitors/switch_mode",
@@ -112,16 +112,16 @@
 
 <h1>Monitor</h1>
 <monitor_session style="display:none"></monitor_session>
+<% if @campaigns.empty? %>
+    <div class="form">
+      <label>No campaigns active.</label>
+    </div>
+<% end %>
 <div class="box">
   <h2>Campaigns</h2>
-  <% if @campaigns.empty? %>
-      <div class="form">
-        <label>No campaigns active.</label>
-      </div>
-  <% end %>
       <div class="table">
         <table id="campaign_table" width="100%" border="0" cellspacing="0" cellpadding="0">
-          <tr>
+          <tr class="table_header">
             <th>Name</th>
             <th>Callers logged in</th>
             <th>Numbers remaining</th>
@@ -145,7 +145,7 @@
       
       <div class="table">
         <table id="caller_table" width="100%" border="0" cellspacing="0" cellpadding="0">
-          <tr>
+          <tr class="table_header">
             <th>Caller</th>
             <th>Campaign</th>
             <th>Phone</th>
@@ -173,7 +173,6 @@
           <% end %>
         </table>
         <a class ="action secondary stop_monitor" href="#" onclick="javascript:stop_monitoring();">Stop Monitor</a>
-        <!-- <input type="button" value="Stop Monitor" class="stop_monitor" onclick="javascript:stop_monitoring();"> -->
         <status style="float : right;"></status>
       </div>
     </div>

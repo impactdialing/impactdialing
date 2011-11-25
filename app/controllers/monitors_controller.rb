@@ -11,7 +11,7 @@ class MonitorsController < ClientController
   def start
     caller_session = CallerSession.find(params[:session_id])
     if caller_session.voter_in_progress
-      unless caller_session.voter_in_progress.call_attempts.last.status == "Call in progress."
+      unless caller_session.voter_in_progress.call_attempts.last.status != "Call in progress."
         Pusher[params[:monitor_session]].trigger('no_voter_on_call',{})
       end
     end
@@ -23,7 +23,7 @@ class MonitorsController < ClientController
     type = params[:type]
     caller_session = CallerSession.find(params[:session_id])
     caller_session.moderator.switch_monitor_mode(caller_session, type)
-    render text: "Monitoring in "+ type + " mode on "+ caller_session.caller.name + "."
+    render text: "Monitoring in "+ type + " mode on "+ caller_session.caller.email + "."
   end
 
   def stop
