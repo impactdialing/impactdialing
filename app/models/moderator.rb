@@ -30,7 +30,7 @@ class Moderator < ActiveRecord::Base
     caller.account.moderators.active.each {|moderator| Pusher[moderator.session].trigger('caller_session_started', data)}    
   end
   
-  def self.voter_connected(caller, event, data)
+  def self.publish_event(caller, event, data)
     caller.account.moderators.active.each {|moderator| Pusher[moderator.session].trigger(event, data)}
   end
   

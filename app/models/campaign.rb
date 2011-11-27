@@ -65,7 +65,10 @@ class Campaign < ActiveRecord::Base
   def recent_attempts(mins=10)
     attempts = CallAttempt.find_all_by_campaign_id(self.id, :conditions=>"call_start > DATE_SUB(now(),INTERVAL #{mins} MINUTE)", :order=>"id desc")
   end
-
+  
+  def callers_log_in?
+    caller_sessions.on_call.length > 0
+  end
   def end_all_calls(account, auth, appurl)
     in_progress = CallAttempt.find_all_by_campaign_id(self.id, :conditions=>"sid is not null and call_end is null and id > 45")
     in_progress.each do |attempt|
