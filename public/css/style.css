@@ -1045,11 +1045,16 @@ transition : color .15s linear; }
 text-decoration : none; }
 
 a.action,
-button {
+button {	
 -webkit-transition : opacity .15s linear;
 -moz-transition : opacity .15s linear;
 -o-transition : opacity .15s linear;
 transition : opacity .15s linear; }
+
+a.small_font
+{
+font-size: 0.875em
+}
 
 /* opacity */
 
