@@ -211,6 +211,13 @@ function subscribe(session_key) {
         }
     });
 
+    channel.bind('caller_connected_dialer', function(data) {
+		hide_all_actions();
+		$("#stop_calling").show();
+	});
+
+
+
     channel.bind('voter_push', function(data) {
         console.log('voter data pushed')
         set_voter(data);
@@ -233,6 +240,7 @@ function subscribe(session_key) {
 			set_message("Status: Connected")
 		}
 		show_response_panel();
+		$("#response_panel select option:selected").attr('selected',false)
         $("#hangup_call").show();
     });
 
