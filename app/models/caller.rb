@@ -61,5 +61,6 @@ class Caller < ActiveRecord::Base
   def info
     attributes.reject { |k, v| (k == "created_at") ||(k == "updated_at") }
   end
+  
 
 end
