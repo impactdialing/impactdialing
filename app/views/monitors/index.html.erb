@@ -86,7 +86,7 @@
 </script>
 
 <script id="caller" type="text/html">
-  <tr attr_id={{id}} class="caller <%= cycle("odd", "even") %> ">
+  <tr id={{id}} class="caller <%= cycle("odd", "even") %> ">
       <td class="caller_name">{{email}}</td>
       <td>{{campaign_name}}</td>
       <td class="voter_phone"></td>
@@ -100,7 +100,7 @@
 </script>
 <script id="campaign" type="text/html">
   {{#campaign_fields}}
-    <tr attr_id={{id}} class="campaign <%= cycle("odd", "even") %>">
+    <tr id={{id}} class="campaign <%= cycle("odd", "even") %>">
        <td><h3><a href={{path}} >{{campaign_name}}</a></h3></td> 
        <td class="callers_logged_in">{{callers_logged_in}}</td>
        <td class="voters_count">{{voters_count}}</td>
@@ -128,7 +128,7 @@
           </tr>
           <% if @campaigns.present? %>
           <% @campaigns.each do |c| %>
-              <tr attr_id="<%= c.id %>" class="campaign <%= cycle("odd", "even") %>">
+              <tr id="<%= c.id %>" class="campaign <%= cycle("odd", "even") %>">
                 <td><h3><%= link_to c.name, campaign_path(c) %></h3></td>
                 <td class="callers_logged_in"><%= c.caller_sessions.on_call.length %></td>
                 <td class="voters_count"><%= c.voters_count("not called", false).length %></td>
@@ -154,7 +154,7 @@
           </tr>
           <% @campaigns.each do |c| %>
               <% c.caller_sessions.on_call.each do |caller_session| %>
-                  <tr attr_id="<%= caller_session.caller.id %>" class="caller <%= cycle("odd", "even") %> ">
+                  <tr id="<%= caller_session.caller.id %>" class="caller <%= cycle("odd", "even") %> ">
                     <td class="caller_name"><%= caller_session.caller.email %></td>
                     <td><%= caller_session.campaign.name %></td>
                     <td class="voter_phone">
