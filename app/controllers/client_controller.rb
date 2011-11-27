@@ -91,16 +91,14 @@ class ClientController < ApplicationController
       end
 
       if @user.valid?
-        @user.send_welcome_email if @user.new_record?
-        @user.save
+        if @user.new_record?
+          @user.save
+          @user.send_welcome_email 
+          @caller = Caller.new(name:"", email: @user.email, password:"demo123",multi_user:true, account_id: account.id, active: true)
+          @caller.save                
+        end
 
-        @caller = Caller.new
-        @caller.name = "Default Caller"
-        @caller.multi_user = true
-        @caller.account_id = @user.account.id
-        @caller.save
-
-        if account.scripts.find_by_name('Political Example Script') == nil
+        if account.scripts.find_by_name('Demo Script') == nil
           @script = Script.default_script(account)
           @script.save
           @numResults = 1
