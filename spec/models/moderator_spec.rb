@@ -43,7 +43,7 @@ describe Moderator do
     Pusher.should_receive(:[]).with(moderator1.session).and_return(channel)
     Pusher.should_receive(:[]).with(moderator2.session).and_return(channel)
     channel.should_receive(:trigger).with("voter_connected", {}).twice
-    Moderator.voter_connected(caller, "voter_connected", {})
+    Moderator.publish_event(caller, "voter_connected", {})
   end
   
 end
