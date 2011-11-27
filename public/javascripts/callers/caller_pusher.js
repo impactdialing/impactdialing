@@ -43,7 +43,8 @@ function get_session() {
                 set_session(json.caller_session.id);
                 subscribe(json.caller_session.session_key);
                 $("#callin_data").hide();
-				        $('#start_calling').hide();
+				$('#start_calling').hide();
+				$('#stop_calling').show();
                 $("#called_in").show();          
                 get_voter();
 
