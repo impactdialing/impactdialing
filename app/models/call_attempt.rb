@@ -54,6 +54,7 @@ class CallAttempt < ActiveRecord::Base
     if caller_session.nil? || caller_session.disconnected? || !caller_session.available_for_call
       hangup
     else
+      update_attributes(:status => CallAttempt::Status::INPROGRESS)
       caller_session.update_attributes(:on_call => true, :available_for_call => false)
       conference(caller_session)      
     end
@@ -122,6 +123,7 @@ class CallAttempt < ActiveRecord::Base
     READY = "Call ready to dial"
     CANCELLED = "Call cancelled"
     SCHEDULED = 'Scheduled for later'
+    RINGING = "Ringing"
 
     MAP = {'in-progress' => INPROGRESS, 'completed' => SUCCESS, 'busy' => BUSY, 'failed' => FAILED, 'no-answer' => NOANSWER, 'canceled' => CANCELLED}
     ALL = MAP.values

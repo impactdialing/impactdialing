@@ -87,7 +87,7 @@ describe Voter do
       call_attempt = voter.call_attempts.first
       call_attempt.campaign.should == campaign
       call_attempt.dialer_mode.should == "robo"
-      call_attempt.status.should == CallAttempt::Status::INPROGRESS
+      call_attempt.status.should == CallAttempt::Status::RINGING
       voter.last_call_attempt.should == call_attempt
     end
 
@@ -121,7 +121,7 @@ describe Voter do
         voter.dial_predictive
         call_attempt = CallAttempt.first
         call_attempt.sid.should == "sid"
-        call_attempt.status.should == CallAttempt::Status::INPROGRESS
+        call_attempt.status.should == CallAttempt::Status::RINGING
       end
 
       it "updates voter attributes" do
