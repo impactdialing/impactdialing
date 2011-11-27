@@ -213,11 +213,13 @@ describe CallerSession do
     #   session.start
     # end
 
-    it "should not  push  any trigger in non preview campaign" do
+    it "should  push  when a caller is connected on a non preview campaign" do
       campaign = Factory(:campaign, :use_web_ui => true, :predictive_type => 'predictive')
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sample")
       2.times { Factory(:voter, :campaign => campaign) }
-      Pusher.should_not_receive(:[]).with(session.session_key)
+      channel = mock
+      Pusher.should_receive(:[]).with(session.session_key).and_return(channel)
+      channel.should_receive(:trigger).with("caller_connected_dialer", anything)
       session.start
     end
 
