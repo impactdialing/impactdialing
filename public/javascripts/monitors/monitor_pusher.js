@@ -1,20 +1,22 @@
+Pusher.log = function(message) {
+    if (window.console && window.console.log) window.console.log(message);
+};
+
+var channel = null;
+
 function subscribe_and_bind_events_monitoring(session_id){
   channel = pusher.subscribe(session_id);  
   function bind_voter_connected(channel){
     channel.bind('voter_connected',function(data){
       if (!$.isEmptyObject(data)){
-        $.each($('tr.caller'), function(){ 
-            if($(this).attr('attr_id')  == data.caller_id){
-              $(this).children('.voter_phone').text(data.voter_phone);
-            } 
-        });
-
+        var caller_selector = 'tr#'+data.caller_id+'.caller'
+        $(caller_selector).children('.voter_phone').text(data.voter_phone);
+        
       }
     });
     
   }
   
-  console.log(channel)  
   channel.bind('no_voter_on_call', function(data){
     $('status').text("Currently no voter is connected, You can monitor when voter connected")
   });
@@ -25,24 +27,33 @@ function subscribe_and_bind_events_monitoring(session_id){
       var caller = ich.caller(data);
       $('#caller_table').children().append(caller);
       bind_voter_connected(channel)
-      var campaign = ich.campaign(data);
-      var campaign_present = false;
-      $.each($('tr.campaign'), function(){ 
-          if($(this).attr('attr_id')  == data.campaign_fields.id){
-            $(this).children('.callers_logged_in').text(data.campaign_fields.callers_logged_in);
-            $(this).children('.voters_count').text(data.campaign_fields.voters_count);
-            campaign_present = true;
-          } 
-      });
-      if(!campaign_present)
-      {
+      
+      var campaign_selector = 'tr#'+data.campaign_fields.id+'.campaign';
+      if($(campaign_selector).length == 0){
+        var campaign = ich.campaign(data);
         $('#campaign_table').children().append(campaign);
+      }
+      else{
+        $(campaign_selector).children('.callers_logged_in').text(data.campaign_fields.callers_logged_in);
+        $(campaign_selector).children('.voters_count').text(data.campaign_fields.voters_count);
       }
     }
   });
   
   bind_voter_connected(channel)
   
+  channel.bind('caller_disconnected', function(data) {
+    var caller_selector = 'tr#'+data.caller_id+'.caller';
+    $(caller_selector).remove();
+    if(!data.campaign_active){
+      var campaign_selector = 'tr#'+data.campaign_id+'.campaign';
+      $(campaign_selector).remove();
+      if($('tr.campaign').length == 0){
+        $('div.form').show();
+      }
+    }
+    
+  });
   
   
 }
