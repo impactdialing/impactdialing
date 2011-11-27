@@ -99,7 +99,7 @@ class Voter < ActiveRecord::Base
           'IfMachine' => self.campaign.use_recordings? ? 'Continue' : 'Hangup',
           'Timeout' => campaign.answer_detection_timeout || 20
       )
-      call_attempt.update_attributes(:status => CallAttempt::Status::INPROGRESS, :sid => @call.sid)
+      call_attempt.update_attributes(:sid => @call.sid)
     end
     # call_attempt.sid
     # }
@@ -175,7 +175,7 @@ class Voter < ActiveRecord::Base
 
   private
   def new_call_attempt(mode = 'robo')
-    call_attempt = self.call_attempts.create(:campaign => self.campaign, :dialer_mode => mode, :status => CallAttempt::Status::INPROGRESS)
+    call_attempt = self.call_attempts.create(:campaign => self.campaign, :dialer_mode => mode, :status => CallAttempt::Status::RINGING)
     self.update_attributes!(:last_call_attempt => call_attempt, :last_call_attempt_time => Time.now)
     call_attempt
   end
