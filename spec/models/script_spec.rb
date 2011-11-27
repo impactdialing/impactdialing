@@ -26,4 +26,36 @@ describe Script do
     manual_script = Factory(:script, :robo => false)
     Script.robo.should == [robo_script]
   end
+  
+  describe "default script" do
+    before(:each) do
+      account = Factory(:account)
+      @script = Script.default_script(account)
+    end
+    
+  
+    it "should have name Demo Script" do
+      @script.name.should eq('Demo Script')    
+    end
+  
+    it "should have FirstName, lastName and Phone as voter fields" do
+      @script.voter_fields.should eq('["FirstName","LastName","Phone"]')
+    end
+  
+    it "should have a default note" do
+      @script.notes.length.should eq(1)
+      @script.notes.first.note.should eq("What's your favorite thing about Impact Dialing?")  
+    end
+    
+    it "should add a default question" do
+      @script.questions.length.should eq(1)
+      @script.questions.first.text.should eq('Are you ready to use Impact Dialing?')
+    end
+    
+    it "should add a default question with 4 possible responses" do
+      @script.questions.length.should eq(1)
+      @script.questions.first.possible_responses.length.should eq(4)
+    end
+    
+  end
 end

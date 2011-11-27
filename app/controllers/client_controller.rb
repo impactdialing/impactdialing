@@ -101,7 +101,7 @@ class ClientController < ApplicationController
         @caller.save
 
         if account.scripts.find_by_name('Political Example Script') == nil
-          @script = Script.political_example(account)
+          @script = Script.default_script(account)
           @script.save
           @numResults = 1
           @numNotes = 1
