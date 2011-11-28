@@ -74,7 +74,7 @@
           }
         });
 
-        status = "Your currently "+$(this).attr("action") + " on "+$(this).parent().prevAll('td.caller_name').text();
+        status = "Your currently "+$(this).attr("action") + " on "+$(this).parent().prevAll('td.caller_name').text().split("/").first();
         monitor($(this).attr("session_id"), $(this).attr("action"), status);
         $(this).parent().parent().attr("on_call","true")
       }
