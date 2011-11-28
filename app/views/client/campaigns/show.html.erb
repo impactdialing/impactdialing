@@ -29,23 +29,21 @@
             <%= options_for_select public_dialers, @campaign.predictive_type %>
           </select>
         </p>
+        <%= render :partial => 'shared/recycle_rate', :locals => {:recycle_hour => @campaign.recycle_rate}%>
         <% if !@campaign.account.recordings.blank? %>
             <p><label> <%= f.check_box :use_recordings, :onclick=>"doRecord();" %> &nbsp; Leave voicemail</label></p>
-
             <div id="recordingsdiv"
                  <% if  !@campaign.use_recordings? %> style="display:none;"
                  <% end %>>
-              <p>Recording:</p>
-              <%= f.collection_select(:recording_id, @account.recordings.active, :id, :name, {:prompt => false}, {:class=>"field", :onchange=>"updatePreview();"}) %>
+              <label for=""><p>Voicemail</label><br>
+              <%= f.collection_select(:recording_id, @account.recordings.active, :id, :name, {:prompt => false}, {:class=>"field", :onchange=>"updatePreview();"}) %></p>
               <div id="sndPreview"></div>
             </div>
         <% end %>
-        <!--     <p><input type="button" class="button" value="Manage Recordings" onclick="document.location.href='/client/recording_add?campaign_id=<%= @campaign.id %>';"/></p>-->
         <p class="actions">
           <a href='/client/recording_add?campaign_id=<%= @campaign.id %>' class="action secondary">Add voicemail message</a>
         </p>
         <p>Campaign ID:  <%= @campaign.campaign_id %></p>
-        <%= render :partial => 'shared/recycle_rate', :locals => {:recycle_hour => @campaign.recycle_rate}%>
       </fieldset>
       <fieldset>
         <legend>Callers with access</legend>
