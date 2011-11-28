@@ -7,18 +7,11 @@ module Client
     end
 
     def index
-      if params[:id].blank?
-        @breadcrumb = "Reports"
-        @campaigns = account.campaigns.manual
-      else
-        @campaign = Campaign.find(params[:id])
-        @breadcrumb=[{"Reports"=>"/client/reports"}, @campaign.name]
-      end
+      @campaigns = params[:id].blank? ? account.campaigns.manual : Campaign.find(params[:id])
     end
 
     def usage
       @campaign = @user.all_campaigns.find(params[:id])
-
       set_report_date_range
 
       all_call_attempts = @campaign.call_attempts.between(@from_date, @to_date + 1.day)

@@ -419,7 +419,7 @@ class Campaign < ActiveRecord::Base
 
   def dial
     update_attribute(:calls_in_progress, true)
-    dial_voters()
+    dial_voters
     update_attribute(:calls_in_progress, false)
   end
 
@@ -490,7 +490,6 @@ class Campaign < ActiveRecord::Base
     end
     results
   end
-
 
   def dial_predictive_simulator
     if dials_ramping?
