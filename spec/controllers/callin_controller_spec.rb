@@ -18,7 +18,7 @@ describe CallinController do
     it "verifies the logged in caller by pin" do
       pin = rand.to_s[2..6]
       caller = Factory(:caller, :pin => pin)
-      caller.account = Factory(:account, :paid=> true)
+      caller.account = Factory(:account, :activated => true)
       Caller.stub(:find_by_pin).and_return(caller)
       post :identify, :Digits => pin
       assigns(:caller).should == caller
@@ -28,7 +28,7 @@ describe CallinController do
       pin = rand.to_s[2..6]
       call_sid = "asdflkjh"
       caller = Factory(:caller, :pin => pin)
-      account = Factory(:account, :paid => true)
+      account = Factory(:account, :activated => true)
       account.callers << caller
       account.save!
       Caller.stub(:find_by_pin).and_return(caller)
@@ -67,10 +67,10 @@ describe CallinController do
     it "Prompts for campaign pin" do
       pin = rand.to_s[2..6]
       caller = Factory(:caller, :pin => pin)
-      account = Factory(:account, :paid => true)
+      account = Factory(:account, :activated => true)
       account.callers << caller
       account.save!
-      
+
       session = Factory(:caller_session, :caller => caller)
       caller.stub_chain(:caller_sessions, :create).and_return(session)
       Caller.stub(:find_by_pin).and_return(caller)
