@@ -13,7 +13,7 @@ class ClientController < ApplicationController
     begin
       @user = User.find(session[:user])
       @account = @user.account
-    rescue 
+    rescue
       logout
     end
   end
@@ -93,9 +93,9 @@ class ClientController < ApplicationController
       if @user.valid?
         if @user.new_record?
           @user.save
-          @user.send_welcome_email 
+          @user.send_welcome_email
           @caller = Caller.new(name:"", email: @user.email, password:"demo123",multi_user:true, account_id: account.id, active: true)
-          @caller.save                
+          @caller.save
         end
 
         if account.scripts.find_by_name('Demo Script') == nil
@@ -419,7 +419,7 @@ class ClientController < ApplicationController
       if response.success?
         flash_message(:notice, "Card verified.")
         @billing_account.save
-        account.update_attribute(:paid, true)
+        account.update_attribute(:card_verified, true)
         redirect_to :action=>"index"
         return
       else

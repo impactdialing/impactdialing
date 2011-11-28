@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe Client::CampaignsController do
-  let(:account) { Factory(:account, :paid => true) }
+  let(:account) { Factory(:account, :activated => true) }
   let(:user) { Factory(:user, :account => account) }
 
   before(:each) do

@@ -51,7 +51,7 @@ describe "predictive_dialer" do
   it "should add callers with calls over the long threshold to the dial pool"
 
   it "should properly choose the next voters to dial" do
-    account = Factory(:account, :paid=>true)
+    account = Factory(:account, :activated => true)
     campaign = Factory(:campaign, :account => account, :caller_id => "0123456789", :caller_id_verified => true)
     campaign.caller_id_verified=true
     voter_list = Factory(:voter_list, :campaign => campaign, :active => true)
@@ -60,7 +60,7 @@ describe "predictive_dialer" do
   end
 
   it "excludes system blocked numbers" do
-    account = Factory(:account, :paid => true)
+    account = Factory(:account, :activated => true)
     campaign = Factory(:campaign, :account => account)
     campaign.caller_id_verified=true
     voter_list = Factory(:voter_list, :campaign => campaign, :active => true)
@@ -71,7 +71,7 @@ describe "predictive_dialer" do
   end
 
   it "excludes campaign blocked numbers" do
-    account = Factory(:account, :paid => true)
+    account = Factory(:account, :activated => true)
     campaign = Factory(:campaign, :account => account)
     campaign.caller_id_verified=true
     voter_list = Factory(:voter_list, :campaign => campaign, :active => true)
@@ -83,13 +83,13 @@ describe "predictive_dialer" do
   end
 
   it "should return zero voters, if active_voter_list_ids is empty" do
-    campaign = Factory(:campaign, :account => Factory(:account, :paid => true))
+    campaign = Factory(:campaign, :account => Factory(:account, :activated => true))
     VoterList.should_receive(:active_voter_list_ids).with(campaign.id).and_return([])
     campaign.voters("not called").should == []
   end
 
   it "should return voters to be call" do
-    campaign = Factory(:campaign, :account => Factory(:account, :paid => true), recycle_rate: 3)
+    campaign = Factory(:campaign, :account => Factory(:account, :activated => true), recycle_rate: 3)
     VoterList.should_receive(:active_voter_list_ids).with(campaign.id).and_return([12, 123])
     Voter.should_receive(:to_be_called).with(campaign.id, [12, 123], "not called",3).and_return(["v1", "v2", "v3", "v2"])
     Voter.should_not_receive(:just_called_voters_call_back).with(campaign.id, [12, 123])
@@ -278,7 +278,7 @@ describe Campaign do
       Factory(:voter, :status => Voter::Status::NOTCALLED, :campaign => campaign)
       campaign.next_voter_in_dial_queue.should == scheduled_voter
     end
-    
+
     it "returns next voter in list if scheduled voter is more than 10 minutes away from call" do
       campaign = Factory(:campaign)
       scheduled_voter = Factory(:voter, :status => CallAttempt::Status::SCHEDULED, :last_call_attempt_time => 2.hours.ago, :scheduled_date => 20.minute.from_now, :campaign => campaign)
@@ -286,7 +286,7 @@ describe Campaign do
       next_voter = Factory(:voter, :status => Voter::Status::NOTCALLED, :campaign => campaign)
       campaign.next_voter_in_dial_queue(current_voter.id).should == next_voter
     end
-    
+
 
     it "returns voter with respect to a current voter" do
       campaign = Factory(:campaign)
@@ -295,13 +295,13 @@ describe Campaign do
       next_voter = Factory(:voter, :status => Voter::Status::NOTCALLED, :campaign => campaign)
       campaign.next_voter_in_dial_queue(current_voter.id).should == next_voter
     end
-    
+
     it "not return any number if only voter to be called a retry and last called time is within campaign recycle rate" do
       campaign = Factory(:campaign, recycle_rate: 2)
       scheduled_voter = Factory(:voter, :status => CallAttempt::Status::SCHEDULED, :last_call_attempt_time => 2.hours.ago, :scheduled_date => 20.minute.from_now, :campaign => campaign)
       retry_voter = Factory(:voter, :status => CallAttempt::Status::VOICEMAIL, last_call_attempt_time:1.hours.ago , :campaign => campaign)
       current_voter = Factory(:voter, :status => CallAttempt::Status::SUCCESS, :campaign => campaign)
-      campaign.next_voter_in_dial_queue(current_voter.id).should be_nil      
+      campaign.next_voter_in_dial_queue(current_voter.id).should be_nil
     end
   end
 
@@ -368,7 +368,7 @@ describe Campaign do
     end
 
     it "does not start the dialer daemon for the campaign if the use has not already paid" do
-      campaign = Factory(:campaign, :account => Factory(:account, :paid => false))
+      campaign = Factory(:campaign, :account => Factory(:account, :activated => false))
       campaign.start.should be_false
     end
 
@@ -380,7 +380,7 @@ describe Campaign do
     it "starts the dialer daemon for the campaign if there are recordings to play" do
       script = Factory(:script)
       script.robo_recordings = [Factory(:robo_recording)]
-      campaign = Factory(:campaign, :script => script, :account => Factory(:account, :paid => true))
+      campaign = Factory(:campaign, :script => script, :account => Factory(:account, :activated => true))
       campaign.should_receive("system")
       campaign.start.should be_nil
     end
@@ -388,14 +388,14 @@ describe Campaign do
     it "does not start the dialer daemon for the campaign if its script has nothing to play" do
       script = Factory(:script)
       script.robo_recordings.size.should == 0
-      campaign = Factory(:campaign, :script => script, :account => Factory(:account, :paid => true))
+      campaign = Factory(:campaign, :script => script, :account => Factory(:account, :activated => true))
       campaign.start.should be_false
     end
 
     [true, false].each do |exit_status|
       it "reports the status if the daemon start success was #{exit_status}" do
         script = Factory(:script, :robo_recordings => [Factory(:robo_recording)])
-        campaign = Factory(:campaign, :script => script, :calls_in_progress => false, :account => Factory(:account, :paid => true))
+        campaign = Factory(:campaign, :script => script, :calls_in_progress => false, :account => Factory(:account, :activated => true))
         campaign.stub(:system).and_return(exit_status)
         campaign.start.should eql(exit_status)
       end
@@ -476,6 +476,6 @@ describe Campaign do
     voter_on_another_campaign.result.should == 'hello'
     voter_on_another_campaign.status.should == 'world'
   end
-  
- 
+
+
 end
