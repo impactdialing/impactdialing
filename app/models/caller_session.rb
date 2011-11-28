@@ -76,7 +76,7 @@ class CallerSession < ActiveRecord::Base
   def start
     response = Twilio::Verb.new do |v|
       v.dial(:hangupOnStar => true, :action => pause_caller_url(self.caller, :host => Settings.host, :port => Settings.port, :session_id => id)) do
-        v.conference(self.session_key, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
+        v.conference(self.session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
       end
     end.response
     update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
@@ -87,7 +87,7 @@ class CallerSession < ActiveRecord::Base
   def join_conference(mute_type, call_sid, monitor_session)
     response = Twilio::Verb.new do |v|
       v.dial(:hangupOnStar => true) do
-        v.conference(self.session_key, :endConferenceOnExit => false, :beep => false, :waitUrl => "#{APP_URL}/callin/hold",:waitMethod =>"GET",:muted => mute_type)
+        v.conference(self.session_key, :startConferenceOnEnter => false, :endConferenceOnExit => false, :beep => false, :waitUrl => "#{APP_URL}/callin/hold",:waitMethod =>"GET",:muted => mute_type)
       end
     end.response
     moderator = Moderator.find_by_session(monitor_session)

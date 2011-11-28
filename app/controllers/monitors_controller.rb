@@ -11,9 +11,9 @@ class MonitorsController < ClientController
   def start
     caller_session = CallerSession.find(params[:session_id])
     if caller_session.voter_in_progress
-      unless caller_session.voter_in_progress.call_attempts.last.status != "Call in progress."
+      Pusher[params[:monitor_session]].trigger('no_voter_on_call',{}) unless caller_session.voter_in_progress.call_attempts.last.status != "Call in progress."
+    else
         Pusher[params[:monitor_session]].trigger('no_voter_on_call',{})
-      end
     end
     mute_type = params[:type]=="breakin" ? false : true
     render xml:  caller_session.join_conference(mute_type, params[:CallSid], params[:monitor_session])
