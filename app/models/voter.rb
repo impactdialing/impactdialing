@@ -25,6 +25,7 @@ class Voter < ActiveRecord::Base
   scope :by_status, lambda { |status| where(:status => status) }
   scope :active, where(:active => true)
   scope :yet_to_call, where("call_back is false AND status != (?)", CallAttempt::Status::SUCCESS)
+  scope :last_call_attempt_before_recycle_rate, lambda { |recycle_rate| where('last_call_attempt_time < ?', recycle_rate.hours.ago)}
   scope :to_be_dialed, yet_to_call.order("ifnull(last_call_attempt_time, '#{Time.at(0)}') ASC")
   scope :randomly, :order => 'rand()'
   scope :to_callback, where(:call_back => true)
@@ -146,18 +147,18 @@ class Voter < ActiveRecord::Base
     status==nil || status==call_status
   end
 
-  def call_attempted__before?(time)
+  def call_attempted_before?(time)
     call_back? && last_call_attempt_time!=nil && last_call_attempt_time < (Time.now - time)
   end
 
-  def self.to_be_called(campaign_id, active_list_ids, status)
+  def self.to_be_called(campaign_id, active_list_ids, status,recycle_rate=3)
     voters = Voter.find_all_by_campaign_id_and_active(campaign_id, 1, :conditions=>"voter_list_id in (#{active_list_ids.join(",")})", :limit=>300, :order=>"rand()")
-    voters.select {|voter| voter.not_yet_called?(status) || (voter.call_attempted__before?(3.hours))}
+    voters.select {|voter| voter.not_yet_called?(status) || (voter.call_attempted_before?(recycle_rate.hours))}
   end
 
   def self.just_called_voters_call_back(campaign_id, active_list_ids)
     uncalled = Voter.find_all_by_campaign_id_and_active_and_call_back(campaign_id, 1, 1, :conditions=>"voter_list_id in (#{active_list_ids.join(",")})")
-    uncalled.select { |voter| voter.call_attempted__before?(10.minutes) }
+    uncalled.select { |voter| voter.call_attempted_before?(10.minutes) }
   end
 
   module Status

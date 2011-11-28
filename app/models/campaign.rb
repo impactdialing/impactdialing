@@ -278,8 +278,8 @@ class Campaign < ActiveRecord::Base
     active_list_ids = VoterList.active_voter_list_ids(self.id)    
     return voters_returned if active_list_ids.empty?
     
-    voters_returned.concat(Voter.to_be_called(id,active_list_ids,status))    
-    voters_returned.concat(Voter.just_called_voters_call_back(self.id, active_list_ids)) if voters_returned.empty? && include_call_retries
+    voters_returned.concat(Voter.to_be_called(id,active_list_ids,status,recycle_rate))    
+    # voters_returned.concat(Voter.just_called_voters_call_back(self.id, active_list_ids)) if voters_returned.empty? && include_call_retries
     
     voters_returned.uniq.sort_by { rand }
   end
@@ -482,8 +482,15 @@ class Campaign < ActiveRecord::Base
 
   def next_voter_in_dial_queue(current_voter_id = nil)
     voter =  all_voters.scheduled.first
-    voter||= all_voters.to_be_dialed.where("voters.id > #{current_voter_id}").first if current_voter_id
-    voter||= all_voters.to_be_dialed.first
+    unless recycle_rate.nil?
+      voter||= all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.where("voters.id > #{current_voter_id}").first if current_voter_id
+      voter||= all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.first
+    else
+      voter||= all_voters.to_be_dialed.where("voters.id > #{current_voter_id}").first if current_voter_id
+      voter||= all_voters.to_be_dialed.first
+    end
+    voter
+    
   end
 
   def voters_dialed

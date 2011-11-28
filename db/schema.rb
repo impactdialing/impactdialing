@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20111124100836) do
+ActiveRecord::Schema.define(:version => 20111127210132) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "paid"
@@ -177,6 +177,7 @@ ActiveRecord::Schema.define(:version => 20111124100836) do
     t.integer  "answer_detection_timeout", :default => 20
     t.boolean  "calls_in_progress",        :default => false
     t.boolean  "robo",                     :default => false
+    t.integer  "recycle_rate"
   end
 
   create_table "campaigns_voter_lists", :id => false, :force => true do |t|
