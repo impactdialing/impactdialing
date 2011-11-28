@@ -14,7 +14,7 @@ namespace :seed do
   end
 
   def user
-    @user||= User.create(:fname => "Aninda", :email => "aninda@mailinator.com", :paid => true, :new_password => 'password', :phone => "9165959543")
+    @user||= User.create(:fname => "Aninda", :email => "aninda@mailinator.com", :activated => true, :new_password => 'password', :phone => "9165959543")
     @user
   end
 

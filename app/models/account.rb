@@ -16,6 +16,10 @@ class Account < ActiveRecord::Base
   def new_billing_account
     BillingAccount.create(:account => self)
   end
-  
-  
+
+  def paid?
+    Rails.logger.debug('Deprecated! Call #activated? instead.')
+    Rails.logger.debug("Called from #{caller[1]}")
+    activated?
+  end
 end
