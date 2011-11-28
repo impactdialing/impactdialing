@@ -84,7 +84,7 @@ class Script < ActiveRecord::Base
         script.notes << Note.new(note:"What's your favorite thing about Impact Dialing?")
         script.questions << question
         script.script = <<-EOS
-  Hi, I'm calling to tell you about how great Impact ...
+  Hi, I'm calling to tell you about how great Impact Dialing is. 
         EOS
       end
     end

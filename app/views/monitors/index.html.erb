@@ -112,12 +112,6 @@
 
 <h1>Monitor</h1>
 <monitor_session style="display:none"></monitor_session>
-<% if @campaigns.empty? %>
-    <div class="form">
-      <label>No campaigns active.</label>
-    </div>
-<% end %>
-<div class="box">
   <h2>Campaigns</h2>
       <div class="table">
         <table id="campaign_table" width="100%" border="0" cellspacing="0" cellpadding="0">
@@ -138,7 +132,6 @@
         </table>
       </div>
   <% #end %>
-</div>
 <h2>Callers</h2>
 <% #if @campaigns.length > 0 %>
     <div class="box">
@@ -177,3 +170,5 @@
       </div>
     </div>
 <% #end %>
+
+<%= link_to "Manage Do Not Call list", blocked_numbers_path, :class => 'action secondary' %>
