@@ -44,6 +44,10 @@ function subscribe_and_bind_events_monitoring(session_id){
   
   channel.bind('caller_disconnected', function(data) {
     var caller_selector = 'tr#'+data.caller_id+'.caller';
+    if($(caller_selector).attr('on_call') == "true"){
+      $('.stop_monitor').hide();
+      $('status').text("You are monitoring nothing")
+    }
     $(caller_selector).remove();
     if(!data.campaign_active){
       var campaign_selector = 'tr#'+data.campaign_id+'.campaign';
