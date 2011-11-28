@@ -245,4 +245,13 @@ describe CallAttempt do
       CallAttempt.with_status(['foo']).should == [@wanted_attempt]
     end
   end
+  
+  describe "call attempts between" do
+    it "should return cal attempts between 2 dates" do
+      Factory(:call_attempt, created_at: Time.now - 10.days)
+      Factory(:call_attempt, created_at: Time.now - 1.month)
+      call_attempts = CallAttempt.between(Time.now - 20.days, Time.now)
+      call_attempts.length.should eq(1)
+    end
+  end
 end
