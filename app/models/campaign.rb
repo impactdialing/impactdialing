@@ -35,12 +35,12 @@ class Campaign < ActiveRecord::Base
   before_validation :set_untitled_name
   before_save :set_untitled_name
   before_validation :sanitize_caller_id
-  
+
   module Type
     PREVIEW = "preview"
     PREDICTIVE = "algorithm1"
   end
-  
+
 
   def set_untitled_name
     self.name = "Untitled #{account.campaigns.count + 1}" if self.name.blank?
@@ -71,11 +71,11 @@ class Campaign < ActiveRecord::Base
   def recent_attempts(mins=10)
     attempts = CallAttempt.find_all_by_campaign_id(self.id, :conditions=>"call_start > DATE_SUB(now(),INTERVAL #{mins} MINUTE)", :order=>"id desc")
   end
-  
+
   def callers_log_in?
     caller_sessions.on_call.length > 0
   end
-  
+
   def end_all_calls(account, auth, appurl)
     in_progress = CallAttempt.find_all_by_campaign_id(self.id, :conditions=>"sid is not null and call_end is null and id > 45")
     in_progress.each do |attempt|
@@ -268,14 +268,14 @@ class Campaign < ActiveRecord::Base
 
   def voters(status=nil, include_call_retries=true, limit=300)
     voters_returned = []
-    return voters_returned if !self.account.paid || self.caller_id.blank?    
-    
-    active_list_ids = VoterList.active_voter_list_ids(self.id)    
+    return voters_returned if !self.account.activated? || self.caller_id.blank?
+
+    active_list_ids = VoterList.active_voter_list_ids(self.id)
     return voters_returned if active_list_ids.empty?
-    
-    voters_returned.concat(Voter.to_be_called(id,active_list_ids,status,recycle_rate))    
+
+    voters_returned.concat(Voter.to_be_called(id,active_list_ids,status,recycle_rate))
     # voters_returned.concat(Voter.just_called_voters_call_back(self.id, active_list_ids)) if voters_returned.empty? && include_call_retries
-    
+
     voters_returned.uniq
   end
 
@@ -412,7 +412,7 @@ class Campaign < ActiveRecord::Base
   end
 
   def ring_predictive_voters(voter_ids)
-    voter_ids.each do |voter|      
+    voter_ids.each do |voter|
       voter.dial_predictive
     end
   end
@@ -424,7 +424,7 @@ class Campaign < ActiveRecord::Base
   end
 
   def start
-    return false if self.calls_in_progress? or (not self.account.paid)
+    return false if self.calls_in_progress? or (not self.account.activated?)
     return false if script.robo_recordings.size == 0
     daemon = "#{Rails.root.join('script', "dialer_control.rb start -- #{self.id}")}"
     logger.info "[dialer] Account id:#{self.account.id} started campaign id:#{self.id} name:#{self.name}"
@@ -446,7 +446,7 @@ class Campaign < ActiveRecord::Base
       voter||= all_voters.to_be_dialed.first
     end
     voter
-    
+
   end
 
   def voters_dialed

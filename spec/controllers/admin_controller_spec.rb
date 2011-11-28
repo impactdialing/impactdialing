@@ -9,11 +9,11 @@ describe AdminController do
       request.env['HTTP_REFERER'] = 'http://referer'
     end
 
-    [true, false].each do |old_paid|
-      it "toggles paid to #{old_paid}" do
-        account = Factory(:account, :paid => old_paid)
-        post :toggle_paid, :id => account.id
-        account.reload.paid.should == !old_paid
+    [true, false].each do |old_activated|
+      it "toggles paid to #{old_activated}" do
+        account = Factory(:account, :activated => old_activated)
+        post :toggle_activated, :id => account.id
+        account.reload.activated.should == !old_activated
         response.should redirect_to(:back)
       end
     end

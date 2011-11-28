@@ -23,6 +23,7 @@ function subscribe_and_bind_events_monitoring(session_id){
   
   channel.bind('caller_session_started', function(data){
     if (!$.isEmptyObject(data)) {
+      console.log("pusher event caller session started")
       $('div.form').hide();
       var caller = ich.caller(data);
       $('#caller_table').children().append(caller);
@@ -37,6 +38,9 @@ function subscribe_and_bind_events_monitoring(session_id){
         $(campaign_selector).children('.callers_logged_in').text(data.campaign_fields.callers_logged_in);
         $(campaign_selector).children('.voters_count').text(data.campaign_fields.voters_count);
       }
+    }
+    else{
+      console.log("pusher event caller session started but no data")
     }
   });
   

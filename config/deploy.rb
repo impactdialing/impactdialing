@@ -51,7 +51,7 @@ task :staging do
 end
 
 task :preproduction do
-  set :rails_env, 'production'
+  set :rails_env, 'preproduction'
   set :branch, 'predictive'
   role :web, preproduction
   role :app, preproduction

@@ -1,11 +1,10 @@
-
 # Filters added to this controller apply to all controllers in the application.
 # Likewise, all the methods added will be available for all controllers.
 
 class ApplicationController < ActionController::Base
   helper :all # include all helpers, all the time
   protect_from_forgery # See ActionController::RequestForgeryProtection for details
-  before_filter :controllerName#, :preload_models
+  before_filter :set_controller_name#, :preload_models
   # Scrub sensitive parameters from your log
   helper_method :phone_format, :phone_number_valid
 
@@ -75,7 +74,7 @@ class ApplicationController < ActionController::Base
     Caller
   end
 
-  def controllerName
+  def set_controller_name
     @controllerName = self.class.controller_path
     @actionName = action_name
   end
