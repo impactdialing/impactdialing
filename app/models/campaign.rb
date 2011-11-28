@@ -35,6 +35,12 @@ class Campaign < ActiveRecord::Base
   before_validation :set_untitled_name
   before_save :set_untitled_name
   before_validation :sanitize_caller_id
+  
+  module Type
+    PREVIEW = "preview"
+    PREDICTIVE = "algorithm1"
+  end
+  
 
   def set_untitled_name
     self.name = "Untitled #{account.campaigns.count + 1}" if self.name.blank?
@@ -69,6 +75,7 @@ class Campaign < ActiveRecord::Base
   def callers_log_in?
     caller_sessions.on_call.length > 0
   end
+  
   def end_all_calls(account, auth, appurl)
     in_progress = CallAttempt.find_all_by_campaign_id(self.id, :conditions=>"sid is not null and call_end is null and id > 45")
     in_progress.each do |attempt|
@@ -238,24 +245,12 @@ class Campaign < ActiveRecord::Base
     Voter.find_all_by_campaign_id(self.id, :select=>"id", :conditions=>"status <> 'not called'")
   end
 
-  def testVoters
-    v = Voter.find_by_CustomID("Load Test")
-    voters=[]
-    (1..200).each do |n|
-      voters<<v
-    end
-    voters
-  end
 
   def voters_count(status=nil, include_call_retries=true)
     active_lists = VoterList.find_all_by_campaign_id_and_active_and_enabled(self.id, 1, 1)
     return [] if active_lists.length==0
     active_list_ids = active_lists.collect { |x| x.id }
-    #voters = Voter.find_all_by_voter_list_id(active_list_ids)
-
     Voter.find_all_by_active(1, :select=>"id", :conditions=>"voter_list_id in (#{active_list_ids.join(",")})  and (status='#{status}' OR (call_back=1 and last_call_attempt_time < (Now() - INTERVAL 180 MINUTE)) )")
-#    Voter.find_by_sql("select count(*) as count from voters where voter_list_id in (#{active_list_ids.join(",")})  and (status='#{status}' OR (call_back=1 and last_call_attempt_time < (Now() - INTERVAL 180 MINUTE)) )")
-
   end
 
 
@@ -281,43 +276,7 @@ class Campaign < ActiveRecord::Base
     voters_returned.concat(Voter.to_be_called(id,active_list_ids,status,recycle_rate))    
     # voters_returned.concat(Voter.just_called_voters_call_back(self.id, active_list_ids)) if voters_returned.empty? && include_call_retries
     
-    voters_returned.uniq.sort_by { rand }
-  end
-
-  def phone_format(str)
-    return "" if str.blank?
-    str.gsub(/[^0-9]/, "")
-  end
-
-  def phone_number_valid(str)
-    if (str.blank?)
-      return false
-    end
-    str.scan(/[0-9]/).size > 9
-  end
-
-  def format_number_to_phone(number, options = {})
-    number = number.to_s.strip unless number.nil?
-    options = options.symbolize_keys
-    area_code = options[:area_code] || nil
-    delimiter = options[:delimiter] || "-"
-    extension = options[:extension].to_s.strip || nil
-    country_code = options[:country_code] || nil
-
-    begin
-      str = ""
-      str << "+#{country_code}#{delimiter}" unless country_code.blank?
-      str << if area_code
-               number.gsub!(/([0-9]{1,3})([0-9]{3})([0-9]{4}$)/, "(\\1) \\2#{delimiter}\\3")
-             else
-               number.gsub!(/([0-9]{0,3})([0-9]{3})([0-9]{4})$/, "\\1#{delimiter}\\2#{delimiter}\\3")
-               number.starts_with?('-') ? number.slice!(1..-1) : number
-             end
-      str << " x #{extension}" unless extension.blank?
-      str
-    rescue
-      number
-    end
+    voters_returned.uniq
   end
 
   def dialing?
@@ -378,10 +337,7 @@ class Campaign < ActiveRecord::Base
 
   def determine_short_to_dial
     stats = call_stats(10)
-
     short_counter = num_short_calls_in_progress(stats[:short_time])
-    puts stats[:ratio_short]
-    puts short_counter
     if stats[:ratio_short]>0 && short_counter > 0
       max_short=(1/stats[:ratio_short]).round
       short_to_dial = (short_counter/max_short).to_f.ceil
@@ -501,18 +457,6 @@ class Campaign < ActiveRecord::Base
     all_voters.count - voters_dialed
   end
 
-  def update_campaign_with_account_information(account)
-    account_id = account.id
-    if script_id.blank?
-      script = account.scripts.active.first
-      script_id = script.id unless script.nil?
-    end
-  end
-
-  module Type
-    PREVIEW = "preview"
-    PREDICTIVE = "algorithm1"
-  end
 
   def clear_calls
     all_voters.update_all(:result => nil, :status => 'not called')
@@ -547,10 +491,6 @@ class Campaign < ActiveRecord::Base
     results
   end
 
-  def ringing_lines
-    #TODO - mark call_attempts as ringing
-    []
-  end
 
   def dial_predictive_simulator
     if dials_ramping?

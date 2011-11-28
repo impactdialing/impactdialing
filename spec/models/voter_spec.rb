@@ -441,6 +441,7 @@ describe Voter do
       voter.capture(response_params)
       voter.note_responses.first eq('say')
     end
+  end
     
     describe "last_call_attempt_before_recycle_rate" do
       it "should return voter if call attempt was before recycle rate hours" do
@@ -455,8 +456,13 @@ describe Voter do
         Voter.last_call_attempt_before_recycle_rate(2).length.should eq(0)
       end
       
+      it "should return  voter if call not attempted " do
+        campaign = Factory(:campaign)
+        voter = Factory(:voter, :campaign => campaign, last_call_attempt_time: nil)
+        Voter.last_call_attempt_before_recycle_rate(2).length.should eq(1)
+      end
+      
+      
     end
 
-
-  end
 end

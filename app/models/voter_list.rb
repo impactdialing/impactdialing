@@ -44,7 +44,7 @@ class VoterList < ActiveRecord::Base
     csv_to_system_map.remap_system_column! "ID", :to => "CustomID"
     csv_phone_column_location = csv_headers.index(csv_to_system_map.csv_index_for "Phone")
 
-    voters_list.each do |voter_info|
+    voters_list.shuffle.each do |voter_info|
       phone_number = Voter.sanitize_phone(voter_info[csv_phone_column_location])
 
       lead = Voter.create(:Phone => phone_number, :voter_list => self, :account_id => account_id, :campaign_id => campaign_id)
