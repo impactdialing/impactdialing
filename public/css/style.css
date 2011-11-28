@@ -1066,3 +1066,7 @@ opacity : .95; }
 
 .rgba .primary  {
 color : rgba(255,255,255,.9); }
+
+#ui-datepicker-div{
+	font-size: 12px;
+}

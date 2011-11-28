@@ -2,7 +2,7 @@
   <legend>Results</legend>
   <div id="result_instruction" style="color: #A0A0A0"><em>When connected, call result options will appear here.</em>
   </div>
-  <div id="response_panel" class="rt" style="font-size : 1em; display: none;">
+  <div id="response_panel" class="rt" style="font-size : 1em;">
     <form id="voter_responses" method="post">
       <input type="hidden" id="voter_id" name="voter_id">
       <% @campaign.script.try(:questions).try(:each) do |question| %>
@@ -15,17 +15,8 @@
             <input type="text" id="note_response_<%= note.id %>" name="notes[<%= note.id %>]"></p>
       <% end %>
     </form>
+    <%= render :partial => "schedule_callback" %>
 
-    <div id="schedule_callback">
-      <p><%= link_to_function 'Schedule callback', 'expand_scheduler()', :class=> "action secondary" %></p>
-
-      <div id="callback_info" style="display: none;">
-        <div>
-          <p>
-            Date and time to call back:
-            <input id="scheduled_date"/>
-          </p>
-        </div>
         <div style="clear: both;">
           <%= link_to_function 'Schedule', 'schedule_for_later()', :class=> "action secondary" %>
           <%= link_to_function 'Hide', 'collapse_scheduler()', :class=> "action secondary" %>
