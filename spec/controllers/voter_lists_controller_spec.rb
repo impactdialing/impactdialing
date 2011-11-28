@@ -107,8 +107,10 @@ describe VoterListsController do
               Voter.delete_all
               import({:json_csv_column_headers => ["Phone", "Custom"].to_json, :csv_to_system_map =>{"Phone"=>"Phone", custom_field=>custom_field}})
               CustomVoterField.all.size.should == 1
-              Voter.all[0].get_attribute(custom_field).should == "Foo"
-              Voter.all[1].get_attribute(custom_field).should == "Bar"
+              custom_fields = Voter.all.collect{|voter| voter.get_attribute(custom_field)}
+              custom_fields.length.should eq(2)
+              custom_fields.should include("Foo")
+              custom_fields.should include("Bar")              
             end
           end
         end

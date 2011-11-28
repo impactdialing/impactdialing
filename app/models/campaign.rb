@@ -281,7 +281,7 @@ class Campaign < ActiveRecord::Base
     voters_returned.concat(Voter.to_be_called(id,active_list_ids,status,recycle_rate))    
     # voters_returned.concat(Voter.just_called_voters_call_back(self.id, active_list_ids)) if voters_returned.empty? && include_call_retries
     
-    voters_returned.uniq.sort_by { rand }
+    voters_returned.uniq
   end
 
   def phone_format(str)
