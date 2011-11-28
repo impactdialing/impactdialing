@@ -173,9 +173,9 @@ describe Voter do
     it "checks, call attemp made before 3 hours or not" do
       voter1 = Factory(:voter, :last_call_attempt_time => 4.hours.ago, :call_back => true)
       voter2 = Factory(:voter, :last_call_attempt_time => 2.hours.ago, :call_back => true)
-      voter1.call_attempted__before?(3.hours).should be_true
-      voter2.call_attempted__before?(3.hours).should be_false
-      voter2.call_attempted__before?(10.minutes).should be_true
+      voter1.call_attempted_before?(3.hours).should be_true
+      voter2.call_attempted_before?(3.hours).should be_false
+      voter2.call_attempted_before?(10.minutes).should be_true
     end
 
     it "returns all the voters to be call" do
@@ -185,11 +185,11 @@ describe Voter do
       active_list_ids = [voter_list1.id, voter_list2.id]
       status = "not called"
       voter1 = Factory(:voter, :campaign => campaign, :voter_list => voter_list1)
-      voter2 = Factory(:voter, :campaign => campaign, :voter_list => voter_list1)
+      voter2 = Factory(:voter, :campaign => campaign, :voter_list => voter_list1, last_call_attempt_time: 2.hours.ago, status: CallAttempt::Status::VOICEMAIL)
       voter3 = Factory(:voter, :campaign => campaign, :voter_list => voter_list2)
       voter4 = Factory(:voter, :voter_list => voter_list1)
       voter5 = Factory(:voter, :campaign => campaign)
-      Voter.to_be_called(campaign.id, active_list_ids, status).length.should == 3
+      Voter.to_be_called(campaign.id, active_list_ids, status,3).length.should == 2
     end
 
     it "return voters, to whoom called just now, but not replied " do
@@ -440,6 +440,21 @@ describe Voter do
       response_params = {"voter_id"=>voter.id, "notes"=>{note1.id=>"say"}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}
       voter.capture(response_params)
       voter.note_responses.first eq('say')
+    end
+    
+    describe "last_call_attempt_before_recycle_rate" do
+      it "should return voter if call attempt was before recycle rate hours" do
+        campaign = Factory(:campaign)
+        voter = Factory(:voter, :campaign => campaign, last_call_attempt_time: 150.minutes.ago)
+        Voter.last_call_attempt_before_recycle_rate(2).first.should eq(voter)
+      end
+      
+      it "should return not voter if call attempt was within recycle rate hours" do
+        campaign = Factory(:campaign)
+        voter = Factory(:voter, :campaign => campaign, last_call_attempt_time: 110.minutes.ago)
+        Voter.last_call_attempt_before_recycle_rate(2).length.should eq(0)
+      end
+      
     end
 
 

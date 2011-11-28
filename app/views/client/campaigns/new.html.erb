@@ -41,6 +41,7 @@
           <a href='/client/recording_add?campaign_id=<%= @campaign.id %>' class="action secondary">Add voicemail message</a>
         </p>
         <p>Campaign ID:  <%= "Not yet generated" %></p>
+        <%= render :partial => 'shared/recycle_rate', :locals => {:recycle_hour => @campaign.recycle_rate} %>
       </fieldset>
       <fieldset>
         <legend>Callers with access</legend>

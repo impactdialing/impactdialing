@@ -1,0 +1,7 @@
+<p> Recycle Rate:
+  <select id="campaign[recycle_rate]" name="campaign[recycle_rate]">
+    	<% 24.times  do |index| %>
+    	<option name="rate_hours" value=<%=index+1%> <% if recycle_hour== index+1 %>selected<% end %> ><%=index+1%> hour(s)</option>
+    	<%end%>
+  </select>
+</p>

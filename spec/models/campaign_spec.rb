@@ -89,9 +89,9 @@ describe "predictive_dialer" do
   end
 
   it "should return voters to be call" do
-    campaign = Factory(:campaign, :account => Factory(:account, :paid => true))
+    campaign = Factory(:campaign, :account => Factory(:account, :paid => true), recycle_rate: 3)
     VoterList.should_receive(:active_voter_list_ids).with(campaign.id).and_return([12, 123])
-    Voter.should_receive(:to_be_called).with(campaign.id, [12, 123], "not called").and_return(["v1", "v2", "v3", "v2"])
+    Voter.should_receive(:to_be_called).with(campaign.id, [12, 123], "not called",3).and_return(["v1", "v2", "v3", "v2"])
     Voter.should_not_receive(:just_called_voters_call_back).with(campaign.id, [12, 123])
     campaign.voters("not called").length.should == 3
   end
@@ -278,6 +278,15 @@ describe Campaign do
       Factory(:voter, :status => Voter::Status::NOTCALLED, :campaign => campaign)
       campaign.next_voter_in_dial_queue.should == scheduled_voter
     end
+    
+    it "returns next voter in list if scheduled voter is more than 10 minutes away from call" do
+      campaign = Factory(:campaign)
+      scheduled_voter = Factory(:voter, :status => CallAttempt::Status::SCHEDULED, :last_call_attempt_time => 2.hours.ago, :scheduled_date => 20.minute.from_now, :campaign => campaign)
+      current_voter = Factory(:voter, :status => Voter::Status::NOTCALLED, :campaign => campaign)
+      next_voter = Factory(:voter, :status => Voter::Status::NOTCALLED, :campaign => campaign)
+      campaign.next_voter_in_dial_queue(current_voter.id).should == next_voter
+    end
+    
 
     it "returns voter with respect to a current voter" do
       campaign = Factory(:campaign)
@@ -285,6 +294,14 @@ describe Campaign do
       current_voter = Factory(:voter, :status => Voter::Status::NOTCALLED, :campaign => campaign)
       next_voter = Factory(:voter, :status => Voter::Status::NOTCALLED, :campaign => campaign)
       campaign.next_voter_in_dial_queue(current_voter.id).should == next_voter
+    end
+    
+    it "not return any number if only voter to be called a retry and last called time is within campaign recycle rate" do
+      campaign = Factory(:campaign, recycle_rate: 2)
+      scheduled_voter = Factory(:voter, :status => CallAttempt::Status::SCHEDULED, :last_call_attempt_time => 2.hours.ago, :scheduled_date => 20.minute.from_now, :campaign => campaign)
+      retry_voter = Factory(:voter, :status => CallAttempt::Status::VOICEMAIL, last_call_attempt_time:1.hours.ago , :campaign => campaign)
+      current_voter = Factory(:voter, :status => CallAttempt::Status::SUCCESS, :campaign => campaign)
+      campaign.next_voter_in_dial_queue(current_voter.id).should be_nil      
     end
   end
 
@@ -459,4 +476,6 @@ describe Campaign do
     voter_on_another_campaign.result.should == 'hello'
     voter_on_another_campaign.status.should == 'world'
   end
+  
+ 
 end
