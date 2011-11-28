@@ -25,7 +25,7 @@ class Voter < ActiveRecord::Base
   scope :by_status, lambda { |status| where(:status => status) }
   scope :active, where(:active => true)
   scope :yet_to_call, where("call_back is false AND status != (?)", CallAttempt::Status::SUCCESS)
-  scope :last_call_attempt_before_recycle_rate, lambda { |recycle_rate| where('last_call_attempt_time < ?', recycle_rate.hours.ago)}
+  scope :last_call_attempt_before_recycle_rate, lambda { |recycle_rate| where('last_call_attempt_time is null or last_call_attempt_time < ? ', recycle_rate.hours.ago)}
   scope :to_be_dialed, yet_to_call.order("ifnull(last_call_attempt_time, '#{Time.at(0)}') ASC")
   scope :randomly, :order => 'rand()'
   scope :to_callback, where(:call_back => true)
