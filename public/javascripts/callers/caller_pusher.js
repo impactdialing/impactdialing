@@ -245,7 +245,8 @@ function subscribe(session_key) {
 			set_message("Status: Connected")
 		}
 		show_response_panel();
-		$("#response_panel select option:selected").attr('selected',false)
+		$("#response_panel select option:selected").attr('selected',false);
+		$('.note_text').val('');
         $("#hangup_call").show();
     });
 
