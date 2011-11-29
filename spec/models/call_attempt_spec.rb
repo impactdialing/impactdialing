@@ -141,7 +141,9 @@ describe CallAttempt do
       voter = Factory(:voter, :campaign => campaign)
       session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => false)
       call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign)
-      call_attempt.connect_to_caller.should == call_attempt.hangup
+      attempt_response = call_attempt.connect_to_caller
+      attempt_response.should == call_attempt.hangup
+      call_attempt.status.should eq(CallAttempt::Status::ABANDONED)
     end
 
     it "plays a recorded message to the voters answering machine and hangs up" do

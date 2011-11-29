@@ -52,6 +52,7 @@ class CallAttempt < ActiveRecord::Base
 
   def connect_to_caller
     if caller_session.nil? || caller_session.disconnected? || !caller_session.available_for_call
+      update_attributes(status: CallAttempt::Status::ABANDONED)
       hangup
     else
       update_attributes(:status => CallAttempt::Status::INPROGRESS)
