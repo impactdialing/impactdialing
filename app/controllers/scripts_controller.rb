@@ -36,6 +36,10 @@ class ScriptsController < ClientController
   def create
     #before filter apply_changes triggered here
   end
+  
+  def update
+    #before filter apply_changes triggered here
+  end
 
   def apply_changes
     @script.update_attributes(params[:script])
