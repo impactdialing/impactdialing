@@ -39,6 +39,12 @@ class Voter < ActiveRecord::Base
 
   cattr_reader :per_page
   @@per_page = 25
+  
+  module Status
+    NOTCALLED = "not called"
+    RETRY = "retry"
+  end
+  
 
   def self.sanitize_phone(phonenumber)
     phonenumber.gsub(/[^0-9]/, "") unless phonenumber.blank?
@@ -159,11 +165,6 @@ class Voter < ActiveRecord::Base
   def self.just_called_voters_call_back(campaign_id, active_list_ids)
     uncalled = Voter.find_all_by_campaign_id_and_active_and_call_back(campaign_id, 1, 1, :conditions=>"voter_list_id in (#{active_list_ids.join(",")})")
     uncalled.select { |voter| voter.call_attempted_before?(10.minutes) }
-  end
-
-  module Status
-    NOTCALLED = "not called"
-    RETRY = "retry"
   end
 
   def unresponded_questions

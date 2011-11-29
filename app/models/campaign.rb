@@ -35,12 +35,12 @@ class Campaign < ActiveRecord::Base
   before_validation :set_untitled_name
   before_save :set_untitled_name
   before_validation :sanitize_caller_id
-  
+
   module Type
     PREVIEW = "preview"
     PREDICTIVE = "algorithm1"
   end
-  
+
 
   def set_untitled_name
     self.name = "Untitled #{account.campaigns.count + 1}" if self.name.blank?
@@ -71,11 +71,11 @@ class Campaign < ActiveRecord::Base
   def recent_attempts(mins=10)
     attempts = CallAttempt.find_all_by_campaign_id(self.id, :conditions=>"call_start > DATE_SUB(now(),INTERVAL #{mins} MINUTE)", :order=>"id desc")
   end
-  
+
   def callers_log_in?
     caller_sessions.on_call.length > 0
   end
-  
+
   def end_all_calls(account, auth, appurl)
     in_progress = CallAttempt.find_all_by_campaign_id(self.id, :conditions=>"sid is not null and call_end is null and id > 45")
     in_progress.each do |attempt|
@@ -268,14 +268,14 @@ class Campaign < ActiveRecord::Base
 
   def voters(status=nil, include_call_retries=true, limit=300)
     voters_returned = []
-    return voters_returned if !self.account.paid || self.caller_id.blank?    
-    
-    active_list_ids = VoterList.active_voter_list_ids(self.id)    
+    return voters_returned if !self.account.activated? || self.caller_id.blank?
+
+    active_list_ids = VoterList.active_voter_list_ids(self.id)
     return voters_returned if active_list_ids.empty?
-    
-    voters_returned.concat(Voter.to_be_called(id,active_list_ids,status,recycle_rate))    
+
+    voters_returned.concat(Voter.to_be_called(id,active_list_ids,status,recycle_rate))
     # voters_returned.concat(Voter.just_called_voters_call_back(self.id, active_list_ids)) if voters_returned.empty? && include_call_retries
-    
+
     voters_returned.uniq
   end
 
@@ -412,19 +412,19 @@ class Campaign < ActiveRecord::Base
   end
 
   def ring_predictive_voters(voter_ids)
-    voter_ids.each do |voter|      
+    voter_ids.each do |voter|
       voter.dial_predictive
     end
   end
 
   def dial
     update_attribute(:calls_in_progress, true)
-    dial_voters()
+    dial_voters
     update_attribute(:calls_in_progress, false)
   end
 
   def start
-    return false if self.calls_in_progress? or (not self.account.paid)
+    return false if self.calls_in_progress? or (not self.account.activated?)
     return false if script.robo_recordings.size == 0
     daemon = "#{Rails.root.join('script', "dialer_control.rb start -- #{self.id}")}"
     logger.info "[dialer] Account id:#{self.account.id} started campaign id:#{self.id} name:#{self.name}"
@@ -446,7 +446,7 @@ class Campaign < ActiveRecord::Base
       voter||= all_voters.to_be_dialed.first
     end
     voter
-    
+
   end
 
   def voters_dialed
@@ -491,7 +491,6 @@ class Campaign < ActiveRecord::Base
     results
   end
 
-
   def dial_predictive_simulator
     if dials_ramping?
       num_to_call= callers_available_for_call.length
@@ -503,32 +502,11 @@ class Campaign < ActiveRecord::Base
     ring_predictive_voters(voter_ids)
   end
   
-  def final_results(from_date, to_date)
-    result = Hash.new
-    script.questions.each_with_index do |question, q_index|
-      result[q_index] = { :question => question.text}
-      puts total_answers_count = question.answers.length
-      question.possible_responses.each_with_index do |possible_response, p_index|  
-        no_of_votes_to_this_option = possible_response.answers.all(:conditions => {:created_at => (from_date..(to_date+1.day))}).length
-        if no_of_votes_to_this_option != 0
-          result[q_index] = [possible_response.value, no_of_votes_to_this_option, no_of_votes_to_this_option * 100 / total_answers_count]
-        else
-          result[q_index][p_index] = [possible_response.value, no_of_votes_to_this_option, 0]
-        end
-        total_answers_count -= no_of_votes_to_this_option
-      end
-    end
-    result
-  end
-  
-  # {"Question1": [{answer: "a", number: 10,perc},{answer: "b", number: 5,perc},]}
   def answers_result(from_date, to_date)
     result = Hash.new
     script.questions.each do |question|
       total_answers = question.answers.answered_within(from_date, to_date).length
-      responses = []
-      question.possible_responses.each { |possible_response| responses << possible_response.stats(from_date, to_date, total_answers)}      
-      result[question.text] = responses
+      result[question.text] = question.possible_responses.collect { |possible_response| possible_response.stats(from_date, to_date, total_answers)}      
     end 
     result    
   end

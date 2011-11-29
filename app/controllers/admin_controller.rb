@@ -82,8 +82,9 @@ class AdminController < ApplicationController
   def set_report_date_range
     begin
       if params[:from_date]
-        @from_date=Date.parse params[:from_date]
-        @to_date = Date.parse params[:to_date]
+        puts params[:from_date]
+        @from_date=Date.parse(params[:from_date])
+        @to_date = Date.parse(params[:to_date])
       else
         @from_date = 1.month.ago
         @to_date = DateTime.now
@@ -101,9 +102,9 @@ class AdminController < ApplicationController
     @accounts = Account.all
   end
 
-  def toggle_paid
+  def toggle_activated
     account = Account.find(params[:id])
-    account.update_attribute(:paid, !account.paid)
+    account.update_attribute(:activated, !account.activated)
     redirect_to :back
   end
 

@@ -5,7 +5,8 @@
     <td>email</td>
     <td>phone</td>
     <td>created_at</td>
-    <td>paid</td>
+    <td>card_verified</td>
+    <td>activated</td>
     <td>domain</td>
     <td></td>
     <td></td>
@@ -18,9 +19,10 @@
       <td><%= account.users.map(&:email).join(', ') %></td>
       <td><%= account.users.map(&:phone).join(', ') %></td>
       <td><%= account.created_at %></td>
-      <td><%= account.paid %> </td>
+      <td><%= account.card_verified %> </td>
+      <td><%= account.activated %> </td>
       <td><%= account.domain %> </td>
-      <td><a href="/admin/toggle_paid/<%= account.id %>">toggle paid</a></td>
+      <td><a href="/admin/toggle_activated/<%= account.id %>">toggle activated</a></td>
       <td><a href="/admin/charge/<%= account.id %>">charge</a></td>
       <td><a href="/admin/login/<%= account.users.first.id %>">login</a></td>
     </tr>

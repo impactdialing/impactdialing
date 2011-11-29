@@ -14,10 +14,11 @@
 ActiveRecord::Schema.define(:version => 20111129065802) do
 
   create_table "accounts", :force => true do |t|
-    t.boolean  "paid"
+    t.boolean  "card_verified"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "domain"
+    t.boolean  "activated",     :default => false
   end
 
   create_table "answers", :force => true do |t|

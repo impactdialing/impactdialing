@@ -7,7 +7,7 @@ class CallerController < ApplicationController
   before_filter :connect_to_twilio, :only => [:preview_dial]
 
   def index
-    unless @caller.account.paid
+    unless @caller.account.activated?
       flash_now(:warning, "Your account is not funded. Please contact your account administrator.")
     end
     @campaigns = @caller.campaigns.manual.active.collect{|c| c if c.use_web_ui? }
@@ -45,7 +45,7 @@ class CallerController < ApplicationController
       end
     end
   end
-  
+
 
   def assign_campaign
     @session = CallerSession.find(params[:session])
@@ -104,7 +104,7 @@ class CallerController < ApplicationController
     @caller = Caller.find(params[:caller_id])
     @campaign = Campaign.find(params[:campaign_id])
     @session = @caller.caller_sessions.create(on_call: false, available_for_call: false,
-              session_key: generate_session_key, sid:  params[:CallSid] , campaign: @campaign )    
+              session_key: generate_session_key, sid:  params[:CallSid] , campaign: @campaign )
      render :xml => @session.start
   end
 

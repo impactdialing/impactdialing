@@ -12,17 +12,16 @@
       <% end %>
       <% @campaign.try(:script).try(:notes).try(:each) do |note| %>
           <p><label for><%= note.note %></label><br>
-            <input type="text" id="note_response_<%= note.id %>" name="notes[<%= note.id %>]"></p>
+            <input type="text" id="note_response_<%= note.id %>" name="notes[<%= note.id %>]" class="note_text"></p>
       <% end %>
     </form>
     <%= render :partial => "schedule_callback" %>
 
         <div style="clear: both;">
-          <%= link_to_function 'Schedule', 'schedule_for_later()', :class=> "action secondary" %>
-          <%= link_to_function 'Hide', 'collapse_scheduler()', :class=> "action secondary" %>
+          <p class="actions"><%= link_to_function 'Schedule', 'schedule_for_later()', :class=> "action secondary" %>
+          <%= link_to_function 'Hide', 'collapse_scheduler()', :class=> "action secondary" %></p>
         </div>
-      </div>
-
-    </div>
+</div>
+</div>
   </div>
 </fieldset>
