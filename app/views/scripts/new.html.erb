@@ -10,8 +10,9 @@
     <%= f.fields_for :robo_recordings do |recording| %>
         <%= render :partial => "robo_recording_fields", :locals => {:f => recording} %>
     <% end %>
-
-    <p class="actions"><%= f.link_to_add "Add recording", :robo_recordings, :class => "action secondary" %></p>
-
+    
+    <%= f.link_to_add "Add recording", :robo_recordings, :class => "action secondary small_font" %>
+    <p>&nbsp;</p>
+    
     <div class="buttons"><%= button_tag 'Save' %></div>
 <% end %>

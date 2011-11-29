@@ -82,28 +82,28 @@ class TwilioLib
     require 'hpricot'
     return if model_instance.sid.blank?
     t = TwilioLib.new(TWILIO_ACCOUNT,TWILIO_AUTH)
-    @a=t.call("GET", "Calls/" + model_instance.sid, {})
-    @doc = Hpricot::XML(@a)
-    puts @doc
-    call = twilio_xml_parse(@doc, model_instance)
+    response = t.call("GET", "Calls/" + model_instance.sid, {})
+    puts response
+    call = twilio_xml_parse(response, model_instance)
   end
-
-  def twilio_xml_parse(doc,model_instance)
-    (doc/:Call).each do |status|
-        model_instance.tCallSegmentSid = status.at("CallSegmentSid").innerHTML
-        model_instance.tAccountSid = status.at("AccountSid").innerHTML
-        model_instance.tCalled = status.at("Called").innerHTML
-        model_instance.tCaller = status.at("Caller").innerHTML
-        model_instance.tPhoneNumberSid = status.at("PhoneNumberSid").innerHTML
-        model_instance.tStatus = status.at("Status").innerHTML
-        model_instance.tStartTime = Time.parse(status.at("StartTime").innerHTML)
-        model_instance.tEndTime = Time.parse(status.at("EndTime").innerHTML)
-        Rails.logger.info "!!!!!!!!! Twilio End Time for id : #{model_instance.id}: #{status.at("EndTime").innerHTML}"
-        model_instance.tDuration = status.at("Duration").innerHTML
-        model_instance.tPrice = status.at("Price").innerHTML
-        model_instance.tFlags = status.at("Flags").innerHTML
-        model_instance.save
-      end
+  def twilio_xml_parse(response,model_instance)
+    call_response = Hash.from_xml(response)['TwilioResponse']['Call']
+    model_instance.tCallSegmentSid = call_response['Sid'] 
+    model_instance.tAccountSid = call_response['AccountSid']
+    model_instance.tCalled = call_response['To']
+    model_instance.tCaller = call_response['From']
+    model_instance.tPhoneNumberSid = call_response['PhoneNumberSid']
+    model_instance.tStatus = call_response['Status']
+    unless call_response['StartTime'].nil?
+      model_instance.tStartTime = Time.parse(call_response['StartTime'])
+    end
+    unless call_response['EndTime'].nil?
+     model_instance.tEndTime = Time.parse(call_response['EndTime'])
+    end
+    model_instance.tDuration = call_response['Duration']
+    model_instance.tPrice = call_response['Price']
+    model_instance.tFlags = call_response['Direction']
+    model_instance.save
   end
 
   def twilio_status_lookup(code)

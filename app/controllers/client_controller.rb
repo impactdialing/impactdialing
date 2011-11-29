@@ -13,7 +13,7 @@ class ClientController < ApplicationController
     begin
       @user = User.find(session[:user])
       @account = @user.account
-    rescue 
+    rescue
       logout
     end
   end
@@ -93,9 +93,9 @@ class ClientController < ApplicationController
       if @user.valid?
         if @user.new_record?
           @user.save
-          @user.send_welcome_email 
+          @user.send_welcome_email
           @caller = Caller.new(name:"", email: @user.email, password:"demo123",multi_user:true, account_id: account.id, active: true)
-          @caller.save                
+          @caller.save
         end
 
         if account.scripts.find_by_name('Demo Script') == nil
@@ -276,18 +276,18 @@ class ClientController < ApplicationController
     if request.post?
       @recording = @account.recordings.new(params[:recording])
       if params[:recording][:file].blank?
-        flash_now(:error, "No file uploaded")
+        flash_now(:error, "You must choose a recording to upload.")
         return
       end
       if params[:recording][:name].blank?
-        flash_now(:error, "No name entered")
+        flash_now(:error, "You must enter a name for the voicemail.")
         return
       end
       @recording.save!
       campaign = Campaign.find(params[:campaign_id])
       campaign.update_attribute(:recording, @recording)
 
-      flash_message(:notice, "Recording saved.")
+      flash_message(:notice, "Vociemail added.")
       redirect_to client_campaign_path(params[:campaign_id])
       return
     else
@@ -419,7 +419,7 @@ class ClientController < ApplicationController
       if response.success?
         flash_message(:notice, "Card verified.")
         @billing_account.save
-        account.update_attribute(:paid, true)
+        account.update_attribute(:card_verified, true)
         redirect_to :action=>"index"
         return
       else
@@ -1065,8 +1065,8 @@ class ClientController < ApplicationController
   def set_report_date_range
     begin
       if params[:from_date]
-        @from_date=Date.parse params[:from_date]
-        @to_date = Date.parse params[:to_date]
+        @from_date=Date.strptime(params[:from_date], "%m/%d/%Y")
+        @to_date = Date.strptime(params[:from_date], "%m/%d/%Y")
       else
         firstCall = CallerSession.find_by_campaign_id(@campaign.id,:order=>"id asc", :limit=>"1")
         lastCall = CallerSession.find_by_campaign_id(@campaign.id,:order=>"id desc", :limit=>"1")

@@ -101,9 +101,6 @@ class CallerSession < ActiveRecord::Base
     Twilio::Verb.new { |v| v.say("Please enter your call results")  if (attempt % 5 == 0); v.pause("length" => 2); v.redirect(pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => id, :attempt=>attempt+1)) }.response
   end
 
-  def collect_response
-
-  end
 
   def end
     self.update_attributes(:on_call => false, :available_for_call => false, :endtime => Time.now)

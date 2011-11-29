@@ -141,7 +141,9 @@ describe CallAttempt do
       voter = Factory(:voter, :campaign => campaign)
       session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => false)
       call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign)
-      call_attempt.connect_to_caller.should == call_attempt.hangup
+      attempt_response = call_attempt.connect_to_caller
+      attempt_response.should == call_attempt.hangup
+      call_attempt.status.should eq(CallAttempt::Status::ABANDONED)
     end
 
     it "plays a recorded message to the voters answering machine and hangs up" do
@@ -243,6 +245,15 @@ describe CallAttempt do
 
     it "filters out attempts of everything but certain statuses" do
       CallAttempt.with_status(['foo']).should == [@wanted_attempt]
+    end
+  end
+  
+  describe "call attempts between" do
+    it "should return cal attempts between 2 dates" do
+      Factory(:call_attempt, created_at: Time.now - 10.days)
+      Factory(:call_attempt, created_at: Time.now - 1.month)
+      call_attempts = CallAttempt.between(Time.now - 20.days, Time.now)
+      call_attempts.length.should eq(1)
     end
   end
 end
