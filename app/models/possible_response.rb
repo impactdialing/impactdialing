@@ -1,4 +1,10 @@
 class PossibleResponse < ActiveRecord::Base
   belongs_to :question
   has_many :answers
+  
+  def stats(from_date, to_date, total_answers)
+    number_of_answers = answers.answered_within(from_date, to_date).length    
+    {answer: value, number: number_of_answers, percentage:  (number_of_answers * 100 / total_answers)}
+  end
+  
 end
