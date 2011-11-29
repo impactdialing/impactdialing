@@ -52,7 +52,7 @@ module Client
     
     def answer
       set_report_date_range
-      @results = @campaign.final_results(@from_date, @to_date)
+      @results = @campaign.answers_result(@from_date, @to_date)
     end
 
     private

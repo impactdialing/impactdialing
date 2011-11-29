@@ -504,21 +504,35 @@ class Campaign < ActiveRecord::Base
   end
   
   def final_results(from_date, to_date)
-    result = Hash.new(Hash.new)
-    r =""
-    puts script.questions
+    result = Hash.new
     script.questions.each_with_index do |question, q_index|
       result[q_index] = { :question => question.text}
-      total_answers_count = question.answers.length
+      puts total_answers_count = question.answers.length
       question.possible_responses.each_with_index do |possible_response, p_index|  
         no_of_votes_to_this_option = possible_response.answers.all(:conditions => {:created_at => (from_date..(to_date+1.day))}).length
-
-        result[q_index][p_index] = { possible_response.value => no_of_votes_to_this_option * 100 / total_answers_count}
+        if no_of_votes_to_this_option != 0
+          result[q_index] = [possible_response.value, no_of_votes_to_this_option, no_of_votes_to_this_option * 100 / total_answers_count]
+        else
+          result[q_index][p_index] = [possible_response.value, no_of_votes_to_this_option, 0]
+        end
         total_answers_count -= no_of_votes_to_this_option
       end
     end
     result
   end
+  
+  # {"Question1": [{answer: "a", number: 10,perc},{answer: "b", number: 5,perc},]}
+  def answers_result(from_date, to_date)
+    result = Hash.new
+    script.questions.each do |question|
+      total_answers = question.answers.answered_within(from_date, to_date).length
+      responses = []
+      question.possible_responses.each { |possible_response| responses << possible_response.stats(from_date, to_date, total_answers)}      
+      result[question.text] = responses
+    end 
+    result    
+  end
+  
 
   private
   def dial_voters
