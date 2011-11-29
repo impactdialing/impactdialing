@@ -49,6 +49,11 @@ module Client
         format.csv { send_data download_report, :type => "text/csv", :filename=>"#{@campaign.name}_report.csv", :disposition => 'attachment' }
       end
     end
+    
+    def answer
+      set_report_date_range
+      @results = @campaign.final_results(@from_date, @to_date)
+    end
 
     private
     def download_report

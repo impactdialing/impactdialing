@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20111127210132) do
+ActiveRecord::Schema.define(:version => 20111129065802) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "paid"
@@ -21,9 +21,10 @@ ActiveRecord::Schema.define(:version => 20111127210132) do
   end
 
   create_table "answers", :force => true do |t|
-    t.integer "voter_id",             :null => false
-    t.integer "question_id",          :null => false
-    t.integer "possible_response_id", :null => false
+    t.integer  "voter_id",             :null => false
+    t.integer  "question_id",          :null => false
+    t.integer  "possible_response_id", :null => false
+    t.datetime "created_at"
   end
 
   create_table "billing_accounts", :force => true do |t|

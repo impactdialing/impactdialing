@@ -101,6 +101,7 @@ ImpactDialing::Application.routes.draw do
     resources :reports do
       collection do
         get :usage
+        get :answer
       end
     end
     get :update_report_real
