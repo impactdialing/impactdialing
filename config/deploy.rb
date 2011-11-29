@@ -3,7 +3,7 @@ require "bundler/capistrano"
 repository = "git@github.com:impactdialing/Impact-Dialing.git"
 bundle_flags = "--deployment --quiet --binstubs"
 bundle_without = [:development, :test, :darwin, :linux]
-preproduction = 'ec2-107-20-99-7.compute-1.amazonaws.com'
+preproduction = 'ec2-50-16-66-123.compute-1.amazonaws.com'
 set :application, "impactdialing"
 set :user, "rails"
 set :scm, :git
