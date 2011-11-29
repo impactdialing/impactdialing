@@ -9,7 +9,8 @@
       <tr>
         <td><%= c.name %></td>
         <td><a href="/client/report_overview?id=<%= c.id %>">Dials</a></td>
-        <td><a href="/client/report_overview_old?id=<%= c.id %>&type=1">Answered</a><br/></td>
+        <td><a href="/client/reports/answer?campaign_id=<%= c.id %>">Answered</a><br/></td>
+        <!-- <td><a href="/client/report_overview_old?id=<%= c.id %>&type=1">Answered</a><br/></td> -->
         <td><a href="<%= usage_client_reports_path(:id => c.id) %>">Usage</a><br/></td>
         <td><%= link_to "Download", download_client_campaign_reports_path(c) %><br/></td>
       </tr>

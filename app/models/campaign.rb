@@ -502,6 +502,23 @@ class Campaign < ActiveRecord::Base
     DIALER_LOGGER.info("predictive_simulator voters to dial #{voter_ids}")
     ring_predictive_voters(voter_ids)
   end
+  
+  def final_results(from_date, to_date)
+    result = Hash.new(Hash.new)
+    r =""
+    puts script.questions
+    script.questions.each_with_index do |question, q_index|
+      result[q_index] = { :question => question.text}
+      total_answers_count = question.answers.length
+      question.possible_responses.each_with_index do |possible_response, p_index|  
+        no_of_votes_to_this_option = possible_response.answers.all(:conditions => {:created_at => (from_date..(to_date+1.day))}).length
+
+        result[q_index][p_index] = { possible_response.value => no_of_votes_to_this_option * 100 / total_answers_count}
+        total_answers_count -= no_of_votes_to_this_option
+      end
+    end
+    result
+  end
 
   private
   def dial_voters
