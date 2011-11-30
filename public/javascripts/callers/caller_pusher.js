@@ -208,11 +208,11 @@ function subscribe(session_key) {
         hide_response_panel();
         $("#stop_calling").show();
         if (!$.isEmptyObject(data.fields)) {
-            set_message("Ready for calls.");
+            set_message("Status: Ready for calls.");
             set_voter(data);
 
         } else {
-            set_message("There are no more numbers to call in this campaign.");
+            set_message("Status: There are no more numbers to call in this campaign.");
         }
     });
 
@@ -232,7 +232,7 @@ function subscribe(session_key) {
     channel.bind('voter_disconnected', function(data) {
         hide_all_actions();
         show_response_panel();
-        set_message("Please enter your call results.");
+        set_message("Status: Waiting for call results.");
         $("#submit_and_keep_call").show();
         $("#submit_and_stop_call").show();
     });
@@ -251,7 +251,7 @@ function subscribe(session_key) {
     });
 
     channel.bind('calling_voter', function(data) {
-        set_message('Call in progress.');
+        set_message('Status: Call in progress.');
         hide_all_actions();
     });
 
@@ -267,20 +267,20 @@ function subscribe(session_key) {
 
     channel.bind('waiting_for_result', function(data) {
         show_response_panel();
-        set_message('Please enter your call results.');
+        set_message('Status: Waiting for call results.');
         hide_all_actions();
         $("#submit_and_keep_call").show();
         $("#submit_and_stop_call").show();
     });	
     
     channel.bind('no_voter_on_call', function(data){
-      $('status').text("Caller is waiting for a call.")
+      $('status').text("Status: Waiting for caller to be connected.")
     });
 
 	channel.bind('predictive_successful_voter_response', function(data){
 	 clear_voter();
 	 hide_response_panel();
-   	 set_message("Dialing.");
+   	 set_message("Status: Dialing.");
 	});
 
     function set_call_attempt(id) {
@@ -299,7 +299,7 @@ function subscribe(session_key) {
         } else {
             hide_all_actions();
             hide_response_panel();
-            set_message("There are no more numbers to call in this campaign.");
+            set_message("Status: There are no more numbers to call in this campaign.");
             $("#stop_calling").show();
         }
     }
