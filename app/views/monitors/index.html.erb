@@ -132,10 +132,12 @@
         </table>
       </div>
   <% #end %>
+
+<br>
+
 <h2>Callers</h2>
 <% #if @campaigns.length > 0 %>
-    <div class="box">
-      
+    <div class="box">  
       <div class="table">
         <table id="caller_table" width="100%" border="0" cellspacing="0" cellpadding="0">
           <tr class="table_header">
@@ -149,6 +151,7 @@
                   <tr id="<%= caller_session.caller.id %>" class="caller <%= cycle("odd", "even") %> ">
                     <td class="caller_name"><%= caller_session.caller.email %></td>
                     <td><%= caller_session.campaign.name %></td>
+                    <td>
                       <a class ="action secondary monitor" href="#" action="eavesdrop" session_id="<%= caller_session.id %>">Eavesdrop</a>
                     </td>
                     <td>
@@ -158,7 +161,7 @@
               <% end %>
           <% end %>
         </table>
-        <a class ="action secondary stop_monitor" href="#" onclick="javascript:stop_monitoring();">Stop monitoring</a>
+        <a class ="action primary stop_monitor" href="#" onclick="javascript:stop_monitoring();">Stop monitoring</a>
         <status style="float : right;"></status>
       </div>
     </div>

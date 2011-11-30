@@ -18,7 +18,7 @@ function subscribe_and_bind_events_monitoring(session_id){
   }
   
   channel.bind('no_voter_on_call', function(data){
-    $('status').text("Currently no voter is connected, You can monitor when voter connected")
+    $('status').text("Status: Caller is not connected to a lead.")
   });
   
   channel.bind('caller_session_started', function(data){
@@ -50,7 +50,7 @@ function subscribe_and_bind_events_monitoring(session_id){
     var caller_selector = 'tr#'+data.caller_id+'.caller';
     if($(caller_selector).attr('on_call') == "true"){
       $('.stop_monitor').hide();
-      $('status').text("You are monitoring nothing")
+      $('status').text("Status: Disconnected.")
     }
     $(caller_selector).remove();
     if(!data.campaign_active){
