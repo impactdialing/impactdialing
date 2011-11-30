@@ -125,6 +125,7 @@ ImpactDialing::Application.routes.draw do
         get :switch_mode
         get :monitor_session
       end
+      match "toggle_call_recording" => "monitors#toggle_call_recording"
     end
   end
 

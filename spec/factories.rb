@@ -28,6 +28,7 @@ end
 Factory.define :campaign do |c|
   c.name 'a campaign'
   c.caller_id '1234567890'
+  c.account { Factory(:account) }
 end
 
 Factory.define :script do |s|
@@ -62,6 +63,7 @@ Factory.define :caller_session do |s|
 end
 
 Factory.define :call_attempt do |ca|
+  ca.campaign { Factory(:campaign) }
 end
 
 Factory.define :robo_recording do |rr|
