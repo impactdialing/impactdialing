@@ -98,6 +98,7 @@ Factory.define :question do |q|
 end
 
 Factory.define :possible_response do |pr|
+  pr.value "no_response"
 end
 
 Factory.define :answer do |a|
