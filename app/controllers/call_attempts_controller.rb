@@ -67,7 +67,7 @@ class CallAttemptsController < ApplicationController
 
   def voter_response
     call_attempt = CallAttempt.find(params[:id])
-    if !params[:scheduled_date].nil? || !params[:scheduled_date].empty?
+    unless params[:scheduled_date].blank? 
       scheduled_date = params[:scheduled_date] + " " + params[:callback_time_hours] +":" + params[:callback_time_hours]
       scheduled_date = DateTime.strptime(scheduled_date, "%m/%d/%Y %H:%M").to_time
       call_attempt.update_attributes(:scheduled_date => scheduled_date, :status => CallAttempt::Status::SCHEDULED)
