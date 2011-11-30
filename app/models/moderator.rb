@@ -26,7 +26,7 @@ class Moderator < ActiveRecord::Base
   def self.caller_connected_to_campaign(caller, campaign, caller_session)
     caller_info = caller.info
     data = caller_info.merge(:campaign_name => campaign.name, :session_id => caller_session.id, :campaign_fields => {:id => campaign.id, :callers_logged_in => campaign.caller_sessions.on_call.length+1,
-       :voters_count => campaign.voters_count("not called", false).length, :path => Rails.application.routes.url_helpers.client_campaign_path(campaign), :dials_in_progress => campaign.caller_sessions.dial_in_progress.length })
+       :voters_count => campaign.voters_count("not called", false).length, :path => Rails.application.routes.url_helpers.client_campaign_path(campaign), :dials_in_progress => campaign.call_attempts.dial_in_progress.length })
     caller.account.moderators.active.each {|moderator| Pusher[moderator.session].trigger('caller_session_started', data)}    
   end
   
