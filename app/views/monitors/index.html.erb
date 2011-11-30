@@ -70,6 +70,7 @@
       else{
         $.each($(this).parent().parent().siblings(), function(){
           if($(this).attr("on_call") == "true"){
+            console.log("switching to different caller");
             stop_monitoring();
             $(this).removeAttr("on_call");
           }
