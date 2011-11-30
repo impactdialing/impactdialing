@@ -17,6 +17,7 @@ guard 'spork', :wait => 50 do
   watch(%r{^config/environments/.+\.rb})
   watch(%r{^config/initializers/.+\.rb})
   watch('spec/spec_helper.rb')
+  watch('spec/factories.rb')
 end
 
 guard :rspec, :version => 2, :bundler => false, :all_after_pass => false, :all_on_start => false, :keep_failed => false do
