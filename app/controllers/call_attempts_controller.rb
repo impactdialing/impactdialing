@@ -67,14 +67,22 @@ class CallAttemptsController < ApplicationController
 
   def voter_response
     call_attempt = CallAttempt.find(params[:id])
-    voter = Voter.find(params[:voter_id])
-    voter.capture(params)
+    unless params[:scheduled_date].nil?
+      scheduled_date = params[:scheduled_date] + " " + params[:callback_time_hours] +":" + params[:callback_time_hours]
+      call_attempt.update_attributes(:scheduled_date => scheduled_date, :status => CallAttempt::Status::SCHEDULED)
+      call_attempt.voter.update_attributes(:scheduled_date => scheduled_date, :status => CallAttempt::Status::SCHEDULED, :call_back => true)
+    else    
+      voter = Voter.find(params[:voter_id])
+      voter.capture(params)
+    end
+    
     if call_attempt.campaign.predictive_type == Campaign::Type::PREVIEW
       next_voter = call_attempt.campaign.next_voter_in_dial_queue
       call_attempt.caller_session.publish("voter_push", next_voter ? next_voter.info : {})
     else
       call_attempt.caller_session.publish("predictive_successful_voter_response", {})
-    end  
+    end      
+    
     call_attempt.caller_session.update_attribute(:voter_in_progress, nil)
     render :nothing => true
   end
