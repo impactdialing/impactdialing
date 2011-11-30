@@ -17,6 +17,7 @@ set :chmod755, "app config db lib public vendor script script/* public/ disp*"
 set :bundle_without, bundle_without
 set :bundle_flags, bundle_flags
 
+
 namespace :deploy do
   task :bundle_new_release, :roles => :app do
     run "cd #{deploy_to} && bundle install --without #{bundle_without.join(' ')} #{bundle_flags}"
