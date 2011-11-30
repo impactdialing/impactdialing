@@ -22,4 +22,10 @@ class Account < ActiveRecord::Base
     Rails.logger.debug("Called from #{caller[1]}")
     activated?
   end
+  
+  def toggle_call_recording!
+    self.record_calls = !self.record_calls
+    self.save
+  end
+
 end

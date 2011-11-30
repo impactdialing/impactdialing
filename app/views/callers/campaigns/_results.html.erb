@@ -2,7 +2,7 @@
   <legend>Results</legend>
   <div id="result_instruction" style="color: #A0A0A0"><em>When connected, call result options will appear here.</em>
   </div>
-  <div id="response_panel" class="rt" style="font-size : 1em; display:none;">
+  <div id="response_panel" class="rt" style="font-size : 1em;display:none">
     <form id="voter_responses" method="post">
       <input type="hidden" id="voter_id" name="voter_id">
       <% @campaign.script.try(:questions).try(:each) do |question| %>
@@ -17,9 +17,6 @@
       <%= render :partial => "schedule_callback" %>  
     </form>
 
-    <div style="clear: both;">
-      <p class="actions"><%= link_to_function 'Hide', 'collapse_scheduler()', :class=> "action secondary" %></p>
-    </div>
 </div>
 </div>
   </div>

@@ -188,10 +188,12 @@ function set_message(text) {
 }
 
 function collapse_scheduler() {
+	$('#schedule_callback').show();
     $("#callback_info").hide();
 }
 
 function expand_scheduler() {
+	$('#schedule_callback').hide();
     $("#callback_info").show();
 }
 
@@ -245,8 +247,7 @@ function subscribe(session_key) {
 			set_message("Status: Connected")
 		}
 		show_response_panel();
-		$("#response_panel select option:selected").attr('selected',false);
-		$('.note_text').val('');
+		cleanup_previous_call_results();
         $("#hangup_call").show();
     });
 
@@ -322,5 +323,12 @@ function subscribe(session_key) {
         $('#voter_info').empty();
         $('#voter_info').append(voter);
     }
+
+	function cleanup_previous_call_results(){
+		$("#response_panel select option:selected").attr('selected',false);
+		$('.note_text').val('');
+		$('#scheduled_date').val('')
+		collapse_scheduler();
+	}
 
 }

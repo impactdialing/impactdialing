@@ -87,7 +87,7 @@ describe CallAttemptsController do
       call_attempt.reload.caller.should == available_session.caller
       available_session.reload.voter_in_progress.should == voter
       response.body.should == Twilio::TwiML::Response.new do |r|
-        r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(call_attempt, :host => Settings.host) do |d|
+        r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(call_attempt, :host => Settings.host), :record=>call_attempt.campaign.account.record_calls do |d|
           d.Conference available_session.session_key, :wait_url => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
         end
       end.text
@@ -100,7 +100,7 @@ describe CallAttemptsController do
       Moderator.stub!(:publish_event).with(available_caller.caller, 'voter_connected', {:caller_id => available_caller.caller.id, :voter_phone => voter.Phone})
       post :connect, :id => call_attempt.id
       response.body.should == Twilio::TwiML::Response.new do |r|
-        r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(call_attempt, :host => Settings.host) do |d|
+        r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(call_attempt, :host => Settings.host), :record=>call_attempt.campaign.account.record_calls do |d|
           d.Conference available_caller.session_key, :wait_url => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
         end
       end.text
