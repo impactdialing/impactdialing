@@ -188,10 +188,12 @@ function set_message(text) {
 }
 
 function collapse_scheduler() {
+	$('#schedule_callback').show();
     $("#callback_info").hide();
 }
 
 function expand_scheduler() {
+	$('#schedule_callback').hide();
     $("#callback_info").show();
 }
 
@@ -325,7 +327,8 @@ function subscribe(session_key) {
 	function cleanup_previous_call_results(){
 		$("#response_panel select option:selected").attr('selected',false);
 		$('.note_text').val('');
-		$('#scheduled_date').val('')		
+		$('#scheduled_date').val('')
+		collapse_scheduler();
 	}
 
 }
