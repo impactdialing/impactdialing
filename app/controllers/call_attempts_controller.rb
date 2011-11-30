@@ -82,8 +82,7 @@ class CallAttemptsController < ApplicationController
       call_attempt.caller_session.publish("voter_push", next_voter ? next_voter.info : {})
     else
       call_attempt.caller_session.publish("predictive_successful_voter_response", {})
-    end      
-    
+    end          
     call_attempt.caller_session.update_attribute(:voter_in_progress, nil)
     render :nothing => true
   end
