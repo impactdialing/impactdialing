@@ -14,13 +14,12 @@
           <p><label for><%= note.note %></label><br>
             <input type="text" id="note_response_<%= note.id %>" name="notes[<%= note.id %>]" class="note_text"></p>
       <% end %>
+      <%= render :partial => "schedule_callback" %>  
     </form>
-    <%= render :partial => "schedule_callback" %>
 
-        <div style="clear: both;">
-          <p class="actions"><%= link_to_function 'Schedule', 'schedule_for_later()', :class=> "action secondary" %>
-          <%= link_to_function 'Hide', 'collapse_scheduler()', :class=> "action secondary" %></p>
-        </div>
+    <div style="clear: both;">
+      <p class="actions"><%= link_to_function 'Hide', 'collapse_scheduler()', :class=> "action secondary" %></p>
+    </div>
 </div>
 </div>
   </div>

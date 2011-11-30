@@ -112,14 +112,14 @@ describe "simulatation_dialer" do
     campaign = Factory(:campaign)
     caller_session = Factory(:caller_session, :on_call => true, :available_for_call => true, :campaign => campaign)
     (1..10).each do |i|
-      call_attempt = Factory(:call_attempt, :caller_session => caller_session, :voter => Factory(:voter), :campaign => campaign, :call_start=>Time.now, :status=>"Call in progress")
+      call_attempt = Factory(:call_attempt, :caller_session => caller_session, :voter => Factory(:voter), :campaign => campaign, :call_start=>Time.now, :status=>"Status: Call in progress")
     end
     campaign.should be_dials_ramping
 
     campaign = Factory(:campaign)
     caller_session = Factory(:caller_session, :on_call => true, :available_for_call => true, :campaign => campaign)
     (1..60).each do |i|
-      call_attempt = Factory(:call_attempt, :caller_session => caller_session, :voter => Factory(:voter), :campaign => campaign, :call_start=>Time.now, :status=>"Call in progress")
+      call_attempt = Factory(:call_attempt, :caller_session => caller_session, :voter => Factory(:voter), :campaign => campaign, :call_start=>Time.now, :status=>"Status: Call in progress")
     end
     campaign.should_not be_dials_ramping
   end
@@ -127,11 +127,11 @@ describe "simulatation_dialer" do
   it "calculates callers_on_call_longer_than" do
     campaign = Factory(:campaign, :predictive_alpha=>0.8, :predictive_beta=>0.2)
     caller_session = Factory(:caller_session, :on_call => true, :available_for_call => false, :campaign => campaign)
-    call_attempt = Factory(:call_attempt, :caller_session => caller_session, :voter => Factory(:voter), :campaign => campaign, :call_start=>Time.now-60, :status=>"Call in progress")
+    call_attempt = Factory(:call_attempt, :caller_session => caller_session, :voter => Factory(:voter), :campaign => campaign, :call_start=>Time.now-60, :status=>"Status: Call in progress")
     caller_session.attempt_in_progress=call_attempt
 
     caller_session_2 = Factory(:caller_session, :on_call => true, :available_for_call => false, :campaign => campaign)
-    call_attempt_2 = Factory(:call_attempt, :caller_session => caller_session_2, :voter => Factory(:voter), :campaign => campaign, :call_start=>Time.now-30, :status=>"Call in progress")
+    call_attempt_2 = Factory(:call_attempt, :caller_session => caller_session_2, :voter => Factory(:voter), :campaign => campaign, :call_start=>Time.now-30, :status=>"Status: Call in progress")
     caller_session_2.attempt_in_progress=call_attempt_2
 
     campaign.callers_on_call_longer_than(20).length.should==2
