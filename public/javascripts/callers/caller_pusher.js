@@ -274,7 +274,7 @@ function subscribe(session_key) {
     });	
     
     channel.bind('no_voter_on_call', function(data){
-      $('status').text("Currently no voter is connected, You can monitor when voter connected")
+      $('status').text("Caller is waiting for a call.")
     });
 
 	channel.bind('predictive_successful_voter_response', function(data){
