@@ -244,7 +244,7 @@ function subscribe(session_key) {
 		hide_all_actions();
 		if(data.dialer && data.dialer != 'preview') {
 	        set_voter(data.voter);	
-			set_message("Status: Connected")
+			set_message("Status: Connected.")
 		}
 		show_response_panel();
 		cleanup_previous_call_results();
