@@ -1,3 +1,4 @@
+<% content_for :javascripts do %>
 <script type="text/javascript" src="https://static.twilio.com/libs/twiliojs/1.0/twilio.js"></script>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js"></script>
 <script src="https://d3ds63zw57jt09.cloudfront.net/1.9/pusher.min.js" type="text/javascript" ></script>
@@ -63,12 +64,12 @@
 
   $(function() {
     $('.monitor').live('click', function(){
-      if($(this).parent().parent().attr("on_call")){
+      if($(this).parent().parent().attr("on_call") == "true"){
         switch_mode($(this).attr("session_id"), $(this).attr("action"));
       }
       else{
         $.each($(this).parent().parent().siblings(), function(){
-          if($(this).attr("on_call")){
+          if($(this).attr("on_call") == "true"){
             stop_monitoring();
             $(this).removeAttr("on_call");
           }
@@ -89,7 +90,6 @@
   <tr id={{id}} class="caller <%= cycle("odd", "even") %> ">
       <td class="caller_name">{{email}}</td>
       <td>{{campaign_name}}</td>
-      <td class="voter_phone"></td>
       <td>
         <a class ="action secondary monitor" href="#" action="eavesdrop" session_id={{session_id}}>Eavesdrop</a>
       </td>
@@ -101,37 +101,40 @@
 <script id="campaign" type="text/html">
   {{#campaign_fields}}
     <tr id={{id}} class="campaign <%= cycle("odd", "even") %>">
-       <td><h3><a href={{path}} >{{campaign_name}}</a></h3></td> 
+       <td><h3><a href={{path}} >{{campaign_name}}</a></h3></td>
        <td class="callers_logged_in">{{callers_logged_in}}</td>
+       <td class="dials_in_progress">{{dials_in_progress}}</td>
        <td class="voters_count">{{voters_count}}</td>
     </tr>
   {{/campaign_fields}}
 
 </script>
 
-
+<% end %>
 <h1>Monitor</h1>
 <monitor_session style="display:none"></monitor_session>
+
   <h2>Campaigns</h2>
       <div class="table">
         <table id="campaign_table" width="100%" border="0" cellspacing="0" cellpadding="0">
           <tr class="table_header">
             <th>Name</th>
             <th>Callers logged in</th>
+            <th>Dials in progress</th>
             <th>Numbers remaining</th>
           </tr>
           <% if @campaigns.present? %>
-          <% @campaigns.each do |c| %>
-              <tr id="<%= c.id %>" class="campaign <%= cycle("odd", "even") %>">
-                <td><h3><%= link_to c.name, campaign_path(c) %></h3></td>
-                <td class="callers_logged_in"><%= c.caller_sessions.on_call.length %></td>
-                <td class="voters_count"><%= c.voters_count("not called", false).length %></td>
-              </tr>
-          <% end %>
+            <% @campaigns.each do |c| %>
+                <tr id="<%= c.id %>" class="campaign <%= cycle("odd", "even") %>">
+                  <td><h3><%= link_to c.name, campaign_path(c) %></h3></td>
+                  <td class="callers_logged_in"><%= c.caller_sessions.on_call.length %></td>
+                  <td class="dials_in_progress"><%= c.caller_sessions.dial_in_progress.length %></td>
+                  <td class="voters_count"><%= c.voters_count("not called", false).length %></td>
+                </tr>
+            <% end %>
           <% end %>
         </table>
       </div>
-  <% #end %>
 
 <br>
 

@@ -7,6 +7,7 @@ class CallerSession < ActiveRecord::Base
 
   scope :on_call, :conditions => {:on_call => true}
   scope :available, :conditions => {:available_for_call => true, :on_call => true}
+  scope :dial_in_progress, :conditions => {:available_for_call => false, :on_call => true}
   scope :not_on_call, :conditions => {:on_call => false}
   scope :held_for_duration, lambda { |minutes| {:conditions => ["hold_time_start <= ?", minutes.ago]} }
   scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
