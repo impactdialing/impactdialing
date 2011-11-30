@@ -32,7 +32,7 @@ class CallAttemptsController < ApplicationController
 
   def disconnect
     call_attempt = CallAttempt.find(params[:id])
-    render :xml => call_attempt.disconnect
+    render :xml => call_attempt.disconnect(params)
   end
 
   def hangup

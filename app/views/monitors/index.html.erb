@@ -171,3 +171,4 @@
 
 <h2>System-wide settings</h2>
 <%= link_to "Manage Do Not Call list", blocked_numbers_path, :class => 'action secondary' %>
+<%= link_to "Call Recording: #{@call_recordings_enabled}", {:action=>"toggle_call_recording"}, {:class => 'action secondary'} %>

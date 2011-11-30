@@ -91,7 +91,7 @@ describe CallAttempt do
       call_attempt = Factory(:call_attempt, :voter => voter)
       Moderator.stub!(:publish_event).with(session.caller, 'voter_connected', {:caller_id => session.caller.id, :voter_phone => voter.Phone})
       call_attempt.conference(session).should == Twilio::TwiML::Response.new do |r|
-        r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(call_attempt, :host => Settings.host) do |d|
+        r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(call_attempt, :host => Settings.host), :record=>call_attempt.campaign.account.record_calls do |d|
           d.Conference session.session_key, :wait_url => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
         end
       end.text

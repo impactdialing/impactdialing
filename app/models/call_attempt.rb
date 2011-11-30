@@ -84,7 +84,7 @@ class CallAttempt < ActiveRecord::Base
     Moderator.publish_event(session.caller, 'voter_connected', {:caller_id => session.caller.id, :voter_phone => voter.Phone})
     voter.conference(session)
     Twilio::TwiML::Response.new do |r|
-      r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(self, :host => Settings.host) do |d|
+      r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(self, :host => Settings.host), :record=>self.campaign.account.record_calls do |d|
         d.Conference session.session_key, :wait_url => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
       end
     end.text
@@ -97,8 +97,8 @@ class CallAttempt < ActiveRecord::Base
     end.text
   end
 
-  def disconnect
-    update_attributes(:status => CallAttempt::Status::SUCCESS, :call_end => Time.now)
+  def disconnect(params={})
+    update_attributes(:status => CallAttempt::Status::SUCCESS, :call_end => Time.now, :recording_duration=>params[:RecordingDuration], :recording_url=>params[:RecordingUrl])
     voter.update_attribute(:status, CallAttempt::Status::SUCCESS)
     Pusher[caller_session.session_key].trigger('voter_disconnected', {:attempt_id => self.id, :voter => self.voter.info})
     hangup
