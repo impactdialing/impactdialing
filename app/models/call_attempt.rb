@@ -101,7 +101,7 @@ class CallAttempt < ActiveRecord::Base
     update_attributes(:status => CallAttempt::Status::SUCCESS, :call_end => Time.now, :recording_duration=>params[:RecordingDuration], :recording_url=>params[:RecordingUrl])
     voter.update_attribute(:status, CallAttempt::Status::SUCCESS)
     Pusher[caller_session.session_key].trigger('voter_disconnected', {:attempt_id => self.id, :voter => self.voter.info})
-    Moderator.publish_event(session.caller, 'voter_disconnected', {:campaign_id => session.campaign.id, :dials_in_progress => campaign.caller_sessions.dial_in_progress.length})
+    Moderator.publish_event(session.caller, 'voter_disconnected', {:campaign_id => campaign.id, :dials_in_progress => campaign.caller_sessions.dial_in_progress.length})
     hangup
   end
 

@@ -47,14 +47,17 @@ function subscribe_and_bind_events_monitoring(session_id){
     }   
   });
   
+  channel.bind('voter_disconnected', function(data) {
+    console.log(data);
+    update_dials_in_progress(data);
+  });
+  
   channel.bind('voter_connected',function(data){
     console.log(data);
     update_dials_in_progress(data);
   });
   
-  channel.bind('voter_disconnected', function(data) {
-    update_dials_in_progress(data);
-  });
+
   
   function update_dials_in_progress(data){
     if (!$.isEmptyObject(data)){
