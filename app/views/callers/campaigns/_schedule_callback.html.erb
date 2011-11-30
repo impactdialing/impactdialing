@@ -1,9 +1,8 @@
-<div id="schedule_callback">
-  <p><%= link_to_function 'Schedule callback', 'expand_scheduler()', :class=> "action secondary" %></p>
 
-  <div id="callback_info" style="display: none;">
-<fieldset>
-	<legend>Schedule callback</legend>
+<p id="schedule_callback"><%= link_to_function 'Schedule callback', 'expand_scheduler()', :class=> "action secondary" %></p>
+<div id="callback_info" style="display: none;">
+<fieldset >
+  <legend>Schedule callback</legend>
     <div>
       <p><label for="">Date</label><br>
         <input id="scheduled_date" name="scheduled_date"/></p>
@@ -42,4 +41,8 @@
           <option value="45">45</option>                            
         </select></p>
     </div>
+    <div style="clear: both;">
+      <p class="actions"><%= link_to_function 'Hide', 'collapse_scheduler()', :class=> "action secondary" %></p>
+    </div>
+    
 </fieldset>
