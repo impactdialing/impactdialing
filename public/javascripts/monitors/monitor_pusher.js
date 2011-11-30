@@ -41,30 +41,33 @@ function subscribe_and_bind_events_monitoring(session_id){
       $('status').text("Status: Disconnected.")
     }
     $(caller_selector).remove();
+    var campaign_selector = 'tr#'+data.campaign_id+'.campaign';
     if(!data.campaign_active){
-      var campaign_selector = 'tr#'+data.campaign_id+'.campaign';
       $(campaign_selector).remove();
-    }   
+    }
+    else{
+      $(campaign_selector).children('.callers_logged_in').text(data.no_of_callers_logged_in);
+    }
   });
   
   channel.bind('voter_disconnected', function(data) {
     console.log(data);
     update_dials_in_progress(data);
+    if (!$.isEmptyObject(data)){
+      var campaign_selector = 'tr#'+data.campaign_id+'.campaign';
+      $(campaign_selector).children('.dials_in_progress').text(data.dials_in_progress);
+      $(campaign_selector).children('.voters_count').text(data.voters_remaining);
+    }
   });
   
   channel.bind('voter_connected',function(data){
     console.log(data);
-    update_dials_in_progress(data);
-  });
-  
-
-  
-  function update_dials_in_progress(data){
     if (!$.isEmptyObject(data)){
       var campaign_selector = 'tr#'+data.campaign_id+'.campaign';
       $(campaign_selector).children('.dials_in_progress').text(data.dials_in_progress);
     }
-  }
+  });
+  
 }
 
 $(document).ready(function() {

@@ -114,7 +114,7 @@ describe CallAttemptsController do
       
       Pusher.should_receive(:[]).with(anything).and_return(channel)
       channel.stub(:trigger)
-      Moderator.stub!(:publish_event).with(caller, 'voter_disconnected', {:campaign_id => call_attempt.campaign.id, :dials_in_progress => 0})
+      Moderator.stub!(:publish_event).with(caller, 'voter_disconnected', {:campaign_id => call_attempt.campaign.id, :dials_in_progress => 0, :voters_remaining => 0})
       post :disconnect, :id => call_attempt.id
       response.body.should == call_attempt.hangup
       call_attempt.reload.status.should == CallAttempt::Status::SUCCESS

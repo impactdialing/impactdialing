@@ -167,7 +167,8 @@ describe CallAttempt do
       caller_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller))
       call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign, :caller_session => caller_session)
       time_now = Time.now
-      Moderator.stub!(:publish_event).with(caller_session.caller, 'voter_disconnected', {:campaign_id => call_attempt.campaign.id, :dials_in_progress => 0})
+      Moderator.stub!(:publish_event).with(caller_session.caller, 'voter_disconnected', {:campaign_id => call_attempt.campaign.id, :dials_in_progress => 0,
+        :voters_remaining => 0})
       Time.stub(:now).and_return(time_now)
       call_attempt.disconnect
       call_attempt.reload.status.should == CallAttempt::Status::SUCCESS
@@ -212,7 +213,8 @@ describe CallAttempt do
       attempt = Factory(:call_attempt, :voter => voter, :caller_session => caller_session)
       channel = mock
       #Moderator.stub!(:publish_event).with(session.caller, 'voter_disconnected', {:campaign_id => attempt.campaign.id, :dials_in_progress => 0})
-      Moderator.should_receive(:publish_event).with(caller_session.caller, 'voter_disconnected', {:campaign_id => attempt.campaign.id, :dials_in_progress => 0})
+      Moderator.should_receive(:publish_event).with(caller_session.caller, 'voter_disconnected', {:campaign_id => attempt.campaign.id, :dials_in_progress => 0,
+        :voters_remaining=>0})
       Pusher.should_receive(:[]).with(anything).and_return(channel)
       channel.should_receive(:trigger).with("voter_disconnected", {:attempt_id => attempt.id, :voter => attempt.voter.info})
       attempt.disconnect
