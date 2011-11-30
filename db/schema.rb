@@ -417,7 +417,7 @@ ActiveRecord::Schema.define(:version => 20111130045341) do
     t.string   "title"
     t.string   "keywords"
     t.string   "description"
-    t.text     "content",     :limit => 16777215
+    t.text     "content",     :limit => 2147483647
     t.boolean  "active"
     t.datetime "created_at"
     t.datetime "updated_at"
