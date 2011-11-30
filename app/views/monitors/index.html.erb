@@ -175,4 +175,5 @@
 
 <h2>System-wide settings</h2>
 <p class="actions"><%= link_to "Call recording: #{@call_recordings_enabled}", {:action=>"toggle_call_recording"}, {:class => 'action secondary'} %></p>
+<p>Links to recordings will appear in each campaign's Download report.</p>
 <p class="actions"><%= link_to "Manage Do Not Call list", blocked_numbers_path, :class => 'action secondary' %></p>

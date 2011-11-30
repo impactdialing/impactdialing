@@ -43,7 +43,7 @@ class MonitorsController < ClientController
   
   def toggle_call_recording
     account.toggle_call_recording!
-    flash_message(:notice, "Call recordings are now #{account.record_calls? ? "on" : "off"}")
+    flash_message(:notice, "Call recording turned #{account.record_calls? ? "on" : "off"}.")
     redirect_to monitors_path
   end
 
