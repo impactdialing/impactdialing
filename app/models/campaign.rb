@@ -505,7 +505,7 @@ class Campaign < ActiveRecord::Base
   def answers_result(from_date, to_date)
     result = Hash.new
     script.questions.each do |question|
-      total_answers = question.answers.answered_within(from_date, to_date).length
+      total_answers = question.answered_within(from_date, to_date).length
       result[question.text] = question.possible_responses.collect { |possible_response| possible_response.stats(from_date, to_date, total_answers)}      
     end 
     result    
