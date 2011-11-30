@@ -81,7 +81,7 @@ describe CallAttemptsController do
       Factory(:caller_session, :campaign => campaign, :available_for_call => false)
       available_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller))
       call_attempt.update_attributes(caller_session: available_session)
-      Moderator.stub!(:publish_event).with(available_session.caller, 'voter_connected', {:caller_id => available_session.caller.id, :voter_phone => voter.Phone})
+      Moderator.stub!(:publish_event).with(available_session.caller, 'voter_connected', {:campaign_id => available_session.campaign.id, :dials_in_progress => 1})
       post :connect, :id => call_attempt.id
 
       call_attempt.reload.caller.should == available_session.caller
@@ -97,7 +97,7 @@ describe CallAttemptsController do
       Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => false)
       available_caller = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => false)
       call_attempt.update_attribute(:caller_session, available_caller)
-      Moderator.stub!(:publish_event).with(available_caller.caller, 'voter_connected', {:caller_id => available_caller.caller.id, :voter_phone => voter.Phone})
+      Moderator.stub!(:publish_event).with(available_caller.caller, 'voter_connected', {:campaign_id => available_caller.campaign.id, :dials_in_progress => 1})
       post :connect, :id => call_attempt.id
       response.body.should == Twilio::TwiML::Response.new do |r|
         r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(call_attempt, :host => Settings.host), :record=>call_attempt.campaign.account.record_calls do |d|
@@ -107,10 +107,14 @@ describe CallAttemptsController do
     end
 
     it "disconnects a call_attempt from a conference" do
-      call_attempt = Factory(:call_attempt, :status => CallAttempt::Status::INPROGRESS, :caller_session => Factory(:caller_session), :voter => Factory(:voter))
+      caller = Factory(:caller)
+      caller_session = Factory(:caller_session, :caller =>caller)
+      call_attempt = Factory(:call_attempt, :status => CallAttempt::Status::INPROGRESS, :caller_session => caller_session, :voter => Factory(:voter))
       channel = mock
+      
       Pusher.should_receive(:[]).with(anything).and_return(channel)
       channel.stub(:trigger)
+      Moderator.stub!(:publish_event).with(caller, 'voter_disconnected', {:campaign_id => call_attempt.campaign.id, :dials_in_progress => 0})
       post :disconnect, :id => call_attempt.id
       response.body.should == call_attempt.hangup
       call_attempt.reload.status.should == CallAttempt::Status::SUCCESS
@@ -186,7 +190,7 @@ describe CallAttemptsController do
       pusher_session = mock
       pusher_session.should_receive(:trigger).with('voter_connected', {:attempt_id=> call_attempt.id, :voter => voter.info}.merge(:dialer => campaign.predictive_type))
       Pusher.stub(:[]).with(session_key).and_return(pusher_session)
-      Moderator.stub!(:publish_event).with(caller_session.caller, 'voter_connected', {:caller_id => caller_session.caller.id, :voter_phone => voter.Phone})
+      Moderator.stub!(:publish_event).with(caller_session.caller, 'voter_connected', {:campaign_id => caller_session.campaign.id, :dials_in_progress => 1})
       post :connect, :id => call_attempt.id
     end
 
