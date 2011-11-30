@@ -2,8 +2,10 @@
   <p><%= link_to_function 'Schedule callback', 'expand_scheduler()', :class=> "action secondary" %></p>
 
   <div id="callback_info" style="display: none;">
+<fieldset>
+	<legend>Schedule callback</legend>
     <div>
-      <p><label for="">Date to call back</label><br>
+      <p><label for="">Date</label><br>
         <input id="scheduled_date" name="scheduled_date"/></p>
       <p><label for="">Time</label><br>
         <select id= "callback_time_hours" name="callback_time_hours">
@@ -40,3 +42,4 @@
           <option value="45">45</option>                            
         </select></p>
     </div>
+</fieldset>
