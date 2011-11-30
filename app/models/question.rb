@@ -8,4 +8,8 @@ class Question < ActiveRecord::Base
   def stats(from_date, to_date)
     question.possible_responses.collect { |possible_response| possible_response.stats(from_date, to_date)}    
   end
+  
+  def answered_within(from_date, to_date)
+    answers.within(from_date, to_date)
+  end
 end
