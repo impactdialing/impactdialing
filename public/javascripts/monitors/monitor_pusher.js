@@ -6,28 +6,17 @@ var channel = null;
 
 function subscribe_and_bind_events_monitoring(session_id){
   channel = pusher.subscribe(session_id);  
-  function bind_voter_connected(channel){
-    channel.bind('voter_connected',function(data){
-      if (!$.isEmptyObject(data)){
-        var caller_selector = 'tr#'+data.caller_id+'.caller'
-        $(caller_selector).children('.voter_phone').text(data.voter_phone);
-        
-      }
-    });
-    
-  }
-  
+
   channel.bind('no_voter_on_call', function(data){
     $('status').text("Status: Caller is not connected to a lead.")
   });
   
   channel.bind('caller_session_started', function(data){
+    console.log(data)
     if (!$.isEmptyObject(data)) {
       console.log("pusher event caller session started")
-      $('div.form').hide();
       var caller = ich.caller(data);
       $('#caller_table').children().append(caller);
-      bind_voter_connected(channel)
       
       var campaign_selector = 'tr#'+data.campaign_fields.id+'.campaign';
       if($(campaign_selector).length == 0){
@@ -44,10 +33,9 @@ function subscribe_and_bind_events_monitoring(session_id){
     }
   });
   
-  bind_voter_connected(channel)
-  
   channel.bind('caller_disconnected', function(data) {
     var caller_selector = 'tr#'+data.caller_id+'.caller';
+    console.log(caller_selector)
     if($(caller_selector).attr('on_call') == "true"){
       $('.stop_monitor').hide();
       $('status').text("Status: Disconnected.")
@@ -56,14 +44,24 @@ function subscribe_and_bind_events_monitoring(session_id){
     if(!data.campaign_active){
       var campaign_selector = 'tr#'+data.campaign_id+'.campaign';
       $(campaign_selector).remove();
-      if($('tr.campaign').length == 0){
-        $('div.form').show();
-      }
-    }
-    
+    }   
   });
   
+  channel.bind('voter_connected',function(data){
+    console.log(data);
+    update_dials_in_progress(data);
+  });
   
+  channel.bind('voter_disconnected', function(data) {
+    update_dials_in_progress(data);
+  });
+  
+  function update_dials_in_progress(data){
+    if (!$.isEmptyObject(data)){
+      var campaign_selector = 'tr#'+data.campaign_id+'.campaign';
+      $(campaign_selector).children('.dials_in_progress').text(data.dials_in_progress);
+    }
+  }
 }
 
 $(document).ready(function() {
@@ -86,7 +84,6 @@ $(document).ready(function() {
     });
     
   }
-  
   
 });
 
