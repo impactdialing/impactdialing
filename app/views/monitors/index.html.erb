@@ -141,7 +141,6 @@
           <tr class="table_header">
             <th>Caller</th>
             <th>Campaign</th>
-            <th>Phone</th>
             <th></th>
             <th></th>
           </tr>
@@ -150,25 +149,19 @@
                   <tr id="<%= caller_session.caller.id %>" class="caller <%= cycle("odd", "even") %> ">
                     <td class="caller_name"><%= caller_session.caller.email %></td>
                     <td><%= caller_session.campaign.name %></td>
-                    <td class="voter_phone">
-                    <% if caller_session.voter_in_progress!=nil %>
-                        <% voter = Voter.find(caller_session.voter_in_progress) %>
-                        <%= voter.Phone %>
-                     <% end %>
-                    <td>
                       <a class ="action secondary monitor" href="#" action="eavesdrop" session_id="<%= caller_session.id %>">Eavesdrop</a>
                     </td>
                     <td>
-                      <a class ="action secondary monitor" href="#" action="breakin" session_id="<%= caller_session.id %>">Break In</a>
+                      <a class ="action secondary monitor" href="#" action="breakin" session_id="<%= caller_session.id %>">Break in</a>
                     </td>
                   </tr>
               <% end %>
           <% end %>
         </table>
-        <a class ="action secondary stop_monitor" href="#" onclick="javascript:stop_monitoring();">Stop Monitor</a>
+        <a class ="action secondary stop_monitor" href="#" onclick="javascript:stop_monitoring();">Stop monitoring</a>
         <status style="float : right;"></status>
       </div>
     </div>
 <% #end %>
-
+<h2>System-wide settings</h2>
 <%= link_to "Manage Do Not Call list", blocked_numbers_path, :class => 'action secondary' %>
