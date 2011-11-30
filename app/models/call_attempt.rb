@@ -8,6 +8,7 @@ class CallAttempt < ActiveRecord::Base
   belongs_to :caller_session
   has_many :call_responses
 
+  scope :dial_in_progress, :conditions => {:status => "Call in progress"}
   scope :for_campaign, lambda { |campaign| {:conditions => ["campaign_id = ?", campaign.id]} }
   scope :for_status, lambda { |status| {:conditions => ["call_attempts.status = ?", status]} }
   scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
@@ -81,7 +82,7 @@ class CallAttempt < ActiveRecord::Base
   def conference(session)
     self.update_attributes(:caller => session.caller, :call_start => Time.now, :caller_session => session)
     session.publish('voter_connected', {:attempt_id => self.id, :voter => self.voter.info})
-    Moderator.publish_event(session.caller, 'voter_connected', {:campaign_id => campaign.id, :dials_in_progress => campaign.caller_sessions.dial_in_progress.length})
+    Moderator.publish_event(session.caller, 'voter_connected', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.dial_in_progress.length})
     voter.conference(session)
     Twilio::TwiML::Response.new do |r|
       r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(self, :host => Settings.host), :record=>self.campaign.account.record_calls do |d|
@@ -101,7 +102,7 @@ class CallAttempt < ActiveRecord::Base
     update_attributes(:status => CallAttempt::Status::SUCCESS, :call_end => Time.now, :recording_duration=>params[:RecordingDuration], :recording_url=>params[:RecordingUrl])
     voter.update_attribute(:status, CallAttempt::Status::SUCCESS)
     Pusher[caller_session.session_key].trigger('voter_disconnected', {:attempt_id => self.id, :voter => self.voter.info})
-    Moderator.publish_event(caller_session.caller, 'voter_disconnected', {:campaign_id => campaign.id, :dials_in_progress => campaign.caller_sessions.dial_in_progress.length})
+    Moderator.publish_event(caller_session.caller, 'voter_disconnected', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.dial_in_progress.length})
     hangup
   end
 
