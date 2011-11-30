@@ -476,6 +476,26 @@ describe Campaign do
     voter_on_another_campaign.result.should == 'hello'
     voter_on_another_campaign.status.should == 'world'
   end
+  
+  it "should give the final results of a campaign as a Hash" do
+    script = Factory(:script)
+    question1 = Factory(:question, :text => "hw are u", :script => script)
+    question2 = Factory(:question, :text => "wr r u", :script => script)
+    possible_response1 = Factory(:possible_response, :question => question1)
+    possible_response2 = Factory(:possible_response, :question => question1)
+    campaign = Factory(:campaign, :script => script)
+    ans = mock
+    from_date =Time.now
+    to_date = Time.now
+    question1.stub!(:answers).and_return(ans)
+    question2.stub!(:answers).and_return(ans)
+    question1.stub!(:possible_responses).and_return([ans,ans])
+    ans.stub!(:answered_within).with(from_date, to_date).and_return(ans)
+    ans.stub!(:length).and_return(40)
+    # ans.stub!(:stats).with(from_date, to_date, 40).and_return({answer: "no_response", number: 20, percentage:  40})
+    # ans.stub!(:stats).with(from_date, to_date, 40).and_return({answer: "no_response", number: 30, percentage:  60})
+    campaign.answers_result(from_date, to_date).should == {"hw are u" => [{answer: "no_response", number: 0, percentage:  0},{answer: "no_response", number: 0, percentage:  0}],"wr r u" => []}
 
-
+  end
+  
 end
