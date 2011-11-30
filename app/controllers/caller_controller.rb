@@ -105,6 +105,7 @@ class CallerController < ApplicationController
     @campaign = Campaign.find(params[:campaign_id])
     @session = @caller.caller_sessions.create(on_call: false, available_for_call: false,
               session_key: generate_session_key, sid:  params[:CallSid] , campaign: @campaign )
+    Moderator.caller_connected_to_campaign(@caller, @campaign,@session)
      render :xml => @session.start
   end
 
