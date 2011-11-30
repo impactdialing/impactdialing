@@ -42,7 +42,7 @@ module Client
         format.csv { send_data download_report, :type => "text/csv", :filename=>"#{@campaign.name}_report.csv", :disposition => 'attachment' }
       end
     end
-    
+
     def answer
       set_report_date_range
       @results = @campaign.answers_result(@from_date, @to_date)
@@ -53,7 +53,8 @@ module Client
       report = CSV.generate do |csv|
         csv << ["_ID", "LastName", "FirstName", "MiddleName", "Suffix", "Phone", "Caller", "Status", "Call start", "Call end", "Attempts", @campaign.account.custom_voter_fields.collect { |cf| cf.name }, @campaign.script.questions.collect { |q| q.text }, @campaign.script.notes.collect { |note| note.note }].flatten
         @campaign.all_voters.answered_within(@from_date, @to_date).each do |v|
-          notes, custom_fields, answers, voter_details = [], [], [], [v.CustomID, v.LastName, v.FirstName, v.MiddleName, v.Suffix, v.Phone, v.last_call_attempt.caller.name, v.status, v.last_call_attempt.call_start, v.last_call_attempt.call_end, v.call_attempts.size]
+          last_call_attempt = v.last_call_attempt
+          notes, custom_fields, answers, voter_details = [], [], [], [v.CustomID, v.LastName, v.FirstName, v.MiddleName, v.Suffix, v.Phone, last_call_attempt ? last_call_attempt.caller.name : '', v.status, last_call_attempt ? last_call_attempt.call_start : '', last_call_attempt ? last_call_attempt.call_end : '', v.call_attempts.size]
           @campaign.account.custom_voter_fields.each { |cf| custom_fields << v.custom_voter_field_values.for_field(cf).first.try(:value) }
           @campaign.script.questions.each { |q| answers << v.answers.for(q).first.try(:possible_response).try(:value) }
           @campaign.script.notes.each { |note| notes << v.note_responses.for(note).last.try(:response) }
@@ -62,6 +63,5 @@ module Client
       end
       report
     end
-
   end
 end
