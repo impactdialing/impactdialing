@@ -6,6 +6,7 @@ class MonitorsController < ClientController
     twilio_capability = Twilio::Util::Capability.new(TWILIO_ACCOUNT, TWILIO_AUTH)
     twilio_capability.allow_client_outgoing(MONITOR_TWILIO_APP_SID)
     @token = twilio_capability.generate
+    @call_recordings_enabled = account.record_calls? ? "On" : "Off"
   end
 
   def start
@@ -38,6 +39,12 @@ class MonitorsController < ClientController
     puts session
     @moderator = Moderator.create!(:session => generate_session_key, :account => @user.account, :active => true)
     render json: @moderator.session.to_json
+  end
+  
+  def toggle_call_recording
+    account.toggle_call_recording!
+    flash_message(:notice, "Call recordings are now #{account.record_calls? ? "on" : "off"}")
+    redirect_to monitors_path
   end
 
 end
