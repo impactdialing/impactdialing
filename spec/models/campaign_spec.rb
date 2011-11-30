@@ -483,18 +483,10 @@ describe Campaign do
     question2 = Factory(:question, :text => "wr r u", :script => script)
     possible_response1 = Factory(:possible_response, :question => question1)
     possible_response2 = Factory(:possible_response, :question => question1)
+    Factory(:answer, :voter => Factory(:voter),:possible_response => possible_response1, :question => question1, :created_at => Time.now)
+    Factory(:answer, :voter => Factory(:voter),:possible_response => possible_response2, :question => question2, :created_at => Time.now)
     campaign = Factory(:campaign, :script => script)
-    ans = mock
-    from_date =Time.now
-    to_date = Time.now
-    question1.stub!(:answers).and_return(ans)
-    question2.stub!(:answers).and_return(ans)
-    question1.stub!(:possible_responses).and_return([ans,ans])
-    ans.stub!(:answered_within).with(from_date, to_date).and_return(ans)
-    ans.stub!(:length).and_return(40)
-    # ans.stub!(:stats).with(from_date, to_date, 40).and_return({answer: "no_response", number: 20, percentage:  40})
-    # ans.stub!(:stats).with(from_date, to_date, 40).and_return({answer: "no_response", number: 30, percentage:  60})
-    campaign.answers_result(from_date, to_date).should == {"hw are u" => [{answer: "no_response", number: 0, percentage:  0},{answer: "no_response", number: 0, percentage:  0}],"wr r u" => []}
+    campaign.answers_result(Time.now, Time.now).should == {"hw are u" => [{answer: "no_response", number: 1, percentage:  100},{answer: "no_response", number: 1, percentage:  100}],"wr r u" => []}
 
   end
   
