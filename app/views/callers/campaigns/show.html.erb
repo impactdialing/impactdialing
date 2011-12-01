@@ -137,15 +137,17 @@ function goclient() {
 		Twilio.Device.connect(params)
 }
 $(window).bind("beforeunload", function() {
-  $.ajax({
-      url : "/caller/" + $("#caller").val() + "/stop_calling",
-      data : {session_id : $("#caller_session").val() },
-      type : "POST",
-      async : false,
-      success : function(response) {
-		$("#start_calling").show();
-    }
-  })
+  if ($("#caller_session").val()) {
+    $.ajax({
+        url : "/caller/" + $("#caller").val() + "/stop_calling",
+        data : {session_id : $("#caller_session").val() },
+        type : "POST",
+        async : false,
+        success : function(response) {
+  		$("#start_calling").show();
+      }
+    });
+  }
 
 });
 
