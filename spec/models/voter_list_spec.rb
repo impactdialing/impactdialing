@@ -176,9 +176,6 @@ describe VoterList do
         custom_fields.length.should eq(2)
         custom_fields.should include("Foo")
         custom_fields.should include("Bar")
-
-        # voter_list.voters[0].get_attribute(custom_field).should ==  "Foo" 
-        # voter_list.voters[1].get_attribute(custom_field).should ==  "Bar" 
       end
 
       it "should not process custom fields for a voters with an invalid phone" do
