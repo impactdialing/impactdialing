@@ -49,14 +49,19 @@ class ApplicationController < ActionController::Base
   end
 
   def unpaid_text
-    return "" if @user==nil
-    warning=""
-    unless @user.account.paid?
-      #warning= "Your account is not funded and cannot make calls. For a free trial or to fund your account, email <a href=\"mailto:info@impactdialing.com\">info@impactdialing.com</a> or call (415) 347-5723."
-#      warning= "Your account is not funded and cannot make calls. Click here to<a href=\"/client/billing\"> activate your account</a>, or email <a href=\"mailto:info@impactdialing.com\">info@impactdialing.com</a> or call (415) 347-5723."
-      warning= "Before you can make calls, you need to verify a credit card number that we can bill. Until then, you can try out as much as you like, except for actually calling. #{billing_link(self.active_layout.instance_variable_get(:@template_path))} ".html_safe
+    if current_user && !current_user.account.card_verified?
+      I18n.t(:unpaid_text, :billing_link => billing_link(self.active_layout.instance_variable_get(:@template_path))).html_safe
+    else
+      ""
     end
-    warning
+  end
+
+  def unactivated_text
+    if current_user && !current_user.account.activated?
+      I18n.t(:unactivated_text).html_safe
+    else
+      ""
+    end
   end
 
   def active_layout
