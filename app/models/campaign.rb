@@ -443,7 +443,7 @@ class Campaign < ActiveRecord::Base
       voter||= all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.where("voters.id > #{current_voter_id}").first if current_voter_id
       voter||= all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.first
     else
-      voter||= all_voters.to_be_dialed.where("voters.id > #{current_voter_id}").first if current_voter_id
+      voter||= all_voters.to_be_dialed.where("voters.id > #{current_voter_id}").first unless current_voter_id.blank?
       voter||= all_voters.to_be_dialed.first
     end
     voter
