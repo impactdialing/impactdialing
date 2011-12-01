@@ -108,6 +108,12 @@ class AdminController < ApplicationController
     redirect_to :back
   end
 
+  def toggle_card_verified
+    account = Account.find(params[:id])
+    account.update_attribute(:card_verified, !account.card_verified)
+    redirect_to :back
+  end
+
   def login
     session[:user]=params[:id]
     redirect_to :controller=>"client", :action=>"index"

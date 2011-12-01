@@ -23,6 +23,7 @@
       <td><%= account.activated %> </td>
       <td><%= account.domain %> </td>
       <td><a href="/admin/toggle_activated/<%= account.id %>">toggle activated</a></td>
+      <td><a href="/admin/toggle_card_verified/<%= account.id %>">toggle card verified</a></td>
       <td><a href="/admin/charge/<%= account.id %>">charge</a></td>
       <td><a href="/admin/login/<%= account.users.first.id %>">login</a></td>
     </tr>
