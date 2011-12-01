@@ -21,7 +21,8 @@ class CallAttemptsController < ApplicationController
                    call_attempt.voter.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
                    call_attempt.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
                    if call_attempt.caller_session && call_attempt.campaign.predictive_type == Campaign::Type::PREVIEW
-                     call_attempt.caller_session.publish('voter_push', call_attempt.campaign.next_voter_in_dial_queue.info)
+                     next_voter = call_attempt.campaign.next_voter_in_dial_queue
+                     call_attempt.caller_session.publish('voter_push', next_voter ? next_voter.info : {})
                    end
                    call_attempt.campaign.use_recordings? ? call_attempt.play_recorded_message : call_attempt.hangup
                  else      
