@@ -1,7 +1,7 @@
 class CampaignsController < ClientController
   layout 'v2'
   include DeletableController
-  before_filter :verify_campaign_ownership, :only => [:update, :show, :verify_callerid, :start, :stop, :dial_statistics, :destroy]
+  before_filter :verify_campaign_ownership, :only => [:update, :show, :start, :stop, :dial_statistics, :destroy]
   before_filter :setup_campaigns_paths, :only => [:index]
 
   def verify_campaign_ownership
@@ -25,8 +25,19 @@ class CampaignsController < ClientController
     @campaign.script ||= account.scripts.active.first
     @campaign.voter_lists.disable_all
     @campaign.voter_lists.by_ids(params[:voter_list_ids]).enable_all
-    flash_message(:notice, "Campaign saved") if @campaign.save
-    redirect_to campaign_path(@campaign)
+
+    if @campaign.valid?
+      flash_message(:notice, "Campaign saved") if @campaign.save
+      redirect_to campaign_path(@campaign)
+    else
+      @scripts = @user.account.scripts.robo.active
+      @callers = account.callers.active
+      @lists = @campaign.voter_lists
+      @voters = @campaign.all_voters.active.paginate(:page => params[:page])
+      @voter_list = @campaign.voter_lists.new
+      render :show
+    end
+
   end
 
   def destroy
@@ -45,18 +56,10 @@ class CampaignsController < ClientController
       return
     end
     @scripts = @user.account.scripts.robo.active
-    @callers  = account.callers.active
-    @lists    = @campaign.voter_lists
+    @callers = account.callers.active
+    @lists = @campaign.voter_lists
     @voters = @campaign.all_voters.active.paginate(:page => params[:page])
     @voter_list = @campaign.voter_lists.new
-  end
-
-  #TODO: extract html message to partial
-  def verify_callerid
-    if @campaign.caller_id.present? and (not @campaign.caller_id_verified)
-      ret = "<div class='msg msg-error'> <p><strong>Your Campaign Caller ID is not verified.</strong></p> </div>".html_safe
-    end
-    render :text => ret
   end
 
   def control
