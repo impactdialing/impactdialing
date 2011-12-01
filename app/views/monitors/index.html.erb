@@ -71,7 +71,9 @@
         $.each($(this).parent().parent().siblings(), function(){
           if($(this).attr("on_call") == "true"){
             console.log("switching to different caller");
-            stop_monitoring();
+            Twilio.Device.disconnectAll();
+            $('status').text("You are monitoring nothing")
+            $('.stop_monitor').hide();
             $(this).removeAttr("on_call");
           }
         });
