@@ -3,6 +3,7 @@
 <div id="callerid"></div>
 
 <%= form_for @campaign, :html => {:name => 'callerForm', :id => 'callerForm'} do |f| %>
+    <%= render "shared/error_messages", :target => @campaign %>
     <fieldset>
 	  <legend>Campaign options</legend>
       <fieldset>
@@ -12,9 +13,6 @@
 
         <p><label for="">Caller ID</label><br>
           <%= f.text_field :caller_id, {:class=>"field size3"} %></p>
-	      <div class="buttons">
-	        <button type="submit">Verify this Caller ID</button>
-	      </div>
 
         <p><label for="">Script</label><br>
           <%= f.collection_select(:script_id, @scripts, :id, :name, {:prompt => true}, {:class=>"field"}) %>
@@ -61,7 +59,3 @@
   <legend>Add Lists</legend>
   <%= render :partial => "voter_lists/new", :locals => { :path => campaign_voter_lists_path(@campaign) } %>
 </fieldset>
-
-<script>
-    <%= remote_function(:update => "callerid", :url => { :action => "verify_callerid", :id=>@campaign.id }) %>
-</script>
