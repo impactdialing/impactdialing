@@ -6,27 +6,29 @@ describe CallAttemptsController do
     let(:account) { Factory(:account) }
     let(:user) { Factory(:user, :account => account) }
     let(:campaign) { Factory(:campaign, :account => account, :robo => false, :use_web_ui => true) }
-    let(:voter) { Factory(:voter) }
+    let(:voter) { Factory(:voter, :campaign => campaign) }
     let(:caller_session){ Factory(:caller_session) }
     let(:call_attempt) { Factory(:call_attempt, :voter => voter, :campaign => campaign, :caller_session => caller_session) }
 
     it "collects voter responses" do
       script = Factory(:script, :robo => false)
+      voter2 = Factory(:voter, :campaign => campaign)
       question1 = Factory(:question, :script => script)
       response1 = Factory(:possible_response, :question => question1)
       question2 = Factory(:question, :script => script)
       response2 = Factory(:possible_response, :question => question2)
 
       channel = mock
-      Voter.stub_chain(:to_be_dialed, :first).and_return(voter)
+      # Voter.stub_chain(:to_be_dialed, :first).and_return(voter)
       Pusher.should_receive(:[]).with(anything).and_return(channel)
-      channel.should_receive(:trigger).with("voter_push", Voter.to_be_dialed.first.info.merge(:dialer => campaign.predictive_type))
-
+      channel.should_receive(:trigger).with("voter_push", voter2.info.merge(:dialer => campaign.predictive_type))
+      
       post :voter_response, :id => call_attempt.id, :voter_id => voter.id, :question => {question1.id=> response1.id, question2.id=>response2.id}
       voter.answers.count.should == 2
     end
 
     it "retry responses should dial voter again later" do
+      voter2 = Factory(:voter, campaign: campaign)
       script = Factory(:script, :robo => false)
       question1 = Factory(:question, :script => script)
       response1 = Factory(:possible_response, :question => question1)
@@ -34,9 +36,8 @@ describe CallAttemptsController do
       response2 = Factory(:possible_response, :question => question2, :retry => true)
 
       channel = mock
-      Voter.stub_chain(:to_be_dialed, :first).and_return(voter)
       Pusher.should_receive(:[]).with(anything).and_return(channel)
-      channel.should_receive(:trigger).with("voter_push", Voter.to_be_dialed.first.info.merge(:dialer => campaign.predictive_type))
+      channel.should_receive(:trigger).with("voter_push", voter2.info.merge(:dialer => campaign.predictive_type))
 
       post :voter_response, :id => call_attempt.id, :voter_id => voter.id, :question => {question1.id=> response1.id, question2.id=>response2.id}
       voter.answers.count.should == 2

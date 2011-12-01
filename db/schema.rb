@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20111130045341) do
+ActiveRecord::Schema.define(:version => 20111201192011) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -143,7 +143,6 @@ ActiveRecord::Schema.define(:version => 20111130045341) do
     t.string   "email"
     t.string   "pin"
     t.integer  "account_id"
-    t.boolean  "multi_user", :default => true
     t.boolean  "active",     :default => true
     t.datetime "created_at"
     t.datetime "updated_at"

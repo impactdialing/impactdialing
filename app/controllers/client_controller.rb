@@ -94,7 +94,7 @@ class ClientController < ApplicationController
         if @user.new_record?
           @user.save
           @user.send_welcome_email
-          @caller = Caller.new(name:"", email: @user.email, password:"demo123",multi_user:true, account_id: account.id, active: true)
+          @caller = Caller.new(name:"", email: @user.email, password:"demo123", account_id: account.id, active: true)
           @caller.save
         end
 
