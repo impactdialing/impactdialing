@@ -39,6 +39,7 @@ class Campaign < ActiveRecord::Base
   module Type
     PREVIEW = "preview"
     PREDICTIVE = "algorithm1"
+    PROGRESSIVE = "progressive"
   end
 
 

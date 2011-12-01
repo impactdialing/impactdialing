@@ -1,19 +1,6 @@
 require "spec_helper"
 
 describe CallAttemptsController do
-  it "updates a call attempt" do
-    campaign = Factory(:campaign)
-    voter = Factory(:voter, :campaign => campaign)
-    call_attempt = Factory(:call_attempt, :scheduled_date => nil, :voter => voter, :campaign => campaign, :caller_session => Factory(:caller_session))
-    scheduled_date = 2.days.from_now
-    put :update, :id => call_attempt.id, :call_attempt => {:scheduled_date => scheduled_date}
-    call_attempt.reload.scheduled_date.to_s.should == scheduled_date.to_s
-    call_attempt.status.should == CallAttempt::Status::SCHEDULED
-    call_attempt.voter.scheduled_date.to_s.should == scheduled_date.to_s
-    call_attempt.voter.call_back.should be_true
-    call_attempt.voter.status.should == CallAttempt::Status::SCHEDULED
-
-  end
 
   describe "gathering responses" do
     let(:account) { Factory(:account) }
