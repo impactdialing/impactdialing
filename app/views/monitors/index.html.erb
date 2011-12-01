@@ -42,7 +42,7 @@
     Twilio.Device.connect(params)
   }
   function stop_monitoring(){
-    $('status').text("You are monitoring nothing")
+    $('status').text("Status: Disconnected.")
     $('.stop_monitor').hide();
     $.each($('tr.caller'), function(){
       $(this).removeAttr("on_call");
@@ -76,7 +76,7 @@
           }
         });
 
-        status = "Your currently "+$(this).attr("action") + " on "+$(this).parent().prevAll('td.caller_name').text().split("/").first();
+        status = "Status: Monitoring in "+$(this).attr("action") + " mode on "+$(this).parent().prevAll('td.caller_name').text().split("/").first() + ".";
         monitor($(this).attr("session_id"), $(this).attr("action"), status);
         $(this).parent().parent().attr("on_call","true")
       }
