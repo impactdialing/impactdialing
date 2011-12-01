@@ -94,10 +94,6 @@ function ready_to_call(dialer) {
         $("#skip_voter").show();
         $("#call_voter").show();
     }
-    if (dialer && dialer.toLowerCase() == "progressive") {
-        $("#stop_calling").show();
-		call_voter();
-    }
 
 }
 
@@ -233,6 +229,11 @@ function subscribe(session_key) {
     channel.bind('voter_push', function(data) {
         console.log('voter data pushed')
         set_voter(data);
+	    if (data.dialer && data.dialer.toLowerCase() == "progressive") {
+		  $("#stop_calling").show();
+		  call_voter();
+	    }
+
         $("#start_calling").hide();
     });
 
