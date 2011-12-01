@@ -94,6 +94,11 @@ function ready_to_call(dialer) {
         $("#skip_voter").show();
         $("#call_voter").show();
     }
+    if (dialer && dialer.toLowerCase() == "progressive") {
+        $("#stop_calling").show();
+		call_voter();
+    }
+
 }
 
 
