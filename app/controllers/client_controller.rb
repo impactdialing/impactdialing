@@ -161,6 +161,10 @@ class ClientController < ApplicationController
     if !text.blank?
       flash_now(:warning, text)
     end
+    text = unactivated_text
+    if !text.blank?
+      flash_now(:warning, text)
+    end
   end
 
   def index

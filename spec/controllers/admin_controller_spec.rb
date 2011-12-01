@@ -18,6 +18,15 @@ describe AdminController do
       end
     end
 
+    [true, false].each do |old_card_verified|
+      it "toggles paid to #{old_card_verified}" do
+        account = Factory(:account, :card_verified => old_card_verified)
+        post :toggle_card_verified, :id => account.id
+        account.reload.card_verified.should == !old_card_verified
+        response.should redirect_to(:back)
+      end
+    end
+
     it "generates an admin report" do
       get :report
       response.should be_ok
