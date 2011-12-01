@@ -42,7 +42,7 @@ class CallerSession < ActiveRecord::Base
   end
 
   def preview_dial(voter)
-    attempt = voter.call_attempts.create(:campaign => self.campaign, :dialer_mode => Campaign::Type::PREVIEW, :status => CallAttempt::Status::RINGING, :caller_session => self, :caller => caller)
+    attempt = voter.call_attempts.create(:campaign => self.campaign, :dialer_mode => campaign.predictive_type, :status => CallAttempt::Status::RINGING, :caller_session => self, :caller => caller)
     update_attribute('attempt_in_progress', attempt)
     voter.update_attributes(:last_call_attempt => attempt, :last_call_attempt_time => Time.now, :caller_session => self)
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
@@ -82,7 +82,7 @@ class CallerSession < ActiveRecord::Base
       end
     end.response
     update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
-    publish('caller_connected_dialer', {}) if campaign.predictive_type != Campaign::Type::PREVIEW
+    publish('caller_connected_dialer', {}) if campaign.predictive_type != Campaign::Type::PREVIEW || campaign.predictive_type != Campaign::Type::PROGRESSIVE
     response
   end
   

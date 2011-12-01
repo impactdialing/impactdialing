@@ -20,7 +20,7 @@ class CallAttemptsController < ApplicationController
                  when "machine"
                    call_attempt.voter.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
                    call_attempt.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
-                   if call_attempt.caller_session && call_attempt.campaign.predictive_type == Campaign::Type::PREVIEW
+                   if call_attempt.caller_session && call_attempt.campaign.predictive_type == Campaign::Type::PREVIEW || call_attempt.campaign.predictive_type == Campaign::Type::PROGRESSIVE
                      next_voter = call_attempt.campaign.next_voter_in_dial_queue
                      call_attempt.caller_session.publish('voter_push', next_voter ? next_voter.info : {})
                    end
@@ -56,15 +56,6 @@ class CallAttemptsController < ApplicationController
     render :xml => response
   end
 
-  def update
-    call_attempt = CallAttempt.find(params[:id])
-    call_attempt.update_attributes(:scheduled_date => params[:call_attempt][:scheduled_date], :status => CallAttempt::Status::SCHEDULED)
-    call_attempt.voter.update_attributes(:scheduled_date => params[:call_attempt][:scheduled_date], :status => CallAttempt::Status::SCHEDULED, :call_back => true)
-
-    next_voter = call_attempt.campaign.next_voter_in_dial_queue
-    call_attempt.caller_session.publish("voter_push", next_voter ? next_voter.info : {}) if call_attempt.campaign.predictive_type == Campaign::Type::PREVIEW
-    render :nothing => true
-  end
 
   def voter_response
     call_attempt = CallAttempt.find(params[:id])
@@ -78,7 +69,7 @@ class CallAttemptsController < ApplicationController
       voter.capture(params)
     end
     
-    if call_attempt.campaign.predictive_type == Campaign::Type::PREVIEW
+    if call_attempt.campaign.predictive_type == Campaign::Type::PREVIEW || call_attempt.campaign.predictive_type == Campaign::Type::PROGRESSIVE
       next_voter = call_attempt.campaign.next_voter_in_dial_queue
       call_attempt.caller_session.publish("voter_push", next_voter ? next_voter.info : {})
     else
