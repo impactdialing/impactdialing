@@ -67,7 +67,7 @@ function get_voter() {
 
 function next_voter() {
     $.ajax({
-        url : "/caller/" + $("#caller_session").val() + "/preview_voter",
+        url : "/caller/" + $("#caller").val() + "/preview_voter",
         data : {id : $("#caller").val(), voter_id : $("#current_voter").val(), session_id : $("#caller_session").val() },
         type : "POST",
         success : function(response) {

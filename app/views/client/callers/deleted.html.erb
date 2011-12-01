@@ -20,7 +20,6 @@
           <td><h3><a href="/client/caller_add/<%= c.id %>"><%= c.name %></a></h3></td>
           <td><%= c.email %></td>
           <td><%= c.pin %></td>
-          <td><% if c.multi_user? %>Yes<% else %>No<% end %></td>
           <td><%= c.created_at.strftime("%m/%d/%Y") %></td>
           <td><%= c.updated_at.strftime("%m/%d/%Y") %></td>
           <td>

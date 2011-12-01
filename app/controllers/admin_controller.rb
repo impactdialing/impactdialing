@@ -127,7 +127,6 @@ class AdminController < ApplicationController
         @user.save
         @caller = Caller.new
         @caller.name="Default Caller"
-        @caller.multi_user=true
         @caller.user_id=@user.id
         @caller.save
         @script = Script.new
