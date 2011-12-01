@@ -33,7 +33,7 @@ class Voter < ActiveRecord::Base
   scope :limit, lambda { |n| {:limit => n} }
   scope :without, lambda { |numbers| where('Phone not in (?)', numbers) }
   scope :answered, where('result_date is not null')
-  scope :answered_within, lambda { |from, to| where(:result_date  => from.beginning_of_day..(to.end_of_day)) }
+  scope :answered_within, lambda { |from, to| where(:result_date => from.beginning_of_day..(to.end_of_day)) }
 
   before_validation :sanitize_phone
 
