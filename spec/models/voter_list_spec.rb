@@ -79,9 +79,7 @@ describe VoterList do
       
       it "should upload all columns expect the Not Available one" do        
         MAPPINGS = CsvMapping.new({"Phone"=>"Phone", "Name"=>"", "Email"=>"Email"})
-        @result = voter_list.import_leads(MAPPINGS,
-            "#{fixture_path}/files/missing_field_list.csv",
-            ",")
+        @result = voter_list.import_leads(MAPPINGS,"#{fixture_path}/files/missing_field_list.csv",",")
         @result.should == {
             :successCount => 2,
             :failedCount => 0
@@ -181,6 +179,12 @@ describe VoterList do
 
         # voter_list.voters[0].get_attribute(custom_field).should ==  "Foo" 
         # voter_list.voters[1].get_attribute(custom_field).should ==  "Bar" 
+      end
+
+      it "should not process custom fields for a voters with an invalid phone" do
+        MAPPINGS = CsvMapping.new({"Phone"=>"Phone", "Name"=>"", "Custom"=>"Custom"})
+        @result = voter_list.import_leads(MAPPINGS,"#{fixture_path}/files/missing_phone_with_custom_fields_list.csv",",")
+        @result.should == { :successCount => 2,  :failedCount => 1 }
       end
     end
 

@@ -13,8 +13,8 @@ class VoterList < ActiveRecord::Base
   scope :by_ids, lambda { |ids| {:conditions => {:id => ids}} }
 
   VOTER_DATA_COLUMNS = {"Phone"=> "Phone", "ID" => "ID", "LastName"=>"LastName", "FirstName"=>"FirstName",
-     "MiddleName"=>"MiddleName", "Suffix"=>"Suffix", "Email"=>"Email", "address"=>"Address","city"=>"City",
-     "state"=>"State/Province","zip_code"=>"Zip/Postal Code","country"=>"Country"}
+                        "MiddleName"=>"MiddleName", "Suffix"=>"Suffix", "Email"=>"Email", "address"=>"Address", "city"=>"City",
+                        "state"=>"State/Province", "zip_code"=>"Zip/Postal Code", "country"=>"Country"}
 
   def self.disable_all
     self.all.each do |voter_list|
@@ -35,8 +35,7 @@ class VoterList < ActiveRecord::Base
 
   def import_leads(csv_to_system_map, csv_filename, separator)
 
-    result = {:successCount => 0,
-              :failedCount => 0}
+    result = {:successCount => 0, :failedCount => 0}
 
     voters_list = CSV.parse(File.read(csv_filename), :col_sep => separator)
     csv_headers = voters_list.delete_at(0)
@@ -47,22 +46,17 @@ class VoterList < ActiveRecord::Base
     voters_list.shuffle.each do |voter_info|
       phone_number = Voter.sanitize_phone(voter_info[csv_phone_column_location])
 
-      lead = Voter.create(:Phone => phone_number, :voter_list => self, :account_id => account_id, :campaign_id => campaign_id)
-      unless lead
+      unless phone_number.blank?
+        result[:successCount] +=1
+        lead = Voter.create(:Phone => phone_number, :voter_list => self, :account_id => account_id, :campaign_id => campaign_id)
+        csv_headers.each_with_index do |csv_column_title, column_location|
+          system_column = csv_to_system_map.system_column_for csv_column_title
+          lead.apply_attribute(system_column, voter_info[column_location]) unless system_column.blank?
+          Rails.logger.info lead.errors.full_messages unless lead.save
+        end
+      else
         result[:failedCount] +=1
         next
-      end
-
-      csv_headers.each_with_index do |csv_column_title, column_location|
-        system_column = csv_to_system_map.system_column_for csv_column_title
-        lead.apply_attribute(system_column, voter_info[column_location]) unless system_column.blank?
-      end
-
-      unless lead.save
-        result[:failedCount] +=1
-        Rails.logger.info lead.errors.full_messages
-      else
-        result[:successCount] +=1
       end
     end
     result
