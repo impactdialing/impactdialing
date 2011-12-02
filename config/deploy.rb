@@ -29,6 +29,7 @@ namespace :deploy do
 
   after('deploy:symlink', 'deploy:link_configuration')
   after('deploy:symlink', 'deploy:install_cron_jobs')
+  after('deploy:symlink', 'deploy:restart_dialer')
   after('deploy:link_configuration', 'deploy:migrate')
 
   task :link_configuration, :roles => :app do
