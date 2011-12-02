@@ -36,7 +36,6 @@ class MonitorsController < ClientController
   end
   
   def monitor_session
-    puts session
     @moderator = Moderator.create!(:session => generate_session_key, :account => @user.account, :active => true)
     render json: @moderator.session.to_json
   end

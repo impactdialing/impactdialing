@@ -31,32 +31,6 @@ class Script < ActiveRecord::Base
     end
   end
 
-  def result_sets_used
-    ret=[]
-    for i in 1..NUM_RESULT_FIELDS do
-      result_set = eval("self.result_set_#{i}")
-      if result_set==nil
-        json={}
-      else
-        json=JSON.parse(result_set)
-      end
-
-      ret << i if json.keys.length>0
-    end
-    ret
-  end
-
-  def notes_used
-    ret=[]
-    for i in 1..NUM_RESULT_FIELDS do
-      note = eval("self.note_#{i}")
-      if !note.blank?
-        ret << i
-      end
-    end
-    ret
-  end
-
   
     def self.default_script(account)
       @rs={
