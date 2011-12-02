@@ -213,6 +213,9 @@ function subscribe(session_key) {
         if (!$.isEmptyObject(data.fields)) {
             set_message("Status: Ready for calls.");
             set_voter(data);
+		    if (data.dialer && data.dialer.toLowerCase() == "progressive") {
+			  call_voter();
+		    }
 
         } else {
             set_message("Status: There are no more numbers to call in this campaign.");
