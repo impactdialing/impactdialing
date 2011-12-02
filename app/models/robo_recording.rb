@@ -14,7 +14,7 @@ class RoboRecording < ActiveRecord::Base
   validates_attachment_content_type :file, :content_type => ['audio/mpeg', 'audio/wav', 'audio/wave', 'audio/x-wav', 'audio/aiff', 'audio/x-aifc', 'audio/x-aiff', 'audio/x-gsm', 'audio/gsm', 'audio/ulaw']
 
   def set_content_type
-    self.file.instance_write(:content_type, MIME::Types.type_for(self.file_file_name).to_s)
+    self.file.instance_write(:content_type, MIME::Types.type_for(self.file_file_name).first)
   end
 
   def next
