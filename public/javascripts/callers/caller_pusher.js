@@ -59,7 +59,6 @@ function get_voter() {
         data : {id : $("#caller").val(), session_id : $("#caller_session").val(), voter_id: $("#current_voter").val() },
         type : "POST",
         success : function(response) {
-            // pushes 'voter_push' event to browsers
         }
     })
 }
@@ -228,13 +227,12 @@ function subscribe(session_key) {
 
 
     channel.bind('voter_push', function(data) {
-        console.log('voter data pushed')
+        console.log('voter data pushed');
         set_voter(data);
 	    if (data.dialer && data.dialer.toLowerCase() == "progressive") {
 		  $("#stop_calling").show();
 		  call_voter();
 	    }
-
         $("#start_calling").hide();
     });
 
