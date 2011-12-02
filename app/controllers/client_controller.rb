@@ -117,37 +117,6 @@ class ClientController < ApplicationController
     end
   end
 
-  def campaigns
-    @breadcrumb="Campaigns"
-    @campaigns = Campaign.active.manual.for_user(@user).paginate :page => params[:page], :order => 'id desc'
-  end
-
-  def campaign_new
-    campaign = Campaign.new(:account_id => account.id, :predictive_type => 'algorithm1')
-    campaign.account_id = account.id
-    count = account.campaigns
-    campaign.name="Untitled #{count.length+1}"
-    script = account.scripts
-    campaign.script_id = script.id if script!=nil
-    campaign.save
-    callers = account.callers.active
-    callers.each do |caller|
-      campaign.callers << caller
-    end
-    #flash[:notice]="Campaign created."
-    redirect_to :action=>"campaign_view", :id=>campaign.id
-    return
-  end
-
-  def campaign_delete
-    @campaign = account.campaigns.find_by_id(params[:id])
-    if !@campaign.blank?
-      @campaign.active = false
-      @campaign.save
-    end
-    flash_message(:notice, "Campaign deleted")
-    redirect_to :back
-  end
 
   def check_warning
     text = warning_text
@@ -217,64 +186,6 @@ class ClientController < ApplicationController
     return
   end
 
-  def campaign_add
-    @breadcrumb=[{"Campaigns"=>"/client/campaigns"},"Add Campaign"]
-    @campaign = account.campaigns.find_by_id(params[:id]) || Campaign.new
-    if @campaign.new_record?
-      @label="Add campaign"
-    else
-      @label="Edit campaign"
-    end
-    newrecord = @campaign.new_record?
-    if request.post?
-      last_caller_id = @campaign.caller_id
-      @campaign.update_attributes(params[:campaign])
-      code=""
-      if @campaign.valid?
-        if !@campaign.caller_id_verified || (!@campaign.caller_id.blank? && last_caller_id != @campaign.caller_id)
-          #verify this callerid
-          t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-          a = t.call("POST", "OutgoingCallerIds", {'PhoneNumber'=>@campaign.caller_id, 'FriendlyName' => "Campaign #{@campaign.id}"})
-          require 'rubygems'
-          require 'hpricot'
-          @doc = Hpricot::XML(a)
-          code= (@doc/"ValidationCode").inner_html
-        end
-        @campaign.account_id = account.id
-        if @campaign.script_id.blank?
-          s = account.scripts.active.first
-          @campaign.script_id = s.id if s!=nil
-        end
-        @campaign.save
-        if params[:listsSent]
-          @campaign.voter_lists.each do |l|
-            l.enabled = false
-            l.save
-          end
-          if !params[:voter_list_ids].blank?
-            params[:voter_list_ids].each do |lid|
-              l = VoterList.find(lid)
-              l.enabled = true
-              l.save
-            end
-          end
-        end
-        if newrecord
-          callers = account.callers.active
-          callers.each do |caller|
-            @campaign.callers << caller
-          end
-        end
-        if code.blank?
-          flash_message(:notice, "Campaign saved")
-        else
-          flash_message(:notice, "Campaign saved.  <font color=red>Enter code #{code} when called.</font>")
-        end
-        redirect_to client_campaign_path(@campaign)
-        return
-      end
-    end
-  end
 
   def recording_add
     if request.post?
