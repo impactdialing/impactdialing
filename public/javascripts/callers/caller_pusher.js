@@ -77,6 +77,7 @@ function next_voter() {
 }
 
 function call_voter() {
+	console.log('called voter');
     $.ajax({
         url : "/caller/" + $("#caller_session").val() + "/call_voter",
         data : {id : $("#caller").val(), voter_id : $("#current_voter").val(), session_id : $("#caller_session").val() },
