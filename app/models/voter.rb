@@ -16,20 +16,18 @@ class Voter < ActiveRecord::Base
   validates_presence_of :Phone
   validates_length_of :Phone, :minimum => 10
 
-  scope :existing_phone_in_campaign, lambda { |phone_number, campaign_id|
-    {:conditions => ['Phone = ? and campaign_id = ?', phone_number, campaign_id]}
-  }
+  scope :existing_phone_in_campaign, lambda { |phone_number, campaign_id| where(:Phone => phone_number).where(:campaign_id => campaign_id) }
 
   scope :default_order, :order => 'LastName, FirstName, Phone'
 
   scope :by_status, lambda { |status| where(:status => status) }
   scope :active, where(:active => true)
-  scope :yet_to_call, where("call_back is false AND status != (?)", CallAttempt::Status::SUCCESS)
+  scope :yet_to_call, where(:call_back => false).where('status != (?)', CallAttempt::Status::SUCCESS)
   scope :last_call_attempt_before_recycle_rate, lambda { |recycle_rate| where('last_call_attempt_time is null or last_call_attempt_time < ? ', recycle_rate.hours.ago)}
-  scope :to_be_dialed, yet_to_call.order("ifnull(last_call_attempt_time, '#{Time.at(0)}') ASC")
-  scope :randomly, :order => 'rand()'
+  scope :to_be_dialed, yet_to_call.order(:last_call_attempt_time)
+  scope :randomly, order('rand()')
   scope :to_callback, where(:call_back => true)
-  scope :scheduled, :conditions => {:scheduled_date => (10.minutes.ago..10.minutes.from_now), :status => CallAttempt::Status::SCHEDULED}
+  scope :scheduled, where(:scheduled_date => (10.minutes.ago..10.minutes.from_now)).where(:status => CallAttempt::Status::SCHEDULED)
   scope :limit, lambda { |n| {:limit => n} }
   scope :without, lambda { |numbers| where('Phone not in (?)', numbers) }
   scope :answered, where('result_date is not null')
@@ -39,12 +37,11 @@ class Voter < ActiveRecord::Base
 
   cattr_reader :per_page
   @@per_page = 25
-  
+
   module Status
     NOTCALLED = "not called"
     RETRY = "retry"
   end
-  
 
   def self.sanitize_phone(phonenumber)
     phonenumber.gsub(/[^0-9]/, "") unless phonenumber.blank?
@@ -61,7 +58,6 @@ class Voter < ActiveRecord::Base
   def self.upload_fields
     ["Phone", "CustomID", "LastName", "FirstName", "MiddleName", "Suffix", "Email"]
   end
-
 
   def dial
     return false if status == Voter::SUCCESS
@@ -90,10 +86,10 @@ class Voter < ActiveRecord::Base
 
   def dial_predictive
     # Thread.new {
-    @client = Twilio::REST::Client.new TWILIO_ACCOUNT, TWILIO_AUTH    
+    @client = Twilio::REST::Client.new TWILIO_ACCOUNT, TWILIO_AUTH
     caller_session = campaign.caller_sessions.available.first
     DIALER_LOGGER.info "connect to _caller #{caller_session.inspect} , #{campaign.predictive_type}"
-    unless caller_session.nil?      
+    unless caller_session.nil?
       DIALER_LOGGER.info "Pushing data for #{info.inspect}"
       call_attempt = new_call_attempt(self.campaign.predictive_type)
       call_attempt.update_attributes(caller_session: caller_session)
@@ -111,7 +107,6 @@ class Voter < ActiveRecord::Base
     # call_attempt.sid
     # }
   end
-
 
   def conference(session)
     session.update_attributes(:voter_in_progress => self)
@@ -200,7 +195,4 @@ class Voter < ActiveRecord::Base
       note_response ? note_response.update_attributes(response: note_res) : note_responses.create(response: note_res, note: Note.find(note_id))
     end
   end
-
-
-
 end
