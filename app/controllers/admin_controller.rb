@@ -82,7 +82,6 @@ class AdminController < ApplicationController
   def set_report_date_range
     begin
       if params[:from_date]
-        puts params[:from_date]
         @from_date=Date.parse(params[:from_date])
         @to_date = Date.parse(params[:to_date])
       else
