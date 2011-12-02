@@ -43,8 +43,8 @@ namespace :deploy do
   end
   
   task :restart_dialer do
-    run "RAILS_ENV=#{rails_env} bundle exec #{current_path}/script/predictive_dialer_control.rb stop &"
-    run "RAILS_ENV=#{rails_env} bundle exec #{current_path}/script/predictive_dialer_control.rb run &"
+    run "cd #{current_path} && RAILS_ENV=#{rails_env} bundle exec script/predictive_dialer_control.rb stop &"
+    run "cd #{current_path} && RAILS_ENV=#{rails_env} bundle exec script/predictive_dialer_control.rb run &"
   end
 end
 
