@@ -51,9 +51,6 @@ class Voter < ActiveRecord::Base
     self.Phone = Voter.sanitize_phone(self.Phone)
   end
 
-  def self.upload_headers
-    ["Phone", "ID", "LastName", "FirstName", "MiddleName", "Suffix", "Email"]
-  end
 
   def self.upload_fields
     ["Phone", "CustomID", "LastName", "FirstName", "MiddleName", "Suffix", "Email"]
