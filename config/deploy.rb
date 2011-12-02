@@ -40,6 +40,11 @@ namespace :deploy do
     run "chmod a+x #{current_path}/script/configure_crontab.sh"
     run "#{current_path}/script/configure_crontab.sh #{rails_env} #{deploy_to}"
   end
+  
+  task :restart_dialer do
+    run "RAILS_ENV=#{rails_env} bundle exec #{current_path}/script/predictive_dialer_control.rb stop &"
+    run "RAILS_ENV=#{rails_env} bundle exec #{current_path}/script/predictive_dialer_control.rb run &"
+  end
 end
 
 task :staging do
