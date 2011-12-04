@@ -52,11 +52,14 @@ function subscribe_and_bind_events_monitoring(session_id){
   
   channel.bind('voter_disconnected', function(data) {
     console.log(data);
-    update_dials_in_progress(data);
     if (!$.isEmptyObject(data)){
       var campaign_selector = 'tr#'+data.campaign_id+'.campaign';
+			var caller_selector = 'tr#'+data.caller_id+'.caller';
       $(campaign_selector).children('.dials_in_progress').text(data.dials_in_progress);
       $(campaign_selector).children('.voters_count').text(data.voters_remaining);
+ 			if($(caller_selector).attr("on_call") == "true"){
+				$('status').text("Status: Caller is not connected to a lead.")
+			}
     }
   });
   
@@ -64,8 +67,11 @@ function subscribe_and_bind_events_monitoring(session_id){
     console.log(data);
     if (!$.isEmptyObject(data)){
       var campaign_selector = 'tr#'+data.campaign_id+'.campaign';
+			var caller_selector = 'tr#'+data.caller_id+'.caller';
       $(campaign_selector).children('.dials_in_progress').text(data.dials_in_progress);
-    }
+			status = "Status: Monitoring in " + $(caller_selector).attr('mode') + " mode on " + $(caller_selector).children('td.caller_name').text().split("/").first() + ".";
+    	$('status').text(status);
+		}
   });
   
 }

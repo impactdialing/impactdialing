@@ -46,6 +46,7 @@
     $('.stop_monitor').hide();
     $.each($('tr.caller'), function(){
       $(this).removeAttr("on_call");
+	  $(this).removeAttr("mode");
     });
     Twilio.Device.disconnectAll();
     return false;
@@ -66,6 +67,7 @@
     $('.monitor').live('click', function(){
       if($(this).parent().parent().attr("on_call") == "true"){
         switch_mode($(this).attr("session_id"), $(this).attr("action"));
+		$(this).parent().parent().attr("mode", $(this).attr("action"))
       }
       else{
         $.each($(this).parent().parent().siblings(), function(){
@@ -78,12 +80,14 @@
             $('status').text("You are monitoring nothing")
             $('.stop_monitor').hide();
             $(this).removeAttr("on_call");
+            $(this).removeAttr("mode");
           }
         });
 
         status = "Status: Monitoring in "+$(this).attr("action") + " mode on "+$(this).parent().prevAll('td.caller_name').text().split("/").first() + ".";
         monitor($(this).attr("session_id"), $(this).attr("action"), status);
-        $(this).parent().parent().attr("on_call","true")
+        $(this).parent().parent().attr("on_call","true");
+		$(this).parent().parent().attr("mode", $(this).attr("action"))
       }
       return false;
     })
