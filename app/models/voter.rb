@@ -166,7 +166,7 @@ class Voter < ActiveRecord::Base
   end
   
   def skip
-    voter.update_attributes(skipped_time:  Time.now)
+    update_attributes(skipped_time:  Time.now)
   end
   
 
