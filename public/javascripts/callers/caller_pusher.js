@@ -236,8 +236,8 @@ function subscribe(session_key) {
 	});
 
     channel.bind('voter_push', function(data) {
-        console.log('voter data pushed');
         set_voter(data);
+		set_message("Status: Ready for calls.");
 	    if (data.dialer && data.dialer.toLowerCase() == "progressive") {
 		  $("#stop_calling").show();
 		  call_voter();
