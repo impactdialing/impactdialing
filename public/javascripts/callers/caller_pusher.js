@@ -227,7 +227,11 @@ function subscribe(session_key) {
 		$("#stop_calling").show();
 	});
 
-
+	channel.bind('answered_by_machine', function(data){
+		if(data.dialer && data.dialer == 'preview'){
+			set_message("Status: Ready for calls.");
+		}
+	});
 
     channel.bind('voter_push', function(data) {
         console.log('voter data pushed');
