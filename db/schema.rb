@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20111201192011) do
+ActiveRecord::Schema.define(:version => 20111204123050) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -483,6 +483,7 @@ ActiveRecord::Schema.define(:version => 20111201192011) do
     t.string   "state"
     t.string   "zip_code"
     t.string   "country"
+    t.datetime "skipped_time"
   end
 
   add_index "voters", ["Phone", "voter_list_id"], :name => "index_voters_on_Phone_and_voter_list_id"
