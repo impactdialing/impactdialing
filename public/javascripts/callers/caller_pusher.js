@@ -112,13 +112,15 @@ function schedule_for_later() {
 }
 
 function send_voter_response() {
+	console.log('submit voter response')
     $('#voter_responses').attr('action', "/call_attempts/" + $("#current_call_attempt").val() + "/voter_response");
     $('#voter_id').val($("#current_voter").val())
     $('#voter_responses').submit(function() {
         $(this).ajaxSubmit({});
         return false;
     });
-    $("#voter_responses").trigger("submit")
+    $("#voter_responses").trigger("submit");
+	
 }
 
 function send_voter_response_and_disconnect() {
