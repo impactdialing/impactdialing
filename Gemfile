@@ -24,6 +24,7 @@ gem 'dynamic_form', '~> 1.1.4'
 gem 'in_place_editing', '~> 1.1.1'
 gem "nested_form", '~>0.1.1'
 gem 'rspec'
+gem 'jquery-rails', '>= 1.0.12'
 
 group :development, :test do
   gem 'ruby-debug19'

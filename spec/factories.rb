@@ -29,6 +29,7 @@ Factory.define :campaign do |c|
   c.name 'a campaign'
   c.caller_id '1234567890'
   c.account { Factory(:account) }
+  c.recycle_rate 1
 end
 
 Factory.define :script do |s|
