@@ -23,7 +23,7 @@
   
   function de_activate_monitor(){
     $.ajax({
-        url : "/client/monitors/stop",
+        url : "/client/monitors/deactivate_session",
         data : {monitor_session : $('monitor_session').text()},
         type : "GET",
         async : false,
@@ -36,12 +36,12 @@
     })
 
   function monitor(session_id, action, status){
-    params = {'session_id': session_id, 'type': action, monitor_session : $('monitor_session').text()};
+    params = {'session_id': session_id, 'type': action, 'monitor_session' : $('monitor_session').text()};
     $('status').text(status)
     $('.stop_monitor').show();
     Twilio.Device.connect(params)
   }
-  function stop_monitoring(){
+  function disconnect_all(){
     $('status').text("Status: Disconnected.")
     $('.stop_monitor').hide();
     $.each($('tr.caller'), function(){
@@ -63,31 +63,56 @@
     })
   }
 
+	function switch_caller(current_session_id, next_session_id, action, status){
+		$.ajax({
+        url : "/client/monitors/stop",
+        data : {session_id : current_session_id},
+        type : "GET",
+        success : function(response) {
+          request_to_switch(next_session_id, action, status);
+        }
+    });
+	}
+	
+	function request_to_switch(next_session_id, action, status){
+		$.ajax({
+        url : "/client/monitors/start",
+        data : {'session_id' : next_session_id, 'type': action, 'monitor_session' : $('monitor_session').text()},
+        type : "POST",
+        success : function(response) {}
+    });
+	}
+
   $(function() {
+		$('.stop').live('click', function(){
+			stop($(this).attr("session_id"))
+		});
     $('.monitor').live('click', function(){
+			var session_id = $(this).attr("session_id");
+			var action = $(this).attr("action");
+			var status = "Status: Monitoring in "+$(this).attr("action") + " mode on "+$(this).parent().prevAll('td.caller_name').text().split("/").first() + ".";
       if($(this).parent().parent().attr("on_call") == "true"){
-        switch_mode($(this).attr("session_id"), $(this).attr("action"));
-		$(this).parent().parent().attr("mode", $(this).attr("action"))
+        switch_mode(session_id, action);
+				$(this).parent().parent().attr("mode", action)
       }
       else{
+				var no_monitoring = true;
         $.each($(this).parent().parent().siblings(), function(){
           if($(this).attr("on_call") == "true"){
-            console.log("switching to different caller");
-            Twilio.Device.disconnectAll();
-            for (i=0;i<=10000000;i++){
-              
-            }
-            $('status').text("You are monitoring nothing")
-            $('.stop_monitor').hide();
+						console.log($(this))
+						console.log($(this).children().children().attr("session_id"))
+						console.log($(this).children().children('.monitor').attr("session_id"))
+						switch_caller($(this).children().children().attr("session_id"), session_id, action, status);
+						no_monitoring = false;
             $(this).removeAttr("on_call");
             $(this).removeAttr("mode");
           }
         });
-
-        status = "Status: Monitoring in "+$(this).attr("action") + " mode on "+$(this).parent().prevAll('td.caller_name').text().split("/").first() + ".";
-        monitor($(this).attr("session_id"), $(this).attr("action"), status);
-        $(this).parent().parent().attr("on_call","true");
-		$(this).parent().parent().attr("mode", $(this).attr("action"))
+				if(no_monitoring){
+        	monitor(session_id, action, status);
+        	$(this).parent().parent().attr("on_call","true");
+					$(this).parent().parent().attr("mode", $(this).attr("action"))
+				}
       }
       return false;
     })
@@ -174,7 +199,7 @@
               <% end %>
           <% end %>
         </table>
-        <a class ="action primary stop_monitor" href="#" onclick="javascript:stop_monitoring();">Stop monitoring</a>
+        <a class ="action primary stop_monitor" href="#" onclick="javascript:disconnect_all();">Stop monitoring</a>
         <status style="float : right;"></status>
       </div>
     </div>

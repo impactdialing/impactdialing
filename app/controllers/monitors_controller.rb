@@ -29,12 +29,19 @@ class MonitorsController < ClientController
   end
 
   def stop
+    caller_session = CallerSession.find(params[:session_id])
+    caller_session.moderator.stop_monitoring(caller_session)
+    render text: "Switching to different caller"
+  end
+  
+  def deactivate_session
     moderator = Moderator.find_by_session(params[:monitor_session])
     moderator.update_attributes(:active => false)
     # caller_session = CallerSession.find(params[:session_id])
     # caller_session.moderator.stop_monitoring(session)
     render nothing: true
   end
+  
   
   def monitor_session
     @moderator = Moderator.create!(:session => generate_session_key, :account => @user.account, :active => true)
