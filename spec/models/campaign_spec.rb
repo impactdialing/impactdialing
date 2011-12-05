@@ -195,6 +195,16 @@ describe "simulatation_dialer" do
 end
 
 describe Campaign do
+  
+  it "save correctly, when both amd_turn_off and user_recordings are not true" do
+    campaign = Campaign.new(:name => "sddd",:amd_turn_off => false, :use_recordings => true)
+    campaign.should be_valid
+  end
+  
+  it "returns valiadtion error, when both amd_turn_off and user_recordings are true" do
+    campaign = Campaign.new(:name => "sddd",:amd_turn_off => true, :use_recordings => true)
+    campaign.should_not be_valid  
+  end
 
   it "restoring makes it active" do
     campaign = Factory(:campaign, :active => false)

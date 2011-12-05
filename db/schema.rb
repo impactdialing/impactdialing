@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20111204123050) do
+ActiveRecord::Schema.define(:version => 20111205070245) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -182,6 +182,7 @@ ActiveRecord::Schema.define(:version => 20111204123050) do
     t.boolean  "calls_in_progress",        :default => false
     t.boolean  "robo",                     :default => false
     t.integer  "recycle_rate"
+    t.boolean  "amd_turn_off"
   end
 
   create_table "campaigns_voter_lists", :id => false, :force => true do |t|

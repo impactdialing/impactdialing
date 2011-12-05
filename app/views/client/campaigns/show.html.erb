@@ -30,6 +30,7 @@
           </select>
         </p>
         <%= render :partial => 'shared/recycle_rate', :locals => {:recycle_hour => @campaign.recycle_rate}%>
+				<p><label> <%= f.check_box :amd_turn_off %> &nbsp; Turn off Answering Machine Detection</label></p>
         <% if !@campaign.account.recordings.blank? %>
             <p><label> <%= f.check_box :use_recordings, :onclick=>"doRecord();" %> &nbsp; Leave voicemail</label></p>
             <div id="recordingsdiv"
