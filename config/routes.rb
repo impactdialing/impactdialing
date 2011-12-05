@@ -39,6 +39,7 @@ ImpactDialing::Application.routes.draw do
       post :collect_response
       post :active_session
       post :preview_voter
+      post :skip_voter
       post :call_voter
       post :stop_calling
       post :start_calling
@@ -52,7 +53,7 @@ ImpactDialing::Application.routes.draw do
   get :hold_call, :to => 'callin#hold', :protocol => PROTOCOL
 
   #broadcast
-  scope 'broadcast' do
+  scope 'broadcast', :protocol => PROTOCOL do
     resources :campaigns do
       member do
         post :verify_callerid

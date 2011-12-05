@@ -66,7 +66,7 @@ function get_voter() {
 
 function next_voter() {
     $.ajax({
-        url : "/caller/" + $("#caller").val() + "/preview_voter",
+        url : "/caller/" + $("#caller").val() + "/skip_voter",
         data : {id : $("#caller").val(), voter_id : $("#current_voter").val(), session_id : $("#caller_session").val() },
         type : "POST",
         success : function(response) {
@@ -112,13 +112,15 @@ function schedule_for_later() {
 }
 
 function send_voter_response() {
+	console.log('submit voter response')
     $('#voter_responses').attr('action', "/call_attempts/" + $("#current_call_attempt").val() + "/voter_response");
     $('#voter_id').val($("#current_voter").val())
     $('#voter_responses').submit(function() {
         $(this).ajaxSubmit({});
         return false;
     });
-    $("#voter_responses").trigger("submit")
+    $("#voter_responses").trigger("submit");
+	
 }
 
 function send_voter_response_and_disconnect() {
@@ -234,8 +236,8 @@ function subscribe(session_key) {
 	});
 
     channel.bind('voter_push', function(data) {
-        console.log('voter data pushed');
         set_voter(data);
+		set_message("Status: Ready for calls.");
 	    if (data.dialer && data.dialer.toLowerCase() == "progressive") {
 		  $("#stop_calling").show();
 		  call_voter();
