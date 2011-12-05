@@ -53,7 +53,7 @@ ImpactDialing::Application.routes.draw do
   get :hold_call, :to => 'callin#hold', :protocol => PROTOCOL
 
   #broadcast
-  scope 'broadcast' do
+  scope 'broadcast', :protocol => PROTOCOL do
     resources :campaigns do
       member do
         post :verify_callerid
