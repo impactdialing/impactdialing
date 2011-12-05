@@ -3,11 +3,12 @@
   <%= render :partial => 'control_list', :locals => {:campaigns => @campaigns} %>
 </div>
 <script type='text/javascript'>
-    Event.observe(window, 'load', function() {
-        setInterval(refreshCampaignStatus, 10*1000);
-    });
+    $(document).ready(function(){
+        setInterval(refreshCampaignStatus, 10 * 1000);
 
-    function refreshCampaignStatus() {
-        new Ajax.Updater('running_list', "<%= running_status_campaigns_path %>", {method: 'get'});
-    }
+        function refreshCampaignStatus() {
+            $("#running_list").load("<%= running_status_campaigns_path %>");
+        }
+
+    })
 </script>
