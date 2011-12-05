@@ -30,6 +30,7 @@ class Voter < ActiveRecord::Base
   scope :scheduled, where(:scheduled_date => (10.minutes.ago..10.minutes.from_now)).where(:status => CallAttempt::Status::SCHEDULED)
   scope :limit, lambda { |n| {:limit => n} }
   scope :without, lambda { |numbers| where('Phone not in (?)', numbers) }
+  scope :not_skipped,  where('skipped_time is null')
   scope :answered, where('result_date is not null')
   scope :answered_within, lambda { |from, to| where(:result_date => from.beginning_of_day..(to.end_of_day)) }
 
@@ -82,7 +83,6 @@ class Voter < ActiveRecord::Base
   end
 
   def dial_predictive
-    # Thread.new {
     @client = Twilio::REST::Client.new TWILIO_ACCOUNT, TWILIO_AUTH
     caller_session = campaign.caller_sessions.available.first
     DIALER_LOGGER.info "connect to _caller #{caller_session.inspect} , #{campaign.predictive_type}"
@@ -101,8 +101,6 @@ class Voter < ActiveRecord::Base
       )
       call_attempt.update_attributes(:sid => @call.sid)
     end
-    # call_attempt.sid
-    # }
   end
 
   def conference(session)
@@ -166,8 +164,14 @@ class Voter < ActiveRecord::Base
     end
     unresponded
   end
+  
+  def skip
+    update_attributes(skipped_time:  Time.now)
+  end
+  
 
   private
+  
   def new_call_attempt(mode = 'robo')
     call_attempt = self.call_attempts.create(:campaign => self.campaign, :dialer_mode => mode, :status => CallAttempt::Status::RINGING)
     self.update_attributes!(:last_call_attempt => call_attempt, :last_call_attempt_time => Time.now)
@@ -192,4 +196,5 @@ class Voter < ActiveRecord::Base
       note_response ? note_response.update_attributes(response: note_res) : note_responses.create(response: note_res, note: Note.find(note_id))
     end
   end
+  
 end
