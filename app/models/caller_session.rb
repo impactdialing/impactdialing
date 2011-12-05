@@ -50,7 +50,7 @@ class CallerSession < ActiveRecord::Base
                                  {
                                      'StatusCallback' => end_call_attempt_url(attempt, :host => Settings.host, :port => Settings.port),
                                      'IfMachine' => 'Continue',
-                                     'Timeout' => campaign.answer_detection_timeout || "20"
+                                     'Timeout' => campaign.amd_turn_off ? "15" : "30"
                                  }
     )
     self.publish('calling_voter', voter.info)

@@ -28,10 +28,10 @@ class Campaign < ActiveRecord::Base
 
   validates :name, :presence => true
   validates :caller_id, :presence => {:on => :update}, :numericality => {:on => :update}, :length => {:on => :update, :minimum => 10, :maximum => 10}
-
+  validate :check_amd_turn_off_and_voice_mail
   cattr_reader :per_page
   @@per_page = 25
-
+  
   before_validation :set_untitled_name
   before_save :set_untitled_name
   before_validation :sanitize_caller_id
@@ -41,8 +41,13 @@ class Campaign < ActiveRecord::Base
     PREDICTIVE = "algorithm1"
     PROGRESSIVE = "progressive"
   end
-
-
+  
+  def check_amd_turn_off_and_voice_mail
+    if (amd_turn_off == true) && (use_recordings == true)
+      errors.add(:base, 'Answering Mechine Detection is necessary to leave voice mails. Please uncheck \'Turn off Answering Mechine Detection\'')
+    end
+  end
+  
   def set_untitled_name
     self.name = "Untitled #{account.campaigns.count + 1}" if self.name.blank?
   end

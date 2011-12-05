@@ -186,6 +186,8 @@ describe CallAttemptsController do
 
     it "notifies pusher when a call attempt is answered by a machine." do
       session_key = 'foo'
+      campaign.recording = Factory(:recording)
+      campaign.save
       voter = Factory(:voter, :last_call_attempt_time => Time.now)
       session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller), :session_key => session_key, :voter_in_progress => voter)
       call_attempt = Factory(:call_attempt, :caller_session => session, :voter => voter, :campaign => campaign)
