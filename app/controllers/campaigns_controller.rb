@@ -17,7 +17,7 @@ class CampaignsController < ClientController
 
   def create
     campaign = @user.account.campaigns.create!(:script => @user.account.scripts.robo.first, :robo => true, :caller_id => params[:caller_id])
-    redirect_to campaign
+    redirect_to broadcast_campaign_path(campaign)
   end
 
   def update
