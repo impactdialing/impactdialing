@@ -27,7 +27,7 @@ class CallerSession < ActiveRecord::Base
     self.update_attributes(:on_call => false, :available_for_call => false, :endtime => Time.now)
     Moderator.publish_event(caller, "caller_disconnected",{:caller_id => caller.id, :campaign_id => campaign.id, :campaign_active => campaign.callers_log_in?,
       :no_of_callers_logged_in => campaign.caller_sessions.on_call.length})
-    self.publish("caller_disconnected", {})
+    self.publish("caller_disconnected", {source: "end_running_call"})
   end
 
 
@@ -108,7 +108,7 @@ class CallerSession < ActiveRecord::Base
     self.update_attributes(:on_call => false, :available_for_call => false, :endtime => Time.now)
     Moderator.publish_event(caller, "caller_disconnected",{:caller_id => caller.id, :campaign_id => campaign.id, :campaign_active => campaign.callers_log_in?,
             :no_of_callers_logged_in => campaign.caller_sessions.on_call.length})
-    self.publish("caller_disconnected", {})
+    self.publish("caller_disconnected", {source: "end_call"})
     Twilio::Verb.hangup
   end
   
