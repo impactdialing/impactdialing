@@ -53,8 +53,8 @@ ImpactDialing::Application.routes.draw do
   get :hold_call, :to => 'callin#hold', :protocol => PROTOCOL
 
   #broadcast
-  scope 'broadcast', :protocol => PROTOCOL do
-    resources :campaigns do
+  scope 'broadcast' do
+    resources :campaigns, :protocol => PROTOCOL do
       member do
         post :verify_callerid
         post :start
@@ -65,21 +65,21 @@ ImpactDialing::Application.routes.draw do
         get :control
         get :running_status
       end
-      resources :voter_lists, :except => [:new, :show] do
+      resources :voter_lists, :protocol => PROTOCOL, :except => [:new, :show] do
         collection { post :import }
       end
     end
-    resources :reports do
+    resources :reports, :protocol => PROTOCOL do
       collection do
         get :usage
         get :dial_details
       end
     end
-    get '/deleted_campaigns', :to => 'broadcast/campaigns#deleted', :as => :broadcast_deleted_campaigns
-    resources :scripts
-    match 'monitor', :to => 'monitor#index'
-    match '/', :to => 'broadcast#index', :as => 'broadcast_root'
-    match '/login', :to => 'broadcast#login', :as => 'broadcast_login'
+    get '/deleted_campaigns', :to => 'broadcast/campaigns#deleted', :as => :broadcast_deleted_campaigns, :protocol => PROTOCOL
+    resources :scripts, :protocol => PROTOCOL
+    match 'monitor', :to => 'monitor#index', :protocol => PROTOCOL
+    match '/', :to => 'broadcast#index', :as => 'broadcast_root', :protocol => PROTOCOL
+    match '/login', :to => 'broadcast#login', :as => 'broadcast_login', :protocol => PROTOCOL
   end
 
   namespace 'broadcast' do
