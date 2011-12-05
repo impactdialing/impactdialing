@@ -67,7 +67,6 @@ class CallAttempt < ActiveRecord::Base
    end
 
   def play_recorded_message
-    puts campaign.recording.file.url
     update_attributes(:status => CallAttempt::Status::VOICEMAIL, :call_end => Time.now)
     voter.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
     Twilio::Verb.new { |v|
