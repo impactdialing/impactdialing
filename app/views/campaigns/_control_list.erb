@@ -17,13 +17,9 @@
             <td><%= c.voters_remaining %></td>
             <td width="20%">
               <% if c.calls_in_progress? %>
-                <%= link_to "Stop", stop_campaign_path(c.id), :method => :post %>
+                  <%= link_to "Stop", stop_campaign_path(c.id), :method => :post %>
               <% else %>
-                  <% if c.caller_id_verified %>
-                    <%= link_to "Start", start_campaign_path(c.id), :method => :post %>
-                  <% else %>
-                    Caller ID not verified
-                  <% end %>
+                  <%= link_to "Start", start_campaign_path(c.id), :method => :post %>
               <% end %>
             </td>
           </tr>
