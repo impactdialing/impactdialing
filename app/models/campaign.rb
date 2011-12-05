@@ -442,11 +442,11 @@ class Campaign < ActiveRecord::Base
     unless recycle_rate.nil?
       voter||= all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.not_skipped.where("voters.id > #{current_voter_id}").first unless current_voter_id.blank?
       voter||= all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.not_skipped.first
-      voter||= all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.first
+      voter||= all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.where("voters.id != #{current_voter_id}").first
     else
       voter||= all_voters.to_be_dialed.not_skipped.where("voters.id > #{current_voter_id}").first unless current_voter_id.blank?
       voter||= all_voters.to_be_dialed.not_skipped.first
-      voter||= all_voters.to_be_dialed.first
+      voter||= all_voters.to_be_dialed.where("voters.id != #{current_voter_id}").first
     end
     voter
 
