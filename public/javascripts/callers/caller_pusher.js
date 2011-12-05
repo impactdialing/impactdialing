@@ -238,8 +238,8 @@ function subscribe(session_key) {
 	});
 
     channel.bind('voter_push', function(data) {
-        set_voter(data);
-		set_message("Status: Ready for calls.");
+			set_message("Status: Ready for calls.");
+			set_voter(data);
 	    if (data.dialer && data.dialer.toLowerCase() == "progressive") {
 		  $("#stop_calling").show();
 		  call_voter();
