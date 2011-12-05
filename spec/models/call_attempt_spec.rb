@@ -155,10 +155,7 @@ describe CallAttempt do
       campaign = Factory(:campaign, :use_recordings => true, :account => account, :recording => Factory(:recording, :file_file_name => 'abc.mp3', :account => account))
       voter = Factory(:voter, :campaign => campaign)
       call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign)
-      call_attempt.play_recorded_message.should == Twilio::TwiML::Response.new do |r|
-        r.Play campaign.recording.file.url
-        r.Hangup
-      end.text
+      call_attempt.play_recorded_message.should == Twilio::Verb.new { |v| v.play(campaign.recording.file.url)}.response
       call_attempt.reload.status.should == CallAttempt::Status::VOICEMAIL
       call_attempt.voter.status.should == CallAttempt::Status::VOICEMAIL
       call_attempt.call_end.should_not be_nil

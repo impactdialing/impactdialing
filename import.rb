@@ -58,10 +58,8 @@ reqs.each do |req|
       d.guid = y[:CallSid]
     rescue
     end
-    puts d.inspect
     d.save
   else
-    puts "index #{req.id}"
   end
 end
 
