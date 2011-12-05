@@ -4,13 +4,8 @@ class Moderator < ActiveRecord::Base
   
   scope :active, :conditions => {:active => true}
   
-  def switch_monitor_mode(session, type)
-    Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    conferences = Twilio::Conference.list({"FriendlyName" => session.session_key})
-    confs = conferences.parsed_response['TwilioResponse']['Conferences']['Conference']
-    conference_sid = ""
-    conference_sid = confs.class == Array ? confs.last['Sid'] : confs['Sid']
-    
+  def switch_monitor_mode(caller_session, type)
+    conference_sid = get_conference_id(caller_session)
     if type == "breakin"
       Twilio::Conference.unmute_participant(conference_sid, call_sid)
     else
@@ -18,9 +13,10 @@ class Moderator < ActiveRecord::Base
     end
   end
   
-  def stop_monitoring(session)
+  def stop_monitoring(caller_session)
+    conference_sid = get_conference_id(caller_session)
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    Twilio::Conference.kick_participant(session.session_key, call_sid)
+    Twilio::Conference.kick_participant(conference_sid, call_sid)
   end
   
   def self.caller_connected_to_campaign(caller, campaign, caller_session)
@@ -32,6 +28,14 @@ class Moderator < ActiveRecord::Base
   
   def self.publish_event(caller, event, data)
     caller.account.moderators.active.each {|moderator| Pusher[moderator.session].trigger(event, data)}
+  end
+  
+  def get_conference_id(caller_session)
+    Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
+    conferences = Twilio::Conference.list({"FriendlyName" => caller_session.session_key})
+    confs = conferences.parsed_response['TwilioResponse']['Conferences']['Conference']
+    conference_sid = ""
+    conference_sid = confs.class == Array ? confs.last['Sid'] : confs['Sid']
   end
   
 end

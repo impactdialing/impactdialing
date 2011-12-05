@@ -122,6 +122,7 @@ ImpactDialing::Application.routes.draw do
       collection do
         post :start
         get :stop
+        get :deactivate_session
         get :switch_mode
         get :monitor_session
       end
