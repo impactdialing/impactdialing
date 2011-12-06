@@ -72,16 +72,15 @@
 				<% if !@user.new_record? %>
 			<a href="/client/forgot">Forgot password?</a>
 			<% end %>
+			<div class="buttons">
+
+				<% if @user.new_record? %>
+				<button type="submit">Sign up</button>
+				<% else %>
+				<button type="submit">Save</button>
+				<% end %>
+
+			</div>
+
 		</fieldset>
-
-		<div class="buttons">
-
-			<% if @user.new_record? %>
-			<button type="submit">Sign up</button>
-			<% else %>
-			<button type="submit">Save</button>
-			<% end %>
-
-		</div>
-
 <% end -%>
