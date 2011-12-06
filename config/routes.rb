@@ -98,7 +98,7 @@ ImpactDialing::Application.routes.draw do
         collection { get :download }
       end
     end
-    resource :account, :only => [:show, :update]
+    resource :account, :only => [:show, :create]
     resources :reports do
       collection do
         get :usage
