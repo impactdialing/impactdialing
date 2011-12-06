@@ -120,7 +120,6 @@ function send_voter_response() {
         return false;
     });
     $("#voter_responses").trigger("submit");
-	$("#voter_responses").unbind("submit");
 	
 }
 
@@ -137,8 +136,7 @@ function send_voter_response_and_disconnect() {
         $(this).ajaxSubmit(options);
         return false;
     });
-    $("#voter_responses").trigger("submit");
-	$("#voter_responses").unbind("submit");
+    $("#voter_responses").trigger("submit")
 }
 
 function disconnect_caller() {
