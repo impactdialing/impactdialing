@@ -116,13 +116,13 @@ describe CallAttempt do
 
     it "connects a successful call attempt to a specified caller_session " do
       campaign = Factory(:campaign)
-      voter = Factory(:voter, :campaign => campaign)
-      Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller))
       caller_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller))
+      voter = Factory(:voter, :campaign => campaign, caller_session: caller_session)
+      Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller))
+
       call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign)
       Moderator.stub!(:publish_event).with(caller_session.caller, 'voter_connected', {:campaign_id => caller_session.campaign.id,
         :caller_id => caller_session.caller.id, :dials_in_progress => 1})
-      call_attempt.update_attributes(caller_session: caller_session)
       call_attempt.connect_to_caller.should == call_attempt.conference(caller_session)
       call_attempt.caller.should == caller_session.caller
     end

@@ -84,23 +84,16 @@ class Voter < ActiveRecord::Base
 
   def dial_predictive
     @client = Twilio::REST::Client.new TWILIO_ACCOUNT, TWILIO_AUTH
-    caller_session = campaign.caller_sessions.available.first
-    DIALER_LOGGER.info "connect to _caller #{caller_session.inspect} , #{campaign.predictive_type}"
-    unless caller_session.nil?
-      DIALER_LOGGER.info "Pushing data for #{info.inspect}"
-      call_attempt = new_call_attempt(self.campaign.predictive_type)
-      call_attempt.update_attributes(caller_session: caller_session)
-
-      @call = @client.account.calls.create(
-          :from => campaign.caller_id,
-          :to => self.Phone,
-          :url => connect_call_attempt_url(call_attempt, :host => Settings.host, :port =>Settings.port),
-          'StatusCallback' => end_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port),
-          'IfMachine' => self.campaign.use_recordings? ? 'Continue' : 'Hangup',
-          'Timeout' => campaign.answer_detection_timeout || 20
-      )
-      call_attempt.update_attributes(:sid => @call.sid)
-    end
+    call_attempt = new_call_attempt(self.campaign.predictive_type)
+    @call = @client.account.calls.create(
+        :from => campaign.caller_id,
+        :to => self.Phone,
+        :url => connect_call_attempt_url(call_attempt, :host => Settings.host, :port =>Settings.port),
+        'StatusCallback' => end_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port),
+        'IfMachine' => self.campaign.use_recordings? ? 'Continue' : 'Hangup',
+        'Timeout' => campaign.answer_detection_timeout || 20
+    )
+    call_attempt.update_attributes(:sid => @call.sid)
   end
 
   def conference(session)

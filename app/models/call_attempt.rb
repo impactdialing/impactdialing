@@ -54,7 +54,8 @@ class CallAttempt < ActiveRecord::Base
     current_recording.next ? current_recording.next.twilio_xml(self) : current_recording.hangup
   end
 
-  def connect_to_caller
+  def connect_to_caller(caller_session=nil)
+    caller_session ||= campaign.caller_sessions.available.first
     if caller_session.nil? || caller_session.disconnected? || !caller_session.available_for_call
       update_attributes(status: CallAttempt::Status::ABANDONED)
       voter.update_attributes(:status => CallAttempt::Status::ABANDONED)
