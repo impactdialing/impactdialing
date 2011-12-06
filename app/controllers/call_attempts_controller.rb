@@ -11,7 +11,7 @@ class CallAttemptsController < ApplicationController
 
   def connect
     call_attempt = CallAttempt.find(params[:id])
-    DIALER_LOGGER.info "callconnect: #{params[:AnsweredBy]}"
+    Rails.logger.debug("callconnect: #{params[:AnsweredBy]}")
     response = case params[:AnsweredBy] #using the 2010 api
                  when "machine"
                    call_attempt.voter.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
