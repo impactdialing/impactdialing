@@ -135,7 +135,7 @@ describe CallAttemptsController do
     end
 
     it "plays a voice mail to a voters answering the campaign uses recordings" do
-      campaign = Factory(:campaign, :use_recordings => true, :recording => Factory(:recording, :file_file_name => 'abc.mp3', :account => Factory(:account)))
+      campaign = Factory(:campaign, :use_recordings => true, :answering_machine_detect => true, :recording => Factory(:recording, :file_file_name => 'abc.mp3', :account => Factory(:account)))
       call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign, :caller_session => Factory(:caller_session))
       post :connect, :id => call_attempt.id, :AnsweredBy => "machine"
       call_attempt.reload.voter.status.should == CallAttempt::Status::VOICEMAIL
