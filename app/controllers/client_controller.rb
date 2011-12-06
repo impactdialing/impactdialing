@@ -89,8 +89,10 @@ class ClientController < ApplicationController
       if !@user.new_record? and (not @user.authenticate_with?(params[:exist_pw]))
         flash_now(:error, "Current password incorrect")
         return
+      else
+        @user.save
       end
-
+      
       if @user.valid?
         if @user.new_record?
           @user.save
