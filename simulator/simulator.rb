@@ -60,7 +60,7 @@ beta = 0.0
 
 best_alpha = 0.01
 best_beta = 1
-best_utilization = 0
+best_utilisation = 0
 
 while beta < 1
   idle_time = 0
@@ -124,8 +124,8 @@ while beta < 1
   simulated_abandonment = abandon_count / finished_dials.select(&:answered?).size
 
   if simulated_abandonment <= target_abandonment
-    utilization = active_time / (active_time + idle_time)
-    if utilization > best_utilization
+    utilisation = active_time / (active_time + idle_time)
+    if utilisation > best_utilisation
       best_alpha = alpha
       best_beta = beta
     end
@@ -136,8 +136,8 @@ while beta < 1
     alpha = 0.01
     beta += 0.01
   end
-  puts "alpha: #{alpha} & beta: #{beta} with utilization: #{utilization}"
-  puts "best utilization so far: #{best_utilization}"
+  puts "alpha: #{alpha} & beta: #{beta} with utilisation: #{utilisation}"
+  puts "best utilisation so far: #{best_utilisation}"
 end
 
 puts best_alpha, best_beta
