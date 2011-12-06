@@ -66,6 +66,7 @@ while beta < 1
   idle_time = 0
   active_time = 0
   active_dials = []
+  active_dials << recent_dials[rand(recent_dials.size)]
   finished_dials = []
   active_call_attempts = []
   finished_call_attempts = []
@@ -75,7 +76,7 @@ while beta < 1
   while(t <= simulator_length)
     active_call_attempts.clone.each do |call_attempt|
       if call_attempt.counter == call_attempt.length
-        caller_statuses.detect(&:available?).toggle
+        caller_statuses.detect(&:unavailable?).toggle
         finished_call_attempts << call_attempt
         active_call_attempts.drop(call_attempt)
         call_attempt.counter = 0
@@ -87,7 +88,7 @@ while beta < 1
     active_dials.clone.each do |dial|
       if dial.counter == dial.length
         if dial.answered?
-          if status = caller_statuses.detect(&:unavailable?)
+          if status = caller_statuses.detect(&:available?)
             status.toggle
             active_call_attempts = recent_call_attempts[rand(recent_call_attempts.size)]
           else
