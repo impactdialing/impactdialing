@@ -62,17 +62,17 @@ class CallAttempt < ActiveRecord::Base
     else
       update_attributes(:status => CallAttempt::Status::INPROGRESS)
       caller_session.update_attributes(:on_call => true, :available_for_call => false)
-      conference(caller_session)      
+      conference(caller_session)
     end
    end
 
   def play_recorded_message
     update_attributes(:status => CallAttempt::Status::VOICEMAIL, :call_end => Time.now)
     voter.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
-    Twilio::Verb.new { |v|
-                v.play(campaign.recording.file.url)
-                #v.hangup
-              }.response
+    Twilio::TwiML::Response.new do |r|
+      r.Play campaign.recording.file.url
+      r.Hangup
+    end.text
   end
 
   def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)

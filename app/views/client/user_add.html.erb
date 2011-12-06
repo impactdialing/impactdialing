@@ -1,1 +1,4 @@
 <%= render :partial => 'join_form' %>
+<% unless @user.new_record? %>
+	<%= render :template => 'client/accounts/show' %>
+<% end %>
