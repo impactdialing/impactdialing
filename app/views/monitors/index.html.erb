@@ -35,9 +35,9 @@
       de_activate_monitor();
     })
 
-  function monitor(session_id, action, status){
+  function monitor(session_id, action){
+		console.log("new connect")
     params = {'session_id': session_id, 'type': action, 'monitor_session' : $('monitor_session').text()};
-    $('status').text(status)
     $('.stop_monitor').show();
     Twilio.Device.connect(params)
   }
@@ -64,6 +64,7 @@
   }
 
 	function switch_caller(current_session_id, next_session_id, action, status){
+		console.log("stop")
 		$.ajax({
         url : "/client/monitors/stop",
         data : {session_id : current_session_id},
@@ -75,6 +76,7 @@
 	}
 	
 	function request_to_switch(next_session_id, action, status){
+		console.log("next start")
 		$.ajax({
         url : "/client/monitors/start",
         data : {'session_id' : next_session_id, 'type': action, 'monitor_session' : $('monitor_session').text()},
@@ -87,10 +89,11 @@
 		$('.stop').live('click', function(){
 			stop($(this).attr("session_id"))
 		});
+		
     $('.monitor').live('click', function(){
 			var session_id = $(this).attr("session_id");
 			var action = $(this).attr("action");
-			var status = "Status: Monitoring in "+$(this).attr("action") + " mode on "+$(this).parent().prevAll('td.caller_name').text().split("/").first() + ".";
+			
       if($(this).parent().parent().attr("on_call") == "true"){
         switch_mode(session_id, action);
 				$(this).parent().parent().attr("mode", action)
@@ -99,8 +102,7 @@
 				var no_monitoring = true;
         $.each($(this).parent().parent().siblings(), function(){
           if($(this).attr("on_call") == "true"){
-						console.log($(this))
-						console.log($(this).children().children().attr("session_id"))
+						console.log("switch detect")
 						console.log($(this).children().children('.monitor').attr("session_id"))
 						switch_caller($(this).children().children().attr("session_id"), session_id, action, status);
 						no_monitoring = false;
@@ -108,10 +110,10 @@
             $(this).removeAttr("mode");
           }
         });
+				$(this).parent().parent().attr("on_call","true");
+				$(this).parent().parent().attr("mode", $(this).attr("action"))
 				if(no_monitoring){
-        	monitor(session_id, action, status);
-        	$(this).parent().parent().attr("on_call","true");
-					$(this).parent().parent().attr("mode", $(this).attr("action"))
+        	monitor(session_id, action);
 				}
       }
       return false;
