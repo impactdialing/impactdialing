@@ -1,7 +1,7 @@
 require Rails.root.join("lib/twilio_lib")
 
 class ClientController < ApplicationController
-  before_filter :check_login, :except => [:login,:user_add, :forgot]
+  before_filter :check_login, :except => [:login,:user_add, :forgot, :start]
   before_filter :check_paid
   before_filter :redirect_to_ssl
 
@@ -9,7 +9,6 @@ class ClientController < ApplicationController
   in_place_edit_for :campaign, :name
 
   def check_login
-    p session[:user], session
     redirect_to_login and return if session[:user].blank?
     begin
       @user = User.find(session[:user])
@@ -75,8 +74,9 @@ class ClientController < ApplicationController
       @user = User.new(:account => Account.new(:domain => request.domain))
     else
       @user = User.find(session[:user])
+      @account = @user.account
     end
-
+    
     if request.post?
       @user.attributes =  params[:user]
       if params[:fullname]!=nil
@@ -165,7 +165,6 @@ class ClientController < ApplicationController
   end
 
   def logout
-    puts "*****************************foo*************************"
     session[:user]=nil
     redirect_to_login
   end

@@ -1,13 +1,14 @@
-require File.join(Rails.root.to_s, 'config/environment')
+RAILS_ROOT = File.expand_path('../..', __FILE__)
+require File.join(RAILS_ROOT, 'config/environment')
 
-logger = Logger.new(Rails.root.join("log", "dialer_#{Rails.env}.log"))
+logger = Logger.new(File.join(RAILS_ROOT, "log", "dialer_#{Rails.env}.log"))
 ActiveRecord::Base.logger = logger
 campaign_id = ARGV.first.to_i
 campaign = Campaign.find(campaign_id)
 
 begin
   logger.info "[dialer] Started daemon for dialing campaign id:#{campaign.id} name:#{campaign.name}"
-  Twilio.default_options[:ssl_ca_file] = File.join(Rails.root.to_s, 'cacert.pem')
+  Twilio.default_options[:ssl_ca_file] = File.join(RAILS_ROOT, 'cacert.pem')
   Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
   campaign.dial
 rescue => e
