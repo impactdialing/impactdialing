@@ -240,7 +240,7 @@ function subscribe(session_key) {
     channel.bind('voter_push', function(data) {
         set_voter(data);
 		set_message("Status: Ready for calls.");
-	    if (data.dialer && data.dialer.toLowerCase() == "progressive") {
+	    if (!$.isEmptyObject(data.fields) && data.dialer && data.dialer.toLowerCase() == "progressive") {
 		  $("#stop_calling").show();
 		  call_voter();
 	    }
@@ -314,6 +314,7 @@ function subscribe(session_key) {
             ready_to_call(data.dialer);
 
         } else {
+			clear_voter();
             hide_all_actions();
             hide_response_panel();
             set_message("Status: There are no more numbers to call in this campaign.");
