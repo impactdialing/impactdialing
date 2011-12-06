@@ -30,7 +30,7 @@
           </select>
         </p>
         <%= render :partial => 'shared/recycle_rate', :locals => {:recycle_hour => @campaign.recycle_rate}%>
-				<p><label> <%= f.check_box :amd_turn_off %> &nbsp; Turn off Answering Machine Detection</label></p>
+				<p><label> <%= f.check_box :answering_machine_detect %> &nbsp; Automatically detect voicemails(required for leaving messages)</label></p>
         <% if !@campaign.account.recordings.blank? %>
             <p><label> <%= f.check_box :use_recordings, :onclick=>"doRecord();" %> &nbsp; Leave voicemail</label></p>
             <div id="recordingsdiv"
@@ -149,9 +149,22 @@
      }
    });
 
+		$('#campaign_answering_machine_detect').click(function () {
+			if($('#campaign_answering_machine_detect').attr('checked')== false){
+				
+				if($("#campaign_use_recordings").attr('checked') == true){
+					$("#recordingsdiv").toggle($("#campaign_use_recordings").checked);
+					$("#campaign_use_recordings").attr('checked', false);
+				}
+			}
+		});
+
   });
 
     function doRecord() {
+				if($("#campaign_use_recordings").attr('checked')== true){
+					$('#campaign_answering_machine_detect').attr('checked', true);
+				}
         $("#recordingsdiv").toggle($("#campaign_use_recordings").checked);
     }
 

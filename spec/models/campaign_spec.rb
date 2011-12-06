@@ -196,14 +196,18 @@ end
 
 describe Campaign do
   
-  it "save correctly, when both amd_turn_off and user_recordings are not true" do
-    campaign = Campaign.new(:name => "sddd",:amd_turn_off => false, :use_recordings => true)
-    campaign.should be_valid
+  it "returns valiadtion error, when user_recordings is true and answering_machine_detect is false" do
+    campaign = Campaign.new(:name => "sddd",:answering_machine_detect => false, :use_recordings => true)
+    campaign.should_not be_valid
   end
   
-  it "returns valiadtion error, when both amd_turn_off and user_recordings are true" do
-    campaign = Campaign.new(:name => "sddd",:amd_turn_off => true, :use_recordings => true)
-    campaign.should_not be_valid  
+  it "save correctly, when user_recordings is true and answering_machine_detect is true" do
+    campaign1 = Campaign.new(:name => "sddd1",:answering_machine_detect => true, :use_recordings => true)
+    campaign2 = Campaign.new(:name => "sddd2",:answering_machine_detect => true, :use_recordings => false)
+    campaign3 = Campaign.new(:name => "sddd3",:answering_machine_detect => false, :use_recordings => false)
+    campaign1.should be_valid
+    campaign2.should be_valid  
+    campaign3.should be_valid  
   end
 
   it "restoring makes it active" do
