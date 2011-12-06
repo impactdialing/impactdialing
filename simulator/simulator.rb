@@ -3,15 +3,20 @@ require "ostruct"
 
 ActiveRecord::Base.establish_connection(
   :adapter  => 'jdbcmysql',
-  :database => 'impactdialing_dev',
+  :database => 'impactdialing_prod',
   :username => 'root',
   :password => nil,
-  :host     => 'localhost')
+  :host     => 'localhost'
+)
 
 class CallerSession < ActiveRecord::Base
 end
 
 class CallAttempt < ActiveRecord::Base
+  def duration
+    return nil unless call_start
+    ((call_end || Time.now) - self.call_start).to_i
+  end
 end
 
 class CallerStatus
@@ -41,6 +46,7 @@ target_abandonment = 0.1
 start_time = 60 * 10
 simulator_length = 60 * 60
 campaign_id = 1
+abandon_count = 0
 
 caller_statuses = CallerSession.where(:campaign_id => campaign_id, :on_call => true).size.times.map{ CallerStatus.new('available') }
 
@@ -129,5 +135,8 @@ while beta < 1
     alpha = 0.01
     beta += 0.01
   end
+  puts "alpha: #{alpha} & beta: #{beta} with utilization: #{utilization}"
+  puts "best utilization so far: #{best_utilization}"
 end
 
+puts best_alpha, best_beta
