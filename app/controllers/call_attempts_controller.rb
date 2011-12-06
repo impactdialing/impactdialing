@@ -18,6 +18,7 @@ class CallAttemptsController < ApplicationController
                    call_attempt.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
                    call_attempt.caller_session.publish('answered_by_machine', {})
                    if call_attempt.caller_session && (call_attempt.campaign.predictive_type == Campaign::Type::PREVIEW || call_attempt.campaign.predictive_type == Campaign::Type::PROGRESSIVE)
+                     call_attempt.caller_session.update_attribute(:voter_in_progress, nil)
                      next_voter = call_attempt.campaign.next_voter_in_dial_queue(call_attempt.voter.id)
                      call_attempt.caller_session.publish('voter_push', next_voter ? next_voter.info : {})
                    end
