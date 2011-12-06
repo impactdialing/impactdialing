@@ -237,9 +237,9 @@ function subscribe(session_key) {
 		}
 	});
 
-    channel.bind('voter_push', function(data) {
-        set_voter(data);
+    channel.bind('voter_push', function(data) {        
 		set_message("Status: Ready for calls.");
+		set_voter(data);
 	    if (!$.isEmptyObject(data.fields) && data.dialer && data.dialer.toLowerCase() == "progressive") {
 		  $("#stop_calling").show();
 		  call_voter();
