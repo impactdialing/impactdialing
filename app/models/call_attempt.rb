@@ -87,7 +87,8 @@ class CallAttempt < ActiveRecord::Base
     Moderator.publish_event(session.caller, 'voter_connected', {:campaign_id => campaign.id, :caller_id => session.caller.id,
       :dials_in_progress => campaign.call_attempts.dial_in_progress.length})
     Rails.logger.debug("Moderator published event")  
-    voter.conference(session)
+    session.update_attributes(:voter_in_progress => voter)
+    # voter.conference(session)
     Rails.logger.debug("Voter conference")  
     Twilio::TwiML::Response.new do |r|
       r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(self, :host => Settings.host), :record=>self.campaign.account.record_calls do |d|
