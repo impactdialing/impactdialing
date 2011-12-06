@@ -1,7 +1,7 @@
 require Rails.root.join("lib/twilio_lib")
 
 class ClientController < ApplicationController
-  before_filter :check_login, :except => [:login,:user_add, :forgot, :start]
+  before_filter :check_login, :except => [:login,:user_add, :forgot]
   before_filter :check_paid
   before_filter :redirect_to_ssl
 
@@ -89,8 +89,10 @@ class ClientController < ApplicationController
       if !@user.new_record? and (not @user.authenticate_with?(params[:exist_pw]))
         flash_now(:error, "Current password incorrect")
         return
+      else
+        @user.save
       end
-
+      
       if @user.valid?
         if @user.new_record?
           @user.save

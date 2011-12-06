@@ -21,7 +21,7 @@ class CallAttemptsController < ApplicationController
                      next_voter = call_attempt.campaign.next_voter_in_dial_queue(call_attempt.voter.id)
                      call_attempt.caller_session.publish('voter_push', next_voter ? next_voter.info : {})
                    end
-                   (call_attempt.campaign.use_recordings? &&  !call_attempt.campaign.amd_turn_off) ? call_attempt.play_recorded_message : call_attempt.hangup
+                   (call_attempt.campaign.use_recordings? &&  call_attempt.campaign.answering_machine_detect) ? call_attempt.play_recorded_message : call_attempt.hangup
                  else      
                    call_attempt.connect_to_caller
                end

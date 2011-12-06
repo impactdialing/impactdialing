@@ -16,8 +16,8 @@ class User < ActiveRecord::Base
   has_many :blocked_numbers, :through => :account
 
   attr_accessor :new_password
-  validates_presence_of :new_password, :on => :create, :message => "can't be blank"
-  validates_length_of :new_password, :within => 5..50, :on => :create, :message => "must be 5 characters or greater"
+  validates_presence_of :new_password, :message => "can't be blank"
+  validates_length_of :new_password, :within => 5..50, :message => "must be 5 characters or greater"
 
   before_save :hash_new_password, :if => :password_changed?
 

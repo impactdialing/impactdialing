@@ -28,7 +28,7 @@ class Campaign < ActiveRecord::Base
 
   validates :name, :presence => true
   validates :caller_id, :presence => {:on => :update}, :numericality => {:on => :update}, :length => {:on => :update, :minimum => 10, :maximum => 10}
-  validate :check_amd_turn_off_and_voice_mail
+  validate :check_answering_machine_detect_and_leave_voice_mail
   cattr_reader :per_page
   @@per_page = 25
   
@@ -42,9 +42,9 @@ class Campaign < ActiveRecord::Base
     PROGRESSIVE = "progressive"
   end
   
-  def check_amd_turn_off_and_voice_mail
-    if (amd_turn_off == true) && (use_recordings == true)
-      errors.add(:base, 'Answering Mechine Detection is necessary to leave voice mails. Please uncheck \'Turn off Answering Mechine Detection\'')
+  def check_answering_machine_detect_and_leave_voice_mail
+    if (answering_machine_detect == false) && (use_recordings == true)
+      errors.add(:base, 'Please select \'Automatically detect voicemails(required for leaving messages)\'')
     end
   end
   
