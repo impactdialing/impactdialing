@@ -59,6 +59,7 @@ class CallAttempt < ActiveRecord::Base
     if caller_session.nil? || caller_session.disconnected? || !caller_session.available_for_call
       update_attributes(status: CallAttempt::Status::ABANDONED)
       voter.update_attributes(:status => CallAttempt::Status::ABANDONED)
+      caller_session.update_attribute(:voter_in_progress, nil) unless caller_session.nil?
       hangup
     else
       update_attributes(:status => CallAttempt::Status::INPROGRESS)
