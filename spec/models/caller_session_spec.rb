@@ -97,7 +97,7 @@ describe CallerSession do
   end
 
   describe "preview dialing" do
-    let(:campaign) { Factory(:campaign, :robo => false, :predictive_type => 'preview') }
+    let(:campaign) { Factory(:campaign, :robo => false, :predictive_type => 'preview', answering_machine_detect: true) }
     let(:voter) { Factory(:voter, :campaign => campaign) }
     let(:caller) { Factory(:caller) }
 
@@ -105,14 +105,28 @@ describe CallerSession do
       caller_session = Factory(:caller_session, :campaign => campaign, :caller => caller, :attempt_in_progress => nil)
       call_attempt = Factory(:call_attempt, :campaign => campaign, :dialer_mode => Campaign::Type::PREVIEW, :status => CallAttempt::Status::INPROGRESS, :caller_session => caller_session, :caller => caller)
       voter.stub_chain(:call_attempts, :create).and_return(call_attempt)
-      Twilio::Call.stub!(:make).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
-      Twilio::Call.should_receive(:make).with(anything, voter.Phone, connect_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port), {'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything})
+      Twilio::Call.should_receive(:make).with(anything, voter.Phone, connect_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port), {'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
 
       caller_session.preview_dial(voter)
       voter.caller_session.should == caller_session
       caller_session.reload.attempt_in_progress.should == call_attempt
       call_attempt.sid.should == "sid"
       call_attempt.caller.should_not be_nil
+    end
+    
+    it "does not send IFMachine if AMD turned off" do
+      campaign1 = Factory(:campaign, :robo => false, :predictive_type => 'preview', answering_machine_detect: false)
+      caller_session = Factory(:caller_session, :campaign => campaign1, :caller => caller, :attempt_in_progress => nil)
+      call_attempt = Factory(:call_attempt, :campaign => campaign1, :dialer_mode => Campaign::Type::PREVIEW, :status => CallAttempt::Status::INPROGRESS, :caller_session => caller_session, :caller => caller)
+      voter.stub_chain(:call_attempts, :create).and_return(call_attempt)
+      Twilio::Call.should_receive(:make).with(anything, voter.Phone, connect_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port), {'StatusCallback'=> anything, 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
+
+      caller_session.preview_dial(voter)
+      voter.caller_session.should == caller_session
+      caller_session.reload.attempt_in_progress.should == call_attempt
+      call_attempt.sid.should == "sid"
+      call_attempt.caller.should_not be_nil
+      
     end
 
     it "pauses the voters results to be entered by the caller" do
