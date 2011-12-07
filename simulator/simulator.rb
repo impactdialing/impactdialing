@@ -49,23 +49,25 @@ campaign_id = 1
 abandon_count = 0
 
 caller_statuses = CallerSession.where(:campaign_id => campaign_id, :on_call => true).size.times.map{ CallerStatus.new('available') }
+caller_statuses = 10.times.map{ CallerStatus.new('available') }
 
 call_attempts = CallAttempt.where(:campaign_id => campaign_id)
 recent_call_attempts = call_attempts.where(:status => "Call completed with success.").map{|attempt| OpenStruct.new(:length => attempt.duration, :counter => 0)}
 
-recent_dials = call_attempts.map{|attempt| OpenStruct.new(:dial_time => rand(15), :counter => 0, :answered? => attempt.status != 'Call cancelled') }
+recent_dials = call_attempts.map{|attempt| OpenStruct.new(:length => rand(15), :counter => 0, :answered? => attempt.status == 'Call completed with success.') }
 
 alpha = 0.01
 beta = 0.0
 
 best_alpha = 0.01
 best_beta = 1
-best_utilization = 0
+best_utilisation = 0
 
 while beta < 1
   idle_time = 0
   active_time = 0
   active_dials = []
+  active_dials << recent_dials[rand(recent_dials.size)]
   finished_dials = []
   active_call_attempts = []
   finished_call_attempts = []
@@ -75,9 +77,9 @@ while beta < 1
   while(t <= simulator_length)
     active_call_attempts.clone.each do |call_attempt|
       if call_attempt.counter == call_attempt.length
-        caller_statuses.detect(&:available?).toggle
+        caller_statuses.detect(&:unavailable?).toggle
         finished_call_attempts << call_attempt
-        active_call_attempts.drop(call_attempt)
+        active_call_attempts.delete(call_attempt)
         call_attempt.counter = 0
       else
         call_attempt.counter += 1
@@ -87,9 +89,9 @@ while beta < 1
     active_dials.clone.each do |dial|
       if dial.counter == dial.length
         if dial.answered?
-          if status = caller_statuses.detect(&:unavailable?)
+          if status = caller_statuses.detect(&:available?)
             status.toggle
-            active_call_attempts = recent_call_attempts[rand(recent_call_attempts.size)]
+            active_call_attempts << recent_call_attempts[rand(recent_call_attempts.size)]
           else
             abandon_count += 1
           end
@@ -104,9 +106,9 @@ while beta < 1
 
     dials_made = finished_dials.select{|dial| dial.counter < start_time}
     dials_answered = finished_dials.select{|dial| dial.counter < start_time && dial.answered?}
-    dials_needed = alpha * dials_answered.size / dials_made.size
+    dials_needed = dials_made.empty? ? 0 : ((alpha * dials_answered.size).to_f / dials_made.size).to_i
     mean_call_length = average(dials_made.map(&:length))
-    longest_call_length = dials_made.map(&:length).inject([dials_made.first.length]){|champion, challenger| [champion, challenger].max}
+    longest_call_length = dials_made.empty? ? 10.minutes : dials_made.map(&:length).inject(dials_made.first.length){|champion, challenger| [champion, challenger].max}
     expected_call_length = (1 - beta) * mean_call_length + beta * longest_call_length
     available_callers = caller_statuses.select(&:available?).size +
       active_call_attempts.select{|call_attempt| call_attempt.counter > expected_call_length}.size -
@@ -120,13 +122,16 @@ while beta < 1
     finished_call_attempts.each{|call_attempt| call_attempt.counter += 1}
     t += 1
   end
-  simulated_abandonment = abandon_count / finished_dials.select(&:answered?).size
+  answered_finished_dials = finished_dials.select(&:answered?)
+  simulated_abandonment = answered_finished_dials.empty? ? 0 : (abandon_count.to_f / answered_finished_dials.size)
 
   if simulated_abandonment <= target_abandonment
-    utilization = active_time / (active_time + idle_time)
-    if utilization > best_utilization
+    total_time = (active_time + idle_time)
+    utilisation = total_time == 0 ? 0 : active_time.to_f / total_time
+    if utilisation > best_utilisation
       best_alpha = alpha
       best_beta = beta
+      best_utilisation = utilisation
     end
   end
   if alpha < 1
@@ -135,8 +140,8 @@ while beta < 1
     alpha = 0.01
     beta += 0.01
   end
-  puts "alpha: #{alpha} & beta: #{beta} with utilization: #{utilization}"
-  puts "best utilization so far: #{best_utilization}"
+  puts "alpha: #{alpha} & beta: #{beta} with utilisation: #{utilisation}"
+  puts "best utilisation so far: #{best_utilisation} and abandonment: #{simulated_abandonment}"
 end
 
 puts best_alpha, best_beta
