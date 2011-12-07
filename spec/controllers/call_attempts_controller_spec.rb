@@ -84,14 +84,14 @@ describe CallAttemptsController do
 
     it "connects a voter to a specified caller" do
       Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => false)
-      available_caller = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => false)
-      call_attempt.update_attribute(:caller_session, available_caller)
-      Moderator.stub!(:publish_event).with(available_caller.caller, 'voter_connected', {:campaign_id => available_caller.campaign.id, 
-        :caller_id => call_attempt.caller_session.caller.id, :dials_in_progress => 1})
+      caller_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => false)
+      call_attempt.voter.update_attribute(:caller_session, caller_session)
+      Moderator.stub!(:publish_event).with(caller_session.caller, 'voter_connected', {:campaign_id => caller_session.campaign.id, 
+        :caller_id => caller_session.caller.id, :dials_in_progress => 1})
       post :connect, :id => call_attempt.id
       response.body.should == Twilio::TwiML::Response.new do |r|
         r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(call_attempt, :host => Settings.host), :record=>call_attempt.campaign.account.record_calls do |d|
-          d.Conference available_caller.session_key, :wait_url => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
+          d.Conference caller_session.session_key, :wait_url => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
         end
       end.text
     end
