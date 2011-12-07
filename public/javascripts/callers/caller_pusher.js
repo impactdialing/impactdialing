@@ -199,7 +199,7 @@ function ready_for_calls(data){
 	  $("#stop_calling").show();
 	  call_voter();
     }
-    if (data.dialer && dialer.toLowerCase() == "preview") {
+    if (data.dialer && data.dialer.toLowerCase() == "preview") {
         $("#stop_calling").show();
         $("#skip_voter").show();
         $("#call_voter").show();
