@@ -45,7 +45,8 @@ class CallAttemptsController < ApplicationController
     call_attempt = CallAttempt.find(params[:id])
     call_attempt.voter.update_attributes(:status => CallAttempt::Status::MAP[params[:CallStatus]], :last_call_attempt_time => Time.now)
     call_attempt.update_attributes(:status => CallAttempt::Status::MAP[params[:CallStatus]], :call_end => Time.now)
-    Moderator.publish_event(call_attempt.campaign, 'update_dials_in_progress', {:campaign_id => call_attempt.campaign.id,:dials_in_progress => call_attempt.campaign.call_attempts.dial_in_progress.length})
+    Moderator.publish_event(call_attempt.campaign, 'update_dials_in_progress', {:campaign_id => call_attempt.campaign.id,:dials_in_progress => call_attempt.campaign.call_attempts.dial_in_progress.length,
+      :voters_remaining => campaign.voters_count("not called", false).length}})
     response = case params[:CallStatus] #using the 2010 api
                  when "no-answer", "busy", "failed"
                    call_attempt.fail

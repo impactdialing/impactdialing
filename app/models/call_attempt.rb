@@ -60,7 +60,8 @@ class CallAttempt < ActiveRecord::Base
       update_attributes(status: CallAttempt::Status::ABANDONED)
       voter.update_attributes(:status => CallAttempt::Status::ABANDONED)
       caller_session.update_attribute(:voter_in_progress, nil) unless caller_session.nil?
-      Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id,:dials_in_progress => campaign.call_attempts.dial_in_progress.length})
+      Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id,:dials_in_progress => campaign.call_attempts.dial_in_progress.length,
+        :voters_remaining => campaign.voters_count("not called", false).length}})
       hangup
     else
       update_attributes(:status => CallAttempt::Status::INPROGRESS)
