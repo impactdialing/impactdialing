@@ -78,7 +78,11 @@ class CallerSession < ActiveRecord::Base
       end
     end.response
     update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
-    publish('caller_connected_dialer', {}) if campaign.predictive_type != Campaign::Type::PREVIEW && campaign.predictive_type != Campaign::Type::PROGRESSIVE
+    if campaign.predictive_type == Campaign::Type::PREVIEW && campaign.predictive_type == Campaign::Type::PROGRESSIVE
+      publish('conference_started', {}) 
+    else
+      publish('caller_connected_dialer', {}) 
+    end
     response
   end
   
