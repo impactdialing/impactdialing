@@ -194,6 +194,19 @@ function expand_scheduler() {
     $("#callback_info").show();
 }
 
+function ready_for_calls(data){
+	if (data.dialer && data.dialer.toLowerCase() == "progressive") {
+	  $("#stop_calling").show();
+	  call_voter();
+    }
+    if (dialer && dialer.toLowerCase() == "preview") {
+        $("#stop_calling").show();
+        $("#skip_voter").show();
+        $("#call_voter").show();
+    }	
+	
+}
+
 function subscribe(session_key) {
     channel = pusher.subscribe(session_key);
     console.log(channel)
@@ -209,21 +222,14 @@ function subscribe(session_key) {
         if (!$.isEmptyObject(data.fields)) {
             set_message("Status: Ready for calls.");
             set_voter(data);
+	    	ready_for_calls(data)
         } else {
             set_message("Status: There are no more numbers to call in this campaign.");
         }
     });
+
 	channel.bind('conference_started' , function(data){
-		if (data.dialer && data.dialer.toLowerCase() == "progressive") {
-		  $("#stop_calling").show();
-		  call_voter();
-	    }
-	    if (dialer && dialer.toLowerCase() == "preview") {
-	        $("#stop_calling").show();
-	        $("#skip_voter").show();
-	        $("#call_voter").show();
-	    }	
-	    
+	    ready_for_calls(data)
 	});
 
 
