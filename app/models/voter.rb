@@ -91,10 +91,9 @@ class Voter < ActiveRecord::Base
         :url => connect_call_attempt_url(call_attempt, :host => Settings.host, :port =>Settings.port),
         'StatusCallback' => end_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port),
         'IfMachine' => self.campaign.use_recordings? ? 'Continue' : 'Hangup',
-        'Timeout' => campaign.answering_machine_detect ? "30" : "15"
+        'Timeout' => campaign.answer_detection_timeout || 20
     )
     call_attempt.update_attributes(:sid => @call.sid)
-    end
   end
 
   def conference(session)
