@@ -25,7 +25,7 @@ class CallerSession < ActiveRecord::Base
     t = ::TwilioLib.new(account, auth)
     t.end_call("#{self.sid}")
     self.update_attributes(:on_call => false, :available_for_call => false, :endtime => Time.now)
-    Moderator.publish_event(caller, "caller_disconnected",{:caller_id => caller.id, :campaign_id => campaign.id, :campaign_active => campaign.callers_log_in?,
+    Moderator.publish_event(campaign, "caller_disconnected",{:caller_id => caller.id, :campaign_id => campaign.id, :campaign_active => campaign.callers_log_in?,
       :no_of_callers_logged_in => campaign.caller_sessions.on_call.length})
     self.publish("caller_disconnected", {source: "end_running_call"})
   end
@@ -46,14 +46,11 @@ class CallerSession < ActiveRecord::Base
     update_attribute('attempt_in_progress', attempt)
     voter.update_attributes(:last_call_attempt => attempt, :last_call_attempt_time => Time.now, :caller_session => self)
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    response = Twilio::Call.make(self.campaign.caller_id, voter.Phone, connect_call_attempt_url(attempt, :host => Settings.host, :port => Settings.port),
-                                 {
-                                     'StatusCallback' => end_call_attempt_url(attempt, :host => Settings.host, :port => Settings.port),
-                                     'IfMachine' => 'Continue',
-                                     'Timeout' => campaign.answering_machine_detect ? "30" : "15"
-                                 }
-    )
+    params = { 'StatusCallback' => end_call_attempt_url(attempt, :host => Settings.host, :port => Settings.port),'Timeout' => campaign.answering_machine_detect ? "30" : "15"}
+    params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect        
+    response = Twilio::Call.make(self.campaign.caller_id, voter.Phone, connect_call_attempt_url(attempt, :host => Settings.host, :port => Settings.port),params)
     self.publish('calling_voter', voter.info)
+    Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id,:dials_in_progress => campaign.call_attempts.dial_in_progress.length})
     attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])
   end
 
@@ -82,7 +79,11 @@ class CallerSession < ActiveRecord::Base
       end
     end.response
     update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
-    publish('caller_connected_dialer', {}) if campaign.predictive_type != Campaign::Type::PREVIEW && campaign.predictive_type != Campaign::Type::PROGRESSIVE
+    if campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE
+      publish('conference_started', {}) 
+    else
+      publish('caller_connected_dialer', {}) 
+    end
     response
   end
   
@@ -106,7 +107,7 @@ class CallerSession < ActiveRecord::Base
 
   def end
     self.update_attributes(:on_call => false, :available_for_call => false, :endtime => Time.now)
-    Moderator.publish_event(caller, "caller_disconnected",{:caller_id => caller.id, :campaign_id => campaign.id, :campaign_active => campaign.callers_log_in?,
+    Moderator.publish_event(campaign, "caller_disconnected",{:caller_id => caller.id, :campaign_id => campaign.id, :campaign_active => campaign.callers_log_in?,
             :no_of_callers_logged_in => campaign.caller_sessions.on_call.length})
     self.publish("caller_disconnected", {source: "end_call"})
     Twilio::Verb.hangup

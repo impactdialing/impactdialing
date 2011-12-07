@@ -8,7 +8,7 @@ class CallAttempt < ActiveRecord::Base
   belongs_to :caller_session
   has_many :call_responses
 
-  scope :dial_in_progress, :conditions => {:status => "Call in progress"}
+  scope :dial_in_progress, :conditions => {:status => ["Call in progress","Ringing"]}
   scope :for_campaign, lambda { |campaign| {:conditions => ["campaign_id = ?", campaign.id]} }
   scope :for_status, lambda { |status| {:conditions => ["call_attempts.status = ?", status]} }
   scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
@@ -55,11 +55,13 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def connect_to_caller(caller_session=nil)
-    caller_session ||= campaign.caller_sessions.available.first
+    caller_session ||= campaign.oldest_available_caller_session
     if caller_session.nil? || caller_session.disconnected? || !caller_session.available_for_call
       update_attributes(status: CallAttempt::Status::ABANDONED)
       voter.update_attributes(:status => CallAttempt::Status::ABANDONED)
       caller_session.update_attribute(:voter_in_progress, nil) unless caller_session.nil?
+      Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id,:dials_in_progress => campaign.call_attempts.dial_in_progress.length,
+        :voters_remaining => campaign.voters_count("not called", false).length})
       hangup
     else
       update_attributes(:status => CallAttempt::Status::INPROGRESS)
@@ -86,7 +88,7 @@ class CallAttempt < ActiveRecord::Base
   def conference(session)
     self.update_attributes(:caller => session.caller, :call_start => Time.now, :caller_session => session)
     session.publish('voter_connected', {:attempt_id => self.id, :voter => self.voter.info})
-    Moderator.publish_event(session.caller, 'voter_connected', {:campaign_id => campaign.id, :caller_id => session.caller.id,
+    Moderator.publish_event(campaign, 'voter_connected', {:campaign_id => campaign.id, :caller_id => session.caller.id,
       :dials_in_progress => campaign.call_attempts.dial_in_progress.length})
     Rails.logger.debug("Moderator published event")  
     voter.conference(session)
@@ -109,15 +111,19 @@ class CallAttempt < ActiveRecord::Base
     update_attributes(:status => CallAttempt::Status::SUCCESS, :call_end => Time.now, :recording_duration=>params[:RecordingDuration], :recording_url=>params[:RecordingUrl])
     voter.update_attribute(:status, CallAttempt::Status::SUCCESS)
     Pusher[caller_session.session_key].trigger('voter_disconnected', {:attempt_id => self.id, :voter => self.voter.info})
-    Moderator.publish_event(caller_session.caller, 'voter_disconnected', {:campaign_id => campaign.id, :caller_id => caller_session.caller.id,
+    Moderator.publish_event(campaign, 'voter_disconnected', {:campaign_id => campaign.id, :caller_id => caller_session.caller.id,
        :dials_in_progress => campaign.call_attempts.dial_in_progress.length, :voters_remaining => campaign.voters_count("not called", false).length})
     hangup
   end
 
   def fail
     next_voter = self.campaign.next_voter_in_dial_queue(voter.id)
-    caller_session.publish('voter_push',next_voter.nil? ? {} : next_voter.info) if caller_session && (campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE)
     voter.update_attributes(:call_back => false)
+    if caller_session && (campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE)
+      caller_session.publish('voter_push',next_voter.nil? ? {} : next_voter.info) 
+      caller_session.update_attribute(:voter_in_progress, nil)
+      caller_session.start      
+    end
   end
 
   def hangup

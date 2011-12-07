@@ -10,9 +10,12 @@ class MonitorsController < ClientController
 
   def start
     caller_session = CallerSession.find(params[:session_id])
-    unless caller_session.voter_in_progress && (caller_session.voter_in_progress.call_attempts.last.status == "Call in progress.")
-      Pusher[params[:monitor_session]].trigger('no_voter_on_call',{})
+    if caller_session.voter_in_progress && (caller_session.voter_in_progress.call_attempts.last.status == "Call in progress")
+      status_msg = "Status: Monitoring in "+ params[:type] + " mode on "+ caller_session.caller.email + "."
+    else
+      status_msg = "Status: Caller is not connected to a lead."
     end
+    Pusher[params[:monitor_session]].trigger('set_status',{:status_msg => status_msg})
     mute_type = params[:type]=="breakin" ? false : true
     render xml:  caller_session.join_conference(mute_type, params[:CallSid], params[:monitor_session])
   end
@@ -21,10 +24,10 @@ class MonitorsController < ClientController
     type = params[:type]
     caller_session = CallerSession.find(params[:session_id])
     caller_session.moderator.switch_monitor_mode(caller_session, type)
-    unless caller_session.voter_in_progress && (caller_session.voter_in_progress.call_attempts.last.status == "Call in progress")
-      render text: "Status: Caller is not connected to a lead."
-    else
+    if caller_session.voter_in_progress && (caller_session.voter_in_progress.call_attempts.last.status == "Call in progress")
       render text: "Status: Monitoring in "+ type + " mode on "+ caller_session.caller.email + "."
+    else
+      render text: "Status: Caller is not connected to a lead."
     end
   end
 

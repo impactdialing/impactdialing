@@ -72,7 +72,10 @@ class Campaign < ActiveRecord::Base
       voter_list.save
     end
   end
-
+  
+  def oldest_available_caller_session
+     caller_sessions.available.find(:first, :order => "updated_at ASC")
+  end
 
   def recent_attempts(mins=10)
     attempts = CallAttempt.find_all_by_campaign_id(self.id, :conditions=>"call_start > DATE_SUB(now(),INTERVAL #{mins} MINUTE)", :order=>"id desc")
