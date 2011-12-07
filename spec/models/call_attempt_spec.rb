@@ -37,7 +37,7 @@ describe CallAttempt do
   it "records a failed attempt" do
     campaign = Factory(:campaign, :use_web_ui => false)
     Factory(:voter, :campaign => campaign, :call_back => false)
-    caller_session = Factory(:caller_session, :campaign => campaign)
+    caller_session = Factory(:caller_session, :campaign => campaign, :session_key => "sample")
     call_attempt = Factory(:call_attempt, :voter => Factory(:voter, :status => Voter::Status::NOTCALLED), :caller_session => caller_session, :campaign => campaign)
     call_attempt.fail
   end
@@ -227,11 +227,12 @@ describe CallAttempt do
     it "pushes 'voter_push' when a failed call attempt ends" do
       campaign = Factory(:campaign, :use_web_ui => true)
       Factory(:voter, :status => Voter::Status::NOTCALLED, :call_back => false, :campaign => campaign)
-      session = Factory(:caller_session, :caller => Factory(:caller), :campaign => campaign)
+      session = Factory(:caller_session, :caller => Factory(:caller), :campaign => campaign, :session_key => "sample")
       attempt = Factory(:call_attempt, :voter => Factory(:voter, :status => CallAttempt::Status::INPROGRESS), :caller_session => session, :campaign => campaign)
       channel = mock
-      Pusher.should_receive(:[]).with(anything).and_return(channel)
+      Pusher.should_receive(:[]).twice.with(anything).and_return(channel)
       channel.should_receive(:trigger).with("voter_push", campaign.all_voters.to_be_dialed.first.info.merge(:dialer => campaign.predictive_type))
+      channel.should_receive(:trigger).with("conference_started", {:dialer => campaign.predictive_type})
       attempt.fail
     end
   end
