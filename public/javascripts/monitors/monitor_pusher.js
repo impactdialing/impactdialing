@@ -73,6 +73,13 @@ function subscribe_and_bind_events_monitoring(session_id){
     	$('status').text(status);
 		}
   });
+
+	channel.bind('update_dials_in_progress', function(data){
+		if (!$.isEmptyObject(data)){
+			var campaign_selector = 'tr#'+data.campaign_id+'.campaign';
+			$(campaign_selector).children('.dials_in_progress').text(data.dials_in_progress);
+		}
+	});
   
 }
 
