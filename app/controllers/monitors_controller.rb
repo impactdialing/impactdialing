@@ -10,7 +10,7 @@ class MonitorsController < ClientController
 
   def start
     caller_session = CallerSession.find(params[:session_id])
-    if caller_session.voter_in_progress && (caller_session.voter_in_progress.call_attempts.last.status == "Call in progress.")
+    if caller_session.voter_in_progress && (caller_session.voter_in_progress.call_attempts.last.status == "Call in progress")
       status_msg = "Status: Monitoring in "+ params[:type] + " mode on "+ caller_session.caller.email + "."
     else
       status_msg = "Status: Caller is not connected to a lead."

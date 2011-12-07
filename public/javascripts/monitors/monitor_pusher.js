@@ -80,6 +80,10 @@ function subscribe_and_bind_events_monitoring(session_id){
 		if (!$.isEmptyObject(data)){
 			var campaign_selector = 'tr#'+data.campaign_id+'.campaign';
 			$(campaign_selector).children('.dials_in_progress').text(data.dials_in_progress);
+			console.log(data.voters_remaining)
+			if(data.voters_remaining){
+				$(campaign_selector).children('.voters_count').text(data.voters_remaining);
+			}
 		}
 	});
   
