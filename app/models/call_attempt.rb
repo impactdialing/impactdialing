@@ -131,6 +131,10 @@ class CallAttempt < ActiveRecord::Base
     Twilio::TwiML::Response.new { |r| r.Hangup }.text
   end
 
+  def question_not_answered
+      self.campaign.script.questions.not_answered_by(voter).first
+  end
+
   module Status
     VOICEMAIL = "Message delivered"
     SUCCESS = "Call completed with success."

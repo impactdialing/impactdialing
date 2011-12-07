@@ -159,30 +159,30 @@ describe CallerSession do
     end
   end
 
+  it "returns next question for the caller_session" do
+    voter = Factory(:voter)
+    script = Factory(:script)
+    campaign = Factory(:campaign, :script => script)
+    caller_session = Factory(:caller_session, :caller => Factory(:caller), :voter_in_progress => voter, :campaign => campaign)
+    Factory(:call_attempt, :caller_session => caller_session, :voter => voter, :campaign => campaign)
+    next_question = Factory(:question, :script => script)
+    Factory(:question, :script => script)
+    caller_session.next_question.should == next_question
+  end
+
   describe "phone responses" do
     let(:script) { Factory(:script) }
-    let(:campaign) { Factory(:campaign, :robo => false, :predictive_type => 'preview', :script => script) }
+    let(:campaign) { Factory(:campaign, :script => script) }
     let(:voter) { Factory(:voter, :campaign => campaign) }
     let(:caller) { Factory(:caller) }
+    let(:question) { Factory(:question, :text => "question?", :script => script) }
+    let(:caller_session) { Factory(:caller_session, :caller => caller, :voter_in_progress => voter, :campaign => campaign) }
 
     it "reads questions and possible voter responses to the caller" do
-      pending
-      question = Factory(:question, :text => "question?", :script => script)
-      script.questions << question
-      question.possible_responses << Factory(:possible_response, :question => question, :keypad => 1, :value => "response1")
-      question.possible_responses << Factory(:possible_response, :question => question, :keypad => 2, :value => "response2")
-      caller_session = Factory(:caller_session, :caller => caller, :voter_in_progress => voter)
-      caller_session.collect_response.should == Twilio::Verb.new do |v|
-        q = voter.unresponded_questions.first
-        v.gather(:timeout => 10, :action => collect_response_caller_url(self.caller, :session => self, :host => Settings.host, :port => Settings.port), :method => "POST") do
-          v.say q.text
-          q.possible_responses.each do |pr|
-            v.say "press #{pr.keypad} for #{pr.value}"
-          end
-        end.response
-
-      end
-
+      Factory(:call_attempt, :caller_session => caller_session, :voter => voter, :campaign => campaign)
+      Factory(:possible_response, :question => question, :keypad => 1, :value => "response1")
+      Factory(:possible_response, :question => question, :keypad => 2, :value => "response2")
+      caller_session.next_question.read(caller_session.attempt_in_progress).should == question.read(caller_session.attempt_in_progress)
     end
 
   end

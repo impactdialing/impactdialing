@@ -82,4 +82,8 @@ class CallAttemptsController < ApplicationController
     call_attempt.caller_session.update_attribute(:voter_in_progress, nil)
     render :nothing => true
   end
+
+  def gather_response
+
+  end
 end
