@@ -80,7 +80,7 @@ describe CallerSession do
       campaign, conf_key = Factory(:campaign), "conference_key"
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => conf_key)
       time_now = Time.now
-      Moderator.stub!(:publish_event).with(session.caller, 'caller_disconnected', {:caller_id => session.caller.id, :campaign_id => campaign.id,
+      Moderator.stub!(:publish_event).with(session.campaign, 'caller_disconnected', {:caller_id => session.caller.id, :campaign_id => campaign.id,
          :campaign_active => false, :no_of_callers_logged_in => 0})
       Time.stub(:now).and_return(time_now)
       response = session.end
@@ -242,7 +242,7 @@ describe CallerSession do
       campaign = Factory(:campaign, :use_web_ui => true, :predictive_type => 'preview')
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sample", :on_call=> true, :available_for_call => true)
       2.times { Factory(:voter, :campaign => campaign) }
-      Moderator.stub!(:publish_event).with(session.caller, 'caller_disconnected', {:caller_id => session.caller.id, :campaign_id => campaign.id, 
+      Moderator.stub!(:publish_event).with(session.campaign, 'caller_disconnected', {:caller_id => session.caller.id, :campaign_id => campaign.id, 
         :campaign_active => false, :no_of_callers_logged_in => 0})
       channel = mock
       Pusher.should_receive(:[]).with(session.session_key).and_return(channel)

@@ -26,8 +26,8 @@ class Moderator < ActiveRecord::Base
     caller.account.moderators.active.each {|moderator| Pusher[moderator.session].trigger('caller_session_started', data)}    
   end
   
-  def self.publish_event(caller, event, data)
-    caller.account.moderators.active.each {|moderator| Pusher[moderator.session].trigger(event, data)}
+  def self.publish_event(campaign, event, data)
+    campaign.account.moderators.active.each {|moderator| Pusher[moderator.session].trigger(event, data)}
   end
   
   def get_conference_id(caller_session)
