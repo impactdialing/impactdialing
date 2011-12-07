@@ -119,6 +119,8 @@ class CallAttempt < ActiveRecord::Base
     next_voter = self.campaign.next_voter_in_dial_queue(voter.id)
     caller_session.publish('voter_push',next_voter.nil? ? {} : next_voter.info) if caller_session && (campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE)
     voter.update_attributes(:call_back => false)
+    caller_session.update_attribute(:voter_in_progress, nil)
+    caller_session.start if caller_session
   end
 
   def hangup

@@ -1,12 +1,20 @@
 require 'active_record'
 require "ostruct"
+require 'yaml'
+RAILS_ENV = ENV['RAILS_ENV']
+
+def database_settings
+  yaml_file = File.open(File.join(File.dirname(__FILE__), 'database.yml'))
+  yaml = YAML.load(yaml_file)
+  @plugins ||= yaml[RAILS_ENV || 'development']
+end
 
 ActiveRecord::Base.establish_connection(
-  :adapter  => 'jdbcmysql',
-  :database => 'impactdialing_prod',
-  :username => 'root',
-  :password => nil,
-  :host     => 'localhost'
+  :adapter  => database_settings['adapter'],
+  :database => database_settings['database'],
+  :username => database_settings['username'],
+  :password => database_settings['password'].blank? ? nil : database_settings['password'],
+  :host     => database_settings['host']
 )
 
 class CallerSession < ActiveRecord::Base
@@ -17,6 +25,9 @@ class CallAttempt < ActiveRecord::Base
     return nil unless call_start
     ((call_end || Time.now) - self.call_start).to_i
   end
+end
+
+class SimulatedValues < ActiveRecord::Base
 end
 
 class CallerStatus
@@ -45,7 +56,7 @@ end
 target_abandonment = 0.1
 start_time = 60 * 10
 simulator_length = 60 * 60
-campaign_id = 1
+campaign_id = 106
 abandon_count = 0
 
 caller_statuses = CallerSession.where(:campaign_id => campaign_id, :on_call => true).size.times.map{ CallerStatus.new('available') }
@@ -54,7 +65,9 @@ caller_statuses = 10.times.map{ CallerStatus.new('available') }
 call_attempts = CallAttempt.where(:campaign_id => campaign_id)
 recent_call_attempts = call_attempts.where(:status => "Call completed with success.").map{|attempt| OpenStruct.new(:length => attempt.duration, :counter => 0)}
 
+puts call_attempts.map(&:status)
 recent_dials = call_attempts.map{|attempt| OpenStruct.new(:length => rand(15), :counter => 0, :answered? => attempt.status == 'Call completed with success.') }
+puts recent_call_attempts, recent_dials
 
 alpha = 0.01
 beta = 0.0
@@ -124,9 +137,11 @@ while beta < 1
   end
   answered_finished_dials = finished_dials.select(&:answered?)
   simulated_abandonment = answered_finished_dials.empty? ? 0 : (abandon_count.to_f / answered_finished_dials.size)
+  puts "simulated_abandonment: #{simulated_abandonment}"
 
   if simulated_abandonment <= target_abandonment
     total_time = (active_time + idle_time)
+    puts active_time, idle_time
     utilisation = total_time == 0 ? 0 : active_time.to_f / total_time
     if utilisation > best_utilisation
       best_alpha = alpha
@@ -135,10 +150,10 @@ while beta < 1
     end
   end
   if alpha < 1
-    alpha += 0.01
+    alpha += 0.10
   else
-    alpha = 0.01
-    beta += 0.01
+    alpha = 0.00
+    beta += 0.10
   end
   puts "alpha: #{alpha} & beta: #{beta} with utilisation: #{utilisation}"
   puts "best utilisation so far: #{best_utilisation} and abandonment: #{simulated_abandonment}"

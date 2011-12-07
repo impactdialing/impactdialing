@@ -4,6 +4,7 @@
 ._*
 config/database.yml
 config/application.yml
+simulator/database.yml
 coverage/
 tmp
 *.DS_Store
