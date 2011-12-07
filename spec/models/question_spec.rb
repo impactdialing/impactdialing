@@ -47,7 +47,7 @@ describe Question do
 
     call_attempt = Factory(:call_attempt)
     question.read(call_attempt).should == Twilio::Verb.new do |v|
-      v.gather(:timeout => 10, :action => collect_response_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port), :method => "POST") do
+      v.gather(:timeout => 10, :action => gather_response_call_attempt_url(call_attempt, :question_id =>question, :host => Settings.host, :port => Settings.port), :method => "POST") do
         v.say question.text
         question.possible_responses.each do |pr|
           v.say "press #{pr.keypad} for #{pr.value}"

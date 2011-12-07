@@ -23,14 +23,14 @@ class Voter < ActiveRecord::Base
   scope :by_status, lambda { |status| where(:status => status) }
   scope :active, where(:active => true)
   scope :yet_to_call, where(:call_back => false).where('status != (?)', CallAttempt::Status::SUCCESS)
-  scope :last_call_attempt_before_recycle_rate, lambda { |recycle_rate| where('last_call_attempt_time is null or last_call_attempt_time < ? ', recycle_rate.hours.ago)}
+  scope :last_call_attempt_before_recycle_rate, lambda { |recycle_rate| where('last_call_attempt_time is null or last_call_attempt_time < ? ', recycle_rate.hours.ago) }
   scope :to_be_dialed, yet_to_call.order(:last_call_attempt_time)
   scope :randomly, order('rand()')
   scope :to_callback, where(:call_back => true)
   scope :scheduled, where(:scheduled_date => (10.minutes.ago..10.minutes.from_now)).where(:status => CallAttempt::Status::SCHEDULED)
   scope :limit, lambda { |n| {:limit => n} }
   scope :without, lambda { |numbers| where('Phone not in (?)', numbers) }
-  scope :not_skipped,  where('skipped_time is null')
+  scope :not_skipped, where('skipped_time is null')
   scope :answered, where('result_date is not null')
   scope :answered_within, lambda { |from, to| where(:result_date => from.beginning_of_day..(to.end_of_day)) }
 
@@ -135,9 +135,9 @@ class Voter < ActiveRecord::Base
     call_back? && last_call_attempt_time!=nil && last_call_attempt_time < (Time.now - time)
   end
 
-  def self.to_be_called(campaign_id, active_list_ids, status,recycle_rate=3)
+  def self.to_be_called(campaign_id, active_list_ids, status, recycle_rate=3)
     voters = Voter.find_all_by_campaign_id_and_active(campaign_id, 1, :conditions=>"voter_list_id in (#{active_list_ids.join(",")})", :limit=>300, :order=>"rand()")
-    voters.select {|voter| voter.not_yet_called?(status) || (voter.call_attempted_before?(recycle_rate.hours))}
+    voters.select { |voter| voter.not_yet_called?(status) || (voter.call_attempted_before?(recycle_rate.hours)) }
   end
 
   def self.just_called_voters_call_back(campaign_id, active_list_ids)
@@ -149,8 +149,15 @@ class Voter < ActiveRecord::Base
     self.campaign.script.questions.not_answered_by(self)
   end
 
+  def answer(question, response)
+    possible_response = question.possible_responses.where(:keypad => response).first
+    return unless possible_response
+    answer = self.answers.for(question).first.try(:update_attribute, {:possible_response => possible_response}) || answers.create(:question => question, :possible_response => possible_response)
+    answer
+  end
+
   private
-  
+
   def new_call_attempt(mode = 'robo')
     call_attempt = self.call_attempts.create(:campaign => self.campaign, :dialer_mode => mode, :status => CallAttempt::Status::RINGING)
     self.update_attributes!(:last_call_attempt => call_attempt, :last_call_attempt_time => Time.now, :status => CallAttempt::Status::RINGING)
@@ -176,5 +183,5 @@ class Voter < ActiveRecord::Base
       note_response ? note_response.update_attributes(response: note_res) : note_responses.create(response: note_res, note: Note.find(note_id))
     end
   end
-  
+
 end
