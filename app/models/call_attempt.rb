@@ -55,7 +55,7 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def connect_to_caller(caller_session=nil)
-    caller_session ||= campaign.caller_sessions.available.first
+    caller_session ||= campaign.oldest_available_caller_session
     if caller_session.nil? || caller_session.disconnected? || !caller_session.available_for_call
       update_attributes(status: CallAttempt::Status::ABANDONED)
       voter.update_attributes(:status => CallAttempt::Status::ABANDONED)
