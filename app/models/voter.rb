@@ -83,17 +83,12 @@ class Voter < ActiveRecord::Base
   end
 
   def dial_predictive
-    @client = Twilio::REST::Client.new TWILIO_ACCOUNT, TWILIO_AUTH
     call_attempt = new_call_attempt(self.campaign.predictive_type)
-    @call = @client.account.calls.create(
-        :from => campaign.caller_id,
-        :to => self.Phone,
-        :url => connect_call_attempt_url(call_attempt, :host => Settings.host, :port =>Settings.port),
-        'StatusCallback' => end_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port),
-        'IfMachine' => self.campaign.use_recordings? ? 'Continue' : 'Hangup',
-        'Timeout' => campaign.answer_detection_timeout || 20
-    )
-    call_attempt.update_attributes(:sid => @call.sid)
+    Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
+    params = { 'StatusCallback' => end_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port),'Timeout' => campaign.answering_machine_detect ? "30" : "15"}
+    params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect        
+    response = Twilio::Call.make(campaign.caller_id, self.Phone, connect_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port),params)
+    call_attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])
   end
 
   def conference(session)
