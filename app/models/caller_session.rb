@@ -86,11 +86,11 @@ class CallerSession < ActiveRecord::Base
     end
     response
   end
-  
+
   def join_conference(mute_type, call_sid, monitor_session)
     response = Twilio::Verb.new do |v|
       v.dial(:hangupOnStar => true) do
-        v.conference(self.session_key, :startConferenceOnEnter => false, :endConferenceOnExit => false, :beep => false, :waitUrl => "#{APP_URL}/callin/hold",:waitMethod =>"GET",:muted => mute_type)
+        v.conference(self.session_key, :startConferenceOnEnter => false, :endConferenceOnExit => false, :beep => false, :waitUrl => "#{APP_URL}/callin/hold", :waitMethod =>"GET", :muted => mute_type)
       end
     end.response
     moderator = Moderator.find_by_session(monitor_session)
@@ -101,9 +101,12 @@ class CallerSession < ActiveRecord::Base
   def pause_for_results(attempt = 0)
     attempt = attempt.to_i || 0
     self.publish("waiting_for_result", {}) if attempt == 0
-    Twilio::Verb.new { |v| v.say("Please enter your call results")  if (attempt % 5 == 0); v.pause("length" => 2); v.redirect(pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => id, :attempt=>attempt+1)) }.response
+    Twilio::Verb.new { |v| v.say("Please enter your call results") if (attempt % 5 == 0); v.pause("length" => 2); v.redirect(pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => id, :attempt=>attempt+1)) }.response
   end
 
+  def next_question
+    attempt_in_progress.question_not_answered
+  end
 
   def end
     self.update_attributes(:on_call => false, :available_for_call => false, :endtime => Time.now)
@@ -112,11 +115,11 @@ class CallerSession < ActiveRecord::Base
     self.publish("caller_disconnected", {source: "end_call"})
     Twilio::Verb.hangup
   end
-  
+
   def disconnected?
     !available_for_call && !on_call
   end
-  
+
 
   def publish(event, data)
     return unless self.campaign.use_web_ui?

@@ -145,18 +145,9 @@ class Voter < ActiveRecord::Base
     uncalled.select { |voter| voter.call_attempted_before?(10.minutes) }
   end
 
-  def unresponded_questions
-    unresponded = []
-    campaign.script.questions.each do |question|
-      unresponded << question if answers.for(question).blank?
-    end
-    unresponded
+  def unanswered_questions
+    self.campaign.script.questions.not_answered_by(self)
   end
-  
-  def skip
-    update_attributes(skipped_time:  Time.now)
-  end
-  
 
   private
   

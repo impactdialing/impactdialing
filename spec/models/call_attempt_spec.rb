@@ -42,6 +42,17 @@ describe CallAttempt do
     call_attempt.fail
   end
 
+  it "returns the next question to be answered for a call attempt" do
+    script = Factory(:script)
+    campaign = Factory(:campaign, :script => script)
+    voter = Factory(:voter, :campaign => campaign)
+    caller_session = Factory(:caller_session, :campaign => campaign)
+    call_attempt = Factory(:call_attempt, :voter => voter, :caller_session => caller_session, :campaign => campaign)
+    question = Factory(:question, :script => script)
+    Factory(:question, :script => script)
+    call_attempt.question_not_answered.should == question
+  end
+
   describe 'next recording' do
     let(:script) { Factory(:script) }
     let(:campaign) { Factory(:campaign, :script => script) }

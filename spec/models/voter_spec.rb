@@ -380,8 +380,9 @@ describe Voter do
   end
 
   describe 'answers' do
-    let(:voter) { Factory(:voter) }
     let(:script) { Factory(:script, :robo => false) }
+    let(:campaign) { Factory(:campaign, :script => script) }
+    let(:voter) { Factory(:voter, :campaign => campaign)}
     let(:question) { Factory(:question, :script => script) }
     let(:response) { Factory(:possible_response, :question => question) }
 
@@ -415,15 +416,11 @@ describe Voter do
       voter.reload.answers.size.should == 2
     end
 
-    it "returns all unanswered questions" do
-      script = Factory(:script)
-      campaign = Factory(:campaign, :script => script)
-      voter = Factory(:voter, :campaign => campaign)
+    it "returns all questions unanswered" do
       answered_question = Factory(:question, :script => script)
-      response = Factory(:possible_response, :question => answered_question)
-      Factory(:answer, :voter => voter, :question => answered_question, :possible_response => response)
+      Factory(:answer, :voter => voter, :question => answered_question, :possible_response => Factory(:possible_response, :question => answered_question))
       pending_question = Factory(:question, :script => script)
-      voter.unresponded_questions.should == [pending_question]
+      voter.unanswered_questions.should == [pending_question]
     end
   end
 
