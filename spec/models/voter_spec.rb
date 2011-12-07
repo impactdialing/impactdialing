@@ -107,13 +107,13 @@ describe Voter do
   end
 
   describe "predictive dialing" do
-    let(:campaign) { Factory(:campaign, :robo => false, :predictive_type => 'algorithm1') }
+    let(:campaign) { Factory(:campaign, :robo => false, :predictive_type => 'algorithm1', answering_machine_detect: true) }
     let(:voter) { Factory(:voter, :campaign => campaign) }
     let(:client) { mock(:client).tap { |client| Twilio::REST::Client.stub(:new).and_return(client) } }
 
     context 'making calls' do
       before(:each) do
-        client.stub_chain(:account, :calls, :create).and_return(mock(:call, :sid => 'sid'))
+        Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
       end
 
       it "is dialed" do
@@ -143,14 +143,13 @@ describe Voter do
     end
 
     it "dials the voter and hangs up on answering machine when not using recordings" do
-      client.stub_chain(:account, :calls, :create).with({:from => anything, :to => anything, :url => anything, 'StatusCallback' => anything, 'IfMachine' => 'Hangup', 'Timeout' => 20}).and_return(mock(:call, :sid => 'sid'))
+      Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
       campaign.use_recordings = false
       voter.dial_predictive
     end
 
     it "dials the voter and continues on answering machine when using recordings" do
-      client.stub_chain(:account, :calls, :create).with({:from => anything, :to => anything, :url => anything, 'StatusCallback' => anything, 'IfMachine' => 'Continue', 'Timeout' => 20}).and_return(mock(:call, :sid => 'sid'))
-      campaign.use_recordings = true
+      Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
       voter.campaign = campaign
       voter.dial_predictive
     end
@@ -158,10 +157,18 @@ describe Voter do
     it "dials the voter with the campaigns answer detection timeout" do
       campaign.use_recordings = true
       campaign.answer_detection_timeout = "10"
-      client.stub_chain(:account, :calls, :create).with({:from => anything, :to => anything, :url => anything, 'StatusCallback' => anything, 'IfMachine' => 'Continue', 'Timeout' => campaign.answer_detection_timeout}).and_return(mock(:call, :sid => 'sid'))
+      Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
       voter.campaign = campaign
       voter.dial_predictive
     end
+    
+    it "dials the voter without IFMachine if AMD detection turned off" do
+      campaign1 = Factory(:campaign, :robo => false, :predictive_type => 'algorithm1', answering_machine_detect: false)
+      Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {'StatusCallback'=> anything, 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
+      voter.campaign = campaign1
+      voter.dial_predictive
+    end
+    
 
     it "checks, whether voter is called or not" do
       voter1 = Factory(:voter, :status => "not called")

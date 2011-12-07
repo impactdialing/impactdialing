@@ -144,4 +144,5 @@ while beta < 1
   puts "best utilisation so far: #{best_utilisation} and abandonment: #{simulated_abandonment}"
 end
 
+SimulatedValues.find_or_create_by_campaign_id(campaign_id).update_attributes(:alpha => best_alpha, :beta => best_beta)
 puts best_alpha, best_beta
