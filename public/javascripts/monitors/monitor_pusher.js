@@ -69,16 +69,21 @@ function subscribe_and_bind_events_monitoring(session_id){
       var campaign_selector = 'tr#'+data.campaign_id+'.campaign';
 			var caller_selector = 'tr#'+data.caller_id+'.caller';
       $(campaign_selector).children('.dials_in_progress').text(data.dials_in_progress);
-			status = "Status: Monitoring in " + $(caller_selector).attr('mode') + " mode on " + $(caller_selector).children('td.caller_name').text().split("/")[0] + ".";
-    	$('status').text(status);
+			if($(caller_selector).attr("on_call") == "true"){
+				status = "Status: Monitoring in " + $(caller_selector).attr('mode') + " mode on " + $(caller_selector).children('td.caller_name').text().split("/")[0] + ".";
+    		$('status').text(status);
+			}
 		}
   });
 
 	channel.bind('update_dials_in_progress', function(data){
-		console.log("update_dials_in_progress")
 		if (!$.isEmptyObject(data)){
 			var campaign_selector = 'tr#'+data.campaign_id+'.campaign';
 			$(campaign_selector).children('.dials_in_progress').text(data.dials_in_progress);
+			console.log(data.voters_remaining)
+			if(data.voters_remaining){
+				$(campaign_selector).children('.voters_count').text(data.voters_remaining);
+			}
 		}
 	});
   
