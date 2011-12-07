@@ -382,7 +382,7 @@ describe Voter do
   describe 'answers' do
     let(:script) { Factory(:script, :robo => false) }
     let(:campaign) { Factory(:campaign, :script => script) }
-    let(:voter) { Factory(:voter, :campaign => campaign)}
+    let(:voter) { Factory(:voter, :campaign => campaign) }
     let(:question) { Factory(:question, :script => script) }
     let(:response) { Factory(:possible_response, :question => question) }
 
@@ -421,6 +421,34 @@ describe Voter do
       Factory(:answer, :voter => voter, :question => answered_question, :possible_response => Factory(:possible_response, :question => answered_question))
       pending_question = Factory(:question, :script => script)
       voter.unanswered_questions.should == [pending_question]
+    end
+
+    describe "phones only" do
+      let(:script) { Factory(:script) }
+      let(:campaign) { Factory(:campaign, :script => script) }
+      let(:voter) { Factory(:voter, :campaign => campaign) }
+      let(:question) { Factory(:question, :script => script) }
+
+      it "captures a voter response" do
+        Factory(:possible_response, :question => question, :keypad => 1, :value => "response1")
+        voter.answer(question,"1").should == voter.answers.first
+        voter.answers.size.should == 1
+      end
+
+      it "rejects an incorrect a voter response" do
+        Factory(:possible_response, :question => question, :keypad => 1, :value => "response1")
+        voter.answer(question,"2").should == nil
+        voter.answers.size.should == 0
+      end
+
+      it "recaptures a voter response" do
+        voter.answer(question, "1")
+        Factory(:possible_response, :question => question, :keypad => 1, :value => "response1")
+        Factory(:possible_response, :question => question, :keypad => 2, :value => "response2")
+        voter.answer(question,"2").should == voter.answers.first
+        voter.answers.size.should == 1
+      end
+
     end
   end
 

@@ -23,7 +23,7 @@ class CallAttemptsController < ApplicationController
                      call_attempt.caller_session.publish('voter_push', next_voter ? next_voter.info : {})
                    end
                    (call_attempt.campaign.use_recordings? &&  call_attempt.campaign.answering_machine_detect) ? call_attempt.play_recorded_message : call_attempt.hangup
-                 else      
+                 else
                    call_attempt.connect_to_caller(call_attempt.voter.caller_session)
                end
     render :xml => response
@@ -64,26 +64,28 @@ class CallAttemptsController < ApplicationController
   def voter_response
     call_attempt = CallAttempt.find(params[:id])
     voter = Voter.find(params[:voter_id])
-    unless params[:scheduled_date].blank? 
+    unless params[:scheduled_date].blank?
       scheduled_date = params[:scheduled_date] + " " + params[:callback_time_hours] +":" + params[:callback_time_hours]
       scheduled_date = DateTime.strptime(scheduled_date, "%m/%d/%Y %H:%M").to_time
       call_attempt.update_attributes(:scheduled_date => scheduled_date, :status => CallAttempt::Status::SCHEDULED)
       call_attempt.voter.update_attributes(:scheduled_date => scheduled_date, :status => CallAttempt::Status::SCHEDULED, :call_back => true)
-    else    
+    else
       voter.capture(params)
     end
-    
+
     if call_attempt.campaign.predictive_type == Campaign::Type::PREVIEW || call_attempt.campaign.predictive_type == Campaign::Type::PROGRESSIVE
       next_voter = call_attempt.campaign.next_voter_in_dial_queue(voter.id)
       call_attempt.caller_session.publish("voter_push", next_voter ? next_voter.info : {})
     else
       call_attempt.caller_session.publish("predictive_successful_voter_response", {})
-    end          
+    end
     call_attempt.caller_session.update_attribute(:voter_in_progress, nil)
     render :nothing => true
   end
 
   def gather_response
-
+    call_attempt = CallAttempt.find(params[:id])
+    question = Question.find(params[:question_id])
+    call_attempt.voter.answer(question,params[:Digits])
   end
 end
