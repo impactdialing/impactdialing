@@ -80,7 +80,7 @@ describe CallerSession do
       campaign, conf_key = Factory(:campaign), "conference_key"
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => conf_key)
       time_now = Time.now
-      Moderator.stub!(:publish_event).with(session.caller, 'caller_disconnected', {:caller_id => session.caller.id, :campaign_id => campaign.id,
+      Moderator.stub!(:publish_event).with(session.campaign, 'caller_disconnected', {:caller_id => session.caller.id, :campaign_id => campaign.id,
          :campaign_active => false, :no_of_callers_logged_in => 0})
       Time.stub(:now).and_return(time_now)
       response = session.end
@@ -97,7 +97,7 @@ describe CallerSession do
   end
 
   describe "preview dialing" do
-    let(:campaign) { Factory(:campaign, :robo => false, :predictive_type => 'preview') }
+    let(:campaign) { Factory(:campaign, :robo => false, :predictive_type => 'preview', answering_machine_detect: true) }
     let(:voter) { Factory(:voter, :campaign => campaign) }
     let(:caller) { Factory(:caller) }
 
@@ -105,14 +105,28 @@ describe CallerSession do
       caller_session = Factory(:caller_session, :campaign => campaign, :caller => caller, :attempt_in_progress => nil)
       call_attempt = Factory(:call_attempt, :campaign => campaign, :dialer_mode => Campaign::Type::PREVIEW, :status => CallAttempt::Status::INPROGRESS, :caller_session => caller_session, :caller => caller)
       voter.stub_chain(:call_attempts, :create).and_return(call_attempt)
-      Twilio::Call.stub!(:make).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
-      Twilio::Call.should_receive(:make).with(anything, voter.Phone, connect_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port), {'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything})
+      Twilio::Call.should_receive(:make).with(anything, voter.Phone, connect_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port), {'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
 
       caller_session.preview_dial(voter)
       voter.caller_session.should == caller_session
       caller_session.reload.attempt_in_progress.should == call_attempt
       call_attempt.sid.should == "sid"
       call_attempt.caller.should_not be_nil
+    end
+    
+    it "does not send IFMachine if AMD turned off" do
+      campaign1 = Factory(:campaign, :robo => false, :predictive_type => 'preview', answering_machine_detect: false)
+      caller_session = Factory(:caller_session, :campaign => campaign1, :caller => caller, :attempt_in_progress => nil)
+      call_attempt = Factory(:call_attempt, :campaign => campaign1, :dialer_mode => Campaign::Type::PREVIEW, :status => CallAttempt::Status::INPROGRESS, :caller_session => caller_session, :caller => caller)
+      voter.stub_chain(:call_attempts, :create).and_return(call_attempt)
+      Twilio::Call.should_receive(:make).with(anything, voter.Phone, connect_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port), {'StatusCallback'=> anything, 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
+
+      caller_session.preview_dial(voter)
+      voter.caller_session.should == caller_session
+      caller_session.reload.attempt_in_progress.should == call_attempt
+      call_attempt.sid.should == "sid"
+      call_attempt.caller.should_not be_nil
+      
     end
 
     it "pauses the voters results to be entered by the caller" do
@@ -228,7 +242,7 @@ describe CallerSession do
       campaign = Factory(:campaign, :use_web_ui => true, :predictive_type => 'preview')
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sample", :on_call=> true, :available_for_call => true)
       2.times { Factory(:voter, :campaign => campaign) }
-      Moderator.stub!(:publish_event).with(session.caller, 'caller_disconnected', {:caller_id => session.caller.id, :campaign_id => campaign.id, 
+      Moderator.stub!(:publish_event).with(session.campaign, 'caller_disconnected', {:caller_id => session.caller.id, :campaign_id => campaign.id, 
         :campaign_active => false, :no_of_callers_logged_in => 0})
       channel = mock
       Pusher.should_receive(:[]).with(session.session_key).and_return(channel)
