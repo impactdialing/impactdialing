@@ -1,19 +1,23 @@
 <div class="box">
-  <%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@campaign.name} Download"} %>
+  <%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@campaign.name} Download Report"} %>
+	<p style="margin-top:20px;margin-bottom:10px;">Include these fields in the spreadsheet:</p>
 
   <% form_tag(download_client_campaign_reports_path(@campaign,:format => 'csv'), :method => "GET") do %>
-	
+		<ul>
 		<% @voter_fields.try(:each) do |field| %>
 	    <li>
-				<%= check_box_tag 'voter_fields[]', field %><%= field %>
+				<input  type="checkbox" name="voter_fields[]" value="<%= field %>" style="margin-right:15px"><%= field %>
 	    </li>
 	  <% end %>
 		<% @custom_voter_fields.try(:each) do |field| %>
 	    <li>
-				<%= check_box_tag 'custom_voter_fields[]', field %><%= field %>
+				<input  type="checkbox" name="custom_voter_fields[]" value="<%= field %>" style="margin-right:10px"><%= field %>
 	    </li>
 	  <% end %>
-
+		</ul>
+		<p style="margin-bottom:50px;">We also include the caller who handled each answered call, the status of each call, the time the call happend,
+		and, of course, the results of the call.</p><br />
+		
 		<div class="buttons"><button type="submit">Download</button></div>
 		<h3>Date range:</h3>
 		      <table>

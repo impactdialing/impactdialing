@@ -70,12 +70,10 @@ module Client
         csv << [params[:voter_fields], "Caller", "Status", "Call start", "Call end", "Attempts", "Recording", params[:custom_voter_fields], @campaign.script.questions.collect { |q| q.text }, @campaign.script.notes.collect { |note| note.note }].flatten
         
         @campaign.all_voters.answered_within(@from_date, @to_date).each do |v|
-        #@campaign.all_voters.each do |v|
           last_call_attempt = v.last_call_attempt
           notes, custom_fields, answers, voter_details = [], [], [], [selected_voter_fields.try(:collect){|f| v.send(f)}, last_call_attempt ? last_call_attempt.caller.name : '', v.status, last_call_attempt ? last_call_attempt.call_start : '', last_call_attempt ? last_call_attempt.call_end : '', v.call_attempts.size, last_call_attempt ? last_call_attempt.report_recording_url : ''].flatten
 
-          custom_voter_field_objects = @campaign.account.custom_voter_fields.try(:select){|cf| selected_custom_voter_fields.try(:include?, " "+cf.name)}
-          # selected_custom_voter_fields.try(:each){|cf| custom_fields << v.custom_voter_field_values.for_field(cf).first.try(:value)}
+          custom_voter_field_objects = @campaign.account.custom_voter_fields.try(:select){|cf| selected_custom_voter_fields.try(:include?, cf.name)}
           custom_voter_field_objects.each { |cf| custom_fields << v.custom_voter_field_values.for_field(cf).first.try(:value) }
           
           @campaign.script.questions.each { |q| answers << v.answers.for(q).first.try(:possible_response).try(:value) }
