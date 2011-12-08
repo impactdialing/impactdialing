@@ -41,7 +41,7 @@ namespace :deploy do
     run "chmod a+x #{current_path}/script/configure_crontab.sh"
     run "#{current_path}/script/configure_crontab.sh #{rails_env} #{deploy_to}"
   end
-  
+
   task :restart_dialer do
     run "ps -ef | grep 'predictive_dialer' | grep -v grep | awk '{print $2}' | xargs kill || echo 'no process with name predictive_dialer found'"
     run "cd #{current_path} && RAILS_ENV=#{rails_env} bundle exec script/predictive_dialer_control.rb start"
@@ -59,7 +59,7 @@ end
 
 task :preproduction do
   set :rails_env, 'preproduction'
-  set :branch, 'predictive'
+  set :branch, 'preproduction'
   role :web, preproduction
   role :app, preproduction
   role :db, preproduction, :primary => true #use an app server for migrations
