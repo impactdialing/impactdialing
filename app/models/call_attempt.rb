@@ -16,7 +16,7 @@ class CallAttempt < ActiveRecord::Base
   scope :with_status, lambda { |statuses| {:conditions => ['status in (?)', statuses]} }
 
   def report_recording_url
-    "#{self.recording_url.gsub("api.twilio.com","recordings.impactdialing.com")}.mp3"
+    "#{self.recording_url.gsub("api.twilio.com","recordings.impactdialing.com")}.mp3" if recording_url
   end
   def ring_time
     if self.answertime!=nil && self.created_at!=nil
