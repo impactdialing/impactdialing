@@ -40,21 +40,26 @@ describe Question do
     script.questions.not_answered_by(voter).should == [pending_question]
   end
 
-  it "reads question and its possible responses to the voter" do
-    question = Factory(:question, :script => script, :text => "question?")
-    Factory(:possible_response, :question => question, :keypad => 1, :value => "response1")
-    Factory(:possible_response, :question => question, :keypad => 2, :value => "response2")
+  describe "reading questions" do
+    let(:question) { Factory(:question, :script => script, :text => "question?") }
+    let(:call_attempt) { Factory(:call_attempt) }
 
-    call_attempt = Factory(:call_attempt)
-    question.read(call_attempt).should == Twilio::Verb.new do |v|
-      v.gather(:timeout => 10, :action => gather_response_call_attempt_url(call_attempt, :question_id =>question, :host => Settings.host, :port => Settings.port), :method => "POST") do
-        v.say question.text
-        question.possible_responses.each do |pr|
-          v.say "press #{pr.keypad} for #{pr.value}"
+    it "return twiml for question and responses" do
+      Factory(:possible_response, :question => question, :keypad => 1, :value => "response1")
+      Factory(:possible_response, :question => question, :keypad => 2, :value => "response2")
+
+      question.read(call_attempt).should == Twilio::Verb.new do |v|
+        v.gather(:timeout => 5, :action => gather_response_call_attempt_url(call_attempt, :question_id =>question, :host => Settings.host, :port => Settings.port), :method => "POST") do
+          v.say question.text
+          question.possible_responses.each do |pr|
+            v.say "press #{pr.keypad} for #{pr.value}"
+          end
         end
-      end
-    end.response
+        v.redirect(gather_response_call_attempt_url(call_attempt, :question_id =>question, :host => Settings.host, :port => Settings.port), :method => "POST")
+      end.response
+    end
 
   end
+
 
 end

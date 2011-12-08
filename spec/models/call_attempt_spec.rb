@@ -53,6 +53,18 @@ describe CallAttempt do
     call_attempt.question_not_answered.should == question
   end
 
+  it "can be scheduled for later" do
+    voter = Factory(:voter)
+    call_attempt = Factory(:call_attempt, :voter => voter)
+    scheduled_date = 2.hours.from_now
+    call_attempt.schedule_for_later(scheduled_date)
+    call_attempt.reload.status.should == CallAttempt::Status::SCHEDULED
+    call_attempt.scheduled_date.to_s.should == scheduled_date.to_s
+    call_attempt.voter.status.should == CallAttempt::Status::SCHEDULED
+    call_attempt.voter.scheduled_date.to_s.should == scheduled_date.to_s
+    call_attempt.voter.call_back.should be_true
+  end
+
   describe 'next recording' do
     let(:script) { Factory(:script) }
     let(:campaign) { Factory(:campaign, :script => script) }
