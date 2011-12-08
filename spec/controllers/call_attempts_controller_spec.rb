@@ -204,7 +204,6 @@ describe CallAttemptsController do
     it "if the call attempt is ABANDONED, it doesn't modify status, when call end" do
       voter = Factory(:voter, :status => CallAttempt::Status::ABANDONED)
       call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign, :caller_session => Factory(:caller_session), :status => CallAttempt::Status::ABANDONED)
-      puts call_attempt.status
       post :end, :id => call_attempt.id, :CallStatus => "completed"
       call_attempt.reload.status.should == CallAttempt::Status::ABANDONED
       call_attempt.voter.reload.status.should == CallAttempt::Status::ABANDONED
