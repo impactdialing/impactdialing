@@ -18,12 +18,13 @@ class Question < ActiveRecord::Base
 
   def read(call_attempt)
     Twilio::Verb.new do |v|
-      v.gather(:timeout => 10, :action => gather_response_call_attempt_url(call_attempt, :question_id => self, :host => Settings.host, :port => Settings.port), :method => "POST") do
+      v.gather(:timeout => 5, :action => gather_response_call_attempt_url(call_attempt, :question_id => self, :host => Settings.host, :port => Settings.port), :method => "POST") do
         v.say self.text
         possible_responses.each do |response|
           v.say "press #{response.keypad} for #{response.value}"
         end
       end
+      v.redirect(gather_response_call_attempt_url(call_attempt, :question_id =>id, :host => Settings.host, :port => Settings.port), :method => "POST")
     end.response
   end
 
