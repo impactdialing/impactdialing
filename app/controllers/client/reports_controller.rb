@@ -65,8 +65,8 @@ module Client
     private
     def download_report
       report = CSV.generate do |csv|
-        #selected_voter_fields = params[:voter_fields]
-        #selected_custom_voter_fields = params[:custom_voter_fields]
+        selected_voter_fields = params[:voter_fields]
+        selected_custom_voter_fields = params[:custom_voter_fields]
         csv << [params[:voter_fields], "Caller", "Status", "Call start", "Call end", "Attempts", "Recording", params[:custom_voter_fields], @campaign.script.questions.collect { |q| q.text }, @campaign.script.notes.collect { |note| note.note }].flatten
         
         @campaign.all_voters.answered_within(@from_date, @to_date).each do |v|
