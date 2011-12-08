@@ -7,7 +7,7 @@ describe CallAttemptsController do
     let(:user) { Factory(:user, :account => account) }
     let(:campaign) { Factory(:campaign, :account => account, :robo => false, :use_web_ui => true) }
     let(:voter) { Factory(:voter, :campaign => campaign) }
-    let(:caller_session){ Factory(:caller_session) }
+    let(:caller_session) { Factory(:caller_session) }
     let(:call_attempt) { Factory(:call_attempt, :voter => voter, :campaign => campaign, :caller_session => caller_session) }
 
     it "collects voter responses" do
@@ -22,7 +22,7 @@ describe CallAttemptsController do
       # Voter.stub_chain(:to_be_dialed, :first).and_return(voter)
       Pusher.should_receive(:[]).with(anything).and_return(channel)
       channel.should_receive(:trigger).with("voter_push", voter2.info.merge(:dialer => campaign.predictive_type))
-      
+
       post :voter_response, :id => call_attempt.id, :voter_id => voter.id, :question => {question1.id=> response1.id, question2.id=>response2.id}
       voter.answers.count.should == 2
     end
@@ -55,6 +55,39 @@ describe CallAttemptsController do
       post :voter_response, :id => call_attempt.id, :voter_id => voter.id, :answers => {}
     end
 
+    describe "phones only" do
+      let(:account) { Factory(:account) }
+      let(:user) { Factory(:user, :account => account) }
+      let(:script) { Factory(:script) }
+      let(:campaign) { Factory(:campaign, :account => account, :robo => false, :use_web_ui => true, :script => script) }
+      let(:voter) { Factory(:voter, :campaign => campaign) }
+      let(:caller_session) { Factory(:caller_session, :campaign => campaign, :session_key => "some_key") }
+      let(:call_attempt) { Factory(:call_attempt, :voter => voter, :campaign => campaign, :caller_session => caller_session) }
+      let(:first_question){ Factory(:question, :script => script) }
+
+      it "gathers responses" do
+        Factory(:possible_response, :keypad => 1, :question => first_question, :value => "value")
+        post :gather_response, :id => call_attempt.id, :question_id => first_question.id, :Digits => "1"
+        voter.answers.size.should == 1
+      end
+
+      it "reads out the next question" do
+        Factory(:possible_response, :keypad => 1, :question => first_question, :value => "value")
+        next_question = Factory(:question, :script => script)
+        Factory(:possible_response, :question => next_question,:keypad => "1", :value => "value")
+        post :gather_response, :id => call_attempt.id, :question_id => first_question.id, :Digits => "1"
+        response.body.should == next_question.read(call_attempt)
+      end
+
+      it "places the voter in a conference when all questions are answered" do
+        Factory(:possible_response, :keypad => 1, :question => first_question, :value => "value")
+        post :gather_response, :id => call_attempt.id, :question_id => first_question.id, :Digits => "1"
+        response.body.should == call_attempt.caller_session.start
+      end
+
+
+    end
+
   end
 
   describe "calling in" do
@@ -69,7 +102,7 @@ describe CallAttemptsController do
       Factory(:caller_session, :campaign => campaign, :available_for_call => false)
       available_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller))
       call_attempt.update_attributes(caller_session: available_session)
-      Moderator.stub!(:publish_event).with(available_session.campaign, 'voter_connected', {:campaign_id => available_session.campaign.id, 
+      Moderator.stub!(:publish_event).with(available_session.campaign, 'voter_connected', {:campaign_id => available_session.campaign.id,
         :caller_id => call_attempt.caller_session.caller.id, :dials_in_progress => 1})
       post :connect, :id => call_attempt.id
 
@@ -86,7 +119,7 @@ describe CallAttemptsController do
       Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => false)
       caller_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => false)
       call_attempt.voter.update_attribute(:caller_session, caller_session)
-      Moderator.stub!(:publish_event).with(caller_session.campaign, 'voter_connected', {:campaign_id => caller_session.campaign.id, 
+      Moderator.stub!(:publish_event).with(caller_session.campaign, 'voter_connected', {:campaign_id => caller_session.campaign.id,
         :caller_id => caller_session.caller.id, :dials_in_progress => 1})
       post :connect, :id => call_attempt.id
       response.body.should == Twilio::TwiML::Response.new do |r|
@@ -102,7 +135,7 @@ describe CallAttemptsController do
       caller_session = Factory(:caller_session, :caller =>caller, :campaign => campaign)
       call_attempt = Factory(:call_attempt, :status => CallAttempt::Status::INPROGRESS, :caller_session => caller_session, :voter => Factory(:voter))
       channel = mock
-      
+
       Pusher.should_receive(:[]).with(anything).and_return(channel)
       channel.stub(:trigger)
       Moderator.stub!(:publish_event).with(call_attempt.campaign, 'voter_disconnected', {:campaign_id => call_attempt.campaign.id, :caller_id => call_attempt.caller_session.caller.id,:dials_in_progress => 0, :voters_remaining => 0})
