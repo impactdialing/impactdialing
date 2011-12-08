@@ -15,21 +15,32 @@ module Client
       set_report_date_range
 
       all_call_attempts = @campaign.call_attempts.between(@from_date, @to_date + 1.day)
-
-      @utilised_call_attempts_seconds = all_call_attempts.sum(:tDuration)
+      @utilised_call_attempts_seconds = round_for_utilization(all_call_attempts.sum(:tDuration))
       @utilised_call_attempts_minutes = all_call_attempts.sum('ceil(tDuration/60)').to_i
+      
 
-      @caller_sessions_seconds = @campaign.caller_sessions.between(@from_date, @to_date + 1.day).sum(:tDuration)
+      @caller_sessions_seconds = round_for_utilization(@campaign.caller_sessions.between(@from_date, @to_date + 1.day).sum(:tDuration))
       @caller_sessions_minutes = @campaign.caller_sessions.between(@from_date, @to_date + 1.day).sum('ceil(tDuration/60)').to_i
 
-      @billable_call_attempts_seconds = all_call_attempts.without_status([CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED]).sum(:tDuration)
+
+      @billable_call_attempts_seconds = round_for_utilization(all_call_attempts.without_status([CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED]).sum(:tDuration))
       @billable_call_attempts_minutes = all_call_attempts.without_status([CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED]).sum('ceil(tDuration/60)').to_i
 
-      @billable_voicemail_seconds = all_call_attempts.with_status([CallAttempt::Status::VOICEMAIL]).sum(:tDuration)
-      @billable_voicemail_minutes = all_call_attempts.with_status([CallAttempt::Status::VOICEMAIL]).sum('ceil(tDuration/60)').to_i
 
-      @billable_abandoned_seconds = all_call_attempts.with_status([CallAttempt::Status::ABANDONED]).sum(:tDuration)
+      @billable_voicemail_seconds = round_for_utilization(all_call_attempts.with_status([CallAttempt::Status::VOICEMAIL]).sum(:tDuration))
+      @billable_voicemail_minutes = all_call_attempts.with_status([CallAttempt::Status::VOICEMAIL]).sum('ceil(tDuration/60)').to_i
+      
+
+      @billable_abandoned_seconds = round_for_utilization(all_call_attempts.with_status([CallAttempt::Status::ABANDONED]).sum(:tDuration))
       @billable_abandoned_minutes = all_call_attempts.with_status([CallAttempt::Status::ABANDONED]).sum('ceil(tDuration/60)').to_i
+    end
+    
+    def round_for_utilization(seconds)
+      if seconds == 0
+        0
+      else
+        (seconds/60).to_s + "." + (seconds % 60).to_s
+      end
     end
 
     def download
