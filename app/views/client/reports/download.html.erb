@@ -2,21 +2,33 @@
   <%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@campaign.name} Download"} %>
 
   <% form_tag(download_client_campaign_reports_path(@campaign,:format => 'csv'), :method => "GET") do %>
-<div class="buttons"><button type="submit">Download</button></div>
-<h3>Date range:</h3>
-      <table>
-        <tr>
-          <td>From:</td>
-          <td> <%= unobtrusive_date_text_picker_tag :from_date, @from_date %> </td>
-        </tr>
-        <tr>
-          <td>
-            To:
-          </td>
-          <td>  <%= unobtrusive_date_text_picker_tag :to_date, @to_date %>
-          </td>
-        </tr>
-      </table>
-<div class="buttons"><button type="submit">Update and download</button></div>
+	
+		<% @voter_fields.try(:each) do |field| %>
+	    <li>
+				<%= check_box_tag 'voter_fields[]', field %><%= field %>
+	    </li>
+	  <% end %>
+		<% @custom_voter_fields.try(:each) do |field| %>
+	    <li>
+				<%= check_box_tag 'custom_voter_fields[]', field %><%= field %>
+	    </li>
+	  <% end %>
+
+		<div class="buttons"><button type="submit">Download</button></div>
+		<h3>Date range:</h3>
+		      <table>
+		        <tr>
+		          <td>From:</td>
+		          <td> <%= unobtrusive_date_text_picker_tag :from_date, @from_date %> </td>
+		        </tr>
+		        <tr>
+		          <td>
+		            To:
+		          </td>
+		          <td>  <%= unobtrusive_date_text_picker_tag :to_date, @to_date %>
+		          </td>
+		        </tr>
+		      </table>
+		<div class="buttons"><button type="submit">Update and download</button></div>
   <% end %>
 </div>
