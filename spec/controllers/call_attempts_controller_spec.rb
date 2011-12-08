@@ -179,6 +179,7 @@ describe CallAttemptsController do
       caller_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller), :session_key => session_key, :voter_in_progress => voter)
       call_attempt.update_attributes(caller_session: caller_session)
       pusher_session = mock
+      voter.status = CallAttempt::Status::INPROGRESS
       pusher_session.should_receive(:trigger).with('voter_connected', {:attempt_id=> call_attempt.id, :voter => voter.info}.merge(:dialer => campaign.predictive_type))
       Pusher.stub(:[]).with(session_key).and_return(pusher_session)
       Moderator.stub!(:publish_event).with(caller_session.campaign, 'voter_connected', {:campaign_id => caller_session.campaign.id,:caller_id => call_attempt.caller_session.caller.id, :dials_in_progress => 1})

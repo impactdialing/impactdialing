@@ -3,7 +3,8 @@ require "bundler/capistrano"
 repository = "git@github.com:impactdialing/Impact-Dialing.git"
 bundle_flags = "--deployment --quiet --binstubs"
 bundle_without = [:development, :test, :darwin, :linux]
-preproduction = 'ec2-50-16-66-123.compute-1.amazonaws.com'
+preproduction_server = 'ec2-50-16-66-123.compute-1.amazonaws.com'
+staging_server = 'ec2-174-129-172-31.compute-1.amazonaws.com'
 set :application, "impactdialing"
 set :user, "rails"
 set :scm, :git
@@ -41,7 +42,7 @@ namespace :deploy do
     run "chmod a+x #{current_path}/script/configure_crontab.sh"
     run "#{current_path}/script/configure_crontab.sh #{rails_env} #{deploy_to}"
   end
-  
+
   task :restart_dialer do
     run "ps -ef | grep 'predictive_dialer' | grep -v grep | awk '{print $2}' | xargs kill || echo 'no process with name predictive_dialer found'"
     run "cd #{current_path} && RAILS_ENV=#{rails_env} bundle exec script/predictive_dialer_control.rb start"
@@ -49,20 +50,20 @@ namespace :deploy do
 end
 
 task :staging do
-  set :server_name, "ec2-174-129-172-31.compute-1.amazonaws.com"
+  set :server_name, staging_server
   set :rails_env, 'staging'
   set :branch, "predictive"
-  role :web, 'ec2-174-129-172-31.compute-1.amazonaws.com'
-  role :app, 'ec2-174-129-172-31.compute-1.amazonaws.com'
-  role :db, 'ec2-174-129-172-31.compute-1.amazonaws.com', :primary => true
+  role :web, staging_server
+  role :app, staging_server
+  role :db, staging_server, :primary => true
 end
 
 task :preproduction do
   set :rails_env, 'preproduction'
-  set :branch, 'predictive'
-  role :web, preproduction
-  role :app, preproduction
-  role :db, preproduction, :primary => true #use an app server for migrations
+  set :branch, 'preproduction'
+  role :web, preproduction_server
+  role :app, preproduction_server
+  role :db, preproduction_server, :primary => true #use an app server for migrations
 end
 
 task :production do
