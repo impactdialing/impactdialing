@@ -42,20 +42,20 @@ describe Question do
 
   describe "reading questions" do
     let(:question) { Factory(:question, :script => script, :text => "question?") }
-    let(:call_attempt) { Factory(:call_attempt) }
+    let(:caller_session) { Factory(:caller_session, :caller => Factory(:caller) ) }
 
     it "return twiml for question and responses" do
       Factory(:possible_response, :question => question, :keypad => 1, :value => "response1")
       Factory(:possible_response, :question => question, :keypad => 2, :value => "response2")
 
-      question.read(call_attempt).should == Twilio::Verb.new do |v|
-        v.gather(:timeout => 5, :action => gather_response_call_attempt_url(call_attempt, :question_id =>question, :host => Settings.host, :port => Settings.port), :method => "POST") do
+      question.read(caller_session).should == Twilio::Verb.new do |v|
+        v.gather(:timeout => 5, :action => gather_response_caller_url(caller_session.caller, :session_id => caller_session.id, :question_id =>question, :host => Settings.host, :port => Settings.port), :method => "POST") do
           v.say question.text
           question.possible_responses.each do |pr|
             v.say "press #{pr.keypad} for #{pr.value}"
           end
         end
-        v.redirect(gather_response_call_attempt_url(call_attempt, :question_id =>question, :host => Settings.host, :port => Settings.port), :method => "POST")
+        v.redirect(gather_response_caller_url(caller_session.caller, :session_id => caller_session.id, :question_id =>question, :host => Settings.host, :port => Settings.port), :method => "POST")
       end.response
     end
 

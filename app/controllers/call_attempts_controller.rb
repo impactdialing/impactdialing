@@ -69,16 +69,6 @@ class CallAttemptsController < ApplicationController
     render :nothing => true
   end
 
-  def gather_response
-    call_attempt = CallAttempt.find(params[:id])
-    question = Question.find(params[:question_id])
-    call_attempt.voter.answer(question, params[:Digits])
-
-    question_xml = call_attempt.question_not_answered.try(:read, call_attempt)
-    pusher_response_received(call_attempt) unless question_xml
-    render :xml => question_xml || call_attempt.caller_session.start
-  end
-
   private
 
   def pusher_response_received(call_attempt)
