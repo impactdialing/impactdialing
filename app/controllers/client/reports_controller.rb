@@ -49,7 +49,7 @@ module Client
       @from_date = from_date || (@campaign.call_attempts.first.try(:created_at) || Date.today)
       @to_date = to_date || (@campaign.call_attempts.last.try(:created_at) || Date.today)
 
-      @voter_fields = ["CustomID","FirstName","MiddleName","LastName","Suffix","Age","Gender","Phone","Email"]
+      @voter_fields = VoterList::VOTER_DATA_COLUMNS
       @custom_voter_fields = @user.account.custom_voter_fields.collect{ |field| field.name}
       respond_to do |format|
         format.html
