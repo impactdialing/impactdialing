@@ -2,14 +2,13 @@
 <fieldset>
 
 	<legend>Fields to include</legend>
-
-  <% form_tag(download_client_campaign_reports_path(@campaign,:format => 'csv'), :method => "GET") do %>
+  <% form_tag(dial_details_reports_path(:id => @campaign.id,:format => 'csv'), :method => "POST") do %>
 		<ul>
-		<% @voter_fields.try(:each_pair) do |key, value| %>
-	    <li>
-				<input  type="checkbox" name="voter_fields[]" value="<%= key %>">&nbsp;<%= value %>
-	    </li>
-	  <% end %>
+			<% @voter_fields.try(:each_pair) do |key, value| %>
+		    <li>
+					<input  type="checkbox" name="voter_fields[]" value="<%= key %>">&nbsp;<%= value %>
+		    </li>
+		  <% end %>
 		<% @custom_voter_fields.try(:each) do |field| %>
 	    <li>
 				<input  type="checkbox" name="custom_voter_fields[]" value="<%= field %>">&nbsp;<%= field %>
