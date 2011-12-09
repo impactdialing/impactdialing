@@ -8,13 +8,20 @@ class VoterListsController < ClientController
   skip_before_filter :check_paid
 
   def create
+
     if params[:upload].blank?
       flash_message(:error, "Please click \"Choose file\" and select your list before clicking Upload.")
       redirect_to @campaign_path
       return
     end
-
     upload = params[:upload]["datafile"]
+    unless valid_file?(upload.original_filename)
+      flash_message(:error, "Wrong file format. Please upload a comma-separated value (CSV) or tab-delimited text (TXT) file. If your list is in Excel format (XLS or XLSX), use \"Save As\" to change it to one of these formats.")
+      redirect_to @campaign_path
+      return
+    end
+
+    
     csv = upload.read
     saved_filename = write_csv_file(csv,upload)
     save_csv_filename_to_session(saved_filename)
@@ -66,6 +73,10 @@ class VoterListsController < ClientController
   end
 
   private
+  def valid_file?(filename)
+    ['.csv','.txt'].include? File.extname(filename).downcase
+  end
+  
   def load_campaign
     @campaign = Campaign.find(params[:campaign_id])
   end
