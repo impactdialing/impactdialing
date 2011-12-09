@@ -43,15 +43,22 @@ ImpactDialing::Application.configure do
   config.action_mailer.delivery_method = :test
 
   config.active_support.deprecation = :log
+  # 
+  # config.after_initialize do
+  #   ActiveMerchant::Billing::Base.mode = :test
+  #   ActiveMerchant::Billing::LinkpointGateway.pem_file  = File.read(Rails.root.join('1909897530.pem'))
+  #   ::BILLING_GW = gateway = ActiveMerchant::Billing::LinkpointGateway.new(
+  #     :login => "1909897530"
+  #   )
+  # end
 
   config.after_initialize do
-    ActiveMerchant::Billing::Base.mode = :test
-    ActiveMerchant::Billing::LinkpointGateway.pem_file  = File.read(Rails.root.join('1909897530.pem'))
+    #  ActiveMerchant::Billing::Base.mode = :test
+    ActiveMerchant::Billing::LinkpointGateway.pem_file  = File.read(Rails.root.join('1383715.pem'))
     ::BILLING_GW = gateway = ActiveMerchant::Billing::LinkpointGateway.new(
-      :login => "1909897530"
+      :login => "1383715"
     )
   end
-
 
 
 
