@@ -16,15 +16,15 @@ class Question < ActiveRecord::Base
     answers.within(from_date, to_date)
   end
 
-  def read(call_attempt)
+  def read(caller_session)
     Twilio::Verb.new do |v|
-      v.gather(:timeout => 5, :action => gather_response_call_attempt_url(call_attempt, :question_id => self, :host => Settings.host, :port => Settings.port), :method => "POST") do
+      v.gather(:timeout => 5, :action => gather_response_caller_url(caller_session.caller, :session_id => caller_session.id, :question_id => self, :host => Settings.host, :port => Settings.port), :method => "POST") do
         v.say self.text
         possible_responses.each do |response|
           v.say "press #{response.keypad} for #{response.value}"
         end
       end
-      v.redirect(gather_response_call_attempt_url(call_attempt, :question_id =>id, :host => Settings.host, :port => Settings.port), :method => "POST")
+      v.redirect(gather_response_caller_url(caller_session.caller, :session_id => caller_session.id, :question_id =>id, :host => Settings.host, :port => Settings.port), :method => "POST")
     end.response
   end
 

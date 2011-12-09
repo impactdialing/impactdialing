@@ -137,10 +137,6 @@ class CallAttempt < ActiveRecord::Base
     voter.update_attributes(:scheduled_date => scheduled_date, :status => Status::SCHEDULED, :call_back => true)
   end
 
-  def question_not_answered
-    self.campaign.script.questions.not_answered_by(voter).first
-  end
-
   module Status
     VOICEMAIL = "Message delivered"
     SUCCESS = "Call completed with success."

@@ -160,9 +160,9 @@ describe CallerSession do
   end
 
   it "returns next question for the caller_session" do
-    voter = Factory(:voter)
     script = Factory(:script)
     campaign = Factory(:campaign, :script => script)
+    voter = Factory(:voter, :campaign => campaign)
     caller_session = Factory(:caller_session, :caller => Factory(:caller), :voter_in_progress => voter, :campaign => campaign)
     Factory(:call_attempt, :caller_session => caller_session, :voter => voter, :campaign => campaign)
     next_question = Factory(:question, :script => script)
@@ -182,7 +182,7 @@ describe CallerSession do
       Factory(:call_attempt, :caller_session => caller_session, :voter => voter, :campaign => campaign)
       Factory(:possible_response, :question => question, :keypad => 1, :value => "response1")
       Factory(:possible_response, :question => question, :keypad => 2, :value => "response2")
-      caller_session.next_question.read(caller_session.attempt_in_progress).should == question.read(caller_session.attempt_in_progress)
+      caller_session.next_question.read(caller_session).should == question.read(caller_session)
     end
 
   end

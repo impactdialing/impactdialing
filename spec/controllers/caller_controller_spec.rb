@@ -222,4 +222,54 @@ describe CallerController do
     session[:caller].should_not be
     response.should redirect_to(caller_root_path)
   end
+
+  describe "phones only" do
+    let(:account) { Factory(:account) }
+    let(:user) { Factory(:user, :account => account) }
+    let(:script) { Factory(:script) }
+    let(:campaign) { Factory(:campaign, :account => account, :robo => false, :use_web_ui => true, :script => script) }
+    let(:voter) { Factory(:voter, :campaign => campaign) }
+    let(:caller_session) { Factory(:caller_session, :campaign => campaign, :session_key => "some_key", :caller => caller, :available_for_call => true, :on_call => true) }
+    let(:call_attempt) { Factory(:call_attempt, :voter => voter, :campaign => campaign, :caller_session => caller_session) }
+    let(:first_question){ Factory(:question, :script => script) }
+
+    before(:each) do
+      caller_session.update_attribute(:voter_in_progress, voter)
+    end
+
+    it "gathers responses" do
+      Factory(:possible_response, :keypad => 1, :question => first_question, :value => "value")
+      post :gather_response, :id => caller.id, :session_id => caller_session.id, :question_id => first_question.id, :Digits => "1"
+      voter.answers.size.should == 1
+    end
+
+    it "reads out the next question" do
+      Factory(:possible_response, :keypad => 1, :question => first_question, :value => "value")
+      next_question = Factory(:question, :script => script)
+      Factory(:possible_response, :question => next_question,:keypad => "1", :value => "value")
+
+      post :gather_response, :id => caller.id, :session_id => caller_session.id, :question_id => first_question.id, :Digits => "1"
+      response.body.should == next_question.read(caller_session)
+    end
+
+    it "places the voter in a conference when all questions are answered" do
+      Factory(:possible_response, :keypad => 1, :question => first_question, :value => "value")
+      post :gather_response, :id => caller.id, :session_id => caller_session.id, :question_id => first_question.id, :Digits => "1"
+      response.body.should == call_attempt.caller_session.start
+    end
+
+    it "places the caller in a new conference if there is no voter in progress" do
+      caller_session.update_attribute(:voter_in_progress, nil)
+      post :gather_response, :id => caller.id, :session_id => caller_session.id
+      response.body.should == caller_session.start
+    end
+
+    it "hangs up if the caller_session is disconnected" do
+      caller_session.update_attributes(:available_for_call => false, :on_call => false)
+      post :gather_response, :id => caller.id, :session_id => caller_session.id
+      response.body.should == Twilio::Verb.hangup
+    end
+
+
+  end
 end
