@@ -31,10 +31,9 @@ class ReportsController < ClientController
     selected_voter_fields = params[:voter_fields]
     selected_custom_voter_fields = params[:custom_voter_fields]
     @csv = CSV.generate do |csv|
-      csv << [selected_voter_fields, selected_custom_voter_fields, "Status", @campaign.script.robo_recordings.collect{|rec| rec.name}].flatten
-      @campaign.all_voters.each do |voter|
-        
-        voter_fields = [selected_voter_fields.try(:collect){|f| voter.send(f)}].flatten
+      csv << [selected_voter_fields ? selected_voter_fields : [], selected_custom_voter_fields ? selected_custom_voter_fields : [], "Status", @campaign.script.robo_recordings.collect{|rec| rec.name}].flatten
+      @campaign.all_voters.answered_within(@from_date, @to_date).each do |voter| 
+        voter_fields = selected_voter_fields ? [selected_voter_fields.try(:collect){|f| voter.send(f)}].flatten : []
         voter_custom_fields = []
         custom_voter_field_objects = @campaign.account.custom_voter_fields.try(:select){|cf| selected_custom_voter_fields.try(:include?, cf.name)}
         custom_voter_field_objects.each { |cf| voter_custom_fields << voter.custom_voter_field_values.for_field(cf).first.try(:value) }
