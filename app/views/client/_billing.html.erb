@@ -21,11 +21,11 @@
 					<p><label for="checking_account_type">Account type:</label>
 					<%= select( "billing_account", "checking_account_type", { "Personal checking" => "PC", 'Personal savings' => 'PS', "Business checking"=>"BC", "Business savings" => "BS"}) %>
 					</p>
-					<p><label for="checking_account_number">Account number:</label>
-						<%= f.text_field :checking_account_number %>
-					</p>
-					<p><label for="bank_routing_number">Routing number:</label>
+					<p><label for="bank_routing_number">Routing number (bottom left of your check):</label>
 						<%= f.text_field :bank_routing_number %>
+					</p>
+					<p><label for="checking_account_number">Account number (next to Routing number):</label>
+						<%= f.text_field :checking_account_number %>
 					</p>
 					<p><label for="check_number">Check number:</label>
 						<input type="text" name="check_number" id="check_number" value="<%= params[:check_number] %>">
