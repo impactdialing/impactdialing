@@ -121,6 +121,7 @@ describe CallerSession do
       Twilio::Call.should_receive(:make).with(anything, voter.Phone, connect_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port), {'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"RestException" => {"Status" => "400"}}})
       channel = mock
       Pusher.should_receive(:[]).with(caller_session.session_key).and_return(channel)
+      channel.should_receive(:trigger).with("voter_push", anything)
       channel.should_receive(:trigger).with("conference_started", anything)
       caller_session.preview_dial(voter)
       call_attempt.status.should eq(CallAttempt::Status::FAILED)
