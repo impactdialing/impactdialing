@@ -77,12 +77,12 @@ function next_voter() {
 
 function call_voter() {
 	console.log('called voter');
+	hide_all_actions();
     $.ajax({
         url : "/caller/" + $("#caller_session").val() + "/call_voter",
         data : {id : $("#caller").val(), voter_id : $("#current_voter").val(), session_id : $("#caller_session").val() },
         type : "POST",
-        success : function(response) {
-            hide_all_actions();
+        success : function(response) {            
             // pushes 'calling_voter'' event to browsers
         }
     })
@@ -254,7 +254,7 @@ function subscribe(session_key) {
 		set_message("Status: Ready for calls.");
 		set_voter(data);
         $("#start_calling").hide();
-		ready_for_calls(data)
+		ready_for_calls(data);
     });
 
 
