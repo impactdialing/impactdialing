@@ -53,7 +53,7 @@ class CallerSession < ActiveRecord::Base
     if response["TwilioResponse"]["RestException"]
       attempt.update_attributes(status: CallAttempt::Status::FAILED)
       voter.update_attributes(status: CallAttempt::Status::FAILED)
-      logger.info "Exception when attempted to call #{voter.Phone} for campaign id:#{self.campaign_id}  Response: #{response["TwilioResponse"]["RestException"].inspect}"
+      Rails.logger.info "Exception when attempted to call #{voter.Phone} for campaign id:#{self.campaign_id}  Response: #{response["TwilioResponse"]["RestException"].inspect}"
       return
     end    
     self.publish('calling_voter', voter.info)
