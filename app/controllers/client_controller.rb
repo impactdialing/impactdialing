@@ -300,29 +300,7 @@ class ClientController < ApplicationController
       name_arr=@billing_account.name.split(" ")
       fname=name_arr.shift
       lname=name_arr.join(" ").strip
-
-      # test an auth to make sure this card is good.
-      creditcard = ActiveMerchant::Billing::CreditCard.new(
-        :number     => @billing_account.decrypt_cc,
-        :month      => @billing_account.expires_month,
-        :year       => @billing_account.expires_year,
-        :type       => @billing_account.cardtype,
-        :first_name => fname,
-        :last_name  => lname,
-        :verification_value => params[:code]
-      )
-
-      if !creditcard.valid?
-        if creditcard.expired?
-          flash_now(:error, "The card expiration date you entered was invalid. Please try again.")
-          @billing_account.cc = ""
-        else
-          flash_now(:error, "The card number or security code you entered was invalid. Please try again.")
-          @billing_account.cc = ""
-        end
-        return
-      end
-
+      
       billing_address = {
           :name => "#{@user.fname} #{@user.lname}",
           :address1 => @billing_account.address1 ,
@@ -330,19 +308,74 @@ class ClientController < ApplicationController
           :city     => @billing_account.city,
           :state    => @billing_account.state,
           :country  => 'US'
-        }
-      options = {:address => {}, :address1 => billing_address, :billing_address => billing_address, :ip=>"127.0.0.1", :order_id=>""}
-      response = BILLING_GW.authorize(1, creditcard,options)
-      logger.info response.inspect
+      }
+        
+      if @billing_account.cardtype=="telecheck"
+                
+       linkpoint_options = {
+         :order_id => "",
+         :address => {}, 
+         :address1 => billing_address, 
+         :billing_address => billing_address, 
+         :ip=>"127.0.0.1", 
+         :telecheck_account => @billing_account.checking_account_number,
+         :telecheck_routing => @billing_account.bank_routing_number,
+         :telecheck_checknumber => params[:check_number], 
+         :telecheck_dl => @billing_account.drivers_license_number, 
+         :telecheck_dlstate => @billing_account.drivers_license_state, 
+         :telecheck_accounttype => @billing_account.checking_account_type
+       }
 
-      if response.success?
-        flash_message(:notice, "Card verified.")
-        @billing_account.save
-        account.update_attribute(:card_verified, true)
-        redirect_to :action=>"index"
-        return
+         response = BILLING_GW.purchase(1, nil, linkpoint_options)
+         logger.info response.inspect
+
+         if response.params["approved"]=="SUBMITTED"
+           flash_message(:notice, "eCheck verified.")
+           @billing_account.save
+           account.update_attribute(:card_verified, true)
+           redirect_to :action=>"index"
+           return
+         else
+           flash_now(:error, "There was a problem validating your eCheck.  Please contact support for help. Error #{response.params["error"]}")
+         end
+
       else
-        flash_now(:error, "There was a problem validating your credit card.  Please email info@impactdialing.com for further support.")
+        # test an auth to make sure this card is good.
+        creditcard = ActiveMerchant::Billing::CreditCard.new(
+          :number     => @billing_account.decrypt_cc,
+          :month      => @billing_account.expires_month,
+          :year       => @billing_account.expires_year,
+          :type       => @billing_account.cardtype,
+          :first_name => fname,
+          :last_name  => lname,
+          :verification_value => params[:code]
+        )
+
+        if !creditcard.valid?
+          if creditcard.expired?
+            flash_now(:error, "The card expiration date you entered was invalid. Please try again.")
+            @billing_account.cc = ""
+          else
+            flash_now(:error, "The card number or security code you entered was invalid. Please try again.")
+            @billing_account.cc = ""
+          end
+          return
+        end
+
+
+        options = {:address => {}, :address1 => billing_address, :billing_address => billing_address, :ip=>"127.0.0.1", :order_id=>""}
+        response = BILLING_GW.authorize(1, creditcard,options)
+        logger.info response.inspect
+
+        if response.success?
+          flash_message(:notice, "Card verified.")
+          @billing_account.save
+          account.update_attribute(:card_verified, true)
+          redirect_to :action=>"index"
+          return
+        else
+          flash_now(:error, "There was a problem validating your credit card.  Please email info@impactdialing.com for further support.")
+        end
       end
 
     end

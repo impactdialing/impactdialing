@@ -155,6 +155,10 @@ class Voter < ActiveRecord::Base
     self.campaign.script.questions.not_answered_by(self)
   end
 
+  def question_not_answered
+    unanswered_questions.first
+  end
+
   def answer(question, response)
     possible_response = question.possible_responses.where(:keypad => response).first
     return unless possible_response

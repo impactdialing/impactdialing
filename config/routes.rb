@@ -42,6 +42,7 @@ ImpactDialing::Application.routes.draw do
       post :call_voter
       post :stop_calling
       post :start_calling
+      post :gather_response
     end
 
   end
@@ -146,7 +147,6 @@ ImpactDialing::Application.routes.draw do
       post :connect
       post :end
       post :disconnect
-      post :gather_response
       post :voter_response
       post :hangup
     end
