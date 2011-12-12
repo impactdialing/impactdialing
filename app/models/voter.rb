@@ -158,6 +158,10 @@ class Voter < ActiveRecord::Base
   def question_not_answered
     unanswered_questions.first
   end
+  
+  def skip
+    update_attributes(skipped_time:  Time.now)
+  end
 
   def answer(question, response)
     possible_response = question.possible_responses.where(:keypad => response).first
