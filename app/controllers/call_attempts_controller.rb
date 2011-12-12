@@ -47,7 +47,11 @@ class CallAttemptsController < ApplicationController
     unless call_attempt.status == CallAttempt::Status::ABANDONED 
       call_attempt.voter.update_attributes(:status => CallAttempt::Status::MAP[params[:CallStatus]], :last_call_attempt_time => Time.now)
       call_attempt.update_attributes(:status => CallAttempt::Status::MAP[params[:CallStatus]], :call_end => Time.now)
+    else
+      call_attempt.voter.update_attributes(:last_call_attempt_time => Time.now)
+      call_attempt.update_attributes(:call_end => Time.now)
     end
+    
     
     Moderator.publish_event(call_attempt.campaign, 'update_dials_in_progress', {:campaign_id => call_attempt.campaign.id,:dials_in_progress => call_attempt.campaign.call_attempts.dial_in_progress.length,
       :voters_remaining => call_attempt.campaign.voters_count("not called", false).length})
