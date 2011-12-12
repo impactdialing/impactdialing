@@ -1,12 +1,12 @@
-require "bundler/capistrano"
+require 'bundler/capistrano'
 
-repository = "git@github.com:impactdialing/Impact-Dialing.git"
-bundle_flags = "--deployment --quiet --binstubs"
+repository = 'git@github.com:impactdialing/Impact-Dialing.git'
+bundle_flags = '--deployment --quiet --binstubs'
 bundle_without = [:development, :test, :darwin, :linux]
 preproduction_server = 'ec2-50-16-66-123.compute-1.amazonaws.com'
 staging_server = 'ec2-174-129-172-31.compute-1.amazonaws.com'
-set :application, "impactdialing"
-set :user, "rails"
+set :application, 'impactdialing'
+set :user, 'rails'
 set :scm, :git
 set :scm_auth_cache, true
 set :repository, repository
@@ -14,7 +14,7 @@ set :runner, 'rails'
 set :use_sudo, false
 set :deploy_via, :export
 set :deploy_to, "/var/www/rails/#{application}"
-set :chmod755, "app config db lib public vendor script script/* public/ disp*"
+set :chmod755, 'app config db lib public vendor script script/* public/ disp*'
 set :bundle_without, bundle_without
 set :bundle_flags, bundle_flags
 
@@ -52,7 +52,7 @@ end
 task :staging do
   set :server_name, staging_server
   set :rails_env, 'staging'
-  set :branch, "predictive"
+  set :branch, 'predictive'
   role :web, staging_server
   role :app, staging_server
   role :db, staging_server, :primary => true
@@ -74,7 +74,7 @@ task :production do
   role :db, 'ec2-107-20-17-151.compute-1.amazonaws.com', :primary => true #use an app server for migrations
 end
 
-task :search_libs, :hosts => "ec2-75-101-228-54.compute-1.amazonaws.com", :user=>"ubuntu" do
-  set :user, "ubuntu"
-  run "ls -x1 /usr/lib | grep -i xml"
+task :search_libs, :hosts => 'ec2-75-101-228-54.compute-1.amazonaws.com', :user=>'ubuntu' do
+  set :user, 'ubuntu'
+  run 'ls -x1 /usr/lib | grep -i xml'
 end
