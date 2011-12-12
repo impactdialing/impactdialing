@@ -12,6 +12,7 @@ class CallAttemptsController < ApplicationController
   def connect
     call_attempt = CallAttempt.find(params[:id])
     Rails.logger.debug("callconnect: #{params[:AnsweredBy]}")
+    call_attempt.update_attribute(:connecttime, Time.now)
     response = case params[:AnsweredBy] #using the 2010 api
                  when "machine"
                    call_attempt.voter.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
@@ -59,7 +60,6 @@ class CallAttemptsController < ApplicationController
                end
     render :xml => response
   end
-
 
   def voter_response
     call_attempt = CallAttempt.find(params[:id])

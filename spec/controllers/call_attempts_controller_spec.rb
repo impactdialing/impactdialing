@@ -81,6 +81,13 @@ describe CallAttemptsController do
       end.text
     end
 
+    it "updates connect time" do
+      now = Time.now
+      Time.stub(:now).and_return(now)
+      post :connect, :id => call_attempt.id
+      Time.parse(call_attempt.reload.connecttime.to_s).to_s.should == now.utc.to_s
+    end
+
     it "connects a voter to a specified caller" do
       Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => false)
       caller_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => false)
