@@ -195,6 +195,10 @@ function expand_scheduler() {
 }
 
 function ready_for_calls(data){
+	if (!$.isEmptyObject(data.fields)) {
+		$("#stop_calling").show();
+		return
+	}
 	if (data.dialer && data.dialer.toLowerCase() == "progressive") {
 	  $("#stop_calling").show();
 	  call_voter();
@@ -224,6 +228,7 @@ function subscribe(session_key) {
             set_voter(data);
 	    	ready_for_calls(data)
         } else {
+			$("#stop_calling").show();
             set_message("Status: There are no more numbers to call in this campaign.");
         }
     });
