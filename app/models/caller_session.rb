@@ -56,7 +56,8 @@ class CallerSession < ActiveRecord::Base
       voter.update_attributes(status: CallAttempt::Status::FAILED)
       next_voter = campaign.next_voter_in_dial_queue(voter.id)
       update_attribute(:voter_in_progress, nil)
-      publish('conference_started',next_voter.nil? ? {} : next_voter.info)
+      publish('voter_push',next_voter.nil? ? {} : next_voter.info)
+      publish('conference_started',{})
       return
     end    
     self.publish('calling_voter', voter.info)
