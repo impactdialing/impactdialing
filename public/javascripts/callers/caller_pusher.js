@@ -250,6 +250,16 @@ function subscribe(session_key) {
         $("#start_calling").hide();
     });
 
+    channel.bind('call_could_not_connect', function(data) {        
+		set_message("Status: Ready for calls.");
+		set_voter(data);
+        $("#start_calling").hide();
+		ready_for_calls(data)
+    });
+
+
+
+
     channel.bind('voter_disconnected', function(data) {
         hide_all_actions();
         show_response_panel();

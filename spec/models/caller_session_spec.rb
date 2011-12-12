@@ -120,9 +120,8 @@ describe CallerSession do
       voter.stub_chain(:call_attempts, :create).and_return(call_attempt)
       Twilio::Call.should_receive(:make).with(anything, voter.Phone, connect_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port), {'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"RestException" => {"Status" => "400"}}})
       channel = mock
-      Pusher.should_receive(:[]).twice.with(caller_session.session_key).and_return(channel)
-      channel.should_receive(:trigger).with("voter_push", anything)
-      channel.should_receive(:trigger).with("conference_started", anything)
+      Pusher.should_receive(:[]).with(caller_session.session_key).and_return(channel)
+      channel.should_receive(:trigger).with("call_could_not_connect", anything)
       caller_session.preview_dial(voter)
       call_attempt.status.should eq(CallAttempt::Status::FAILED)
       voter.status.should eq(CallAttempt::Status::FAILED)
