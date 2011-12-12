@@ -114,6 +114,20 @@ describe CallerSession do
       call_attempt.caller.should_not be_nil
     end
     
+    it "catches exception and pushes next voter if call cannot be made" do
+      caller_session = Factory(:caller_session, :campaign => campaign, :caller => caller, :attempt_in_progress => nil)
+      call_attempt = Factory(:call_attempt, :campaign => campaign, :dialer_mode => Campaign::Type::PREVIEW, :status => CallAttempt::Status::INPROGRESS, :caller_session => caller_session, :caller => caller)
+      voter.stub_chain(:call_attempts, :create).and_return(call_attempt)
+      Twilio::Call.should_receive(:make).with(anything, voter.Phone, connect_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port), {'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"RestException" => {"Status" => "400"}}})
+      channel = mock
+      Pusher.should_receive(:[]).with(caller_session.session_key).and_return(channel)
+      channel.should_receive(:trigger).with("conference_started", anything)
+      caller_session.preview_dial(voter)
+      call_attempt.status.should eq(CallAttempt::Status::FAILED)
+      voter.status.should eq(CallAttempt::Status::FAILED)
+    end
+    
+    
     it "does not send IFMachine if AMD turned off" do
       campaign1 = Factory(:campaign, :robo => false, :predictive_type => 'preview', answering_machine_detect: false)
       caller_session = Factory(:caller_session, :campaign => campaign1, :caller => caller, :attempt_in_progress => nil)
