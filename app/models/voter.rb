@@ -138,7 +138,7 @@ class Voter < ActiveRecord::Base
   end
 
   def call_attempted_before?(time)
-    call_back? && last_call_attempt_time!=nil && last_call_attempt_time < (Time.now - time)
+    last_call_attempt_time!=nil && last_call_attempt_time < (Time.now - time)
   end
 
   def self.to_be_called(campaign_id, active_list_ids, status, recycle_rate=3)
