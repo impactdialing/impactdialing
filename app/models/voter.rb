@@ -163,11 +163,21 @@ class Voter < ActiveRecord::Base
     update_attributes(skipped_time:  Time.now)
   end
 
-  def answer(question, response)
+  def answer(question, response, recorded_by_caller = nil)
     possible_response = question.possible_responses.where(:keypad => response).first
+    self.answer_recorded_by = recorded_by_caller
     return unless possible_response
     answer = self.answers.for(question).first.try(:update_attribute, {:possible_response => possible_response}) || answers.create(:question => question, :possible_response => possible_response)
+    notify_observers :answer_recorded
     answer
+  end
+
+  def answer_recorded_by
+    @caller_session
+  end
+
+  def answer_recorded_by=(caller_session)
+    @caller_session = caller_session
   end
 
   private
@@ -175,7 +185,7 @@ class Voter < ActiveRecord::Base
   def new_call_attempt(mode = 'robo')
     call_attempt = self.call_attempts.create(:campaign => self.campaign, :dialer_mode => mode, :status => CallAttempt::Status::RINGING)
     self.update_attributes!(:last_call_attempt => call_attempt, :last_call_attempt_time => Time.now, :status => CallAttempt::Status::RINGING)
-    Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id,:dials_in_progress => campaign.call_attempts.dial_in_progress.length})
+    Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.dial_in_progress.length})
     call_attempt
   end
 
