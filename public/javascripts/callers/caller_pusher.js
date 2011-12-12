@@ -195,7 +195,7 @@ function expand_scheduler() {
 }
 
 function ready_for_calls(data){
-	if (!$.isEmptyObject(data.fields)) {
+	if ($.isEmptyObject(data.fields)) {
 		$("#stop_calling").show();
 		return
 	}
