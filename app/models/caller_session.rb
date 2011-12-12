@@ -49,6 +49,13 @@ class CallerSession < ActiveRecord::Base
     params = { 'StatusCallback' => end_call_attempt_url(attempt, :host => Settings.host, :port => Settings.port),'Timeout' => campaign.answering_machine_detect ? "30" : "15"}
     params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect        
     response = Twilio::Call.make(self.campaign.caller_id, voter.Phone, connect_call_attempt_url(attempt, :host => Settings.host, :port => Settings.port),params)
+    
+    if response["TwilioResponse"]["RestException"]
+      attempt.update_attributes(status: CallAttempt::Status::FAILED)
+      voter.update_attributes(status: CallAttempt::Status::FAILED)
+      logger.info "Exception when attempted to call #{voter.Phone} for campaign id:#{self.campaign_id}  Response: #{response["TwilioResponse"]["RestException"].inspect}"
+      return
+    end    
     self.publish('calling_voter', voter.info)
     Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id,:dials_in_progress => campaign.call_attempts.dial_in_progress.length})
     attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])
