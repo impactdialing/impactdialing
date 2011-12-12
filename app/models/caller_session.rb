@@ -112,7 +112,7 @@ class CallerSession < ActiveRecord::Base
   end
 
   def next_question
-    attempt_in_progress.question_not_answered
+    voter_in_progress.question_not_answered
   end
 
   def end

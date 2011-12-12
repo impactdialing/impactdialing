@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20111207081656) do
+ActiveRecord::Schema.define(:version => 20111209081823) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -45,6 +45,11 @@ ActiveRecord::Schema.define(:version => 20111207081656) do
     t.string   "state"
     t.string   "country"
     t.string   "name"
+    t.string   "checking_account_number"
+    t.string   "bank_routing_number"
+    t.string   "drivers_license_number"
+    t.string   "drivers_license_state"
+    t.string   "checking_account_type"
   end
 
   create_table "blocked_numbers", :force => true do |t|

@@ -54,40 +54,6 @@ describe CallAttemptsController do
       channel.should_receive(:trigger).with("voter_push", campaign.all_voters.to_be_dialed.first.info.merge({dialer: next_voter.campaign.predictive_type}))
       post :voter_response, :id => call_attempt.id, :voter_id => voter.id, :answers => {}
     end
-
-    describe "phones only" do
-      let(:account) { Factory(:account) }
-      let(:user) { Factory(:user, :account => account) }
-      let(:script) { Factory(:script) }
-      let(:campaign) { Factory(:campaign, :account => account, :robo => false, :use_web_ui => true, :script => script) }
-      let(:voter) { Factory(:voter, :campaign => campaign) }
-      let(:caller_session) { Factory(:caller_session, :campaign => campaign, :session_key => "some_key") }
-      let(:call_attempt) { Factory(:call_attempt, :voter => voter, :campaign => campaign, :caller_session => caller_session) }
-      let(:first_question){ Factory(:question, :script => script) }
-
-      it "gathers responses" do
-        Factory(:possible_response, :keypad => 1, :question => first_question, :value => "value")
-        post :gather_response, :id => call_attempt.id, :question_id => first_question.id, :Digits => "1"
-        voter.answers.size.should == 1
-      end
-
-      it "reads out the next question" do
-        Factory(:possible_response, :keypad => 1, :question => first_question, :value => "value")
-        next_question = Factory(:question, :script => script)
-        Factory(:possible_response, :question => next_question,:keypad => "1", :value => "value")
-        post :gather_response, :id => call_attempt.id, :question_id => first_question.id, :Digits => "1"
-        response.body.should == next_question.read(call_attempt)
-      end
-
-      it "places the voter in a conference when all questions are answered" do
-        Factory(:possible_response, :keypad => 1, :question => first_question, :value => "value")
-        post :gather_response, :id => call_attempt.id, :question_id => first_question.id, :Digits => "1"
-        response.body.should == call_attempt.caller_session.start
-      end
-
-
-    end
-
   end
 
   describe "calling in" do
