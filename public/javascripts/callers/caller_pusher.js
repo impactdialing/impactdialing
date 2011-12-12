@@ -195,10 +195,6 @@ function expand_scheduler() {
 }
 
 function ready_for_calls(data){
-	if ($.isEmptyObject(data.fields)) {
-		$("#stop_calling").show();
-		return
-	}
 	if (data.dialer && data.dialer.toLowerCase() == "progressive") {
 	  $("#stop_calling").show();
 	  call_voter();
@@ -259,7 +255,13 @@ function subscribe(session_key) {
 		set_message("Status: Ready for calls.");
 		set_voter(data);
         $("#start_calling").hide();
-		ready_for_calls(data);
+		if ($.isEmptyObject(data.fields)) {
+			$("#stop_calling").show();
+			
+		}
+		else {
+    	  ready_for_calls(data);
+		}
     });
 
 
