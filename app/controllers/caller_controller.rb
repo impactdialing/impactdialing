@@ -83,7 +83,7 @@ class CallerController < ApplicationController
     caller_session = caller.caller_sessions.find(params[:session_id])
     question = Question.find_by_id(params[:question_id])
     voter = caller_session.voter_in_progress
-    voter.answer(question, params[:Digits]) if voter && question
+    voter.answer(question, params[:Digits], caller_session) if voter && question
 
     xml = Twilio::Verb.hangup if caller_session.disconnected?
     xml ||= (voter.question_not_answered.try(:read, caller_session) if voter)
@@ -200,4 +200,5 @@ class CallerController < ApplicationController
     Postoffice.feedback(params[:issue]).deliver
     render :text=> "var x='ok';"
   end
+
 end
