@@ -405,7 +405,7 @@ class Campaign < ActiveRecord::Base
 
   def dial_predictive_voters
     if ratio_dial?
-      num_to_call= (callers_to_dial.length * get_dial_ratio) - call_attempts_in_progress.length
+      num_to_call= (callers_to_dial.length - call_attempts_in_progress.length ) * get_dial_ratio
     else
       short_to_dial=determine_short_to_dial
       max_calls=determine_pool_size(short_to_dial)
@@ -414,10 +414,11 @@ class Campaign < ActiveRecord::Base
 
     DIALER_LOGGER.info "#{self.name}: Callers logged in: #{callers.length}, Callers on call: #{callers_on_call.length}, Callers not on call:  #{callers_not_on_call}, Calls in progress: #{call_attempts_in_progress.length}"
     DIALER_LOGGER.info "num_to_call #{num_to_call}"
-
-    voter_ids=choose_voters_to_dial(num_to_call) #TODO check logic
-    DIALER_LOGGER.info("voters to dial #{voter_ids}")
-    ring_predictive_voters(voter_ids)
+    if num_to_call > 0
+      voter_ids=choose_voters_to_dial(num_to_call) #TODO check logic
+      DIALER_LOGGER.info("voters to dial #{voter_ids}")
+      ring_predictive_voters(voter_ids)
+    end
   end
 
   def ring_predictive_voters(voter_ids)
