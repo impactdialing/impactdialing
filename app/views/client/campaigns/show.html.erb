@@ -184,6 +184,18 @@
 				}
 			}
 		});
+		
+		
+		$("#file_upload_submit").live('click', function() {
+		    var form = $("#callerForm");
+		    var action = form.attr("action");
+		    var serialized_form = form.serialize();
+		    $.post(action, serialized_form, submit_voter_list());
+		});
+		
+		function submit_voter_list() {
+		   $("#new_voter_list").submit();
+		}
 
   });
 
