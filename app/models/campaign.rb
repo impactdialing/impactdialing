@@ -73,6 +73,14 @@ class Campaign < ActiveRecord::Base
     end
   end
   
+  def time_period_exceed?
+    if start_time.hour < end_time.hour
+      !(start_time.hour <= Time.now.utc.in_time_zone(time_zone).hour && end_time.hour > Time.now.utc.in_time_zone(time_zone).hour)
+    else
+      !(start_time.hour >= Time.now.utc.in_time_zone(time_zone).hour || end_time.hour > Time.now.utc.in_time_zone(time_zone).hour)
+    end
+  end
+  
   def oldest_available_caller_session
      caller_sessions.available.find(:first, :order => "updated_at ASC")
   end

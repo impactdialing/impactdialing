@@ -39,6 +39,7 @@ describe CallAttempt do
     Factory(:voter, :campaign => campaign, :call_back => false)
     caller_session = Factory(:caller_session, :campaign => campaign, :session_key => "sample")
     call_attempt = Factory(:call_attempt, :voter => Factory(:voter, :status => Voter::Status::NOTCALLED), :caller_session => caller_session, :campaign => campaign)
+    campaign.stub!(:time_period_exceed?).and_return(false)
     call_attempt.fail
   end
 
@@ -241,6 +242,7 @@ describe CallAttempt do
       Factory(:voter, :status => Voter::Status::NOTCALLED, :call_back => false, :campaign => campaign)
       session = Factory(:caller_session, :caller => Factory(:caller), :campaign => campaign, :session_key => "sample")
       attempt = Factory(:call_attempt, :voter => Factory(:voter, :status => CallAttempt::Status::INPROGRESS), :caller_session => session, :campaign => campaign)
+      campaign.stub!(:time_period_exceed?).and_return(false)
       channel = mock
       info = campaign.all_voters.to_be_dialed.first.info
       info[:fields]['status'] = CallAttempt::Status::READY
