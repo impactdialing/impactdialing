@@ -49,8 +49,10 @@ describe CallerController do
       next_voter = Factory(:voter, :campaign => campaign)
       session = Factory(:caller_session, :campaign => campaign, :caller => caller, :session_key => session_key)
       channel = mock
+      info = voter.info
+      info[:fields]['status'] = CallAttempt::Status::READY
       Pusher.should_receive(:[]).with(session_key).and_return(channel)
-      channel.should_receive(:trigger).with('caller_connected', voter.info.merge(:dialer => campaign.predictive_type))
+      channel.should_receive(:trigger).with('caller_connected', info.merge(:dialer => campaign.predictive_type))
       post :preview_voter, :id => caller.id, :session_id => session.id
     end
 
@@ -60,8 +62,10 @@ describe CallerController do
       next_voter = Factory(:voter, :campaign => campaign)
       session = Factory(:caller_session, :campaign => campaign, :caller => caller, :session_key => session_key)
       channel = mock
+      info = voter.info
+      info[:fields]['status'] = CallAttempt::Status::READY      
       Pusher.should_receive(:[]).with(session_key).and_return(channel)
-      channel.should_receive(:trigger).with('caller_connected', voter.info.merge(:dialer => campaign.predictive_type))
+      channel.should_receive(:trigger).with('caller_connected', info.merge(:dialer => campaign.predictive_type))
       post :preview_voter, :id => caller.id, :session_id => session.id
     end
 
@@ -80,8 +84,11 @@ describe CallerController do
       next_voter = Factory(:voter, :campaign => campaign, "FirstName"=>'last')
       session = Factory(:caller_session, :campaign => campaign, :caller => caller, :session_key => session_key)
       channel = mock
+      info = next_voter.info
+      info[:fields]['status'] = CallAttempt::Status::READY
+      
       Pusher.should_receive(:[]).with(session_key).and_return(channel)
-      channel.should_receive(:trigger).with('caller_connected', next_voter.info.merge(:dialer => campaign.predictive_type))
+      channel.should_receive(:trigger).with('caller_connected', info.merge(:dialer => campaign.predictive_type))
       post :preview_voter, :id => caller.id, :session_id => session.id, :voter_id => voter.id
     end
 
@@ -91,8 +98,11 @@ describe CallerController do
       last_voter = Factory(:voter, :campaign => campaign, "FirstName"=>'last')      
       session = Factory(:caller_session, :campaign => campaign, :caller => caller, :session_key => session_key)
       channel = mock
+      info = first_voter.info
+      info[:fields]['status'] = CallAttempt::Status::READY
+      
       Pusher.should_receive(:[]).with(session_key).and_return(channel)
-      channel.should_receive(:trigger).with('caller_connected', first_voter.info.merge(:dialer => campaign.predictive_type))
+      channel.should_receive(:trigger).with('caller_connected', info.merge(:dialer => campaign.predictive_type))
       post :preview_voter, :id => caller.id, :session_id => session.id, :voter_id => last_voter.id
     end
 
