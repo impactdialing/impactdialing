@@ -14,7 +14,7 @@ class CallAttemptsController < ApplicationController
     Rails.logger.debug("callconnect: #{params[:AnsweredBy]}")
     call_attempt.update_attribute(:connecttime, Time.now)
     response = case params[:AnsweredBy] #using the 2010 api
-                 when "machine"
+                 when "machine" 
                    call_attempt.voter.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
                    call_attempt.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
                    if call_attempt.caller_session && (call_attempt.campaign.predictive_type == Campaign::Type::PREVIEW || call_attempt.campaign.predictive_type == Campaign::Type::PROGRESSIVE)
