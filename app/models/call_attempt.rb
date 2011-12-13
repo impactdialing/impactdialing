@@ -8,7 +8,7 @@ class CallAttempt < ActiveRecord::Base
   belongs_to :caller_session
   has_many :call_responses
 
-  scope :dial_in_progress, :conditions => {:status => ["Call in progress","Ringing"]}
+  scope :dial_in_progress, where('call_end is null')
   scope :for_campaign, lambda { |campaign| {:conditions => ["campaign_id = ?", campaign.id]} }
   scope :for_status, lambda { |status| {:conditions => ["call_attempts.status = ?", status]} }
   scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
@@ -59,7 +59,7 @@ class CallAttempt < ActiveRecord::Base
     caller_session ||= campaign.oldest_available_caller_session
     if caller_session.nil? || caller_session.disconnected? || !caller_session.available_for_call
       update_attributes(status: CallAttempt::Status::ABANDONED)
-      voter.update_attributes(:status => CallAttempt::Status::ABANDONED, call_back: true)
+      voter.update_attributes(:status => CallAttempt::Status::ABANDONED, call_back: false)
       caller_session.update_attribute(:voter_in_progress, nil) unless caller_session.nil?
       Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id,:dials_in_progress => campaign.call_attempts.dial_in_progress.length,
         :voters_remaining => campaign.voters_count("not called", false).length})
@@ -125,6 +125,8 @@ class CallAttempt < ActiveRecord::Base
       caller_session.publish('voter_push',next_voter.nil? ? {} : next_voter.info)
       caller_session.update_attribute(:voter_in_progress, nil)
       caller_session.start
+    else
+      hangup
     end
   end
 
@@ -135,10 +137,6 @@ class CallAttempt < ActiveRecord::Base
   def schedule_for_later(scheduled_date)
     update_attributes(:scheduled_date => scheduled_date, :status => Status::SCHEDULED)
     voter.update_attributes(:scheduled_date => scheduled_date, :status => Status::SCHEDULED, :call_back => true)
-  end
-
-  def question_not_answered
-    self.campaign.script.questions.not_answered_by(voter).first
   end
 
   module Status

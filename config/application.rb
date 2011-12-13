@@ -51,5 +51,6 @@ module ImpactDialing
     # config.i18n.load_path += Dir[Rails.root.join('my', 'locales', '*.{rb,yml}')]
     # config.i18n.default_locale = :de
     config.action_view.javascript_expansions[:jdefaults] = %w(jquery jquery_ujs application)
+    config.active_record.observers = :voter_observer
   end
 end

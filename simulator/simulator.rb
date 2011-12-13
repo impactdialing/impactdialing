@@ -25,6 +25,11 @@ class CallAttempt < ActiveRecord::Base
     return nil unless call_start
     ((call_end || Time.now) - self.call_start).to_i
   end
+
+  def ringing_duration
+    return 15 unless connecttime
+    (connecttime - created_at).to_i
+  end
 end
 
 class SimulatedValues < ActiveRecord::Base
@@ -66,7 +71,7 @@ call_attempts = CallAttempt.where(:campaign_id => campaign_id)
 recent_call_attempts = call_attempts.where(:status => "Call completed with success.").map{|attempt| OpenStruct.new(:length => attempt.duration, :counter => 0)}
 
 puts call_attempts.map(&:status)
-recent_dials = call_attempts.map{|attempt| OpenStruct.new(:length => rand(15), :counter => 0, :answered? => attempt.status == 'Call completed with success.') }
+recent_dials = call_attempts.map{|attempt| OpenStruct.new(:length => attempt.ringing_duration, :counter => 0, :answered? => attempt.status == 'Call completed with success.') }
 puts recent_call_attempts, recent_dials
 
 alpha = 0.01
@@ -135,6 +140,7 @@ while beta < 1
     finished_call_attempts.each{|call_attempt| call_attempt.counter += 1}
     t += 1
   end
+
   answered_finished_dials = finished_dials.select(&:answered?)
   simulated_abandonment = answered_finished_dials.empty? ? 0 : (abandon_count.to_f / answered_finished_dials.size)
   puts "simulated_abandonment: #{simulated_abandonment}"
@@ -147,6 +153,7 @@ while beta < 1
       best_alpha = alpha
       best_beta = beta
       best_utilisation = utilisation
+      simulated_abandonment_for_best_utilisation = simulated_abandonment
     end
   end
   if alpha < 1
@@ -160,4 +167,5 @@ while beta < 1
 end
 
 SimulatedValues.find_or_create_by_campaign_id(campaign_id).update_attributes(:alpha => best_alpha, :beta => best_beta)
+puts "alpha: #{best_alpha} beta: #{best_beta} with utilisation: #{best_utilisation} and simulated abandonment: #{simulated_abandonment_for_best_utilisation}"
 puts best_alpha, best_beta
