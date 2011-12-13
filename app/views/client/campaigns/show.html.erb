@@ -31,7 +31,10 @@
           </select>
         </p>
 
-				<p><label for="">Dial period</label>
+<p><label for="">Time zone</label>
+<%= time_zone_select( "campaign", 'time_zone', ActiveSupport::TimeZone.us_zones, :default => "Pacific Time (US & Canada)") %></p>
+
+				<p><label for="">Dialing hours</label>
 						<select class="field" id="campaign_start_time" name="campaign[start_time]">
 							
 		          <% if @campaign.start_time %>
@@ -51,8 +54,6 @@
 		          <% end %>
 							<%= options_for_select hours, @campaign.end_time %>
 		        </select>
-					
-						<%= time_zone_select( "campaign", 'time_zone', ActiveSupport::TimeZone.us_zones, :default => "Pacific Time (US & Canada)") %>
 				</p>
 				
 				<%= render :partial => 'shared/recycle_rate', :locals => {:recycle_hour => @campaign.recycle_rate}%>
