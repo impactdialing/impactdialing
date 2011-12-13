@@ -6,7 +6,8 @@
 <%= form_for @campaign,  url:  "#{client_campaigns_path}/#{@campaign.id}", :method=> :put, :html => {:name => 'callerForm', :id => 'callerForm'} do |f| %>
     <%= render "shared/error_messages", :target => @campaign %>
     <fieldset>
-    <%= hidden_field_tag :id, @campaign.id,{:class=>"field"} %>
+    
+		<%= hidden_field_tag :id, @campaign.id,{:class=>"field"} %>
 	  <legend>Campaign options</legend>
       <fieldset>
         <legend>Basic settings</legend>
@@ -29,7 +30,32 @@
             <%= options_for_select public_dialers, @campaign.predictive_type %>
           </select>
         </p>
-        <%= render :partial => 'shared/recycle_rate', :locals => {:recycle_hour => @campaign.recycle_rate}%>
+
+				<p><label for="">Dial period</label>
+						<select class="field" id="campaign_start_time" name="campaign[start_time]">
+							
+		          <% if @campaign.start_time %>
+		              <option value="<%= @campaign.start_time.try(:hour) %>" selected>
+										<%= hours.map{ |p| p[0]}[hours.map { |pair| pair[1] }.index(@campaign.start_time.try(:hour).to_s)] %>
+									</option>
+		          <% end %>
+		          <%= options_for_select hours, @campaign.start_time %>
+		        </select>
+						to
+						<select class="field" id="campaign_end_time" name="campaign[end_time]">
+							
+		          <% if @campaign.end_time %>
+		              <option value="<%= @campaign.end_time.try(:hour) %>" selected>
+										<%= hours.map{ |p| p[0]}[hours.map { |pair| pair[1] }.index((@campaign.end_time.try(:hour)).to_s)] %>
+									</option>
+		          <% end %>
+							<%= options_for_select hours, @campaign.end_time %>
+		        </select>
+					
+						<%= time_zone_select( "campaign", 'time_zone', ActiveSupport::TimeZone.us_zones, :default => "Pacific Time (US & Canada)") %>
+				</p>
+				
+				<%= render :partial => 'shared/recycle_rate', :locals => {:recycle_hour => @campaign.recycle_rate}%>
 				<p><%= f.check_box :answering_machine_detect %>&nbsp;Automatically detect voicemails</p>
         <% if !@campaign.account.recordings.blank? %>
             <p><%= f.check_box :use_recordings, :onclick=>"doRecord();" %>&nbsp;Leave voicemail message</p>
