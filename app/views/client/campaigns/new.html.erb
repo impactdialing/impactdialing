@@ -25,8 +25,10 @@
             <%= options_for_select public_dialers, ["Predictive", "algorithm1"] %>
           </select>
         </p>
-
-				<p><label for="">Dial period</label>
+		
+				<p><label for="">Time zone</label>
+				<%= time_zone_select( "campaign", 'time_zone', ActiveSupport::TimeZone.us_zones, :default => "Pacific Time (US & Canada)") %></p>
+				<p><label for="">Dialing hours</label>
 						<select class="field" id="campaign_start_time" name="campaign[start_time]">
 		          <option value="9" selected>9 AM</option>
 		          <%= options_for_select hours%>
@@ -36,7 +38,6 @@
 		          <option value="21" selected>9 PM</option>
 		          <%= options_for_select hours%>
 		        </select>
-						<%= time_zone_select( "campaign", 'time_zone', ActiveSupport::TimeZone.us_zones, :default => "Pacific Time (US & Canada)") %>
 				</p>
         <%= render :partial => 'shared/recycle_rate', :locals => {:recycle_hour => @campaign.recycle_rate} %>
 				<p><%= f.check_box :answering_machine_detect, {:checked => 'checked'}%>&nbsp;Automatically detect voicemails</p>
