@@ -21,7 +21,9 @@ describe CallAttemptsController do
       channel = mock
       # Voter.stub_chain(:to_be_dialed, :first).and_return(voter)
       Pusher.should_receive(:[]).with(anything).and_return(channel)
-      channel.should_receive(:trigger).with("voter_push", voter2.info.merge(:dialer => campaign.predictive_type))
+      info = voter2.info
+      info[:fields]['status'] = CallAttempt::Status::READY
+      channel.should_receive(:trigger).with("voter_push", info.merge(:dialer => campaign.predictive_type))
 
       post :voter_response, :id => call_attempt.id, :voter_id => voter.id, :question => {question1.id=> response1.id, question2.id=>response2.id}
       voter.answers.count.should == 2
@@ -37,7 +39,10 @@ describe CallAttemptsController do
 
       channel = mock
       Pusher.should_receive(:[]).with(anything).and_return(channel)
-      channel.should_receive(:trigger).with("voter_push", voter2.info.merge(:dialer => campaign.predictive_type))
+      info = voter2.info
+      info[:fields]['status'] = CallAttempt::Status::READY
+      
+      channel.should_receive(:trigger).with("voter_push", info.merge(:dialer => campaign.predictive_type))
 
       post :voter_response, :id => call_attempt.id, :voter_id => voter.id, :question => {question1.id=> response1.id, question2.id=>response2.id}
       voter.answers.count.should == 2
@@ -50,8 +55,11 @@ describe CallAttemptsController do
       next_voter = Factory(:voter, :campaign => campaign, :status => Voter::Status::NOTCALLED, :call_back => false)
       campaign.all_voters.size.should == 2
       channel = mock
+      info = campaign.all_voters.to_be_dialed.first.info
+      info[:fields]['status'] = CallAttempt::Status::READY
+      
       Pusher.should_receive(:[]).with(anything).and_return(channel)
-      channel.should_receive(:trigger).with("voter_push", campaign.all_voters.to_be_dialed.first.info.merge({dialer: next_voter.campaign.predictive_type}))
+      channel.should_receive(:trigger).with("voter_push", info.merge({dialer: next_voter.campaign.predictive_type}))
       post :voter_response, :id => call_attempt.id, :voter_id => voter.id, :answers => {}
     end
   end
@@ -134,6 +142,7 @@ describe CallAttemptsController do
     end
 
     it "hangs up when a answering machine is detected and campaign uses no recordings" do
+      voter2 =  Factory(:voter, :campaign => campaign, :call_back => false)
       CallAttempt.stub(:find).and_return(call_attempt)
       post :connect, :id => call_attempt.id, :AnsweredBy => 'machine'
       response.body.should == call_attempt.hangup
@@ -201,9 +210,12 @@ describe CallAttemptsController do
       call_attempt = Factory(:call_attempt, :caller_session => session, :voter => voter, :campaign => campaign)
       next_voter = Factory(:voter, :campaign => campaign, :status => Voter::Status::NOTCALLED)
       pusher_session = mock
+      
+      info = next_voter.info
+      info[:fields]['status'] = CallAttempt::Status::READY
       Pusher.stub(:[]).with(session_key).and_return(pusher_session)
       pusher_session.should_receive(:trigger).with("answered_by_machine", {:dialer=>"preview"})
-      pusher_session.should_receive(:trigger).with('voter_push', next_voter.info.merge(:dialer => campaign.predictive_type))
+      pusher_session.should_receive(:trigger).with('voter_push', info.merge(:dialer => campaign.predictive_type))
       post :connect, :id => call_attempt.id, :AnsweredBy => "machine"
     end
     

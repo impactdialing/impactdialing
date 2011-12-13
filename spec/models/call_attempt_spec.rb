@@ -242,8 +242,10 @@ describe CallAttempt do
       session = Factory(:caller_session, :caller => Factory(:caller), :campaign => campaign, :session_key => "sample")
       attempt = Factory(:call_attempt, :voter => Factory(:voter, :status => CallAttempt::Status::INPROGRESS), :caller_session => session, :campaign => campaign)
       channel = mock
+      info = campaign.all_voters.to_be_dialed.first.info
+      info[:fields]['status'] = CallAttempt::Status::READY
       Pusher.should_receive(:[]).twice.with(anything).and_return(channel)
-      channel.should_receive(:trigger).with("voter_push", campaign.all_voters.to_be_dialed.first.info.merge(:dialer => campaign.predictive_type))
+      channel.should_receive(:trigger).with("voter_push", info.merge(:dialer => campaign.predictive_type))
       channel.should_receive(:trigger).with("conference_started", {:dialer => campaign.predictive_type})
       attempt.fail
     end
