@@ -73,18 +73,22 @@ class CallerSession < ActiveRecord::Base
   end
 
   def start
-    response = Twilio::Verb.new do |v|
-      v.dial(:hangupOnStar => true, :action => pause_caller_url(self.caller, :host => Settings.host, :port => Settings.port, :session_id => id)) do
-        v.conference(self.session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
-      end
-    end.response
-    update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
-    if campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE
-      publish('conference_started', {}) 
+    if campaign.time_period_exceed?
+      time_exceed_hangup
     else
-      publish('caller_connected_dialer', {}) 
+      response = Twilio::Verb.new do |v|
+        v.dial(:hangupOnStar => true, :action => pause_caller_url(self.caller, :host => Settings.host, :port => Settings.port, :session_id => id)) do
+          v.conference(self.session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
+        end
+      end.response
+      update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
+      if campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE
+        publish('conference_started', {}) 
+      else
+        publish('caller_connected_dialer', {}) 
+      end
+      response
     end
-    response
   end
 
   def join_conference(mute_type, call_sid, monitor_session)
@@ -118,6 +122,14 @@ class CallerSession < ActiveRecord::Base
 
   def disconnected?
     !available_for_call && !on_call
+  end
+  
+  def time_exceed_hangup
+    Twilio::Verb.new do |v|
+      v.say "In this campaign you can not make calls right now. Because this campaign is active between #{@campaign.start_time.hour > 12 ? @campaign.start_time.hour-12 : @campaign.start_time.hour} "+ (@campaign.start_time.hour <= 12 ? "AM" : "PM")+ 
+      " to #{@campaign.end_time.hour > 12 ? @campaign.end_time.hour-12 : @campaign.end_time.hour} "+ (@campaign.end_time.hour <= 12 ? "AM" : "PM")
+      v.hangup
+    end.response
   end
 
 

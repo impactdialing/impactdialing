@@ -106,10 +106,11 @@ describe CallerController do
 
     it "pushes 'calling' to the caller" do
       session_key = "caller_session_key"
-      caller_session = Factory(:caller_session, :caller => caller, :on_call => true, :available_for_call => true, :session_key => session_key)
+      campaign = Factory(:campaign, :start_time => Time.new("2000-01-01 01:00:00"),:end_time =>   Time.new("2000-01-01 23:00:00"))
+      caller_session = Factory(:caller_session, :caller => caller, :on_call => true, :available_for_call => true, :session_key => session_key, :campaign => campaign)
       voter = Factory(:voter)
-      Twilio::Call.stub(:make).and_return("TwilioResponse"=> {"Call" => {"Sid" => 'sid'}})
       channel = mock
+      Twilio::Call.stub(:make).and_return("TwilioResponse"=> {"Call" => {"Sid" => 'sid'}})
       Pusher.should_receive(:[]).with(session_key).and_return(channel)
       channel.should_receive(:trigger).with('calling_voter', anything)
       post :call_voter, :session_id => caller_session.id , :voter_id => voter.id
@@ -129,7 +130,7 @@ describe CallerController do
     end
 
     it "creates a conference for a caller" do
-      campaign = Factory(:campaign, :account => account)
+      campaign = Factory(:campaign, :account => account,:start_time => Time.new("2000-01-01 01:00:00"),:end_time =>   Time.new("2000-01-01 23:00:00"))
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => 'key')
       Moderator.stub!(:caller_connected_to_campaign).with(caller, campaign, session)
       
@@ -185,7 +186,7 @@ describe CallerController do
     end
 
     it "resets a callers session's conference while an attempt is in progress" do
-      session = Factory(:caller_session, :caller => caller, :campaign => Factory(:campaign), :available_for_call => false, :on_call => true, :session_key => "some_key")
+      session = Factory(:caller_session, :caller => caller, :campaign => Factory(:campaign,:start_time => Time.new("2000-01-01 01:00:00"),:end_time =>   Time.new("2000-01-01 23:00:00")), :available_for_call => false, :on_call => true, :session_key => "some_key")
       post :pause, :id => caller.id, :session_id => session.id
       response.body.should == session.start
     end

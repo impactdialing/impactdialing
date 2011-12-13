@@ -67,6 +67,7 @@ describe CallerSession do
     it "creates a conference" do
       campaign, conf_key = Factory(:campaign), "conference_key"
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => conf_key)
+      campaign.stub!(:time_period_exceed?).and_return(false)
       session.start.should == Twilio::Verb.new do |v|
         v.dial(:hangupOnStar => true, :action => pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => session)) do
           v.conference(conf_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => "GET")
@@ -232,6 +233,7 @@ describe CallerSession do
       campaign = Factory(:campaign, :use_web_ui => true, :predictive_type => 'predictive')
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sample")
       2.times { Factory(:voter, :campaign => campaign) }
+      campaign.stub!(:time_period_exceed?).and_return(false)
       channel = mock
       Pusher.should_receive(:[]).with(session.session_key).and_return(channel)
       channel.should_receive(:trigger).with("caller_connected_dialer", anything)

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20111209081823) do
+ActiveRecord::Schema.define(:version => 20111212034544) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -189,6 +189,9 @@ ActiveRecord::Schema.define(:version => 20111209081823) do
     t.integer  "recycle_rate"
     t.boolean  "amd_turn_off"
     t.boolean  "answering_machine_detect"
+    t.time     "start_time"
+    t.time     "end_time"
+    t.string   "time_zone"
   end
 
   create_table "campaigns_voter_lists", :id => false, :force => true do |t|

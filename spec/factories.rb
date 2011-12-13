@@ -30,6 +30,9 @@ Factory.define :campaign do |c|
   c.caller_id '1234567890'
   c.account { Factory(:account) }
   c.recycle_rate 1
+  c.start_time Time.new(2011,1,1,1,0,0)
+  c.end_time Time.new(2011,1,1,23,0,0)
+  c.time_zone "Pacific Time (US & Canada)"
 end
 
 Factory.define :script do |s|
