@@ -60,7 +60,7 @@ end
 
 task :preproduction do
   set :rails_env, 'preproduction'
-  set :branch, 'predictive'
+  set :branch, 'preproduction'
   role :web, preproduction_server
   role :app, preproduction_server
   role :db, preproduction_server, :primary => true #use an app server for migrations
