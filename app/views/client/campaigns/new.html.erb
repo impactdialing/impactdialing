@@ -25,6 +25,19 @@
             <%= options_for_select public_dialers, ["Predictive", "algorithm1"] %>
           </select>
         </p>
+
+				<p><label for="">Dial period</label>
+						<select class="field" id="campaign_start_time" name="campaign[start_time]">
+		          <option value="9" selected>9 AM</option>
+		          <%= options_for_select hours%>
+		        </select>
+						to
+						<select class="field" id="campaign_end_time" name="campaign[end_time]">
+		          <option value="21" selected>9 PM</option>
+		          <%= options_for_select hours%>
+		        </select>
+						<%= time_zone_select( "campaign", 'time_zone', ActiveSupport::TimeZone.us_zones, :default => "Pacific Time (US & Canada)") %>
+				</p>
         <%= render :partial => 'shared/recycle_rate', :locals => {:recycle_hour => @campaign.recycle_rate} %>
 				<p><%= f.check_box :answering_machine_detect, {:checked => 'checked'}%>&nbsp;Automatically detect voicemails</p>
         <% if !@campaign.account.recordings.blank? %>
@@ -38,7 +51,7 @@
               <div id="sndPreview"></div>
             </div>
         <% end %>
-        <!--     <p><input type="button" class="button" value="Manage Recordings" onclick="document.location.href='/client/recording_add?campaign_id=<%= @campaign.id %>';"/></p>-->
+
         <p class="actions">
           <a href='/client/recording_add?campaign_id=<%= @campaign.id %>' class="action secondary">Add voicemail message</a>
         </p>

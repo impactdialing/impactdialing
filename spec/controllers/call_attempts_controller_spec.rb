@@ -67,7 +67,7 @@ describe CallAttemptsController do
   describe "calling in" do
     let(:account) { Factory(:account) }
     let(:user) { Factory(:user, :account => account) }
-    let(:campaign) { Factory(:campaign, :account => account, :robo => false) }
+    let(:campaign) { Factory(:campaign, :account => account, :robo => false,:start_time => Time.new("2000-01-01 01:00:00"),:end_time => Time.new("2000-01-01 23:00:00")) }
     let(:voter) { Factory(:voter, :campaign => campaign, :call_back => false) }
     let(:caller_session) { caller_session = Factory(:caller_session, :session_key => "sample")}
     let(:call_attempt) { Factory(:call_attempt, :voter => voter, :campaign => campaign, :caller_session => caller_session) }
@@ -170,6 +170,7 @@ describe CallAttemptsController do
     #end
 
     it "updates the details of a call not answered" do
+      campaign.stub(:time_period_exceed?).and_return(false)
       post :end, :id => call_attempt.id, :CallStatus => "no-answer"
       call_attempt.reload.status.should == CallAttempt::Status::NOANSWER
       call_attempt.voter.status.should == CallAttempt::Status::NOANSWER

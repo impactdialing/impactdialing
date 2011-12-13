@@ -96,12 +96,13 @@
 
 <%= render 'results' %>
 <%= render 'actions' %>
+<% unless @campaign.time_period_exceed? %>
+	<div id="start_calling">
+	  <a class="action primary" href="#" onclick="javascript:goclient();">Start calling</a>
+	</div>
+	<br>
+<% end %>
 
-<div id="start_calling">
-  <a class="action primary" href="#" onclick="javascript:goclient();">Start calling</a>
-</div>
-
-<br>
 
 <div id="callin_data">
   <p>

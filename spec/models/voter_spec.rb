@@ -118,6 +118,7 @@ describe Voter do
 
       it "is dialed" do
         caller_session = Factory(:caller_session, :available_for_call => true, :on_call => true, campaign: campaign)
+        campaign.stub(:time_period_exceed?).and_return(false)
         voter.dial_predictive
         call_attempt = CallAttempt.first
         call_attempt.sid.should == "sid"
@@ -126,6 +127,7 @@ describe Voter do
 
       it "updates voter attributes" do
         caller_session = Factory(:caller_session, :available_for_call => true, :on_call => true, campaign: campaign)
+        campaign.stub(:time_period_exceed?).and_return(false)
         voter.dial_predictive
         call_attempt = voter.call_attempts.last
         voter.last_call_attempt.should == call_attempt
@@ -136,6 +138,7 @@ describe Voter do
 
       it "updates the call_attempts campaign" do
         caller_session = Factory(:caller_session, :available_for_call => true, :on_call => true, campaign: campaign)
+        campaign.stub(:time_period_exceed?).and_return(false)
         voter.dial_predictive
         call_attempt = voter.call_attempts.last
         call_attempt.campaign.should == voter.campaign
@@ -145,12 +148,14 @@ describe Voter do
     it "dials the voter and hangs up on answering machine when not using recordings" do
       Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
       campaign.use_recordings = false
+      campaign.stub(:time_period_exceed?).and_return(false)
       voter.dial_predictive
     end
 
     it "dials the voter and continues on answering machine when using recordings" do
       Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
       voter.campaign = campaign
+      campaign.stub(:time_period_exceed?).and_return(false)
       voter.dial_predictive
     end
 
@@ -159,6 +164,7 @@ describe Voter do
       campaign.answer_detection_timeout = "10"
       Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
       voter.campaign = campaign
+      campaign.stub(:time_period_exceed?).and_return(false)
       voter.dial_predictive
     end
     
@@ -166,6 +172,7 @@ describe Voter do
       campaign1 = Factory(:campaign, :robo => false, :predictive_type => 'algorithm1', answering_machine_detect: false)
       Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {'StatusCallback'=> anything, 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
       voter.campaign = campaign1
+      campaign1.stub(:time_period_exceed?).and_return(false)
       voter.dial_predictive
     end
     
