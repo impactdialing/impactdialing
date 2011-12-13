@@ -54,41 +54,6 @@ describe CallAttemptsController do
       channel.should_receive(:trigger).with("voter_push", campaign.all_voters.to_be_dialed.first.info.merge({dialer: next_voter.campaign.predictive_type}))
       post :voter_response, :id => call_attempt.id, :voter_id => voter.id, :answers => {}
     end
-
-    describe "phones only" do
-      let(:account) { Factory(:account) }
-      let(:user) { Factory(:user, :account => account) }
-      let(:script) { Factory(:script) }
-      let(:campaign) { Factory(:campaign, :account => account, :robo => false, :use_web_ui => true, :script => script, :start_time => Time.new("2000-01-01 01:00:00"),:end_time =>   Time.new("2000-01-01 23:00:00")) }
-      let(:voter) { Factory(:voter, :campaign => campaign) }
-      let(:caller_session) { Factory(:caller_session, :campaign => campaign, :session_key => "some_key") }
-      let(:call_attempt) { Factory(:call_attempt, :voter => voter, :campaign => campaign, :caller_session => caller_session) }
-      let(:first_question){ Factory(:question, :script => script) }
-
-      it "gathers responses" do
-        Factory(:possible_response, :keypad => 1, :question => first_question, :value => "value")
-        post :gather_response, :id => call_attempt.id, :question_id => first_question.id, :Digits => "1"
-        
-        voter.answers.size.should == 1
-      end
-
-      it "reads out the next question" do
-        Factory(:possible_response, :keypad => 1, :question => first_question, :value => "value")
-        next_question = Factory(:question, :script => script)
-        Factory(:possible_response, :question => next_question,:keypad => "1", :value => "value")
-        post :gather_response, :id => call_attempt.id, :question_id => first_question.id, :Digits => "1"
-        response.body.should == next_question.read(call_attempt)
-      end
-
-      it "places the voter in a conference when all questions are answered" do
-        Factory(:possible_response, :keypad => 1, :question => first_question, :value => "value")
-        post :gather_response, :id => call_attempt.id, :question_id => first_question.id, :Digits => "1"
-        response.body.should == call_attempt.caller_session.start
-      end
-
-
-    end
-
   end
 
   describe "calling in" do
@@ -114,6 +79,13 @@ describe CallAttemptsController do
           d.Conference available_session.session_key, :wait_url => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
         end
       end.text
+    end
+
+    it "updates connect time" do
+      now = Time.now
+      Time.stub(:now).and_return(now)
+      post :connect, :id => call_attempt.id
+      Time.parse(call_attempt.reload.connecttime.to_s).to_s.should == now.utc.to_s
     end
 
     it "connects a voter to a specified caller" do
@@ -243,5 +215,14 @@ describe CallAttemptsController do
       call_attempt.reload.status.should == CallAttempt::Status::ABANDONED
       call_attempt.voter.reload.status.should == CallAttempt::Status::ABANDONED
     end
+    
+    it "if the call attempt is ABANDONED, it  modifies end_tme, when call end" do
+      voter = Factory(:voter, :status => CallAttempt::Status::ABANDONED)
+      call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign, :caller_session => Factory(:caller_session), :status => CallAttempt::Status::ABANDONED)
+      post :end, :id => call_attempt.id, :CallStatus => "completed"
+      call_attempt.reload.call_end.utc.to_i.should == Time.now.utc.to_i
+      call_attempt.voter.reload.last_call_attempt_time.utc.to_i.should == Time.now.utc.to_i
+    end
+    
   end
 end

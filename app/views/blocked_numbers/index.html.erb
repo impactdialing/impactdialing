@@ -5,6 +5,19 @@
 
 <h1>Do Not Call list</h1>
 
+<fieldset>
+  <legend>Add number</legend>
+<%= form_for BlockedNumber.new do |f| %>
+	<p><%= f.label :number %><br>
+	<%= f.text_field :number %></p>
+	<p><%= f.label :level %><br>
+	<%= f.select :campaign_id, [["System", nil]] + @campaigns.map{|c| [c.name, c.id]} %></p>
+	<div class="buttons">
+		<%= button_tag "Add" %>
+	</div>
+<% end %>
+</fieldset>
+
 <table>
 	<tr>
 		<th>Phone</th>
@@ -23,16 +36,3 @@
 		</tr>
 	<% end %>
 </table>
-
-<fieldset>
-  <legend>Add number</legend>
-<%= form_for BlockedNumber.new do |f| %>
-	<p><%= f.label :number %><br>
-	<%= f.text_field :number %></p>
-	<p><%= f.label :level %><br>
-	<%= f.select :campaign_id, [["System", nil]] + @campaigns.map{|c| [c.name, c.id]} %></p>
-	<div class="buttons">
-		<%= button_tag "Add" %>
-	</div>
-<% end %>
-</fieldset>

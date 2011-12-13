@@ -43,17 +43,6 @@ describe CallAttempt do
     call_attempt.fail
   end
 
-  it "returns the next question to be answered for a call attempt" do
-    script = Factory(:script)
-    campaign = Factory(:campaign, :script => script)
-    voter = Factory(:voter, :campaign => campaign)
-    caller_session = Factory(:caller_session, :campaign => campaign)
-    call_attempt = Factory(:call_attempt, :voter => voter, :caller_session => caller_session, :campaign => campaign)
-    question = Factory(:question, :script => script)
-    Factory(:question, :script => script)
-    call_attempt.question_not_answered.should == question
-  end
-
   it "can be scheduled for later" do
     voter = Factory(:voter)
     call_attempt = Factory(:call_attempt, :voter => voter)
@@ -114,7 +103,7 @@ describe CallAttempt do
       session = Factory(:caller_session, :caller => Factory(:caller), :session_key => "example_key")
       voter = Factory(:voter)
       call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign)
-      Moderator.stub!(:publish_event).with(call_attempt.campaign, 'voter_connected', {:campaign_id => campaign.id, :caller_id => session.caller.id, :dials_in_progress => 0})
+      Moderator.stub!(:publish_event).with(call_attempt.campaign, 'voter_connected', {:campaign_id => campaign.id, :caller_id => session.caller.id, :dials_in_progress => 1})
       call_attempt.conference(session).should == Twilio::TwiML::Response.new do |r|
         r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(call_attempt, :host => Settings.host), :record=>call_attempt.campaign.account.record_calls do |d|
           d.Conference session.session_key, :wait_url => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
@@ -216,7 +205,7 @@ describe CallAttempt do
       attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign)
       session = Factory(:caller_session, :caller => Factory(:caller), :campaign => campaign)
       channel = mock
-      Moderator.stub!(:publish_event).with(session.campaign, 'voter_connected', {:campaign_id => campaign.id, :caller_id => session.caller.id, :dials_in_progress => 0})
+      Moderator.stub!(:publish_event).with(session.campaign, 'voter_connected', {:campaign_id => campaign.id, :caller_id => session.caller.id, :dials_in_progress => 1})
       Pusher.should_receive(:[]).with(session.session_key).and_return(channel)
       channel.should_receive(:trigger).with("voter_connected", anything)
       attempt.voter.stub(:conference)
@@ -229,7 +218,7 @@ describe CallAttempt do
       attempt = Factory(:call_attempt, :campaign => campaign, :voter => voter)
       session = Factory(:caller_session, :caller => Factory(:caller), :campaign => campaign, :voter_in_progress => voter)
       Moderator.stub!(:publish_event).with(session.campaign, 'voter_connected', {:campaign_id => campaign.id, 
-        :caller_id => session.caller.id,:dials_in_progress => 0})
+        :caller_id => session.caller.id,:dials_in_progress => 1})
       session.should_receive(:publish).with("voter_connected", {:attempt_id => attempt.id, :voter => attempt.voter.info})
       attempt.voter.stub(:conference)
       attempt.conference(session)

@@ -503,5 +503,15 @@ describe Voter do
 
 
   end
+  
+  describe "skip voter" do
+    
+    it "should skip voter but adding skipped_time" do
+      campaign = Factory(:campaign)
+      voter = Factory(:voter, :campaign => campaign)
+      voter.skip
+      voter.skipped_time.should_not be_nil
+    end
+  end
 
 end

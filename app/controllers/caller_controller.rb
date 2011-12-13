@@ -2,7 +2,7 @@ require Rails.root.join("lib/twilio_lib")
 
 class CallerController < ApplicationController
   layout "caller"
-  before_filter :check_login, :except=>[:login, :feedback, :assign_campaign, :end_session, :pause, :start_calling]
+  before_filter :check_login, :except=>[:login, :feedback, :assign_campaign, :end_session, :pause, :start_calling, :gather_response]
   before_filter :redirect_to_ssl
   before_filter :connect_to_twilio, :only => [:preview_dial]
 
@@ -10,7 +10,7 @@ class CallerController < ApplicationController
     unless @caller.account.activated?
       flash_now(:warning, "Your account is not funded. Please contact your account administrator.")
     end
-    @campaigns = @caller.campaigns.manual.active.collect{|c| c if c.use_web_ui? }
+    @campaigns = @caller.campaigns.manual.active.collect { |c| c if c.use_web_ui? }
   end
 
 
@@ -53,7 +53,7 @@ class CallerController < ApplicationController
     @campaign = @session.caller.account.campaigns.find_by_campaign_id(params[:Digits])
     if @campaign
       @session.update_attributes(:campaign => @campaign)
-      Moderator.caller_connected_to_campaign(caller, @campaign,@session)
+      Moderator.caller_connected_to_campaign(caller, @campaign, @session)
       render :xml => @session.start
     else
       render :xml => @session.ask_for_campaign(params[:attempt].to_i)
@@ -78,6 +78,20 @@ class CallerController < ApplicationController
     end
   end
 
+  def gather_response
+    caller = Caller.find(params[:id])
+    caller_session = caller.caller_sessions.find(params[:session_id])
+    question = Question.find_by_id(params[:question_id])
+    voter = caller_session.voter_in_progress
+    voter.answer(question, params[:Digits], caller_session) if voter && question
+
+    xml = Twilio::Verb.hangup if caller_session.disconnected?
+    xml ||= (voter.question_not_answered.try(:read, caller_session) if voter)
+    xml ||= caller_session.start
+    render :xml => xml
+  end
+
+
   def end_session
     caller_session = CallerSession.find_by_sid(params[:CallSid])
     render :xml => caller_session.try(:end) || Twilio::Verb.hangup
@@ -95,7 +109,7 @@ class CallerController < ApplicationController
     caller_session.publish('caller_connected', voter ? voter.info : {}) if caller_session.campaign.predictive_type == Campaign::Type::PREVIEW || caller_session.campaign.predictive_type == Campaign::Type::PROGRESSIVE
     render :nothing => true
   end
-  
+
   def skip_voter
     caller_session = @caller.caller_sessions.find(params[:session_id])
     voter = Voter.find(params[:voter_id])
@@ -103,16 +117,16 @@ class CallerController < ApplicationController
     next_voter = caller_session.campaign.next_voter_in_dial_queue(params[:voter_id])
     caller_session.publish('caller_connected', next_voter ? next_voter.info : {}) if caller_session.campaign.predictive_type == Campaign::Type::PREVIEW || caller_session.campaign.predictive_type == Campaign::Type::PROGRESSIVE
     render :nothing => true
-    
+
   end
 
   def start_calling
     @caller = Caller.find(params[:caller_id])
     @campaign = Campaign.find(params[:campaign_id])
     @session = @caller.caller_sessions.create(on_call: false, available_for_call: false,
-              session_key: generate_session_key, sid:  params[:CallSid] , campaign: @campaign )
-    Moderator.caller_connected_to_campaign(@caller, @campaign,@session)
-     render :xml => @session.start
+                                              session_key: generate_session_key, sid: params[:CallSid], campaign: @campaign)
+    Moderator.caller_connected_to_campaign(@caller, @campaign, @session)
+    render :xml => @session.start
   end
 
 
@@ -186,4 +200,5 @@ class CallerController < ApplicationController
     Postoffice.feedback(params[:issue]).deliver
     render :text=> "var x='ok';"
   end
+
 end

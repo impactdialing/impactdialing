@@ -12,12 +12,13 @@ class CallAttemptsController < ApplicationController
   def connect
     call_attempt = CallAttempt.find(params[:id])
     Rails.logger.debug("callconnect: #{params[:AnsweredBy]}")
+    call_attempt.update_attribute(:connecttime, Time.now)
     response = case params[:AnsweredBy] #using the 2010 api
                  when "machine"
                    call_attempt.voter.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
                    call_attempt.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
-                   call_attempt.caller_session.publish('answered_by_machine', {})
                    if call_attempt.caller_session && (call_attempt.campaign.predictive_type == Campaign::Type::PREVIEW || call_attempt.campaign.predictive_type == Campaign::Type::PROGRESSIVE)
+                     call_attempt.caller_session.publish('answered_by_machine', {})
                      call_attempt.caller_session.update_attribute(:voter_in_progress, nil)
                      next_voter = call_attempt.campaign.next_voter_in_dial_queue(call_attempt.voter.id)
                      call_attempt.caller_session.publish('voter_push', next_voter ? next_voter.info : {})
@@ -46,7 +47,11 @@ class CallAttemptsController < ApplicationController
     unless call_attempt.status == CallAttempt::Status::ABANDONED 
       call_attempt.voter.update_attributes(:status => CallAttempt::Status::MAP[params[:CallStatus]], :last_call_attempt_time => Time.now)
       call_attempt.update_attributes(:status => CallAttempt::Status::MAP[params[:CallStatus]], :call_end => Time.now)
+    else
+      call_attempt.voter.update_attributes(:last_call_attempt_time => Time.now)
+      call_attempt.update_attributes(:call_end => Time.now)
     end
+    
     
     Moderator.publish_event(call_attempt.campaign, 'update_dials_in_progress', {:campaign_id => call_attempt.campaign.id,:dials_in_progress => call_attempt.campaign.call_attempts.dial_in_progress.length,
       :voters_remaining => call_attempt.campaign.voters_count("not called", false).length})
@@ -60,23 +65,12 @@ class CallAttemptsController < ApplicationController
     render :xml => response
   end
 
-
   def voter_response
     call_attempt = CallAttempt.find(params[:id])
     voter = Voter.find(params[:voter_id])
     params[:scheduled_date].blank? ? voter.capture(params) : schedule_for_later(call_attempt)
     pusher_response_received(call_attempt)
     render :nothing => true
-  end
-
-  def gather_response
-    call_attempt = CallAttempt.find(params[:id])
-    question = Question.find(params[:question_id])
-    call_attempt.voter.answer(question, params[:Digits])
-
-    question_xml = call_attempt.question_not_answered.try(:read, call_attempt)
-    pusher_response_received(call_attempt) unless question_xml
-    render :xml => question_xml || call_attempt.caller_session.start
   end
 
   private

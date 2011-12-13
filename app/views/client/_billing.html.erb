@@ -1,40 +1,41 @@
 <div role="main">
-	<h1>Billing information</h1>
+	<h1>Billing</h1>
 	<div class="table">
 		 <div class="form">
 			<%= error_messages_for :billing_account, :header_message => "Please review and correct the following errors:" %>
 			<% form_for :billing_account, @billing_account do |f| -%>
+			<p>Please verify your payment information. We will not actually charge you until you are ready to make calls.</p>
+			<p>We require prepayment for your usage. If you would like to be billed per caller, rather than per minute, or for volume discounts, please contact support at the email in the lower right corner of your screen.</p>			
 			<fieldset>
-				<h5>We use industry standard encryption to protect your credit card information.</h5>
-
-				<p>We will charge your card on the first of every month. If you would like to be billed per caller, rather than per minute, or to pre-pay for a discount, please let us know at <a href="mailto:email@impactdialing.com">email@impactdialing.com</a>.</p>
-
+				<legend>Payment information</legend>
+				<p>Checks are much cheaper to process than credit cards, so if possible, please pay with an electronic check so we can pass the savings on to you. If it is not possible for you to pay by check, we will charge a 2.5% processing fee to cover credit card fees.</p>
+				<p><strong>We use industry standard encryption to protect your payment information.</strong></p>
 				<p><label for="last_name">Payment type:</label>
 				<% if BILLING_GW.class.to_s=="ActiveMerchant::Billing::BogusGateway" %>
 					<%= select( "billing_account", "cardtype", { "Bogus" => "bogus"}) %>
 				<% else %>
-					<%= select( "billing_account", "cardtype", { "Visa" => "visa", "Mastercard" => "master", "eCheck" => "telecheck"}, {}, {:onchange=>"payType();"}) %>
+					<%= select( "billing_account", "cardtype", { "eCheck" => "telecheck", "Visa" => "visa", "Mastercard" => "master"}, {}, {:onchange=>"payType();"}) %>
 				<% end %>
 				</p>
 				<div id="echeck" style="display:none;">
-					<p><label for="checking_account_type">Checking account type:</label>
+					<p><label for="checking_account_type">Account type:</label>
 					<%= select( "billing_account", "checking_account_type", { "Personal checking" => "PC", 'Personal savings' => 'PS', "Business checking"=>"BC", "Business savings" => "BS"}) %>
 					</p>
-					<p><label for="checking_account_number">Checking account number:</label>
+					<p><label for="bank_routing_number">Routing number (bottom left of your check):</label>
+						<%= f.text_field :bank_routing_number %>
+					</p>
+					<p><label for="checking_account_number">Account number (next to Routing number):</label>
 						<%= f.text_field :checking_account_number %>
 					</p>
 					<p><label for="check_number">Check number:</label>
 						<input type="text" name="check_number" id="check_number" value="<%= params[:check_number] %>">
 					</p>
-					<p><label for="bank_routing_number">Bank routing number:</label>
-						<%= f.text_field :bank_routing_number %>
-					</p>
-					<p><label for="drivers_license_number">Driver's license number:</label>
+					<p><label for="drivers_license_number">Driver's license/Tax ID number:</label>
 						<%= f.text_field :drivers_license_number %>
 					</p>
 
 					<p>
-						<label for="zip">Driver License State:</label>
+						<label for="zip">Driver's license/Tax ID state:</label>
 						<%= f.select :drivers_license_state, ['AK',
 									'AL',
 									'AR',
@@ -112,7 +113,7 @@
 						<%= f.text_field :name %>
 					</p>
 				</div>
-				<p><label for="zip">Address:</label>
+				<p><label for="zip">Billing address:</label>
 					<%= f.text_field :address1 %>
 				</p>
 				<p>
@@ -182,7 +183,7 @@
 				<%# submit_tag "Update account" %>
 				<%# f.submit "Submit", :disable_with => 'submiting...', :class=>"button" %>
 				<div class="buttons">
-					<button type="submit">Verify this card</button>
+					<button type="submit">Verify</button>
 				</div>
 				</fieldset>
 			<% end -%>

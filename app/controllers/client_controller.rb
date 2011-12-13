@@ -336,7 +336,7 @@ class ClientController < ApplicationController
            redirect_to :action=>"index"
            return
          else
-           flash_now(:error, "There was a problem validating your eCheck.  Please email info@impactdialing.com for further support.  #{response.params["error"]}")
+           flash_now(:error, "There was a problem validating your eCheck.  Please contact support for help. Error #{response.params["error"]}")
          end
 
       else
