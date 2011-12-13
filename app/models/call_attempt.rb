@@ -125,6 +125,8 @@ class CallAttempt < ActiveRecord::Base
       caller_session.publish('voter_push',next_voter.nil? ? {} : next_voter.info)
       caller_session.update_attribute(:voter_in_progress, nil)
       caller_session.start
+    else
+      hangup
     end
   end
 
