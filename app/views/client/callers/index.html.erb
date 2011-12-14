@@ -29,10 +29,7 @@
 </div>
 
 <p><%= page_entries_info @callers %> <%= will_paginate @callers %></p>
-<p class="actions">
-    <%= link_to 'Add new webui caller', new_client_caller_path, :class => 'action primary' %>
-    <%= link_to 'Add new phones only caller', new_client_caller_path(:is_phones_only => true), :class => 'action primary'  %>
-</p>
-<p class="actions">
-  <%= link_to 'View deleted callers', client_deleted_callers_path, :class => 'action secondary' %>
-</p>
+<p class="actions"><%= link_to 'Add web caller', new_client_caller_path, :class => 'action primary' %></p>
+<p>Phones-only callers should only be used by political campaigns using the phones-only interface.</p>
+<p class="actions"><%= link_to 'Add phones-only caller', new_client_caller_path(:is_phones_only => true), :class => 'action primary'  %></p>
+<p class="actions"><%= link_to 'View deleted callers', client_deleted_callers_path, :class => 'action secondary' %></p>
