@@ -1,10 +1,12 @@
 <h1>New campaign</h1>
-<validationError></validationError>
+
 <%= javascript_include_tag "https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js" %>
 <div id="callerid"></div>
 
 <%= form_for @campaign,  url:  "#{client_campaigns_path}/#{@campaign.id}", :html => {:name => 'callerForm', :id => 'callerForm'} do |f| %>
-    <%= render "shared/error_messages", :target => @campaign %>
+		<div id="validationError">
+    	<%= render "shared/error_messages", :target => @campaign %>
+		</div>
     <fieldset>
     <%= hidden_field_tag :id, @campaign.id,{:class=>"field"} %>
 	  <legend>Campaign options</legend>
@@ -179,7 +181,7 @@
 							$("#new_voter_list").submit();
 						}
 						else{
-							$('validationError').append(response)	
+							$('#validationError').html(response)	
 						}
 					}
 				});	
