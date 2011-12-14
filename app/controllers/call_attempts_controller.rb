@@ -69,6 +69,7 @@ class CallAttemptsController < ApplicationController
     call_attempt = CallAttempt.find(params[:id])
     voter = Voter.find(params[:voter_id])
     params[:scheduled_date].blank? ? voter.capture(params) : schedule_for_later(call_attempt)
+    call_attempt.update_attributes(wrapup_time: Time.now)
     pusher_response_received(call_attempt)
     render :nothing => true
   end
