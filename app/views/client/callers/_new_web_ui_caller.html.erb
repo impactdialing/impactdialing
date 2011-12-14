@@ -1,0 +1,12 @@
+<fieldset>
+  <%= hidden_field_tag :id, @caller.id, {:class=>"field"} %>
+  <p>
+    <label>Email</label>
+    <%= f.text_field :email, {:class=>"field"} %>
+  </p>
+
+  <p>
+    <label>Password</label>
+    <%= f.text_field :password, {:class=>"field"} %>
+  </p>
+</fieldset>

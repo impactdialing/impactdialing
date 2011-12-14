@@ -6,7 +6,7 @@
 <%= form_for @campaign,  url:  "#{client_campaigns_path}/#{@campaign.id}", :method=> :put, :html => {:name => 'callerForm', :id => 'callerForm'} do |f| %>
     <%= render "shared/error_messages", :target => @campaign %>
     <fieldset>
-    
+
 		<%= hidden_field_tag :id, @campaign.id,{:class=>"field"} %>
 	  <legend>Campaign options</legend>
       <fieldset>
@@ -36,7 +36,7 @@
 
 				<p><label for="">Dialing hours</label>
 						<select class="field" id="campaign_start_time" name="campaign[start_time]">
-							
+
 		          <% if @campaign.start_time %>
 		              <option value="<%= @campaign.start_time.try(:hour) %>" selected>
 										<%= hours.map{ |p| p[0]}[hours.map { |pair| pair[1] }.index(@campaign.start_time.try(:hour).to_s)] %>
@@ -46,7 +46,7 @@
 		        </select>
 						to
 						<select class="field" id="campaign_end_time" name="campaign[end_time]">
-							
+
 		          <% if @campaign.end_time %>
 		              <option value="<%= @campaign.end_time.try(:hour) %>" selected>
 										<%= hours.map{ |p| p[0]}[hours.map { |pair| pair[1] }.index((@campaign.end_time.try(:hour)).to_s)] %>
@@ -55,7 +55,7 @@
 							<%= options_for_select hours, @campaign.end_time %>
 		        </select>
 				</p>
-				
+
 				<%= render :partial => 'shared/recycle_rate', :locals => {:recycle_hour => @campaign.recycle_rate}%>
 				<p><%= f.check_box :answering_machine_detect %>&nbsp;Automatically detect voicemails</p>
         <% if !@campaign.account.recordings.blank? %>
@@ -98,7 +98,7 @@
 
               <% @callers.each do |l| %>
                   <tr>
-                    <td><%= check_box_tag "campaign[caller_ids][]", "#{l.id}", callerInCampaign(l), id: "campaign_caller_id_#{l.id}" -%> <%= l.email %></td>
+                    <td><%= check_box_tag "campaign[caller_ids][]", "#{l.id}", callerInCampaign(l), id: "campaign_caller_id_#{l.id}" -%> <%= l.email || l.name%></td>
                     <td></td>
                     <td><%= l.pin %></td>
                     <% if @campaign.predictive_type.index("robo,") %>
@@ -178,15 +178,15 @@
 
 		$('#campaign_answering_machine_detect').click(function () {
 			if($('#campaign_answering_machine_detect').attr('checked')== false){
-				
+
 				if($("#campaign_use_recordings").attr('checked') == true){
 					$("#recordingsdiv").toggle($("#campaign_use_recordings").checked);
 					$("#campaign_use_recordings").attr('checked', false);
 				}
 			}
 		});
-		
-		
+
+
 		$("#file_upload_submit").live('click', function() {
 			$.ajax({
 				url : $("#callerForm").attr("action"),
@@ -202,7 +202,6 @@
 				}
 			});	
 		});
-		
 
   });
 

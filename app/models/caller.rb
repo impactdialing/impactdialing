@@ -7,7 +7,7 @@ class Caller < ActiveRecord::Base
   belongs_to :account
   has_many :caller_sessions
   before_create :create_uniq_pin
-  validates_uniqueness_of :email
+  validates_uniqueness_of :email, :allow_nil => true
 
   scope :active, where(:active => true)
 
