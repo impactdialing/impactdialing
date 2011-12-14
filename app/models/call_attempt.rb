@@ -126,6 +126,7 @@ class CallAttempt < ActiveRecord::Base
     if caller_session && (campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE)
       caller_session.publish('voter_push',next_voter.nil? ? {} : next_voter.info)
       caller_session.update_attribute(:voter_in_progress, nil)
+      update_attributes(wrapup_time: Time.now)
       caller_session.start
     else
       hangup
