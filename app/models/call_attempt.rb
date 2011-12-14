@@ -123,10 +123,10 @@ class CallAttempt < ActiveRecord::Base
   def fail
     next_voter = self.campaign.next_voter_in_dial_queue(voter.id)
     voter.update_attributes(:call_back => false)
+    update_attributes(wrapup_time: Time.now)
     if caller_session && (campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE)
       caller_session.publish('voter_push',next_voter.nil? ? {} : next_voter.info)
-      caller_session.update_attribute(:voter_in_progress, nil)
-      update_attributes(wrapup_time: Time.now)
+      caller_session.update_attribute(:voter_in_progress, nil)      
       caller_session.start
     else
       hangup
