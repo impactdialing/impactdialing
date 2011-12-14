@@ -136,8 +136,8 @@ class CallerSession < ActiveRecord::Base
   
   def time_exceed_hangup
     Twilio::Verb.new do |v|
-      v.say "In this campaign you can not make calls right now. Because this campaign is active between #{@campaign.start_time.hour > 12 ? @campaign.start_time.hour-12 : @campaign.start_time.hour} "+ (@campaign.start_time.hour <= 12 ? "AM" : "PM")+ 
-      " to #{@campaign.end_time.hour > 12 ? @campaign.end_time.hour-12 : @campaign.end_time.hour} "+ (@campaign.end_time.hour <= 12 ? "AM" : "PM")
+      v.say I18n.t(:campaign_time_period_exceed, :start_time => @campaign.start_time.hour <= 12 ? "#{@campaign.start_time.hour} AM" : "#{@campaign.start_time.hour-12} PM",
+      :end_time => @campaign.end_time.hour <= 12 ? "#{@campaign.end_time.hour} AM" : "#{@campaign.end_time.hour-12} PM")
       v.hangup
     end.response
   end

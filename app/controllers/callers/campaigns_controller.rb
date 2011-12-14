@@ -13,8 +13,8 @@ module Callers
       @campaign = @caller.campaigns.find(params[:id])
       
       if @campaign.time_period_exceed?
-        flash_now(:warning, "In this campaign you can not make calls right now. Because this campaign is active between #{@campaign.start_time.hour > 12 ? @campaign.start_time.hour-12 : @campaign.start_time.hour} "+ (@campaign.start_time.hour <= 12 ? "AM" : "PM")+
-        " to #{@campaign.end_time.hour > 12 ? @campaign.end_time.hour-12 : @campaign.end_time.hour} "+ (@campaign.end_time.hour <= 12 ? "AM" : "PM"))
+        flash_now(:warning, I18n.t(:campaign_time_period_exceed, :start_time => @campaign.start_time.hour <= 12 ? "#{@campaign.start_time.hour} AM" : "#{@campaign.start_time.hour-12} PM",
+         :end_time => @campaign.end_time.hour <= 12 ? "#{@campaign.end_time.hour} AM" : "#{@campaign.end_time.hour-12} PM")) 
       end
       @selected_voter_fields = @campaign.script.try(:voter_fields) ? eval(@campaign.script.try(:voter_fields)) : []
       twilio_capability = Twilio::Util::Capability.new(TWILIO_ACCOUNT, TWILIO_AUTH)
