@@ -9,11 +9,13 @@ class CallAttempt < ActiveRecord::Base
   has_many :call_responses
 
   scope :dial_in_progress, where('call_end is null')
+  scope :not_wrapped_up, where('wrapup_time is null')
   scope :for_campaign, lambda { |campaign| {:conditions => ["campaign_id = ?", campaign.id]} }
   scope :for_status, lambda { |status| {:conditions => ["call_attempts.status = ?", status]} }
   scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
   scope :without_status, lambda { |statuses| {:conditions => ['status not in (?)', statuses]} }
   scope :with_status, lambda { |statuses| {:conditions => ['status in (?)', statuses]} }
+
 
   def report_recording_url
     "#{self.recording_url.gsub("api.twilio.com","recordings.impactdialing.com")}.mp3" if recording_url
@@ -58,7 +60,7 @@ class CallAttempt < ActiveRecord::Base
   def connect_to_caller(caller_session=nil)
     caller_session ||= campaign.oldest_available_caller_session
     if caller_session.nil? || caller_session.disconnected? || !caller_session.available_for_call
-      update_attributes(status: CallAttempt::Status::ABANDONED)
+      update_attributes(status: CallAttempt::Status::ABANDONED, wrapup_time: Time.now)
       voter.update_attributes(:status => CallAttempt::Status::ABANDONED, call_back: false)
       caller_session.update_attribute(:voter_in_progress, nil) unless caller_session.nil?
       Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id,:dials_in_progress => campaign.call_attempts.dial_in_progress.length,

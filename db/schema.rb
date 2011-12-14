@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20111212034544) do
+ActiveRecord::Schema.define(:version => 20111214072555) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -92,6 +92,7 @@ ActiveRecord::Schema.define(:version => 20111212034544) do
     t.datetime "scheduled_date"
     t.string   "recording_url"
     t.integer  "recording_duration"
+    t.datetime "wrapup_time"
   end
 
   add_index "call_attempts", ["call_end"], :name => "index_call_attempts_on_call_end"
