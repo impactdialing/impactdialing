@@ -1,4 +1,5 @@
 class MonitorsController < ClientController
+  skip_before_filter :start,:stop
   layout 'client'
   
   def index
