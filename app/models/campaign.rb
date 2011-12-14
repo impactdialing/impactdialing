@@ -77,7 +77,7 @@ class Campaign < ActiveRecord::Base
     if start_time.hour < end_time.hour
       !(start_time.hour <= Time.now.utc.in_time_zone(time_zone).hour && end_time.hour > Time.now.utc.in_time_zone(time_zone).hour)
     else
-      !(start_time.hour >= Time.now.utc.in_time_zone(time_zone).hour || end_time.hour > Time.now.utc.in_time_zone(time_zone).hour)
+      !(start_time.hour >= Time.now.utc.in_time_zone(time_zone).hour || end_time.hour < Time.now.utc.in_time_zone(time_zone).hour)
     end
   end
   
