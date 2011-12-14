@@ -7,8 +7,8 @@ class CallerSession < ActiveRecord::Base
 
   scope :on_call, :conditions => {:on_call => true}
   scope :available, :conditions => {:available_for_call => true, :on_call => true}
-  scope :dial_in_progress, :conditions => {:available_for_call => false, :on_call => true}
   scope :not_on_call, :conditions => {:on_call => false}
+  scope :connected_to_voter, where('voter_in_progress is not null')
   scope :held_for_duration, lambda { |minutes| {:conditions => ["hold_time_start <= ?", minutes.ago]} }
   scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
   has_one :voter_in_progress, :class_name => 'Voter'
