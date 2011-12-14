@@ -1,4 +1,5 @@
 <h1>New campaign</h1>
+<validationError></validationError>
 <%= javascript_include_tag "https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js" %>
 <div id="callerid"></div>
 
@@ -169,16 +170,20 @@
 			});
 			
 			$("#file_upload_submit").live('click', function() {
-			    var form = $("#callerForm");
-			    var action = form.attr("action");
-			    var serialized_form = form.serialize();
-			    $.post(action, serialized_form, submit_voter_list());
+				$.ajax({
+					url : $("#callerForm").attr("action"),
+					data : $("#callerForm").serialize(),
+					type : "POST",
+					success : function(response){
+						if(response.match(/^<!DOCTYPE html>/)){
+							$("#new_voter_list").submit();
+						}
+						else{
+							$('validationError').append(response)	
+						}
+					}
+				});	
 			});
-
-			function submit_voter_list() {
-				alert("gfd")
-			   $("#new_voter_list").submit();
-			}
 
     });
 
