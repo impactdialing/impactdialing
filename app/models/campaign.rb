@@ -413,7 +413,7 @@ class Campaign < ActiveRecord::Base
 
   def dial_predictive_voters
     if ratio_dial?
-      num_to_call= (callers_available_for_call.length - call_attempts_in_progress.length ) * get_dial_ratio
+      num_to_call= (callers_to_dial.length - callers_on_call.length ) * get_dial_ratio
     else
       short_to_dial=determine_short_to_dial
       max_calls=determine_pool_size(short_to_dial)
