@@ -326,7 +326,7 @@ class Campaign < ActiveRecord::Base
   end
   
   def call_attempts_not_wrapped_up
-    call_attempts_not_wrapped_up.not_wrapped_up
+    call_attempts.not_wrapped_up
   end
   
   def caller_sessions_in_progress
