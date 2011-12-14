@@ -12,6 +12,7 @@
 	    <p>
 			        <label>Your email</label>
 					<%= f.text_field :email, {:class=>"field"} %>
+					<%= f.hidden_field :captcha %>
 			      </p>
 				<% if @user==nil || !@user.new_record? %>
 			    <p>

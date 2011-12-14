@@ -7,6 +7,12 @@ describe User do
   end
 
   it { should validate_uniqueness_of(:email).with_message(/is already in use/) }
+  
+  it "should not allow spambots" do
+    u = User.new(:captcha =>"something")
+    u.save
+    u.errors[:base].should include("Spambots aren\'t welcome here")
+  end
 
   it "creates a reset code" do
     Digest::SHA2.stub!(:hexdigest).and_return('reset code')
