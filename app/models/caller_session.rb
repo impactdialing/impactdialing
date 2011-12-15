@@ -88,7 +88,7 @@ class CallerSession < ActiveRecord::Base
       time_exceed_hangup
     else
       response = Twilio::Verb.new do |v|
-        v.dial(:hangupOnStar => true, :action => gather_response_caller_url(self.caller, :host => Settings.host, :port => Settings.port, :session_id => id)) do
+        v.dial(:hangupOnStar => true, :action => caller_response_path) do
           v.conference(self.session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
         end
       end.response
@@ -148,5 +148,14 @@ class CallerSession < ActiveRecord::Base
     return unless self.campaign.use_web_ui?
     Rails.logger.debug("PUSHER APP ID ::::::::::::::::::::::::::::::::::::::  #{Pusher.app_id}////////////////////////////#{event}")
     Pusher[self.session_key].trigger(event, data.merge!(:dialer => self.campaign.predictive_type))
+  end
+
+  private
+  def caller_response_path
+    if caller.is_phones_only?
+      gather_response_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => id)
+    else
+      pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => id)
+    end
   end
 end
