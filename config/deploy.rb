@@ -34,11 +34,10 @@ namespace :deploy do
   after('deploy:symlink', 'deploy:restart_dialer')
   after('deploy:link_configuration', 'deploy:migrate')
   
-  before "deploy:restart", "delayed_job:stop"
-  after  "deploy:restart", "delayed_job:start"
-  after "deploy:stop",  "delayed_job:stop"
+  after "deploy:stop", "delayed_job:stop"
   after "deploy:start", "delayed_job:start"
-
+  after "deploy:restart", "delayed_job:restart"
+  
   task :link_configuration, :roles => :app do
     run "ln -s #{deploy_to}/shared/config/database.yml #{current_path}/config/database.yml"
     run "ln -s #{deploy_to}/shared/config/application.yml #{current_path}/config/application.yml"
