@@ -53,7 +53,7 @@ namespace :deploy do
     run "cd #{current_path} && RAILS_ENV=#{rails_env} bundle exec script/predictive_dialer_control.rb start"
   end
   
-  task :restart_delayed_jobs_worker do
+  task :restart_delayed_jobs_worker , :roles => :app do
       run "cd #{current_path}; RAILS_ENV=#{rails_env} script/delayed_job restart"
   end
 end
