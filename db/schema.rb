@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20111214101724) do
+ActiveRecord::Schema.define(:version => 20111214182225) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -211,6 +211,21 @@ ActiveRecord::Schema.define(:version => 20111214101724) do
     t.string  "name",       :null => false
     t.integer "account_id"
   end
+
+  create_table "delayed_jobs", :force => true do |t|
+    t.integer  "priority",   :default => 0
+    t.integer  "attempts",   :default => 0
+    t.text     "handler"
+    t.text     "last_error"
+    t.datetime "run_at"
+    t.datetime "locked_at"
+    t.datetime "failed_at"
+    t.string   "locked_by"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "delayed_jobs", ["priority", "run_at"], :name => "delayed_jobs_priority"
 
   create_table "dumps", :force => true do |t|
     t.integer  "request_id"

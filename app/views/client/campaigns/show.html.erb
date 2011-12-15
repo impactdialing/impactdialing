@@ -4,6 +4,7 @@
 <div id="callerid"></div>
 
 <%= form_for @campaign,  url:  "#{client_campaigns_path}/#{@campaign.id}", :method=> :put, :html => {:name => 'callerForm', :id => 'callerForm'} do |f| %>
+
     <%= render "shared/error_messages", :target => @campaign %>
     <fieldset>
 
@@ -197,7 +198,7 @@
 						$("#new_voter_list").submit();
 					}
 					else{
-						$('validationError').append(response)	
+						$('#errorExplanation').html(response)	
 					}
 				}
 			});	

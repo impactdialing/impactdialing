@@ -18,6 +18,7 @@ module ImpactDialing
     config.filter_parameters << :password << :card_number << :card_verification << :cc << :code
     #config.time_zone = 'UTC'
 
+
     require 'active_merchant'
     require 'hoptoad_notifier'
     # Settings in config/environments/* take precedence over those specified here.
@@ -49,7 +50,8 @@ module ImpactDialing
 
     # The default locale is :en and all translations from config/locales/*.rb,yml are auto loaded.
     # config.i18n.load_path += Dir[Rails.root.join('my', 'locales', '*.{rb,yml}')]
-    # config.i18n.default_locale = :de
+    config.i18n.default_locale = :en
+    config.i18n.fallbacks = [:en]
     config.action_view.javascript_expansions[:jdefaults] = %w(jquery jquery_ujs application)
     config.active_record.observers = :voter_observer
   end
