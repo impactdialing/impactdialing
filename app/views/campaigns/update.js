@@ -1,0 +1,1 @@
+<%= render "shared/error_messages", :target => @campaign %>

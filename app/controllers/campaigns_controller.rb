@@ -36,9 +36,12 @@ class CampaignsController < ClientController
       @lists = @campaign.voter_lists
       @voters = @campaign.all_voters.active.paginate(:page => params[:page])
       @voter_list = @campaign.voter_lists.new
-      render :show
+      
+      respond_to do |format|
+        format.js
+        format.html{render :show}
+      end
     end
-
   end
 
   def destroy
