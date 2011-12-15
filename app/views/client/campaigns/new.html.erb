@@ -3,13 +3,13 @@
 <%= javascript_include_tag "https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js" %>
 <div id="callerid"></div>
 
-<%= form_for @campaign,  url:  "#{client_campaigns_path}/#{@campaign.id}", :html => {:name => 'callerForm', :id => 'callerForm'} do |f| %>
-		<div id="validationError">
-    	<%= render "shared/error_messages", :target => @campaign %>
-		</div>
+<%= form_for @campaign, url: "#{client_campaigns_path}/#{@campaign.id}", :html => {:name => 'callerForm', :id => 'callerForm'} do |f| %>
+    <div id="validationError">
+      <%= render "shared/error_messages", :target => @campaign %>
+    </div>
     <fieldset>
-    <%= hidden_field_tag :id, @campaign.id,{:class=>"field"} %>
-	  <legend>Campaign options</legend>
+      <%= hidden_field_tag :id, @campaign.id, {:class=>"field"} %>
+      <legend>Campaign options</legend>
       <fieldset>
         <legend>Basic settings</legend>
         <p><label for="">Name</label><br>
@@ -24,26 +24,29 @@
 
         <p><label for="">Dialing mode</label>
           <select class="field" id="campaign_predictive_type" name="campaign[predictive_type]">
-            <% public_dialers = [["Predictive", "algorithm1"], ["Power x4", "power_4x"], ["Power x3", "power_3x"], ["Power x2", "power_2x"],["Progressive", "progressive"], ["Preview", "preview"],] %>
+            <% public_dialers = [["Predictive", "algorithm1"], ["Power x4", "power_4x"], ["Power x3", "power_3x"], ["Power x2", "power_2x"], ["Progressive", "progressive"], ["Preview", "preview"],] %>
             <%= options_for_select public_dialers, ["Predictive", "algorithm1"] %>
           </select>
         </p>
-		
-				<p><label for="">Time zone</label>
-				<%= time_zone_select( "campaign", 'time_zone', ActiveSupport::TimeZone.us_zones, :default => "Pacific Time (US & Canada)") %></p>
-				<p><label for="">Dialing hours</label>
-						<select class="field" id="campaign_start_time" name="campaign[start_time]">
-		          <option value="9" selected>9 AM</option>
-		          <%= options_for_select hours%>
-		        </select>
-						to
-						<select class="field" id="campaign_end_time" name="campaign[end_time]">
-		          <option value="21" selected>9 PM</option>
-		          <%= options_for_select hours%>
-		        </select>
-				</p>
+
+        <p><label for="">Time zone</label>
+          <%= time_zone_select("campaign", 'time_zone', ActiveSupport::TimeZone.us_zones, :default => "Pacific Time (US & Canada)") %>
+        </p>
+
+        <p><label for="">Dialing hours</label>
+          <select class="field" id="campaign_start_time" name="campaign[start_time]">
+            <option value="9" selected>9 AM</option>
+            <%= options_for_select hours %>
+          </select>
+          to
+          <select class="field" id="campaign_end_time" name="campaign[end_time]">
+            <option value="21" selected>9 PM</option>
+            <%= options_for_select hours %>
+          </select>
+        </p>
         <%= render :partial => 'shared/recycle_rate', :locals => {:recycle_hour => @campaign.recycle_rate} %>
-				<p><%= f.check_box :answering_machine_detect, {:checked => 'checked'}%>&nbsp;Automatically detect voicemails</p>
+        <p><%= f.check_box :answering_machine_detect, {:checked => 'checked'} %>&nbsp;Automatically detect
+          voicemails</p>
         <% if !@campaign.account.recordings.blank? %>
             <p><%= f.check_box :use_recordings, :onclick=>"doRecord();" %>&nbsp;Leave voicemail message</p>
 
@@ -57,8 +60,10 @@
         <% end %>
 
         <p class="actions">
-          <a href='/client/recording_add?campaign_id=<%= @campaign.id %>' class="action secondary">Add voicemail message</a>
+          <a href='/client/recording_add?campaign_id=<%= @campaign.id %>' class="action secondary">Add voicemail
+            message</a>
         </p>
+
         <p>Campaign ID:  <%= "Not yet generated" %></p>
       </fieldset>
       <fieldset>
@@ -66,34 +71,34 @@
         <% if @callers.length==0 %>
             <p>No callers entered.</p>
         <% else %>
-          <div id="callers">
-			<form>
-				<ul class="clearfix">
-					<li><input type="checkbox" value="0" id="selectAll"> All Callers</li>
-					<% @callers.each do |l| %>
-					<li><%= check_box_tag "campaign[caller_ids][]", "#{l.id}", callerInCampaign(l), :onclick=>"someCallers();" -%> <%= l.email %></li>
-					<% end %>
-				</ul>
-			</form>
-		</div>
-		<% end %>
+            <div id="callers">
+              <form>
+                <ul class="clearfix">
+                  <li><input type="checkbox" value="0" id="selectAll"> All Callers</li>
+                  <% @callers.each do |l| %>
+                      <li><%= check_box_tag "campaign[caller_ids][]", "#{l.id}", callerInCampaign(l), :onclick=>"someCallers();" -%> <%= l.email || l.name %></li>
+                  <% end %>
+                </ul>
+              </form>
+            </div>
+        <% end %>
       </fieldset>
       <fieldset>
         <legend>Lists being called</legend>
         <% if @lists.length==0 %>
             <p>You haven't uploaded any lists yet.</p>
         <% else %>
-		<div>
-		<form>
-			<ul class="clearfix">
-				<% @lists.each do |l| %>
-				<li><%= check_box_tag "voter_list_ids[]", "#{l.id}", l.enabled -%> <%= l.name %></li>
-				<% end %>
-			</ul>
-		</form>
-		</div>
-		<% end %>
-	</fieldset>
+            <div>
+              <form>
+                <ul class="clearfix">
+                  <% @lists.each do |l| %>
+                      <li><%= check_box_tag "voter_list_ids[]", "#{l.id}", l.enabled -%> <%= l.name %></li>
+                  <% end %>
+                </ul>
+              </form>
+            </div>
+        <% end %>
+      </fieldset>
       <div class="buttons">
         <button type="submit">Save</button>
       </div>
@@ -101,61 +106,61 @@
 <% end %>
 <fieldset>
   <legend>Add list</legend>
-  <%= render :partial => "voter_lists/new", :locals => { :path => campaign_client_voter_lists_path(@campaign) } %>
+  <%= render :partial => "voter_lists/new", :locals => {:path => campaign_client_voter_lists_path(@campaign)} %>
 </fieldset>
 
 <script>
     $(function () {
-      $('#callers input[type="checkbox"]').attr('checked', true);
-      $('#selectAll').click(function () {
-       $('#callers').find(':checkbox').attr('checked', true);
-      });
+        $('#callers input[type="checkbox"]').attr('checked', true);
+        $('#selectAll').click(function () {
+            $('#callers').find(':checkbox').attr('checked', true);
+        });
 
 
-      $('#callers input[name^= "campaign[caller_ids]"]').change(function(){
-        if ($('#callers input[name^= "campaign[caller_ids]"]:checked').length == <%= @callers.length %> ){
-          $('#selectAll').attr('checked', true)
-        }
-        if ($('#callers input[name^= "campaign[caller_ids]"]:checked').length < <%= @callers.length %> ){
-          $('#selectAll').attr('checked', false)
-        }
-      });
-			
-			$('#campaign_answering_machine_detect').click(function () {
-				if($('#campaign_answering_machine_detect').attr('checked')== false){
+        $('#callers input[name^= "campaign[caller_ids]"]').change(function() {
+            if ($('#callers input[name^= "campaign[caller_ids]"]:checked').length == <%= @callers.length %>) {
+                $('#selectAll').attr('checked', true)
+            }
+            if ($('#callers input[name^= "campaign[caller_ids]"]:checked').length < <%= @callers.length %>) {
+                $('#selectAll').attr('checked', false)
+            }
+        });
 
-					if($("#campaign_use_recordings").attr('checked') == true){
-						$("#recordingsdiv").toggle($("#campaign_use_recordings").checked);
-						$("#campaign_use_recordings").attr('checked', false);
-					}
-				}
-			});
-			
-			$("#file_upload_submit").live('click', function() {
-				$.ajax({
-					url : $("#callerForm").attr("action"),
-					data : $("#callerForm").serialize(),
-					type : "POST",
-					success : function(response){
-						if(response.match(/^<!DOCTYPE html>/)){
-							$("#new_voter_list").submit();
-						}
-						else{
-							$('#validationError').html(response)	
-						}
-					}
-				});	
-			});
+        $('#campaign_answering_machine_detect').click(function () {
+            if ($('#campaign_answering_machine_detect').attr('checked') == false) {
+
+                if ($("#campaign_use_recordings").attr('checked') == true) {
+                    $("#recordingsdiv").toggle($("#campaign_use_recordings").checked);
+                    $("#campaign_use_recordings").attr('checked', false);
+                }
+            }
+        });
+
+        $("#file_upload_submit").live('click', function() {
+            $.ajax({
+                url : $("#callerForm").attr("action"),
+                data : $("#callerForm").serialize(),
+                type : "POST",
+                success : function(response) {
+                    if (response.match(/^<!DOCTYPE html>/)) {
+                        $("#new_voter_list").submit();
+                    }
+                    else {
+                        $('#validationError').html(response)
+                    }
+                }
+            });
+        });
 
     });
 
-    function doRecord() {	
-				if($("#campaign_use_recordings").attr('checked')== true){
-					$('#campaign_answering_machine_detect').attr('checked', true);
-				}
+    function doRecord() {
+        if ($("#campaign_use_recordings").attr('checked') == true) {
+            $('#campaign_answering_machine_detect').attr('checked', true);
+        }
         $("#recordingsdiv").toggle($("#campaign_use_recordings").checked);
     }
- 		<% if !@campaign.account.recordings.blank? %>
+    <% if !@campaign.account.recordings.blank? %>
     function updatePreview() {
         recording_id = $("#campaign_recording_id").val();
     <%@account.recordings.each do |recording| %>
