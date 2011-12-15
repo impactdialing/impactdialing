@@ -85,7 +85,7 @@
 				<ul class="clearfix">
 					<li><input type="checkbox" value="0" id="selectAll">&nbsp; All callers</li>
 					<% @callers.each do |l| %>
-					<li><%= check_box_tag "campaign[caller_ids][]", "#{l.id}", callerInCampaign(l), :onclick=>"someCallers();" -%> <%= l.email %></li>
+					<li><%= check_box_tag "campaign[caller_ids][]", "#{l.id}", callerInCampaign(l), :onclick=>"someCallers();" -%> <%= l.email || l.name%></li>
 					<% end %>
 				</ul>
 			</form>
