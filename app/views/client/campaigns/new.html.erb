@@ -88,15 +88,20 @@
         <% if @lists.length==0 %>
             <p>You haven't uploaded any lists yet.</p>
         <% else %>
-            <div>
-              <form>
-                <ul class="clearfix">
-                  <% @lists.each do |l| %>
-                      <li><%= check_box_tag "voter_list_ids[]", "#{l.id}", l.enabled -%> <%= l.name %></li>
-                  <% end %>
-                </ul>
-              </form>
-            </div>
+            <table>
+		              <tr>
+		                <th>Name</th>
+		                <th>Phone #s</th>
+		                <th>Remaining</th>
+		              </tr>
+		              <% @lists.each do |l| %>
+		                  <tr>
+		                    <td valign="top"><%= check_box_tag "voter_list_ids[]", "#{l.id}", l.enabled -%> <%= l.name %></td>
+		                    <td valign="top"><%= l.voters.size %></td>
+		                    <td valign="top"><%= Voter.find_all_by_voter_list_id_and_active(l.id, 1, :conditions=>"status= 'Not Called' or call_back=1").size %></td>
+		                  </tr>
+		              <% end %>
+			</table>
         <% end %>
       </fieldset>
       <div class="buttons">
