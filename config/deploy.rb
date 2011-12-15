@@ -18,6 +18,7 @@ set :deploy_to, "/var/www/rails/#{application}"
 set :chmod755, 'app config db lib public vendor script script/* public/ disp*'
 set :bundle_without, bundle_without
 set :bundle_flags, bundle_flags
+set :delayed_job_server_role, :app
 
 
 namespace :deploy do
@@ -53,9 +54,6 @@ namespace :deploy do
     run "cd #{current_path} && RAILS_ENV=#{rails_env} bundle exec script/predictive_dialer_control.rb start"
   end
   
-  task :restart_delayed_jobs_worker , :roles => :app do
-      run "cd #{current_path}; RAILS_ENV=#{rails_env} script/delayed_job restart"
-  end
 end
 
 task :staging do
