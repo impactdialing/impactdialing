@@ -55,6 +55,7 @@ namespace :deploy do
   end
   
   task :restart_delayed_jobs_worker do
+      run "mkdir -p #{deploy_to}/shared/pids"
       run "cd #{current_path}; RAILS_ENV=#{rails_env} script/delayed_job restart"
   end
 end
