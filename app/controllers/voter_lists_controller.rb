@@ -32,44 +32,50 @@ class VoterListsController < ClientController
   end
 
   def import
-    @separator = params["separator"]
-    @csv_column_headers = JSON.parse(params["json_csv_column_headers"])
-
-    csv_to_system_map = CsvMapping.new(params["csv_to_system_map"])
-    unless csv_to_system_map.valid?
-      csv_to_system_map.errors.each { |error| flash_now(:error, error) }
-      render "column_mapping", :layout => @layout
-      return
-    end
-
-    csv_filename = session[:voters_list_upload]["filename"]
-    uploaded_filename = temp_file_path(csv_filename)
-
-    @voter_list = VoterList.new
-    @voter_list.name = params[:voter_list_name]
-    @voter_list.campaign_id = params[:campaign_id]
-    @voter_list.account_id = account.id
-    unless @voter_list.valid?
-      flash_now(:error, @voter_list.errors.full_messages.join("; "))
-      render "column_mapping", :layout => @layout
-      return
-    end
-    @voter_list.save!
-
-    begin
-      result = @voter_list.import_leads(csv_to_system_map,
-                                        uploaded_filename,
-                                        @separator)
-      flash_message(:notice, "Upload complete. #{result[:successCount]} out of #{result[:successCount]+result[:failedCount]} records imported successfully.")
-    rescue CSV::MalformedCSVError => err
-      @voter_list.destroy
-      flash_message(:error, "Invalid CSV file. Could not import.")
-    ensure
-      File.unlink uploaded_filename
-      session[:voters_list_upload] = nil
-    end
-
+    Delayed::Job.enqueue VoterListJob.new(params["separator"], params["json_csv_column_headers"], params["csv_to_system_map"], 
+    session[:voters_list_upload]["filename"], params[:voter_list_name], params[:campaign_id], account.id,current_user.domain, current_user.email)    
+    session[:voters_list_upload] = nil    ,
+    flash_message(:notice,I18n.t(:voter_list_upload_scheduled))
     redirect_to @campaign_path
+    
+    # @separator = params["separator"]
+    #     @csv_column_headers = JSON.parse(params["json_csv_column_headers"])
+    # 
+    #     csv_to_system_map = CsvMapping.new(params["csv_to_system_map"])
+    #     unless csv_to_system_map.valid?
+    #       csv_to_system_map.errors.each { |error| flash_now(:error, error) }
+    #       render "column_mapping", :layout => @layout
+    #       return
+    #     end
+    # 
+    #     csv_filename = session[:voters_list_upload]["filename"]
+    #     uploaded_filename = temp_file_path(csv_filename)
+    # 
+    #     @voter_list = VoterList.new
+    #     @voter_list.name = params[:voter_list_name]
+    #     @voter_list.campaign_id = params[:campaign_id]
+    #     @voter_list.account_id = account.id
+    #     unless @voter_list.valid?
+    #       flash_now(:error, @voter_list.errors.full_messages.join("; "))
+    #       render "column_mapping", :layout => @layout
+    #       return
+    #     end
+    #     @voter_list.save!
+    # 
+    #     begin
+    #       result = @voter_list.import_leads(csv_to_system_map,
+    #                                         uploaded_filename,
+    #                                         @separator)
+    #       flash_message(:notice, "Upload complete. #{result[:successCount]} out of #{result[:successCount]+result[:failedCount]} records imported successfully.")
+    #     rescue CSV::MalformedCSVError => err
+    #       @voter_list.destroy
+    #       flash_message(:error, "Invalid CSV file. Could not import.")
+    #     ensure
+    #       File.unlink uploaded_filename
+    #       session[:voters_list_upload] = nil
+    #     end
+    # 
+    #     redirect_to @campaign_path
   end
 
   private
@@ -97,6 +103,11 @@ class VoterListsController < ClientController
     file.rewind
     csv_filename
   end
+  
+  def temp_file_path(filename)
+    Rails.root.join('tmp', filename).to_s
+  end
+  
 
   def save_csv_filename_to_session(csv_filename)
     session[:voters_list_upload] = {
@@ -104,9 +115,6 @@ class VoterListsController < ClientController
         "upload_time" => Time.now}
   end
 
-  def temp_file_path(filename)
-    Rails.root.join('tmp', filename).to_s
-  end
 
   def separator_from_file_extension(filename)
     (File.extname(filename).downcase.include?('.csv')) ? ',' : "\t"

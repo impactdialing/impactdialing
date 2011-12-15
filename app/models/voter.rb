@@ -89,7 +89,7 @@ class Voter < ActiveRecord::Base
     params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect        
     response = Twilio::Call.make(campaign.caller_id, self.Phone, connect_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port),params)
     if response["TwilioResponse"]["RestException"]
-      call_attempt.update_attributes(status: CallAttempt::Status::FAILED)
+      call_attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
       update_attributes(status: CallAttempt::Status::FAILED)
       DIALER_LOGGER.logger.info "[dialer] Exception when attempted to call #{self.Phone} for campaign id:#{self.campaign_id}  Response: #{response["TwilioResponse"]["RestException"].inspect}"
       return
