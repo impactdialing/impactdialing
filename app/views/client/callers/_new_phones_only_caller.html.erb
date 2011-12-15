@@ -5,8 +5,5 @@
     <%= f.text_field :name, {:class=>"field"} %>
     <%= f.hidden_field :is_phones_only, {:class=>"field"} %>
   </p>
-  <p>
-    <label>PIN</label>
-    <%= @caller.pin || "to be generated" %>
-  </p>
+  <p>PIN: <%= @caller.pin || "to be generated" %></p>
 </fieldset>

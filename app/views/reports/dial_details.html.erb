@@ -1,3 +1,14 @@
+<script>
+	$(function () {
+		$('#download_all_voters_submit').click(function(){
+			$('#download_all_voters').attr('checked','checked');
+		});
+		$('#range_voters_submit').click(function(){
+			$('#download_all_voters').removeAttr('checked');
+		});
+	});
+</script>
+
 <h1>Download Report</h1>
 <fieldset>
 
@@ -16,8 +27,8 @@
 	  <% end %>
 		</ul>		
 </fieldset>
-
-<div class="buttons"><button type="submit">Download</button></div>
+<input type="checkbox" style="display:none" id="download_all_voters" name="download_all_voters"></input>
+<div class="buttons"><button type="submit" id="download_all_voters_submit">Download entire campaign</button></div>
 
 		<h3>Date range:</h3>
 		      <table>
@@ -33,6 +44,6 @@
 		          </td>
 		        </tr>
 		      </table>
-		<div class="buttons"><button type="submit">Update and download</button></div>
+		<div class="buttons"><button id="range_voters_submit" type="submit">Download just this date range</button></div>
   <% end %>
 </div>
