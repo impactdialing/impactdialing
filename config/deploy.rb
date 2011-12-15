@@ -1,4 +1,5 @@
 require 'bundler/capistrano'
+require "delayed/recipes"
 
 repository = 'git@github.com:impactdialing/Impact-Dialing.git'
 bundle_flags = '--deployment --quiet --binstubs'
