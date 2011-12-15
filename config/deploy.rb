@@ -54,7 +54,7 @@ namespace :deploy do
   
   task :restart_delayed_job_worker do
     run "ps -ef | grep 'delayed_job' | grep -v grep | awk '{print $2}' | xargs kill || echo 'no process with name delayed_job found'"
-    run "cd #{current_path} && RAILS_ENV=#{rails_env} bundle exec script/delayed_job.rb start"
+    run "cd #{current_path} && RAILS_ENV=#{rails_env} bundle exec script/delayed_job start"
   end
   
   
