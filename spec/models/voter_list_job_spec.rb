@@ -16,7 +16,7 @@ describe VoterListJob do
     describe "requirements" do
       
       it "needs a list name" do
-        job = VoterListJob.new(@separator,@json_csv_column_headers,@csv_to_system_map,'','',@campaign.id,@account.id,nil)
+        job = VoterListJob.new(@separator,@json_csv_column_headers,@csv_to_system_map,'','',@campaign.id,@account.id,nil,nil)
         mailer = mock
         UserMailer.should_receive(:new).and_return(mailer)
         mailer.should_receive(:voter_list_upload)
@@ -25,7 +25,7 @@ describe VoterListJob do
 
       it "should not save a list if the user already has a list with the same name" do
         Factory(:voter_list, :account => @account, :campaign_id => @campaign.id, :name => "abcd")
-        job = VoterListJob.new(@separator,@json_csv_column_headers,@csv_to_system_map,'','abcd',@campaign.id,@account.id,nil)
+        job = VoterListJob.new(@separator,@json_csv_column_headers,@csv_to_system_map,'','abcd',@campaign.id,@account.id,nil,nil)
         mailer = mock
         UserMailer.should_receive(:new).and_return(mailer)
         mailer.should_receive(:voter_list_upload)        
@@ -44,7 +44,7 @@ describe VoterListJob do
       
       it "saves all the voters in the csv according to the mappings" do
         Voter.delete_all
-        job = VoterListJob.new(@separator,@json_csv_column_headers,@csv_to_system_map,@csv_filename,'abcd',@campaign.id,@account.id,nil)
+        job = VoterListJob.new(@separator,@json_csv_column_headers,@csv_to_system_map,@csv_filename,'abcd',@campaign.id,@account.id,nil,nil)
         mailer = mock
         UserMailer.should_receive(:new).and_return(mailer)
         mailer.should_receive(:voter_list_upload)
@@ -57,7 +57,7 @@ describe VoterListJob do
 
       it "removes the temporary file from disk" do
         temp_filename = "#{Rails.root}/tmp/#{@csv_filename}"
-        job = VoterListJob.new(@separator,@json_csv_column_headers,@csv_to_system_map,@csv_filename,'abcd',@campaign.id,@account.id,nil)
+        job = VoterListJob.new(@separator,@json_csv_column_headers,@csv_to_system_map,@csv_filename,'abcd',@campaign.id,@account.id,nil,nil)
         mailer = mock
         UserMailer.should_receive(:new).and_return(mailer)
         mailer.should_receive(:voter_list_upload)        
@@ -75,7 +75,7 @@ describe VoterListJob do
           end        
         custom_field = "Custom"
         Voter.delete_all
-        job = VoterListJob.new(@separator,["Phone", "Custom"].to_json,{"Phone"=>"Phone", custom_field=>custom_field},@csv_filename,'abcd',@campaign.id,@account.id,nil)
+        job = VoterListJob.new(@separator,["Phone", "Custom"].to_json,{"Phone"=>"Phone", custom_field=>custom_field},@csv_filename,'abcd',@campaign.id,@account.id,nil,nil)
         mailer = mock
         UserMailer.should_receive(:new).and_return(mailer)
         mailer.should_receive(:voter_list_upload)        
@@ -99,7 +99,7 @@ describe VoterListJob do
       end
 
       it "should flash an error" do    
-        job = VoterListJob.new(@separator,@json_csv_column_headers,@csv_to_system_map,@csv_filename,'bui',@campaign.id,@account.id,nil)  
+        job = VoterListJob.new(@separator,@json_csv_column_headers,@csv_to_system_map,@csv_filename,'bui',@campaign.id,@account.id,nil,nil)  
         mailer = mock
         UserMailer.should_receive(:new).and_return(mailer)
         mailer.should_receive(:voter_list_upload)                
@@ -108,7 +108,7 @@ describe VoterListJob do
 
       it "should not save the voters list entry" do
         
-        job = VoterListJob.new(@separator,@json_csv_column_headers,@csv_to_system_map,@csv_filename,'hui',@campaign.id,@account.id,nil)  
+        job = VoterListJob.new(@separator,@json_csv_column_headers,@csv_to_system_map,@csv_filename,'hui',@campaign.id,@account.id,nil,nil)  
         mailer = mock
         UserMailer.should_receive(:new).and_return(mailer)
         mailer.should_receive(:voter_list_upload)                

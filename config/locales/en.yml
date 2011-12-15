@@ -13,6 +13,7 @@ en:
   voter_list_upload_succeded_subject: "Your voter list was successfully uploaded"
   voter_list_upload_failed_subject: "Your voter list was not uploaded"
   voter_list_upload_scheduled: "We have sceduled you voter list for upload will send an email once it is completed."
+  campaign_time_period_exceed: "You can only call this campaign between %{start_time} and %{end_time}. Please try back during those hours."
   white_labeling:
     impactdialing:
       title: "Impact Dialing"

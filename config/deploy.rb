@@ -32,6 +32,11 @@ namespace :deploy do
   after('deploy:symlink', 'deploy:install_cron_jobs')
   after('deploy:symlink', 'deploy:restart_dialer')
   after('deploy:link_configuration', 'deploy:migrate')
+  
+  before "deploy:restart", "delayed_job:stop"
+  after  "deploy:restart", "delayed_job:start"
+  after "deploy:stop",  "delayed_job:stop"
+  after "deploy:start", "delayed_job:start"
 
   task :link_configuration, :roles => :app do
     run "ln -s #{deploy_to}/shared/config/database.yml #{current_path}/config/database.yml"
@@ -46,6 +51,10 @@ namespace :deploy do
   task :restart_dialer do
     run "ps -ef | grep 'predictive_dialer' | grep -v grep | awk '{print $2}' | xargs kill || echo 'no process with name predictive_dialer found'"
     run "cd #{current_path} && RAILS_ENV=#{rails_env} bundle exec script/predictive_dialer_control.rb start"
+  end
+  
+  task :restart_delayed_jobs_worker do
+      run "cd #{current_path}; RAILS_ENV=#{rails_env} script/delayed_job restart"
   end
 end
 

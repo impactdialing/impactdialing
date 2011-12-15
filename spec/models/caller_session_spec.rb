@@ -69,7 +69,7 @@ describe CallerSession do
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => conf_key)
       campaign.stub!(:time_period_exceed?).and_return(false)
       session.start.should == Twilio::Verb.new do |v|
-        v.dial(:hangupOnStar => true, :action => gather_response_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => session)) do
+        v.dial(:hangupOnStar => true, :action => session.send(:caller_response_path)) do
           v.conference(conf_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => "GET")
         end
       end.response
@@ -94,6 +94,18 @@ describe CallerSession do
     it "puts the caller on hold" do
       session = Factory(:caller_session)
       session.hold.should == Twilio::Verb.new { |v| v.play "#{Settings.host}:#{Settings.port}/wav/hold.mp3"; v.redirect(:method => 'GET'); }.response
+    end
+
+    it "reads responses to a phones only caller" do
+      caller = Factory(:caller, :is_phones_only => true, :name => 'me')
+      caller_session = Factory(:caller_session, :caller => caller)
+      caller_session.send(:caller_response_path).should == gather_response_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => caller_session.id)
+    end
+
+    it "prompts  for response to a caller using the web ui" do
+      caller = Factory(:caller, :email => 'me@i.com')
+      caller_session = Factory(:caller_session, :caller => caller)
+      caller_session.send(:caller_response_path).should == pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => caller_session.id)
     end
   end
 
@@ -300,6 +312,7 @@ describe CallerSession do
     end
 
   end
+
   it "lists attempts between two dates" do
     too_old = Factory(:caller_session).tap { |ca| ca.update_attribute(:created_at, 10.minutes.ago) }
     too_new = Factory(:caller_session).tap { |ca| ca.update_attribute(:created_at, 10.minutes.from_now) }
