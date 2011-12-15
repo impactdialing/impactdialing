@@ -24,6 +24,9 @@ class TwilioController < ApplicationController
   def call_ended
     #TWILIO_LOG.info "#{@call_attempt.voter.Phone} : Call Ended"
     logger.info "[dialer] call ended. #{@log_message}"
+    @call_attempt = CallAttempt.find(params[:call_attempt_id])
+    voter = @call_attempt.voter
+    voter.update_attributes(:result_date => Time.now)
     render :text => ''
   end
 
