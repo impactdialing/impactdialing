@@ -91,9 +91,42 @@ describe "predictive_dialer" do
   it "should return voters to be call" do
     campaign = Factory(:campaign, :account => Factory(:account, :activated => true), recycle_rate: 3)
     VoterList.should_receive(:active_voter_list_ids).with(campaign.id).and_return([12, 123])
-    Voter.should_receive(:to_be_called).with(campaign.id, [12, 123], "not called",3).and_return(["v1", "v2", "v3", "v2"])
+    Voter.should_receive(:to_be_called).with(campaign.id, [12, 123], "not called", 3).and_return(["v1", "v2", "v3", "v2"])
     Voter.should_not_receive(:just_called_voters_call_back).with(campaign.id, [12, 123])
     campaign.voters("not called").length.should == 3
+  end
+
+  describe "power dialing" do
+    let(:campaign) { Factory(:campaign, :predictive_type => "power_2") }
+
+    def setup_callers
+      3.times { Factory(:caller_session, :caller => Factory(:caller), :campaign => campaign, :available_for_call => true, :on_call => true) }
+    end
+
+    def setup_voters
+      10.times { Factory(:voter, :campaign => campaign, :status => Voter::Status::NOTCALLED) }
+    end
+
+    it "should determine dial ratio" do
+      campaign.ratio_dial?.should be_true
+      campaign.get_dial_ratio.should == 2
+    end
+
+    it "dials dial_ratio times the callers available" do
+      setup_callers
+      setup_voters
+      campaign.dials_count.should == 6
+      voters = campaign.choose_voters_to_dial(campaign.dials_count)
+      voters.size.should == 6
+    end
+
+
+    it "should dial n times the callers available for the power mode" do
+      setup_callers
+      campaign.should_receive(:ring_predictive_voters).with([anything, anything, anything, anything, anything, anything])
+      campaign.dial_predictive_voters
+    end
+
   end
 
   #canned scenarios where we back into / prove our new calls / max calls
@@ -195,19 +228,19 @@ describe "simulatation_dialer" do
 end
 
 describe Campaign do
-  
+
   it "returns valiadtion error, when user_recordings is true and answering_machine_detect is false" do
-    campaign = Campaign.new(:name => "sddd",:answering_machine_detect => false, :use_recordings => true)
+    campaign = Campaign.new(:name => "sddd", :answering_machine_detect => false, :use_recordings => true)
     campaign.should_not be_valid
   end
-  
+
   it "save correctly, when user_recordings is true and answering_machine_detect is true" do
-    campaign1 = Campaign.new(:name => "sddd1",:answering_machine_detect => true, :use_recordings => true)
-    campaign2 = Campaign.new(:name => "sddd2",:answering_machine_detect => true, :use_recordings => false)
-    campaign3 = Campaign.new(:name => "sddd3",:answering_machine_detect => false, :use_recordings => false)
+    campaign1 = Campaign.new(:name => "sddd1", :answering_machine_detect => true, :use_recordings => true)
+    campaign2 = Campaign.new(:name => "sddd2", :answering_machine_detect => true, :use_recordings => false)
+    campaign3 = Campaign.new(:name => "sddd3", :answering_machine_detect => false, :use_recordings => false)
     campaign1.should be_valid
-    campaign2.should be_valid  
-    campaign3.should be_valid  
+    campaign2.should be_valid
+    campaign3.should be_valid
   end
 
   it "restoring makes it active" do
@@ -313,7 +346,7 @@ describe Campaign do
     it "not return any number if only voter to be called a retry and last called time is within campaign recycle rate" do
       campaign = Factory(:campaign, recycle_rate: 2)
       scheduled_voter = Factory(:voter, :status => CallAttempt::Status::SCHEDULED, :last_call_attempt_time => 2.hours.ago, :scheduled_date => 20.minute.from_now, :campaign => campaign)
-      retry_voter = Factory(:voter, :status => CallAttempt::Status::VOICEMAIL, last_call_attempt_time:1.hours.ago , :campaign => campaign)
+      retry_voter = Factory(:voter, :status => CallAttempt::Status::VOICEMAIL, last_call_attempt_time: 1.hours.ago, :campaign => campaign)
       current_voter = Factory(:voter, :status => CallAttempt::Status::SUCCESS, :campaign => campaign)
       campaign.next_voter_in_dial_queue(current_voter.id).should be_nil
     end
@@ -338,7 +371,7 @@ describe Campaign do
       Factory(:caller_session, :campaign => Factory(:campaign, :account => Factory(:account)), :on_call => true)
       user.account.campaigns.with_running_caller_sessions.should be_empty
     end
-    
+
     it "should return caller session, which is oldest and available to take call" do
       campaign = Factory(:campaign)
       caller_session1 = Factory(:caller_session, :campaign => campaign, :on_call => true)
@@ -348,7 +381,7 @@ describe Campaign do
       caller_session1.update_attributes(:available_for_call => true, :updated_at => Time.now + 1.second)
       caller_session3.update_attributes(:updated_at => Time.now + 5.second)
       campaign.oldest_available_caller_session.should == caller_session2
-      
+
     end
   end
 
@@ -502,7 +535,7 @@ describe Campaign do
     voter_on_another_campaign.result.should == 'hello'
     voter_on_another_campaign.status.should == 'world'
   end
-  
+
   it "should give the final results of a campaign as a Hash" do
     now = Time.now
     script = Factory(:script)
@@ -510,34 +543,34 @@ describe Campaign do
     question2 = Factory(:question, :text => "wr r u", :script => script)
     possible_response1 = Factory(:possible_response, :question => question1)
     possible_response2 = Factory(:possible_response, :question => question1)
-    Factory(:answer, :voter => Factory(:voter),:possible_response => possible_response1, :question => question1, :created_at => now)
-    Factory(:answer, :voter => Factory(:voter),:possible_response => possible_response2, :question => question2, :created_at => now)
+    Factory(:answer, :voter => Factory(:voter), :possible_response => possible_response1, :question => question1, :created_at => now)
+    Factory(:answer, :voter => Factory(:voter), :possible_response => possible_response2, :question => question2, :created_at => now)
     campaign = Factory(:campaign, :script => script)
-    campaign.answers_result(now, now).should == {"hw are u" => [{answer: "no_response", number: 1, percentage:  100},{answer: "no_response", number: 1, percentage:  100}],"wr r u" => []}
+    campaign.answers_result(now, now).should == {"hw are u" => [{answer: "no_response", number: 1, percentage: 100}, {answer: "no_response", number: 1, percentage: 100}], "wr r u" => []}
 
   end
-  
+
   describe "time period" do
     before(:each) do
-      @campaign = Factory(:campaign, :start_time => Time.new(2011,1,1,9,0,0),:end_time => Time.new(2011,1,1,21,0,0),:time_zone =>"Pacific Time (US & Canada)")
+      @campaign = Factory(:campaign, :start_time => Time.new(2011, 1, 1, 9, 0, 0), :end_time => Time.new(2011, 1, 1, 21, 0, 0), :time_zone =>"Pacific Time (US & Canada)")
     end
     it "should allow callers to dial, if time not expired" do
       t1 = Time.parse("01/2/2011 10:00")
       t2 = Time.parse("01/2/2011 09:00")
-      Time.stub!(:now).and_return(t1,t1,t2,t2)
+      Time.stub!(:now).and_return(t1, t1, t2, t2)
       @campaign.time_period_exceed?.should == false
-      @campaign.time_period_exceed?.should == false 
+      @campaign.time_period_exceed?.should == false
     end
-    
+
     it "should not allow callers to dial, if time  expired" do
       t1 = Time.parse("01/2/2011 22:20")
       t2 = Time.parse("01/2/2011 11:00")
       t3 = Time.parse("01/2/2011 15:00")
-      Time.stub!(:now).and_return(t1,t1,t2,t2,t3,t3)
+      Time.stub!(:now).and_return(t1, t1, t2, t2, t3, t3)
       @campaign.time_period_exceed?.should == true
       @campaign.time_period_exceed?.should == true
       @campaign.time_period_exceed?.should == true
     end
   end
-  
+
 end
