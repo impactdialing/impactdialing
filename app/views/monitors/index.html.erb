@@ -80,7 +80,7 @@
 		$.ajax({
         url : "/client/monitors/start",
         data : {'session_id' : next_session_id, 'type': action, 'monitor_session' : $('monitor_session').text()},
-        type : "POST",
+        type : "GET",
         success : function(response) {}
     });
 	}
@@ -165,7 +165,7 @@
                 <tr id="<%= c.id %>" class="campaign <%= cycle("odd", "even") %>">
                   <td><h3><%= link_to c.name, campaign_path(c) %></h3></td>
                   <td class="callers_logged_in"><%= c.caller_sessions.on_call.length %></td>
-                  <td class="dials_in_progress"><%= c.caller_sessions.dial_in_progress.length %></td>
+                  <td class="dials_in_progress"><%= c.call_attempts.dial_in_progress.length %></td>
                   <td class="voters_count"><%= c.voters_count("not called", false).length %></td>
                 </tr>
             <% end %>
