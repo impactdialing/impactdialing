@@ -1,5 +1,5 @@
 class MonitorsController < ClientController
-  skip_before_filter :start,:stop
+  skip_before_filter :check_login, :only => [:start,:stop]
   layout 'client'
   
   def index
