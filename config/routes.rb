@@ -121,7 +121,7 @@ ImpactDialing::Application.routes.draw do
     resources :blocked_numbers, :only => [:index, :create, :destroy]
     resources :monitors do
       collection do
-        post :start
+        get :start
         get :stop
         get :deactivate_session
         get :switch_mode

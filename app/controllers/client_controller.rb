@@ -1,7 +1,7 @@
 require Rails.root.join("lib/twilio_lib")
 
 class ClientController < ApplicationController
-  before_filter :check_login, :except => [:login, :user_add, :forgot, :switch_mode, :deactivate_session]
+  before_filter :check_login, :except => [:login, :user_add, :forgot]
   before_filter :check_paid
   before_filter :redirect_to_ssl
 
