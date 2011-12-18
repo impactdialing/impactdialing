@@ -40,7 +40,7 @@ class VoterListJob
       result = @voter_list.import_leads(@csv_to_system_map,
                                         uploaded_filename,
                                         @separator)
-      response['success'] <<  "Upload complete. #{result[:successCount]} out of #{result[:successCount]+result[:failedCount]} records imported successfully."
+      response['success'] <<  "#{result[:successCount]} out of #{result[:successCount]+result[:failedCount]} records imported successfully."
     rescue Exception => err
       puts err
       @voter_list.destroy

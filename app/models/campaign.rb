@@ -411,17 +411,21 @@ class Campaign < ActiveRecord::Base
 
   def choose_voters_to_dial(num_voters)
     return [] if num_voters < 1
-    scheduled_voter_ids = self.all_voters.scheduled.limit(num_voters)
-    (scheduled_voter_ids + self.voters('not called')).reject(&:blocked?).uniq[0..num_voters-1]
+    scheduled_voters = all_voters.scheduled.limit(num_voters)
+    return scheduled_voters + all_voters.to_be_dialed.without(account.blocked_numbers.for_campaign(self).map(&:number)).limit(num_voters - scheduled_voters.size)
   end
 
   def ratio_dial?
     predictive_type=="" || predictive_type.index("power_")==0 || predictive_type.index("robo,")==0
   end
 
+  def dials_count
+    (callers_to_dial.length - call_attempts_not_wrapped_up.length) * get_dial_ratio
+  end
+
   def dial_predictive_voters
     if ratio_dial?
-      num_to_call= (callers_to_dial.length - call_attempts_not_wrapped_up.length ) * get_dial_ratio
+      num_to_call= dials_count
     else
       short_to_dial=determine_short_to_dial
       max_calls=determine_pool_size(short_to_dial)

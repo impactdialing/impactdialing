@@ -29,7 +29,7 @@ class Voter < ActiveRecord::Base
   scope :to_callback, where(:call_back => true)
   scope :scheduled, where(:scheduled_date => (10.minutes.ago..10.minutes.from_now)).where(:status => CallAttempt::Status::SCHEDULED)
   scope :limit, lambda { |n| {:limit => n} }
-  scope :without, lambda { |numbers| where('Phone not in (?)', numbers) }
+  scope :without, lambda { |numbers| where('Phone not in (?)', numbers << -1) }
   scope :not_skipped, where('skipped_time is null')
   scope :answered, where('result_date is not null')
   scope :answered_within, lambda { |from, to| where(:result_date => from.beginning_of_day..(to.end_of_day)) }
