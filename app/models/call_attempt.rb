@@ -99,7 +99,7 @@ class CallAttempt < ActiveRecord::Base
     Rails.logger.debug("Voter conference")
     Twilio::TwiML::Response.new do |r|
       r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(self, :host => Settings.host), :record=>self.campaign.account.record_calls do |d|
-        d.Conference session.session_key, :wait_url => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
+        d.Conference session.session_key, :waitUrl => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
       end
     end.text
   end

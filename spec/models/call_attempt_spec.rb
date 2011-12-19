@@ -106,7 +106,7 @@ describe CallAttempt do
       Moderator.stub!(:publish_event).with(call_attempt.campaign, 'voter_connected', {:campaign_id => campaign.id, :caller_id => session.caller.id, :dials_in_progress => 1})
       call_attempt.conference(session).should == Twilio::TwiML::Response.new do |r|
         r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(call_attempt, :host => Settings.host), :record=>call_attempt.campaign.account.record_calls do |d|
-          d.Conference session.session_key, :wait_url => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
+          d.Conference session.session_key, :waitUrl => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
         end
       end.text
       call_attempt.reload.call_start.should_not be_nil

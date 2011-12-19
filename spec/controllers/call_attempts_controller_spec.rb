@@ -84,7 +84,7 @@ describe CallAttemptsController do
       available_session.reload.voter_in_progress.should == voter
       response.body.should == Twilio::TwiML::Response.new do |r|
         r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(call_attempt, :host => Settings.host), :record=>call_attempt.campaign.account.record_calls do |d|
-          d.Conference available_session.session_key, :wait_url => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
+          d.Conference available_session.session_key, :waitUrl => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
         end
       end.text
     end
@@ -105,7 +105,7 @@ describe CallAttemptsController do
       post :connect, :id => call_attempt.id
       response.body.should == Twilio::TwiML::Response.new do |r|
         r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(call_attempt, :host => Settings.host), :record=>call_attempt.campaign.account.record_calls do |d|
-          d.Conference caller_session.session_key, :wait_url => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
+          d.Conference caller_session.session_key, :waitUrl => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
         end
       end.text
     end

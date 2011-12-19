@@ -121,9 +121,9 @@ describe "predictive_dialer" do
     end
 
 
-    it "should dial n times the callers available for the power mode" do
-      pending
+    it "dials dial_ratio times the callers available for the power mode" do
       setup_callers
+      setup_voters
       campaign.should_receive(:ring_predictive_voters).with([anything, anything, anything, anything, anything, anything])
       campaign.dial_predictive_voters
     end
