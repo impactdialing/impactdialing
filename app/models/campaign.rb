@@ -31,7 +31,7 @@ class Campaign < ActiveRecord::Base
   validate :check_answering_machine_detect_and_leave_voice_mail
   cattr_reader :per_page
   @@per_page = 25
-  
+
   before_validation :set_untitled_name
   before_save :set_untitled_name
   before_validation :sanitize_caller_id
@@ -41,13 +41,13 @@ class Campaign < ActiveRecord::Base
     PREDICTIVE = "algorithm1"
     PROGRESSIVE = "progressive"
   end
-  
+
   def check_answering_machine_detect_and_leave_voice_mail
     if (answering_machine_detect == false) && (use_recordings == true)
       errors.add(:base, 'Please select \'Automatically detect voicemails(required for leaving messages)\'')
     end
   end
-  
+
   def set_untitled_name
     self.name = "Untitled #{account.campaigns.count + 1}" if self.name.blank?
   end
@@ -72,7 +72,7 @@ class Campaign < ActiveRecord::Base
       voter_list.save
     end
   end
-  
+
   def time_period_exceed?
     if start_time.hour < end_time.hour
       !(start_time.hour <= Time.now.utc.in_time_zone(time_zone).hour && end_time.hour > Time.now.utc.in_time_zone(time_zone).hour)
@@ -80,7 +80,7 @@ class Campaign < ActiveRecord::Base
       !(start_time.hour >= Time.now.utc.in_time_zone(time_zone).hour || end_time.hour < Time.now.utc.in_time_zone(time_zone).hour)
     end
   end
-  
+
   def oldest_available_caller_session
      caller_sessions.available.find(:first, :order => "updated_at ASC")
   end
@@ -324,11 +324,11 @@ class Campaign < ActiveRecord::Base
   def call_attempts_in_progress
     call_attempts.dial_in_progress
   end
-  
+
   def call_attempts_not_wrapped_up
     call_attempts.not_wrapped_up
   end
-  
+
   def caller_sessions_in_progress
     caller_sessions.connected_to_voter
   end
@@ -425,11 +425,9 @@ class Campaign < ActiveRecord::Base
 
   def dial_predictive_voters
     if ratio_dial?
-      num_to_call= dials_count
+      num_to_call = (callers_to_dial.length - call_attempts_not_wrapped_up.length ) * get_dial_ratio
     else
-      short_to_dial=determine_short_to_dial
-      max_calls=determine_pool_size(short_to_dial)
-      num_to_call=max_calls-call_attempts_in_progress.length
+      num_to_call = num_to_call_predictive
     end
 
     DIALER_LOGGER.info "#{self.name}: Callers logged in: #{callers.length}, Callers on call: #{callers_on_call.length}, Callers not on call:  #{callers_not_on_call}, Calls in progress: #{call_attempts_in_progress.length}"
@@ -439,6 +437,12 @@ class Campaign < ActiveRecord::Base
       DIALER_LOGGER.info("voters to dial #{voter_ids}")
       ring_predictive_voters(voter_ids)
     end
+  end
+
+  def num_to_call_predictive
+    short_to_dial = determine_short_to_dial
+    max_calls = determine_pool_size(short_to_dial)
+    max_calls - call_attempts_in_progress.length
   end
 
   def ring_predictive_voters(voter_ids)
@@ -531,16 +535,16 @@ class Campaign < ActiveRecord::Base
     DIALER_LOGGER.info("predictive_simulator voters to dial #{voter_ids}")
     ring_predictive_voters(voter_ids)
   end
-  
+
   def answers_result(from_date, to_date)
     result = Hash.new
     script.questions.each do |question|
       total_answers = question.answered_within(from_date, to_date).length
-      result[question.text] = question.possible_responses.collect { |possible_response| possible_response.stats(from_date, to_date, total_answers)}      
-    end 
-    result    
+      result[question.text] = question.possible_responses.collect { |possible_response| possible_response.stats(from_date, to_date, total_answers)}
+    end
+    result
   end
-  
+
 
   private
   def dial_voters

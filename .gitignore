@@ -7,8 +7,7 @@ config/application.yml
 simulator/database.yml
 coverage/
 tmp
-*.DS_Store
-public/.DS_Store
+.DS_Store
 test/
 lib/*.pid
 *.rails2
