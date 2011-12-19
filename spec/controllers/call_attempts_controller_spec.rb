@@ -41,7 +41,7 @@ describe CallAttemptsController do
       Pusher.should_receive(:[]).with(anything).and_return(channel)
       info = voter2.info
       info[:fields]['status'] = CallAttempt::Status::READY
-      
+
       channel.should_receive(:trigger).with("voter_push", info.merge(:dialer => campaign.predictive_type))
 
       post :voter_response, :id => call_attempt.id, :voter_id => voter.id, :question => {question1.id=> response1.id, question2.id=>response2.id}
@@ -57,7 +57,7 @@ describe CallAttemptsController do
       channel = mock
       info = campaign.all_voters.to_be_dialed.first.info
       info[:fields]['status'] = CallAttempt::Status::READY
-      
+
       Pusher.should_receive(:[]).with(anything).and_return(channel)
       channel.should_receive(:trigger).with("voter_push", info.merge({dialer: next_voter.campaign.predictive_type}))
       post :voter_response, :id => call_attempt.id, :voter_id => voter.id, :answers => {}
@@ -211,7 +211,7 @@ describe CallAttemptsController do
       call_attempt = Factory(:call_attempt, :caller_session => session, :voter => voter, :campaign => campaign)
       next_voter = Factory(:voter, :campaign => campaign, :status => Voter::Status::NOTCALLED)
       pusher_session = mock
-      
+
       info = next_voter.info
       info[:fields]['status'] = CallAttempt::Status::READY
       Pusher.stub(:[]).with(session_key).and_return(pusher_session)
@@ -219,7 +219,7 @@ describe CallAttemptsController do
       pusher_session.should_receive(:trigger).with('voter_push', info.merge(:dialer => campaign.predictive_type))
       post :connect, :id => call_attempt.id, :AnsweredBy => "machine"
     end
-    
+
     it "if the call attempt is ABANDONED, it doesn't modify status, when call end" do
       voter = Factory(:voter, :status => CallAttempt::Status::ABANDONED)
       call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign, :caller_session => Factory(:caller_session), :status => CallAttempt::Status::ABANDONED)
@@ -227,14 +227,16 @@ describe CallAttemptsController do
       call_attempt.reload.status.should == CallAttempt::Status::ABANDONED
       call_attempt.voter.reload.status.should == CallAttempt::Status::ABANDONED
     end
-    
+
     it "if the call attempt is ABANDONED, it  modifies end_tme, when call end" do
+      time_now = Time.now
+      Time.stub(:now).and_return(time_now)
       voter = Factory(:voter, :status => CallAttempt::Status::ABANDONED)
       call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign, :caller_session => Factory(:caller_session), :status => CallAttempt::Status::ABANDONED)
       post :end, :id => call_attempt.id, :CallStatus => "completed"
-      call_attempt.reload.call_end.utc.to_i.should == Time.now.utc.to_i
-      call_attempt.voter.reload.last_call_attempt_time.utc.to_i.should == Time.now.utc.to_i
+      call_attempt.reload.call_end.utc.to_i.should == time_now.utc.to_i
+      call_attempt.voter.reload.last_call_attempt_time.utc.to_i.should == time_now.utc.to_i
     end
-    
+
   end
 end
