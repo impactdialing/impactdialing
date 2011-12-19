@@ -4,10 +4,10 @@ ImpactDialing::Application.configure do
   TWILIO_ACCOUNT="AC422d17e57a30598f8120ee67feae29cd"
   TWILIO_AUTH="897298ab9f34357f651895a7011e1631"
   APP_NUMBER="8582254595"
-  
+
   #monitor
    MONITOR_TWILIO_APP_SID="AP7a2d44762a9c4ff39e963868133c9ce5"
-   
+
   #Brian?
   #TWILIO_ACCOUNT="ACc0208d4be3e204d5812af2813683243a"
   #TWILIO_AUTH="4e179c64daa7c9f5108bd6623c98aea6"
@@ -43,7 +43,7 @@ ImpactDialing::Application.configure do
   config.action_mailer.delivery_method = :test
 
   config.active_support.deprecation = :log
-  # 
+  #
   # config.after_initialize do
   #   ActiveMerchant::Billing::Base.mode = :test
   #   ActiveMerchant::Billing::LinkpointGateway.pem_file  = File.read(Rails.root.join('1909897530.pem'))

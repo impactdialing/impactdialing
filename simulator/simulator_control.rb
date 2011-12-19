@@ -4,4 +4,4 @@ require 'daemons'
 
 RAILS_ROOT = File.expand_path('../..', __FILE__)
 
-Daemons.run(File.join(RAILS_ROOT, 'lib', 'simulator.rb'), {:ARGV => ARGV})
+Daemons.run(File.join(RAILS_ROOT, 'simulator', 'simulator.rb'), {:ARGV => ARGV})
