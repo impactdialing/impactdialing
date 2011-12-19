@@ -13,25 +13,21 @@ class VoterListJob
   end
 
   def perform
-    puts "start jobbbbbbbbbbbbbbbbbbb"
     response = {"errors"=> [], "success"=> []}
     user_mailer = UserMailer.new
 
     unless @csv_to_system_map.valid?
       response["errors"].concat(@csv_to_system_map.errors)
       user_mailer.voter_list_upload(response,@domain, @email)
-      puts response
       return response
     end
 
     uploaded_filename = temp_file_path(@csv_filename)
-    puts uploaded_filename
     @voter_list = VoterList.new(name: @voter_list_name, campaign_id: @voter_list_campaign_id, account_id: @voter_list_account_id)
 
     unless @voter_list.valid?
       response['errors'] << @voter_list.errors.full_messages.join("; ")
       user_mailer.voter_list_upload(response,@domain, @email)
-      puts response
       return response
     end
     @voter_list.save!
@@ -46,7 +42,6 @@ class VoterListJob
       @voter_list.destroy
       response['errors'] << "Invalid CSV file. Could not import."
     ensure
-      puts response
       File.unlink uploaded_filename
       user_mailer.voter_list_upload(response,@domain, @email)
       return response
