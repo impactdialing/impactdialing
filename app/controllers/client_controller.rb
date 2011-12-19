@@ -9,7 +9,6 @@ class ClientController < ApplicationController
   in_place_edit_for :campaign, :name
 
   def check_login
-    
     redirect_to_login and return if session[:user].blank?
     begin
       @user = User.find(session[:user])
