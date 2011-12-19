@@ -1,21 +1,14 @@
 <%= error_messages_for :caller %>
-	<h1>Add caller</h1>
-	<%= form_for :caller, url:  client_callers_path(@caller) do |f| -%>  
-  	<fieldset>
-  	  <%= hidden_field_tag :id, @caller.id,{:class=>"field"} %>
-        <p>
-          <label>Email</label>
-  		<%= f.text_field :email, {:class=>"field"} %>
-        </p>
-        <p>
-          <label>Password</label>
-  		<%= f.text_field :password, {:class=>"field"} %>
-        </p>
-      </fieldset>
-
-  	<div class="buttons">
-  	<button type="submit">Save</button>
-  	</div>
-  <% end -%>
+<h1>Add caller</h1>
+<%= form_for :caller, url: client_callers_path(@caller) do |f| -%>
+    <% if @caller.is_phones_only? %>
+        <%= render :partial => 'new_phones_only_caller', :locals => {:f => f } %>
+    <% else %>
+        <%= render :partial => 'new_web_ui_caller', :locals => {:f => f } %>
+    <% end %>
+    <div class="buttons">
+      <button type="submit">Save</button>
+    </div>
+<% end -%>
 
 

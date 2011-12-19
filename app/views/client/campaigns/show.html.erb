@@ -1,12 +1,16 @@
-<h1>Edit campaign</h1>
 
+<%= javascript_include_tag "campaign/auto_save" %>
 <%= javascript_include_tag "https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js" %>
+<h1>Edit campaign</h1>
 <div id="callerid"></div>
 
 <%= form_for @campaign,  url:  "#{client_campaigns_path}/#{@campaign.id}", :method=> :put, :html => {:name => 'callerForm', :id => 'callerForm'} do |f| %>
+	<div id="validationError">
     <%= render "shared/error_messages", :target => @campaign %>
+	</div>
     <fieldset>
-    <%= hidden_field_tag :id, @campaign.id,{:class=>"field"} %>
+
+		<%= hidden_field_tag :id, @campaign.id,{:class=>"field"} %>
 	  <legend>Campaign options</legend>
       <fieldset>
         <legend>Basic settings</legend>
@@ -29,7 +33,33 @@
             <%= options_for_select public_dialers, @campaign.predictive_type %>
           </select>
         </p>
-        <%= render :partial => 'shared/recycle_rate', :locals => {:recycle_hour => @campaign.recycle_rate}%>
+
+<p><label for="">Time zone</label>
+<%= time_zone_select( "campaign", 'time_zone', ActiveSupport::TimeZone.us_zones, :default => "Pacific Time (US & Canada)") %></p>
+
+				<p><label for="">Dialing hours</label>
+						<select class="field" id="campaign_start_time" name="campaign[start_time]">
+
+		          <% if @campaign.start_time %>
+		              <option value="<%= @campaign.start_time.try(:hour) %>" selected>
+										<%= hours.map{ |p| p[0]}[hours.map { |pair| pair[1] }.index(@campaign.start_time.try(:hour).to_s)] %>
+									</option>
+		          <% end %>
+		          <%= options_for_select hours, @campaign.start_time %>
+		        </select>
+						to
+						<select class="field" id="campaign_end_time" name="campaign[end_time]">
+
+		          <% if @campaign.end_time %>
+		              <option value="<%= @campaign.end_time.try(:hour) %>" selected>
+										<%= hours.map{ |p| p[0]}[hours.map { |pair| pair[1] }.index((@campaign.end_time.try(:hour)).to_s)] %>
+									</option>
+		          <% end %>
+							<%= options_for_select hours, @campaign.end_time %>
+		        </select>
+				</p>
+
+				<%= render :partial => 'shared/recycle_rate', :locals => {:recycle_hour => @campaign.recycle_rate}%>
 				<p><%= f.check_box :answering_machine_detect %>&nbsp;Automatically detect voicemails</p>
         <% if !@campaign.account.recordings.blank? %>
             <p><%= f.check_box :use_recordings, :onclick=>"doRecord();" %>&nbsp;Leave voicemail message</p>
@@ -50,76 +80,40 @@
         <legend>Callers with access</legend>
         <% if @callers.length==0 %>
             <p>No callers entered.</p>
-            <a href="/client/callers" class="add-button"><span>Add callers</span></a>
         <% else %>
           <div id="callers">
-            <table width="100%" border="0" cellspacing="0" cellpadding="0">
-              <tr>
-                <th>Email</th>
-                <th>&nbsp;</th>
-                <th>PIN</th>
-                <% if @campaign.predictive_type.index("robo,") %>
-                    <th></th>
-                    <th></th>
-                <% end %>
-              </tr>
-              <tr>
-                <td><input type="checkbox" value="0" id="selectAll"> All Callers</td>
-                <td></td>
-                <td></td>
-              </tr>
-
-              <% @callers.each do |l| %>
-                  <tr>
-                    <td><%= check_box_tag "campaign[caller_ids][]", "#{l.id}", callerInCampaign(l), id: "campaign_caller_id_#{l.id}" -%> <%= l.email %></td>
-                    <td></td>
-                    <td><%= l.pin %></td>
-                    <% if @campaign.predictive_type.index("robo,") %>
-                        <td>
-                          <a href="/client/robo_session_start?caller_id=<%= l.id %>&campaign_id=<%= @campaign.id %>">start</a>
-                        </td>
-                        <td>
-                          <a href="/client/robo_session_end?caller_id=<%= l.id %>&campaign_id=<%= @campaign.id %>">end</a>
-                        </td>
-                    <% end %>
-                  </tr>
-              <% end %>
-            </table>
-          </div>
-        <% end %>
+			<form>
+				<ul class="clearfix">
+					<li><input type="checkbox" value="0" id="selectAll">&nbsp; All callers</li>
+					<% @callers.each do |l| %>
+					<li><%= check_box_tag "campaign[caller_ids][]", "#{l.id}", callerInCampaign(l), :onclick=>"someCallers();" -%> <%= l.email || l.name%></li>
+					<% end %>
+				</ul>
+			</form>
+		</div>
+		<% end %>
       </fieldset>
       <fieldset>
-        <legend>Available lists</legend>
+        <legend>Lists being called</legend>
         <% if @lists.length==0 %>
             <p>You haven't uploaded any lists yet.</p>
-
-            <% if @show_voter_buttons %>
-                <a href="/client/voter_add?campaign_id=<%= @campaign.id %>" class="add-button"><span>Enter Voter</span></a>
-            <% end %>
         <% else %>
-        Uncheck a list to stop calling it:
-            <table border="0" cellspacing="0" cellpadding="0">
-              <tr>
-                <th>Name</th>
-                <th nowrap>Phone #s</th>
-                <th>Remaining</th>
-              </tr>
-              <% @lists.each do |l| %>
-                  <tr>
-                    <td valign="top"><%= check_box_tag "voter_list_ids[]", "#{l.id}", l.enabled -%> <%= l.name %></td>
-                    <td valign="top"><%= l.voters.size %></td>
-                    <td valign="top"><%= Voter.find_all_by_voter_list_id_and_active(l.id, 1, :conditions=>"status= 'Not Called' or call_back=1").size %></td>
-                  </tr>
-              <% end %>
-            </table>
-            <input type="hidden" name="listsSent" value="1">
-
-            <% if @user.id==1 && @show_voter_buttons %>
-                <a href="/client/voter_add?campaign_id=<%= @campaign.id %>" class="add-button"><span>Enter Voter</span></a>
-                <a href="/client/voter_view?campaign_id=<%= @campaign.id %>" class="button"><span>View Voters</span></a>
-            <% end %>
-        <% end %>
-      </fieldset>
+			<table>
+		              <tr>
+		                <th>Name</th>
+		                <th>Phone #s</th>
+		                <th>Remaining</th>
+		              </tr>
+		              <% @lists.each do |l| %>
+		                  <tr>
+		                    <td valign="top"><%= check_box_tag "voter_list_ids[]", "#{l.id}", l.enabled -%> <%= l.name %></td>
+		                    <td valign="top"><%= l.voters.size %></td>
+		                    <td valign="top"><%= Voter.find_all_by_voter_list_id_and_active(l.id, 1, :conditions=>"status= 'Not Called' or call_back=1").size %></td>
+		                  </tr>
+		              <% end %>
+			</table>
+		<% end %>
+	</fieldset>
       <div class="buttons">
         <button type="submit">Save</button>
       </div>
@@ -151,7 +145,7 @@
 
 		$('#campaign_answering_machine_detect').click(function () {
 			if($('#campaign_answering_machine_detect').attr('checked')== false){
-				
+
 				if($("#campaign_use_recordings").attr('checked') == true){
 					$("#recordingsdiv").toggle($("#campaign_use_recordings").checked);
 					$("#campaign_use_recordings").attr('checked', false);

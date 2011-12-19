@@ -70,7 +70,10 @@ module Client
         redirect_to client_campaign_path(@campaign)
       else
         @callers = account.callers.active
-        render :show
+        respond_to do |format|
+          format.js 
+          format.html{render :action =>"show"}
+        end
       end
     end
 

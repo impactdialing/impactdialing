@@ -12,7 +12,7 @@ class VoterList < ActiveRecord::Base
   scope :active, where(:active => true)
   scope :by_ids, lambda { |ids| {:conditions => {:id => ids}} }
 
-  VOTER_DATA_COLUMNS = {"Phone"=> "Phone", "ID" => "ID", "LastName"=>"LastName", "FirstName"=>"FirstName",
+  VOTER_DATA_COLUMNS = {"Phone"=> "Phone", "CustomID" => "ID", "LastName"=>"LastName", "FirstName"=>"FirstName",
                         "MiddleName"=>"MiddleName", "Suffix"=>"Suffix", "Email"=>"Email", "address"=>"Address", "city"=>"City",
                         "state"=>"State/Province", "zip_code"=>"Zip/Postal Code", "country"=>"Country"}
 

@@ -8,16 +8,19 @@ class CallAttempt < ActiveRecord::Base
   belongs_to :caller_session
   has_many :call_responses
 
-  scope :dial_in_progress, :conditions => {:status => ["Call in progress","Ringing"]}
+  scope :dial_in_progress, where('call_end is null')
+  scope :not_wrapped_up, where('wrapup_time is null')
   scope :for_campaign, lambda { |campaign| {:conditions => ["campaign_id = ?", campaign.id]} }
   scope :for_status, lambda { |status| {:conditions => ["call_attempts.status = ?", status]} }
   scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
   scope :without_status, lambda { |statuses| {:conditions => ['status not in (?)', statuses]} }
   scope :with_status, lambda { |statuses| {:conditions => ['status in (?)', statuses]} }
 
+
   def report_recording_url
-    "#{self.recording_url.gsub("api.twilio.com","recordings.impactdialing.com")}.mp3"
+    "#{self.recording_url.gsub("api.twilio.com","recordings.impactdialing.com")}.mp3" if recording_url
   end
+
   def ring_time
     if self.answertime!=nil && self.created_at!=nil
       (self.answertime - self.created_at).to_i
@@ -57,8 +60,8 @@ class CallAttempt < ActiveRecord::Base
   def connect_to_caller(caller_session=nil)
     caller_session ||= campaign.oldest_available_caller_session
     if caller_session.nil? || caller_session.disconnected? || !caller_session.available_for_call
-      update_attributes(status: CallAttempt::Status::ABANDONED)
-      voter.update_attributes(:status => CallAttempt::Status::ABANDONED)
+      update_attributes(status: CallAttempt::Status::ABANDONED, wrapup_time: Time.now)
+      voter.update_attributes(:status => CallAttempt::Status::ABANDONED, call_back: false)
       caller_session.update_attribute(:voter_in_progress, nil) unless caller_session.nil?
       Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id,:dials_in_progress => campaign.call_attempts.dial_in_progress.length,
         :voters_remaining => campaign.voters_count("not called", false).length})
@@ -69,7 +72,7 @@ class CallAttempt < ActiveRecord::Base
       caller_session.update_attributes(:on_call => true, :available_for_call => false)
       conference(caller_session)
     end
-   end
+  end
 
   def play_recorded_message
     update_attributes(:status => CallAttempt::Status::VOICEMAIL, :call_end => Time.now)
@@ -91,9 +94,9 @@ class CallAttempt < ActiveRecord::Base
     session.publish('voter_connected', {:attempt_id => self.id, :voter => self.voter.info})
     Moderator.publish_event(campaign, 'voter_connected', {:campaign_id => campaign.id, :caller_id => session.caller.id,
       :dials_in_progress => campaign.call_attempts.dial_in_progress.length})
-    Rails.logger.debug("Moderator published event")  
+    Rails.logger.debug("Moderator published event")
     voter.conference(session)
-    Rails.logger.debug("Voter conference")  
+    Rails.logger.debug("Voter conference")
     Twilio::TwiML::Response.new do |r|
       r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(self, :host => Settings.host), :record=>self.campaign.account.record_calls do |d|
         d.Conference session.session_key, :wait_url => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
@@ -120,15 +123,23 @@ class CallAttempt < ActiveRecord::Base
   def fail
     next_voter = self.campaign.next_voter_in_dial_queue(voter.id)
     voter.update_attributes(:call_back => false)
+    update_attributes(wrapup_time: Time.now)
     if caller_session && (campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE)
-      caller_session.publish('voter_push',next_voter.nil? ? {} : next_voter.info) 
-      caller_session.update_attribute(:voter_in_progress, nil)
-      caller_session.start      
+      caller_session.publish('voter_push',next_voter.nil? ? {} : next_voter.info)
+      caller_session.update_attribute(:voter_in_progress, nil)      
+      caller_session.start
+    else
+      hangup
     end
   end
 
   def hangup
     Twilio::TwiML::Response.new { |r| r.Hangup }.text
+  end
+
+  def schedule_for_later(scheduled_date)
+    update_attributes(:scheduled_date => scheduled_date, :status => Status::SCHEDULED)
+    voter.update_attributes(:scheduled_date => scheduled_date, :status => Status::SCHEDULED, :call_back => true)
   end
 
   module Status

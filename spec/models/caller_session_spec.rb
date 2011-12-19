@@ -67,8 +67,9 @@ describe CallerSession do
     it "creates a conference" do
       campaign, conf_key = Factory(:campaign), "conference_key"
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => conf_key)
+      campaign.stub!(:time_period_exceed?).and_return(false)
       session.start.should == Twilio::Verb.new do |v|
-        v.dial(:hangupOnStar => true, :action => pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => session)) do
+        v.dial(:hangupOnStar => true, :action => session.send(:caller_response_path)) do
           v.conference(conf_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => "GET")
         end
       end.response
@@ -94,6 +95,18 @@ describe CallerSession do
       session = Factory(:caller_session)
       session.hold.should == Twilio::Verb.new { |v| v.play "#{Settings.host}:#{Settings.port}/wav/hold.mp3"; v.redirect(:method => 'GET'); }.response
     end
+
+    it "reads responses to a phones only caller" do
+      caller = Factory(:caller, :is_phones_only => true, :name => 'me')
+      caller_session = Factory(:caller_session, :caller => caller)
+      caller_session.send(:caller_response_path).should == gather_response_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => caller_session.id)
+    end
+
+    it "prompts  for response to a caller using the web ui" do
+      caller = Factory(:caller, :email => 'me@i.com')
+      caller_session = Factory(:caller_session, :caller => caller)
+      caller_session.send(:caller_response_path).should == pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => caller_session.id)
+    end
   end
 
   describe "preview dialing" do
@@ -113,6 +126,20 @@ describe CallerSession do
       call_attempt.sid.should == "sid"
       call_attempt.caller.should_not be_nil
     end
+    
+    it "catches exception and pushes next voter if call cannot be made" do
+      caller_session = Factory(:caller_session, :campaign => campaign, :caller => caller, :attempt_in_progress => nil)
+      call_attempt = Factory(:call_attempt, :campaign => campaign, :dialer_mode => Campaign::Type::PREVIEW, :status => CallAttempt::Status::INPROGRESS, :caller_session => caller_session, :caller => caller)
+      voter.stub_chain(:call_attempts, :create).and_return(call_attempt)
+      Twilio::Call.should_receive(:make).with(anything, voter.Phone, connect_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port), {'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"RestException" => {"Status" => "400"}}})
+      channel = mock
+      Pusher.should_receive(:[]).with(caller_session.session_key).and_return(channel)
+      channel.should_receive(:trigger).with("call_could_not_connect", anything)
+      caller_session.preview_dial(voter)
+      call_attempt.status.should eq(CallAttempt::Status::FAILED)
+      voter.status.should eq(CallAttempt::Status::FAILED)
+    end
+    
     
     it "does not send IFMachine if AMD turned off" do
       campaign1 = Factory(:campaign, :robo => false, :predictive_type => 'preview', answering_machine_detect: false)
@@ -159,30 +186,30 @@ describe CallerSession do
     end
   end
 
+  it "returns next question for the caller_session" do
+    script = Factory(:script)
+    campaign = Factory(:campaign, :script => script)
+    voter = Factory(:voter, :campaign => campaign)
+    caller_session = Factory(:caller_session, :caller => Factory(:caller), :voter_in_progress => voter, :campaign => campaign)
+    Factory(:call_attempt, :caller_session => caller_session, :voter => voter, :campaign => campaign)
+    next_question = Factory(:question, :script => script)
+    Factory(:question, :script => script)
+    caller_session.next_question.should == next_question
+  end
+
   describe "phone responses" do
     let(:script) { Factory(:script) }
-    let(:campaign) { Factory(:campaign, :robo => false, :predictive_type => 'preview', :script => script) }
+    let(:campaign) { Factory(:campaign, :script => script) }
     let(:voter) { Factory(:voter, :campaign => campaign) }
     let(:caller) { Factory(:caller) }
+    let(:question) { Factory(:question, :text => "question?", :script => script) }
+    let(:caller_session) { Factory(:caller_session, :caller => caller, :voter_in_progress => voter, :campaign => campaign) }
 
     it "reads questions and possible voter responses to the caller" do
-      pending
-      question = Factory(:question, :text => "question?", :script => script)
-      script.questions << question
-      question.possible_responses << Factory(:possible_response, :question => question, :keypad => 1, :value => "response1")
-      question.possible_responses << Factory(:possible_response, :question => question, :keypad => 2, :value => "response2")
-      caller_session = Factory(:caller_session, :caller => caller, :voter_in_progress => voter)
-      caller_session.collect_response.should == Twilio::Verb.new do |v|
-        q = voter.unresponded_questions.first
-        v.gather(:timeout => 10, :action => collect_response_caller_url(self.caller, :session => self, :host => Settings.host, :port => Settings.port), :method => "POST") do
-          v.say q.text
-          q.possible_responses.each do |pr|
-            v.say "press #{pr.keypad} for #{pr.value}"
-          end
-        end.response
-
-      end
-
+      Factory(:call_attempt, :caller_session => caller_session, :voter => voter, :campaign => campaign)
+      Factory(:possible_response, :question => question, :keypad => 1, :value => "response1")
+      Factory(:possible_response, :question => question, :keypad => 2, :value => "response2")
+      caller_session.next_question.read(caller_session).should == question.read(caller_session)
     end
 
   end
@@ -232,6 +259,7 @@ describe CallerSession do
       campaign = Factory(:campaign, :use_web_ui => true, :predictive_type => 'predictive')
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sample")
       2.times { Factory(:voter, :campaign => campaign) }
+      campaign.stub!(:time_period_exceed?).and_return(false)
       channel = mock
       Pusher.should_receive(:[]).with(session.session_key).and_return(channel)
       channel.should_receive(:trigger).with("caller_connected_dialer", anything)
@@ -284,6 +312,7 @@ describe CallerSession do
     end
 
   end
+
   it "lists attempts between two dates" do
     too_old = Factory(:caller_session).tap { |ca| ca.update_attribute(:created_at, 10.minutes.ago) }
     too_new = Factory(:caller_session).tap { |ca| ca.update_attribute(:created_at, 10.minutes.from_now) }

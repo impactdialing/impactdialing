@@ -7,8 +7,8 @@ class CallerSession < ActiveRecord::Base
 
   scope :on_call, :conditions => {:on_call => true}
   scope :available, :conditions => {:available_for_call => true, :on_call => true}
-  scope :dial_in_progress, :conditions => {:available_for_call => false, :on_call => true}
   scope :not_on_call, :conditions => {:on_call => false}
+  scope :connected_to_voter, where('voter_in_progress is not null')
   scope :held_for_duration, lambda { |minutes| {:conditions => ["hold_time_start <= ?", minutes.ago]} }
   scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
   has_one :voter_in_progress, :class_name => 'Voter'
@@ -49,6 +49,17 @@ class CallerSession < ActiveRecord::Base
     params = { 'StatusCallback' => end_call_attempt_url(attempt, :host => Settings.host, :port => Settings.port),'Timeout' => campaign.answering_machine_detect ? "30" : "15"}
     params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect        
     response = Twilio::Call.make(self.campaign.caller_id, voter.Phone, connect_call_attempt_url(attempt, :host => Settings.host, :port => Settings.port),params)
+    
+    if response["TwilioResponse"]["RestException"]
+      Rails.logger.info "Exception when attempted to call #{voter.Phone} for campaign id:#{self.campaign_id}  Response: #{response["TwilioResponse"]["RestException"].inspect}"
+      attempt.update_attributes(status: CallAttempt::Status::FAILED)
+      voter.update_attributes(status: CallAttempt::Status::FAILED)
+      next_voter = campaign.next_voter_in_dial_queue(voter.id)
+      update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil,:voter_in_progress => nil)
+      attempt.update_attributes(wrapup_time: Time.now)
+      publish('call_could_not_connect',next_voter.nil? ? {} : next_voter.info)
+      return
+    end    
     self.publish('calling_voter', voter.info)
     Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id,:dials_in_progress => campaign.call_attempts.dial_in_progress.length})
     attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])
@@ -73,24 +84,28 @@ class CallerSession < ActiveRecord::Base
   end
 
   def start
-    response = Twilio::Verb.new do |v|
-      v.dial(:hangupOnStar => true, :action => pause_caller_url(self.caller, :host => Settings.host, :port => Settings.port, :session_id => id)) do
-        v.conference(self.session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
-      end
-    end.response
-    update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
-    if campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE
-      publish('conference_started', {}) 
+    if campaign.time_period_exceed?
+      time_exceed_hangup
     else
-      publish('caller_connected_dialer', {}) 
+      response = Twilio::Verb.new do |v|
+        v.dial(:hangupOnStar => true, :action => caller_response_path) do
+          v.conference(self.session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
+        end
+      end.response
+      update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
+      if campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE
+        publish('conference_started', {}) 
+      else
+        publish('caller_connected_dialer', {}) 
+      end
+      response
     end
-    response
   end
-  
+
   def join_conference(mute_type, call_sid, monitor_session)
     response = Twilio::Verb.new do |v|
       v.dial(:hangupOnStar => true) do
-        v.conference(self.session_key, :startConferenceOnEnter => false, :endConferenceOnExit => false, :beep => false, :waitUrl => "#{APP_URL}/callin/hold",:waitMethod =>"GET",:muted => mute_type)
+        v.conference(self.session_key, :startConferenceOnEnter => false, :endConferenceOnExit => false, :beep => false, :waitUrl => "#{APP_URL}/callin/hold", :waitMethod =>"GET", :muted => mute_type)
       end
     end.response
     moderator = Moderator.find_by_session(monitor_session)
@@ -101,9 +116,12 @@ class CallerSession < ActiveRecord::Base
   def pause_for_results(attempt = 0)
     attempt = attempt.to_i || 0
     self.publish("waiting_for_result", {}) if attempt == 0
-    Twilio::Verb.new { |v| v.say("Please enter your call results")  if (attempt % 5 == 0); v.pause("length" => 2); v.redirect(pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => id, :attempt=>attempt+1)) }.response
+    Twilio::Verb.new { |v| v.say("Please enter your call results") if (attempt % 5 == 0); v.pause("length" => 2); v.redirect(pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => id, :attempt=>attempt+1)) }.response
   end
 
+  def next_question
+    voter_in_progress.question_not_answered
+  end
 
   def end
     self.update_attributes(:on_call => false, :available_for_call => false, :endtime => Time.now)
@@ -112,15 +130,32 @@ class CallerSession < ActiveRecord::Base
     self.publish("caller_disconnected", {source: "end_call"})
     Twilio::Verb.hangup
   end
-  
+
   def disconnected?
     !available_for_call && !on_call
   end
   
+  def time_exceed_hangup
+    Twilio::Verb.new do |v|
+      v.say I18n.t(:campaign_time_period_exceed, :start_time => @campaign.start_time.hour <= 12 ? "#{@campaign.start_time.hour} AM" : "#{@campaign.start_time.hour-12} PM",
+      :end_time => @campaign.end_time.hour <= 12 ? "#{@campaign.end_time.hour} AM" : "#{@campaign.end_time.hour-12} PM")
+      v.hangup
+    end.response
+  end
+
 
   def publish(event, data)
     return unless self.campaign.use_web_ui?
     Rails.logger.debug("PUSHER APP ID ::::::::::::::::::::::::::::::::::::::  #{Pusher.app_id}////////////////////////////#{event}")
     Pusher[self.session_key].trigger(event, data.merge!(:dialer => self.campaign.predictive_type))
+  end
+
+  private
+  def caller_response_path
+    if caller.is_phones_only?
+      gather_response_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => id)
+    else
+      pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => id)
+    end
   end
 end

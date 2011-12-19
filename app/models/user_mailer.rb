@@ -21,4 +21,23 @@ class UserMailer
       }
     })
   end
+  
+  def voter_list_upload(response,user_domain,email)
+    unless response['success'].blank?
+      subject = I18n.t(:voter_list_upload_succeded_subject)
+      content = response['success'].join("<br/>")
+    else
+      subject = I18n.t(:voter_list_upload_failed_subject)
+      content = response['errors'].join("<br/>")
+    end
+    @uakari.send_email({
+      :message => {
+        :subject => subject,
+        :html => content,
+        :from_name => white_labeled_title(user_domain),
+        :from_email => 'email@impactdialing.com',
+        :to_email => [email]
+      }
+    })
+  end
 end

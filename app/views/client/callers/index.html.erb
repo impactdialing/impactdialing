@@ -13,7 +13,7 @@
       </tr>
 	<% @callers.each do |c| %>
       <tr class="<%= cycle("odd","even") %>">
-        <td><h3><%= link_to "#{c.email}", client_caller_path(c.id)%></h3></td>
+        <td><h3><%= link_to "#{c.email || c.name}", client_caller_path(c.id)%></h3></td>
         <td><%= c.created_at.strftime("%m/%d/%Y") %></td>
         <td>
           <div style="display:none;">
@@ -29,9 +29,7 @@
 </div>
 
 <p><%= page_entries_info @callers %> <%= will_paginate @callers %></p>
-<p class="actions">
-    <%= link_to 'Add new caller', new_client_caller_path, :class => 'action primary' %>
-</p>
-<p class="actions">
-  <%= link_to 'View deleted callers', client_deleted_callers_path, :class => 'action secondary' %>
-</p>
+<p class="actions"><%= link_to 'Add web caller', new_client_caller_path, :class => 'action primary' %></p>
+<p>Phones-only callers should only be used by political campaigns using the phones-only interface.</p>
+<p class="actions"><%= link_to 'Add phones-only caller', new_client_caller_path(:is_phones_only => true), :class => 'action primary'  %></p>
+<p class="actions"><%= link_to 'View deleted callers', client_deleted_callers_path, :class => 'action secondary' %></p>

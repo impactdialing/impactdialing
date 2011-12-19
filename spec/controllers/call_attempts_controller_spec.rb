@@ -7,7 +7,7 @@ describe CallAttemptsController do
     let(:user) { Factory(:user, :account => account) }
     let(:campaign) { Factory(:campaign, :account => account, :robo => false, :use_web_ui => true) }
     let(:voter) { Factory(:voter, :campaign => campaign) }
-    let(:caller_session){ Factory(:caller_session) }
+    let(:caller_session) { Factory(:caller_session) }
     let(:call_attempt) { Factory(:call_attempt, :voter => voter, :campaign => campaign, :caller_session => caller_session) }
 
     it "collects voter responses" do
@@ -21,8 +21,10 @@ describe CallAttemptsController do
       channel = mock
       # Voter.stub_chain(:to_be_dialed, :first).and_return(voter)
       Pusher.should_receive(:[]).with(anything).and_return(channel)
-      channel.should_receive(:trigger).with("voter_push", voter2.info.merge(:dialer => campaign.predictive_type))
-      
+      info = voter2.info
+      info[:fields]['status'] = CallAttempt::Status::READY
+      channel.should_receive(:trigger).with("voter_push", info.merge(:dialer => campaign.predictive_type))
+
       post :voter_response, :id => call_attempt.id, :voter_id => voter.id, :question => {question1.id=> response1.id, question2.id=>response2.id}
       voter.answers.count.should == 2
     end
@@ -37,7 +39,10 @@ describe CallAttemptsController do
 
       channel = mock
       Pusher.should_receive(:[]).with(anything).and_return(channel)
-      channel.should_receive(:trigger).with("voter_push", voter2.info.merge(:dialer => campaign.predictive_type))
+      info = voter2.info
+      info[:fields]['status'] = CallAttempt::Status::READY
+      
+      channel.should_receive(:trigger).with("voter_push", info.merge(:dialer => campaign.predictive_type))
 
       post :voter_response, :id => call_attempt.id, :voter_id => voter.id, :question => {question1.id=> response1.id, question2.id=>response2.id}
       voter.answers.count.should == 2
@@ -50,17 +55,19 @@ describe CallAttemptsController do
       next_voter = Factory(:voter, :campaign => campaign, :status => Voter::Status::NOTCALLED, :call_back => false)
       campaign.all_voters.size.should == 2
       channel = mock
+      info = campaign.all_voters.to_be_dialed.first.info
+      info[:fields]['status'] = CallAttempt::Status::READY
+      
       Pusher.should_receive(:[]).with(anything).and_return(channel)
-      channel.should_receive(:trigger).with("voter_push", campaign.all_voters.to_be_dialed.first.info.merge({dialer: next_voter.campaign.predictive_type}))
+      channel.should_receive(:trigger).with("voter_push", info.merge({dialer: next_voter.campaign.predictive_type}))
       post :voter_response, :id => call_attempt.id, :voter_id => voter.id, :answers => {}
     end
-
   end
 
   describe "calling in" do
     let(:account) { Factory(:account) }
     let(:user) { Factory(:user, :account => account) }
-    let(:campaign) { Factory(:campaign, :account => account, :robo => false) }
+    let(:campaign) { Factory(:campaign, :account => account, :robo => false,:start_time => Time.new("2000-01-01 01:00:00"),:end_time => Time.new("2000-01-01 23:00:00")) }
     let(:voter) { Factory(:voter, :campaign => campaign, :call_back => false) }
     let(:caller_session) { caller_session = Factory(:caller_session, :session_key => "sample")}
     let(:call_attempt) { Factory(:call_attempt, :voter => voter, :campaign => campaign, :caller_session => caller_session) }
@@ -69,7 +76,7 @@ describe CallAttemptsController do
       Factory(:caller_session, :campaign => campaign, :available_for_call => false)
       available_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller))
       call_attempt.update_attributes(caller_session: available_session)
-      Moderator.stub!(:publish_event).with(available_session.campaign, 'voter_connected', {:campaign_id => available_session.campaign.id, 
+      Moderator.stub!(:publish_event).with(available_session.campaign, 'voter_connected', {:campaign_id => available_session.campaign.id,
         :caller_id => call_attempt.caller_session.caller.id, :dials_in_progress => 1})
       post :connect, :id => call_attempt.id
 
@@ -82,11 +89,18 @@ describe CallAttemptsController do
       end.text
     end
 
+    it "updates connect time" do
+      now = Time.now
+      Time.stub(:now).and_return(now)
+      post :connect, :id => call_attempt.id
+      Time.parse(call_attempt.reload.connecttime.to_s).to_s.should == now.utc.to_s
+    end
+
     it "connects a voter to a specified caller" do
       Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => false)
       caller_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => false)
       call_attempt.voter.update_attribute(:caller_session, caller_session)
-      Moderator.stub!(:publish_event).with(caller_session.campaign, 'voter_connected', {:campaign_id => caller_session.campaign.id, 
+      Moderator.stub!(:publish_event).with(caller_session.campaign, 'voter_connected', {:campaign_id => caller_session.campaign.id,
         :caller_id => caller_session.caller.id, :dials_in_progress => 1})
       post :connect, :id => call_attempt.id
       response.body.should == Twilio::TwiML::Response.new do |r|
@@ -102,7 +116,7 @@ describe CallAttemptsController do
       caller_session = Factory(:caller_session, :caller =>caller, :campaign => campaign)
       call_attempt = Factory(:call_attempt, :status => CallAttempt::Status::INPROGRESS, :caller_session => caller_session, :voter => Factory(:voter))
       channel = mock
-      
+
       Pusher.should_receive(:[]).with(anything).and_return(channel)
       channel.stub(:trigger)
       Moderator.stub!(:publish_event).with(call_attempt.campaign, 'voter_disconnected', {:campaign_id => call_attempt.campaign.id, :caller_id => call_attempt.caller_session.caller.id,:dials_in_progress => 0, :voters_remaining => 0})
@@ -128,6 +142,7 @@ describe CallAttemptsController do
     end
 
     it "hangs up when a answering machine is detected and campaign uses no recordings" do
+      voter2 =  Factory(:voter, :campaign => campaign, :call_back => false)
       CallAttempt.stub(:find).and_return(call_attempt)
       post :connect, :id => call_attempt.id, :AnsweredBy => 'machine'
       response.body.should == call_attempt.hangup
@@ -155,6 +170,7 @@ describe CallAttemptsController do
     #end
 
     it "updates the details of a call not answered" do
+      campaign.stub(:time_period_exceed?).and_return(false)
       post :end, :id => call_attempt.id, :CallStatus => "no-answer"
       call_attempt.reload.status.should == CallAttempt::Status::NOANSWER
       call_attempt.voter.status.should == CallAttempt::Status::NOANSWER
@@ -195,11 +211,30 @@ describe CallAttemptsController do
       call_attempt = Factory(:call_attempt, :caller_session => session, :voter => voter, :campaign => campaign)
       next_voter = Factory(:voter, :campaign => campaign, :status => Voter::Status::NOTCALLED)
       pusher_session = mock
+      
+      info = next_voter.info
+      info[:fields]['status'] = CallAttempt::Status::READY
       Pusher.stub(:[]).with(session_key).and_return(pusher_session)
       pusher_session.should_receive(:trigger).with("answered_by_machine", {:dialer=>"preview"})
-      pusher_session.should_receive(:trigger).with('voter_push', next_voter.info.merge(:dialer => campaign.predictive_type))
+      pusher_session.should_receive(:trigger).with('voter_push', info.merge(:dialer => campaign.predictive_type))
       post :connect, :id => call_attempt.id, :AnsweredBy => "machine"
     end
-
+    
+    it "if the call attempt is ABANDONED, it doesn't modify status, when call end" do
+      voter = Factory(:voter, :status => CallAttempt::Status::ABANDONED)
+      call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign, :caller_session => Factory(:caller_session), :status => CallAttempt::Status::ABANDONED)
+      post :end, :id => call_attempt.id, :CallStatus => "completed"
+      call_attempt.reload.status.should == CallAttempt::Status::ABANDONED
+      call_attempt.voter.reload.status.should == CallAttempt::Status::ABANDONED
+    end
+    
+    it "if the call attempt is ABANDONED, it  modifies end_tme, when call end" do
+      voter = Factory(:voter, :status => CallAttempt::Status::ABANDONED)
+      call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign, :caller_session => Factory(:caller_session), :status => CallAttempt::Status::ABANDONED)
+      post :end, :id => call_attempt.id, :CallStatus => "completed"
+      call_attempt.reload.call_end.utc.to_i.should == Time.now.utc.to_i
+      call_attempt.voter.reload.last_call_attempt_time.utc.to_i.should == Time.now.utc.to_i
+    end
+    
   end
 end

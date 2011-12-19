@@ -77,25 +77,17 @@ function next_voter() {
 
 function call_voter() {
 	console.log('called voter');
+	hide_all_actions();
     $.ajax({
         url : "/caller/" + $("#caller_session").val() + "/call_voter",
         data : {id : $("#caller").val(), voter_id : $("#current_voter").val(), session_id : $("#caller_session").val() },
         type : "POST",
-        success : function(response) {
-            hide_all_actions();
+        success : function(response) {            
             // pushes 'calling_voter'' event to browsers
         }
     })
 }
 
-function ready_to_call(dialer) {
-    if (dialer && dialer.toLowerCase() == "preview") {
-        $("#stop_calling").show();
-        $("#skip_voter").show();
-        $("#call_voter").show();
-    }
-
-}
 
 
 function schedule_for_later() {
@@ -121,7 +113,7 @@ function send_voter_response() {
     });
     $("#voter_responses").trigger("submit");
 	$("#voter_responses").unbind("submit");
-	
+
 }
 
 function send_voter_response_and_disconnect() {
@@ -202,6 +194,19 @@ function expand_scheduler() {
     $("#callback_info").show();
 }
 
+function ready_for_calls(data){
+	if (data.dialer && data.dialer.toLowerCase() == "progressive") {
+	  $("#stop_calling").show();
+	  call_voter();
+    }
+    if (data.dialer && data.dialer.toLowerCase() == "preview") {
+        $("#stop_calling").show();
+        $("#skip_voter").show();
+        $("#call_voter").show();
+    }	
+
+}
+
 function subscribe(session_key) {
     channel = pusher.subscribe(session_key);
     console.log(channel)
@@ -217,14 +222,17 @@ function subscribe(session_key) {
         if (!$.isEmptyObject(data.fields)) {
             set_message("Status: Ready for calls.");
             set_voter(data);
-		    if (data.dialer && data.dialer.toLowerCase() == "progressive") {
-			  call_voter();
-		    }
-
+	    	ready_for_calls(data)
         } else {
+			$("#stop_calling").show();
             set_message("Status: There are no more numbers to call in this campaign.");
         }
     });
+
+	channel.bind('conference_started' , function(data){
+	    ready_for_calls(data)
+	});
+
 
     channel.bind('caller_connected_dialer', function(data) {
 		hide_all_actions();
@@ -240,12 +248,24 @@ function subscribe(session_key) {
     channel.bind('voter_push', function(data) {        
 		set_message("Status: Ready for calls.");
 		set_voter(data);
-	    if (!$.isEmptyObject(data.fields) && data.dialer && data.dialer.toLowerCase() == "progressive") {
-		  $("#stop_calling").show();
-		  call_voter();
-	    }
         $("#start_calling").hide();
     });
+
+    channel.bind('call_could_not_connect', function(data) {        
+		set_message("Status: Ready for calls.");
+		set_voter(data);
+        $("#start_calling").hide();
+		if ($.isEmptyObject(data.fields)) {
+			$("#stop_calling").show();
+			
+		}
+		else {
+    	  ready_for_calls(data);
+		}
+    });
+
+
+
 
     channel.bind('voter_disconnected', function(data) {
         hide_all_actions();
@@ -311,7 +331,6 @@ function subscribe(session_key) {
             bind_voter(data);
             hide_response_panel();
             hide_all_actions();
-            ready_to_call(data.dialer);
 
         } else {
 			clear_voter();

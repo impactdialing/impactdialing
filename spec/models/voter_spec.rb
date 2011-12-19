@@ -118,6 +118,7 @@ describe Voter do
 
       it "is dialed" do
         caller_session = Factory(:caller_session, :available_for_call => true, :on_call => true, campaign: campaign)
+        campaign.stub(:time_period_exceed?).and_return(false)
         voter.dial_predictive
         call_attempt = CallAttempt.first
         call_attempt.sid.should == "sid"
@@ -126,6 +127,7 @@ describe Voter do
 
       it "updates voter attributes" do
         caller_session = Factory(:caller_session, :available_for_call => true, :on_call => true, campaign: campaign)
+        campaign.stub(:time_period_exceed?).and_return(false)
         voter.dial_predictive
         call_attempt = voter.call_attempts.last
         voter.last_call_attempt.should == call_attempt
@@ -136,6 +138,7 @@ describe Voter do
 
       it "updates the call_attempts campaign" do
         caller_session = Factory(:caller_session, :available_for_call => true, :on_call => true, campaign: campaign)
+        campaign.stub(:time_period_exceed?).and_return(false)
         voter.dial_predictive
         call_attempt = voter.call_attempts.last
         call_attempt.campaign.should == voter.campaign
@@ -145,12 +148,14 @@ describe Voter do
     it "dials the voter and hangs up on answering machine when not using recordings" do
       Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
       campaign.use_recordings = false
+      campaign.stub(:time_period_exceed?).and_return(false)
       voter.dial_predictive
     end
 
     it "dials the voter and continues on answering machine when using recordings" do
       Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
       voter.campaign = campaign
+      campaign.stub(:time_period_exceed?).and_return(false)
       voter.dial_predictive
     end
 
@@ -159,6 +164,7 @@ describe Voter do
       campaign.answer_detection_timeout = "10"
       Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
       voter.campaign = campaign
+      campaign.stub(:time_period_exceed?).and_return(false)
       voter.dial_predictive
     end
     
@@ -166,6 +172,7 @@ describe Voter do
       campaign1 = Factory(:campaign, :robo => false, :predictive_type => 'algorithm1', answering_machine_detect: false)
       Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {'StatusCallback'=> anything, 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
       voter.campaign = campaign1
+      campaign1.stub(:time_period_exceed?).and_return(false)
       voter.dial_predictive
     end
     
@@ -230,7 +237,7 @@ describe Voter do
       Voter.to_be_dialed.should == [voter]
     end
 
-    (CallAttempt::Status::ALL - [CallAttempt::Status::SUCCESS]).each do |status|
+    (CallAttempt::Status::ALL - [CallAttempt::Status::INPROGRESS, CallAttempt::Status::RINGING, CallAttempt::Status::READY, CallAttempt::Status::SUCCESS]).each do |status|
       it "includes voters with a status of #{status} " do
         voter = Factory(:voter, :status => status)
         Voter.to_be_dialed.should == [voter]
@@ -380,8 +387,9 @@ describe Voter do
   end
 
   describe 'answers' do
-    let(:voter) { Factory(:voter) }
     let(:script) { Factory(:script, :robo => false) }
+    let(:campaign) { Factory(:campaign, :script => script) }
+    let(:voter) { Factory(:voter, :campaign => campaign) }
     let(:question) { Factory(:question, :script => script) }
     let(:response) { Factory(:possible_response, :question => question) }
 
@@ -415,15 +423,39 @@ describe Voter do
       voter.reload.answers.size.should == 2
     end
 
-    it "returns all unanswered questions" do
-      script = Factory(:script)
-      campaign = Factory(:campaign, :script => script)
-      voter = Factory(:voter, :campaign => campaign)
+    it "returns all questions unanswered" do
       answered_question = Factory(:question, :script => script)
-      response = Factory(:possible_response, :question => answered_question)
-      Factory(:answer, :voter => voter, :question => answered_question, :possible_response => response)
+      Factory(:answer, :voter => voter, :question => answered_question, :possible_response => Factory(:possible_response, :question => answered_question))
       pending_question = Factory(:question, :script => script)
-      voter.unresponded_questions.should == [pending_question]
+      voter.unanswered_questions.should == [pending_question]
+    end
+
+    describe "phones only" do
+      let(:script) { Factory(:script) }
+      let(:campaign) { Factory(:campaign, :script => script) }
+      let(:voter) { Factory(:voter, :campaign => campaign) }
+      let(:question) { Factory(:question, :script => script) }
+
+      it "captures a voter response" do
+        Factory(:possible_response, :question => question, :keypad => 1, :value => "response1")
+        voter.answer(question,"1").should == voter.answers.first
+        voter.answers.size.should == 1
+      end
+
+      it "rejects an incorrect a voter response" do
+        Factory(:possible_response, :question => question, :keypad => 1, :value => "response1")
+        voter.answer(question,"2").should == nil
+        voter.answers.size.should == 0
+      end
+
+      it "recaptures a voter response" do
+        voter.answer(question, "1")
+        Factory(:possible_response, :question => question, :keypad => 1, :value => "response1")
+        Factory(:possible_response, :question => question, :keypad => 2, :value => "response2")
+        voter.answer(question,"2").should == voter.answers.first
+        voter.answers.size.should == 1
+      end
+
     end
   end
 
@@ -470,6 +502,16 @@ describe Voter do
     end
 
 
+  end
+  
+  describe "skip voter" do
+    
+    it "should skip voter but adding skipped_time" do
+      campaign = Factory(:campaign)
+      voter = Factory(:voter, :campaign => campaign)
+      voter.skip
+      voter.skipped_time.should_not be_nil
+    end
   end
 
 end

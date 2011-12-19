@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20111207081656) do
+ActiveRecord::Schema.define(:version => 20111214182225) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -45,6 +45,11 @@ ActiveRecord::Schema.define(:version => 20111207081656) do
     t.string   "state"
     t.string   "country"
     t.string   "name"
+    t.string   "checking_account_number"
+    t.string   "bank_routing_number"
+    t.string   "drivers_license_number"
+    t.string   "drivers_license_state"
+    t.string   "checking_account_type"
   end
 
   create_table "blocked_numbers", :force => true do |t|
@@ -87,6 +92,7 @@ ActiveRecord::Schema.define(:version => 20111207081656) do
     t.datetime "scheduled_date"
     t.string   "recording_url"
     t.integer  "recording_duration"
+    t.datetime "wrapup_time"
   end
 
   add_index "call_attempts", ["call_end"], :name => "index_call_attempts_on_call_end"
@@ -143,10 +149,11 @@ ActiveRecord::Schema.define(:version => 20111207081656) do
     t.string   "email"
     t.string   "pin"
     t.integer  "account_id"
-    t.boolean  "active",     :default => true
+    t.boolean  "active",         :default => true
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "password"
+    t.boolean  "is_phones_only", :default => false
   end
 
   create_table "callers_campaigns", :id => false, :force => true do |t|
@@ -184,6 +191,9 @@ ActiveRecord::Schema.define(:version => 20111207081656) do
     t.integer  "recycle_rate"
     t.boolean  "amd_turn_off"
     t.boolean  "answering_machine_detect"
+    t.time     "start_time"
+    t.time     "end_time"
+    t.string   "time_zone"
   end
 
   create_table "campaigns_voter_lists", :id => false, :force => true do |t|
@@ -201,6 +211,21 @@ ActiveRecord::Schema.define(:version => 20111207081656) do
     t.string  "name",       :null => false
     t.integer "account_id"
   end
+
+  create_table "delayed_jobs", :force => true do |t|
+    t.integer  "priority",   :default => 0
+    t.integer  "attempts",   :default => 0
+    t.text     "handler"
+    t.text     "last_error"
+    t.datetime "run_at"
+    t.datetime "locked_at"
+    t.datetime "failed_at"
+    t.string   "locked_by"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "delayed_jobs", ["priority", "run_at"], :name => "delayed_jobs_priority"
 
   create_table "dumps", :force => true do |t|
     t.integer  "request_id"

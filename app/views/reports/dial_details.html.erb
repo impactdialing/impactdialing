@@ -1,0 +1,49 @@
+<script>
+	$(function () {
+		$('#download_all_voters_submit').click(function(){
+			$('#download_all_voters').attr('checked','checked');
+		});
+		$('#range_voters_submit').click(function(){
+			$('#download_all_voters').removeAttr('checked');
+		});
+	});
+</script>
+
+<h1>Download Report</h1>
+<fieldset>
+
+	<legend>Fields to include</legend>
+  <% form_tag(dial_details_reports_path(:id => @campaign.id,:format => 'csv'), :method => "POST") do %>
+		<ul>
+			<% @voter_fields.try(:each_pair) do |key, value| %>
+		    <li>
+					<input  type="checkbox" name="voter_fields[]" value="<%= key %>">&nbsp;<%= value %>
+		    </li>
+		  <% end %>
+		<% @custom_voter_fields.try(:each) do |field| %>
+	    <li>
+				<input  type="checkbox" name="custom_voter_fields[]" value="<%= field %>">&nbsp;<%= field %>
+	    </li>
+	  <% end %>
+		</ul>		
+</fieldset>
+<input type="checkbox" style="display:none" id="download_all_voters" name="download_all_voters"></input>
+<div class="buttons"><button type="submit" id="download_all_voters_submit">Download entire campaign</button></div>
+
+		<h3>Date range:</h3>
+		      <table>
+		        <tr>
+		          <td>From:</td>
+		          <td> <%= unobtrusive_date_text_picker_tag :from_date, @from_date %> </td>
+		        </tr>
+		        <tr>
+		          <td>
+		            To:
+		          </td>
+		          <td>  <%= unobtrusive_date_text_picker_tag :to_date, @to_date %>
+		          </td>
+		        </tr>
+		      </table>
+		<div class="buttons"><button id="range_voters_submit" type="submit">Download just this date range</button></div>
+  <% end %>
+</div>

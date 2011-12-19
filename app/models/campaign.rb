@@ -73,6 +73,14 @@ class Campaign < ActiveRecord::Base
     end
   end
   
+  def time_period_exceed?
+    if start_time.hour < end_time.hour
+      !(start_time.hour <= Time.now.utc.in_time_zone(time_zone).hour && end_time.hour > Time.now.utc.in_time_zone(time_zone).hour)
+    else
+      !(start_time.hour >= Time.now.utc.in_time_zone(time_zone).hour || end_time.hour < Time.now.utc.in_time_zone(time_zone).hour)
+    end
+  end
+  
   def oldest_available_caller_session
      caller_sessions.available.find(:first, :order => "updated_at ASC")
   end
@@ -314,7 +322,15 @@ class Campaign < ActiveRecord::Base
   end
 
   def call_attempts_in_progress
-    CallAttempt.find_all_by_campaign_id(self.id, :conditions=>"call_end is NULL")
+    call_attempts.dial_in_progress
+  end
+  
+  def call_attempts_not_wrapped_up
+    call_attempts.not_wrapped_up
+  end
+  
+  def caller_sessions_in_progress
+    caller_sessions.connected_to_voter
   end
 
   def callers_not_on_call
@@ -395,17 +411,21 @@ class Campaign < ActiveRecord::Base
 
   def choose_voters_to_dial(num_voters)
     return [] if num_voters < 1
-    scheduled_voter_ids = self.all_voters.scheduled.limit(num_voters)
-    (scheduled_voter_ids + self.voters('not called')).reject(&:blocked?).uniq[0..num_voters-1]
+    scheduled_voters = all_voters.scheduled.limit(num_voters)
+    return scheduled_voters + all_voters.to_be_dialed.without(account.blocked_numbers.for_campaign(self).map(&:number)).limit(num_voters - scheduled_voters.size)
   end
 
   def ratio_dial?
     predictive_type=="" || predictive_type.index("power_")==0 || predictive_type.index("robo,")==0
   end
 
+  def dials_count
+    (callers_to_dial.length - call_attempts_not_wrapped_up.length) * get_dial_ratio
+  end
+
   def dial_predictive_voters
     if ratio_dial?
-      num_to_call= (callers_to_dial.length * get_dial_ratio) - call_attempts_in_progress.length
+      num_to_call= dials_count
     else
       short_to_dial=determine_short_to_dial
       max_calls=determine_pool_size(short_to_dial)
@@ -414,10 +434,11 @@ class Campaign < ActiveRecord::Base
 
     DIALER_LOGGER.info "#{self.name}: Callers logged in: #{callers.length}, Callers on call: #{callers_on_call.length}, Callers not on call:  #{callers_not_on_call}, Calls in progress: #{call_attempts_in_progress.length}"
     DIALER_LOGGER.info "num_to_call #{num_to_call}"
-
-    voter_ids=choose_voters_to_dial(num_to_call) #TODO check logic
-    DIALER_LOGGER.info("voters to dial #{voter_ids}")
-    ring_predictive_voters(voter_ids)
+    if num_to_call > 0
+      voter_ids=choose_voters_to_dial(num_to_call) #TODO check logic
+      DIALER_LOGGER.info("voters to dial #{voter_ids}")
+      ring_predictive_voters(voter_ids)
+    end
   end
 
   def ring_predictive_voters(voter_ids)
@@ -451,6 +472,10 @@ class Campaign < ActiveRecord::Base
     voter||= all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.not_skipped.first
     voter||= all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.where("voters.id != #{current_voter_id}").first unless current_voter_id.blank?
     voter||= all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.first
+    unless voter.nil?
+      voter.lock!
+      voter.update_attributes(status: CallAttempt::Status::READY)
+    end
     voter
   end
 

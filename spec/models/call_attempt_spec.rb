@@ -39,7 +39,20 @@ describe CallAttempt do
     Factory(:voter, :campaign => campaign, :call_back => false)
     caller_session = Factory(:caller_session, :campaign => campaign, :session_key => "sample")
     call_attempt = Factory(:call_attempt, :voter => Factory(:voter, :status => Voter::Status::NOTCALLED), :caller_session => caller_session, :campaign => campaign)
+    campaign.stub!(:time_period_exceed?).and_return(false)
     call_attempt.fail
+  end
+
+  it "can be scheduled for later" do
+    voter = Factory(:voter)
+    call_attempt = Factory(:call_attempt, :voter => voter)
+    scheduled_date = 2.hours.from_now
+    call_attempt.schedule_for_later(scheduled_date)
+    call_attempt.reload.status.should == CallAttempt::Status::SCHEDULED
+    call_attempt.scheduled_date.to_s.should == scheduled_date.to_s
+    call_attempt.voter.status.should == CallAttempt::Status::SCHEDULED
+    call_attempt.voter.scheduled_date.to_s.should == scheduled_date.to_s
+    call_attempt.voter.call_back.should be_true
   end
 
   describe 'next recording' do
@@ -90,7 +103,7 @@ describe CallAttempt do
       session = Factory(:caller_session, :caller => Factory(:caller), :session_key => "example_key")
       voter = Factory(:voter)
       call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign)
-      Moderator.stub!(:publish_event).with(call_attempt.campaign, 'voter_connected', {:campaign_id => campaign.id, :caller_id => session.caller.id, :dials_in_progress => 0})
+      Moderator.stub!(:publish_event).with(call_attempt.campaign, 'voter_connected', {:campaign_id => campaign.id, :caller_id => session.caller.id, :dials_in_progress => 1})
       call_attempt.conference(session).should == Twilio::TwiML::Response.new do |r|
         r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(call_attempt, :host => Settings.host), :record=>call_attempt.campaign.account.record_calls do |d|
           d.Conference session.session_key, :wait_url => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
@@ -192,7 +205,7 @@ describe CallAttempt do
       attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign)
       session = Factory(:caller_session, :caller => Factory(:caller), :campaign => campaign)
       channel = mock
-      Moderator.stub!(:publish_event).with(session.campaign, 'voter_connected', {:campaign_id => campaign.id, :caller_id => session.caller.id, :dials_in_progress => 0})
+      Moderator.stub!(:publish_event).with(session.campaign, 'voter_connected', {:campaign_id => campaign.id, :caller_id => session.caller.id, :dials_in_progress => 1})
       Pusher.should_receive(:[]).with(session.session_key).and_return(channel)
       channel.should_receive(:trigger).with("voter_connected", anything)
       attempt.voter.stub(:conference)
@@ -205,7 +218,7 @@ describe CallAttempt do
       attempt = Factory(:call_attempt, :campaign => campaign, :voter => voter)
       session = Factory(:caller_session, :caller => Factory(:caller), :campaign => campaign, :voter_in_progress => voter)
       Moderator.stub!(:publish_event).with(session.campaign, 'voter_connected', {:campaign_id => campaign.id, 
-        :caller_id => session.caller.id,:dials_in_progress => 0})
+        :caller_id => session.caller.id,:dials_in_progress => 1})
       session.should_receive(:publish).with("voter_connected", {:attempt_id => attempt.id, :voter => attempt.voter.info})
       attempt.voter.stub(:conference)
       attempt.conference(session)
@@ -229,9 +242,12 @@ describe CallAttempt do
       Factory(:voter, :status => Voter::Status::NOTCALLED, :call_back => false, :campaign => campaign)
       session = Factory(:caller_session, :caller => Factory(:caller), :campaign => campaign, :session_key => "sample")
       attempt = Factory(:call_attempt, :voter => Factory(:voter, :status => CallAttempt::Status::INPROGRESS), :caller_session => session, :campaign => campaign)
+      campaign.stub!(:time_period_exceed?).and_return(false)
       channel = mock
+      info = campaign.all_voters.to_be_dialed.first.info
+      info[:fields]['status'] = CallAttempt::Status::READY
       Pusher.should_receive(:[]).twice.with(anything).and_return(channel)
-      channel.should_receive(:trigger).with("voter_push", campaign.all_voters.to_be_dialed.first.info.merge(:dialer => campaign.predictive_type))
+      channel.should_receive(:trigger).with("voter_push", info.merge(:dialer => campaign.predictive_type))
       channel.should_receive(:trigger).with("conference_started", {:dialer => campaign.predictive_type})
       attempt.fail
     end
