@@ -27,7 +27,7 @@
     <%# callers = info["callers"]  %>
     <%# calls = info["calls"] %>
     <% callers = CallerSession.find_all_by_campaign_id_and_on_call(campaign.id, 1) %>
-    <% calls = CallAttempt.find_all_by_campaign_id(campaign.id, :conditions=>"call_end is  NULL") %>
+    <% calls = campaign.call_attempts.dial_in_progress %>
 
     <% voters = campaign.voters_count("not called") %>
 

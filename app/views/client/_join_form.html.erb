@@ -9,6 +9,7 @@
 
 		<fieldset>
 		<p>By signing up, you agree to our <a href="<%= policies_path %>#terms" target="_blank">Terms of Service</a>.</p>
+		<%= f.hidden_field :captcha %>
 	    <p>
 			        <label>Your email</label>
 					<%= f.text_field :email, {:class=>"field"} %>

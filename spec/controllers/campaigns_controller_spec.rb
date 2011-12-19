@@ -3,7 +3,7 @@ require "spec_helper"
 describe CampaignsController do
   let(:account) { Factory(:account) }
   let(:user) { Factory(:user, :account => account) }
-  let(:another_users_campaign) { Factory(:campaign, :account => Factory(:account)) }
+  let(:another_users_campaign) { Factory(:campaign, :account => Factory(:account),:start_time => Time.new("2000-01-01 01:00:00"),:end_time =>   Time.new("2000-01-01 23:00:00")) }
 
   before(:each) do
     login_as user

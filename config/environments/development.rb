@@ -13,7 +13,7 @@ ImpactDialing::Application.configure do
   #TWILIO_AUTH="4e179c64daa7c9f5108bd6623c98aea6"
   #APP_NUMBER="5104048117"
 
-  APP_HOST = '3w8v.localtunnel.com'
+  APP_HOST = '3u7c.localtunnel.com'
 
   TEST_CALLER_NUMBER="4155130942"
   TEST_VOTER_NUMBER="4155130242"
@@ -43,15 +43,22 @@ ImpactDialing::Application.configure do
   config.action_mailer.delivery_method = :test
 
   config.active_support.deprecation = :log
+  # 
+  # config.after_initialize do
+  #   ActiveMerchant::Billing::Base.mode = :test
+  #   ActiveMerchant::Billing::LinkpointGateway.pem_file  = File.read(Rails.root.join('1909897530.pem'))
+  #   ::BILLING_GW = gateway = ActiveMerchant::Billing::LinkpointGateway.new(
+  #     :login => "1909897530"
+  #   )
+  # end
 
   config.after_initialize do
-    ActiveMerchant::Billing::Base.mode = :test
-    ActiveMerchant::Billing::LinkpointGateway.pem_file  = File.read(Rails.root.join('1909897530.pem'))
+    #  ActiveMerchant::Billing::Base.mode = :test
+    ActiveMerchant::Billing::LinkpointGateway.pem_file  = File.read(Rails.root.join('1383715.pem'))
     ::BILLING_GW = gateway = ActiveMerchant::Billing::LinkpointGateway.new(
-      :login => "1909897530"
+      :login => "1383715"
     )
   end
-
 
 
 

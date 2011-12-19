@@ -20,7 +20,7 @@ describe Client::ReportsController do
       end
 
       it "seconds" do
-        assigns(:utilised_call_attempts_seconds).should == 113.minutes + 59.seconds
+        assigns(:utilised_call_attempts_seconds).should == "113.59"
       end
 
       it "minutes" do
@@ -28,7 +28,7 @@ describe Client::ReportsController do
       end
 
       it "billable seconds" do
-        assigns(:billable_call_attempts_seconds).should == 111.minutes + 59.seconds
+        assigns(:billable_call_attempts_seconds).should == "111.59"
       end
 
       it "billable minutes" do
@@ -46,7 +46,7 @@ describe Client::ReportsController do
       end
 
       it "seconds" do
-        assigns(:caller_sessions_seconds).should == 111.minutes + 59.seconds
+        assigns(:caller_sessions_seconds).should == "111.59"
       end
 
       it "minutes" do

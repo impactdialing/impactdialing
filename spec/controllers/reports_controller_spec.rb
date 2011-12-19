@@ -36,13 +36,13 @@ describe ReportsController do
       end
 
       it "lists dial details" do
-        voter1 = Factory(:voter, :campaign => campaign, :Phone =>"1234567891" , :call_attempts => [Factory(:call_attempt),Factory( :call_attempt, :voter => voter1, :campaign => campaign, :status => CallAttempt::Status::SUCCESS )])
+        voter1 = Factory(:voter, :campaign => campaign, :Phone =>"1234567891" , :result_date => Time.now,:call_attempts => [Factory(:call_attempt),Factory( :call_attempt, :voter => voter1, :campaign => campaign, :status => CallAttempt::Status::SUCCESS )])
         voter2 = Factory(:voter, :campaign => campaign, :Phone =>"1234567892")
 
         Factory(:call_response, :call_attempt => voter1.call_attempts.last, :robo_recording => recording1, :recording_response => response1)
         Factory(:call_response, :call_attempt => voter1.call_attempts.last, :robo_recording => recording2, :recording_response => response4)
 
-        get :dial_details, :campaign_id => campaign.id
+        post :dial_details, :id => campaign.id, :format => 'csv',:voter_fields => ["Phone"]
         assigns(:campaign).should == campaign
 
         response.should be_ok
@@ -50,7 +50,7 @@ describe ReportsController do
         lines = csv.split("\n")
         lines[0].should == "Phone,Status,recording1,recording2"
         lines[1].should == "#{voter1.Phone},#{voter1.call_attempts.last.status},#{response1.response},#{response4.response}"
-        lines[2].should == "#{voter2.Phone},Not Dialed"
+        lines[2].should == nil
       end
     end
   end

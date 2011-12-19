@@ -51,6 +51,9 @@ GEM
     columnize (0.3.4)
     crack (0.1.8)
     daemons (1.0.10)
+    delayed_job (2.1.4)
+      activesupport (~> 3.0)
+      daemons
     diff-lcs (1.1.3)
     dynamic_form (1.1.4)
     erubis (2.6.6)
@@ -210,6 +213,7 @@ DEPENDENCIES
   aws-s3 (~> 0.6.2)
   capistrano (= 2.9.0)
   daemons (~> 1.0.10)
+  delayed_job (~> 2.1.4)
   dynamic_form (~> 1.1.4)
   factory_girl (~> 1.3.3)
   fastercsv (~> 1.5.4)

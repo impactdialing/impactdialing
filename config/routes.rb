@@ -36,13 +36,13 @@ ImpactDialing::Application.routes.draw do
     member do
       post :assign_campaign
       post :pause
-      post :collect_response
       post :active_session
       post :preview_voter
       post :skip_voter
       post :call_voter
       post :stop_calling
       post :start_calling
+      post :gather_response
     end
 
   end
@@ -72,7 +72,7 @@ ImpactDialing::Application.routes.draw do
     resources :reports do
       collection do
         get :usage
-        get :dial_details
+        post :dial_details
       end
     end
     get '/deleted_campaigns', :to => 'broadcast/campaigns#deleted', :as => :broadcast_deleted_campaigns
@@ -121,7 +121,7 @@ ImpactDialing::Application.routes.draw do
     resources :blocked_numbers, :only => [:index, :create, :destroy]
     resources :monitors do
       collection do
-        post :start
+        get :start
         get :stop
         get :deactivate_session
         get :switch_mode

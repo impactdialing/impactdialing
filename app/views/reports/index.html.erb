@@ -18,7 +18,8 @@
             <%= link_to 'Usage', usage_reports_path(:campaign_id => c.id) %>
           </td>
           <td>
-            <%= link_to 'Download', dial_details_reports_path(:campaign_id => c) %>
+						<%= link_to "Download", dial_details_reports_path(:id => c.id),:method => "POST" %>
+             
           </td>
         </tr>
       <% end %>

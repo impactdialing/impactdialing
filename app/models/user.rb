@@ -15,11 +15,18 @@ class User < ActiveRecord::Base
   has_many :callers, :through => :account
   has_many :blocked_numbers, :through => :account
 
-  attr_accessor :new_password
+  attr_accessor :new_password, :captcha
+  validate :reverse_captcha
   validates_presence_of :new_password, :message => "can't be blank"
   validates_length_of :new_password, :within => 5..50, :message => "must be 5 characters or greater"
 
   before_save :hash_new_password, :if => :password_changed?
+  
+  def reverse_captcha
+    if captcha.present?
+      errors.add(:base, 'Spambots aren\'t welcome here')
+    end
+  end
 
   def password_changed?
     !!@new_password

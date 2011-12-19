@@ -96,16 +96,17 @@
 
 <%= render 'results' %>
 <%= render 'actions' %>
+<% unless @campaign.time_period_exceed? %>
+	<div id="start_calling">
+	  <a class="action primary" href="#" onclick="javascript:goclient();">Start calling</a>
+	</div>
+	<br>
+<% end %>
 
-<div id="start_calling">
-  <a class="action primary" href="#" onclick="javascript:goclient();">Start calling</a>
-</div>
-
-<br>
 
 <div id="callin_data">
   <p>
-	<b>Or, dial in</b><br>
+	<b>If you don't have a headset, dial in:</b><br>
     Dial-in number: <%= Settings.phone %><br>
     PIN: <%= @caller.pin %><br>
     Campaign ID: <%= @campaign.campaign_id %>
