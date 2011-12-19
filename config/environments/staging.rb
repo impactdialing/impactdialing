@@ -34,6 +34,8 @@ ImpactDialing::Application.configure do
     ::BILLING_GW = gateway = ActiveMerchant::Billing::LinkpointGateway.new(
       :login => "1383715"
     )
+    ActiveMerchant::Billing::LinkpointGateway.wiredump_device = File.open("/tmp/linkpoint.log", "a+")
+    ActiveMerchant::Billing::LinkpointGateway.wiredump_device.sync = true
   end
 
   # Use a different logger for distributed setups
