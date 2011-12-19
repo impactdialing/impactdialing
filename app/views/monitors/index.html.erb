@@ -2,7 +2,12 @@
 <script type="text/javascript" src="https://static.twilio.com/libs/twiliojs/1.0/twilio.js"></script>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js"></script>
 <script src="https://d3ds63zw57jt09.cloudfront.net/1.9/pusher.min.js" type="text/javascript" ></script>
-<%= javascript_include_tag 'monitors/monitor_pusher', 'ICanHaz.min.js' %>
+<%= javascript_include_tag %>
+<script type="text/javascript">
+//console.log('the heck:', $.fn.stopwatch, $('body').stopwatch, $.fn);
+</script>
+<%= javascript_include_tag 'monitors/jquery.stopwatch', 'monitors/monitor_pusher', 'ICanHaz.min.js' %>
+
 
   <script type="text/javascript">
       var pusher = new Pusher('<%= Pusher.key %>');
@@ -127,6 +132,12 @@
   <tr id={{id}} class="caller <%= cycle("odd", "even") %> ">
       <td class="caller_name">{{email}}</td>
       <td>{{campaign_name}}</td>
+			<td class="status">On hold</td>
+			<td>
+				<div class="timer">
+					<div class="display"><span class="hr">00</span>:<span class="min">00</span>:<span class="sec">00</span></div>
+				<div>
+			</td>
       <td>
         <a class ="action secondary monitor" href="#" action="eavesdrop" session_id={{session_id}}>Eavesdrop</a>
       </td>
@@ -183,14 +194,25 @@
           <tr class="table_header">
             <th>Caller</th>
             <th>Campaign</th>
+						<th>status</th>
+						<th>time</th>
             <th></th>
             <th></th>
           </tr>
           <% @campaigns.each do |c| %>
               <% c.caller_sessions.on_call.each do |caller_session| %>
-                  <tr id="<%= caller_session.caller.id %>" class="caller <%= cycle("odd", "even") %> ">
+                  <tr id="<%= caller_session.caller.id %>" class="caller <%= cycle("odd", "even") %> " older="true">
                     <td class="caller_name"><%= caller_session.caller.email %></td>
                     <td><%= caller_session.campaign.name %></td>
+										<% status, d = caller_status_and_duration(caller_session) %>
+										<td class="status"><%= status %></td>
+										<td>
+											<div class="timer">
+												<div class="display">
+													<span class="hr"><%= d[0]+d[1] %></span>:<span class="min"><%= d[3]+d[4] %></span>:<span class="sec"><%= d[6]+d[7] %></span>
+												</div>
+											<div>
+										</td>
                     <td>
                       <a class ="action secondary monitor" href="#" action="eavesdrop" session_id="<%= caller_session.id %>">Eavesdrop</a>
                     </td>

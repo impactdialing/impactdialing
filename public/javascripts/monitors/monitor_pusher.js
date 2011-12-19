@@ -4,12 +4,20 @@ Pusher.log = function(message) {
 
 var channel = null;
 
+function update_status_and_duration(caller_selector, status){
+	$($(caller_selector).find('.status')).html(status)
+	$($(caller_selector).find('.timer')).stopwatch('reset');
+	//$($(caller_selector).find('.timer')).stopwatch('start');
+}
+
 function subscribe_and_bind_events_monitoring(session_id){
   channel = pusher.subscribe(session_id);  
 
   channel.bind('set_status', function(data){
-    $('status').text(data.status_msg)
+    $('status').text(data.status_msg);
   });
+
+	console.log('stopwatch: inside monitoring', $.fn.stopwatch, $('body').stopwatch);
   
   channel.bind('caller_session_started', function(data){
     console.log(data)
@@ -27,6 +35,10 @@ function subscribe_and_bind_events_monitoring(session_id){
         $(campaign_selector).children('.callers_logged_in').text(data.campaign_fields.callers_logged_in);
         $(campaign_selector).children('.voters_count').text(data.campaign_fields.voters_count);
       }
+			
+			var caller_selector = 'tr#'+data.id+'.caller';
+			$($(caller_selector).find('.timer')).stopwatch();
+			
     }
     else{
       console.log("pusher event caller session started but no data")
@@ -38,7 +50,7 @@ function subscribe_and_bind_events_monitoring(session_id){
     console.log(caller_selector)
     if($(caller_selector).attr('on_call') == "true"){
       $('.stop_monitor').hide();
-      $('status').text("Status: Disconnected.")
+      $('status').text("Status: Disconnected.");
     }
     $(caller_selector).remove();
     var campaign_selector = 'tr#'+data.campaign_id+'.campaign';
@@ -55,10 +67,11 @@ function subscribe_and_bind_events_monitoring(session_id){
     if (!$.isEmptyObject(data)){
       var campaign_selector = 'tr#'+data.campaign_id+'.campaign';
 			var caller_selector = 'tr#'+data.caller_id+'.caller';
+			update_status_and_duration(caller_selector, "Wrap up");
       $(campaign_selector).children('.dials_in_progress').text(data.dials_in_progress);
       $(campaign_selector).children('.voters_count').text(data.voters_remaining);
  			if($(caller_selector).attr("on_call") == "true"){
-				$('status').text("Status: Caller is not connected to a lead.")
+				$('status').text("Status: Caller is not connected to a lead.");
 			}
     }
   });
@@ -68,6 +81,7 @@ function subscribe_and_bind_events_monitoring(session_id){
     if (!$.isEmptyObject(data)){
       var campaign_selector = 'tr#'+data.campaign_id+'.campaign';
 			var caller_selector = 'tr#'+data.caller_id+'.caller';
+			update_status_and_duration(caller_selector, "On call");
       $(campaign_selector).children('.dials_in_progress').text(data.dials_in_progress);
 			if($(caller_selector).attr("on_call") == "true"){
 				status = "Status: Monitoring in " + $(caller_selector).attr('mode') + " mode on " + $(caller_selector).children('td.caller_name').text().split("/")[0] + ".";
@@ -80,10 +94,16 @@ function subscribe_and_bind_events_monitoring(session_id){
 		if (!$.isEmptyObject(data)){
 			var campaign_selector = 'tr#'+data.campaign_id+'.campaign';
 			$(campaign_selector).children('.dials_in_progress').text(data.dials_in_progress);
-			console.log(data.voters_remaining)
+			console.log(data.voters_remaining);
 			if(data.voters_remaining){
 				$(campaign_selector).children('.voters_count').text(data.voters_remaining);
 			}
+		}
+	});
+	channel.bind('voter_response_submitted', function(data){
+		if (!$.isEmptyObject(data)){
+			var caller_selector = 'tr#'+data.caller_id+'.caller';
+			update_status_and_duration(caller_selector, "On hold");
 		}
 	});
   
@@ -91,7 +111,12 @@ function subscribe_and_bind_events_monitoring(session_id){
 
 $(document).ready(function() {
 
-  $('.stop_monitor').hide()
+	var timers = $('.timer');
+	$.each(timers, function(){
+		$(this).stopwatch('start');
+	});
+
+  $('.stop_monitor').hide();
 
   if($('monitor_session').text()){
     monitor_session = $('monitor_session').text();
