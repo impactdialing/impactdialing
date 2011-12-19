@@ -15,7 +15,7 @@ module MonitorsHelper
       end
     else
       status = "On hold"
-      duration = Time.now - caller_session.updated_at 
+      duration = Time.now - (caller_session.updated_at.nil? caller_session.created_at : caller_session.updated_at)
     end
     [status, Time.at(duration).gmtime.strftime('%R:%S')]
   end
