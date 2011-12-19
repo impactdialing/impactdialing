@@ -71,17 +71,13 @@
         <% if @callers.length==0 %>
             <p>No callers entered.</p>
         <% else %>
-            <div id="callers">
-              <form>
-                <ul class="clearfix">
-                  <li><input type="checkbox" value="0" id="selectAll"> All Callers</li>
-                  <% @callers.each do |l| %>
-                      <li><%= check_box_tag "campaign[caller_ids][]", "#{l.id}", callerInCampaign(l), :onclick=>"someCallers();" -%> <%= l.email || l.name %></li>
-                  <% end %>
-                </ul>
-              </form>
-            </div>
-        <% end %>
+          <div id="callers">
+					<p><input type="checkbox" value="0" id="selectAll">&nbsp;All callers</p>
+					<% @callers.each do |l| %>
+					<p><%= check_box_tag "campaign[caller_ids][]", "#{l.id}", callerInCampaign(l), :onclick=>"someCallers();" -%> <%= l.email || l.name%></p>
+					<% end %>
+		</div>
+		<% end %>
       </fieldset>
       <fieldset>
         <legend>Lists being called</legend>

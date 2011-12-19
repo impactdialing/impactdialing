@@ -555,11 +555,11 @@ describe Campaign do
     before(:each) do
       @campaign = Factory(:campaign, :start_time => Time.new(2011, 1, 1, 9, 0, 0), :end_time => Time.new(2011, 1, 1, 21, 0, 0), :time_zone =>"Pacific Time (US & Canada)")
     end
+
     it "should allow callers to dial, if time not expired" do
       t1 = Time.parse("01/2/2011 10:00")
       t2 = Time.parse("01/2/2011 09:00")
       Time.stub!(:now).and_return(t1, t1, t2, t2)
-      @campaign.time_period_exceed?.should == false
       @campaign.time_period_exceed?.should == false
     end
 
@@ -568,8 +568,6 @@ describe Campaign do
       t2 = Time.parse("01/2/2011 11:00")
       t3 = Time.parse("01/2/2011 15:00")
       Time.stub!(:now).and_return(t1, t1, t2, t2, t3, t3)
-      @campaign.time_period_exceed?.should == true
-      @campaign.time_period_exceed?.should == true
       @campaign.time_period_exceed?.should == true
     end
   end
