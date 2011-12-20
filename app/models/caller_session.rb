@@ -52,11 +52,10 @@ class CallerSession < ActiveRecord::Base
     
     if response["TwilioResponse"]["RestException"]
       Rails.logger.info "Exception when attempted to call #{voter.Phone} for campaign id:#{self.campaign_id}  Response: #{response["TwilioResponse"]["RestException"].inspect}"
-      attempt.update_attributes(status: CallAttempt::Status::FAILED)
+      attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
       voter.update_attributes(status: CallAttempt::Status::FAILED)
       next_voter = campaign.next_voter_in_dial_queue(voter.id)
       update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil,:voter_in_progress => nil)
-      attempt.update_attributes(wrapup_time: Time.now)
       publish('call_could_not_connect',next_voter.nil? ? {} : next_voter.info)
       return
     end    
