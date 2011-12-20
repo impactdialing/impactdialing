@@ -8,6 +8,7 @@ class Campaign < ActiveRecord::Base
   has_many :call_attempts
   has_many :caller_campaigns
   has_many :callers, :through => :caller_campaigns
+  has_one :simulated_values
   belongs_to :script
   belongs_to :account
   belongs_to :recording
@@ -416,7 +417,7 @@ class Campaign < ActiveRecord::Base
   end
 
   def ratio_dial?
-    predictive_type=="" || predictive_type.index("power_")==0 || predictive_type.index("robo,")==0
+    predictive_type == "" || predictive_type.index("power_") == 0 || predictive_type.index("robo,") == 0
   end
 
   def dials_count
@@ -433,7 +434,7 @@ class Campaign < ActiveRecord::Base
     DIALER_LOGGER.info "#{self.name}: Callers logged in: #{callers.length}, Callers on call: #{callers_on_call.length}, Callers not on call:  #{callers_not_on_call}, Calls in progress: #{call_attempts_in_progress.length}"
     DIALER_LOGGER.info "num_to_call #{num_to_call}"
     if num_to_call > 0
-      voter_ids=choose_voters_to_dial(num_to_call) #TODO check logic
+      voter_ids = choose_voters_to_dial(num_to_call) #TODO check logic
       DIALER_LOGGER.info("voters to dial #{voter_ids}")
       ring_predictive_voters(voter_ids)
     end
