@@ -1,5 +1,4 @@
 require 'active_record'
-require 'active_support'
 require "ostruct"
 require 'yaml'
 require 'logger'
@@ -79,9 +78,9 @@ def simulate(campaign_id)
   recent_call_attempts = call_attempts.where(:status => "Call completed with success.").map{|attempt| OpenStruct.new(:length => attempt.duration, :counter => 0)}
 
   ActiveRecord::Base.logger.info call_attempts.map(&:status)
-  ActiveRecord::Base.logger.info call_attempts.map(&:status)
   recent_dials = call_attempts.map{|attempt| OpenStruct.new(:length => attempt.ringing_duration, :counter => 0, :answered? => attempt.status == 'Call completed with success.') }
-  ActiveRecord::Base.logger.info recent_call_attempts, recent_dials
+  ActiveRecord::Base.logger.info recent_call_attempts
+  ActiveRecord::Base.logger.info recent_dials
 
   alpha = 0.01
   beta = 0.0
@@ -162,7 +161,7 @@ def simulate(campaign_id)
 
     if simulated_abandonment <= target_abandonment
       total_time = (active_time + idle_time)
-      ActiveRecord::Base.logger.info active_time, idle_time
+      ActiveRecord::Base.logger.info "active_time: #{active_time}, idle_time: #{idle_time}"
       utilisation = total_time == 0 ? 0 : active_time.to_f / total_time
       if utilisation > best_utilisation
         best_alpha = alpha
@@ -183,7 +182,6 @@ def simulate(campaign_id)
 
   SimulatedValues.find_or_create_by_campaign_id(campaign_id).update_attributes(:alpha => best_alpha, :beta => best_beta)
   ActiveRecord::Base.logger.info "alpha: #{best_alpha} beta: #{best_beta} with utilisation: #{best_utilisation} and simulated abandonment: #{simulated_abandonment_for_best_utilisation}"
-  ActiveRecord::Base.logger.info best_alpha, best_beta
 end
 
 loop do
