@@ -129,7 +129,7 @@ def simulate(campaign_id)
       end
 
       dials_made = finished_dials.select{|dial| dial.counter < start_time}
-      dials_answered = finished_dials.select{|dial| dial.counter < start_time && dial.answered?}
+      dials_answered = dials_made.select(&:answered?)
       dials_needed = dials_made.empty? ? 0 : ((alpha * dials_answered.size).to_f / dials_made.size).to_i
       mean_call_length = average(dials_made.map(&:length))
       longest_call_length = dials_made.empty? ? 10.minutes : dials_made.map(&:length).inject(dials_made.first.length){|champion, challenger| [champion, challenger].max}
@@ -139,7 +139,8 @@ def simulate(campaign_id)
         active_call_attempts.select{|call_attempt| call_attempt.counter > longest_call_length}.size
       ringing_lines = active_dials.size
       dials_to_make = (dials_needed * available_callers) - ringing_lines
-      dials_to_make.times{ active_dials << recent_dials[rand(dials_to_make.size)] }
+
+      dials_to_make.times{ active_dials << recent_dials[rand(recent_dials.size)] }
       idle_time += caller_statuses.select(&:available?).size
       active_time += caller_statuses.select(&:unavailable?).size
       finished_dials.each{|dial| dial.counter += 1}
