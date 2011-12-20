@@ -83,7 +83,7 @@ class Campaign < ActiveRecord::Base
   end
 
   def oldest_available_caller_session
-     caller_sessions.available.find(:first, :order => "updated_at ASC")
+    caller_sessions.available.find(:first, :order => "updated_at ASC", :lock => true)
   end
 
   def recent_attempts(mins=10)
@@ -291,7 +291,7 @@ class Campaign < ActiveRecord::Base
     active_list_ids = VoterList.active_voter_list_ids(self.id)
     return voters_returned if active_list_ids.empty?
 
-    voters_returned.concat(Voter.to_be_called(id,active_list_ids,status,recycle_rate))
+    voters_returned.concat(Voter.to_be_called(id, active_list_ids, status, recycle_rate))
     # voters_returned.concat(Voter.just_called_voters_call_back(self.id, active_list_ids)) if voters_returned.empty? && include_call_retries
 
     voters_returned.uniq
@@ -472,7 +472,7 @@ class Campaign < ActiveRecord::Base
   end
 
   def next_voter_in_dial_queue(current_voter_id = nil)
-    voter =  all_voters.scheduled.first
+    voter = all_voters.scheduled.first
     voter||= all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.not_skipped.where("voters.id > #{current_voter_id}").first unless current_voter_id.blank?
     voter||= all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.not_skipped.first
     voter||= all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.where("voters.id != #{current_voter_id}").first unless current_voter_id.blank?
@@ -514,8 +514,8 @@ class Campaign < ActiveRecord::Base
 
     mean_conversation = stats[:avg_duration] #the mean length of a conversation in the last 10 minutes
     longest_conversation = stats[:biggest_long] #the length of the longest conversation in the last 10 minutes
-    expected_conversation = ( 1 - predictive_beta ) * mean_conversation + predictive_beta * longest_conversation
-    available_callers = callers_available_for_call.length +  callers_on_call_longer_than(expected_conversation ).length - callers_on_call_longer_than(longest_conversation).length
+    expected_conversation = (1 - predictive_beta) * mean_conversation + predictive_beta * longest_conversation
+    available_callers = callers_available_for_call.length + callers_on_call_longer_than(expected_conversation).length - callers_on_call_longer_than(longest_conversation).length
   end
 
   def callers_on_call_longer_than(minute_threshold)
@@ -541,11 +541,10 @@ class Campaign < ActiveRecord::Base
     result = Hash.new
     script.questions.each do |question|
       total_answers = question.answered_within(from_date, to_date).length
-      result[question.text] = question.possible_responses.collect { |possible_response| possible_response.stats(from_date, to_date, total_answers)}
+      result[question.text] = question.possible_responses.collect { |possible_response| possible_response.stats(from_date, to_date, total_answers) }
     end
     result
   end
-
 
   private
   def dial_voters
