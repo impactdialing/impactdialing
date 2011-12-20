@@ -14,7 +14,7 @@ class CallAttemptsController < ApplicationController
     Rails.logger.debug("callconnect: #{params[:AnsweredBy]}")
     call_attempt.update_attribute(:connecttime, Time.now)
     response = case params[:AnsweredBy] #using the 2010 api
-                 when "machine" 
+                 when "machine"
                    call_attempt.voter.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
                    call_attempt.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
                    if call_attempt.caller_session && (call_attempt.campaign.predictive_type == Campaign::Type::PREVIEW || call_attempt.campaign.predictive_type == Campaign::Type::PROGRESSIVE)
@@ -25,7 +25,7 @@ class CallAttemptsController < ApplicationController
                    end
                    (call_attempt.campaign.use_recordings? && call_attempt.campaign.answering_machine_detect) ? call_attempt.play_recorded_message : call_attempt.hangup
                  else
-                   call_attempt.connect_to_caller(call_attempt.voter.caller_session)
+                   CallerSession.transaction { call_attempt.connect_to_caller(call_attempt.voter.caller_session) }
                end
     render :xml => response
   end
@@ -44,18 +44,18 @@ class CallAttemptsController < ApplicationController
   def end
     DIALER_LOGGER.info "callstatus: #{params[:CallStatus]}"
     call_attempt = CallAttempt.find(params[:id])
-    unless call_attempt.status == CallAttempt::Status::ABANDONED 
+    unless call_attempt.status == CallAttempt::Status::ABANDONED
       call_attempt.voter.update_attributes(:status => CallAttempt::Status::MAP[params[:CallStatus]], :last_call_attempt_time => Time.now)
       call_attempt.update_attributes(:status => CallAttempt::Status::MAP[params[:CallStatus]], :call_end => Time.now)
     else
       call_attempt.voter.update_attributes(:last_call_attempt_time => Time.now)
       call_attempt.update_attributes(:call_end => Time.now)
     end
-    
-    
-    Moderator.publish_event(call_attempt.campaign, 'update_dials_in_progress', {:campaign_id => call_attempt.campaign.id,:dials_in_progress => call_attempt.campaign.call_attempts.dial_in_progress.length,
-      :voters_remaining => call_attempt.campaign.voters_count("not called", false).length})
-      
+
+
+    Moderator.publish_event(call_attempt.campaign, 'update_dials_in_progress', {:campaign_id => call_attempt.campaign.id, :dials_in_progress => call_attempt.campaign.call_attempts.dial_in_progress.length,
+                                                                                :voters_remaining => call_attempt.campaign.voters_count("not called", false).length})
+
     response = case params[:CallStatus] #using the 2010 api
                  when "no-answer", "busy", "failed"
                    call_attempt.fail
