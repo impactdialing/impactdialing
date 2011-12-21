@@ -137,7 +137,7 @@ def simulate(campaign_id)
 
       dials_made = finished_dials.select{|dial| dial.counter < start_time}
       dials_answered = dials_made.select(&:answered?)
-      dials_needed = dials_made.empty? ? 0 : ((alpha * dials_answered.size).to_f / dials_made.size).to_i
+      dials_needed = dials_made.empty? ? 0 : ((alpha * dials_answered.size).to_f / dials_made.size)
       mean_call_length = average(dials_made.map(&:length))
       longest_call_length = dials_made.empty? ? 10.minutes : dials_made.map(&:length).inject(dials_made.first.length){|champion, challenger| [champion, challenger].max}
       expected_call_length = (1 - beta) * mean_call_length + beta * longest_call_length
