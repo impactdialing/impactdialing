@@ -1,8 +1,8 @@
   <h1>Reports</h1>
-  <table width="100%" border="0" cellspacing="0" cellpadding="0">
     <% if @account.campaigns.length==0 %>
       <tr><td>You haven't created any campaigns yet.</td></tr>
     <% else %>
+      <table>
       <tr><th colspan="7">Campaign</th></tr>
     <% end %>
     <% @campaigns.each do |c| %>
@@ -10,7 +10,6 @@
         <td><%= c.name %></td>
         <td><a href="/client/report_overview?id=<%= c.id %>">Dials</a></td>
         <td><a method="post" href="/client/reports/answer?campaign_id=<%= c.id %>" >Answered</a><br/></td>
-        <!-- <td><a href="/client/report_overview_old?id=<%= c.id %>&type=1">Answered</a><br/></td> -->
         <td><a href="<%= usage_client_reports_path(:id => c.id) %>">Usage</a><br/></td>
         <td><%= link_to "Download", download_client_campaign_reports_path(c) %><br/></td>
       </tr>
