@@ -426,7 +426,7 @@ class Campaign < ActiveRecord::Base
 
   def dial_predictive_voters
     if ratio_dial?
-      num_to_call = (callers_to_dial.length - call_attempts_not_wrapped_up.length ) * get_dial_ratio
+      num_to_call = (callers_to_dial.length - call_attempts_not_wrapped_up.length) * get_dial_ratio
     else
       num_to_call = num_to_call_predictive
     end
@@ -440,10 +440,26 @@ class Campaign < ActiveRecord::Base
     end
   end
 
+  #def num_to_call_predictive
+  #  short_to_dial = determine_short_to_dial
+  #  max_calls = determine_pool_size(short_to_dial)
+  #  max_calls - call_attempts_in_progress.length
+  #end
+
   def num_to_call_predictive
-    short_to_dial = determine_short_to_dial
-    max_calls = determine_pool_size(short_to_dial)
-    max_calls - call_attempts_in_progress.length
+    #if <50 calls have been made recently make one call at a time
+    dials_made = call_attempts.between(10.minutes.ago, Time.now)
+    active_call_attempts = dials_made.where(:status => CallAttempt::Status::INPROGRESS)
+    dials_answered = dials_made.select(&:answered?)
+    dials_needed = dials_made.empty? ? 0 : ((simulated_values.alpha * dials_answered.size).to_f / dials_made.size).to_i
+    mean_call_length = average(dials_made.map(&:duration))
+    longest_call_length = dials_made.empty? ? 10.minutes : dials_made.map(&:length).inject(dials_made.first.length) { |champion, challenger| [champion, challenger].max }
+    expected_call_length = (1 - simulated_values.beta) * mean_call_length + simulated_values.beta * longest_call_length
+    available_callers = caller_sessions.available.size +
+        active_call_attempts.select { |call_attempt| call_attempt.duration > expected_call_length }.size -
+        active_call_attempts.select { |call_attempt| call_attempt.duration > longest_call_length }.size
+    ringing_lines = dials_made.where(:connecttime => nil).size
+    dials_to_make = (dials_needed * available_callers) - ringing_lines
   end
 
   def ring_predictive_voters(voter_ids)
