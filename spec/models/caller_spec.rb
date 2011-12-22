@@ -53,6 +53,45 @@ describe Caller do
       end
     end.response
   end
+  
+  describe "choice in phones-only preview" do
+    let(:caller) { Factory(:caller, :account => user.account) }
+    before(:each) do
+      @campaign = Factory(:campaign, :robo => false, :predictive_type => 'preview')
+      @caller_session = Factory(:caller_session, :caller => caller, :campaign => @campaign, :session_key => "sessionkey")
+      @voter = Factory(:voter, :campaign => @campaign)
+    end
+    
+    it "if choice is * , make call to voter and caller will be placed into conference" do
+      Twilio::Call.stub(:make)
+      Twilio::Call.should_receive(:make).with(anything, @voter.Phone,anything,anything).and_return("TwilioResponse"=> {"Call" => {"Sid" => 'sid'}})
+      caller.choice_result("*", @voter, @caller_session).should == response = Twilio::Verb.new do |v|
+        v.dial(:hangupOnStar => true, :action => gather_response_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => @caller_session.id)) do
+          v.conference(@caller_session.session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
+        end
+      end.response
+    end
+    
+    it "if choice is # , skip the voter" do
+      next_voter = Factory(:voter, :campaign => @campaign,:FirstName => "next voter first name", :LastName => "next voter last name")
+      caller.choice_result("#", @voter, @caller_session).should == Twilio::Verb.new do |v|
+        v.gather(:numDigits => 1, :timeout => 10, :action => choose_voter_caller_url(caller.id, :session => @caller_session.id, :host => Settings.host, :port => Settings.port, :voter => next_voter.id), :method => "POST", :finishOnKey => "5") do
+          v.say "#{next_voter.FirstName}  #{next_voter.LastName}. Press * to dial or # to skip."
+        end
+      end.response
+      @voter.reload.skipped_time.should_not be_nil
+      @voter.reload.status.should == 'not called'
+    end
+    
+    it "if choice is neither * nor #, agaign ask caller option" do
+      caller.choice_result("3", @voter, @caller_session).should == Twilio::Verb.new do |v|
+        v.gather(:numDigits => 1, :timeout => 10, :action => choose_voter_caller_url(caller, :session => @caller_session, :host => Settings.host, :port => Settings.port, :voter => @voter), :method => "POST", :finishOnKey => "5") do
+          v.say "Press * to dial or # to skip."
+        end
+      end.response
+    end
+    
+  end
 
   it do
     Factory(:caller)

@@ -2,9 +2,10 @@ require Rails.root.join("lib/twilio_lib")
 
 class CallerController < ApplicationController
   layout "caller"
-  before_filter :check_login, :except=>[:login, :feedback, :assign_campaign, :end_session, :pause, :start_calling, :gather_response]
+  before_filter :check_login, :except=>[:login, :feedback, :assign_campaign, :end_session, :pause, :start_calling, :gather_response, :choose_voter, :phones_only_progressive]
   before_filter :redirect_to_ssl
   before_filter :connect_to_twilio, :only => [:preview_dial]
+
 
   def index
     unless @caller.account.activated?
@@ -136,7 +137,22 @@ class CallerController < ApplicationController
     caller_session.preview_dial(voter)
     render :nothing => true
   end
-
+  
+  def choose_voter
+    caller_session = CallerSession.find(params[:session])
+    voter = Voter.find(params[:voter])
+    caller = @caller = Caller.find(params[:id])
+    caller_choice = params[:Digits]
+    render :xml => caller.choice_result(caller_choice, voter, caller_session)
+  end
+  
+  def phones_only_progressive
+    caller_session = CallerSession.find(params[:session_id])
+    voter = Voter.find(params[:voter_id])
+    render :xml => caller_session.phones_only_start
+    caller_session.preview_dial(voter)
+  end
+  
   def ping
     #sleep 2.5
     send_rt(params[:key], 'ping', params[:num])
