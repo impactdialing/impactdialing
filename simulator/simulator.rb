@@ -1,12 +1,18 @@
 require 'active_record'
 require "ostruct"
 require 'yaml'
-RAILS_ENV = ENV['RAILS_ENV']
+require 'logger'
+
+RAILS_ENV = ENV['RAILS_ENV'] || 'development'
+SIMULATOR_ROOT = ENV['SIMULATOR_ROOT'] || File.expand_path('..', __FILE__)
+
+FileUtils.mkdir_p(File.join(SIMULATOR_ROOT, 'log'), :verbose => true)
+ActiveRecord::Base.logger = Logger.new(File.open(File.join(SIMULATOR_ROOT, 'log', "simulator_#{RAILS_ENV}.log"), 'a'))
 
 def database_settings
   yaml_file = File.open(File.join(File.dirname(__FILE__), 'database.yml'))
   yaml = YAML.load(yaml_file)
-  @plugins ||= yaml[RAILS_ENV || 'development']
+  @plugins ||= yaml[RAILS_ENV].tap{|y| ActiveRecord::Base.logger.info y}
 end
 
 ActiveRecord::Base.establish_connection(
@@ -71,9 +77,10 @@ def simulate(campaign_id)
   call_attempts = CallAttempt.where(:campaign_id => campaign_id)
   recent_call_attempts = call_attempts.where(:status => "Call completed with success.").map{|attempt| OpenStruct.new(:length => attempt.duration, :counter => 0)}
 
-  puts call_attempts.map(&:status)
+  ActiveRecord::Base.logger.info call_attempts.map(&:status)
   recent_dials = call_attempts.map{|attempt| OpenStruct.new(:length => attempt.ringing_duration, :counter => 0, :answered? => attempt.status == 'Call completed with success.') }
-  puts recent_call_attempts, recent_dials
+  ActiveRecord::Base.logger.info recent_call_attempts
+  ActiveRecord::Base.logger.info recent_dials
 
   alpha = 0.01
   beta = 0.0
@@ -129,8 +136,8 @@ def simulate(campaign_id)
       end
 
       dials_made = finished_dials.select{|dial| dial.counter < start_time}
-      dials_answered = finished_dials.select{|dial| dial.counter < start_time && dial.answered?}
-      dials_needed = dials_made.empty? ? 0 : ((alpha * dials_answered.size).to_f / dials_made.size).to_i
+      dials_answered = dials_made.select(&:answered?)
+      dials_needed = dials_made.empty? ? 0 : ((alpha * dials_answered.size).to_f / dials_made.size)
       mean_call_length = average(dials_made.map(&:length))
       longest_call_length = dials_made.empty? ? 10.minutes : dials_made.map(&:length).inject(dials_made.first.length){|champion, challenger| [champion, challenger].max}
       expected_call_length = (1 - beta) * mean_call_length + beta * longest_call_length
@@ -139,7 +146,8 @@ def simulate(campaign_id)
         active_call_attempts.select{|call_attempt| call_attempt.counter > longest_call_length}.size
       ringing_lines = active_dials.size
       dials_to_make = (dials_needed * available_callers) - ringing_lines
-      dials_to_make.times{ active_dials << recent_dials[rand(dials_to_make.size)] }
+
+      dials_to_make.times{ active_dials << recent_dials[rand(recent_dials.size)] }
       idle_time += caller_statuses.select(&:available?).size
       active_time += caller_statuses.select(&:unavailable?).size
       finished_dials.each{|dial| dial.counter += 1}
@@ -149,11 +157,11 @@ def simulate(campaign_id)
 
     answered_finished_dials = finished_dials.select(&:answered?)
     simulated_abandonment = answered_finished_dials.empty? ? 0 : (abandon_count.to_f / answered_finished_dials.size)
-    puts "simulated_abandonment: #{simulated_abandonment}"
+    ActiveRecord::Base.logger.info "simulated_abandonment: #{simulated_abandonment}"
 
     if simulated_abandonment <= target_abandonment
       total_time = (active_time + idle_time)
-      puts active_time, idle_time
+      ActiveRecord::Base.logger.info "active_time: #{active_time}, idle_time: #{idle_time}"
       utilisation = total_time == 0 ? 0 : active_time.to_f / total_time
       if utilisation > best_utilisation
         best_alpha = alpha
@@ -168,27 +176,26 @@ def simulate(campaign_id)
       alpha = 0.00
       beta += 0.10
     end
-    puts "alpha: #{alpha} & beta: #{beta} with utilisation: #{utilisation}"
-    puts "best utilisation so far: #{best_utilisation} and abandonment: #{simulated_abandonment}"
+    ActiveRecord::Base.logger.info "alpha: #{alpha} & beta: #{beta} with utilisation: #{utilisation}"
+    ActiveRecord::Base.logger.info "best utilisation so far: #{best_utilisation} and abandonment: #{simulated_abandonment}"
   end
 
   SimulatedValues.find_or_create_by_campaign_id(campaign_id).update_attributes(:alpha => best_alpha, :beta => best_beta)
-  puts "alpha: #{best_alpha} beta: #{best_beta} with utilisation: #{best_utilisation} and simulated abandonment: #{simulated_abandonment_for_best_utilisation}"
-  puts best_alpha, best_beta
+  ActiveRecord::Base.logger.info "alpha: #{best_alpha} beta: #{best_beta} with utilisation: #{best_utilisation} and simulated abandonment: #{simulated_abandonment_for_best_utilisation}"
 end
 
 loop do
   begin
-    CallerSession.where(:on_call => true).tap{|sessions| puts sessions.size}.each do |c|
+    CallerSession.where(:on_call => true).tap{|sessions| ActiveRecord::Base.logger.info sessions.size}.each do |c|
       simulate(c.campaign_id)
     end
     sleep 3
   rescue Exception => e
     if e.class == SystemExit || e.class == Interrupt
-      puts "============ EXITING  ============"
+      ActiveRecord::Base.logger.info "============ EXITING  ============"
       exit
     end
-    puts "Rescued - #{ e } (#{ e.class })!"
-    puts e.backtrace
+    ActiveRecord::Base.logger.info "Rescued - #{ e } (#{ e.class })!"
+    ActiveRecord::Base.logger.info e.backtrace
   end
 end

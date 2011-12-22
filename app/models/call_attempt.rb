@@ -18,7 +18,7 @@ class CallAttempt < ActiveRecord::Base
 
 
   def report_recording_url
-    "#{self.recording_url.gsub("api.twilio.com","recordings.impactdialing.com")}.mp3" if recording_url
+    "#{self.recording_url.gsub("api.twilio.com", "recordings.impactdialing.com")}.mp3" if recording_url
   end
 
   def ring_time
@@ -63,8 +63,7 @@ class CallAttempt < ActiveRecord::Base
       update_attributes(status: CallAttempt::Status::ABANDONED, wrapup_time: Time.now)
       voter.update_attributes(:status => CallAttempt::Status::ABANDONED, call_back: false)
       caller_session.update_attribute(:voter_in_progress, nil) unless caller_session.nil?
-      Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id,:dials_in_progress => campaign.call_attempts.dial_in_progress.length,
-        :voters_remaining => campaign.voters_count("not called", false).length})
+      Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.dial_in_progress.length, :voters_remaining => campaign.voters_count("not called", false).length})
       hangup
     else
       update_attributes(:status => CallAttempt::Status::INPROGRESS)
@@ -92,8 +91,7 @@ class CallAttempt < ActiveRecord::Base
   def conference(session)
     self.update_attributes(:caller => session.caller, :call_start => Time.now, :caller_session => session)
     session.publish('voter_connected', {:attempt_id => self.id, :voter => self.voter.info})
-    Moderator.publish_event(campaign, 'voter_connected', {:campaign_id => campaign.id, :caller_id => session.caller.id,
-      :dials_in_progress => campaign.call_attempts.dial_in_progress.length})
+    Moderator.publish_event(campaign, 'voter_connected', {:campaign_id => campaign.id, :caller_id => session.caller.id, :dials_in_progress => campaign.call_attempts.dial_in_progress.length})
     Rails.logger.debug("Moderator published event")
     voter.conference(session)
     Rails.logger.debug("Voter conference")
@@ -116,7 +114,7 @@ class CallAttempt < ActiveRecord::Base
     voter.update_attribute(:status, CallAttempt::Status::SUCCESS)
     Pusher[caller_session.session_key].trigger('voter_disconnected', {:attempt_id => self.id, :voter => self.voter.info})
     Moderator.publish_event(campaign, 'voter_disconnected', {:campaign_id => campaign.id, :caller_id => caller_session.caller.id,
-       :dials_in_progress => campaign.call_attempts.dial_in_progress.length, :voters_remaining => campaign.voters_count("not called", false).length})
+                                                             :dials_in_progress => campaign.call_attempts.dial_in_progress.length, :voters_remaining => campaign.voters_count("not called", false).length})
     hangup
   end
 
@@ -163,6 +161,7 @@ class CallAttempt < ActiveRecord::Base
     MAP = {'in-progress' => INPROGRESS, 'completed' => SUCCESS, 'busy' => BUSY, 'failed' => FAILED, 'no-answer' => NOANSWER, 'canceled' => CANCELLED}
     ALL = MAP.values
     RETRY = [NOANSWER, BUSY, FAILED]
+    ANSWERED = [INPROGRESS, SUCCESS]
   end
 
 end
