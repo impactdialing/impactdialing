@@ -126,8 +126,12 @@ class CallAttempt < ActiveRecord::Base
     update_attributes(wrapup_time: Time.now)
     if caller_session && (campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE)
       caller_session.publish('voter_push',next_voter.nil? ? {} : next_voter.info)
-      caller_session.update_attribute(:voter_in_progress, nil)      
-      caller_session.start
+      caller_session.update_attribute(:voter_in_progress, nil)
+      if caller_session.caller.is_phones_only?
+        caller_session.ask_caller_to_choose_voter(next_voter)
+      else
+        caller_session.start
+      end
     else
       hangup
     end

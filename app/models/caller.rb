@@ -62,5 +62,18 @@ class Caller < ActiveRecord::Base
     attributes.reject { |k, v| (k == "created_at") ||(k == "updated_at") }
   end
   
+  def choice_result(caller_choice, voter, caller_session)
+    if caller_choice == "*"
+      response = caller_session.phones_only_start
+      caller_session.preview_dial(voter)
+      response
+    elsif caller_choice == "#"
+      voter.skip
+      caller_session.ask_caller_to_choose_voter
+    else
+      caller_session.ask_caller_to_choose_voter(voter, caller_choice)
+    end
+  end
+  
 
 end

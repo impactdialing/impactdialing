@@ -43,6 +43,8 @@ ImpactDialing::Application.routes.draw do
       post :stop_calling
       post :start_calling
       post :gather_response
+      post :choose_voter
+      post :phones_only_progressive
     end
 
   end

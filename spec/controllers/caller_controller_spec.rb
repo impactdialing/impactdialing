@@ -140,7 +140,7 @@ describe CallerController do
     end
 
     it "creates a conference for a caller" do
-      campaign = Factory(:campaign, :account => account,:start_time => Time.new("2000-01-01 01:00:00"),:end_time =>   Time.new("2000-01-01 23:00:00"))
+      campaign = Factory(:campaign, :account => account,:start_time => Time.new("2000-01-01 01:00:00"),:end_time => Time.new("2000-01-01 23:00:00"))
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => 'key')
       Moderator.stub!(:caller_connected_to_campaign).with(caller, campaign, session)
       
@@ -225,6 +225,52 @@ describe CallerController do
       post :active_session, :id => caller.id, :campaign_id => campaign.id
       response.body.should == {:caller_session => {:id => nil}}.to_json
     end
+  end
+  
+  describe "phones-only call" do
+    let(:caller) { Factory(:caller, :is_phones_only => true, :name => "caller name", :pin => "78453") }
+    describe "preview mode" do
+      before(:each) do
+        @campaign = Factory(:campaign, :robo => false, :predictive_type => 'preview')
+        @caller_session = Factory(:caller_session, :caller => caller, :campaign => @campaign, :session_key => "sessionkey")
+        @current_voter = Factory(:voter, :campaign => @campaign)
+      end
+    
+      it "add the caller to the conference and call to the voter, if caller press * " do
+        Twilio::Call.stub(:make)
+        Twilio::Call.should_receive(:make).with(anything, @current_voter.Phone,anything,anything).and_return("TwilioResponse"=> {"Call" => {"Sid" => 'sid'}})
+        post :choose_voter, :id => caller.id, :session => @caller_session.id, :voter => @current_voter.id, :Digits => "*"  
+        response.body.should == @caller_session.phones_only_start
+      end
+    
+      it "if caller press #, skip the voter then say the next voter name and ask for option" do 
+        next_voter = Factory(:voter, :campaign => @campaign,:FirstName => "next voter first name", :LastName => "next voter last name")
+        post :choose_voter, :id => caller.id, :session => @caller_session.id, :voter => @current_voter.id, :Digits => "#"
+        response.body.should == Twilio::Verb.new do |v|
+          v.gather(:numDigits => 1, :timeout => 10, :action => choose_voter_caller_url(caller.id, :session => @caller_session.id, :host => Settings.host, :port => Settings.port, :voter => next_voter.id), :method => "POST", :finishOnKey => "5") do
+            v.say "#{next_voter.FirstName}  #{next_voter.LastName}. Press * to dial or # to skip."
+          end
+        end.response
+        @current_voter.reload.skipped_time.should_not be_nil
+        @current_voter.reload.status.should == 'not called'
+      end
+    end
+    
+    describe "progressive mode" do
+      
+      it "add the caller to the conference and make the call to voter" do
+        campaign = Factory(:campaign, :robo => false, :predictive_type => 'preview')
+        caller_session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sessionkey")
+        voter = Factory(:voter, :campaign => campaign)
+        
+        Twilio::Call.stub(:make)
+        Twilio::Call.should_receive(:make).with(anything, voter.Phone,anything,anything).and_return("TwilioResponse"=> {"Call" => {"Sid" => 'sid'}})
+        post :phones_only_progressive, :id => caller.id, :session_id => caller_session.id, :voter_id => voter.id
+        response.body.should == caller_session.phones_only_start
+      end
+      
+    end
+    
   end
 
   it "logs out" do

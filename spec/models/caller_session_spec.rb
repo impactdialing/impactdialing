@@ -196,6 +196,41 @@ describe CallerSession do
     Factory(:question, :script => script)
     caller_session.next_question.should == next_question
   end
+  
+  describe "phones-only caller" do
+    let(:caller) { Factory(:caller, :is_phones_only => true, :name => "caller name", :pin => "78453") }
+    
+    it "asks caller to choose voter or skip, if caller is phones-only and campaign is preview" do
+      campaign = Factory(:campaign, :robo => false, :predictive_type => 'preview')
+      voter = Factory(:voter, :campaign => campaign)
+      caller_session = Factory(:caller_session, :caller => caller, :campaign => campaign)
+      campaign.stub!(:time_period_exceed?).and_return(false)
+      caller_session.start.should == Twilio::Verb.new do |v|
+        v.gather(:numDigits => 1, :timeout => 10, :action => choose_voter_caller_url(self.caller, :session => caller_session, :host => Settings.host, :port => Settings.port, :voter => voter), :method => "POST", :finishOnKey => "5") do
+          v.say "#{voter.FirstName}  #{voter.LastName}. Press * to dial or # to skip."
+        end
+      end.response
+    end
+    
+    it "says voter first name and last name, if caller is phones-only and campaign is progressive" do
+      campaign = Factory(:campaign, :robo => false, :predictive_type => 'progressive')
+      voter = Factory(:voter, :FirstName => "first name", :LastName => "last name", :campaign => campaign)
+      caller_session = Factory(:caller_session, :caller => caller, :campaign => campaign)
+      campaign.stub!(:time_period_exceed?).and_return(false)
+      caller_session.start.should == Twilio::Verb.new do |v|
+        v.say "#{voter.FirstName}  #{voter.LastName}." 
+        v.redirect(phones_only_progressive_caller_url(caller, :session_id => caller_session.id, :voter_id => voter.id, :host => Settings.host, :port => Settings.port), :method => "POST")
+      end.response
+    end
+    
+    it "says 'no more voters to dial', if there are no voters to dial" do
+      campaign = Factory(:campaign, :robo => false, :predictive_type => 'progressive')
+      campaign.stub!(:time_period_exceed?).and_return(false)
+      voter = Factory(:voter, :FirstName => "first name", :LastName => "last name", :campaign => campaign, :status => "Call completed with success.")
+      caller_session = Factory(:caller_session, :caller => caller, :campaign => campaign)
+      caller_session.start.should == Twilio::Verb.new { |v| v.say I18n.t(:campaign_has_no_more_voters) }.response
+    end
+  end
 
   describe "phone responses" do
     let(:script) { Factory(:script) }
