@@ -202,7 +202,7 @@
           <% @campaigns.each do |c| %>
               <% c.caller_sessions.on_call.each do |caller_session| %>
                   <tr id="<%= caller_session.caller.id %>" class="caller <%= cycle("odd", "even") %> " older="true">
-                    <td class="caller_name"><%= caller_session.caller.email %></td>
+                    <td class="caller_name"><%= caller_name(caller_session.caller) %></td>
                     <td><%= caller_session.campaign.name %></td>
 										<% status, d = caller_status_and_duration(caller_session) %>
 										<td class="status"><%= status %></td>

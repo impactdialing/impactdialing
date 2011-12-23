@@ -20,4 +20,8 @@ module MonitorsHelper
     [status, Time.at(duration).gmtime.strftime('%R:%S')]
   end
   
+  def caller_name(caller)
+    caller.is_phones_only? ? caller.name : caller.email
+  end
+  
 end
