@@ -9,6 +9,27 @@ module Client
     def index
       @campaigns = params[:id].blank? ? account.campaigns.manual : Campaign.find(params[:id])
     end
+    
+    def dials
+      from_date = Date.strptime(params[:from_date], "%m/%d/%Y") if params[:from_date]
+      to_date = Date.strptime(params[:to_date], "%m/%d/%Y") if params[:to_date]
+      @from_date = from_date || (@campaign.call_attempts.first.try(:created_at) || Time.now)
+      @to_date = to_date || Time.now
+
+      @voters = params[:from_date] ? @campaign.all_voters.last_call_attempt_within(@from_date, @to_date) : @campaign.all_voters
+      if @voters
+        @answered = @voters.by_status(CallAttempt::Status::SUCCESS).count
+        @no_answer = @voters.by_status(CallAttempt::Status::NOANSWER).count
+        @busy_signal = @voters.by_status(CallAttempt::Status::BUSY).count
+        @ringing = @voters.by_status(CallAttempt::Status::RINGING).count
+        @abandoned = @voters.by_status(CallAttempt::Status::ABANDONED).count
+        @failed = @voters.by_status(CallAttempt::Status::FAILED).count
+        @voicemail = @voters.by_status(CallAttempt::Status::VOICEMAIL).count
+        @scheduled = @voters.by_status(CallAttempt::Status::SCHEDULED).count
+        @not_dialed = @voters.by_status('not called').count
+        @total = ((@voters.count == 0) ? 1 : @voters.count)
+      end
+    end
 
     def usage
       @campaign = @user.all_campaigns.find(params[:id])
