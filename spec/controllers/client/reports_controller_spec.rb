@@ -55,11 +55,7 @@ describe Client::ReportsController do
     end
   end
   
-  describe "dials report" do
-    it "retrive all call" do
-      
-    end
-  end
+  
 
   describe "download report" do
 
