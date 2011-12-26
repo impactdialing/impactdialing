@@ -33,6 +33,7 @@ class Voter < ActiveRecord::Base
   scope :not_skipped, where('skipped_time is null')
   scope :answered, where('result_date is not null')
   scope :answered_within, lambda { |from, to| where(:result_date => from.beginning_of_day..(to.end_of_day)) }
+  scope :last_call_attempt_within, lambda { |from, to| where(:last_call_attempt_time => from..(to + 1.day))}
 
   before_validation :sanitize_phone
 
@@ -75,6 +76,7 @@ class Voter < ActiveRecord::Base
 
     if response["TwilioResponse"]["RestException"]
       logger.info "[dialer] Exception when attempted to call #{message}  Response: #{response["TwilioResponse"]["RestException"].inspect}"
+      update_attributes(status: CallAttempt::Status::FAILED)
       return false
     end
     logger.info "[dialer] Dialed #{message}. Response: #{response["TwilioResponse"].inspect}"
