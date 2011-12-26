@@ -137,7 +137,12 @@ class Campaign < ActiveRecord::Base
   end
 
   def call_stats(mins=nil)
-    @stats ||= {:attempts=>[], :abandon=>0, :answer=>0, :no_answer=>0, :total=>0, :answer_pct=>0, :avg_duration=>0, :abandon_pct=>0, :avg_hold_time=>0, :total_long=>0, :total_short=>0, :avg_long=>0, :biggest_long=>0, :avg_ring_time=>0, :avg_ring_time_devation=>0, :current_short=>0, :current_long=>0, :short_deviation=>0, :avg_short=>0}.tap do |stats|
+    @stats ||= {:attempts=>[], :abandon=>0, :answer=>0, :no_answer=>0,
+                :total=>0, :answer_pct=>0, :avg_duration=>0, :abandon_pct=>0,
+                :avg_hold_time=>0, :total_long=>0, :total_short=>0, :avg_long=>0,
+                :biggest_long=>0, :avg_ring_time=>0, :avg_ring_time_devation=>0,
+                :current_short=>0, :current_long=>0,
+                :short_deviation=>0, :avg_short=>0}.tap do |stats|
       totduration=0
       tothold=0
       totholddata=0
@@ -153,7 +158,7 @@ class Campaign < ActiveRecord::Base
       if mins.blank?
         attempts = CallAttempt.find_all_by_campaign_id(self.id, :order=>"id desc")
       else
-        attempts = CallAttempt.find_all_by_campaign_id(self.id, :conditions=>"call_start > DATE_SUB(now(),INTERVAL #{mins} MINUTE) or call_end > DATE_SUB(now(),INTERVAL #{mins} MINUTE)", :order=>"id desc")
+        attempts = CallAttempt.find_all_by_campaign_id(self.id,:conditions=>"call_start > DATE_SUB(now(),INTERVAL #{mins} MINUTE) or call_end > DATE_SUB(now(),INTERVAL #{mins} MINUTE)", :order=>"id desc")
       end
 
       stats[:attempts]=attempts
@@ -453,10 +458,12 @@ class Campaign < ActiveRecord::Base
   def num_to_call_predictive_simulate
     dials_made = call_attempts.between(10.minutes.ago, Time.now)
     active_call_attempts = dials_made.with_status(CallAttempt::Status::INPROGRESS)
+    #check if answered means only those that were answered by voters and completed successfuly or the success+ inprogress
     dials_answered = dials_made.with_status(CallAttempt::Status::ANSWERED)
-    dials_required = dials_made.empty? ? 0 : ((simulated_values.alpha * dials_answered.size).to_f / dials_made.size)
-    mean_call_length = average(dials_made.map(&:duration))
-    longest_call_length = dials_made.empty? ? 10.minutes : dials_made.map(&:duration).inject(dials_made.first.duration) { |champion, challenger| [champion, challenger].max }
+    dials_required = dials_made.empty? ? 0 : ((simulated_values.alpha * dials_made.size) / dials_answered.size)
+    #calculating mean, longest and expected call length using only answered(completed successfully) calls
+    mean_call_length = average(dials_answered.map(&:duration))
+    longest_call_length = dials_made.empty? ? 10.minutes : dials_answered.map(&:duration).inject(dials_answered.first.duration) { |champion, challenger| [champion, challenger].max }
     expected_call_length = (1 - simulated_values.beta) * mean_call_length + simulated_values.beta * longest_call_length
     available_callers = caller_sessions.available.size +
         active_call_attempts.select { |call_attempt| call_attempt.duration > expected_call_length }.size -
