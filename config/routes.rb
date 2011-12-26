@@ -74,6 +74,7 @@ ImpactDialing::Application.routes.draw do
     resources :reports do
       collection do
         get :usage
+        get :dials
         post :dial_details
       end
     end

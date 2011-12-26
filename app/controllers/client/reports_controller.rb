@@ -16,19 +16,21 @@ module Client
       @from_date = from_date || (@campaign.call_attempts.first.try(:created_at) || Time.now)
       @to_date = to_date || Time.now
 
-      @voters = params[:from_date] ? @campaign.all_voters.last_call_attempt_within(@from_date, @to_date) : @campaign.all_voters
-      if @voters
-        @answered = @voters.by_status(CallAttempt::Status::SUCCESS).count
-        @no_answer = @voters.by_status(CallAttempt::Status::NOANSWER).count
-        @busy_signal = @voters.by_status(CallAttempt::Status::BUSY).count
-        @ringing = @voters.by_status(CallAttempt::Status::RINGING).count
-        @abandoned = @voters.by_status(CallAttempt::Status::ABANDONED).count
-        @failed = @voters.by_status(CallAttempt::Status::FAILED).count
-        @voicemail = @voters.by_status(CallAttempt::Status::VOICEMAIL).count
-        @scheduled = @voters.by_status(CallAttempt::Status::SCHEDULED).count
-        @not_dialed = @voters.by_status('not called').count
-        @total = ((@voters.count == 0) ? 1 : @voters.count)
+      dialed_voters = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date)
+      @total_voters = @campaign.all_voters
+      if dialed_voters
+        @answered = dialed_voters.by_status(CallAttempt::Status::ANSWERED).count
+        @no_answer = dialed_voters.by_status(CallAttempt::Status::NOANSWER).count
+        @busy_signal = dialed_voters.by_status(CallAttempt::Status::BUSY).count
+        @ringing = dialed_voters.by_status(CallAttempt::Status::RINGING).count
+        @abandoned = dialed_voters.by_status(CallAttempt::Status::ABANDONED).count
+        @failed = dialed_voters.by_status(CallAttempt::Status::FAILED).count
+        @voicemail = dialed_voters.by_status(CallAttempt::Status::VOICEMAIL).count
+        @scheduled = dialed_voters.by_status(CallAttempt::Status::SCHEDULED).count
       end
+      @total = ((@total_voters.count == 0) ? 1 : @total_voters.count)
+      @ready_to_dial = params[:from_date] ? 0 : @total_voters.by_status(CallAttempt::Status::READY).count
+      @not_dialed = not_dilaed_voters(params[:from_date])
     end
 
     def usage
@@ -107,6 +109,14 @@ module Client
         end
       end
       report
+    end
+    
+    def not_dilaed_voters(range_parameters)
+      if range_parameters
+        @total_voters.count - (@answered.to_i + @no_answer.to_i + @busy_signal.to_i + @ringing.to_i + @abandoned.to_i + @failed.to_i + @voicemail.to_i + @scheduled.to_i)
+      else
+        @total_voters.by_status(Voter::Status::NOTCALLED).count
+      end
     end
   end
 end
