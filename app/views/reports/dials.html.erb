@@ -22,19 +22,7 @@
 						<td>Ringing</td><td><%= @ringing %></td><td><%= ((@ringing.to_f/@total)*100).round %>%</td>
 					</tr>
 					<tr class="<%= cycle("odd","even") %>">
-						<td>Ready to dial</td><td><%= @ready_to_dial %></td><td><%= ((@ready_to_dial.to_f/@total)*100).round %>%</td>
-					</tr>
-					<tr class="<%= cycle("odd","even") %>">
-						<td>Call abandoned</td><td><%= @abandoned %></td><td><%= ((@abandoned.to_f/@total)*100).round %>%</td>
-					</tr>
-					<tr class="<%= cycle("odd","even") %>">
 						<td>Failed</td><td><%= @failed %></td><td><%= ((@failed.to_f/@total)*100).round %>%</td>
-					</tr>
-					<tr class="<%= cycle("odd","even") %>">
-						<td>Voicemail</td><td><%= @voicemail %></td><td><%= ((@voicemail.to_f/@total)*100).round %>%</td>
-					</tr>
-					<tr class="<%= cycle("odd","even") %>">
-						<td>Scheduled for later</td><td><%= @scheduled %></td><td><%= ((@scheduled.to_f/@total)*100).round %>%</td>
 					</tr>
 					<tr class="<%= cycle("odd","even") %>">
 						<td>Not dialed</td><td><%= @not_dialed %></td><td><%= ((@not_dialed.to_f/@total)*100).round %>%</td>
@@ -46,7 +34,7 @@
 </div>
 
 <h3>Date range:</h3>
-<% form_tag(dials_client_reports_path, :method => :get) do %>
+<% form_tag(dials_reports_path, :method => :get) do %>
  
   <table>
     <tr>
