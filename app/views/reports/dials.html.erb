@@ -19,10 +19,10 @@
 						<td>Busy signal</td><td><%= @busy_signal %></td><td><%= ((@busy_signal.to_f/@total)*100).round %>%</td>
 					</tr>
 					<tr class="<%= cycle("odd","even") %>">
-						<td>Ringing</td><td><%= @ringing %></td><td><%= ((@ringing.to_f/@total)*100).round %>%</td>
+						<td>Failed</td><td><%= @failed %></td><td><%= ((@failed.to_f/@total)*100).round %>%</td>
 					</tr>
 					<tr class="<%= cycle("odd","even") %>">
-						<td>Failed</td><td><%= @failed %></td><td><%= ((@failed.to_f/@total)*100).round %>%</td>
+						<td>Ringing</td><td><%= @ringing %></td><td><%= ((@ringing.to_f/@total)*100).round %>%</td>
 					</tr>
 					<tr class="<%= cycle("odd","even") %>">
 						<td>Not dialed</td><td><%= @not_dialed %></td><td><%= ((@not_dialed.to_f/@total)*100).round %>%</td>
