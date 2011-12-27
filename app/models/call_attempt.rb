@@ -123,18 +123,16 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def fail
-    next_voter = self.campaign.next_voter_in_dial_queue(voter.id)
     voter.update_attributes(:call_back => false)
     update_attributes(wrapup_time: Time.now)
     Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.length, :voters_remaining => campaign.voters_count("not called", false).length})
     if caller_session && (campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE)
-      caller_session.publish('voter_push',next_voter.nil? ? {} : next_voter.info)
+      unless caller_session.caller.is_phones_only?
+        next_voter = self.campaign.next_voter_in_dial_queue(voter.id) 
+        caller_session.publish('voter_push',next_voter.nil? ? {} : next_voter.info) 
+      end      
       caller_session.update_attribute(:voter_in_progress, nil)
-      if caller_session.caller.is_phones_only?
-        caller_session.ask_caller_to_choose_voter(next_voter)
-      else
-        caller_session.start
-      end
+      caller_session.start
     else
       hangup
     end
