@@ -48,7 +48,7 @@ class VoterList < ActiveRecord::Base
       phone_number = Voter.sanitize_phone(voter_info[csv_phone_column_location])
       lead = nil
       if csv_custom_id_column_location.present?
-        lead = Voter.find_by_CustomID(voter_info[csv_custom_id_column_location])
+        lead = Voter.find_by_CustomID_and_campaign_id(voter_info[csv_custom_id_column_location], campaign_id)
         lead.update_attributes(:voter_list => self) if lead.present?
       end
       
