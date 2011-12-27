@@ -139,7 +139,7 @@ class CallAttempt < ActiveRecord::Base
       else
         Twilio::TwiML::Response.new do |r|
           r.Redirect "#{phones_only_caller_index_path(session_id: caller_session.id)}"
-        end
+        end.text
       end  
     else
       hangup                        
