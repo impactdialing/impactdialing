@@ -52,11 +52,10 @@ class CallerSession < ActiveRecord::Base
     
     if response["TwilioResponse"]["RestException"]
       Rails.logger.info "Exception when attempted to call #{voter.Phone} for campaign id:#{self.campaign_id}  Response: #{response["TwilioResponse"]["RestException"].inspect}"
-      attempt.update_attributes(status: CallAttempt::Status::FAILED)
+      attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
       voter.update_attributes(status: CallAttempt::Status::FAILED)
       next_voter = campaign.next_voter_in_dial_queue(voter.id)
       update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil,:voter_in_progress => nil)
-      attempt.update_attributes(wrapup_time: Time.now)
       publish('call_could_not_connect',next_voter.nil? ? {} : next_voter.info)
       return
     end    
@@ -86,6 +85,8 @@ class CallerSession < ActiveRecord::Base
   def start
     if campaign.time_period_exceed?
       time_exceed_hangup
+    elsif (caller.is_phones_only? && (campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE))
+      ask_caller_to_choose_voter
     else
       response = Twilio::Verb.new do |v|
         v.dial(:hangupOnStar => true, :action => caller_response_path) do
@@ -96,9 +97,28 @@ class CallerSession < ActiveRecord::Base
       if campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE
         publish('conference_started', {}) 
       else
-        publish('caller_connected_dialer', {}) 
+        publish('caller_connected_dialer', {})
       end
       response
+    end
+  end
+  
+  def phones_only_start
+    response = Twilio::Verb.new do |v|
+      v.dial(:hangupOnStar => true, :action => gather_response_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => id)) do
+        v.conference(session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
+      end
+    end.response
+    update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
+    response
+  end
+  
+  def ask_caller_to_choose_voter(voter = nil, caller_choice = nil)
+    voter ||= campaign.next_voter_in_dial_queue
+    if voter.present?
+      campaign.predictive_type == Campaign::Type::PREVIEW ? say_voter_name_ask_caller_to_choose_voter(voter, caller_choice) : say_voter_name_and_call(voter)
+    else
+      response = Twilio::Verb.new { |v| v.say I18n.t(:campaign_has_no_more_voters) }.response
     end
   end
 
@@ -158,4 +178,25 @@ class CallerSession < ActiveRecord::Base
       pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => id)
     end
   end
+    
+  def say_voter_name_ask_caller_to_choose_voter(voter, caller_choice)
+    if caller_choice.present?
+      (msg = "Press * to dial or # to skip.")  unless ["*","#"].include? caller_choice
+    else
+      msg = "#{voter.FirstName}  #{voter.LastName}. Press * to dial or # to skip."
+    end
+    Twilio::Verb.new do |v|
+      v.gather(:numDigits => 1, :timeout => 10, :action => choose_voter_caller_url(self.caller, :session => self, :host => Settings.host, :port => Settings.port, :voter => voter), :method => "POST", :finishOnKey => "5") do
+        v.say msg
+      end
+    end.response
+  end
+  
+  def say_voter_name_and_call(voter)
+    Twilio::Verb.new do |v|
+      v.say "#{voter.FirstName}  #{voter.LastName}." 
+      v.redirect(phones_only_progressive_caller_url(caller, :session_id => id, :voter_id => voter.id, :host => Settings.host, :port => Settings.port), :method => "POST")
+    end.response
+  end
+
 end

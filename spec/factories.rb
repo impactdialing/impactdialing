@@ -119,4 +119,7 @@ end
 Factory.define :moderator do |n|
 end
 
+Factory.define :simulated_values do |sv|
+end
+
 
