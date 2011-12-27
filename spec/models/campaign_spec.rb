@@ -143,8 +143,18 @@ describe "simulation_dialer" do
 
   it "should dial one line per caller if no calls have been made in the last ten minutes" do
     campaign = Factory(:campaign)
-    Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true)
-    Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true)
+    2.times {Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true)}
+    num_to_call = campaign.dial_predictive_simulator
+    campaign.should_not_receive(:num_to_call_predictive_simulate)
+    caller_sessions = CallerSession.find_all_by_campaign_id(campaign.id)
+    num_to_call.should eq(caller_sessions.size)
+  end
+
+  it "should dial one line per caller if abandonment rate exceeds acceptable rate" do
+    campaign = Factory(:campaign, :acceptable_abandon_rate => 0.2)
+    Factory(:call_attempt, :campaign => campaign, :call_start => 20.seconds.ago)
+    Factory(:call_attempt, :campaign => campaign, :call_start => 20.seconds.ago, :status => CallAttempt::Status::ABANDONED)
+    2.times {Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true)}
     num_to_call = campaign.dial_predictive_simulator
     campaign.should_not_receive(:num_to_call_predictive_simulate)
     caller_sessions = CallerSession.find_all_by_campaign_id(campaign.id)
