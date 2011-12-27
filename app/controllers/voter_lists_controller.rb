@@ -39,10 +39,10 @@ class VoterListsController < ClientController
     redirect_to @campaign_path  
   end
   
-  def insert_lead
-    VoterList.find_by_name('web_form')
-    lead = Voter.create(:Phone => params[:phone_number], :voter_list => self, :account_id => params[:account_id], :campaign_id => params[:campaign_id])
-  end
+  # def insert_lead
+  #   VoterList.find_by_name('web_form')
+  #   lead = Voter.create(:Phone => params[:phone_number], :voter_list => self, :account_id => params[:account_id], :campaign_id => params[:campaign_id])
+  # end
   
   
 
