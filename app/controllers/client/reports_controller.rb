@@ -9,6 +9,29 @@ module Client
     def index
       @campaigns = params[:id].blank? ? account.campaigns.manual : Campaign.find(params[:id])
     end
+    
+    def dials
+      from_date = Date.strptime(params[:from_date], "%m/%d/%Y") if params[:from_date]
+      to_date = Date.strptime(params[:to_date], "%m/%d/%Y") if params[:to_date]
+      @from_date = from_date || (@campaign.call_attempts.first.try(:created_at) || Time.now)
+      @to_date = to_date || Time.now
+
+      dialed_voters = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date)
+      @total_voters = @campaign.all_voters
+      if dialed_voters
+        @answered = dialed_voters.by_status(CallAttempt::Status::ANSWERED).count
+        @no_answer = dialed_voters.by_status(CallAttempt::Status::NOANSWER).count
+        @busy_signal = dialed_voters.by_status(CallAttempt::Status::BUSY).count
+        @ringing = dialed_voters.by_status(CallAttempt::Status::RINGING).count
+        @abandoned = dialed_voters.by_status(CallAttempt::Status::ABANDONED).count
+        @failed = dialed_voters.by_status(CallAttempt::Status::FAILED).count
+        @voicemail = dialed_voters.by_status(CallAttempt::Status::VOICEMAIL).count
+        @scheduled = dialed_voters.by_status(CallAttempt::Status::SCHEDULED).count
+      end
+      @total = ((@total_voters.count == 0) ? 1 : @total_voters.count)
+      @ready_to_dial = params[:from_date] ? 0 : @total_voters.by_status(CallAttempt::Status::READY).count
+      @not_dialed = not_dilaed_voters(params[:from_date])
+    end
 
     def usage
       @campaign = @user.all_campaigns.find(params[:id])
@@ -72,7 +95,7 @@ module Client
         voters.try(:each) do |v|
           last_call_attempt = v.last_call_attempt
           
-          notes, voter_custom_fields, answers, call_details = [], [], [], [last_call_attempt ? last_call_attempt.caller.try(:email) : '', v.status, last_call_attempt ? last_call_attempt.call_start : '', last_call_attempt ? last_call_attempt.call_end : '', v.call_attempts.size, last_call_attempt ? last_call_attempt.report_recording_url : ''].flatten
+          notes, voter_custom_fields, answers, call_details = [], [], [], [last_call_attempt ? last_call_attempt.caller.try(:email) : '', v.status, last_call_attempt ? last_call_attempt.call_start.try(:in_time_zone, @campaign.time_zone) : '', last_call_attempt ? last_call_attempt.call_end.try(:in_time_zone, @campaign.time_zone) : '', v.call_attempts.size, last_call_attempt ? last_call_attempt.report_recording_url : ''].flatten
           voter_fields = selected_voter_fields ? [selected_voter_fields.try(:collect){|f| v.send(f)}].flatten : []
           custom_voter_field_objects = @campaign.account.custom_voter_fields.try(:select){|cf| selected_custom_voter_fields.try(:include?, cf.name)}
           custom_voter_field_objects.each { |cf| voter_custom_fields << v.custom_voter_field_values.for_field(cf).first.try(:value) }
@@ -86,6 +109,14 @@ module Client
         end
       end
       report
+    end
+    
+    def not_dilaed_voters(range_parameters)
+      if range_parameters
+        @total_voters.count - (@answered.to_i + @no_answer.to_i + @busy_signal.to_i + @ringing.to_i + @abandoned.to_i + @failed.to_i + @voicemail.to_i + @scheduled.to_i)
+      else
+        @total_voters.by_status(Voter::Status::NOTCALLED).count
+      end
     end
   end
 end

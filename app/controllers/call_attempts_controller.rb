@@ -52,10 +52,6 @@ class CallAttemptsController < ApplicationController
       call_attempt.update_attributes(:call_end => Time.now)
     end
 
-
-    Moderator.publish_event(call_attempt.campaign, 'update_dials_in_progress', {:campaign_id => call_attempt.campaign.id, :dials_in_progress => call_attempt.campaign.call_attempts.dial_in_progress.length,
-                                                                                :voters_remaining => call_attempt.campaign.voters_count("not called", false).length})
-
     response = case params[:CallStatus] #using the 2010 api
                  when "no-answer", "busy", "failed"
                    call_attempt.fail
@@ -71,7 +67,8 @@ class CallAttemptsController < ApplicationController
     params[:scheduled_date].blank? ? voter.capture(params) : schedule_for_later(call_attempt)
     call_attempt.update_attributes(wrapup_time: Time.now)
     
-    Moderator.publish_event(call_attempt.campaign, 'voter_response_submitted', {:caller_id => call_attempt.caller_session.caller.id})
+    Moderator.publish_event(call_attempt.campaign, 'voter_response_submitted', {:caller_id => call_attempt.caller_session.caller.id,
+          :campaign_id => call_attempt.campaign.id, :dials_in_progress => call_attempt.campaign.call_attempts.not_wrapped_up.length, :voters_remaining => call_attempt.campaign.voters_count("not called", false).length})
     pusher_response_received(call_attempt)
     render :nothing => true
   end

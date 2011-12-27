@@ -68,7 +68,6 @@ function subscribe_and_bind_events_monitoring(session_id){
       var campaign_selector = 'tr#'+data.campaign_id+'.campaign';
 			var caller_selector = 'tr#'+data.caller_id+'.caller';
 			update_status_and_duration(caller_selector, "Wrap up");
-      $(campaign_selector).children('.dials_in_progress').text(data.dials_in_progress);
       $(campaign_selector).children('.voters_count').text(data.voters_remaining);
  			if($(caller_selector).attr("on_call") == "true"){
 				$('status').text("Status: Caller is not connected to a lead.");
@@ -82,7 +81,6 @@ function subscribe_and_bind_events_monitoring(session_id){
       var campaign_selector = 'tr#'+data.campaign_id+'.campaign';
 			var caller_selector = 'tr#'+data.caller_id+'.caller';
 			update_status_and_duration(caller_selector, "On call");
-      $(campaign_selector).children('.dials_in_progress').text(data.dials_in_progress);
 			if($(caller_selector).attr("on_call") == "true"){
 				status = "Status: Monitoring in " + $(caller_selector).attr('mode') + " mode on " + $(caller_selector).children('td.caller_name').text().split("/")[0] + ".";
     		$('status').text(status);
@@ -94,7 +92,7 @@ function subscribe_and_bind_events_monitoring(session_id){
 		if (!$.isEmptyObject(data)){
 			var campaign_selector = 'tr#'+data.campaign_id+'.campaign';
 			$(campaign_selector).children('.dials_in_progress').text(data.dials_in_progress);
-			console.log(data.voters_remaining);
+			console.log(data);
 			if(data.voters_remaining){
 				$(campaign_selector).children('.voters_count').text(data.voters_remaining);
 			}
@@ -103,7 +101,10 @@ function subscribe_and_bind_events_monitoring(session_id){
 	channel.bind('voter_response_submitted', function(data){
 		if (!$.isEmptyObject(data)){
 			var caller_selector = 'tr#'+data.caller_id+'.caller';
+			var campaign_selector = 'tr#'+data.campaign_id+'.campaign';
 			update_status_and_duration(caller_selector, "On hold");
+			$(campaign_selector).children('.dials_in_progress').text(data.dials_in_progress);
+			$(campaign_selector).children('.voters_count').text(data.voters_remaining);
 		}
 	});
   
