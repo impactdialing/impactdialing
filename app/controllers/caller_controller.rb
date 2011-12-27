@@ -63,9 +63,11 @@ class CallerController < ApplicationController
 
 
   def stop_calling
-    caller = Caller.find(params[:id])
-    @session = caller.caller_sessions.find(params[:session_id])
-    @session.end_running_call
+    unless params[:session_id].blank?
+      caller = Caller.find(params[:id])
+      @session = caller.caller_sessions.find(params[:session_id])
+      @session.end_running_call
+    end
     render :nothing => true
   end
 
