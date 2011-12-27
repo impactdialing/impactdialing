@@ -8,6 +8,7 @@ class Campaign < ActiveRecord::Base
   has_many :call_attempts
   has_many :caller_campaigns
   has_many :callers, :through => :caller_campaigns
+  has_one :simulated_values
   belongs_to :script
   belongs_to :account
   belongs_to :recording
@@ -82,7 +83,7 @@ class Campaign < ActiveRecord::Base
   end
 
   def oldest_available_caller_session
-     caller_sessions.available.find(:first, :order => "updated_at ASC")
+    caller_sessions.available.find(:first, :order => "updated_at ASC", :lock => true)
   end
 
   def recent_attempts(mins=10)
@@ -290,7 +291,7 @@ class Campaign < ActiveRecord::Base
     active_list_ids = VoterList.active_voter_list_ids(self.id)
     return voters_returned if active_list_ids.empty?
 
-    voters_returned.concat(Voter.to_be_called(id,active_list_ids,status,recycle_rate))
+    voters_returned.concat(Voter.to_be_called(id, active_list_ids, status, recycle_rate))
     # voters_returned.concat(Voter.just_called_voters_call_back(self.id, active_list_ids)) if voters_returned.empty? && include_call_retries
 
     voters_returned.uniq
@@ -416,7 +417,7 @@ class Campaign < ActiveRecord::Base
   end
 
   def ratio_dial?
-    predictive_type=="" || predictive_type.index("power_")==0 || predictive_type.index("robo,")==0
+    predictive_type == "" || predictive_type.index("power_") == 0 || predictive_type.index("robo,") == 0
   end
 
   def dials_count
@@ -425,7 +426,7 @@ class Campaign < ActiveRecord::Base
 
   def dial_predictive_voters
     if ratio_dial?
-      num_to_call = (callers_to_dial.length - call_attempts_not_wrapped_up.length ) * get_dial_ratio
+      num_to_call = (callers_to_dial.length - call_attempts_not_wrapped_up.length) * get_dial_ratio
     else
       num_to_call = num_to_call_predictive
     end
@@ -433,7 +434,7 @@ class Campaign < ActiveRecord::Base
     DIALER_LOGGER.info "#{self.name}: Callers logged in: #{callers.length}, Callers on call: #{callers_on_call.length}, Callers not on call:  #{callers_not_on_call}, Calls in progress: #{call_attempts_in_progress.length}"
     DIALER_LOGGER.info "num_to_call #{num_to_call}"
     if num_to_call > 0
-      voter_ids=choose_voters_to_dial(num_to_call) #TODO check logic
+      voter_ids = choose_voters_to_dial(num_to_call) #TODO check logic
       DIALER_LOGGER.info("voters to dial #{voter_ids}")
       ring_predictive_voters(voter_ids)
     end
@@ -443,6 +444,26 @@ class Campaign < ActiveRecord::Base
     short_to_dial = determine_short_to_dial
     max_calls = determine_pool_size(short_to_dial)
     max_calls - call_attempts_in_progress.length
+  end
+
+  def average(array)
+  array.sum.to_f / array.size
+  end
+
+  def num_to_call_predictive_simulate
+    dials_made = call_attempts.between(10.minutes.ago, Time.now)
+    active_call_attempts = dials_made.with_status(CallAttempt::Status::INPROGRESS)
+    dials_answered = dials_made.with_status(CallAttempt::Status::ANSWERED)
+    dials_required = dials_made.empty? ? 0 : ((simulated_values.alpha * dials_answered.size).to_f / dials_made.size)
+    mean_call_length = average(dials_made.map(&:duration))
+    longest_call_length = dials_made.empty? ? 10.minutes : dials_made.map(&:duration).inject(dials_made.first.duration) { |champion, challenger| [champion, challenger].max }
+    expected_call_length = (1 - simulated_values.beta) * mean_call_length + simulated_values.beta * longest_call_length
+    available_callers = caller_sessions.available.size +
+        active_call_attempts.select { |call_attempt| call_attempt.duration > expected_call_length }.size -
+        active_call_attempts.select { |call_attempt| call_attempt.duration > longest_call_length }.size
+    ringing_lines = dials_made.with_status(CallAttempt::Status::RINGING).size
+    dials_to_make = (dials_required * available_callers) - ringing_lines
+    dials_to_make.to_i
   end
 
   def ring_predictive_voters(voter_ids)
@@ -471,7 +492,7 @@ class Campaign < ActiveRecord::Base
   end
 
   def next_voter_in_dial_queue(current_voter_id = nil)
-    voter =  all_voters.scheduled.first
+    voter = all_voters.scheduled.first
     voter||= all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.not_skipped.where("voters.id > #{current_voter_id}").first unless current_voter_id.blank?
     voter||= all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.not_skipped.first
     voter||= all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.where("voters.id != #{current_voter_id}").first unless current_voter_id.blank?
@@ -513,8 +534,8 @@ class Campaign < ActiveRecord::Base
 
     mean_conversation = stats[:avg_duration] #the mean length of a conversation in the last 10 minutes
     longest_conversation = stats[:biggest_long] #the length of the longest conversation in the last 10 minutes
-    expected_conversation = ( 1 - predictive_beta ) * mean_conversation + predictive_beta * longest_conversation
-    available_callers = callers_available_for_call.length +  callers_on_call_longer_than(expected_conversation ).length - callers_on_call_longer_than(longest_conversation).length
+    expected_conversation = (1 - predictive_beta) * mean_conversation + predictive_beta * longest_conversation
+    available_callers = callers_available_for_call.length + callers_on_call_longer_than(expected_conversation).length - callers_on_call_longer_than(longest_conversation).length
   end
 
   def callers_on_call_longer_than(minute_threshold)
@@ -540,11 +561,10 @@ class Campaign < ActiveRecord::Base
     result = Hash.new
     script.questions.each do |question|
       total_answers = question.answered_within(from_date, to_date).length
-      result[question.text] = question.possible_responses.collect { |possible_response| possible_response.stats(from_date, to_date, total_answers)}
+      result[question.text] = question.possible_responses.collect { |possible_response| possible_response.stats(from_date, to_date, total_answers) }
     end
     result
   end
-
 
   private
   def dial_voters
