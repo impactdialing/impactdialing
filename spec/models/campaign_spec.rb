@@ -139,13 +139,23 @@ describe "ratio_dialer" do
   it "should set the dial ratio to 2 if no recent calls have been answered"
 end
 
-describe "simulatation_dialer" do
+describe "simulation_dialer" do
+
+  it "should dial one line per caller if no calls have been made in the last ten minutes" do
+    campaign = Factory(:campaign)
+    Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true)
+    Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true)
+    num_to_call = campaign.dial_predictive_simulator
+    campaign.should_not_receive(:num_to_call_predictive_simulate)
+    caller_sessions = CallerSession.find_all_by_campaign_id(campaign.id)
+    num_to_call.should eq(caller_sessions.size)
+  end
 
   it "should determine calls to make give the simulated alpha and beta values" do
     simulated_values = SimulatedValues.create(:alpha => 0.5, :beta => 0.8)
     campaign = Factory(:campaign, :simulated_values => simulated_values)
     10.times {Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true )}
-    11.times {Factory(:call_attempt, :campaign => campaign, :call_start => 8.minutes.ago)}
+    25.times {Factory(:call_attempt, :campaign => campaign, :call_start => 8.minutes.ago)}
     10.times {Factory(:call_attempt, :campaign => campaign, :call_start => 20.seconds.ago, :status => CallAttempt::Status::SUCCESS)}
     10.times {Factory(:call_attempt, :campaign => campaign, :call_start => 10.seconds.ago, :status => CallAttempt::Status::SUCCESS)}
     2.times {Factory(:call_attempt, :campaign => campaign, :call_start => 10.seconds.ago, :status => CallAttempt::Status::RINGING)}

@@ -161,7 +161,7 @@ class CallAttempt < ActiveRecord::Base
     MAP = {'in-progress' => INPROGRESS, 'completed' => SUCCESS, 'busy' => BUSY, 'failed' => FAILED, 'no-answer' => NOANSWER, 'canceled' => CANCELLED}
     ALL = MAP.values
     RETRY = [NOANSWER, BUSY, FAILED]
-    ANSWERED =  [SUCCESS]
+    ANSWERED =  [INPROGRESS, SUCCESS]
   end
 
 end
