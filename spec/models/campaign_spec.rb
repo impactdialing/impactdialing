@@ -139,7 +139,17 @@ describe "ratio_dialer" do
   it "should set the dial ratio to 2 if no recent calls have been answered"
 end
 
-describe "simulatation_dialer" do
+describe "simulation_dialer" do
+
+  it "should dial one line per caller if no calls have been made in the last ten minutes" do
+    campaign = Factory(:campaign)
+    Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true)
+    Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true)
+    num_to_call = campaign.dial_predictive_simulator
+    campaign.should_not_receive(:num_to_call_predictive_simulate)
+    caller_sessions = CallerSession.find_all_by_campaign_id(campaign.id)
+    num_to_call.should eq(caller_sessions.size)
+  end
 
   it "should determine calls to make give the simulated alpha and beta values" do
     simulated_values = SimulatedValues.create(:alpha => 0.5, :beta => 0.8)
