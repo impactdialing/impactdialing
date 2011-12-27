@@ -34,6 +34,12 @@
           </select>
         </p>
 
+        <p><label>Acceptable Abandonement</label>
+           <select class="field" id="campaign_abandon_rate" name="campaign[acceptable_abandon_rate]">
+            <%= options_for_select [["1%", 0.01], ["2%", 0.02], ["3%", 0.03]], @campaign.acceptable_abandon_rate%>
+          </select>
+        </p>
+
 <p><label for="">Time zone</label>
 <%= time_zone_select( "campaign", 'time_zone', ActiveSupport::TimeZone.us_zones, :default => "Pacific Time (US & Canada)") %></p>
 
