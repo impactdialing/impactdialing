@@ -460,10 +460,11 @@ class Campaign < ActiveRecord::Base
     active_call_attempts = dials_made.with_status(CallAttempt::Status::INPROGRESS)
     #check if answered means only those that were answered by voters and completed successfuly or the success+ inprogress
     dials_answered = dials_made.with_status(CallAttempt::Status::ANSWERED)
+    dials_answered_finished = dials_made.with_status(CallAttempt::Status::SUCCESS)
     dials_required = dials_made.empty? ? 0 : ((simulated_values.alpha * dials_made.size) / dials_answered.size)
     #calculating mean, longest and expected call length using only answered(completed successfully) calls
-    mean_call_length = average(dials_answered.map(&:duration))
-    longest_call_length = dials_made.empty? ? 10.minutes : dials_answered.map(&:duration).inject(dials_answered.first.duration) { |champion, challenger| [champion, challenger].max }
+    mean_call_length = average(dials_answered_finished.map(&:duration))
+    longest_call_length = dials_made.empty? ? 10.minutes : dials_answered_finished.map(&:duration).inject(dials_answered.first.duration) { |champion, challenger| [champion, challenger].max }
     expected_call_length = (1 - simulated_values.beta) * mean_call_length + simulated_values.beta * longest_call_length
     available_callers = caller_sessions.available.size +
         active_call_attempts.select { |call_attempt| call_attempt.duration > expected_call_length }.size -

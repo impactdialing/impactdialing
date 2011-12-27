@@ -145,7 +145,7 @@ describe "simulatation_dialer" do
     simulated_values = SimulatedValues.create(:alpha => 0.5, :beta => 0.8)
     campaign = Factory(:campaign, :simulated_values => simulated_values)
     10.times {Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true )}
-    11.times {Factory(:call_attempt, :campaign => campaign, :call_start => 8.minutes.ago)}
+    25.times {Factory(:call_attempt, :campaign => campaign, :call_start => 8.minutes.ago)}
     10.times {Factory(:call_attempt, :campaign => campaign, :call_start => 20.seconds.ago, :status => CallAttempt::Status::SUCCESS)}
     10.times {Factory(:call_attempt, :campaign => campaign, :call_start => 10.seconds.ago, :status => CallAttempt::Status::SUCCESS)}
     2.times {Factory(:call_attempt, :campaign => campaign, :call_start => 10.seconds.ago, :status => CallAttempt::Status::RINGING)}
