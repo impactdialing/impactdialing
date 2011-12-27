@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20111219164653) do
+ActiveRecord::Schema.define(:version => 20111227064012) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -194,6 +194,7 @@ ActiveRecord::Schema.define(:version => 20111219164653) do
     t.time     "start_time"
     t.time     "end_time"
     t.string   "time_zone"
+    t.float    "acceptable_abandon_rate"
   end
 
   create_table "campaigns_voter_lists", :id => false, :force => true do |t|
