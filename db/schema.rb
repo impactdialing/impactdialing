@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20111214182225) do
+ActiveRecord::Schema.define(:version => 20111219164653) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -206,6 +206,8 @@ ActiveRecord::Schema.define(:version => 20111214182225) do
     t.integer "custom_voter_field_id"
     t.string  "value"
   end
+
+  add_index "custom_voter_field_values", ["voter_id"], :name => "index_custom_voter_field_values_on_voter_id"
 
   create_table "custom_voter_fields", :force => true do |t|
     t.string  "name",       :null => false

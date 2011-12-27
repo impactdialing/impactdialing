@@ -433,7 +433,7 @@ class Campaign < ActiveRecord::Base
     if ratio_dial?
       num_to_call = (callers_to_dial.length - call_attempts_not_wrapped_up.length) * get_dial_ratio
     else
-      num_to_call = num_to_call_predictive
+      num_to_call = dial_predictive_simulator
     end
 
     DIALER_LOGGER.info "#{self.name}: Callers logged in: #{callers.length}, Callers on call: #{callers_on_call.length}, Callers not on call:  #{callers_not_on_call}, Calls in progress: #{call_attempts_in_progress.length}"
@@ -460,10 +460,11 @@ class Campaign < ActiveRecord::Base
     active_call_attempts = dials_made.with_status(CallAttempt::Status::INPROGRESS)
     #check if answered means only those that were answered by voters and completed successfuly or the success+ inprogress
     dials_answered = dials_made.with_status(CallAttempt::Status::ANSWERED)
+    dials_answered_finished = dials_made.with_status(CallAttempt::Status::SUCCESS)
     dials_required = dials_made.empty? ? 0 : ((simulated_values.alpha * dials_made.size) / dials_answered.size)
     #calculating mean, longest and expected call length using only answered(completed successfully) calls
-    mean_call_length = average(dials_answered.map(&:duration))
-    longest_call_length = dials_made.empty? ? 10.minutes : dials_answered.map(&:duration).inject(dials_answered.first.duration) { |champion, challenger| [champion, challenger].max }
+    mean_call_length = average(dials_answered_finished.map(&:duration))
+    longest_call_length = dials_made.empty? ? 10.minutes : dials_answered_finished.map(&:duration).inject(dials_answered.first.duration) { |champion, challenger| [champion, challenger].max }
     expected_call_length = (1 - simulated_values.beta) * mean_call_length + simulated_values.beta * longest_call_length
     available_callers = caller_sessions.available.size +
         active_call_attempts.select { |call_attempt| call_attempt.duration > expected_call_length }.size -
@@ -554,14 +555,13 @@ class Campaign < ActiveRecord::Base
   end
 
   def dial_predictive_simulator
-    if dials_ramping?
+    dials_made = call_attempts.between(10.minutes.ago, Time.now)
+    if dials_made.size == 0
       num_to_call= callers_available_for_call.length
     else
-      num_to_call= (dials_needed * dialer_available_callers) - ringing_lines
+      #actually call num_to_call_predictive_simulate
+      num_to_call= caller_sessions.available.size
     end
-    voter_ids=choose_voters_to_dial(num_to_call) #TODO check logic
-    DIALER_LOGGER.info("predictive_simulator voters to dial #{voter_ids}")
-    ring_predictive_voters(voter_ids)
   end
 
   def answers_result(from_date, to_date)
