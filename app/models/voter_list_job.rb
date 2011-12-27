@@ -12,7 +12,7 @@ class VoterListJob
   end
 
   def perform
-    response = {"errors" => [], "success" => []}
+    response = {"errors"=> [], "success"=> []}
     user_mailer = UserMailer.new
 
     unless @csv_to_system_map.valid?
