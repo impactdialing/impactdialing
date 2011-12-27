@@ -31,6 +31,7 @@ ImpactDialing::Application.routes.draw do
     collection do
       get :login
       post :end_session
+      post :phones_only
     end
 
     member do

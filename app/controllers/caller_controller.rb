@@ -63,11 +63,10 @@ class CallerController < ApplicationController
 
 
   def stop_calling
-    unless params[:session_id].blank?
-      caller = Caller.find(params[:id])
-      @session = caller.caller_sessions.find(params[:session_id])
-      @session.end_running_call
-    end
+    caller = Caller.find(params[:id])
+    @session = caller.caller_sessions.find(params[:session_id])
+    @session.end_running_call
+    CallAttempt.wrapup_calls(params[:id]) unless params[:id].empty?
     render :nothing => true
   end
 
@@ -153,6 +152,13 @@ class CallerController < ApplicationController
     voter = Voter.find(params[:voter_id])
     render :xml => caller_session.phones_only_start
     caller_session.preview_dial(voter)
+  end
+  
+  def phones_only
+    caller_session = CallerSession.find(params[:session_id])
+    xml = caller_session.ask_caller_to_choose_voter
+    Rails.logger.debug(xml)
+    render :xml => xml    
   end
   
   def ping

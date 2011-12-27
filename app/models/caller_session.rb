@@ -60,7 +60,7 @@ class CallerSession < ActiveRecord::Base
       return
     end    
     self.publish('calling_voter', voter.info)
-    Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id,:dials_in_progress => campaign.call_attempts.not_wrapped_up.length, :voters_remaining => campaign.voters_count("not called", false).length})
+    Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id,:dials_in_progress => campaign.call_attempts.dial_in_progress.length})
     attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])
   end
 
@@ -83,6 +83,7 @@ class CallerSession < ActiveRecord::Base
   end
 
   def start
+    wrapup
     if campaign.time_period_exceed?
       time_exceed_hangup
     elsif (caller.is_phones_only? && (campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE))
@@ -171,6 +172,10 @@ class CallerSession < ActiveRecord::Base
   end
 
   private
+  
+  def wrapup
+    attempt_in_progress.try(:wrapup_now)
+  end
   def caller_response_path
     if caller.is_phones_only?
       gather_response_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => id)

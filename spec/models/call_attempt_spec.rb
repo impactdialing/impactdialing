@@ -284,4 +284,32 @@ describe CallAttempt do
       call_attempts.length.should eq(1)
     end
   end
+
+  describe "total call length" do
+    it "should include the wrap up time if the call has been wrapped up" do
+      call_attempt = Factory(:call_attempt, :call_start => Time.now - 3.minute, :wrapup_time => Time.now)
+      total_time = (call_attempt.wrapup_time - call_attempt.call_start).to_i
+      call_attempt.duration_wrapped_up.should eq(total_time)
+    end
+
+    it "should return the duration from start to now if call has not been wrapped up " do
+      call_attempt = Factory(:call_attempt, :call_start => Time.now - 3.minute)
+      total_time = (Time.now - call_attempt.call_start).to_i
+      call_attempt.duration_wrapped_up.should eq(total_time)
+    end
+  end
+  
+  describe "wrapup call_attempts" do
+    it "should wrapup all call_attempts that are not" do
+      caller = Factory(:caller)
+      another_caller = Factory(:caller)
+      Factory(:call_attempt, caller_id: caller.id)
+      Factory(:call_attempt, caller_id: another_caller)
+      Factory(:call_attempt, caller_id: caller.id)
+      Factory(:call_attempt, wrapup_time: Time.now-2.hours,caller_id: caller.id)
+      CallAttempt.not_wrapped_up.find_all_by_caller_id(caller.id).length.should eq(2)
+      CallAttempt.wrapup_calls(caller.id)
+      CallAttempt.not_wrapped_up.find_all_by_caller_id(caller.id).length.should eq(0)
+    end
+  end
 end

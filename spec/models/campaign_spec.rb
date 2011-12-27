@@ -166,8 +166,8 @@ describe "simulation_dialer" do
     campaign = Factory(:campaign, :simulated_values => simulated_values)
     10.times {Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true )}
     25.times {Factory(:call_attempt, :campaign => campaign, :call_start => 8.minutes.ago)}
-    10.times {Factory(:call_attempt, :campaign => campaign, :call_start => 20.seconds.ago, :status => CallAttempt::Status::SUCCESS)}
-    10.times {Factory(:call_attempt, :campaign => campaign, :call_start => 10.seconds.ago, :status => CallAttempt::Status::SUCCESS)}
+    10.times {Factory(:call_attempt, :campaign => campaign, :call_start => 20.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::SUCCESS)}
+    10.times {Factory(:call_attempt, :campaign => campaign, :call_start => 10.seconds.ago, :wrapup_time => 5.seconds.ago,:status => CallAttempt::Status::SUCCESS)}
     2.times {Factory(:call_attempt, :campaign => campaign, :call_start => 10.seconds.ago, :status => CallAttempt::Status::RINGING)}
     unavailable_caller_sessions = CallerSession.all[1..7]
     unavailable_caller_sessions.each {|caller_session| caller_session.update_attribute(:available_for_call, false)}

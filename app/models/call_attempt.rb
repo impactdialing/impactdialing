@@ -34,6 +34,10 @@ class CallAttempt < ActiveRecord::Base
     ((call_end || Time.now) - self.call_start).to_i
   end
 
+  def duration_wrapped_up
+    ((wrapup_time || Time.now) - self.call_start).to_i
+  end
+
   def duration_rounded_up
     ((duration || 0) / 60.0).ceil
   end
@@ -45,6 +49,11 @@ class CallAttempt < ActiveRecord::Base
 
   def client
     campaign.client
+  end
+  
+  def self.wrapup_calls(caller_id)
+    not_wrapped_up = CallAttempt.not_wrapped_up.find_all_by_caller_id(caller_id)
+    not_wrapped_up.each {|call_attempt| call_attempt.update_attributes(wrapup_time: Time.now)}
   end
 
   def next_recording(current_recording = nil, call_response = nil)
@@ -118,21 +127,24 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def fail
-    next_voter = self.campaign.next_voter_in_dial_queue(voter.id)
     voter.update_attributes(:call_back => false)
     update_attributes(wrapup_time: Time.now)
     Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.length, :voters_remaining => campaign.voters_count("not called", false).length})
     if caller_session && (campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE)
-      caller_session.publish('voter_push',next_voter.nil? ? {} : next_voter.info)
-      caller_session.update_attribute(:voter_in_progress, nil)
-      if caller_session.caller.is_phones_only?
-        caller_session.ask_caller_to_choose_voter(next_voter)
-      else
+      caller_session.update_attribute(:voter_in_progress, nil)      
+      unless caller_session.caller.is_phones_only?          
+        next_voter = self.campaign.next_voter_in_dial_queue(voter.id) 
+        caller_session.publish('voter_push',next_voter.nil? ? {} : next_voter.info)         
         caller_session.start
-      end
+      else
+        Rails.logger.debug("failed called being redirected")
+        Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
+        Twilio::Call.redirect(caller_session.sid, phones_only_caller_index_path(session_id: caller_session.id))        
+        hangup                
+      end  
     else
-      hangup
-    end
+      hangup                        
+    end  
   end
 
   def hangup
@@ -142,6 +154,10 @@ class CallAttempt < ActiveRecord::Base
   def schedule_for_later(scheduled_date)
     update_attributes(:scheduled_date => scheduled_date, :status => Status::SCHEDULED)
     voter.update_attributes(:scheduled_date => scheduled_date, :status => Status::SCHEDULED, :call_back => true)
+  end
+
+  def wrapup_now
+    update_attributes(:wrapup_time => Time.now)
   end
 
   module Status
