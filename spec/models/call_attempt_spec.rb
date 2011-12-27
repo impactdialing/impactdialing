@@ -246,9 +246,8 @@ describe CallAttempt do
       channel = mock
       info = campaign.all_voters.to_be_dialed.first.info
       info[:fields]['status'] = CallAttempt::Status::READY
-      Pusher.should_receive(:[]).twice.with(anything).and_return(channel)
+      Pusher.should_receive(:[]).with(anything).and_return(channel)
       channel.should_receive(:trigger).with("voter_push", info.merge(:dialer => campaign.predictive_type))
-      channel.should_receive(:trigger).with("conference_started", {:dialer => campaign.predictive_type})
       attempt.fail
     end
   end
