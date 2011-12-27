@@ -457,18 +457,18 @@ class Campaign < ActiveRecord::Base
 
   def num_to_call_predictive_simulate
     dials_made = call_attempts.between(10.minutes.ago, Time.now)
+    calls_wrapping_up = dials_made.with_status(CallAttempt::Status::SUCCESS).not_wrapped_up
     active_call_attempts = dials_made.with_status(CallAttempt::Status::INPROGRESS)
-    #check if answered means only those that were answered by voters and completed successfuly or the success+ inprogress
+    active_call_attempts << calls_wrapping_up unless calls_wrapping_up.empty?
     dials_answered = dials_made.with_status(CallAttempt::Status::ANSWERED)
-    dials_answered_finished = dials_made.with_status(CallAttempt::Status::SUCCESS)
+    dials_answered_finished = dials_made.with_status(CallAttempt::Status::SUCCESS).where('wrapup_time is not null')
     dials_required = dials_made.empty? ? 0 : ((simulated_values.alpha * dials_made.size) / dials_answered.size)
-    #calculating mean, longest and expected call length using only answered(completed successfully) calls
-    mean_call_length = average(dials_answered_finished.map(&:duration))
-    longest_call_length = dials_made.empty? ? 10.minutes : dials_answered_finished.map(&:duration).inject(dials_answered.first.duration) { |champion, challenger| [champion, challenger].max }
+    mean_call_length = average(dials_answered_finished.map(&:duration_wrapped_up))
+    longest_call_length = dials_made.empty? ? 10.minutes : dials_answered_finished.map(&:duration_wrapped_up).inject(dials_answered.first.duration) { |champion, challenger| [champion, challenger].max }
     expected_call_length = (1 - simulated_values.beta) * mean_call_length + simulated_values.beta * longest_call_length
     available_callers = caller_sessions.available.size +
-        active_call_attempts.select { |call_attempt| call_attempt.duration > expected_call_length }.size -
-        active_call_attempts.select { |call_attempt| call_attempt.duration > longest_call_length }.size
+        active_call_attempts.select { |call_attempt| call_attempt.duration_wrapped_up > expected_call_length }.size -
+        active_call_attempts.select { |call_attempt| call_attempt.duration_wrapped_up > longest_call_length }.size
     ringing_lines = dials_made.with_status(CallAttempt::Status::RINGING).size
     dials_to_make = (dials_required * available_callers) - ringing_lines
     dials_to_make.to_i
