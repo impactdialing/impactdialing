@@ -46,6 +46,11 @@ class CallAttempt < ActiveRecord::Base
   def client
     campaign.client
   end
+  
+  def self.wrapup_calls(caller_id)
+    not_wrapped_up = CallAttempt.not_wrapped_up.find_all_by_caller_id(caller_id)
+    not_wrapped_up.each {|call_attempt| call_attempt.update_attributes(wrapup_time: Time.now)}
+  end
 
   def next_recording(current_recording = nil, call_response = nil)
     return campaign.script.robo_recordings.first.twilio_xml(self) unless current_recording
@@ -142,6 +147,10 @@ class CallAttempt < ActiveRecord::Base
   def schedule_for_later(scheduled_date)
     update_attributes(:scheduled_date => scheduled_date, :status => Status::SCHEDULED)
     voter.update_attributes(:scheduled_date => scheduled_date, :status => Status::SCHEDULED, :call_back => true)
+  end
+
+  def wrapup_now
+    update_attributes(:wrapup_time => Time.now)
   end
 
   module Status
