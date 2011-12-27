@@ -54,6 +54,8 @@ describe Client::ReportsController do
       end
     end
   end
+  
+  
 
   describe "download report" do
 

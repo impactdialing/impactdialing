@@ -176,7 +176,7 @@
                 <tr id="<%= c.id %>" class="campaign <%= cycle("odd", "even") %>">
                   <td><h3><%= link_to c.name, campaign_path(c) %></h3></td>
                   <td class="callers_logged_in"><%= c.caller_sessions.on_call.length %></td>
-                  <td class="dials_in_progress"><%= c.call_attempts.dial_in_progress.length %></td>
+                  <td class="dials_in_progress"><%= c.call_attempts.not_wrapped_up.try(:length) %></td>
                   <td class="voters_count"><%= c.voters_count("not called", false).length %></td>
                 </tr>
             <% end %>
@@ -202,7 +202,7 @@
           <% @campaigns.each do |c| %>
               <% c.caller_sessions.on_call.each do |caller_session| %>
                   <tr id="<%= caller_session.caller.id %>" class="caller <%= cycle("odd", "even") %> " older="true">
-                    <td class="caller_name"><%= caller_session.caller.email %></td>
+                    <td class="caller_name"><%= caller_name(caller_session.caller) %></td>
                     <td><%= caller_session.campaign.name %></td>
 										<% status, d = caller_status_and_duration(caller_session) %>
 										<td class="status"><%= status %></td>

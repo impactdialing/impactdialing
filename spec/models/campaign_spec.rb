@@ -141,38 +141,20 @@ end
 
 describe "simulatation_dialer" do
 
-  it "should determine the number of dials to make given the alpha and beta values" do
-    simulated_values = SimulatedValues.create(:alpha => 0.3, :beta => 0.6)
+  it "should determine calls to make give the simulated alpha and beta values" do
+    simulated_values = SimulatedValues.create(:alpha => 0.5, :beta => 0.8)
     campaign = Factory(:campaign, :simulated_values => simulated_values)
-    Factory(:call_attempt, :status => CallAttempt::Status::SUCCESS, :campaign => campaign, :call_start => 15.seconds.ago, :connecttime => 12.seconds.ago, :caller_session => Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true))
-    Factory(:call_attempt, :status => CallAttempt::Status::INPROGRESS, :campaign => campaign, :call_start => 14.seconds.ago, :connecttime => 10.seconds.ago, :caller_session => Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => false))
-    Factory(:call_attempt, :status => CallAttempt::Status::INPROGRESS, :campaign => campaign, :call_start => 10.seconds.ago, :connecttime => 6.seconds.ago, :caller_session => Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => false))
-    Factory(:call_attempt, :status => CallAttempt::Status::INPROGRESS, :campaign => campaign, :call_start => 7.seconds.ago, :connecttime => 3.seconds.ago, :caller_session => Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => false))
-    Factory(:call_attempt, :status => CallAttempt::Status::INPROGRESS, :campaign => campaign, :call_start => 13.seconds.ago, :connecttime => 7.seconds.ago, :caller_session => Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => false))
-    Factory(:call_attempt, :status => CallAttempt::Status::INPROGRESS, :campaign => campaign, :call_start => 21.seconds.ago, :connecttime => 12.seconds.ago, :caller_session => Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => false))
-    Factory(:call_attempt, :status => CallAttempt::Status::INPROGRESS, :campaign => campaign, :call_start => 15.seconds.ago, :connecttime => 9.seconds.ago, :caller_session => Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => false))
-    Factory(:call_attempt, :status => CallAttempt::Status::INPROGRESS, :campaign => campaign, :call_start => 16.seconds.ago, :connecttime => 11.seconds.ago, :caller_session => Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => false))
-    Factory(:call_attempt, :status => CallAttempt::Status::SUCCESS, :campaign => campaign, :call_start => 17.seconds.ago, :connecttime => 12.seconds.ago, :caller_session => Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true))
-    Factory(:call_attempt, :status => CallAttempt::Status::INPROGRESS, :campaign => campaign, :call_start => 18.seconds.ago, :connecttime => 13.seconds.ago, :caller_session => Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => false))
-    Factory(:call_attempt, :status => CallAttempt::Status::INPROGRESS, :campaign => campaign, :call_start => 14.seconds.ago, :connecttime => 9.seconds.ago, :caller_session => Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => false))
-    Factory(:call_attempt, :status => CallAttempt::Status::INPROGRESS, :campaign => campaign, :call_start => 14.seconds.ago, :connecttime => 6.seconds.ago, :caller_session => Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => false))
-    Factory(:call_attempt, :status => CallAttempt::Status::SUCCESS, :campaign => campaign, :call_start => 15.seconds.ago, :connecttime => 10.seconds.ago, :caller_session => Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true))
-
-    Factory(:call_attempt, :status => CallAttempt::Status::NOANSWER, :campaign => campaign, :call_start => 16.seconds.ago, :caller_session => Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true))
-    Factory(:call_attempt, :status => CallAttempt::Status::NOANSWER, :campaign => campaign, :call_start => 16.seconds.ago, :caller_session => Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true))
-    Factory(:call_attempt, :status => CallAttempt::Status::NOANSWER, :campaign => campaign, :call_start => 16.seconds.ago, :caller_session => Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true))
-    Factory(:call_attempt, :status => CallAttempt::Status::NOANSWER, :campaign => campaign, :call_start => 16.seconds.ago, :caller_session => Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true))
-    Factory(:call_attempt, :status => CallAttempt::Status::NOANSWER, :campaign => campaign, :call_start => 16.seconds.ago, :caller_session => Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true))
-    Factory(:call_attempt, :status => CallAttempt::Status::NOANSWER, :campaign => campaign, :call_start => 16.seconds.ago, :caller_session => Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true))
-    Factory(:call_attempt, :status => CallAttempt::Status::NOANSWER, :campaign => campaign, :call_start => 16.seconds.ago, :caller_session => Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true))
-    Factory(:call_attempt, :status => CallAttempt::Status::NOANSWER, :campaign => campaign, :call_start => 16.seconds.ago, :caller_session => Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true))
-    Factory(:call_attempt, :status => CallAttempt::Status::RINGING, :campaign => campaign, :call_start => 16.seconds.ago, :caller_session => Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true))
-    Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true)
-    Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true)
-    Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true)
-    Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true)
+    10.times {Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true )}
+    25.times {Factory(:call_attempt, :campaign => campaign, :call_start => 8.minutes.ago)}
+    10.times {Factory(:call_attempt, :campaign => campaign, :call_start => 20.seconds.ago, :status => CallAttempt::Status::SUCCESS)}
+    10.times {Factory(:call_attempt, :campaign => campaign, :call_start => 10.seconds.ago, :status => CallAttempt::Status::SUCCESS)}
+    2.times {Factory(:call_attempt, :campaign => campaign, :call_start => 10.seconds.ago, :status => CallAttempt::Status::RINGING)}
+    unavailable_caller_sessions = CallerSession.all[1..7]
+    unavailable_caller_sessions.each {|caller_session| caller_session.update_attribute(:available_for_call, false)}
+    5.times {Factory(:call_attempt, :campaign => campaign, :call_start => 5.seconds.ago, :status => CallAttempt::Status::INPROGRESS)}
+    2.times {Factory(:call_attempt, :campaign => campaign, :call_start => 20.seconds.ago, :status => CallAttempt::Status::INPROGRESS)}
     calls_to_make = campaign.num_to_call_predictive_simulate
-    calls_to_make.should eq(2)
+    calls_to_make.should eq(3)
   end
 
   it "determines if dialing is ramping up" do
