@@ -45,6 +45,7 @@ ImpactDialing::Application.routes.draw do
       post :gather_response
       post :choose_voter
       post :phones_only_progressive
+      post :phones_only
     end
 
   end

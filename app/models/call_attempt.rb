@@ -131,9 +131,15 @@ class CallAttempt < ActiveRecord::Base
       unless caller_session.caller.is_phones_only?          
         next_voter = self.campaign.next_voter_in_dial_queue(voter.id) 
         caller_session.publish('voter_push',next_voter.nil? ? {} : next_voter.info)         
-      end                        
-    end
-    hangup
+        caller_session.start
+      else
+        Twilio::TwiML::Response.new do |r|
+          r.Redirect "#{caller_phones_only(session_id: caller_session.id)}"
+        end
+      end  
+    else
+      hangup                        
+    end  
   end
 
   def hangup
