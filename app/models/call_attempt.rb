@@ -137,9 +137,9 @@ class CallAttempt < ActiveRecord::Base
         caller_session.publish('voter_push',next_voter.nil? ? {} : next_voter.info)         
         caller_session.start
       else
-        Twilio::TwiML::Response.new do |r|
-          r.Redirect "#{phones_only_caller_index_path(session_id: caller_session.id)}"
-        end.text
+        client = Twilio::REST::Client.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+        client.redirect_to(phones_only_caller_index_path(session_id: caller_session.id))
+        hangup                
       end  
     else
       hangup                        
