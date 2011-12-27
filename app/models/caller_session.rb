@@ -170,6 +170,14 @@ class CallerSession < ActiveRecord::Base
     Rails.logger.debug("PUSHER APP ID ::::::::::::::::::::::::::::::::::::::  #{Pusher.app_id}////////////////////////////#{event}")
     Pusher[self.session_key].trigger(event, data.merge!(:dialer => self.campaign.predictive_type))
   end
+  
+  def get_conference_id
+     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
+     conferences = Twilio::Conference.list({"FriendlyName" => session_key})
+     confs = conferences.parsed_response['TwilioResponse']['Conferences']['Conference']
+     conference_sid = ""
+     conference_sid = confs.class == Array ? confs.last['Sid'] : confs['Sid']
+   end
 
   private
   
