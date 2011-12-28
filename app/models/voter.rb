@@ -34,6 +34,7 @@ class Voter < ActiveRecord::Base
   scope :answered, where('result_date is not null')
   scope :answered_within, lambda { |from, to| where(:result_date => from.beginning_of_day..(to.end_of_day)) }
   scope :last_call_attempt_within, lambda { |from, to| where(:last_call_attempt_time => from..(to + 1.day))}
+  scope :priority_voters, :conditions => {:priority => "1", :status => 'not called'}
 
   before_validation :sanitize_phone
 
