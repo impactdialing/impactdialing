@@ -26,6 +26,7 @@ gem "nested_form", '~>0.1.1'
 gem 'rspec'
 gem 'jquery-rails', '>= 1.0.12'
 gem 'delayed_job', '~>2.1.4'
+gem 'heroku'
 
 group :development, :test do
   gem 'ruby-debug19'
@@ -46,7 +47,7 @@ end
 # you only need to do this once since the options will be saved in your .bundle/config file for subsequent calls
 group :darwin do #mac notifiers
   gem 'rb-fsevent'
-  gem 'growl_notify'
+#  gem 'growl_notify'
 end
 
 group :linux do #linux notifiers
