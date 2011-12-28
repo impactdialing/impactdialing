@@ -417,8 +417,9 @@ class Campaign < ActiveRecord::Base
 
   def choose_voters_to_dial(num_voters)
     return [] if num_voters < 1
+    priority_voters = all_voters.priority_voters.limit(num_voters)
     scheduled_voters = all_voters.scheduled.limit(num_voters)
-    return scheduled_voters + all_voters.to_be_dialed.without(account.blocked_numbers.for_campaign(self).map(&:number)).limit(num_voters - scheduled_voters.size)
+    return priority_voters + scheduled_voters + all_voters.to_be_dialed.without(account.blocked_numbers.for_campaign(self).map(&:number)).limit(num_voters - (priority_voters.size + scheduled_voters.size))
   end
 
   def ratio_dial?
@@ -500,7 +501,8 @@ class Campaign < ActiveRecord::Base
   end
 
   def next_voter_in_dial_queue(current_voter_id = nil)
-    voter = all_voters.scheduled.first
+    voter = all_voters.priority_voters.first 
+    voter||= all_voters.scheduled.first
     voter||= all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.not_skipped.where("voters.id > #{current_voter_id}").first unless current_voter_id.blank?
     voter||= all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.not_skipped.first
     voter||= all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.where("voters.id != #{current_voter_id}").first unless current_voter_id.blank?
