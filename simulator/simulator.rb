@@ -4,24 +4,25 @@ require 'yaml'
 require 'logger'
 require 'fileutils'
 
-RAILS_ENV = ENV['RAILS_ENV'] || 'development'
+RAILS_ROOT = File.expand_path('../..', __FILE__)
+require File.join(RAILS_ROOT, 'config/environment')
 SIMULATOR_ROOT = ENV['SIMULATOR_ROOT'] || File.expand_path('..', __FILE__)
 FileUtils.mkdir_p(File.join(SIMULATOR_ROOT, 'log'), :verbose => true)
 ActiveRecord::Base.logger = Logger.new(File.open(File.join(SIMULATOR_ROOT, 'log', "simulator_#{RAILS_ENV}.log"), 'a'))
 
-def database_settings
-  yaml_file = File.open(File.join(File.dirname(__FILE__), '../config/database.yml'))
-  yaml = YAML.load(yaml_file)
-  @plugins ||= yaml[RAILS_ENV].tap{|y| ActiveRecord::Base.logger.info y}
-end
-
-ActiveRecord::Base.establish_connection(
-  :adapter  => database_settings['adapter'],
-  :database => database_settings['database'],
-  :username => database_settings['username'],
-  :password => database_settings['password'].blank? ? nil : database_settings['password'],
-  :host     => database_settings['host']
-)
+#def database_settings
+#  yaml_file = File.open(File.join(File.dirname(__FILE__), '../config/database.yml'))
+#  yaml = YAML.load(yaml_file)
+#  @plugins ||= yaml[RAILS_ENV].tap{|y| ActiveRecord::Base.logger.info y}
+#end
+#
+#ActiveRecord::Base.establish_connection(
+#  :adapter  => database_settings['adapter'],
+#  :database => database_settings['database'],
+#  :username => database_settings['username'],
+#  :password => database_settings['password'].blank? ? nil : database_settings['password'],
+#  :host     => database_settings['host']
+#)
 
 class CallerSession < ActiveRecord::Base
 end
