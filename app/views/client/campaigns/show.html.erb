@@ -25,7 +25,7 @@
         </p>
 
         <p><label for="">Dialing mode</label>
-          <select class="field" id="campaign_predictive_type" name="campaign[predictive_type]">
+          <select class="field" id="campaign_predictive_type" name="campaign[predictive_type]" onchange="dialingModeOnChange()">
             <% public_dialers = [["Predictive", "algorithm1"], ["Power", "progressive"], ["Preview", "preview"],] %>
             <% if !public_dialers.map { |pair| pair[1] }.index(@campaign.predictive_type) %>
                 <option value="<%= @campaign.predictive_type %>" selected><%= @campaign.predictive_type %></option>
@@ -34,7 +34,7 @@
           </select>
         </p>
 
-        <p><label>Abandonment rate</label>
+        <p id="abandon_rate_edit" style="display: none"><label>Abandonment rate</label>
            <select class="field" id="campaign_abandon_rate" name="campaign[acceptable_abandon_rate]">
             <%= options_for_select [["1%", 0.01], ["2%", 0.02], ["3%", 0.03]], @campaign.acceptable_abandon_rate%>
           </select>
@@ -127,40 +127,51 @@
 </fieldset>
 
 <script>
-  $(function () {
-    if ($('#callers input[name^= "campaign[caller_ids]"]:checked').length == <%= @callers.length %> ){
-      $('#selectAll').attr('checked', true)
+    function dialingModeOnChange(){
+        console.log("onchange");
+        var dialMode = $('#campaign_predictive_type').val();
+        if(dialMode == "algorithm1"){
+            $('#abandon_rate_edit').show();
+        }
     }
 
-   $('#selectAll').click(function () {
-    $('#callers').find(':checkbox').attr('checked', this.checked);
-   });
+    $(function () {
+        if($("#campaign_predictive_type").val() == "algorithm1"){
+            $("#abandon_rate_edit").show();
+        }
+        if ($('#callers input[name^= "campaign[caller_ids]"]:checked').length == <%= @callers.length %> ){
+            $('#selectAll').attr('checked', true)
+        }
 
-   $('#callers input[name^= "campaign[caller_ids]"]').change(function(){
-     if ($('#callers input[name^= "campaign[caller_ids]"]:checked').length == <%= @callers.length %> ){
-       $('#selectAll').attr('checked', true)
-     }
-     if ($('#callers input[name^= "campaign[caller_ids]"]:checked').length < <%= @callers.length %> ){
-       $('#selectAll').attr('checked', false)
-     }
-   });
+        $('#selectAll').click(function () {
+            $('#callers').find(':checkbox').attr('checked', this.checked);
+        });
 
-		$('#campaign_answering_machine_detect').click(function () {
-			if($('#campaign_answering_machine_detect').attr('checked')== false){
+        $('#callers input[name^= "campaign[caller_ids]"]').change(function(){
+            if ($('#callers input[name^= "campaign[caller_ids]"]:checked').length == <%= @callers.length %> ){
+                $('#selectAll').attr('checked', true)
+            }
+            if ($('#callers input[name^= "campaign[caller_ids]"]:checked').length < <%= @callers.length %> ){
+                $('#selectAll').attr('checked', false)
+            }
+        });
 
-				if($("#campaign_use_recordings").attr('checked') == true){
-					$("#recordingsdiv").toggle($("#campaign_use_recordings").checked);
-					$("#campaign_use_recordings").attr('checked', false);
-				}
-			}
-		});
+        $('#campaign_answering_machine_detect').click(function () {
+            if($('#campaign_answering_machine_detect').attr('checked')== false){
 
-  });
+                if($("#campaign_use_recordings").attr('checked') == true){
+                    $("#recordingsdiv").toggle($("#campaign_use_recordings").checked);
+                    $("#campaign_use_recordings").attr('checked', false);
+                }
+            }
+        });
+
+    });
 
     function doRecord() {
-				if($("#campaign_use_recordings").attr('checked')== true){
-					$('#campaign_answering_machine_detect').attr('checked', true);
-				}
+        if($("#campaign_use_recordings").attr('checked')== true){
+            $('#campaign_answering_machine_detect').attr('checked', true);
+        }
         $("#recordingsdiv").toggle($("#campaign_use_recordings").checked);
     }
 
