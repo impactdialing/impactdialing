@@ -20,7 +20,8 @@ describe VoterListsController do
     
     it "should add a voter with priority 1" do
       post :insert_lead, campaign_id: @campaign.id, phone_number: "1234567890"
-      Voter.all.length.should eq(1)
+      @campaign.all_voters.length.should eq(1)
+      @campaign.all_voters.first.priority.should eq("1")
     end
     
   end
