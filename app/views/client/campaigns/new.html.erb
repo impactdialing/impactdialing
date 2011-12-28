@@ -23,13 +23,13 @@
         </p>
 
         <p><label for="">Dialing mode</label>
-          <select class="field" id="campaign_predictive_type" name="campaign[predictive_type]">
+          <select class="field" id="campaign_predictive_type" name="campaign[predictive_type]" onchange="dialingModeOnChange()">
             <% public_dialers = [["Predictive", "algorithm1"], ["Power", "progressive"], ["Preview", "preview"],] %>
             <%= options_for_select public_dialers, ["Power", "progressive"] %>
           </select>
           </p>
 
-        <p><label>Abandonment rate</label>
+        <p id="abandon_rate" style="display: none;"><label>Abandonment rate</label>
            <select class="field" id="campaign_abandon_rate" name="campaign[acceptable_abandon_rate]">
             <%= options_for_select [["1%", 0.01], ["2%", 0.02], ["3%", 0.03]], 0.03 %>
           </select>
@@ -117,6 +117,13 @@
 </fieldset>
 
 <script>
+    function dialingModeOnChange(){
+        var dialMode = $('#campaign_predictive_type').val();
+        if(dialMode == "algorithm1"){
+            $('#abandon_rate').show();
+        }
+    }
+
     $(function () {
       $('#callers input[type="checkbox"]').attr('checked', true);
       $('#selectAll').click(function () {
