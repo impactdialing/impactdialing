@@ -19,22 +19,22 @@
 						<td>Busy signal</td><td><%= @busy_signal %></td><td><%= ((@busy_signal.to_f/@total)*100).round %>%</td>
 					</tr>
 					<tr class="<%= cycle("odd","even") %>">
+						<td>Failed</td><td><%= @failed %></td><td><%= ((@failed.to_f/@total)*100).round %>%</td>
+					</tr>
+					<tr class="<%= cycle("odd","even") %>">
+						<td>Scheduled for later</td><td><%= @scheduled %></td><td><%= ((@scheduled.to_f/@total)*100).round %>%</td>
+					</tr>
+					<tr class="<%= cycle("odd","even") %>">
+						<td>Abandoned</td><td><%= @abandoned %></td><td><%= ((@abandoned.to_f/@total)*100).round %>%</td>
+					</tr>
+					<tr class="<%= cycle("odd","even") %>">
+						<td>Voicemail left</td><td><%= @voicemail %></td><td><%= ((@voicemail.to_f/@total)*100).round %>%</td>
+					</tr>
+					<tr class="<%= cycle("odd","even") %>">
 						<td>Ringing</td><td><%= @ringing %></td><td><%= ((@ringing.to_f/@total)*100).round %>%</td>
 					</tr>
 					<tr class="<%= cycle("odd","even") %>">
 						<td>Ready to dial</td><td><%= @ready_to_dial %></td><td><%= ((@ready_to_dial.to_f/@total)*100).round %>%</td>
-					</tr>
-					<tr class="<%= cycle("odd","even") %>">
-						<td>Call abandoned</td><td><%= @abandoned %></td><td><%= ((@abandoned.to_f/@total)*100).round %>%</td>
-					</tr>
-					<tr class="<%= cycle("odd","even") %>">
-						<td>Failed</td><td><%= @failed %></td><td><%= ((@failed.to_f/@total)*100).round %>%</td>
-					</tr>
-					<tr class="<%= cycle("odd","even") %>">
-						<td>Voicemail</td><td><%= @voicemail %></td><td><%= ((@voicemail.to_f/@total)*100).round %>%</td>
-					</tr>
-					<tr class="<%= cycle("odd","even") %>">
-						<td>Scheduled for later</td><td><%= @scheduled %></td><td><%= ((@scheduled.to_f/@total)*100).round %>%</td>
 					</tr>
 					<tr class="<%= cycle("odd","even") %>">
 						<td>Not dialed</td><td><%= @not_dialed %></td><td><%= ((@not_dialed.to_f/@total)*100).round %>%</td>
