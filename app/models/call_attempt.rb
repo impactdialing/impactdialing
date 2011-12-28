@@ -137,9 +137,10 @@ class CallAttempt < ActiveRecord::Base
         caller_session.publish('voter_push',next_voter.nil? ? {} : next_voter.info)         
         caller_session.start
       else
-        Twilio::TwiML::Response.new do |r|
-          r.Redirect "#{caller_phones_only(session_id: caller_session.id)}"
-        end
+        Rails.logger.debug("failed called being redirected")
+        Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
+        Twilio::Conference.kick_participant(caller_session.get_conference_id, caller_session.sid)        
+        hangup                
       end  
     else
       hangup                        

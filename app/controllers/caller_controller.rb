@@ -156,7 +156,9 @@ class CallerController < ApplicationController
   
   def phones_only
     caller_session = CallerSession.find(params[:session_id])
-    caller_session.ask_caller_to_choose_voter    
+    xml = caller_session.ask_caller_to_choose_voter
+    Rails.logger.debug(xml)
+    render :xml => xml    
   end
   
   def ping

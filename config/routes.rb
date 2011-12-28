@@ -1,4 +1,4 @@
-PROTOCOL = Rails.env == 'development' ? 'http://' : 'https://'
+PROTOCOL = Rails.env == 'development' || Rails.env == 'heroku' ? 'http://' : 'https://'
 
 ImpactDialing::Application.routes.draw do
   root :to => "home#index"
@@ -31,6 +31,7 @@ ImpactDialing::Application.routes.draw do
     collection do
       get :login
       post :end_session
+      post :phones_only
     end
 
     member do
@@ -45,7 +46,6 @@ ImpactDialing::Application.routes.draw do
       post :gather_response
       post :choose_voter
       post :phones_only_progressive
-      post :phones_only
     end
 
   end
