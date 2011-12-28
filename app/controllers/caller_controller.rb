@@ -2,7 +2,7 @@ require Rails.root.join("lib/twilio_lib")
 
 class CallerController < ApplicationController
   layout "caller"
-  before_filter :check_login, :except=>[:login, :feedback, :assign_campaign, :end_session, :pause, :start_calling, :gather_response, :choose_voter, :phones_only_progressive]
+  before_filter :check_login, :except=>[:login, :feedback, :assign_campaign, :end_session, :pause, :start_calling, :gather_response, :choose_voter, :phones_only_progressive, :phones_only]
   before_filter :redirect_to_ssl
   before_filter :connect_to_twilio, :only => [:preview_dial]
 
@@ -155,6 +155,7 @@ class CallerController < ApplicationController
   end
   
   def phones_only
+    Rails.logger.debug('Entered redirect')
     caller_session = CallerSession.find(params[:session_id])
     xml = caller_session.ask_caller_to_choose_voter
     Rails.logger.debug(xml)

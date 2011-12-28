@@ -139,8 +139,8 @@ class CallAttempt < ActiveRecord::Base
       else
         Rails.logger.debug("failed called being redirected")
         Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-        Twilio::Conference.kick_participant(caller_session.get_conference_id, caller_session.sid)        
-        hangup                
+        Twilio::Call.redirect(caller_session.sid, phones_only_caller_index_url(:host => Settings.host, :port => Settings.port, session_id: caller_session.id))        
+        Rails.logger.debug("failed called after redirected --- #{caller_session.sid}")
       end  
     else
       hangup                        
