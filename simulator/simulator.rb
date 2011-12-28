@@ -5,7 +5,6 @@ require 'logger'
 
 RAILS_ENV = ENV['RAILS_ENV'] || 'development'
 SIMULATOR_ROOT = ENV['SIMULATOR_ROOT'] || File.expand_path('..', __FILE__)
-
 FileUtils.mkdir_p(File.join(SIMULATOR_ROOT, 'log'), :verbose => true)
 ActiveRecord::Base.logger = Logger.new(File.open(File.join(SIMULATOR_ROOT, 'log', "simulator_#{RAILS_ENV}.log"), 'a'))
 
@@ -29,7 +28,7 @@ end
 class CallAttempt < ActiveRecord::Base
   def duration
     return nil unless call_start
-    ((call_end || Time.now) - self.call_start).to_i
+    ((wrapup_time || Time.now) - self.call_start).to_i
   end
 
   def ringing_duration
@@ -66,13 +65,14 @@ def average(array)
 end
 
 def simulate(campaign_id)
-  target_abandonment = 0.1
+  target_abandonment = Campaign.find(campaign_id).acceptable_abandon_rate
   start_time = 60 * 10
   simulator_length = 60 * 60
   abandon_count = 0
 
-  caller_statuses = CallerSession.where(:campaign_id => campaign_id, :on_call => true).size.times.map{ CallerStatus.new('available') }
-  caller_statuses = 10.times.map{ CallerStatus.new('available') }
+  caller_statuses = CallerSession.where(:campaign_id => campaign_id,
+            :on_call => true).size.times.map{ CallerStatus.new('available') }
+  #caller_statuses = 10.times.map{ CallerStatus.new('available') }
 
   call_attempts = CallAttempt.where(:campaign_id => campaign_id)
   recent_call_attempts = call_attempts.where(:status => "Call completed with success.").map{|attempt| OpenStruct.new(:length => attempt.duration, :counter => 0)}
