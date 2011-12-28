@@ -2,6 +2,7 @@ require 'active_record'
 require "ostruct"
 require 'yaml'
 require 'logger'
+require 'fileutils'
 
 RAILS_ENV = ENV['RAILS_ENV'] || 'development'
 SIMULATOR_ROOT = ENV['SIMULATOR_ROOT'] || File.expand_path('..', __FILE__)
@@ -9,7 +10,7 @@ FileUtils.mkdir_p(File.join(SIMULATOR_ROOT, 'log'), :verbose => true)
 ActiveRecord::Base.logger = Logger.new(File.open(File.join(SIMULATOR_ROOT, 'log', "simulator_#{RAILS_ENV}.log"), 'a'))
 
 def database_settings
-  yaml_file = File.open(File.join(File.dirname(__FILE__), 'database.yml'))
+  yaml_file = File.open(File.join(File.dirname(__FILE__), '../config/database.yml'))
   yaml = YAML.load(yaml_file)
   @plugins ||= yaml[RAILS_ENV].tap{|y| ActiveRecord::Base.logger.info y}
 end
