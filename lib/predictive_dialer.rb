@@ -1,4 +1,5 @@
 #require File.join("../", 'config/environment')
+RAILS_ROOT = File.expand_path('../..', __FILE__)
 require File.join(RAILS_ROOT, 'config/environment')
 ActiveRecord::Base.logger = DIALER_LOGGER
 
