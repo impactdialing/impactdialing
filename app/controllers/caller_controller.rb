@@ -155,6 +155,7 @@ class CallerController < ApplicationController
   end
   
   def phones_only
+    Rails.logger.debug('Entered redirect')
     caller_session = CallerSession.find(params[:session_id])
     xml = caller_session.ask_caller_to_choose_voter
     Rails.logger.debug(xml)
