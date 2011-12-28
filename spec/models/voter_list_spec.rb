@@ -54,6 +54,7 @@ describe VoterList do
 
     describe "import from csv" do
       USER_MAPPINGS = CsvMapping.new({
+                                         "Id" => "CustomID",
                                          "LAST" => "LastName",
                                          "FIRSTName" => "FirstName",
                                          "Phone" => "Phone",
@@ -147,6 +148,38 @@ describe VoterList do
         another_voter_list.import_leads(
             USER_MAPPINGS,
             csv_file_upload,
+            ",").should ==
+            {
+                :successCount => 2,
+                :failedCount => 0
+            }
+      end
+      
+    end
+    
+    
+    describe "update voter with same id" do
+      let(:csv_file_upload_with_duplicate_custom_id) {
+        source_file = "#{fixture_path}/files/voter_list_with_duplicate_custom_id_field.csv"
+        temp_dir = "#{fixture_path}/test_tmp"
+        temp_filename = "#{temp_dir}/voter_list_with_duplicate_custom_id_field.csv"
+        FileUtils.cp source_file, temp_filename
+        temp_filename
+      }
+      
+      # before :each do
+      #         Voter.destroy_all
+      #         @result = voter_list.import_leads(
+      #             USER_MAPPINGS,
+      #             csv_file_upload_with_duplicate_custom_id,
+      #             ",")
+      #       end
+            
+      it "update the voter with same id" do
+        another_voter_list = Factory(:voter_list, :campaign => campaign, :account => user.account)
+        another_voter_list.import_leads(
+            USER_MAPPINGS,
+            csv_file_upload_with_duplicate_custom_id,
             ",").should ==
             {
                 :successCount => 2,

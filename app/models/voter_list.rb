@@ -42,13 +42,19 @@ class VoterList < ActiveRecord::Base
 
     csv_to_system_map.remap_system_column! "ID", :to => "CustomID"
     csv_phone_column_location = csv_headers.index(csv_to_system_map.csv_index_for "Phone")
-
+    csv_custom_id_column_location = csv_headers.index(csv_to_system_map.csv_index_for "CustomID")
+    
     voters_list.shuffle.each do |voter_info|
       phone_number = Voter.sanitize_phone(voter_info[csv_phone_column_location])
-
-      unless phone_number.blank?
+      lead = nil
+      if csv_custom_id_column_location.present?
+        lead = Voter.find_by_CustomID_and_campaign_id(voter_info[csv_custom_id_column_location], campaign_id)
+        lead.update_attributes(:voter_list => self) if lead.present?
+      end
+      
+      if lead.present? || phone_number.present?
         result[:successCount] +=1
-        lead = Voter.create(:Phone => phone_number, :voter_list => self, :account_id => account_id, :campaign_id => campaign_id)
+        (lead = Voter.create(:Phone => phone_number, :voter_list => self, :account_id => account_id, :campaign_id => campaign_id)) if lead.nil?
         csv_headers.each_with_index do |csv_column_title, column_location|
           system_column = csv_to_system_map.system_column_for csv_column_title
           lead.apply_attribute(system_column, voter_info[column_location]) unless system_column.blank?
