@@ -6,6 +6,7 @@ class VoterListsController < ClientController
   before_filter :load_campaign, :setup_based_on_type
   before_filter :check_file_uploaded, :only => [:import]
   skip_before_filter :check_paid
+  before_filter :check_login, :except => [:insert_lead]
 
   def create
 
@@ -47,16 +48,18 @@ class VoterListsController < ClientController
     redirect_to @campaign_path  
   end
   
-  # def insert_lead
-  #   voter_list = VoterList.find_by_name_and_campaign_id('web_form',params[:campaign_id])
-  #   if voter_list.nil?
-  #     voter_list =  VoterList.create(name: 'web_form', account_id: params[:account_id], active: true, campaign_id: params[:campaign_id], enabled: true)
-  #   end
-  #   lead = Voter.create(:Phone => params[:phone_number], :voter_list => voter_list, 
-  #   :account_id => params[:account_id], :campaign_id => params[:campaign_id], CustomID: params[:custom_id],
-  #   FirstName: params[:first_name], LastName: params[:last_name], MiddleName: params[:middle_name], Email: params[:email], address: params[:address],
-  #    city: params[:city], state: params[:state], zip_code: params[:zip_code], country: params[:country])    
-  # end
+  def insert_lead
+    voter_list = VoterList.find_by_name_and_campaign_id('web_form',params[:campaign_id])
+    if voter_list.nil?
+      voter_list =  VoterList.create(name: 'web_form', account_id: params[:account_id], active: true, campaign_id: params[:campaign_id], enabled: true)
+    end
+    lead = Voter.create(:Phone => params[:phone_number], :voter_list => voter_list, 
+    :account_id => params[:account_id], :campaign_id => params[:campaign_id], CustomID: params[:custom_id],
+    FirstName: params[:first_name], LastName: params[:last_name], MiddleName: params[:middle_name], Email: params[:email], address: params[:address],
+     city: params[:city], state: params[:state], zip_code: params[:zip_code], country: params[:country], priority: "1")        
+     
+    render nothing: true 
+  end
   
   
 

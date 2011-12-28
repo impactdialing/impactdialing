@@ -58,6 +58,17 @@ describe "predictive_dialer" do
     voter = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list, :account => account)
     campaign.choose_voters_to_dial(1).should == [voter]
   end
+  
+  it "should  choose priority voter as the next voters to dial" do
+    account = Factory(:account, :activated => true)
+    campaign = Factory(:campaign, :account => account, :caller_id => "0123456789", :caller_id_verified => true)
+    campaign.caller_id_verified=true
+    voter_list = Factory(:voter_list, :campaign => campaign, :active => true)
+    voter = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list, :account => account)
+    priority_voter = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list, :account => account, priority: "1")
+    campaign.choose_voters_to_dial(1).should == [priority_voter]
+  end
+  
 
   it "excludes system blocked numbers" do
     account = Factory(:account, :activated => true)
@@ -349,6 +360,14 @@ describe Campaign do
   end
 
   describe "next voter to be dialed" do
+    
+    it "returns priority  not called voter first" do
+      campaign = Factory(:campaign)
+      voter = Factory(:voter, :status => 'not called', :campaign => campaign)
+      priority_voter = Factory(:voter, :status => 'not called', :campaign => campaign, priority: "1")
+      campaign.next_voter_in_dial_queue.should == priority_voter
+      
+    end
     it "returns uncalled voter before called voter" do
       campaign = Factory(:campaign)
       Factory(:voter, :status => CallAttempt::Status::SUCCESS, :last_call_attempt_time => 2.hours.ago, :campaign => campaign)
