@@ -1,4 +1,4 @@
-PROTOCOL = Rails.env == 'development' ? 'http://' : 'https://'
+PROTOCOL = Rails.env == 'development' || Rails.env == 'heroku' ? 'http://' : 'https://'
 
 ImpactDialing::Application.routes.draw do
   root :to => "home#index"
