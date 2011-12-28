@@ -69,7 +69,10 @@ ImpactDialing::Application.routes.draw do
         get :running_status
       end
       resources :voter_lists, :except => [:new, :show] do
-        collection { post :import }
+        collection do 
+           post :import 
+           post :insert_lead
+        end
       end
     end
     resources :reports do
