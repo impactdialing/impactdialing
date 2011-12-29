@@ -81,7 +81,7 @@ while beta < 1
 
       else
 
-        increment its elepased time by 1
+        increment its elapsed time by 1
 
       end
 
@@ -93,7 +93,7 @@ while beta < 1
 
     dials_answered = number of elements in finished_dials with counters < start_time with status “answered”
 
-    dials_needed = alpha * dials_answered / dials_made
+    dials_needed = alpha * dials_made / dials_answered
 
     mean_conversation = the mean length of elements in finished dials with counters < start_time
 
