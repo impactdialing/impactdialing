@@ -2,26 +2,27 @@ require 'active_record'
 require "ostruct"
 require 'yaml'
 require 'logger'
+require 'fileutils'
 
-RAILS_ENV = ENV['RAILS_ENV'] || 'development'
+RAILS_ROOT = File.expand_path('../..', __FILE__)
+require File.join(RAILS_ROOT, 'config/environment')
 SIMULATOR_ROOT = ENV['SIMULATOR_ROOT'] || File.expand_path('..', __FILE__)
-
 FileUtils.mkdir_p(File.join(SIMULATOR_ROOT, 'log'), :verbose => true)
 ActiveRecord::Base.logger = Logger.new(File.open(File.join(SIMULATOR_ROOT, 'log', "simulator_#{RAILS_ENV}.log"), 'a'))
 
-def database_settings
-  yaml_file = File.open(File.join(File.dirname(__FILE__), 'database.yml'))
-  yaml = YAML.load(yaml_file)
-  @plugins ||= yaml[RAILS_ENV].tap{|y| ActiveRecord::Base.logger.info y}
-end
-
-ActiveRecord::Base.establish_connection(
-  :adapter  => database_settings['adapter'],
-  :database => database_settings['database'],
-  :username => database_settings['username'],
-  :password => database_settings['password'].blank? ? nil : database_settings['password'],
-  :host     => database_settings['host']
-)
+#def database_settings
+#  yaml_file = File.open(File.join(File.dirname(__FILE__), '../config/database.yml'))
+#  yaml = YAML.load(yaml_file)
+#  @plugins ||= yaml[RAILS_ENV].tap{|y| ActiveRecord::Base.logger.info y}
+#end
+#
+#ActiveRecord::Base.establish_connection(
+#  :adapter  => database_settings['adapter'],
+#  :database => database_settings['database'],
+#  :username => database_settings['username'],
+#  :password => database_settings['password'].blank? ? nil : database_settings['password'],
+#  :host     => database_settings['host']
+#)
 
 class CallerSession < ActiveRecord::Base
 end
@@ -29,7 +30,7 @@ end
 class CallAttempt < ActiveRecord::Base
   def duration
     return nil unless call_start
-    ((call_end || Time.now) - self.call_start).to_i
+    ((wrapup_time || Time.now) - self.call_start).to_i
   end
 
   def ringing_duration
@@ -66,13 +67,14 @@ def average(array)
 end
 
 def simulate(campaign_id)
-  target_abandonment = 0.1
+  target_abandonment = Campaign.find(campaign_id).acceptable_abandon_rate
   start_time = 60 * 10
   simulator_length = 60 * 60
   abandon_count = 0
 
-  caller_statuses = CallerSession.where(:campaign_id => campaign_id, :on_call => true).size.times.map{ CallerStatus.new('available') }
-  caller_statuses = 10.times.map{ CallerStatus.new('available') }
+  caller_statuses = CallerSession.where(:campaign_id => campaign_id,
+            :on_call => true).size.times.map{ CallerStatus.new('available') }
+  #caller_statuses = 10.times.map{ CallerStatus.new('available') }
 
   call_attempts = CallAttempt.where(:campaign_id => campaign_id)
   recent_call_attempts = call_attempts.where(:status => "Call completed with success.").map{|attempt| OpenStruct.new(:length => attempt.duration, :counter => 0)}
