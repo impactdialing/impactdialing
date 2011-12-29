@@ -2,7 +2,7 @@ require Rails.root.join("lib/twilio_lib")
 
 class CallerController < ApplicationController
   layout "caller"
-  before_filter :check_login, :except=>[:login, :feedback, :assign_campaign, :end_session, :pause, :start_calling, :gather_response, :choose_voter, :phones_only_progressive, :phones_only]
+  before_filter :check_login, :except=>[:login, :feedback, :assign_campaign, :end_session, :pause, :start_calling, :gather_response, :choose_voter, :phones_only_progressive, :phones_only, :choose_instructions_option]
   before_filter :redirect_to_ssl
   before_filter :connect_to_twilio, :only => [:preview_dial]
 
@@ -55,7 +55,7 @@ class CallerController < ApplicationController
     if @campaign
       @session.update_attributes(:campaign => @campaign)
       Moderator.caller_connected_to_campaign(caller, @campaign, @session)
-      render :xml => @session.start
+      render :xml => caller.is_phones_only? ? caller.ask_instructions_choice(@session) : @session.start
     else
       render :xml => @session.ask_for_campaign(params[:attempt].to_i)
     end
@@ -89,7 +89,7 @@ class CallerController < ApplicationController
 
     xml = Twilio::Verb.hangup if caller_session.disconnected?
     xml ||= (voter.question_not_answered.try(:read, caller_session) if voter)
-    xml ||= caller_session.start
+    xml ||= caller.is_phones_only_and_preview_or_progressive?(caller_session.campaign) ? caller_session.ask_caller_to_choose_voter : caller_session.start
     render :xml => xml
   end
 
@@ -160,6 +160,12 @@ class CallerController < ApplicationController
     xml = caller_session.ask_caller_to_choose_voter
     Rails.logger.debug(xml)
     render :xml => xml    
+  end
+  
+  def choose_instructions_option
+    caller_session = CallerSession.find(params[:session])
+    caller = Caller.find(params[:id])
+    render :xml => caller.instruction_choice_result(params[:Digits], caller_session)
   end
   
   def ping
