@@ -7,6 +7,24 @@ describe VoterListsController do
     @current_user = Factory(:user)
     login_as @current_user
   end
+  
+  describe "insert lead" do
+    before :each do
+      @campaign = Factory(:campaign, :account => @current_user.account)
+    end
+    
+    it "should create a voter list if none exist with name web form" do
+      post :insert_lead, campaign_id: @campaign.id, phone_number: "1234567890"
+      @campaign.voter_lists.length.should eq(1)
+    end
+    
+    it "should add a voter with priority 1" do
+      post :insert_lead, campaign_id: @campaign.id, phone_number: "1234567890"
+      @campaign.all_voters.length.should eq(1)
+      @campaign.all_voters.first.priority.should eq("1")
+    end
+    
+  end
 
   describe "voters list" do
     let(:csv_file_upload) { {"datafile" => fixture_file_upload("/files/valid_voters_list.csv")} }
