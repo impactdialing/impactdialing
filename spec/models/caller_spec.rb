@@ -54,45 +54,96 @@ describe Caller do
     end.response
   end
   
-  describe "choice in phones-only preview" do
+  describe "choice in phones-only" do
     let(:caller) { Factory(:caller, :account => user.account) }
-    before(:each) do
-      @campaign = Factory(:campaign, :robo => false, :predictive_type => 'preview')
-      @caller_session = Factory(:caller_session, :caller => caller, :campaign => @campaign, :session_key => "sessionkey")
-      @voter = Factory(:voter, :campaign => @campaign)
+    describe "choose voter" do
+      before(:each) do
+        @campaign = Factory(:campaign, :robo => false, :predictive_type => 'preview')
+        @caller_session = Factory(:caller_session, :caller => caller, :campaign => @campaign, :session_key => "sessionkey")
+        @voter = Factory(:voter, :campaign => @campaign)
+      end
+    
+      it "if choice is * , make call to voter and caller will be placed into conference" do
+        Twilio::Call.stub(:make)
+        Twilio::Call.should_receive(:make).with(anything, @voter.Phone,anything,anything).and_return("TwilioResponse"=> {"Call" => {"Sid" => 'sid'}})
+        caller.choice_result("*", @voter, @caller_session).should == response = Twilio::Verb.new do |v|
+          v.dial(:hangupOnStar => true, :action => gather_response_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => @caller_session.id)) do
+            v.conference(@caller_session.session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
+          end
+        end.response
+      end
+    
+      it "if choice is # , skip the voter" do
+        next_voter = Factory(:voter, :campaign => @campaign,:FirstName => "next voter first name", :LastName => "next voter last name")
+        caller.choice_result("#", @voter, @caller_session).should == Twilio::Verb.new do |v|
+          v.gather(:numDigits => 1, :timeout => 10, :action => choose_voter_caller_url(caller.id, :session => @caller_session.id, :host => Settings.host, :port => Settings.port, :voter => next_voter.id), :method => "POST", :finishOnKey => "5") do
+            v.say "#{next_voter.FirstName}  #{next_voter.LastName}. Press * to dial or # to skip."
+          end
+        end.response
+        @voter.reload.skipped_time.should_not be_nil
+        @voter.reload.status.should == 'not called'
+      end
+    
+      it "if choice is neither * nor #, agaign ask caller option" do
+        caller.choice_result("3", @voter, @caller_session).should == Twilio::Verb.new do |v|
+          v.gather(:numDigits => 1, :timeout => 10, :action => choose_voter_caller_url(caller, :session => @caller_session, :host => Settings.host, :port => Settings.port, :voter => @voter), :method => "POST", :finishOnKey => "5") do
+            v.say "Press * to dial or # to skip."
+          end
+        end.response
+      end
     end
     
-    it "if choice is * , make call to voter and caller will be placed into conference" do
-      Twilio::Call.stub(:make)
-      Twilio::Call.should_receive(:make).with(anything, @voter.Phone,anything,anything).and_return("TwilioResponse"=> {"Call" => {"Sid" => 'sid'}})
-      caller.choice_result("*", @voter, @caller_session).should == response = Twilio::Verb.new do |v|
-        v.dial(:hangupOnStar => true, :action => gather_response_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => @caller_session.id)) do
-          v.conference(@caller_session.session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
-        end
-      end.response
+    describe "select * to dial or # to listen instructions" do
+      before(:each) do
+        @campaign = Factory(:campaign, :robo => false, :predictive_type => 'preview')
+        @caller_session = Factory(:caller_session, :caller => caller, :campaign => @campaign, :session_key => "sessionkey")
+      end
+      
+      it "if selected option is * and campaign mode is preview" do
+        phones_only_caller = Factory(:caller, :is_phones_only => true)
+        @caller_session.should_receive(:ask_caller_to_choose_voter)
+        phones_only_caller.instruction_choice_result("*", @caller_session)
+      end
+      
+      it "if selected option is * and campaign mode is predictive" do
+        @campaign.update_attributes(:predictive_type => 'algorithm1')
+        phones_only_caller = Factory(:caller, :is_phones_only => true)
+        @caller_session.should_receive(:start)
+        phones_only_caller.instruction_choice_result("*", @caller_session)
+      end
+      
+      it "if selected option is #, then read the instructions" do
+        caller.instruction_choice_result("#", @caller_session).should == Twilio::Verb.new do |v|
+          v.gather(:numDigits => 1, :timeout => 10, :action => choose_instructions_option_caller_url(caller, :session => @caller_session, :host => Settings.host, :port => Settings.port), :method => "POST", :finishOnKey => "5") do
+            v.say I18n.t(:phones_only_caller_instructions)
+          end
+        end.response
+      end
+      
+      it "if seleced option is neither * nor #, then again ask the caller, same options" do
+        caller.instruction_choice_result("4", @caller_session).should == Twilio::Verb.new do |v|
+          v.gather(:numDigits => 1, :timeout => 10, :action => choose_instructions_option_caller_url(caller, :session => @caller_session, :host => Settings.host, :port => Settings.port), :method => "POST", :finishOnKey => "5") do
+            v.say "Press * to begin dialing or # for instructions."
+          end
+        end.response
+      end
+      
     end
-    
-    it "if choice is # , skip the voter" do
-      next_voter = Factory(:voter, :campaign => @campaign,:FirstName => "next voter first name", :LastName => "next voter last name")
-      caller.choice_result("#", @voter, @caller_session).should == Twilio::Verb.new do |v|
-        v.gather(:numDigits => 1, :timeout => 10, :action => choose_voter_caller_url(caller.id, :session => @caller_session.id, :host => Settings.host, :port => Settings.port, :voter => next_voter.id), :method => "POST", :finishOnKey => "5") do
-          v.say "#{next_voter.FirstName}  #{next_voter.LastName}. Press * to dial or # to skip."
-        end
-      end.response
-      @voter.reload.skipped_time.should_not be_nil
-      @voter.reload.status.should == 'not called'
-    end
-    
-    it "if choice is neither * nor #, agaign ask caller option" do
-      caller.choice_result("3", @voter, @caller_session).should == Twilio::Verb.new do |v|
-        v.gather(:numDigits => 1, :timeout => 10, :action => choose_voter_caller_url(caller, :session => @caller_session, :host => Settings.host, :port => Settings.port, :voter => @voter), :method => "POST", :finishOnKey => "5") do
-          v.say "Press * to dial or # to skip."
-        end
-      end.response
-    end
-    
   end
-
+  
+  it "is_phones_only_and_preview_or_progressive? is true if is_phones_only and campaign type is preview or progressive" do
+    phones_only_caller = Factory(:caller, :is_phones_only => true)
+    phones_only_caller.is_phones_only_and_preview_or_progressive?(Factory(:campaign, :predictive_type => Campaign::Type::PREVIEW)).should be_true
+    phones_only_caller.is_phones_only_and_preview_or_progressive?(Factory(:campaign, :predictive_type => Campaign::Type::PROGRESSIVE)).should be_true
+    phones_only_caller.is_phones_only_and_preview_or_progressive?(Factory(:campaign, :predictive_type => Campaign::Type::PREDICTIVE)).should be_false
+  end
+  
+  it "is_phones_only_and_preview_or_progressive? is false if not is_phones_only and campaign type is preview or progressive" do
+    web_caller = Factory(:caller, :is_phones_only => false)
+    web_caller.is_phones_only_and_preview_or_progressive?(Factory(:campaign, :predictive_type => Campaign::Type::PREVIEW)).should be_false
+    web_caller.is_phones_only_and_preview_or_progressive?(Factory(:campaign, :predictive_type => Campaign::Type::PROGRESSIVE)).should be_false
+  end
+  
   it do
     Factory(:caller)
     should validate_uniqueness_of :email

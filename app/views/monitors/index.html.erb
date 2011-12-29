@@ -149,7 +149,7 @@
 <script id="campaign" type="text/html">
   {{#campaign_fields}}
     <tr id={{id}} class="campaign <%= cycle("odd", "even") %>">
-       <td><h3><a href={{path}} >{{campaign_name}}</a></h3></td>
+       <td>{{campaign_name}}</td>
        <td class="callers_logged_in">{{callers_logged_in}}</td>
        <td class="dials_in_progress">{{dials_in_progress}}</td>
        <td class="voters_count">{{voters_count}}</td>
@@ -174,7 +174,7 @@
           <% if @campaigns.present? %>
             <% @campaigns.each do |c| %>
                 <tr id="<%= c.id %>" class="campaign <%= cycle("odd", "even") %>">
-                  <td><%= link_to c.name, campaign_path(c) %></td>
+                  <td><%= c.name %></td>
                   <td class="callers_logged_in"><%= c.caller_sessions.on_call.length %></td>
                   <td class="dials_in_progress"><%= c.call_attempts.not_wrapped_up.try(:length) %></td>
                   <td class="voters_count"><%= c.voters_count("not called", false).length %></td>
