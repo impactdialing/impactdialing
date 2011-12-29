@@ -84,10 +84,10 @@ def simulate(campaign_id)
   recent_dials = call_attempts.map{|attempt| OpenStruct.new(:length => attempt.ringing_duration, :counter => 0, :answered? => attempt.status == 'Call completed with success.') }
   ActiveRecord::Base.logger.info recent_dials.size
 
-  alpha = 0.01
+  alpha = 0.10
   beta = 0.0
 
-  best_alpha = 0.01
+  best_alpha = 0.10
   best_beta = 1
   best_utilisation = 0
 
