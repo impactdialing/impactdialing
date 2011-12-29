@@ -33,7 +33,6 @@
             <%= options_for_select public_dialers, @campaign.predictive_type %>
           </select>
         </p>
-
         <p id="abandon_rate_edit" style="display: none"><label>Abandonment rate</label>
            <select class="field" id="campaign_abandon_rate" name="campaign[acceptable_abandon_rate]">
             <%= options_for_select [["1%", 0.01], ["2%", 0.02], ["3%", 0.03]], @campaign.acceptable_abandon_rate%>
@@ -128,16 +127,19 @@
 
 <script>
     function dialingModeOnChange(){
-        console.log("onchange");
         var dialMode = $('#campaign_predictive_type').val();
         if(dialMode == "algorithm1"){
             $('#abandon_rate_edit').show();
+            $('#campaign_abandon_rate').val(0.03);
+        }else{
+            $('#abandon_rate_edit').hide();
         }
     }
 
     $(function () {
         if($("#campaign_predictive_type").val() == "algorithm1"){
             $("#abandon_rate_edit").show();
+
         }
         if ($('#callers input[name^= "campaign[caller_ids]"]:checked').length == <%= @callers.length %> ){
             $('#selectAll').attr('checked', true)

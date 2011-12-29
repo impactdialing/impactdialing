@@ -121,6 +121,9 @@
         var dialMode = $('#campaign_predictive_type').val();
         if(dialMode == "algorithm1"){
             $('#abandon_rate').show();
+            $('#campaign_abandon_rate').val(0.03);
+        }else{
+            $('#abandon_rate').hide();
         }
     }
 
