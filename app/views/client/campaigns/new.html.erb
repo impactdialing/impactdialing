@@ -24,7 +24,7 @@
 
         <p><label for="">Dialing mode</label>
           <select class="field" id="campaign_predictive_type" name="campaign[predictive_type]" onchange="dialingModeOnChange()">
-            <% public_dialers = [["Predictive", "algorithm1"], ["Power", "progressive"], ["Preview", "preview"],] %>
+            <% public_dialers = [["Predictive (beta)", "algorithm1"], ["Power", "progressive"], ["Preview", "preview"],] %>
             <%= options_for_select public_dialers, ["Power", "progressive"] %>
           </select>
           </p>
