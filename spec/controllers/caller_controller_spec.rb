@@ -147,6 +147,17 @@ describe CallerController do
       post :assign_campaign, :id =>caller.id, :session => session.id, :Digits => campaign.reload.campaign_id
       response.body.should == session.start
     end
+    
+    it "ask caller to select instructions choice, if caller is phones-only" do
+      campaign = Factory(:campaign, :account => account,:start_time => Time.new("2000-01-01 01:00:00"),:end_time => Time.new("2000-01-01 23:00:00"))
+      phones_only_caller = Factory(:caller, :account => account, :is_phones_only => true)
+      session = Factory(:caller_session, :caller => phones_only_caller, :campaign => campaign, :session_key => 'key')
+      Moderator.stub!(:caller_connected_to_campaign).with(phones_only_caller, campaign, session)
+      session.should_not_receive(:start)
+      
+      post :assign_campaign, :id => phones_only_caller.id, :session => session.id, :Digits => campaign.reload.campaign_id
+      response.body.should == phones_only_caller.ask_instructions_choice(session)
+    end
 
     it "asks for campaign pin again when incorrect" do
       campaign = Factory(:campaign, :account => account)
@@ -257,7 +268,6 @@ describe CallerController do
     end
     
     describe "progressive mode" do
-      
       it "add the caller to the conference and make the call to voter" do
         campaign = Factory(:campaign, :robo => false, :predictive_type => 'preview')
         caller_session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sessionkey")
@@ -268,7 +278,13 @@ describe CallerController do
         post :phones_only_progressive, :id => caller.id, :session_id => caller_session.id, :voter_id => voter.id
         response.body.should == caller_session.phones_only_start
       end
-      
+    end
+    
+    it "ask caller to select options, i.e * for dialing or # for instructions" do
+      campaign = Factory(:campaign, :robo => false, :predictive_type => 'preview')
+      caller_session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sessionkey")
+      post :choose_instructions_option, :id => caller.id, :session => caller_session.id, :Digits => "*"
+      response.body.should == caller.instruction_choice_result("*", caller_session)
     end
     
   end
@@ -314,19 +330,27 @@ describe CallerController do
       post :gather_response, :id => caller.id, :session_id => caller_session.id, :question_id => first_question.id, :Digits => "1"
       response.body.should == call_attempt.caller_session.start
     end
-
+    
     it "places the caller in a new conference if there is no voter in progress" do
       caller_session.update_attribute(:voter_in_progress, nil)
       post :gather_response, :id => caller.id, :session_id => caller_session.id
       response.body.should == caller_session.start
     end
+    
+    it "ask caller to choose voter if campaign type is either preview or progressive" do
+      phones_only_caller = Factory(:caller, :is_phones_only => true)
+      campaign_preview = Factory(:campaign, :account => account, :robo => false, :use_web_ui => true, :script => script, :predictive_type => "preview")
+      caller_session2 = Factory(:caller_session, :campaign => campaign_preview, :session_key => "some_key", :caller => phones_only_caller, :available_for_call => true, :on_call => true)
+      post :gather_response, :id => phones_only_caller.id, :session_id => caller_session2.id, :question_id => first_question.id, :Digits => "1"
+      response.body.should == caller_session2.ask_caller_to_choose_voter
+    end
+    
 
     it "hangs up if the caller_session is disconnected" do
       caller_session.update_attributes(:available_for_call => false, :on_call => false)
       post :gather_response, :id => caller.id, :session_id => caller_session.id
       response.body.should == Twilio::Verb.hangup
     end
-
 
   end
 end
