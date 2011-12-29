@@ -567,8 +567,10 @@ class Campaign < ActiveRecord::Base
     if dials_made.size == 0 || !abandon_rate_acceptable?
       num_to_call= callers_available_for_call.length
     else
-      #actually call num_to_call_predictive_simulate
-      num_to_call= callers_available_for_call.length
+      num_to_call= num_to_call_predictive_simulate
+      if num_to_call <= 0
+        num_to_call = callers_available_for_call.length
+      end
     end
   end
 
