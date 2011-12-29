@@ -205,7 +205,7 @@ describe CallerSession do
       voter = Factory(:voter, :campaign => campaign)
       caller_session = Factory(:caller_session, :caller => caller, :campaign => campaign)
       campaign.stub!(:time_period_exceed?).and_return(false)
-      caller_session.start.should == Twilio::Verb.new do |v|
+      caller_session.ask_caller_to_choose_voter.should == Twilio::Verb.new do |v|
         v.gather(:numDigits => 1, :timeout => 10, :action => choose_voter_caller_url(self.caller, :session => caller_session, :host => Settings.host, :port => Settings.port, :voter => voter), :method => "POST", :finishOnKey => "5") do
           v.say "#{voter.FirstName}  #{voter.LastName}. Press * to dial or # to skip."
         end
@@ -217,7 +217,7 @@ describe CallerSession do
       voter = Factory(:voter, :FirstName => "first name", :LastName => "last name", :campaign => campaign)
       caller_session = Factory(:caller_session, :caller => caller, :campaign => campaign)
       campaign.stub!(:time_period_exceed?).and_return(false)
-      caller_session.start.should == Twilio::Verb.new do |v|
+      caller_session.ask_caller_to_choose_voter.should == Twilio::Verb.new do |v|
         v.say "#{voter.FirstName}  #{voter.LastName}." 
         v.redirect(phones_only_progressive_caller_url(caller, :session_id => caller_session.id, :voter_id => voter.id, :host => Settings.host, :port => Settings.port), :method => "POST")
       end.response
@@ -228,7 +228,7 @@ describe CallerSession do
       campaign.stub!(:time_period_exceed?).and_return(false)
       voter = Factory(:voter, :FirstName => "first name", :LastName => "last name", :campaign => campaign, :status => "Call completed with success.")
       caller_session = Factory(:caller_session, :caller => caller, :campaign => campaign)
-      caller_session.start.should == Twilio::Verb.new { |v| v.say I18n.t(:campaign_has_no_more_voters) }.response
+      caller_session.ask_caller_to_choose_voter.should == Twilio::Verb.new { |v| v.say I18n.t(:campaign_has_no_more_voters) }.response
     end
   end
 

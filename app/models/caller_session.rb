@@ -86,8 +86,6 @@ class CallerSession < ActiveRecord::Base
     wrapup
     if campaign.time_period_exceed?
       time_exceed_hangup
-    elsif (caller.is_phones_only? && (campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE))
-      ask_caller_to_choose_voter
     else
       response = Twilio::Verb.new do |v|
         v.dial(:hangupOnStar => true, :action => caller_response_path) do

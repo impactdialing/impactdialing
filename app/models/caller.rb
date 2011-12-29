@@ -23,6 +23,10 @@ class Caller < ActiveRecord::Base
     end
     self.pin = uniq_pin
   end
+  
+  def is_phones_only_and_preview_or_progressive?(campaign)
+    is_phones_only? and (campaign.predictive_type == Campaign::Type::PREVIEW or campaign.predictive_type == Campaign::Type::PROGRESSIVE)
+  end
 
   class << self
     include Rails.application.routes.url_helpers
@@ -60,6 +64,28 @@ class Caller < ActiveRecord::Base
   
   def info
     attributes.reject { |k, v| (k == "created_at") ||(k == "updated_at") }
+  end
+  
+  def ask_instructions_choice(caller_session)
+    Twilio::Verb.new do |v|
+      v.gather(:numDigits => 1, :timeout => 10, :action => choose_instructions_option_caller_url(self, :session => caller_session, :host => Settings.host, :port => Settings.port), :method => "POST", :finishOnKey => "5") do
+        v.say "Press * to begin dialing or # for instructions."
+      end
+    end.response
+  end
+  
+  def instruction_choice_result(caller_choice, caller_session)
+    if caller_choice == "*"
+      is_phones_only_and_preview_or_progressive?(caller_session.campaign) ? caller_session.ask_caller_to_choose_voter : caller_session.start
+    elsif caller_choice == "#"
+      Twilio::Verb.new do |v|
+        v.gather(:numDigits => 1, :timeout => 10, :action => choose_instructions_option_caller_url(self, :session => caller_session, :host => Settings.host, :port => Settings.port), :method => "POST", :finishOnKey => "5") do
+          v.say I18n.t(:phones_only_caller_instructions)
+        end
+      end.response
+    else
+      ask_instructions_choice(caller_session)
+    end
   end
   
   def choice_result(caller_choice, voter, caller_session)
