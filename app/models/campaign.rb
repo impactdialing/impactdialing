@@ -460,7 +460,7 @@ class Campaign < ActiveRecord::Base
     dials_made = call_attempts.between(10.minutes.ago, Time.now)
     calls_wrapping_up = dials_made.with_status(CallAttempt::Status::SUCCESS).not_wrapped_up
     active_call_attempts = dials_made.with_status(CallAttempt::Status::INPROGRESS)
-    active_call_attempts << calls_wrapping_up unless calls_wrapping_up.empty?
+    active_call_attempts.concat(calls_wrapping_up) unless calls_wrapping_up.empty?
     dials_answered = dials_made.with_status(CallAttempt::Status::ANSWERED)
     dials_answered_finished = dials_made.with_status(CallAttempt::Status::SUCCESS).where('wrapup_time is not null')
     dials_required = dials_made.empty? ? 0 : ((simulated_values.alpha * dials_made.size) / dials_answered.size)

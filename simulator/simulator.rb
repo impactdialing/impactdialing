@@ -80,9 +80,9 @@ def simulate(campaign_id)
   recent_call_attempts = call_attempts.where(:status => "Call completed with success.").map{|attempt| OpenStruct.new(:length => attempt.duration, :counter => 0)}
 
   ActiveRecord::Base.logger.info call_attempts.map(&:status)
+  ActiveRecord::Base.logger.info recent_call_attempts.size
   recent_dials = call_attempts.map{|attempt| OpenStruct.new(:length => attempt.ringing_duration, :counter => 0, :answered? => attempt.status == 'Call completed with success.') }
-  ActiveRecord::Base.logger.info recent_call_attempts
-  ActiveRecord::Base.logger.info recent_dials
+  ActiveRecord::Base.logger.info recent_dials.size
 
   alpha = 0.01
   beta = 0.0
@@ -95,7 +95,8 @@ def simulate(campaign_id)
     SimulatedValues.find_or_create_by_campaign_id(campaign_id, :alpha => best_alpha, :beta => best_beta)
     return
   end
-
+   p "recent call attempts", recent_call_attempts
+  p "recent dials", recent_dials
   while beta < 1
     idle_time = 0
     active_time = 0
@@ -136,19 +137,23 @@ def simulate(campaign_id)
           dial.counter += 1
         end
       end
-
       dials_made = finished_dials.select{|dial| dial.counter < start_time}
       dials_answered = dials_made.select(&:answered?)
-      mean_call_length = average(dials_made.map(&:length))
-      dials_needed = dials_made.empty? ? 0 : ((alpha * dials_made.size).to_f / dials_answered.size)
-      longest_call_length = dials_made.empty? ? 10.minutes : dials_made.map(&:length).inject(dials_made.first.length){|champion, challenger| [champion, challenger].max}
+      mean_call_length = average(finished_call_attempts.map(&:length))
+      dials_needed = dials_answered.empty? ? 0 : ((alpha * dials_made.size).to_f / dials_answered.size)
+      longest_call_length = finished_call_attempts.empty? ? 10.minutes : finished_call_attempts.map(&:length).inject(finished_call_attempts.first.length){|champion, challenger| [champion, challenger].max}
       expected_call_length = (1 - beta) * mean_call_length + beta * longest_call_length
       available_callers = caller_statuses.select(&:available?).size +
         active_call_attempts.select{|call_attempt| call_attempt.counter > expected_call_length}.size -
         active_call_attempts.select{|call_attempt| call_attempt.counter > longest_call_length}.size
       ringing_lines = active_dials.size
+      p "dials needed"
+      p dials_needed
+      p "available callers"
+      p available_callers
       dials_to_make = (dials_needed * available_callers) - ringing_lines
-
+      p "dials_to make"
+      p dials_to_make
       dials_to_make.times{ active_dials << recent_dials[rand(recent_dials.size)] }
       idle_time += caller_statuses.select(&:available?).size
       active_time += caller_statuses.select(&:unavailable?).size
@@ -188,6 +193,7 @@ end
 
 loop do
   begin
+    p "start simulator"
     CallerSession.where(:on_call => true).tap{|sessions| ActiveRecord::Base.logger.info sessions.size}.each do |c|
       simulate(c.campaign_id)
     end
