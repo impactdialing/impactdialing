@@ -97,7 +97,7 @@ while beta < 1
 
     mean_conversation = the mean length of elements in finished dials with counters < start_time
 
-    longest_conversation = the length of the longest element in finished+dials with counters < start_time
+    longest_conversation = the length of the longest element in finished_dials with counters < start_time
 
     expected_conversation = ( 1 - beta ) * mean_conversation + beta * longest_conversation
 
