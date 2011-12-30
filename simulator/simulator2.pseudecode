@@ -1,0 +1,146 @@
+target_abandonment = externally-defined target abandonment rate
+start_time = number of seconds ago to start simulating; for now, 600
+simulator_length = number of seconds to simulate; for now 3,600
+
+caller_status = [ an array of length equal to the number of callers on the system with all values “available” ]
+
+# at first, it looks like this [ “available”, “available”, … ]
+observed_conversations = [ an array of arrays of the lengths of conversations that occurred after start_time, and a counter set to 0 ]
+
+# example: observed_conversations = [ [ 45, 0 ], [ 5, 0 ], [ 63, 0 ], ... ]
+observed_dials = [ an of array of arrays of all the lengths of the dials that occurred after start_time, a counter set to 0, and their status ]
+
+# example: observed_dials = [ [ 9, 0, answered ], [ 15, 0, unanswered ], [ 12, 0, answered ] … ]
+
+mean_conversation = the mean of the observed conversations
+longest_conversation = the longest observed conversation
+
+expected_conversation = mean_conversation
+dials_needed = 1
+
+best_dials = 1
+best_conversation = longest_conversation
+best_utilization = 0
+
+while expected_conversation < longest_conversation
+
+  idle_time = 0
+
+  active_time = 0
+
+  active_dials = [ ]
+
+  finished_dials = [ ]
+
+  active_conversations = [ ]
+
+  finished_conversations = [ ]
+
+  t = 0
+
+  while t <= simulator_length
+
+    for each element in active_conversations
+
+      if its counter = its length
+
+        change status of 1 caller to available
+
+        move that element to finished_conversations
+
+        reset its counter to 0
+
+      else
+
+        increment its counter by 1
+
+      end
+
+    end
+
+    for each element in active_dials
+
+      if the elapsed time = its length
+
+        if its outcome is “answered”
+
+          if a caller is available
+
+            change the status of that caller to unavailable
+
+            copy one element from observed_conversations to active_conversations
+
+          else
+
+            increment abandon_count
+
+          end
+
+        end
+
+        move that element to finished_dials
+
+        reset its counter to 0
+
+      else
+
+        increment its elapsed time by 1
+
+      end
+
+    end
+
+    # simulated dialer
+
+    available_callers = number of elements in caller_status array “available” + number of elements in active_conversations with counters > expected_conversation - number of elements in active_conversations with counters > than longest_conversation
+
+    ringing_lines = number of elements in active_dials
+
+    dials_to_make = ( dials_needed * available_callers ) - ringing_lines
+
+    copy dials_to_make elements from observed_dials to active_dials
+
+    increment idle_time by the number of available callers
+
+    increment active_time by the number of unavailable callers
+
+    increment the counters of all elements in finished_dials
+
+    increment the counters of all elements in finished_conversations
+
+    increment t
+
+  end
+
+  simulated_abandonment = abandon_count / number of elements in finished_calls with status “answered”
+
+  if simulated_abandonment <= target_abandonment
+
+    utilization = active_time / ( active_time + idle_time )
+
+    if utilization > best_utilization
+
+      best_dials = dials_needed
+
+      best_conversation = expected_conversation
+
+    end
+
+  end
+
+  increment = 10 #the higher this value, the more accurate the simulation, but the slower it runs
+
+  answer_ratio = number of elements in observed_dials / number of elements in observed_dials with status "answered"
+
+  if dials_needed < answer_ratio
+
+    increment alpha by ( answer_ratio / increment )
+
+  else
+
+    dials_needed = 1
+
+    increment expected_conversation by ( ( longest_conversation - mean_conversation ) / increment )
+
+  end
+end

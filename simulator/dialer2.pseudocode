@@ -1,0 +1,7 @@
+get longest_conversation, expected_conversation, and dials_needed from simulator
+
+available_callers = number of callers on hold + number calls of length > expected_conversation - number of calls of length > than longest_conversation
+
+ringing_lines = number of currently ringing lines
+
+dials_to_make = ( dials_needed * available_callers ) - ringing_lines
