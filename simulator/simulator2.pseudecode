@@ -12,14 +12,17 @@ observed_dials = [ an of array of arrays of all the lengths of the dials that oc
 
 # example: observed_dials = [ [ 9, 0, answered ], [ 15, 0, unanswered ], [ 12, 0, answered ] … ]
 
-alpha = .01
-beta = 0
+mean_conversation = the mean of the observed conversations
+longest_conversation = the longest observed conversation
 
-best_alpha = .01
-best_beta = 1
+expected_conversation = mean_conversation
+dials_needed = 1
+
+best_dials = 1
+best_conversation = longest_conversation
 best_utilization = 0
 
-while beta < 1
+while expected_conversation < longest_conversation
 
   idle_time = 0
 
@@ -89,18 +92,6 @@ while beta < 1
 
     # simulated dialer
 
-    dials_made = number of elements in finished_dials with counters < start_time
-
-    dials_answered = number of elements in finished_dials with counters < start_time with status “answered”
-
-    dials_needed = alpha * dials_made / dials_answered
-
-    mean_conversation = the mean length of elements in finished dials with counters < start_time
-
-    longest_conversation = the length of the longest element in finished+dials with counters < start_time
-
-    expected_conversation = ( 1 - beta ) * mean_conversation + beta * longest_conversation
-
     available_callers = number of elements in caller_status array “available” + number of elements in active_conversations with counters > expected_conversation - number of elements in active_conversations with counters > than longest_conversation
 
     ringing_lines = number of elements in active_dials
@@ -129,23 +120,27 @@ while beta < 1
 
     if utilization > best_utilization
 
-      best_alpha = alpha
+      best_dials = dials_needed
 
-      best_beta = beta
+      best_conversation = expected_conversation
 
     end
 
   end
 
-  if alpha < 1
+  increment = 10 #the higher this value, the more accurate the simulation, but the slower it runs
 
-    increment alpha by .01
+  answer_ratio = number of elements in observed_dials / number of elements in observed_dials with status "answered"
+
+  if dials_needed < answer_ratio
+
+    increment alpha by ( answer_ratio / increment )
 
   else
 
-    alpha = .01
+    dials_needed = 1
 
-    increment beta by .01
+    increment expected_conversation by ( ( longest_conversation - mean_conversation ) / increment )
 
   end
 end
