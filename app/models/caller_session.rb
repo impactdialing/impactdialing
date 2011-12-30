@@ -113,11 +113,15 @@ class CallerSession < ActiveRecord::Base
   end
   
   def ask_caller_to_choose_voter(voter = nil, caller_choice = nil)
-    voter ||= campaign.next_voter_in_dial_queue
-    if voter.present?
-      campaign.predictive_type == Campaign::Type::PREVIEW ? say_voter_name_ask_caller_to_choose_voter(voter, caller_choice) : say_voter_name_and_call(voter)
+    if campaign.time_period_exceed?
+      time_exceed_hangup 
     else
-      response = Twilio::Verb.new { |v| v.say I18n.t(:campaign_has_no_more_voters) }.response
+      voter ||= campaign.next_voter_in_dial_queue
+      if voter.present?
+        campaign.predictive_type == Campaign::Type::PREVIEW ? say_voter_name_ask_caller_to_choose_voter(voter, caller_choice) : say_voter_name_and_call(voter)
+      else
+        response = Twilio::Verb.new { |v| v.say I18n.t(:campaign_has_no_more_voters) }.response
+      end
     end
   end
 
