@@ -74,7 +74,7 @@ def simulator_campaign_base_values(campaign_id, start_time)
   call_attempts_from_start_time = campaign.call_attempts.between(start_time.seconds.ago, Time.now)
   observed_conversations = call_attempts_from_start_time.where(:status => "Call completed with success.").map{|attempt| OpenStruct.new(:length => attempt.duration_wrapped_up, :counter => 0)}
   observed_dials = call_attempts_from_start_time.map{|attempt| OpenStruct.new(:length => attempt.ringing_duration, :counter => 0, :answered? => attempt.status == 'Call completed with success.') }
-  puts observed_conversations
+  ActiveRecord::Base.logger.info observed_conversations
   
   unless observed_conversations.blank?
     mean_conversation = average(observed_conversations.map(&:length))
@@ -87,12 +87,12 @@ def simulator_campaign_base_values(campaign_id, start_time)
   expected_conversation = mean_conversation
   best_conversation = longest_conversation
   
-  puts "Expected Conversation: #{expected_conversation}"
-  puts "Longest Conversation: #{longest_conversation}"    
-  puts "Available Callers: #{caller_statuses.length}"
-  puts "Observed Conversations: #{observed_conversations.length}"
-  puts "Observed Dials: #{observed_dials.length}"
-  puts "Answered Observed Dials: #{observed_dials.count(&:answered?)}"
+  ActiveRecord::Base.logger.info "Expected Conversation: #{expected_conversation}"
+  ActiveRecord::Base.logger.info "Longest Conversation: #{longest_conversation}"    
+  ActiveRecord::Base.logger.info "Available Callers: #{caller_statuses.length}"
+  ActiveRecord::Base.logger.info "Observed Conversations: #{observed_conversations.length}"
+  ActiveRecord::Base.logger.info "Observed Dials: #{observed_dials.length}"
+  ActiveRecord::Base.logger.info "Answered Observed Dials: #{observed_dials.count(&:answered?)}"
   
   [expected_conversation, mean_conversation, longest_conversation, best_conversation, caller_statuses, observed_conversations, observed_dials]
   
@@ -161,9 +161,9 @@ def simulate(campaign_id)
       finished_conversations.each{|call_attempt| call_attempt.counter += 1}
       t += 1     
       
-      puts "Number of Available Caller: #{available_callers}"                        
-      puts "Number of Active Dials: #{ringing_lines}"
-      puts "Dials to make: #{dials_to_make}"
+      ActiveRecord::Base.logger.info "Number of Available Caller: #{available_callers}"                        
+      ActiveRecord::Base.logger.info "Number of Active Dials: #{ringing_lines}"
+      ActiveRecord::Base.logger.info "Dials to make: #{dials_to_make}"
    end
    
    finished_conversations_answered_count = finished_conversations.count(&:answered?)
@@ -179,8 +179,8 @@ def simulate(campaign_id)
    increment = 10.0
 
    answer_ratio =  observed_dials.size  / observed_dials.count(&:answered?)
-   puts "Dials Needed: #{dials_needed}"
-   puts "Answer ratio: #{answer_ratio}"
+   ActiveRecord::Base.logger.info "Dials Needed: #{dials_needed}"
+   ActiveRecord::Base.logger.info "Answer ratio: #{answer_ratio}"
    if dials_needed < answer_ratio
 
      dials_needed += (answer_ratio - 1)/ increment
@@ -189,11 +189,11 @@ def simulate(campaign_id)
      expected_conversation += ((longest_conversation - mean_conversation) /increment)
    end
    
-   puts "Dials Needed: #{dials_needed}"
-   puts "Expected Conversations Time: #{expected_conversation}"
+   ActiveRecord::Base.logger.info "Dials Needed: #{dials_needed}"
+   ActiveRecord::Base.logger.info "Expected Conversations Time: #{expected_conversation}"
   end  
-  puts "Best Dials: #{best_dials}"
-  puts "Best Conversation: #{best_conversation}"
-  puts "Longest Conversation: #{longest_conversation}"
+  ActiveRecord::Base.logger.info "Best Dials: #{best_dials}"
+  ActiveRecord::Base.logger.info "Best Conversation: #{best_conversation}"
+  ActiveRecord::Base.logger.info "Longest Conversation: #{longest_conversation}"
   SimulatedValues.find_or_create_by_campaign_id(campaign_id).update_attributes(best_dials: best_dials, best_conversation: best_conversation, longest_conversation: longest_conversation)
 end
