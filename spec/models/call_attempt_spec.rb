@@ -18,7 +18,8 @@ describe CallAttempt do
 
   it "rounds up the duration to the nearest minute" do
     now = Time.now
-    call_attempt = Factory(:call_attempt, :call_start => now, :call_end => now + 2.minutes + 30.seconds)
+    call_attempt = Factory(:call_attempt, :call_start => Time.now, :call_end => (Time.now + 150.seconds))
+    Time.stub(:now).and_return(now + 150.seconds)
     call_attempt.duration_rounded_up.should == 3
   end
 
