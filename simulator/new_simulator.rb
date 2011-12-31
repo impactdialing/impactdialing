@@ -197,3 +197,23 @@ def simulate(campaign_id)
   ActiveRecord::Base.logger.info "Longest Conversation: #{longest_conversation}"
   SimulatedValues.find_or_create_by_campaign_id(campaign_id).update_attributes(best_dials: best_dials, best_conversation: best_conversation, longest_conversation: longest_conversation)
 end
+
+loop do
+  begin
+    p "start simulator"
+    logged_in_campaigns = ActiveRecord::Base.connection.execute("select distinct campaign_id from caller_sessions where on_call=1")
+    puts logged_in_campaigns.length
+    logged_in_campaigns.each do
+      
+      simulate(c.campaign_id)
+    end
+    sleep 3
+  rescue Exception => e
+    if e.class == SystemExit || e.class == Interrupt
+      ActiveRecord::Base.logger.info "============ EXITING  ============"
+      exit
+    end
+    ActiveRecord::Base.logger.info "Rescued - #{ e } (#{ e.class })!"
+    ActiveRecord::Base.logger.info e.backtrace
+  end
+end
