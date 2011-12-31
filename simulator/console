@@ -1,0 +1,74 @@
+Script started on Fri Dec 30 10:53:29 2011
+bash-3.2$ cd pro[K[K[Kpro[K[K[K[K[K[Kpwd [K[Kd 
+/Users/nikhil/projects/work/Impact-Dialing/simulator
+bash-3.2$ ls
+Gemfile			activeData.csv		database.yml.sample	outgoingData.csv	simulator.rb		simulator_control.rb
+Gemfile.lock		console			dialer2.pseudocode	simulator.pseudecode	simulator2.pseudecode	simulator_spec.rb
+bash-3.2$ cd ..
+bash-3.2$ ls
+1359891.pem	1909186423.pem	Capfile		Gemfile.lock	Procfile	Rakefile	bin		config		coverage	doc		lib		public		rsa_key.pub	simulator	tmp
+1383715.pem	1909897530.pem	Gemfile		Guardfile	README		app		cacert.pem	config.ru	db		import.rb	log		rsa_key		script		spec		vendor
+bash-3.2$ rails console
+Loading development environment (Rails 3.0.10)
+ruby-1.9.2-p180 :001 > Callattempt.create(created_at: Time.now - 1.day.ago)
+NameError: uninitialized constant Callattempt
+	from /Users/nikhil/.rvm/gems/ruby-1.9.2-p180@impact-dialing/gems/aws-s3-0.6.2/lib/aws/s3/extensions.rb:206:in `const_missing_from_s3_library'
+	from (irb):1
+	from /Users/nikhil/.rvm/gems/ruby-1.9.2-p180@impact-dialing/gems/railties-3.0.10/lib/rails/commands/console.rb:44:in `start'
+	from /Users/nikhil/.rvm/gems/ruby-1.9.2-p180@impact-dialing/gems/railties-3.0.10/lib/rails/commands/console.rb:8:in `start'
+	from /Users/nikhil/.rvm/gems/ruby-1.9.2-p180@impact-dialing/gems/railties-3.0.10/lib/rails/commands.rb:23:in `<top (required)>'
+	from script/rails:6:in `require'
+	from script/rails:6:in `<main>'
+ruby-1.9.2-p180 :002 > Callattempt.create(created_at: Time.now - 1.day.ago)[Pt[4hA[4lt
+ => #<CallAttempt id: 1, voter_id: nil, sid: nil, status: nil, campaign_id: nil, call_start: nil, call_end: nil, caller_id: nil, connecttime: nil, caller_session_id: nil, caller_hold_time: nil, created_at: 86399.99995, updated_at: "2011-12-30 05:34:22", result: nil, result_digit: nil, tCallSegmentSid: nil, tAccountSid: nil, tCalled: nil, tCaller: nil, tPhoneNumberSid: nil, tStatus: nil, tDuration: nil, tFlags: nil, tStartTime: nil, tEndTime: nil, tPrice: nil, answertime: nil, dialer_mode: nil, result_json: nil, scheduled_date: nil, recording_url: nil, recording_duration: nil, wrapup_time: nil> 
+ruby-1.9.2-p180 :003 > CallAttempt.create(created_at: Time.now - 1.day.ago))[K)[K)[K)[K)[K)[K)[K)[K)[K)[K)[K)[K
+ => #<CallAttempt id: 2, voter_id: nil, sid: nil, status: nil, campaign_id: nil, call_start: nil, call_end: nil, caller_id: nil, connecttime: nil, caller_session_id: nil, caller_hold_time: nil, created_at: "2011-12-30 05:34:49", updated_at: "2011-12-30 05:34:49", result: nil, result_digit: nil, tCallSegmentSid: nil, tAccountSid: nil, tCalled: nil, tCaller: nil, tPhoneNumberSid: nil, tStatus: nil, tDuration: nil, tFlags: nil, tStartTime: nil, tEndTime: nil, tPrice: nil, answertime: nil, dialer_mode: nil, result_json: nil, scheduled_date: nil, recording_url: nil, recording_duration: nil, wrapup_time: nil> 
+ruby-1.9.2-p180 :004 > CallAttempt.create(created_at: Time.now) - 1.day.ago)))[4h([4lT
+ => #<CallAttempt id: 3, voter_id: nil, sid: nil, status: nil, campaign_id: nil, call_start: nil, call_end: nil, caller_id: nil, connecttime: nil, caller_session_id: nil, caller_hold_time: nil, created_at: 86399.999975, updated_at: "2011-12-30 05:35:12", result: nil, result_digit: nil, tCallSegmentSid: nil, tAccountSid: nil, tCalled: nil, tCaller: nil, tPhoneNumberSid: nil, tStatus: nil, tDuration: nil, tFlags: nil, tStartTime: nil, tEndTime: nil, tPrice: nil, answertime: nil, dialer_mode: nil, result_json: nil, scheduled_date: nil, recording_url: nil, recording_duration: nil, wrapup_time: nil> 
+ruby-1.9.2-p180 :005 > CallAttempt.create(created_at: (Time.now - 1.day.ago)).)t)o)_)t)i)m)e)
+NoMethodError: undefined method `to_time' for 86399.999981:Float
+	from (irb):5
+	from /Users/nikhil/.rvm/gems/ruby-1.9.2-p180@impact-dialing/gems/railties-3.0.10/lib/rails/commands/console.rb:44:in `start'
+	from /Users/nikhil/.rvm/gems/ruby-1.9.2-p180@impact-dialing/gems/railties-3.0.10/lib/rails/commands/console.rb:8:in `start'
+	from /Users/nikhil/.rvm/gems/ruby-1.9.2-p180@impact-dialing/gems/railties-3.0.10/lib/rails/commands.rb:23:in `<top (required)>'
+	from script/rails:6:in `require'
+	from script/rails:6:in `<main>'
+ruby-1.9.2-p180 :006 > CallAttempt.create(created_at: (Time.now - 1.day.ago).to_time))[K)[K)[K)[Kd)a)t)
+NoMethodError: undefined method `to_dat' for 86399.999986:Float
+	from (irb):6
+	from /Users/nikhil/.rvm/gems/ruby-1.9.2-p180@impact-dialing/gems/railties-3.0.10/lib/rails/commands/console.rb:44:in `start'
+	from /Users/nikhil/.rvm/gems/ruby-1.9.2-p180@impact-dialing/gems/railties-3.0.10/lib/rails/commands/console.rb:8:in `start'
+	from /Users/nikhil/.rvm/gems/ruby-1.9.2-p180@impact-dialing/gems/railties-3.0.10/lib/rails/commands.rb:23:in `<top (required)>'
+	from script/rails:6:in `require'
+	from script/rails:6:in `<main>'
+ruby-1.9.2-p180 :007 > CallAttempt.create(created_at: (Time.now - 1.day.ago).to_dat)w))[Ke)
+NoMethodError: undefined method `to_date' for 86399.999987:Float
+	from (irb):7
+	from /Users/nikhil/.rvm/gems/ruby-1.9.2-p180@impact-dialing/gems/railties-3.0.10/lib/rails/commands/console.rb:44:in `start'
+	from /Users/nikhil/.rvm/gems/ruby-1.9.2-p180@impact-dialing/gems/railties-3.0.10/lib/rails/commands/console.rb:8:in `start'
+	from /Users/nikhil/.rvm/gems/ruby-1.9.2-p180@impact-dialing/gems/railties-3.0.10/lib/rails/commands.rb:23:in `<top (required)>'
+	from script/rails:6:in `require'
+	from script/rails:6:in `<main>'
+ruby-1.9.2-p180 :008 > CallAttempt.create(created_at: (Time.now - 1.day.ago).to_date)t)i)m)e)
+NoMethodError: undefined method `to_datetime' for 86399.999979:Float
+	from (irb):8
+	from /Users/nikhil/.rvm/gems/ruby-1.9.2-p180@impact-dialing/gems/railties-3.0.10/lib/rails/commands/console.rb:44:in `start'
+	from /Users/nikhil/.rvm/gems/ruby-1.9.2-p180@impact-dialing/gems/railties-3.0.10/lib/rails/commands/console.rb:8:in `start'
+	from /Users/nikhil/.rvm/gems/ruby-1.9.2-p180@impact-dialing/gems/railties-3.0.10/lib/rails/commands.rb:23:in `<top (required)>'
+	from script/rails:6:in `require'
+	from script/rails:6:in `<main>'
+ruby-1.9.2-p180 :009 > CallAttempt.create(created_at: (Time.now - 1.day.ago).to_datetime))[K)[K)[K)[K)[K)[K)[K)[K)[K)[K)[K)[K[4hD[4lT[4ha[4lT[4ht[4lT[4he[4lT
+TypeError: expected numeric or date
+	from /Users/nikhil/.rvm/rubies/ruby-1.9.2-p180/lib/ruby/1.9.1/date.rb:1356:in `-'
+	from /Users/nikhil/.rvm/gems/ruby-1.9.2-p180@impact-dialing/gems/activesupport-3.0.10/lib/active_support/core_ext/date/calculations.rb:98:in `minus_with_duration'
+	from (irb):9
+	from /Users/nikhil/.rvm/gems/ruby-1.9.2-p180@impact-dialing/gems/railties-3.0.10/lib/rails/commands/console.rb:44:in `start'
+	from /Users/nikhil/.rvm/gems/ruby-1.9.2-p180@impact-dialing/gems/railties-3.0.10/lib/rails/commands/console.rb:8:in `start'
+	from /Users/nikhil/.rvm/gems/ruby-1.9.2-p180@impact-dialing/gems/railties-3.0.10/lib/rails/commands.rb:23:in `<top (required)>'
+	from script/rails:6:in `require'
+	from script/rails:6:in `<main>'
+ruby-1.9.2-p180 :010 > CallAttempt.create(created_at: (DateTime.now - 1.day.ago))[K)[K)[K)[K)[K)[K)[K)[K)[K)[K)[K)[K)[K)[K)[K)[K)[K)[K)[K)[K)[K)[K)[K)[K)[K)[KT)i)m)e).)a)t)()0)))
+ => #<CallAttempt id: 4, voter_id: nil, sid: nil, status: nil, campaign_id: nil, call_start: nil, call_end: nil, caller_id: nil, connecttime: nil, caller_session_id: nil, caller_hold_time: nil, created_at: "1970-01-01 00:00:00", updated_at: "2011-12-30 05:36:16", result: nil, result_digit: nil, tCallSegmentSid: nil, tAccountSid: nil, tCalled: nil, tCaller: nil, tPhoneNumberSid: nil, tStatus: nil, tDuration: nil, tFlags: nil, tStartTime: nil, tEndTime: nil, tPrice: nil, answertime: nil, dialer_mode: nil, result_json: nil, scheduled_date: nil, recording_url: nil, recording_duration: nil, wrapup_time: nil> 
+ruby-1.9.2-p180 :011 > CallAttempt.create(created_at: Time.at(0))
+ => #<CallAttempt id: 5, voter_id: nil, sid: nil, status: nil, campaign_id: nil, call_start: nil, call_end: nil, caller_id: nil, connecttime: nil, caller_session_id: nil, caller_hold_time: nil, created_at: "1970-01-01 00:00:00", updated_at: "2011-12-30 05:36:23", result: nil, result_digit: nil, tCallSegmentSid: nil, tAccountSid: nil, tCalled: nil, tCaller: nil, tPhoneNumberSid: nil, tStatus: nil, tDuration: nil, tFlags: nil, tStartTime: nil, tEndTime: nil, tPrice: nil, answertime: nil, dialer_mode: nil, result_json: nil, scheduled_date: nil, recording_url: nil, recording_duration: nil, wrapup_time: nil> 
+ruby-1.9.2-p180 :012 > CallAttempt.create(created_at: Time.at(0))
