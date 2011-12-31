@@ -200,7 +200,6 @@ end
 
 loop do
   begin
-    p "start simulator"
     logged_in_campaigns = ActiveRecord::Base.connection.execute("select distinct campaign_id from caller_sessions where on_call=1")
     puts logged_in_campaigns.length
     logged_in_campaigns.each do
