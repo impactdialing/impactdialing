@@ -31,8 +31,9 @@ class CallAttempt < ActiveRecord::Base
 
   def duration
     return nil unless call_start
-    ((call_end || Time.now) - self.call_start).to_i
+    ((call_end || Time.now) - call_start).to_i
   end
+    
 
   def duration_wrapped_up
     ((wrapup_time || Time.now) - self.call_start).to_i
