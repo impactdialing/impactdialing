@@ -48,13 +48,21 @@ module Client
       end
     end
     
-    def update      
-      @script = account.scripts.find_by_id(params[:id])
-      params[:script][:voter_fields] =  params[:voter_field] ? params[:voter_field].to_json : nil
-      if @script.update_attributes(params[:script])
-        flash_message(:notice, "Script updated")
-        redirect_to :action=>"index"          
-      else
+    def update
+      params[:script][:voter_fields] =  params[:voter_field] ? params[:voter_field].to_json : nil 
+      begin
+        params[:save_as] ? save_as : @script = account.scripts.find_by_id(params[:id])
+        
+        if params[:save_as] 
+          redirect_to client_script_path(@script)
+        elsif !params[:save_as] && @script.update_attributes(params[:script])
+          flash_message(:notice, "Script updated")
+          redirect_to :action=>"index"        
+        else
+          render :action=>"new"   
+        end
+      rescue Exception => e 
+        flash_message(:notice, "Script not saved. Error:" + e.message)
         render :action=>"new"   
       end
     end
@@ -64,6 +72,33 @@ module Client
       @script.update_attributes(:active => false)
       flash_message(:notice, "Script deleted")
       redirect_to :action => "index"
+    end
+    
+    private
+    
+    def save_as
+      puts params[:script][:questions_attributes]
+      @script = Script.new(:name => "", :active => true, :account => @user.account, :script => params[:script][:script], :voter_fields => params[:script][:voter_fields])
+      @script.save(:validate => false)
+      params[:script][:questions_attributes].each_value.each do |q|
+        if q[:_destroy] == "false"
+          question = @script.questions.new(:text => q[:text])
+          question.save!
+          q[:possible_responses_attributes].each_value.each do |ps|
+            puts ps[:_destroy]
+            if ps[:_destroy] == "false"
+              possible_response = question.possible_responses.new(:value => ps[:value], :keypad => ps[:keypad], :retry => ps[:retry])
+              possible_response.save!
+            end
+          end
+        end
+      end
+      params[:script][:notes_attributes].try(:each_value).try(:each) do |n|
+        if n[:_destroy] == "false"
+          note = @script.notes.new(:note => n[:note])
+          note.save!
+        end
+      end
     end
     
   end
