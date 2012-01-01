@@ -12,24 +12,24 @@ def simulator_test
                               :recycle_rate => 1, :start_time => Time.new(2011,1,1,1,0,0), :end_time => Time.new(2011,1,1,23,0,0),
                               :time_zone => "Pacific Time (US & Canada)", :acceptable_abandon_rate => 0.1})
   25.times{CallerSession.create(:available_for_call => true, :on_call => true, :campaign_id => campaign.id)}
-  call_time = 8.minutes.ago
+  call_time = 6.minutes.ago
   connect_times = []
   answer_statuses = []
   conversation_times = []
 
-  CSV.foreach('/home/preethi/callCenter/outgoingData.csv') do |row|
+  CSV.foreach('outgoingData.csv') do |row|
     connect_times << row[0].to_i
     answer_statuses << row[1].to_i
   end
 
-  CSV.foreach('/home/preethi/callCenter/activeData.csv') do |row|
+  CSV.foreach('activeData.csv') do |row|
     conversation_times << row[0].to_i
   end
 
 
   connect_times.size.times do |index|
     created_at = call_time - connect_times[index]
-    wrapup_time = call_time + 5
+    wrapup_time = call_time + 5.seconds
     start_time = connect_time = call_time
     if answer_statuses[index] == 1
       call_status = CallAttempt::Status::SUCCESS

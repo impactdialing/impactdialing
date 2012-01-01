@@ -172,21 +172,105 @@ describe "simulation_dialer" do
     num_to_call.should eq(caller_sessions.size)
   end
 
-  it "should determine calls to make give the simulated alpha and beta values" do
-    simulated_values = SimulatedValues.create(:alpha => 0.5, :beta => 0.8)
+  it "should determine calls to make give the simulated best_dials when call_attempts prior int the last 10 mins are present" do
+    simulated_values = SimulatedValues.create(best_dials: 2.33345, best_conversation: 34.0076, longest_conversation: 42.0876)
     campaign = Factory(:campaign, :simulated_values => simulated_values)
+    
     10.times {Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true )}
-    25.times {Factory(:call_attempt, :campaign => campaign, :call_start => 8.minutes.ago)}
     10.times {Factory(:call_attempt, :campaign => campaign, :call_start => 20.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::SUCCESS)}
-    10.times {Factory(:call_attempt, :campaign => campaign, :call_start => 10.seconds.ago, :wrapup_time => 5.seconds.ago,:status => CallAttempt::Status::SUCCESS)}
+    10.times {Factory(:call_attempt, :campaign => campaign, :call_start => 10.seconds.ago,:status => CallAttempt::Status::SUCCESS)}
+    Factory(:call_attempt, :campaign => campaign, :call_start => 35.seconds.ago,:status => CallAttempt::Status::SUCCESS)
+    Factory(:call_attempt, :campaign => campaign, :call_start => 65.seconds.ago,:status => CallAttempt::Status::SUCCESS)
     2.times {Factory(:call_attempt, :campaign => campaign, :call_start => 10.seconds.ago, :status => CallAttempt::Status::RINGING)}
     unavailable_caller_sessions = CallerSession.all[1..7]
     unavailable_caller_sessions.each {|caller_session| caller_session.update_attribute(:available_for_call, false)}
     5.times {Factory(:call_attempt, :campaign => campaign, :call_start => 5.seconds.ago, :status => CallAttempt::Status::INPROGRESS)}
     2.times {Factory(:call_attempt, :campaign => campaign, :call_start => 20.seconds.ago, :status => CallAttempt::Status::INPROGRESS)}
     calls_to_make = campaign.num_to_call_predictive_simulate
+    calls_to_make.should eq(10)
+  end
+  
+  it "should determine calls to make give the simulated best_dials when call_attempts prior int the last 10 mins are present" do
+    simulated_values = SimulatedValues.create(best_dials: 1, best_conversation: 0, longest_conversation: 0)
+    campaign = Factory(:campaign, :simulated_values => simulated_values)
+    3.times {Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true )}
+    calls_to_make = campaign.num_to_call_predictive_simulate
     calls_to_make.should eq(3)
   end
+  
+  it "should determine calls to make when no simulated values" do
+    campaign = Factory(:campaign)
+    3.times {Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true )}
+    calls_to_make = campaign.num_to_call_predictive_simulate
+    calls_to_make.should eq(3)
+  end
+  
+  describe "best dials simulated" do
+  
+    it "should return 1 as best dials if simulated_values is nil" do
+      campaign = Factory(:campaign)
+      campaign.best_dials_simulated.should eq(1)
+    end
+    
+    it "should return 1 as best dials if  best_dials simulated_values is nil" do
+      campaign = Factory(:campaign)
+      campaign.best_dials_simulated.should eq(1)
+    end
+    
+    it "should return best dials  if  best_dials simulated_values is has a value" do
+     simulated_values = SimulatedValues.create(best_dials: 1.8, best_conversation: 0, longest_conversation: 0)
+     campaign = Factory(:campaign, :simulated_values => simulated_values)
+      campaign.best_dials_simulated.should eq(2)
+    end
+    
+  
+ end
+
+  describe "best conversations simulated" do
+  
+    it "should return 0 as best conversation if simulated_values is nil" do
+      campaign = Factory(:campaign)
+      campaign.best_conversation_simulated.should eq(0)
+    end
+    
+    it "should return 0 as best conversation if best_conversation simulated_values is nil" do
+      campaign = Factory(:campaign)
+      campaign.best_conversation_simulated.should eq(0)
+    end
+    
+    it "should return best conversation if  best_conversation simulated_values is has a value" do
+     simulated_values = SimulatedValues.create(best_dials: 1.8, best_conversation: 34.34, longest_conversation: 0)
+     campaign = Factory(:campaign, :simulated_values => simulated_values)
+      campaign.best_conversation_simulated.should eq(34.34)
+    end
+    
+  
+ end
+ 
+  describe "longest conversations simulated" do
+  
+    it "should return 0 as longest conversation if simulated_values is nil" do
+      campaign = Factory(:campaign)
+      campaign.longest_conversation_simulated.should eq(0)
+    end
+    
+    it "should return 0 as longest conversation if longest_conversation simulated_values is nil" do
+      campaign = Factory(:campaign)
+      campaign.longest_conversation_simulated.should eq(0)
+    end
+    
+    it "should return longest conversation if  longest_conversation simulated_values is has a value" do
+     simulated_values = SimulatedValues.create(best_dials: 1.8, best_conversation: 34.34, longest_conversation: 67.09)
+     campaign = Factory(:campaign, :simulated_values => simulated_values)
+      campaign.longest_conversation_simulated.should eq(67.09)
+    end
+    
+ end
+ 
+  
+  
+  
+  
 
   it "determines if dialing is ramping up" do
     #less than 50 dials in the last 10 minutes

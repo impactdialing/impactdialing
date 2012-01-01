@@ -134,7 +134,7 @@ while expected_conversation < longest_conversation
 
   if dials_needed < answer_ratio
 
-    increment alpha by ( answer_ratio / increment )
+    increment dials_needed by ( ( answer_ratio - 1 ) / increment )
 
   else
 

@@ -9,12 +9,18 @@ class ApplicationController < ActionController::Base
   helper_method :phone_format, :phone_number_valid
 
   def redirect_to_ssl
-    return true if Rails.env == 'development' || Rails.env == 'heroku' || testing? || action_name=="monitor" || request.domain.index("amazonaws")
+    return true if Rails.env == 'development' || Rails.env == 'heroku_staging' || testing? || action_name=="monitor" || request.domain.index("amazonaws")
     return true if ssl?
     @cont = controller_name
     @act = action_name
     flash.keep
     if ['staging', 'preprod'].include?(request.subdomain)
+      redirect_to URI.join("https://#{request.subdomain}.#{request.domain}", request.fullpath).to_s
+    elsif ['predictive'].include?(request.subdomain)
+      redirect_to "https://#{APP_HOST}/caller"
+    elsif ['broadcast'].include?(request.subdomain)
+      redirect_to "https://#{APP_HOST}/broadcast"
+    elsif ['herokuapp'].include?(request.subdomain)
       redirect_to URI.join("https://#{request.subdomain}.#{request.domain}", request.fullpath).to_s
     elsif controller_name=="caller"
       redirect_to "https://caller.#{request.domain}/#{@cont}/#{@act}/#{params[:id]}"
