@@ -16,12 +16,12 @@ class ApplicationController < ActionController::Base
     flash.keep
     if ['staging', 'preprod'].include?(request.subdomain)
       redirect_to URI.join("https://#{request.subdomain}.#{request.domain}", request.fullpath).to_s
+    elsif Rails.env == 'heroku'
+      redirect_to URI.join("https://impactdialing.herokuapp.com", request.fullpath).to_s
     elsif ['predictive'].include?(request.subdomain)
       redirect_to "https://#{APP_HOST}/caller"
     elsif ['broadcast'].include?(request.subdomain)
       redirect_to "https://#{APP_HOST}/broadcast"
-    elsif ['herokuapp'].include?(request.subdomain)
-      redirect_to URI.join("https://#{request.subdomain}.#{request.domain}", request.fullpath).to_s
     elsif controller_name=="caller"
       redirect_to "https://caller.#{request.domain}/#{@cont}/#{@act}/#{params[:id]}"
     elsif controller_name == 'broadcast'
