@@ -679,15 +679,15 @@ describe Campaign do
   it "should give the final results of a campaign as a Hash" do
     now = Time.now
     script = Factory(:script)
+    campaign = Factory(:campaign, :script => script)
     question1 = Factory(:question, :text => "hw are u", :script => script)
     question2 = Factory(:question, :text => "wr r u", :script => script)
     possible_response1 = Factory(:possible_response, :question => question1)
     possible_response2 = Factory(:possible_response, :question => question1)
-    Factory(:answer, :voter => Factory(:voter), :possible_response => possible_response1, :question => question1, :created_at => now)
-    Factory(:answer, :voter => Factory(:voter), :possible_response => possible_response2, :question => question2, :created_at => now)
-    campaign = Factory(:campaign, :script => script)
+    Factory(:answer, :voter => Factory(:voter, :campaign => campaign), :possible_response => possible_response1, :question => question1, :created_at => now)
+    Factory(:answer, :voter => Factory(:voter, :campaign => campaign), :possible_response => possible_response2, :question => question2, :created_at => now)
+    Factory(:answer, :voter => Factory(:voter, :campaign => Factory(:campaign)), :possible_response => possible_response2, :question => question2, :created_at => now)
     campaign.answers_result(now, now).should == {"hw are u" => [{answer: "no_response", number: 1, percentage: 100}, {answer: "no_response", number: 1, percentage: 100}], "wr r u" => []}
-
   end
 
   describe "time period" do
