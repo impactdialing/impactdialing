@@ -109,10 +109,15 @@
 
           <%= f.link_to_add "Add a note", :notes, :class => "action secondary", :type => 'notes' %>
         </p>
-
+				
       </fieldset>
     <div class= "buttons">
+			<input type="checkbox" id="save_as" name="save_as" style="display:none">
       <button type="submit">Save</button>
+			<% unless @script.name.blank? %>
+				<button onclick="document.getElementById('save_as').checked = true;">Save as</button>
+			<% end %>
     </div>
 
 <% end %>
+
