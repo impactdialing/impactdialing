@@ -53,8 +53,7 @@ module Client
       begin
         params[:save_as] ? save_as : @script = account.scripts.find_by_id(params[:id])
         
-        if params[:save_as]
-          flash_message(:notice, "Please enter script name"iden.)
+        if params[:save_as] 
           redirect_to client_script_path(@script)
         elsif !params[:save_as] && @script.update_attributes(params[:script])
           flash_message(:notice, "Script updated")
@@ -63,7 +62,7 @@ module Client
           render :action=>"new"   
         end
       rescue Exception => e 
-        flash_message(:error, "Script not saved. Error:" + e.message)
+        flash_message(:notice, "Script not saved. Error:" + e.message)
         render :action=>"new"   
       end
     end
