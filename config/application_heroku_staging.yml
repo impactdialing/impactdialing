@@ -1,5 +1,5 @@
 default: &default_settings
-  host: impactdialing_staging.herokuapp.com
+  host: impactdialing-staging.herokuapp.com
   port: 80
   phone: 6502626881
 
@@ -12,12 +12,12 @@ test:
 
 heroku_staging:
   <<: *default_settings
-  host: impactdialing_staging.herokuapp.com
+  host: impactdialing-staging.herokuapp.com
   port: 80
 
 production:
   <<: *default_settings
-  host: impactdialing_staging.herokuapp.com
+  host: impactdialing-staging.herokuapp.com
   port: 80
 
 staging:
