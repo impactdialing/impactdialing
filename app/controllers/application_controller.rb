@@ -11,6 +11,8 @@ class ApplicationController < ActionController::Base
   helper_method :phone_format, :phone_number_valid
 
   def redirect_to_ssl
+    # retiring this branch - no longer do any redirects
+    return true
     return true if local_request? || RAILS_ENV == 'development' || testing? || RAILS_ENV == 'staging' || action_name=="monitor" || request.domain.index("amazonaws")
     return true if ssl?
     @cont = controller_name
