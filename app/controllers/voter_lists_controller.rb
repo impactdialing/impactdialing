@@ -29,7 +29,6 @@ class VoterListsController < ClientController
     save_csv_filename_to_session(saved_file_name)
     @separator = separator_from_file_extension(upload.original_filename)
     @csv_column_headers = CSV.parse(upload.open.readline, :col_sep => @separator).first.compact
-
     render "column_mapping", :layout => @layout
   end
 
