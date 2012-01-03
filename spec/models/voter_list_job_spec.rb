@@ -36,10 +36,6 @@ describe VoterListJob do
     describe "after import" do
       before :each do        
         @csv_filename = "valid_voters_list_#{Time.now.to_i}_#{rand(999)}"
-        File.open(Rails.root.join('tmp', @csv_filename).to_s, "w") do |f|
-            f.write(File.open("#{fixture_path}/files/valid_voters_list.csv").read)
-            f.flush
-          end
       end
       
       it "saves all the voters in the csv according to the mappings" do
@@ -48,6 +44,9 @@ describe VoterListJob do
         mailer = mock
         UserMailer.should_receive(:new).and_return(mailer)
         mailer.should_receive(:voter_list_upload)
+        s3 = mock
+        VoterList.should_receive(:read_from_s3).and_return(s3)
+        s3.should_receive(:value).and_return(File.open("#{fixture_path}/files/valid_voters_list.csv").read)
         
         job.perform
         Voter.count.should == 2
@@ -61,24 +60,28 @@ describe VoterListJob do
         mailer = mock
         UserMailer.should_receive(:new).and_return(mailer)
         mailer.should_receive(:voter_list_upload)        
+        s3 = mock
+        VoterList.should_receive(:read_from_s3).and_return(s3)
+        s3.should_receive(:value).and_return(File.open("#{fixture_path}/files/valid_voters_list.csv").read)
+        VoterList.should_receive(:delete_from_s3)
         job.perform
-        File.should_not exist(temp_filename)
       end
     end
 
     describe "custom fields" do
       it "creates previously uncreated custom columns" do
         @csv_filename = "valid_voters_list_#{Time.now.to_i}_#{rand(999)}"
-        File.open(Rails.root.join('tmp', @csv_filename).to_s, "w") do |f|
-            f.write(File.open("#{fixture_path}/files/voters_custom_fields_list.csv").read)
-            f.flush
-          end        
         custom_field = "Custom"
         Voter.delete_all
         job = VoterListJob.new(@separator,["Phone", "Custom"].to_json,{"Phone"=>"Phone", custom_field=>custom_field},@csv_filename,'abcd',@campaign.id,@account.id,nil,nil)
         mailer = mock
         UserMailer.should_receive(:new).and_return(mailer)
-        mailer.should_receive(:voter_list_upload)        
+        mailer.should_receive(:voter_list_upload)    
+        s3 = mock
+        VoterList.should_receive(:read_from_s3).and_return(s3)
+        s3.should_receive(:value).and_return(File.open("#{fixture_path}/files/voters_custom_fields_list.csv").read)
+        VoterList.should_receive(:delete_from_s3)
+            
         job.perform
         CustomVoterField.all.size.should == 1
         custom_fields = Voter.all.collect{|voter| voter.get_attribute(custom_field)}
