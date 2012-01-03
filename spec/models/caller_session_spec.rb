@@ -35,6 +35,14 @@ describe CallerSession do
     voter.caller_session.should == session
   end
 
+  it "sets an the last call attempted on a caller session as the attempt in progress" do
+    caller_session = Factory(:caller_session)
+    first_attempt = Factory(:call_attempt, :caller_session => caller_session)
+    caller_session.update_attributes(:attempt_in_progress => nil)
+    latest_attempt = Factory(:call_attempt, :caller_session => caller_session)
+    caller_session.attempt_in_progress.should == latest_attempt
+  end
+
   describe "Calling in" do
     let(:caller) { Factory(:caller) }
 

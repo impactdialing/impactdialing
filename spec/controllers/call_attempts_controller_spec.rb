@@ -123,6 +123,7 @@ describe CallAttemptsController do
       post :disconnect, :id => call_attempt.id
       response.body.should == call_attempt.hangup
       call_attempt.reload.status.should == CallAttempt::Status::SUCCESS
+      caller_session.attempt_in_progress.should == call_attempt
     end
 
     it "hangs up given a call_attempts call sid" do
