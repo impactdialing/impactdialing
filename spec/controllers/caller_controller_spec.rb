@@ -254,7 +254,8 @@ describe CallerController do
         response.body.should == @caller_session.phones_only_start
       end
     
-      it "if caller press #, skip the voter then say the next voter name and ask for option" do 
+      it "if caller press #, skip the voter then say the next voter name and ask for option" do
+        pending "sree to fix"
         next_voter = Factory(:voter, :campaign => @campaign,:FirstName => "next voter first name", :LastName => "next voter last name")
         post :choose_voter, :id => caller.id, :session => @caller_session.id, :voter => @current_voter.id, :Digits => "#"
         response.body.should == Twilio::Verb.new do |v|
