@@ -5,36 +5,6 @@ describe CallerController do
   let(:user) { Factory(:user, :account => account) }
   let(:caller) { Factory(:caller, :account => account) }
 
-  describe 'index' do
-    before(:each) do
-      login_as(caller)
-    end
-
-    it "doesn't list deleted campaigns" do
-      caller.campaigns = [(Factory(:campaign, :active => false)), Factory(:campaign, :active => true)]
-      caller.save!
-      get :index
-      assigns(:campaigns).should have(1).thing
-      assigns(:campaigns)[0].should be_active
-    end
-
-    it "doesn't list robo campaigns" do
-      caller.campaigns = [(Factory(:campaign, :active => true, :robo => false)), Factory(:campaign, :active => true, :robo => true)]
-      caller.save!
-      get :index
-      assigns(:campaigns).should have(1).thing
-      assigns(:campaigns)[0].should be_active
-    end
-
-    it "lists all campaigns for web ui" do
-      Factory(:campaign, :use_web_ui => false)
-      campaign = Factory(:campaign, :use_web_ui => true)
-      caller.campaigns << campaign
-      caller.save!
-      get :index
-      assigns(:campaigns).should eq([campaign])
-    end
-  end
 
   describe "preview dial" do
     let(:campaign) { Factory(:campaign) }
@@ -221,7 +191,7 @@ describe CallerController do
     it "finds the campaigns callers active session" do
       login_as(caller)
       campaign = Factory(:campaign)
-      Factory(:caller_campaign,:caller => caller, :campaign => campaign)
+      caller.update_attributes(:campaign_id => campaign.id)
       session = Factory(:caller_session, :caller => caller, :session_key => 'key', :on_call => true, :available_for_call => true, :campaign => campaign)
       Factory(:caller_session, :caller => caller, :session_key => 'other_key', :on_call => true, :available_for_call => true, :campaign => Factory(:campaign))
       post :active_session, :id => caller.id, :campaign_id => campaign
@@ -231,6 +201,7 @@ describe CallerController do
     it "returns no session if the caller is not connected" do
       login_as(caller)
       campaign = Factory(:campaign)
+      caller.update_attributes(:campaign_id => campaign.id)
       Factory(:caller_campaign, :caller => caller, :campaign => campaign)
       Factory(:caller_session, :caller => caller, :session_key => 'key', :on_call => false, :available_for_call => true, :campaign => campaign)
       post :active_session, :id => caller.id, :campaign_id => campaign.id
