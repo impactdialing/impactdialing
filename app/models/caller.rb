@@ -69,7 +69,7 @@ class Caller < ActiveRecord::Base
   def ask_instructions_choice(caller_session)
     Twilio::Verb.new do |v|
       v.gather(:numDigits => 1, :timeout => 10, :action => choose_instructions_option_caller_url(self, :session => caller_session, :host => Settings.host, :port => Settings.port), :method => "POST", :finishOnKey => "5") do
-        v.say "Press * to begin dialing or # for instructions."
+        v.say I18n.t(:caller_instruction_choice)
       end
     end.response
   end
