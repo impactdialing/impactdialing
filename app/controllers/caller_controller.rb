@@ -101,8 +101,8 @@ class CallerController < ApplicationController
 
   def active_session
     caller = Caller.find(params[:id])
-    campaign = caller.campaigns.find(params[:campaign_id])
-    render :json => caller.caller_sessions.available.where("campaign_id = #{campaign.id}").last || {:caller_session => {:id => nil}}
+    campaign = Campaign.find(params[:campaign_id])
+    render :json => caller.active_session(campaign).to_json
   end
 
   def preview_voter

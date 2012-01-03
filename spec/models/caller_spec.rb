@@ -150,4 +150,31 @@ describe Caller do
     Factory(:caller)
     should validate_uniqueness_of :email
   end
+
+  describe "active session" do
+    let(:caller) { Factory(:caller, :account => user.account) }
+
+    it "returns the last available caller session" do
+      campaign = Factory(:campaign)
+      campaign.callers << caller
+      session = Factory(:caller_session, :caller => caller, :session_key => 'key', :on_call => true, :available_for_call => true, :campaign => campaign)
+      caller.active_session(campaign).should == session
+    end
+
+    it "returns no session if the caller is not available" do
+      campaign = Factory(:campaign)
+      campaign.callers << caller
+      Factory(:caller_session, :caller => caller, :session_key => 'key', :on_call => true, :available_for_call => true, :campaign => Factory(:campaign))
+      caller.active_session(campaign).should == {:caller_session => {:id => nil}}
+    end
+
+    it "returns no session if the caller is not associated with the campaign" do
+      campaign = Factory(:campaign)
+      Factory(:caller_session, :caller => caller, :session_key => 'key', :on_call => true, :available_for_call => true, :campaign => campaign)
+      caller.active_session(campaign).should == {:caller_session => {:id => nil}}
+    end
+
+  end
+
+
 end

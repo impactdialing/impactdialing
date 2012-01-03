@@ -63,7 +63,7 @@ describe CallerController do
       session = Factory(:caller_session, :campaign => campaign, :caller => caller, :session_key => session_key)
       channel = mock
       info = voter.info
-      info[:fields]['status'] = CallAttempt::Status::READY      
+      info[:fields]['status'] = CallAttempt::Status::READY
       Pusher.should_receive(:[]).with(session_key).and_return(channel)
       channel.should_receive(:trigger).with('caller_connected', info.merge(:dialer => campaign.predictive_type))
       post :preview_voter, :id => caller.id, :session_id => session.id
@@ -86,7 +86,7 @@ describe CallerController do
       channel = mock
       info = next_voter.info
       info[:fields]['status'] = CallAttempt::Status::READY
-      
+
       Pusher.should_receive(:[]).with(session_key).and_return(channel)
       channel.should_receive(:trigger).with('caller_connected', info.merge(:dialer => campaign.predictive_type))
       post :preview_voter, :id => caller.id, :session_id => session.id, :voter_id => voter.id
@@ -95,12 +95,12 @@ describe CallerController do
     it "skips to the first undialed voter if the current voter context is the last" do
       session_key = "sdklsjfg923784"
       first_voter = Factory(:voter, :campaign => campaign, "FirstName"=>'first')
-      last_voter = Factory(:voter, :campaign => campaign, "FirstName"=>'last')      
+      last_voter = Factory(:voter, :campaign => campaign, "FirstName"=>'last')
       session = Factory(:caller_session, :campaign => campaign, :caller => caller, :session_key => session_key)
       channel = mock
       info = first_voter.info
       info[:fields]['status'] = CallAttempt::Status::READY
-      
+
       Pusher.should_receive(:[]).with(session_key).and_return(channel)
       channel.should_receive(:trigger).with('caller_connected', info.merge(:dialer => campaign.predictive_type))
       post :preview_voter, :id => caller.id, :session_id => session.id, :voter_id => last_voter.id
@@ -110,20 +110,20 @@ describe CallerController do
       caller_session = Factory(:caller_session, :caller => caller, :on_call => true, :available_for_call => true)
       voter = Factory(:voter)
       Twilio::Call.stub(:make)
-      Twilio::Call.should_receive(:make).with(anything, voter.Phone,anything,anything).and_return("TwilioResponse"=> {"Call" => {"Sid" => 'sid'}})
-      post :call_voter, :session_id => caller_session.id , :voter_id => voter.id
+      Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, anything).and_return("TwilioResponse"=> {"Call" => {"Sid" => 'sid'}})
+      post :call_voter, :session_id => caller_session.id, :voter_id => voter.id
     end
 
     it "pushes 'calling' to the caller" do
       session_key = "caller_session_key"
-      campaign = Factory(:campaign, :start_time => Time.new("2000-01-01 01:00:00"),:end_time =>   Time.new("2000-01-01 23:00:00"))
+      campaign = Factory(:campaign, :start_time => Time.new("2000-01-01 01:00:00"), :end_time => Time.new("2000-01-01 23:00:00"))
       caller_session = Factory(:caller_session, :caller => caller, :on_call => true, :available_for_call => true, :session_key => session_key, :campaign => campaign)
       voter = Factory(:voter)
       channel = mock
       Twilio::Call.stub(:make).and_return("TwilioResponse"=> {"Call" => {"Sid" => 'sid'}})
       Pusher.should_receive(:[]).with(session_key).and_return(channel)
       channel.should_receive(:trigger).with('calling_voter', anything)
-      post :call_voter, :session_id => caller_session.id , :voter_id => voter.id
+      post :call_voter, :session_id => caller_session.id, :voter_id => voter.id
     end
   end
 
@@ -134,27 +134,27 @@ describe CallerController do
       CallerSession.stub(:find).and_return(session)
       session.stub(:start).and_return(:nothing)
       Moderator.stub!(:caller_connected_to_campaign).with(caller, campaign, session)
-      
+
       post :assign_campaign, :id =>caller.id, :session_id => session, :Digits => campaign.reload.campaign_id
       assigns(:session).campaign.should == campaign
     end
 
     it "creates a conference for a caller" do
-      campaign = Factory(:campaign, :account => account,:start_time => Time.new("2000-01-01 01:00:00"),:end_time => Time.new("2000-01-01 23:00:00"))
+      campaign = Factory(:campaign, :account => account, :start_time => Time.new("2000-01-01 01:00:00"), :end_time => Time.new("2000-01-01 23:00:00"))
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => 'key')
       Moderator.stub!(:caller_connected_to_campaign).with(caller, campaign, session)
-      
+
       post :assign_campaign, :id =>caller.id, :session => session.id, :Digits => campaign.reload.campaign_id
       response.body.should == session.start
     end
-    
+
     it "ask caller to select instructions choice, if caller is phones-only" do
-      campaign = Factory(:campaign, :account => account,:start_time => Time.new("2000-01-01 01:00:00"),:end_time => Time.new("2000-01-01 23:00:00"))
+      campaign = Factory(:campaign, :account => account, :start_time => Time.new("2000-01-01 01:00:00"), :end_time => Time.new("2000-01-01 23:00:00"))
       phones_only_caller = Factory(:caller, :account => account, :is_phones_only => true)
       session = Factory(:caller_session, :caller => phones_only_caller, :campaign => campaign, :session_key => 'key')
       Moderator.stub!(:caller_connected_to_campaign).with(phones_only_caller, campaign, session)
       session.should_not_receive(:start)
-      
+
       post :assign_campaign, :id => phones_only_caller.id, :session => session.id, :Digits => campaign.reload.campaign_id
       response.body.should == phones_only_caller.ask_instructions_choice(session)
     end
@@ -163,7 +163,7 @@ describe CallerController do
       campaign = Factory(:campaign, :account => account)
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => 'key')
       Moderator.stub!(:caller_connected_to_campaign).with(caller, campaign, session)
-      
+
       post :assign_campaign, :id =>caller.id, :session => session.id, :Digits => '1234', :attempt => 1
       response.body.should == session.ask_for_campaign(1)
     end
@@ -173,8 +173,8 @@ describe CallerController do
       campaign = Factory(:campaign, :account => Factory(:account), :campaign_id => cpin)
       session = Factory(:caller_session, :caller => caller, :session_key => 'key')
       Moderator.stub!(:caller_connected_to_campaign).with(caller, campaign, session)
-      
-      post :assign_campaign, :id =>caller.id ,:session => session.id, :Digits => '1234', :attempt => 1
+
+      post :assign_campaign, :id =>caller.id, :session => session.id, :Digits => '1234', :attempt => 1
       response.body.should == session.ask_for_campaign(1)
     end
 
@@ -207,11 +207,11 @@ describe CallerController do
     end
 
     it "resets a callers session's conference while an attempt is in progress" do
-      session = Factory(:caller_session, :caller => caller, :campaign => Factory(:campaign,:start_time => Time.new("2000-01-01 01:00:00"),:end_time =>   Time.new("2000-01-01 23:00:00")), :available_for_call => false, :on_call => true, :session_key => "some_key")
+      session = Factory(:caller_session, :caller => caller, :campaign => Factory(:campaign, :start_time => Time.new("2000-01-01 01:00:00"), :end_time => Time.new("2000-01-01 23:00:00")), :available_for_call => false, :on_call => true, :session_key => "some_key")
       post :pause, :id => caller.id, :session_id => session.id
       response.body.should == session.start
     end
-    
+
     it "hangups if caller is disconnected" do
       session = Factory(:caller_session, :caller => caller, :campaign => Factory(:campaign), :available_for_call => false, :on_call => false, :session_key => "some_key")
       post :pause, :id => caller.id, :session_id => session.id
@@ -221,23 +221,32 @@ describe CallerController do
     it "finds the campaigns callers active session" do
       login_as(caller)
       campaign = Factory(:campaign)
-      Factory(:caller_campaign,:caller => caller, :campaign => campaign)
+      campaign.callers << caller
       session = Factory(:caller_session, :caller => caller, :session_key => 'key', :on_call => true, :available_for_call => true, :campaign => campaign)
       Factory(:caller_session, :caller => caller, :session_key => 'other_key', :on_call => true, :available_for_call => true, :campaign => Factory(:campaign))
       post :active_session, :id => caller.id, :campaign_id => campaign
       response.body.should == session.to_json
     end
 
+
+    it "returns no session if caller not associated with a campaign" do
+      login_as(caller)
+      campaign = Factory(:campaign)
+      session = Factory(:caller_session, :caller => caller, :session_key => 'key', :on_call => true, :available_for_call => true, :campaign => campaign)
+      post :active_session, :id => caller.id, :campaign_id => campaign
+      response.body.should == {:caller_session => {:id => nil}}.to_json
+    end
+
     it "returns no session if the caller is not connected" do
       login_as(caller)
       campaign = Factory(:campaign)
-      Factory(:caller_campaign, :caller => caller, :campaign => campaign)
+      campaign.callers << caller
       Factory(:caller_session, :caller => caller, :session_key => 'key', :on_call => false, :available_for_call => true, :campaign => campaign)
       post :active_session, :id => caller.id, :campaign_id => campaign.id
       response.body.should == {:caller_session => {:id => nil}}.to_json
     end
   end
-  
+
   describe "phones-only call" do
     let(:caller) { Factory(:caller, :is_phones_only => true, :name => "caller name", :pin => "78453") }
     describe "preview mode" do
@@ -246,17 +255,17 @@ describe CallerController do
         @caller_session = Factory(:caller_session, :caller => caller, :campaign => @campaign, :session_key => "sessionkey")
         @current_voter = Factory(:voter, :campaign => @campaign)
       end
-    
+
       it "add the caller to the conference and call to the voter, if caller press * " do
         Twilio::Call.stub(:make)
-        Twilio::Call.should_receive(:make).with(anything, @current_voter.Phone,anything,anything).and_return("TwilioResponse"=> {"Call" => {"Sid" => 'sid'}})
-        post :choose_voter, :id => caller.id, :session => @caller_session.id, :voter => @current_voter.id, :Digits => "*"  
+        Twilio::Call.should_receive(:make).with(anything, @current_voter.Phone, anything, anything).and_return("TwilioResponse"=> {"Call" => {"Sid" => 'sid'}})
+        post :choose_voter, :id => caller.id, :session => @caller_session.id, :voter => @current_voter.id, :Digits => "*"
         response.body.should == @caller_session.phones_only_start
       end
-    
+
       it "if caller press #, skip the voter then say the next voter name and ask for option" do
         pending "sree to fix"
-        next_voter = Factory(:voter, :campaign => @campaign,:FirstName => "next voter first name", :LastName => "next voter last name")
+        next_voter = Factory(:voter, :campaign => @campaign, :FirstName => "next voter first name", :LastName => "next voter last name")
         post :choose_voter, :id => caller.id, :session => @caller_session.id, :voter => @current_voter.id, :Digits => "#"
         response.body.should == Twilio::Verb.new do |v|
           v.gather(:numDigits => 1, :timeout => 10, :action => choose_voter_caller_url(caller.id, :session => @caller_session.id, :host => Settings.host, :port => Settings.port, :voter => next_voter.id), :method => "POST", :finishOnKey => "5") do
@@ -267,27 +276,27 @@ describe CallerController do
         @current_voter.reload.status.should == 'not called'
       end
     end
-    
+
     describe "progressive mode" do
       it "add the caller to the conference and make the call to voter" do
         campaign = Factory(:campaign, :robo => false, :predictive_type => 'preview')
         caller_session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sessionkey")
         voter = Factory(:voter, :campaign => campaign)
-        
+
         Twilio::Call.stub(:make)
-        Twilio::Call.should_receive(:make).with(anything, voter.Phone,anything,anything).and_return("TwilioResponse"=> {"Call" => {"Sid" => 'sid'}})
+        Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, anything).and_return("TwilioResponse"=> {"Call" => {"Sid" => 'sid'}})
         post :phones_only_progressive, :id => caller.id, :session_id => caller_session.id, :voter_id => voter.id
         response.body.should == caller_session.phones_only_start
       end
     end
-    
+
     it "ask caller to select options, i.e * for dialing or # for instructions" do
       campaign = Factory(:campaign, :robo => false, :predictive_type => 'preview')
       caller_session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sessionkey")
       post :choose_instructions_option, :id => caller.id, :session => caller_session.id, :Digits => "*"
       response.body.should == caller.instruction_choice_result("*", caller_session)
     end
-    
+
   end
 
   it "logs out" do
@@ -305,7 +314,7 @@ describe CallerController do
     let(:voter) { Factory(:voter, :campaign => campaign) }
     let(:caller_session) { Factory(:caller_session, :campaign => campaign, :session_key => "some_key", :caller => caller, :available_for_call => true, :on_call => true) }
     let(:call_attempt) { Factory(:call_attempt, :voter => voter, :campaign => campaign, :caller_session => caller_session) }
-    let(:first_question){ Factory(:question, :script => script) }
+    let(:first_question) { Factory(:question, :script => script) }
 
     before(:each) do
       caller_session.update_attribute(:voter_in_progress, voter)
@@ -320,7 +329,7 @@ describe CallerController do
     it "reads out the next question" do
       Factory(:possible_response, :keypad => 1, :question => first_question, :value => "value")
       next_question = Factory(:question, :script => script)
-      Factory(:possible_response, :question => next_question,:keypad => "1", :value => "value")
+      Factory(:possible_response, :question => next_question, :keypad => "1", :value => "value")
 
       post :gather_response, :id => caller.id, :session_id => caller_session.id, :question_id => first_question.id, :Digits => "1"
       response.body.should == next_question.read(caller_session)
@@ -331,13 +340,13 @@ describe CallerController do
       post :gather_response, :id => caller.id, :session_id => caller_session.id, :question_id => first_question.id, :Digits => "1"
       response.body.should == call_attempt.caller_session.start
     end
-    
+
     it "places the caller in a new conference if there is no voter in progress" do
       caller_session.update_attribute(:voter_in_progress, nil)
       post :gather_response, :id => caller.id, :session_id => caller_session.id
       response.body.should == caller_session.start
     end
-    
+
     it "ask caller to choose voter if campaign type is either preview or progressive" do
       phones_only_caller = Factory(:caller, :is_phones_only => true)
       campaign_preview = Factory(:campaign, :account => account, :robo => false, :use_web_ui => true, :script => script, :predictive_type => "preview")
@@ -345,7 +354,7 @@ describe CallerController do
       post :gather_response, :id => phones_only_caller.id, :session_id => caller_session2.id, :question_id => first_question.id, :Digits => "1"
       response.body.should == caller_session2.ask_caller_to_choose_voter
     end
-    
+
 
     it "hangs up if the caller_session is disconnected" do
       caller_session.update_attributes(:available_for_call => false, :on_call => false)

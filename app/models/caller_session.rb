@@ -11,6 +11,7 @@ class CallerSession < ActiveRecord::Base
   scope :connected_to_voter, where('voter_in_progress is not null')
   scope :held_for_duration, lambda { |minutes| {:conditions => ["hold_time_start <= ?", minutes.ago]} }
   scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
+  scope :on_campaign, lambda{|campaign| where("campaign_id = #{campaign.id}")}
   has_one :voter_in_progress, :class_name => 'Voter'
   has_one :attempt_in_progress, :class_name => 'CallAttempt'
   has_one :moderator
