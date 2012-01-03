@@ -24,8 +24,9 @@ class VoterListsController < ClientController
 
     
     csv = upload.read
-    saved_filename = write_csv_file(csv,upload)
-    save_csv_filename_to_session(saved_filename)
+    csv_filename = "#{upload.original_filename}_#{Time.now.to_i}_#{rand(999)}"
+    saved_file_name = VoterList.upload_file_to_s3(csv, csv_filename)
+    save_csv_filename_to_session(saved_file_name)
     @separator = separator_from_file_extension(upload.original_filename)
     @csv_column_headers = CSV.parse(upload.open.readline, :col_sep => @separator).first.compact
 
@@ -80,19 +81,7 @@ class VoterListsController < ClientController
     false
   end
 
-  def write_csv_file(csv,file)
-    csv_filename = "#{file.original_filename}_#{Time.now.to_i}_#{rand(999)}"
-    File.open(temp_file_path(csv_filename), "w") do |f|
-      f.write(csv)
-      f.flush
-    end
-    file.rewind
-    csv_filename
-  end
   
-  def temp_file_path(filename)
-    Rails.root.join('tmp', filename).to_s
-  end
   
 
   def save_csv_filename_to_session(csv_filename)

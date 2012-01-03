@@ -21,7 +21,6 @@ class VoterListJob
       return response
     end
 
-    uploaded_filename = temp_file_path(@csv_filename)
     @voter_list = VoterList.new(name: @voter_list_name, campaign_id: @voter_list_campaign_id, account_id: @voter_list_account_id)
 
     unless @voter_list.valid?
@@ -33,20 +32,17 @@ class VoterListJob
 
     begin
       result = @voter_list.import_leads(@csv_to_system_map,
-                                        uploaded_filename,
+                                        @csv_filename,
                                         @separator)
       response['success'] <<  "Upload complete. #{result[:successCount]} out of #{result[:successCount]+result[:failedCount]} records imported successfully."
     rescue Exception => err
       @voter_list.destroy
       response['errors'] << "Invalid CSV file. Could not import."
     ensure
-      File.unlink uploaded_filename
+      VoterList.delete_from_s3 @csv_filename
       user_mailer.voter_list_upload(response,@domain, @email)
       return response
     end
   end
 
-  def temp_file_path(filename)
-    Rails.root.join('tmp', filename).to_s
-  end
 end
