@@ -23,6 +23,11 @@ class Caller < ActiveRecord::Base
     end
     self.pin = uniq_pin
   end
+
+  def active_session(campaign)
+    return {:caller_session => {:id => nil}} if self.campaign.nil?
+    caller_sessions.available.on_campaign(campaign).last || {:caller_session => {:id => nil}}
+  end
   
   def is_phones_only_and_preview_or_progressive?(campaign)
     is_phones_only? and (campaign.predictive_type == Campaign::Type::PREVIEW or campaign.predictive_type == Campaign::Type::PROGRESSIVE)

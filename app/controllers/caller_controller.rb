@@ -102,7 +102,7 @@ class CallerController < ApplicationController
   def active_session
     caller = Caller.find(params[:id])
     campaign = caller.campaign
-    render :json => caller.caller_sessions.available.where("campaign_id = #{campaign.id}").last || {:caller_session => {:id => nil}}
+    render :json => caller.active_session(campaign).to_json
   end
 
   def preview_voter
@@ -142,7 +142,7 @@ class CallerController < ApplicationController
   def choose_voter
     caller_session = CallerSession.find(params[:session])
     voter = Voter.find(params[:voter])
-    caller = @caller = Caller.find(params[:id])
+    caller  = Caller.find(params[:id])
     caller_choice = params[:Digits]
     render :xml => caller.choice_result(caller_choice, voter, caller_session)
   end

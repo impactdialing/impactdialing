@@ -11,6 +11,7 @@ class CallerSession < ActiveRecord::Base
   scope :connected_to_voter, where('voter_in_progress is not null')
   scope :held_for_duration, lambda { |minutes| {:conditions => ["hold_time_start <= ?", minutes.ago]} }
   scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
+  scope :on_campaign, lambda{|campaign| where("campaign_id = #{campaign.id}")}
   has_one :voter_in_progress, :class_name => 'Voter'
   has_one :attempt_in_progress, :class_name => 'CallAttempt'
   has_one :moderator
@@ -150,6 +151,7 @@ class CallerSession < ActiveRecord::Base
     self.update_attributes(:on_call => false, :available_for_call => false, :endtime => Time.now)
     Moderator.publish_event(campaign, "caller_disconnected",{:caller_id => caller.id, :campaign_id => campaign.id, :campaign_active => campaign.callers_log_in?,
             :no_of_callers_logged_in => campaign.caller_sessions.on_call.length})
+    attempt_in_progress.try(:update_attributes, {:wrapup_time => Time.now})
     self.publish("caller_disconnected", {source: "end_call"})
     Twilio::Verb.hangup
   end
@@ -186,6 +188,7 @@ class CallerSession < ActiveRecord::Base
   def wrapup
     attempt_in_progress.try(:wrapup_now)
   end
+
   def caller_response_path
     if caller.is_phones_only?
       gather_response_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => id)
@@ -213,5 +216,4 @@ class CallerSession < ActiveRecord::Base
       v.redirect(phones_only_progressive_caller_url(caller, :session_id => id, :voter_id => voter.id, :host => Settings.host, :port => Settings.port), :method => "POST")
     end.response
   end
-
 end
