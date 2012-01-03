@@ -72,9 +72,6 @@ describe VoterListsController do
           session[:voters_list_upload].should_not be_empty
         end
 
-        it "saves the uploaded csv" do
-          File.should exist("#{Rails.root}/tmp/#{session[:voters_list_upload]['filename']}")
-        end
 
         it "renders the mappings screen" do
           flash[:error].should be_blank
