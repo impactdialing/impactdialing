@@ -1,4 +1,6 @@
 require 'ostruct'
+require 'aws/s3'
+
 
 class VoterList < ActiveRecord::Base
   belongs_to :campaign
@@ -36,8 +38,8 @@ class VoterList < ActiveRecord::Base
   def import_leads(csv_to_system_map, csv_filename, separator)
 
     result = {:successCount => 0, :failedCount => 0}
-
-    voters_list = CSV.parse(File.read(csv_filename), :col_sep => separator)
+    
+    voters_list = CSV.parse(VoterList.read_from_s3(csv_filename).value, :col_sep => separator)
     csv_headers = voters_list.delete_at(0)
 
     csv_to_system_map.remap_system_column! "ID", :to => "CustomID"
@@ -84,6 +86,35 @@ class VoterList < ActiveRecord::Base
     voter_list = VoterList.find(id)
     voter_list.enabled = true
     voter_list.save
+  end
+  
+  def self.read_from_s3(file_name)
+    @config = YAML::load(File.open("#{Rails.root}/config/amazon_s3.yml"))
+    AWS::S3::Base.establish_connection!(
+        :access_key_id     => @config["access_key_id"],
+        :secret_access_key => @config["secret_access_key"]
+      )    
+      AWS::S3::S3Object.find file_name, @config['bucket']
+  end
+  
+  def self.delete_from_s3(file_name)
+    @config = YAML::load(File.open("#{Rails.root}/config/amazon_s3.yml"))
+    AWS::S3::Base.establish_connection!(
+        :access_key_id     => @config["access_key_id"],
+        :secret_access_key => @config["secret_access_key"]
+      )    
+      AWS::S3::S3Object.delete file_name, @config['bucket']
+  end
+  
+  def self.upload_file_to_s3(file, file_name)
+    @config = YAML::load(File.open("#{Rails.root}/config/amazon_s3.yml"))
+    AWS::S3::Base.establish_connection!(
+        :access_key_id     => @config["access_key_id"],
+        :secret_access_key => @config["secret_access_key"]
+      )    
+    s3path="#{Rails.env}/uploads/voter_list/#{file_name}"
+    AWS::S3::S3Object.store(s3path, file, @config['bucket'],:content_type =>"application/text", :access => :private)
+    s3path
   end
 
   private
