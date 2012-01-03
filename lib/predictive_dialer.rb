@@ -1,7 +1,8 @@
 #require File.join("../", 'config/environment')
 RAILS_ROOT = File.expand_path('../..', __FILE__)
 require File.join(RAILS_ROOT, 'config/environment')
-ActiveRecord::Base.logger = DIALER_LOGGER
+#ActiveRecord::Base.logger = DIALER_LOGGER #why would you want to log all the sql ??
+ActiveRecord::Base.logger = nil #why would you want to log all the sql ??
 
 loop do
   begin

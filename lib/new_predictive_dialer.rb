@@ -1,6 +1,7 @@
 #require File.join("../", 'config/environment')
 require File.join(RAILS_ROOT, 'config/environment')
-ActiveRecord::Base.logger = DIALER_LOGGER
+#ActiveRecord::Base.logger = DIALER_LOGGER
+ActiveRecord::Base.logger = nil
 
 loop do
   begin

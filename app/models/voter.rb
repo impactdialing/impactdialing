@@ -177,12 +177,18 @@ class Voter < ActiveRecord::Base
     self.answer_recorded_by = recorded_by_caller
     return unless possible_response
     answer = self.answers.for(question).first.try(:update_attribute, {:possible_response => possible_response}) || answers.create(:question => question, :possible_response => possible_response)
+    DIALER_LOGGER.info "??? notifying observer ???"
     notify_observers :answer_recorded
+    DIALER_LOGGER.info "... notified observer ..."
     answer
   end
 
   def answer_recorded_by
     @caller_session
+  end
+
+  def current_call_attempt
+    answer_recorded_by.attempt_in_progress
   end
 
   def answer_recorded_by=(caller_session)

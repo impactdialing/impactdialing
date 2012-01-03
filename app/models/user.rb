@@ -76,7 +76,7 @@ class User < ActiveRecord::Base
   end
 
   def send_welcome_email
-    return false if Rails.env !="production"
+    return false if Rails.env !="heroku"
     send_michael_welcome_email
     return false if domain!="impactdialing.com" && domain!="localhost"
     begin
