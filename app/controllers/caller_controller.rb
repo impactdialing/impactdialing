@@ -42,7 +42,7 @@ class CallerController < ApplicationController
         flash_now(:error, "Wrong email or password.")
       else
         session[:caller]=@caller.id
-        redirect_to :action=>"index"
+        redirect_to callers_campaign_path(@caller.campaign)
       end
     end
   end
@@ -101,7 +101,7 @@ class CallerController < ApplicationController
 
   def active_session
     caller = Caller.find(params[:id])
-    campaign = caller.campaigns.find(params[:campaign_id])
+    campaign = caller.campaign
     render :json => caller.caller_sessions.available.where("campaign_id = #{campaign.id}").last || {:caller_session => {:id => nil}}
   end
 

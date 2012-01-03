@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20111231124608) do
+ActiveRecord::Schema.define(:version => 20120103053245) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -154,6 +154,7 @@ ActiveRecord::Schema.define(:version => 20111231124608) do
     t.datetime "updated_at"
     t.string   "password"
     t.boolean  "is_phones_only", :default => false
+    t.integer  "campaign_id"
   end
 
   create_table "callers_campaigns", :id => false, :force => true do |t|

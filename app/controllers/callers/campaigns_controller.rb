@@ -1,16 +1,12 @@
 module Callers
   class CampaignsController < ::CallerController
     layout 'caller'
-
-    def index
-      @campaigns = @caller.campaigns.manual.active.using_web_ui
-    end
-
+    
     def show
       unless @caller.account.activated?
         flash_now(:warning, "Your account is not funded. Please contact your account administrator.")
       end
-      @campaign = @caller.campaigns.find(params[:id])
+      @campaign = @caller.campaign
       
       if @campaign.time_period_exceed?
         flash_now(:warning, I18n.t(:campaign_time_period_exceed, :start_time => @campaign.start_time.hour <= 12 ? "#{@campaign.start_time.hour} AM" : "#{@campaign.start_time.hour-12} PM",

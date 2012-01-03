@@ -17,6 +17,23 @@ describe Client::CallersController do
   end
 
   it_should_behave_like 'all controllers of deletable entities'
+  
+  
+  it "doesn't list deleted campaigns, in the dropdown list" do
+    c1 = Factory(:campaign, :active => false, :account => user.account)
+    c2 = Factory(:campaign, :active => true, :account => user.account)
+    get :new
+    assigns(:campaigns).should have(1).thing
+    assigns(:campaigns)[0].should be_active
+  end
+  
+  it "doesn't list robo campaigns, in the dropdown list " do
+    c1 = Factory(:campaign, :active => true, :robo => false, :account => user.account)
+    c2 = Factory(:campaign, :active => true, :robo => true, :account => user.account)
+    get :new
+    assigns(:campaigns).should have(1).thing
+    assigns(:campaigns)[0].should be_active
+  end
 
   it "should create a phones only caller" do
     name = "preethi_is_not_evil"

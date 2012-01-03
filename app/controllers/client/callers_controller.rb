@@ -1,6 +1,7 @@
 module Client
   class CallersController < ClientController
     include DeletableController
+    before_filter :load_campaigns, :except => [:index,:destroy]
 
     def type_name
       'caller'
@@ -35,12 +36,6 @@ module Client
       @caller = Caller.new(params[:caller])
       @caller.account_id = account.id
       if @caller.save
-        all_callers = account.callers.active
-        all_campaings = account.campaigns.active
-        all_campaings.each do |campaign|
-          campaign.callers << @caller if campaign.callers.length >= (all_callers.length)-1
-          campaign.save
-        end
         flash_message(:notice, "Caller saved")
         redirect_to :action=>"index"
       else
@@ -57,6 +52,10 @@ module Client
       flash_message(:notice, "Caller deleted")
       redirect_to :action=>"index"
     end
-
+    
+    private
+    def load_campaigns
+      @campaigns = account.campaigns.manual.active
+    end
   end
 end

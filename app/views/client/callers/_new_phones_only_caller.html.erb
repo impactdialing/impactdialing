@@ -5,5 +5,9 @@
     <%= f.text_field :name, {:class=>"field"} %>
     <%= f.hidden_field :is_phones_only, {:class=>"field"} %>
   </p>
+	<p>
+		<label>Campaign</label>
+		<%= f.select("campaign_id", @campaigns.try(:collect){|c| [ c.name, c.id ]}) %>
+	</p>
   <p>PIN: <%= @caller.pin || "to be generated" %></p>
 </fieldset>

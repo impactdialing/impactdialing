@@ -9,4 +9,8 @@
     <label>Password</label>
     <%= f.text_field :password, {:class=>"field"} %>
   </p>
+	<p>
+		<label>Campaign</label>
+		<%= f.select("campaign_id", @campaigns.try(:collect){|c| [ c.name, c.id ]}) %>
+	</p>
 </fieldset>

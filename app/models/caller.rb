@@ -2,12 +2,12 @@ class Caller < ActiveRecord::Base
   include Rails.application.routes.url_helpers
   include Deletable
   validates_format_of :email, :allow_blank => true, :with => /^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i, :message => "Invalid email"
-  has_many :caller_campaigns
-  has_many :campaigns, :through => :caller_campaigns
+  belongs_to :campaign
   belongs_to :account
   has_many :caller_sessions
   before_create :create_uniq_pin
   validates_uniqueness_of :email, :allow_nil => true
+  #validates_presence_of :campaign_id
 
   scope :active, where(:active => true)
 
