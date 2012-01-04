@@ -2,6 +2,7 @@
 # Likewise, all the methods added will be available for all controllers.
 
 class ApplicationController < ActionController::Base
+  include WhiteLabeling
   helper :all # include all helpers, all the time
   protect_from_forgery # See ActionController::RequestForgeryProtection for details
   before_filter :set_controller_name#, :preload_models
@@ -10,7 +11,7 @@ class ApplicationController < ActionController::Base
 
   def redirect_to_ssl
     return true if Rails.env == 'development' || Rails.env == 'heroku_staging' || testing? || action_name=="monitor" || request.domain.index("amazonaws")
-    return true if ssl?
+    return true if ssl? || whitelabel?
     @cont = controller_name
     @act = action_name
     flash.keep
@@ -308,6 +309,10 @@ class ApplicationController < ActionController::Base
     else
       flash.now[where] = [error_message]
     end
+  end
+
+  def whitelabel?
+    correct_domain(request.domain)!="impactdialing"
   end
 
 end
