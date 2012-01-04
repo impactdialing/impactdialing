@@ -60,7 +60,7 @@
   function switch_mode(session, mode){
     $.ajax({
         url : "/client/monitors/switch_mode",
-        data : {session_id : session,type : mode},
+        data : {session_id : session,type : mode,monitor_session : $('monitor_session').text()},
         type : "GET",
         success : function(response) {
           $('status').text(response)
