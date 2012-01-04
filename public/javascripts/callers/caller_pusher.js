@@ -47,7 +47,6 @@ function get_session() {
 				$('#stop_calling').show();
                 $("#called_in").show();          
                 get_voter();
-
             }
         }
     })
