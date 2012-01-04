@@ -101,6 +101,9 @@ ImpactDialing::Application.routes.draw do
         put 'restore', :to => "#{type_plural}#restore"
       end
     end
+    resources :callers do
+      member{ get :reassign_to_campaign }
+    end
     resources :campaigns, :only => [] do
       resources :reports do
         collection { get :download }

@@ -79,7 +79,6 @@ function subscribe_and_bind_events_monitoring(session_id){
   });
   
   channel.bind('voter_disconnected', function(data) {
-    console.log(data);
     if (!$.isEmptyObject(data)){
       var campaign_selector = 'tr#'+data.campaign_id+'.campaign';
 			var caller_selector = 'tr#'+data.caller_id+'.caller';
@@ -92,7 +91,6 @@ function subscribe_and_bind_events_monitoring(session_id){
   });
   
   channel.bind('voter_connected',function(data){
-    console.log(data);
     if (!$.isEmptyObject(data)){
       var campaign_selector = 'tr#'+data.campaign_id+'.campaign';
 			var caller_selector = 'tr#'+data.caller_id+'.caller';
@@ -108,7 +106,6 @@ function subscribe_and_bind_events_monitoring(session_id){
 		if (!$.isEmptyObject(data)){
 			var campaign_selector = 'tr#'+data.campaign_id+'.campaign';
 			$(campaign_selector).children('.dials_in_progress').text(data.dials_in_progress);
-			console.log(data);
 			if(data.voters_remaining){
 				$(campaign_selector).children('.voters_count').text(data.voters_remaining);
 			}
@@ -151,7 +148,6 @@ $(document).ready(function() {
         }
     });  
   }
-	
   
 });
 
