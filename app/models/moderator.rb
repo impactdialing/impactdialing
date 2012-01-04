@@ -19,11 +19,6 @@ class Moderator < ActiveRecord::Base
     Twilio::Conference.kick_participant(conference_sid, call_sid)
   end
   
-  def self.update_caller_session(caller_session_id, monitor_session)
-    moderator = Moderator.find_by_session(monitor_session)
-    moderator.update_attributes(:caller_session_id => caller_session_id)
-  end
-  
   def self.caller_connected_to_campaign(caller, campaign, caller_session)
     caller.email = caller.name if caller.is_phones_only?
     caller_info = caller.info
