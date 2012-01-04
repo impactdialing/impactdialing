@@ -2,12 +2,12 @@ class Caller < ActiveRecord::Base
   include Rails.application.routes.url_helpers
   include Deletable
   validates_format_of :email, :allow_blank => true, :with => /^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i, :message => "Invalid email"
-  has_many :caller_campaigns
-  has_many :campaigns, :through => :caller_campaigns
+  belongs_to :campaign
   belongs_to :account
   has_many :caller_sessions
   before_create :create_uniq_pin
   validates_uniqueness_of :email, :allow_nil => true
+  #validates_presence_of :campaign_id
 
   scope :active, where(:active => true)
 
@@ -25,7 +25,7 @@ class Caller < ActiveRecord::Base
   end
 
   def active_session(campaign)
-    return {:caller_session => {:id => nil}} if self.campaigns.where("callers_campaigns.campaign_id = #{campaign.id}").blank?
+    return {:caller_session => {:id => nil}} if self.campaign.nil?
     caller_sessions.available.on_campaign(campaign).last || {:caller_session => {:id => nil}}
   end
   
@@ -74,7 +74,7 @@ class Caller < ActiveRecord::Base
   def ask_instructions_choice(caller_session)
     Twilio::Verb.new do |v|
       v.gather(:numDigits => 1, :timeout => 10, :action => choose_instructions_option_caller_url(self, :session => caller_session, :host => Settings.host, :port => Settings.port), :method => "POST", :finishOnKey => "5") do
-        v.say "Press * to begin dialing or # for instructions."
+        v.say I18n.t(:caller_instruction_choice)
       end
     end.response
   end

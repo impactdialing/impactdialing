@@ -72,19 +72,7 @@
 
         <p>Campaign ID:  <%= "Not yet generated" %></p>
       </fieldset>
-      <fieldset>
-        <legend>Callers with access</legend>
-        <% if @callers.length==0 %>
-            <p>No callers entered.</p>
-        <% else %>
-          <div id="callers">
-					<p><input type="checkbox" value="0" id="selectAll">&nbsp;All callers</p>
-					<% @callers.each do |l| %>
-					<p><%= check_box_tag "campaign[caller_ids][]", "#{l.id}", callerInCampaign(l), :onclick=>"someCallers();" -%> <%= l.email || l.name%></p>
-					<% end %>
-		</div>
-		<% end %>
-      </fieldset>
+      
       <fieldset>
         <legend>Lists being called</legend>
         <% if @lists.length==0 %>

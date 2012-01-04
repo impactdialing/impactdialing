@@ -199,9 +199,9 @@ class CallerSession < ActiveRecord::Base
     
   def say_voter_name_ask_caller_to_choose_voter(voter, caller_choice)
     if caller_choice.present?
-      (msg = "Press * to dial or # to skip.")  unless ["*","#"].include? caller_choice
+      (msg = I18n.t(:read_star_to_dial_pound_to_skip))  unless ["*","#"].include? caller_choice
     else
-      msg = "#{voter.FirstName}  #{voter.LastName}. Press * to dial or # to skip."
+      msg = I18n.t(:read_voter_name, :first_name => voter.FirstName, :last_name => voter.LastName) 
     end
     Twilio::Verb.new do |v|
       v.gather(:numDigits => 1, :timeout => 10, :action => choose_voter_caller_url(self.caller, :session => self, :host => Settings.host, :port => Settings.port, :voter => voter), :method => "POST", :finishOnKey => "5") do
