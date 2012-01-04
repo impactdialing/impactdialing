@@ -11,7 +11,7 @@ class ApplicationController < ActionController::Base
 
   def redirect_to_ssl
     return true if Rails.env == 'development' || Rails.env == 'heroku_staging' || testing? || action_name=="monitor" || request.domain.index("amazonaws")
-    return true if ssl? || whitelabel?
+    return true if ssl?
     @cont = controller_name
     @act = action_name
     flash.keep
@@ -309,10 +309,6 @@ class ApplicationController < ActionController::Base
     else
       flash.now[where] = [error_message]
     end
-  end
-
-  def whitelabel?
-    correct_domain(request.domain)!="impactdialing"
   end
 
 end
