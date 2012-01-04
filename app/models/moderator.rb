@@ -19,11 +19,18 @@ class Moderator < ActiveRecord::Base
     Twilio::Conference.kick_participant(conference_sid, call_sid)
   end
   
+  def self.update_caller_session(caller_session_id, monitor_session)
+    moderator = Moderator.find_by_session(monitor_session)
+    moderator.update_attributes(:caller_session_id => caller_session_id)
+  end
+  
   def self.caller_connected_to_campaign(caller, campaign, caller_session)
     caller.email = caller.name if caller.is_phones_only?
     caller_info = caller.info
-    data = caller_info.merge(:campaign_name => campaign.name, :session_id => caller_session.id, :campaign_fields => {:id => campaign.id, :callers_logged_in => campaign.caller_sessions.on_call.length+1,
-       :voters_count => campaign.voters_count("not called", false).length, :dials_in_progress => campaign.call_attempts.not_wrapped_up.length })
+    data = caller_info.merge(:campaign_name => campaign.name, :session_id => caller_session.id, :campaign_fields => {:id => campaign.id, 
+      :callers_logged_in => campaign.caller_sessions.on_call.length+1,
+      :voters_count => campaign.voters_count("not called", false).length, :dials_in_progress => campaign.call_attempts.not_wrapped_up.length },
+      :campaign_ids => caller.account.campaigns.collect{|c| c.id}, :campaign_names => caller.account.campaigns.collect{|c| c.name},:current_campaign_id => campaign.id)
     caller.account.moderators.active.each {|moderator| Pusher[moderator.session].trigger('caller_session_started', data)}    
   end
   

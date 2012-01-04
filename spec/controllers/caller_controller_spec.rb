@@ -5,36 +5,6 @@ describe CallerController do
   let(:user) { Factory(:user, :account => account) }
   let(:caller) { Factory(:caller, :account => account) }
 
-  describe 'index' do
-    before(:each) do
-      login_as(caller)
-    end
-
-    it "doesn't list deleted campaigns" do
-      caller.campaigns = [(Factory(:campaign, :active => false)), Factory(:campaign, :active => true)]
-      caller.save!
-      get :index
-      assigns(:campaigns).should have(1).thing
-      assigns(:campaigns)[0].should be_active
-    end
-
-    it "doesn't list robo campaigns" do
-      caller.campaigns = [(Factory(:campaign, :active => true, :robo => false)), Factory(:campaign, :active => true, :robo => true)]
-      caller.save!
-      get :index
-      assigns(:campaigns).should have(1).thing
-      assigns(:campaigns)[0].should be_active
-    end
-
-    it "lists all campaigns for web ui" do
-      Factory(:campaign, :use_web_ui => false)
-      campaign = Factory(:campaign, :use_web_ui => true)
-      caller.campaigns << campaign
-      caller.save!
-      get :index
-      assigns(:campaigns).should eq([campaign])
-    end
-  end
 
   describe "preview dial" do
     let(:campaign) { Factory(:campaign) }
@@ -221,7 +191,11 @@ describe CallerController do
     it "finds the campaigns callers active session" do
       login_as(caller)
       campaign = Factory(:campaign)
+  # <<<<<<< HEAD
+  #       caller.update_attributes(:campaign_id => campaign.id)
+  # =======
       campaign.callers << caller
+# >>>>>>> d176c14bd02145b242494c245e5a0f574c4b6d5e
       session = Factory(:caller_session, :caller => caller, :session_key => 'key', :on_call => true, :available_for_call => true, :campaign => campaign)
       Factory(:caller_session, :caller => caller, :session_key => 'other_key', :on_call => true, :available_for_call => true, :campaign => Factory(:campaign))
       post :active_session, :id => caller.id, :campaign_id => campaign
@@ -251,7 +225,7 @@ describe CallerController do
     let(:caller) { Factory(:caller, :is_phones_only => true, :name => "caller name", :pin => "78453") }
     describe "preview mode" do
       before(:each) do
-        @campaign = Factory(:campaign, :robo => false, :predictive_type => 'preview')
+        @campaign = Factory(:campaign, :robo => false, :predictive_type => 'preview', :start_time => (Time.now - 8.hours), :end_time => (Time.now - 8.hours))
         @caller_session = Factory(:caller_session, :caller => caller, :campaign => @campaign, :session_key => "sessionkey")
         @current_voter = Factory(:voter, :campaign => @campaign)
       end
@@ -264,12 +238,11 @@ describe CallerController do
       end
 
       it "if caller press #, skip the voter then say the next voter name and ask for option" do
-        pending "sree to fix"
         next_voter = Factory(:voter, :campaign => @campaign, :FirstName => "next voter first name", :LastName => "next voter last name")
         post :choose_voter, :id => caller.id, :session => @caller_session.id, :voter => @current_voter.id, :Digits => "#"
         response.body.should == Twilio::Verb.new do |v|
           v.gather(:numDigits => 1, :timeout => 10, :action => choose_voter_caller_url(caller.id, :session => @caller_session.id, :host => Settings.host, :port => Settings.port, :voter => next_voter.id), :method => "POST", :finishOnKey => "5") do
-            v.say "#{next_voter.FirstName}  #{next_voter.LastName}. Press * to dial or # to skip."
+            v.say I18n.t(:read_voter_name, :first_name => next_voter.FirstName, :last_name => next_voter.LastName)
           end
         end.response
         @current_voter.reload.skipped_time.should_not be_nil

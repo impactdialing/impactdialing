@@ -58,7 +58,7 @@ describe Caller do
     let(:caller) { Factory(:caller, :account => user.account) }
     describe "choose voter" do
       before(:each) do
-        @campaign = Factory(:campaign, :robo => false, :predictive_type => 'preview')
+        @campaign = Factory(:campaign, :robo => false, :predictive_type => 'preview', :start_time => (Time.now - 8.hours), :end_time => (Time.now - 8.hours))
         @caller_session = Factory(:caller_session, :caller => caller, :campaign => @campaign, :session_key => "sessionkey")
         @voter = Factory(:voter, :campaign => @campaign)
       end
@@ -74,11 +74,10 @@ describe Caller do
       end
     
       it "if choice is # , skip the voter" do
-        pending "sree to fix"
         next_voter = Factory(:voter, :campaign => @campaign,:FirstName => "next voter first name", :LastName => "next voter last name")
         caller.choice_result("#", @voter, @caller_session).should == Twilio::Verb.new do |v|
           v.gather(:numDigits => 1, :timeout => 10, :action => choose_voter_caller_url(caller.id, :session => @caller_session.id, :host => Settings.host, :port => Settings.port, :voter => next_voter.id), :method => "POST", :finishOnKey => "5") do
-            v.say "#{next_voter.FirstName}  #{next_voter.LastName}. Press * to dial or # to skip."
+            v.say I18n.t(:read_voter_name, :first_name => next_voter.FirstName, :last_name => next_voter.LastName)
           end
         end.response
         @voter.reload.skipped_time.should_not be_nil
@@ -86,10 +85,9 @@ describe Caller do
       end
     
       it "if choice is neither * nor #, agaign ask caller option" do
-        pending "sree to fix"
         caller.choice_result("3", @voter, @caller_session).should == Twilio::Verb.new do |v|
           v.gather(:numDigits => 1, :timeout => 10, :action => choose_voter_caller_url(caller, :session => @caller_session, :host => Settings.host, :port => Settings.port, :voter => @voter), :method => "POST", :finishOnKey => "5") do
-            v.say "Press * to dial or # to skip."
+            v.say I18n.t(:read_star_to_dial_pound_to_skip)
           end
         end.response
       end
@@ -125,7 +123,7 @@ describe Caller do
       it "if seleced option is neither * nor #, then again ask the caller, same options" do
         caller.instruction_choice_result("4", @caller_session).should == Twilio::Verb.new do |v|
           v.gather(:numDigits => 1, :timeout => 10, :action => choose_instructions_option_caller_url(caller, :session => @caller_session, :host => Settings.host, :port => Settings.port), :method => "POST", :finishOnKey => "5") do
-            v.say "Press * to begin dialing or # for instructions."
+            v.say I18n.t(:caller_instruction_choice)
           end
         end.response
       end

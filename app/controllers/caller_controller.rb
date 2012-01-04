@@ -42,7 +42,7 @@ class CallerController < ApplicationController
         flash_now(:error, "Wrong email or password.")
       else
         session[:caller]=@caller.id
-        redirect_to :action=>"index"
+        redirect_to callers_campaign_path(@caller.campaign)
       end
     end
   end
@@ -101,7 +101,7 @@ class CallerController < ApplicationController
 
   def active_session
     caller = Caller.find(params[:id])
-    campaign = Campaign.find(params[:campaign_id])
+    campaign = caller.campaign
     render :json => caller.active_session(campaign).to_json
   end
 
@@ -142,7 +142,7 @@ class CallerController < ApplicationController
   def choose_voter
     caller_session = CallerSession.find(params[:session])
     voter = Voter.find(params[:voter])
-    caller = @caller = Caller.find(params[:id])
+    caller  = Caller.find(params[:id])
     caller_choice = params[:Digits]
     render :xml => caller.choice_result(caller_choice, voter, caller_session)
   end
