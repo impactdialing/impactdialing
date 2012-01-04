@@ -41,6 +41,7 @@ describe CallAttempt do
     caller_session = Factory(:caller_session, :campaign => campaign, :session_key => "sample")
     call_attempt = Factory(:call_attempt, :voter => Factory(:voter, :status => Voter::Status::NOTCALLED), :caller_session => caller_session, :campaign => campaign)
     campaign.stub!(:time_period_exceed?).and_return(false)
+    caller_session.stub!(:caller_reassigned_to_another_campaign?).and_return(false)
     call_attempt.fail
   end
 
@@ -241,7 +242,7 @@ describe CallAttempt do
     it "pushes 'voter_push' when a failed call attempt ends" do
       campaign = Factory(:campaign, :use_web_ui => true)
       Factory(:voter, :status => Voter::Status::NOTCALLED, :call_back => false, :campaign => campaign)
-      session = Factory(:caller_session, :caller => Factory(:caller), :campaign => campaign, :session_key => "sample")
+      session = Factory(:caller_session, :caller => Factory(:caller, :campaign => campaign), :campaign => campaign, :session_key => "sample")
       attempt = Factory(:call_attempt, :voter => Factory(:voter, :status => CallAttempt::Status::INPROGRESS), :caller_session => session, :campaign => campaign)
       campaign.stub!(:time_period_exceed?).and_return(false)
       channel = mock
