@@ -207,7 +207,7 @@ describe CallerSession do
       campaign.stub!(:time_period_exceed?).and_return(false)
       caller_session.ask_caller_to_choose_voter.should == Twilio::Verb.new do |v|
         v.gather(:numDigits => 1, :timeout => 10, :action => choose_voter_caller_url(self.caller, :session => caller_session, :host => Settings.host, :port => Settings.port, :voter => voter), :method => "POST", :finishOnKey => "5") do
-          v.say "#{voter.FirstName}  #{voter.LastName}. Press * to dial or # to skip."
+          v.say I18n.t(:read_voter_name, :first_name => voter.FirstName, :last_name => voter.LastName) 
         end
       end.response
     end
