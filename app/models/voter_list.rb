@@ -54,14 +54,18 @@ class VoterList < ActiveRecord::Base
         lead.update_attributes(:voter_list => self) if lead.present?
       end
       
-      if lead.present? || phone_number.present?
-        result[:successCount] +=1
-        (lead = Voter.create(:Phone => phone_number, :voter_list => self, :account_id => account_id, :campaign_id => campaign_id)) if lead.nil?
-        csv_headers.each_with_index do |csv_column_title, column_location|
-          system_column = csv_to_system_map.system_column_for csv_column_title
-          lead.apply_attribute(system_column, voter_info[column_location]) unless system_column.blank?
-          Rails.logger.info lead.errors.full_messages unless lead.save
-        end
+      if lead.nil?
+        lead = Voter.new(:Phone => phone_number, :voter_list => self, :account_id => account_id, :campaign_id => campaign_id)
+      end
+      
+      if lead.valid?
+          lead.save         
+          result[:successCount] +=1
+          csv_headers.each_with_index do |csv_column_title, column_location|
+            system_column = csv_to_system_map.system_column_for csv_column_title
+            lead.apply_attribute(system_column, voter_info[column_location]) unless system_column.blank?
+            Rails.logger.info lead.errors.full_messages unless lead.save
+          end
       else
         result[:failedCount] +=1
         next
