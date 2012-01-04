@@ -9,9 +9,12 @@ module MonitorsHelper
       elsif call_attempt.wrapup_time.blank? && call_attempt.call_end.present?
         status = "Wrap up"
         duration = Time.now - call_attempt.call_end
-      else
+      elsif call_attempt.wrapup_time.present?
         duration = Time.now - call_attempt.wrapup_time
         status = "On hold"
+      else
+        status = "On hold"
+        duration = Time.now - (caller_session.updated_at.nil? ? caller_session.created_at : caller_session.updated_at)
       end
     else
       status = "On hold"
