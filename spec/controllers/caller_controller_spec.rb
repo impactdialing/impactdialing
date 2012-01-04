@@ -259,7 +259,7 @@ describe CallerController do
         post :choose_voter, :id => caller.id, :session => @caller_session.id, :voter => @current_voter.id, :Digits => "#"
         response.body.should == Twilio::Verb.new do |v|
           v.gather(:numDigits => 1, :timeout => 10, :action => choose_voter_caller_url(caller.id, :session => @caller_session.id, :host => Settings.host, :port => Settings.port, :voter => next_voter.id), :method => "POST", :finishOnKey => "5") do
-            v.say "#{next_voter.FirstName}  #{next_voter.LastName}. Press * to dial or # to skip."
+            v.say I18n.t(:read_voter_name, :first_name => next_voter.FirstName, :last_name => next_voter.LastName)
           end
         end.response
         @current_voter.reload.skipped_time.should_not be_nil
