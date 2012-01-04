@@ -202,6 +202,7 @@ loop do
   begin
     logged_in_campaigns = ActiveRecord::Base.connection.execute("select distinct campaign_id from caller_sessions where on_call=1")
     logged_in_campaigns.each do |c|     
+      puts "Simulating #{c.name}"
       simulate(c.campaign_id)
     end
     sleep 3
