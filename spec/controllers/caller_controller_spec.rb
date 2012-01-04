@@ -111,6 +111,7 @@ describe CallerController do
 
     it "creates a conference for a caller" do
       campaign = Factory(:campaign, :account => account, :start_time => Time.new("2000-01-01 01:00:00"), :end_time => Time.new("2000-01-01 23:00:00"))
+      campaign.callers << caller
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => 'key')
       Moderator.stub!(:caller_connected_to_campaign).with(caller, campaign, session)
 
@@ -177,7 +178,9 @@ describe CallerController do
     end
 
     it "resets a callers session's conference while an attempt is in progress" do
-      session = Factory(:caller_session, :caller => caller, :campaign => Factory(:campaign, :start_time => Time.new("2000-01-01 01:00:00"), :end_time => Time.new("2000-01-01 23:00:00")), :available_for_call => false, :on_call => true, :session_key => "some_key")
+      campaign = Factory(:campaign, :start_time => Time.new("2000-01-01 01:00:00"), :end_time => Time.new("2000-01-01 23:00:00"))
+      campaign.callers << caller
+      session = Factory(:caller_session, :caller => caller, :campaign => campaign, :available_for_call => false, :on_call => true, :session_key => "some_key")
       post :pause, :id => caller.id, :session_id => session.id
       response.body.should == session.start
     end
@@ -191,11 +194,7 @@ describe CallerController do
     it "finds the campaigns callers active session" do
       login_as(caller)
       campaign = Factory(:campaign)
-  # <<<<<<< HEAD
-  #       caller.update_attributes(:campaign_id => campaign.id)
-  # =======
       campaign.callers << caller
-# >>>>>>> d176c14bd02145b242494c245e5a0f574c4b6d5e
       session = Factory(:caller_session, :caller => caller, :session_key => 'key', :on_call => true, :available_for_call => true, :campaign => campaign)
       Factory(:caller_session, :caller => caller, :session_key => 'other_key', :on_call => true, :available_for_call => true, :campaign => Factory(:campaign))
       post :active_session, :id => caller.id, :campaign_id => campaign
@@ -226,6 +225,7 @@ describe CallerController do
     describe "preview mode" do
       before(:each) do
         @campaign = Factory(:campaign, :robo => false, :predictive_type => 'preview', :start_time => (Time.now - 8.hours), :end_time => (Time.now - 8.hours))
+        @campaign.callers << caller
         @caller_session = Factory(:caller_session, :caller => caller, :campaign => @campaign, :session_key => "sessionkey")
         @current_voter = Factory(:voter, :campaign => @campaign)
       end
@@ -241,7 +241,7 @@ describe CallerController do
         next_voter = Factory(:voter, :campaign => @campaign, :FirstName => "next voter first name", :LastName => "next voter last name")
         post :choose_voter, :id => caller.id, :session => @caller_session.id, :voter => @current_voter.id, :Digits => "#"
         response.body.should == Twilio::Verb.new do |v|
-          v.gather(:numDigits => 1, :timeout => 10, :action => choose_voter_caller_url(caller.id, :session => @caller_session.id, :host => Settings.host, :port => Settings.port, :voter => next_voter.id), :method => "POST", :finishOnKey => "5") do
+          v.gather(:numDigits => 1, :timeout => 10, :action => choose_voter_caller_url(caller, :session => @caller_session.id, :host => Settings.host, :port => Settings.port, :voter => next_voter.id), :method => "POST", :finishOnKey => "5") do
             v.say I18n.t(:read_voter_name, :first_name => next_voter.FirstName, :last_name => next_voter.LastName)
           end
         end.response
@@ -253,6 +253,7 @@ describe CallerController do
     describe "progressive mode" do
       it "add the caller to the conference and make the call to voter" do
         campaign = Factory(:campaign, :robo => false, :predictive_type => 'preview')
+        campaign.callers << caller
         caller_session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sessionkey")
         voter = Factory(:voter, :campaign => campaign)
 
@@ -265,6 +266,7 @@ describe CallerController do
 
     it "ask caller to select options, i.e * for dialing or # for instructions" do
       campaign = Factory(:campaign, :robo => false, :predictive_type => 'preview')
+      campaign.callers << caller
       caller_session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sessionkey")
       post :choose_instructions_option, :id => caller.id, :session => caller_session.id, :Digits => "*"
       response.body.should == caller.instruction_choice_result("*", caller_session)
@@ -284,6 +286,7 @@ describe CallerController do
     let(:user) { Factory(:user, :account => account) }
     let(:script) { Factory(:script) }
     let(:campaign) { Factory(:campaign, :account => account, :robo => false, :use_web_ui => true, :script => script) }
+    let(:caller) { Factory(:caller, :campaign => campaign, :account => account) }
     let(:voter) { Factory(:voter, :campaign => campaign) }
     let(:caller_session) { Factory(:caller_session, :campaign => campaign, :session_key => "some_key", :caller => caller, :available_for_call => true, :on_call => true) }
     let(:call_attempt) { Factory(:call_attempt, :voter => voter, :campaign => campaign, :caller_session => caller_session) }
@@ -321,8 +324,8 @@ describe CallerController do
     end
 
     it "ask caller to choose voter if campaign type is either preview or progressive" do
-      phones_only_caller = Factory(:caller, :is_phones_only => true)
       campaign_preview = Factory(:campaign, :account => account, :robo => false, :use_web_ui => true, :script => script, :predictive_type => "preview")
+      phones_only_caller = Factory(:caller, :is_phones_only => true, :campaign => campaign_preview)
       caller_session2 = Factory(:caller_session, :campaign => campaign_preview, :session_key => "some_key", :caller => phones_only_caller, :available_for_call => true, :on_call => true)
       post :gather_response, :id => phones_only_caller.id, :session_id => caller_session2.id, :question_id => first_question.id, :Digits => "1"
       response.body.should == caller_session2.ask_caller_to_choose_voter

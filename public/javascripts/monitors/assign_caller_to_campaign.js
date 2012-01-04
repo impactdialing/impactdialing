@@ -1,4 +1,5 @@
 $(document).ready(function() {
+
 	$('.assign_campaign').change(function(){
 		var campaign_id = this.value;
 		var caller_id = $(this).closest('tr').attr('id');
@@ -8,4 +9,5 @@ $(document).ready(function() {
         success : function(response) {}
     });
 	});
+	
 });

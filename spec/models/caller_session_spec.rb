@@ -76,6 +76,7 @@ describe CallerSession do
       campaign, conf_key = Factory(:campaign), "conference_key"
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => conf_key)
       campaign.stub!(:time_period_exceed?).and_return(false)
+      session.stub!(:caller_reassigned_to_another_campaign?).and_return(false)
       session.start.should == Twilio::Verb.new do |v|
         v.dial(:hangupOnStar => true, :action => session.send(:caller_response_path)) do
           v.conference(conf_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => "GET")
@@ -206,15 +207,16 @@ describe CallerSession do
   end
   
   describe "phones-only caller" do
-    let(:caller) { Factory(:caller, :is_phones_only => true, :name => "caller name", :pin => "78453") }
     
     it "asks caller to choose voter or skip, if caller is phones-only and campaign is preview" do
       campaign = Factory(:campaign, :robo => false, :predictive_type => 'preview')
+      caller = Factory(:caller, :is_phones_only => true, :name => "caller name", :pin => "78453", :campaign => campaign) 
       voter = Factory(:voter, :campaign => campaign)
       caller_session = Factory(:caller_session, :caller => caller, :campaign => campaign)
       campaign.stub!(:time_period_exceed?).and_return(false)
+      
       caller_session.ask_caller_to_choose_voter.should == Twilio::Verb.new do |v|
-        v.gather(:numDigits => 1, :timeout => 10, :action => choose_voter_caller_url(self.caller, :session => caller_session, :host => Settings.host, :port => Settings.port, :voter => voter), :method => "POST", :finishOnKey => "5") do
+        v.gather(:numDigits => 1, :timeout => 10, :action => choose_voter_caller_url(caller, :session => caller_session, :host => Settings.host, :port => Settings.port, :voter => voter), :method => "POST", :finishOnKey => "5") do
           v.say I18n.t(:read_voter_name, :first_name => voter.FirstName, :last_name => voter.LastName) 
         end
       end.response
@@ -222,6 +224,7 @@ describe CallerSession do
     
     it "says voter first name and last name, if caller is phones-only and campaign is progressive" do
       campaign = Factory(:campaign, :robo => false, :predictive_type => 'progressive')
+      caller = Factory(:caller, :is_phones_only => true, :name => "caller name", :pin => "78453", :campaign => campaign) 
       voter = Factory(:voter, :FirstName => "first name", :LastName => "last name", :campaign => campaign)
       caller_session = Factory(:caller_session, :caller => caller, :campaign => campaign)
       campaign.stub!(:time_period_exceed?).and_return(false)
@@ -233,6 +236,7 @@ describe CallerSession do
     
     it "says 'no more voters to dial', if there are no voters to dial" do
       campaign = Factory(:campaign, :robo => false, :predictive_type => 'progressive')
+      caller = Factory(:caller, :is_phones_only => true, :name => "caller name", :pin => "78453", :campaign => campaign) 
       campaign.stub!(:time_period_exceed?).and_return(false)
       voter = Factory(:voter, :FirstName => "first name", :LastName => "last name", :campaign => campaign, :status => "Call completed with success.")
       caller_session = Factory(:caller_session, :caller => caller, :campaign => campaign)
@@ -255,6 +259,43 @@ describe CallerSession do
       caller_session.next_question.read(caller_session).should == question.read(caller_session)
     end
 
+  end
+  
+  describe "reassigned caller to another campaign" do
+    
+    it "should be true" do
+      caller = Factory(:caller, :campaign => Factory(:campaign))
+      caller_session = Factory(:caller_session, :campaign => Factory(:campaign), :caller => caller)
+      caller_session.caller_reassigned_to_another_campaign?.should be_true
+    end
+    
+    it "say the msg 'You have been re-assigned to campaign', if caller is phones_only" do
+      caller = Factory(:caller, :campaign => Factory(:campaign), :is_phones_only => true)
+      caller_session = Factory(:caller_session, :campaign => Factory(:campaign), :caller => caller)
+      caller_session.reassign_caller_session_to_campaign.should == Twilio::Verb.new do |v|
+        v.say I18n.t(:re_assign_caller_to_another_campaign, :campaign_name => caller.campaign.name)
+        v.redirect(choose_instructions_option_caller_url(caller, :host => Settings.host, :port => Settings.port, :session => caller_session.id, :Digits => "*"))
+      end.response
+    end
+    
+    it "push 'caller_re_assigned_to_campaign' event, if caller is not phones_only" do
+      campaign = Factory(:campaign, :use_web_ui => true)
+      caller_session = Factory(:caller_session, :campaign => campaign, :caller => Factory(:caller, :campaign => campaign, :is_phones_only => false))
+      channel = mock
+      Pusher.should_receive(:[]).with(caller_session.session_key).and_return(channel)
+      channel.should_receive(:trigger).with("caller_re_assigned_to_campaign", anything)
+      caller_session.reassign_caller_session_to_campaign
+    end
+    
+    it "reassign the caller_session to campaign" do
+      campaign1 = Factory(:campaign, :use_web_ui => true, :predictive_type => 'preview')
+      campaign2 = Factory(:campaign, :use_web_ui => true, :predictive_type => 'preview')
+      caller = Factory(:caller, :campaign => campaign2)
+      caller_session = Factory(:caller_session, :caller => caller, :campaign => campaign1, :session_key => "sample", :on_call=> true, :available_for_call => true)
+      caller_session.reassign_caller_session_to_campaign
+      caller_session.reload.campaign.should == caller.campaign
+    end
+    
   end
 
 
@@ -303,6 +344,7 @@ describe CallerSession do
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sample")
       2.times { Factory(:voter, :campaign => campaign) }
       campaign.stub!(:time_period_exceed?).and_return(false)
+      session.stub!(:caller_reassigned_to_another_campaign?).and_return(false)
       channel = mock
       Pusher.should_receive(:[]).with(session.session_key).and_return(channel)
       channel.should_receive(:trigger).with("caller_connected_dialer", anything)
@@ -329,6 +371,7 @@ describe CallerSession do
       channel.should_receive(:trigger).with("waiting_for_result", anything)
       session.pause_for_results
     end
+    
   end
 
 

@@ -54,20 +54,21 @@ describe Caller do
     end.response
   end
   
-  describe "choice in phones-only" do
-    let(:caller) { Factory(:caller, :account => user.account) }
-    describe "choose voter" do
+  describe "choice in phones-only" do 
+    
+    describe "choose voter" do  
       before(:each) do
         @campaign = Factory(:campaign, :robo => false, :predictive_type => 'preview', :start_time => (Time.now - 8.hours), :end_time => (Time.now - 8.hours))
-        @caller_session = Factory(:caller_session, :caller => caller, :campaign => @campaign, :session_key => "sessionkey")
+        @caller = Factory(:caller, :account => user.account, :campaign => @campaign)
+        @caller_session = Factory(:caller_session, :caller => @caller, :campaign => @campaign, :session_key => "sessionkey")
         @voter = Factory(:voter, :campaign => @campaign)
       end
     
       it "if choice is * , make call to voter and caller will be placed into conference" do
         Twilio::Call.stub(:make)
         Twilio::Call.should_receive(:make).with(anything, @voter.Phone,anything,anything).and_return("TwilioResponse"=> {"Call" => {"Sid" => 'sid'}})
-        caller.choice_result("*", @voter, @caller_session).should == response = Twilio::Verb.new do |v|
-          v.dial(:hangupOnStar => true, :action => gather_response_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => @caller_session.id)) do
+        @caller.choice_result("*", @voter, @caller_session).should == response = Twilio::Verb.new do |v|
+          v.dial(:hangupOnStar => true, :action => gather_response_caller_url(@caller, :host => Settings.host, :port => Settings.port, :session_id => @caller_session.id)) do
             v.conference(@caller_session.session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
           end
         end.response
@@ -75,8 +76,8 @@ describe Caller do
     
       it "if choice is # , skip the voter" do
         next_voter = Factory(:voter, :campaign => @campaign,:FirstName => "next voter first name", :LastName => "next voter last name")
-        caller.choice_result("#", @voter, @caller_session).should == Twilio::Verb.new do |v|
-          v.gather(:numDigits => 1, :timeout => 10, :action => choose_voter_caller_url(caller.id, :session => @caller_session.id, :host => Settings.host, :port => Settings.port, :voter => next_voter.id), :method => "POST", :finishOnKey => "5") do
+        @caller.choice_result("#", @voter, @caller_session).should == Twilio::Verb.new do |v|
+          v.gather(:numDigits => 1, :timeout => 10, :action => choose_voter_caller_url(@caller.id, :session => @caller_session.id, :host => Settings.host, :port => Settings.port, :voter => next_voter.id), :method => "POST", :finishOnKey => "5") do
             v.say I18n.t(:read_voter_name, :first_name => next_voter.FirstName, :last_name => next_voter.LastName)
           end
         end.response
@@ -85,8 +86,8 @@ describe Caller do
       end
     
       it "if choice is neither * nor #, agaign ask caller option" do
-        caller.choice_result("3", @voter, @caller_session).should == Twilio::Verb.new do |v|
-          v.gather(:numDigits => 1, :timeout => 10, :action => choose_voter_caller_url(caller, :session => @caller_session, :host => Settings.host, :port => Settings.port, :voter => @voter), :method => "POST", :finishOnKey => "5") do
+        @caller.choice_result("3", @voter, @caller_session).should == Twilio::Verb.new do |v|
+          v.gather(:numDigits => 1, :timeout => 10, :action => choose_voter_caller_url(@caller, :session => @caller_session, :host => Settings.host, :port => Settings.port, :voter => @voter), :method => "POST", :finishOnKey => "5") do
             v.say I18n.t(:read_star_to_dial_pound_to_skip)
           end
         end.response
@@ -96,7 +97,8 @@ describe Caller do
     describe "select * to dial or # to listen instructions" do
       before(:each) do
         @campaign = Factory(:campaign, :robo => false, :predictive_type => 'preview')
-        @caller_session = Factory(:caller_session, :caller => caller, :campaign => @campaign, :session_key => "sessionkey")
+        @caller = Factory(:caller, :account => user.account, :campaign => @campaign)
+        @caller_session = Factory(:caller_session, :caller => @caller, :campaign => @campaign, :session_key => "sessionkey")
       end
       
       it "if selected option is * and campaign mode is preview" do
@@ -113,16 +115,16 @@ describe Caller do
       end
       
       it "if selected option is #, then read the instructions" do
-        caller.instruction_choice_result("#", @caller_session).should == Twilio::Verb.new do |v|
-          v.gather(:numDigits => 1, :timeout => 10, :action => choose_instructions_option_caller_url(caller, :session => @caller_session, :host => Settings.host, :port => Settings.port), :method => "POST", :finishOnKey => "5") do
+        @caller.instruction_choice_result("#", @caller_session).should == Twilio::Verb.new do |v|
+          v.gather(:numDigits => 1, :timeout => 10, :action => choose_instructions_option_caller_url(@caller, :session => @caller_session, :host => Settings.host, :port => Settings.port), :method => "POST", :finishOnKey => "5") do
             v.say I18n.t(:phones_only_caller_instructions)
           end
         end.response
       end
       
       it "if seleced option is neither * nor #, then again ask the caller, same options" do
-        caller.instruction_choice_result("4", @caller_session).should == Twilio::Verb.new do |v|
-          v.gather(:numDigits => 1, :timeout => 10, :action => choose_instructions_option_caller_url(caller, :session => @caller_session, :host => Settings.host, :port => Settings.port), :method => "POST", :finishOnKey => "5") do
+        @caller.instruction_choice_result("4", @caller_session).should == Twilio::Verb.new do |v|
+          v.gather(:numDigits => 1, :timeout => 10, :action => choose_instructions_option_caller_url(@caller, :session => @caller_session, :host => Settings.host, :port => Settings.port), :method => "POST", :finishOnKey => "5") do
             v.say I18n.t(:caller_instruction_choice)
           end
         end.response
