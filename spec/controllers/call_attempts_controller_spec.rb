@@ -64,21 +64,40 @@ describe CallAttemptsController do
     end
   end
 
+  describe "phones only" do
+    let(:account) { Factory(:account) }
+    let(:user) { Factory(:user, :account => account) }
+    let(:campaign) { Factory(:campaign, :account => account, :robo => false, :start_time => Time.new("2000-01-01 01:00:00"), :end_time => Time.new("2000-01-01 23:00:00")) }
+    let(:caller) { Factory(:caller) }
+
+    it "routes different calls to callers sharing credentials" do
+      session1 = Factory(:caller_session, :session_key => "sample1", :campaign => campaign, :available_for_call => true, :on_call => true)
+      session2 = Factory(:caller_session, :session_key => "sample2", :campaign => campaign, :available_for_call => true, :on_call => true)
+      attempt1 = Factory(:call_attempt, :voter => Factory(:voter), :campaign => campaign)
+      attempt2 = Factory(:call_attempt, :voter => Factory(:voter), :campaign => campaign)
+      post :connect, :id => attempt1.id, :AnsweredBy => "human"
+      post :connect, :id => attempt2.id, :AnsweredBy => "human"
+      session1.voter_in_progress.should_not be_nil
+      session2.voter_in_progress.should_not be_nil
+      session1.attempt_in_progress.should_not == session2.attempt_in_progress
+    end
+  end
+
   describe "calling in" do
     let(:account) { Factory(:account) }
     let(:user) { Factory(:user, :account => account) }
-    let(:campaign) { Factory(:campaign, :account => account, :robo => false,:start_time => Time.new("2000-01-01 01:00:00"),:end_time => Time.new("2000-01-01 23:00:00")) }
+    let(:campaign) { Factory(:campaign, :account => account, :robo => false, :start_time => Time.new("2000-01-01 01:00:00"), :end_time => Time.new("2000-01-01 23:00:00")) }
     let(:caller) { Factory(:caller, :account => account, :campaign => campaign)}
     let(:voter) { Factory(:voter, :campaign => campaign, :call_back => false) }
-    let(:caller_session) { caller_session = Factory(:caller_session, :session_key => "sample", :caller => caller)}
-    let(:call_attempt) { Factory(:call_attempt, :voter => voter, :campaign => campaign, :caller_session => caller_session, :caller => caller) }
+    let(:caller_session) { caller_session = Factory(:caller_session, :session_key => "sample", :caller => caller, :campaign => campaign) }
+    let(:call_attempt) { Factory(:call_attempt, :voter => voter, :campaign => campaign, :caller_session => caller_session) }
 
     it "connects the voter to an available caller" do
       Factory(:caller_session, :campaign => campaign, :available_for_call => false)
       available_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller))
       call_attempt.update_attributes(caller_session: available_session)
       Moderator.stub!(:publish_event).with(available_session.campaign, 'voter_connected', {:campaign_id => available_session.campaign.id,
-        :caller_id => call_attempt.caller_session.caller.id})
+                                                                                           :caller_id => call_attempt.caller_session.caller.id})
       post :connect, :id => call_attempt.id
 
       call_attempt.reload.caller.should == available_session.caller
@@ -102,7 +121,7 @@ describe CallAttemptsController do
       caller_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => false)
       call_attempt.voter.update_attribute(:caller_session, caller_session)
       Moderator.stub!(:publish_event).with(caller_session.campaign, 'voter_connected', {:campaign_id => caller_session.campaign.id,
-        :caller_id => caller_session.caller.id})
+                                                                                        :caller_id => caller_session.caller.id})
       post :connect, :id => call_attempt.id
       response.body.should == Twilio::TwiML::Response.new do |r|
         r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(call_attempt, :host => Settings.host), :record=>call_attempt.campaign.account.record_calls do |d|
@@ -144,7 +163,7 @@ describe CallAttemptsController do
     end
 
     it "hangs up when a answering machine is detected and campaign uses no recordings" do
-      voter2 =  Factory(:voter, :campaign => campaign, :call_back => false)
+      voter2 = Factory(:voter, :campaign => campaign, :call_back => false)
       CallAttempt.stub(:find).and_return(call_attempt)
       post :connect, :id => call_attempt.id, :AnsweredBy => 'machine'
       response.body.should == call_attempt.hangup
@@ -200,7 +219,7 @@ describe CallAttemptsController do
       voter.status = CallAttempt::Status::INPROGRESS
       pusher_session.should_receive(:trigger).with('voter_connected', {:attempt_id=> call_attempt.id, :voter => voter.info}.merge(:dialer => campaign.predictive_type))
       Pusher.stub(:[]).with(session_key).and_return(pusher_session)
-      Moderator.stub!(:publish_event).with(caller_session.campaign, 'voter_connected', {:campaign_id => caller_session.campaign.id,:caller_id => call_attempt.caller_session.caller.id})
+      Moderator.stub!(:publish_event).with(caller_session.campaign, 'voter_connected', {:campaign_id => caller_session.campaign.id, :caller_id => call_attempt.caller_session.caller.id})
       post :connect, :id => call_attempt.id
     end
 
