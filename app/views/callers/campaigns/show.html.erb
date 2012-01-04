@@ -6,8 +6,8 @@
 
 
 
-  <%= pusher_js %>
-    <%= javascript_include_tag  'callers/caller_pusher', 'ICanHaz.min.js', 'jquery.form.js' %>
+    <%= pusher_js %>
+    <%= javascript_include_tag 'callers/caller_pusher', 'ICanHaz.min.js', 'jquery.form.js' %>
 
     <script type="text/javascript">
         var pusher = new Pusher('<%= Pusher.key %>');
@@ -16,48 +16,48 @@
     <script id="voter" type="text/html">
       {{#fields}}
       <% if @selected_voter_fields.delete('CustomId') %>
-        <li>ID: <b>{{CustomID}}</b></li>
+          <li>ID: <b>{{CustomID}}</b></li>
       <% end %>
       <% if @selected_voter_fields.delete('FirstName') %>
-        <li>First name: <b>{{FirstName}}</b></li>
+          <li>First name: <b>{{FirstName}}</b></li>
       <% end %>
       <% if @selected_voter_fields.delete('MiddleName') %>
-        <li>Middle name: <b>{{MiddleName}}</b></li>
+          <li>Middle name: <b>{{MiddleName}}</b></li>
       <% end %>
       <% if @selected_voter_fields.delete('LastName') %>
-        <li>Last name: <b>{{LastName}}</b></li>
+          <li>Last name: <b>{{LastName}}</b></li>
       <% end %>
       <% if @selected_voter_fields.delete('Suffix') %>
-        <li>Suffix: <b>{{Suffix}}</b></li>
+          <li>Suffix: <b>{{Suffix}}</b></li>
       <% end %>
       <% if @selected_voter_fields.delete('Address') %>
-        <li>Address: <b>{{address}}</b></li>
+          <li>Address: <b>{{address}}</b></li>
       <% end %>
       <% if @selected_voter_fields.delete('City') %>
-        <li>City: <b>{{city}}</b></li>
+          <li>City: <b>{{city}}</b></li>
       <% end %>
       <% if @selected_voter_fields.delete('State/Province') %>
-        <li>State/Province: <b>{{state}}</b></li>
+          <li>State/Province: <b>{{state}}</b></li>
       <% end %>
       <% if @selected_voter_fields.delete('Zip/Postal Code') %>
-        <li>Zip/Postal Code: <b>{{zip_code}}</b></li>
+          <li>Zip/Postal Code: <b>{{zip_code}}</b></li>
       <% end %>
       <% if @selected_voter_fields.delete('Country') %>
-        <li>Country: <b>{{country}}</b></li>
+          <li>Country: <b>{{country}}</b></li>
       <% end %>
 
 
       <% if @selected_voter_fields.delete('Phone') %>
-        <li>Phone: <b>{{Phone}}</b></li>
+          <li>Phone: <b>{{Phone}}</b></li>
       <% end %>
       <% if @selected_voter_fields.delete('Email') %>
-        <li>Email: <b>{{Email}}</b></li>
+          <li>Email: <b>{{Email}}</b></li>
       <% end %>
 
       {{/fields}}
       {{#custom_fields}}
       <% @selected_voter_fields.try(:each) do |s| %>
-      <li><%= s %>: <b>{{<%= s %>}}</b></li>
+          <li><%= s %>: <b>{{<%= s %>}}</b></li>
       <% end %>
       {{/custom_fields}}
     </script>
@@ -73,13 +73,13 @@
 
 <form>
 
-<fieldset>
-  <legend>Lead information</legend>
-  <div id="voter_info_message" class="rt">
-    <em>When connected, lead information will appear here.</em>
-  </div>
-  <ul id="voter_info" class="clearfix"></ul>
-</fieldset>
+  <fieldset>
+    <legend>Lead information</legend>
+    <div id="voter_info_message" class="rt">
+      <em>When connected, lead information will appear here.</em>
+    </div>
+    <ul id="voter_info" class="clearfix"></ul>
+  </fieldset>
 
 </form>
 
@@ -88,68 +88,68 @@
 <fieldset>
   <legend>Script</legend>
   <% if @campaign.script %>
-    <div class="rt script"> <%=raw @campaign.script.script.gsub("\n", "<br />") %></div>
+      <div class="rt script"> <%= raw @campaign.script.script.gsub("\n", "<br />") %></div>
   <% else %>
-    <div class="rt script">There is no script assigned to this campaign.</div>
+      <div class="rt script">There is no script assigned to this campaign.</div>
   <% end %>
 </fieldset>
 
 <%= render 'results' %>
 <%= render 'actions' %>
 <% unless @campaign.time_period_exceed? %>
-	<div id="start_calling">
-	  <a class="action primary" href="#" onclick="javascript:goclient();">Start calling</a>
-	</div>
-	<br>
+    <div id="start_calling">
+      <a class="action primary" href="#" onclick="javascript:goclient();">Start calling</a>
+    </div>
+    <br>
+
+    <div id="callin_data">
+      <p>
+        <b>If you don't have a headset, dial in:</b><br>
+        Dial-in number: <%= Settings.phone %><br>
+        PIN: <%= @caller.pin %><br>
+        Campaign ID: <%= @campaign.campaign_id %>
+      </p>
+    </div>
 <% end %>
-
-
-<div id="callin_data">
-  <p>
-	<b>If you don't have a headset, dial in:</b><br>
-    Dial-in number: <%= Settings.phone %><br>
-    PIN: <%= @caller.pin %><br>
-    Campaign ID: <%= @campaign.campaign_id %>
-  </p>
-</div>
 
 <%= javascript_include_tag "https://static.twilio.com/libs/twiliojs/1.0/twilio.js" %>
 <script type="text/javascript">
 
 
-Twilio.Device.setup("<%= @token %>", {'debug':true});
+    Twilio.Device.setup("<%= @token %>", {'debug':true});
 
-Twilio.Device.connect(function (conn) {
- console.log("Successfully established call");
-});
-Twilio.Device.ready(function (device) {})
-Twilio.Device.error(function (error) {
-	alert(error.message);
-});
-
-
-Twilio.Device.connect(function (conn) {
-  $("#start_calling").hide();
-});
-
-
-function goclient() {
-	  params = {"PhoneNumber": "<%= @phone_number %>", 'campaign_id': "<%= @campaign.id %>", 'caller_id': "<%= @caller.id %>" };
-		Twilio.Device.connect(params)
-}
-$(window).bind("beforeunload", function() {
-  if ($("#caller_session").val()) {
-    $.ajax({
-        url : "/caller/" + $("#caller").val() + "/stop_calling",
-        data : {session_id : $("#caller_session").val() },
-        type : "POST",
-        async : false,
-        success : function(response) {
-  		$("#start_calling").show();
-      }
+    Twilio.Device.connect(function (conn) {
+        console.log("Successfully established call");
     });
-  }
+    Twilio.Device.ready(function (device) {
+    })
+    Twilio.Device.error(function (error) {
+        alert(error.message);
+    });
 
-});
+
+    Twilio.Device.connect(function (conn) {
+        $("#start_calling").hide();
+    });
+
+
+    function goclient() {
+        params = {"PhoneNumber": "<%= @phone_number %>", 'campaign_id': "<%= @campaign.id %>", 'caller_id': "<%= @caller.id %>" };
+        Twilio.Device.connect(params)
+    }
+    $(window).bind("beforeunload", function() {
+        if ($("#caller_session").val()) {
+            $.ajax({
+                url : "/caller/" + $("#caller").val() + "/stop_calling",
+                data : {session_id : $("#caller_session").val() },
+                type : "POST",
+                async : false,
+                success : function(response) {
+                    $("#start_calling").show();
+                }
+            });
+        }
+
+    });
 
 </script>
