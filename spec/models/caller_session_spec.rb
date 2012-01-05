@@ -296,6 +296,18 @@ describe CallerSession do
       caller_session.reload.campaign.should == caller.campaign
     end
     
+    it "" do
+      campaign1 = Factory(:campaign, :use_web_ui => true, :predictive_type => 'preview')
+      campaign2 = Factory(:campaign, :use_web_ui => true, :predictive_type => 'preview')
+      phones_only_caller = Factory(:caller, :campaign => campaign2, :is_phones_only => true)
+      caller_session = Factory(:caller_session, :caller => phones_only_caller, :campaign => campaign1, :session_key => "sample", :on_call=> true, :available_for_call => true)
+      Moderator.should_receive(:publish_event)
+      caller_session.start.should == Twilio::Verb.new do |v|
+        v.say I18n.t(:re_assign_caller_to_another_campaign, :campaign_name => phones_only_caller.campaign.name)
+        v.redirect(choose_instructions_option_caller_url(phones_only_caller, :host => Settings.host, :port => Settings.port, :session => caller_session.id, :Digits => "*"))
+      end.response
+    end
+    
   end
 
 
