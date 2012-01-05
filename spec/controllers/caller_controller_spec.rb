@@ -98,56 +98,6 @@ describe CallerController do
   end
 
   describe "calling in" do
-    it "allocates a campaign to a caller" do
-      campaign = Factory(:campaign, :account => account)
-      session = Factory(:caller_session, :caller => caller, :campaign => nil)
-      CallerSession.stub(:find).and_return(session)
-      session.stub(:start).and_return(:nothing)
-      Moderator.stub!(:caller_connected_to_campaign).with(caller, campaign, session)
-
-      post :assign_campaign, :id =>caller.id, :session_id => session, :Digits => campaign.reload.campaign_id
-      assigns(:session).campaign.should == campaign
-    end
-
-    it "creates a conference for a caller" do
-      campaign = Factory(:campaign, :account => account, :start_time => Time.new("2000-01-01 01:00:00"), :end_time => Time.new("2000-01-01 23:00:00"))
-      campaign.callers << caller
-      session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => 'key')
-      Moderator.stub!(:caller_connected_to_campaign).with(caller, campaign, session)
-
-      post :assign_campaign, :id =>caller.id, :session => session.id, :Digits => campaign.reload.campaign_id
-      response.body.should == session.start
-    end
-
-    it "ask caller to select instructions choice, if caller is phones-only" do
-      campaign = Factory(:campaign, :account => account, :start_time => Time.new("2000-01-01 01:00:00"), :end_time => Time.new("2000-01-01 23:00:00"))
-      phones_only_caller = Factory(:caller, :account => account, :is_phones_only => true)
-      session = Factory(:caller_session, :caller => phones_only_caller, :campaign => campaign, :session_key => 'key')
-      Moderator.stub!(:caller_connected_to_campaign).with(phones_only_caller, campaign, session)
-      session.should_not_receive(:start)
-
-      post :assign_campaign, :id => phones_only_caller.id, :session => session.id, :Digits => campaign.reload.campaign_id
-      response.body.should == phones_only_caller.ask_instructions_choice(session)
-    end
-
-    it "asks for campaign pin again when incorrect" do
-      campaign = Factory(:campaign, :account => account)
-      session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => 'key')
-      Moderator.stub!(:caller_connected_to_campaign).with(caller, campaign, session)
-
-      post :assign_campaign, :id =>caller.id, :session => session.id, :Digits => '1234', :attempt => 1
-      response.body.should == session.ask_for_campaign(1)
-    end
-
-    it "does not allow a caller from one user to log onto a campaign of another user" do
-      cpin = '1234'
-      campaign = Factory(:campaign, :account => Factory(:account), :campaign_id => cpin)
-      session = Factory(:caller_session, :caller => caller, :session_key => 'key')
-      Moderator.stub!(:caller_connected_to_campaign).with(caller, campaign, session)
-
-      post :assign_campaign, :id =>caller.id, :session => session.id, :Digits => '1234', :attempt => 1
-      response.body.should == session.ask_for_campaign(1)
-    end
 
     it "terminates a callers session" do
       sid = "some_sid"
