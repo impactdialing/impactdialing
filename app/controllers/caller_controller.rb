@@ -145,7 +145,7 @@ class CallerController < ApplicationController
     caller_session = CallerSession.find(params[:session_id])
     xml = caller_session.ask_caller_to_choose_voter
     Rails.logger.debug(xml)
-    render :xml => xml    
+    render :xml => xml 
   end
   
   def choose_instructions_option
