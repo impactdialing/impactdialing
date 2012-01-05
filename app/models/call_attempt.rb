@@ -136,7 +136,6 @@ class CallAttempt < ActiveRecord::Base
       unless caller_session.caller.is_phones_only?          
         next_voter = self.campaign.next_voter_in_dial_queue(voter.id) 
         caller_session.publish('voter_push',next_voter.nil? ? {} : next_voter.info)         
-        caller_session.publish('conference_started', {}) 
         caller_session.start
       else
         Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
