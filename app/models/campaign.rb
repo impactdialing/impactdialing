@@ -568,6 +568,7 @@ class Campaign < ActiveRecord::Base
   end
 
   def dial_predictive_simulator
+    num_to_call = 0
     dials_made = call_attempts.between(10.minutes.ago, Time.now)
     if dials_made.size == 0 || !abandon_rate_acceptable?
       num_to_call= callers_available_for_call.length
@@ -577,6 +578,7 @@ class Campaign < ActiveRecord::Base
         num_to_call = callers_available_for_call.length
       end
     end
+    num_to_call
   end
 
   def answers_result(from_date, to_date)
