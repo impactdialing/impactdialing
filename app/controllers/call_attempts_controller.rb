@@ -17,13 +17,15 @@ class CallAttemptsController < ApplicationController
                  when "machine"
                    call_attempt.voter.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
                    call_attempt.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
+                   (call_attempt.campaign.use_recordings? && call_attempt.campaign.answering_machine_detect) ? call_attempt.play_recorded_message : call_attempt.hangup
                    if call_attempt.caller_session && (call_attempt.campaign.predictive_type == Campaign::Type::PREVIEW || call_attempt.campaign.predictive_type == Campaign::Type::PROGRESSIVE)
                      call_attempt.caller_session.publish('answered_by_machine', {})
                      call_attempt.caller_session.update_attribute(:voter_in_progress, nil)
                      next_voter = call_attempt.campaign.next_voter_in_dial_queue(call_attempt.voter.id)
                      call_attempt.caller_session.publish('voter_push', next_voter ? next_voter.info : {})
+                     call_attempt.caller_session.publish('conference_started', {}) 
                    end
-                   (call_attempt.campaign.use_recordings? && call_attempt.campaign.answering_machine_detect) ? call_attempt.play_recorded_message : call_attempt.hangup
+
                  else
                    CallerSession.transaction { call_attempt.connect_to_caller(call_attempt.voter.caller_session) }
                end

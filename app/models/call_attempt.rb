@@ -136,12 +136,11 @@ class CallAttempt < ActiveRecord::Base
       unless caller_session.caller.is_phones_only?          
         next_voter = self.campaign.next_voter_in_dial_queue(voter.id) 
         caller_session.publish('voter_push',next_voter.nil? ? {} : next_voter.info)         
+        caller_session.publish('conference_started', {}) 
         caller_session.start
       else
-        Rails.logger.debug("failed called being redirected")
         Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
         Twilio::Call.redirect(caller_session.sid, phones_only_caller_index_url(:host => Settings.host, :port => Settings.port, session_id: caller_session.id))        
-        Rails.logger.debug("failed called after redirected --- #{caller_session.sid}")
       end  
     else
       hangup                        
