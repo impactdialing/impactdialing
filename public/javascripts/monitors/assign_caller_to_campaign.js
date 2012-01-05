@@ -1,6 +1,6 @@
 $(document).ready(function() {
 
-	$('.assign_campaign').change(function(){
+	$('.assign_campaign').live('change', function(){
 		var campaign_id = this.value;
 		var caller_id = $(this).closest('tr').attr('id');
 		$.ajax({
