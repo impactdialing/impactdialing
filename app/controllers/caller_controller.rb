@@ -47,20 +47,19 @@ class CallerController < ApplicationController
     end
   end
 
-
-  def assign_campaign
-    @session = CallerSession.find(params[:session])
-    caller = Caller.find(params[:id])
-    @campaign = @session.caller.account.campaigns.find_by_campaign_id(params[:Digits])
-    if @campaign
-      @session.update_attributes(:campaign => @campaign)
-      Moderator.caller_connected_to_campaign(caller, @campaign, @session)
-      render :xml => caller.is_phones_only? ? caller.ask_instructions_choice(@session) : @session.start
-    else
-      render :xml => @session.ask_for_campaign(params[:attempt].to_i)
-    end
-  end
-
+  # 
+  # def assign_campaign
+  #   @session = CallerSession.find(params[:session])
+  #   caller = Caller.find(params[:id])
+  #   @campaign = @session.caller.account.campaigns.find_by_campaign_id(params[:Digits])
+  #   if @campaign
+  #     @session.update_attributes(:campaign => @campaign)
+  #     Moderator.caller_connected_to_campaign(caller, @campaign, @session)
+  #     render :xml => caller.is_phones_only? ? caller.ask_instructions_choice(@session) : @session.start
+  #   else
+  #     render :xml => @session.ask_for_campaign(params[:attempt].to_i)
+  #   end
+  # end
 
   def stop_calling
     caller = Caller.find(params[:id])
