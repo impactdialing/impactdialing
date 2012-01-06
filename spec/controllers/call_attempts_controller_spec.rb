@@ -238,6 +238,7 @@ describe CallAttemptsController do
       Pusher.stub(:[]).with(session_key).and_return(pusher_session)
       pusher_session.should_receive(:trigger).with("answered_by_machine", {:dialer=>"preview"})
       pusher_session.should_receive(:trigger).with('voter_push', info.merge(:dialer => campaign.predictive_type))
+      pusher_session.should_receive(:trigger).with('conference_started', {:dialer=>"preview"})
       post :connect, :id => call_attempt.id, :AnsweredBy => "machine"
     end
 
