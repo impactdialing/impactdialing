@@ -203,7 +203,8 @@ loop do
     logged_in_campaigns = ActiveRecord::Base.connection.execute("select distinct campaign_id from caller_sessions where on_call=1")
     logged_in_campaigns.each do |k|     
       puts "Simulating #{k.first}"
-      simulate(k.first)
+      campaign = Campaign.find(k.first)      
+      simulate(k.first) if campaign.predictive_type == Campaign::Type::PREDICTIVE
     end
     sleep 3
   rescue Exception => e
