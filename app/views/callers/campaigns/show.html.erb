@@ -135,6 +135,7 @@
 
 
     function goclient() {
+        $("#callin_data").hide();
         params = {"PhoneNumber": "<%= @phone_number %>", 'campaign_id': "<%= @campaign.id %>", 'caller_id': "<%= @caller.id %>" };
         Twilio.Device.connect(params)
     }
