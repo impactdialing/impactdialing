@@ -1,7 +1,8 @@
 module Client
   class CallersController < ClientController
     include DeletableController
-    before_filter :load_campaigns, :except => [:index,:destroy]
+    skip_before_filter :check_login, :only => [:reassign_to_campaign]
+    before_filter :load_campaigns, :except => [:index,:destroy,:reassign_to_campaign]
 
     def type_name
       'caller'
@@ -51,6 +52,12 @@ module Client
       end
       flash_message(:notice, "Caller deleted")
       redirect_to :action=>"index"
+    end
+    
+    def reassign_to_campaign
+      caller = Caller.find_by_id(params[:id])
+      caller.update_attributes(:campaign_id => params[:campaign_id])
+      render :nothing => true
     end
     
     private

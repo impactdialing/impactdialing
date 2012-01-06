@@ -87,8 +87,9 @@ describe CallAttemptsController do
     let(:account) { Factory(:account) }
     let(:user) { Factory(:user, :account => account) }
     let(:campaign) { Factory(:campaign, :account => account, :robo => false, :start_time => Time.new("2000-01-01 01:00:00"), :end_time => Time.new("2000-01-01 23:00:00")) }
+    let(:caller) { Factory(:caller, :account => account, :campaign => campaign)}
     let(:voter) { Factory(:voter, :campaign => campaign, :call_back => false) }
-    let(:caller_session) { caller_session = Factory(:caller_session, :session_key => "sample") }
+    let(:caller_session) { caller_session = Factory(:caller_session, :session_key => "sample", :caller => caller, :campaign => campaign) }
     let(:call_attempt) { Factory(:call_attempt, :voter => voter, :campaign => campaign, :caller_session => caller_session) }
 
     it "connects the voter to an available caller" do
