@@ -143,7 +143,7 @@ class CallerController < ApplicationController
   def phones_only
     Rails.logger.debug('Entered redirect')
     caller_session = CallerSession.find(params[:session_id])
-    xml = (params[:campaign_reassigned] == "true") ?  caller_session.read_campaign_reassign_msg : caller_session.ask_caller_to_choose_voter
+    xml = (params[:campaign_reassigned] == "true") ?  caller_session.read_campaign_reassign_msg : caller_session.caller.instruction_choice_result("*", caller_session)
     Rails.logger.debug(xml)
     render :xml => xml 
   end
