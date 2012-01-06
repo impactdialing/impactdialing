@@ -139,7 +139,7 @@ class CallAttempt < ActiveRecord::Base
         caller_session.start
       else
         Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-        Twilio::Call.redirect(caller_session.sid, phones_only_caller_index_url(:host => Settings.host, :port => Settings.port, session_id: caller_session.id))        
+        Twilio::Call.redirect(caller_session.sid, phones_only_caller_index_url(:host => Settings.host, :port => Settings.port, session_id: caller_session.id, :is_campaign_reassigned? => caller_session.caller_reassigned_to_another_campaign?))        
       end  
     else
       hangup                        
