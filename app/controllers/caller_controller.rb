@@ -47,21 +47,6 @@ class CallerController < ApplicationController
     end
   end
 
-
-  def assign_campaign
-    @session = CallerSession.find(params[:session])
-    caller = Caller.find(params[:id])
-    @campaign = @session.caller.account.campaigns.find_by_campaign_id(params[:Digits])
-    if @campaign
-      @session.update_attributes(:campaign => @campaign)
-      Moderator.caller_connected_to_campaign(caller, @campaign, @session)
-      render :xml => caller.is_phones_only? ? caller.ask_instructions_choice(@session) : @session.start
-    else
-      render :xml => @session.ask_for_campaign(params[:attempt].to_i)
-    end
-  end
-
-
   def stop_calling
     caller = Caller.find(params[:id])
     @session = caller.caller_sessions.find(params[:session_id])
@@ -121,7 +106,6 @@ class CallerController < ApplicationController
     next_voter = caller_session.campaign.next_voter_in_dial_queue(params[:voter_id])
     caller_session.publish('caller_connected', next_voter ? next_voter.info : {}) if caller_session.campaign.predictive_type == Campaign::Type::PREVIEW || caller_session.campaign.predictive_type == Campaign::Type::PROGRESSIVE
     render :nothing => true
-
   end
 
   def start_calling
@@ -161,7 +145,7 @@ class CallerController < ApplicationController
     caller_session = CallerSession.find(params[:session_id])
     xml = caller_session.ask_caller_to_choose_voter
     Rails.logger.debug(xml)
-    render :xml => xml    
+    render :xml => xml 
   end
   
   def choose_instructions_option

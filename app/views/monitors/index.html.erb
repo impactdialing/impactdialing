@@ -203,7 +203,7 @@
                   <tr id="<%= caller_session.caller.id %>" class="caller <%= cycle("odd", "even") %> " older="true">
                     <td class="caller_name"><%= caller_name(caller_session.caller) %></td>
                     <td>
-											<select>
+											<select class='assign_campaign'>
 												<%= options_for_select(@all_campaigns.collect {|c| [ c.name, c.id ] }, caller_session.campaign.id) %>
 											</select>
 										</td>

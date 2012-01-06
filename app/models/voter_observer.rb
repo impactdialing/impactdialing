@@ -5,7 +5,7 @@ class VoterObserver < ActiveRecord::Observer
     return unless voter.unanswered_questions.blank?
     return unless voter.answer_recorded_by
 
-    voter.current_call_attempt.try(:update_attribute, {:wrapup_time => Time.now})
+    voter.current_call_attempt.try(:update_attributes, {:wrapup_time => Time.now})
     DIALER_LOGGER.info "====================================================="
     if voter.campaign.predictive_type == Campaign::Type::PREVIEW || voter.campaign.predictive_type == Campaign::Type::PROGRESSIVE
       next_voter = voter.campaign.next_voter_in_dial_queue(voter.id)

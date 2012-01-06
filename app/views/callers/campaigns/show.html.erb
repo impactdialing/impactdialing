@@ -4,10 +4,11 @@
 <% end %>
 <% content_for :javascripts do %>
     <%= pusher_js %>
-    <%= javascript_include_tag 'callers/caller_pusher', 'ICanHaz.min.js', 'jquery.form.js' %>
+    <%= javascript_include_tag 'callers/caller_pusher', 'ICanHaz.min.js', 'jquery.form.js', 'flash_detect_min.js' , 'browser_detect.js'%>
 
     <script type="text/javascript">
         var pusher = new Pusher('<%= Pusher.key %>');
+		pusher.connection.bind('connected', function() {pusher_ready=true;})
     </script>
 
     <script id="voter" type="text/html">
@@ -59,6 +60,7 @@
       {{/custom_fields}}
     </script>
 <% end %>
+<%= render 'browser_test' %>
 
 <%= hidden_field_tag(:caller, @caller.id) %>
 <%= hidden_field_tag(:caller_session, nil) %>
@@ -93,6 +95,7 @@
 
 <%= render 'results' %>
 <%= render 'actions' %>
+
 <% unless @campaign.time_period_exceed? %>
     <div id="start_calling">
       <a class="action primary" href="#" onclick="javascript:goclient();">Start calling</a>
@@ -119,6 +122,7 @@
         console.log("Successfully established call");
     });
     Twilio.Device.ready(function (device) {
+		client_ready=true;
     })
     Twilio.Device.error(function (error) {
         alert(error.message);
@@ -131,6 +135,7 @@
 
 
     function goclient() {
+        $("#callin_data").hide();
         params = {"PhoneNumber": "<%= @phone_number %>", 'campaign_id': "<%= @campaign.id %>", 'caller_id': "<%= @caller.id %>" };
         Twilio.Device.connect(params)
     }

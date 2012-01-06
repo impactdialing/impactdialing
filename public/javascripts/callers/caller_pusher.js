@@ -318,6 +318,11 @@ function subscribe(session_key) {
 	 hide_response_panel();
    	 set_message("Status: Dialing.");
 	});
+	
+	channel.bind('caller_re_assigned_to_campaign', function(data){
+		alert("You have been re-assigned to " + data.campaign_name+".");
+		window.location.replace(window.location.href.substring(0, window.location.href.lastIndexOf('/')+1) + data.campaign_id);
+	});
 
     function set_call_attempt(id) {
         $("#current_call_attempt").val(id);

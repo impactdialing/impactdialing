@@ -85,22 +85,22 @@ class CallerSession < ActiveRecord::Base
 
   def start
     wrapup
-    if campaign.time_period_exceed?
-      time_exceed_hangup
-    else
-      response = Twilio::Verb.new do |v|
-        v.dial(:hangupOnStar => true, :action => caller_response_path) do
-          v.conference(self.session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
-        end
-      end.response
-      update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
-      if campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE
-        publish('conference_started', {}) 
-      else
-        publish('caller_connected_dialer', {})
-      end
-      response
+    if caller_reassigned_to_another_campaign? 
+      caller.is_phones_only? ? (return reassign_caller_session_to_campaign) : reassign_caller_session_to_campaign
     end
+    return time_exceed_hangup if campaign.time_period_exceed?
+    response = Twilio::Verb.new do |v|
+      v.dial(:hangupOnStar => true, :action => caller_response_path) do
+        v.conference(self.session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
+      end
+    end.response
+    update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
+    if campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE
+      publish('conference_started', {}) 
+    else
+      publish('caller_connected_dialer', {})
+    end
+    response
   end
   
   def phones_only_start
@@ -114,6 +114,7 @@ class CallerSession < ActiveRecord::Base
   end
   
   def ask_caller_to_choose_voter(voter = nil, caller_choice = nil)
+    return reassign_caller_session_to_campaign if caller_reassigned_to_another_campaign?
     if campaign.time_period_exceed?
       time_exceed_hangup 
     else
@@ -142,6 +143,25 @@ class CallerSession < ActiveRecord::Base
     self.publish("waiting_for_result", {}) if attempt == 0
     Twilio::Verb.new { |v| v.say("Please enter your call results") if (attempt % 5 == 0); v.pause("length" => 2); v.redirect(pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => id, :attempt=>attempt+1)) }.response
   end
+  
+  def reassign_caller_session_to_campaign
+    old_campaign = self.campaign
+    self.update_attributes(:campaign => caller.campaign)
+    Moderator.publish_event(campaign, "caller_re_assigned_to_campaign", {:campaign_fields => {:id => campaign.id, :campaign_name => campaign.name, :callers_logged_in => campaign.caller_sessions.on_call.length+1,
+      :voters_count => campaign.voters_count("not called", false).length, :dials_in_progress => campaign.call_attempts.not_wrapped_up.length }, :old_campaign_id => old_campaign.id,:no_of_callers_logged_in_old_campaign => old_campaign.caller_sessions.on_call.length})
+    if caller.is_phones_only? 
+      Twilio::Verb.new do |v|
+        v.say I18n.t(:re_assign_caller_to_another_campaign, :campaign_name => caller.campaign.name)
+        v.redirect(choose_instructions_option_caller_url(self.caller, :host => Settings.host, :port => Settings.port, :session => id, :Digits => "*"))
+      end.response
+    else
+      self.publish("caller_re_assigned_to_campaign",{:campaign_name => caller.campaign.name, :campaign_id => caller.campaign.id})
+    end
+  end
+   
+   def caller_reassigned_to_another_campaign?
+      caller.campaign.id != self.campaign.id
+   end
 
   def next_question
     voter_in_progress.question_not_answered
@@ -196,7 +216,7 @@ class CallerSession < ActiveRecord::Base
       pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => id)
     end
   end
-    
+      
   def say_voter_name_ask_caller_to_choose_voter(voter, caller_choice)
     if caller_choice.present?
       (msg = I18n.t(:read_star_to_dial_pound_to_skip))  unless ["*","#"].include? caller_choice

@@ -50,4 +50,13 @@ describe Client::CallersController do
     caller.should_not be_nil
     caller.is_phones_only.should be_false
   end
+  
+  it "re-assigns caller to the campaign" do
+    campaign1 = Factory(:campaign, :active => true, :account => user.account)
+    campaign2 = Factory(:campaign, :active => true, :account => user.account)
+    caller = Factory(:caller, :campaign => campaign1)
+    get :reassign_to_campaign, :id => caller.id, :campaign_id => campaign2.id
+    caller.reload.campaign.id.should == campaign2.id
+  end
+  
 end
