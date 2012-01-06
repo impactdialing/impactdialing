@@ -25,6 +25,7 @@ en:
   client_not_ready: "We could not load the browser phone. Please check your firewall settings or anything else that could be blocking access."
   pusher_not_ready: "We could not load browser push notifications. Please check your firewall settings or anything else that could be blocking access."
   browser_unsupported: "Your browser is out of date or not supported.  Please download <a href='https://www.google.com/chrome/'>Google Chrome (11+)</a>, <a href='www.apple.com/safari/'>Apple Safari (5+)</a>, <a href='http://www.mozilla.org/en-US/firefox/new/'>Mozilla Firefox (3.6+)</a>, or <a href='http://windows.microsoft.com/en-US/internet-explorer/downloads/ie'>Microsoft Internet Explorer (7+)</a>."
+  javascript_disabled: "JavaScript must be enabled to use this page"
   white_labeling:
     impactdialing:
       title: "Impact Dialing"
