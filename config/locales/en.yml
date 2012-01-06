@@ -19,6 +19,7 @@ en:
   read_voter_name: "%{first_name}  %{last_name}. Press star to dial or pound to skip."
   read_star_to_dial_pound_to_skip: "Press star to dial or pound to skip."
   submit_results: "Then press star to submit your result."
+  invalid_file_uploaded: Invalid file. Could not upload.
   white_labeling:
     impactdialing:
       title: "Impact Dialing"
