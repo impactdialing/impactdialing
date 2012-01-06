@@ -1,5 +1,7 @@
 <div class="callout alert clearfix" id="browserTestContainer" style="display:none;"><p id="browserTest"></p></div>
-
+<noscript>
+	<div class="callout alert clearfix"><p><b><%= t('javascript_disabled') %></b></p></div>
+</noscript>
 <script type="text/javascript"> 
 var warning='';
 var client_ready=false;
@@ -26,15 +28,15 @@ function browser_supported(){
 	return supported;
 }
 
-
-if (!FlashDetect.installed)
+if (!FlashDetect.installed){
 	warning='<%=  t('flash_missing_html') %>';
+}
 
 if (!flash_supported())
 	warning='<%=  t('flash_old_html') %>';
 
 if (!browser_supported())
-	warning='<%=  t('browser_unsupported') %>';
+	warning="<%=  t('browser_unsupported') %>";
 	
 if (warning!=''){
 	$('#browserTestContainer').show();
@@ -55,6 +57,7 @@ function pusher_ready_test(){
 		warning='<%=  t('pusher_not_ready') %>';
 		$('#browserTestContainer').show();
 		$('#browserTest').html(warning);
+		$("#start_calling").hide();
 	}
 }
 
