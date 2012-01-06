@@ -242,7 +242,7 @@ describe CallerController do
     let(:caller) { Factory(:caller, :is_phones_only => true, :name => "caller name", :pin => "78453") }
     describe "preview mode" do
       before(:each) do
-        @campaign = Factory(:campaign, :robo => false, :predictive_type => 'preview', start_time: Time.now - 6.hours, end_time: Time.now + 6.hours)
+        @campaign = Factory(:campaign, :robo => false, :predictive_type => 'preview')
         @caller_session = Factory(:caller_session, :caller => caller, :campaign => @campaign, :session_key => "sessionkey")
         @current_voter = Factory(:voter, :campaign => @campaign)
       end
