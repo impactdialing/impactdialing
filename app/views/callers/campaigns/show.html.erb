@@ -97,7 +97,7 @@
 <%= render 'actions' %>
 
 <% unless @campaign.time_period_exceed? %>
-    <div id="start_calling">
+    <div id="start_calling" >
       <a class="action primary" href="#" onclick="javascript:goclient();">Start calling</a>
     </div>
     <br>
@@ -114,7 +114,8 @@
 
 <%= javascript_include_tag "https://static.twilio.com/libs/twiliojs/1.0/twilio.js" %>
 <script type="text/javascript">
-
+	if (!FlashDetect.installed || !flash_supported())
+		$("#start_calling").hide();
 
     Twilio.Device.setup("<%= @token %>", {'debug':true});
 
@@ -135,6 +136,7 @@
 
 
     function goclient() {
+        $("#callin_data").hide();
         params = {"PhoneNumber": "<%= @phone_number %>", 'campaign_id': "<%= @campaign.id %>", 'caller_id': "<%= @caller.id %>" };
         Twilio.Device.connect(params)
     }
