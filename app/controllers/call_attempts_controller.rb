@@ -22,7 +22,7 @@ class CallAttemptsController < ApplicationController
                      call_attempt.caller_session.update_attribute(:voter_in_progress, nil)
                      next_voter = call_attempt.campaign.next_voter_in_dial_queue(call_attempt.voter.id)
                      call_attempt.caller_session.publish('voter_push', next_voter ? next_voter.info : {})
-                     call_attempt.caller_session.publish('conference_started', {}) 
+                     call_attempt.caller_session.publish('conference_started', {})
                    end
                    (call_attempt.campaign.use_recordings? && call_attempt.campaign.answering_machine_detect) ? call_attempt.play_recorded_message : call_attempt.hangup
                  else
@@ -70,29 +70,27 @@ class CallAttemptsController < ApplicationController
       voter = Voter.find(params[:voter_id])
       params[:scheduled_date].blank? ? voter.capture(params) : schedule_for_later(call_attempt)
       call_attempt.update_attributes(wrapup_time: Time.now)
-    
-      Moderator.publish_event(call_attempt.campaign, 'voter_response_submitted', {:caller_id => call_attempt.caller_id,
-            :campaign_id => call_attempt.campaign.id, :dials_in_progress => call_attempt.campaign.call_attempts.not_wrapped_up.length, :voters_remaining => call_attempt.campaign.voters_count("not called", false).length})
+
+      Moderator.publish_event(call_attempt.campaign, 'voter_response_submitted', {:caller_id => call_attempt.caller_id, :campaign_id => call_attempt.campaign.id, :dials_in_progress => call_attempt.campaign.call_attempts.not_wrapped_up.length, :voters_remaining => call_attempt.campaign.voters_count("not called", false).length})
       pusher_response_received(call_attempt)
       render :nothing => true
-    end    
-  end
-
-  private
-
-  def pusher_response_received(call_attempt)
-    if call_attempt.campaign.predictive_type == Campaign::Type::PREVIEW || call_attempt.campaign.predictive_type == Campaign::Type::PROGRESSIVE
-      next_voter = call_attempt.campaign.next_voter_in_dial_queue(call_attempt.voter.id)
-      call_attempt.caller_session.publish("voter_push", next_voter ? next_voter.info : {})
-    else
-      call_attempt.caller_session.publish("predictive_successful_voter_response", {})
     end
-    call_attempt.caller_session.update_attribute(:voter_in_progress, nil)
-  end
 
-  def schedule_for_later(call_attempt)
-    scheduled_date = params[:scheduled_date] + " " + params[:callback_time_hours] +":" + params[:callback_time_hours]
-    call_attempt.schedule_for_later(DateTime.strptime(scheduled_date, "%m/%d/%Y %H:%M").to_time)
-  end
+    private
 
-end
+    def pusher_response_received(call_attempt)
+      if call_attempt.campaign.predictive_type == Campaign::Type::PREVIEW || call_attempt.campaign.predictive_type == Campaign::Type::PROGRESSIVE
+        next_voter = call_attempt.campaign.next_voter_in_dial_queue(call_attempt.voter.id)
+        call_attempt.caller_session.publish("voter_push", next_voter ? next_voter.info : {})
+      else
+        call_attempt.caller_session.publish("predictive_successful_voter_response", {})
+      end
+      call_attempt.caller_session.update_attribute(:voter_in_progress, nil)
+    end
+
+    def schedule_for_later(call_attempt)
+      scheduled_date = params[:scheduled_date] + " " + params[:callback_time_hours] +":" + params[:callback_time_hours]
+      call_attempt.schedule_for_later(DateTime.strptime(scheduled_date, "%m/%d/%Y %H:%M").to_time)
+    end
+
+  end
