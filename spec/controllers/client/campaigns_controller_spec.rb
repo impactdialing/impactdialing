@@ -19,22 +19,6 @@ describe Client::CampaignsController do
   describe 'show' do
     let(:campaign) {Factory(:campaign, :account => account)}
 
-    it "lists the campaign's active voters" do
-      inactive_voter = Factory(:voter, :active => false, :campaign => campaign)
-      active_voter = Factory(:voter, :active => true, :campaign => campaign)
-      get :show, :id => campaign.id
-      assigns(:voters).should == [active_voter]
-    end
-
-    it "orders the campaign's voters by LastName, FirstName & Phone" do
-      Factory(:voter, :active => true, :campaign => campaign, :FirstName => '1', :LastName => 'b', :Phone => '3333333333')
-      Factory(:voter, :active => true, :campaign => campaign, :FirstName => '1', :LastName => 'b', :Phone => '0000000000')
-      Factory(:voter, :active => true, :campaign => campaign, :FirstName => '2', :LastName => 'a', :Phone => '2222222222')
-      Factory(:voter, :active => true, :campaign => campaign, :FirstName => '1', :LastName => 'a', :Phone => '1111111111')
-      get :show, :id => campaign.id
-      assigns(:voters).map(&:Phone).should == ['1111111111', '2222222222', '0000000000', '3333333333']
-    end
-
 
     after(:each) do
       response.should be_ok
