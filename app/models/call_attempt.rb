@@ -133,7 +133,7 @@ class CallAttempt < ActiveRecord::Base
     Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.length, :voters_remaining => campaign.voters_count("not called", false).length})
     if caller_session && (campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE)
       caller_session.update_attribute(:voter_in_progress, nil)      
-      if caller_session.caller.is_phones_only_and_preview_or_progressive?(caller_session.campaign)  
+      if caller_session.caller.is_phones_only?
         Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
         Twilio::Call.redirect(caller_session.sid, phones_only_caller_index_url(:host => Settings.host, :port => Settings.port, session_id: caller_session.id, :campaign_reassigned => caller_session.caller_reassigned_to_another_campaign?))
       else  
