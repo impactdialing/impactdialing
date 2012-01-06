@@ -71,7 +71,7 @@ def simulator_campaign_base_values(campaign_id, start_time)
             :on_call => true).size.times.map{ CallerStatus.new('available') }            
   campaign = Campaign.find(campaign_id)
   
-  call_attempts_from_start_time = campaign.call_attempts.between(start_time.seconds.ago, Time.now)
+  call_attempts_from_start_time = campaign.call_attempts.between((Time.now - start_time.seconds), Time.now)
   observed_conversations = call_attempts_from_start_time.where(:status => "Call completed with success.").map{|attempt| OpenStruct.new(:length => attempt.duration_wrapped_up, :counter => 0)}
   observed_dials = call_attempts_from_start_time.map{|attempt| OpenStruct.new(:length => attempt.ringing_duration, :counter => 0, :answered? => attempt.status == 'Call completed with success.') }
   ActiveRecord::Base.logger.info observed_conversations
@@ -203,7 +203,8 @@ loop do
     logged_in_campaigns = ActiveRecord::Base.connection.execute("select distinct campaign_id from caller_sessions where on_call=1")
     logged_in_campaigns.each do |k|     
       puts "Simulating #{k.first}"
-      simulate(k.first)
+      campaign = Campaign.find(k.first)      
+      simulate(k.first) if campaign.predictive_type == Campaign::Type::PREDICTIVE
     end
     sleep 3
   rescue Exception => e
