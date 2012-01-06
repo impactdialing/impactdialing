@@ -55,7 +55,9 @@ describe Client::CallersController do
     campaign1 = Factory(:campaign, :active => true, :account => user.account)
     campaign2 = Factory(:campaign, :active => true, :account => user.account)
     caller = Factory(:caller, :campaign => campaign1)
-    get :reassign_to_campaign, :id => caller.id, :campaign_id => campaign2.id
+    caller_session = Factory(:caller_session, :caller => caller, :campaign => campaign2)
+    call_attempt = Factory(:call_attempt, :caller_session => caller_session)
+    get :reassign_to_campaign, :id => caller.id, :campaign_id => campaign2.id, :session_id => caller_session.id
     caller.reload.campaign.id.should == campaign2.id
   end
   

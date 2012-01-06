@@ -57,6 +57,8 @@ module Client
     def reassign_to_campaign
       caller = Caller.find_by_id(params[:id])
       caller.update_attributes(:campaign_id => params[:campaign_id])
+      caller_session = caller.caller_sessions.find_by_id(params[:session_id])
+      reassign_caller_session_to_campaign if (!caller.is_phones_only? && caller_session.attempt_in_progress.nil?)
       render :nothing => true
     end
     
