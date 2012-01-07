@@ -132,7 +132,7 @@ class CallerSession < ActiveRecord::Base
       end
     end.response
     moderator = Moderator.find_by_session(monitor_session)
-    moderator.update_attributes(:caller_session_id => self.id, :call_sid => call_sid)
+    moderator.update_attributes(:caller_session_id => self.id, :call_sid => call_sid) unless moderator.nil?
     response
   end
 
