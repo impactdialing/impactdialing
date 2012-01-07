@@ -6,7 +6,7 @@ module MonitorsHelper
       if call_attempt.status == (CallAttempt::Status::INPROGRESS || CallAttempt::Status::RINGING)
         status = "On call"
         duration = Time.now - call_attempt.created_at
-      elsif call_attempt.wrapup_time.blank?
+      elsif call_attempt.wrapup_time.blank? && call_attempt.call_end.present?
         status = "Wrap up"
         duration = Time.now - call_attempt.call_end
       elsif call_attempt.wrapup_time.present?
