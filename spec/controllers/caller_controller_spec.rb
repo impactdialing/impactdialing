@@ -80,8 +80,13 @@ describe CallerController do
       caller_session = Factory(:caller_session, :caller => caller, :on_call => true, :available_for_call => true)
       voter = Factory(:voter)
       Twilio::Call.stub(:make)
+<<<<<<< HEAD
       Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, anything).and_return("TwilioResponse"=> {"Call" => {"Sid" => 'sid'}})
       post :call_voter, :session_id => caller_session.id, :voter_id => voter.id
+=======
+      Twilio::Call.should_receive(:make).with(anything, voter.Phone,anything,anything).and_return("TwilioResponse"=> {"Call" => {"Sid" => 'sid'}})
+      post :call_voter, :session_id => caller_session.id , :voter_id => voter.id, id: caller.id
+>>>>>>> 2c56b0d... ActiveRecord::RecordNotFound: Couldn't find CallAttempt without an ID , ActiveRecord::RecordNotFound: Couldn't find Voter with ID=
     end
 
     it "pushes 'calling' to the caller" do
@@ -93,7 +98,7 @@ describe CallerController do
       Twilio::Call.stub(:make).and_return("TwilioResponse"=> {"Call" => {"Sid" => 'sid'}})
       Pusher.should_receive(:[]).with(session_key).and_return(channel)
       channel.should_receive(:trigger).with('calling_voter', anything)
-      post :call_voter, :session_id => caller_session.id, :voter_id => voter.id
+      post :call_voter, :session_id => caller_session.id , :voter_id => voter.id, id: caller.id
     end
   end
 
