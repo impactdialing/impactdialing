@@ -139,7 +139,8 @@ class CallerController < ApplicationController
 
 
   def call_voter
-    caller_session = @caller.caller_sessions.find(params[:session_id])
+    caller = Caller.find(params[:id])
+    caller_session = caller.caller_sessions.find(params[:session_id])
     voter = Voter.find(params[:voter_id])
     caller_session.preview_dial(voter)
     render :nothing => true
@@ -148,7 +149,7 @@ class CallerController < ApplicationController
   def choose_voter
     caller_session = CallerSession.find(params[:session])
     voter = Voter.find(params[:voter])
-    caller = @caller = Caller.find(params[:id])
+    caller = Caller.find(params[:id])
     caller_choice = params[:Digits]
     render :xml => caller.choice_result(caller_choice, voter, caller_session)
   end
