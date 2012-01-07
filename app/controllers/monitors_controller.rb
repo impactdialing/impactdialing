@@ -44,8 +44,8 @@ class MonitorsController < ClientController
   end
   
   def deactivate_session
-    moderator = Moderator.find_by_session(params[:monitor_session])
-    moderator.update_attributes(:active => false)
+    moderator = Moderator.find_by_session(params[:monitor_session]) 
+    moderator.update_attributes(:active => false) unless moderator.nil?
     # caller_session = CallerSession.find(params[:session_id])
     # caller_session.moderator.stop_monitoring(session)
     render nothing: true
