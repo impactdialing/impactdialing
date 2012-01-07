@@ -171,7 +171,7 @@ describe CallerController do
   end
 
   describe "phones-only call" do
-    let(:caller) { Factory(:caller, :is_phones_only => true, :name => "caller name", :pin => "78453") }
+    let(:caller) { Factory(:caller, :is_phones_only => true, :name => "caller name", :pin => "78453", campaign:  @campaign) }
     describe "preview mode" do
       before(:each) do
         @campaign = Factory(:campaign, :robo => false, :predictive_type => 'preview')
