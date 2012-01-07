@@ -109,12 +109,16 @@ class CallerController < ApplicationController
   end
 
   def start_calling
-    @caller = Caller.find(params[:caller_id])
-    @campaign = Campaign.find(params[:campaign_id])
-    @session = @caller.caller_sessions.create(on_call: false, available_for_call: false,
-                                              session_key: generate_session_key, sid: params[:CallSid], campaign: @campaign)
-    Moderator.caller_connected_to_campaign(@caller, @campaign, @session)
-    render :xml => @session.start
+    if params[:caller_id].blank? || params[:campaign_id].blank?
+      render :nothing => true
+    else
+      @caller = Caller.find(params[:caller_id])
+      @campaign = Campaign.find(params[:campaign_id])
+      @session = @caller.caller_sessions.create(on_call: false, available_for_call: false,
+                                                session_key: generate_session_key, sid: params[:CallSid], campaign: @campaign)
+      Moderator.caller_connected_to_campaign(@caller, @campaign, @session)
+      render :xml => @session.start
+    end
   end
 
 
