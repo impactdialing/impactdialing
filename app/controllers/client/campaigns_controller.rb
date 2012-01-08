@@ -7,7 +7,6 @@ module Client
       @campaign.save(:validate => false)
       @callers = account.callers.active
       @lists = @campaign.voter_lists
-      @voters = @campaign.all_voters.active.default_order.paginate(:page => params[:page])
       @scripts = account.scripts.manual.active
 
       @show_voter_buttons = @user.show_voter_buttons
@@ -20,7 +19,6 @@ module Client
 
       @callers = account.callers.active
       @lists = @campaign.voter_lists
-      @voters = @campaign.all_voters.active.default_order.paginate(:page => params[:page])
       @scripts = account.scripts.manual.active
 
       @show_voter_buttons = @user.show_voter_buttons

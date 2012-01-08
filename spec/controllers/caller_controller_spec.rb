@@ -7,7 +7,7 @@ describe CallerController do
 
 
   describe "preview dial" do
-    let(:campaign) { Factory(:campaign) }
+    let(:campaign) { Factory(:campaign, start_time: Time.now - 6.hours, end_time: Time.now + 6.hours) }
 
     before(:each) do
       login_as(caller)
@@ -80,8 +80,8 @@ describe CallerController do
       caller_session = Factory(:caller_session, :caller => caller, :on_call => true, :available_for_call => true)
       voter = Factory(:voter)
       Twilio::Call.stub(:make)
-      Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, anything).and_return("TwilioResponse"=> {"Call" => {"Sid" => 'sid'}})
-      post :call_voter, :session_id => caller_session.id, :voter_id => voter.id
+      Twilio::Call.should_receive(:make).with(anything, voter.Phone,anything,anything).and_return("TwilioResponse"=> {"Call" => {"Sid" => 'sid'}})
+      post :call_voter, :session_id => caller_session.id , :voter_id => voter.id, id: caller.id
     end
 
     it "pushes 'calling' to the caller" do
@@ -93,7 +93,7 @@ describe CallerController do
       Twilio::Call.stub(:make).and_return("TwilioResponse"=> {"Call" => {"Sid" => 'sid'}})
       Pusher.should_receive(:[]).with(session_key).and_return(channel)
       channel.should_receive(:trigger).with('calling_voter', anything)
-      post :call_voter, :session_id => caller_session.id, :voter_id => voter.id
+      post :call_voter, :session_id => caller_session.id , :voter_id => voter.id, id: caller.id
     end
   end
 
@@ -171,11 +171,10 @@ describe CallerController do
   end
 
   describe "phones-only call" do
-    let(:caller) { Factory(:caller, :is_phones_only => true, :name => "caller name", :pin => "78453") }
+    let(:caller) { Factory(:caller, :is_phones_only => true, :name => "caller name", :pin => "78453", campaign:  @campaign) }
     describe "preview mode" do
       before(:each) do
-        @campaign = Factory(:campaign, :robo => false, :predictive_type => 'preview', :start_time => (Time.now - 8.hours), :end_time => (Time.now - 8.hours))
-        @campaign.callers << caller
+        @campaign = Factory(:campaign, :robo => false, :predictive_type => 'preview')
         @caller_session = Factory(:caller_session, :caller => caller, :campaign => @campaign, :session_key => "sessionkey")
         @current_voter = Factory(:voter, :campaign => @campaign)
       end

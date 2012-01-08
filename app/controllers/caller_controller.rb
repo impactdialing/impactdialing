@@ -109,17 +109,22 @@ class CallerController < ApplicationController
   end
 
   def start_calling
-    @caller = Caller.find(params[:caller_id])
-    @campaign = Campaign.find(params[:campaign_id])
-    @session = @caller.caller_sessions.create(on_call: false, available_for_call: false,
-                                              session_key: generate_session_key, sid: params[:CallSid], campaign: @campaign)
-    Moderator.caller_connected_to_campaign(@caller, @campaign, @session)
-    render :xml => @session.start
+    if params[:caller_id].blank? || params[:campaign_id].blank?
+      render :nothing => true
+    else
+      @caller = Caller.find(params[:caller_id])
+      @campaign = Campaign.find(params[:campaign_id])
+      @session = @caller.caller_sessions.create(on_call: false, available_for_call: false,
+                                                session_key: generate_session_key, sid: params[:CallSid], campaign: @campaign)
+      Moderator.caller_connected_to_campaign(@caller, @campaign, @session)
+      render :xml => @session.start
+    end
   end
 
 
   def call_voter
-    caller_session = @caller.caller_sessions.find(params[:session_id])
+    caller = Caller.find(params[:id])
+    caller_session = caller.caller_sessions.find(params[:session_id])
     voter = Voter.find(params[:voter_id])
     caller_session.preview_dial(voter)
     render :nothing => true
@@ -128,7 +133,7 @@ class CallerController < ApplicationController
   def choose_voter
     caller_session = CallerSession.find(params[:session])
     voter = Voter.find(params[:voter])
-    caller  = Caller.find(params[:id])
+    caller = Caller.find(params[:id])
     caller_choice = params[:Digits]
     render :xml => caller.choice_result(caller_choice, voter, caller_session)
   end

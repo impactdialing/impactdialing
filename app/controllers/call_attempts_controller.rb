@@ -22,7 +22,7 @@ class CallAttemptsController < ApplicationController
                      call_attempt.caller_session.update_attribute(:voter_in_progress, nil)
                      next_voter = call_attempt.campaign.next_voter_in_dial_queue(call_attempt.voter.id)
                      call_attempt.caller_session.publish('voter_push', next_voter ? next_voter.info : {})
-                     call_attempt.caller_session.publish('conference_started', {}) 
+                     call_attempt.caller_session.publish('conference_started', {})
                    end
                    (call_attempt.campaign.use_recordings? && call_attempt.campaign.answering_machine_detect) ? call_attempt.play_recorded_message : call_attempt.hangup
                  else
@@ -63,15 +63,18 @@ class CallAttemptsController < ApplicationController
   end
 
   def voter_response
-    call_attempt = CallAttempt.find(params[:id])
-    voter = Voter.find(params[:voter_id])
-    params[:scheduled_date].blank? ? voter.capture(params) : schedule_for_later(call_attempt)
-    call_attempt.update_attributes(wrapup_time: Time.now)
-    
-    Moderator.publish_event(call_attempt.campaign, 'voter_response_submitted', {:caller_id => call_attempt.caller_session.caller.id,
-          :campaign_id => call_attempt.campaign.id, :dials_in_progress => call_attempt.campaign.call_attempts.not_wrapped_up.length, :voters_remaining => call_attempt.campaign.voters_count("not called", false).length})
-    pusher_response_received(call_attempt)
-    render :nothing => true
+    if params[:voter_id].nil? || params[:id].nil?
+      render :nothing => true
+    else
+      call_attempt = CallAttempt.find(params[:id])
+      voter = Voter.find(params[:voter_id])
+      params[:scheduled_date].blank? ? voter.capture(params) : schedule_for_later(call_attempt)
+      call_attempt.update_attributes(wrapup_time: Time.now)
+
+      Moderator.publish_event(call_attempt.campaign, 'voter_response_submitted', {:caller_id => call_attempt.caller_id, :campaign_id => call_attempt.campaign.id, :dials_in_progress => call_attempt.campaign.call_attempts.not_wrapped_up.length, :voters_remaining => call_attempt.campaign.voters_count("not called", false).length})
+      pusher_response_received(call_attempt)
+      render :nothing => true
+    end
   end
 
   private
