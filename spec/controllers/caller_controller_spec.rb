@@ -223,6 +223,14 @@ describe CallerController do
     end
 
   end
+  
+  it "read re-assiged msg when caller reassigned to another campaign" do
+    campaign = Factory(:campaign, :robo => false, :predictive_type => 'preview')
+    campaign.callers << caller
+    caller_session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sessionkey")
+    post :phones_only, :campaign_reassigned => "true", :session_id => caller_session.id
+    response.body.should == caller_session.read_campaign_reassign_msg
+  end
 
   it "logs out" do
     login_as(caller)

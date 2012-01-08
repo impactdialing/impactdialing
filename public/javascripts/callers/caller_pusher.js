@@ -321,9 +321,30 @@ function subscribe(session_key) {
 	});
 	
 	channel.bind('caller_re_assigned_to_campaign', function(data){
+		set_new_campaign_script(data);
+		if(data.dialer && data.dialer == 'preview'){
+			next_voter();
+		}
+		set_response_panel(data);
 		alert("You have been re-assigned to " + data.campaign_name+".");
-		window.location.replace(window.location.href.substring(0, window.location.href.lastIndexOf('/')+1) + data.campaign_id);
 	});
+	
+		function set_new_campaign_script(data){
+			$('#campaign').val(data.campaign_id);
+
+			$('#script').text(data.script);
+		}
+		
+		function set_response_panel(data){
+			$.ajax({
+		      url : "/caller/" + $("#caller").val() + "/new_campaign_response_panel",
+		      data : {},
+		      type : "POST",
+		      success : function(response) {
+						$('#response_panel').replaceWith(response);
+		      }
+		  })	
+		}
 
     function set_call_attempt(id) {
         $("#current_call_attempt").val(id);
