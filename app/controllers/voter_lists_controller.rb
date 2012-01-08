@@ -28,7 +28,13 @@ class VoterListsController < ClientController
     saved_file_name = VoterList.upload_file_to_s3(csv, csv_filename)
     save_csv_filename_to_session(saved_file_name)
     @separator = separator_from_file_extension(upload.original_filename)
-    @csv_column_headers = CSV.parse(upload.open.readline, :col_sep => @separator).first.compact
+    begin
+      @csv_column_headers = CSV.parse(upload.open.readline, :col_sep => @separator).first.compact
+    rescue Exception => err
+      flash_message(:error, I18n.t(:invalid_file_uploaded))      
+      redirect_to @campaign_path
+      return
+    end    
     render "column_mapping", :layout => @layout
   end
 
@@ -66,7 +72,7 @@ class VoterListsController < ClientController
   end
 
   def check_file_uploaded
-    return true if session[:voters_list_upload] and session[:voters_list_upload]["filename"]
+    return true if session[:voters_list_upload] && session[:voters_list_upload]["filename"]
     flash_message(:error, "Please upload the file again.")
     redirect_to @campaign_path
     false

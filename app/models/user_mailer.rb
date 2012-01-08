@@ -7,7 +7,7 @@ class UserMailer
   end
 
   def deliver_invitation(new_user, current_user)
-    link = reset_password_url(:host => Settings.host, :port => Settings.port, :reset_code => new_user.password_reset_code)
+    link = reset_password_url(:host => APP_HOST, :reset_code => new_user.password_reset_code)
     @uakari.send_email({
       :track_opens => true,
       :track_clicks => true,
