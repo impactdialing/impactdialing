@@ -85,7 +85,7 @@ class CallerSession < ActiveRecord::Base
 
   def start
     wrapup
-    if caller_reassigned_to_another_campaign? 
+    if caller_reassigned_to_another_campaign?
       caller.is_phones_only? ? (return reassign_caller_session_to_campaign) : reassign_caller_session_to_campaign
     end
     return time_exceed_hangup if campaign.time_period_exceed?
