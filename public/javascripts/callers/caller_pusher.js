@@ -78,7 +78,7 @@ function call_voter() {
 	console.log('called voter');
 	hide_all_actions();
     $.ajax({
-        url : "/caller/" + $("#caller_session").val() + "/call_voter",
+        url : "/caller/" + $("#caller").val() + "/call_voter",
         data : {id : $("#caller").val(), voter_id : $("#current_voter").val(), session_id : $("#caller_session").val() },
         type : "POST",
         success : function(response) {            
@@ -325,7 +325,12 @@ function subscribe(session_key) {
 		set_new_campaign_script(data);
 		set_response_panel(data);
 		get_voter();
-		alert("You have been re-assigned to " + data.campaign_name+".");	
+		if (data.dialer && data.dialer.toLowerCase() == "algorithm1") {
+			hide_all_actions();
+			$("#stop_calling").show();
+		}
+		alert("You have been re-assigned to " + data.campaign_name+".");
+	
 	});
 	
 		function set_new_campaign_script(data){
