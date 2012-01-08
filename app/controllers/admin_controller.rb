@@ -118,66 +118,10 @@ class AdminController < ApplicationController
     redirect_to :controller=>"client", :action=>"index"
   end
 
-  def user
-    @user = User.new
-    if request.post?
-      @user.update_attributes params[:user]
-      if @user.valid?
-        @user.save
-        @caller = Caller.new
-        @caller.name="Default Caller"
-        @caller.user_id=@user.id
-        @caller.save
-        @script = Script.new
-        @script.name="Voter ID Example"
-        @script.keypad_1="Strong supportive"
-        @script.keypad_2="Lean supportive"
-        @script.keypad_3="Undecided"
-        @script.keypad_4="Lean opposed"
-        @script.keypad_5="Strong opposed"
-        @script.keypad_6="Refused"
-        @script.keypad_7="Not home/call back"
-        @script.keypad_8="Language barrier"
-        @script.keypad_9="Wrong number"
-        @script.incompletes=["7"].to_json
-        @script.script="Hi, I'm a volunteer with the such-and-such campaign.
-
-I'm voting for such-and-such because...
-
-Can we count on you to vote for such-and-such?"
-@script.active=1
-@script.user_id=@user.id
-@script.save
-@script = Script.new
-@script.name="GOTV Example"
-@script.keypad_1="Will vote early"
-@script.keypad_2="Will vote on election day"
-@script.keypad_3="Already voted"
-@script.keypad_4="Will not vote"
-@script.keypad_5="Not a supporter"
-@script.keypad_6="Refused"
-@script.keypad_7="Not home/call back"
-@script.keypad_8="Language barrier"
-@script.keypad_9="Wrong number"
-@script.incompletes=["7"].to_json
-@script.script="Hi, I'm a volunteer with the such-and-such campaign.
-
-I'm voting for such-and-such because...
-
-Can we count on you to vote for such-and-such?"
-@script.active=1
-@script.user_id=@user.id
-@script.save
-flash_message(:notice, "User created!")
-redirect_to :controller=>"client"
-      end
-    end
-  end
-
   def cms
     @version = session[:cms_version]
-    @keys = Seo.all.map{ |i| i.crmkey }.uniq
-    @keys.delete_if {|x| x == nil}
+    @keys = Seo.all.map { |i| i.crmkey }.uniq
+    @keys.delete_if { |x| x == nil }
     @keys.sort!
   end
 
@@ -220,7 +164,7 @@ redirect_to :controller=>"client"
       if params[:v]
         session[:cms_version]=params[:v]
         session[:cms_version]=nil if params[:v].blank? || params[:v]=="Live"
-        flash_message(:notice,"CMS version changed")
+        flash_message(:notice, "CMS version changed")
         redirect_to :action=>"cms"
       end
       if !params[:nv].blank?
@@ -236,12 +180,12 @@ redirect_to :controller=>"client"
           # x.save
           # session[:cms_version]=x.version
           session[:cms_version]=params[:nv].strip
-          flash_message(:notice,"CMS version added successfully")
+          flash_message(:notice, "CMS version added successfully")
           redirect_to :action=>"cms"
         end
       end
     end
-    @versions = Seo.all.map{ |i| i.version }.uniq
+    @versions = Seo.all.map { |i| i.version }.uniq
   end
 
   def robo_log_parse
@@ -268,7 +212,7 @@ redirect_to :controller=>"client"
       s.version=session[:cms_version]
       s.version=nil if session[:cms_version].blank?
       s.save
-      flash_message(:notice,"CMS updated successfully")
+      flash_message(:notice, "CMS updated successfully")
       redirect_to :action=>"cms"
     end
   end
@@ -288,28 +232,28 @@ redirect_to :controller=>"client"
 
   def charge_account(billing_account, amount)
     creditcard = ActiveMerchant::Billing::CreditCard.new(
-      :number     => billing_account.decrypt_cc,
-      :month      => billing_account.expires_month,
-      :year       => billing_account.expires_year,
-      :type       => billing_account.cardtype,
-      :first_name => billing_account.first_name,
-      :last_name  => billing_account.last_name
+        :number => billing_account.decrypt_cc,
+        :month => billing_account.expires_month,
+        :year => billing_account.expires_year,
+        :type => billing_account.cardtype,
+        :first_name => billing_account.first_name,
+        :last_name => billing_account.last_name
     )
 
     user = billing_account.account.users.first
     billing_address = {
-      :name => "#{user.fname} #{user.lname}",
-      :address1 => billing_account.address1 ,
-      :zip => billing_account.zip,
-      :city     => billing_account.city,
-      :state    => billing_account.state,
-      :country  => 'US'
+        :name => "#{user.fname} #{user.lname}",
+        :address1 => billing_account.address1,
+        :zip => billing_account.zip,
+        :city => billing_account.city,
+        :state => billing_account.state,
+        :country => 'US'
     }
     options = {:address => {}, :address1 => billing_address, :billing_address => billing_address, :ip=>"127.0.0.1", :order_id=>""}
-    @response = BILLING_GW.authorize(amount.to_f*100, creditcard,options)
+    @response = BILLING_GW.authorize(amount.to_f*100, creditcard, options)
 
     if @response.message == 'APPROVED'
-      BILLING_GW.capture(@amount,  @response.authorization)
+      BILLING_GW.capture(@amount, @response.authorization)
       true
     else
       false
@@ -331,6 +275,7 @@ redirect_to :controller=>"client"
       @attempts = CallAttempt.find_all_by_caller_session_id(@session, :order=>"id")
     end
   end
+
   private
   def authenticate
     authenticate_or_request_with_http_basic(self.class.controller_path) do |user_name, password|

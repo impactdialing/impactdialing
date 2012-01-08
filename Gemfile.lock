@@ -246,7 +246,7 @@ DEPENDENCIES
   mongrel (~> 1.2.0.pre2)
   mysql (~> 2.8.1)
   nested_form (~> 0.1.1)
-  newrelic_rpm (~> 3.0.1)
+  newrelic_rpm
   nokogiri (~> 1.4.4)
   paperclip (= 2.3.16)
   pusher (~> 0.8.2)

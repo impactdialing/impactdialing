@@ -133,7 +133,7 @@ class CallerController < ApplicationController
   def choose_voter
     caller_session = CallerSession.find(params[:session])
     voter = Voter.find(params[:voter])
-    caller  = Caller.find(params[:id])
+    caller = Caller.find(params[:id])
     caller_choice = params[:Digits]
     render :xml => caller.choice_result(caller_choice, voter, caller_session)
   end
