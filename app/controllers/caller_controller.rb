@@ -6,15 +6,6 @@ class CallerController < ApplicationController
   before_filter :redirect_to_ssl
   before_filter :connect_to_twilio, :only => [:preview_dial]
 
-
-  def index
-    unless @caller.account.activated?
-      flash_now(:warning, "Your account is not funded. Please contact your account administrator.")
-    end
-    @campaigns = @caller.campaigns.manual.active.collect { |c| c if c.use_web_ui? }
-  end
-
-
   def check_login
     if session[:caller].blank?
       redirect_to caller_login_path

@@ -78,7 +78,7 @@ function call_voter() {
 	console.log('called voter');
 	hide_all_actions();
     $.ajax({
-        url : "/caller/" + $("#caller").val() + "/call_voter",
+        url : "/caller/" + $("#caller_session").val() + "/call_voter",
         data : {id : $("#caller").val(), voter_id : $("#current_voter").val(), session_id : $("#caller_session").val() },
         type : "POST",
         success : function(response) {            
@@ -321,13 +321,11 @@ function subscribe(session_key) {
 	});
 	
 	channel.bind('caller_re_assigned_to_campaign', function(data){
-		alert("You have been re-assigned to " + data.campaign_name+".");
-		set_new_campaign_script(data);
-		if(data.dialer && data.dialer == 'preview'){
-			next_voter();
-		}
-		set_response_panel(data);
 		
+		set_new_campaign_script(data);
+		set_response_panel(data);
+		get_voter();
+		alert("You have been re-assigned to " + data.campaign_name+".");	
 	});
 	
 		function set_new_campaign_script(data){
