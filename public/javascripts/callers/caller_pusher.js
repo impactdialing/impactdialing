@@ -321,17 +321,17 @@ function subscribe(session_key) {
 	});
 	
 	channel.bind('caller_re_assigned_to_campaign', function(data){
+		alert("You have been re-assigned to " + data.campaign_name+".");
 		set_new_campaign_script(data);
 		if(data.dialer && data.dialer == 'preview'){
 			next_voter();
 		}
 		set_response_panel(data);
-		alert("You have been re-assigned to " + data.campaign_name+".");
+		
 	});
 	
 		function set_new_campaign_script(data){
 			$('#campaign').val(data.campaign_id);
-
 			$('#script').text(data.script);
 		}
 		
