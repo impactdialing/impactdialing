@@ -26,7 +26,7 @@ class MonitorsController < ClientController
     type = params[:type]
     caller_session = CallerSession.find(params[:session_id])
     if caller_session.moderator.nil?
-      render text: "Status: There is some problem in switching mode. Please refresh the page."
+      render text: "Status: There is some problem in switching mode. Please refresh the page"
     else
       caller_session.moderator.switch_monitor_mode(caller_session, type)
       if caller_session.voter_in_progress && (caller_session.voter_in_progress.call_attempts.last.status == "Call in progress")
