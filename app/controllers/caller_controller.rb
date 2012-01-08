@@ -2,7 +2,7 @@ require Rails.root.join("lib/twilio_lib")
 
 class CallerController < ApplicationController
   layout "caller"
-  before_filter :check_login, :except=>[:login, :feedback, :assign_campaign, :end_session, :pause, :start_calling, :gather_response, :choose_voter, :phones_only_progressive, :phones_only, :choose_instructions_option]
+  before_filter :check_login, :except=>[:login, :feedback, :assign_campaign, :end_session, :pause, :start_calling, :gather_response, :choose_voter, :phones_only_progressive, :phones_only, :choose_instructions_option, :new_campaign_response_panel]
   before_filter :redirect_to_ssl
   before_filter :connect_to_twilio, :only => [:preview_dial]
 
@@ -145,13 +145,19 @@ class CallerController < ApplicationController
     caller_session = CallerSession.find(params[:session_id])
     xml = (params[:campaign_reassigned] == "true") ?  caller_session.read_campaign_reassign_msg : caller_session.caller.instruction_choice_result("*", caller_session)
     Rails.logger.debug(xml)
-    render :xml => xml 
+    render :xml => xml
   end
   
   def choose_instructions_option
     caller_session = CallerSession.find(params[:session])
     caller = Caller.find(params[:id])
     render :xml => caller.instruction_choice_result(params[:Digits], caller_session)
+  end
+  
+  def new_campaign_response_panel
+    caller = Caller.find(params[:id])
+    @campaign = caller.campaign
+    render :layout => false
   end
   
   def ping

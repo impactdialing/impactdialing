@@ -87,9 +87,9 @@
 <fieldset>
   <legend>Script</legend>
   <% if @campaign.script %>
-      <div class="rt script"> <%= raw @campaign.script.script.gsub("\n", "<br />") %></div>
+      <div id="script" class="rt script"> <%= raw @campaign.script.script.gsub("\n", "<br />") %></div>
   <% else %>
-      <div class="rt script">There is no script assigned to this campaign.</div>
+      <div id="script" class="rt script">There is no script assigned to this campaign.</div>
   <% end %>
 </fieldset>
 
