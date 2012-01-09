@@ -586,9 +586,10 @@ class Campaign < ActiveRecord::Base
 
   def answers_result(from_date, to_date)
     result = Hash.new
+    voter_ids = Voter.find(:all, conditions: "campaign_id = #{self.id}", :select => 'id').collect{|x| x.id}
     script.questions.each do |question|
-      total_answers = question.answered_within(from_date, to_date).belong_to(all_voters.collect{|v| v.id}).length
-      result[question.text] = question.possible_responses.collect { |possible_response| possible_response.stats(from_date, to_date, total_answers, self) }
+      total_answers = question.answered_within(from_date, to_date).belong_to(voter_ids).length
+      result[question.text] = question.possible_responses.collect { |possible_response| possible_response.stats(from_date, to_date, total_answers, voter_ids) }
     end
     result
   end
