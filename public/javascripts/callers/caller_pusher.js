@@ -324,13 +324,11 @@ function subscribe(session_key) {
 		
 		set_new_campaign_script(data);
 		set_response_panel(data);
-		
+		clear_voter();
 		if (data.dialer && (data.dialer.toLowerCase() == "preview" || data.dialer.toLowerCase() == "progressive")) {
-			$("#current_voter").val('');
 			get_voter();
 		}
 		else{
-			clear_voter();
 			$("#stop_calling").show();
 		}
 		alert("You have been re-assigned to " + data.campaign_name+".");
