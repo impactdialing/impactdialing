@@ -27,7 +27,7 @@ function forming_select_tag(data){
 }
 
 function update_campaign_row(data){
-	var campaign_selector = 'tr#'+data.campaign_fields.id+'.campaign';
+	var campaign_selector = 'tr#campaign_'+data.campaign_fields.id;
 	if($(campaign_selector).length == 0){
     var campaign = ich.campaign(data);
     $('#campaign_table').children().append(campaign);
@@ -40,7 +40,7 @@ function update_campaign_row(data){
 }
 
 function update_old_campaign_row(data){
-	var old_campaign_selector = 'tr#'+data.old_campaign_id+'.campaign';
+	var old_campaign_selector = 'tr#campaign_'+data.old_campaign_id;
 	if(data.no_of_callers_logged_in_old_campaign == 0){
     $(old_campaign_selector).remove();
   }
@@ -61,7 +61,7 @@ function subscribe_and_bind_events_monitoring(session_id){
   channel.bind('caller_session_started', function(data){
     if (!$.isEmptyObject(data)) {
       console.log("pusher event caller session started")
-			var caller_selector = 'tr#'+data.id+'.caller';
+			var caller_selector = 'tr#caller_'+data.id;
       var caller = ich.caller(data);
       
 			$('#caller_table').children().append(caller);
@@ -75,18 +75,14 @@ function subscribe_and_bind_events_monitoring(session_id){
   });
   
   channel.bind('caller_disconnected', function(data) {
-    var caller_selector = 'tr#'+data.caller_id+'.caller';
+    var caller_selector = 'tr#caller_'+data.caller_id;
+		var campaign_selector = 'tr#campaign_'+data.campaign_id;
+		
     if($(caller_selector).attr('on_call') == "true"){
       $('.stop_monitor').hide();
       $('status').text("Status: Disconnected.");
     }
-
-		console.log('caller_disconnected:', $(caller_selector), !data.campaign_active);
-
     $(caller_selector).remove();
-    var campaign_selector = 'tr#'+data.campaign_id+'.campaign';
-		console.log('caller_disconnected:', data, caller_selector, $(campaign_selector));
-    
 		if(!data.campaign_active){
       $(campaign_selector).remove();
     }
@@ -97,8 +93,8 @@ function subscribe_and_bind_events_monitoring(session_id){
   
   channel.bind('voter_disconnected', function(data) {
     if (!$.isEmptyObject(data)){
-      var campaign_selector = 'tr#'+data.campaign_id+'.campaign';
-			var caller_selector = 'tr#'+data.caller_id+'.caller';
+      var campaign_selector = 'tr#campaign_'+data.campaign_id;
+			var caller_selector = 'tr#caller_'+data.caller_id;
 			update_status_and_duration(caller_selector, "Wrap up");
       $(campaign_selector).children('.voters_count').text(data.voters_remaining);
  			if($(caller_selector).attr("on_call") == "true"){
@@ -109,8 +105,8 @@ function subscribe_and_bind_events_monitoring(session_id){
   
   channel.bind('voter_connected',function(data){
     if (!$.isEmptyObject(data)){
-      var campaign_selector = 'tr#'+data.campaign_id+'.campaign';
-			var caller_selector = 'tr#'+data.caller_id+'.caller';
+      var campaign_selector = 'tr#campaign_'+data.campaign_id;
+			var caller_selector = 'tr#caller_'+data.caller_id;
 			update_status_and_duration(caller_selector, "On call");
 			if($(caller_selector).attr("on_call") == "true"){
 				status = "Status: Monitoring in " + $(caller_selector).attr('mode') + " mode on " + $(caller_selector).children('td.caller_name').text().split("/")[0] + ".";
@@ -121,7 +117,7 @@ function subscribe_and_bind_events_monitoring(session_id){
 
 	channel.bind('update_dials_in_progress', function(data){
 		if (!$.isEmptyObject(data)){
-			var campaign_selector = 'tr#'+data.campaign_id+'.campaign';
+			var campaign_selector = 'tr#campaign_'+data.campaign_id;
 			$(campaign_selector).children('.dials_in_progress').text(data.dials_in_progress);
 			if(data.voters_remaining){
 				$(campaign_selector).children('.voters_count').text(data.voters_remaining);
@@ -131,8 +127,8 @@ function subscribe_and_bind_events_monitoring(session_id){
 	
 	channel.bind('voter_response_submitted', function(data){
 		if (!$.isEmptyObject(data)){
-			var caller_selector = 'tr#'+data.caller_id+'.caller';
-			var campaign_selector = 'tr#'+data.campaign_id+'.campaign';
+			var caller_selector = 'tr#caller_'+data.caller_id;
+			var campaign_selector = 'tr#campaign_'+data.campaign_id;
 			update_status_and_duration(caller_selector, "On hold");
 			$(campaign_selector).children('.dials_in_progress').text(data.dials_in_progress);
 			$(campaign_selector).children('.voters_count').text(data.voters_remaining);
@@ -141,10 +137,10 @@ function subscribe_and_bind_events_monitoring(session_id){
 	
 	channel.bind('caller_re_assigned_to_campaign', function(data){
 		if (!$.isEmptyObject(data)){
-			var caller_selector = 'tr#'+data.caller_id+'.caller';
+			var caller_selector = 'tr#caller_'+data.caller_id;
 			update_campaign_row(data);
 			update_old_campaign_row(data);
-			update_status_and_duration(caller_selector, "Hold");
+			update_status_and_duration(caller_selector, "On hold");
 		}
 	});
   
