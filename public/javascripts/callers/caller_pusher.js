@@ -324,9 +324,12 @@ function subscribe(session_key) {
 		
 		set_new_campaign_script(data);
 		set_response_panel(data);
-		get_voter();
-		if (data.dialer && data.dialer.toLowerCase() == "algorithm1") {
-			hide_all_actions();
+		
+		if (data.dialer && (data.dialer.toLowerCase() == "preview" || data.dialer.toLowerCase() == "progressive")) {
+			get_voter();
+		}
+		else{
+			clear_voter();
 			$("#stop_calling").show();
 		}
 		alert("You have been re-assigned to " + data.campaign_name+".");
