@@ -7,3 +7,4 @@ QuestionObjets: <%= ObjectSpace.each_object(Question){} %>
 PossibleResponseObjets: <%= ObjectSpace.each_object(PossibleResponse){} %>
 
 Count: <%= ObjectSpace.count_objects %>
+Memory <%= (`ps -o rss= -p #{$$}`.to_f / 1024.0) %>
