@@ -37,7 +37,7 @@ describe Client::CallersController do
 
   it "should create a phones only caller" do
     name = "preethi_is_not_evil"
-    post :create, :caller => {:name => name, :is_phones_only => true}
+    post :create, :caller => {:name => name, :is_phones_only => true, :campaign_id => "1234"}
     caller = Caller.find_by_name(name)
     caller.should_not be_nil
     caller.is_phones_only.should be_true
@@ -45,7 +45,7 @@ describe Client::CallersController do
 
   it "should create a phones only caller" do
     email = "preethi@evil.com"
-    post :create, :caller => {:email => email, :is_phones_only => false}
+    post :create, :caller => {:email => email, :is_phones_only => false, :campaign_id => "1234"}
     caller = Caller.find_by_email(email)
     caller.should_not be_nil
     caller.is_phones_only.should be_false

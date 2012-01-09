@@ -42,6 +42,7 @@ end
 Factory.define :caller do |s|
   s.email { Factory.next(:email) }
   s.name 'a caller'
+  s.campaign_id { Factory(:campaign).id }
 end
 
 Factory.define :voter_list do |v|
