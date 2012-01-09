@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120103053245) do
+ActiveRecord::Schema.define(:version => 20120109031228) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -80,7 +80,7 @@ ActiveRecord::Schema.define(:version => 20120103053245) do
     t.string   "tCalled"
     t.string   "tCaller"
     t.string   "tPhoneNumberSid"
-    t.integer  "tStatus"
+    t.string   "tStatus"
     t.integer  "tDuration"
     t.integer  "tFlags"
     t.datetime "tStartTime"
@@ -130,7 +130,7 @@ ActiveRecord::Schema.define(:version => 20120103053245) do
     t.string   "tCalled"
     t.string   "tCaller"
     t.string   "tPhoneNumberSid"
-    t.integer  "tStatus"
+    t.string   "tStatus"
     t.integer  "tDuration"
     t.integer  "tFlags"
     t.datetime "tStartTime"
