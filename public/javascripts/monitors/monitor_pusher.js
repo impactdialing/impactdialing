@@ -80,6 +80,9 @@ function subscribe_and_bind_events_monitoring(session_id){
       $('.stop_monitor').hide();
       $('status').text("Status: Disconnected.");
     }
+
+		console.log('caller_disconnected:', $(caller_selector), !data.campaign_active, $(campaign_selector));
+
     $(caller_selector).remove();
     var campaign_selector = 'tr#'+data.campaign_id+'.campaign';
     if(!data.campaign_active){

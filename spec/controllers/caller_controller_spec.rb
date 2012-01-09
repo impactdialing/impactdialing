@@ -171,12 +171,12 @@ describe CallerController do
   end
 
   describe "phones-only call" do
-    let(:caller) { Factory(:caller, :is_phones_only => true, :name => "caller name", :pin => "78453", campaign:  @campaign) }
+    let(:campaign) { Factory(:campaign, :robo => false, :predictive_type => 'preview') }
+    let(:caller) { Factory(:caller, :is_phones_only => true, :name => "caller name", :pin => "78453", campaign:  campaign) }
     describe "preview mode" do
       before(:each) do
-        @campaign = Factory(:campaign, :robo => false, :predictive_type => 'preview')
-        @caller_session = Factory(:caller_session, :caller => caller, :campaign => @campaign, :session_key => "sessionkey")
-        @current_voter = Factory(:voter, :campaign => @campaign)
+        @caller_session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sessionkey")
+        @current_voter = Factory(:voter, :campaign => campaign)
       end
 
       it "add the caller to the conference and call to the voter, if caller press * " do
@@ -187,7 +187,7 @@ describe CallerController do
       end
 
       it "if caller press #, skip the voter then say the next voter name and ask for option" do
-        next_voter = Factory(:voter, :campaign => @campaign, :FirstName => "next voter first name", :LastName => "next voter last name")
+        next_voter = Factory(:voter, :campaign => campaign, :FirstName => "next voter first name", :LastName => "next voter last name")
         post :choose_voter, :id => caller.id, :session => @caller_session.id, :voter => @current_voter.id, :Digits => "#"
         response.body.should == Twilio::Verb.new do |v|
           v.gather(:numDigits => 1, :timeout => 10, :action => choose_voter_caller_url(caller, :session => @caller_session.id, :host => Settings.host, :port => Settings.port, :voter => next_voter.id), :method => "POST", :finishOnKey => "5") do

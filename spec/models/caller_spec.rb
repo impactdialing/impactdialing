@@ -168,12 +168,6 @@ describe Caller do
       caller.active_session(campaign).should == {:caller_session => {:id => nil}}
     end
 
-    it "returns no session if the caller is not associated with the campaign" do
-      campaign = Factory(:campaign)
-      Factory(:caller_session, :caller => caller, :session_key => 'key', :on_call => true, :available_for_call => true, :campaign => campaign)
-      caller.active_session(campaign).should == {:caller_session => {:id => nil}}
-    end
-
   end
 
 
