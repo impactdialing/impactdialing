@@ -68,7 +68,6 @@ module Client
           caller_session.reassign_caller_session_to_campaign
         end
       end
-      caller_session.reassign_caller_session_to_campaign if (!caller.is_phones_only? && caller_session.attempt_in_progress.nil?)
       render :nothing => true
     end
     
