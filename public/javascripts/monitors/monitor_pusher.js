@@ -81,11 +81,13 @@ function subscribe_and_bind_events_monitoring(session_id){
       $('status').text("Status: Disconnected.");
     }
 
-		console.log('caller_disconnected:', $(caller_selector), !data.campaign_active, $(campaign_selector));
+		console.log('caller_disconnected:', $(caller_selector), !data.campaign_active);
 
     $(caller_selector).remove();
     var campaign_selector = 'tr#'+data.campaign_id+'.campaign';
-    if(!data.campaign_active){
+		console.log('caller_disconnected:', data, caller_selector, $(campaign_selector));
+    
+		if(!data.campaign_active){
       $(campaign_selector).remove();
     }
     else{
@@ -139,8 +141,10 @@ function subscribe_and_bind_events_monitoring(session_id){
 	
 	channel.bind('caller_re_assigned_to_campaign', function(data){
 		if (!$.isEmptyObject(data)){
+			var caller_selector = 'tr#'+data.caller_id+'.caller';
 			update_campaign_row(data);
 			update_old_campaign_row(data);
+			update_status_and_duration(caller_selector, "Hold");
 		}
 	});
   

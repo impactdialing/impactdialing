@@ -326,6 +326,7 @@ function subscribe(session_key) {
 		set_response_panel(data);
 		
 		if (data.dialer && (data.dialer.toLowerCase() == "preview" || data.dialer.toLowerCase() == "progressive")) {
+			$("#current_voter").val('');
 			get_voter();
 		}
 		else{
