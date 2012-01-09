@@ -106,5 +106,17 @@ class Caller < ActiveRecord::Base
     end
   end
   
+  def reassign_to_another_campaign(caller_session)
+    if caller_session.attempt_in_progress.nil?
+      if self.is_phones_only?
+        if (caller_session.campaign.predictive_type != "preview" && caller_session.campaign.predictive_type != "progressive")
+          Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
+          Twilio::Call.redirect(caller_session.sid, phones_only_caller_index_url(:host => Settings.host, :port => Settings.port, session_id: caller_session.id, :campaign_reassigned => true))
+        end
+      else
+        caller_session.reassign_caller_session_to_campaign
+      end
+    end
+  end
 
 end
