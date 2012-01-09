@@ -129,7 +129,7 @@
 </script>
 
 <script id="caller" type="text/html">
-  <tr id={{id}} class="caller <%= cycle("odd", "even") %> " session_id={{session_id}}>
+  <tr id="caller_{{id}}" class="caller <%= cycle("odd", "even") %> " session_id={{session_id}} caller_id={{id}}>
       <td class="caller_name">{{email}}</td>
       <td class="campaigns"></td>
 			<td class="status">On hold</td>
@@ -148,7 +148,7 @@
 </script>
 <script id="campaign" type="text/html">
   {{#campaign_fields}}
-    <tr id={{id}} class="campaign <%= cycle("odd", "even") %>">
+    <tr id="campaign_{{id}}" class="campaign <%= cycle("odd", "even") %>" campaign_id={{id}}>
        <td>{{campaign_name}}</td>
        <td class="callers_logged_in">{{callers_logged_in}}</td>
        <td class="dials_in_progress">{{dials_in_progress}}</td>
@@ -173,7 +173,7 @@
           </tr>
           <% if @campaigns.present? %>
             <% @campaigns.each do |c| %>
-                <tr id="<%= c.id %>" class="campaign <%= cycle("odd", "even") %>">
+                <tr id="<%= "campaign_"+c.id.to_s %>" class="campaign <%= cycle("odd", "even") %>">
                   <td><%= c.name %></td>
                   <td class="callers_logged_in"><%= c.caller_sessions.on_call.length %></td>
                   <td class="dials_in_progress"><%= c.call_attempts.not_wrapped_up.try(:length) %></td>
@@ -200,7 +200,7 @@
           </tr>
           <% @campaigns.each do |c| %>
               <% c.caller_sessions.on_call.each do |caller_session| %>
-                  <tr id="<%= caller_session.caller.id %>" class="caller <%= cycle("odd", "even") %> " older="true" session_id="<%= caller_session.id %>">
+                  <tr id="<%= "caller_"+caller_session.caller.id.to_s %>" class="caller <%= cycle("odd", "even") %> " older="true" session_id="<%= caller_session.id %>">
                     <td class="caller_name"><%= caller_name(caller_session.caller) %></td>
                     <td>
 											<select class='assign_campaign'>
