@@ -195,7 +195,6 @@ function expand_scheduler() {
 
 function ready_for_calls(data){
 	if (data.dialer && data.dialer.toLowerCase() == "progressive") {
-		consol.log("yyyyyyyyyy")
 	  $("#stop_calling").show();
 	  call_voter();
     }
