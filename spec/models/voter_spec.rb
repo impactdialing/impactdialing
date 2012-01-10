@@ -16,6 +16,19 @@ describe Voter do
       Voter.existing_phone_in_campaign('0123456789', 99).count
     }.by(1)
   end
+  
+  it "gives remaining voters to count" do
+    campaign = Factory(:campaign)
+    no_answr_voter = Factory(:voter, :campaign => campaign, :status=> CallAttempt::Status::NOANSWER)
+    busy_voter = Factory(:voter, :campaign => campaign, :status=> CallAttempt::Status::BUSY)
+    abandon_voter = Factory(:voter, :campaign => campaign, :status=> CallAttempt::Status::ABANDONED)
+    ready_voter = Factory(:voter, :campaign => campaign, :status=> CallAttempt::Status::READY)
+    schedule_voter = Factory(:voter, :campaign => campaign, :status=> CallAttempt::Status::SCHEDULED, :call_back => true)
+    not_called_voter = Factory(:voter, :campaign => campaign, :status=> Voter::Status::NOTCALLED)
+    failed_voter = Factory(:voter, :campaign => campaign, :status=> CallAttempt::Status::FAILED, :call_back => true)
+    success_voter = Factory(:voter, :campaign => campaign, :status=> CallAttempt::Status::SUCCESS)
+    Voter.remaining_voters_count_for('campaign_id', campaign.id).should == 7
+  end
 
   it "lists voters not called" do
     voter1 = Factory(:voter, :campaign => Factory(:campaign), :status=> Voter::Status::NOTCALLED)

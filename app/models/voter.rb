@@ -58,6 +58,10 @@ class Voter < ActiveRecord::Base
   def self.upload_fields
     ["Phone", "CustomID", "LastName", "FirstName", "MiddleName", "Suffix", "Email"]
   end
+  
+  def self.remaining_voters_count_for(column_name, column_value)
+    count(:conditions => "#{column_name} = #{column_value} AND active = 1 AND (status in ('No answer','No answer busy signal','Call abandoned','Call ready to dial','Scheduled for later','not called') or call_back=1)")
+  end
 
   def dial
     return false if status == Voter::SUCCESS
@@ -94,7 +98,7 @@ class Voter < ActiveRecord::Base
     if response["TwilioResponse"]["RestException"]
       call_attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
       update_attributes(status: CallAttempt::Status::FAILED)
-      Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.length, :voters_remaining => campaign.voters_count("not called", false).length})
+      Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.length, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
       DIALER_LOGGER.info "[dialer] Exception when attempted to call #{self.Phone} for campaign id:#{self.campaign_id}  Response: #{response["TwilioResponse"]["RestException"].inspect}"
       return
     end
@@ -200,7 +204,7 @@ class Voter < ActiveRecord::Base
   def new_call_attempt(mode = 'robo')
     call_attempt = self.call_attempts.create(:campaign => self.campaign, :dialer_mode => mode, :status => CallAttempt::Status::RINGING)
     self.update_attributes!(:last_call_attempt => call_attempt, :last_call_attempt_time => Time.now, :status => CallAttempt::Status::RINGING)
-    Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.length, :voters_remaining => campaign.voters_count("not called", false).length})
+    Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.length, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
     call_attempt
   end
 
