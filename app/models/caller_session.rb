@@ -161,7 +161,8 @@ class CallerSession < ActiveRecord::Base
     if caller.is_phones_only? 
       read_campaign_reassign_msg
     else
-      self.publish("caller_re_assigned_to_campaign",{:campaign_name => caller.campaign.name, :campaign_id => caller.campaign.id, :script => caller.campaign.script.try(:script)})
+      next_voter = caller.campaign.next_voter_in_dial_queue
+      self.publish("caller_re_assigned_to_campaign",{:campaign_name => caller.campaign.name, :campaign_id => caller.campaign.id, :script => caller.campaign.script.try(:script)}.merge!(next_voter ? next_voter.info : {}))
     end
   end
   

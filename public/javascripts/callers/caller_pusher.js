@@ -328,7 +328,13 @@ function subscribe(session_key) {
 		set_response_panel(data);
 		clear_voter();
 		if (data.dialer && (data.dialer.toLowerCase() == "preview" || data.dialer.toLowerCase() == "progressive")) {
-			get_voter();
+			if (!$.isEmptyObject(data.fields)) {
+          set_message("Status: Ready for calls.");
+          set_voter(data);
+      } else {
+					$("#stop_calling").show();
+          set_message("Status: There are no more numbers to call in this campaign.");
+      }
 		}
 		else{
 			$("#stop_calling").show();
