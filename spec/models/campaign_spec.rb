@@ -680,13 +680,14 @@ describe Campaign do
     now = Time.now
     script = Factory(:script)
     campaign = Factory(:campaign, :script => script)
+    campaign2 = Factory(:campaign)
     question1 = Factory(:question, :text => "hw are u", :script => script)
     question2 = Factory(:question, :text => "wr r u", :script => script)
     possible_response1 = Factory(:possible_response, :question => question1)
     possible_response2 = Factory(:possible_response, :question => question1)
-    Factory(:answer, :voter => Factory(:voter, :campaign => campaign), :possible_response => possible_response1, :question => question1, :created_at => now)
-    Factory(:answer, :voter => Factory(:voter, :campaign => campaign), :possible_response => possible_response2, :question => question2, :created_at => now)
-    Factory(:answer, :voter => Factory(:voter, :campaign => Factory(:campaign)), :possible_response => possible_response2, :question => question2, :created_at => now)
+    Factory(:answer, :voter => Factory(:voter, :campaign => campaign), campaign: campaign, :possible_response => possible_response1, :question => question1, :created_at => now)
+    Factory(:answer, :voter => Factory(:voter, :campaign => campaign), campaign: campaign,:possible_response => possible_response2, :question => question2, :created_at => now)
+    Factory(:answer, :voter => Factory(:voter, :campaign => campaign2), campaign: campaign2, :possible_response => possible_response2, :question => question2, :created_at => now)
     campaign.answers_result(now, now).should == {"hw are u" => [{answer: "no_response", number: 1, percentage: 100}, {answer: "no_response", number: 1, percentage: 100}], "wr r u" => []}
   end
 
