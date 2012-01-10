@@ -121,7 +121,7 @@ class CallerController < ApplicationController
   def call_voter
     caller = Caller.find(params[:id])
     caller_session = caller.caller_sessions.find(params[:session_id])
-    voter = Voter.find(params[:voter_id])
+    (voter = Voter.find(params[:voter_id])) if params[:voter_id]
     caller_session.preview_dial(voter)
     render :nothing => true
   end
