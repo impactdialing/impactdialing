@@ -111,6 +111,11 @@ class Caller < ActiveRecord::Base
         end
       else
         caller_session.reassign_caller_session_to_campaign
+        if campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE
+          caller_session.publish('conference_started', {}) 
+        else
+          caller_session.publish('caller_connected_dialer', {})
+        end
       end
     end
   end

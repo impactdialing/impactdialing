@@ -335,6 +335,7 @@ function subscribe(session_key) {
 					$("#stop_calling").show();
           set_message("Status: There are no more numbers to call in this campaign.");
       }
+
 		}
 		else{
 			$("#stop_calling").show();
