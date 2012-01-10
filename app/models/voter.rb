@@ -60,7 +60,7 @@ class Voter < ActiveRecord::Base
   end
   
   def self.remaining_voters_count_for(column_name, column_value)
-    count(:conditions => "#{column_name} = #{column_value} AND active = 1 AND (status in ('No answer','No answer busy signal','Call abandoned','Call ready to dial','Scheduled for later','not called') or call_back=1)")
+    count(:conditions => "#{column_name} = #{column_value} AND active = 1 AND (status not in ('Call in progress','Ringing','Call ready to dial','Call completed with success.') or call_back=1)")
   end
 
   def dial
