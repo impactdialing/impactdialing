@@ -148,7 +148,7 @@ class CallerSession < ActiveRecord::Base
     old_campaign = self.campaign
     self.update_attributes(:campaign => caller.campaign)
     Moderator.publish_event(campaign, "caller_re_assigned_to_campaign", {:caller_id => caller.id, :campaign_fields => {:id => campaign.id, :campaign_name => campaign.name, :callers_logged_in => campaign.caller_sessions.on_call.length,
-      :voters_count => campaign.voters_count("not called", false).length, :dials_in_progress => campaign.call_attempts.not_wrapped_up.length }, :old_campaign_id => old_campaign.id,:no_of_callers_logged_in_old_campaign => old_campaign.caller_sessions.on_call.length})
+      :voters_count => Voter.remaining_voters_count_for('campaign_id', campaign.id), :dials_in_progress => campaign.call_attempts.not_wrapped_up.length }, :old_campaign_id => old_campaign.id,:no_of_callers_logged_in_old_campaign => old_campaign.caller_sessions.on_call.length})
     if caller.is_phones_only? 
       read_campaign_reassign_msg
     else
