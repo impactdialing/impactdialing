@@ -57,7 +57,7 @@ class CallerSession < ActiveRecord::Base
       voter.update_attributes(status: CallAttempt::Status::FAILED)
       next_voter = campaign.next_voter_in_dial_queue(voter.id)
       update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil,:voter_in_progress => nil)
-      publish('call_could_not_connect',next_voter.nil? ? {} : next_voter.info)
+      redirect_to_phones_only_start if caller.is_phones_only? ? redirect_to_phones_only_start : publish('call_could_not_connect',next_voter.nil? ? {} : next_voter.info)
       return
     end    
     self.publish('calling_voter', voter.info)
@@ -125,6 +125,11 @@ class CallerSession < ActiveRecord::Base
         response = Twilio::Verb.new { |v| v.say I18n.t(:campaign_has_no_more_voters) }.response
       end
     end
+  end
+  
+  def redirect_to_phones_only_start
+    Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
+    Twilio::Call.redirect(sid, phones_only_caller_index_url(:host => Settings.host, :port => Settings.port, session_id: id, :campaign_reassigned => caller_reassigned_to_another_campaign?))
   end
 
   def join_conference(mute_type, call_sid, monitor_session)

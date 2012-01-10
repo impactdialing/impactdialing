@@ -134,8 +134,7 @@ class CallAttempt < ActiveRecord::Base
     if caller_session && (campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE)
       caller_session.update_attribute(:voter_in_progress, nil)      
       if caller_session.caller.is_phones_only?
-        Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-        Twilio::Call.redirect(caller_session.sid, phones_only_caller_index_url(:host => Settings.host, :port => Settings.port, session_id: caller_session.id, :campaign_reassigned => caller_session.caller_reassigned_to_another_campaign?))
+        caller_session.redirect_to_phones_only_start
       else  
         next_voter = self.campaign.next_voter_in_dial_queue(voter.id) 
         caller_session.publish('voter_push',next_voter.nil? ? {} : next_voter.info)         
