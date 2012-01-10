@@ -12,8 +12,8 @@ class Question < ActiveRecord::Base
     question.possible_responses.collect { |possible_response| possible_response.stats(from_date, to_date) }
   end
 
-  def answered_within(from_date, to_date)
-    answers.within(from_date, to_date)
+  def answered_within(from_date, to_date, campaign_id)
+    answers.within(from_date, to_date, campaign_id)
   end
 
   def read(caller_session)
