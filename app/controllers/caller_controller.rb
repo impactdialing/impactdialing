@@ -5,6 +5,10 @@ class CallerController < ApplicationController
   before_filter :check_login, :except=>[:login, :feedback, :assign_campaign, :end_session, :pause, :start_calling, :gather_response, :choose_voter, :phones_only_progressive, :phones_only, :choose_instructions_option, :new_campaign_response_panel]
   before_filter :redirect_to_ssl
   before_filter :connect_to_twilio, :only => [:preview_dial]
+  
+  def index
+    redirect_to callers_campaign_path(@caller.campaign)
+  end
 
   def check_login
     if session[:caller].blank?
@@ -20,7 +24,7 @@ class CallerController < ApplicationController
 
   def logout
     session[:caller]=nil
-    redirect_to caller_root_path
+    redirect_to caller_login_path
   end
 
   def login
