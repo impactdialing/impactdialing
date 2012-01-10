@@ -215,8 +215,8 @@ describe CallerController do
 
     it "ask caller to select options, i.e * for dialing or # for instructions" do
       campaign = Factory(:campaign, :robo => false, :predictive_type => 'preview')
-      campaign.callers << caller
-      caller_session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sessionkey")
+      preview_caller = Factory(:caller, :campaign => campaign)
+      caller_session = Factory(:caller_session, :caller => preview_caller, :campaign => campaign, :session_key => "sessionkey")
       post :choose_instructions_option, :id => caller.id, :session => caller_session.id, :Digits => "*"
       response.body.should == caller.instruction_choice_result("*", caller_session)
     end

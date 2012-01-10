@@ -28,10 +28,6 @@ class Caller < ActiveRecord::Base
     return {:caller_session => {:id => nil}} if self.campaign.nil?
     caller_sessions.available.on_campaign(campaign).last || {:caller_session => {:id => nil}}
   end
-  
-  def is_phones_only_and_preview_or_progressive?(campaign)
-    is_phones_only? and (campaign.predictive_type == Campaign::Type::PREVIEW or campaign.predictive_type == Campaign::Type::PROGRESSIVE)
-  end
 
   class << self
     include Rails.application.routes.url_helpers
@@ -81,7 +77,7 @@ class Caller < ActiveRecord::Base
   
   def instruction_choice_result(caller_choice, caller_session)
     if caller_choice == "*"
-      is_phones_only_and_preview_or_progressive?(caller_session.campaign) ? caller_session.ask_caller_to_choose_voter : caller_session.start
+      campaign.is_preview_or_progressive ? caller_session.ask_caller_to_choose_voter : caller_session.start
     elsif caller_choice == "#"
       Twilio::Verb.new do |v|
         v.gather(:numDigits => 1, :timeout => 10, :action => choose_instructions_option_caller_url(self, :session => caller_session, :host => Settings.host, :port => Settings.port), :method => "POST", :finishOnKey => "5") do
