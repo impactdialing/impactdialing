@@ -48,6 +48,10 @@ class Campaign < ActiveRecord::Base
     end
   end
 
+  def is_preview_or_progressive
+    predictive_type == Type::PREVIEW || predictive_type == Type::PROGRESSIVE
+  end
+
   def set_untitled_name
     self.name = "Untitled #{account.campaigns.count + 1}" if self.name.blank?
   end

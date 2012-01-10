@@ -11,11 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-<<<<<<< HEAD
 ActiveRecord::Schema.define(:version => 20120109031228) do
-=======
-ActiveRecord::Schema.define(:version => 20120103053245) do
->>>>>>> 58a34d8... disabling download for broadcast, too
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
