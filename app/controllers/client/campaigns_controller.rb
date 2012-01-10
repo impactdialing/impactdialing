@@ -60,10 +60,8 @@ module Client
       if @campaign.valid?
         @campaign.script ||= @campaign.account.scripts.first
         @campaign.save
-        if params[:listsSent]
-          @campaign.disable_voter_list
-          params[:voter_list_ids].each { |id| VoterList.enable_voter_list(id) } unless params[:voter_list_ids].blank?
-        end
+        @campaign.disable_voter_list
+        params[:voter_list_ids].each { |id| VoterList.enable_voter_list(id) } unless params[:voter_list_ids].blank?
         flash_message(:notice, "Campaign saved")
         redirect_to client_campaign_path(@campaign)
       else
