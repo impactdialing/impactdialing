@@ -57,7 +57,7 @@ class CallerSession < ActiveRecord::Base
       voter.update_attributes(status: CallAttempt::Status::FAILED)
       next_voter = campaign.next_voter_in_dial_queue(voter.id)
       update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil,:voter_in_progress => nil)
-      redirect_to_phones_only_start if caller.is_phones_only? ? redirect_to_phones_only_start : publish('call_could_not_connect',next_voter.nil? ? {} : next_voter.info)
+      caller.is_phones_only? ? redirect_to_phones_only_start : publish('call_could_not_connect',next_voter.nil? ? {} : next_voter.info)
       return
     end    
     self.publish('calling_voter', voter.info)
