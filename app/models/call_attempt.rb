@@ -73,7 +73,7 @@ class CallAttempt < ActiveRecord::Base
       update_attributes(status: CallAttempt::Status::ABANDONED, wrapup_time: Time.now)
       voter.update_attributes(:status => CallAttempt::Status::ABANDONED, call_back: false)
       caller_session.update_attribute(:voter_in_progress, nil) unless caller_session.nil?
-      Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.length, :voters_remaining => campaign.voters_count("not called", false).length})
+      Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.length, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
       hangup
     else
       update_attributes(:status => CallAttempt::Status::INPROGRESS)
@@ -123,14 +123,14 @@ class CallAttempt < ActiveRecord::Base
     update_attributes(:status => CallAttempt::Status::SUCCESS, :call_end => Time.now, :recording_duration=>params[:RecordingDuration], :recording_url=>params[:RecordingUrl])
     voter.update_attribute(:status, CallAttempt::Status::SUCCESS)
     Pusher[caller_session.session_key].trigger('voter_disconnected', {:attempt_id => self.id, :voter => self.voter.info})
-    Moderator.publish_event(campaign, 'voter_disconnected', {:campaign_id => campaign.id, :caller_id => caller_session.caller.id, :voters_remaining => campaign.voters_count("not called", false).length})
+    Moderator.publish_event(campaign, 'voter_disconnected', {:campaign_id => campaign.id, :caller_id => caller_session.caller.id, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
     hangup
   end
 
   def fail
     voter.update_attributes(:call_back => false)
     update_attributes(wrapup_time: Time.now)
-    Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.length, :voters_remaining => campaign.voters_count("not called", false).length})
+    Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.length, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
     if caller_session && (campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE)
       caller_session.update_attribute(:voter_in_progress, nil)      
       if caller_session.caller.is_phones_only?
@@ -160,10 +160,10 @@ class CallAttempt < ActiveRecord::Base
   end
 
   module Status
-    VOICEMAIL = "Message delivered"
-    SUCCESS = "Call completed with success."
-    INPROGRESS = "Call in progress"
-    NOANSWER = "No answer"
+    VOICEMAIL = 'Message delivered'
+    SUCCESS = 'Call completed with success.'
+    INPROGRESS = 'Call in progress'
+    NOANSWER = 'No answer'
     ABANDONED = "Call abandoned"
     BUSY = "No answer busy signal"
     FAILED = "Call failed"

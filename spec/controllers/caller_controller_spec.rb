@@ -235,7 +235,7 @@ describe CallerController do
     login_as(caller)
     post :logout
     session[:caller].should_not be
-    response.should redirect_to(caller_root_path)
+    response.should redirect_to(caller_login_path)
   end
 
   describe "phones only" do
