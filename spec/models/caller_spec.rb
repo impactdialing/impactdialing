@@ -94,56 +94,42 @@ describe Caller do
       end
     end
     
-    describe "select * to dial or # to listen instructions" do
-      before(:each) do
-        @campaign = Factory(:campaign, :robo => false, :predictive_type => 'preview')
-        @caller = Factory(:caller, :account => user.account, :campaign => @campaign)
-        @caller_session = Factory(:caller_session, :caller => @caller, :campaign => @campaign, :session_key => "sessionkey")
-      end
-      
-      it "if selected option is * and campaign mode is preview" do
+    describe "caller instructions" do
+      let(:campaign){ Factory(:campaign, :robo => false, :predictive_type => 'preview')}
+      let(:caller){Factory(:caller, :account => user.account, :campaign => campaign)}
+      let(:caller_session){ Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sessionkey") }
+
+      it "asks to choose voter if * is chosen" do
         phones_only_caller = Factory(:caller, :is_phones_only => true)
-        @caller_session.should_receive(:ask_caller_to_choose_voter)
-        phones_only_caller.instruction_choice_result("*", @caller_session)
+        caller_session.should_receive(:ask_caller_to_choose_voter)
+        phones_only_caller.instruction_choice_result("*", caller_session)
       end
       
-      it "if selected option is * and campaign mode is predictive" do
-        @campaign.update_attributes(:predictive_type => 'algorithm1')
-        phones_only_caller = Factory(:caller, :is_phones_only => true)
-        @caller_session.should_receive(:start)
-        phones_only_caller.instruction_choice_result("*", @caller_session)
+      it "puts the caller back into conference when * is chosen" do
+        campaign.update_attributes(:predictive_type => 'algorithm1')
+        phones_only_caller = Factory(:caller, :is_phones_only => true, :campaign => campaign)
+        caller_session = Factory(:caller_session, :caller => phones_only_caller, :campaign => campaign, :session_key => "sessionkey")
+        caller_session.should_receive(:start)
+        phones_only_caller.instruction_choice_result("*", caller_session)
       end
       
-      it "if selected option is #, then read the instructions" do
-        @caller.instruction_choice_result("#", @caller_session).should == Twilio::Verb.new do |v|
-          v.gather(:numDigits => 1, :timeout => 10, :action => choose_instructions_option_caller_url(@caller, :session => @caller_session, :host => Settings.host, :port => Settings.port), :method => "POST", :finishOnKey => "5") do
+      it "are read out when # is chosen" do
+        caller.instruction_choice_result("#", caller_session).should == Twilio::Verb.new do |v|
+          v.gather(:numDigits => 1, :timeout => 10, :action => choose_instructions_option_caller_url(caller, :session => caller_session, :host => Settings.host, :port => Settings.port), :method => "POST", :finishOnKey => "5") do
             v.say I18n.t(:phones_only_caller_instructions)
           end
         end.response
       end
       
-      it "if seleced option is neither * nor #, then again ask the caller, same options" do
-        @caller.instruction_choice_result("4", @caller_session).should == Twilio::Verb.new do |v|
-          v.gather(:numDigits => 1, :timeout => 10, :action => choose_instructions_option_caller_url(@caller, :session => @caller_session, :host => Settings.host, :port => Settings.port), :method => "POST", :finishOnKey => "5") do
+      it "are re-read if chosen input is neither * nor #" do
+        caller.instruction_choice_result("4", caller_session).should == Twilio::Verb.new do |v|
+          v.gather(:numDigits => 1, :timeout => 10, :action => choose_instructions_option_caller_url(caller, :session => caller_session, :host => Settings.host, :port => Settings.port), :method => "POST", :finishOnKey => "5") do
             v.say I18n.t(:caller_instruction_choice)
           end
         end.response
       end
       
     end
-  end
-  
-  it "is_phones_only_and_preview_or_progressive? is true if is_phones_only and campaign type is preview or progressive" do
-    phones_only_caller = Factory(:caller, :is_phones_only => true)
-    phones_only_caller.is_phones_only_and_preview_or_progressive?(Factory(:campaign, :predictive_type => Campaign::Type::PREVIEW)).should be_true
-    phones_only_caller.is_phones_only_and_preview_or_progressive?(Factory(:campaign, :predictive_type => Campaign::Type::PROGRESSIVE)).should be_true
-    phones_only_caller.is_phones_only_and_preview_or_progressive?(Factory(:campaign, :predictive_type => Campaign::Type::PREDICTIVE)).should be_false
-  end
-  
-  it "is_phones_only_and_preview_or_progressive? is false if not is_phones_only and campaign type is preview or progressive" do
-    web_caller = Factory(:caller, :is_phones_only => false)
-    web_caller.is_phones_only_and_preview_or_progressive?(Factory(:campaign, :predictive_type => Campaign::Type::PREVIEW)).should be_false
-    web_caller.is_phones_only_and_preview_or_progressive?(Factory(:campaign, :predictive_type => Campaign::Type::PROGRESSIVE)).should be_false
   end
   
   it do
