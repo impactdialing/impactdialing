@@ -312,7 +312,11 @@ class Campaign < ActiveRecord::Base
   def predictive_dial
     return if dialing?
     update_attribute(:calls_in_progress, true)
-    dial_predictive_voters
+    begin
+      dial_predictive_voters
+    ensure
+      update_attribute(:calls_in_progress, false)
+    end
     update_attribute(:calls_in_progress, false)
   end
 
