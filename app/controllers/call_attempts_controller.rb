@@ -52,7 +52,7 @@ class CallAttemptsController < ApplicationController
       call_attempt.voter.update_attributes(:last_call_attempt_time => Time.now)
       call_attempt.update_attributes(:call_end => Time.now)
     end
-
+  
     response = case params[:CallStatus] #using the 2010 api
                  when "no-answer", "busy", "failed"
                    call_attempt.fail
