@@ -27,6 +27,7 @@ en:
   browser_unsupported: "Your browser is out of date or not supported. Please download <a href='https://www.google.com/chrome/'>Google Chrome (11+)</a>, <a href='www.apple.com/safari/'>Apple Safari (5+)</a>, <a href='http://www.mozilla.org/en-US/firefox/new/'>Mozilla Firefox (3.6+)</a>, or <a href='http://windows.microsoft.com/en-US/internet-explorer/downloads/ie'>Microsoft Internet Explorer (7+)</a>."
   javascript_disabled: "We could not load JavaScript. Please check your browser settings and reload this page."
   invalid_file_uploaded: "Your file is corrupt or has a problem. Please try saving the data into a new comma-separated value (CSV) or tab-delimited text (TXT) file and then try again."
+  client_report_processing: "Your report is currently being prepared for download."
   white_labeling:
     impactdialing:
       title: "Impact Dialing"
