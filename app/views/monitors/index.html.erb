@@ -200,7 +200,7 @@
           </tr>
           <% @campaigns.each do |c| %>
               <% c.caller_sessions.on_call.each do |caller_session| %>
-                  <tr id="<%= "caller_"+caller_session.caller.id.to_s %>" class="caller <%= cycle("odd", "even") %> " older="true" session_id="<%= caller_session.id %>">
+                  <tr id="<%= "caller_"+caller_session.caller.id.to_s %>" class="caller <%= cycle("odd", "even") %> " older="true" session_id="<%= caller_session.id %>" caller_id="<%= caller_session.caller.id %>">
                     <td class="caller_name"><%= caller_name(caller_session.caller) %></td>
                     <td>
 											<select class='assign_campaign'>
