@@ -138,7 +138,8 @@ function disconnect_caller() {
         data : {session_id : $("#caller_session").val() },
         type : "POST",
         success : function(response) {
-            $("#start_calling").show();
+			if (FlashDetect.installed && flash_supported())
+            	$("#start_calling").show();
             // pushes 'calling_voter'' event to browsers
         }
     })
@@ -299,7 +300,8 @@ function subscribe(session_key) {
         set_message('Status: Not connected.');
         $("#callin_data").show();
         hide_all_actions();
-        $("#start_calling").show();
+		if (FlashDetect.installed && flash_supported())
+        	$("#start_calling").show();
     });
 
     channel.bind('waiting_for_result', function(data) {
