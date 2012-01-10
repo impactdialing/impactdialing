@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120103053245) do
+ActiveRecord::Schema.define(:version => 20120110075448) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -27,6 +27,7 @@ ActiveRecord::Schema.define(:version => 20120103053245) do
     t.integer  "question_id",          :null => false
     t.integer  "possible_response_id", :null => false
     t.datetime "created_at"
+    t.integer  "campaign_id"
   end
 
   create_table "billing_accounts", :force => true do |t|

@@ -9,6 +9,7 @@ class Campaign < ActiveRecord::Base
   has_many :caller_campaigns
   has_many :callers, :through => :caller_campaigns
   has_one :simulated_values
+  has_many :answers
   belongs_to :script
   belongs_to :account
   belongs_to :recording
@@ -583,10 +584,9 @@ class Campaign < ActiveRecord::Base
 
   def answers_result(from_date, to_date)
     result = Hash.new
-    voter_ids = Voter.find(:all, conditions: "campaign_id = #{self.id}", :select => 'id').collect{|x| x.id}
     script.questions.each do |question|
-      total_answers = question.answered_within(from_date, to_date).belong_to(voter_ids).length
-      result[question.text] = question.possible_responses.collect { |possible_response| possible_response.stats(from_date, to_date, total_answers, voter_ids) }
+      total_answers = question.answered_within(from_date, to_date, self.id).size
+      result[question.text] = question.possible_responses.collect { |possible_response| possible_response.stats(from_date, to_date, total_answers, self.id) }
     end
     result
   end
