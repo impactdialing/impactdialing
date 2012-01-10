@@ -176,7 +176,7 @@ class Voter < ActiveRecord::Base
     possible_response = question.possible_responses.where(:keypad => response).first
     self.answer_recorded_by = recorded_by_caller
     return unless possible_response
-    answer = self.answers.for(question).first.try(:update_attribute, {:possible_response => possible_response}) || answers.create(:question => question, :possible_response => possible_response)
+    answer = self.answers.for(question).first.try(:update_attributes, {:possible_response => possible_response}) || answers.create(:question => question, :possible_response => possible_response)
     DIALER_LOGGER.info "??? notifying observer ???"
     notify_observers :answer_recorded
     DIALER_LOGGER.info "... notified observer ..."
