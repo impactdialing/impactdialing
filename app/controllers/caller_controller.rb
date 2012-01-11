@@ -2,18 +2,13 @@ require Rails.root.join("lib/twilio_lib")
 
 class CallerController < ApplicationController
   layout "caller"
-  before_filter :check_login, :except=>[:login, :feedback, :assign_campaign, :end_session, :pause, :start_calling, :gather_response, :choose_voter, :phones_only_progressive, :phones_only, :choose_instructions_option]
+  before_filter :check_login, :except=>[:login, :feedback, :assign_campaign, :end_session, :pause, :start_calling, :gather_response, :choose_voter, :phones_only_progressive, :phones_only, :choose_instructions_option, :new_campaign_response_panel]
   before_filter :redirect_to_ssl
   before_filter :connect_to_twilio, :only => [:preview_dial]
-
-
+  
   def index
-    unless @caller.account.activated?
-      flash_now(:warning, "Your account is not funded. Please contact your account administrator.")
-    end
-    @campaigns = @caller.campaigns.manual.active.collect { |c| c if c.use_web_ui? }
+    redirect_to callers_campaign_path(@caller.campaign)
   end
-
 
   def check_login
     if session[:caller].blank?
@@ -29,7 +24,7 @@ class CallerController < ApplicationController
 
   def logout
     session[:caller]=nil
-    redirect_to caller_root_path
+    redirect_to caller_login_path
   end
 
   def login
@@ -42,25 +37,10 @@ class CallerController < ApplicationController
         flash_now(:error, "Wrong email or password.")
       else
         session[:caller]=@caller.id
-        redirect_to :action=>"index"
+        redirect_to callers_campaign_path(@caller.campaign)
       end
     end
   end
-
-
-  def assign_campaign
-    @session = CallerSession.find(params[:session])
-    caller = Caller.find(params[:id])
-    @campaign = @session.caller.account.campaigns.find_by_campaign_id(params[:Digits])
-    if @campaign
-      @session.update_attributes(:campaign => @campaign)
-      Moderator.caller_connected_to_campaign(caller, @campaign, @session)
-      render :xml => caller.is_phones_only? ? caller.ask_instructions_choice(@session) : @session.start
-    else
-      render :xml => @session.ask_for_campaign(params[:attempt].to_i)
-    end
-  end
-
 
   def stop_calling
     caller = Caller.find(params[:id])
@@ -89,7 +69,8 @@ class CallerController < ApplicationController
 
     xml = Twilio::Verb.hangup if caller_session.disconnected?
     xml ||= (voter.question_not_answered.try(:read, caller_session) if voter)
-    xml ||= caller.is_phones_only_and_preview_or_progressive?(caller_session.campaign) ? caller_session.ask_caller_to_choose_voter : caller_session.start
+    xml ||= caller_session.ask_caller_to_choose_voter if (caller.is_phones_only? && caller.campaign.is_preview_or_progressive)
+    xml ||= caller_session.start
     render :xml => xml
   end
 
@@ -101,8 +82,8 @@ class CallerController < ApplicationController
 
   def active_session
     caller = Caller.find(params[:id])
-    campaign = caller.campaigns.find(params[:campaign_id])
-    render :json => caller.caller_sessions.available.where("campaign_id = #{campaign.id}").last || {:caller_session => {:id => nil}}
+    campaign = caller.campaign
+    render :json => caller.active_session(campaign).to_json
   end
 
   def preview_voter
@@ -121,7 +102,6 @@ class CallerController < ApplicationController
     next_voter = caller_session.campaign.next_voter_in_dial_queue(params[:voter_id])
     caller_session.publish('caller_connected', next_voter ? next_voter.info : {}) if caller_session.campaign.predictive_type == Campaign::Type::PREVIEW || caller_session.campaign.predictive_type == Campaign::Type::PROGRESSIVE
     render :nothing => true
-
   end
 
   def start_calling
@@ -141,8 +121,10 @@ class CallerController < ApplicationController
   def call_voter
     caller = Caller.find(params[:id])
     caller_session = caller.caller_sessions.find(params[:session_id])
-    voter = Voter.find(params[:voter_id])
-    caller_session.preview_dial(voter)
+    if params[:voter_id]
+      voter = Voter.find(params[:voter_id])
+      caller_session.preview_dial(voter)
+    end
     render :nothing => true
   end
   
@@ -164,15 +146,21 @@ class CallerController < ApplicationController
   def phones_only
     Rails.logger.debug('Entered redirect')
     caller_session = CallerSession.find(params[:session_id])
-    xml = caller_session.ask_caller_to_choose_voter
+    xml = (params[:campaign_reassigned] == "true") ?  caller_session.read_campaign_reassign_msg : caller_session.caller.instruction_choice_result("*", caller_session)
     Rails.logger.debug(xml)
-    render :xml => xml    
+    render :xml => xml
   end
   
   def choose_instructions_option
     caller_session = CallerSession.find(params[:session])
     caller = Caller.find(params[:id])
     render :xml => caller.instruction_choice_result(params[:Digits], caller_session)
+  end
+  
+  def new_campaign_response_panel
+    caller = Caller.find(params[:id])
+    @campaign = caller.campaign
+    render :layout => false
   end
   
   def ping

@@ -11,6 +11,7 @@ class CallerSession < ActiveRecord::Base
   scope :connected_to_voter, where('voter_in_progress is not null')
   scope :held_for_duration, lambda { |minutes| {:conditions => ["hold_time_start <= ?", minutes.ago]} }
   scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
+  scope :on_campaign, lambda{|campaign| where("campaign_id = #{campaign.id}")}
   has_one :voter_in_progress, :class_name => 'Voter'
   has_one :attempt_in_progress, :class_name => 'CallAttempt'
   has_one :moderator
@@ -54,9 +55,13 @@ class CallerSession < ActiveRecord::Base
       Rails.logger.info "Exception when attempted to call #{voter.Phone} for campaign id:#{self.campaign_id}  Response: #{response["TwilioResponse"]["RestException"].inspect}"
       attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
       voter.update_attributes(status: CallAttempt::Status::FAILED)
-      next_voter = campaign.next_voter_in_dial_queue(voter.id)
       update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil,:voter_in_progress => nil)
-      publish('call_could_not_connect',next_voter.nil? ? {} : next_voter.info)
+      if caller.is_phones_only?
+        redirect_to_phones_only_start
+      else
+        next_voter = campaign.next_voter_in_dial_queue(voter.id)
+        publish('call_could_not_connect',next_voter.nil? ? {} : next_voter.info)
+      end
       return
     end    
     self.publish('calling_voter', voter.info)
@@ -84,22 +89,22 @@ class CallerSession < ActiveRecord::Base
 
   def start
     wrapup
-    if campaign.time_period_exceed?
-      time_exceed_hangup
-    else
-      response = Twilio::Verb.new do |v|
-        v.dial(:hangupOnStar => true, :action => caller_response_path) do
-          v.conference(self.session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
-        end
-      end.response
-      update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
-      if campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE
-        publish('conference_started', {}) 
-      else
-        publish('caller_connected_dialer', {})
-      end
-      response
+    if caller_reassigned_to_another_campaign?
+      caller.is_phones_only? ? (return reassign_caller_session_to_campaign) : reassign_caller_session_to_campaign
     end
+    return time_exceed_hangup if campaign.time_period_exceed?
+    response = Twilio::Verb.new do |v|
+      v.dial(:hangupOnStar => true, :action => caller_response_path) do
+        v.conference(self.session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
+      end
+    end.response
+    update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
+    if campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE
+      publish('conference_started', {}) 
+    else
+      publish('caller_connected_dialer', {})
+    end
+    response
   end
   
   def phones_only_start
@@ -113,6 +118,7 @@ class CallerSession < ActiveRecord::Base
   end
   
   def ask_caller_to_choose_voter(voter = nil, caller_choice = nil)
+    return reassign_caller_session_to_campaign if caller_reassigned_to_another_campaign?
     if campaign.time_period_exceed?
       time_exceed_hangup 
     else
@@ -123,6 +129,11 @@ class CallerSession < ActiveRecord::Base
         response = Twilio::Verb.new { |v| v.say I18n.t(:campaign_has_no_more_voters) }.response
       end
     end
+  end
+  
+  def redirect_to_phones_only_start
+    Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
+    Twilio::Call.redirect(sid, phones_only_caller_index_url(:host => Settings.host, :port => Settings.port, session_id: id, :campaign_reassigned => caller_reassigned_to_another_campaign?))
   end
 
   def join_conference(mute_type, call_sid, monitor_session)
@@ -141,6 +152,30 @@ class CallerSession < ActiveRecord::Base
     self.publish("waiting_for_result", {}) if attempt == 0
     Twilio::Verb.new { |v| v.say("Please enter your call results") if (attempt % 5 == 0); v.pause("length" => 2); v.redirect(pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => id, :attempt=>attempt+1)) }.response
   end
+  
+  def reassign_caller_session_to_campaign
+    old_campaign = self.campaign
+    self.update_attributes(:campaign => caller.campaign)
+    Moderator.publish_event(campaign, "caller_re_assigned_to_campaign", {:caller_id => caller.id, :campaign_fields => {:id => campaign.id, :campaign_name => campaign.name, :callers_logged_in => campaign.caller_sessions.on_call.length,
+      :voters_count => Voter.remaining_voters_count_for('campaign_id', campaign.id), :dials_in_progress => campaign.call_attempts.not_wrapped_up.length }, :old_campaign_id => old_campaign.id,:no_of_callers_logged_in_old_campaign => old_campaign.caller_sessions.on_call.length})
+    if caller.is_phones_only? 
+      read_campaign_reassign_msg
+    else
+      next_voter = caller.campaign.next_voter_in_dial_queue
+      self.publish("caller_re_assigned_to_campaign",{:campaign_name => caller.campaign.name, :campaign_id => caller.campaign.id, :script => caller.campaign.script.try(:script)}.merge!(next_voter ? next_voter.info : {}))
+    end
+  end
+  
+  def read_campaign_reassign_msg
+    Twilio::Verb.new do |v|
+      v.say I18n.t(:re_assign_caller_to_another_campaign, :campaign_name => caller.campaign.name)
+      v.redirect(choose_instructions_option_caller_url(self.caller, :host => Settings.host, :port => Settings.port, :session => id, :Digits => "*"))
+    end.response
+  end
+   
+   def caller_reassigned_to_another_campaign?
+      caller.campaign.id != self.campaign.id
+   end
 
   def next_question
     voter_in_progress.question_not_answered
@@ -150,6 +185,7 @@ class CallerSession < ActiveRecord::Base
     self.update_attributes(:on_call => false, :available_for_call => false, :endtime => Time.now)
     Moderator.publish_event(campaign, "caller_disconnected",{:caller_id => caller.id, :campaign_id => campaign.id, :campaign_active => campaign.callers_log_in?,
             :no_of_callers_logged_in => campaign.caller_sessions.on_call.length})
+    attempt_in_progress.try(:update_attributes, {:wrapup_time => Time.now})
     self.publish("caller_disconnected", {source: "end_call"})
     Twilio::Verb.hangup
   end
@@ -186,6 +222,7 @@ class CallerSession < ActiveRecord::Base
   def wrapup
     attempt_in_progress.try(:wrapup_now)
   end
+
   def caller_response_path
     if caller.is_phones_only?
       gather_response_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => id)
@@ -193,7 +230,7 @@ class CallerSession < ActiveRecord::Base
       pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => id)
     end
   end
-    
+      
   def say_voter_name_ask_caller_to_choose_voter(voter, caller_choice)
     if caller_choice.present?
       (msg = I18n.t(:read_star_to_dial_pound_to_skip))  unless ["*","#"].include? caller_choice
@@ -213,5 +250,4 @@ class CallerSession < ActiveRecord::Base
       v.redirect(phones_only_progressive_caller_url(caller, :session_id => id, :voter_id => voter.id, :host => Settings.host, :port => Settings.port), :method => "POST")
     end.response
   end
-
 end

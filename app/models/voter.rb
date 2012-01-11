@@ -70,6 +70,10 @@ class Voter < ActiveRecord::Base
   def self.upload_fields
     ["Phone", "CustomID", "LastName", "FirstName", "MiddleName", "Suffix", "Email"]
   end
+  
+  def self.remaining_voters_count_for(column_name, column_value)
+    count(:conditions => "#{column_name} = #{column_value} AND active = 1 AND (status not in ('Call in progress','Ringing','Call ready to dial','Call completed with success.') or call_back=1)")
+  end
 
   def dial
     return false if status == Voter::SUCCESS
@@ -106,7 +110,7 @@ class Voter < ActiveRecord::Base
     if response["TwilioResponse"]["RestException"]
       call_attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
       update_attributes(status: CallAttempt::Status::FAILED)
-      Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.length, :voters_remaining => campaign.voters_count("not called", false).length})
+      Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.length, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
       DIALER_LOGGER.info "[dialer] Exception when attempted to call #{self.Phone} for campaign id:#{self.campaign_id}  Response: #{response["TwilioResponse"]["RestException"].inspect}"
       return
     end
@@ -149,9 +153,14 @@ class Voter < ActiveRecord::Base
     capture_answers(response["question"])
     capture_notes(response['notes'])
   end
-
+  
+  def selected_custom_voter_field_values
+    select_custom_fields = campaign.script.try(:selected_custom_fields)
+    custom_voter_field_values.try(:select){|cvf| select_custom_fields.include?(cvf.custom_voter_field.name)} if select_custom_fields.present?
+  end
+  
   def info
-    {:fields => self.attributes.reject { |k, v| (k == "created_at") ||(k == "updated_at") }, :custom_fields => Hash[*self.custom_voter_field_values.collect { |cvfv| [cvfv.custom_voter_field.name, cvfv.value] }.flatten]}
+    {:fields => self.attributes.reject { |k, v| (k == "created_at") ||(k == "updated_at") }, :custom_fields => Hash[*self.selected_custom_voter_field_values.try(:collect){ |cvfv| [cvfv.custom_voter_field.name, cvfv.value] }.try(:flatten)]}.merge!(campaign.script ? campaign.script.selected_fields_json : {})
   end
 
   def not_yet_called?(call_status)
@@ -188,13 +197,19 @@ class Voter < ActiveRecord::Base
     possible_response = question.possible_responses.where(:keypad => response).first
     self.answer_recorded_by = recorded_by_caller
     return unless possible_response
-    answer = self.answers.for(question).first.try(:update_attribute, {:possible_response => possible_response}) || answers.create(:question => question, :possible_response => possible_response)
+    answer = self.answers.for(question).first.try(:update_attributes, {:possible_response => possible_response}) || answers.create(:question => question, :possible_response => possible_response)
+    DIALER_LOGGER.info "??? notifying observer ???"
     notify_observers :answer_recorded
+    DIALER_LOGGER.info "... notified observer ..."
     answer
   end
 
   def answer_recorded_by
     @caller_session
+  end
+
+  def current_call_attempt
+    answer_recorded_by.attempt_in_progress
   end
 
   def answer_recorded_by=(caller_session)
@@ -206,7 +221,7 @@ class Voter < ActiveRecord::Base
   def new_call_attempt(mode = 'robo')
     call_attempt = self.call_attempts.create(:campaign => self.campaign, :dialer_mode => mode, :status => CallAttempt::Status::RINGING)
     self.update_attributes!(:last_call_attempt => call_attempt, :last_call_attempt_time => Time.now, :status => CallAttempt::Status::RINGING)
-    Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.length, :voters_remaining => campaign.voters_count("not called", false).length})
+    Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.length, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
     call_attempt
   end
 

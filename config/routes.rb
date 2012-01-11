@@ -47,6 +47,7 @@ ImpactDialing::Application.routes.draw do
       post :choose_voter
       post :phones_only_progressive
       post :choose_instructions_option
+      post :new_campaign_response_panel
     end
 
   end
@@ -100,6 +101,9 @@ ImpactDialing::Application.routes.draw do
       resources type_plural, :only => [:new, :index, :show, :destroy, :create, :update] do
         put 'restore', :to => "#{type_plural}#restore"
       end
+    end
+    resources :callers do
+      member{ get :reassign_to_campaign }
     end
     resources :campaigns, :only => [] do
       resources :reports do

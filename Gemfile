@@ -41,6 +41,7 @@ group :development do
   gem 'guard-spork'
   gem 'guard-rails'
   gem 'capistrano', '2.9.0'
+  gem 'heroku_san'
 end
 
 # run 'bundle install' with either '--without linux' or '--without darwin' depending on your os.
