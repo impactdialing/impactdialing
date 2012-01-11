@@ -145,6 +145,10 @@ class Voter < ActiveRecord::Base
   def info
     {:fields => self.attributes.reject { |k, v| (k == "created_at") ||(k == "updated_at") }, :custom_fields => Hash[*self.custom_voter_field_values.collect { |cvfv| [cvfv.custom_voter_field.name, cvfv.value] }.flatten]}
   end
+  
+  def new_info
+    info.merge!(campaign.script.selected_fields).merge!({:selected_custom_fields => campaign.script.slected_custom_fields})
+  end
 
   def not_yet_called?(call_status)
     status==nil || status==call_status
