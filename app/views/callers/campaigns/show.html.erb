@@ -13,36 +13,18 @@
 
     <script id="voter" type="text/html">
       {{#fields}}
-      <% if @selected_voter_fields.delete('CustomId') %>
-          <li>ID: <b>{{CustomID}}</b></li>
-      <% end %>
-      <% if @selected_voter_fields.delete('FirstName') %>
+					{{#CustomID}}
+          	<li>ID: <b>{{CustomID}}</b></li>
+					{{/CustomID}}		
           <li>First name: <b>{{FirstName}}</b></li>
-      <% end %>
-      <% if @selected_voter_fields.delete('MiddleName') %>
           <li>Middle name: <b>{{MiddleName}}</b></li>
-      <% end %>
-      <% if @selected_voter_fields.delete('LastName') %>
           <li>Last name: <b>{{LastName}}</b></li>
-      <% end %>
-      <% if @selected_voter_fields.delete('Suffix') %>
           <li>Suffix: <b>{{Suffix}}</b></li>
-      <% end %>
-      <% if @selected_voter_fields.delete('Address') %>
           <li>Address: <b>{{address}}</b></li>
-      <% end %>
-      <% if @selected_voter_fields.delete('City') %>
           <li>City: <b>{{city}}</b></li>
-      <% end %>
-      <% if @selected_voter_fields.delete('State/Province') %>
           <li>State/Province: <b>{{state}}</b></li>
-      <% end %>
-      <% if @selected_voter_fields.delete('Zip/Postal Code') %>
           <li>Zip/Postal Code: <b>{{zip_code}}</b></li>
-      <% end %>
-      <% if @selected_voter_fields.delete('Country') %>
           <li>Country: <b>{{country}}</b></li>
-      <% end %>
 
 
       <% if @selected_voter_fields.delete('Phone') %>
