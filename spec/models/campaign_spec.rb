@@ -2,33 +2,12 @@ require "spec_helper"
 require Rails.root.join("lib/twilio_lib")
 
 describe "predictive_dialer" do
-  it "does not dial when dials are already in progress" do
-    campaign = Factory(:campaign, :calls_in_progress => true, :predictive_type => 'predictive')
-    campaign.should_not_receive(:dial_predictive_voters)
-    campaign.predictive_dial
-  end
 
-  it "does not dial when a campaign uses preview dialing" do
-    campaign = Factory(:campaign, :calls_in_progress => false, :predictive_type => 'preview')
-    campaign.should_not_receive(:dial_predictive_voters)
-    campaign.predictive_dial
-  end
 
   it "predictive dial dials voters" do
     campaign = Factory(:campaign, :calls_in_progress => false, :predictive_type => 'predictive')
     campaign.should_receive(:dial_predictive_voters)
     campaign.predictive_dial
-  end
-
-  it "set calls_in_progress before dialing predictive voters, and unsets it after" do
-    campaign = Factory(:campaign, :calls_in_progress => false, :predictive_type => 'predictive')
-
-    def campaign.dial_predictive_voters
-      calls_in_progress.should == true
-    end
-
-    campaign.predictive_dial
-    campaign.calls_in_progress.should == false
   end
 
   it "determines the campaign dial strategy" do
