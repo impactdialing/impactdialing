@@ -54,6 +54,38 @@ describe Voter do
     caller.reload.voter_in_progress.should == voter
   end
 
+  describe "voter fields" do
+    let(:account) { Factory(:account) }
+    let(:voter) { Factory(:voter, :account => account) }
+    let(:field1) {Factory(:custom_voter_field, :name => "field1", :account => account)}
+    let(:field2) {Factory(:custom_voter_field, :name => "field2", :account => account)}
+    let(:field3) {Factory(:custom_voter_field, :name => "field3", :account => account)}
+
+    it "lists a voters custom fields" do
+      value1 = Factory(:custom_voter_field_value, :voter => voter, :custom_voter_field => field1, :value => "value1")
+      value2 = Factory(:custom_voter_field_value, :voter => voter, :custom_voter_field => field2, :value => "value2")
+      voter.custom_fields.should == [value1.value, value2.value]
+    end
+
+    it "lists voters custom fields with selected field names" do
+      value1 = Factory(:custom_voter_field_value, :voter => voter, :custom_voter_field => field1, :value => "value1")
+      value2 = Factory(:custom_voter_field_value, :voter => voter, :custom_voter_field => field2, :value => "value2")
+      voter.selected_custom_fields([field1.name, field2.name]).should == [value1.value, value2.value]
+      #voter.selected_custom_fields([field2.name, field1.name]).should == [value2.value, value1.value]
+      voter.selected_custom_fields([field1.name, field3.name]).should == [value1.value,nil]
+      voter.selected_custom_fields(["foo", "bar"]).should == [nil,nil]
+    end
+
+    it "lists selected voter fields" do
+      phone,custom_id,firstname  = "39045098753", "24566", "first"
+      voter.update_attributes(:Phone => phone, :CustomID => custom_id, :FirstName => firstname)
+      voter.selected_fields(["Phone", "FirstName", "LastName"]).should == [phone,firstname,nil]
+      voter.selected_fields(["Phone", "LastName", "FirstName"]).should == [phone,nil,firstname]
+    end
+
+  end
+
+
   describe "Dialing" do
     let(:campaign) { Factory(:campaign) }
     let(:voter) { Factory(:voter, :campaign => campaign) }
@@ -167,7 +199,7 @@ describe Voter do
       campaign.stub(:time_period_exceed?).and_return(false)
       voter.dial_predictive
     end
-    
+
     it "dials the voter without IFMachine if AMD detection turned off" do
       campaign1 = Factory(:campaign, :robo => false, :predictive_type => 'algorithm1', answering_machine_detect: false)
       Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {'StatusCallback'=> anything, 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
@@ -175,7 +207,7 @@ describe Voter do
       campaign1.stub(:time_period_exceed?).and_return(false)
       voter.dial_predictive
     end
-    
+
 
     it "checks, whether voter is called or not" do
       voter1 = Factory(:voter, :status => "not called")
@@ -438,13 +470,13 @@ describe Voter do
 
       it "captures a voter response" do
         Factory(:possible_response, :question => question, :keypad => 1, :value => "response1")
-        voter.answer(question,"1").should == voter.answers.first
+        voter.answer(question, "1").should == voter.answers.first
         voter.answers.size.should == 1
       end
 
       it "rejects an incorrect a voter response" do
         Factory(:possible_response, :question => question, :keypad => 1, :value => "response1")
-        voter.answer(question,"2").should == nil
+        voter.answer(question, "2").should == nil
         voter.answers.size.should == 0
       end
 
@@ -452,7 +484,7 @@ describe Voter do
         voter.answer(question, "1")
         Factory(:possible_response, :question => question, :keypad => 1, :value => "response1")
         Factory(:possible_response, :question => question, :keypad => 2, :value => "response2")
-        voter.answer(question,"2").should == voter.answers.first
+        voter.answer(question, "2").should == voter.answers.first
         voter.answers.size.should == 1
       end
 
@@ -503,9 +535,9 @@ describe Voter do
 
 
   end
-  
+
   describe "skip voter" do
-    
+
     it "should skip voter but adding skipped_time" do
       campaign = Factory(:campaign)
       voter = Factory(:voter, :campaign => campaign)
