@@ -103,7 +103,7 @@ describe CallAttempt do
     it "conferences a call_attempt to a caller_session" do
       campaign = Factory(:campaign)
       session = Factory(:caller_session, :caller => Factory(:caller), :session_key => "example_key")
-      voter = Factory(:voter)
+      voter = Factory(:voter, :campaign => campaign)
       call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign)
       Moderator.stub!(:publish_event).with(call_attempt.campaign, 'voter_connected', {:campaign_id => campaign.id, :caller_id => session.caller.id})
       call_attempt.conference(session).should == Twilio::TwiML::Response.new do |r|
@@ -203,7 +203,7 @@ describe CallAttempt do
 
     it "notifies a call attempt being conferenced to a session" do
       campaign = Factory(:campaign)
-      voter = Factory(:voter)
+      voter = Factory(:voter, :campaign => campaign)
       attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign)
       session = Factory(:caller_session, :caller => Factory(:caller), :campaign => campaign)
       channel = mock
@@ -215,8 +215,9 @@ describe CallAttempt do
     end
 
     it "pushes voter details" do
-      voter = Factory(:voter)
       campaign = Factory(:campaign)
+      voter = Factory(:voter, :campaign => campaign)
+      
       attempt = Factory(:call_attempt, :campaign => campaign, :voter => voter)
       session = Factory(:caller_session, :caller => Factory(:caller), :campaign => campaign, :voter_in_progress => voter)
       Moderator.stub!(:publish_event).with(session.campaign, 'voter_connected', {:campaign_id => campaign.id, 
@@ -227,8 +228,9 @@ describe CallAttempt do
     end
 
     it "pushes 'voter_disconnected' event when a call_attempt ends" do
-      voter = Factory(:voter, :status => CallAttempt::Status::SUCCESS)
       campaign = Factory(:campaign, :use_web_ui => true)
+      voter = Factory(:voter, :campaign => campaign, :status => CallAttempt::Status::SUCCESS)
+      
       caller_session = Factory(:caller_session, :caller => Factory(:caller), :campaign => campaign)
       attempt = Factory(:call_attempt, :voter => voter, :caller_session => caller_session, :campaign => campaign)
       channel = mock
