@@ -1,6 +1,8 @@
 module Client
   class CallersController < ClientController
     include DeletableController
+    skip_before_filter :check_login, :only => [:reassign_to_campaign]
+    before_filter :load_campaigns, :except => [:index,:destroy,:reassign_to_campaign]
 
     def type_name
       'caller'
@@ -23,11 +25,16 @@ module Client
 
     def update
       @caller = account.callers.find_by_id(params[:id])
-      if @caller.update_attributes(params[:caller])
-        flash_message(:notice, "Caller updated")
-        redirect_to :action=>"index"
-      else
+      if @caller.is_on_call? && (params[:campaign_id] != @caller.campaign.id)
+        flash_message(:error, "This caller is logged in and so can't be changed to a new campaign from this screen. To reassign them to a new campaign, please use the Monitor tab.")
         render :action=>"new"
+      else
+        if @caller.update_attributes(params[:caller])
+          flash_message(:notice, "Caller updated")
+          redirect_to :action=>"index"
+        else
+          render :action=>"new"
+        end
       end
     end
 
@@ -35,12 +42,6 @@ module Client
       @caller = Caller.new(params[:caller])
       @caller.account_id = account.id
       if @caller.save
-        all_callers = account.callers.active
-        all_campaings = account.campaigns.active
-        all_campaings.each do |campaign|
-          campaign.callers << @caller if campaign.callers.length >= (all_callers.length)-1
-          campaign.save
-        end
         flash_message(:notice, "Caller saved")
         redirect_to :action=>"index"
       else
@@ -57,6 +58,18 @@ module Client
       flash_message(:notice, "Caller deleted")
       redirect_to :action=>"index"
     end
-
+    
+    def reassign_to_campaign
+      caller = Caller.find_by_id(params[:id])
+      caller.update_attributes(:campaign_id => params[:campaign_id])
+      caller_session = caller.caller_sessions.find_by_id(params[:session_id])
+      caller.reassign_to_another_campaign(caller_session)
+      render :nothing => true
+    end
+    
+    private
+    def load_campaigns
+      @campaigns = account.campaigns.manual.active
+    end
   end
 end

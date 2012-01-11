@@ -29,8 +29,6 @@
 <%# web ui scripts %>
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
-  <script type="text/javascript" src="/js/browser_detect.js"></script>
-  <script type="text/javascript" src="/js/flash_detect_min.js"></script>
   <%= javascript_include_tag 'application' %>
   <%= yield :javascripts %>
 
@@ -96,7 +94,7 @@
       </ul>
   <% elsif logged_in_as_caller? %>
       <ul class='clearfix'>
-        <li class='divider'><a href="/caller/" class='divider'>Home</a></li>
+        <!-- <li class='divider'><a href="/caller/" class='divider'>Home</a></li> -->
         <li><a href="/caller/logout">Log out</a></li>
       </ul>
   <% end %>

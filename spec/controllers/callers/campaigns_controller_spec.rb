@@ -3,32 +3,18 @@ require "spec_helper"
 describe Callers::CampaignsController do
   let(:account) { Factory(:account) }
   let(:user) { Factory(:user, :account => account) }
-  let(:caller) { Factory(:caller, :account => account) }
   let(:campaign) { Factory(:campaign, :account => account) }
+  let(:caller) { Factory(:caller, :account => account, :campaign => campaign) }
+  
 
   before(:each) do
     login_as(caller)
   end
 
-  it "lists all manual active campaigns with a web ui" do
-    caller.campaigns << Factory(:campaign, :active => false)
-    caller.campaigns << Factory(:campaign, :active => false,:robo => false, :use_web_ui => true)
-    caller.campaigns << Factory(:campaign, :active => true, :robo => false, :use_web_ui => false)
-    caller.campaigns << Factory(:campaign, :active => true, :robo => true, :use_web_ui => true)
-    campaign1 = Factory(:campaign, :active => true, :robo => false, :use_web_ui => true)
-    caller.campaigns << campaign1
-    caller.save
-    get :index
-    assigns(:campaigns).should == [campaign1]
-  end
-
   it "finds a callers campaign" do
-    caller.campaigns << Factory(:campaign, :active => false)
     campaign1 = Factory(:campaign, :active => true, :use_web_ui => true)
-    caller.campaigns << campaign1
-    caller.save
     get :show, :id => campaign1.id
-    assigns(:campaign).should == campaign1
+    assigns(:campaign).should == campaign
   end
 
   #it "allows a caller to callin to a campaign" do

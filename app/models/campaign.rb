@@ -6,8 +6,7 @@ class Campaign < ActiveRecord::Base
   has_many :voter_lists, :conditions => {:active => true}
   has_many :all_voters, :class_name => 'Voter'
   has_many :call_attempts
-  has_many :caller_campaigns
-  has_many :callers, :through => :caller_campaigns
+  has_many :callers
   has_one :simulated_values
   has_many :answers
   belongs_to :script
@@ -48,6 +47,10 @@ class Campaign < ActiveRecord::Base
     if (answering_machine_detect == false) && (use_recordings == true)
       errors.add(:base, 'Please select \'Automatically detect voicemails(required for leaving messages)\'')
     end
+  end
+
+  def is_preview_or_progressive
+    predictive_type == Type::PREVIEW || predictive_type == Type::PROGRESSIVE
   end
 
   def set_untitled_name

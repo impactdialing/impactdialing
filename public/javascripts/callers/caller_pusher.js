@@ -138,7 +138,8 @@ function disconnect_caller() {
         data : {session_id : $("#caller_session").val() },
         type : "POST",
         success : function(response) {
-            $("#start_calling").show();
+			if (FlashDetect.installed && flash_supported())
+            	$("#start_calling").show();
             // pushes 'calling_voter'' event to browsers
         }
     })
@@ -214,6 +215,7 @@ function subscribe(session_key) {
     channel.bind('caller_connected', function(data) {
         console.log('caller_connected' + data)
         hide_all_actions();
+		$('#browserTestContainer').hide();
         $("#start_calling").hide();
         $("#callin_data").hide();
         hide_response_panel();
@@ -298,7 +300,8 @@ function subscribe(session_key) {
         set_message('Status: Not connected.');
         $("#callin_data").show();
         hide_all_actions();
-        $("#start_calling").show();
+		if (FlashDetect.installed && flash_supported())
+        	$("#start_calling").show();
     });
 
     channel.bind('waiting_for_result', function(data) {
@@ -318,6 +321,44 @@ function subscribe(session_key) {
 	 hide_response_panel();
    	 set_message("Status: Dialing.");
 	});
+	
+	channel.bind('caller_re_assigned_to_campaign', function(data){
+		
+		set_new_campaign_script(data);
+		set_response_panel(data);
+		clear_voter();
+		if (data.dialer && (data.dialer.toLowerCase() == "preview" || data.dialer.toLowerCase() == "progressive")) {
+			if (!$.isEmptyObject(data.fields)) {
+          set_message("Status: Ready for calls.");
+          set_voter(data);
+      } else {
+					$("#stop_calling").show();
+          set_message("Status: There are no more numbers to call in this campaign.");
+      }
+
+		}
+		else{
+			$("#stop_calling").show();
+		}
+		alert("You have been re-assigned to " + data.campaign_name+".");
+	
+	});
+	
+		function set_new_campaign_script(data){
+			$('#campaign').val(data.campaign_id);
+			$('#script').text(data.script);
+		}
+		
+		function set_response_panel(data){
+			$.ajax({
+		      url : "/caller/" + $("#caller").val() + "/new_campaign_response_panel",
+		      data : {},
+		      type : "POST",
+		      success : function(response) {
+						$('#response_panel').replaceWith(response);
+		      }
+		  })	
+		}
 
     function set_call_attempt(id) {
         $("#current_call_attempt").val(id);
@@ -354,6 +395,14 @@ function subscribe(session_key) {
 
 
     function bind_voter(data) {
+        if(data.custom_fields){
+          var customList = []
+          $.each(data.custom_fields, function(item){ 
+            customList.push({name:item, value:data.custom_fields[item]});
+          });
+          $.extend(data, {custom_field_list: customList})
+        }
+        
         var voter = ich.voter(data); //using ICanHaz a moustache. js like thingamagic
         $('#voter_info').empty();
         $('#voter_info').append(voter);

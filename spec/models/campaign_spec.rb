@@ -37,7 +37,7 @@ describe "predictive_dialer" do
     voter = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list, :account => account)
     campaign.choose_voters_to_dial(1).should == [voter]
   end
-  
+
   it "should  choose priority voter as the next voters to dial" do
     account = Factory(:account, :activated => true)
     campaign = Factory(:campaign, :account => account, :caller_id => "0123456789", :caller_id_verified => true)
@@ -47,7 +47,7 @@ describe "predictive_dialer" do
     priority_voter = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list, :account => account, priority: "1")
     campaign.choose_voters_to_dial(1).should == [priority_voter]
   end
-  
+
 
   it "excludes system blocked numbers" do
     account = Factory(:account, :activated => true)
@@ -133,7 +133,7 @@ describe "simulation_dialer" do
 
   it "should dial one line per caller if no calls have been made in the last ten minutes" do
     campaign = Factory(:campaign)
-    2.times {Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true)}
+    2.times { Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true) }
     num_to_call = campaign.dial_predictive_simulator
     campaign.should_not_receive(:num_to_call_predictive_simulate)
     caller_sessions = CallerSession.find_all_by_campaign_id(campaign.id)
@@ -144,7 +144,7 @@ describe "simulation_dialer" do
     campaign = Factory(:campaign, :acceptable_abandon_rate => 0.2)
     Factory(:call_attempt, :campaign => campaign, :call_start => 20.seconds.ago)
     Factory(:call_attempt, :campaign => campaign, :call_start => 20.seconds.ago, :status => CallAttempt::Status::ABANDONED)
-    2.times {Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true)}
+    2.times { Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true) }
     num_to_call = campaign.dial_predictive_simulator
     campaign.should_not_receive(:num_to_call_predictive_simulate)
     caller_sessions = CallerSession.find_all_by_campaign_id(campaign.id)
@@ -154,102 +154,98 @@ describe "simulation_dialer" do
   it "should determine calls to make give the simulated best_dials when call_attempts prior int the last 10 mins are present" do
     simulated_values = SimulatedValues.create(best_dials: 2.33345, best_conversation: 34.0076, longest_conversation: 42.0876)
     campaign = Factory(:campaign, :simulated_values => simulated_values)
-    
-    10.times {Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true )}
-    10.times {Factory(:call_attempt, :campaign => campaign, :call_start => 20.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::SUCCESS)}
-    10.times {Factory(:call_attempt, :campaign => campaign, :call_start => 10.seconds.ago,:status => CallAttempt::Status::SUCCESS)}
-    Factory(:call_attempt, :campaign => campaign, :call_start => 35.seconds.ago,:status => CallAttempt::Status::SUCCESS)
-    Factory(:call_attempt, :campaign => campaign, :call_start => 65.seconds.ago,:status => CallAttempt::Status::SUCCESS)
-    2.times {Factory(:call_attempt, :campaign => campaign, :call_start => 10.seconds.ago, :status => CallAttempt::Status::RINGING)}
+
+    10.times { Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true) }
+    10.times { Factory(:call_attempt, :campaign => campaign, :call_start => 20.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::SUCCESS) }
+    10.times { Factory(:call_attempt, :campaign => campaign, :call_start => 10.seconds.ago, :status => CallAttempt::Status::SUCCESS) }
+    Factory(:call_attempt, :campaign => campaign, :call_start => 35.seconds.ago, :status => CallAttempt::Status::SUCCESS)
+    Factory(:call_attempt, :campaign => campaign, :call_start => 65.seconds.ago, :status => CallAttempt::Status::SUCCESS)
+    2.times { Factory(:call_attempt, :campaign => campaign, :call_start => 10.seconds.ago, :status => CallAttempt::Status::RINGING) }
     unavailable_caller_sessions = CallerSession.all[1..7]
-    unavailable_caller_sessions.each {|caller_session| caller_session.update_attribute(:available_for_call, false)}
-    5.times {Factory(:call_attempt, :campaign => campaign, :call_start => 5.seconds.ago, :status => CallAttempt::Status::INPROGRESS)}
-    2.times {Factory(:call_attempt, :campaign => campaign, :call_start => 20.seconds.ago, :status => CallAttempt::Status::INPROGRESS)}
+    unavailable_caller_sessions.each { |caller_session| caller_session.update_attribute(:available_for_call, false) }
+    5.times { Factory(:call_attempt, :campaign => campaign, :call_start => 5.seconds.ago, :status => CallAttempt::Status::INPROGRESS) }
+    2.times { Factory(:call_attempt, :campaign => campaign, :call_start => 20.seconds.ago, :status => CallAttempt::Status::INPROGRESS) }
     calls_to_make = campaign.num_to_call_predictive_simulate
     calls_to_make.should eq(10)
   end
-  
+
   it "should determine calls to make give the simulated best_dials when call_attempts prior int the last 10 mins are present" do
     simulated_values = SimulatedValues.create(best_dials: 1, best_conversation: 0, longest_conversation: 0)
     campaign = Factory(:campaign, :simulated_values => simulated_values)
-    3.times {Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true )}
+    3.times { Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true) }
     calls_to_make = campaign.num_to_call_predictive_simulate
     calls_to_make.should eq(3)
   end
-  
+
   it "should determine calls to make when no simulated values" do
     campaign = Factory(:campaign)
-    3.times {Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true )}
+    3.times { Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true) }
     calls_to_make = campaign.num_to_call_predictive_simulate
     calls_to_make.should eq(3)
   end
-  
+
   describe "best dials simulated" do
-  
+
     it "should return 1 as best dials if simulated_values is nil" do
       campaign = Factory(:campaign)
       campaign.best_dials_simulated.should eq(1)
     end
-    
+
     it "should return 1 as best dials if  best_dials simulated_values is nil" do
       campaign = Factory(:campaign)
       campaign.best_dials_simulated.should eq(1)
     end
-    
+
     it "should return best dials  if  best_dials simulated_values is has a value" do
-     simulated_values = SimulatedValues.create(best_dials: 1.8, best_conversation: 0, longest_conversation: 0)
-     campaign = Factory(:campaign, :simulated_values => simulated_values)
+      simulated_values = SimulatedValues.create(best_dials: 1.8, best_conversation: 0, longest_conversation: 0)
+      campaign = Factory(:campaign, :simulated_values => simulated_values)
       campaign.best_dials_simulated.should eq(2)
     end
-    
-  
- end
+
+
+  end
 
   describe "best conversations simulated" do
-  
+
     it "should return 0 as best conversation if simulated_values is nil" do
       campaign = Factory(:campaign)
       campaign.best_conversation_simulated.should eq(0)
     end
-    
+
     it "should return 0 as best conversation if best_conversation simulated_values is nil" do
       campaign = Factory(:campaign)
       campaign.best_conversation_simulated.should eq(0)
     end
-    
+
     it "should return best conversation if  best_conversation simulated_values is has a value" do
-     simulated_values = SimulatedValues.create(best_dials: 1.8, best_conversation: 34.34, longest_conversation: 0)
-     campaign = Factory(:campaign, :simulated_values => simulated_values)
+      simulated_values = SimulatedValues.create(best_dials: 1.8, best_conversation: 34.34, longest_conversation: 0)
+      campaign = Factory(:campaign, :simulated_values => simulated_values)
       campaign.best_conversation_simulated.should eq(34.34)
     end
-    
-  
- end
- 
+
+
+  end
+
   describe "longest conversations simulated" do
-  
+
     it "should return 0 as longest conversation if simulated_values is nil" do
       campaign = Factory(:campaign)
       campaign.longest_conversation_simulated.should eq(0)
     end
-    
+
     it "should return 0 as longest conversation if longest_conversation simulated_values is nil" do
       campaign = Factory(:campaign)
       campaign.longest_conversation_simulated.should eq(0)
     end
-    
+
     it "should return longest conversation if  longest_conversation simulated_values is has a value" do
-     simulated_values = SimulatedValues.create(best_dials: 1.8, best_conversation: 34.34, longest_conversation: 67.09)
-     campaign = Factory(:campaign, :simulated_values => simulated_values)
+      simulated_values = SimulatedValues.create(best_dials: 1.8, best_conversation: 34.34, longest_conversation: 67.09)
+      campaign = Factory(:campaign, :simulated_values => simulated_values)
       campaign.longest_conversation_simulated.should eq(67.09)
     end
-    
- end
- 
-  
-  
-  
-  
+
+  end
+
 
   it "determines if dialing is ramping up" do
     #less than 50 dials in the last 10 minutes
@@ -345,6 +341,14 @@ describe Campaign do
     campaign.should_not be_valid
   end
 
+  it "is_phones_only_and_preview_or_progressive? is true if is_phones_only and campaign type is preview or progressive" do
+    preview_campaign = Factory(:campaign, :predictive_type => Campaign::Type::PREVIEW)
+    preview_campaign.is_preview_or_progressive.should be_true
+
+    progressive_campaign = Factory(:campaign, :predictive_type => Campaign::Type::PROGRESSIVE)
+    progressive_campaign.is_preview_or_progressive.should be_true
+  end
+
   it "save correctly, when user_recordings is true and answering_machine_detect is true" do
     campaign1 = Campaign.new(:name => "sddd1", :answering_machine_detect => true, :use_recordings => true)
     campaign2 = Campaign.new(:name => "sddd2", :answering_machine_detect => true, :use_recordings => false)
@@ -423,13 +427,13 @@ describe Campaign do
   end
 
   describe "next voter to be dialed" do
-    
+
     it "returns priority  not called voter first" do
       campaign = Factory(:campaign)
       voter = Factory(:voter, :status => 'not called', :campaign => campaign)
       priority_voter = Factory(:voter, :status => 'not called', :campaign => campaign, priority: "1")
       campaign.next_voter_in_dial_queue.should == priority_voter
-      
+
     end
     it "returns uncalled voter before called voter" do
       campaign = Factory(:campaign)

@@ -26,7 +26,7 @@
 
         <p><label for="">Dialing mode</label>
           <select class="field" id="campaign_predictive_type" name="campaign[predictive_type]" onchange="dialingModeOnChange()">
-            <% public_dialers = [["Predictive (beta)", "algorithm1"], ["Power", "progressive"], ["Preview", "preview"],] %>
+            <% public_dialers = [["Predictive", "algorithm1"], ["Power", "progressive"], ["Preview", "preview"],] %>
             <% if !public_dialers.map { |pair| pair[1] }.index(@campaign.predictive_type) %>
                 <option value="<%= @campaign.predictive_type %>" selected><%= @campaign.predictive_type %></option>
             <% end %>
@@ -79,21 +79,8 @@
         <p class="actions">
           <a href='/client/recording_add?campaign_id=<%= @campaign.id %>' class="action secondary">Add voicemail message</a>
         </p>
-        <p>Campaign ID: <%= @campaign.campaign_id %></p>
       </fieldset>
-      <fieldset>
-        <legend>Callers with access</legend>
-        <% if @callers.length==0 %>
-            <p>No callers entered.</p>
-        <% else %>
-          <div id="callers">
-					<p><input type="checkbox" value="0" id="selectAll">&nbsp;All callers</p>
-					<% @callers.each do |l| %>
-					<p><%= check_box_tag "campaign[caller_ids][]", "#{l.id}", callerInCampaign(l), :onclick=>"someCallers();" -%> <%= l.email || l.name%></p>
-					<% end %>
-		</div>
-		<% end %>
-      </fieldset>
+      
       <fieldset>
         <legend>Lists being called</legend>
         <% if @lists.length==0 %>
@@ -109,7 +96,7 @@
 		                  <tr>
 		                    <td valign="top"><%= check_box_tag "voter_list_ids[]", "#{l.id}", l.enabled -%> <%= l.name %></td>
 		                    <td valign="top"><%= l.voters.size %></td>
-		                    <td valign="top"><%= Voter.count(:conditions => "voter_list_id = #{l.id} AND active = 1 AND (status = 'Not Called' or call_back=1) ") %></td>
+		                    <td valign="top"><%= Voter.remaining_voters_count_for('voter_list_id', l.id) %></td>
 		                  </tr>
 		              <% end %>
 			</table>

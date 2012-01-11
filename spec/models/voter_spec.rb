@@ -16,6 +16,19 @@ describe Voter do
       Voter.existing_phone_in_campaign('0123456789', 99).count
     }.by(1)
   end
+  
+  it "gives remaining voters to count" do
+    campaign = Factory(:campaign)
+    no_answr_voter = Factory(:voter, :campaign => campaign, :status=> CallAttempt::Status::NOANSWER)
+    busy_voter = Factory(:voter, :campaign => campaign, :status=> CallAttempt::Status::BUSY)
+    abandon_voter = Factory(:voter, :campaign => campaign, :status=> CallAttempt::Status::ABANDONED)
+    schedule_voter = Factory(:voter, :campaign => campaign, :status=> CallAttempt::Status::SCHEDULED, :call_back => true)
+    not_called_voter = Factory(:voter, :campaign => campaign, :status=> Voter::Status::NOTCALLED)
+    failed_voter = Factory(:voter, :campaign => campaign, :status=> CallAttempt::Status::FAILED, :call_back => true)
+    ready_voter = Factory(:voter, :campaign => campaign, :status=> CallAttempt::Status::READY)
+    success_voter = Factory(:voter, :campaign => campaign, :status=> CallAttempt::Status::SUCCESS)
+    Voter.remaining_voters_count_for('campaign_id', campaign.id).should == 6
+  end
 
   it "lists voters not called" do
     voter1 = Factory(:voter, :campaign => Factory(:campaign), :status=> Voter::Status::NOTCALLED)
@@ -346,7 +359,7 @@ describe Voter do
   end
 
   it "provides voter information with custom fields" do
-    voter = Factory(:voter, :campaign => Factory(:campaign, :account => Factory(:account)))
+    voter = Factory(:voter, :campaign => Factory(:campaign, :account => Factory(:account), :script => Factory(:script, :voter_fields => "[\"foo\",\"goo\"]")))
     voter_no_custom = Factory(:voter, :campaign => Factory(:campaign, :account => Factory(:account)))
     voter.apply_attribute('foo', 'bar')
     voter.apply_attribute('goo', 'car')
