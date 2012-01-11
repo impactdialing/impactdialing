@@ -306,17 +306,9 @@ class Campaign < ActiveRecord::Base
     voters_returned.uniq
   end
 
-  def dialing?
-    (predictive_type == 'preview' || calls_in_progress?).tap do
-      DIALER_LOGGER.info "SKIP #{self.name} dials in progress #{self.calls_in_progress?} #{self.predictive_type}"
-    end
-  end
 
   def predictive_dial
-    return if dialing?
-    update_attribute(:calls_in_progress, true)
     dial_predictive_voters
-    update_attribute(:calls_in_progress, false)
   end
 
   def callers_to_dial
