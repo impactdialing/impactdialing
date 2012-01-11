@@ -7,15 +7,13 @@
   <table width="100%" border="0" cellspacing="0" cellpadding="0">
     <tr>
       <th>Name</th>
-      <th>Campaign ID</th>
-      <th>Date Added</th>
-      <th>Date Deleted</th>
+      <th>Date added</th>
+      <th>Date deleted</th>
       <th width="55" class="ac"></th>
     </tr>
     <% @campaigns.each do |c| %>
       <tr class="<%= cycle("odd","even") %>">
-        <td><h3><a href="<%= client_campaign_path(c) %>"><%= c.name %></a></h3></td>
-        <td><%= c.group_id %></td>
+        <td><strong><a href="<%= client_campaign_path(c) %>"><%= c.name %></a></strong></td>
         <td><%= c.created_at.strftime("%m/%d/%Y") %></td>
         <td><%= c.updated_at.strftime("%m/%d/%Y") %></td>
         <td>
