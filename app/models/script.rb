@@ -35,13 +35,13 @@ class Script < ActiveRecord::Base
     JSON.parse(voter_fields).select{ |field| VoterList::VOTER_DATA_COLUMNS.keys.include?(field) }
   end
   
-  def slected_custom_fields
+  def selected_custom_fields
     JSON.parse(voter_fields).select{ |field| !VoterList::VOTER_DATA_COLUMNS.keys.include?(field) }
   end
   
-  def selected_fields_json_form
+  def selected_fields_json
     result = Hash.new
-    selected_fields.each do |x|
+    selected_fields.try(:each) do |x|
       result[x+"_flag"] = true
     end
     result

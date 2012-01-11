@@ -395,12 +395,14 @@ function subscribe(session_key) {
 
 
     function bind_voter(data) {
-        var customList = []
-        $.each(data.custom_fields, function(item){ 
-          customList.push({name:item, value:data.custom_fields[item]});
-        });
-        $.extend(data, {custom_field_list: customList})
-        console.log(data);
+        if(data.custom_fields)
+          var customList = []
+          $.each(data.custom_fields, function(item){ 
+            customList.push({name:item, value:data.custom_fields[item]});
+          });
+          $.extend(data, {custom_field_list: customList})
+        }
+        
         var voter = ich.voter(data); //using ICanHaz a moustache. js like thingamagic
         $('#voter_info').empty();
         $('#voter_info').append(voter);

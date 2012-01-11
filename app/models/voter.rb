@@ -141,13 +141,13 @@ class Voter < ActiveRecord::Base
     capture_answers(response["question"])
     capture_notes(response['notes'])
   end
-
-  def info
-    {:fields => self.attributes.reject { |k, v| (k == "created_at") ||(k == "updated_at") }, :custom_fields => Hash[*self.custom_voter_field_values.collect { |cvfv| [cvfv.custom_voter_field.name, cvfv.value] }.flatten]}
+  
+  def selected_custom_voter_field_values
+    custom_voter_field_values.select{|cvf| campaign.script.try(:selected_custom_fields).include?(cvf.custom_voter_field.name)}
   end
   
-  def new_info
-    info.merge!(campaign.script.selected_fields).merge!({:selected_custom_fields => campaign.script.slected_custom_fields})
+  def info
+    {:fields => self.attributes.reject { |k, v| (k == "created_at") ||(k == "updated_at") }, :custom_fields => Hash[*self.selected_custom_voter_field_values.collect { |cvfv| [cvfv.custom_voter_field.name, cvfv.value] }.flatten]}.merge!(campaign.script ? campaign.script.selected_fields_json : {})
   end
 
   def not_yet_called?(call_status)
