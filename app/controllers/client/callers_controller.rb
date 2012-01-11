@@ -26,7 +26,7 @@ module Client
     def update
       @caller = account.callers.find_by_id(params[:id])
       if @caller.is_on_call? && (params[:campaign_id] != @caller.campaign.id)
-        flash_message(:error, "You can't reassign the caller to the campaign, Because caller is on call. Please go to monitor page to change the campaign")
+        flash_message(:error, "This caller is logged in and so can't be changed to a new campaign from this screen. To reassign them to a new campaign, please use the Monitor tab.")
         render :action=>"new"
       else
         if @caller.update_attributes(params[:caller])
