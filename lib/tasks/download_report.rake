@@ -8,13 +8,14 @@ task :download_report => :environment do
       :secret_access_key => 'lx3/dMIPjOkUAEDf4hcUM/AwxMzZU9yo7Wk/R4l5'
   )
 
-  filename = "#{Rails.root}/temp/report_#{@campaign.name}.csv"
+  filename = "#{Rails.root}/tmp/report_#{@campaign.name}.csv"
   File.open(filename, "w"){|f| f.write report}
-  AWS::S3::S3Object.store("report_#{@campaign.name}.csv", File.open(filename), "download_reports", :content_type => "text/csv")
+  p filename
+  AWS::S3::S3Object.store("report_#{@campaign.name}.csv", File.open(filename), "impactdiallingapp", :content_type => "text/csv", :access=>'public-read')
 end
 
 def get_report
-  c = Campaign.find(@campaign_id)
+  c = Campaign.find(69)
   @campaign = c
   custom_fields = c.account.custom_voter_fields.collect { |field| field.name }
   campaign_notes = c.script.notes.collect { |note| note.note }
