@@ -13,33 +13,46 @@
 
     <script id="voter" type="text/html">
       {{#fields}}
-					{{#CustomID}}
+					{{#CustomID_flag}}
           	<li>ID: <b>{{CustomID}}</b></li>
-					{{/CustomID}}		
-          <li>First name: <b>{{FirstName}}</b></li>
-          <li>Middle name: <b>{{MiddleName}}</b></li>
-          <li>Last name: <b>{{LastName}}</b></li>
-          <li>Suffix: <b>{{Suffix}}</b></li>
-          <li>Address: <b>{{address}}</b></li>
-          <li>City: <b>{{city}}</b></li>
-          <li>State/Province: <b>{{state}}</b></li>
-          <li>Zip/Postal Code: <b>{{zip_code}}</b></li>
-          <li>Country: <b>{{country}}</b></li>
-
-
-      <% if @selected_voter_fields.delete('Phone') %>
+					{{/CustomID_flag}}
+					{{#FirstName_flag}}
+          	<li>First name: <b>{{FirstName}}</b></li>
+					{{/FirstName_flag}}
+					{{#MiddleName_flag}}
+          	<li>Middle name: <b>{{MiddleName}}</b></li>
+					{{/MiddleName_flag}}
+					{{#LastName_flag}}
+          	<li>Last name: <b>{{LastName}}</b></li>
+					{{/LastName_flag}}
+					{{#Suffix_flag}}
+          	<li>Suffix: <b>{{Suffix}}</b></li>
+					{{/Suffix_flag}}
+					{{#address_flag}}
+          	<li>Address: <b>{{address}}</b></li>
+					{{/address_flag}}
+					{{#city_flag}}
+          	<li>City: <b>{{city}}</b></li>
+					{{/city_flag}}
+					{{#state_flag}}
+          	<li>State/Province: <b>{{state}}</b></li>
+					{{/state_flag}}
+					{{#zip_code_flag}}
+          	<li>Zip/Postal Code: <b>{{zip_code}}</b></li>
+					{{/zip_code_flag}}
+					{{#country_flag}}
+          	<li>Country: <b>{{country}}</b></li>
+					{{/country_flag}}
+					{{#Phone_flag}}
           <li>Phone: <b>{{Phone}}</b></li>
-      <% end %>
-      <% if @selected_voter_fields.delete('Email') %>
+      		{{/Phone_flag}}
+					{{#Email_flag}}
           <li>Email: <b>{{Email}}</b></li>
-      <% end %>
-
+					{{/Email_flag}}
       {{/fields}}
-      {{#custom_fields}}
-      <% @selected_voter_fields.try(:each) do |s| %>
-          <li><%= s %>: <b>{{<%= s %>}}</b></li>
-      <% end %>
-      {{/custom_fields}}
+      {{#custom_field_list}}
+				<li>{{name}}: <b>{{value}}</b></li>
+      {{/custom_field_list}}
     </script>
 <% end %>
 <%= render 'browser_test' %>
