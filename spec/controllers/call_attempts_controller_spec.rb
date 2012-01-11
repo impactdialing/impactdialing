@@ -73,8 +73,8 @@ describe CallAttemptsController do
     it "routes different calls to callers sharing credentials" do
       session1 = Factory(:caller_session, :session_key => "sample1", :campaign => campaign, :available_for_call => true, :on_call => true)
       session2 = Factory(:caller_session, :session_key => "sample2", :campaign => campaign, :available_for_call => true, :on_call => true)
-      attempt1 = Factory(:call_attempt, :voter => Factory(:voter), :campaign => campaign)
-      attempt2 = Factory(:call_attempt, :voter => Factory(:voter), :campaign => campaign)
+      attempt1 = Factory(:call_attempt, :voter => Factory(:voter,:campaign => campaign), :campaign => campaign)
+      attempt2 = Factory(:call_attempt, :voter => Factory(:voter,:campaign => campaign), :campaign => campaign)
       post :connect, :id => attempt1.id, :AnsweredBy => "human"
       post :connect, :id => attempt2.id, :AnsweredBy => "human"
       session1.voter_in_progress.should_not be_nil
@@ -134,7 +134,7 @@ describe CallAttemptsController do
       caller = Factory(:caller)
       campaign = Factory(:campaign)
       caller_session = Factory(:caller_session, :caller =>caller, :campaign => campaign)
-      call_attempt = Factory(:call_attempt, :status => CallAttempt::Status::INPROGRESS, :caller_session => caller_session, :voter => Factory(:voter))
+      call_attempt = Factory(:call_attempt, :status => CallAttempt::Status::INPROGRESS, :caller_session => caller_session, :voter => Factory(:voter, :campaign => campaign))
       channel = mock
 
       Pusher.should_receive(:[]).with(anything).and_return(channel)

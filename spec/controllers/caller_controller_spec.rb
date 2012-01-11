@@ -78,7 +78,7 @@ describe CallerController do
 
     it "makes a call to the voter" do
       caller_session = Factory(:caller_session, :caller => caller, :on_call => true, :available_for_call => true)
-      voter = Factory(:voter)
+      voter = Factory(:voter, :campaign => caller.campaign)
       Twilio::Call.stub(:make)
       Twilio::Call.should_receive(:make).with(anything, voter.Phone,anything,anything).and_return("TwilioResponse"=> {"Call" => {"Sid" => 'sid'}})
       post :call_voter, :session_id => caller_session.id , :voter_id => voter.id, id: caller.id
@@ -88,7 +88,7 @@ describe CallerController do
       session_key = "caller_session_key"
       campaign = Factory(:campaign, :start_time => Time.new("2000-01-01 01:00:00"), :end_time => Time.new("2000-01-01 23:00:00"))
       caller_session = Factory(:caller_session, :caller => caller, :on_call => true, :available_for_call => true, :session_key => session_key, :campaign => campaign)
-      voter = Factory(:voter)
+      voter = Factory(:voter, :campaign =>campaign)
       channel = mock
       Twilio::Call.stub(:make).and_return("TwilioResponse"=> {"Call" => {"Sid" => 'sid'}})
       Pusher.should_receive(:[]).with(session_key).and_return(channel)

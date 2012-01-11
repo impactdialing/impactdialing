@@ -25,6 +25,10 @@ end
 Factory.define :billing_account do |b|
 end
 
+Factory.define :script do |s|
+  s.name 'a script'
+end
+
 Factory.define :campaign do |c|
   c.name 'a campaign'
   c.caller_id '1234567890'
@@ -33,10 +37,7 @@ Factory.define :campaign do |c|
   c.start_time (Time.now - 6.hours)
   c.end_time (Time.now - 7.hours)
   c.time_zone "Pacific Time (US & Canada)"
-end
-
-Factory.define :script do |s|
-  s.name 'a script'
+  c.script_id {Factory(:script)}
 end
 
 Factory.define :caller do |s|

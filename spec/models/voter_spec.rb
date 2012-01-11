@@ -327,7 +327,7 @@ describe Voter do
   end
 
   it "provides voter information with custom fields" do
-    voter = Factory(:voter, :campaign => Factory(:campaign, :account => Factory(:account)))
+    voter = Factory(:voter, :campaign => Factory(:campaign, :account => Factory(:account), :script => Factory(:script, :voter_fields => "[\"foo\",\"goo\"]")))
     voter_no_custom = Factory(:voter, :campaign => Factory(:campaign, :account => Factory(:account)))
     voter.apply_attribute('foo', 'bar')
     voter.apply_attribute('goo', 'car')
