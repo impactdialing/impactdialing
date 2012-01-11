@@ -54,6 +54,18 @@ class Voter < ActiveRecord::Base
     self.Phone = Voter.sanitize_phone(self.Phone)
   end
 
+  def custom_fields
+    custom_voter_field_values.collect(&:value)
+  end
+
+  def selected_fields(selection)
+    selection.select{|field| Voter.upload_fields.include?(field)}.map{|field| self.send(field)}
+  end
+
+  def selected_custom_fields(selection)
+    custom_voter_field_values.map{|cf| cf.value if selection.include?(cf.custom_voter_field.name) }
+  end
+
 
   def self.upload_fields
     ["Phone", "CustomID", "LastName", "FirstName", "MiddleName", "Suffix", "Email"]
