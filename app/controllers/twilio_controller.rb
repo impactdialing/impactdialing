@@ -18,7 +18,7 @@ class TwilioController < ApplicationController
   def report_error
     #TWILIO_LOG.info "#{@call_attempt.voter.Phone} : Error occured."
     logger.info "[dialer] error. #{@log_message}"
-    render :text => ''
+    render :xml => Twilio::Verb.hangup
   end
 
   def call_ended
