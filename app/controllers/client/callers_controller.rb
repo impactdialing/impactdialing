@@ -23,6 +23,7 @@ module Client
       @caller = account.callers.find_by_id(params[:id])
     end
 
+
     def update
       @caller = account.callers.find_by_id(params[:id])
       if @caller.is_on_call? && (params[:caller][:campaign_id] != @caller.campaign.id)
