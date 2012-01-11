@@ -28,6 +28,10 @@ class Caller < ActiveRecord::Base
     return {:caller_session => {:id => nil}} if self.campaign.nil?
     caller_sessions.available.on_campaign(campaign).last || {:caller_session => {:id => nil}}
   end
+  
+  def is_on_call?
+    caller_sessions.on_call.length > 0
+  end
 
   class << self
     include Rails.application.routes.url_helpers

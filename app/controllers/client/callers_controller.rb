@@ -25,11 +25,16 @@ module Client
 
     def update
       @caller = account.callers.find_by_id(params[:id])
-      if @caller.update_attributes(params[:caller])
-        flash_message(:notice, "Caller updated")
-        redirect_to :action=>"index"
-      else
+      if @caller.is_on_call?
+        flash_message(:notice, "You can't reassign the caller to the campaign, Because caller is on call. Please go to monitor page to change the campaign")
         render :action=>"new"
+      else
+        if @caller.update_attributes(params[:caller])
+          flash_message(:notice, "Caller updated")
+          redirect_to :action=>"index"
+        else
+          render :action=>"new"
+        end
       end
     end
 
