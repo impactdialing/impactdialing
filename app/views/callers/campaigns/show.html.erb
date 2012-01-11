@@ -13,9 +13,9 @@
 
     <script id="voter" type="text/html">
       {{#fields}}
-					{{#CustomID_flag}}
+					{{#ID_flag}}
           	<li>ID: <b>{{CustomID}}</b></li>
-					{{/CustomID_flag}}
+					{{/ID_flag}}
 					{{#FirstName_flag}}
           	<li>First name: <b>{{FirstName}}</b></li>
 					{{/FirstName_flag}}
@@ -36,7 +36,7 @@
 					{{/City_flag}}
 					{{#State/Province_flag}}
           	<li>State/Province: <b>{{state}}</b></li>
-					{{/state_flag}}
+					{{/State/Province_flag}}
 					{{#Zip/Postal Code_flag}}
           	<li>Zip/Postal Code: <b>{{zip_code}}</b></li>
 					{{/Zip/Postal Code_flag}}
