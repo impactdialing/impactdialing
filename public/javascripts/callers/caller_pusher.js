@@ -395,7 +395,7 @@ function subscribe(session_key) {
 
 
     function bind_voter(data) {
-        if(data.custom_fields)
+        if(data.custom_fields){
           var customList = []
           $.each(data.custom_fields, function(item){ 
             customList.push({name:item, value:data.custom_fields[item]});
