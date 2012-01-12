@@ -75,18 +75,22 @@ describe Voter do
     let(:field3) {Factory(:custom_voter_field, :name => "field3", :account => account)}
 
     it "lists a voters custom fields" do
-      value1 = Factory(:custom_voter_field_value, :voter => voter, :custom_voter_field => field1, :value => "value1")
+      f = field1
       value2 = Factory(:custom_voter_field_value, :voter => voter, :custom_voter_field => field2, :value => "value2")
-      voter.custom_fields.should == [value1.value, value2.value]
+      f = field3
+      voter.custom_fields.should == [nil, value2.value ,nil]
     end
 
     it "lists voters custom fields with selected field names" do
       value1 = Factory(:custom_voter_field_value, :voter => voter, :custom_voter_field => field1, :value => "value1")
       value2 = Factory(:custom_voter_field_value, :voter => voter, :custom_voter_field => field2, :value => "value2")
       voter.selected_custom_fields([field1.name, field2.name]).should == [value1.value, value2.value]
-      #voter.selected_custom_fields([field2.name, field1.name]).should == [value2.value, value1.value]
-      voter.selected_custom_fields([field1.name, field3.name]).should == [value1.value,nil]
-      voter.selected_custom_fields(["foo", "bar"]).should == [nil,nil]
+      voter.selected_custom_fields([field2.name, field1.name]).should == [value2.value, value1.value]
+    end
+
+    it "lists voters custom fields with selected field names" do
+      value2 = Factory(:custom_voter_field_value, :voter => voter, :custom_voter_field => field2, :value => "value2")
+      voter.selected_custom_fields([field1.name, field2.name,field3.name]).should == [nil, value2.value, nil]
     end
 
     it "lists selected voter fields" do
