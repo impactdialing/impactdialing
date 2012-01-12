@@ -3,15 +3,15 @@ desc "Update twilio call data"
 
 task :download_report => :environment do
   report = get_report
-  #AWS::S3::Base.establish_connection!(
-  #    :access_key_id => 'AKIAJCTCEHXW27SMQRHA',
-  #    :secret_access_key => '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'
-  #)
+  AWS::S3::Base.establish_connection!(
+      :access_key_id => 'AKIAJCTCEHXW27SMQRHA',
+      :secret_access_key => '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'
+  )
 
   filename = "#{Rails.root}/tmp/report_#{@campaign.name}.csv"
   File.open(filename, "w") { |f| f.write report }
   p filename
-  #AWS::S3::S3Object.store("report_#{@campaign.name}.csv", File.open(filename), "impactdiallingapp", :content_type => "text/csv", :access=>'public-read')
+  AWS::S3::S3Object.store("report_#{@campaign.name}.csv", File.open(filename), "impactdiallingapp", :content_type => "text/csv", :access=>'public-read')
 end
 
 def get_report
