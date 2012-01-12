@@ -8,6 +8,7 @@ task :download_report => :environment do
       :secret_access_key => 'lx3/dMIPjOkUAEDf4hcUM/AwxMzZU9yo7Wk/R4l5'
   )
 
+  FileUtils.mkdir_p(Rails.root.join("tmp"))
   filename = "#{Rails.root}/tmp/report_#{@campaign.name}.csv"
   File.open(filename, "w") { |f| f.write report }
   p filename
@@ -23,8 +24,8 @@ def get_report
 
   report = CSV.generate do |csv|
     csv << [Voter.upload_fields, custom_fields, "Caller", "Status", "Call start", "Call end", "Attempts", "Recording", campaign_questions.collect { |q| q.text }, campaign_notes.collect { |note| note.note }].flatten
-    i = 1
-    c.all_voters.find_in_batches do |voters|
+    i = 0
+    c.all_voters.find_in_batches(:batch_size => 2000) do |voters|
       voters.each do |v|
         voter_fields = v.selected_fields(Voter.upload_fields)
         voter_custom_fields = v.selected_custom_fields(custom_fields)
@@ -41,7 +42,7 @@ def get_report
         end
       end
       i += 1
-      p "#{i} times  : Processed 1000"
+      p "#{i} times : Processed 2000"
     end
   end
   return report
