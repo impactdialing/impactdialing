@@ -47,8 +47,8 @@ class User < ActiveRecord::Base
    self.hashed_password == Digest::SHA2.hexdigest(self.salt + password)
   end
 
-  def create_reset_code
-    update_attributes(:password_reset_code => Digest::SHA2.hexdigest(Time.new.to_s.split(//).sort_by{rand}.join))
+  def create_reset_code!
+    update_attribute(:password_reset_code , Digest::SHA2.hexdigest(Time.new.to_s.split(//).sort_by{rand}.join))
   end
 
   def clear_reset_code
