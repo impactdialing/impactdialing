@@ -23,6 +23,7 @@ def get_report
 
   report = CSV.generate do |csv|
     csv << [Voter.upload_fields, custom_fields, "Caller", "Status", "Call start", "Call end", "Attempts", "Recording", campaign_questions.collect { |q| q.text }, campaign_notes.collect { |note| note.note }].flatten
+    i = 1
     c.all_voters.find_in_batches do |voters|
       voters.each do |v|
         voter_fields = v.selected_fields(Voter.upload_fields)
@@ -39,6 +40,8 @@ def get_report
           csv << [voter_fields, voter_custom_fields, nil, "Not Dialed"].flatten
         end
       end
+      i += 1
+      p "#{i} times  : Processed 1000"
     end
   end
   return report
