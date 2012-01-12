@@ -23,7 +23,7 @@ def get_report
   campaign_questions = c.script.questions
 
   report = CSV.generate do |csv|
-    csv << [Voter.upload_fields, custom_fields, "Caller", "Status", "Call start", "Call end", "Attempts", "Recording", campaign_questions.collect { |q| q.text }, campaign_notes.collect { |note| note.note }].flatten
+    csv << [Voter.upload_fields, "Caller", "Status", "Call start", "Call end", "Attempts", "Recording", campaign_questions.collect { |q| q.text }, campaign_notes.collect { |note| note.note }, custom_fields].flatten
     i = 0
     c.all_voters.find_in_batches(:batch_size => 2000) do |voters|
       voters.each do |v|
@@ -36,13 +36,14 @@ def get_report
         if last_call_attempt
           campaign_questions.each { |q| answers << v.answers.for(q).first.try(:possible_response).try(:value) }
           campaign_notes.each { |note| notes << v.note_responses.for(note).last.try(:response) }
-          csv << [voter_fields, voter_custom_fields, call_details, answers, notes].flatten
+          csv << [voter_fields, call_details, answers, notes, voter_custom_fields].flatten
         else
-          csv << [voter_fields, voter_custom_fields, nil, "Not Dialed"].flatten
+          csv << [voter_fields, nil, "Not Dialed", voter_custom_fields].flatten
         end
       end
       i += 1
       p "#{i} times : Processed 2000"
+      break
     end
   end
   return report
