@@ -28,7 +28,6 @@ def get_report
     c.all_voters.find_in_batches(:batch_size => 2000) do |voters|
       voters.each do |v|
         voter_fields = v.selected_fields(Voter.upload_fields)
-        voter_custom_fields = v.selected_custom_fields(custom_fields)
 
         last_call_attempt = v.last_call_attempt
         call_details = [last_call_attempt ? last_call_attempt.caller.try(:email) : '', v.status, last_call_attempt ? last_call_attempt.call_start.try(:in_time_zone, c.time_zone) : '', last_call_attempt ? last_call_attempt.call_end.try(:in_time_zone, c.time_zone) : '', v.call_attempts.size, last_call_attempt ? last_call_attempt.report_recording_url : ''].flatten
@@ -36,13 +35,14 @@ def get_report
         if last_call_attempt
           campaign_questions.each { |q| answers << v.answers.for(q).first.try(:possible_response).try(:value) }
           campaign_notes.each { |note| notes << v.note_responses.for(note).last.try(:response) }
-          csv << [voter_fields, voter_custom_fields, call_details, answers, notes].flatten
+          csv << [voter_fields, v.custom_fields, call_details, answers, notes].flatten
         else
-          csv << [voter_fields, voter_custom_fields, nil, "Not Dialed"].flatten
+          csv << [voter_fields, v.custom_fields, nil, "Not Dialed"].flatten
         end
       end
       i += 1
       p "#{i} times : Processed 2000"
+      break
     end
   end
   return report
