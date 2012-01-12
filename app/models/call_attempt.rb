@@ -36,7 +36,7 @@ class CallAttempt < ActiveRecord::Base
     
 
   def duration_wrapped_up
-    ((wrapup_time || Time.now) - self.call_start).to_i
+    ((wrapup_time || Time.now) - (self.call_start || Time.now)).to_i
   end
 
   def duration_rounded_up
@@ -72,7 +72,6 @@ class CallAttempt < ActiveRecord::Base
     if caller_session.nil? || caller_session.disconnected? || !caller_session.available_for_call
       update_attributes(status: CallAttempt::Status::ABANDONED, wrapup_time: Time.now)
       voter.update_attributes(:status => CallAttempt::Status::ABANDONED, call_back: false)
-      caller_session.update_attribute(:voter_in_progress, nil) unless caller_session.nil?
       Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.length, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
       hangup
     else
