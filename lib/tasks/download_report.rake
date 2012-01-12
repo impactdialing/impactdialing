@@ -26,6 +26,7 @@ def get_report
     csv << [Voter.upload_fields, custom_fields, "Caller", "Status", "Call start", "Call end", "Attempts", "Recording", campaign_questions.collect { |q| q.text }, campaign_notes.collect { |note| note.note }].flatten
     i = 0
     c.all_voters.find_in_batches(:batch_size => 2000) do |voters|
+      p "starting"
       voters.each do |v|
         voter_fields = v.selected_fields(Voter.upload_fields)
 
@@ -42,7 +43,6 @@ def get_report
       end
       i += 1
       p "#{i} times : Processed 2000"
-      break
     end
   end
   return report
