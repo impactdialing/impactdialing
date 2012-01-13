@@ -24,10 +24,7 @@ class CallAttemptsController < ApplicationController
                      call_attempt.caller_session.publish('voter_push', next_voter ? next_voter.info : {})
                      call_attempt.caller_session.publish('conference_started', {})
                    end
-                   if call_attempt.campaign.predictive_type == Campaign::Type::PREDICTIVE
-                     call_attempt.update_attributes(wrapup_time: Time.now) 
-                   end
-                   
+                   call_attempt.update_attributes(wrapup_time: Time.now)                    
                    (call_attempt.campaign.use_recordings? && call_attempt.campaign.answering_machine_detect) ? call_attempt.play_recorded_message : call_attempt.hangup
                  else
                    CallerSession.transaction { call_attempt.connect_to_caller(call_attempt.voter.caller_session) }
