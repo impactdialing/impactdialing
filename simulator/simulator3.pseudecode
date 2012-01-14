@@ -1,27 +1,44 @@
 target_abandonment = externally-defined target abandonment rate
 start_time = number of seconds ago to start simulating; for now, 600
 simulator_length = number of seconds to simulate; for now 3,600
+increment = the number of times to loop for each parameter; for now, 10
 
 caller_status = [ an array of length equal to the number of callers on the system with all values “available” ]
 # at first, it looks like this [ “available”, “available”, … ]
 
-observed_conversations = [ an array of arrays of the lengths of conversations that occurred after start_time, and a counter set to 0 ]
-# example: observed_conversations = [ [ 45, 0 ], [ 5, 0 ], [ 63, 0 ], ... ]
+observed_conversations = [ an array of arrays of the lengths of conversations that occurred after start_time, the lengths of their wrapup times, and a counter set to 0 ]
+# example: observed_conversations = [ [ 45, 5, 0 ], [ 5, 3, 0 ], [ 63, 7, 0 ], ... ]
 
 observed_dials = [ an of array of arrays of all the lengths of the dials that occurred after start_time, a counter set to 0, and their status ]
 # example: observed_dials = [ [ 9, 0, answered ], [ 15, 0, unanswered ], [ 12, 0, answered ] … ]
 
+
 mean_conversation = the mean of the observed conversations
 longest_conversation = the longest observed conversation
 
-expected_conversation = mean_conversation
+longest_wrapup = the longest observed wrapup time
+
+answer_ratio = number of elements in observed_dials / number of elements in observed_dials with status "answered"
+
+
 dials_needed = 1
+expected_conversation = longest_conversation
+expected_wrapup = longest_wrapup
+
 
 best_dials = 1
 best_conversation = longest_conversation
+best_wrapup = longest_wrapup
 best_utilization = 0
 
-while expected_conversation < longest_conversation
+
+i = 0
+j = 0
+
+while i < 3
+# run the loop 3 times, for dials, conversations, and wrapups
+
+while j < increment
 
   idle_time = 0
 
@@ -41,7 +58,7 @@ while expected_conversation < longest_conversation
 
     for each element in active_conversations
 
-      if its counter = its length
+      if its counter = the call length + the wrapup time
 
         change status of 1 caller to available
 
@@ -91,7 +108,9 @@ while expected_conversation < longest_conversation
 
     # simulated dialer
 
-    available_callers = number of elements in caller_status array “available” + number of elements in active_conversations with counters > expected_conversation - number of elements in active_conversations with counters > than longest_conversation
+    active_wrapups = [ for every active_conversation with a counter > its conversation length, put an element in this array = the counter - the conversation length ]
+
+    available_callers = number of elements in caller_status array “available” + number of elements in active_conversations with counters > expected_conversation + number of elements in active_wrapups > expected_wrapup - number of elements in active_conversations with counters > than longest_conversation
 
     ringing_lines = number of elements in active_dials
 
@@ -127,19 +146,24 @@ while expected_conversation < longest_conversation
 
   end
 
-  increment = 10 #the higher this value, the more accurate the simulation, but the slower it runs
-
-  answer_ratio = number of elements in observed_dials / number of elements in observed_dials with status "answered"
-
-  if dials_needed < answer_ratio
+  if i = 0
 
     increment dials_needed by ( ( answer_ratio - 1 ) / increment )
 
-  else
-
-    dials_needed = 1
+  if i = 1
 
     increment expected_conversation by ( ( longest_conversation - mean_conversation ) / increment )
 
-  end
+  if i = 2
+
+    increment expected_wrapup by ( longest_wrapup / 10 )
+
+end
+
+  dials_needed = best_dials
+
+  expected_conversation = best_conversation
+
+  increment j
+
 end
