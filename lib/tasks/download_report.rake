@@ -16,7 +16,7 @@ task :download_report => :environment do
 end
 
 def get_report
-  c = Campaign.find(69)
+  c = Campaign.find(91)
   @campaign = c
   custom_fields = c.account.custom_voter_fields.collect { |field| field.name }
   campaign_notes = c.script.notes
