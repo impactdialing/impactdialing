@@ -82,9 +82,9 @@ class User < ActiveRecord::Base
     @campaign.save
     @caller = Caller.new(name:"", email: self.email, password:"demo123", account_id: self.account.id, active: true, campaign_id: @campaign.id)
     @caller.save
-    @voter_list = VoterList.new(name: "Demo voter list", account_id: self.account.id, campaign_id: @campaign.id)
+    @voter_list = VoterList.new(name: "Demo list", account_id: self.account.id, campaign_id: @campaign.id)
     @voter_list.save
-    @voter = Voter.new(Phone: "4152372444", LastName: "Voter", FirstName: "Demo", campaign_id: @campaign.id, account_id: self.account.id, voter_list_id: @voter_list.id)
+    @voter = Voter.new(Phone: "4152372444", LastName: "Lead", FirstName: "Demo", campaign_id: @campaign.id, account_id: self.account.id, voter_list_id: @voter_list.id)
     @voter.save  
   end
 
