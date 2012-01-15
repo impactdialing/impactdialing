@@ -94,19 +94,20 @@ class ClientController < ApplicationController
       end
       
       if @user.valid?
-        if @user.new_record?
-          @user.save
           @user.send_welcome_email
-          @caller = Caller.new(name:"", email: @user.email, password:"demo123", account_id: account.id, active: true)
-          @caller.save
-        end
+          
+          if account.scripts.find_by_name('Demo Script') == nil
+            @script = Script.default_script(account)
+            @script.save
+            @numResults = 1
+            @numNotes = 1
+          end
 
-        if account.scripts.find_by_name('Demo Script') == nil
-          @script = Script.default_script(account)
-          @script.save
-          @numResults = 1
-          @numNotes = 1
-        end
+          @campaign = Campaign.new(name: "Demo campaign", caller_id: "4153475723", start_time: "01:00:00", end_time: "00:00:00", account_id: account.id, script_id: @script.id)
+          @campaign.save
+          @caller = Caller.new(name:"", email: @user.email, password:"demo123", account_id: account.id, active: true, campaign_id: @campaign.id)
+          @caller.save
+
 
         if session[:user].blank?
           message = "Your account has been created."
