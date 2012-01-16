@@ -89,7 +89,7 @@ class CallerSession < ActiveRecord::Base
 
   def start
     wrapup
-    unless on_call?
+    unless endtime.nil?
       return Twilio::Verb.hangup
     end
     if caller_reassigned_to_another_campaign?
@@ -111,6 +111,10 @@ class CallerSession < ActiveRecord::Base
   end
   
   def phones_only_start
+    unless endtime.nil?
+      return Twilio::Verb.hangup
+    end
+    
     response = Twilio::Verb.new do |v|
       v.dial(:hangupOnStar => true, :action => gather_response_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => id)) do
         v.conference(session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
