@@ -174,13 +174,13 @@ describe Voter do
       end
 
       it "updates voter attributes" do
+        time_now = Time.now
+        Time.stub!(:now).and_return(time_now)
         caller_session = Factory(:caller_session, :available_for_call => true, :on_call => true, campaign: campaign)
         campaign.stub(:time_period_exceed?).and_return(false)
         voter.dial_predictive
         call_attempt = voter.call_attempts.last
         voter.last_call_attempt.should == call_attempt
-        time_now = Time.now
-        Time.stub!(:now).and_return(time_now)
         DateTime.parse(voter.last_call_attempt_time.to_s).should == DateTime.parse(time_now.utc.to_s)
       end
 
