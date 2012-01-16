@@ -31,7 +31,7 @@ def get_report
         voter_fields = v.selected_fields(Voter.upload_fields)
 
         last_call_attempt = v.last_call_attempt
-        call_details = [last_call_attempt ? last_call_attempt.caller.try(:email) : '', v.status, last_call_attempt ? last_call_attempt.call_start.try(:in_time_zone, c.time_zone) : '', last_call_attempt ? last_call_attempt.call_end.try(:in_time_zone, c.time_zone) : '', v.call_attempts.size, last_call_attempt ? last_call_attempt.report_recording_url : ''].flatten
+        call_details = [last_call_attempt ? (last_call_attempt.caller.try(:email)||last_call_attempt.caller.try(:name)) : '', v.status, last_call_attempt ? last_call_attempt.call_start.try(:in_time_zone, c.time_zone) : '', last_call_attempt ? last_call_attempt.call_end.try(:in_time_zone, c.time_zone) : '', v.call_attempts.size, last_call_attempt ? last_call_attempt.report_recording_url : ''].flatten
         notes, answers = [], []
         if last_call_attempt
           campaign_questions.each { |q| answers << v.answers.for(q).first.try(:possible_response).try(:value) }
