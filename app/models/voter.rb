@@ -74,7 +74,7 @@ class Voter < ActiveRecord::Base
 
 
   def self.upload_fields
-    ["Phone", "CustomID", "LastName", "FirstName", "MiddleName", "Suffix", "Email"]
+    ["Phone", "CustomID", "LastName", "FirstName", "MiddleName", "Suffix", "Email", "address", "city", "state", "country"]
   end
   
   def self.remaining_voters_count_for(column_name, column_value)
