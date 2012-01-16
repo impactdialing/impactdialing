@@ -34,7 +34,6 @@ class CampaignsController < ClientController
       @scripts = @user.account.scripts.robo.active
       @callers = account.callers.active
       @lists = @campaign.voter_lists
-      @voters = @campaign.all_voters.active.paginate(:page => params[:page])
       @voter_list = @campaign.voter_lists.new
       
       respond_to do |format|
@@ -62,7 +61,6 @@ class CampaignsController < ClientController
     @scripts = @user.account.scripts.robo.active
     @callers = account.callers.active
     @lists = @campaign.voter_lists
-    @voters = @campaign.all_voters.active.paginate(:page => params[:page])
     @voter_list = @campaign.voter_lists.new
   end
 
