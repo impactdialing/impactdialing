@@ -20,7 +20,6 @@ en:
   read_voter_name: "%{first_name}  %{last_name}. Press star to dial or pound to skip."
   read_star_to_dial_pound_to_skip: "Press star to dial or pound to skip."
   submit_results: "Then press star to submit your result."
-  invalid_file_uploaded: Invalid file. Could not upload.
   flash_missing_html: "Because you do not have an up-to-date version of Adobe Flash, you must dial in. If you would like to use the browser phone, please <a href=\"http://get.adobe.com/flashplayer/\">click here</a> to download and install the most recent version of Flash."
   flash_old_html: "Because you do not have an up-to-date version of Adobe Flash, you must dial in. If you would like to use the browser phone, please <a href=\"http://get.adobe.com/flashplayer/\">click here</a> to download and install the most recent version of Flash."
   client_not_ready: "We could not load the browser phone. Please check your firewall settings or anything else that could be blocking access."
