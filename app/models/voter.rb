@@ -33,7 +33,7 @@ class Voter < ActiveRecord::Base
   scope :not_skipped, where('skipped_time is null')
   scope :answered, where('result_date is not null')
   scope :answered_within, lambda { |from, to| where(:result_date => from.beginning_of_day..(to.end_of_day)) }
-  scope :last_call_attempt_within, lambda { |from, to| where(:last_call_attempt_time => from..(to + 1.day))}
+  scope :last_call_attempt_within, lambda { |from, to| where(:last_call_attempt_time => from..(to + 1.day)) }
   scope :priority_voters, :conditions => {:priority => "1", :status => 'not called'}
 
   before_validation :sanitize_phone
@@ -52,6 +52,24 @@ class Voter < ActiveRecord::Base
 
   def sanitize_phone
     self.Phone = Voter.sanitize_phone(self.Phone)
+  end
+
+  def custom_fields
+    account.custom_fields.map { |field| CustomVoterFieldValue.voter_fields(self, field).first.try(:value) }
+  end
+
+  def selected_fields(selection)
+    selection.select { |field| Voter.upload_fields.include?(field) }.map { |field| self.send(field) }
+  end
+
+  def selected_custom_fields(selection)
+    selected_fields = []
+    selection.each do |field|
+      field = account.custom_voter_fields.find_by_name(field)
+      selected_fields << nil and next unless field
+      selected_fields << CustomVoterFieldValue.voter_fields(self, field).first.try(:value)
+    end
+    selected_fields
   end
 
 
@@ -92,9 +110,9 @@ class Voter < ActiveRecord::Base
   def dial_predictive
     call_attempt = new_call_attempt(self.campaign.predictive_type)
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    params = { 'StatusCallback' => end_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port),'Timeout' => campaign.answering_machine_detect ? "30" : "15"}
-    params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect        
-    response = Twilio::Call.make(campaign.caller_id, self.Phone, connect_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port),params)
+    params = {'StatusCallback' => end_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port), 'Timeout' => campaign.answering_machine_detect ? "30" : "15"}
+    params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect
+    response = Twilio::Call.make(campaign.caller_id, self.Phone, connect_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port), params)
     if response["TwilioResponse"]["RestException"]
       call_attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
       update_attributes(status: CallAttempt::Status::FAILED)
@@ -176,9 +194,9 @@ class Voter < ActiveRecord::Base
   def question_not_answered
     unanswered_questions.first
   end
-  
+
   def skip
-    update_attributes(skipped_time:  Time.now, status: 'not called')
+    update_attributes(skipped_time: Time.now, status: 'not called')
   end
 
   def answer(question, response, recorded_by_caller = nil)
