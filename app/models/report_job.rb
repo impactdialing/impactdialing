@@ -39,7 +39,7 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
     else
       csv << [voter_fields, voter.custom_fields, nil, "Not Dialed"].flatten
     end
-    csv
+    csv.flatten
   end
 
 end
