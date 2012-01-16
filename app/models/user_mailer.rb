@@ -47,6 +47,7 @@ class UserMailer
     @uakari.send_email({
       :message => {
         :subject => subject,
+        :text => content,
         :html => content,
         :from_name => white_labeled_title(user_domain),
         :from_email => 'email@impactdialing.com',
