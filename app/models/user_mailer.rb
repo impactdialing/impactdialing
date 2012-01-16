@@ -40,4 +40,18 @@ class UserMailer
       }
     })
   end
+
+  def deliver_download(user, download_link)
+    subject = I18n.t(:report_ready_for_download)
+    content = "<br/>#{download_link}<br/>"
+    @uakari.send_email({
+      :message => {
+        :subject => subject,
+        :html => content,
+        :from_name => white_labeled_title(user_domain),
+        :from_email => 'email@impactdialing.com',
+        :to_email => [user.email]
+      }
+    })
+  end
 end

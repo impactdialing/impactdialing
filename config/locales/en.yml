@@ -28,6 +28,7 @@ en:
   javascript_disabled: "We could not load JavaScript. Please check your browser settings and reload this page."
   invalid_file_uploaded: "Your file is corrupt or has a problem. Please try saving the data into a new comma-separated value (CSV) or tab-delimited text (TXT) file and then try again."
   client_report_processing: "Your report is currently being prepared for download."
+  report_ready_for_download: "Your report is ready for download."
   white_labeling:
     impactdialing:
       title: "Impact Dialing"
