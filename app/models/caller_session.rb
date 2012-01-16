@@ -89,6 +89,9 @@ class CallerSession < ActiveRecord::Base
 
   def start
     wrapup
+    unless on_call?
+      return Twilio::Verb.hangup
+    end
     if caller_reassigned_to_another_campaign?
       caller.is_phones_only? ? (return reassign_caller_session_to_campaign) : reassign_caller_session_to_campaign
     end
