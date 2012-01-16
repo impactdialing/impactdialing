@@ -8,22 +8,26 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
     FileUtils.mkdir_p(Rails.root.join("tmp"))
     filename = "#{Rails.root}/tmp/report_#{campaign.name}.csv"
     File.open(filename, "w") { |f| f.write @report }
-    AWS::S3::S3Object.store("report_#{campaign.name}.csv", File.open(filename), "impactdialing_production", :content_type => "text/csv", :access=>'public-read')
-    UserMailer.deliver_download(user,AWS::S3::S3Object.url_for("report_#{campaign.name}.csv", "impactdialing_production"))
+    AWS::S3::S3Object.store("report_#{campaign.name}.csv", File.open(filename), "download_reports", :content_type => "text/csv", :access=>'public-read')
+    UserMailer.deliver_download(user,AWS::S3::S3Object.url_for("report_#{campaign.name}.csv", "download_reports"))
   end
 
   def perform
     @campaign_notes = campaign.script.notes
     @campaign_questions = campaign.script.questions
-    @report = CSV.generate do |csv|
-      csv << [selected_voter_fields, selected_custom_voter_fields, "Caller", "Status", "Call start", "Call end", "Attempts", "Recording", campaign_questions.collect { |q| q.text }, campaign_notes.collect { |note| note.note }].flatten
-      if download_all_voters
-        campaign.all_voters.find_in_batches(:batch_size => 2000) { |voters| voters.each { |v| csv << csv_for(v) } }
-      else
-        campaign.all_voters.answered_within(from_date, to_date).find_in_batches(:batch_size => 2000) { |voters| voters.each { |v| csv << csv_for(v) } }
+    begin
+      @report = CSV.generate do |csv|
+        csv << [selected_voter_fields, selected_custom_voter_fields, "Caller", "Status", "Call start", "Call end", "Attempts", "Recording", campaign_questions.collect { |q| q.text }, campaign_notes.collect { |note| note.note }].flatten
+        if download_all_voters
+          campaign.all_voters.find_in_batches(:batch_size => 2000) { |voters| voters.each { |v| csv << csv_for(v) } }
+        else
+          campaign.all_voters.answered_within(from_date, to_date).find_in_batches(:batch_size => 2000) { |voters| voters.each { |v| csv << csv_for(v) } }
+        end
       end
+      save_report
+    rescue Exception => e
+      UserMailer.deliver_download(user,"#{e.message}::#{e.backtrace} :: An error has occured")
     end
-    save_report
   end
 
   def csv_for(voter)
