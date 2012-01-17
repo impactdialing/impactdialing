@@ -29,7 +29,7 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
 
   def csv_for(voter)
     csv, notes, answers = [], [], []
-    voter_fields = voter.selected_fields(selected_voter_fields.compact)
+    voter_fields = voter.selected_fields(selected_voter_fields.try(:compact))
 
     last_call_attempt = voter.last_call_attempt
     call_details = [last_call_attempt ? last_call_attempt.caller.try(:name)||last_call_attempt.caller.try(:email) : '', voter.status, last_call_attempt ? last_call_attempt.call_start.try(:in_time_zone, campaign.time_zone) : '', last_call_attempt ? last_call_attempt.call_end.try(:in_time_zone, campaign.time_zone) : '', voter.call_attempts.size, last_call_attempt ? last_call_attempt.report_recording_url : ''].flatten
