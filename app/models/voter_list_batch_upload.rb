@@ -52,6 +52,9 @@ class VoterListBatchUpload
           custom_fields = []          
         end
       end    
+      
+      Voter.import leads
+      CustomVoterFieldValue.import custom_fields
    result
  end
     
