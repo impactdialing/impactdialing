@@ -100,6 +100,12 @@ describe Voter do
       voter.selected_fields(["Phone", "LastName", "FirstName"]).should == [phone,nil,firstname]
     end
 
+    it "selects phone number if there are no selected fields" do
+      phone,custom_id,firstname  = "39045098753", "24566", "first"
+      voter.update_attributes(:Phone => phone, :CustomID => custom_id, :FirstName => firstname)
+      voter.selected_fields.should == [phone]
+    end
+
   end
 
   describe "Dialing" do
