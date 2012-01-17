@@ -74,6 +74,7 @@ describe Voter do
     let(:field2) {Factory(:custom_voter_field, :name => "field2", :account => account)}
     let(:field3) {Factory(:custom_voter_field, :name => "field3", :account => account)}
 
+
     it "lists a voters custom fields" do
       f = field1
       value2 = Factory(:custom_voter_field_value, :voter => voter, :custom_voter_field => field2, :value => "value2")
@@ -324,41 +325,6 @@ describe Voter do
     end
   end
 
-  describe "voter attributes" do
-    let(:voter) { Factory(:voter, :campaign => Factory(:campaign, :account => Factory(:account)), :Phone => '384756923349') }
-
-    it "populates original attributes" do
-      voter.apply_attribute('Phone', '0123456789')
-      voter.Phone.should == '0123456789'
-    end
-
-    it "populates custom attributes" do
-      attribute, value = 'Custom', 'foo'
-      voter.apply_attribute(attribute, value)
-      field = CustomVoterField.find_by_name(attribute)
-      field.should_not be_nil
-      CustomVoterFieldValue.voter_fields(voter, field).first.value.should == value
-    end
-
-    it "returns value of original attributes" do
-      attribute, value = 'Phone', '2947832874'
-      voter.apply_attribute(attribute, value)
-      voter.get_attribute(attribute).should == value
-    end
-
-    it "returns value of custom attributes" do
-      attribute, value = 'Custom', 'abcde'
-      voter.apply_attribute(attribute, value)
-      voter.get_attribute(attribute).should == value
-    end
-
-    it "fails to update if it fails to validate" do
-      original_number = voter.Phone
-      attribute, value = 'Phone', '12345'
-      voter.apply_attribute(attribute, value).should be_false
-      voter.reload.get_attribute(attribute).should == original_number
-    end
-  end
 
   it "lists scheduled voters" do
     recent_voter = Factory(:voter, :scheduled_date => 2.minutes.ago, :status => CallAttempt::Status::SCHEDULED, :call_back => true)
@@ -367,49 +333,12 @@ describe Voter do
     Voter.scheduled.should == [recent_voter]
   end
 
-  it "provides voter information with custom fields" do
-    voter = Factory(:voter, :campaign => Factory(:campaign, :account => Factory(:account), :script => Factory(:script, :voter_fields => "[\"foo\",\"goo\"]")))
-    voter_no_custom = Factory(:voter, :campaign => Factory(:campaign, :account => Factory(:account)))
-    voter.apply_attribute('foo', 'bar')
-    voter.apply_attribute('goo', 'car')
-    voter.info.should == {:fields => voter.attributes.reject { |k, v| ["created_at", "updated_at"].include? k }, :custom_fields => {'foo' => 'bar', 'goo' => 'car'}}
-    voter_no_custom.info == {:fields => voter_no_custom.attributes.reject { |k, v| ["created_at", "updated_at"].include? k }, :custom_fields => {}}
-  end
 
   it "limits voters when listing them" do
     10.times { Factory(:voter) }
     Voter.limit(5).should have(5).voters
   end
 
-  describe "voter attributes" do
-    let(:voter) { Factory(:voter, :campaign => Factory(:campaign, :account=> Factory(:account)), :Phone => '384756923349') }
-
-    it "populates original attributes" do
-      voter.apply_attribute('Phone', '0123456789')
-      voter.Phone.should == '0123456789'
-    end
-
-    it "populates custom attributes" do
-      attribute, value = 'Custom', 'foo'
-      voter.apply_attribute(attribute, value)
-      field = CustomVoterField.find_by_name(attribute)
-      field.should_not be_nil
-      CustomVoterFieldValue.voter_fields(voter, field).first.value.should == value
-    end
-
-    it "returns value of original attributes" do
-      attribute, value = 'Phone', '2947832874'
-      voter.apply_attribute(attribute, value)
-      voter.get_attribute(attribute).should == value
-    end
-
-    it "returns value of custom attributes" do
-      attribute, value = 'Custom', 'abcde'
-      voter.apply_attribute(attribute, value)
-      voter.get_attribute(attribute).should == value
-    end
-
-  end
 
   it "excludes specific numbers" do
     unblocked_voter = Factory(:voter, :Phone => "1234567890")

@@ -36,42 +36,9 @@ class VoterList < ActiveRecord::Base
   end
 
   def import_leads(csv_to_system_map, csv_filename, separator)
-
-    result = {:successCount => 0, :failedCount => 0}
     
-    voters_list = CSV.parse(VoterList.read_from_s3(csv_filename).value, :col_sep => separator)
-    csv_headers = voters_list.delete_at(0)
-
-    csv_to_system_map.remap_system_column! "ID", :to => "CustomID"
-    csv_phone_column_location = csv_headers.index(csv_to_system_map.csv_index_for "Phone")
-    csv_custom_id_column_location = csv_headers.index(csv_to_system_map.csv_index_for "CustomID")
-    
-    voters_list.shuffle.each do |voter_info|
-      phone_number = Voter.sanitize_phone(voter_info[csv_phone_column_location])
-      lead = nil
-      if csv_custom_id_column_location.present?
-        lead = Voter.find_by_CustomID_and_campaign_id(voter_info[csv_custom_id_column_location], campaign_id)
-        lead.update_attributes(:voter_list => self) if lead.present?
-      end
-      
-      if lead.nil?
-        lead = Voter.new(:Phone => phone_number, :voter_list => self, :account_id => account_id, :campaign_id => campaign_id)
-      end
-      
-      if lead.valid?
-          lead.save         
-          result[:successCount] +=1
-          csv_headers.each_with_index do |csv_column_title, column_location|
-            system_column = csv_to_system_map.system_column_for csv_column_title
-            lead.apply_attribute(system_column, voter_info[column_location]) unless system_column.blank?
-            Rails.logger.info lead.errors.full_messages unless lead.save
-          end
-      else
-        result[:failedCount] +=1
-        next
-      end
-    end
-    result
+    batch_upload = VoterListBatchUpload.new(self)
+    batch_upload.import_leads(csv_to_system_map, csv_filename, separator)
   end
 
   def dial
