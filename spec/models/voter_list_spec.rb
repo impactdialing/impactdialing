@@ -112,8 +112,9 @@ describe VoterList do
             USER_MAPPINGS,
             csv_file_upload,
             ",")                
+    
         Voter.count.should == 2
-
+        puts Voter.all.inspect
         voter = Voter.find_by_Email("foo@bar.com")
         voter.campaign_id.should == campaign.id
         voter.account_id.should == user.account.id

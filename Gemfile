@@ -27,6 +27,7 @@ gem 'rspec'
 gem 'jquery-rails', '>= 1.0.12'
 gem 'delayed_job', '~>2.1.4'
 gem 'heroku'
+gem "activerecord-import", ">= 0.2.0"
 
 group :development, :test do
   gem 'ruby-debug19'
