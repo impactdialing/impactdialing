@@ -1,4 +1,10 @@
 class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected_custom_voter_fields, :download_all_voters, :from_date, :to_date)
+
+  def initialize(campaign, user, voter_fields, custom_fields, all_voters, from, to)
+    voter_fields = ["Phone"] if voter_fields.blank?
+    super(campaign, user, voter_fields, custom_fields, all_voters, from, to)
+  end
+
   def save_report
     AWS::S3::Base.establish_connection!(
         :access_key_id => 'AKIAINGDKRFQU6S63LUQ',
@@ -16,7 +22,6 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
   def perform
     @campaign_notes = campaign.script.notes
     @campaign_questions = campaign.script.questions
-    selected_voter_fields ||= ["Phone"]
     @report = CSV.generate do |csv|
       csv << [selected_voter_fields, selected_custom_voter_fields, "Caller", "Status", "Call start", "Call end", "Attempts", "Recording", @campaign_questions.collect { |q| q.text }, @campaign_notes.collect { |note| note.note }].flatten.compact
       if download_all_voters
