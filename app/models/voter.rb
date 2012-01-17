@@ -58,7 +58,8 @@ class Voter < ActiveRecord::Base
     account.custom_fields.map { |field| CustomVoterFieldValue.voter_fields(self, field).first.try(:value) }
   end
 
-  def selected_fields(selection)
+  def selected_fields(selection = nil)
+    return [self.Phone] unless selection
     selection.select { |field| Voter.upload_fields.include?(field) }.map { |field| self.send(field) }
   end
 
@@ -74,7 +75,7 @@ class Voter < ActiveRecord::Base
 
 
   def self.upload_fields
-    ["Phone", "CustomID", "LastName", "FirstName", "MiddleName", "Suffix", "Email"]
+    ["Phone", "CustomID", "LastName", "FirstName", "MiddleName", "Suffix", "Email", "address", "city", "state","zip_code", "country"]
   end
 
   def self.remaining_voters_count_for(column_name, column_value)

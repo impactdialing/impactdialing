@@ -76,7 +76,12 @@ module Client
       @custom_voter_fields = @user.account.custom_voter_fields.collect{ |field| field.name}
       respond_to do |format|
         format.html
-        format.csv { send_data download_report, :type => "text/csv", :filename=>"#{@campaign.name}_report.csv", :disposition => 'attachment' }
+        #format.csv { send_data download_report, :type => "text/csv", :filename=>"#{@campaign.name}_report.csv", :disposition => 'attachment' }
+        format.csv do
+          Delayed::Job.enqueue ReportJob.new(@campaign, @user, params[:voter_fields], params[:custom_voter_fields], params[:download_all_voters], @from_date, @to_date)
+          flash_message(:notice,I18n.t(:client_report_processing))
+          redirect_to client_reports_path
+        end
       end
     end
 

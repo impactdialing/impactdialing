@@ -37,7 +37,7 @@ class ClientController < ApplicationController
       if user.blank?
         flash_now(:error, "We could not find an account with that email address")
       else
-        user.create_reset_code
+        user.create_reset_code!
         #Postoffice.password_recovery(u).deliver
 
         begin
