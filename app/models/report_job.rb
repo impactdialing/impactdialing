@@ -16,6 +16,7 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
   def perform
     @campaign_notes = campaign.script.notes
     @campaign_questions = campaign.script.questions
+    selected_voter_fields ||= ["Phone"]
     @report = CSV.generate do |csv|
       csv << [selected_voter_fields.try(:compact), selected_custom_voter_fields.try(:compact), "Caller", "Status", "Call start", "Call end", "Attempts", "Recording", @campaign_questions.collect { |q| q.text }, @campaign_notes.collect { |note| note.note }].flatten
       if download_all_voters
