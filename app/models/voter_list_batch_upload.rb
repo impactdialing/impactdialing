@@ -1,20 +1,20 @@
 class VoterListBatchUpload
-  
+
   def initialize(list)
-    @list = list    
+    @list = list
   end
-  
-  
+
+
   def import_leads(csv_to_system_map, csv_filename, separator)
     result = {:successCount => 0, :failedCount => 0}
-    
+
     voters_list = CSV.parse(VoterList.read_from_s3(csv_filename).value, :col_sep => separator)
     csv_headers = voters_list.delete_at(0)
 
     csv_to_system_map.remap_system_column! "ID", :to => "CustomID"
     csv_phone_column_location = csv_headers.index(csv_to_system_map.csv_index_for "Phone")
     csv_custom_id_column_location = csv_headers.index(csv_to_system_map.csv_index_for "CustomID")
-    
+
     create_custom_attributes(csv_headers, csv_to_system_map)
     leads = []
     custom_fields = []
@@ -35,10 +35,10 @@ class VoterListBatchUpload
           lead.save
           leads << lead
           result[:successCount] +=1
-          csv_headers.each_with_index do |csv_column_title, column_location|            
+          csv_headers.each_with_index do |csv_column_title, column_location|
             system_column = csv_to_system_map.system_column_for csv_column_title
             if !system_column.blank? && system_column != "Phone"
-              apply_attribute(lead, system_column, voter_info[column_location], custom_fields) 
+              apply_attribute(lead, system_column, voter_info[column_location], custom_fields)
             end
           end
         else
@@ -49,13 +49,15 @@ class VoterListBatchUpload
           Voter.import leads
           CustomVoterFieldValue.import custom_fields
           leads = []
-          custom_fields = []          
+          custom_fields = []
         end
-      end    
+      end
+      Voter.import leads
+      CustomVoterFieldValue.import custom_fields
    result
  end
-    
-  
+
+
   def apply_attribute(voter, attribute, value, custom_fields)
     if voter.has_attribute? attribute
       voter.update_attributes(attribute => value)
@@ -69,8 +71,8 @@ class VoterListBatchUpload
       end
     end
   end
-  
-  
+
+
   def create_custom_attributes(csv_headers, csv_to_system_map)
     temp_voter = Voter.new
     csv_headers.each do |csv_column_title|
@@ -80,7 +82,7 @@ class VoterListBatchUpload
         if custom_attribute.nil?
           CustomVoterField.create(:name => system_column, :account => @list.account)
         end
-      end        
-    end    
+      end
+    end
   end
 end
