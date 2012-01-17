@@ -58,7 +58,8 @@ class Voter < ActiveRecord::Base
     account.custom_fields.map { |field| CustomVoterFieldValue.voter_fields(self, field).first.try(:value) }
   end
 
-  def selected_fields(selection)
+  def selected_fields(selection = nil)
+    return [self.Phone] unless selection
     selection.select { |field| Voter.upload_fields.include?(field) }.map { |field| self.send(field) }
   end
 
