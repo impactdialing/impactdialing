@@ -14,7 +14,7 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
     FileUtils.mkdir_p(Rails.root.join("tmp"))
     filename = "#{Rails.root}/tmp/report_#{campaign.name}.csv"
     File.open(filename, "w") { |f| f.write @report }
-    AWS::S3::S3Object.store("report_#{campaign.name}.csv", File.open(filename), "download_reports", :content_type => "text/csv", :access=>'public-read')
+    AWS::S3::S3Object.store("report_#{campaign.name}.csv", File.open(filename), "download_reports", :content_type => "text/csv", :access=>:private, :expires_in => 12*60*60)
     mailer = UserMailer.new
     mailer.deliver_download(user, AWS::S3::S3Object.url_for("report_#{campaign.name}.csv", "download_reports"))
   end
