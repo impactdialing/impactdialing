@@ -45,10 +45,13 @@ class VoterListBatchUpload
           result[:failedCount] +=1
           next
         end
-      end
-    Voter.import leads
-    CustomVoterFieldValue.import custom_fields
-    
+        if leads.size >= 1000
+          Voter.import leads
+          CustomVoterFieldValue.import custom_fields
+          leads = []
+          custom_fields = []          
+        end
+      end    
    result
  end
     
