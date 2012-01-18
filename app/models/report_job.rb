@@ -35,7 +35,8 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
 
   def csv_for(voter)
     voter_fields = voter.selected_fields(selected_voter_fields.try(:compact))
-    [voter_fields, voter.custom_fields, @campaign_strategy.call_details(voter)].flatten.compact
+    custom_fields = voter.selected_custom_fields(selected_custom_voter_fields)
+    [voter_fields, custom_fields, @campaign_strategy.call_details(voter)].flatten
   end
 
 end
