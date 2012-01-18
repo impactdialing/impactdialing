@@ -294,7 +294,7 @@ describe VoterList do
       voter2 = Factory(:voter, :voter_list => voter_list, :campaign => voter_list.campaign)
       voter1.should_receive(:dial)
       voter2.should_receive(:dial)
-      Voter.stub_chain(:to_be_dialed, :find_in_batches).and_return([[voter1, voter2]])
+      Voter.stub_chain(:to_be_dialed, :find_in_batches).and_yield [ voter1, voter2 ]
       voter_list.dial
     end
 
