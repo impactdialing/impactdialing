@@ -2,7 +2,6 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
   include HerokuDelayedJobAutoscale::Autoscale
 
   def initialize(campaign, user, voter_fields, custom_fields, all_voters, from, to)
-    @campaign_strategy = campaign.robo ? BroadcastStrategy.new(campaign) : CallerStrategy.new(campaign)
     voter_fields = ["Phone"] if voter_fields.blank?
     super(campaign, user, voter_fields, custom_fields, all_voters, from, to)
   end
@@ -22,6 +21,7 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
   end
 
   def perform
+    @campaign_strategy = campaign.robo ? BroadcastStrategy.new(campaign) : CallerStrategy.new(campaign)
     @report = CSV.generate do |csv|
       csv << @campaign_strategy.csv_header(selected_voter_fields, selected_custom_voter_fields)
       if download_all_voters
