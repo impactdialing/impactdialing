@@ -45,12 +45,7 @@ describe ReportsController do
         post :dial_details, :id => campaign.id, :format => 'csv',:voter_fields => ["Phone"]
         assigns(:campaign).should == campaign
 
-        response.should be_ok
-        csv = assigns(:csv)
-        lines = csv.split("\n")
-        lines[0].should == "Phone,Status,recording1,recording2"
-        lines[1].should == "#{voter1.Phone},#{voter1.call_attempts.last.status},#{response1.response},#{response4.response}"
-        lines[2].should == nil
+        response.should be_redirect
       end
     end
   end
