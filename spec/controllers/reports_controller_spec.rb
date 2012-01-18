@@ -42,7 +42,7 @@ describe ReportsController do
         Factory(:call_response, :call_attempt => voter1.call_attempts.last, :robo_recording => recording1, :recording_response => response1)
         Factory(:call_response, :call_attempt => voter1.call_attempts.last, :robo_recording => recording2, :recording_response => response4)
 
-        post :dial_details, :id => campaign.id, :format => 'csv',:voter_fields => ["Phone"]
+        post :dial_details, :id => campaign.id, :format => 'csv',:voter_fields => ["Phone"], :custom_voter_fields => []
         assigns(:campaign).should == campaign
 
         response.should be_redirect
