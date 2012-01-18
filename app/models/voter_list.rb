@@ -42,12 +42,12 @@ class VoterList < ActiveRecord::Base
   end
 
   def dial
-    self.voters.to_be_dialed.find_in_batches(:batch_size => 500).each do |voter_group|
+    self.voters.to_be_dialed.find_in_batches(:batch_size => 500) { |voter_group|
       voter_group.each do |voter|
         return false unless self.campaign.calls_in_progress?
         voter.dial
       end
-    end
+    }
     true
   end
 
