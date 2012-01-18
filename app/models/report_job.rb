@@ -54,7 +54,7 @@ class CallerStrategy < CampaignStrategy
 
   def call_details(voter)
     answers, notes = [], []
-    last_attempt = voter.last_call_attempt
+    last_attempt = voter.call_attempts.last
     details = if last_attempt
                 [last_attempt.try(:caller).try(:known_as), voter.status, last_attempt.try(:call_start).try(:in_time_zone, @campaign.time_zone), last_attempt.try(:call_end).try(:in_time_zone, @campaign.time_zone), voter.call_attempts.size, last_attempt.try(:report_recording_url)].flatten
               else
