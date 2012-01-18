@@ -22,8 +22,6 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
   end
 
   def perform
-    @campaign_notes = campaign.script.notes
-    @campaign_questions = campaign.script.questions
     @report = CSV.generate do |csv|
       csv << @campaign_strategy.csv_header(selected_voter_fields, selected_custom_voter_fields)
       if download_all_voters
