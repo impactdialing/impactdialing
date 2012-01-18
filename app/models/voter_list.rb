@@ -42,9 +42,11 @@ class VoterList < ActiveRecord::Base
   end
 
   def dial
-    self.voters.to_be_dialed.randomly.each do |voter|
-      return false unless self.campaign.calls_in_progress?
-      voter.dial
+    self.voters.to_be_dialed.find_in_batches(:batch_size => 2000).each do |voters|
+      voters.each do |voter|
+        return false unless self.campaign.calls_in_progress?
+        voter.dial
+      end
     end
     true
   end

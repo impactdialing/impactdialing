@@ -563,8 +563,9 @@ describe Campaign do
       script = Factory(:script)
       script.robo_recordings = [Factory(:robo_recording)]
       campaign = Factory(:campaign, :script => script, :account => Factory(:account, :activated => true))
-      campaign.should_receive("system")
-      campaign.start.should be_nil
+      Delayed::Job.should_receive(:enqueue)
+      campaign.start.should be_true
+      campaign.calls_in_progress.should be_true
     end
 
     it "does not start the dialer daemon for the campaign if its script has nothing to play" do
@@ -574,14 +575,6 @@ describe Campaign do
       campaign.start.should be_false
     end
 
-    [true, false].each do |exit_status|
-      it "reports the status if the daemon start success was #{exit_status}" do
-        script = Factory(:script, :robo_recordings => [Factory(:robo_recording)])
-        campaign = Factory(:campaign, :script => script, :calls_in_progress => false, :account => Factory(:account, :activated => true))
-        campaign.stub(:system).and_return(exit_status)
-        campaign.start.should eql(exit_status)
-      end
-    end
 
     it "stops the dialer daemon " do
       campaign = Factory(:campaign, :calls_in_progress => true)
