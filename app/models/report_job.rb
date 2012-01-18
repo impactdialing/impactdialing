@@ -1,4 +1,5 @@
 class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected_custom_voter_fields, :download_all_voters, :from_date, :to_date)
+  include HerokuDelayedJobAutoscale::Autoscale
 
   def initialize(campaign, user, voter_fields, custom_fields, all_voters, from, to)
     @campaign_strategy = campaign.robo ? BroadcastStrategy.new(campaign) : CallerStrategy.new(campaign)
