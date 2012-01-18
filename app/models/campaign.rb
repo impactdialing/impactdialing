@@ -491,10 +491,8 @@ class Campaign < ActiveRecord::Base
   def start
     return false if self.calls_in_progress? or (not self.account.activated?)
     return false if script.robo_recordings.size == 0
-    daemon = "#{Rails.root.join('script', "dialer_control.rb start -- #{self.id}")}"
-    logger.info "[dialer] Account id:#{self.account.id} started campaign id:#{self.id} name:#{self.name}"
+    Delayed::Job.enqueue BroadcastCampaignJob.new(self.id)
     update_attribute(:calls_in_progress, true)
-    system(daemon)
   end
 
   def stop
