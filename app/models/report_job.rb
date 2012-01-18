@@ -35,7 +35,7 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
 
   def csv_for(voter)
     voter_fields = voter.selected_fields(selected_voter_fields.try(:compact))
-    [voter_fields, voter.custom_fields, @campaign_strategy.call_details(voter)].flatten
+    [voter_fields, voter.custom_fields, @campaign_strategy.call_details(voter)].flatten.compact
   end
 
 end
@@ -49,7 +49,7 @@ end
 
 class CallerStrategy < CampaignStrategy
   def csv_header(fields, custom_fields)
-    [fields, custom_fields, "Caller", "Status", "Call start", "Call end", "Attempts", "Recording", @campaign.script.questions.collect { |q| q.text }, @campaign.script.notes.collect { |note| note.note }].flatten.compact
+    ["Caller", "Status", "Call start", "Call end", "Attempts", "Recording", @campaign.script.questions.collect { |q| q.text }, @campaign.script.notes.collect { |note| note.note }].flatten.compact
   end
 
   def call_details(voter)
