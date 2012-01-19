@@ -39,37 +39,12 @@ class ReportsController < ClientController
       format.html
       format.csv do
         Delayed::Job.enqueue ReportJob.new(@campaign, @user, params[:voter_fields], params[:custom_voter_fields], params[:download_all_voters], @from_date, @to_date)
-        flash_message(:notice,I18n.t(:client_report_processing))
-        redirect_to reports_path
+        redirect_to reports_path, :flash => {:notice => I18n.t(:client_report_processing)}
       end
     end
   end
   
   private
-  
-  def download_csv
-    selected_voter_fields = params[:voter_fields]
-    selected_custom_voter_fields = params[:custom_voter_fields]
-    @csv = CSV.generate do |csv|
-      csv << [selected_voter_fields ? selected_voter_fields : [], selected_custom_voter_fields ? selected_custom_voter_fields : [], "Status", @campaign.script.robo_recordings.collect{|rec| rec.name}].flatten
-      voters = params[:download_all_voters] ? @campaign.all_voters : @campaign.all_voters.answered_within(@from_date, @to_date)
-      
-      voters.try(:each) do |voter| 
-        voter_fields = selected_voter_fields ? [selected_voter_fields.try(:collect){|f| voter.send(f)}].flatten : []
-        voter_custom_fields = []
-        custom_voter_field_objects = @campaign.account.custom_voter_fields.try(:select){|cf| selected_custom_voter_fields.try(:include?, cf.name)}
-        custom_voter_field_objects.each { |cf| voter_custom_fields << voter.custom_voter_field_values.for_field(cf).first.try(:value) }
-        
-        attempt = voter.call_attempts.last
-        if attempt
-          csv  << [voter_fields, voter_custom_fields, voter.call_attempts.last.status, (attempt.call_responses.collect{|call_response| call_response.recording_response.try(:response) } if attempt.call_responses.size > 0) ].flatten
-        else
-          csv  << [voter_fields, voter_custom_fields, 'Not Dialed'].flatten
-        end
-      end
-    end
-    @csv
-  end
   
   def set_report_period
     from_date = Date.strptime(params[:from_date], "%m/%d/%Y") if params[:from_date]
