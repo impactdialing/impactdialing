@@ -10,4 +10,5 @@
 		<%= f.select("campaign_id", @campaigns.try(:collect){|c| [ c.name, c.id ]}) %>
 	</p>
   <p>PIN: <%= @caller.pin || "to be generated" %></p>
+<p>Phones-only PINs can be shared and used by multiple people at the same time.</p>
 </fieldset>
