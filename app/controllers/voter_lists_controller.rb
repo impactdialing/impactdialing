@@ -29,7 +29,7 @@ class VoterListsController < ClientController
     save_csv_filename_to_session(saved_file_name)
     @separator = separator_from_file_extension(upload.original_filename)
     begin
-      @csv_column_headers = CSV.parse(upload.open.readline, :col_sep => @separator).first.compact
+      @csv_column_headers = CSV.new(csv, :col_sep => @separator).shift.compact
     rescue Exception => err
       flash_message(:error, I18n.t(:invalid_file_uploaded))      
       redirect_to @campaign_path
