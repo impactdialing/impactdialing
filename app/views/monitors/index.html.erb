@@ -129,7 +129,7 @@
 </script>
 
 <script id="caller" type="text/html">
-  <tr id="caller_{{id}}" class="caller <%= cycle("odd", "even") %> " session_id={{session_id}} caller_id={{id}}>
+  <tr id="caller_{{session_id}}" class="caller <%= cycle("odd", "even") %> " session_id={{session_id}} caller_id={{id}}>
       <td class="caller_name">{{email}}</td>
       <td class="campaigns"></td>
 			<td class="status">On hold</td>
@@ -200,7 +200,7 @@
           </tr>
           <% @campaigns.each do |c| %>
               <% c.caller_sessions.on_call.each do |caller_session| %>
-                  <tr id="<%= "caller_"+caller_session.caller.id.to_s %>" class="caller <%= cycle("odd", "even") %> " older="true" session_id="<%= caller_session.id %>" caller_id="<%= caller_session.caller.id %>">
+                  <tr id="<%= "caller_"+caller_session.id.to_s %>" class="caller <%= cycle("odd", "even") %> " older="true" session_id="<%= caller_session.id %>" caller_id="<%= caller_session.caller.id %>">
                     <td class="caller_name"><%= caller_name(caller_session.caller) %></td>
                     <td>
 											<select class='assign_campaign'>
