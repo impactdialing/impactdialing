@@ -16,8 +16,6 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
     filename = "#{Rails.root}/tmp/report_#{campaign.name}.csv"
     File.open(filename, "w") { |f| f.write @report }
     AWS::S3::S3Object.store("report_#{campaign.name}.csv", File.open(filename), "download_reports", :content_type => "text/csv", :access=>:private, :expires_in => 12*60*60)
-    mailer = UserMailer.new
-    mailer.deliver_download(user, AWS::S3::S3Object.url_for("report_#{campaign.name}.csv", "download_reports"))
   end
 
   def perform
@@ -37,6 +35,24 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
     voter_fields = voter.selected_fields(selected_voter_fields.try(:compact))
     custom_fields = voter.selected_custom_fields(selected_custom_voter_fields)
     [voter_fields, custom_fields, @campaign_strategy.call_details(voter)].flatten
+  end
+
+  def after(job)
+    notify_success
+  end
+
+  def error(job, exception)
+    notify_failure(job, exception)
+  end
+
+  def notify_success
+    mailer = UserMailer.new
+    mailer.deliver_download(user, AWS::S3::S3Object.url_for("report_#{campaign.name}.csv", "download_reports"))
+  end
+
+  def notify_failure(job, exception)
+    mailer = UserMailer.new
+    mailer.deliver_download_failure(user, job, exception)
   end
 
 end
@@ -74,7 +90,7 @@ class BroadcastStrategy < CampaignStrategy
 
   def call_details(voter)
     last_attempt = voter.call_attempts.last
-    details = last_attempt ?  [last_attempt.status, (last_attempt.call_responses.collect { |call_response| call_response.recording_response.try(:response) } if last_attempt.call_responses.size > 0)].flatten : ['Not Dialed']
+    details = last_attempt ? [last_attempt.status, (last_attempt.call_responses.collect { |call_response| call_response.recording_response.try(:response) } if last_attempt.call_responses.size > 0)].flatten : ['Not Dialed']
     details
   end
 end
