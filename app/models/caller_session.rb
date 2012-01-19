@@ -26,7 +26,7 @@ class CallerSession < ActiveRecord::Base
     t = ::TwilioLib.new(account, auth)
     t.end_call("#{self.sid}")
     self.update_attributes(:on_call => false, :available_for_call => false, :endtime => Time.now)
-    Moderator.publish_event(campaign, "caller_disconnected",{:caller_id => caller.id, :campaign_id => campaign.id, :campaign_active => campaign.callers_log_in?,
+    Moderator.publish_event(campaign, "caller_disconnected",{:caller_session_id => id, :caller_id => caller.id, :campaign_id => campaign.id, :campaign_active => campaign.callers_log_in?,
       :no_of_callers_logged_in => campaign.caller_sessions.on_call.length})
     self.publish("caller_disconnected", {source: "end_running_call"})
   end
@@ -163,7 +163,7 @@ class CallerSession < ActiveRecord::Base
   def reassign_caller_session_to_campaign
     old_campaign = self.campaign
     self.update_attributes(:campaign => caller.campaign)
-    Moderator.publish_event(campaign, "caller_re_assigned_to_campaign", {:caller_id => caller.id, :campaign_fields => {:id => campaign.id, :campaign_name => campaign.name, :callers_logged_in => campaign.caller_sessions.on_call.length,
+    Moderator.publish_event(campaign, "caller_re_assigned_to_campaign", {:caller_session_id => id, :caller_id => caller.id, :campaign_fields => {:id => campaign.id, :campaign_name => campaign.name, :callers_logged_in => campaign.caller_sessions.on_call.length,
       :voters_count => Voter.remaining_voters_count_for('campaign_id', campaign.id), :dials_in_progress => campaign.call_attempts.not_wrapped_up.length }, :old_campaign_id => old_campaign.id,:no_of_callers_logged_in_old_campaign => old_campaign.caller_sessions.on_call.length})
     if caller.is_phones_only? 
       read_campaign_reassign_msg
@@ -190,7 +190,7 @@ class CallerSession < ActiveRecord::Base
 
   def end
     self.update_attributes(:on_call => false, :available_for_call => false, :endtime => Time.now)
-    Moderator.publish_event(campaign, "caller_disconnected",{:caller_id => caller.id, :campaign_id => campaign.id, :campaign_active => campaign.callers_log_in?,
+    Moderator.publish_event(campaign, "caller_disconnected",{:caller_session_id => id, :caller_id => caller.id, :campaign_id => campaign.id, :campaign_active => campaign.callers_log_in?,
             :no_of_callers_logged_in => campaign.caller_sessions.on_call.length})
     attempt_in_progress.try(:update_attributes, {:wrapup_time => Time.now})
     self.publish("caller_disconnected", {source: "end_call"})

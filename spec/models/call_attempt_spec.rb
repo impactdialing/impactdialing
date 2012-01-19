@@ -105,7 +105,7 @@ describe CallAttempt do
       session = Factory(:caller_session, :caller => Factory(:caller), :session_key => "example_key")
       voter = Factory(:voter, :campaign => campaign)
       call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign)
-      Moderator.stub!(:publish_event).with(call_attempt.campaign, 'voter_connected', {:campaign_id => campaign.id, :caller_id => session.caller.id})
+      Moderator.stub!(:publish_event).with(call_attempt.campaign, 'voter_connected', {:caller_session_id => session.id, :campaign_id => campaign.id, :caller_id => session.caller.id})
       call_attempt.conference(session).should == Twilio::TwiML::Response.new do |r|
         r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(call_attempt, :host => Settings.host), :record=>call_attempt.campaign.account.record_calls do |d|
           d.Conference session.session_key, :waitUrl => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
@@ -121,7 +121,7 @@ describe CallAttempt do
       caller_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller))
       call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign)
       call_attempt.update_attributes(caller_session: caller_session)
-      Moderator.stub!(:publish_event).with(caller_session.campaign, 'voter_connected', {:campaign_id => caller_session.campaign.id, 
+      Moderator.stub!(:publish_event).with(caller_session.campaign, 'voter_connected', {:caller_session_id => caller_session.id, :campaign_id => caller_session.campaign.id, 
         :caller_id => caller_session.caller.id})
       call_attempt.connect_to_caller.should == call_attempt.conference(caller_session)
       call_attempt.caller.should == caller_session.caller
@@ -136,7 +136,7 @@ describe CallAttempt do
       Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller))
 
       call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign)
-      Moderator.stub!(:publish_event).with(caller_session.campaign, 'voter_connected', {:campaign_id => caller_session.campaign.id,
+      Moderator.stub!(:publish_event).with(caller_session.campaign, 'voter_connected', {:caller_session_id => caller_session.id, :campaign_id => caller_session.campaign.id,
         :caller_id => caller_session.caller.id})
       call_attempt.connect_to_caller.should == call_attempt.conference(caller_session)
       call_attempt.caller.should == caller_session.caller
@@ -148,7 +148,7 @@ describe CallAttempt do
       caller_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller))
       call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign)
       call_attempt.update_attributes(caller_session: caller_session)
-      Moderator.stub!(:publish_event).with(call_attempt.campaign, 'voter_connected', {:campaign_id => call_attempt.campaign.id,
+      Moderator.stub!(:publish_event).with(call_attempt.campaign, 'voter_connected', {:caller_session_id => caller_session.id, :campaign_id => call_attempt.campaign.id,
         :caller_id => caller_session.caller.id})
       call_attempt.connect_to_caller
       call_attempt.reload.caller_session.should == caller_session
@@ -185,7 +185,7 @@ describe CallAttempt do
       caller_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller))
       call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign, :caller_session => caller_session)
       time_now = Time.now
-      Moderator.stub!(:publish_event).with(caller_session.campaign, 'voter_disconnected', {:campaign_id => call_attempt.campaign.id,
+      Moderator.stub!(:publish_event).with(caller_session.campaign, 'voter_disconnected', {:caller_session_id => caller_session.id ,:campaign_id => call_attempt.campaign.id,
         :caller_id => caller_session.caller.id, :voters_remaining => 0})
       Time.stub(:now).and_return(time_now)
       call_attempt.disconnect
@@ -207,7 +207,7 @@ describe CallAttempt do
       attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign)
       session = Factory(:caller_session, :caller => Factory(:caller), :campaign => campaign)
       channel = mock
-      Moderator.stub!(:publish_event).with(session.campaign, 'voter_connected', {:campaign_id => campaign.id, :caller_id => session.caller.id})
+      Moderator.stub!(:publish_event).with(session.campaign, 'voter_connected', {:caller_session_id => session.id, :campaign_id => campaign.id, :caller_id => session.caller.id})
       Pusher.should_receive(:[]).with(session.session_key).and_return(channel)
       channel.should_receive(:trigger).with("voter_connected", anything)
       attempt.voter.stub(:conference)
@@ -220,7 +220,7 @@ describe CallAttempt do
       
       attempt = Factory(:call_attempt, :campaign => campaign, :voter => voter)
       session = Factory(:caller_session, :caller => Factory(:caller), :campaign => campaign, :voter_in_progress => voter)
-      Moderator.stub!(:publish_event).with(session.campaign, 'voter_connected', {:campaign_id => campaign.id, 
+      Moderator.stub!(:publish_event).with(session.campaign, 'voter_connected', {:caller_session_id => session.id, :campaign_id => campaign.id, 
         :caller_id => session.caller.id})
       session.should_receive(:publish).with("voter_connected", {:attempt_id => attempt.id, :voter => attempt.voter.info})
       attempt.voter.stub(:conference)
@@ -234,7 +234,7 @@ describe CallAttempt do
       caller_session = Factory(:caller_session, :caller => Factory(:caller), :campaign => campaign)
       attempt = Factory(:call_attempt, :voter => voter, :caller_session => caller_session, :campaign => campaign)
       channel = mock
-      Moderator.should_receive(:publish_event).with(attempt.campaign, 'voter_disconnected', {:campaign_id => attempt.campaign.id,
+      Moderator.should_receive(:publish_event).with(attempt.campaign, 'voter_disconnected', {:caller_session_id => caller_session.id, :campaign_id => attempt.campaign.id,
          :caller_id => caller_session.caller.id, :voters_remaining=>0})
       Pusher.should_receive(:[]).with(anything).and_return(channel)
       channel.should_receive(:trigger).with("voter_disconnected", {:attempt_id => attempt.id, :voter => attempt.voter.info})
