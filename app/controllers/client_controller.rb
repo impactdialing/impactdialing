@@ -98,6 +98,10 @@ class ClientController < ApplicationController
         @user.create_default_campaign
         if session[:user].blank?
           message = "Your account has been created."
+          session[:user]=@user.id
+          flash_message(:notice, message)          
+          redirect_to :action=>"welcome"
+          return
         else
           message="Your account has been updated."
         end
