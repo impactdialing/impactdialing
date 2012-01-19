@@ -35,7 +35,7 @@ describe Script do
     
   
     it "should have name Demo Script" do
-      @script.name.should eq('How do you like the predictive dialer so far?')    
+      @script.name.should == "Demo script"
     end
   
     it "should have FirstName, lastName and Phone as voter fields" do
