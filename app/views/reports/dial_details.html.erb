@@ -34,7 +34,7 @@
 <fieldset>
 	<div id="fields">
 	<legend>Fields to include</legend>
-  <% form_tag(dial_details_reports_path(:id => @campaign.id,:format => 'csv'), :method => "POST", :protocol => PROTOCOL) do %>
+  <% form_tag(dial_details_reports_path(:id => @campaign.id,:format => 'csv', :protocol => PROTOCOL), :method => "POST") do %>
 		<ul>
 			<li><input type="checkbox" value="0" id="selectAll">&nbsp;Select all</li>
 			<% @voter_fields.try(:each_pair) do |key, value| %>
