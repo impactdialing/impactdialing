@@ -87,6 +87,7 @@ describe Voter do
       value2 = Factory(:custom_voter_field_value, :voter => voter, :custom_voter_field => field2, :value => "value2")
       voter.selected_custom_fields([field1.name, field2.name]).should == [value1.value, value2.value]
       voter.selected_custom_fields([field2.name, field1.name]).should == [value2.value, value1.value]
+      voter.selected_custom_fields(nil).should == []
     end
 
     it "lists voters custom fields with selected field names" do
