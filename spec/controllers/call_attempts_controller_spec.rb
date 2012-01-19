@@ -96,7 +96,7 @@ describe CallAttemptsController do
       Factory(:caller_session, :campaign => campaign, :available_for_call => false)
       available_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller))
       call_attempt.update_attributes(caller_session: available_session)
-      Moderator.stub!(:publish_event).with(available_session.campaign, 'voter_connected', {:campaign_id => available_session.campaign.id,
+      Moderator.stub!(:publish_event).with(available_session.campaign, 'voter_connected', {:caller_session_id => call_attempt.caller_session.id,:campaign_id => available_session.campaign.id,
                                                                                            :caller_id => call_attempt.caller_session.caller.id})
       post :connect, :id => call_attempt.id
 
@@ -120,7 +120,7 @@ describe CallAttemptsController do
       Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => false)
       caller_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => false)
       call_attempt.voter.update_attribute(:caller_session, caller_session)
-      Moderator.stub!(:publish_event).with(caller_session.campaign, 'voter_connected', {:campaign_id => caller_session.campaign.id,
+      Moderator.stub!(:publish_event).with(caller_session.campaign, 'voter_connected', {:caller_session_id => caller_session.id, :campaign_id => caller_session.campaign.id,
                                                                                         :caller_id => caller_session.caller.id})
       post :connect, :id => call_attempt.id
       response.body.should == Twilio::TwiML::Response.new do |r|
@@ -139,7 +139,7 @@ describe CallAttemptsController do
 
       Pusher.should_receive(:[]).with(anything).and_return(channel)
       channel.stub(:trigger)
-      Moderator.stub!(:publish_event).with(call_attempt.campaign, 'voter_disconnected', {:campaign_id => call_attempt.campaign.id, :caller_id => call_attempt.caller_session.caller.id, :voters_remaining => 0})
+      Moderator.stub!(:publish_event).with(call_attempt.campaign, 'voter_disconnected', {:caller_session_id => caller_session.id, :campaign_id => call_attempt.campaign.id, :caller_id => call_attempt.caller_session.caller.id, :voters_remaining => 0})
       post :disconnect, :id => call_attempt.id
       response.body.should == call_attempt.hangup
       call_attempt.reload.status.should == CallAttempt::Status::SUCCESS
@@ -219,7 +219,7 @@ describe CallAttemptsController do
       voter.status = CallAttempt::Status::INPROGRESS
       pusher_session.should_receive(:trigger).with('voter_connected', {:attempt_id=> call_attempt.id, :voter => voter.info}.merge(:dialer => campaign.predictive_type))
       Pusher.stub(:[]).with(session_key).and_return(pusher_session)
-      Moderator.stub!(:publish_event).with(caller_session.campaign, 'voter_connected', {:campaign_id => caller_session.campaign.id, :caller_id => call_attempt.caller_session.caller.id})
+      Moderator.stub!(:publish_event).with(caller_session.campaign, 'voter_connected', {:caller_session_id => caller_session.id, :campaign_id => caller_session.campaign.id, :caller_id => call_attempt.caller_session.caller.id})
       post :connect, :id => call_attempt.id
     end
 
