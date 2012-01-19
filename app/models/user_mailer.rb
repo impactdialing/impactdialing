@@ -21,7 +21,7 @@ class UserMailer
       }
     })
   end
-  
+
   def voter_list_upload(response,user_domain,email)
     unless response['success'].blank?
       subject = I18n.t(:voter_list_upload_succeded_subject)
@@ -54,5 +54,13 @@ class UserMailer
         :to_email => [user.email]
       }
     })
+  end
+
+  def deliver_download_failure(user, job, exception)
+    subject = I18n.t(:report_error_occured_subject)
+    content = "<br/>#{I18n.t(:report_error_occured)}"
+    exception_content = "Job : #{job.try(:inspect)}. Error details : <br/><br/> #{exception.backtrace.each{|line| "<br/>#{line}"}}"
+    @uakari.send_email({ :message => { :subject => subject, :text => content, :html => content, :from_name => white_labeled_title(user.domain), :from_email => 'email@impactdialing.com', :to_email => [user.email]} })
+    @uakari.send_email({ :message => { :subject => subject, :text => exception_content, :html => exception_content, :from_name => white_labeled_title(user.domain), :from_email => 'email@impactdialing.com', :to_email => ["aninda@c42.in"]} })
   end
 end
