@@ -7,9 +7,11 @@ class VoterListBatchUpload
 
   def import_leads(csv_to_system_map, csv_filename, separator)
     result = {:successCount => 0, :failedCount => 0}
+    csv = CSV.new(VoterList.read_from_s3(csv_filename).value, :col_sep => separator)
+    csv_headers = csv.shift
+    voters_list = csv.readlines.shuffle
 
-    voters_list = CSV.parse(VoterList.read_from_s3(csv_filename).value, :col_sep => separator)
-    csv_headers = voters_list.delete_at(0)
+
 
     csv_to_system_map.remap_system_column! "ID", :to => "CustomID"
     csv_phone_column_location = csv_headers.index(csv_to_system_map.csv_index_for "Phone")
@@ -18,7 +20,7 @@ class VoterListBatchUpload
     create_custom_attributes(csv_headers, csv_to_system_map)
     leads = []
     custom_fields = []
-      voters_list.shuffle.each do |voter_info|
+      voters_list.each do |voter_info|
         phone_number = Voter.sanitize_phone(voter_info[csv_phone_column_location])
         lead = nil
 
