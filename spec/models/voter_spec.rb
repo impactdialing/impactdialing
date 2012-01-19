@@ -67,6 +67,48 @@ describe Voter do
     caller.reload.voter_in_progress.should == voter
   end
 
+  describe "voter fields" do
+    let(:account) { Factory(:account) }
+    let(:voter) { Factory(:voter, :account => account) }
+    let(:field1) {Factory(:custom_voter_field, :name => "field1", :account => account)}
+    let(:field2) {Factory(:custom_voter_field, :name => "field2", :account => account)}
+    let(:field3) {Factory(:custom_voter_field, :name => "field3", :account => account)}
+
+
+    it "lists a voters custom fields" do
+      f = field1
+      value2 = Factory(:custom_voter_field_value, :voter => voter, :custom_voter_field => field2, :value => "value2")
+      f = field3
+      voter.custom_fields.should == [nil, value2.value ,nil]
+    end
+
+    it "lists voters custom fields with selected field names" do
+      value1 = Factory(:custom_voter_field_value, :voter => voter, :custom_voter_field => field1, :value => "value1")
+      value2 = Factory(:custom_voter_field_value, :voter => voter, :custom_voter_field => field2, :value => "value2")
+      voter.selected_custom_fields([field1.name, field2.name]).should == [value1.value, value2.value]
+      voter.selected_custom_fields([field2.name, field1.name]).should == [value2.value, value1.value]
+    end
+
+    it "lists voters custom fields with selected field names" do
+      value2 = Factory(:custom_voter_field_value, :voter => voter, :custom_voter_field => field2, :value => "value2")
+      voter.selected_custom_fields([field1.name, field2.name,field3.name]).should == [nil, value2.value, nil]
+    end
+
+    it "lists selected voter fields" do
+      phone,custom_id,firstname  = "39045098753", "24566", "first"
+      voter.update_attributes(:Phone => phone, :CustomID => custom_id, :FirstName => firstname)
+      voter.selected_fields(["Phone", "FirstName", "LastName"]).should == [phone,firstname,nil]
+      voter.selected_fields(["Phone", "LastName", "FirstName"]).should == [phone,nil,firstname]
+    end
+
+    it "selects phone number if there are no selected fields" do
+      phone,custom_id,firstname  = "39045098753", "24566", "first"
+      voter.update_attributes(:Phone => phone, :CustomID => custom_id, :FirstName => firstname)
+      voter.selected_fields.should == [phone]
+    end
+
+  end
+
   describe "Dialing" do
     let(:campaign) { Factory(:campaign) }
     let(:voter) { Factory(:voter, :campaign => campaign) }
@@ -139,13 +181,13 @@ describe Voter do
       end
 
       it "updates voter attributes" do
+        time_now = Time.now
+        Time.stub!(:now).and_return(time_now)
         caller_session = Factory(:caller_session, :available_for_call => true, :on_call => true, campaign: campaign)
         campaign.stub(:time_period_exceed?).and_return(false)
         voter.dial_predictive
         call_attempt = voter.call_attempts.last
         voter.last_call_attempt.should == call_attempt
-        time_now = Time.now
-        Time.stub!(:now).and_return(time_now)
         DateTime.parse(voter.last_call_attempt_time.to_s).should == DateTime.parse(time_now.utc.to_s)
       end
 
@@ -180,7 +222,7 @@ describe Voter do
       campaign.stub(:time_period_exceed?).and_return(false)
       voter.dial_predictive
     end
-    
+
     it "dials the voter without IFMachine if AMD detection turned off" do
       campaign1 = Factory(:campaign, :robo => false, :predictive_type => 'algorithm1', answering_machine_detect: false)
       Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {'StatusCallback'=> anything, 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
@@ -188,7 +230,7 @@ describe Voter do
       campaign1.stub(:time_period_exceed?).and_return(false)
       voter.dial_predictive
     end
-    
+
 
     it "checks, whether voter is called or not" do
       voter1 = Factory(:voter, :status => "not called")
@@ -283,41 +325,6 @@ describe Voter do
     end
   end
 
-  describe "voter attributes" do
-    let(:voter) { Factory(:voter, :campaign => Factory(:campaign, :account => Factory(:account)), :Phone => '384756923349') }
-
-    it "populates original attributes" do
-      voter.apply_attribute('Phone', '0123456789')
-      voter.Phone.should == '0123456789'
-    end
-
-    it "populates custom attributes" do
-      attribute, value = 'Custom', 'foo'
-      voter.apply_attribute(attribute, value)
-      field = CustomVoterField.find_by_name(attribute)
-      field.should_not be_nil
-      CustomVoterFieldValue.voter_fields(voter, field).first.value.should == value
-    end
-
-    it "returns value of original attributes" do
-      attribute, value = 'Phone', '2947832874'
-      voter.apply_attribute(attribute, value)
-      voter.get_attribute(attribute).should == value
-    end
-
-    it "returns value of custom attributes" do
-      attribute, value = 'Custom', 'abcde'
-      voter.apply_attribute(attribute, value)
-      voter.get_attribute(attribute).should == value
-    end
-
-    it "fails to update if it fails to validate" do
-      original_number = voter.Phone
-      attribute, value = 'Phone', '12345'
-      voter.apply_attribute(attribute, value).should be_false
-      voter.reload.get_attribute(attribute).should == original_number
-    end
-  end
 
   it "lists scheduled voters" do
     recent_voter = Factory(:voter, :scheduled_date => 2.minutes.ago, :status => CallAttempt::Status::SCHEDULED, :call_back => true)
@@ -326,49 +333,12 @@ describe Voter do
     Voter.scheduled.should == [recent_voter]
   end
 
-  it "provides voter information with custom fields" do
-    voter = Factory(:voter, :campaign => Factory(:campaign, :account => Factory(:account), :script => Factory(:script, :voter_fields => "[\"foo\",\"goo\"]")))
-    voter_no_custom = Factory(:voter, :campaign => Factory(:campaign, :account => Factory(:account)))
-    voter.apply_attribute('foo', 'bar')
-    voter.apply_attribute('goo', 'car')
-    voter.info.should == {:fields => voter.attributes.reject { |k, v| ["created_at", "updated_at"].include? k }, :custom_fields => {'foo' => 'bar', 'goo' => 'car'}}
-    voter_no_custom.info == {:fields => voter_no_custom.attributes.reject { |k, v| ["created_at", "updated_at"].include? k }, :custom_fields => {}}
-  end
 
   it "limits voters when listing them" do
     10.times { Factory(:voter) }
     Voter.limit(5).should have(5).voters
   end
 
-  describe "voter attributes" do
-    let(:voter) { Factory(:voter, :campaign => Factory(:campaign, :account=> Factory(:account)), :Phone => '384756923349') }
-
-    it "populates original attributes" do
-      voter.apply_attribute('Phone', '0123456789')
-      voter.Phone.should == '0123456789'
-    end
-
-    it "populates custom attributes" do
-      attribute, value = 'Custom', 'foo'
-      voter.apply_attribute(attribute, value)
-      field = CustomVoterField.find_by_name(attribute)
-      field.should_not be_nil
-      CustomVoterFieldValue.voter_fields(voter, field).first.value.should == value
-    end
-
-    it "returns value of original attributes" do
-      attribute, value = 'Phone', '2947832874'
-      voter.apply_attribute(attribute, value)
-      voter.get_attribute(attribute).should == value
-    end
-
-    it "returns value of custom attributes" do
-      attribute, value = 'Custom', 'abcde'
-      voter.apply_attribute(attribute, value)
-      voter.get_attribute(attribute).should == value
-    end
-
-  end
 
   it "excludes specific numbers" do
     unblocked_voter = Factory(:voter, :Phone => "1234567890")
@@ -451,13 +421,13 @@ describe Voter do
 
       it "captures a voter response" do
         Factory(:possible_response, :question => question, :keypad => 1, :value => "response1")
-        voter.answer(question,"1").should == voter.answers.first
+        voter.answer(question, "1").should == voter.answers.first
         voter.answers.size.should == 1
       end
 
       it "rejects an incorrect a voter response" do
         Factory(:possible_response, :question => question, :keypad => 1, :value => "response1")
-        voter.answer(question,"2").should == nil
+        voter.answer(question, "2").should == nil
         voter.answers.size.should == 0
       end
 
@@ -465,7 +435,7 @@ describe Voter do
         voter.answer(question, "1")
         Factory(:possible_response, :question => question, :keypad => 1, :value => "response1")
         Factory(:possible_response, :question => question, :keypad => 2, :value => "response2")
-        voter.answer(question,"2").should == voter.answers.first
+        voter.answer(question, "2").should == voter.answers.first
         voter.answers.size.should == 1
       end
 
@@ -516,9 +486,9 @@ describe Voter do
 
 
   end
-  
+
   describe "skip voter" do
-    
+
     it "should skip voter but adding skipped_time" do
       campaign = Factory(:campaign)
       voter = Factory(:voter, :campaign => campaign)

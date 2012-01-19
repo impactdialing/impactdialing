@@ -26,4 +26,10 @@ describe TwilioController do
       end
     end
   end
+
+  it "hangs up a call that has reported an error" do
+    post :report_error, :call_attempt_id => call_attempt.id, :CallStatus => CallAttempt::Status::INPROGRESS
+    response.body.should == Twilio::Verb.hangup
+  end
+
 end

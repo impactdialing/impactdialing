@@ -240,6 +240,7 @@ describe CallAttemptsController do
       pusher_session.should_receive(:trigger).with('voter_push', info.merge(:dialer => campaign.predictive_type))
       pusher_session.should_receive(:trigger).with('conference_started', {:dialer=>"preview"})
       post :connect, :id => call_attempt.id, :AnsweredBy => "machine"
+      call_attempt.reload.wrapup_time.should_not be_nil
     end
 
     it "if the call attempt is ABANDONED, it doesn't modify status, when call end" do

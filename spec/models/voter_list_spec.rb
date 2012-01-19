@@ -112,8 +112,9 @@ describe VoterList do
             USER_MAPPINGS,
             csv_file_upload,
             ",")                
+    
         Voter.count.should == 2
-
+        puts Voter.all.inspect
         voter = Voter.find_by_Email("foo@bar.com")
         voter.campaign_id.should == campaign.id
         voter.account_id.should == user.account.id
@@ -293,9 +294,7 @@ describe VoterList do
       voter2 = Factory(:voter, :voter_list => voter_list, :campaign => voter_list.campaign)
       voter1.should_receive(:dial)
       voter2.should_receive(:dial)
-      voters = mock
-      voters.should_receive(:to_be_dialed).and_return(mock('voters', :randomly => [voter1, voter2]))
-      voter_list.stub!(:voters).and_return(voters)
+      Voter.stub_chain(:to_be_dialed, :find_in_batches).and_yield [ voter1, voter2 ]
       voter_list.dial
     end
 
