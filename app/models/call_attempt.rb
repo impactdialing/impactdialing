@@ -100,7 +100,7 @@ class CallAttempt < ActiveRecord::Base
   def conference(session)
     self.update_attributes(:caller => session.caller, :call_start => Time.now, :caller_session => session)
     session.publish('voter_connected', {:attempt_id => self.id, :voter => self.voter.info})
-    Moderator.publish_event(campaign, 'voter_connected', {:campaign_id => campaign.id, :caller_id => session.caller.id})
+    Moderator.publish_event(campaign, 'voter_connected', {:caller_session_id => session.id, :campaign_id => campaign.id, :caller_id => session.caller.id})
     Rails.logger.debug("Moderator published event")
     voter.conference(session)
     Rails.logger.debug("Voter conference")
@@ -122,7 +122,7 @@ class CallAttempt < ActiveRecord::Base
     update_attributes(:status => CallAttempt::Status::SUCCESS, :call_end => Time.now, :recording_duration=>params[:RecordingDuration], :recording_url=>params[:RecordingUrl])
     voter.update_attribute(:status, CallAttempt::Status::SUCCESS)
     Pusher[caller_session.session_key].trigger('voter_disconnected', {:attempt_id => self.id, :voter => self.voter.info})
-    Moderator.publish_event(campaign, 'voter_disconnected', {:campaign_id => campaign.id, :caller_id => caller_session.caller.id, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
+    Moderator.publish_event(campaign, 'voter_disconnected', {:caller_session_id => caller_session.id,:campaign_id => campaign.id, :caller_id => caller_session.caller.id, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
     hangup
   end
 
