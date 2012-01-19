@@ -79,7 +79,7 @@ module Client
         format.html
         format.csv do
           Delayed::Job.enqueue ReportJob.new(@campaign, @user, params[:voter_fields], params[:custom_voter_fields], params[:download_all_voters], @from_date, @to_date)
-          redirect_to client_reports_path, :flash => {:notice => I18n.t(:client_report_processing)}
+          redirect_to client_reports_url, :flash => {:notice => I18n.t(:client_report_processing)}
         end
       end
     end
