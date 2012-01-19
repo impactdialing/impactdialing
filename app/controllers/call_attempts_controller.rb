@@ -24,6 +24,7 @@ class CallAttemptsController < ApplicationController
                      call_attempt.caller_session.publish('voter_push', next_voter ? next_voter.info : {})
                      call_attempt.caller_session.publish('conference_started', {})
                    end
+                   call_attempt.update_attributes(wrapup_time: Time.now)                    
                    (call_attempt.campaign.use_recordings? && call_attempt.campaign.answering_machine_detect) ? call_attempt.play_recorded_message : call_attempt.hangup
                  else
                    CallerSession.transaction { call_attempt.connect_to_caller(call_attempt.voter.caller_session) }
@@ -71,7 +72,7 @@ class CallAttemptsController < ApplicationController
       params[:scheduled_date].blank? ? voter.capture(params) : schedule_for_later(call_attempt)
       call_attempt.update_attributes(wrapup_time: Time.now)
 
-      Moderator.publish_event(call_attempt.campaign, 'voter_response_submitted', {:caller_id => call_attempt.caller_id, :campaign_id => call_attempt.campaign.id, :dials_in_progress => call_attempt.campaign.call_attempts.not_wrapped_up.length, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', call_attempt.campaign.id)})
+      Moderator.publish_event(call_attempt.campaign, 'voter_response_submitted', {:caller_id => call_attempt.caller_id, :campaign_id => call_attempt.campaign.id, :dials_in_progress => call_attempt.campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', call_attempt.campaign.id)})
       pusher_response_received(call_attempt)
       render :nothing => true
     end

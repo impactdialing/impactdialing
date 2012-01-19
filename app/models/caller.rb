@@ -66,6 +66,12 @@ class Caller < ActiveRecord::Base
   def phone
     #required for the form field.
   end
+
+  def known_as
+    return name unless name.blank?
+    return email unless email.blank?
+    ''
+  end
   
   def info
     attributes.reject { |k, v| (k == "created_at") ||(k == "updated_at") }

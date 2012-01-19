@@ -20,8 +20,8 @@ loop do
       DIALER_LOGGER.info "============ EXITING  ============"
       exit 
     end
-    DIALER_LOGGER.info "Rescued - #{ e } (#{ e.class })!"
-    DIALER_LOGGER.info e.backtrace
+    DIALER_LOGGER.info "DIALER EXCEPTION Rescued - #{ e } (#{ e.class })!"
+    DIALER_LOGGER.info "DIALER EXCEPTION Backtrace : #{e.backtrace}"
     ActiveRecord::Base.connection.reconnect!
   end
 end

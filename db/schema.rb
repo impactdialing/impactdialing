@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120110075448) do
+ActiveRecord::Schema.define(:version => 20120115081117) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -190,7 +190,7 @@ ActiveRecord::Schema.define(:version => 20120110075448) do
     t.integer  "answer_detection_timeout", :default => 20
     t.boolean  "calls_in_progress",        :default => false
     t.boolean  "robo",                     :default => false
-    t.integer  "recycle_rate"
+    t.integer  "recycle_rate",             :default => 1
     t.boolean  "amd_turn_off"
     t.boolean  "answering_machine_detect"
     t.time     "start_time"

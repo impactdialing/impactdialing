@@ -2,33 +2,12 @@ require "spec_helper"
 require Rails.root.join("lib/twilio_lib")
 
 describe "predictive_dialer" do
-  it "does not dial when dials are already in progress" do
-    campaign = Factory(:campaign, :calls_in_progress => true, :predictive_type => 'predictive')
-    campaign.should_not_receive(:dial_predictive_voters)
-    campaign.predictive_dial
-  end
 
-  it "does not dial when a campaign uses preview dialing" do
-    campaign = Factory(:campaign, :calls_in_progress => false, :predictive_type => 'preview')
-    campaign.should_not_receive(:dial_predictive_voters)
-    campaign.predictive_dial
-  end
 
   it "predictive dial dials voters" do
     campaign = Factory(:campaign, :calls_in_progress => false, :predictive_type => 'predictive')
     campaign.should_receive(:dial_predictive_voters)
     campaign.predictive_dial
-  end
-
-  it "set calls_in_progress before dialing predictive voters, and unsets it after" do
-    campaign = Factory(:campaign, :calls_in_progress => false, :predictive_type => 'predictive')
-
-    def campaign.dial_predictive_voters
-      calls_in_progress.should == true
-    end
-
-    campaign.predictive_dial
-    campaign.calls_in_progress.should == false
   end
 
   it "determines the campaign dial strategy" do
@@ -584,8 +563,9 @@ describe Campaign do
       script = Factory(:script)
       script.robo_recordings = [Factory(:robo_recording)]
       campaign = Factory(:campaign, :script => script, :account => Factory(:account, :activated => true))
-      campaign.should_receive("system")
-      campaign.start.should be_nil
+      Delayed::Job.should_receive(:enqueue)
+      campaign.start.should be_true
+      campaign.calls_in_progress.should be_true
     end
 
     it "does not start the dialer daemon for the campaign if its script has nothing to play" do
@@ -595,14 +575,6 @@ describe Campaign do
       campaign.start.should be_false
     end
 
-    [true, false].each do |exit_status|
-      it "reports the status if the daemon start success was #{exit_status}" do
-        script = Factory(:script, :robo_recordings => [Factory(:robo_recording)])
-        campaign = Factory(:campaign, :script => script, :calls_in_progress => false, :account => Factory(:account, :activated => true))
-        campaign.stub(:system).and_return(exit_status)
-        campaign.start.should eql(exit_status)
-      end
-    end
 
     it "stops the dialer daemon " do
       campaign = Factory(:campaign, :calls_in_progress => true)

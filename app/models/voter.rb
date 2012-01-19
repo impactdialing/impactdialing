@@ -33,7 +33,7 @@ class Voter < ActiveRecord::Base
   scope :not_skipped, where('skipped_time is null')
   scope :answered, where('result_date is not null')
   scope :answered_within, lambda { |from, to| where(:result_date => from.beginning_of_day..(to.end_of_day)) }
-  scope :last_call_attempt_within, lambda { |from, to| where(:last_call_attempt_time => from..(to + 1.day))}
+  scope :last_call_attempt_within, lambda { |from, to| where(:last_call_attempt_time => from..(to + 1.day)) }
   scope :priority_voters, :conditions => {:priority => "1", :status => 'not called'}
 
   before_validation :sanitize_phone
@@ -54,11 +54,30 @@ class Voter < ActiveRecord::Base
     self.Phone = Voter.sanitize_phone(self.Phone)
   end
 
+  def custom_fields
+    account.custom_fields.map { |field| CustomVoterFieldValue.voter_fields(self, field).first.try(:value) }
+  end
+
+  def selected_fields(selection = nil)
+    return [self.Phone] unless selection
+    selection.select { |field| Voter.upload_fields.include?(field) }.map { |field| self.send(field) }
+  end
+
+  def selected_custom_fields(selection)
+    selected_fields = []
+    selection.each do |field|
+      field = account.custom_voter_fields.find_by_name(field)
+      selected_fields << nil and next unless field
+      selected_fields << CustomVoterFieldValue.voter_fields(self, field).first.try(:value)
+    end
+    selected_fields
+  end
+
 
   def self.upload_fields
-    ["Phone", "CustomID", "LastName", "FirstName", "MiddleName", "Suffix", "Email"]
+    ["Phone", "CustomID", "LastName", "FirstName", "MiddleName", "Suffix", "Email", "address", "city", "state","zip_code", "country"]
   end
-  
+
   def self.remaining_voters_count_for(column_name, column_value)
     count(:conditions => "#{column_name} = #{column_value} AND active = 1 AND (status not in ('Call in progress','Ringing','Call ready to dial','Call completed with success.') or call_back=1)")
   end
@@ -92,9 +111,9 @@ class Voter < ActiveRecord::Base
   def dial_predictive
     call_attempt = new_call_attempt(self.campaign.predictive_type)
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    params = { 'StatusCallback' => end_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port),'Timeout' => campaign.answering_machine_detect ? "30" : "15"}
-    params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect        
-    response = Twilio::Call.make(campaign.caller_id, self.Phone, connect_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port),params)
+    params = {'StatusCallback' => end_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port), 'Timeout' => campaign.answering_machine_detect ? "30" : "15"}
+    params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect
+    response = Twilio::Call.make(campaign.caller_id, self.Phone, connect_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port), params)
     if response["TwilioResponse"]["RestException"]
       call_attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
       update_attributes(status: CallAttempt::Status::FAILED)
@@ -107,21 +126,6 @@ class Voter < ActiveRecord::Base
 
   def conference(session)
     session.update_attributes(:voter_in_progress => self)
-  end
-
-  def apply_attribute(attribute, value)
-    if self.has_attribute? attribute
-      self.update_attributes(attribute => value)
-    else
-      custom_attribute = self.campaign.account.custom_voter_fields.find_by_name(attribute)
-      custom_attribute ||= CustomVoterField.create(:name => attribute, :account => self.campaign.account) unless attribute.blank?
-      custom_field_value = CustomVoterFieldValue.voter_fields(self, custom_attribute).try(:first)
-      if custom_field_value.present?
-        custom_field_value.update_attributes(:value => value)
-      else
-        self.custom_voter_field_values.create(:voter => self, :custom_voter_field => custom_attribute, :value => value)
-      end
-    end
   end
 
   def get_attribute(attribute)
@@ -141,14 +145,14 @@ class Voter < ActiveRecord::Base
     capture_answers(response["question"])
     capture_notes(response['notes'])
   end
-  
+
   def selected_custom_voter_field_values
     select_custom_fields = campaign.script.try(:selected_custom_fields)
-    custom_voter_field_values.try(:select){|cvf| select_custom_fields.include?(cvf.custom_voter_field.name)} if select_custom_fields.present?
+    custom_voter_field_values.try(:select) { |cvf| select_custom_fields.include?(cvf.custom_voter_field.name) } if select_custom_fields.present?
   end
-  
+
   def info
-    {:fields => self.attributes.reject { |k, v| (k == "created_at") ||(k == "updated_at") }, :custom_fields => Hash[*self.selected_custom_voter_field_values.try(:collect){ |cvfv| [cvfv.custom_voter_field.name, cvfv.value] }.try(:flatten)]}.merge!(campaign.script ? campaign.script.selected_fields_json : {})
+    {:fields => self.attributes.reject { |k, v| (k == "created_at") ||(k == "updated_at") }, :custom_fields => Hash[*self.selected_custom_voter_field_values.try(:collect) { |cvfv| [cvfv.custom_voter_field.name, cvfv.value] }.try(:flatten)]}.merge!(campaign.script ? campaign.script.selected_fields_json : {})
   end
 
   def not_yet_called?(call_status)
@@ -176,16 +180,16 @@ class Voter < ActiveRecord::Base
   def question_not_answered
     unanswered_questions.first
   end
-  
+
   def skip
-    update_attributes(skipped_time:  Time.now, status: 'not called')
+    update_attributes(skipped_time: Time.now, status: 'not called')
   end
 
   def answer(question, response, recorded_by_caller = nil)
     possible_response = question.possible_responses.where(:keypad => response).first
     self.answer_recorded_by = recorded_by_caller
     return unless possible_response
-    answer = self.answers.for(question).first.try(:update_attributes, {:possible_response => possible_response}) || answers.create(:question => question, :possible_response => possible_response)
+    answer = self.answers.for(question).first.try(:update_attributes, {:possible_response => possible_response}) || answers.create(:question => question, :possible_response => possible_response, campaign: Campaign.find(campaign_id) )
     DIALER_LOGGER.info "??? notifying observer ???"
     notify_observers :answer_recorded
     DIALER_LOGGER.info "... notified observer ..."
@@ -218,7 +222,7 @@ class Voter < ActiveRecord::Base
     questions.try(:each_pair) do |question_id, answer_id|
       voters_response = PossibleResponse.find(answer_id)
       current_response = answers.find_by_question_id(question_id)
-      current_response ? current_response.update_attributes(:possible_response => voters_response, :created_at => Time.now) : answers.create(:possible_response => voters_response, :question => Question.find(question_id), :created_at => Time.now)
+      current_response ? current_response.update_attributes(:possible_response => voters_response, :created_at => Time.now) : answers.create(:possible_response => voters_response, :question => Question.find(question_id), :created_at => Time.now, campaign: Campaign.find(campaign_id))
       retry_response ||= voters_response if voters_response.retry?
     end
     update_attributes(:status => Voter::Status::RETRY) if retry_response

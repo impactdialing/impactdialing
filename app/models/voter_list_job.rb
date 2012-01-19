@@ -1,4 +1,5 @@
 class VoterListJob
+    include HerokuDelayedJobAutoscale::Autoscale
   def initialize(separator, column_headers, csv_to_system_map, filename, voter_list_name, campaign_id, account_id, domain, email)
     @separator = separator
     @csv_column_headers = JSON.parse(column_headers)
@@ -36,6 +37,7 @@ class VoterListJob
                                         @separator)
       response['success'] <<  "Upload complete. #{result[:successCount]} out of #{result[:successCount]+result[:failedCount]} records imported successfully."
     rescue Exception => err
+      puts err.backtrace.join("\n")
       @voter_list.destroy
       response['errors'] << "Invalid CSV file. Could not import."
     ensure

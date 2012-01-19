@@ -37,7 +37,7 @@ class ClientController < ApplicationController
       if user.blank?
         flash_now(:error, "We could not find an account with that email address")
       else
-        user.create_reset_code
+        user.create_reset_code!
         #Postoffice.password_recovery(u).deliver
 
         begin
@@ -94,20 +94,8 @@ class ClientController < ApplicationController
       end
       
       if @user.valid?
-        if @user.new_record?
-          @user.save
-          @user.send_welcome_email
-          @caller = Caller.new(name:"", email: @user.email, password:"demo123", account_id: account.id, active: true)
-          @caller.save
-        end
-
-        if account.scripts.find_by_name('Demo Script') == nil
-          @script = Script.default_script(account)
-          @script.save
-          @numResults = 1
-          @numNotes = 1
-        end
-
+        @user.send_welcome_email
+        @user.create_default_campaign
         if session[:user].blank?
           message = "Your account has been created."
         else

@@ -28,4 +28,8 @@ class Account < ActiveRecord::Base
     self.save
   end
 
+  def custom_fields
+    custom_voter_fields
+  end
+
 end

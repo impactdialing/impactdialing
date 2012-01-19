@@ -33,16 +33,15 @@ class ReportsController < ClientController
   def dial_details
     @campaign = account.campaigns.find(params[:id])
     set_report_period
-    # from_date = Date.strptime(params[:from_date], "%m/%d/%Y") if params[:from_date]
-    #     to_date = Date.strptime(params[:to_date], "%m/%d/%Y") if params[:to_date]
-    #     @from_date = from_date || (@campaign.call_attempts.first.try(:created_at) || Date.today)
-    #     @to_date = to_date || (@campaign.call_attempts.last.try(:created_at) || Date.today)
-
     @voter_fields = VoterList::VOTER_DATA_COLUMNS
-    @custom_voter_fields = @user.account.custom_voter_fields.collect{ |field| field.name}
+    @custom_voter_fields = @user.account.custom_fields.collect{ |field| field.name}
     respond_to do |format|
       format.html
-      format.csv { send_data download_csv, :type => "text/csv", :filename=>"#{@campaign.name}_report.csv", :disposition => 'attachment' }
+      format.csv do
+        Delayed::Job.enqueue ReportJob.new(@campaign, @user, params[:voter_fields], params[:custom_voter_fields], params[:download_all_voters], @from_date, @to_date)
+        flash_message(:notice,I18n.t(:client_report_processing))
+        redirect_to reports_path
+      end
     end
   end
   

@@ -53,6 +53,14 @@ describe Caller do
       end
     end.response
   end
+
+  it "is known as the name unless blank" do
+    name,mail = 'name', "mail@mail.com"
+    web_ui_caller = Factory(:caller, :name => '', :email => mail)
+    phones_only_caller = Factory(:caller, :name => name, :email => '')
+    web_ui_caller.known_as.should == mail
+    phones_only_caller.known_as.should == name
+  end
   
   describe "choice in phones-only" do 
     

@@ -33,7 +33,7 @@ module Client
       else
         random_password = rand(Time.now.to_i)
         new_user = account.users.create!(:email => params[:email], :new_password => random_password.to_s)
-        new_user.create_reset_code
+        new_user.create_reset_code!
         UserMailer.new.deliver_invitation(new_user, @user)
       end
       redirect_to :back

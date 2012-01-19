@@ -306,17 +306,9 @@ class Campaign < ActiveRecord::Base
     voters_returned.uniq
   end
 
-  def dialing?
-    (predictive_type == 'preview' || calls_in_progress?).tap do
-      DIALER_LOGGER.info "SKIP #{self.name} dials in progress #{self.calls_in_progress?} #{self.predictive_type}"
-    end
-  end
 
   def predictive_dial
-    return if dialing?
-    update_attribute(:calls_in_progress, true)
     dial_predictive_voters
-    update_attribute(:calls_in_progress, false)
   end
 
   def callers_to_dial
@@ -499,10 +491,8 @@ class Campaign < ActiveRecord::Base
   def start
     return false if self.calls_in_progress? or (not self.account.activated?)
     return false if script.robo_recordings.size == 0
-    daemon = "#{Rails.root.join('script', "dialer_control.rb start -- #{self.id}")}"
-    logger.info "[dialer] Account id:#{self.account.id} started campaign id:#{self.id} name:#{self.name}"
+    Delayed::Job.enqueue BroadcastCampaignJob.new(self.id)
     update_attribute(:calls_in_progress, true)
-    system(daemon)
   end
 
   def stop
