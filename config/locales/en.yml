@@ -29,6 +29,8 @@ en:
   invalid_file_uploaded: "Your file is corrupt or has a problem. Please try saving the data into a new comma-separated value (CSV) or tab-delimited text (TXT) file and then try again."
   client_report_processing: "Your report is currently being prepared for download. You will receive an email when it is ready."
   report_ready_for_download: "Your report is ready for download."
+  report_error_occured_subject: "Error generating report."
+  report_error_occured: "There was a problem generating a report for your campaign. Support has been notified and is looking into the issue."
   white_labeling:
     impactdialing:
       title: "Impact Dialing"
