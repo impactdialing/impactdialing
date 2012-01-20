@@ -61,16 +61,23 @@ class CallerController < ApplicationController
   end
 
   def gather_response
+    start_time = Time.now
+    logger.info "RESPONSE TIME : (RESPONDED) in #{Time.now - start_time}"
     caller = Caller.find(params[:id])
     caller_session = caller.caller_sessions.find(params[:session_id])
     question = Question.find_by_id(params[:question_id])
     voter = caller_session.voter_in_progress
     voter.answer(question, params[:Digits], caller_session) if voter && question
 
+    logger.info "RESPONSE TIME : (ANSWERED) #{Time.now - start_time}"
+
     xml = Twilio::Verb.hangup if caller_session.disconnected?
     xml ||= (voter.question_not_answered.try(:read, caller_session) if voter)
+    logger.info "RESPONSE TIME : (CHECKED FOR OTHER QUESTIONS) #{Time.now - start_time}"
     xml ||= caller_session.ask_caller_to_choose_voter if (caller.is_phones_only? && caller.campaign.is_preview_or_progressive)
+    logger.info "RESPONSE TIME : (CHOSE ANOTHER VOTER) #{Time.now - start_time}"
     xml ||= caller_session.start
+    logger.info "RESPONSE TIME : (STARTED) #{Time.now - start_time}"
     render :xml => xml
   end
 
