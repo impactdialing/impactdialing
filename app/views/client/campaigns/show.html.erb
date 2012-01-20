@@ -1,4 +1,3 @@
-
 <%= javascript_include_tag "campaign/auto_save" %>
 <%= javascript_include_tag "https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js" %>
 <h1>Edit campaign</h1>
@@ -19,7 +18,7 @@
 
         <p><label for="">Caller ID</label><br>
           <%= f.text_field :caller_id, {:class=>"field size3"} %></p>
-
+		<p>Caller ID refers to the phone number that your leads see on their Caller ID when the predictive dialer calls them. In many places, you are legally required to display a valid Caller ID for your company or organization, so you should always use a valid Caller ID.</p>
         <p><label for="">Script</label><br>
           <%= f.collection_select(:script_id, @scripts, :id, :name, {:class=>"field"}) %>
         </p>
@@ -33,6 +32,7 @@
             <%= options_for_select public_dialers, @campaign.predictive_type %>
           </select>
         </p>
+
 				<div id="abandon_rate_edit" style="display: none">
         	<p><label>Abandonment rate</label>
 	           <select class="field" id="campaign_abandon_rate" name="campaign[acceptable_abandon_rate]">
@@ -69,6 +69,7 @@
 				</p>
 
 				<%= render :partial => 'shared/recycle_rate', :locals => {:recycle_hour => @campaign.recycle_rate}%>
+				<p>Recycle rate is the minimum amount of time the dialer will wait between calling the same lead twice.</p>
 				<p><%= f.check_box :answering_machine_detect %>&nbsp;Automatically detect voicemails</p>
         <% if !@campaign.account.recordings.blank? %>
             <p><%= f.check_box :use_recordings, :onclick=>"doRecord();" %>&nbsp;Leave voicemail message</p>
