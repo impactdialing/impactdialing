@@ -5,6 +5,10 @@ class BroadcastCampaignJob
     @campaign = Campaign.find(campaign_id)
   end
   
+  def display_name
+   "Broadcastcampaign-job-#{@campaign.id}"
+  end
+  
   def perform            
     begin
       Twilio.default_options[:ssl_ca_file] = File.join(RAILS_ROOT, 'cacert.pem')

@@ -500,6 +500,11 @@ class Campaign < ActiveRecord::Base
   end
 
   def stop
+    Delayed::Job.all do |job|
+        if job.name == "Broadcastcampaign-job-#{self.id}" 
+          job.delete
+        end
+    end
     update_attribute(:calls_in_progress, false)
   end
 
