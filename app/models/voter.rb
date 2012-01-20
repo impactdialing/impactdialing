@@ -100,6 +100,7 @@ class Voter < ActiveRecord::Base
 
     if response["TwilioResponse"]["RestException"]
       logger.info "[dialer] Exception when attempted to call #{message}  Response: #{response["TwilioResponse"]["RestException"].inspect}"
+      call_attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)      
       update_attributes(status: CallAttempt::Status::FAILED)
       return false
     end
