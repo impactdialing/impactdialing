@@ -35,7 +35,7 @@ describe Script do
     
   
     it "should have name Demo Script" do
-      @script.name.should eq('Demo Script')    
+      @script.name.should == "Demo script"
     end
   
     it "should have FirstName, lastName and Phone as voter fields" do
@@ -44,12 +44,12 @@ describe Script do
   
     it "should have a default note" do
       @script.notes.length.should eq(1)
-      @script.notes.first.note.should eq("What's your favorite thing about Impact Dialing?")  
+      @script.notes.first.note.should eq("What's your favorite feature?")  
     end
     
     it "should add a default question" do
       @script.questions.length.should eq(1)
-      @script.questions.first.text.should eq('Are you ready to use Impact Dialing?')
+      @script.questions.first.text.should eq('How do you like the predictive dialer so far?')
     end
     
     it "should add a default question with 4 possible responses" do
