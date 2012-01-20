@@ -1,5 +1,17 @@
 $(function() {
   
+  //doesn't allow duplicate keypads
+  $('.keypad').live('focusout', function(){
+    if($(this).val()){
+      if($(this).closest('fieldset').find('.keypad:visible[value='+$(this).val()+']').length > 1){
+        alert("Keypad value already used. Please enter different value.")
+        $(this).val('');
+      }
+    }
+  });
+  
+  
+//nestead-form  
 $('form a.add_nested_fields').live('click', function() {
   // Setup
   var assoc   = $(this).attr('data-association');           // Name of child
