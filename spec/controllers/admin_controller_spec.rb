@@ -41,5 +41,15 @@ describe AdminController do
       get :state
       response.should be_ok
     end
+    
+    it "delete account" do
+      account = Factory(:account)
+      Factory(:user, :account => account)
+      Factory(:user, :account => account)
+      get :destroy, :id => account.id
+      Account.all.should == []
+      User.all.should == []
+      response.should redirect_to(:back)
+    end
   end
 end
