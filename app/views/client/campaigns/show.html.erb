@@ -32,6 +32,7 @@
             <%= options_for_select public_dialers, @campaign.predictive_type %>
           </select>
         </p>
+<<<<<<< HEAD
 
 				<div id="abandon_rate_edit" style="display: none">
         	<p><label>Abandonment rate</label>
@@ -42,6 +43,14 @@
 					<p>Abandonment rate is the percentage of answered phone calls in predictive mode that are picked up when no caller is available. Abandoned calls are often regulated by the government to be less than 3% of answered dials. The higher the abandonment rate, the less time your callers will spend waiting between calls.
 					</p>
 				</div>
+=======
+<p>Preview mode calls one person at a time, lets you preview the name of the person you are calling before you dial, and lets you choose to skip the current person. Power mode calls one person at a time immediately after you finish your previous call, without giving you the option to skip. Predictive mode uses an intelligent controller to optimize the amount of time your callers spend talking to leads.</p>
+        <p id="abandon_rate_edit" style="display: none"><label>Abandonment rate</label>
+           <select class="field" id="campaign_abandon_rate" name="campaign[acceptable_abandon_rate]">
+            <%= options_for_select [["1%", 0.01], ["2%", 0.02], ["3%", 0.03]], @campaign.acceptable_abandon_rate%>
+          </select>
+        </p>
+>>>>>>> 7068157... moved help text into relevant views
 
 <p><label for="">Time zone</label>
 <%= time_zone_select( "campaign", 'time_zone', ActiveSupport::TimeZone.us_zones, :default => "Pacific Time (US & Canada)") %></p>
