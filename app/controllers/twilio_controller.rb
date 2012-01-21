@@ -18,6 +18,7 @@ class TwilioController < ApplicationController
   def report_error
     #TWILIO_LOG.info "#{@call_attempt.voter.Phone} : Error occured."
     logger.info "[dialer] error. #{@log_message}"
+    @call_attempt.update_attributes(wrapup_time: Time.now)
     render :xml => Twilio::Verb.hangup
   end
 
@@ -27,6 +28,7 @@ class TwilioController < ApplicationController
     @call_attempt = CallAttempt.find(params[:call_attempt_id])
     voter = @call_attempt.voter
     voter.update_attributes(:result_date => Time.now)
+    @call_attempt.update_attributes(wrapup_time: Time.now)
     render :text => ''
   end
 

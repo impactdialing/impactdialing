@@ -289,6 +289,7 @@ describe VoterList do
 
   describe "dial" do
     let(:voter_list) { Factory(:voter_list, :campaign => Factory(:campaign, :calls_in_progress => true)) }
+
     it "dials all the voters who have not been dialed yet" do
       voter1 = Factory(:voter, :voter_list => voter_list, :campaign => voter_list.campaign)
       voter2 = Factory(:voter, :voter_list => voter_list, :campaign => voter_list.campaign)
