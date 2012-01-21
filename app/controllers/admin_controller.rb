@@ -117,6 +117,13 @@ class AdminController < ApplicationController
     session[:user]=params[:id]
     redirect_to :controller=>"client", :action=>"index"
   end
+  
+  def destroy
+    @account = Account.find(params[:id])
+    @account.users.try(:each){|user| user.destroy }
+    @account.destroy
+    redirect_to :back
+  end
 
   def cms
     @version = session[:cms_version]
