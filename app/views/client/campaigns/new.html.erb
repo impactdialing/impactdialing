@@ -17,7 +17,7 @@
 
         <p><label for="">Caller ID</label><br>
           <%= f.text_field :caller_id, {:class=>"field size3"} %></p>
-		<p>Caller ID refers to the phone number that your leads see on their Caller ID when the predictive dialer calls them. In many places, you are legally required to display a valid Caller ID for your company or organization, so you should always use a valid Caller ID.</p>
+		<p>Caller ID refers to the phone number that your leads see on their Caller ID. In many circumstances, you are legally required to display a valid Caller ID.</p>
         <p><label for="">Script</label><br>
           <%= f.collection_select(:script_id, @scripts, :id, :name, {:prompt => true}, {:class=>"field"}) %>
         </p>
