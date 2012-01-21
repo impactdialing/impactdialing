@@ -63,15 +63,15 @@ class Script < ActiveRecord::Base
       }
       
       possible_responses = []
-      possible_responses << PossibleResponse.new(keypad: 1, value:"I'm ready!", retry: false)
-      possible_responses << PossibleResponse.new(keypad: 2, value: "I was born ready.", retry: false)
-      possible_responses << PossibleResponse.new(keypad: 3, value: "I'm going to call (415) 347-5723 to learn more.", retry: false)
-      possible_responses << PossibleResponse.new(keypad: 4, value: "Who is Impact Dialing and what is this website?", retry: false)
-      question = Question.new(text: "Are you ready to use Impact Dialing?")
+      possible_responses << PossibleResponse.new(keypad: 1, value:"It's great.", retry: false)
+      possible_responses << PossibleResponse.new(keypad: 2, value: "It's amazing!", retry: false)
+      possible_responses << PossibleResponse.new(keypad: 3, value: "I'm a bit confused, so I'm going to call Support.", retry: false)
+      possible_responses << PossibleResponse.new(keypad: 4, value: "How did I get here? I'm so lost.", retry: false)
+      question = Question.new(text: "How do you like the predictive dialer so far?")
       question.possible_responses = possible_responses
-      Script.new(name: 'Demo Script',  active: 1, account_id: account.id, result_set_1: @rs.to_json).tap do |script|
+      Script.new(name: 'Demo script',  active: 1, account_id: account.id, result_set_1: @rs.to_json).tap do |script|
         script.voter_fields='["FirstName","LastName","Phone"]'
-        script.notes << Note.new(note:"What's your favorite thing about Impact Dialing?")
+        script.notes << Note.new(note:"What's your favorite feature?")
         script.questions << question
         script.script = <<-EOS
   Hi, I'm calling to tell you about how great Impact Dialing is. 
