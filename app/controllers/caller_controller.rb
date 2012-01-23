@@ -85,7 +85,7 @@ class CallerController < ApplicationController
 
   def active_session
     caller = Caller.find(params[:id])
-    campaign = caller.campaign
+    campaign = Campaign.find(params[:campaign_id])
     render :json => caller.active_session(campaign).to_json
   end
 
