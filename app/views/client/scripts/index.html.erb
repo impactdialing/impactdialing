@@ -1,5 +1,6 @@
 <%= javascript_include_tag "application" %>
-<%= javascript_include_tag "defaults" %>
+
+<%= javascript_include_tag "https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js" %>
 <%= csrf_meta_tag%>
 <h1>Scripts</h1>
 <% if @scripts.length==0 %>
@@ -20,7 +21,7 @@
               <td><%= s.created_at.strftime("%m/%d/%Y") %></td>
               <td>
                 <div style="display:none"><%= button_to "delete", client_script_path(s), :method => :delete, :id => "delete-button-#{s.id}" %></div>
-                <a href="javascript:if(confirm('Are you sure you want to delete this script?')) $('#delete-button-<%= s.id%>').trigger('click');" class="ico del"></a>
+                <a href="javascript:" class="ico del" script_id="<%= s.id%>"></a>
               </td>  
             </tr>
         <% end %>
@@ -34,3 +35,17 @@
 <p><strong>Phones-only users: </strong>The "Phones-only keypad" values refer to the buttons that your callers press on their phones to enter results after each call. Callers can press * to hang up the current call, then enter their results on their keypad and press * again to submit each result.</p>
 <p class="actions"><%= link_to 'Add new script', new_client_script_path, :class => 'action primary' %></p>
 <p class="actions"><%= link_to 'View deleted scripts', client_deleted_scripts_path, :class => 'action secondary' %></p>
+
+<script type="text/javascript">
+	var number_of_scripts = <%= @scripts.try(:length) %>
+	$(function(){ 
+		$('.ico.del').click(function(){
+			if(number_of_scripts == 1){
+				alert("You must have at least one script.");
+			}
+			else if(confirm('Are you sure you want to delete this script?')){
+				$('#delete-button-'+$(this).attr('script_id')).trigger('click');
+			}
+		})
+	});
+</script>
