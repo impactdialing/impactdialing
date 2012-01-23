@@ -207,6 +207,22 @@ function ready_for_calls(data){
 
 }
 
+function set_new_campaign_script(data){
+	$('#campaign').val(data.campaign_id);
+	$('#script').text(data.script);
+}
+
+function set_response_panel(data){
+	$.ajax({
+      url : "/caller/" + $("#caller").val() + "/new_campaign_response_panel",
+      data : {},
+      type : "POST",
+      success : function(response) {
+				$('#response_panel').replaceWith(response);
+      }
+  })	
+}
+
 function subscribe(session_key) {
     channel = pusher.subscribe(session_key);
     console.log(channel)
@@ -343,22 +359,6 @@ function subscribe(session_key) {
 		alert("You have been re-assigned to " + data.campaign_name+".");
 	
 	});
-	
-		function set_new_campaign_script(data){
-			$('#campaign').val(data.campaign_id);
-			$('#script').text(data.script);
-		}
-		
-		function set_response_panel(data){
-			$.ajax({
-		      url : "/caller/" + $("#caller").val() + "/new_campaign_response_panel",
-		      data : {},
-		      type : "POST",
-		      success : function(response) {
-						$('#response_panel').replaceWith(response);
-		      }
-		  })	
-		}
 
     function set_call_attempt(id) {
         $("#current_call_attempt").val(id);

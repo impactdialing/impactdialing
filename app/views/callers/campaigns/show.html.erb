@@ -131,9 +131,21 @@
 
     function goclient() {
         $("#callin_data").hide();
+				$.ajax({
+            url : "/caller/" + $("#caller").val() + "/check_reassign",
+            data : {campaign_id : $("#campaign").val()},
+            type : "POST",
+            success : function(response) {
+							if(response.reassign == 'true'){
+								set_new_campaign_script(response);
+								set_response_panel(response);
+							} 
+            }
+        });
         params = {"PhoneNumber": "<%= @phone_number %>", 'campaign_id': "<%= @campaign.id %>", 'caller_id': "<%= @caller.id %>" };
-        Twilio.Device.connect(params)
+				Twilio.Device.connect(params)
     }
+
     $(window).bind("beforeunload", function() {
         if ($("#caller_session").val()) {
             $.ajax({
