@@ -1,21 +1,18 @@
 <h1>Reports</h1>
 <% if @campaigns.length==0 %>
-  <div class="form">
-    <label>No campaigns exist.</label>
-  </div>
+    <p>You haven't created any campaigns yet.</p>
 <% else %>
-  <div class="table">
     <table>
       <tr>
-        <th>Name</th>
+        <th>Campaign</th>
 		<th></th>
 		<th></th>
 		<th></th>
       </tr>
       <% @campaigns.each do |c| %>
         <tr class="<%= cycle("odd","even") %>">
-          <td><h3><%= link_to c.name, campaign_path(c) %></h3></td>
-					<td>
+          <td><%= link_to c.name, campaign_path(c) %></td>
+		  <td>
             <%= link_to 'Dials', dials_reports_path(:campaign_id => c.id) %>
           </td>
           <td>
@@ -23,13 +20,8 @@
           </td>
           <td>
 			<%= link_to "Download", dial_details_reports_path(:id => c.id),:method => "POST" %>
-			<!--Download report temporarily disabled pending bug fix; please contact support for your download-->
           </td>
         </tr>
       <% end %>
-
     </table>
-  </div>
-
-
 <% end %>

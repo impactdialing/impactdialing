@@ -1,14 +1,11 @@
 <h1>Deleted callers</h1>
 <% if @callers.length==0 %>
-  <div class="form">
-    <label>No callers entered.</label>
-  </div>
+    <p>No callers have been deleted.</p>
 <% else %>
-  <div class="table">
-    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+    <table>
       <tr>
         <th>Name</th>
-        <th>Date added</th>
+        <th>Date created</th>
         <th>Date deleted</th>
         <th width="55" class="ac"></th>
       </tr>
@@ -26,7 +23,6 @@
       <% end %>
     </table>
   <% end %>
-</div>
 <p><%= page_entries_info @callers %> <%= will_paginate @callers %></p>
 <p class="actions"><%= link_to 'Return to active callers', '/client/callers', :class => 'action primary' %></p>
 
