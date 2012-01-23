@@ -2,7 +2,7 @@ require Rails.root.join("lib/twilio_lib")
 
 class CallerController < ApplicationController
   layout "caller"
-  before_filter :check_login, :except=>[:login, :feedback, :assign_campaign, :end_session, :pause, :start_calling, :gather_response, :choose_voter, :phones_only_progressive, :phones_only, :choose_instructions_option, :new_campaign_response_panel, :active_session]
+  before_filter :check_login, :except=>[:login, :feedback, :assign_campaign, :end_session, :pause, :start_calling, :gather_response, :choose_voter, :phones_only_progressive, :phones_only, :choose_instructions_option, :new_campaign_response_panel, :check_reassign, :active_session]
   before_filter :redirect_to_ssl
   before_filter :connect_to_twilio, :only => [:preview_dial]
   
@@ -106,21 +106,25 @@ class CallerController < ApplicationController
     caller_session.publish('caller_connected', next_voter ? next_voter.info : {}) if caller_session.campaign.predictive_type == Campaign::Type::PREVIEW || caller_session.campaign.predictive_type == Campaign::Type::PROGRESSIVE
     render :nothing => true
   end
+  
+  def check_reassign
+    caller = Caller.find(params[:id])
+    if caller.campaign.id == params[:campaign_id].to_i
+      render :json => {:reassign => "false"}
+    else
+      render :json => {:reassign => "true", :campaign_id => caller.campaign.id, :script => caller.campaign.script.try(:script)}
+    end
+  end
 
   def start_calling
     if params[:caller_id].blank? || params[:campaign_id].blank?
       render :nothing => true
     else
       @caller = Caller.find(params[:caller_id])
-      if @caller.campaign.id == params[:campaign_id]
-        @session = @caller.caller_sessions.create(on_call: false, available_for_call: false,
-                                                  session_key: generate_session_key, sid: params[:CallSid], campaign: @caller.campaign)
-        Moderator.caller_connected_to_campaign(@caller, @campaign, @session)
-        response = @session.start
-        render :xml => response
-      else
-        redirect_to callers_campaign_path(@caller.campaign)
-      end
+      @session = @caller.caller_sessions.create(on_call: false, available_for_call: false,
+                                                session_key: generate_session_key, sid: params[:CallSid], campaign: @caller.campaign)
+      Moderator.caller_connected_to_campaign(@caller, @caller.campaign, @session)      
+      render :xml => @session.start
     end
   end
 

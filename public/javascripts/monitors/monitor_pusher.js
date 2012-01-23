@@ -125,13 +125,6 @@ function subscribe_and_bind_events_monitoring(session_id){
 		}
 	});
 	
-	channel.bind('update_no_of_callers_logged_in', function(data){
-		if (!$.isEmptyObject(data)){
-			var campaign_selector = 'tr#campaign_'+data.campaign_id;
-			$(campaign_selector).children('.callers_logged_in').text(data.callers_logged_in);
-		}
-	});
-	
 	channel.bind('voter_response_submitted', function(data){
 		if (!$.isEmptyObject(data)){
 			var caller_selector = 'tr#caller_'+data.caller_session_id;
