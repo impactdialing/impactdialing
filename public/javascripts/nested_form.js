@@ -4,7 +4,7 @@ $(function() {
   $('.keypad').live('focusout', function(){
     if($(this).val()){
       if($(this).closest('fieldset').find('.keypad:visible[value='+$(this).val()+']').length > 1){
-        alert("Keypad value already used. Please enter different value.")
+        alert("Two responses in the one question have the same keypad value. Please fix this before saving.")
         $(this).val('');
       }
     }
