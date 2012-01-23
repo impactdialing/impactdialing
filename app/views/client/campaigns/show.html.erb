@@ -18,7 +18,7 @@
 
         <p><label for="">Caller ID</label><br>
           <%= f.text_field :caller_id, {:class=>"field size3"} %></p>
-		<p>Caller ID refers to the phone number that your leads see on their Caller ID when the predictive dialer calls them. In many places, you are legally required to display a valid Caller ID for your company or organization, so you should always use a valid Caller ID.</p>
+		<p>Caller ID refers to the phone number that your leads see on their Caller ID. In many circumstances, you are legally required to display a valid Caller ID.</p>
         <p><label for="">Script</label><br>
           <%= f.collection_select(:script_id, @scripts, :id, :name, {:class=>"field"}) %>
         </p>
@@ -32,14 +32,14 @@
             <%= options_for_select public_dialers, @campaign.predictive_type %>
           </select>
         </p>
-
+<p>Preview calls one lead at a time and lets you choose to dial or skip each lead. Power calls another lead immediately after you finish your previous call, without giving the option to skip. Predictive uses an intelligent controller to maximize your callers' talk time.</p>
 				<div id="abandon_rate_edit" style="display: none">
         	<p><label>Abandonment rate</label>
 	           <select class="field" id="campaign_abandon_rate" name="campaign[acceptable_abandon_rate]">
 	            <%= options_for_select [["1%", 0.01], ["2%", 0.02], ["3%", 0.03]], @campaign.acceptable_abandon_rate%>
 	          </select>
 	        </p>
-					<p>Abandonment rate is the percentage of answered phone calls in predictive mode that are picked up when no caller is available. Abandoned calls are often regulated by the government to be less than 3% of answered dials. The higher the abandonment rate, the less time your callers will spend waiting between calls.
+					<p>Abandonment rate is the percentage of calls that are answered when no caller is available. Abandoned calls are often legally required to be less than 3%. The higher the abandonment rate, the less time your callers spend waiting between calls.
 					</p>
 				</div>
 
@@ -69,7 +69,7 @@
 				</p>
 
 				<%= render :partial => 'shared/recycle_rate', :locals => {:recycle_hour => @campaign.recycle_rate}%>
-				<p>Recycle rate is the minimum amount of time the dialer will wait between calling the same lead twice.</p>
+				<p>Recycle rate is the minimum amount of time the dialer will wait between calling the same lead again.</p>
 				<p><%= f.check_box :answering_machine_detect %>&nbsp;Automatically detect voicemails</p>
         <% if !@campaign.account.recordings.blank? %>
             <p><%= f.check_box :use_recordings, :onclick=>"doRecord();" %>&nbsp;Leave voicemail message</p>
