@@ -112,13 +112,15 @@ class CallerController < ApplicationController
       render :nothing => true
     else
       @caller = Caller.find(params[:caller_id])
-      @campaign = Campaign.find(params[:campaign_id])
-      @session = @caller.caller_sessions.create(on_call: false, available_for_call: false,
-                                                session_key: generate_session_key, sid: params[:CallSid], campaign: @campaign)
-      Moderator.caller_connected_to_campaign(@caller, @campaign, @session)
-      response = @session.start
-      Moderator.publish_event(@caller.campaign, 'update_no_of_callers_logged_in', {:campaign_id => @caller.campaign.id, :callers_logged_in => @caller.campaign.caller_sessions.on_call.length})
-      render :xml => response
+      if @caller.campaign.id == params[:campaign_id]
+        @session = @caller.caller_sessions.create(on_call: false, available_for_call: false,
+                                                  session_key: generate_session_key, sid: params[:CallSid], campaign: @caller.campaign)
+        Moderator.caller_connected_to_campaign(@caller, @campaign, @session)
+        response = @session.start
+        render :xml => response
+      else
+        redirect_to callers_campaign_path(@caller.campaign)
+      end
     end
   end
 

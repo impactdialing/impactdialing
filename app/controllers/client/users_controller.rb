@@ -35,6 +35,7 @@ module Client
         new_user = account.users.create!(:email => params[:email], :new_password => random_password.to_s)
         new_user.create_reset_code!
         UserMailer.new.deliver_invitation(new_user, @user)
+        flash_message(:notice, "#{params[:email]} has been invited.")
       end
       redirect_to :back
     end
