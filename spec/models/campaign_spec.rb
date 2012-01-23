@@ -340,6 +340,14 @@ describe Campaign do
     campaign = Campaign.new(:name => "sddd", :answering_machine_detect => false, :use_recordings => true)
     campaign.should_not be_valid
   end
+  
+  it 'return validation error, if caller id is either blank, not a number or not a valid length' do
+    campaign = Campaign.new(:account => Factory(:account))
+    campaign.save(:validate => false)
+    campaign.update_attributes(:caller_id => '23456yuiid').should be_false
+    campaign.errors[:base].should == ['Your Caller ID must be a valid 10-digit phone number']
+    campaign.errors[:caller_id].should == []
+  end
 
   it "is_phones_only_and_preview_or_progressive? is true if is_phones_only and campaign type is preview or progressive" do
     preview_campaign = Factory(:campaign, :predictive_type => Campaign::Type::PREVIEW)
