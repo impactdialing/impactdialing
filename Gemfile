@@ -19,7 +19,7 @@ gem "paperclip", "2.3.16"
 gem 'daemons', '~> 1.0.10'
 gem 'twilio', '~> 3.0.1'
 gem 'settingslogic', '~> 2.0.6'
-gem "twilio-ruby", '~> 3.3.0'
+gem "twilio-ruby", '~> 3.5.1'
 gem 'dynamic_form', '~> 1.1.4'
 gem 'in_place_editing', '~> 1.1.1'
 gem "nested_form", '~>0.1.1'
