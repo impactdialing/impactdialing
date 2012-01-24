@@ -51,7 +51,6 @@ describe CampaignsController do
         created_campaign.recording.should be_nil
       end
     end
-
   end
 
 
