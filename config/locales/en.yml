@@ -72,3 +72,8 @@ en:
         full_title: "Dialing Support"
         phone: "(800) 123-4567"
         email: "email@dialingsupport.com"
+    afpdialer:
+      title: "Americans for Prosperity"
+      full_title: "Americans for Prosperity"
+      phone: "(415) 347-5723"
+      email: "afpdialer@impactdialing.com"
