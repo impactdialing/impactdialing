@@ -1,11 +1,10 @@
 <% if target.errors.any? %>
 <div id="errorExplanation">
 	<div class = 'callout alert clearfix'>
-  	<h2><%=target.class.name%> was not saved:</h2>
-	  <ul>
-	  <% target.errors.full_messages.each do |msg| %>
-	    <li><%= msg %></li>
-	  <% end %>
+		<ul style="list-style:none; margin-bottom:0.0em;">
+	  	<% target.errors.full_messages.each do |msg| %>
+	    	<li><%= msg %></li>
+	  	<% end %>
 	  </ul>
 	</div>
 </div>
