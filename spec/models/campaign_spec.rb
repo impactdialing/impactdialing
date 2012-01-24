@@ -696,4 +696,16 @@ describe Campaign do
     end
   end
 
+  describe "broadcast campaigns" do
+    it "should send out an email when started" do
+      script = Factory(:script, :robo_recordings => [Factory(:robo_recording)])
+      campaign = Factory(:campaign,:script => script, :robo => true, :calls_in_progress => false, :account => Factory(:account, :activated => true))
+      Delayed::Job.stub(:enqueue)
+      mailer = mock
+      UserMailer.stub(:new).and_return(mailer)
+      mailer.should_receive(:notify_broadcast_start)
+      campaign.start
+    end
+  end
+
 end
