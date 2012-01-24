@@ -73,7 +73,7 @@ class CampaignsController < ClientController
   end
 
   def start
-    @campaign.start
+    @campaign.start(@user)
     redirect_to control_campaigns_path
   end
 

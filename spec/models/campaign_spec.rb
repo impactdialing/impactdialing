@@ -551,12 +551,12 @@ describe Campaign do
 
     it "does not start the dialer daemon for the campaign if the use has not already paid" do
       campaign = Factory(:campaign, :account => Factory(:account, :activated => false))
-      campaign.start.should be_false
+      campaign.start(Factory(:user)).should be_false
     end
 
     it "does not start the dialer daemon for the campaign if it is already started" do
       campaign = Factory(:campaign, :calls_in_progress => true)
-      campaign.start.should be_false
+      campaign.start(Factory(:user)).should be_false
     end
 
     it "starts the dialer daemon for the campaign if there are recordings to play" do
@@ -564,7 +564,7 @@ describe Campaign do
       script.robo_recordings = [Factory(:robo_recording)]
       campaign = Factory(:campaign, :script => script, :account => Factory(:account, :activated => true))
       Delayed::Job.should_receive(:enqueue)
-      campaign.start.should be_true
+      campaign.start(Factory(:user)).should be_true
       campaign.calls_in_progress.should be_true
     end
 
@@ -572,7 +572,7 @@ describe Campaign do
       script = Factory(:script)
       script.robo_recordings.size.should == 0
       campaign = Factory(:campaign, :script => script, :account => Factory(:account, :activated => true))
-      campaign.start.should be_false
+      campaign.start(Factory(:user)).should be_false
     end
 
 
@@ -685,6 +685,18 @@ describe Campaign do
       t3 = Time.parse("01/2/2011 15:00")
       Time.stub!(:now).and_return(t1, t1, t2, t2, t3, t3)
       @campaign.time_period_exceed?.should == true
+    end
+  end
+
+  describe "broadcast campaigns" do
+    it "should send out an email when started" do
+      script = Factory(:script, :robo_recordings => [Factory(:robo_recording)])
+      campaign = Factory(:campaign,:script => script, :robo => true, :calls_in_progress => false, :account => Factory(:account, :activated => true))
+      Delayed::Job.stub(:enqueue)
+      mailer = mock
+      UserMailer.stub(:new).and_return(mailer)
+      mailer.should_receive(:notify_broadcast_start)
+      campaign.start(Factory(:user))
     end
   end
 
