@@ -67,3 +67,8 @@ en:
       full_title: "ConnexxNow, LLC"
       phone: "(415) 347-5723"
       email: "connexxnow@impactdialing.com"
+    dialingsupport:
+        title: "Dialing Support"
+        full_title: "Dialing Support"
+        phone: "(800) 123-4567"
+        email: "email@dialingsupport.com"
