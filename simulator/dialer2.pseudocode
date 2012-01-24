@@ -1,6 +1,6 @@
-get longest_conversation, best_conversation, and best_dials from simulator
+get longest_conversation, best_conversation, best_wrapup, and best_dials from simulator
 
-available_callers = number of callers on hold + number calls of length > best_conversation - number of calls of length > than longest_conversation
+available_callers = number of callers on hold + number calls of length > best_conversation + number of callers on wrapup of length > best_wrapup - number of calls of length > than longest_conversation
 
 ringing_lines = number of currently ringing lines
 
