@@ -1,6 +1,6 @@
 class ReportsController < ClientController
   layout 'v2'
-  before_filter :load_campaign, :only => [:usage, :dials]
+  before_filter :load_campaign, :only => [:usage, :dials, :answers]
 
   def load_campaign
     @campaign = Campaign.find(params[:campaign_id])
@@ -12,6 +12,12 @@ class ReportsController < ClientController
 
   def usage
     @minutes = @campaign.call_attempts.for_status(CallAttempt::Status::SUCCESS).inject(0) { |sum, ca| sum + ca.minutes_used }
+  end
+  
+  def answers
+    set_report_period
+    @results = @campaign.robo_answer_results(@from_date, @to_date)
+    render :template => 'client/reports/answer'
   end
   
   def dials

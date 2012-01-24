@@ -8,6 +8,7 @@ class RoboRecording < ActiveRecord::Base
   belongs_to :script
   has_many :recording_responses
   accepts_nested_attributes_for :recording_responses, :allow_destroy => true
+  has_many :call_responses
   before_post_process :set_content_type
 
   validates_presence_of :name, :message => "Please name your recording."
@@ -25,7 +26,11 @@ class RoboRecording < ActiveRecord::Base
   def response_for(digits)
     self.recording_responses.find_by_keypad(digits)
   end
-
+  
+  def answered_within(from_date, to_date, campaign_id)
+    call_responses.within(from_date, to_date, campaign_id)
+  end
+  
   def twilio_xml(call_attempt)
     ivr_url = call_attempts_url(:host => Settings.host, :id => call_attempt.id, :robo_recording_id => self.id)
     recording_responses.count > 0 ? ivr_prompt(ivr_url) : play_message(call_attempt)

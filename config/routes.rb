@@ -83,6 +83,7 @@ ImpactDialing::Application.routes.draw do
         get :usage
         get :dials
         post :dial_details
+        get :answers
       end
     end
     get '/deleted_campaigns', :to => 'broadcast/campaigns#deleted', :as => :broadcast_deleted_campaigns
