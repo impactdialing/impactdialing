@@ -509,12 +509,12 @@ class Campaign < ActiveRecord::Base
     update_attribute(:calls_in_progress, false)
   end
 
-  def start
+  def start(user)
     return false if self.calls_in_progress? or (not self.account.activated?)
     return false if script.robo_recordings.size == 0
     Delayed::Job.enqueue BroadcastCampaignJob.new(self.id)
     update_attribute(:calls_in_progress, true)
-    UserMailer.new.notify_broadcast_start(self)
+    UserMailer.new.notify_broadcast_start(self,user)
   end
 
   def stop

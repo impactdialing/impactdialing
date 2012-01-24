@@ -14,21 +14,22 @@ module Client
 
     def new
       @script = Script.new(:robo => false, questions: [Question.new(possible_responses: [PossibleResponse.new])])
-      @voter_fields = ["CustomID","FirstName","MiddleName","LastName","Suffix","Age","Gender","Phone","Email"]
+      @voter_fields = Voter.upload_fields
       @voter_fields.concat(@user.account.custom_voter_fields.collect{ |field| field.name})
       @voter_field_values=[]
     end
 
     def create
       params[:script][:voter_fields] =  params[:voter_field] ? params[:voter_field].to_json : nil
-      @script = Script.new(params[:script])  
-      @voter_field_values = params[:voter_fields] || []
+      @script = Script.new(params[:script])
+      @voter_fields = Voter.upload_fields
+      @voter_field_values = params[:voter_field] || []
       if @script.save
         @user.account.scripts << @script
         flash_message(:notice, "Script saved")
-        redirect_to :action=>"index"          
+        redirect_to :action=>"index"
       else
-        render :action=>"new"   
+        render :action=>"new"
       end
     end
 
@@ -47,23 +48,23 @@ module Client
         @voter_field_values=[]
       end
     end
-    
+
     def update
-      params[:script][:voter_fields] =  params[:voter_field] ? params[:voter_field].to_json : nil 
+      params[:script][:voter_fields] =  params[:voter_field] ? params[:voter_field].to_json : nil
       begin
         params[:save_as] ? save_as : @script = account.scripts.find_by_id(params[:id])
-        
-        if params[:save_as] 
+
+        if params[:save_as]
           redirect_to client_script_path(@script)
         elsif !params[:save_as] && @script.update_attributes(params[:script])
           flash_message(:notice, "Script updated")
-          redirect_to :action=>"index"        
+          redirect_to :action=>"index"
         else
-          render :action=>"new"   
+          render :action=>"new"
         end
-      rescue Exception => e 
+      rescue Exception => e
         flash_message(:notice, "Script not saved. Error:" + e.message)
-        render :action=>"new"   
+        render :action=>"new"
       end
     end
 
@@ -73,9 +74,9 @@ module Client
       flash_message(:notice, "Script deleted")
       redirect_to :action => "index"
     end
-    
+
     private
-    
+
     def save_as
       puts params[:script][:questions_attributes]
       @script = Script.new(:name => "", :active => true, :account => @user.account, :script => params[:script][:script], :voter_fields => params[:script][:voter_fields])
@@ -100,6 +101,6 @@ module Client
         end
       end
     end
-    
+
   end
 end

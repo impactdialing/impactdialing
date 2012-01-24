@@ -35,6 +35,7 @@ function update_caller_row(data){
 }
 
 function update_campaign_row(data){
+
 	var campaign_selector = 'tr#campaign_'+data.campaign_fields.id;
 	if($(campaign_selector).length == 0){
     var campaign = ich.campaign(data);
