@@ -348,6 +348,13 @@ describe Campaign do
     campaign.errors[:base].should == ['Your Caller ID must be a valid 10-digit phone number.']
     campaign.errors[:caller_id].should == []
   end
+  
+  it 'return validation error, when callers are login and try to change dialing mode' do
+    campaign = Campaign.create!(:name => 'Titled', :caller_id => '0123456789', :account => Factory(:account), :predictive_type =>Campaign::Type::PREVIEW)
+    campaign.caller_sessions.create!(:on_call => true)
+    campaign.update_attributes(:predictive_type => Campaign::Type::PROGRESSIVE).should be_false
+    campaign.errors[:base].should == ['You cannot change dialing modes while callers are logged in.']
+  end
 
   it "is_phones_only_and_preview_or_progressive? is true if is_phones_only and campaign type is preview or progressive" do
     preview_campaign = Factory(:campaign, :predictive_type => Campaign::Type::PREVIEW)

@@ -2,6 +2,7 @@ require Rails.root.join("lib/twilio_lib")
 
 class Campaign < ActiveRecord::Base
   include Deletable
+  
   has_many :caller_sessions
   has_many :voter_lists, :conditions => {:active => true}
   has_many :all_voters, :class_name => 'Voter'
@@ -31,6 +32,7 @@ class Campaign < ActiveRecord::Base
   validates :caller_id, :presence => {:on => :update}, :numericality => {:on => :update}, :length => {:on => :update, :minimum => 10, :maximum => 10}
   validate :set_caller_id_error_msg
   validate :check_answering_machine_detect_and_leave_voice_mail
+  validate :predictive_type_change
   cattr_reader :per_page
   @@per_page = 25
 
@@ -50,10 +52,16 @@ class Campaign < ActiveRecord::Base
       errors[:caller_id].clear
     end
   end
-
+  
   def check_answering_machine_detect_and_leave_voice_mail
     if (answering_machine_detect == false) && (use_recordings == true)
       errors.add(:base, 'Please select \'Automatically detect voicemails(required for leaving messages)\'')
+    end
+  end
+  
+  def predictive_type_change
+    if predictive_type_changed? && callers_log_in?
+      errors.add(:base, 'You cannot change dialing modes while callers are logged in.')
     end
   end
 
