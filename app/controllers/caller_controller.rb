@@ -61,6 +61,7 @@ class CallerController < ApplicationController
   end
 
   def gather_response
+    start_time = Time.now
     caller = Caller.find(params[:id])
     caller_session = caller.caller_sessions.find(params[:session_id])
     question = Question.find_by_id(params[:question_id])
