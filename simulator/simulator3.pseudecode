@@ -76,7 +76,7 @@ while j < increment
 
     for each element in active_dials
 
-      if the elapsed time = its length
+      if its counter = the dial length
 
         if its outcome is “answered”
 
@@ -142,6 +142,8 @@ while j < increment
 
       best_conversation = expected_conversation
 
+      best_wrapup = expected_wrapup
+
     end
 
   end
@@ -158,12 +160,14 @@ while j < increment
 
     increment expected_wrapup by ( longest_wrapup / 10 )
 
+  increment j
+
 end
 
   dials_needed = best_dials
 
   expected_conversation = best_conversation
 
-  increment j
+  increment i
 
 end
