@@ -26,6 +26,14 @@ function forming_select_tag(data){
 	return select_tag;
 }
 
+function update_caller_row(data){
+  var caller_selector = 'tr#caller_'+data.caller_session_id;
+  if($(caller_selector).find('.assign_campaign').val() != data.campaign_fields.id){
+    $(caller_selector).find('.assign_campaign :selected').removeAttr('selected');
+    $(caller_selector).find('.assign_campaign option[value="'+data.campaign_fields.id+'"]').attr('selected','selected')
+  }
+}
+
 function update_campaign_row(data){
 	var campaign_selector = 'tr#campaign_'+data.campaign_fields.id;
 	if($(campaign_selector).length == 0){
@@ -138,6 +146,7 @@ function subscribe_and_bind_events_monitoring(session_id){
 	channel.bind('caller_re_assigned_to_campaign', function(data){
 		if (!$.isEmptyObject(data)){
 			var caller_selector = 'tr#caller_'+data.caller_session_id;
+			update_caller_row(data)
 			update_campaign_row(data);
 			update_old_campaign_row(data);
 			update_status_and_duration(caller_selector, "On hold");
