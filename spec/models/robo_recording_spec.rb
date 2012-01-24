@@ -2,10 +2,25 @@ require "spec_helper"
 
 describe RoboRecording do
   include Rails.application.routes.url_helpers
+  
+  let(:script) { Factory(:script) }
+  let(:campaign) { Factory(:campaign, :script => script) }
+  
+  it "should return questions answered in a time range" do
+    now = Time.now
+    robo_recording = Factory(:robo_recording, :script => script)
+    recording_response = Factory(:recording_response, :robo_recording => robo_recording)
+    call_response1 = Factory(:call_response, :call_attempt => Factory(:call_attempt), campaign: campaign, :recording_response => recording_response, :robo_recording => robo_recording, :created_at => (now - 2.days))
+    call_response2 = Factory(:call_response, :call_attempt => Factory(:call_attempt), campaign: campaign, :recording_response => recording_response, :robo_recording => robo_recording, :created_at => (now - 1.days))
+    call_response3 = Factory(:call_response, :call_attempt => Factory(:call_attempt), campaign: campaign, :recording_response => recording_response, :robo_recording => robo_recording, :created_at => (now + 1.minute))
+    call_response4 = Factory(:call_response, :call_attempt => Factory(:call_attempt), campaign: campaign, :recording_response => recording_response, :robo_recording => robo_recording, :created_at => (now + 1.day))
+    robo_recording.answered_within(now, now + 1.day, campaign.id).should == [call_response3, call_response4]
+    robo_recording.answered_within(now + 2.days, now + 3.days, campaign.id).should == []
+    robo_recording.answered_within(now, now, campaign.id).should == [call_response3, call_response4]
+  end
 
   describe "next recording in the script" do
     it "return the next recording in the script" do
-      script = Factory(:script)
       recording1 = Factory(:robo_recording, :script => script)
       recording2 = Factory(:robo_recording, :script => script)
       recording3 = Factory(:robo_recording, :script => script)
@@ -14,7 +29,6 @@ describe RoboRecording do
     end
 
     it "returns nil for no existing next recording for this script" do
-      script = Factory(:script)
       recording1 = Factory(:robo_recording, :script => script)
       recording2 = Factory(:robo_recording, :script => script)
       recording3 = Factory(:robo_recording, :script => Factory(:script))

@@ -10,6 +10,7 @@ class Campaign < ActiveRecord::Base
   has_many :callers
   has_one :simulated_values
   has_many :answers
+  has_many :call_responses
   belongs_to :script
   belongs_to :account
   belongs_to :recording
@@ -608,6 +609,15 @@ class Campaign < ActiveRecord::Base
       result[question.text] = question.possible_responses.collect { |possible_response| possible_response.stats(from_date, to_date, total_answers, self.id) }
     end
     result
+  end
+  
+  def robo_answer_results(from_date, to_date)
+    result = Hash.new
+    script.robo_recordings.each do |robo_recording|
+      total_answers = robo_recording.answered_within(from_date, to_date, self.id).size
+      result[robo_recording.name] = robo_recording.recording_responses.collect { |recording_response| recording_response.stats(from_date, to_date, total_answers, self.id) }
+    end
+    result 
   end
 
   private
