@@ -19,6 +19,15 @@ describe CampaignsController do
     response.should redirect_to campaign_path(user.account.campaigns.last)
   end
 
+  it "creates a new robo campaign with the first active robo script by default" do
+    deleted_script = Factory(:script, :account => user.account, :robo => true, :active => false)
+    active_script = Factory(:script, :account => user.account, :robo => true, :active => true)
+    lambda {
+      post :create, :caller_id => '0123456789'
+    }.should change(user.account.campaigns.active.robo, :size).by(1)
+    user.account.campaigns.active.robo.last.script.should == active_script
+  end
+
   it "lists robo campaigns" do
     robo_campaign = Factory(:campaign, :account => user.account, :robo => true)
     manual_campaign = Factory(:campaign, :account => user.account, :robo => false)
@@ -39,17 +48,20 @@ describe CampaignsController do
   end
 
   describe "update a campaign" do
-    let(:campaign) { Factory(:campaign, :account => user.account) }
+    let(:default_script){ Factory(:script, :account => user.account, :robo => true, :active => true)}
+    let(:campaign) { Factory(:campaign, :account => user.account, :script => default_script) }
 
     it "updates the campaign attributes" do
-      post :update, :id => campaign.id, :campaign => {:name => "an impactful campaign"}
+      new_script = Factory(:script, :account => user.account, :robo => true, :active => true)
+      post :update, :id => campaign.id, :campaign => {:name => "an impactful campaign", :script => new_script}
       campaign.reload.name.should == "an impactful campaign"
+      campaign.reload.script.should == new_script
     end
 
-    it "assigns one of the scripts of the current user" do
-      script = Factory(:script, :account => user.account)
+    it "assigns first of the robo scripts of the current user" do
+      script = Factory(:script, :account => user.account, :robo => true, :active => true)
       post :update, :id => campaign.id, :campaign => {}
-      campaign.reload.script.should == script
+      campaign.reload.script.should == default_script
     end
 
     it "disables voters list which are not to be called" do
