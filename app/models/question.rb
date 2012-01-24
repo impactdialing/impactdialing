@@ -18,7 +18,7 @@ class Question < ActiveRecord::Base
 
   def read(caller_session)
     Twilio::Verb.new do |v|
-      v.gather(:timeout => 5, :action => gather_response_caller_url(caller_session.caller, :session_id => caller_session.id, :question_id => self, :host => Settings.host, :port => Settings.port), :method => "POST") do
+      v.gather(:timeout => 5, :finishOnKey=>"*", :action => gather_response_caller_url(caller_session.caller, :session_id => caller_session.id, :question_id => self, :host => Settings.host, :port => Settings.port), :method => "POST") do
         v.say self.text
         possible_responses.each do |response|
           v.say "press #{response.keypad} for #{response.value}"

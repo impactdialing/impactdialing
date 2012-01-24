@@ -49,7 +49,7 @@ describe Question do
       Factory(:possible_response, :question => question, :keypad => 2, :value => "response2")
 
       question.read(caller_session).should == Twilio::Verb.new do |v|
-        v.gather(:timeout => 5, :action => gather_response_caller_url(caller_session.caller, :session_id => caller_session.id, :question_id =>question, :host => Settings.host, :port => Settings.port), :method => "POST") do
+        v.gather(:timeout => 5, :finishOnKey => '*', :action => gather_response_caller_url(caller_session.caller, :session_id => caller_session.id, :question_id =>question, :host => Settings.host, :port => Settings.port), :method => "POST") do
           v.say question.text
           question.possible_responses.each do |pr|
             v.say "press #{pr.keypad} for #{pr.value}"
