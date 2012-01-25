@@ -1,3 +1,6 @@
+<% flash[:notice] = [flash[:notice]].flatten! %>
+<% flash[:error] = [flash[:error]].flatten! %>
+<% flash[:warning] = [flash[:warning]].flatten! %>
 <% if flash[:notice] and display.include? :notice %>
     <% flash[:notice].reverse.each do |message| %>
         <div class="msg msg-ok">
