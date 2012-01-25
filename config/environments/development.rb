@@ -21,6 +21,7 @@ ImpactDialing::Application.configure do
   PUSHER_APP_ID="6868"
   PUSHER_KEY="1e93714ff1e5907aa618"
   PUSHER_SECRET="26b438b5e27a3e84d59c"
+  TWILIO_ERROR = "http://status-impactdialing.heroku.com/twilio/error_development"
 
   # Settings specified here will take precedence over those in config/environment.rb
 

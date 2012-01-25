@@ -38,6 +38,10 @@ class CallAttempt < ActiveRecord::Base
   def duration_wrapped_up
     ((wrapup_time || Time.now) - (self.call_start || Time.now)).to_i
   end
+  
+  def time_to_wrapup
+    ((wrapup_time || Time.now) - (self.call_end || Time.now)).to_i
+  end
 
   def duration_rounded_up
     ((duration || 0) / 60.0).ceil
