@@ -35,9 +35,7 @@ class Voter < ActiveRecord::Base
   scope :answered_within, lambda { |from, to| where(:result_date => from.beginning_of_day..(to.end_of_day)) }
   scope :last_call_attempt_within, lambda { |from, to| where(:last_call_attempt_time => from..(to + 1.day)) }
   scope :priority_voters, :conditions => {:priority => "1", :status => 'not called'}
-  scope :for, lambda { |campaign_id| where(:campaign_id => campaign_id) }
-  scope :call_connected_within, lambda {|from_date, to_date, campaign_id| last_call_attempt_within(from_date, to_date).by_status(CallAttempt::Status::SUCCESS).for(campaign_id)}
-  
+
   before_validation :sanitize_phone
 
   cattr_reader :per_page
@@ -94,7 +92,7 @@ class Voter < ActiveRecord::Base
         self.campaign.caller_id,
         self.Phone,
         twilio_callback_url(callback_params),
-        'FallbackUrl' => TWILIO_ERROR,
+        'FallbackUrl' => twilio_report_error_url(callback_params),
         'StatusCallback' => twilio_call_ended_url(callback_params),
         'Timeout' => '20',
         'IfMachine' => 'Hangup'
@@ -114,7 +112,7 @@ class Voter < ActiveRecord::Base
   def dial_predictive
     call_attempt = new_call_attempt(self.campaign.predictive_type)
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    params = {'FallbackUrl' => TWILIO_ERROR,'StatusCallback' => end_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port), 'Timeout' => campaign.answering_machine_detect ? "30" : "15"}
+    params = {'StatusCallback' => end_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port), 'Timeout' => campaign.answering_machine_detect ? "30" : "15"}
     params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect
     response = Twilio::Call.make(campaign.caller_id, self.Phone, connect_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port), params)
     if response["TwilioResponse"]["RestException"]
@@ -189,7 +187,6 @@ class Voter < ActiveRecord::Base
   end
 
   def answer(question, response, recorded_by_caller = nil)
-    update_attribute(:result_date, Time.now)
     possible_response = question.possible_responses.where(:keypad => response).first
     self.answer_recorded_by = recorded_by_caller
     return unless possible_response
