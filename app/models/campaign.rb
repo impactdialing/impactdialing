@@ -606,7 +606,10 @@ class Campaign < ActiveRecord::Base
     result = Hash.new
     script.questions.each do |question|
       total_answers = question.answered_within(from_date, to_date, self.id).size
-      result[question.text] = question.possible_responses.collect { |possible_response| possible_response.stats(from_date, to_date, total_answers, self.id) }
+      total_answered_voters = Voter.call_connected_within(from_date, to_date, self.id).try(:size)
+      no_response_voters = total_answered_voters - total_answers
+      result[question.text] = question.possible_responses.collect { |possible_response| possible_response.stats(from_date, to_date, total_answered_voters, self.id) }
+      result[question.text] << {answer: "No response", number: no_response_voters, percentage:  total_answered_voters == 0 ? 0 : (no_response_voters * 100 / total_answered_voters)}
     end
     result
   end

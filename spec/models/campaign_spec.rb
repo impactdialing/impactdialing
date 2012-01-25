@@ -666,20 +666,26 @@ describe Campaign do
     voter_on_another_campaign.result.should == 'hello'
     voter_on_another_campaign.status.should == 'world'
   end
-
-  it "should give the final results of a campaign as a Hash" do
-    now = Time.now
-    script = Factory(:script)
-    campaign = Factory(:campaign, :script => script)
-    campaign2 = Factory(:campaign)
-    question1 = Factory(:question, :text => "hw are u", :script => script)
-    question2 = Factory(:question, :text => "wr r u", :script => script)
-    possible_response1 = Factory(:possible_response, :question => question1)
-    possible_response2 = Factory(:possible_response, :question => question1)
-    Factory(:answer, :voter => Factory(:voter, :campaign => campaign), campaign: campaign, :possible_response => possible_response1, :question => question1, :created_at => now)
-    Factory(:answer, :voter => Factory(:voter, :campaign => campaign), campaign: campaign,:possible_response => possible_response2, :question => question2, :created_at => now)
-    Factory(:answer, :voter => Factory(:voter, :campaign => campaign2), campaign: campaign2, :possible_response => possible_response2, :question => question2, :created_at => now)
-    campaign.answers_result(now, now).should == {"hw are u" => [{answer: "no_response", number: 1, percentage: 100}, {answer: "no_response", number: 1, percentage: 100}], "wr r u" => []}
+  describe "answers report" do
+    let(:script) { Factory(:script) }
+    let(:campaign) { Factory(:campaign, :script => script) }
+    it "should give the final results of a campaign as a Hash" do
+      now = Time.now
+      campaign2 = Factory(:campaign)
+      question1 = Factory(:question, :text => "hw are u", :script => script)
+      question2 = Factory(:question, :text => "wr r u", :script => script)
+      possible_response1 = Factory(:possible_response, :value => "fine", :question => question1)
+      possible_response2 = Factory(:possible_response, :value => "super", :question => question1)
+      voter1 = Factory(:voter,:last_call_attempt_time => now, :status => CallAttempt::Status::SUCCESS, :campaign => campaign)
+      voter2 = Factory(:voter,:last_call_attempt_time => now, :status => CallAttempt::Status::SUCCESS, :campaign => campaign)
+      voter3 = Factory(:voter,:last_call_attempt_time => now, :status => CallAttempt::Status::SUCCESS, :campaign => campaign)
+      voter4 = Factory(:voter,:last_call_attempt_time => now, :status => CallAttempt::Status::SUCCESS, :campaign => campaign)
+      Factory(:answer, :voter => voter2, campaign: campaign, :possible_response => possible_response1, :question => question1, :created_at => now)
+      Factory(:answer, :voter => voter3, campaign: campaign,:possible_response => possible_response2, :question => question1, :created_at => now)
+      another_campaign_answer = Factory(:answer, :voter => voter4, campaign: campaign2, :possible_response => possible_response2, :question => question2, :created_at => now)
+      campaign.answers_result(now, now).should == {"hw are u" => [{answer: possible_response1.value, number: 1, percentage: 25}, {answer: possible_response2.value, number: 1, percentage: 25},{answer: "No response", number: 2, percentage: 50}], "wr r u" => [{answer: "No response", number: 4, percentage: 100}]}
+    end
+    
   end
 
   describe "time period" do
