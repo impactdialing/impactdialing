@@ -29,6 +29,19 @@ describe Voter do
     success_voter = Factory(:voter, :campaign => campaign, :status=> CallAttempt::Status::SUCCESS)
     Voter.remaining_voters_count_for('campaign_id', campaign.id).should == 6
   end
+  
+  it "give all connected voters, within given limit" do
+    now = Time.now
+    campaign = Factory(:campaign)
+    time_exceeded_voter1 = Factory(:voter,:last_call_attempt_time => now, :status => CallAttempt::Status::SUCCESS, :campaign => campaign)
+    voter2 = Factory(:voter,:last_call_attempt_time => now-7.days, :status => CallAttempt::Status::SUCCESS, :campaign => campaign)
+    voter3 = Factory(:voter,:last_call_attempt_time => now-8.days, :status => CallAttempt::Status::SUCCESS, :campaign => campaign)
+    voter4 = Factory(:voter,:last_call_attempt_time => now-9.days, :status => CallAttempt::Status::SUCCESS, :campaign => campaign)
+    voter5 = Factory(:voter,:last_call_attempt_time => now-10.days, :status => CallAttempt::Status::SUCCESS, :campaign => campaign)
+    time_exceeded_voter6 = Factory(:voter,:last_call_attempt_time => now-11.days, :status => CallAttempt::Status::SUCCESS, :campaign => campaign)
+    wrong_status_voter7 = Factory(:voter,:last_call_attempt_time => now-6.days, :status => CallAttempt::Status::BUSY, :campaign => campaign)
+    Voter.call_connected_within(now-10.days, now-5.days, campaign.id).should == [voter2,voter3,voter4,voter5]
+  end
 
   it "lists voters not called" do
     voter1 = Factory(:voter, :campaign => Factory(:campaign), :status=> Voter::Status::NOTCALLED)

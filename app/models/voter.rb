@@ -35,7 +35,9 @@ class Voter < ActiveRecord::Base
   scope :answered_within, lambda { |from, to| where(:result_date => from.beginning_of_day..(to.end_of_day)) }
   scope :last_call_attempt_within, lambda { |from, to| where(:last_call_attempt_time => from..(to + 1.day)) }
   scope :priority_voters, :conditions => {:priority => "1", :status => 'not called'}
-
+  scope :for, lambda { |campaign_id| where(:campaign_id => campaign_id) }
+  scope :call_connected_within, lambda {|from_date, to_date, campaign_id| last_call_attempt_within(from_date, to_date).by_status(CallAttempt::Status::SUCCESS).for(campaign_id)}
+  
   before_validation :sanitize_phone
 
   cattr_reader :per_page
@@ -187,6 +189,7 @@ class Voter < ActiveRecord::Base
   end
 
   def answer(question, response, recorded_by_caller = nil)
+    update_attribute(:result_date, Time.now)
     possible_response = question.possible_responses.where(:keypad => response).first
     self.answer_recorded_by = recorded_by_caller
     return unless possible_response
