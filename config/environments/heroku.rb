@@ -11,6 +11,7 @@ ImpactDialing::Application.configure do
   PUSHER_KEY="6f37f3288a3762e60f94"
   PUSHER_SECRET="b9a1cfc2c1ab4b64ad03"
   MONITOR_TWILIO_APP_SID="APe95d3960a26f46e69697b6840149655b"
+  TWILIO_ERROR = "http://status-impactdialing.heroku.com/twilio/error_production"
 
   # Settings specified here will take precedence over those in config/environment.rb
 
