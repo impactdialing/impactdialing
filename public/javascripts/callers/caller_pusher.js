@@ -137,16 +137,22 @@ function send_voter_response_and_disconnect() {
 }
 
 function disconnect_caller() {
-    $.ajax({
-        url : "/caller/" + $("#caller").val() + "/stop_calling",
-        data : {session_id : $("#caller_session").val() },
-        type : "POST",
-        success : function(response) {
-            if (FlashDetect.installed && flash_supported())
-                $("#start_calling").show();
-            // pushes 'calling_voter'' event to browsers
-        }
-    })
+    var session_id = $("#caller_session").val();
+    if (session_id) {
+        $.ajax({
+            url : "/caller/" + $("#caller").val() + "/stop_calling",
+            data : {session_id : session_id },
+            type : "POST",
+            success : function(response) {
+                if (FlashDetect.installed && flash_supported())
+                    $("#start_calling").show();
+                // pushes 'calling_voter'' event to browsers
+            }
+        })
+    }else{
+        hide_all_actions();
+        $("#start_calling").show();
+    }
 }
 
 function disconnect_voter() {
