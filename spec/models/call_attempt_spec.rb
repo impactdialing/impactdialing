@@ -303,6 +303,24 @@ describe CallAttempt do
     end
   end
   
+  describe "capture voter response, when call disconnected unexpectedly" do
+    it "capture response as 'No response' for the questions which are not answered" do
+      script = Factory(:script)
+      campaign = Factory(:campaign, :script => script)
+      voter = Factory(:voter, :campaign => campaign)
+      question = Factory(:question, :script => script)
+      unanswered_question = Factory(:question, :script => script)
+      possible_response = Factory(:possible_response, :question => question, :value => "ok")
+      answer = Factory(:answer, :question => question, :campaign => campaign, :possible_response => possible_response, :voter => voter)
+      call_attempt = Factory(:call_attempt, :status => CallAttempt::Status::SUCCESS, :voter => voter, :campaign => campaign)
+      call_attempt.capture_answer_as_no_response 
+      question.possible_responses.count.should == 1
+      question.answers.count.should == 1
+      unanswered_question.possible_responses.count.should == 1
+      unanswered_question.answers.count.should == 1
+    end
+  end
+  
   describe "wrapup call_attempts" do
     it "should wrapup all call_attempts that are not" do
       caller = Factory(:caller)
