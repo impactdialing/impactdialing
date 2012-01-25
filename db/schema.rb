@@ -140,6 +140,7 @@ ActiveRecord::Schema.define(:version => 20120124130241) do
     t.float    "tPrice"
     t.integer  "attempt_in_progress"
     t.string   "session_key"
+    t.boolean  "ended"
   end
 
   add_index "caller_sessions", ["caller_id"], :name => "index_caller_sessions_on_caller_id"
