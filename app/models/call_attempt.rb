@@ -162,8 +162,7 @@ class CallAttempt < ActiveRecord::Base
   end
   
   def capture_answer_as_no_response
-    puts status
-    return unless (status == CallAttempt::Status::SUCCESS)
+    return if (connecttime == nil)
     voter.campaign.script.questions.not_answered_by(voter).try(:each) do |question|
       possible_response = question.possible_responses.find_by_value("No response") || question.possible_responses.create(:value => "No response")
       possible_response.answers.create(:question => question, :voter => voter, :campaign => campaign)
