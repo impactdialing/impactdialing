@@ -38,7 +38,7 @@ group :development, :test do
 end
 
 group :development do
-  gem 'mongrel', '~> 1.2.0.pre2'
+  gem 'thin'
   gem 'guard'
   gem 'guard-bundler'
   gem 'guard-rspec'
