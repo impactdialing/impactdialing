@@ -43,9 +43,9 @@ function get_session() {
                 set_session(json.caller_session.id);
                 subscribe(json.caller_session.session_key);
                 $("#callin_data").hide();
-				$('#start_calling').hide();
-				$('#stop_calling').show();
-                $("#called_in").show();          
+                $('#start_calling').hide();
+                $('#stop_calling').show();
+                $("#called_in").show();
                 get_voter();
             }
         }
@@ -75,27 +75,26 @@ function next_voter() {
 }
 
 function call_voter() {
-	console.log('called voter');
-	hide_all_actions();
+    console.log('called voter');
+    hide_all_actions();
     $.ajax({
         url : "/caller/" + $("#caller").val() + "/call_voter",
         data : {id : $("#caller").val(), voter_id : $("#current_voter").val(), session_id : $("#caller_session").val() },
         type : "POST",
-        success : function(response) {            
+        success : function(response) {
             // pushes 'calling_voter'' event to browsers
         }
     })
 }
 
 
-
 function schedule_for_later() {
     hide_all_actions();
     var date = $('#scheduled_date').val();
     var hours = $('select#callback_time_hours option:selected').val();
-	var minutes = $('select#callback_time_minutes option:selected').val();
-	var date_time = date + " "+ hours + ":" + minutes;
-    $.post("/call_attempts/"+$('#current_call_attempt').val(),
+    var minutes = $('select#callback_time_minutes option:selected').val();
+    var date_time = date + " " + hours + ":" + minutes;
+    $.post("/call_attempts/" + $('#current_call_attempt').val(),
         {_method: 'PUT', call_attempt : { scheduled_date : $('#scheduled_date').val()}},
         function(response) {
         }
@@ -103,15 +102,20 @@ function schedule_for_later() {
 }
 
 function send_voter_response() {
-	console.log('submit voter response')
+    console.log('submit voter response')
     $('#voter_responses').attr('action', "/call_attempts/" + $("#current_call_attempt").val() + "/voter_response");
-    $('#voter_id').val($("#current_voter").val())
+    var vid = $('#voter_id').val($("#current_voter").val())
     $('#voter_responses').submit(function() {
         $(this).ajaxSubmit({});
         return false;
     });
-    $("#voter_responses").trigger("submit");
-	$("#voter_responses").unbind("submit");
+    if (!vid) {
+        alert("voter context not found.")
+    } else {
+        $("#voter_responses").trigger("submit");
+        $("#voter_responses").unbind("submit");
+    }
+
 
 }
 
@@ -129,7 +133,7 @@ function send_voter_response_and_disconnect() {
         return false;
     });
     $("#voter_responses").trigger("submit");
-	$("#voter_responses").unbind("submit");
+    $("#voter_responses").unbind("submit");
 }
 
 function disconnect_caller() {
@@ -138,8 +142,8 @@ function disconnect_caller() {
         data : {session_id : $("#caller_session").val() },
         type : "POST",
         success : function(response) {
-			if (FlashDetect.installed && flash_supported())
-            	$("#start_calling").show();
+            if (FlashDetect.installed && flash_supported())
+                $("#start_calling").show();
             // pushes 'calling_voter'' event to browsers
         }
     })
@@ -185,42 +189,42 @@ function set_message(text) {
 }
 
 function collapse_scheduler() {
-	$('#schedule_callback').show();
+    $('#schedule_callback').show();
     $("#callback_info").hide();
 }
 
 function expand_scheduler() {
-	$('#schedule_callback').hide();
+    $('#schedule_callback').hide();
     $("#callback_info").show();
 }
 
-function ready_for_calls(data){
-	if (data.dialer && data.dialer.toLowerCase() == "progressive") {
-	  $("#stop_calling").show();
-	  call_voter();
+function ready_for_calls(data) {
+    if (data.dialer && data.dialer.toLowerCase() == "progressive") {
+        $("#stop_calling").show();
+        call_voter();
     }
     if (data.dialer && data.dialer.toLowerCase() == "preview") {
         $("#stop_calling").show();
         $("#skip_voter").show();
         $("#call_voter").show();
-    }	
+    }
 
 }
 
-function set_new_campaign_script(data){
-	$('#campaign').val(data.campaign_id);
-	$('#script').text(data.script);
+function set_new_campaign_script(data) {
+    $('#campaign').val(data.campaign_id);
+    $('#script').text(data.script);
 }
 
-function set_response_panel(data){
-	$.ajax({
-      url : "/caller/" + $("#caller").val() + "/new_campaign_response_panel",
-      data : {},
-      type : "POST",
-      success : function(response) {
-				$('#response_panel').replaceWith(response);
-      }
-  })	
+function set_response_panel(data) {
+    $.ajax({
+        url : "/caller/" + $("#caller").val() + "/new_campaign_response_panel",
+        data : {},
+        type : "POST",
+        success : function(response) {
+            $('#response_panel').replaceWith(response);
+        }
+    })
 }
 
 function subscribe(session_key) {
@@ -231,7 +235,7 @@ function subscribe(session_key) {
     channel.bind('caller_connected', function(data) {
         console.log('caller_connected' + data)
         hide_all_actions();
-		$('#browserTestContainer').hide();
+        $('#browserTestContainer').hide();
         $("#start_calling").hide();
         $("#callin_data").hide();
         hide_response_panel();
@@ -239,49 +243,47 @@ function subscribe(session_key) {
         if (!$.isEmptyObject(data.fields)) {
             set_message("Status: Ready for calls.");
             set_voter(data);
-	    	ready_for_calls(data)
+            ready_for_calls(data)
         } else {
-			$("#stop_calling").show();
+            $("#stop_calling").show();
             set_message("Status: There are no more numbers to call in this campaign.");
         }
     });
 
-	channel.bind('conference_started' , function(data){
-	    ready_for_calls(data)
-	});
+    channel.bind('conference_started', function(data) {
+        ready_for_calls(data)
+    });
 
 
     channel.bind('caller_connected_dialer', function(data) {
-		hide_all_actions();
-		$("#stop_calling").show();
-	});
+        hide_all_actions();
+        $("#stop_calling").show();
+    });
 
-	channel.bind('answered_by_machine', function(data){
-		if(data.dialer && data.dialer == 'preview'){
-			set_message("Status: Ready for calls.");
-		}
-	});
+    channel.bind('answered_by_machine', function(data) {
+        if (data.dialer && data.dialer == 'preview') {
+            set_message("Status: Ready for calls.");
+        }
+    });
 
-    channel.bind('voter_push', function(data) {        
-		set_message("Status: Ready for calls.");
-		set_voter(data);
+    channel.bind('voter_push', function(data) {
+        set_message("Status: Ready for calls.");
+        set_voter(data);
         $("#start_calling").hide();
     });
 
-    channel.bind('call_could_not_connect', function(data) {        
-		set_message("Status: Ready for calls.");
-		set_voter(data);
+    channel.bind('call_could_not_connect', function(data) {
+        set_message("Status: Ready for calls.");
+        set_voter(data);
         $("#start_calling").hide();
-		if ($.isEmptyObject(data.fields)) {
-			$("#stop_calling").show();
-			
-		}
-		else {
-    	  ready_for_calls(data);
-		}
+        if ($.isEmptyObject(data.fields)) {
+            $("#stop_calling").show();
+
+        }
+        else {
+            ready_for_calls(data);
+        }
     });
-
-
 
 
     channel.bind('voter_disconnected', function(data) {
@@ -293,14 +295,14 @@ function subscribe(session_key) {
     });
 
     channel.bind('voter_connected', function(data) {
-		set_call_attempt(data.attempt_id);
-		hide_all_actions();
-		if(data.dialer && data.dialer != 'preview') {
-	        set_voter(data.voter);	
-			set_message("Status: Connected.")
-		}
-		show_response_panel();
-		cleanup_previous_call_results();
+        set_call_attempt(data.attempt_id);
+        hide_all_actions();
+        if (data.dialer && data.dialer != 'preview') {
+            set_voter(data.voter);
+            set_message("Status: Connected.")
+        }
+        show_response_panel();
+        cleanup_previous_call_results();
         $("#hangup_call").show();
     });
 
@@ -316,8 +318,8 @@ function subscribe(session_key) {
         set_message('Status: Not connected.');
         $("#callin_data").show();
         hide_all_actions();
-		if (FlashDetect.installed && flash_supported())
-        	$("#start_calling").show();
+        if (FlashDetect.installed && flash_supported())
+            $("#start_calling").show();
     });
 
     channel.bind('waiting_for_result', function(data) {
@@ -326,39 +328,39 @@ function subscribe(session_key) {
         hide_all_actions();
         $("#submit_and_keep_call").show();
         $("#submit_and_stop_call").show();
-    });	
-    
-    channel.bind('no_voter_on_call', function(data){
-      $('status').text("Status: Waiting for caller to be connected.")
     });
 
-	channel.bind('predictive_successful_voter_response', function(data){
-	 clear_voter();
-	 hide_response_panel();
-   	 set_message("Status: Dialing.");
-	});
-	
-	channel.bind('caller_re_assigned_to_campaign', function(data){
-		
-		set_new_campaign_script(data);
-		set_response_panel(data);
-		clear_voter();
-		if (data.dialer && (data.dialer.toLowerCase() == "preview" || data.dialer.toLowerCase() == "progressive")) {
-			if (!$.isEmptyObject(data.fields)) {
-          set_message("Status: Ready for calls.");
-          set_voter(data);
-      } else {
-					$("#stop_calling").show();
-          set_message("Status: There are no more numbers to call in this campaign.");
-      }
+    channel.bind('no_voter_on_call', function(data) {
+        $('status').text("Status: Waiting for caller to be connected.")
+    });
 
-		}
-		else{
-			$("#stop_calling").show();
-		}
-		alert("You have been re-assigned to " + data.campaign_name+".");
-	
-	});
+    channel.bind('predictive_successful_voter_response', function(data) {
+        clear_voter();
+        hide_response_panel();
+        set_message("Status: Dialing.");
+    });
+
+    channel.bind('caller_re_assigned_to_campaign', function(data) {
+
+        set_new_campaign_script(data);
+        set_response_panel(data);
+        clear_voter();
+        if (data.dialer && (data.dialer.toLowerCase() == "preview" || data.dialer.toLowerCase() == "progressive")) {
+            if (!$.isEmptyObject(data.fields)) {
+                set_message("Status: Ready for calls.");
+                set_voter(data);
+            } else {
+                $("#stop_calling").show();
+                set_message("Status: There are no more numbers to call in this campaign.");
+            }
+
+        }
+        else {
+            $("#stop_calling").show();
+        }
+        alert("You have been re-assigned to " + data.campaign_name + ".");
+
+    });
 
     function set_call_attempt(id) {
         $("#current_call_attempt").val(id);
@@ -373,7 +375,7 @@ function subscribe(session_key) {
             hide_all_actions();
 
         } else {
-			clear_voter();
+            clear_voter();
             hide_all_actions();
             hide_response_panel();
             set_message("Status: There are no more numbers to call in this campaign.");
@@ -395,24 +397,24 @@ function subscribe(session_key) {
 
 
     function bind_voter(data) {
-        if(data.custom_fields){
-          var customList = []
-          $.each(data.custom_fields, function(item){ 
-            customList.push({name:item, value:data.custom_fields[item]});
-          });
-          $.extend(data, {custom_field_list: customList})
+        if (data.custom_fields) {
+            var customList = []
+            $.each(data.custom_fields, function(item) {
+                customList.push({name:item, value:data.custom_fields[item]});
+            });
+            $.extend(data, {custom_field_list: customList})
         }
-        
+
         var voter = ich.voter(data); //using ICanHaz a moustache. js like thingamagic
         $('#voter_info').empty();
         $('#voter_info').append(voter);
     }
 
-	function cleanup_previous_call_results(){
-		$("#response_panel select option:selected").attr('selected',false);
-		$('.note_text').val('');
-		$('#scheduled_date').val('')
-		collapse_scheduler();
-	}
+    function cleanup_previous_call_results() {
+        $("#response_panel select option:selected").attr('selected', false);
+        $('.note_text').val('');
+        $('#scheduled_date').val('')
+        collapse_scheduler();
+    }
 
 }
