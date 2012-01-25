@@ -44,4 +44,5 @@ ImpactDialing::Application.configure do
   TWILIO_ACCOUNT="blahblahblah"
   TWILIO_AUTH="blahblahblah"
   TWILIO_APP_SID="blahdahhahah"
+  TWILIO_ERROR = "blah"
 end

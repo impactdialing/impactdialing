@@ -137,7 +137,7 @@ describe Voter do
           voter.campaign.caller_id,
           voter.Phone,
           callback_url,
-          'FallbackUrl' => fallback_url,
+          "FallbackUrl"=>"blah",
           'StatusCallback' => callended_url,
           'Timeout' => '20',
           'IfMachine' => 'Hangup'
@@ -182,7 +182,7 @@ describe Voter do
 
     context 'making calls' do
       before(:each) do
-        Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
+        Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {"FallbackUrl"=>"blah", 'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
       end
 
       it "is dialed" do
@@ -215,14 +215,14 @@ describe Voter do
     end
 
     it "dials the voter and hangs up on answering machine when not using recordings" do
-      Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
+      Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {"FallbackUrl"=>"blah",'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
       campaign.use_recordings = false
       campaign.stub(:time_period_exceed?).and_return(false)
       voter.dial_predictive
     end
 
     it "dials the voter and continues on answering machine when using recordings" do
-      Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
+      Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {"FallbackUrl"=>"blah", 'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
       voter.campaign = campaign
       campaign.stub(:time_period_exceed?).and_return(false)
       voter.dial_predictive
@@ -231,7 +231,7 @@ describe Voter do
     it "dials the voter with the campaigns answer detection timeout" do
       campaign.use_recordings = true
       campaign.answer_detection_timeout = "10"
-      Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
+      Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {"FallbackUrl"=>"blah", 'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
       voter.campaign = campaign
       campaign.stub(:time_period_exceed?).and_return(false)
       voter.dial_predictive
@@ -239,7 +239,7 @@ describe Voter do
 
     it "dials the voter without IFMachine if AMD detection turned off" do
       campaign1 = Factory(:campaign, :robo => false, :predictive_type => 'algorithm1', answering_machine_detect: false)
-      Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {'StatusCallback'=> anything, 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
+      Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {"FallbackUrl"=>"blah", 'StatusCallback'=> anything, 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
       voter.campaign = campaign1
       campaign1.stub(:time_period_exceed?).and_return(false)
       voter.dial_predictive
