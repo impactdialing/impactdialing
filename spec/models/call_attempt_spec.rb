@@ -312,7 +312,7 @@ describe CallAttempt do
       unanswered_question = Factory(:question, :script => script)
       possible_response = Factory(:possible_response, :question => question, :value => "ok")
       answer = Factory(:answer, :question => question, :campaign => campaign, :possible_response => possible_response, :voter => voter)
-      call_attempt = Factory(:call_attempt, connecttime => Time.now, :status => CallAttempt::Status::SUCCESS, :voter => voter, :campaign => campaign)
+      call_attempt = Factory(:call_attempt, :connecttime => Time.now, :status => CallAttempt::Status::SUCCESS, :voter => voter, :campaign => campaign)
       call_attempt.capture_answer_as_no_response 
       question.possible_responses.count.should == 1
       question.answers.count.should == 1
