@@ -1,7 +1,7 @@
-<h1>Scripts</h1>
+<h1>Messages</h1>
 <% if @scripts.length==0 %>
   <div class="form">
-    <label>No scripts entered.</label>
+    <label>No messages entered.</label>
   </div>
 <% else %>
   <div class="table">
@@ -26,5 +26,5 @@
   <p><%= page_entries_info @scripts %> <%= will_paginate @scripts %></p>
 
 <% end %>
-<p class="actions"><%= link_to 'Add new script', new_script_path, :class => 'action primary' %></p>
-<p class="actions"><%= link_to 'View deleted scripts', client_deleted_scripts_path, :class => 'action secondary' %></p>
+<p class="actions"><%= link_to 'Add new message', new_script_path, :class => 'action primary' %></p>
+<p class="actions"><%= link_to 'View deleted messages', client_deleted_scripts_path, :class => 'action secondary' %></p>
