@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120124130241) do
+ActiveRecord::Schema.define(:version => 20120126100314) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -353,7 +353,7 @@ ActiveRecord::Schema.define(:version => 20120124130241) do
   create_table "scripts", :force => true do |t|
     t.string   "name"
     t.text     "script"
-    t.boolean  "active",        :default => true
+    t.boolean  "active",                              :default => true
     t.integer  "account_id"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -407,7 +407,7 @@ ActiveRecord::Schema.define(:version => 20120124130241) do
     t.text     "keypad_48"
     t.text     "keypad_49"
     t.string   "incompletes"
-    t.string   "voter_fields"
+    t.text     "voter_fields",  :limit => 2147483647
     t.text     "result_set_1"
     t.text     "result_set_2"
     t.text     "result_set_3"
@@ -428,7 +428,7 @@ ActiveRecord::Schema.define(:version => 20120124130241) do
     t.string   "note_8"
     t.string   "note_9"
     t.string   "note_10"
-    t.boolean  "robo",          :default => false
+    t.boolean  "robo",                                :default => false
     t.text     "result_set_11"
     t.text     "result_set_12"
     t.text     "result_set_13"
