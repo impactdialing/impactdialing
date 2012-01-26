@@ -485,13 +485,17 @@ class Campaign < ActiveRecord::Base
     simulated_values.nil? ? 0 : simulated_values.longest_conversation.nil? ? 0 : simulated_values.longest_conversation
   end
   
+  def best_wrapup_simulated
+    simulated_values.nil? ? 0 : simulated_values.best_wrapup_time.nil? ? 0 : simulated_values.best_wrapup_time
+  end
+  
+  
+  
   def num_to_call_predictive_simulate
     dials_made = call_attempts.between(10.minutes.ago, Time.now)
     calls_wrapping_up = dials_made.with_status(CallAttempt::Status::SUCCESS).not_wrapped_up
     active_call_attempts = dials_made.with_status(CallAttempt::Status::INPROGRESS)
-    active_call_attempts.concat(calls_wrapping_up) unless calls_wrapping_up.empty?            
-    available_callers = caller_sessions.available.size +
-        active_call_attempts.select { |call_attempt| ((call_attempt.duration_wrapped_up > best_conversation_simulated) && (call_attempt.duration_wrapped_up < longest_conversation_simulated))}.size 
+    available_callers = caller_sessions.available.size + active_call_attempts.select { |call_attempt| ((call_attempt.duration_wrapped_up > best_conversation_simulated) && (call_attempt.duration_wrapped_up < longest_conversation_simulated))}.size + calls_wrapping_up.select{|wrapping_up_call| wrapping_up_call.time_to_wrapup > best_wrapup_simulated}.size
     ringing_lines = dials_made.with_status(CallAttempt::Status::RINGING).size
     dials_to_make = (best_dials_simulated * available_callers) - ringing_lines
     dials_to_make.to_i
@@ -513,8 +517,8 @@ class Campaign < ActiveRecord::Base
     return false if self.calls_in_progress? or (not self.account.activated?)
     return false if script.robo_recordings.size == 0
     Delayed::Job.enqueue BroadcastCampaignJob.new(self.id)
-    update_attribute(:calls_in_progress, true)
-    UserMailer.new.notify_broadcast_start(self,user)
+    UserMailer.new.notify_broadcast_start(self,user) if Rails.env == 'heroku'
+    update_attribute(:calls_in_progress, true)    
   end
 
   def stop

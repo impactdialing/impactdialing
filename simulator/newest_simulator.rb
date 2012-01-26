@@ -87,7 +87,7 @@ def simulator_campaign_base_values(campaign_id, start_time)
   puts "Observed Dials: #{observed_dials.length}"
   puts "Answered Observed Dials: #{observed_dials.count(&:answered?)}"
   
-  [expected_conversation, longest_conversation, best_conversation, expected_wrapup_time, longest_wrapup_time, best_wrapup_time, caller_statuses, observed_conversations, observed_dials]
+  [expected_conversation, longest_conversation, best_conversation, mean_conversation, expected_wrapup_time, longest_wrapup_time, best_wrapup_time, caller_statuses, observed_conversations, observed_dials]
   
 end
 
@@ -98,14 +98,21 @@ def simulate(campaign_id)
   abandon_count = 0
   dials_needed = 1
   best_dials = 1  
-  best_utilization = 0
   increment = 10.0
   outer_loop = 0
   inner_loop = 0
   
-  expected_conversation, longest_conversation, best_conversation, expected_wrapup_time, longest_wrapup_time, best_wrapup_time, caller_statuses, observed_conversations, observed_dials =  simulator_campaign_base_values(campaign_id, start_time)
+  expected_conversation, longest_conversation, best_conversation, mean_conversation, expected_wrapup_time, longest_wrapup_time, best_wrapup_time, caller_statuses, observed_conversations, observed_dials =  simulator_campaign_base_values(campaign_id, start_time)
   
   while outer_loop < 3
+    best_utilization = 0
+    if outer_loop == 1
+      expected_conversation = mean_conversation
+    end
+    
+    if outer_loop == 2
+      expected_wrapup_time = 0
+    end        
     
     while inner_loop < increment
       idle_time = active_time = 0.0 
@@ -174,13 +181,14 @@ def simulate(campaign_id)
    
      finished_conversations_answered_count = finished_conversations.count(&:answered?)
      simulated_abandonment = abandon_count / (finished_conversations_answered_count == 0 ? 1 : finished_conversations_answered_count)
-     if simulated_abandonment <= target_abandonment
      
+     if simulated_abandonment <= target_abandonment     
        utilization = active_time / ( active_time + idle_time )     
        if utilization > best_utilization
-         best_dials = dials_needed
-         best_conversation = expected_conversation
-         best_wrapup_time = expected_wrapup_time
+         best_utilization = utilization
+         best_dials = dials_needed if outer_loop == 0
+         best_conversation = expected_conversation if outer_loop == 1
+         best_wrapup_time = expected_wrapup_time if outer_loop == 2
        end
      end   
 
@@ -196,7 +204,7 @@ def simulate(campaign_id)
     end
   
     if outer_loop == 2
-      expected_wrapup_time += (longest_wrapup_time/10)
+      expected_wrapup_time += (longest_wrapup_time/increment)
     end
     
     inner_loop += 1
@@ -209,24 +217,24 @@ def simulate(campaign_id)
  puts "Best Dials: #{best_dials}"
  puts "Best Conversation: #{best_conversation}"
  puts "Longest Conversation: #{longest_conversation}"
- # SimulatedValues.find_or_create_by_campaign_id(campaign_id).update_attributes(best_dials: best_dials, best_conversation: best_conversation, longest_conversation: longest_conversation)
+ SimulatedValues.find_or_create_by_campaign_id(campaign_id).update_attributes(best_dials: best_dials, best_conversation: best_conversation, longest_conversation: longest_conversation, best_wrapup_time: best_wrapup_time)
 end 
 
-# loop do
-#   begin
-#     logged_in_campaigns = ActiveRecord::Base.connection.execute("select distinct campaign_id from caller_sessions where on_call=1")
-#     logged_in_campaigns.each do |k|     
-#       puts "Simulating #{k.first}"
-#       campaign = Campaign.find(k.first)      
-#       simulate(k.first) if campaign.predictive_type == Campaign::Type::PREDICTIVE
-#     end
-#     sleep 3
-#   rescue Exception => e
-#     if e.class == SystemExit || e.class == Interrupt
-#       ActiveRecord::Base.logger.info "============ EXITING  ============"
-#       exit
-#     end
-#     ActiveRecord::Base.logger.info "Rescued - #{ e } (#{ e.class })!"
-#     ActiveRecord::Base.logger.info e.backtrace
-#   end
-# end
+loop do
+  begin
+    logged_in_campaigns = ActiveRecord::Base.connection.execute("select distinct campaign_id from caller_sessions where on_call=1")
+    logged_in_campaigns.each do |k|     
+      puts "Simulating #{k.first}"
+      campaign = Campaign.find(k.first)      
+      simulate(k.first) if campaign.predictive_type == Campaign::Type::PREDICTIVE
+    end
+    sleep 3
+  rescue Exception => e
+    if e.class == SystemExit || e.class == Interrupt
+      ActiveRecord::Base.logger.info "============ EXITING  ============"
+      exit
+    end
+    ActiveRecord::Base.logger.info "Rescued - #{ e } (#{ e.class })!"
+    ActiveRecord::Base.logger.info e.backtrace
+  end
+end
