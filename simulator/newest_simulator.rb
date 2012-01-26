@@ -217,24 +217,24 @@ def simulate(campaign_id)
  puts "Best Dials: #{best_dials}"
  puts "Best Conversation: #{best_conversation}"
  puts "Longest Conversation: #{longest_conversation}"
- # SimulatedValues.find_or_create_by_campaign_id(campaign_id).update_attributes(best_dials: best_dials, best_conversation: best_conversation, longest_conversation: longest_conversation)
+ SimulatedValues.find_or_create_by_campaign_id(campaign_id).update_attributes(best_dials: best_dials, best_conversation: best_conversation, longest_conversation: longest_conversation, best_wrapup_time: best_wrapup_time)
 end 
 
-# loop do
-#   begin
-#     logged_in_campaigns = ActiveRecord::Base.connection.execute("select distinct campaign_id from caller_sessions where on_call=1")
-#     logged_in_campaigns.each do |k|     
-#       puts "Simulating #{k.first}"
-#       campaign = Campaign.find(k.first)      
-#       simulate(k.first) if campaign.predictive_type == Campaign::Type::PREDICTIVE
-#     end
-#     sleep 3
-#   rescue Exception => e
-#     if e.class == SystemExit || e.class == Interrupt
-#       ActiveRecord::Base.logger.info "============ EXITING  ============"
-#       exit
-#     end
-#     ActiveRecord::Base.logger.info "Rescued - #{ e } (#{ e.class })!"
-#     ActiveRecord::Base.logger.info e.backtrace
-#   end
-# end
+loop do
+  begin
+    logged_in_campaigns = ActiveRecord::Base.connection.execute("select distinct campaign_id from caller_sessions where on_call=1")
+    logged_in_campaigns.each do |k|     
+      puts "Simulating #{k.first}"
+      campaign = Campaign.find(k.first)      
+      simulate(k.first) if campaign.predictive_type == Campaign::Type::PREDICTIVE
+    end
+    sleep 3
+  rescue Exception => e
+    if e.class == SystemExit || e.class == Interrupt
+      ActiveRecord::Base.logger.info "============ EXITING  ============"
+      exit
+    end
+    ActiveRecord::Base.logger.info "Rescued - #{ e } (#{ e.class })!"
+    ActiveRecord::Base.logger.info e.backtrace
+  end
+end
