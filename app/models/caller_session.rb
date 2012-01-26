@@ -193,6 +193,7 @@ class CallerSession < ActiveRecord::Base
     Moderator.publish_event(campaign, "caller_disconnected",{:caller_session_id => id, :caller_id => caller.id, :campaign_id => campaign.id, :campaign_active => campaign.callers_log_in?,
             :no_of_callers_logged_in => campaign.caller_sessions.on_call.length})
     attempt_in_progress.try(:update_attributes, {:wrapup_time => Time.now})
+    attempt_in_progress.try(:capture_answer_as_no_response)
     self.publish("caller_disconnected", {source: "end_call"})
     Twilio::Verb.hangup
   end

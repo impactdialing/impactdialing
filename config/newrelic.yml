@@ -17,3 +17,8 @@ heroku:
     transaction_threshold: apdex_f
   capture_params: false
   log_level: info
+  background:
+    monitor_mode: true
+    app_name: 'Background Jobs'
+    transaction_tracer:
+        enabled: false
