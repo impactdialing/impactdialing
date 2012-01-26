@@ -39,7 +39,7 @@ module Client
       @voter_fields.concat(@user.account.custom_voter_fields.collect{ |field| field.name})
       if @script.voter_fields!=nil
         begin
-          @voter_field_values = eval(@script.voter_fields)
+          @voter_field_values = JSON.parse(@script.voter_fields)
         rescue
           @voter_field_values=[]
         end
