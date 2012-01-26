@@ -10,6 +10,9 @@ class RoboRecording < ActiveRecord::Base
   accepts_nested_attributes_for :recording_responses, :allow_destroy => true
   has_many :call_responses
   before_post_process :set_content_type
+  
+  scope :responded_by, lambda { |voter| joins(:call_responses).where("call_responses.call_attempt_id = ?", voter.last_call_attempt.id) }
+  scope :not_responded_by, lambda { |voter| order("id ASC").where("robo_recordings.id not in (?)", RoboRecording.responded_by(voter).collect(&:id) + [-1]) }
 
   validates_presence_of :name, :message => "Please name your recording."
   validates_attachment_content_type :file, :content_type => ['audio/mpeg', 'audio/wav', 'audio/wave', 'audio/x-wav', 'audio/aiff', 'audio/x-aifc', 'audio/x-aiff', 'audio/x-gsm', 'audio/gsm', 'audio/ulaw']

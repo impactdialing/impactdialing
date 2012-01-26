@@ -5,6 +5,9 @@ describe RoboRecording do
   
   let(:script) { Factory(:script) }
   let(:campaign) { Factory(:campaign, :script => script) }
+  let(:call_attempt) { Factory(:call_attempt)}
+  let(:voter) { Factory(:voter, :campaign => campaign, :last_call_attempt => call_attempt) }
+
   
   it "should return questions answered in a time range" do
     now = Time.now
@@ -17,6 +20,19 @@ describe RoboRecording do
     robo_recording.answered_within(now, now + 1.day, campaign.id).should == [call_response3, call_response4]
     robo_recording.answered_within(now + 2.days, now + 3.days, campaign.id).should == []
     robo_recording.answered_within(now, now, campaign.id).should == [call_response3, call_response4]
+  end
+  
+  it "returns robo_recordings answered by a voter" do
+    responded_recording = Factory(:robo_recording, :script => script, :name => "Q1?")
+    pending_recording = Factory(:robo_recording, :script => script, :name => "Q2?")
+    Factory(:call_response, :call_attempt => call_attempt, :recording_response => Factory(:recording_response), :robo_recording => responded_recording, :created_at => (Time.now - 2.days))
+    RoboRecording.responded_by(voter).should == [responded_recording]
+  end
+
+  it "returns all robo_recordings, which are not responded by voter" do
+    r1 = Factory(:robo_recording, :script => script, :name => "Q1?")
+    r2 = Factory(:robo_recording, :script => script, :name => "Q2?")
+    script.robo_recordings.not_responded_by(voter).should == [r1, r2]
   end
 
   describe "next recording in the script" do

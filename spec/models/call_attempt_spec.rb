@@ -304,7 +304,7 @@ describe CallAttempt do
   end
   
   describe "capture voter response, when call disconnected unexpectedly" do
-    it "capture response as 'No response' for the questions which are not answered" do
+    it "capture response as 'No response' for the questions, which are not answered" do
       script = Factory(:script)
       campaign = Factory(:campaign, :script => script)
       voter = Factory(:voter, :campaign => campaign)
@@ -318,6 +318,24 @@ describe CallAttempt do
       question.answers.count.should == 1
       unanswered_question.possible_responses.count.should == 1
       unanswered_question.answers.count.should == 1
+    end
+    
+    it "capture response as 'No response' for the robo_recordings, for which voter not responded" do
+      script = Factory(:script)
+      campaign = Factory(:campaign, :script => script)
+      voter = Factory(:voter, :campaign => campaign)
+      call_attempt = Factory(:call_attempt, :status => CallAttempt::Status::SUCCESS, :campaign => campaign, :voter => voter)
+      voter.update_attribute(:last_call_attempt, call_attempt)
+      robo_recording = Factory(:robo_recording, :script => script)
+      not_respond_robo_recording = Factory(:robo_recording, :script => script)
+      recording_response = Factory(:recording_response, :robo_recording => robo_recording, :response => "ok")
+      call_response = Factory(:call_response, :robo_recording => robo_recording, :campaign => campaign, :recording_response => recording_response, :call_attempt => call_attempt)
+      
+      call_attempt.capture_answer_as_no_response_for_robo 
+      robo_recording.recording_responses.count.should == 1
+      robo_recording.call_responses.count.should == 1
+      not_respond_robo_recording.recording_responses.count.should == 1
+      not_respond_robo_recording.call_responses.count.should == 1
     end
   end
   
