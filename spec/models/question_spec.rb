@@ -52,15 +52,30 @@ describe Question do
         v.gather(:timeout => 5, :finishOnKey => '*', :action => gather_response_caller_url(caller_session.caller, :session_id => caller_session.id, :question_id =>question, :host => Settings.host, :port => Settings.port), :method => "POST") do
           v.say question.text
           question.possible_responses.each do |pr|
-            v.say "press #{pr.keypad} for #{pr.value}"
+            v.say "press #{pr.keypad} for #{pr.value}" unless (pr.value == "[No response]")
           end
           v.say I18n.t(:submit_results)
         end
         v.redirect(gather_response_caller_url(caller_session.caller, :session_id => caller_session.id, :question_id =>question, :host => Settings.host, :port => Settings.port), :method => "POST")
       end.response
     end
-
+    
+    it "doesn't read [No response] as response for question" do
+      Factory(:possible_response, :question => question, :keypad => 1, :value => "response1")
+      Factory(:possible_response, :question => question, :keypad => 2, :value => "[No response]")
+      
+      question.read(caller_session).should == Twilio::Verb.new do |v|
+        v.gather(:timeout => 5, :finishOnKey => '*', :action => gather_response_caller_url(caller_session.caller, :session_id => caller_session.id, :question_id =>question, :host => Settings.host, :port => Settings.port), :method => "POST") do
+          v.say question.text
+          question.possible_responses.each do |pr|
+            v.say "press #{pr.keypad} for #{pr.value}" unless (pr.value == "[No response]")
+          end
+          v.say I18n.t(:submit_results)
+        end
+        v.redirect(gather_response_caller_url(caller_session.caller, :session_id => caller_session.id, :question_id =>question, :host => Settings.host, :port => Settings.port), :method => "POST")
+      end.response
+      
+    end
   end
-
 
 end

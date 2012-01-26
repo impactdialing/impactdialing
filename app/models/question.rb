@@ -21,7 +21,7 @@ class Question < ActiveRecord::Base
       v.gather(:timeout => 5, :finishOnKey=>"*", :action => gather_response_caller_url(caller_session.caller, :session_id => caller_session.id, :question_id => self, :host => Settings.host, :port => Settings.port), :method => "POST") do
         v.say self.text
         possible_responses.each do |response|
-          v.say "press #{response.keypad} for #{response.value}"
+          v.say "press #{response.keypad} for #{response.value}" unless (response.value == "[No response]")
         end
         v.say I18n.t(:submit_results)
       end
