@@ -168,6 +168,14 @@ class CallAttempt < ActiveRecord::Base
       possible_response.answers.create(:question => question, :voter => voter, :campaign => campaign)
     end
   end
+  
+  def capture_answer_as_no_response_for_robo
+    campaign.script.robo_recordings.not_responded_by(voter).try(:each) do |robo_recording|
+      recording_response = robo_recording.recording_responses.find_by_response("[No response]") || robo_recording.recording_responses.create(:response => "[No response]", :keypad =>10)
+      puts recording_response
+      recording_response.call_responses.create(:robo_recording => robo_recording, :call_attempt => self, :campaign => campaign)
+    end
+  end
 
   module Status
     VOICEMAIL = 'Message delivered'
