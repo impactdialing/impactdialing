@@ -18,8 +18,9 @@ ActiveRecord::Schema.define(:version => 20120124130241) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "domain"
-    t.boolean  "activated",     :default => false
-    t.boolean  "record_calls",  :default => false
+    t.boolean  "activated",            :default => false
+    t.boolean  "record_calls",         :default => false
+    t.integer  "chargify_customer_id"
   end
 
   create_table "answers", :force => true do |t|
