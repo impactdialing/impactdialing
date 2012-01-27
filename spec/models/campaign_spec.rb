@@ -8,7 +8,7 @@ describe "predictive_dialer" do
      campaign = Factory(:campaign, :calls_in_progress => false, :predictive_type => 'predictive')
      campaign.should_receive(:dial_predictive_voters)
      campaign.predictive_dial
-   end
+  end
  
    it "determines the campaign dial strategy" do
      Factory(:campaign, :predictive_type => 'predictive').should_not be_ratio_dial
@@ -27,7 +27,6 @@ describe "predictive_dialer" do
      campaign.determine_pool_size(0).should == campaign.call_stats(10)[:dials_needed]
    end
  
-   it "should add callers with calls over the long threshold to the dial pool"
  
    it "should properly choose the next voters to dial" do
      account = Factory(:account, :activated => true)
@@ -122,13 +121,9 @@ describe "predictive_dialer" do
  
    #canned scenarios where we back into / prove our new calls / max calls
  
- end
+
  
- describe "ratio_dialer" do
-   it "should get the dial ratio based on predictive type"
-   it "should set the dial ratio to 2 if no recent calls have been answered"
- end
- 
+end 
  describe "simulation_dialer" do
  
    it "should dial one line per caller if no calls have been made in the last ten minutes" do
@@ -176,7 +171,7 @@ describe "predictive_dialer" do
       3.times { Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true) }
       calls_to_make = campaign.num_to_call_predictive_simulate
       calls_to_make.should eq(3)
-    end
+  end
   
     it "should determine calls to make when no simulated values" do
       campaign = Factory(:campaign)
@@ -329,12 +324,7 @@ describe "predictive_dialer" do
       campaign_2.dials_needed.should==campaign.predictive_alpha/2
   
     end
-  end
-
-  it "chooses dial strategey"
-  it "determines ringing lines" #need to track this by updating a flag when call is answered
-
-end
+ end
 
 describe Campaign do
 
@@ -703,7 +693,7 @@ describe Campaign do
   describe "time period" do
     before(:each) do
       @campaign = Factory(:campaign, :start_time => Time.new(2011, 1, 1, 9, 0, 0), :end_time => Time.new(2011, 1, 1, 21, 0, 0), :time_zone =>"Pacific Time (US & Canada)")
-  
+    end
     it "clears calls" do
       campaign = Factory(:campaign)
       voters = 3.times.map { Factory(:voter, :campaign => campaign, :result => 'foo', :status => 'bar') }
@@ -733,6 +723,7 @@ describe Campaign do
       Factory(:answer, :voter => Factory(:voter, :campaign => campaign2), campaign: campaign2, :possible_response => possible_response2, :question => question2, :created_at => now)
       campaign.answers_result(now, now).should == {"hw are u" => [{answer: possible_response1.value, number: 1, percentage: 33}, {answer: possible_response2.value, number: 1, percentage: 33}, {answer: possible_response3.value, number: 1, percentage: 33}], "wr r u" => [{answer: "[No response]", number: 0, percentage: 0}]}
     end
+  end
   
     describe "time period" do
       before(:each) do

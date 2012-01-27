@@ -13,14 +13,14 @@
 
 ActiveRecord::Schema.define(:version => 20120126100314) do
 
-
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "domain"
-    t.boolean  "activated",     :default => false
-    t.boolean  "record_calls",  :default => false
+    t.boolean  "activated",            :default => false
+    t.boolean  "record_calls",         :default => false
+    t.integer  "chargify_customer_id"
   end
 
   create_table "answers", :force => true do |t|
@@ -110,6 +110,7 @@ ActiveRecord::Schema.define(:version => 20120126100314) do
     t.datetime "updated_at"
     t.integer  "robo_recording_id"
     t.integer  "times_attempted",       :default => 0
+    t.integer  "campaign_id"
   end
 
   create_table "caller_sessions", :force => true do |t|
