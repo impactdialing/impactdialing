@@ -1,4 +1,4 @@
-<%form||=nil%>
+<% form||=nil %>
 <p><%= form.check_box :answering_machine_detect %>&nbsp;Automatically detect voicemails</p>
 <% if !@campaign.account.recordings.blank? %>
     <p><%= form.check_box :use_recordings, :onclick=>"doRecord();" %>&nbsp;Leave voicemail message</p>
@@ -11,4 +11,8 @@
       <div id="sndPreview"></div>
     </div>
 <% end %>
+
+<p class="actions">
+  <a href='/client/recording_add?campaign_id=<%= @campaign.id %>' class="action secondary">Add voicemail message</a>
+</p>
 
