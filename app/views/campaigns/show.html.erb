@@ -1,15 +1,18 @@
+<% content_for :javascripts do %>
+    <%= javascript_include_tag "campaign/auto_save" %>
+    <%= javascript_include_tag "campaign/campaign" %>
+<% end %>
 
-<%= javascript_include_tag "campaign/auto_save" %>
 <h1>Edit campaign</h1>
 
 <div id="callerid"></div>
 
 <%= form_for @campaign, :html => {:name => 'callerForm', :id => 'callerForm'} do |f| %>
-	<div id="validationError">
-    <%= render "shared/error_messages", :target => @campaign %>
-	</div>
+    <div id="validationError">
+      <%= render "shared/error_messages", :target => @campaign %>
+    </div>
     <fieldset>
-	  <legend>Campaign options</legend>
+      <legend>Campaign options</legend>
       <fieldset>
         <legend>Basic settings</legend>
         <p><label for="">Name</label><br>
@@ -17,9 +20,16 @@
 
         <p><label for="">Caller ID</label><br>
           <%= f.text_field :caller_id, {:class=>"field size3"} %></p>
-		<p>Caller ID refers to the phone number that your leads see on their Caller ID. In many circumstances, you are legally required to display a valid Caller ID.</p>
-        <p><label for="">Message</label><br>
+
+        <p>Caller ID refers to the phone number that your leads see on their Caller ID. In many circumstances, you are
+          legally required to display a valid Caller ID.</p>
+
+        <p><label for="">Script</label><br>
           <%= f.collection_select(:script_id, @scripts, :id, :name, {:prompt => true}, {:class=>"field"}) %>
+        </p>
+
+        <p><label for="">Message</label><br>
+          <%= render :partial => 'voicemail', :locals => {:form => f} %>
         </p>
       </fieldset>
       <fieldset>
@@ -31,7 +41,7 @@
                 <a href="/client/voter_add?campaign_id=<%= @campaign.id %>" class="add-button"><span>Enter Voter</span></a>
             <% end %>
         <% else %>
-        Uncheck a list to stop calling it:
+            Uncheck a list to stop calling it:
             <table border="0" cellspacing="0" cellpadding="0">
               <tr>
                 <th>Name</th>
@@ -42,7 +52,7 @@
                   <tr>
                     <td valign="top"><%= check_box_tag "voter_list_ids[]", "#{l.id}", l.enabled -%> <%= l.name %></td>
                     <td valign="top"><%= l.voters.size %></td>
-                    <td valign="top"><%= l.voters_remaining%></td>
+                    <td valign="top"><%= l.voters_remaining %></td>
                   </tr>
               <% end %>
             </table>
@@ -61,5 +71,5 @@
 <% end %>
 <fieldset>
   <legend>Add Lists</legend>
-  <%= render :partial => "voter_lists/new", :locals => { :path => campaign_voter_lists_path(@campaign) } %>
+  <%= render :partial => "voter_lists/new", :locals => {:path => campaign_voter_lists_path(@campaign)} %>
 </fieldset>

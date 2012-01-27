@@ -95,7 +95,7 @@ class Voter < ActiveRecord::Base
         'FallbackUrl' => twilio_report_error_url(callback_params),
         'StatusCallback' => twilio_call_ended_url(callback_params),
         'Timeout' => '20',
-        'IfMachine' => 'Hangup'
+        'IfMachine' => 'Continue'
     )
 
     if response["TwilioResponse"]["RestException"]

@@ -179,6 +179,17 @@ describe CallAttempt do
       call_attempt.call_end.should_not be_nil
     end
 
+    it "hangs up to answering machines when the campaign does not use recordings" do
+      account = Factory(:account)
+      campaign = Factory(:campaign, :use_recordings => false, :account => account, :recording => Factory(:recording, :file_file_name => 'abc.mp3', :account => account))
+      voter = Factory(:voter, :campaign => campaign)
+      call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign)
+      call_attempt.play_recorded_message.should == Twilio::Verb.hangup
+      call_attempt.reload.status.should == CallAttempt::Status::HANGUP
+      call_attempt.voter.status.should == CallAttempt::Status::HANGUP
+      call_attempt.call_end.should_not be_nil
+    end
+
     it "disconnects the voter from the caller" do
       campaign = Factory(:campaign)
       voter = Factory(:voter, :campaign => campaign)
