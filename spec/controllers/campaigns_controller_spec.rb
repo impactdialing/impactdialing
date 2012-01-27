@@ -3,30 +3,57 @@ require "spec_helper"
 describe CampaignsController do
   let(:account) { Factory(:account) }
   let(:user) { Factory(:user, :account => account) }
-  let(:another_users_campaign) { Factory(:campaign, :account => Factory(:account),:start_time => Time.new("2000-01-01 01:00:00"),:end_time =>   Time.new("2000-01-01 23:00:00")) }
+  let(:another_users_campaign) { Factory(:campaign, :account => Factory(:account), :start_time => Time.new("2000-01-01 01:00:00"), :end_time => Time.new("2000-01-01 23:00:00")) }
 
   before(:each) do
     login_as user
   end
 
-  it "creates a new robo campaign" do
-    manual_script = Factory(:script, :account => user.account, :robo => false)
-    robo_script = Factory(:script, :account => user.account, :robo => true)
-    lambda {
-      post :create, :caller_id => '0123456789'
-    }.should change(user.account.campaigns.active.robo, :size).by(1)
-    user.account.campaigns.active.robo.last.script.should == robo_script
-    response.should redirect_to campaign_path(user.account.campaigns.last)
+  describe "create a campaign" do
+
+    it "creates a new robo campaign" do
+      manual_script = Factory(:script, :account => user.account, :robo => false)
+      robo_script = Factory(:script, :account => user.account, :robo => true)
+      lambda {
+        post :create, :campaign => {:caller_id => '0123456789'}
+      }.should change(user.account.campaigns.active.robo, :size).by(1)
+      user.account.campaigns.active.robo.last.script.should == robo_script
+      response.should redirect_to campaign_path(user.account.campaigns.last)
+    end
+
+    it "creates a new robo campaign with the first active robo script by default" do
+      deleted_script = Factory(:script, :account => user.account, :robo => true, :active => false)
+      active_script = Factory(:script, :account => user.account, :robo => true, :active => true)
+      lambda {
+        post :create, :campaign => {:caller_id => '0123456789'}
+      }.should change(user.account.campaigns.active.robo, :size).by(1)
+      user.account.campaigns.active.robo.last.script.should == active_script
+    end
+
+    describe "voicemails" do
+      let(:recording) { Factory(:recording) }
+
+      it "creates a new robo campaign with a answering machine recording" do
+        lambda {
+          post :create, :campaign => {:caller_id => '0123456789', :answering_machine_detect => true, :recording_id => recording.id}
+        }.should change(user.account.campaigns.active.robo, :size).by(1)
+        created_campaign = user.account.campaigns.active.robo.last
+        created_campaign.answering_machine_detect.should be_true
+        created_campaign.recording.should == recording
+      end
+
+      it "does not default to answering machine recording" do
+        lambda {
+          post :create, :campaign => {:caller_id => '0123456789'}
+        }.should change(user.account.campaigns.active.robo, :size).by(1)
+        created_campaign = user.account.campaigns.active.robo.last
+        created_campaign.answering_machine_detect.should be_false
+        created_campaign.recording.should be_nil
+      end
+    end
+
   end
 
-  it "creates a new robo campaign with the first active robo script by default" do
-    deleted_script = Factory(:script, :account => user.account, :robo => true, :active => false)
-    active_script = Factory(:script, :account => user.account, :robo => true, :active => true)
-    lambda {
-      post :create, :caller_id => '0123456789'
-    }.should change(user.account.campaigns.active.robo, :size).by(1)
-    user.account.campaigns.active.robo.last.script.should == active_script
-  end
 
   it "lists robo campaigns" do
     robo_campaign = Factory(:campaign, :account => user.account, :robo => true)
@@ -48,8 +75,8 @@ describe CampaignsController do
   end
 
   describe "update a campaign" do
-    let(:default_script){ Factory(:script, :account => user.account, :robo => true, :active => true)}
-    let(:campaign) { Factory(:campaign, :account => user.account, :script => default_script) }
+    let(:default_script) { Factory(:script, :account => user.account, :robo => true, :active => true) }
+    let(:campaign) { Factory(:campaign, :account => user.account, :script => default_script, :robo =>true) }
 
     it "updates the campaign attributes" do
       new_script = Factory(:script, :account => user.account, :robo => true, :active => true)
@@ -75,6 +102,19 @@ describe CampaignsController do
     it "can update only campaigns owned by the user'" do
       post :update, :id => another_users_campaign.id
       response.status.should == 401
+    end
+
+    describe "voicemails" do
+      let(:recording) { Factory(:recording) }
+
+      it "updates with voicemail attributes" do
+        post :update, :id => campaign.id, :campaign => {:answering_machine_detect => true, :use_recordings => true, :recording_id => recording.id}
+        current_campaign = campaign.reload
+        current_campaign.answering_machine_detect.should be_true
+        current_campaign.use_recordings.should be_true
+        current_campaign.recording.should == recording
+      end
+
     end
   end
 

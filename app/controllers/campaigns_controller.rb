@@ -17,7 +17,9 @@ class CampaignsController < ClientController
   end
 
   def create
-    campaign = @user.account.campaigns.create!(:script => @user.account.scripts.robo.active.first, :robo => true, :caller_id => params[:caller_id])
+    campaign = @user.account.campaigns.create(params[:campaign].merge({:robo => true}))
+    campaign.script||= @user.account.scripts.robo.active.first
+    campaign.save
     redirect_to broadcast_campaign_path(campaign)
   end
 

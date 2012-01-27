@@ -87,8 +87,9 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def play_recorded_message
-    update_attributes(:status => CallAttempt::Status::VOICEMAIL, :call_end => Time.now)
-    voter.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
+    update_attributes(:call_end => Time.now, :status => campaign.use_recordings? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP)
+    voter.update_attributes(:status => campaign.use_recordings? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP)
+    return hangup unless campaign.use_recordings?
     Twilio::TwiML::Response.new do |r|
       r.Play campaign.recording.file.url
       r.Hangup
