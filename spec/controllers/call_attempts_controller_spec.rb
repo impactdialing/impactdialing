@@ -167,8 +167,8 @@ describe CallAttemptsController do
       CallAttempt.stub(:find).and_return(call_attempt)
       post :connect, :id => call_attempt.id, :AnsweredBy => 'machine'
       response.body.should == call_attempt.hangup
-      call_attempt.reload.voter.status.should == CallAttempt::Status::AMD
-      call_attempt.status.should == CallAttempt::Status::AMD
+      call_attempt.reload.voter.status.should == CallAttempt::Status::HANGUP
+      call_attempt.status.should == CallAttempt::Status::HANGUP
     end
 
     it "plays a voice mail to a voters answering the campaign uses recordings" do
@@ -217,10 +217,10 @@ describe CallAttemptsController do
     end
     
     it "not updates the details of a call status, if it is answering machine detected" do
-      call_attempt = Factory(:call_attempt, :status => CallAttempt::Status::AMD, :voter => Factory(:voter, :status => CallAttempt::Status::AMD))
+      call_attempt = Factory(:call_attempt, :status => CallAttempt::Status::HANGUP, :voter => Factory(:voter, :status => CallAttempt::Status::HANGUP))
       post :end, :id => call_attempt.id, :CallStatus => "anything"
-      call_attempt.reload.status.should == CallAttempt::Status::AMD
-      call_attempt.voter.status.should == CallAttempt::Status::AMD
+      call_attempt.reload.status.should == CallAttempt::Status::HANGUP
+      call_attempt.voter.status.should == CallAttempt::Status::HANGUP
     end
     
     it "not updates the details of a call status, if it is voice mailed" do

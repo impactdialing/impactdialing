@@ -180,7 +180,6 @@ class CallAttempt < ActiveRecord::Base
 
   module Status
     VOICEMAIL = 'Message delivered'
-    AMD = "Answering machine detected"
     SUCCESS = 'Call completed with success.'
     INPROGRESS = 'Call in progress'
     NOANSWER = 'No answer'
