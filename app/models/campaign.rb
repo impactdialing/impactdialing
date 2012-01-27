@@ -29,6 +29,7 @@ class Campaign < ActiveRecord::Base
 
   validates :name, :presence => true
   validates :caller_id, :presence => {:on => :update}, :numericality => {:on => :update}, :length => {:on => :update, :minimum => 10, :maximum => 10}
+  validate :set_caller_id_error_msg
   validate :check_answering_machine_detect_and_leave_voice_mail
   cattr_reader :per_page
   @@per_page = 25
@@ -42,6 +43,13 @@ class Campaign < ActiveRecord::Base
     PREDICTIVE = "algorithm1"
     PROGRESSIVE = "progressive"
   end
+  
+  def set_caller_id_error_msg
+      if errors[:caller_id].any?
+        errors.add(:base, 'Your Caller ID must be a valid 10-digit phone number.')
+        errors[:caller_id].clear
+      end
+    end
 
   def check_answering_machine_detect_and_leave_voice_mail
     if (answering_machine_detect == false) && (use_recordings == true)
