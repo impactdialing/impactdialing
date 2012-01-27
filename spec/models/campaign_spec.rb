@@ -661,35 +661,7 @@ describe Campaign do
       end
     end
   end
-
-  it "clears calls" do
-    campaign = Factory(:campaign)
-    voters = 3.times.map { Factory(:voter, :campaign => campaign, :result => 'foo', :status => 'bar') }
-    voter_on_another_campaign = Factory(:voter, :result => 'hello', :status => 'world')
-    campaign.clear_calls
-    voters.each(&:reload).each do |voter|
-      voter.result.should be_nil
-      voter.status.should == 'not called'
-    end
-    voter_on_another_campaign.result.should == 'hello'
-    voter_on_another_campaign.status.should == 'world'
-  end
-
-  it "should give the final results of a campaign as a Hash" do
-    now = Time.now
-    script = Factory(:script)
-    campaign = Factory(:campaign, :script => script)
-    campaign2 = Factory(:campaign)
-    question1 = Factory(:question, :text => "hw are u", :script => script)
-    question2 = Factory(:question, :text => "wr r u", :script => script)
-    possible_response1 = Factory(:possible_response, :question => question1)
-    possible_response2 = Factory(:possible_response, :question => question1)
-    Factory(:answer, :voter => Factory(:voter, :campaign => campaign), campaign: campaign, :possible_response => possible_response1, :question => question1, :created_at => now)
-    Factory(:answer, :voter => Factory(:voter, :campaign => campaign), campaign: campaign,:possible_response => possible_response2, :question => question2, :created_at => now)
-    Factory(:answer, :voter => Factory(:voter, :campaign => campaign2), campaign: campaign2, :possible_response => possible_response2, :question => question2, :created_at => now)
-    campaign.answers_result(now, now).should == {"hw are u" => [{answer: "no_response", number: 1, percentage: 100}, {answer: "no_response", number: 1, percentage: 100}], "wr r u" => []}
-  end
-
+  
   describe "time period" do
     before(:each) do
       @campaign = Factory(:campaign, :start_time => Time.new(2011, 1, 1, 9, 0, 0), :end_time => Time.new(2011, 1, 1, 21, 0, 0), :time_zone =>"Pacific Time (US & Canada)")
@@ -706,7 +678,7 @@ describe Campaign do
       voter_on_another_campaign.result.should == 'hello'
       voter_on_another_campaign.status.should == 'world'
     end
-  
+    
     it "should give the final results of a campaign as a Hash" do
       now = Time.now
       script = Factory(:script)
@@ -714,15 +686,15 @@ describe Campaign do
       campaign2 = Factory(:campaign)
       question1 = Factory(:question, :text => "hw are u", :script => script)
       question2 = Factory(:question, :text => "wr r u", :script => script)
-      possible_response1 = Factory(:possible_response, :value => "fine", :question => question1)
-      possible_response2 = Factory(:possible_response, :value => "super", :question => question1)
-      possible_response3 = Factory(:possible_response, :value => "[No response]", :question => question1)
+      possible_response1 = Factory(:possible_response, :question => question1)
+      possible_response2 = Factory(:possible_response, :question => question1)
       Factory(:answer, :voter => Factory(:voter, :campaign => campaign), campaign: campaign, :possible_response => possible_response1, :question => question1, :created_at => now)
-      Factory(:answer, :voter => Factory(:voter, :campaign => campaign), campaign: campaign,:possible_response => possible_response2, :question => question1, :created_at => now)
-      Factory(:answer, :voter => Factory(:voter, :campaign => campaign), campaign: campaign,:possible_response => possible_response3, :question => question1, :created_at => now)
+      Factory(:answer, :voter => Factory(:voter, :campaign => campaign), campaign: campaign,:possible_response => possible_response2, :question => question2, :created_at => now)
       Factory(:answer, :voter => Factory(:voter, :campaign => campaign2), campaign: campaign2, :possible_response => possible_response2, :question => question2, :created_at => now)
-      campaign.answers_result(now, now).should == {"hw are u" => [{answer: possible_response1.value, number: 1, percentage: 33}, {answer: possible_response2.value, number: 1, percentage: 33}, {answer: possible_response3.value, number: 1, percentage: 33}], "wr r u" => [{answer: "[No response]", number: 0, percentage: 0}]}
+      campaign.answers_result(now, now).should == {"hw are u" => [{answer: "no_response", number: 1, percentage: 100}, {answer: "no_response", number: 1, percentage: 100}], "wr r u" => []}
     end
+    
+  
   end
   
     describe "time period" do
