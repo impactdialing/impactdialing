@@ -23,10 +23,11 @@ module Client
         @answered = @campaign.answered_count(dialed_voters_ids)
         @no_answer = dialed_voters.by_status(CallAttempt::Status::NOANSWER).count
         @busy_signal = dialed_voters.by_status(CallAttempt::Status::BUSY).count
+        @answering_machine = dialed_voters.by_status(CallAttempt::Status::AMD).count
+        @voicemail = dialed_voters.by_status(CallAttempt::Status::VOICEMAIL).count
         @ringing = dialed_voters.by_status(CallAttempt::Status::RINGING).count
         @abandoned = dialed_voters.by_status(CallAttempt::Status::ABANDONED).count
         @failed = dialed_voters.by_status(CallAttempt::Status::FAILED).count
-        @voicemail = dialed_voters.by_status(CallAttempt::Status::VOICEMAIL).count
         @scheduled = dialed_voters.by_status(CallAttempt::Status::SCHEDULED).count
       end
       @total = ((@total_voters_count == 0) ? 1 : @total_voters_count)

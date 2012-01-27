@@ -19,6 +19,12 @@
 						<td>Busy signal</td><td><%= @busy_signal %></td><td><%= ((@busy_signal.to_f/@total)*100).round %>%</td>
 					</tr>
 					<tr class="<%= cycle("odd","even") %>">
+						<td>Answering machine</td><td><%= @answering_machine %></td><td><%= ((@answering_machine.to_f/@total)*100).round %>%</td>
+					</tr>
+					<tr class="<%= cycle("odd","even") %>">
+						<td>Message left</td><td><%= @voicemail %></td><td><%= ((@voicemail.to_f/@total)*100).round %>%</td>
+					</tr>
+					<tr class="<%= cycle("odd","even") %>">
 						<td>Failed</td><td><%= @failed %></td><td><%= ((@failed.to_f/@total)*100).round %>%</td>
 					</tr>
 					<tr class="<%= cycle("odd","even") %>">

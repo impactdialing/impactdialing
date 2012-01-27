@@ -15,8 +15,8 @@ class CallAttemptsController < ApplicationController
     call_attempt.update_attribute(:connecttime, Time.now)
     response = case params[:AnsweredBy] #using the 2010 api
                  when "machine"
-                   call_attempt.voter.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
-                   call_attempt.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
+                   call_attempt.voter.update_attributes(:status => CallAttempt::Status::AMD)
+                   call_attempt.update_attributes(:status => CallAttempt::Status::AMD)
                    if call_attempt.caller_session && (call_attempt.campaign.predictive_type == Campaign::Type::PREVIEW || call_attempt.campaign.predictive_type == Campaign::Type::PROGRESSIVE)
                      call_attempt.caller_session.publish('answered_by_machine', {})
                      call_attempt.caller_session.update_attribute(:voter_in_progress, nil)
@@ -46,12 +46,12 @@ class CallAttemptsController < ApplicationController
   def end
     DIALER_LOGGER.info "callstatus: #{params[:CallStatus]}"
     call_attempt = CallAttempt.find(params[:id])
-    unless call_attempt.status == CallAttempt::Status::ABANDONED
-      call_attempt.voter.update_attributes(:status => CallAttempt::Status::MAP[params[:CallStatus]], :last_call_attempt_time => Time.now)
-      call_attempt.update_attributes(:status => CallAttempt::Status::MAP[params[:CallStatus]], :call_end => Time.now)
-    else
+    if [CallAttempt::Status::AMD, CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED].include? call_attempt.status
       call_attempt.voter.update_attributes(:last_call_attempt_time => Time.now)
       call_attempt.update_attributes(:call_end => Time.now)
+    else
+      call_attempt.voter.update_attributes(:status => CallAttempt::Status::MAP[params[:CallStatus]], :last_call_attempt_time => Time.now)
+      call_attempt.update_attributes(:status => CallAttempt::Status::MAP[params[:CallStatus]], :call_end => Time.now)
     end
   
     response = case params[:CallStatus] #using the 2010 api
