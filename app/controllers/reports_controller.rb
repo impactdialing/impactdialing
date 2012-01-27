@@ -29,6 +29,8 @@ class ReportsController < ClientController
       @answered = dialed_voters.by_status(CallAttempt::Status::ANSWERED).count
       @no_answer = dialed_voters.by_status(CallAttempt::Status::NOANSWER).count
       @busy_signal = dialed_voters.by_status(CallAttempt::Status::BUSY).count
+      @answering_machine = dialed_voters.by_status(CallAttempt::Status::AMD).count
+      @voicemail = dialed_voters.by_status(CallAttempt::Status::VOICEMAIL).count
       @ringing = dialed_voters.by_status(CallAttempt::Status::RINGING).count
       @failed = dialed_voters.by_status(CallAttempt::Status::FAILED).count
     end
