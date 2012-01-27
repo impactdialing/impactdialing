@@ -69,11 +69,7 @@
         </p>
 
         <%= render :partial => 'shared/recycle_rate', :locals => {:recycle_hour => @campaign.recycle_rate} %>
-        <%= render :partial => 'voicemail', :locals => {:form => f} %>
-        <p class="actions">
-          <a href='/client/recording_add?campaign_id=<%= @campaign.id %>' class="action secondary">Add voicemail
-            message</a>
-        </p>
+        <%= render :partial => 'campaigns/voicemail', :locals => {:form => f} %>
       </fieldset>
 
       <fieldset>
