@@ -39,6 +39,9 @@
 					<tr class="<%= cycle("odd","even") %>">
 						<td>Not dialed</td><td><%= @not_dialed %></td><td><%= ((@not_dialed.to_f/@total)*100).round %>%</td>
 					</tr>
+					<tr class="<%= cycle("odd","even") %>">
+						<td>Total dials</td><td><%= @total_dials %></td><td><%= ((@total_dials.to_f/@total)*100).round %>%</td>
+					</tr>
 			
 		    </table>
 		</div>

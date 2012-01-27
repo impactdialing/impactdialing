@@ -34,6 +34,7 @@ class ReportsController < ClientController
     end
     @total = ((@total_voters.count == 0) ? 1 : @total_voters.count)
     @not_dialed = not_dilaed_voters(params[:from_date])
+    @total_dials = @answered.to_i + @no_answer.to_i + @busy_signal.to_i + @ringing.to_i + @failed.to_i
   end
   
   def dial_details
