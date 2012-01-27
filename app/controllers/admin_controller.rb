@@ -4,7 +4,7 @@ class AdminController < ApplicationController
   layout "basic"
   USER_NAME, PASSWORD = "impact", "Mb<3Ad4F@2tCallz"
   before_filter :authenticate
-  require "nokogiri"
+
 
   def state
     if Time.now.hour > 0 && Time.now.hour < 6
