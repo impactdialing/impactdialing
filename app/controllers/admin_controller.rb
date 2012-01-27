@@ -12,7 +12,6 @@ class AdminController < ApplicationController
     else
       @calling_status = "Available".html_safe
     end
-    @all_calls = CallAttempt.find_all_by_call_end(nil).size
     @logged_in_campaigns = Campaign.all(:conditions=>"id in (select distinct campaign_id from caller_sessions where on_call=1)")
     @logged_in_callers = CallerSession.find_all_by_on_call(1)
     @errors=""
