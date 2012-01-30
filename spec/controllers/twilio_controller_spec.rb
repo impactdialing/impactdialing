@@ -38,5 +38,23 @@ describe TwilioController do
     post :callback, :call_attempt_id => call_attempt.id, :CallStatus => 'in-progress', :AnsweredBy => 'machine'
     response.body.should == call_attempt.play_recorded_message
   end
+  
+  it "doesn't updates voter status, if it is answered by machine" do 
+    voter = Factory(:voter, :status => CallAttempt::Status::HANGUP, :campaign => campaign)
+    call_attempt = Factory(:call_attempt, :status => CallAttempt::Status::HANGUP, :campaign => campaign, :voter => voter)
+    voter.update_attributes(:last_call_attempt => call_attempt)
+    post :call_ended, :call_attempt_id => call_attempt.id, :CallStatus => "completed"
+    call_attempt.reload.status.should == CallAttempt::Status::HANGUP
+    call_attempt.voter.status.should == CallAttempt::Status::HANGUP
+  end
+  
+  it "doesn't updates voter status, if the voice mail delivered" do 
+    voter = Factory(:voter, :status => CallAttempt::Status::VOICEMAIL, :campaign => campaign)
+    call_attempt = Factory(:call_attempt, :status => CallAttempt::Status::VOICEMAIL, :campaign => campaign, :voter => voter)
+    voter.update_attributes(:last_call_attempt => call_attempt)
+    post :call_ended, :call_attempt_id => call_attempt.id, :CallStatus => "completed"
+    call_attempt.reload.status.should == CallAttempt::Status::VOICEMAIL
+    call_attempt.voter.status.should == CallAttempt::Status::VOICEMAIL
+  end
 
 end
