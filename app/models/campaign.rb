@@ -39,6 +39,7 @@ class Campaign < ActiveRecord::Base
 
   before_validation :set_untitled_name
   before_save :set_untitled_name
+  before_save :detect_answering_machine
   before_validation :sanitize_caller_id
 
   module Type
@@ -52,6 +53,10 @@ class Campaign < ActiveRecord::Base
       errors.add(:base, 'Your Caller ID must be a valid 10-digit phone number.')
       errors[:caller_id].clear
     end
+  end
+
+  def detect_answering_machine
+    self.answering_machine_detect = true if use_recordings?
   end
   
   def check_answering_machine_detect_and_leave_voice_mail
