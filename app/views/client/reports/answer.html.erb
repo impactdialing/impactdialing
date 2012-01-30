@@ -1,7 +1,7 @@
 <%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@campaign.name} Answered Calls Report "} %>
 <% i = 1 %>
 <% @results.each_pair do |question, stats| %>
-	  <h3>Question <%= i %>: <%= question %></h3>
+	  <h3><%= @campaign.robo == true ? "Recording" : "Question" %> <%= i %>: <%= question %></h3>
 	   <table width="100%" border="0" cellspacing="0" cellpadding="0">
 	     <tr>
 	       <th>Answer</th>
