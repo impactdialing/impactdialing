@@ -365,13 +365,13 @@ describe "predictive_dialer" do
       progressive_campaign.is_preview_or_progressive.should be_true
     end
 
-    it "detects answering machines while using recordings" do
-      campaign = Factory(:campaign)
-      campaign.answering_machine_detect.should be_false
-      campaign.use_recordings = true
-      campaign.save
-      campaign.reload.answering_machine_detect.should == true
-    end
+    #  it "detects answering machines while using recordings" do
+    #   campaign = Factory(:campaign)
+    #   campaign.answering_machine_detect.should be_false
+    #   campaign.use_recordings = true
+    #   campaign.save
+    #   campaign.reload.answering_machine_detect.should == true
+    # end
   
     it "save correctly, when user_recordings is true and answering_machine_detect is true" do
       campaign1 = Campaign.new(:name => "sddd1", :answering_machine_detect => true, :use_recordings => true)
