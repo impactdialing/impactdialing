@@ -173,6 +173,7 @@ def simulate(campaign_id)
      utilization = active_time / ( active_time + idle_time )     
      if utilization > best_utilization
        best_dials = dials_needed
+       best_utilisation = utilisation
        best_conversation = expected_conversation
      end
    end

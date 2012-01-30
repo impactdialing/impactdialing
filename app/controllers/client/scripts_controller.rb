@@ -78,7 +78,6 @@ module Client
     private
 
     def save_as
-      puts params[:script][:questions_attributes]
       @script = Script.new(:name => "", :active => true, :account => @user.account, :script => params[:script][:script], :voter_fields => params[:script][:voter_fields])
       @script.save(:validate => false)
       params[:script][:questions_attributes].each_value.each do |q|
@@ -86,7 +85,6 @@ module Client
           question = @script.questions.new(:text => q[:text])
           question.save!
           q[:possible_responses_attributes].each_value.each do |ps|
-            puts ps[:_destroy]
             if ps[:_destroy] == "false"
               possible_response = question.possible_responses.new(:value => ps[:value], :keypad => ps[:keypad], :retry => ps[:retry])
               possible_response.save!
