@@ -23,7 +23,6 @@ class TwilioController < ApplicationController
   def call_ended
     #TWILIO_LOG.info "#{@call_attempt.voter.Phone} : Call Ended"
     logger.info "[dialer] call ended. #{@log_message}"
-    @call_attempt = CallAttempt.find(params[:call_attempt_id])
     voter = @call_attempt.voter
     voter.update_attributes(:result_date => Time.now)
     @call_attempt.update_attributes(wrapup_time: Time.now)
@@ -34,10 +33,12 @@ class TwilioController < ApplicationController
   private
   def retrieve_call_details
     @call_attempt = CallAttempt.find(params[:call_attempt_id])
-    @call_attempt.update_attribute('status', CallAttempt::Status::MAP[params['CallStatus']])
     campaign = @call_attempt.campaign
     voter = @call_attempt.voter
-    voter.update_attributes(:status => Voter::MAP[params['CallStatus']])
+    unless [CallAttempt::Status::HANGUP, CallAttempt::Status::VOICEMAIL].include? @call_attempt.status
+      @call_attempt.update_attribute('status', CallAttempt::Status::MAP[params['CallStatus']])
+      voter.update_attributes(:status => Voter::MAP[params['CallStatus']])
+    end
     @log_message = "call_attempt: #{@call_attempt.id} campaign: #{campaign.name}, phone: #{voter.Phone}\n callback parameters: #{params.inspect}"
   end
 end
