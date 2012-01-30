@@ -11,10 +11,7 @@ module Client
     end
     
     def dials
-      from_date = Date.strptime(params[:from_date], "%m/%d/%Y") if params[:from_date]
-      to_date = Date.strptime(params[:to_date], "%m/%d/%Y") if params[:to_date]
-      @from_date = from_date || (@campaign.call_attempts.first.try(:created_at) || Time.now)
-      @to_date = to_date || Time.now
+      set_date_range
 
       dialed_voters = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date)
       @total_voters_count = @campaign.all_voters.count
@@ -70,11 +67,7 @@ module Client
     end
 
     def download
-      from_date = Date.strptime(params[:from_date], "%m/%d/%Y") if params[:from_date]
-      to_date = Date.strptime(params[:to_date], "%m/%d/%Y") if params[:to_date]
-      @from_date = from_date || (@campaign.call_attempts.first.try(:created_at) || Date.today)
-      @to_date = to_date || (@campaign.call_attempts.last.try(:created_at) || Date.today)
-
+      set_date_range
       @voter_fields = VoterList::VOTER_DATA_COLUMNS
       @custom_voter_fields = @user.account.custom_voter_fields.collect{ |field| field.name}
       respond_to do |format|
@@ -87,11 +80,18 @@ module Client
     end
 
     def answer
-      set_report_date_range
+      set_date_range
       @results = @campaign.answers_result(@from_date, @to_date)
     end
 
     private
+    
+    def set_date_range
+      from_date = Date.strptime(params[:from_date], "%m/%d/%Y") if params[:from_date]
+      to_date = Date.strptime(params[:to_date], "%m/%d/%Y") if params[:to_date]
+      @from_date = from_date || (@campaign.call_attempts.first.try(:created_at) || Date.today)
+      @to_date = to_date || (@campaign.call_attempts.last.try(:created_at) || Date.today)
+    end
     
     def not_dilaed_voters(range_parameters)
       if range_parameters
