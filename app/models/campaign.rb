@@ -621,11 +621,14 @@ class Campaign < ActiveRecord::Base
 
   def answers_result(from_date, to_date)
     result = Hash.new
-    script.questions.each do |question|
-      total_answers = question.answered_within(from_date, to_date, self.id).size
-      result[question.text] = question.possible_responses.collect { |possible_response| possible_response.stats(from_date, to_date, total_answers, self.id) }
-      result[question.text] << {answer: "[No response]", number: 0, percentage:  0} unless question.possible_responses.find_by_value("[No response]").present?
+    unless script.nil?
+      script.questions.each do |question|
+        total_answers = question.answered_within(from_date, to_date, self.id).size
+        result[question.text] = question.possible_responses.collect { |possible_response| possible_response.stats(from_date, to_date, total_answers, self.id) }
+        result[question.text] << {answer: "[No response]", number: 0, percentage:  0} unless question.possible_responses.find_by_value("[No response]").present?
+      end
     end
+    
     result
   end
 
