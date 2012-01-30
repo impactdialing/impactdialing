@@ -14,7 +14,7 @@ class Voter < ActiveRecord::Base
   has_many :note_responses
 
   validates_presence_of :Phone
-  validates_length_of :Phone, :minimum => 10
+  validates_length_of :Phone, :minimum => 10, :unless => Proc.new{|voter| voter.Phone.start_with?("+")}
 
   scope :existing_phone_in_campaign, lambda { |phone_number, campaign_id| where(:Phone => phone_number).where(:campaign_id => campaign_id) }
 
@@ -47,7 +47,9 @@ class Voter < ActiveRecord::Base
   end
 
   def self.sanitize_phone(phonenumber)
+    append = true if phonenumber.start_with?('+')
     phonenumber.gsub(/[^0-9]/, "") unless phonenumber.blank?
+    append ? "+#{phonenumber}" : phonenumber
   end
 
   def sanitize_phone
