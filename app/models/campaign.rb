@@ -39,7 +39,7 @@ class Campaign < ActiveRecord::Base
 
   before_validation :set_untitled_name
   before_save :set_untitled_name
-  before_validation :detect_answering_machine
+  # before_validation :detect_answering_machine
   before_validation :sanitize_caller_id
 
   module Type
