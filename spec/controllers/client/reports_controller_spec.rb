@@ -62,7 +62,7 @@ describe Client::ReportsController do
     it "pulls up report downloads page" do
       campaign = Factory(:campaign, script: Factory(:script))
       Delayed::Job.should_receive(:enqueue)
-      get :download, :campaign_id => campaign.id
+      get :download, :campaign_id => campaign.id, format: 'csv'
       response.should redirect_to 'https://test.host/client/reports'
     end
 
