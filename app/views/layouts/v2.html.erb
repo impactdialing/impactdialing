@@ -43,9 +43,9 @@
   <link rel="stylesheet" media="screen" href="/css/992.css?v=1">
   <![endif]-->
   <%= yield :stylesheets %>
-	<%= yield :javascripts %>
-
   <%= javascript_include_tag :jdefaults %>
+  <%= yield :javascripts %>
+
   <%= javascript_include_tag "nested_form" %>
 
   <!-- JavaScript at bottom except for Modernizr -->
@@ -160,10 +160,10 @@
 
 <script src="js/mylibs/jquery.fitvids.js"></script>
 <script>
-  $(document).ready(function(){
-    // Target your .container, .wrapper, .post, etc.
-    $(".video").fitVids();
-  });
+    $(document).ready(function() {
+        // Target your .container, .wrapper, .post, etc.
+        $(".video").fitVids();
+    });
 </script>
 
 <!--[if (lt IE 9) & (!IEMobile)]>

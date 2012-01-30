@@ -1,5 +1,5 @@
-$(function () {
-	$("#file_upload_submit").live('click', function() {
+$(document).ready(function(){
+    	$("#file_upload_submit").live('click', function() {
 		$.ajax({
 			url : $("#callerForm").attr("action"),
 			data : $("#callerForm").serialize(),
@@ -9,14 +9,13 @@ $(function () {
 					$("#new_voter_list").submit();
 				}
 				else{
-					$('#validationError').html(response)	
+					$('#validationError').html(response)
 				}
 			},
 			error: function(response){
 				$('#validationError').html(response['responseText'])
 			}
-			
-		});	
+
+		});
 	});
-	
-});
+})
