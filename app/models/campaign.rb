@@ -499,23 +499,11 @@ class Campaign < ActiveRecord::Base
   def longest_conversation_simulated
     simulated_values.nil? ? 0 : simulated_values.longest_conversation.nil? ? 0 : simulated_values.longest_conversation
   end
-<<<<<<< HEAD
 
   def best_wrapup_simulated
     simulated_values.nil? ? 0 : simulated_values.best_wrapup_time.nil? ? 0 : simulated_values.best_wrapup_time
   end
 
-
-
-=======
-  
-  def best_wrapup_simulated
-    simulated_values.nil? ? 0 : simulated_values.best_wrapup_time.nil? ? 0 : simulated_values.best_wrapup_time
-  end
-  
-  
-  
->>>>>>> heroku-prod
   def num_to_call_predictive_simulate
     dials_made = call_attempts.between(10.minutes.ago, Time.now)
     calls_wrapping_up = dials_made.with_status(CallAttempt::Status::SUCCESS).not_wrapped_up
