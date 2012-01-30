@@ -35,6 +35,11 @@ describe Voter do
     voter.should be_valid
   end
 
+  it "validation fails when phone number not given" do
+    voter = Factory.build(:voter, :Phone => nil)
+    voter.should_not be_valid
+  end
+
   it "lists voters not called" do
     voter1 = Factory(:voter, :campaign => Factory(:campaign), :status=> Voter::Status::NOTCALLED)
     voter2 = Factory(:voter, :campaign => Factory(:campaign), :status=> Voter::Status::NOTCALLED)
