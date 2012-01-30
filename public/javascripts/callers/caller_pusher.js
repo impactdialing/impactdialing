@@ -121,6 +121,7 @@ function send_voter_response() {
 
 function send_voter_response_and_disconnect() {
     var options = {
+	    data: {stop_calling: true },
         success:  function() {
             disconnect_caller();
         }
