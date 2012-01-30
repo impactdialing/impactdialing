@@ -634,10 +634,12 @@ class Campaign < ActiveRecord::Base
 
   def robo_answer_results(from_date, to_date)
     result = Hash.new
-    script.robo_recordings.each do |robo_recording|
-      total_answers = robo_recording.answered_within(from_date, to_date, self.id).size
-      result[robo_recording.name] = robo_recording.recording_responses.collect { |recording_response| recording_response.stats(from_date, to_date, total_answers, self.id) }
-      result[robo_recording.name] << {answer: "[No response]", number: 0, percentage:  0} unless robo_recording.recording_responses.find_by_response("[No response]").present?
+    unless script.nil?
+      script.robo_recordings.each do |robo_recording|
+        total_answers = robo_recording.answered_within(from_date, to_date, self.id).size
+        result[robo_recording.name] = robo_recording.recording_responses.collect { |recording_response| recording_response.stats(from_date, to_date, total_answers, self.id) }
+        result[robo_recording.name] << {answer: "[No response]", number: 0, percentage:  0} unless robo_recording.recording_responses.find_by_response("[No response]").present?
+      end
     end
     result
   end
