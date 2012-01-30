@@ -30,6 +30,11 @@ describe Voter do
     Voter.remaining_voters_count_for('campaign_id', campaign.id).should == 6
   end
 
+  it "allows international phone numbers beginning with +" do
+    voter = Factory(:voter, :Phone => "+2353546")
+    voter.should be_valid
+  end
+
   it "lists voters not called" do
     voter1 = Factory(:voter, :campaign => Factory(:campaign), :status=> Voter::Status::NOTCALLED)
     voter2 = Factory(:voter, :campaign => Factory(:campaign), :status=> Voter::Status::NOTCALLED)
