@@ -64,7 +64,7 @@ class ReportsController < ClientController
   
   def not_dilaed_voters(range_parameters)
     if range_parameters
-      @total_voters.count - (@answered.to_i + @no_answer.to_i + @busy_signal.to_i + @ringing.to_i + @failed.to_i)
+      @total_voters.count - (@answered.to_i + @no_answer.to_i + @busy_signal.to_i + @ringing.to_i + @failed.to_i + @answering_machine.to_i + @voicemail.to_i)
     else
       @total_voters.by_status(Voter::Status::NOTCALLED).count
     end

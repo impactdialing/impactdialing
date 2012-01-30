@@ -33,7 +33,7 @@ module Client
       @total = ((@total_voters_count == 0) ? 1 : @total_voters_count)
       @ready_to_dial = params[:from_date] ? 0 : @campaign.all_voters.by_status(CallAttempt::Status::READY).count
       @not_dialed = not_dilaed_voters(params[:from_date])
-      @total_dials = @answered.to_i + @no_answer.to_i + @busy_signal.to_i + @ringing.to_i + @abandoned.to_i + @failed.to_i + @voicemail.to_i + @scheduled.to_i
+      @total_dials = @answered.to_i + @no_answer.to_i + @busy_signal.to_i + @ringing.to_i + @abandoned.to_i + @failed.to_i + @voicemail.to_i + @scheduled.to_i + @answering_machine.to_i
     end
 
     def usage
@@ -95,7 +95,7 @@ module Client
     
     def not_dilaed_voters(range_parameters)
       if range_parameters
-        @total_voters_count - (@answered.to_i + @no_answer.to_i + @busy_signal.to_i + @ringing.to_i + @abandoned.to_i + @failed.to_i + @voicemail.to_i + @scheduled.to_i)
+        @total_voters_count - (@answered.to_i + @no_answer.to_i + @busy_signal.to_i + @ringing.to_i + @abandoned.to_i + @failed.to_i + @voicemail.to_i + @scheduled.to_i + @answering_machine.to_i)
       else
         @campaign.all_voters.by_status(Voter::Status::NOTCALLED).count
       end
