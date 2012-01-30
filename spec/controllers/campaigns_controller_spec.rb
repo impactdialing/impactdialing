@@ -35,7 +35,7 @@ describe CampaignsController do
 
       it "creates a new robo campaign with a answering machine recording" do
         lambda {
-          post :create, :campaign => {:caller_id => '0123456789', :answering_machine_detect => true, :recording_id => recording.id}
+          post :create, :campaign => {:caller_id => '0123456789', :use_recordings => true, :recording_id => recording.id}
         }.should change(user.account.campaigns.active.robo, :size).by(1)
         created_campaign = user.account.campaigns.active.robo.last
         created_campaign.answering_machine_detect.should be_true

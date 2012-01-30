@@ -2,7 +2,7 @@ require Rails.root.join("lib/twilio_lib")
 
 class Campaign < ActiveRecord::Base
   include Deletable
-  
+
   has_many :caller_sessions
   has_many :voter_lists, :conditions => {:active => true}
   has_many :all_voters, :class_name => 'Voter'
@@ -32,14 +32,12 @@ class Campaign < ActiveRecord::Base
   validates :name, :presence => true
   validates :caller_id, :presence => {:on => :update}, :numericality => {:on => :update}, :length => {:on => :update, :minimum => 10, :maximum => 10}
   validate :set_caller_id_error_msg
-  validate :check_answering_machine_detect_and_leave_voice_mail
   validate :predictive_type_change
   cattr_reader :per_page
   @@per_page = 25
 
   before_validation :set_untitled_name
   before_save :set_untitled_name
-  # before_validation :detect_answering_machine
   before_validation :sanitize_caller_id
 
   module Type
@@ -47,7 +45,7 @@ class Campaign < ActiveRecord::Base
     PREDICTIVE = "algorithm1"
     PROGRESSIVE = "progressive"
   end
-  
+
   def set_caller_id_error_msg
     if errors[:caller_id].any?
       errors.add(:base, 'Your Caller ID must be a valid 10-digit phone number.')
@@ -55,16 +53,14 @@ class Campaign < ActiveRecord::Base
     end
   end
 
-  def detect_answering_machine
-    self.answering_machine_detect = self.use_recordings
+  def answering_machine_detect
+    use_recordings?
   end
-  
-  def check_answering_machine_detect_and_leave_voice_mail
-    if (answering_machine_detect == false) && (use_recordings == true)
-      errors.add(:base, 'Please select \'Automatically detect voicemails(required for leaving messages)\'')
-    end
+
+  def answering_machine_detect?
+    use_recordings?
   end
-  
+
   def predictive_type_change
     if predictive_type_changed? && callers_log_in?
       errors.add(:base, 'You cannot change dialing modes while callers are logged in.')
@@ -327,7 +323,7 @@ class Campaign < ActiveRecord::Base
 
     voters_returned.uniq
   end
-  
+
    def answered_count(dialed_voters_ids)
      answers.where('voter_id in (?)', dialed_voters_ids).group('voter_id').length
    end
@@ -477,25 +473,25 @@ class Campaign < ActiveRecord::Base
   def average(array)
   array.sum.to_f / array.size
   end
-  
+
   def best_dials_simulated
     simulated_values.nil? ? 1 : simulated_values.best_dials.nil? ? 1 : simulated_values.best_dials.ceil
   end
-  
+
   def best_conversation_simulated
     simulated_values.nil? ? 0 : simulated_values.best_conversation.nil? ? 0 : simulated_values.best_conversation
   end
-  
+
   def longest_conversation_simulated
     simulated_values.nil? ? 0 : simulated_values.longest_conversation.nil? ? 0 : simulated_values.longest_conversation
   end
-  
+
   def best_wrapup_simulated
     simulated_values.nil? ? 0 : simulated_values.best_wrapup_time.nil? ? 0 : simulated_values.best_wrapup_time
   end
-  
-  
-  
+
+
+
   def num_to_call_predictive_simulate
     dials_made = call_attempts.between(10.minutes.ago, Time.now)
     calls_wrapping_up = dials_made.with_status(CallAttempt::Status::SUCCESS).not_wrapped_up
@@ -523,12 +519,12 @@ class Campaign < ActiveRecord::Base
     return false if script.robo_recordings.size == 0
     Delayed::Job.enqueue BroadcastCampaignJob.new(self.id)
     UserMailer.new.notify_broadcast_start(self,user) if Rails.env == 'heroku'
-    update_attribute(:calls_in_progress, true)    
+    update_attribute(:calls_in_progress, true)
   end
 
   def stop
     Delayed::Job.all do |job|
-        if job.name == "Broadcastcampaign-job-#{self.id}" 
+        if job.name == "Broadcastcampaign-job-#{self.id}"
           job.delete
         end
     end
@@ -536,7 +532,7 @@ class Campaign < ActiveRecord::Base
   end
 
   def next_voter_in_dial_queue(current_voter_id = nil)
-    voter = all_voters.priority_voters.first 
+    voter = all_voters.priority_voters.first
     voter||= all_voters.scheduled.first
     voter||= all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.not_skipped.where("voters.id > #{current_voter_id}").first unless current_voter_id.blank?
     voter||= all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.not_skipped.first
@@ -620,7 +616,7 @@ class Campaign < ActiveRecord::Base
     end
     result
   end
-  
+
   def robo_answer_results(from_date, to_date)
     result = Hash.new
     script.robo_recordings.each do |robo_recording|
@@ -628,7 +624,7 @@ class Campaign < ActiveRecord::Base
       result[robo_recording.name] = robo_recording.recording_responses.collect { |recording_response| recording_response.stats(from_date, to_date, total_answers, self.id) }
       result[robo_recording.name] << {answer: "[No response]", number: 0, percentage:  0} unless robo_recording.recording_responses.find_by_response("[No response]").present?
     end
-    result 
+    result
   end
 
   private
