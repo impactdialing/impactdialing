@@ -173,7 +173,7 @@ describe Voter do
   end
 
   describe "predictive dialing" do
-    let(:campaign) { Factory(:campaign, :robo => false, :predictive_type => 'algorithm1', answering_machine_detect: true) }
+    let(:campaign) { Factory(:campaign, :robo => false, :predictive_type => 'algorithm1', use_recordings: true) }
     let(:voter) { Factory(:voter, :campaign => campaign) }
     let(:client) { mock(:client).tap { |client| Twilio::REST::Client.stub(:new).and_return(client) } }
 
@@ -213,7 +213,6 @@ describe Voter do
 
     it "dials the voter and hangs up on answering machine when not using recordings" do
       Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
-      campaign.use_recordings = false
       campaign.stub(:time_period_exceed?).and_return(false)
       voter.dial_predictive
     end
