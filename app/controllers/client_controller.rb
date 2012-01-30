@@ -153,6 +153,7 @@ class ClientController < ApplicationController
       else
         session[:user]=@user.id
         redirect_to :action=>"index"
+        return
       end
     end
 
