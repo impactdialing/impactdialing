@@ -48,8 +48,8 @@ class Voter < ActiveRecord::Base
 
   def self.sanitize_phone(phonenumber)
     append = true if phonenumber.start_with?('+')
-    phonenumber.gsub(/[^0-9]/, "") unless phonenumber.blank?
-    append ? "+#{phonenumber}" : phonenumber
+    sanitized = phonenumber.gsub(/[^0-9]/, "") unless phonenumber.blank?
+    append ? "+#{sanitized}" : sanitized
   end
 
   def sanitize_phone
