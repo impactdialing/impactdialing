@@ -32,7 +32,6 @@ class Campaign < ActiveRecord::Base
   validates :name, :presence => true
   validates :caller_id, :presence => {:on => :update}, :numericality => {:on => :update}, :length => {:on => :update, :minimum => 10, :maximum => 10}
   validate :set_caller_id_error_msg
-  validate :check_answering_machine_detect_and_leave_voice_mail
   validate :predictive_type_change
   cattr_reader :per_page
   @@per_page = 25
@@ -74,6 +73,7 @@ class Campaign < ActiveRecord::Base
       errors.add(:base, 'You cannot change dialing modes while callers are logged in.')
     end
   end
+  
   
   def predictive_type_change
      if predictive_type_changed? && callers_log_in?
