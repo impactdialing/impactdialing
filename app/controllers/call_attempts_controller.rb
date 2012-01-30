@@ -73,17 +73,19 @@ class CallAttemptsController < ApplicationController
       call_attempt.update_attributes(wrapup_time: Time.now)
 
       Moderator.publish_event(call_attempt.campaign, 'voter_response_submitted', {:caller_session_id => call_attempt.caller_session.id, :campaign_id => call_attempt.campaign.id, :dials_in_progress => call_attempt.campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', call_attempt.campaign.id)})
-      pusher_response_received(call_attempt)
+      pusher_response_received(call_attempt, params[:stop_calling])
       render :nothing => true
     end
   end
 
   private
 
-  def pusher_response_received(call_attempt)
-    if call_attempt.campaign.predictive_type == Campaign::Type::PREVIEW || call_attempt.campaign.predictive_type == Campaign::Type::PROGRESSIVE
-      next_voter = call_attempt.campaign.next_voter_in_dial_queue(call_attempt.voter.id)
-      call_attempt.caller_session.publish("voter_push", next_voter ? next_voter.info : {})
+  def pusher_response_received(call_attempt,stop_calling)
+    if call_attempt.campaign.predictive_type == Campaign::Type::PREVIEW || call_attempt.campaign.predictive_type == Campaign::Type::PROGRESSIVE 
+      if stop_calling.blank?
+        next_voter = call_attempt.campaign.next_voter_in_dial_queue(call_attempt.voter.id)
+        call_attempt.caller_session.publish("voter_push", next_voter ? next_voter.info : {})
+      end
     else
       call_attempt.caller_session.publish("predictive_successful_voter_response", {})
     end

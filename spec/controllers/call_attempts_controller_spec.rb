@@ -62,6 +62,20 @@ describe CallAttemptsController do
       channel.should_receive(:trigger).with("voter_push", info.merge({dialer: next_voter.campaign.predictive_type}))
       post :voter_response, :id => call_attempt.id, :voter_id => voter.id, :answers => {}
     end
+    
+    it "not send send next voter to be dialed via voter_push Pusher event when stop calling" do
+      Factory(:voter, :campaign => Factory(:campaign), :status => Voter::Status::NOTCALLED)
+      voter = Factory(:voter, :campaign => campaign, :status => CallAttempt::Status::SUCCESS, :call_back => false)
+      next_voter = Factory(:voter, :campaign => campaign, :status => Voter::Status::NOTCALLED, :call_back => false)
+      campaign.all_voters.size.should == 2
+      channel = mock
+      info = campaign.all_voters.to_be_dialed.first.info
+      info[:fields]['status'] = CallAttempt::Status::READY
+
+      Pusher.should_not_receive(:[]).with(anything).and_return(channel)
+      post :voter_response, :id => call_attempt.id, :voter_id => voter.id, :answers => {}, stop_calling: true
+    end
+    
   end
 
   describe "phones only" do
