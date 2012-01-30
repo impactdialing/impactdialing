@@ -1,5 +1,4 @@
 class VoterListJob
-    include HerokuDelayedJobAutoscale::Autoscale
     include NewRelic::Agent::Instrumentation::ControllerInstrumentation
   def initialize(separator, column_headers, csv_to_system_map, filename, voter_list_name, campaign_id, account_id, domain, email)
     @separator = separator
