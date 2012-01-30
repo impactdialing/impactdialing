@@ -543,11 +543,7 @@ class Campaign < ActiveRecord::Base
     return false if script.robo_recordings.size == 0
     Delayed::Job.enqueue BroadcastCampaignJob.new(self.id)
     UserMailer.new.notify_broadcast_start(self,user) if Rails.env == 'heroku'
-<<<<<<< HEAD
-    update_attribute(:calls_in_progress, true)
-=======
     update_attribute(:calls_in_progress, true)    
->>>>>>> heroku-prod
   end
 
   def stop
