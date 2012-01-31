@@ -30,7 +30,8 @@ class Campaign < ActiveRecord::Base
   attr_accessor :predictive_alpha, :predictive_beta
 
   validates :name, :presence => true
-  validates :caller_id, :presence => {:on => :update}, :numericality => {:on => :update}, :length => {:on => :update, :minimum => 10, :maximum => 10}
+  validates :caller_id, :presence => true, :unless => :new_campaign
+  validates :caller_id, :numericality => {:on => :update}, :length => {:on => :update, :minimum => 10, :maximum => 10}, :unless => Proc.new{|campaign| campaign.caller_id && campaign.caller_id.start_with?('+')}
   validate :set_caller_id_error_msg
   validate :predictive_type_change
   cattr_reader :per_page
@@ -45,17 +46,21 @@ class Campaign < ActiveRecord::Base
     PREDICTIVE = "algorithm1"
     PROGRESSIVE = "progressive"
   end
+
+  def new_campaign
+    new_record?
+  end
   
   def set_caller_id_error_msg
       if errors[:caller_id].any?
-        errors.add(:base, 'Your Caller ID must be a valid 10-digit phone number.')
+        errors.add(:base, 'Your Caller ID must be a valid 10-digit phone number or an international number')
         errors[:caller_id].clear
       end
     end
 
   def set_caller_id_error_msg
     if errors[:caller_id].any?
-      errors.add(:base, 'Your Caller ID must be a valid 10-digit phone number.')
+      errors.add(:base, 'Your Caller ID must be a valid 10-digit phone number or an international number')
       errors[:caller_id].clear
     end
   end
