@@ -95,6 +95,8 @@ class CallerController < ApplicationController
     if caller_session.campaign.predictive_type == Campaign::Type::PREVIEW || caller_session.campaign.predictive_type == Campaign::Type::PROGRESSIVE
       voter = caller_session.campaign.next_voter_in_dial_queue(params[:voter_id])
       caller_session.publish('caller_connected', voter ? voter.info : {}) 
+    else
+      caller_session.publish('caller_connected_dialer', {})
     end
     render :nothing => true
   end

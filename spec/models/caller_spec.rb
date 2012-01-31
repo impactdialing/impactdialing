@@ -144,7 +144,14 @@ describe Caller do
     Factory(:caller)
     should validate_uniqueness_of :email
   end
-
+  
+  it "returns name for phone-only-caller, email for web-caller " do
+    phones_only_caller = Factory(:caller, :is_phones_only => true, :name => "name", :email => "email1@gmail.com")
+    web_caller = Factory(:caller, :is_phones_only => false, :name => "name", :email => "email2@gmail.com")
+    phones_only_caller.identity_name.should == "name"
+    web_caller.identity_name.should == "email2@gmail.com"
+  end
+  
   describe "active session" do
     let(:caller) { Factory(:caller, :account => user.account) }
 

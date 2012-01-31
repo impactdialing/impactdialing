@@ -30,27 +30,27 @@ describe CampaignsController do
       user.account.campaigns.active.robo.last.script.should == active_script
     end
 
-    describe "voicemails" do
-      let(:recording) { Factory(:recording) }
-
-      it "creates a new robo campaign with a answering machine recording" do
-        lambda {
-          post :create, :campaign => {:caller_id => '0123456789', :use_recordings => true, :recording_id => recording.id}
-        }.should change(user.account.campaigns.active.robo, :size).by(1)
-        created_campaign = user.account.campaigns.active.robo.last
-        created_campaign.answering_machine_detect.should be_true
-        created_campaign.recording.should == recording
-      end
-
-      it "does not default to answering machine recording" do
-        lambda {
-          post :create, :campaign => {:caller_id => '0123456789'}
-        }.should change(user.account.campaigns.active.robo, :size).by(1)
-        created_campaign = user.account.campaigns.active.robo.last
-        created_campaign.answering_machine_detect.should be_false
-        created_campaign.recording.should be_nil
-      end
-    end
+    #describe "voicemails" do
+    #  let(:recording) { Factory(:recording) }
+    #
+    #  it "creates a new robo campaign with a answering machine recording" do
+    #    lambda {
+    #      post :create, :campaign => {:caller_id => '0123456789', :use_recordings => true, :recording_id => recording.id}
+    #    }.should change(user.account.campaigns.active.robo, :size).by(1)
+    #    created_campaign = user.account.campaigns.active.robo.last
+    #    created_campaign.answering_machine_detect.should be_true
+    #    created_campaign.recording.should == recording
+    #  end
+    #
+    #  it "does not default to answering machine recording" do
+    #    lambda {
+    #      post :create, :campaign => {:caller_id => '0123456789'}
+    #    }.should change(user.account.campaigns.active.robo, :size).by(1)
+    #    created_campaign = user.account.campaigns.active.robo.last
+    #    created_campaign.answering_machine_detect.should be_false
+    #    created_campaign.recording.should be_nil
+    #  end
+    #end
 
   end
 
