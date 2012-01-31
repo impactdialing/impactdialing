@@ -11,7 +11,7 @@ module Api
       
       if !params[:campaign_id].blank? && !params[:account_id].blank?
         campaign = Campaign.find(params[:campaign_id])
-        if campaign.account_id != params[:account_id]
+        if campaign.account_id.to_s != params[:account_id]
           response['error'] = {code: '400' , message: 'Campaign is not assigned to the account'}
           return
         end
@@ -26,15 +26,17 @@ module Api
     
     def create
       response_result = Hash.new
-      validate_params(response_result)      
-      begin
-        Caller.create!(email: params[:email], account_id: params[:account_id], password: params[:password], campaign_id: params[:campaign_id])
-      rescue Exception => err
-        puts err
-        response_result['error'] = {code: '400', message: err.to_s}
-      end
-      if response_result['error'].blank?
-        response_result['success'] = {code: '200', message:'Lead Imported Successfully'}     
+      validate_params(response_result)     
+      unless response_result['error'].nil?
+        begin
+          Caller.create!(email: params[:email], account_id: params[:account_id], password: params[:password], campaign_id: params[:campaign_id])
+        rescue Exception => err
+          puts err
+          response_result['error'] = {code: '400', message: err.to_s}
+        end
+        if response_result['error'].blank?
+          response_result['success'] = {code: '200', message:'Lead Imported Successfully'}     
+        end
       end
       render json: response_result      
     end
