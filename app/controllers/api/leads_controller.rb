@@ -1,50 +1,42 @@
 module Api
   class LeadsController < ApiController
   
-    def validate_params(response)
-    
+    def validate_params
       begin
         Campaign.find(params[:campaign_id])
         Account.find(params[:account_id])
       rescue Exception => err
-        response['error'] = {code: '404', message:err.to_s}          
-        return
+        render_json_response({status: 'error', code: '404', message:err.to_s})          
+        return false
       end
       
       if !params[:campaign_id].blank? && !params[:account_id].blank?
         campaign = Campaign.find(params[:campaign_id])
         if campaign.account_id.to_s != params[:account_id]
-          response['error'] = {code: '400' , message: 'Campaign is not assigned to the account'}
-          return
+          render_json_response({status: 'error', code: '400' , message: 'Campaign is not assigned to the account'})
+          return false
         end
       end    
-    
+      return true
     end
   
   
     def create
-      response_result = Hash.new
-      validate_params(response_result)
-      if response_result['error'].nil?
-        voter_list = VoterList.find_by_name_and_campaign_id('web_form',params[:campaign_id])
-        if voter_list.nil?
-          voter_list =  VoterList.create(name: 'web_form', account_id: params[:account_id], active: true, campaign_id: params[:campaign_id], enabled: true)
-        end
-    
-        begin
-          Voter.create!(:Phone => params[:phone_number], :voter_list => voter_list, 
-          :account_id => params[:account_id], :campaign_id => params[:campaign_id], CustomID: params[:custom_id],
-          FirstName: params[:first_name], LastName: params[:last_name], MiddleName: params[:middle_name], Email: params[:email], address: params[:address],
-           city: params[:city], state: params[:state], zip_code: params[:zip_code], country: params[:country], priority: "1")        
-        rescue Exception => err
-          response_result['error'] = {code: '400', message: err.to_s}
-        end
-  
-        if response_result['error'].blank?
-          response_result['success'] = {code: '200', message:'Lead Imported Successfully'}     
-        end
+      return unless validate_params
+      voter_list = VoterList.find_by_name_and_campaign_id('web_form',params[:campaign_id])
+      if voter_list.nil?
+        voter_list =  VoterList.create(name: 'web_form', account_id: params[:account_id], active: true, campaign_id: params[:campaign_id], enabled: true)
+      end    
+      begin
+        Voter.create!(:Phone => params[:phone_number], :voter_list => voter_list, 
+        :account_id => params[:account_id], :campaign_id => params[:campaign_id], CustomID: params[:custom_id],
+        FirstName: params[:first_name], LastName: params[:last_name], MiddleName: params[:middle_name], Email: params[:email], address: params[:address],
+         city: params[:city], state: params[:state], zip_code: params[:zip_code], country: params[:country], priority: "1")        
+      rescue Exception => err
+        render_json_response({status: 'error',code: '400', message: err.to_s})
+        return
       end
-      render json: response_result
+      render_json_response({status: 'ok', code: '200', message:'Lead Imported Successfully'})
     end
   
   end
