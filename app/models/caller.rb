@@ -13,7 +13,11 @@ class Caller < ActiveRecord::Base
 
   cattr_reader :per_page
   @@per_page = 25
-
+  
+  def identity_name
+    is_phones_only?  ? name : email
+  end
+  
   def create_uniq_pin
     uniq_pin=0
     while uniq_pin==0 do
