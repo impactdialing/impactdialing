@@ -9,6 +9,11 @@ ImpactDialing::Application.routes.draw do
   match '/client/policies', :to => 'client#policies', :as => :client_policies
   match '/broadcast/policies', :to => 'broadcast#policies', :as => :broadcast_policies
   match '/homecss/css/style.css', :to => 'home#homecss'
+  
+  namespace 'api' do
+    resources :leads
+    resources :callers
+  end
 
   namespace 'admin' do
     [:campaigns, :scripts, :callers].each do |entities|
@@ -74,7 +79,6 @@ ImpactDialing::Application.routes.draw do
       resources :voter_lists, :except => [:new, :show] do
         collection do 
            post :import 
-           post :insert_lead
         end
       end
     end
