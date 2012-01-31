@@ -1,4 +1,5 @@
 <% form||=nil %>
+<p><%= form.check_box :answering_machine_detect %>&nbsp;Automatically detect voicemails</p>
 <% if !@campaign.account.recordings.blank? %>
     <p><%= form.check_box :use_recordings, :onclick=>"doRecord();" %>&nbsp;Leave voicemail message</p>
 

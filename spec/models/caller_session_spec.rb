@@ -119,7 +119,7 @@ describe CallerSession do
   end
 
   describe "preview dialing" do
-    let(:campaign) { Factory(:campaign, :robo => false, :predictive_type => 'preview', use_recordings: true) }
+    let(:campaign) { Factory(:campaign, :robo => false, :predictive_type => 'preview', answering_machine_detect: true) }
     let(:voter) { Factory(:voter, :campaign => campaign) }
     let(:caller) { Factory(:caller) }
 

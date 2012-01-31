@@ -60,14 +60,6 @@ class Campaign < ActiveRecord::Base
     end
   end
 
-  def answering_machine_detect
-    use_recordings?
-  end
-
-  def answering_machine_detect?
-    use_recordings?
-  end
-
   def predictive_type_change
     if predictive_type_changed? && callers_log_in?
       errors.add(:base, 'You cannot change dialing modes while callers are logged in.')

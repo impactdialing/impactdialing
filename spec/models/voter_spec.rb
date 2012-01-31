@@ -173,7 +173,7 @@ describe Voter do
   end
 
   describe "predictive dialing" do
-    let(:campaign) { Factory(:campaign, :robo => false, :predictive_type => 'algorithm1', use_recordings: true) }
+    let(:campaign) { Factory(:campaign, :robo => false, :predictive_type => 'algorithm1', answering_machine_detect: true) }
     let(:voter) { Factory(:voter, :campaign => campaign) }
     let(:client) { mock(:client).tap { |client| Twilio::REST::Client.stub(:new).and_return(client) } }
 
