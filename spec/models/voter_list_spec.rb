@@ -277,8 +277,8 @@ describe VoterList do
         VoterList.should_receive(:read_from_s3).and_return(s3)
         s3.should_receive(:value).and_return(File.open("#{fixture_path}/files/missing_phone_with_custom_fields_list.csv").read)        
         
-        MAPPINGS = CsvMapping.new({"Phone"=>"Phone", "Name"=>"", "Custom"=>"Custom"})
-        @result = voter_list.import_leads(MAPPINGS,"#{fixture_path}/files/missing_phone_with_custom_fields_list.csv",",")
+        mappings = CsvMapping.new({"Phone"=>"Phone", "Name"=>"", "Custom"=>"Custom"})
+        @result = voter_list.import_leads(mappings,"#{fixture_path}/files/missing_phone_with_custom_fields_list.csv",",")
         @result.should == { :successCount => 2,  :failedCount => 1 }
       end
     end

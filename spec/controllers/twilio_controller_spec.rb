@@ -31,13 +31,6 @@ describe TwilioController do
     post :report_error, :call_attempt_id => call_attempt.id, :CallStatus => CallAttempt::Status::INPROGRESS
     response.body.should == Twilio::Verb.hangup
   end
-
-  it "plays a recorded message for a call answered by a machine" do
-    recorded_message = Factory(:recording)
-    campaign.update_attributes(:answering_machine_detect => true, :use_recordings => true, :recording => recorded_message)
-    post :callback, :call_attempt_id => call_attempt.id, :CallStatus => 'in-progress', :AnsweredBy => 'machine'
-    response.body.should == call_attempt.play_recorded_message
-  end
   
   it "doesn't updates voter status, if it is answered by machine" do 
     voter = Factory(:voter, :status => CallAttempt::Status::HANGUP, :campaign => campaign)
