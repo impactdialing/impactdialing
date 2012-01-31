@@ -254,6 +254,7 @@ describe CallerController do
     end
 
     it "gathers responses" do
+      voter.update_attributes(:last_call_attempt => call_attempt)
       Factory(:possible_response, :keypad => 1, :question => first_question, :value => "value")
       post :gather_response, :id => caller.id, :session_id => caller_session.id, :question_id => first_question.id, :Digits => "1"
       voter.answers.size.should == 1
@@ -269,6 +270,7 @@ describe CallerController do
     end
 
     it "places the voter in a conference when all questions are answered" do
+      voter.update_attributes(:last_call_attempt => call_attempt)
       Factory(:possible_response, :keypad => 1, :question => first_question, :value => "value")
       post :gather_response, :id => caller.id, :session_id => caller_session.id, :question_id => first_question.id, :Digits => "1"
       response.body.should == call_attempt.caller_session.start
