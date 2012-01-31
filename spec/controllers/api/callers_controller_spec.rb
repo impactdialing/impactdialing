@@ -18,8 +18,8 @@ describe Api::CallersController do
   it 'should throw an error if campaign id is not passed' do
     post :create, email: "email@email.com", api_key: '1mp@ctd1@l1ng'
     result = JSON.parse(response.body)
-    result['error']['code'].should eq('400')
-    result['error']['message'].should eq("Validation failed: Campaign can't be blank")
+    result['error']['code'].should eq('404')
+    result['error']['message'].should eq("Couldn't find Campaign without an ID")
   end
   
   it 'should throw an error if campaign does not exist' do
@@ -39,15 +39,14 @@ describe Api::CallersController do
 
   it 'should throw an error if campaign does not belong to account ' do
     another_account = Factory(:account)
-    post :create, campaign_id: @campaign.id, account_id: another_account.id, api_key: '1mp@ctd1@l1ng'
+    post :create, campaign_id: @campaign.id, account_id: another_account.id.to_s, api_key: '1mp@ctd1@l1ng'
     result = JSON.parse(response.body)
     result['error']['code'].should eq('400')
     result['error']['message'].should eq('Campaign is not assigned to the account')
   end
   
   it 'should throw an error if caller email is blank ' do
-    another_account = Factory(:account)
-    post :create, campaign_id: @campaign.id, account_id: @campaign.account_id, api_key: '1mp@ctd1@l1ng'
+    post :create, campaign_id: @campaign.id, account_id: @campaign.account_id.to_s, api_key: '1mp@ctd1@l1ng'
     result = JSON.parse(response.body)
     result['error']['code'].should eq('400')
     result['error']['message'].should eq('Email cannot be blank')
@@ -55,7 +54,7 @@ describe Api::CallersController do
   
   it 'should throw an error if caller email is already taken ' do
     Factory(:caller, email: 'abc@abc.com', campaign_id: @campaign.id, account_id: @campaign.account_id)
-    post :create, email: 'abc@abc.com', campaign_id: @campaign.id, account_id: @campaign.account_id, api_key: '1mp@ctd1@l1ng'
+    post :create, email: 'abc@abc.com', campaign_id: @campaign.id, account_id: @campaign.account_id.to_s, api_key: '1mp@ctd1@l1ng'
     result = JSON.parse(response.body)
     result['error']['code'].should eq('400')
     result['error']['message'].should eq('Validation failed: Email has already been taken')

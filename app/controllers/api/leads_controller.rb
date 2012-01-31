@@ -25,7 +25,7 @@ module Api
     def create
       response_result = Hash.new
       validate_params(response_result)
-      unless response_result['error'].nil?
+      if response_result['error'].nil?
         voter_list = VoterList.find_by_name_and_campaign_id('web_form',params[:campaign_id])
         if voter_list.nil?
           voter_list =  VoterList.create(name: 'web_form', account_id: params[:account_id], active: true, campaign_id: params[:campaign_id], enabled: true)
