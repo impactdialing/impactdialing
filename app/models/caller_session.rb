@@ -138,6 +138,11 @@ class CallerSession < ActiveRecord::Base
     end
   end
   
+  def next_start_for_phones_only
+    Moderator.publish_event(campaign, 'voter_response_submitted', {:caller_session_id => id, :campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)}) 
+    ask_caller_to_choose_voter 
+  end
+  
   def redirect_to_phones_only_start
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
     Twilio::Call.redirect(sid, phones_only_caller_index_url(:host => Settings.host, :port => Settings.port, session_id: id, :campaign_reassigned => caller_reassigned_to_another_campaign?))
