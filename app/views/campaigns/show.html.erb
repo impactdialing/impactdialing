@@ -18,7 +18,7 @@
         <p><label for="">Caller ID</label><br>
           <%= f.text_field :caller_id, {:class=>"field size3"} %></p>
 
-        <p><label for="">Script</label><br>
+        <p><label for="">Message</label><br>
           <%= f.collection_select(:script_id, @scripts, :id, :name, {:prompt => true}, {:class=>"field"}) %>
         </p>
       </fieldset>
@@ -60,6 +60,6 @@
     </fieldset>
 <% end %>
 <fieldset>
-  <legend>Add Lists</legend>
+  <legend>Add lists</legend>
   <%= render :partial => "voter_lists/new", :locals => { :path => campaign_voter_lists_path(@campaign) } %>
 </fieldset>
