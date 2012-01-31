@@ -27,7 +27,7 @@ module Api
     def create
       response_result = Hash.new
       validate_params(response_result)     
-      unless response_result['error'].nil?
+      if response_result['error'].nil?
         begin
           Caller.create!(email: params[:email], account_id: params[:account_id], password: params[:password], campaign_id: params[:campaign_id])
         rescue Exception => err
