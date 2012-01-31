@@ -265,6 +265,7 @@ function subscribe(session_key) {
     channel.bind('caller_connected_dialer', function(data) {
         hide_all_actions();
         $("#stop_calling").show();
+        set_message("Status: Dialing.");
     });
 
     channel.bind('answered_by_machine', function(data) {
