@@ -364,15 +364,6 @@ describe "predictive_dialer" do
       #progressive_campaign.is_preview_or_progressive.should be_true
     end
 
-
-    it "detects answering machines while using recordings" do
-      campaign = Factory.build(:campaign)
-      campaign.answering_machine_detect.should be_false
-      campaign.use_recordings = true
-      campaign.save
-      campaign.reload.answering_machine_detect.should == true
-    end
-
     it "restoring makes it active" do
       campaign = Factory(:campaign, :active => false)
       campaign.restore
