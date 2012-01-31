@@ -341,7 +341,7 @@ describe "predictive_dialer" do
       campaign = Campaign.new(:account => Factory(:account))
       campaign.save(:validate => false)
       campaign.update_attributes(:caller_id => '23456yuiid').should be_false
-      campaign.errors[:base].should == ['Your Caller ID must be a valid 10-digit phone number.']
+      campaign.errors[:base].should == ['Your Caller ID must be a valid 10-digit phone number or an international number']
       campaign.errors[:caller_id].should == []
     end
 
