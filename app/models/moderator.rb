@@ -20,7 +20,7 @@ class Moderator < ActiveRecord::Base
   end
   
   def self.caller_connected_to_campaign(caller, campaign, caller_session)
-    caller.email = caller.name if caller.is_phones_only?
+    caller.email = caller.identity_name
     caller_info = caller.info
     data = caller_info.merge(:campaign_name => campaign.name, :session_id => caller_session.id, :campaign_fields => {:id => campaign.id, 
       :callers_logged_in => campaign.caller_sessions.on_call.length+1,
