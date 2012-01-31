@@ -21,10 +21,8 @@
         <p><label for="">Caller ID</label><br>
           <%= f.text_field :caller_id, {:class=>"field size3"} %></p>
 
-        <p>Caller ID refers to the phone number that your leads see on their Caller ID. In many circumstances, you are
-          legally required to display a valid Caller ID.</p>
-
         <p><label for="">Script</label><br>
+        <p><label for="">Message</label><br>
           <%= f.collection_select(:script_id, @scripts, :id, :name, {:prompt => true}, {:class=>"field"}) %>
         </p>
 
@@ -70,6 +68,6 @@
     </fieldset>
 <% end %>
 <fieldset>
-  <legend>Add Lists</legend>
-  <%= render :partial => "voter_lists/new", :locals => {:path => campaign_voter_lists_path(@campaign)} %>
+  <legend>Add lists</legend>
+  <%= render :partial => "voter_lists/new", :locals => { :path => campaign_voter_lists_path(@campaign) } %>
 </fieldset>
