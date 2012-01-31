@@ -15,8 +15,6 @@ class BroadcastCampaignJob
       Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
       @campaign.dial
     rescue => e
-      puts e
-      puts e.backtrace.join("\n")
       @campaign.stop
     end
     

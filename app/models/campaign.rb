@@ -45,6 +45,13 @@ class Campaign < ActiveRecord::Base
     PREDICTIVE = "algorithm1"
     PROGRESSIVE = "progressive"
   end
+  
+  def set_caller_id_error_msg
+      if errors[:caller_id].any?
+        errors.add(:base, 'Your Caller ID must be a valid 10-digit phone number.')
+        errors[:caller_id].clear
+      end
+    end
 
   def set_caller_id_error_msg
     if errors[:caller_id].any?
@@ -66,6 +73,13 @@ class Campaign < ActiveRecord::Base
       errors.add(:base, 'You cannot change dialing modes while callers are logged in.')
     end
   end
+  
+  
+  def predictive_type_change
+     if predictive_type_changed? && callers_log_in?
+       errors.add(:base, 'You cannot change dialing modes while callers are logged in.')
+     end
+   end
 
   def is_preview_or_progressive
     predictive_type == Type::PREVIEW || predictive_type == Type::PROGRESSIVE
@@ -490,8 +504,6 @@ class Campaign < ActiveRecord::Base
     simulated_values.nil? ? 0 : simulated_values.best_wrapup_time.nil? ? 0 : simulated_values.best_wrapup_time
   end
 
-
-
   def num_to_call_predictive_simulate
     dials_made = call_attempts.between(10.minutes.ago, Time.now)
     calls_wrapping_up = dials_made.with_status(CallAttempt::Status::SUCCESS).not_wrapped_up
@@ -519,7 +531,7 @@ class Campaign < ActiveRecord::Base
     return false if script.robo_recordings.size == 0
     Delayed::Job.enqueue BroadcastCampaignJob.new(self.id)
     UserMailer.new.notify_broadcast_start(self,user) if Rails.env == 'heroku'
-    update_attribute(:calls_in_progress, true)
+    update_attribute(:calls_in_progress, true)    
   end
 
   def stop
@@ -609,20 +621,25 @@ class Campaign < ActiveRecord::Base
 
   def answers_result(from_date, to_date)
     result = Hash.new
-    script.questions.each do |question|
-      total_answers = question.answered_within(from_date, to_date, self.id).size
-      result[question.text] = question.possible_responses.collect { |possible_response| possible_response.stats(from_date, to_date, total_answers, self.id) }
-      result[question.text] << {answer: "[No response]", number: 0, percentage:  0} unless question.possible_responses.find_by_value("[No response]").present?
+    unless script.nil?
+      script.questions.each do |question|
+        total_answers = question.answered_within(from_date, to_date, self.id).size
+        result[question.text] = question.possible_responses.collect { |possible_response| possible_response.stats(from_date, to_date, total_answers, self.id) }
+        result[question.text] << {answer: "[No response]", number: 0, percentage:  0} unless question.possible_responses.find_by_value("[No response]").present?
+      end
     end
+    
     result
   end
 
   def robo_answer_results(from_date, to_date)
     result = Hash.new
-    script.robo_recordings.each do |robo_recording|
-      total_answers = robo_recording.answered_within(from_date, to_date, self.id).size
-      result[robo_recording.name] = robo_recording.recording_responses.collect { |recording_response| recording_response.stats(from_date, to_date, total_answers, self.id) }
-      result[robo_recording.name] << {answer: "[No response]", number: 0, percentage:  0} unless robo_recording.recording_responses.find_by_response("[No response]").present?
+    unless script.nil?
+      script.robo_recordings.each do |robo_recording|
+        total_answers = robo_recording.answered_within(from_date, to_date, self.id).size
+        result[robo_recording.name] = robo_recording.recording_responses.collect { |recording_response| recording_response.stats(from_date, to_date, total_answers, self.id) }
+        result[robo_recording.name] << {answer: "[No response]", number: 0, percentage:  0} unless robo_recording.recording_responses.find_by_response("[No response]").present?
+      end
     end
     result
   end

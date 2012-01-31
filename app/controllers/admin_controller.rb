@@ -4,33 +4,17 @@ class AdminController < ApplicationController
   layout "basic"
   USER_NAME, PASSWORD = "impact", "Mb<3Ad4F@2tCallz"
   before_filter :authenticate
-  require "nokogiri"
+
 
   def state
-    if !params[:end].blank?
-      cs = CallerSession.find(params[:end])
-      cs.end_running_call
-    end
-    calls_to_end = CallAttempt.all(:conditions=>"tEndTime is not NULL and call_end is NULL")
-    calls_to_end.each do |c|
-      c.call_end = c.tEndTime
-      c.save
-    end
     if Time.now.hour > 0 && Time.now.hour < 6
       @calling_status = "<font color=red>Unavailable, off hours</font>".html_safe
     else
       @calling_status = "Available".html_safe
     end
-    @all_calls = CallAttempt.find_all_by_call_end(nil).size
     @logged_in_campaigns = Campaign.all(:conditions=>"id in (select distinct campaign_id from caller_sessions where on_call=1)")
     @logged_in_callers = CallerSession.find_all_by_on_call(1)
-    @ready_to_dial = CallAttempt.find_all_by_status("Call ready to dial", :conditions=>"call_end is null")
     @errors=""
-    #t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-    #a=t.call("GET", "Calls?Status=queued", {})
-    #doc  = Nokogiri::XML(a)
-    #tcalls=doc.xpath("//Calls")
-    #@queued=tcalls.first.attributes["total"].value if tcalls.length>0
   end
 
   def index

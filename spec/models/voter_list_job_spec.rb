@@ -105,7 +105,11 @@ describe VoterListJob do
         job = VoterListJob.new(@separator,@json_csv_column_headers,@csv_to_system_map,@csv_filename,'bui',@campaign.id,@account.id,nil,nil)  
         mailer = mock
         UserMailer.should_receive(:new).and_return(mailer)
-        mailer.should_receive(:voter_list_upload)                
+        mailer.should_receive(:voter_list_upload)   
+        s3 = mock
+        VoterList.should_receive(:read_from_s3).and_return(s3)
+        s3.should_receive(:value).and_return(File.open("#{fixture_path}/files/invalid_voters_list.csv").read)
+                     
         job.perform['errors'].should include "Invalid CSV file. Could not import."
       end
 
@@ -115,6 +119,9 @@ describe VoterListJob do
         mailer = mock
         UserMailer.should_receive(:new).and_return(mailer)
         mailer.should_receive(:voter_list_upload)                
+        s3 = mock
+        VoterList.should_receive(:read_from_s3).and_return(s3)
+        s3.should_receive(:value).and_return(File.open("#{fixture_path}/files/invalid_voters_list.csv").read)        
         job.perform
         VoterList.all.should be_empty
       end
