@@ -64,6 +64,7 @@ class CampaignsController < ClientController
     @callers = account.callers.active
     @lists = @campaign.voter_lists
     @voter_list = @campaign.voter_lists.new
+    @voicemails = account.scripts.message.active
   end
 
   def control

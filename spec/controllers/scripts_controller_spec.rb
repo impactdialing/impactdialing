@@ -34,6 +34,13 @@ describe ScriptsController do
       assigns(:scripts).should == [active_script]
     end
 
+    it "lists interactive scripts" do
+      script = Factory(:script, :account => user.account, :active => true, :robo => true)
+      script_for_voicemail = Factory(:script, :account => user.account, :active => true, :robo => true, :for_voicemail => true)
+      get :index
+      assigns(:scripts).should == [script]
+    end
+
     it "creates a new script" do
       get :new
       assigns(:script).should be
