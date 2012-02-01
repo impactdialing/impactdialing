@@ -23,9 +23,9 @@ module Api
   
     def create
       return unless validate_params
-      voter_list = VoterList.find_by_name_and_campaign_id('web_form',params[:campaign_id])
+      voter_list = VoterList.find_by_name_and_campaign_id("web_form_campaign_#{params[:campaign_id]}",params[:campaign_id])
       if voter_list.nil?
-        voter_list =  VoterList.create(name: 'web_form', account_id: params[:account_id], active: true, campaign_id: params[:campaign_id], enabled: true)
+        voter_list =  VoterList.create(name: "web_form_campaign_#{params[:campaign_id]}", account_id: params[:account_id], active: true, campaign_id: params[:campaign_id], enabled: true)
       end    
       begin
         Voter.create!(:Phone => params[:phone_number], :voter_list => voter_list, 
