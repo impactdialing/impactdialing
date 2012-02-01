@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120126100314) do
+ActiveRecord::Schema.define(:version => 20120131133541) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -441,6 +441,7 @@ ActiveRecord::Schema.define(:version => 20120126100314) do
     t.string   "note_14"
     t.string   "note_15"
     t.string   "note_16"
+    t.boolean  "for_voicemail"
   end
 
   create_table "seos", :force => true do |t|

@@ -15,6 +15,8 @@ class Script < ActiveRecord::Base
   scope :robo, :conditions => {:robo => true }
   scope :manual, :conditions => {:robo => false }
   scope :active, {:conditions => {:active => 1}}
+  scope :interactive, robo.where("for_voicemail is NULL or for_voicemail = #{false}")
+  scope :message, robo.where(:for_voicemail => true)
 
   after_find :set_result_set
 
