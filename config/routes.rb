@@ -93,6 +93,7 @@ ImpactDialing::Application.routes.draw do
     end
     get '/deleted_campaigns', :to => 'broadcast/campaigns#deleted', :as => :broadcast_deleted_campaigns
     resources :scripts
+    resources :messages
     match 'monitor', :to => 'monitor#index'
     match '/', :to => 'broadcast#index', :as => 'broadcast_root'
     match '/login', :to => 'broadcast#login', :as => 'broadcast_login'
