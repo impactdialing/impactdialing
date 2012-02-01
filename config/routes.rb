@@ -113,7 +113,10 @@ ImpactDialing::Application.routes.draw do
     end
     resources :campaigns, :only => [] do
       resources :reports do
-        collection { get :download }
+        collection do
+          get :download_report
+          post :download
+        end
       end
     end
     resource :account, :only => [:show, :create]
