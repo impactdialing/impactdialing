@@ -6,7 +6,7 @@ module Api
         Campaign.find(params[:campaign_id])
         Account.find(params[:account_id])
       rescue Exception => err
-        render_json_response({status: 'error', code: '404', message:err.to_s})          
+        render_json_response({status: 'error', code: '404', message: err.to_s})
         return false
       end
       
@@ -34,7 +34,7 @@ module Api
         render_json_response({status: 'error', code: '400', message: err.to_s})
         return
       end
-      render_json_response({status: 'ok', code: '200', message:'Caller created successfully'})
+      render_json_response({status: 'ok', code: '200', message: 'Caller created successfully'})
     end
       
   end
