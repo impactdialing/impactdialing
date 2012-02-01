@@ -21,14 +21,11 @@
         <p><label for="">Caller ID</label><br>
           <%= f.text_field :caller_id, {:class=>"field size3"} %></p>
 
-        <p><label for="">Script</label><br>
-        <p><label for="">Message</label><br>
-          <%= f.collection_select(:script_id, @scripts, :id, :name, {:prompt => true}, {:class=>"field"}) %>
-        </p>
+        <p><label for="">Live Message</label><%= f.collection_select(:script_id, @scripts, :id, :name, {:prompt => true}, {:class=>"field"}) %></p>
 
-        <!--<p><label for="">Message</label><br>-->
-          <!--<%= render :partial => 'voicemail', :locals => {:form => f} %>-->
-        <!--</p>-->
+        <p><label for="">Voicemail Message</label><br>
+          <%= render :partial => 'voicemail', :locals => {:form => f} %>
+        </p>
       </fieldset>
       <fieldset>
         <legend>Available lists</legend>
