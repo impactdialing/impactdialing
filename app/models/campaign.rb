@@ -40,6 +40,7 @@ class Campaign < ActiveRecord::Base
 
   before_validation :set_untitled_name
   before_save :set_untitled_name
+  before_save :set_answering_machine_detect
   before_validation :sanitize_caller_id
 
   module Type
@@ -99,6 +100,10 @@ class Campaign < ActiveRecord::Base
       break unless Campaign.find_by_campaign_id(pin)
     end
     self.campaign_id = pin
+  end
+
+  def set_answering_machine_detect
+    self.answering_machine_detect = self.use_recordings = robo? && !voicemail_script.nil?
   end
 
   def disable_voter_list
