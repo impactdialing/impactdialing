@@ -87,11 +87,13 @@ ImpactDialing::Application.routes.draw do
         get :usage
         get :dials
         post :dial_details
+        post :download
         get :answers
       end
     end
     get '/deleted_campaigns', :to => 'broadcast/campaigns#deleted', :as => :broadcast_deleted_campaigns
     resources :scripts
+    resources :messages
     match 'monitor', :to => 'monitor#index'
     match '/', :to => 'broadcast#index', :as => 'broadcast_root'
     match '/login', :to => 'broadcast#login', :as => 'broadcast_login'
@@ -113,7 +115,10 @@ ImpactDialing::Application.routes.draw do
     end
     resources :campaigns, :only => [] do
       resources :reports do
-        collection { get :download }
+        collection do
+          get :download_report
+          post :download
+        end
       end
     end
     resource :account, :only => [:show, :create]

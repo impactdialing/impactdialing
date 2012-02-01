@@ -15,7 +15,7 @@ class ScriptsController < ClientController
   end
 
   def index
-    @scripts = @user.account.scripts.active.robo.paginate(:page => params[:page])
+    @scripts = @user.account.scripts.active.interactive.paginate(:page => params[:page])
   end
 
   def new_script

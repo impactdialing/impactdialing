@@ -341,8 +341,20 @@ describe "predictive_dialer" do
       campaign = Campaign.new(:account => Factory(:account))
       campaign.save(:validate => false)
       campaign.update_attributes(:caller_id => '23456yuiid').should be_false
-      campaign.errors[:base].should == ['Your Caller ID must be a valid 10-digit phone number.']
+      campaign.errors[:base].should == ['Your Caller ID must be a valid 10-digit phone number or an international number']
       campaign.errors[:caller_id].should == []
+    end
+
+    it "should not have a blank caller_id" do
+      campaign = Factory(:campaign, :caller_id => nil)
+      campaign.should_not be_valid
+    end
+
+    it "skips validations for an international phone number" do
+      campaign = Factory.build(:campaign, :caller_id => "+98743987")
+      campaign.should be_valid
+      campaign = Factory.build(:campaign, :caller_id => "+987AB87A")
+      campaign.should be_valid
     end
 
     it 'return validation error, when callers are login and try to change dialing mode' do
