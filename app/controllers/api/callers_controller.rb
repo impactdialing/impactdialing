@@ -34,7 +34,7 @@ module Api
         render_json_response({status: 'error', code: '400', message: err.to_s})
         return
       end
-      render_json_response({status: 'ok', code: '200', message:'Caller created Successfully'})
+      render_json_response({status: 'ok', code: '200', message:'Caller created successfully'})
     end
       
   end
