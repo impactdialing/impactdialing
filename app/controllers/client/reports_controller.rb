@@ -66,7 +66,7 @@ module Client
       end
     end
     
-    def download_form
+    def download_report
       set_date_range
       @voter_fields = VoterList::VOTER_DATA_COLUMNS
       @custom_voter_fields = @user.account.custom_voter_fields.collect{ |field| field.name}      
