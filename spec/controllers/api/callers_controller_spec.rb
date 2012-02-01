@@ -55,6 +55,11 @@ describe Api::CallersController do
     JSON.parse(response.body).should eq({"status"=>"error", "message"=>"Validation failed: Email has already been taken"})
   end
   
+  it 'should create caller ' do
+    post :create, email: 'abc@abc.com', campaign_id: @campaign.id, account_id: @campaign.account_id.to_s, api_key: '1mp@ctd1@l1ng'
+    response.code.should eq('200')
+    JSON.parse(response.body).should eq({"status"=>"ok", "message"=>"Caller created Successfully"})
+  end
   
   
   
