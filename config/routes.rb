@@ -82,7 +82,7 @@ ImpactDialing::Application.routes.draw do
       collection do
         get :usage
         get :dials
-        get :dial_details
+        post :dial_details
         post :download
         get :answers
       end
