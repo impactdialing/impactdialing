@@ -1,7 +1,8 @@
 require 'spec_helper'
 
 describe MessagesController do
-  let(:user) { Factory(:user) }
+  let(:account) { Factory(:account) }
+  let(:user) { Factory(:user, :account => account) }
 
   before(:each) do
     login_as(user)
@@ -11,6 +12,8 @@ describe MessagesController do
     post :create, :script => {:name => 'some name'}
     assigns(:script).robo.should be_true
     assigns(:script).for_voicemail.should be_true
+    assigns(:script).active.should be_true
+    assigns(:script).account.should == account
   end
 
   it "displays the message" do

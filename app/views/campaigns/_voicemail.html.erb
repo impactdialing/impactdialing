@@ -1,18 +1,5 @@
 <% form||=nil %>
-<p><%= form.check_box :answering_machine_detect %>&nbsp;Automatically detect voicemails</p>
-<% if !@campaign.account.recordings.blank? %>
-    <p><%= form.check_box :use_recordings, :onclick=>"doRecord();" %>&nbsp;Leave voicemail message</p>
-
-    <div id="recordingsdiv"
-         <% if  !@campaign.use_recordings? %> style="display:none;"
-         <% end %>>
-      <label for=""><p>Voicemail</label><br>
-      <%= form.collection_select(:recording_id, @account.recordings.active, :id, :name, {:prompt => false}, {:class=>"field", :onchange=>"updatePreview();"}) %></p>
-      <div id="sndPreview"></div>
-    </div>
+<% if @voicemails %>
+      <%=form.collection_select(:voicemail_script_id, @voicemails, :id, :name, {:prompt => false, :include_blank => "No voicemail selected"}, {:class=>"field"}) %>
 <% end %>
-
-<p class="actions">
-  <a href='/client/recording_add?campaign_id=<%= @campaign.id %>' class="action secondary">Add voicemail message</a>
-</p>
 
