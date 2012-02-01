@@ -28,7 +28,7 @@ module Api
         voter_list =  VoterList.create(name: "web_form_campaign_#{params[:campaign_id]}", account_id: params[:account_id], active: true, campaign_id: params[:campaign_id], enabled: true)
       end    
       begin
-        Voter.create!(:Phone => params[:phone_number], :voter_list => voter_list, 
+        Voter.create!(:Phone => Voter.sanitize_phone(params[:phone_number]), :voter_list => voter_list, 
         :account_id => params[:account_id], :campaign_id => params[:campaign_id], CustomID: params[:custom_id],
         FirstName: params[:first_name], LastName: params[:last_name], MiddleName: params[:middle_name], Email: params[:email], address: params[:address],
          city: params[:city], state: params[:state], zip_code: params[:zip_code], country: params[:country], priority: "1")        
