@@ -43,15 +43,15 @@ class ReportsController < ClientController
     @campaign = account.campaigns.find(params[:id])
     set_report_period
     @voter_fields = VoterList::VOTER_DATA_COLUMNS
-    @custom_voter_fields = @user.account.custom_fields.collect{ |field| field.name}
-    respond_to do |format|
-      format.html
-      format.csv do
-        Delayed::Job.enqueue ReportJob.new(@campaign, @user, params[:voter_fields], params[:custom_voter_fields], params[:download_all_voters], @from_date, @to_date)
-        flash_message(:notice, I18n.t(:client_report_processing))
-        redirect_to reports_url
-      end
-    end
+    @custom_voter_fields = @user.account.custom_fields.collect{ |field| field.name}    
+  end
+  
+  def download
+    @campaign = account.campaigns.find(params[:id])
+    set_report_period
+    Delayed::Job.enqueue ReportJob.new(@campaign, @user, params[:voter_fields], params[:custom_voter_fields], params[:download_all_voters], @from_date, @to_date)
+    flash_message(:notice, I18n.t(:client_report_processing))
+    redirect_to reports_url
   end
   
   private
