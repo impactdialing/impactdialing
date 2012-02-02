@@ -13,11 +13,11 @@ module Client
     end
 
     def update_password
-      user = User.find(params[:user_id])
-      if user.password_reset_code == params[:reset_code]
-        user.new_password = params[:password]
-        user.clear_reset_code
-        user.save!
+      @user = User.find(params[:user_id])
+      if @user.password_reset_code == params[:reset_code]
+        @user.new_password = params[:password]
+        @user.clear_reset_code
+        flash_message(:notice, 'Your password needs to be 5 characters or greater.') unless @user.save
         flash_message(:notice, 'Your password has been successfully reset')
       else
         flash_message(:error, INVALID_RESET_TOKEN)
