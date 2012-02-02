@@ -6,8 +6,9 @@ class MessagesController < ClientController
   end
 
   def create
-    @script = Script.create(params[:script].merge(:robo => true, :for_voicemail => true, :active => true, :account => account))
-    redirect_to message_path(@script)
+    @script = Script.new(params[:script].merge(:robo => true, :for_voicemail => true, :active => true, :account => account))
+    render :action => 'new' unless @script.save
+    redirect_to message_path(@script) if @script.save
   end
 
   def show
