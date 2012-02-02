@@ -526,6 +526,17 @@ describe "predictive_dialer" do
       end
     end
 
+    describe "voicemails" do
+      it "uses answering machine and recordings" do
+        campaign = Factory(:campaign, :robo => true, :voicemail_script => Factory(:script, :robo => true, :for_voicemail => true))
+        campaign.answering_machine_detect?.should be_true
+        campaign.use_recordings.should be_true
+        campaign.update_attribute(:voicemail_script ,nil)
+        campaign.answering_machine_detect?.should be_false
+        campaign.use_recordings.should be_false
+      end
+    end
+
     describe 'lists campaigns' do
       before(:each) do
         @robo_campaign = Factory(:campaign, :robo => true)
