@@ -1,6 +1,7 @@
 module Api
   class CallersController < ApiController
 
+
     def validate_params
       begin
         Campaign.find(params[:campaign_id])
