@@ -121,10 +121,48 @@ describe Voter do
   end
 
   describe "Dialing" do
-    let(:campaign) { Factory(:campaign) }
+    let(:campaign) { Factory(:campaign, :robo => true) }
     let(:voter) { Factory(:voter, :campaign => campaign) }
 
     it "is dialed" do
+      call_attempt = Factory(:call_attempt)
+      voter.should_receive(:new_call_attempt).and_return(call_attempt)
+      callback_url = twilio_callback_url(:call_attempt_id => call_attempt, :host => Settings.host, :port => Settings.port)
+      fallback_url = 'blah'
+      callended_url = twilio_call_ended_url(:call_attempt_id => call_attempt, :host => Settings.host, :port => Settings.port)
+      Twilio::Call.should_receive(:make).with(
+          voter.campaign.caller_id,
+          voter.Phone,
+          callback_url,
+          'FallbackUrl' => fallback_url,
+          'StatusCallback' => callended_url,
+          'Timeout' => '20',
+          'IfMachine' => anything
+      ).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
+      voter.dial
+    end
+
+    it "hangs up after detecting answering machine" do
+      #campaign.update_attributes(:voicemail_script => Factory(:script))
+      call_attempt = Factory(:call_attempt)
+      voter.should_receive(:new_call_attempt).and_return(call_attempt)
+      callback_url = twilio_callback_url(:call_attempt_id => call_attempt, :host => Settings.host, :port => Settings.port)
+      fallback_url = 'blah'
+      callended_url = twilio_call_ended_url(:call_attempt_id => call_attempt, :host => Settings.host, :port => Settings.port)
+      Twilio::Call.should_receive(:make).with(
+          voter.campaign.caller_id,
+          voter.Phone,
+          callback_url,
+          'FallbackUrl' => fallback_url,
+          'StatusCallback' => callended_url,
+          'Timeout' => '20',
+          'IfMachine' => 'Hangup'
+      ).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
+      voter.dial
+    end
+
+    it "continues after detecting answering machine" do
+      campaign.update_attributes(:voicemail_script => Factory(:script))
       call_attempt = Factory(:call_attempt)
       voter.should_receive(:new_call_attempt).and_return(call_attempt)
       callback_url = twilio_callback_url(:call_attempt_id => call_attempt, :host => Settings.host, :port => Settings.port)
