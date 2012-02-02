@@ -1,6 +1,6 @@
 <h1><%= @script.new_record? ? "New message" : "Edit message" %></h1>
 <%= error_messages_for :script %>
-<%= form_for @script, :url => messages_path, :html => {:name => 'messageForm', :id => 'messageForm', :multipart => true} do |f| %>
+<%= form_for @script, :url => (@script.new_record? ? messages_path : message_path(@script.id)), :html => {:name => 'messageForm', :id => 'messageForm', :multipart => true} do |f| %>
     <%= f.hidden_field :robo %>
     <p>
       <label>Message name</label>

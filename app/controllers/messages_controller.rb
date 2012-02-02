@@ -18,4 +18,10 @@ class MessagesController < ClientController
   def show
     @script = Script.find(params[:id])
   end
+
+  def update
+    @script = Script.find(params[:id])
+    @script.update_attributes(params[:script])
+    redirect_to message_path(@script)
+  end
 end

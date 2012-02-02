@@ -16,6 +16,13 @@ describe MessagesController do
     assigns(:script).account.should == account
   end
 
+  it "should update a message" do
+    script = Factory(:script, :robo => true, :for_voicemail => true)
+    new_name = "new script name"
+    post :update, :id => script.id, :script => { :name => new_name}
+    assigns(:script).name.should == new_name
+  end
+
   it "displays the message" do
     script = Factory(:script, :robo => true, :for_voicemail => true)
     script.robo_recordings << Factory(:robo_recording)
