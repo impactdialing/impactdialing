@@ -55,14 +55,14 @@ class Campaign < ActiveRecord::Base
   
   def set_caller_id_error_msg
       if errors[:caller_id].any?
-        errors.add(:base, 'Your Caller ID must be a valid 10-digit phone number or an international number')
+        errors.add(:base, 'Your Caller ID must be a 10-digit North American phone number or begin with "+" and the country code.')
         errors[:caller_id].clear
       end
     end
 
   def set_caller_id_error_msg
     if errors[:caller_id].any?
-      errors.add(:base, 'Your Caller ID must be a valid 10-digit phone number or an international number')
+      errors.add(:base, 'Your Caller ID must be a 10-digit North American phone number or begin with "+" and the country code.')
       errors[:caller_id].clear
     end
   end

@@ -16,7 +16,7 @@
         <td><strong><%= link_to "#{c.email || c.name}", client_caller_path(c.id)%></strong></td>
         <td><%= c.created_at.strftime("%m/%d/%Y") %></td>
         <% if c.is_phones_only %>
-          <td><%= c.pin %></td>  
+          <td>PIN: <%= c.pin %></td>  
         <%else%>
           <td></td>
         <%end%>
