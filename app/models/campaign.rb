@@ -40,7 +40,7 @@ class Campaign < ActiveRecord::Base
 
   before_validation :set_untitled_name
   before_save :set_untitled_name
-  before_save :set_answering_machine_detect
+  #before_save :set_answering_machine_detect
   before_validation :sanitize_caller_id
 
   module Type
@@ -103,7 +103,7 @@ class Campaign < ActiveRecord::Base
   end
 
   def set_answering_machine_detect
-    self.answering_machine_detect = self.use_recordings = robo? && !voicemail_script.nil?
+    self.answering_machine_detect = self.use_recordings = self.robo? && !self.voicemail_script.nil?
   end
 
   def disable_voter_list
