@@ -91,6 +91,18 @@ describe CallAttempt do
     end
   end
 
+  describe "voicemails" do
+    let(:voicemail){Factory(:robo_recording)}
+    let(:campaign){ Factory(:campaign, :robo => true, :voicemail_script => Factory(:script, :robo => true, :for_voicemail => true, :robo_recordings => [voicemail]))}
+
+    it "are left on a call_attempt" do
+      call_attempt = Factory(:call_attempt, :campaign => campaign, :voter => Factory(:voter))
+      call_attempt.leave_voicemail.should == voicemail.play_message(call_attempt)
+      call_attempt.reload.status.should == CallAttempt::Status::VOICEMAIL
+      call_attempt.voter.reload.status.should == CallAttempt::Status::VOICEMAIL
+    end
+  end
+
   describe "voter connected" do
     it "makes an attempt wait" do
       call_attempt = Factory(:call_attempt)

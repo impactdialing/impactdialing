@@ -113,6 +113,10 @@ class Campaign < ActiveRecord::Base
     end
   end
 
+  def leave_voicemail?
+     self.robo? && self.voicemail_script
+  end
+
   def time_period_exceed?
     if start_time.hour < end_time.hour
       !(start_time.hour <= Time.now.utc.in_time_zone(time_zone).hour && end_time.hour > Time.now.utc.in_time_zone(time_zone).hour)

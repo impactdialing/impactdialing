@@ -98,7 +98,7 @@ class Voter < ActiveRecord::Base
         'FallbackUrl' => TWILIO_ERROR,
         'StatusCallback' => twilio_call_ended_url(callback_params),
         'Timeout' => '20',
-        'IfMachine' => 'Continue'
+        'IfMachine' => self.campaign.leave_voicemail? ? 'Continue' : 'Hangup'
     )
 
     if response["TwilioResponse"]["RestException"]
