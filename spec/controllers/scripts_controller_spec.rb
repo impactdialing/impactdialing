@@ -25,6 +25,13 @@ describe ScriptsController do
       assigns(:scripts).should == [robo_script]
     end
 
+    it "lists non interactive robo scripts" do
+      message = Factory(:script, :account => user.account, :active => true, :robo => true, :for_voicemail => true)
+      manual_script = Factory(:script, :account => user.account, :active => true, :robo => false)
+      get :index
+      assigns(:messages).should == [message]
+    end
+
     it_should_behave_like 'all controllers of deletable entities'
 
     it "lists active scripts" do
