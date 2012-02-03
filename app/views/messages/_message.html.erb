@@ -9,7 +9,7 @@
 
     <fieldset>
       <legend>Audio</legend>
-
+      <p>You can upload an MP3, WAV, or AIFF file, although you can only preview MP3 files.</p>
       <%= f.fields_for :robo_recordings do |recording| %>
           <p>
             <%= recording.label :name %>
@@ -22,10 +22,6 @@
           <% end %>
           <p><%= recording.file_field :file %></p>
       <% end %>
-
-
     </fieldset>
-    <p>&nbsp;</p>
-
     <div class="buttons"><%= button_tag 'Save' %></div>
 <% end %>
