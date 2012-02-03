@@ -21,9 +21,9 @@
         <p><label for="">Caller ID</label><br>
           <%= f.text_field :caller_id, {:class=>"field size3"} %></p>
 
-        <p><label for="">Live Message</label><%= f.collection_select(:script_id, @scripts, :id, :name, {:prompt => true}, {:class=>"field"}) %></p>
+        <p><label for="">Live message</label><%= f.collection_select(:script_id, @scripts, :id, :name, {:prompt => true}, {:class=>"field"}) %></p>
 
-        <p><label for="">Voicemail Message</label><br>
+        <p><label for="">Voicemail message</label><br>
           <%= render :partial => 'voicemail', :locals => {:form => f} %>
         </p>
       </fieldset>
