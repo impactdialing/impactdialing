@@ -15,8 +15,7 @@ class ScriptsController < ClientController
   end
 
   def index
-    @scripts = @user.account.scripts.active.interactive.paginate(:page => params[:page])
-    @messages = @user.account.scripts.active.message.paginate(:page => params[:page])
+  @scripts = @user.account.scripts.active.robo.paginate(:page => params[:page])
   end
 
   def new_script
@@ -37,7 +36,7 @@ class ScriptsController < ClientController
   def create
     #before filter apply_changes triggered here
   end
-  
+
   def update
     #before filter apply_changes triggered here
   end
@@ -96,7 +95,7 @@ class ScriptsController < ClientController
     @fields = ["CustomID", "FirstName", "MiddleName", "LastName", "Suffix", "Age", "Gender", "Phone", "Email"]
     @breadcrumb=[{"Scripts"=>"/client/scripts"}, "Edit Script"]
     @label = "Add script"
-  
+
     @numResults = 0
     for i in 1..NUM_RESULT_FIELDS do
       @numResults+=1 if !eval("@script.result_set_#{i}").blank?
@@ -105,7 +104,7 @@ class ScriptsController < ClientController
     for i in 1..NUM_RESULT_FIELDS do
       @numNotes+=1 if !eval("@script.note_#{i}").blank?
     end
-  
+
     if @script.incompletes!=nil
       begin
         @incompletes = JSON.parse(@script.incompletes)
@@ -115,7 +114,7 @@ class ScriptsController < ClientController
     else
       @incompletes={}
     end
-  
+
     if @script.voter_fields!=nil
       begin
         @voter_fields = eval(@script.voter_fields)
