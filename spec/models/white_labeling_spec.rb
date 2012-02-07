@@ -17,4 +17,8 @@ describe WhiteLabeling do
   it "defaults to impactdialing if the domain isn't set" do
     correct_domain(nil).should == 'impactdialing'
   end
+
+  it "email defaults to email@impactdialing.com" do
+    white_labeled_email('localhost').should == 'email@impactdialing.com'
+  end
 end
