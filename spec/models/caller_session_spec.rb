@@ -242,15 +242,6 @@ describe CallerSession do
       caller_session = Factory(:caller_session, :caller => caller, :campaign => campaign)
       caller_session.ask_caller_to_choose_voter.should == Twilio::Verb.new { |v| v.say I18n.t(:campaign_has_no_more_voters) }.response
     end
-    
-    it "sends pusher event 'voter_response_submitted' to the moderator'" do
-      campaign = Factory(:campaign)
-      caller = Factory(:caller, :campaign => campaign)
-      caller_session = Factory(:caller_session, :campaign => campaign, :caller => caller)
-      Moderator.should_receive(:publish_event).with(campaign, 'voter_response_submitted', {:caller_session_id => caller_session.id, :campaign_id => campaign.id, :dials_in_progress => 0, :voters_remaining => 0})
-      caller_session.next_start_for_phones_only
-    end
-    
   end
 
   describe "phone responses" do

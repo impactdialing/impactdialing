@@ -36,6 +36,7 @@ describe ReportsController do
       end
 
       it "lists dial details" do
+        AWS::S3::S3Object.stub(:store)
         voter1 = Factory(:voter, :campaign => campaign, :Phone =>"1234567891" , :result_date => Time.now,:call_attempts => [Factory(:call_attempt),Factory( :call_attempt, :voter => voter1, :campaign => campaign, :status => CallAttempt::Status::SUCCESS )])
         voter2 = Factory(:voter, :campaign => campaign, :Phone =>"1234567892")
 

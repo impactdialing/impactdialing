@@ -19,10 +19,11 @@ describe ScriptsController do
     end
 
     it "lists robo scripts" do
-      robo_script = Factory(:script, :account => user.account, :active => true, :robo => true)
       manual_script = Factory(:script, :account => user.account, :active => true, :robo => false)
+      interactive_script = Factory(:script, :account => user.account, :active => true, :robo => true)
+      non_interactive_script = Factory(:script, :account => user.account, :active => true, :robo => true, :for_voicemail => true)
       get :index
-      assigns(:scripts).should == [robo_script]
+      assigns(:scripts).should == [interactive_script, non_interactive_script]
     end
 
     it_should_behave_like 'all controllers of deletable entities'

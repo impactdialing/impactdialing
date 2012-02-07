@@ -53,6 +53,12 @@ describe Voter do
     Voter.active.should == [active_voter]
   end
 
+  it "returns voters from an enabled list" do
+    voter_from_enabled_list = Factory(:voter, :voter_list => Factory(:voter_list, :enabled => true))
+    voter_from_disabled_list = Factory(:voter, :voter_list => Factory(:voter_list, :enabled => false))
+    Voter.enabled.should == [voter_from_enabled_list]
+  end
+
   it "returns voters that have responded" do
     Factory(:voter)
     3.times { Factory(:voter, :result_date => Time.now) }
@@ -121,10 +127,48 @@ describe Voter do
   end
 
   describe "Dialing" do
-    let(:campaign) { Factory(:campaign) }
+    let(:campaign) { Factory(:campaign, :robo => true) }
     let(:voter) { Factory(:voter, :campaign => campaign) }
 
     it "is dialed" do
+      call_attempt = Factory(:call_attempt)
+      voter.should_receive(:new_call_attempt).and_return(call_attempt)
+      callback_url = twilio_callback_url(:call_attempt_id => call_attempt, :host => Settings.host, :port => Settings.port)
+      fallback_url = 'blah'
+      callended_url = twilio_call_ended_url(:call_attempt_id => call_attempt, :host => Settings.host, :port => Settings.port)
+      Twilio::Call.should_receive(:make).with(
+          voter.campaign.caller_id,
+          voter.Phone,
+          callback_url,
+          'FallbackUrl' => fallback_url,
+          'StatusCallback' => callended_url,
+          'Timeout' => '20',
+          'IfMachine' => anything
+      ).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
+      voter.dial
+    end
+
+    it "hangs up after detecting answering machine" do
+      #campaign.update_attributes(:voicemail_script => Factory(:script))
+      call_attempt = Factory(:call_attempt)
+      voter.should_receive(:new_call_attempt).and_return(call_attempt)
+      callback_url = twilio_callback_url(:call_attempt_id => call_attempt, :host => Settings.host, :port => Settings.port)
+      fallback_url = 'blah'
+      callended_url = twilio_call_ended_url(:call_attempt_id => call_attempt, :host => Settings.host, :port => Settings.port)
+      Twilio::Call.should_receive(:make).with(
+          voter.campaign.caller_id,
+          voter.Phone,
+          callback_url,
+          'FallbackUrl' => fallback_url,
+          'StatusCallback' => callended_url,
+          'Timeout' => '20',
+          'IfMachine' => 'Hangup'
+      ).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
+      voter.dial
+    end
+
+    it "continues after detecting answering machine" do
+      campaign.update_attributes(:voicemail_script => Factory(:script))
       call_attempt = Factory(:call_attempt)
       voter.should_receive(:new_call_attempt).and_return(call_attempt)
       callback_url = twilio_callback_url(:call_attempt_id => call_attempt, :host => Settings.host, :port => Settings.port)
@@ -422,11 +466,19 @@ describe Voter do
       pending_question = Factory(:question, :script => script)
       voter.unanswered_questions.should == [pending_question]
     end
+    
+    it "sends pusher event to moderator as 'voter_response_submitted' " do
+      voter.update_attributes(:last_call_attempt => Factory(:call_attempt, :campaign => campaign, :caller_session => Factory(:caller_session)))
+      answered_question = Factory(:question, :script => script)
+      Factory(:answer, :voter => voter, :question => answered_question, :possible_response => Factory(:possible_response, :question => answered_question))
+      Moderator.should_receive(:publish_event).with(campaign, 'voter_response_submitted', anything)
+      voter.unanswered_questions.should == []
+    end
 
     describe "phones only" do
       let(:script) { Factory(:script) }
       let(:campaign) { Factory(:campaign, :script => script) }
-      let(:voter) { Factory(:voter, :campaign => campaign) }
+      let(:voter) { Factory(:voter, :campaign => campaign, :last_call_attempt => Factory(:call_attempt, :caller_session => Factory(:caller_session))) }
       let(:question) { Factory(:question, :script => script) }
 
       it "captures a voter response" do

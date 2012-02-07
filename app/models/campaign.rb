@@ -12,6 +12,7 @@ class Campaign < ActiveRecord::Base
   has_many :answers
   has_many :call_responses
   belongs_to :script
+  belongs_to :voicemail_script, :class_name => 'Script', :foreign_key => 'voicemail_script_id'
   belongs_to :account
   belongs_to :recording
 
@@ -30,7 +31,8 @@ class Campaign < ActiveRecord::Base
   attr_accessor :predictive_alpha, :predictive_beta
 
   validates :name, :presence => true
-  validates :caller_id, :presence => {:on => :update}, :numericality => {:on => :update}, :length => {:on => :update, :minimum => 10, :maximum => 10}
+  validates :caller_id, :presence => true, :unless => :new_campaign
+  validates :caller_id, :numericality => {:on => :update}, :length => {:on => :update, :minimum => 10, :maximum => 10}, :unless => Proc.new{|campaign| campaign.caller_id && campaign.caller_id.start_with?('+')}
   validate :set_caller_id_error_msg
   validate :predictive_type_change
   cattr_reader :per_page
@@ -38,6 +40,7 @@ class Campaign < ActiveRecord::Base
 
   before_validation :set_untitled_name
   before_save :set_untitled_name
+  #before_save :set_answering_machine_detect
   before_validation :sanitize_caller_id
 
   module Type
@@ -45,17 +48,21 @@ class Campaign < ActiveRecord::Base
     PREDICTIVE = "algorithm1"
     PROGRESSIVE = "progressive"
   end
+
+  def new_campaign
+    new_record?
+  end
   
   def set_caller_id_error_msg
       if errors[:caller_id].any?
-        errors.add(:base, 'Your Caller ID must be a valid 10-digit phone number.')
+        errors.add(:base, 'Your Caller ID must be a 10-digit North American phone number or begin with "+" and the country code.')
         errors[:caller_id].clear
       end
     end
 
   def set_caller_id_error_msg
     if errors[:caller_id].any?
-      errors.add(:base, 'Your Caller ID must be a valid 10-digit phone number.')
+      errors.add(:base, 'Your Caller ID must be a 10-digit North American phone number or begin with "+" and the country code.')
       errors[:caller_id].clear
     end
   end
@@ -95,11 +102,19 @@ class Campaign < ActiveRecord::Base
     self.campaign_id = pin
   end
 
+  def set_answering_machine_detect
+    self.answering_machine_detect = self.use_recordings = self.robo? && !self.voicemail_script.nil?
+  end
+
   def disable_voter_list
     voter_lists.each do |voter_list|
       voter_list.enabled = false
       voter_list.save
     end
+  end
+
+  def leave_voicemail?
+     self.robo? && self.voicemail_script
   end
 
   def time_period_exceed?

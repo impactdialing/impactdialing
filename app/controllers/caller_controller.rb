@@ -70,7 +70,7 @@ class CallerController < ApplicationController
 
     xml = Twilio::Verb.hangup if caller_session.disconnected?
     xml ||= (voter.question_not_answered.try(:read, caller_session) if voter)
-    xml ||= caller_session.next_start_for_phones_only if (caller.is_phones_only? && caller.campaign.is_preview_or_progressive)
+    xml ||= caller_session.ask_caller_to_choose_voter if (caller.is_phones_only? && caller.campaign.is_preview_or_progressive)
     xml ||= caller_session.start
     render :xml => xml
   end
@@ -95,6 +95,8 @@ class CallerController < ApplicationController
     if caller_session.campaign.predictive_type == Campaign::Type::PREVIEW || caller_session.campaign.predictive_type == Campaign::Type::PROGRESSIVE
       voter = caller_session.campaign.next_voter_in_dial_queue(params[:voter_id])
       caller_session.publish('caller_connected', voter ? voter.info : {}) 
+    else
+      caller_session.publish('caller_connected_dialer', {})
     end
     render :nothing => true
   end

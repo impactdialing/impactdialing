@@ -8,7 +8,7 @@ class TwilioController < ApplicationController
     #TWILIO_LOG.info "New Call to : #{@call_attempt.voter.Phone}"
     logger.info "[dialer] call picked up. #{@log_message}; Call Status : #{params['CallStatus']}"
     response = Twilio::Verb.hangup unless params['CallStatus'] == 'in-progress'
-    #response||= @call_attempt.play_recorded_message if (params[:AnsweredBy] == 'machine')
+    response||= @call_attempt.leave_voicemail if (params[:AnsweredBy] == 'machine')
     response||= @call_attempt.campaign.script.robo_recordings.first.twilio_xml(@call_attempt)
     render :xml => response
   end

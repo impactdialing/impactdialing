@@ -30,27 +30,13 @@ describe CampaignsController do
       user.account.campaigns.active.robo.last.script.should == active_script
     end
 
-    #describe "voicemails" do
-    #  let(:recording) { Factory(:recording) }
-    #
-    #  it "creates a new robo campaign with a answering machine recording" do
-    #    lambda {
-    #      post :create, :campaign => {:caller_id => '0123456789', :use_recordings => true, :recording_id => recording.id}
-    #    }.should change(user.account.campaigns.active.robo, :size).by(1)
-    #    created_campaign = user.account.campaigns.active.robo.last
-    #    created_campaign.answering_machine_detect.should be_true
-    #    created_campaign.recording.should == recording
-    #  end
-    #
-    #  it "does not default to answering machine recording" do
-    #    lambda {
-    #      post :create, :campaign => {:caller_id => '0123456789'}
-    #    }.should change(user.account.campaigns.active.robo, :size).by(1)
-    #    created_campaign = user.account.campaigns.active.robo.last
-    #    created_campaign.answering_machine_detect.should be_false
-    #    created_campaign.recording.should be_nil
-    #  end
-    #end
+    describe "voicemails" do
+      it "creates a campaign with a voicemail" do
+        voicemail = Factory(:script, :robo => true, :active => true, :for_voicemail => true, :name => "voicemail script")
+        post :create, :campaign => {:caller_id => "+3987", :robo => true, :voicemail_script => voicemail}
+        user.account.campaigns.active.robo.last.voicemail_script.should == voicemail
+      end
+    end
 
   end
 
@@ -65,6 +51,12 @@ describe CampaignsController do
   it "renders a campaign" do
     get :show, :id => Factory(:campaign, :account => user.account, :robo => true).id
     response.code.should == '200'
+  end
+
+  it "renders all the available voicemail scripts" do
+    script = Factory(:script, :account => account, :for_voicemail => true, :robo => true)
+    get :show, :id => Factory(:campaign, :account => user.account, :robo => true).id
+    assigns[:voicemails].should == [script]
   end
 
   it "only provides robo scritps to select for a campaign" do
@@ -113,6 +105,13 @@ describe CampaignsController do
         current_campaign.answering_machine_detect.should be_true
         current_campaign.use_recordings.should be_true
         current_campaign.recording.should == recording
+      end
+
+      it "updates a campaign with a voicemail" do
+        #campaign = Factory(:campaign, :robo => true)
+        voicemail = Factory(:script, :robo => true, :active => true, :for_voicemail => true, :name => "voicemail script")
+        post :update, :id=> campaign.id, :campaign => {:caller_id => "+3987", :robo => true, :voicemail_script => voicemail}
+        campaign.reload.voicemail_script.should == voicemail
       end
 
     end

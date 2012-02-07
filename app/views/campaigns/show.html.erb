@@ -1,4 +1,4 @@
-<%content_for :javascripts do %>
+<% content_for :javascripts do %>
     <%= javascript_include_tag "campaign/auto_save" %>
     <%= javascript_include_tag "campaign/campaign" %>
 <% end %>
@@ -21,16 +21,13 @@
         <p><label for="">Caller ID</label><br>
           <%= f.text_field :caller_id, {:class=>"field size3"} %></p>
 
-        <p>Caller ID refers to the phone number that your leads see on their Caller ID. In many circumstances, you are
-          legally required to display a valid Caller ID.</p>
-
-        <p><label for="">Message</label><br>
-          <%= f.collection_select(:script_id, @scripts, :id, :name, {:prompt => true}, {:class=>"field"}) %>
+        <p><label for="">Live
+          message</label><%= f.collection_select(:script_id, @scripts, :id, :name, {:prompt => true}, {:class=>"field"}) %>
         </p>
 
-        <!--<p><label for="">Message</label><br>-->
-          <!--<%= render :partial => 'voicemail', :locals => {:form => f} %>-->
-        <!--</p>-->
+        <p><label for="">Voicemail message</label><br>
+          <%= render :partial => 'voicemail', :locals => {:form => f} %>
+        </p>
       </fieldset>
       <fieldset>
         <legend>Available lists</legend>
@@ -70,6 +67,6 @@
     </fieldset>
 <% end %>
 <fieldset>
-  <legend>Add Lists</legend>
+  <legend>Add lists</legend>
   <%= render :partial => "voter_lists/new", :locals => {:path => campaign_voter_lists_path(@campaign)} %>
 </fieldset>
