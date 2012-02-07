@@ -86,6 +86,12 @@ class CallAttempt < ActiveRecord::Base
     end
   end
 
+  def leave_voicemail
+    update_attributes(:status => CallAttempt::Status::VOICEMAIL)
+    voter.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
+    self.campaign.voicemail_script.robo_recordings.first.play_message(self)
+  end
+
   def play_recorded_message
     update_attributes(:call_end => Time.now, :status => campaign.use_recordings? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP)
     voter.update_attributes(:status => campaign.use_recordings? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP)

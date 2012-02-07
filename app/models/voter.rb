@@ -1,4 +1,9 @@
 class Voter < ActiveRecord::Base
+  module Status
+    NOTCALLED = "not called"
+    RETRY = "retry"
+  end
+
   include Rails.application.routes.url_helpers
   include CallAttempt::Status
 
@@ -20,31 +25,28 @@ class Voter < ActiveRecord::Base
 
   scope :default_order, :order => 'LastName, FirstName, Phone'
 
+  scope :enabled, {:include => :voter_list, :conditions => {'voter_lists.enabled' => true}}
+
   scope :by_status, lambda { |status| where(:status => status) }
   scope :active, where(:active => true)
-  scope :yet_to_call, where(:call_back => false).where('status not in (?)', [CallAttempt::Status::INPROGRESS, CallAttempt::Status::RINGING, CallAttempt::Status::READY, CallAttempt::Status::SUCCESS])
+  scope :yet_to_call, enabled.where(:call_back => false).where('status not in (?)', [CallAttempt::Status::INPROGRESS, CallAttempt::Status::RINGING, CallAttempt::Status::READY, CallAttempt::Status::SUCCESS])
   scope :last_call_attempt_before_recycle_rate, lambda { |recycle_rate| where('last_call_attempt_time is null or last_call_attempt_time < ? ', recycle_rate.hours.ago) }
   scope :to_be_dialed, yet_to_call.order(:last_call_attempt_time)
   scope :randomly, order('rand()')
   scope :to_callback, where(:call_back => true)
-  scope :scheduled, where(:scheduled_date => (10.minutes.ago..10.minutes.from_now)).where(:status => CallAttempt::Status::SCHEDULED)
+  scope :scheduled, enabled.where(:scheduled_date => (10.minutes.ago..10.minutes.from_now)).where(:status => CallAttempt::Status::SCHEDULED)
   scope :limit, lambda { |n| {:limit => n} }
   scope :without, lambda { |numbers| where('Phone not in (?)', numbers << -1) }
   scope :not_skipped, where('skipped_time is null')
   scope :answered, where('result_date is not null')
   scope :answered_within, lambda { |from, to| where(:result_date => from.beginning_of_day..(to.end_of_day)) }
   scope :last_call_attempt_within, lambda { |from, to| where(:last_call_attempt_time => from..(to + 1.day)) }
-  scope :priority_voters, :conditions => {:priority => "1", :status => 'not called'}
+  scope :priority_voters, enabled.where(:priority => "1", :status => Voter::Status::NOTCALLED) #:conditions => {:priority => "1", :status => 'not called'}
 
   before_validation :sanitize_phone
 
   cattr_reader :per_page
   @@per_page = 25
-
-  module Status
-    NOTCALLED = "not called"
-    RETRY = "retry"
-  end
 
   def self.sanitize_phone(phonenumber)
     return phonenumber if phonenumber.blank?
@@ -98,7 +100,7 @@ class Voter < ActiveRecord::Base
         'FallbackUrl' => TWILIO_ERROR,
         'StatusCallback' => twilio_call_ended_url(callback_params),
         'Timeout' => '20',
-        'IfMachine' => 'Continue'
+        'IfMachine' => self.campaign.leave_voicemail? ? 'Continue' : 'Hangup'
     )
 
     if response["TwilioResponse"]["RestException"]
@@ -178,7 +180,9 @@ class Voter < ActiveRecord::Base
   end
 
   def unanswered_questions
-    self.campaign.script.questions.not_answered_by(self)
+    questions = self.campaign.script.questions.not_answered_by(self)
+    Moderator.publish_event(campaign, 'voter_response_submitted', {:caller_session_id => last_call_attempt.caller_session.id, :campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)}) unless questions.present?
+    questions
   end
 
   def question_not_answered

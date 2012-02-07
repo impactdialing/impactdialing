@@ -38,6 +38,15 @@ describe "predictive_dialer" do
      campaign.choose_voters_to_dial(1).should == [voter]
    end
 
+  it "dials voters off enabled lists only" do
+     campaign = Factory(:campaign)
+     enabled_list = Factory(:voter_list, :campaign => campaign, :active => true, :enabled => true)
+     disabled_list = Factory(:voter_list, :campaign => campaign, :active => true, :enabled => false)
+     voter1 = Factory(:voter, :campaign => campaign, :voter_list => enabled_list)
+     voter2 = Factory(:voter, :campaign => campaign, :voter_list => disabled_list)
+     campaign.choose_voters_to_dial(2).should == [voter1]
+  end
+
    it "should  choose priority voter as the next voters to dial" do
      account = Factory(:account, :activated => true)
      campaign = Factory(:campaign, :account => account, :caller_id => "0123456789", :caller_id_verified => true)
@@ -341,8 +350,20 @@ describe "predictive_dialer" do
       campaign = Campaign.new(:account => Factory(:account))
       campaign.save(:validate => false)
       campaign.update_attributes(:caller_id => '23456yuiid').should be_false
-      campaign.errors[:base].should == ['Your Caller ID must be a valid 10-digit phone number.']
+      campaign.errors[:base].should == ['Your Caller ID must be a 10-digit North American phone number or begin with "+" and the country code.']
       campaign.errors[:caller_id].should == []
+    end
+
+    it "should not have a blank caller_id" do
+      campaign = Factory(:campaign, :caller_id => nil)
+      campaign.should_not be_valid
+    end
+
+    it "skips validations for an international phone number" do
+      campaign = Factory.build(:campaign, :caller_id => "+98743987")
+      campaign.should be_valid
+      campaign = Factory.build(:campaign, :caller_id => "+987AB87A")
+      campaign.should be_valid
     end
 
     it 'return validation error, when callers are login and try to change dialing mode' do
@@ -511,6 +532,18 @@ describe "predictive_dialer" do
         caller_session3.update_attributes(:updated_at => Time.now + 5.second)
         campaign.oldest_available_caller_session.should == caller_session2
 
+      end
+    end
+
+    describe "voicemails" do
+      it "are left when a voicemail script is present" do
+        campaign = Factory(:campaign, :robo => true, :voicemail_script => Factory(:script, :robo => true, :for_voicemail => true))
+        campaign.leave_voicemail?.should be_true
+      end
+
+      it "are not left when a voicemail script is absent" do
+        campaign = Factory(:campaign, :robo => true)
+        campaign.leave_voicemail?.should be_false
       end
     end
 

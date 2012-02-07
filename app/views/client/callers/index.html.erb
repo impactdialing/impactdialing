@@ -15,7 +15,11 @@
       <tr class="<%= cycle("odd","even") %>">
         <td><strong><%= link_to "#{c.email || c.name}", client_caller_path(c.id)%></strong></td>
         <td><%= c.created_at.strftime("%m/%d/%Y") %></td>
-        <td><!-- put PIN here --></td>
+        <% if c.is_phones_only %>
+          <td>PIN: <%= c.pin %></td>  
+        <%else%>
+          <td></td>
+        <%end%>
         <td>
           <div style="display:none;">
             <%= button_to "delete", client_caller_path(c), :method => :delete, :id => "delete-button-#{c.id}" %>

@@ -1,8 +1,8 @@
 require "spec_helper"
 
 describe TwilioController do
-  let(:campaign) { Factory(:campaign, :script => Factory(:script, :robo_recordings => [recording])) }
   let(:recording) { Factory(:robo_recording, :file_file_name => 'foo.wav') }
+  let(:campaign) { Factory(:campaign, :robo => true, :script => Factory(:script, :robo_recordings => [recording])) }
   let(:call_attempt) { Factory(:call_attempt, :campaign => campaign, :voter => Factory(:voter)) }
 
   it "proceeds with the call if the call was answered" do
@@ -31,8 +31,16 @@ describe TwilioController do
     post :report_error, :call_attempt_id => call_attempt.id, :CallStatus => CallAttempt::Status::INPROGRESS
     response.body.should == Twilio::Verb.hangup
   end
-  
-  it "doesn't updates voter status, if it is answered by machine" do 
+
+  it "leaves a voicemail when the call is answered by machine" do
+    campaign.update_attribute(:voicemail_script , Factory(:script, :robo => true, :for_voicemail => true, :robo_recordings => [recording]))
+    post :callback, :call_attempt_id => call_attempt.id, :AnsweredBy => 'machine', :CallStatus => 'in-progress'
+    response.body.should == call_attempt.leave_voicemail
+    call_attempt.voter.reload.status.should == CallAttempt::Status::VOICEMAIL
+    call_attempt.reload.status.should == CallAttempt::Status::VOICEMAIL
+  end
+
+  it "doesn't updates voter status, if it is answered by machine" do
     voter = Factory(:voter, :status => CallAttempt::Status::HANGUP, :campaign => campaign)
     call_attempt = Factory(:call_attempt, :status => CallAttempt::Status::HANGUP, :campaign => campaign, :voter => voter)
     voter.update_attributes(:last_call_attempt => call_attempt)
@@ -40,8 +48,8 @@ describe TwilioController do
     call_attempt.reload.status.should == CallAttempt::Status::HANGUP
     call_attempt.voter.status.should == CallAttempt::Status::HANGUP
   end
-  
-  it "doesn't updates voter status, if the voice mail delivered" do 
+
+  it "doesn't updates voter status, if the voice mail delivered" do
     voter = Factory(:voter, :status => CallAttempt::Status::VOICEMAIL, :campaign => campaign)
     call_attempt = Factory(:call_attempt, :status => CallAttempt::Status::VOICEMAIL, :campaign => campaign, :voter => voter)
     voter.update_attributes(:last_call_attempt => call_attempt)

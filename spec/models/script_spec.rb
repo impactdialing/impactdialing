@@ -15,7 +15,7 @@ describe Script do
     Script.by_updated.all.should == [newer_script, older_script]
   end
 
-  it "gives active scripts" do
+  it "lists active scripts" do
     inactive = Factory(:script, :active => false)
     active = Factory(:script, :active => true)
     Script.active.should == [active]
@@ -26,7 +26,21 @@ describe Script do
     manual_script = Factory(:script, :robo => false)
     Script.robo.should == [robo_script]
   end
-  
+
+  it "lists interactive scripts" do
+    script = Factory(:script, :robo => true, :for_voicemail => false)
+    another_script = Factory(:script, :robo => true)
+    script_for_voicemail = Factory(:script, :robo => true, :for_voicemail => true)
+    Script.interactive.should == [script, another_script]
+  end
+
+  it "lists message scripts" do
+    script = Factory(:script, :robo => true, :for_voicemail => false)
+    another_script = Factory(:script, :robo => true)
+    script_for_voicemail = Factory(:script, :robo => true, :for_voicemail => true)
+    Script.message.should == [script_for_voicemail]
+  end
+
   describe "default script" do
     before(:each) do
       account = Factory(:account)
