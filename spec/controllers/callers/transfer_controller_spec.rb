@@ -5,7 +5,7 @@ describe TransferController do
   it "should dial a number" do
     script =  Factory(:script)
     campaign = Factory(:campaign, script: script)
-    transfer = Factory(:transfer, script: script)
+    transfer = Factory(:transfer, script: script, phone_number: "1234567890")
     caller_session = Factory(:caller_session)
     call_attempt = Factory(:call_attempt)
     voter = Factory(:voter, Phone: "1234567890")
