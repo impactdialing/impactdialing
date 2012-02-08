@@ -480,6 +480,7 @@ ActiveRecord::Schema.define(:version => 20120206140632) do
     t.string   "status"
     t.datetime "connecttime"
     t.string   "sid"
+    t.string   "session_key"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

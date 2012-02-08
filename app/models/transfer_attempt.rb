@@ -29,12 +29,12 @@ class TransferAttempt < ActiveRecord::Base
   
   def redirect_callee
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    Twilio::Call.redirect(call_attempt.sid, callee_transfer(:host => Settings.host, :port => Settings.port, session_key: session_key))        
+    Twilio::Call.redirect(call_attempt.sid, callee_transfer_path(self, :host => Settings.host, :port => Settings.port, session_key: session_key))        
   end
   
   def redirect_caller
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    Twilio::Call.redirect(caller_session.sid, caller_transfer(:host => Settings.host, :port => Settings.port, session_key: session_key))        
+    Twilio::Call.redirect(caller_session.sid, caller_transfer_path(self,:host => Settings.host, :port => Settings.port, session_key: session_key))        
   end
   
   

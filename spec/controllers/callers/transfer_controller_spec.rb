@@ -25,7 +25,8 @@ describe TransferController do
   it "should connect a call to a conference" do
     campaign =  Factory(:campaign)
     caller_session = Factory(:caller_session, campaign: campaign)
-    transfer_attempt = Factory(:transfer_attempt, caller_session: caller_session)
+    call_attempt = Factory(:call_attempt)
+    transfer_attempt = Factory(:transfer_attempt, caller_session: caller_session, call_attempt: call_attempt)
     post :connect, id: transfer_attempt.id
     transfer_attempt.reload
     transfer_attempt.connecttime.should_not be_nil
