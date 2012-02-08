@@ -1,0 +1,14 @@
+<fieldset>
+  <legend>Call results</legend>
+  <% @script.questions.each_with_index do |question, index| %>
+    <%= f.fields_for :questions, question do |builder| %>  
+      <%= render "question_fields", f: builder %>   
+    <% end %>
+  <%end%>
+  <%= f.fields_for :notes do |builder| %>
+    <%= render "notes_fields", f: builder %>   
+  <% end %>
+  <%= link_to_add_fields "Add a question", f, :questions %>
+  <%= link_to_add_fields "Add a note", f, :notes %>
+  </fieldset>  
+  

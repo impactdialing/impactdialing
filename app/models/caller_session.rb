@@ -15,6 +15,7 @@ class CallerSession < ActiveRecord::Base
   has_one :voter_in_progress, :class_name => 'Voter'
   has_one :attempt_in_progress, :class_name => 'CallAttempt'
   has_one :moderator
+  has_many :transfer_attempts
   unloadable
 
   def minutes_used
@@ -92,6 +93,7 @@ class CallerSession < ActiveRecord::Base
     unless endtime.nil?
       return Twilio::Verb.hangup
     end
+    
     if caller_reassigned_to_another_campaign?
       caller.is_phones_only? ? (return reassign_caller_session_to_campaign) : reassign_caller_session_to_campaign
     end
@@ -153,6 +155,8 @@ class CallerSession < ActiveRecord::Base
     moderator.update_attributes(:caller_session_id => self.id, :call_sid => call_sid) unless moderator.nil?
     response
   end
+  
+
 
   def pause_for_results(attempt = 0)
     attempt = attempt.to_i || 0

@@ -7,6 +7,7 @@ class CallAttempt < ActiveRecord::Base
   belongs_to :caller
   belongs_to :caller_session
   has_many :call_responses
+  has_one :transfer_attempt
 
   scope :dial_in_progress, where('call_end is null')
   scope :not_wrapped_up, where('wrapup_time is null')
@@ -112,9 +113,7 @@ class CallAttempt < ActiveRecord::Base
     self.update_attributes(:caller => session.caller, :call_start => Time.now, :caller_session => session)
     session.publish('voter_connected', {:attempt_id => self.id, :voter => self.voter.info})
     Moderator.publish_event(campaign, 'voter_connected', {:caller_session_id => session.id, :campaign_id => campaign.id, :caller_id => session.caller.id})
-    Rails.logger.debug("Moderator published event")
     voter.conference(session)
-    Rails.logger.debug("Voter conference")
     Twilio::TwiML::Response.new do |r|
       r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(self, :host => Settings.host), :record=>self.campaign.account.record_calls do |d|
         d.Conference session.session_key, :waitUrl => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2

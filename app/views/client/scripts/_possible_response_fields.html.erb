@@ -1,0 +1,16 @@
+<table>
+  <tr>
+    <td width = 30%>
+      <%= f.text_field :value %>
+    </td>
+    <td width = 30%>
+      <%= f.text_field :keypad, :value => 1, :class =>"keypad" %>
+    </td>
+    <td width = 15%>
+      <%= f.check_box :retry %>
+    </td>
+    <td width = 15%>
+      <%= link_to_remove_fields "", f %>
+    </td>
+  </tr>
+</table>

@@ -101,6 +101,21 @@ function schedule_for_later() {
     );
 }
 
+function transfer_call(){
+	var options = {
+	    data: {voter: $('#voter_id').val(), call_attempt: $("#current_call_attempt").val(), caller_session:$("#caller_session").val()  },
+    };
+    $('#transfer_form').attr('action', "/transfer/dial")    
+	$('#transfer_form').submit(function() {
+        $(this).ajaxSubmit(options);
+        return false;
+    });
+    $("#transfer_form").trigger("submit");
+    $("#transfer_form").unbind("submit");
+
+    
+}
+
 function send_voter_response() {
     console.log('submit voter response')
     $('#voter_responses').attr('action', "/call_attempts/" + $("#current_call_attempt").val() + "/voter_response");
@@ -183,6 +198,15 @@ function dial_in_caller() {
 function show_response_panel() {
     $("#response_panel").show();
     $("#result_instruction").hide();
+	show_transfer_panel();
+}
+
+function show_transfer_panel(){
+	$("#transfer_panel").show();
+}
+
+function hide_transfer_panel(){
+	$("#transfer_panel").hide();
 }
 
 
