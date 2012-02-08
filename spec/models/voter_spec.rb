@@ -53,6 +53,12 @@ describe Voter do
     Voter.active.should == [active_voter]
   end
 
+  it "returns voters from an enabled list" do
+    voter_from_enabled_list = Factory(:voter, :voter_list => Factory(:voter_list, :enabled => true))
+    voter_from_disabled_list = Factory(:voter, :voter_list => Factory(:voter_list, :enabled => false))
+    Voter.enabled.should == [voter_from_enabled_list]
+  end
+
   it "returns voters that have responded" do
     Factory(:voter)
     3.times { Factory(:voter, :result_date => Time.now) }

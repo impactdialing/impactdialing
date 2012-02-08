@@ -38,6 +38,15 @@ describe "predictive_dialer" do
      campaign.choose_voters_to_dial(1).should == [voter]
    end
 
+  it "dials voters off enabled lists only" do
+     campaign = Factory(:campaign)
+     enabled_list = Factory(:voter_list, :campaign => campaign, :active => true, :enabled => true)
+     disabled_list = Factory(:voter_list, :campaign => campaign, :active => true, :enabled => false)
+     voter1 = Factory(:voter, :campaign => campaign, :voter_list => enabled_list)
+     voter2 = Factory(:voter, :campaign => campaign, :voter_list => disabled_list)
+     campaign.choose_voters_to_dial(2).should == [voter1]
+  end
+
    it "should  choose priority voter as the next voters to dial" do
      account = Factory(:account, :activated => true)
      campaign = Factory(:campaign, :account => account, :caller_id => "0123456789", :caller_id_verified => true)

@@ -56,6 +56,7 @@ end
 Factory.define :voter do |v|
   v.FirstName { Factory.next(:name) }
   v.Phone { Factory.next(:phonenumber) }
+  v.voter_list { Factory(:voter_list, :enabled => true) }
 end
 
 Factory.define :family do |v|

@@ -46,6 +46,7 @@ describe VoterListsController do
       describe "valid csv file" do
         before :each do
           session[:voters_list_upload] = nil
+          AWS::S3::S3Object.stub(:store)
           post :create,
                :campaign_id => @campaign.id,
                :upload => csv_file_upload

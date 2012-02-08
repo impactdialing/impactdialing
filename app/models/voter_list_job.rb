@@ -17,7 +17,7 @@ class VoterListJob
 
     unless @csv_to_system_map.valid?
       response["errors"].concat(@csv_to_system_map.errors)
-      user_mailer.voter_list_upload(response,@domain, @email)
+      user_mailer.voter_list_upload(response, @domain, @email)
       return response
     end
 
@@ -25,7 +25,7 @@ class VoterListJob
 
     unless @voter_list.valid?
       response['errors'] << @voter_list.errors.full_messages.join("; ")
-      user_mailer.voter_list_upload(response,@domain, @email)
+      user_mailer.voter_list_upload(response, @domain, @email)
       return response
     end
     @voter_list.save!
@@ -34,13 +34,13 @@ class VoterListJob
       result = @voter_list.import_leads(@csv_to_system_map,
                                         @csv_filename,
                                         @separator)
-      response['success'] <<  "Upload complete. #{result[:successCount]} out of #{result[:successCount]+result[:failedCount]} records imported successfully."
+      response['success'] << "Upload complete. #{result[:successCount]} out of #{result[:successCount]+result[:failedCount]} records imported successfully."
     rescue Exception => err
       @voter_list.destroy
       response['errors'] << "Invalid CSV file. Could not import."
     ensure
       VoterList.delete_from_s3 @csv_filename
-      user_mailer.voter_list_upload(response,@domain, @email)
+      user_mailer.voter_list_upload(response, @domain, @email)
       return response
     end
   end
