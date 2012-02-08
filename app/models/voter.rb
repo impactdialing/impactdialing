@@ -1,4 +1,9 @@
 class Voter < ActiveRecord::Base
+  module Status
+    NOTCALLED = "not called"
+    RETRY = "retry"
+  end
+
   include Rails.application.routes.url_helpers
   include CallAttempt::Status
 
@@ -20,31 +25,28 @@ class Voter < ActiveRecord::Base
 
   scope :default_order, :order => 'LastName, FirstName, Phone'
 
+  scope :enabled, {:include => :voter_list, :conditions => {'voter_lists.enabled' => true}}
+
   scope :by_status, lambda { |status| where(:status => status) }
   scope :active, where(:active => true)
-  scope :yet_to_call, where(:call_back => false).where('status not in (?)', [CallAttempt::Status::INPROGRESS, CallAttempt::Status::RINGING, CallAttempt::Status::READY, CallAttempt::Status::SUCCESS])
+  scope :yet_to_call, enabled.where(:call_back => false).where('status not in (?)', [CallAttempt::Status::INPROGRESS, CallAttempt::Status::RINGING, CallAttempt::Status::READY, CallAttempt::Status::SUCCESS])
   scope :last_call_attempt_before_recycle_rate, lambda { |recycle_rate| where('last_call_attempt_time is null or last_call_attempt_time < ? ', recycle_rate.hours.ago) }
   scope :to_be_dialed, yet_to_call.order(:last_call_attempt_time)
   scope :randomly, order('rand()')
   scope :to_callback, where(:call_back => true)
-  scope :scheduled, where(:scheduled_date => (10.minutes.ago..10.minutes.from_now)).where(:status => CallAttempt::Status::SCHEDULED)
+  scope :scheduled, enabled.where(:scheduled_date => (10.minutes.ago..10.minutes.from_now)).where(:status => CallAttempt::Status::SCHEDULED)
   scope :limit, lambda { |n| {:limit => n} }
   scope :without, lambda { |numbers| where('Phone not in (?)', numbers << -1) }
   scope :not_skipped, where('skipped_time is null')
   scope :answered, where('result_date is not null')
   scope :answered_within, lambda { |from, to| where(:result_date => from.beginning_of_day..(to.end_of_day)) }
   scope :last_call_attempt_within, lambda { |from, to| where(:last_call_attempt_time => from..(to + 1.day)) }
-  scope :priority_voters, :conditions => {:priority => "1", :status => 'not called'}
+  scope :priority_voters, enabled.where(:priority => "1", :status => Voter::Status::NOTCALLED) #:conditions => {:priority => "1", :status => 'not called'}
 
   before_validation :sanitize_phone
 
   cattr_reader :per_page
   @@per_page = 25
-
-  module Status
-    NOTCALLED = "not called"
-    RETRY = "retry"
-  end
 
   def self.sanitize_phone(phonenumber)
     return phonenumber if phonenumber.blank?

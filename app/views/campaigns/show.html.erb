@@ -1,4 +1,4 @@
-<%content_for :javascripts do %>
+<% content_for :javascripts do %>
     <%= javascript_include_tag "campaign/auto_save" %>
     <%= javascript_include_tag "campaign/campaign" %>
 <% end %>
@@ -21,7 +21,9 @@
         <p><label for="">Caller ID</label><br>
           <%= f.text_field :caller_id, {:class=>"field size3"} %></p>
 
-        <p><label for="">Live message</label><%= f.collection_select(:script_id, @scripts, :id, :name, {:prompt => true}, {:class=>"field"}) %></p>
+        <p><label for="">Live
+          message</label><%= f.collection_select(:script_id, @scripts, :id, :name, {:prompt => true}, {:class=>"field"}) %>
+        </p>
 
         <p><label for="">Voicemail message</label><br>
           <%= render :partial => 'voicemail', :locals => {:form => f} %>
@@ -66,5 +68,5 @@
 <% end %>
 <fieldset>
   <legend>Add lists</legend>
-  <%= render :partial => "voter_lists/new", :locals => { :path => campaign_voter_lists_path(@campaign) } %>
+  <%= render :partial => "voter_lists/new", :locals => {:path => campaign_voter_lists_path(@campaign)} %>
 </fieldset>

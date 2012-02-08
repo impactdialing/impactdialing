@@ -19,17 +19,11 @@ describe ScriptsController do
     end
 
     it "lists robo scripts" do
-      robo_script = Factory(:script, :account => user.account, :active => true, :robo => true)
       manual_script = Factory(:script, :account => user.account, :active => true, :robo => false)
+      interactive_script = Factory(:script, :account => user.account, :active => true, :robo => true)
+      non_interactive_script = Factory(:script, :account => user.account, :active => true, :robo => true, :for_voicemail => true)
       get :index
-      assigns(:scripts).should == [robo_script]
-    end
-
-    it "lists non interactive robo scripts" do
-      message = Factory(:script, :account => user.account, :active => true, :robo => true, :for_voicemail => true)
-      manual_script = Factory(:script, :account => user.account, :active => true, :robo => false)
-      get :index
-      assigns(:messages).should == [message]
+      assigns(:scripts).should == [interactive_script, non_interactive_script]
     end
 
     it_should_behave_like 'all controllers of deletable entities'
@@ -39,13 +33,6 @@ describe ScriptsController do
       inactive_script = Factory(:script, :account => user.account, :active => false, :robo => true)
       get :index
       assigns(:scripts).should == [active_script]
-    end
-
-    it "lists interactive scripts" do
-      script = Factory(:script, :account => user.account, :active => true, :robo => true)
-      script_for_voicemail = Factory(:script, :account => user.account, :active => true, :robo => true, :for_voicemail => true)
-      get :index
-      assigns(:scripts).should == [script]
     end
 
     it "creates a new script" do

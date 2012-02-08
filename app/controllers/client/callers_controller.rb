@@ -21,6 +21,11 @@ module Client
     def show
       @breadcrumb=[{"Callers"=>"/client/callers"}, "Add Caller"]
       @caller = account.callers.find_by_id(params[:id])
+      @caller ||= Caller.new
+      if @caller.new_record?
+        flash[:error] = ["No caller found. Create a new caller?"]
+        render :action => "new"
+      end
     end
 
 
