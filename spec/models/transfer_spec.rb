@@ -10,7 +10,7 @@ describe Transfer do
       call_attempt = Factory(:call_attempt)
       voter = Factory(:voter)
       Twilio::Call.should_receive(:make).with(voter.Phone, transfer.phone_number, anything, anything).and_return("TwilioResponse"=> {"Call" => {"Sid" => 'sid'}})
-      transfer.dial(caller_session, call_attempt, voter)
+      transfer.dial(caller_session, call_attempt, voter, Transfer::Type::WARM)
       transfer.transfer_attempts.first.sid.should eq('sid')
     end
     
@@ -21,7 +21,7 @@ describe Transfer do
       call_attempt = Factory(:call_attempt)
       voter = Factory(:voter)
       Twilio::Call.should_receive(:make).with(voter.Phone, transfer.phone_number, anything, anything).and_return("TwilioResponse"=> {"Call" => {"Sid" => 'sid'}})
-      transfer.dial(caller_session, call_attempt, voter)
+      transfer.dial(caller_session, call_attempt, voter, Transfer::Type::WARM)
       transfer.transfer_attempts.first.status.should eq(CallAttempt::Status::RINGING)
     end
     
@@ -32,7 +32,7 @@ describe Transfer do
       call_attempt = Factory(:call_attempt)
       voter = Factory(:voter)
       Twilio::Call.should_receive(:make).with(voter.Phone, transfer.phone_number, anything, anything).and_return("TwilioResponse"=> {"RestException" => {}})
-      transfer.dial(caller_session, call_attempt, voter)
+      transfer.dial(caller_session, call_attempt, voter, Transfer::Type::WARM)
       transfer.transfer_attempts.first.status.should eq(CallAttempt::Status::FAILED)
     end    
     

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120206140632) do
+ActiveRecord::Schema.define(:version => 20120208081234) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -483,6 +483,7 @@ ActiveRecord::Schema.define(:version => 20120206140632) do
     t.string   "session_key"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "transfer_type"
   end
 
   create_table "transfers", :force => true do |t|
