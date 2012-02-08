@@ -92,7 +92,7 @@
               </fieldset>
             <% end %>
           </notes>
-          <transfers style="display:none">
+          <transfers <% unless @script.transfers.present? %>style="display:none"<% end %>>
             <fieldset class="transfers_fields">
               <legend>Transfer</legend>            
               <table>
