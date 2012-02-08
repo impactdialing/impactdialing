@@ -6,6 +6,11 @@ class UserMailer
     @uakari = Uakari.new(MAILCHIMP_API_KEY)
   end
 
+  def white_labeled_email(domain)
+    email = super(domain)
+    @uakari.list_verified_email_addresses["email_addresses"].include?(email) ? email : super("non_existant_domain")
+  end
+
   def deliver_invitation(new_user, current_user)
     link = reset_password_url(protocol: PROTOCOL, :host => APP_HOST, :reset_code => new_user.password_reset_code)
     @uakari.send_email({
@@ -35,7 +40,7 @@ class UserMailer
         :subject => subject,
         :html => content,
         :from_name => white_labeled_title(user_domain),
-        :from_email => white_labeled_email(current_user.domain),
+        :from_email => white_labeled_email(user_domain),
         :to_email => [email]
       }
     })
@@ -45,7 +50,7 @@ class UserMailer
     to_email = "michael@impactdialing.com"
     subject = I18n.t(:broadcast_campaign_started)
     content = "<br/>#{I18n.t(:broadcast_campaign_started)} : #{campaign.name} by #{user.email}"
-    @uakari.send_email({ :message => { :subject => subject, :text => content, :html => content, :from_name => white_labeled_title(campaign.account.domain), :from_email => white_labeled_email(current_user.domain), :to_email => [to_email]} })
+    @uakari.send_email({ :message => { :subject => subject, :text => content, :html => content, :from_name => white_labeled_title(campaign.account.domain), :from_email => white_labeled_email(user.domain), :to_email => [to_email]} })
   end
 
   def deliver_download(user, download_link)
@@ -57,7 +62,7 @@ class UserMailer
         :text => content,
         :html => content,
         :from_name => white_labeled_title(user.domain),
-        :from_email => white_labeled_email(current_user.domain),
+        :from_email => white_labeled_email(user.domain),
         :to_email => [user.email]
       }
     })
@@ -67,7 +72,7 @@ class UserMailer
     subject = I18n.t(:report_error_occured_subject)
     content = "<br/>#{I18n.t(:report_error_occured)}"
     exception_content = "Job : #{job.try(:inspect)}. Error details : <br/><br/> #{exception.backtrace.each{|line| "<br/>#{line}"}}"
-    @uakari.send_email({ :message => { :subject => subject, :text => content, :html => content, :from_name => white_labeled_title(user.domain), :from_email => 'email@impactdialing.com', :to_email => [user.email]} })
+    @uakari.send_email({ :message => { :subject => subject, :text => content, :html => content, :from_name => white_labeled_title(user.domain), :from_email => white_labeled_email(user.domain), :to_email => [user.email]} })
     @uakari.send_email({ :message => { :subject => subject, :text => exception_content, :html => exception_content, :from_name => white_labeled_title(user.domain), :from_email => 'email@impactdialing.com', :to_email => ["aninda@c42.in"]} })
   end
 end
