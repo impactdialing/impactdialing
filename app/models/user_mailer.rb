@@ -45,7 +45,7 @@ class UserMailer
     to_email = "michael@impactdialing.com"
     subject = I18n.t(:broadcast_campaign_started)
     content = "<br/>#{I18n.t(:broadcast_campaign_started)} : #{campaign.name} by #{user.email}"
-    @uakari.send_email({ :message => { :subject => subject, :text => content, :html => content, :from_name => white_labeled_title(campaign.account.domain), :from_email => white_labeled_email(current_user.domain), :to_email => [to_email]} })
+    @uakari.send_email({ :message => { :subject => subject, :text => content, :html => content, :from_name => white_labeled_title(campaign.account.domain), :from_email => white_labeled_email(user.domain), :to_email => [to_email]} })
   end
 
   def deliver_download(user, download_link)
