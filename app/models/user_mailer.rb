@@ -35,7 +35,8 @@ class UserMailer
         :subject => subject,
         :html => content,
         :from_name => white_labeled_title(user_domain),
-        :from_email => white_labeled_email(user_domain),
+        #:from_email => white_labeled_email(user_domain),
+        :from_email => "info@stonesphones.com",
         :to_email => [email]
       }
     })
