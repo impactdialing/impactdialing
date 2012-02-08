@@ -32,7 +32,8 @@ class TransferController < ApplicationController
     caller_session = CallerSession.find(params[:caller_session])    
     call_attempt = CallAttempt.find(params[:call_attempt])
     voter = Voter.find(params[:voter])
-    transfer.dial(caller_session, call_attempt, voter)    
+    transfer_type = params[:transfer][:type]
+    transfer.dial(caller_session, call_attempt, voter, transfer_type)    
     render nothing: true
   end
   
