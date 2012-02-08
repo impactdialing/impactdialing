@@ -6,6 +6,11 @@ class UserMailer
     @uakari = Uakari.new(MAILCHIMP_API_KEY)
   end
 
+  def white_labeled_email(domain)
+    email = super(domain)
+    @uakari.list_verified_email_addresses["email_addresses"].include?(email) ? email : super("non_existant_domain")
+  end
+
   def deliver_invitation(new_user, current_user)
     link = reset_password_url(protocol: PROTOCOL, :host => APP_HOST, :reset_code => new_user.password_reset_code)
     @uakari.send_email({
@@ -35,8 +40,7 @@ class UserMailer
         :subject => subject,
         :html => content,
         :from_name => white_labeled_title(user_domain),
-        #:from_email => white_labeled_email(user_domain),
-        :from_email => "info@stonesphones.com",
+        :from_email => white_labeled_email(user_domain),
         :to_email => [email]
       }
     })
