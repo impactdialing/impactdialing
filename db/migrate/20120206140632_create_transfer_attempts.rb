@@ -10,7 +10,8 @@ class CreateTransferAttempts < ActiveRecord::Migration
         t.datetime :call_end
         t.string :status
         t.datetime :connecttime
-        t.string :sid        
+        t.string :sid
+        t.string :session_key        
         t.timestamps
       end
     end    
