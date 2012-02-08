@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120201112844) do
+ActiveRecord::Schema.define(:version => 20120206140632) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -467,6 +467,30 @@ ActiveRecord::Schema.define(:version => 20120201112844) do
     t.float    "best_conversation"
     t.float    "longest_conversation"
     t.float    "best_wrapup_time"
+  end
+
+  create_table "transfer_attempts", :force => true do |t|
+    t.integer  "transfer_id"
+    t.integer  "caller_session_id"
+    t.integer  "call_attempt_id"
+    t.integer  "script_id"
+    t.integer  "campaign_id"
+    t.datetime "call_start"
+    t.datetime "call_end"
+    t.string   "status"
+    t.datetime "connecttime"
+    t.string   "sid"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "transfers", :force => true do |t|
+    t.string   "label"
+    t.string   "phone_number"
+    t.string   "transfer_type"
+    t.integer  "script_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "users", :force => true do |t|

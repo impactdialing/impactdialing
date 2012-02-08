@@ -56,7 +56,6 @@
                       <th width = 15%>Delete</th>
                     </tr>
                   </table>
-                  <p>
                   <%= q.fields_for :possible_responses do |r| %>
                     <table>
                       <tr>
@@ -77,7 +76,6 @@
                   <% end %>
                   <%= q.link_to_add "New response", :possible_responses, :class => "action secondary small_font", :type => "possible_responses"%>
                   <%= q.link_to_remove "Delete this question", :class => "action secondary small_font", :type => "questions"%></p>
-              </p>
               </fieldset>
             <% end %>
             <% end %>
@@ -94,10 +92,41 @@
               </fieldset>
             <% end %>
           </notes>
-        <p class = "actions">
-          <%= f.link_to_add "Add a question", :questions, :class => "action secondary", :type => "questions"%>
+          <transfers style="display:none">
+            <fieldset class="transfers_fields">
+              <legend>Transfer</legend>            
+              <table>
+                <tr>
+                  <th width = 25%>Label</th>
+                  <th width = 25%>Number</th>
+                  <th width = 25%>Delete</th>
+                </tr>
+              </table>
+            
+            <%= f.fields_for :transfers do |t| %>
+                <nested_type type = 'transfers'></nested_type>
+                <table>
+                  <tr>
+                    <td width = 25%>
+                      <%= t.text_field :label %>
+                    </td>
+                    <td width = 25%>
+                      <%= t.text_field :phone_number %>
+                    </td>
+                    <td width = 25%>
+                      <%= t.link_to_remove " ", :class => "ico del", :type => "transfers"%>
+                    </td>
+                                    
+                  </tr>
+                </table>
 
-          <%= f.link_to_add "Add a note", :notes, :class => "action secondary", :type => "notes"%>
+            <% end %>
+            </fieldset>            
+          </transfers>
+        <p class = "actions">
+          <%= f.link_to_add "Add a question", :questions, :class => "action secondary", :type => "questions" %>
+          <%= f.link_to_add "Add a note", :notes, :class => "action secondary", :type => "notes" %>
+          <%= f.link_to_add "Add a transfer", :transfers, :class => "action secondary", :type => "transfers" %>
 
         </p>
 

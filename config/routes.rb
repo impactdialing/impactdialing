@@ -175,6 +175,18 @@ ImpactDialing::Application.routes.draw do
       post :hangup
     end
   end
+  
+  resources :transfer, :protocol => PROTOCOL do
+    member do
+      post :connect
+      post :end
+      post :disconnect      
+    end
+    collection do 
+      post :dial
+    end
+  end
+  
 
   resources :users do
     put '/update_password', :to => 'client/users#update_password', :as => 'update_password'

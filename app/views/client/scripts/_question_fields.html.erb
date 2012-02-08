@@ -1,13 +1,9 @@
-<%= q.label :text, "Question" %>
-<%= q.text_field :text %>
-<div>
-  <%= q.fields_for :possible_responses do |r| %>
-      <%= r.text_field :value %>
-      <%= r.text_field :keypad %>
-      <%= r.link_to_remove "Remove response" %>
-  <% end %>
-  <%= q.link_to_add "Add response", :possible_responses %>
-</div>
-
-
-<%= q.link_to_remove "Remove Question" %>
+<fieldset>
+  <legend>Question 1</legend>
+  <p>
+    <label>Question:</label>
+    <nested_type type = 'questions'></nested_type>
+    <%= f.text_field :text%>
+  </p>
+  <%= render "script_possible_response", f: f %>  
+</fieldset>

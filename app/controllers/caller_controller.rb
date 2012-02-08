@@ -158,10 +158,8 @@ class CallerController < ApplicationController
   end
   
   def phones_only
-    Rails.logger.debug('Entered redirect')
     caller_session = CallerSession.find(params[:session_id])
     xml = (params[:campaign_reassigned] == "true") ?  caller_session.read_campaign_reassign_msg : caller_session.caller.instruction_choice_result("*", caller_session)
-    Rails.logger.debug(xml)
     render :xml => xml
   end
   
@@ -216,6 +214,10 @@ class CallerController < ApplicationController
     @session.call(@voter)
     send_rt(params[:key], 'waiting', 'preview_dialing')
     render :text=> "var x='ok';"
+  end
+  
+  def transfer_call
+    
   end
 
   def connect_to_twilio
