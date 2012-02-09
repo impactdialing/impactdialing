@@ -16,7 +16,7 @@ describe Voter do
       Voter.existing_phone_in_campaign('0123456789', 99).count
     }.by(1)
   end
-  
+
   it "gives remaining voters to count" do
     campaign = Factory(:campaign)
     no_answr_voter = Factory(:voter, :campaign => campaign, :status=> CallAttempt::Status::NOANSWER)
@@ -86,16 +86,16 @@ describe Voter do
   describe "voter fields" do
     let(:account) { Factory(:account) }
     let(:voter) { Factory(:voter, :account => account) }
-    let(:field1) {Factory(:custom_voter_field, :name => "field1", :account => account)}
-    let(:field2) {Factory(:custom_voter_field, :name => "field2", :account => account)}
-    let(:field3) {Factory(:custom_voter_field, :name => "field3", :account => account)}
+    let(:field1) { Factory(:custom_voter_field, :name => "field1", :account => account) }
+    let(:field2) { Factory(:custom_voter_field, :name => "field2", :account => account) }
+    let(:field3) { Factory(:custom_voter_field, :name => "field3", :account => account) }
 
 
     it "lists a voters custom fields" do
       f = field1
       value2 = Factory(:custom_voter_field_value, :voter => voter, :custom_voter_field => field2, :value => "value2")
       f = field3
-      voter.custom_fields.should == [nil, value2.value ,nil]
+      voter.custom_fields.should == [nil, value2.value, nil]
     end
 
     it "lists voters custom fields with selected field names" do
@@ -108,18 +108,18 @@ describe Voter do
 
     it "lists voters custom fields with selected field names" do
       value2 = Factory(:custom_voter_field_value, :voter => voter, :custom_voter_field => field2, :value => "value2")
-      voter.selected_custom_fields([field1.name, field2.name,field3.name]).should == [nil, value2.value, nil]
+      voter.selected_custom_fields([field1.name, field2.name, field3.name]).should == [nil, value2.value, nil]
     end
 
     it "lists selected voter fields" do
-      phone,custom_id,firstname  = "39045098753", "24566", "first"
+      phone, custom_id, firstname = "39045098753", "24566", "first"
       voter.update_attributes(:Phone => phone, :CustomID => custom_id, :FirstName => firstname)
-      voter.selected_fields(["Phone", "FirstName", "LastName"]).should == [phone,firstname,nil]
-      voter.selected_fields(["Phone", "LastName", "FirstName"]).should == [phone,nil,firstname]
+      voter.selected_fields(["Phone", "FirstName", "LastName"]).should == [phone, firstname, nil]
+      voter.selected_fields(["Phone", "LastName", "FirstName"]).should == [phone, nil, firstname]
     end
 
     it "selects phone number if there are no selected fields" do
-      phone,custom_id,firstname  = "39045098753", "24566", "first"
+      phone, custom_id, firstname = "39045098753", "24566", "first"
       voter.update_attributes(:Phone => phone, :CustomID => custom_id, :FirstName => firstname)
       voter.selected_fields.should == [phone]
     end
@@ -214,6 +214,17 @@ describe Voter do
       voter2 = Factory(:voter, :call_back =>true)
       Voter.to_callback.should == [voter2]
     end
+  end
+
+  it "it should not dial a voter if a call_attempt is underway" do
+    campaign = Factory(:campaign, :robo => false, :predictive_type => 'algorithm1', answering_machine_detect: true)
+    voter = Factory(:voter, :campaign => campaign)
+    time_now = Time.now
+    Time.stub(:now).and_return(Time.now)
+    call_just_completed = Factory(:call_attempt, :voter => voter, :status => CallAttempt::Status::INPROGRESS, :call_end => Time.now)
+    voter.dial_predictive.should be_nil
+    ongoing_call = Factory(:call_attempt, :voter => voter, :status => CallAttempt::Status::INPROGRESS)
+    voter.dial_predictive.should be_nil
   end
 
   describe "predictive dialing" do
@@ -466,7 +477,7 @@ describe Voter do
       pending_question = Factory(:question, :script => script)
       voter.unanswered_questions.should == [pending_question]
     end
-    
+
     it "sends pusher event to moderator as 'voter_response_submitted' " do
       voter.update_attributes(:last_call_attempt => Factory(:call_attempt, :campaign => campaign, :caller_session => Factory(:caller_session)))
       answered_question = Factory(:question, :script => script)
