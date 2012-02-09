@@ -212,6 +212,7 @@ function hide_transfer_panel(){
 
 function hide_response_panel() {
     $("#response_panel").hide();
+
 	hide_transfer_panel();
     $("#result_instruction").show();
 
