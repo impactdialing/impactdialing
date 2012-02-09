@@ -197,6 +197,7 @@ function dial_in_caller() {
 
 function show_response_panel() {
     $("#response_panel").show();
+	show_transfer_panel();
     $("#result_instruction").hide();
 }
 
@@ -211,6 +212,7 @@ function hide_transfer_panel(){
 
 function hide_response_panel() {
     $("#response_panel").hide();
+	hide_transfer_panel();
     $("#result_instruction").show();
 
 }
