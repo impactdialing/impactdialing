@@ -127,6 +127,12 @@ describe "predictive_dialer" do
        campaign.dial_predictive_voters
      end
 
+     it "does not redial a voter that is in progress" do
+       voter = Factory(:voter, :campaign => campaign, :status => CallAttempt::Status::SUCCESS)
+       Factory(:call_attempt, :voter => voter, :status => CallAttempt::Status::SUCCESS)
+       campaign.choose_voters_to_dial(20).should_not include(voter.id)
+     end
+
    end
 
    #canned scenarios where we back into / prove our new calls / max calls
