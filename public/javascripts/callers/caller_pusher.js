@@ -103,7 +103,7 @@ function schedule_for_later() {
 
 function transfer_call(){
 	var options = {
-	    data: {voter: $('#voter_id').val(), call_attempt: $("#current_call_attempt").val(), caller_session:$("#caller_session").val()  },
+	    data: {voter: $('#voter_id').val($("#current_voter").val()), call_attempt: $("#current_call_attempt").val(), caller_session:$("#caller_session").val()  },
     };
     $('#transfer_form').attr('action', "/transfer/dial")    
 	$('#transfer_form').submit(function() {
