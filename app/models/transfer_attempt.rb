@@ -32,14 +32,14 @@ class TransferAttempt < ActiveRecord::Base
     puts "ddddddddddddddddd 1"
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
     puts "ddddddddddddddddd 2"
-    Twilio::Call.redirect(call_attempt.sid, callee_transfer_path(self, :host => Settings.host, :port => Settings.port, session_key: session_key))        
+    Twilio::Call.redirect(call_attempt.sid, callee_transfer_index_url(:host => Settings.host, :port => Settings.port, session_key: session_key))        
   end
   
   def redirect_caller
     puts "ddddddddddddddddd 4"
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
     puts "ddddddddddddddddd 5"
-    Twilio::Call.redirect(caller_session.sid, caller_transfer_path(self,:host => Settings.host, :port => Settings.port, session_key: session_key))        
+    Twilio::Call.redirect(caller_session.sid, caller_transfer_index_url(:host => Settings.host, :port => Settings.port, session_key: session_key))        
     
   end
   

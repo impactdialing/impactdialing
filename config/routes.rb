@@ -181,10 +181,10 @@ ImpactDialing::Application.routes.draw do
       post :connect
       post :end
       post :disconnect      
-      post :callee
-      post :caller      
     end
     collection do 
+      post :callee
+      post :caller            
       post :dial
     end
   end
