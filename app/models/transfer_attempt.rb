@@ -1,3 +1,4 @@
+require Rails.root.join("lib/twilio_lib")
 class TransferAttempt < ActiveRecord::Base
   belongs_to :transfer
   belongs_to :caller_session
