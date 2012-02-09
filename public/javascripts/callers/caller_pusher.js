@@ -110,10 +110,6 @@ function transfer_call(){
         $(this).ajaxSubmit(options);
         return false;
     });
-    $("#transfer_form").trigger("submit");
-    $("#transfer_form").unbind("submit");
-
-    
 }
 
 function send_voter_response() {
