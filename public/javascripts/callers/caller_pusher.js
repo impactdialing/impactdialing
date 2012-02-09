@@ -264,7 +264,6 @@ function subscribe(session_key) {
 
 
     channel.bind('caller_connected', function(data) {
-        console.log('caller_connected' + data)
         hide_all_actions();
         $('#browserTestContainer').hide();
         $("#start_calling").hide();
