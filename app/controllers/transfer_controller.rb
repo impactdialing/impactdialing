@@ -5,7 +5,12 @@ class TransferController < ApplicationController
     transfer_attempt = TransferAttempt.find(params[:id])
     transfer_attempt.update_attribute(:connecttime, Time.now)
     transfer_attempt.redirect_callee
-    transfer_attempt.redirect_caller
+    if transfer_attempt.transfer_type == Transfer::Type::WARM
+      transfer_attempt.redirect_caller
+    else
+      t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+      t.end_call("#{transfer_attempt.caller_session.sid}")      
+    end
     render xml: transfer_attempt.conference(transfer_attempt.caller_session, transfer_attempt.call_attempt)        
   end
   
@@ -42,7 +47,6 @@ class TransferController < ApplicationController
         v.conference(params[:session_key], :startConferenceOnEnter => true, :endConferenceOnExit => true, :beep => false, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
       end
     end.response
-    puts response
     render xml: response    
   end
   
@@ -52,7 +56,6 @@ class TransferController < ApplicationController
         v.conference(params[:session_key], :startConferenceOnEnter => true, :endConferenceOnExit => false, :beep => false, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
       end    
     end.response
-    puts response
     render xml: response
   end
     
