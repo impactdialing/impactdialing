@@ -102,7 +102,7 @@ function schedule_for_later() {
 }
 
 function transfer_call(){
-	$('#transfer_button').attr('disabled','disabled');
+	$('#transfer_button').hide();
 	var options = {
 	    data: {voter: $("#current_voter").val(), call_attempt: $("#current_call_attempt").val(), caller_session:$("#caller_session").val()  },
     };
@@ -200,7 +200,7 @@ function show_response_panel() {
 
 function show_transfer_panel(){
 	$("#transfer_panel").show();
-	$('#transfer_button').removeAttr('disabled')
+	$('#transfer_button').show();
 }
 
 function hide_transfer_panel(){

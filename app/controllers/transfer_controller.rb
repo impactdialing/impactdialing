@@ -42,6 +42,10 @@ class TransferController < ApplicationController
     render nothing: true
   end
   
+  def move_to_next_voter
+    
+  end
+  
   def callee
     response = Twilio::Verb.new do |v|
       v.dial(:hangupOnStar => true) do
