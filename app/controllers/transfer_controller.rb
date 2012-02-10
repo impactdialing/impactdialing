@@ -44,10 +44,8 @@ class TransferController < ApplicationController
   
   
   def callee
-    caller_session = CallerSession.find(params[:caller_session])
-    caller = Caller.find(caller_session.caller_id)
     response = Twilio::Verb.new do |v|
-      v.dial(:hangupOnStar => true, action: pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => caller_session.id)) do
+      v.dial(:hangupOnStar => true) do
         v.conference(params[:session_key], :startConferenceOnEnter => true, :endConferenceOnExit => true, :beep => false, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
       end
     end.response
@@ -55,8 +53,10 @@ class TransferController < ApplicationController
   end
   
   def caller
+    caller_session = CallerSession.find(params[:caller_session])
+    caller = Caller.find(caller_session.caller_id)
     response = Twilio::Verb.new do |v|
-      v.dial(:hangupOnStar => true) do
+      v.dial(:hangupOnStar => true, action: pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => caller_session.id)) do
         v.conference(params[:session_key], :startConferenceOnEnter => true, :endConferenceOnExit => false, :beep => false, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
       end    
     end.response
