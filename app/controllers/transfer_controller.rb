@@ -8,8 +8,9 @@ class TransferController < ApplicationController
     if transfer_attempt.transfer_type == Transfer::Type::WARM
       transfer_attempt.redirect_caller
     else
-      t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-      t.end_call("#{transfer_attempt.caller_session.sid}")      
+      conference_sid = transfer_attempt.caller_session.get_conference_id
+      Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
+      Twilio::Conference.kick_participant(conference_sid, transfer_attempt.caller_session.sid)
     end
     render xml: transfer_attempt.conference(transfer_attempt.caller_session, transfer_attempt.call_attempt)        
   end
