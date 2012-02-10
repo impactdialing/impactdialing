@@ -6,8 +6,11 @@
         <%= select( "transfer", "id",@campaign.script.transfers.collect{|transfer| [transfer.label + " - "+ transfer.phone_number  ,transfer.id]}) %>               
         <div class= "buttons">
             <button type="submit" id="transfer_button" style="margin-top:10px" onclick="javascript:transfer_call();">Transfer</button>
+            <button type="submit" id="stop_listening" style="margin-top:10px; display:none" onclick="javascript:kick_caller_off();">Stop Listening</button>
         </div>
       </form>
+      <button type="submit" id="transfer_button" style="margin-top:10px" onclick="javascript:transfer_call();">Transfer</button>
+      
       
     </fieldset>
   <% end %>
