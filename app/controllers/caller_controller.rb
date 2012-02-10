@@ -41,6 +41,15 @@ class CallerController < ApplicationController
       end
     end
   end
+  
+  def kick_caller_off_conference
+    caller = Caller.find(params[:id])
+    caller_session = caller.caller_sessions.find(params[:caller_session])    
+    conference_sid = caller_session.get_conference_id
+    Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
+    Twilio::Conference.kick_participant(conference_sid, caller_session.sid)
+    render nothing: true
+  end
 
   def stop_calling
     caller = Caller.find(params[:id])

@@ -35,7 +35,7 @@ class TransferAttempt < ActiveRecord::Base
   
   def redirect_caller
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    Twilio::Call.redirect(caller_session.sid, caller_transfer_index_url(:host => Settings.host, :port => Settings.port, session_key: session_key, caller_session: caller_session.id))        
+    Twilio::Call.redirect(caller_session.sid, caller_transfer_index_url(:host => Settings.host, :port => Settings.port, session_key: session_key, caller_session: caller_session_id))        
   end
   
   
