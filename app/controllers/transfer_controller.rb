@@ -42,9 +42,6 @@ class TransferController < ApplicationController
     render nothing: true
   end
   
-  def start_conference
-    
-  end
   
   def callee
     caller_session = CallerSession.find(params[:caller_session])

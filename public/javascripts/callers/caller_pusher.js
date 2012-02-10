@@ -105,6 +105,9 @@ function transfer_call(){
 	$('#transfer_button').hide();
 	var options = {
 	    data: {voter: $("#current_voter").val(), call_attempt: $("#current_call_attempt").val(), caller_session:$("#caller_session").val()  },
+		success:  function() {
+            $('#stop_listening').show();
+        }        
     };
     $('#transfer_form').attr('action', "/transfer/dial")    
 	$('#transfer_form').submit(function() {
@@ -194,13 +197,13 @@ function dial_in_caller() {
 
 function show_response_panel() {
     $("#response_panel").show();
-	show_transfer_panel();
     $("#result_instruction").hide();
 }
 
 function show_transfer_panel(){
 	$("#transfer_panel").show();
 	$('#transfer_button').show();
+	$('#stop_listening').hide();
 }
 
 function hide_transfer_panel(){
@@ -281,7 +284,7 @@ function subscribe(session_key) {
     });
 
     channel.bind('conference_started', function(data) {
-        ready_for_calls(data)
+        ready_for_calls(data)		
     });
 
 
@@ -333,6 +336,7 @@ function subscribe(session_key) {
             set_message("Status: Connected.")
         }
         show_response_panel();
+		show_transfer_panel();
         cleanup_previous_call_results();
         $("#hangup_call").show();
     });
