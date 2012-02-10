@@ -116,6 +116,16 @@ function transfer_call(){
     });
 }
 
+function kick_caller_off(){
+	$.ajax({
+        url : "/caller/" + $("#caller").val() + "/kick_caller_off_conference",
+        data : {caller_session: $("#caller_session").val() },
+        type : "POST",
+    })
+    
+	
+}
+
 function send_voter_response() {
     console.log('submit voter response')
     $('#voter_responses').attr('action', "/call_attempts/" + $("#current_call_attempt").val() + "/voter_response");
