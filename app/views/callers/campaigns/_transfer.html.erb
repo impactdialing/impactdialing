@@ -5,7 +5,7 @@
       <form id="transfer_form" method="post" action="">
         <%= select( "transfer", "id",@campaign.script.transfers.collect{|transfer| [transfer.label + " - "+ transfer.phone_number  ,transfer.id]}) %>               
         <div class= "buttons">
-            <button type="submit" style="margin-top:10px" onclick="javascript:transfer_call();">Transfer</button>
+            <button type="submit" id="transfer_button" style="margin-top:10px" onclick="javascript:transfer_call();">Transfer</button>
         </div>
       </form>
       
