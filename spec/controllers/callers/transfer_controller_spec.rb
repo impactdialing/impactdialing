@@ -5,13 +5,13 @@ describe TransferController do
   it "should dial a number" do
     script =  Factory(:script)
     campaign = Factory(:campaign, script: script)
-    transfer = Factory(:transfer, script: script, phone_number: "1234567890")
+    transfer = Factory(:transfer, script: script, phone_number: "1234567890", transfer_type: Transfer::Type::WARM)
     caller_session = Factory(:caller_session)
     call_attempt = Factory(:call_attempt)
     voter = Factory(:voter, Phone: "1234567890")
     Transfer.should_receive(:find).and_return(transfer)
     transfer.should_receive(:dial).with(caller_session, call_attempt, voter, Transfer::Type::WARM)
-    post :dial, transfer: {id: transfer.id, type: Transfer::Type::WARM} , caller_session:  caller_session.id, call_attempt: call_attempt.id, voter: voter.id
+    post :dial, transfer: {id: transfer.id} , caller_session:  caller_session.id, call_attempt: call_attempt.id, voter: voter.id
   end
   
   it "should disconnect and set attempt status as success" do
