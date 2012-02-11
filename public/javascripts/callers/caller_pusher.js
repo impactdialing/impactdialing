@@ -25,6 +25,7 @@ function hide_all_actions() {
     $("#hangup_call").hide();
     $("#submit_and_keep_call").hide();
     $("#submit_and_stop_call").hide();
+	$('kick_self_out_of_conference').hide();
 
 }
 
@@ -103,6 +104,8 @@ function schedule_for_later() {
 
 function transfer_call(){
 	$('#transfer_button').hide();
+	$('#hangup_call').hide();
+	$('kick_self_out_of_conference').show();	
 	var options = {
 	    data: {voter: $("#current_voter").val(), call_attempt: $("#current_call_attempt").val(), caller_session:$("#caller_session").val()  },
 		success:  function() {
