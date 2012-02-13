@@ -104,11 +104,10 @@ function schedule_for_later() {
 function transfer_call(){
 	$('#transfer_button').hide();
 	$('#hangup_call').hide();
-	$('kick_self_out_of_conference').show();	
 	var options = {
 	    data: {voter: $("#current_voter").val(), call_attempt: $("#current_call_attempt").val(), caller_session:$("#caller_session").val()  },
-		success:  function() {
-            $('#stop_listening').show();
+		success:  function(data) {
+			console.log(data)
         }        
     };
     $('#transfer_form').attr('action', "/transfer/dial")    
