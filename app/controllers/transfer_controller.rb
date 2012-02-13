@@ -7,6 +7,7 @@ class TransferController < ApplicationController
     transfer_attempt.redirect_callee
     if transfer_attempt.transfer_type == Transfer::Type::WARM
       transfer_attempt.redirect_caller
+      transfer_attempt.caller_session.publish("warm_transfer",{})
     else
       conference_sid = transfer_attempt.caller_session.get_conference_id
       Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)

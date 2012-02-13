@@ -390,6 +390,10 @@ function subscribe(session_key) {
         set_message("Status: Dialing.");
     });
 
+	channel.bind('warm_transfer',function(data){
+	 	$('#kick_self_out_of_conference').show();	
+	});
+
     channel.bind('caller_re_assigned_to_campaign', function(data) {
 
         set_new_campaign_script(data);
