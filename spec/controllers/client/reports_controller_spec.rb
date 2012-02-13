@@ -66,6 +66,15 @@ describe Client::ReportsController do
       response.should redirect_to 'https://test.host/client/reports'
     end
 
+    it "sets the default date range according to the campaign's time zone" do
+      campaign = Factory(:campaign, script: Factory(:script), :time_zone => "Pacific Time (US & Canada)")
+      Time.stub(:now => Time.utc(2012, 2, 13, 0, 0, 0))
+      get :download_report, :campaign_id => campaign.id
+      response.should be_ok
+      assigns(:from_date).should == Date.new(2012, 2, 12)
+      assigns(:to_date).should == Date.new(2012, 2, 12)
+    end
+
   end
 
 end

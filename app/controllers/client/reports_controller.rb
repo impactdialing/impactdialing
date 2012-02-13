@@ -89,8 +89,9 @@ module Client
     def set_date_range
       from_date = Date.strptime(params[:from_date], "%m/%d/%Y") if params[:from_date]
       to_date = Date.strptime(params[:to_date], "%m/%d/%Y") if params[:to_date]
-      @from_date = from_date || (@campaign.call_attempts.first.try(:created_at) || Date.today)
-      @to_date = to_date || (@campaign.call_attempts.last.try(:created_at) || Date.today)
+      time_zone = @campaign.time_zone
+      @from_date = from_date || (@campaign.call_attempts.first.try(:created_at) || Time.now).in_time_zone(time_zone).to_date
+      @to_date = to_date || (@campaign.call_attempts.last.try(:created_at) || Time.now).in_time_zone(time_zone).to_date
     end
     
     def not_dilaed_voters(range_parameters)
