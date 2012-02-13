@@ -25,7 +25,7 @@ function hide_all_actions() {
     $("#hangup_call").hide();
     $("#submit_and_keep_call").hide();
     $("#submit_and_stop_call").hide();
-	$('kick_self_out_of_conference').hide();
+	$('#kick_self_out_of_conference').hide();
 }
 
 
