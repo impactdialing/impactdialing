@@ -14,7 +14,18 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
 
     FileUtils.mkdir_p(Rails.root.join("tmp"))
     filename = "#{Rails.root}/tmp/report_#{campaign.name}.csv"
-    File.open(filename, "w") { |f| f.write @report }
+    report_csv = @report.split("\n")
+    file = File.open(filename, "w")
+    report_csv.each do |r|
+      begin
+        file.write(r)
+      rescue Exception => e
+        puts e
+        puts r
+        next
+      end
+      
+    end
     AWS::S3::S3Object.store("report_#{campaign.name}.csv", File.open(filename), "download_reports", :content_type => "text/csv", :access=>:private, :expires_in => 12*60*60)
   end
 

@@ -2,6 +2,7 @@
   <% if @campaign.script.transfers.present? %>
     <fieldset>
       <legend>Transfer</legend>            
+      <input type="hidden" id="caller_hungup" name="caller_hungup" value="false">
       <form id="transfer_form" method="post" action="">
         <%= select( "transfer", "id",@campaign.script.transfers.collect{|transfer| [transfer.label + " - "+ transfer.phone_number  ,transfer.id]}) %>               
         <div class= "buttons">

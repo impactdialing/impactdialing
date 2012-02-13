@@ -332,17 +332,13 @@ function subscribe(session_key) {
 
 
     channel.bind('voter_disconnected', function(data) {
-		var warm_transfer = false;
-		if ($('#kick_self_out_of_conference').is(":visible")) {
-			warm_transfer = true;
-		}	
         hide_all_actions();
         show_response_panel();
 		hide_transfer_panel();
         set_message("Status: Waiting for call results.");
         $("#submit_and_keep_call").show();
         $("#submit_and_stop_call").show();
-		if (warm_transfer){
+		if (false){
 			$('#kick_self_out_of_conference').show();
 	        $("#submit_and_keep_call").hide();
 	        $("#submit_and_stop_call").hide();
@@ -413,8 +409,7 @@ function subscribe(session_key) {
 	 	$('#kick_self_out_of_conference').show();	
 	});
 	channel.bind('caller_kicked_off',function(data){
-	 	$("#submit_and_keep_call").show();
-        $("#submit_and_stop_call").show();
+		$('#caller_hungup').val('true')
 		
 	});
 	
