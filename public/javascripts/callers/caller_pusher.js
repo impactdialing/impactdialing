@@ -336,6 +336,7 @@ function subscribe(session_key) {
     channel.bind('voter_disconnected', function(data) {
         hide_all_actions();
         show_response_panel();
+		hide_transfer_panel();
         set_message("Status: Waiting for call results.");
         $("#submit_and_keep_call").show();
         $("#submit_and_stop_call").show();
