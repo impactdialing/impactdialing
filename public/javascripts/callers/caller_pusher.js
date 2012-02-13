@@ -107,7 +107,9 @@ function transfer_call(){
 	var options = {
 	    data: {voter: $("#current_voter").val(), call_attempt: $("#current_call_attempt").val(), caller_session:$("#caller_session").val()  },
 		success:  function(data) {
-			console.log(data)
+			if (data.type == "warm") {
+			  $('#kick_self_out_of_conference').show();
+			}
         }        
     };
     $('#transfer_form').attr('action', "/transfer/dial")    
