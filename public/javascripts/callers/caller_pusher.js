@@ -335,7 +335,14 @@ function subscribe(session_key) {
 
 
     channel.bind('voter_disconnected', function(data) {
+		warm_transfer = false;
+		if $('#kick_self_out_of_conference').is(":visible") {
+			warm_transfer = true;
+		}	
         hide_all_actions();
+		if warm_transfer{
+			$('#kick_self_out_of_conference').show();
+		}
         show_response_panel();
 		hide_transfer_panel();
         set_message("Status: Waiting for call results.");
