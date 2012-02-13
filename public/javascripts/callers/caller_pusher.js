@@ -382,7 +382,14 @@ function subscribe(session_key) {
     channel.bind('waiting_for_result', function(data) {
         show_response_panel();
         set_message('Status: Waiting for call results.');
+		var warm_transfer = false;
+		if ($('#kick_self_out_of_conference').is(":visible")) {
+			warm_transfer = true;
+		}	
         hide_all_actions();
+		if (warm_transfer){
+			$('#kick_self_out_of_conference').show();
+		}
         $("#submit_and_keep_call").show();
         $("#submit_and_stop_call").show();
     });
