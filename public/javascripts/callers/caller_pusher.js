@@ -335,7 +335,7 @@ function subscribe(session_key) {
 
 
     channel.bind('voter_disconnected', function(data) {
-		warm_transfer = false;
+		var warm_transfer = false;
 		if ($('#kick_self_out_of_conference').is(":visible")) {
 			warm_transfer = true;
 		}	
