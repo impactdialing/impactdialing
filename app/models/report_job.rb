@@ -14,11 +14,13 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
 
     FileUtils.mkdir_p(Rails.root.join("tmp"))
     filename = "#{Rails.root}/tmp/report_#{campaign.name}.csv"
+    puts @report
     report_csv = @report.split("\n")
     file = File.open(filename, "w")
     report_csv.each do |r|
       begin
         file.write(r)
+        file.write("\n")
       rescue Exception => e
         puts e
         puts r
