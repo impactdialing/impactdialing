@@ -337,14 +337,18 @@ function subscribe(session_key) {
 			warm_transfer = true;
 		}	
         hide_all_actions();
-		if (warm_transfer){
-			$('#kick_self_out_of_conference').show();
-		}
         show_response_panel();
 		hide_transfer_panel();
         set_message("Status: Waiting for call results.");
         $("#submit_and_keep_call").show();
         $("#submit_and_stop_call").show();
+		if (warm_transfer){
+			$('#kick_self_out_of_conference').show();
+	        $("#submit_and_keep_call").hide();
+	        $("#submit_and_stop_call").hide();
+
+		}
+
     });
 
     channel.bind('voter_connected', function(data) {
@@ -384,11 +388,15 @@ function subscribe(session_key) {
 			warm_transfer = true;
 		}	
         hide_all_actions();
-		if (warm_transfer){
-			$('#kick_self_out_of_conference').show();
-		}
         $("#submit_and_keep_call").show();
         $("#submit_and_stop_call").show();
+		if (warm_transfer){
+			$('#kick_self_out_of_conference').show();
+			$("#submit_and_keep_call").hide();
+	        $("#submit_and_stop_call").hide();
+	        
+		}
+
     });
 
     channel.bind('no_voter_on_call', function(data) {
@@ -404,6 +412,14 @@ function subscribe(session_key) {
 	channel.bind('warm_transfer',function(data){
 	 	$('#kick_self_out_of_conference').show();	
 	});
+	channel.bind('caller_kicked_off',function(data){
+	 	$("#submit_and_keep_call").show();
+        $("#submit_and_stop_call").show();
+		
+	});
+	
+	
+	
 
     channel.bind('caller_re_assigned_to_campaign', function(data) {
 
