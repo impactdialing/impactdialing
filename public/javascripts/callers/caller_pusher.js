@@ -116,6 +116,7 @@ function transfer_call(){
         $(this).ajaxSubmit(options);
         return false;
     });
+	$("#transfer_form").unbind("submit");
 }
 
 function kick_caller_off(){
