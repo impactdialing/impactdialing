@@ -114,6 +114,7 @@ function transfer_call(){
     $('#transfer_form').attr('action', "/transfer/dial")    
 	$('#transfer_form').submit(function() {
         $(this).ajaxSubmit(options);
+		$(this).unbind("submit");
         return false;
     });
 }
