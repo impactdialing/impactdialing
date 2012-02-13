@@ -57,7 +57,7 @@ class UserMailer
         :text => content,
         :html => content,
         :from_name => white_labeled_title(user.domain),
-        :from_email => white_labeled_email(current_user.domain),
+        :from_email => white_labeled_email(user.domain),
         :to_email => [user.email]
       }
     })
