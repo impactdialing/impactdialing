@@ -45,6 +45,8 @@ class Transfer < ActiveRecord::Base
    Digest::SHA1.hexdigest(args.flatten.join('--'))
  end
  
+
+ 
  
   
 end

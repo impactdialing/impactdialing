@@ -4,10 +4,11 @@ class TransferAttempt < ActiveRecord::Base
   belongs_to :caller_session
   belongs_to :call_attempt
   include Rails.application.routes.url_helpers
+  scope :within, lambda { |from, to, campaign_id| where(:created_at => from..(to + 1.day)).where(campaign_id: campaign_id)}
   
   
   
-  def conference(caller_session, call_attempt)
+  def conference
     update_attributes(call_start: Time.now)
     Twilio::TwiML::Response.new do |r|
       r.Dial :hangupOnStar => 'false', :action => disconnect_transfer_path(self, :host => Settings.host), :record=>caller_session.campaign.account.record_calls do |d|
