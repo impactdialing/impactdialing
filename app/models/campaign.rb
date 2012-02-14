@@ -641,7 +641,12 @@ class Campaign < ActiveRecord::Base
   end
   
   def transfers(from_date, to_date)    
-    TransferAttempt.aggregate(transfer_attempts.within(from_date, to_date, id))
+    result = {}
+    attempts = transfer_attempts.within(from_date, to_date, id)
+    unless attempts.blank?
+      result = TransferAttempt.aggregate(attempts)
+    end
+    result
   end
 
   def robo_answer_results(from_date, to_date)
