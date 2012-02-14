@@ -36,7 +36,8 @@ module Client
     def show
       @script = @user.account.scripts.find(params[:id])
       @script.questions << [Question.new(possible_responses: [PossibleResponse.new])]  if @script.questions.empty?
-      @voter_fields = ["CustomID","FirstName","MiddleName","LastName","Suffix","Address","City","State/Province","Zip/Postal Code","Country","Phone","Email"]
+      #@voter_fields = ["CustomID","FirstName","MiddleName","LastName","Suffix","Address","City","State/Province","Zip/Postal Code","Country","Phone","Email"]
+      @voter_fields = VoterList::VOTER_DATA_COLUMNS.values
       @voter_fields.concat(@user.account.custom_voter_fields.collect{ |field| field.name})
       if @script.voter_fields!=nil
         begin
