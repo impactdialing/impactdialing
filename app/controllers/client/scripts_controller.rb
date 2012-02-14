@@ -14,7 +14,7 @@ module Client
 
     def new
       @script = Script.new(:robo => false, questions: [Question.new(possible_responses: [PossibleResponse.new])])
-      @voter_fields = Voter.upload_fields
+      @voter_fields = VoterList::VOTER_DATA_COLUMNS.values
       @voter_fields.concat(@user.account.custom_voter_fields.collect{ |field| field.name})
       @voter_field_values=[]
     end
