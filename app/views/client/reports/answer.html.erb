@@ -19,6 +19,16 @@
      <% i = i + 1%>
 <% end %>
 
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <h3>Transfer Call Details</h3>
+  <tr>
+    <th>Transfers</th>
+    <th>Number</th>
+    <th>Percentage</th>
+  </tr>
+</table>
+
+
 <h3>Date range:</h3>
 
   	<% form_tag( @campaign.robo == true ? answers_reports_path : answer_client_reports_path, :method => :get) do %>   

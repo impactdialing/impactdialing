@@ -638,6 +638,10 @@ class Campaign < ActiveRecord::Base
     
     result
   end
+  
+  def transfers(from_date, to_date)
+    
+  end
 
   def robo_answer_results(from_date, to_date)
     result = Hash.new
