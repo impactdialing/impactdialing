@@ -3,8 +3,10 @@ class TransferAttempt < ActiveRecord::Base
   belongs_to :transfer
   belongs_to :caller_session
   belongs_to :call_attempt
+  belongs_to :campaign
   include Rails.application.routes.url_helpers
   scope :within, lambda { |from, to, campaign_id| where(:created_at => from..(to + 1.day)).where(campaign_id: campaign_id)}
+
   
   
   
@@ -39,6 +41,27 @@ class TransferAttempt < ActiveRecord::Base
     Twilio::Call.redirect(caller_session.sid, caller_transfer_index_url(:host => Settings.host, :port => Settings.port, session_key: session_key, caller_session: caller_session_id))        
   end
   
+  def self.aggregate(attempts)
+    result = Hash.new
+    attempts.each do |attempt|
+      if result[attempt.transfer.id].nil?
+        result[attempt.transfer.id] = {label: attempt.transfer.label, number: 0}
+      end
+      result[attempt.transfer.id][:number] = result[attempt.transfer.id][:number]+1
+    end
+    
+    total = 0
+    
+    result.each_value do |value|
+      total = total + value[:number]
+    end  
+    
+    result.each_pair do |key, value|
+      value[:percentage] = (value[:number] *100) / total
+    end
+      
+    result
+  end
   
   
 end
