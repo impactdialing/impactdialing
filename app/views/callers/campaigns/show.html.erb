@@ -24,7 +24,9 @@
 
     <script id="voter" type="text/html">
       {{#fields}}
-          	<li>CustomID: <b>{{CustomID}}</b></li>
+					{{#ID_flag}}
+          	<li>ID: <b>{{CustomID}}</b></li>
+					{{/ID_flag}}
 					{{#FirstName_flag}}
           	<li>First name: <b>{{FirstName}}</b></li>
 					{{/FirstName_flag}}
