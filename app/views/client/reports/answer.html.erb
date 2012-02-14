@@ -19,22 +19,24 @@
      <% i = i + 1%>
 <% end %>
 
-<table width="100%" border="0" cellspacing="0" cellpadding="0">
-  <h3>Transfer Call Details</h3>
-  <tr>
-    <th>Transfers</th>
-    <th>Number</th>
-    <th>Percentage</th>
-  </tr>
-  <%@transfers.each_pair do |key, value|%>
-  <tr>
-    <td><%= value[:label]%></td>
-    <td><%= value[:number]%></td>
-    <td><%= value[:percentage]%> %</td>
-  </tr>
+<%unless @transfers.blank?%>
+  <table width="100%" border="0" cellspacing="0" cellpadding="0">
+    <h3>Transfer Call Details</h3>
+    <tr>
+      <th>Transfers</th>
+      <th>Number</th>
+      <th>Percentage</th>
+    </tr>
+    <%@transfers.each_pair do |key, value|%>
+    <tr>
+      <td><%= value[:label]%></td>
+      <td><%= value[:number]%></td>
+      <td><%= value[:percentage]%> %</td>
+    </tr>
   
-  <%end%>
-</table>
+    <%end%>
+  </table>
+<%end%>
 
 
 <h3>Date range:</h3>
