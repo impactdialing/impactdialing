@@ -26,6 +26,14 @@
     <th>Number</th>
     <th>Percentage</th>
   </tr>
+  <%@transfers.each_pair do |key, value|%>
+  <tr>
+    <td><%= value[:label]%></td>
+    <td><%= value[:number]%></td>
+    <td><%= value[:percentage]%> %</td>
+  </tr>
+  
+  <%end%>
 </table>
 
 

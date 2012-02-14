@@ -82,6 +82,7 @@ module Client
     def answer
       set_date_range
       @results = @campaign.answers_result(@from_date, @to_date)
+      @transfers = @campaign.transfers(@from_date, @to_date)
     end
 
     private

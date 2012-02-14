@@ -7,6 +7,7 @@ class Campaign < ActiveRecord::Base
   has_many :voter_lists, :conditions => {:active => true}
   has_many :all_voters, :class_name => 'Voter'
   has_many :call_attempts
+  has_many :transfer_attempts
   has_many :callers
   has_one :simulated_values
   has_many :answers
@@ -639,8 +640,8 @@ class Campaign < ActiveRecord::Base
     result
   end
   
-  def transfers(from_date, to_date)
-    
+  def transfers(from_date, to_date)    
+    TransferAttempt.aggregate(transfer_attempts.within(from_date, to_date, id))
   end
 
   def robo_answer_results(from_date, to_date)
