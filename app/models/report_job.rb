@@ -3,6 +3,9 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
 
   def initialize(campaign, user, voter_fields, custom_fields, all_voters, from, to)
     voter_fields = ["Phone"] if voter_fields.blank?
+    time_zone = ActiveSupport::TimeZone.new(campaign.time_zone)
+    from = time_zone.parse(from)
+    to = time_zone.parse(to)
     super(campaign, user, voter_fields, custom_fields, all_voters, from, to)
   end
 
