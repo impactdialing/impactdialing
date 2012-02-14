@@ -416,7 +416,7 @@ function subscribe(session_key) {
         var voter = ich.voter(data); //using ICanHaz a moustache. js like thingamagic
         $('#voter_info').empty();
         $('#voter_info').append(voter);
-        alert(data.CustomID);
+        alert(data.fields.CustomID);
     }
 
     function cleanup_previous_call_results() {
