@@ -3,9 +3,6 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
 
   def initialize(campaign, user, voter_fields, custom_fields, all_voters, from, to)
     voter_fields = ["Phone"] if voter_fields.blank?
-    time_zone = ActiveSupport::TimeZone.new(campaign.time_zone)
-    from = time_zone.parse(from)
-    to = time_zone.parse(to)
     super(campaign, user, voter_fields, custom_fields, all_voters, from, to)
   end
 
@@ -28,7 +25,7 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
       if download_all_voters
         campaign.all_voters.find_in_batches(:batch_size => 2000) { |voters| voters.each { |v| csv << csv_for(v) } }
       else
-        campaign.all_voters.answered_within(from_date, to_date).find_in_batches(:batch_size => 2000) { |voters| voters.each { |v| csv << csv_for(v) } }
+        campaign.all_voters.answered_within_timespan(from_date, to_date).find_in_batches(:batch_size => 2000) { |voters| voters.each { |v| csv << csv_for(v) } }
       end
     end
     save_report
