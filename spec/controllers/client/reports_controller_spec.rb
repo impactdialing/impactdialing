@@ -67,12 +67,13 @@ describe Client::ReportsController do
     end
 
     it "sets the default date range according to the campaign's time zone" do
-      campaign = Factory(:campaign, script: Factory(:script), :time_zone => "Pacific Time (US & Canada)")
+      time_zone = ActiveSupport::TimeZone.new("Pacific Time (US & Canada)")
+      campaign = Factory(:campaign, script: Factory(:script), :time_zone => time_zone.name)
       Time.stub(:now => Time.utc(2012, 2, 13, 0, 0, 0))
       get :download_report, :campaign_id => campaign.id
       response.should be_ok
-      assigns(:from_date).should == Date.new(2012, 2, 12)
-      assigns(:to_date).should == Date.new(2012, 2, 12)
+      assigns(:from_date).to_i.should == time_zone.local(2012, 2, 12, 0).to_i
+      assigns(:to_date).to_i.should == time_zone.local(2012, 2, 12, 23, 59, 59).to_i
     end
 
   end

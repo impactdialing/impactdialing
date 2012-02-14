@@ -75,6 +75,15 @@ describe Voter do
     Voter.answered_within(1.days.ago, 1.days.ago).should == [v2]
   end
 
+  it "returns voters who have responded within a time range" do
+    v1 = Factory(:voter, :result_date => Time.new(2012, 2, 14, 10))
+    v2 = Factory(:voter, :result_date => Time.new(2012, 2, 14, 15))
+    v3 = Factory(:voter, :result_date => Time.new(2012, 2, 14, 20))
+    Voter.answered_within_timespan(Time.new(2012, 2, 14, 10), Time.new(2012, 2, 14, 12)).should == [v1]
+    Voter.answered_within_timespan(Time.new(2012, 2, 14, 12), Time.new(2012, 2, 14, 23, 59, 59)).should == [v2, v3]
+    Voter.answered_within_timespan(Time.new(2012, 2, 14, 0), Time.new(2012, 2, 14, 9, 59, 59)).should == []
+  end
+
   it "conferences with a caller" do
     voter = Factory(:voter)
     caller = Factory(:caller_session)
