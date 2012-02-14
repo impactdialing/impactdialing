@@ -186,6 +186,13 @@ class CallerController < ApplicationController
     render :layout => false
   end
   
+  def transfer_panel
+    caller = Caller.find(params[:id])
+    @campaign = caller.campaign
+    render :layout => false    
+  end
+  
+  
   def ping
     #sleep 2.5
     send_rt(params[:key], 'ping', params[:num])
