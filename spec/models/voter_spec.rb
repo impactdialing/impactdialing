@@ -142,7 +142,7 @@ describe Voter do
           callback_url,
           'FallbackUrl' => fallback_url,
           'StatusCallback' => callended_url,
-          'Timeout' => '20',
+          'Timeout' => '15',
           'IfMachine' => anything
       ).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
       voter.dial
@@ -161,7 +161,7 @@ describe Voter do
           callback_url,
           'FallbackUrl' => fallback_url,
           'StatusCallback' => callended_url,
-          'Timeout' => '20',
+          'Timeout' => '15',
           'IfMachine' => 'Hangup'
       ).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
       voter.dial
@@ -180,7 +180,7 @@ describe Voter do
           callback_url,
           'FallbackUrl' => fallback_url,
           'StatusCallback' => callended_url,
-          'Timeout' => '20',
+          'Timeout' => '30',
           'IfMachine' => 'Continue'
       ).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
       voter.dial

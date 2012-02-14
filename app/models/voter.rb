@@ -99,7 +99,7 @@ class Voter < ActiveRecord::Base
         twilio_callback_url(callback_params),
         'FallbackUrl' => TWILIO_ERROR,
         'StatusCallback' => twilio_call_ended_url(callback_params),
-        'Timeout' => '20',
+        'Timeout' => self.campaign.leave_voicemail? ? '30' : '15',
         'IfMachine' => self.campaign.leave_voicemail? ? 'Continue' : 'Hangup'
     )
 
