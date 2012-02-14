@@ -274,6 +274,18 @@ function set_response_panel(data) {
         }
     })
 }
+function set_transfer_panel(data) {
+    $.ajax({
+        url : "/caller/" + $("#caller").val() + "/transfer_panel",
+        data : {},
+        type : "POST",
+        success : function(response) {
+            $('#transfer_panel').replaceWith(response);
+        }
+    })
+}
+
+
 
 function subscribe(session_key) {
     channel = pusher.subscribe(session_key);
@@ -411,6 +423,7 @@ function subscribe(session_key) {
 
         set_new_campaign_script(data);
         set_response_panel(data);
+		set_transfer_panel(data)
         clear_voter();
         if (data.dialer && (data.dialer.toLowerCase() == "preview" || data.dialer.toLowerCase() == "progressive")) {
             if (!$.isEmptyObject(data.fields)) {

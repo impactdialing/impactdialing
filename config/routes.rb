@@ -55,6 +55,7 @@ ImpactDialing::Application.routes.draw do
       post :check_reassign
       post :kick_caller_off_conference
       post :new_campaign_response_panel
+      post :transfer_panel
     end
 
   end
