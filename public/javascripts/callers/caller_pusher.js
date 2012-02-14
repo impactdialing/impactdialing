@@ -359,6 +359,7 @@ function subscribe(session_key) {
         show_response_panel();
 		show_transfer_panel();
         cleanup_previous_call_results();
+		cleanup_transfer_panel();
         $("#hangup_call").show();
     });
 
@@ -397,6 +398,7 @@ function subscribe(session_key) {
 	 	$('#kick_self_out_of_conference').show();	
 	});
 	channel.bind('caller_kicked_off',function(data){
+		$('#kick_self_out_of_conference').hide();	
 		$("#submit_and_keep_call").show();
         $("#submit_and_stop_call").show();        
 		
@@ -481,5 +483,10 @@ function subscribe(session_key) {
         $('#scheduled_date').val('')
         collapse_scheduler();
     }
+
+    function cleanup_transfer_panel() {
+        $('#transfer_type').val('');
+    }
+
 
 }
