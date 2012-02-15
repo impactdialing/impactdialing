@@ -38,31 +38,28 @@ module Client
       set_report_date_range
 
       all_call_attempts = @campaign.call_attempts.between(@from_date, @to_date + 1.day)
-      @utilised_call_attempts_seconds = round_for_utilization(all_call_attempts.sum(:tDuration))
-      @utilised_call_attempts_minutes = all_call_attempts.sum('ceil(tDuration/60)').to_i
+      all_transfer_attempts = @campaign.transfer_attempts.between(@from_date, @to_date + 1.day)
+      utilization(@campaign, all_call_attempts)
       
-
-      @caller_sessions_seconds = round_for_utilization(@campaign.caller_sessions.between(@from_date, @to_date + 1.day).sum(:tDuration))
-      @caller_sessions_minutes = @campaign.caller_sessions.between(@from_date, @to_date + 1.day).sum('ceil(tDuration/60)').to_i
-
-
-      @billable_call_attempts_seconds = round_for_utilization(all_call_attempts.without_status([CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED]).sum(:tDuration))
-      @billable_call_attempts_minutes = all_call_attempts.without_status([CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED]).sum('ceil(tDuration/60)').to_i
-
-
-      @billable_voicemail_seconds = round_for_utilization(all_call_attempts.with_status([CallAttempt::Status::VOICEMAIL]).sum(:tDuration))
-      @billable_voicemail_minutes = all_call_attempts.with_status([CallAttempt::Status::VOICEMAIL]).sum('ceil(tDuration/60)').to_i
-      
-
-      @billable_abandoned_seconds = round_for_utilization(all_call_attempts.with_status([CallAttempt::Status::ABANDONED]).sum(:tDuration))
-      @billable_abandoned_minutes = all_call_attempts.with_status([CallAttempt::Status::ABANDONED]).sum('ceil(tDuration/60)').to_i
+      @caller_sessions_minutes = @campaign.caller_sessions.between(@from_date, @to_date + 1.day).sum('ceil(TIMESTAMPDIFF(SECOND ,starttime,endtime)/60)').to_i      
+      @billable_call_attempts_minutes = all_call_attempts.without_status([CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED]).sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)').to_i
+      @billable_transfer_minutes = all_transfer_attempts.sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)').to_i
+      @billable_voicemail_minutes = all_call_attempts.with_status([CallAttempt::Status::VOICEMAIL]).sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)').to_i
+      @billable_abandoned_minutes = all_call_attempts.with_status([CallAttempt::Status::ABANDONED]).sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)').to_i
+    end
+    
+    def utilization(campaign, all_call_attempts)
+      @caller_sessions_logged_in_seconds = round_for_utilization(campaign.caller_sessions.between(@from_date, @to_date + 1.day).sum('TIMESTAMPDIFF(SECOND ,starttime,endtime)'))
+      @caller_session_on_call = round_for_utilization(all_call_attempts.without_status([CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED]).sum('TIMESTAMPDIFF(SECOND ,connecttime,call_end)'))
+      @caller_session_wrapup = round_for_utilization(all_call_attempts.without_status([CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED]).sum('TIMESTAMPDIFF(SECOND ,call_end,wrapup_time)'))
+      @caller_session_on_hold = @caller_sessions_logged_in_seconds.to_f - @caller_session_on_call.to_f - @caller_session_wrapup.to_f
     end
     
     def round_for_utilization(seconds)
       if seconds == 0
         0
       else
-        (seconds/60).to_s + "." + (seconds % 60).to_s
+        (seconds.to_i/60).to_s + "." + (seconds.to_i % 60).to_s
       end
     end
     
@@ -82,6 +79,7 @@ module Client
     def answer
       set_date_range
       @results = @campaign.answers_result(@from_date, @to_date)
+      @transfers = @campaign.transfers(@from_date, @to_date)
     end
 
     private
