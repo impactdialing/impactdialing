@@ -12,10 +12,10 @@ describe Client::ReportsController do
       before(:each) do
         campaign = Factory(:campaign, :account => user.account)
         time_now = Time.now
-        Factory(:call_attempt, :tDuration => 10.minutes + 2.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
-        Factory(:call_attempt, :tDuration => 1.minutes, :status => CallAttempt::Status::VOICEMAIL, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
-        Factory(:call_attempt, :tDuration => 101.minutes + 57.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
-        Factory(:call_attempt, :tDuration => 1.minutes, :status => CallAttempt::Status::ABANDONED, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
+        Factory(:call_attempt, connecttime: Time.now, call_end: Time.now + (10.minutes + 2.seconds), :tDuration => 10.minutes + 2.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
+        Factory(:call_attempt, connecttime: Time.now, call_end: Time.now + (1.minutes),:tDuration => 1.minutes, :status => CallAttempt::Status::VOICEMAIL, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
+        Factory(:call_attempt, connecttime: Time.now, call_end: Time.now + (101.minutes + 57.seconds),:tDuration => 101.minutes + 57.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
+        Factory(:call_attempt, connecttime: Time.now, call_end: Time.now + (1.minutes),:tDuration => 1.minutes, :status => CallAttempt::Status::ABANDONED, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
         get :usage, :id => campaign.id
       end
 
@@ -40,8 +40,8 @@ describe Client::ReportsController do
       before(:each) do
         campaign = Factory(:campaign, :account => user.account)
         time_now = Time.now
-        Factory(:caller_session, :tDuration => 10.minutes + 2.seconds, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
-        Factory(:caller_session, :tDuration => 101.minutes + 57.seconds, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
+        Factory(:caller_session,starttime: Time.now, endtime: Time.now + (10.minutes + 2.seconds),  :tDuration => 10.minutes + 2.seconds, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
+        Factory(:caller_session,starttime: Time.now, endtime: Time.now + (101.minutes + 57.seconds), :tDuration => 101.minutes + 57.seconds, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
         get :usage, :id => campaign.id
       end
 

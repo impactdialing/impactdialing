@@ -6,6 +6,7 @@ class TransferAttempt < ActiveRecord::Base
   belongs_to :campaign
   include Rails.application.routes.url_helpers
   scope :within, lambda { |from, to, campaign_id| where(:created_at => from..(to + 1.day)).where(campaign_id: campaign_id)}
+  scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
 
   
   
