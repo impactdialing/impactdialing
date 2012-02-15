@@ -107,12 +107,7 @@ function transfer_call(){
 	$('#transfer_button').hide();
 	$('#hangup_call').hide();
 	var options = {
-	    data: {voter: $("#current_voter").val(), call_attempt: $("#current_call_attempt").val(), caller_session:$("#caller_session").val()  },
-		success:  function(data) {
-			if (data.type == 'warm'){
-				$('#transfer_type').val('warm')
-			}
-        }        
+	    data: {voter: $("#current_voter").val(), call_attempt: $("#current_call_attempt").val(), caller_session:$("#caller_session").val()  }
     };
     $('#transfer_form').attr('action', "/transfer/dial")    
 	$('#transfer_form').submit(function() {
@@ -386,6 +381,13 @@ function subscribe(session_key) {
     channel.bind('transfer_busy', function(data) {
         $("#hangup_call").show();
     });
+    channel.bind('transfer_connected', function(data) {
+		if (data.type == 'warm'){
+			$('#transfer_type').val('warm')
+		}	
+    });
+
+
 
 
 
