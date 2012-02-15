@@ -60,7 +60,7 @@ function get_voter() {
     $.ajax({
         url : "/caller/" + $("#caller").val() + "/preview_voter",
         data : {id : $("#caller").val(), session_id : $("#caller_session").val(), voter_id: $("#current_voter").val() },
-        type : "POST",
+        type : "POST"
     })
 }
 
