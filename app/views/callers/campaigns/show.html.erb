@@ -9,6 +9,17 @@
     <script type="text/javascript">
         var pusher = new Pusher('<%= Pusher.key %>');
 		pusher.connection.bind('connected', function() {pusher_ready=true;})
+
+      $(document).ready(function() {
+        $(".hidden_script").css("display", "none");
+        $(".hidden_script").wrap('<div class="unhide_script" title="Click to show/hide text">[more]</span>');
+        $(".unhide_script").click(function () {
+          $(this).children(".hidden_script").toggle();
+          new_toggle_string = $(this).html().match(/\[more\]/) ? "[less]" : "[more]";
+          new_html = $(this).html().replace(/(\[more\]|\[less\])/, new_toggle_string);
+          $(this).html(new_html);
+        });
+      });
     </script>
 
     <script id="voter" type="text/html">
@@ -82,7 +93,13 @@
 <fieldset>
   <legend>Script</legend>
   <% if @campaign.script %>
-      <div id="script" class="rt script"> <%= raw @campaign.script.script.gsub("\n", "<br />") %></div>
+      <div id="script" class="rt script">
+        <%= raw @campaign.script.script.gsub(/(\n|\[hide\]|\[\/hide\])/, {
+          "\n" => "<br />",
+          "[hide]" => '<div class="hidden_script">',
+          "[/hide]" => "</div>",
+          }) %>
+      </div>
   <% else %>
       <div id="script" class="rt script">There is no script assigned to this campaign.</div>
   <% end %>
