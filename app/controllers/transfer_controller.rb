@@ -27,6 +27,7 @@ class TransferController < ApplicationController
     transfer_attempt.update_attributes(:status => CallAttempt::Status::MAP[params[:CallStatus]], :call_end => Time.now)
     response = case params[:CallStatus] #using the 2010 api
                  when "no-answer", "busy", "failed"
+                  transfer_attempt.caller_session.publish('transfer_busy', {})
                    transfer_attempt.fail
                  else
                    transfer_attempt.hangup
