@@ -11,6 +11,7 @@ $(document).ready(function() {
         if ($("#caller_session").val()) {
             //do nothing if the caller session context already exists
         } else {
+	        console.log(Date.now())
             get_session();
         }
     }, 10000); //end setInterval
