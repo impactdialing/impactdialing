@@ -7,6 +7,12 @@ task :update_twilio_stats => :environment do
   attempts.each do |attempt|
     TwilioLib.new.update_twilio_stats_by_model attempt
   end
+  
+  transfer_attempts = TransferAttempt.all(:conditions=>"tPrice is NULL and (tStatus is NULL or tStatus = 'completed')")
+  transfer_attempts.each do |transfer_attempt|
+    TwilioLib.new.update_twilio_stats_by_model transfer_attempt
+  end
+  
   sessions = CallerSession.all(:conditions=>"tPrice is NULL and (tStatus is NULL or tStatus = 'completed')")
   sessions.each do |session|
     TwilioLib.new.update_twilio_stats_by_model session
