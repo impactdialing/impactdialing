@@ -40,6 +40,7 @@ class Voter < ActiveRecord::Base
   scope :not_skipped, where('skipped_time is null')
   scope :answered, where('result_date is not null')
   scope :answered_within, lambda { |from, to| where(:result_date => from.beginning_of_day..(to.end_of_day)) }
+  scope :answered_within_timespan, lambda { |from, to| where(:result_date => from..to)}
   scope :last_call_attempt_within, lambda { |from, to| where(:last_call_attempt_time => from..(to + 1.day)) }
   scope :priority_voters, enabled.where(:priority => "1", :status => Voter::Status::NOTCALLED) #:conditions => {:priority => "1", :status => 'not called'}
 
@@ -99,7 +100,7 @@ class Voter < ActiveRecord::Base
         twilio_callback_url(callback_params),
         'FallbackUrl' => TWILIO_ERROR,
         'StatusCallback' => twilio_call_ended_url(callback_params),
-        'Timeout' => '20',
+        'Timeout' => self.campaign.leave_voicemail? ? '30' : '15',
         'IfMachine' => self.campaign.leave_voicemail? ? 'Continue' : 'Hangup'
     )
 
