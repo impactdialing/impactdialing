@@ -56,12 +56,11 @@ function get_session() {
 }
 
 function get_voter() {
+	console.log('priview voter')
     $.ajax({
         url : "/caller/" + $("#caller").val() + "/preview_voter",
         data : {id : $("#caller").val(), session_id : $("#caller_session").val(), voter_id: $("#current_voter").val() },
         type : "POST",
-        success : function(response) {
-        }
     })
 }
 
