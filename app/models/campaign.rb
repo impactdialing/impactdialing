@@ -7,6 +7,7 @@ class Campaign < ActiveRecord::Base
   has_many :voter_lists, :conditions => {:active => true}
   has_many :all_voters, :class_name => 'Voter'
   has_many :call_attempts
+  has_many :transfer_attempts
   has_many :callers
   has_one :simulated_values
   has_many :answers
@@ -636,6 +637,15 @@ class Campaign < ActiveRecord::Base
       end
     end
     
+    result
+  end
+  
+  def transfers(from_date, to_date)    
+    result = {}
+    attempts = transfer_attempts.within(from_date, to_date, id)
+    unless attempts.blank?
+      result = TransferAttempt.aggregate(attempts)
+    end
     result
   end
 

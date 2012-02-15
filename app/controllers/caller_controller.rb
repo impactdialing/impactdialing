@@ -41,6 +41,17 @@ class CallerController < ApplicationController
       end
     end
   end
+  
+  def kick_caller_off_conference
+    caller = Caller.find(params[:id])
+    caller_session = caller.caller_sessions.find(params[:caller_session])    
+    conference_sid = caller_session.get_conference_id
+    Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
+    Twilio::Conference.kick_participant(conference_sid, caller_session.sid)
+    Twilio::Call.redirect(caller_session.sid, pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => caller_session.id))            
+    caller_session.publish('caller_kicked_off', {}) 
+    render nothing: true
+  end
 
   def stop_calling
     caller = Caller.find(params[:id])
@@ -124,7 +135,7 @@ class CallerController < ApplicationController
       render :nothing => true
     else
       @caller = Caller.find(params[:caller_id])
-      @session = @caller.caller_sessions.create(on_call: false, available_for_call: false,
+      @session = @caller.caller_sessions.create(on_call: false, available_for_call: false,starttime: Time.now,
                                                 session_key: generate_session_key, sid: params[:CallSid], campaign: @caller.campaign)
       Moderator.caller_connected_to_campaign(@caller, @caller.campaign, @session)      
       render :xml => @session.start
@@ -158,10 +169,8 @@ class CallerController < ApplicationController
   end
   
   def phones_only
-    Rails.logger.debug('Entered redirect')
     caller_session = CallerSession.find(params[:session_id])
     xml = (params[:campaign_reassigned] == "true") ?  caller_session.read_campaign_reassign_msg : caller_session.caller.instruction_choice_result("*", caller_session)
-    Rails.logger.debug(xml)
     render :xml => xml
   end
   
@@ -176,6 +185,13 @@ class CallerController < ApplicationController
     @campaign = caller.campaign
     render :layout => false
   end
+  
+  def transfer_panel
+    caller = Caller.find(params[:id])
+    @campaign = caller.campaign
+    render :layout => false    
+  end
+  
   
   def ping
     #sleep 2.5
@@ -216,6 +232,10 @@ class CallerController < ApplicationController
     @session.call(@voter)
     send_rt(params[:key], 'waiting', 'preview_dialing')
     render :text=> "var x='ok';"
+  end
+  
+  def transfer_call
+    
   end
 
   def connect_to_twilio

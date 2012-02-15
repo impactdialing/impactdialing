@@ -125,4 +125,10 @@ end
 Factory.define :simulated_values do |sv|
 end
 
+Factory.define :transfer do |t|
+end
+Factory.define :transfer_attempt do |t|
+end
+
+
 

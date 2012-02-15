@@ -53,6 +53,10 @@ $('form a.add_nested_fields').live('click', function() {
   else if(assoc == "notes"){
     $(this).parent().siblings('notes').append(content);
   }
+  else if(assoc == "transfers"){
+	$($('.transfers_fields').parent()).show();
+	$('.transfers_fields').append(content)
+  }  
   else
   {
     $(this).before(content);
@@ -133,4 +137,6 @@ $('form a.remove_nested_fields').live('click', function() {
   return false;
 });
 });
+
+
 
