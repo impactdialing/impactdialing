@@ -51,7 +51,7 @@ class CallAttemptsController < ApplicationController
       call_attempt.update_attributes(:call_end => Time.now)
     else
       call_attempt.voter.update_attributes(:status => CallAttempt::Status::MAP[params[:CallStatus]], :last_call_attempt_time => Time.now)
-      call_attempt.update_attributes(:status => CallAttempt::Status::MAP[params[:CallStatus]], :call_end => Time.now)
+      call_attempt.update_attributes(:status => CallAttempt::Status::MAP[params[:CallStatus]])
     end
   
     response = case params[:CallStatus] #using the 2010 api
