@@ -25,7 +25,7 @@ function hide_all_actions() {
     $("#hangup_call").hide();
     $("#submit_and_keep_call").hide();
     $("#submit_and_stop_call").hide();
-
+	$('#kick_self_out_of_conference').hide();
 }
 
 
@@ -102,18 +102,32 @@ function schedule_for_later() {
 }
 
 function transfer_call(){
+	$('#transfer_button').hide();
+	$('#hangup_call').hide();
 	var options = {
-	    data: {voter: $('#voter_id').val(), call_attempt: $("#current_call_attempt").val(), caller_session:$("#caller_session").val()  },
+	    data: {voter: $("#current_voter").val(), call_attempt: $("#current_call_attempt").val(), caller_session:$("#caller_session").val()  },
+		success:  function(data) {
+			if (data.type == 'warm'){
+				$('#transfer_type').val('warm')
+			}
+        }        
     };
     $('#transfer_form').attr('action', "/transfer/dial")    
 	$('#transfer_form').submit(function() {
         $(this).ajaxSubmit(options);
+		$(this).unbind("submit");
         return false;
     });
-    $("#transfer_form").trigger("submit");
-    $("#transfer_form").unbind("submit");
+}
 
+function kick_caller_off(){
+	$.ajax({
+        url : "/caller/" + $("#caller").val() + "/kick_caller_off_conference",
+        data : {caller_session: $("#caller_session").val() },
+        type : "POST",
+    })
     
+	
 }
 
 function send_voter_response() {
@@ -198,11 +212,12 @@ function dial_in_caller() {
 function show_response_panel() {
     $("#response_panel").show();
     $("#result_instruction").hide();
-	show_transfer_panel();
 }
 
 function show_transfer_panel(){
 	$("#transfer_panel").show();
+	$('#transfer_button').show();
+	$('#stop_listening').hide();
 }
 
 function hide_transfer_panel(){
@@ -212,7 +227,9 @@ function hide_transfer_panel(){
 
 function hide_response_panel() {
     $("#response_panel").hide();
+	hide_transfer_panel();
     $("#result_instruction").show();
+
 }
 
 function set_message(text) {
@@ -257,6 +274,18 @@ function set_response_panel(data) {
         }
     })
 }
+function set_transfer_panel(data) {
+    $.ajax({
+        url : "/caller/" + $("#caller").val() + "/transfer_panel",
+        data : {},
+        type : "POST",
+        success : function(response) {
+            $('#transfer_panel').replaceWith(response);
+        }
+    })
+}
+
+
 
 function subscribe(session_key) {
     channel = pusher.subscribe(session_key);
@@ -264,7 +293,6 @@ function subscribe(session_key) {
 
 
     channel.bind('caller_connected', function(data) {
-        console.log('caller_connected' + data)
         hide_all_actions();
         $('#browserTestContainer').hide();
         $("#start_calling").hide();
@@ -282,7 +310,7 @@ function subscribe(session_key) {
     });
 
     channel.bind('conference_started', function(data) {
-        ready_for_calls(data)
+        ready_for_calls(data)		
     });
 
 
@@ -321,9 +349,16 @@ function subscribe(session_key) {
     channel.bind('voter_disconnected', function(data) {
         hide_all_actions();
         show_response_panel();
+		hide_transfer_panel();
         set_message("Status: Waiting for call results.");
         $("#submit_and_keep_call").show();
         $("#submit_and_stop_call").show();
+		if ($('#transfer_type').val() == 'warm'){
+			$('#kick_self_out_of_conference').show();
+	        $("#submit_and_keep_call").hide();
+	        $("#submit_and_stop_call").hide();
+		}
+
     });
 
     channel.bind('voter_connected', function(data) {
@@ -334,7 +369,9 @@ function subscribe(session_key) {
             set_message("Status: Connected.")
         }
         show_response_panel();
+		show_transfer_panel();
         cleanup_previous_call_results();
+		cleanup_transfer_panel();
         $("#hangup_call").show();
     });
 
@@ -357,9 +394,6 @@ function subscribe(session_key) {
     channel.bind('waiting_for_result', function(data) {
         show_response_panel();
         set_message('Status: Waiting for call results.');
-        hide_all_actions();
-        $("#submit_and_keep_call").show();
-        $("#submit_and_stop_call").show();
     });
 
     channel.bind('no_voter_on_call', function(data) {
@@ -372,10 +406,24 @@ function subscribe(session_key) {
         set_message("Status: Dialing.");
     });
 
+	channel.bind('warm_transfer',function(data){
+	 	$('#kick_self_out_of_conference').show();	
+	});
+	channel.bind('caller_kicked_off',function(data){
+		$('#kick_self_out_of_conference').hide();	
+		$("#submit_and_keep_call").show();
+        $("#submit_and_stop_call").show();        
+		
+	});
+	
+	
+	
+
     channel.bind('caller_re_assigned_to_campaign', function(data) {
 
         set_new_campaign_script(data);
         set_response_panel(data);
+		set_transfer_panel(data)
         clear_voter();
         if (data.dialer && (data.dialer.toLowerCase() == "preview" || data.dialer.toLowerCase() == "progressive")) {
             if (!$.isEmptyObject(data.fields)) {
@@ -448,5 +496,10 @@ function subscribe(session_key) {
         $('#scheduled_date').val('')
         collapse_scheduler();
     }
+
+    function cleanup_transfer_panel() {
+        $('#transfer_type').val('');
+    }
+
 
 }

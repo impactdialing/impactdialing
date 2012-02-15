@@ -92,13 +92,14 @@
               </fieldset>
             <% end %>
           </notes>
-          <transfers style="display:none">
+          <transfers <% unless @script.transfers.present? %>style="display:none"<% end %>>
             <fieldset class="transfers_fields">
               <legend>Transfer</legend>            
               <table>
                 <tr>
                   <th width = 25%>Label</th>
                   <th width = 25%>Number</th>
+                  <th width = 25%>Type</th>
                   <th width = 25%>Delete</th>
                 </tr>
               </table>
@@ -113,6 +114,10 @@
                     <td width = 25%>
                       <%= t.text_field :phone_number %>
                     </td>
+                    <td width = 25%>
+                      <%= t.select(:transfer_type,[['Warm','warm'],['Cold','cold']]) %>
+                    </td>
+                    
                     <td width = 25%>
                       <%= t.link_to_remove " ", :class => "ico del", :type => "transfers"%>
                     </td>

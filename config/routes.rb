@@ -53,7 +53,9 @@ ImpactDialing::Application.routes.draw do
       post :phones_only_progressive
       post :choose_instructions_option
       post :check_reassign
+      post :kick_caller_off_conference
       post :new_campaign_response_panel
+      post :transfer_panel
     end
 
   end
@@ -183,6 +185,8 @@ ImpactDialing::Application.routes.draw do
       post :disconnect      
     end
     collection do 
+      post :callee
+      post :caller            
       post :dial
     end
   end
