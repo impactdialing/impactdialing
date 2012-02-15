@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120215090959) do
+ActiveRecord::Schema.define(:version => 20120215103023) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -484,6 +484,17 @@ ActiveRecord::Schema.define(:version => 20120215090959) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "transfer_type"
+    t.float    "tPrice"
+    t.string   "tStatus"
+    t.string   "tCallSegmentSid"
+    t.string   "tAccountSid"
+    t.string   "tCalled"
+    t.string   "tCaller"
+    t.string   "tPhoneNumberSid"
+    t.datetime "tStartTime"
+    t.datetime "tEndTime"
+    t.integer  "tDuration"
+    t.integer  "tFlags"
   end
 
   create_table "transfers", :force => true do |t|
