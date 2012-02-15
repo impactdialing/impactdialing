@@ -313,7 +313,9 @@ function subscribe(session_key) {
     });
 
     channel.bind('conference_started', function(data) {
+	if ($("#caller_session").val() != "" )){
         ready_for_calls(data)		
+	}
     });
 
 
