@@ -383,6 +383,11 @@ function subscribe(session_key) {
         set_message('Status: Call in progress.');
         hide_all_actions();
     });
+    channel.bind('transfer_busy', function(data) {
+        $("#hangup_call").show();
+    });
+
+
 
     channel.bind('caller_disconnected', function(data) {
         clear_caller();
