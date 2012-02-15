@@ -13,6 +13,7 @@ class TransferController < ApplicationController
       Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
       Twilio::Conference.kick_participant(conference_sid, transfer_attempt.caller_session.sid)
     end
+    transfer_attempt.caller_session.publish('transfer_connected', {type: transfer_attempt.transfer_type})
     render xml: transfer_attempt.conference        
   end
   
