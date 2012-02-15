@@ -35,12 +35,14 @@ function set_session(session_id) {
 }
 
 function get_session() {
+	console.log("get session")
     $.ajax({
         url : "/caller/active_session",
         data : {id : $("#caller").val(), campaign_id : $("#campaign").val() },
         type : "POST",
         success : function(json) {
             if (json.caller_session.id && $("#caller_session").val() === ""  ) {
+			    console.log("get session success")
                 set_session(json.caller_session.id);
                 subscribe(json.caller_session.session_key);
                 $("#callin_data").hide();
