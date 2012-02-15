@@ -13,7 +13,7 @@ $(document).ready(function() {
         } else {
             get_session();
         }
-    }, 5000); //end setInterval
+    }, 15000); //end setInterval
 
     $('#scheduled_date').datepicker();
 })
