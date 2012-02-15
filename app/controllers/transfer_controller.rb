@@ -4,8 +4,16 @@ class TransferController < ApplicationController
   def connect
     transfer_attempt = TransferAttempt.find(params[:id])
     transfer_attempt.update_attribute(:connecttime, Time.now)
-    transfer_attempt.
-    render xml: transfer_attempt.conference(transfer_attempt.caller_session, transfer_attempt.call_attempt)        
+    transfer_attempt.redirect_callee
+    if transfer_attempt.transfer_type == Transfer::Type::WARM
+      transfer_attempt.redirect_caller
+      transfer_attempt.caller_session.publish("warm_transfer",{})
+    else
+      conference_sid = transfer_attempt.caller_session.get_conference_id
+      Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
+      Twilio::Conference.kick_participant(conference_sid, transfer_attempt.caller_session.sid)
+    end
+    render xml: transfer_attempt.conference        
   end
   
   def disconnect
@@ -31,31 +39,31 @@ class TransferController < ApplicationController
     caller_session = CallerSession.find(params[:caller_session])    
     call_attempt = CallAttempt.find(params[:call_attempt])
     voter = Voter.find(params[:voter])
-    transfer.dial(caller_session, call_attempt, voter)    
-    render nothing: true
+    transfer.dial(caller_session, call_attempt, voter, transfer.transfer_type)    
+    render json: {type: transfer.transfer_type}
   end
+  
   
   def callee
     response = Twilio::Verb.new do |v|
-      v.dial(:hangupOnStar => true, :action => gather_response_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => id)) do
-        v.conference(params[:session_key], :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
+      v.dial(:hangupOnStar => true) do
+        v.conference(params[:session_key], :startConferenceOnEnter => true, :endConferenceOnExit => true, :beep => false, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
+      end
     end.response
-    response    
+    render xml: response    
   end
   
   def caller
+    caller_session = CallerSession.find(params[:caller_session])
+    caller = Caller.find(caller_session.caller_id)
     response = Twilio::Verb.new do |v|
-      v.dial(:hangupOnStar => true, :action => gather_response_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => id)) do
-        v.conference(params[:session_key], :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
-    end.response    
-    response
+      v.dial(:hangupOnStar => true, action: pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => caller_session.id)) do
+        v.conference(params[:session_key], :startConferenceOnEnter => true, :endConferenceOnExit => false, :beep => false, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
+      end    
+    end.response
+    render xml: response
   end
   
-  
-  def redirect_callee_to_new_conference
-    Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    Twilio::Call.redirect(sid, phones_only_caller_index_url(:host => Settings.host, :port => Settings.port, ))    
-  end
-  
+    
   
 end

@@ -11,12 +11,21 @@
 		<th>Minutes</th>
 	</tr>
 	<tr>
-		<td>Callers</td>
+		<td>Logged in</td>
     <td><%= @caller_sessions_seconds %></td>
 	</tr>
+	<tr>
+		<td>On call</td>
+    <td><%= @caller_sessions_seconds %></td>
+	</tr>
+	<tr>
+		<td>Wrap up</td>
+    <td><%= @caller_sessions_seconds %></td>
+	</tr>
+	
 
   <tr>
-    <td>Calls</td>
+    <td>On hold</td>
     <td><%= @utilised_call_attempts_seconds %></td>
   </tr>
 	<tr>
@@ -31,9 +40,14 @@
     <td><%= @caller_sessions_minutes %></td>
 	</tr>
 	<tr>
-		<td>Calls</td>
+		<td>Leads</td>
     <td><%= @billable_call_attempts_minutes %></td>
 	</tr>
+	<tr>
+		<td>Transfers</td>
+    <td><%= @billable_call_attempts_minutes %></td>
+	</tr>
+	
 	<tr>
 		<td>Voicemails</td>
     <td><%= @billable_voicemail_minutes %></td>

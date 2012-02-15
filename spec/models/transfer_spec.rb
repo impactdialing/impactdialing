@@ -2,6 +2,19 @@ require "spec_helper"
 
 describe Transfer do
   
+  describe "phone number" do
+    it "should sanitize the phone number" do
+      transfer = Factory(:transfer, phone_number: "(203) 643-0521")
+      transfer.phone_number.should eq('2036430521')
+    end
+    
+    it "should throw validatio error if phone number is not valid" do
+      transfer = Factory.build(:transfer, phone_number: "9090909")
+      transfer.should_not be_valid
+    end
+    
+  end
+  
   describe "dial" do
     it "should make a call and update attempt with call sid" do
       voter = Factory(:voter, Phone: "1234567890")
@@ -10,7 +23,7 @@ describe Transfer do
       call_attempt = Factory(:call_attempt)
       voter = Factory(:voter)
       Twilio::Call.should_receive(:make).with(voter.Phone, transfer.phone_number, anything, anything).and_return("TwilioResponse"=> {"Call" => {"Sid" => 'sid'}})
-      transfer.dial(caller_session, call_attempt, voter)
+      transfer.dial(caller_session, call_attempt, voter, Transfer::Type::WARM)
       transfer.transfer_attempts.first.sid.should eq('sid')
     end
     
@@ -21,18 +34,18 @@ describe Transfer do
       call_attempt = Factory(:call_attempt)
       voter = Factory(:voter)
       Twilio::Call.should_receive(:make).with(voter.Phone, transfer.phone_number, anything, anything).and_return("TwilioResponse"=> {"Call" => {"Sid" => 'sid'}})
-      transfer.dial(caller_session, call_attempt, voter)
+      transfer.dial(caller_session, call_attempt, voter, Transfer::Type::WARM)
       transfer.transfer_attempts.first.status.should eq(CallAttempt::Status::RINGING)
     end
     
     it "should create a transfer attempt with status failed if cannot make call" do
       voter = Factory(:voter, Phone: "1234567890")
-      transfer = Factory(:transfer, phone_number: "98789876")
+      transfer = Factory(:transfer, phone_number: "9923700678")
       caller_session = Factory(:caller_session)
       call_attempt = Factory(:call_attempt)
       voter = Factory(:voter)
       Twilio::Call.should_receive(:make).with(voter.Phone, transfer.phone_number, anything, anything).and_return("TwilioResponse"=> {"RestException" => {}})
-      transfer.dial(caller_session, call_attempt, voter)
+      transfer.dial(caller_session, call_attempt, voter, Transfer::Type::WARM)
       transfer.transfer_attempts.first.status.should eq(CallAttempt::Status::FAILED)
     end    
     
