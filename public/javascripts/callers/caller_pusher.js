@@ -14,7 +14,7 @@ $(document).ready(function() {
 	        console.log(Date.now())
             get_session();
         }
-    }, 10000); //end setInterval
+    }, 5000); //end setInterval
 
     $('#scheduled_date').datepicker();
 })
@@ -40,7 +40,7 @@ function get_session() {
         data : {id : $("#caller").val(), campaign_id : $("#campaign").val() },
         type : "POST",
         success : function(json) {
-            if (json.caller_session.id) {
+            if (json.caller_session.id && $("#caller_session").val() === ""  ) {
                 set_session(json.caller_session.id);
                 subscribe(json.caller_session.session_key);
                 $("#callin_data").hide();
