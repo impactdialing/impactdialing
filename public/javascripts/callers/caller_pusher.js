@@ -396,11 +396,6 @@ function subscribe(session_key) {
 	        
 		}			
     });
-    channel.bind('transfer_hungup', function(data) {
-		if ($('#transfer_type').val() == 'warm'){
-			$("#hangup_call").show();
-		}			
-    });
 
 
 
