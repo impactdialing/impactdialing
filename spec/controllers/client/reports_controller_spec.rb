@@ -56,18 +56,18 @@ describe Client::ReportsController do
       end
 
       it "logged in caller session" do
-        assigns(:caller_sessions_logged_in_seconds).should == "131.59"
+        assigns(:caller_sessions_logged_in_seconds).should == "132"
       end
       
       it "on call time" do
-        assigns(:caller_session_on_call).should == "112.7"
+        assigns(:caller_session_on_call).should == "113"
       end
       
       it "on wrapup time" do
-        assigns(:caller_session_wrapup).should == "1.30"
+        assigns(:caller_session_wrapup).should == "2"
       end
       it "on hold time" do
-        assigns(:caller_session_on_hold).should == 17.59
+        assigns(:caller_session_on_hold).should == "19"
       end
       
 
