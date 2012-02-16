@@ -53,8 +53,9 @@ describe TransferController do
   
   it "should end a successful call" do
     campaign =  Factory(:campaign)
-    caller_session = Factory(:caller_session, campaign: campaign)
-    transfer_attempt = Factory(:transfer_attempt, caller_session: caller_session)
+    call_attempt = Factory(:call_attempt)
+    caller_session = Factory(:caller_session, campaign: campaign, attempt_in_progress: call_attempt)
+    transfer_attempt = Factory(:transfer_attempt, caller_session: caller_session, call_attempt: call_attempt)
     post :end, id: transfer_attempt.id, :CallStatus => 'completed'
     response.body.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
     transfer_attempt.reload

@@ -386,6 +386,14 @@ function subscribe(session_key) {
 			$('#transfer_type').val('warm')
 		}	
     });
+    channel.bind('transfer_conference_ended', function(data) {
+		if (data.type == 'warm'){
+			$("#hangup_call").hide();
+			$('#kick_self_out_of_conference').hide();
+		}	
+    });
+
+
 
 
 
