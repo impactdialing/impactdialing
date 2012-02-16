@@ -2,7 +2,7 @@ require Rails.root.join("lib/twilio_lib")
 
 class Campaign < ActiveRecord::Base
   include Deletable
-  include ApplicationHelper
+  include ApplicationHelper::TimeUtils
   include ReportsHelper::Utilization
   include ReportsHelper::Billing
 

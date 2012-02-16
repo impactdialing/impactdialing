@@ -7,30 +7,7 @@
       using a microphone on their computer.</p>
 
     <table>
-      <tr>
-        <th>Utilization (1-second increments)</th>
-        <th>Minutes</th>
-      </tr>
-      <tr>
-        <td>Logged in</td>
-        <td><%= @campaign.time_logged_in(@from_date, @to_date) %></td>
-      </tr>
-      <tr>
-        <td>On call</td>
-        <td><%= @campaign.time_on_call(@from_date, @to_date) %></td>
-      </tr>
-      <tr>
-        <td>Wrap up</td>
-        <td><%= @campaign.time_in_wrapup(@from_date, @to_date) %></td>
-      </tr>
-
-      <tr>
-        <td>On hold</td>
-        <td><%= @campaign.time_onhold(@from_date, @to_date) %></td>
-      </tr>
-      <tr>
-        <td colspan="2">&nbsp;</td>
-      </tr>
+      <%= render :partial => 'shared/utilization', :locals => {:report => @campaign} %>
 
       <tr>
         <th>Billable time (1-minute increments)</th>
@@ -61,21 +38,4 @@
   </div>
 </div>
 
-<h3>Date range:</h3>
-<% form_tag (usage_client_reports_path(:id => params[:id])) do %>
-    <table>
-      <tr>
-        <td>From:</td>
-        <td> <%= unobtrusive_date_text_picker_tag :from_date, @from_date %> </td>
-      </tr>
-      <tr>
-        <td>To:</td>
-        <td>
-          <%= unobtrusive_date_text_picker_tag :to_date, @to_date %>
-        </td>
-      </tr>
-    </table>
-    <div class="buttons">
-      <button type="submit">Update</button>
-    </div>
-<% end %>
+<%= render :partial => 'shared/date_picker', :locals => {:url => usage_client_reports_path(:id => params[:id])} %>

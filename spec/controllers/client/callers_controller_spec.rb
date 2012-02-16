@@ -60,5 +60,4 @@ describe Client::CallersController do
     get :reassign_to_campaign, :id => caller.id, :campaign_id => campaign2.id, :session_id => caller_session.id
     caller.reload.campaign.id.should == campaign2.id
   end
-  
 end
