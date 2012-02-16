@@ -24,6 +24,10 @@ class TransferController < ApplicationController
   def disconnect
     transfer_attempt = TransferAttempt.find(params[:id])
     transfer_attempt.update_attributes(:status => CallAttempt::Status::SUCCESS)
+    if transfer_attempt.caller_session.attempt_in_progress != nil && transfer_attempt.caller_session.attempt_in_progress.id == transfer_attempt.call_attempt.id
+      transfer_attempt.caller_session.publish('transfer_conference_ended', {})
+    end
+    
     render xml: Twilio::TwiML::Response.new { |r| r.Hangup }.text
   end
   
@@ -36,8 +40,9 @@ class TransferController < ApplicationController
                    transfer_attempt.fail
                  else
                    if transfer_attempt.caller_session.attempt_in_progress != nil && transfer_attempt.caller_session.attempt_in_progress.id == transfer_attempt.call_attempt.id
-                     transfer_attempt.caller_session.publish('transfer_conference_ended', {})
+                     transfer_attempt.caller_session.publish('transfer_hungup', {})
                    end
+                   
                    transfer_attempt.hangup
                end
     render :xml => response    
