@@ -17,7 +17,13 @@ describe TransferController do
   end
   
   it "should disconnect and set attempt status as success" do
-    transfer_attempt = Factory(:transfer_attempt)
+    script =  Factory(:script)
+    campaign = Factory(:campaign, script: script)
+    
+    caller_session = Factory(:caller_session, campaign: campaign, session_key: "12345")
+    call_attempt = Factory(:call_attempt)
+    transfer_attempt = Factory(:transfer_attempt, caller_session: caller_session, call_attempt: call_attempt)
+
     post :disconnect, id: transfer_attempt.id
     response.body.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
     transfer_attempt.reload
