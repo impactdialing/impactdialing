@@ -113,7 +113,10 @@ module ApplicationHelper
     javascript_include_tag("https://d3ds63zw57jt09.cloudfront.net/1.9/pusher.min.js")
   end
 
-  def round_for_utilization(seconds)
-    (seconds.to_f/60).ceil.to_s
+
+  module TimeUtils
+    def round_for_utilization(seconds)
+      (seconds.to_f/60).ceil.to_s
+    end
   end
 end
