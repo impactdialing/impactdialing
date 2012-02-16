@@ -391,6 +391,9 @@ function subscribe(session_key) {
 		if ($('#transfer_type').val() == 'warm'){
 			$("#hangup_call").hide();
 			$('#kick_self_out_of_conference').hide();
+			$("#submit_and_keep_call").show();
+	        $("#submit_and_stop_call").show();
+	        
 		}	
     });
 
