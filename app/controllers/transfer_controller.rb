@@ -4,6 +4,10 @@ class TransferController < ApplicationController
   def connect
     transfer_attempt = TransferAttempt.find(params[:id])
     transfer_attempt.update_attribute(:connecttime, Time.now)
+    if transfer_attempt.call_attempt.status == CallAttempt::Status::SUCCESS
+      render xml: transfer_attempt.hangup
+      return
+    end
     transfer_attempt.redirect_callee
     if transfer_attempt.transfer_type == Transfer::Type::WARM
       transfer_attempt.redirect_caller
