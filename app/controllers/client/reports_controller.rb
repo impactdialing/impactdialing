@@ -4,7 +4,7 @@ module Client
     before_filter :set_report_date_range, :only => [:usage]
 
     def load_campaign
-      @campaign = current_user.campaigns.find(params[:campaign_id])
+      @campaign = Campaign.find(params[:campaign_id])
     end
 
     def index
@@ -35,6 +35,7 @@ module Client
     end
 
     def usage
+      @campaign = current_user.campaigns.find(params[:id])
     end
     
     def download_report
