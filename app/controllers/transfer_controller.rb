@@ -39,9 +39,6 @@ class TransferController < ApplicationController
                   transfer_attempt.caller_session.publish('transfer_busy', {})
                    transfer_attempt.fail
                  else
-                   if transfer_attempt.caller_session.attempt_in_progress != nil && transfer_attempt.caller_session.attempt_in_progress.id == transfer_attempt.call_attempt.id
-                     transfer_attempt.caller_session.publish('transfer_conference_ended', {})
-                   end
                    transfer_attempt.hangup
                end
     render :xml => response    
