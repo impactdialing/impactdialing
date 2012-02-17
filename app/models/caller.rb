@@ -9,6 +9,7 @@ class Caller < ActiveRecord::Base
   belongs_to :account
   has_many :caller_sessions
   has_many :call_attempts
+  has_many :answers
   before_create :create_uniq_pin
   validates_uniqueness_of :email, :allow_nil => true
   validates_presence_of :campaign_id
