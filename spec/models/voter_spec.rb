@@ -495,6 +495,14 @@ describe Voter do
       voter.unanswered_questions.should == []
     end
 
+    it "associates the caller with the answer" do
+      caller = Factory(:caller)
+      session = Factory(:caller_session, :caller => caller)
+      voter = Factory(:voter, :campaign => campaign, :last_call_attempt => Factory(:call_attempt, :caller_session => session))
+      Factory(:possible_response, :question => question, :keypad => 1, :value => "response1")
+      voter.answer(question, "1", session).caller_id.should == caller.id
+    end
+
     describe "phones only" do
       let(:script) { Factory(:script) }
       let(:campaign) { Factory(:campaign, :script => script) }
@@ -578,5 +586,4 @@ describe Voter do
       voter.skipped_time.should_not be_nil
     end
   end
-
 end
