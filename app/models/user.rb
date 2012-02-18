@@ -44,6 +44,7 @@ class User < ActiveRecord::Base
   end
 
   def authenticate_with?(password)
+    return false unless password
    self.hashed_password == Digest::SHA2.hexdigest(self.salt + password)
   end
 
