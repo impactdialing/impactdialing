@@ -71,6 +71,7 @@ end
 
 Factory.define :call_attempt do |ca|
   ca.campaign { Factory(:campaign) }
+  ca.caller { Factory(:caller) }
 end
 
 Factory.define :robo_recording do |rr|
@@ -111,6 +112,7 @@ Factory.define :possible_response do |pr|
 end
 
 Factory.define :answer do |a|
+  a.caller { Factory(:caller) }
 end
 
 Factory.define :caller_campaign do |cc|

@@ -69,7 +69,7 @@ class CallAttemptsController < ApplicationController
     else
       call_attempt = CallAttempt.find(params[:id])
       voter = Voter.find(params[:voter_id])
-      params[:scheduled_date].blank? ? voter.capture(params) : schedule_for_later(call_attempt)
+      params[:scheduled_date].blank? ? voter.capture(params, call_attempt) : schedule_for_later(call_attempt)
       call_attempt.update_attributes(wrapup_time: Time.now)
 
       Moderator.publish_event(call_attempt.campaign, 'voter_response_submitted', {:caller_session_id => call_attempt.caller_session.id, :campaign_id => call_attempt.campaign.id, :dials_in_progress => call_attempt.campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', call_attempt.campaign.id)})
