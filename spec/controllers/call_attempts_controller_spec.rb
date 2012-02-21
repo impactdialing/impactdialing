@@ -157,7 +157,6 @@ describe CallAttemptsController do
       post :disconnect, :id => call_attempt.id
       response.body.should == call_attempt.hangup
       call_attempt.reload.status.should == CallAttempt::Status::SUCCESS
-      caller_session.attempt_in_progress.should == call_attempt
     end
 
     it "hangs up given a call_attempts call sid" do
@@ -248,10 +247,10 @@ describe CallAttemptsController do
       session_key = 'foo'
       custom_field = Factory(:custom_voter_field)
       Factory(:custom_voter_field_value, :voter => voter, :custom_voter_field => custom_field, :value => 'value')
-      caller_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller), :session_key => session_key, :voter_in_progress => voter)
+      caller_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller), :session_key => session_key)
+      voter.update_attributes(:status => CallAttempt::Status::INPROGRESS, :caller_session => caller_session)
       call_attempt.update_attributes(caller_session: caller_session)
       pusher_session = mock
-      voter.status = CallAttempt::Status::INPROGRESS
       pusher_session.should_receive(:trigger).with('voter_connected', {:attempt_id=> call_attempt.id, :voter => voter.info}.merge(:dialer => campaign.predictive_type))
       Pusher.stub(:[]).with(session_key).and_return(pusher_session)
       Moderator.stub!(:publish_event).with(caller_session.campaign, 'voter_connected', {:caller_session_id => caller_session.id, :campaign_id => caller_session.campaign.id, :caller_id => call_attempt.caller_session.caller.id})

@@ -133,7 +133,7 @@ class Voter < ActiveRecord::Base
   end
 
   def conference(session)
-    session.update_attributes(:voter_in_progress => self)
+    self.update_attributes(:status => CallAttempt::Status::INPROGRESS, :caller_session => session) # session.voter_in_progress.should == self
   end
 
   def get_attribute(attribute)
