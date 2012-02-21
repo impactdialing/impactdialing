@@ -81,7 +81,7 @@ class CallAttempt < ActiveRecord::Base
       hangup
     else
       update_attributes(:status => CallAttempt::Status::INPROGRESS)
-      voter.update_attributes(:status => CallAttempt::Status::INPROGRESS)
+      #voter.update_attributes(:status => CallAttempt::Status::INPROGRESS)
       caller_session.update_attributes(:on_call => true, :available_for_call => false)
       conference(caller_session)
     end

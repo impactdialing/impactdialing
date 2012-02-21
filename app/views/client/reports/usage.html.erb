@@ -1,75 +1,80 @@
 <%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@campaign.name} Usage"} %>
 <div class="content clearfix">
-<div role="main">
-<p>Two sets of metrics are provided for you below. First, you can see how much time your callers actually spent on the phone; each call is rounded to the nearest second. Next, you can see how much time you are being billed for; each call is rounded to the nearest minute. You caller time is only billed when your callers dial in, instead of using a microphone on their computer.</p>
+  <div role="main">
+    <p>Two sets of metrics are provided for you below. First, you can see how much time your callers actually spent on
+      the phone; each call is rounded to the nearest second. Next, you can see how much time you are being billed for;
+      each call is rounded to the nearest minute. You caller time is only billed when your callers dial in, instead of
+      using a microphone on their computer.</p>
 
-<table>
-	<tr>
-		<th>Utilization (1-second increments)</th>
-		<th>Minutes</th>
-	</tr>
-	<tr>
-		<td>Logged in</td>
-    <td><%= @caller_sessions_logged_in_seconds %></td>
-	</tr>
-	<tr>
-		<td>On call</td>
-    <td><%= @caller_session_on_call %></td>
-	</tr>
-	<tr>
-		<td>Wrap up</td>
-    <td><%= @caller_session_wrapup %></td>
-	</tr>
-	
-  <tr>
-    <td>On hold</td>
-    <td><%= @caller_session_on_hold %></td>
-  </tr>
-	<tr>
-		<td colspan="2">&nbsp;</td>
-	</tr>
-	<tr>
-		<th>Billable time (1-minute increments)</th>
-		<th>Minutes</th>
-	</tr>
-	<tr>
-		<td>Callers</td>
-    <td><%= @caller_sessions_minutes %></td>
-	</tr>
-	<tr>
-		<td>Leads</td>
-    <td><%= @billable_call_attempts_minutes %></td>
-	</tr>
-	<tr>
-		<td>Transfers</td>
-    <td><%= @billable_call_attempts_minutes %></td>
-	</tr>
-	
-	<tr>
-		<td>Voicemails</td>
-    <td><%= @billable_voicemail_minutes %></td>
-	</tr>
-	<tr>
-		<td>Abandoned calls</td>
-    <td><%= @billable_abandoned_minutes %></td>
-	</tr>
-</table>
-</div>
+    <table>
+      <tr>
+        <th>Utilization (1-second increments)</th>
+        <th>Minutes</th>
+      </tr>
+      <tr>
+        <td>Logged in</td>
+        <td><%= @campaign.time_logged_in(@from_date, @to_date) %></td>
+      </tr>
+      <tr>
+        <td>On call</td>
+        <td><%= @campaign.time_on_call(@from_date, @to_date) %></td>
+      </tr>
+      <tr>
+        <td>Wrap up</td>
+        <td><%= @campaign.time_in_wrapup(@from_date, @to_date) %></td>
+      </tr>
+      <tr>
+        <td>On hold</td>
+        <td><%= @campaign.time_onhold(@from_date, @to_date) %></td>
+      </tr>
+      <tr>
+        <td colspan="2">&nbsp;</td>
+      </tr>
+
+      <tr>
+        <th>Billable time (1-minute increments)</th>
+        <th>Minutes</th>
+      </tr>
+      <tr>
+        <td>Callers</td>
+        <td><%= @campaign.caller_time(@from_date, @to_date) %></td>
+      </tr>
+      <tr>
+        <td>Leads</td>
+        <td><%= @campaign.lead_time(@from_date, @to_date) %></td>
+      </tr>
+      <tr>
+        <td>Transfers</td>
+        <td><%= @campaign.transfer_time(@from_date, @to_date) %></td>
+      </tr>
+
+      <tr>
+        <td>Voicemails</td>
+        <td><%= @campaign.voicemail_time(@from_date, @to_date) %></td>
+      </tr>
+      <tr>
+        <td>Abandoned calls</td>
+        <td><%= @campaign.abandoned_calls_time(@from_date, @to_date) %></td>
+      </tr>
+    </table>
+  </div>
 </div>
 
 <h3>Date range:</h3>
 <% form_tag (usage_client_reports_path(:id => params[:id])) do %>
-  <table>
-    <tr>
-      <td>From:</td>
-      <td> <%= unobtrusive_date_text_picker_tag :from_date,@from_date %> </td>
-    </tr>
-    <tr>
-      <td>To:</td>
-      <td>
-        <%= unobtrusive_date_text_picker_tag :to_date,@to_date %>
-      </td>
-    </tr>
-  </table>
-<div class="buttons"><button type="submit">Update</button></div>
+    <table>
+      <tr>
+        <td>From:</td>
+        <td> <%= unobtrusive_date_text_picker_tag :from_date, @from_date %> </td>
+      </tr>
+      <tr>
+        <td>To:</td>
+        <td>
+          <%= unobtrusive_date_text_picker_tag :to_date, @to_date %>
+        </td>
+      </tr>
+    </table>
+    <div class="buttons">
+      <button type="submit">Update</button>
+    </div>
 <% end %>
