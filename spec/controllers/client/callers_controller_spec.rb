@@ -63,10 +63,13 @@ describe Client::CallersController do
 
   describe "call details report" do
 
+    let(:script) { Factory(:script) }
+    let(:campaign) { Factory(:campaign, :script => script, :account => user.account) }
+    let(:caller) { Factory(:caller) }
+
+    before(:each) { Factory(:caller_session, :campaign => campaign, :caller => caller) }
+
     it "gets the entire list of questions and responses" do
-      script = Factory(:script)
-      caller = Factory(:caller)
-      campaign = Factory(:campaign, :script => script, :active => true, :account => user.account)
       question = Factory(:question, :script => script)
       another_question = Factory(:question, :script => Factory(:script))
       2.times { Factory(:possible_response, :question => question) }
@@ -74,6 +77,27 @@ describe Client::CallersController do
       response.should be_ok
       assigns(:questions_and_responses).should have(1).item
       assigns(:questions_and_responses)[question.text].should have(2).items
+    end
+
+    it "shows only the campaigns in which the caller was involved" do
+      another_campaign = Factory(:campaign, :script => script, :active => true, :account => user.account)
+      get :call_details, :id => caller.id, :campaign_id => campaign.id
+      response.should be_ok
+      assigns(:campaigns).should == [campaign]
+    end
+
+    it "shows only manual campaigns" do
+      robo_campaign = Factory(:campaign, :script => script, :account => user.account, :robo => true)
+      Factory(:caller_session, :caller => caller, :campaign => robo_campaign)
+      get :call_details, :id => caller.id, :campaign_id => campaign.id
+      response.should be_ok
+      assigns(:campaigns).should == [campaign]
+    end
+
+    it "defaults to the first campaign if campaign_id is not given" do
+      get :call_details, :id => caller.id
+      response.should be_ok
+      assigns(:campaign).should == campaign
     end
   end
 end
