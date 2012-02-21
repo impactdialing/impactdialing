@@ -40,6 +40,10 @@ describe User do
     user.authenticate_with?("xyzzy123").should be_true
   end
 
+  it "does not authenticate a User nil password" do
+    user.authenticate_with?(nil).should be_false
+  end
+
   it "finds the billing_account through account" do
     billing_account = Factory(:billing_account)
     user.account.update_attribute(:billing_account, billing_account)
