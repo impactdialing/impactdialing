@@ -133,7 +133,7 @@ class Voter < ActiveRecord::Base
   end
 
   def conference(session)
-    session.update_attributes(:voter_in_progress => self)
+    self.update_attributes(:status => CallAttempt::Status::INPROGRESS, :caller_session => session) # session.voter_in_progress.should == self
   end
 
   def get_attribute(attribute)
@@ -148,9 +148,9 @@ class Voter < ActiveRecord::Base
     account.blocked_numbers.for_campaign(campaign).map(&:number).include?(self.Phone)
   end
 
-  def capture(response)
+  def capture(response, call_attempt)
     update_attribute(:result_date, Time.now)
-    capture_answers(response["question"])
+    capture_answers(response["question"], call_attempt)
     capture_notes(response['notes'])
   end
 
@@ -199,7 +199,7 @@ class Voter < ActiveRecord::Base
     possible_response = question.possible_responses.where(:keypad => response).first
     self.answer_recorded_by = recorded_by_caller
     return unless possible_response
-    answer = self.answers.for(question).first.try(:update_attributes, {:possible_response => possible_response}) || answers.create(:question => question, :possible_response => possible_response, campaign: Campaign.find(campaign_id) )
+    answer = self.answers.for(question).first.try(:update_attributes, {:possible_response => possible_response}) || answers.create(:question => question, :possible_response => possible_response, campaign: Campaign.find(campaign_id), caller: recorded_by_caller.caller)
     DIALER_LOGGER.info "??? notifying observer ???"
     notify_observers :answer_recorded
     DIALER_LOGGER.info "... notified observer ..."
@@ -227,12 +227,12 @@ class Voter < ActiveRecord::Base
     call_attempt
   end
 
-  def capture_answers(questions)
+  def capture_answers(questions, call_attempt)
     retry_response = nil
     questions.try(:each_pair) do |question_id, answer_id|
       voters_response = PossibleResponse.find(answer_id)
       current_response = answers.find_by_question_id(question_id)
-      current_response ? current_response.update_attributes(:possible_response => voters_response, :created_at => Time.now) : answers.create(:possible_response => voters_response, :question => Question.find(question_id), :created_at => Time.now, campaign: Campaign.find(campaign_id))
+      current_response ? current_response.update_attributes(:possible_response => voters_response, :created_at => Time.now) : answers.create(:possible_response => voters_response, :question => Question.find(question_id), :created_at => Time.now, campaign: Campaign.find(campaign_id), :caller => call_attempt.caller)
       retry_response ||= voters_response if voters_response.retry?
     end
     update_attributes(:status => Voter::Status::RETRY) if retry_response

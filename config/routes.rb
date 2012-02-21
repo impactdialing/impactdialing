@@ -9,7 +9,7 @@ ImpactDialing::Application.routes.draw do
   match '/client/policies', :to => 'client#policies', :as => :client_policies
   match '/broadcast/policies', :to => 'broadcast#policies', :as => :broadcast_policies
   match '/homecss/css/style.css', :to => 'home#homecss'
-  
+
   namespace 'api' do
     resources :leads
     resources :callers
@@ -79,8 +79,8 @@ ImpactDialing::Application.routes.draw do
         get :running_status
       end
       resources :voter_lists, :except => [:new, :show] do
-        collection do 
-           post :import 
+        collection do
+          post :import
         end
       end
     end
@@ -113,7 +113,11 @@ ImpactDialing::Application.routes.draw do
       end
     end
     resources :callers do
-      member{ get :reassign_to_campaign }
+      member do
+        get :usage
+        get :call_details
+      end
+      member { get :reassign_to_campaign }
     end
     resources :campaigns, :only => [] do
       resources :reports do

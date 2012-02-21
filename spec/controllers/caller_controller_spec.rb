@@ -84,6 +84,13 @@ describe CallerController do
       post :call_voter, :session_id => caller_session.id , :voter_id => voter.id, id: caller.id
     end
 
+    it "does not call voter unless caller session is known" do
+      voter = Factory(:voter, :campaign => caller.campaign)
+      Twilio::Call.stub(:make)
+      Twilio::Call.should_not_receive(:make)
+      post :call_voter, :session_id => "" , :voter_id => voter.id, id: caller.id
+    end
+
     it "pushes 'calling' to the caller" do
       session_key = "caller_session_key"
       campaign = Factory(:campaign, :start_time => Time.new("2000-01-01 01:00:00"), :end_time => Time.new("2000-01-01 23:00:00"))
@@ -116,13 +123,15 @@ describe CallerController do
     end
 
     it "pauses a callers session while an attempt is in progress" do
-      session = Factory(:caller_session, :caller => caller, :campaign => Factory(:campaign), :available_for_call => false, :on_call => true, :voter_in_progress => Factory(:voter), :session_key => 'some_key')
+      session = Factory(:caller_session, :caller => caller, :campaign => Factory(:campaign), :available_for_call => false, :on_call => true, :session_key => 'some_key')
+      voter = Factory(:voter, :status => CallAttempt::Status::INPROGRESS, :caller_session => session)
       post :pause, :id => caller.id, :session_id => session.id, :attempt => nil
       response.body.should == session.pause_for_results
     end
 
     it "says wait message every fifth attempts when the voter is paused for results" do
-      session = Factory(:caller_session, :caller => caller, :campaign => Factory(:campaign), :available_for_call => false, :on_call => true, :voter_in_progress => Factory(:voter), :session_key => 'some_key')
+      session = Factory(:caller_session, :caller => caller, :campaign => Factory(:campaign), :available_for_call => false, :on_call => true, :session_key => 'some_key')
+      voter = Factory(:voter, :caller_session => session, :status => CallAttempt::Status::INPROGRESS)
       post :pause, :id => caller.id, :session_id => session.id, :attempt => 5
       response.body.should == session.pause_for_results(5)
     end
@@ -244,8 +253,8 @@ describe CallerController do
     let(:script) { Factory(:script) }
     let(:campaign) { Factory(:campaign, :account => account, :robo => false, :use_web_ui => true, :script => script) }
     let(:caller) { Factory(:caller, :campaign => campaign, :account => account) }
-    let(:voter) { Factory(:voter, :campaign => campaign) }
     let(:caller_session) { Factory(:caller_session, :campaign => campaign, :session_key => "some_key", :caller => caller, :available_for_call => true, :on_call => true) }
+    let(:voter) { Factory(:voter, :campaign => campaign, :caller_session => caller_session, :status => CallAttempt::Status::INPROGRESS) }
     let(:call_attempt) { Factory(:call_attempt, :voter => voter, :campaign => campaign, :caller_session => caller_session) }
     let(:first_question) { Factory(:question, :script => script) }
 
