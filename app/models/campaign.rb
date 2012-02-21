@@ -462,7 +462,9 @@ class Campaign < ActiveRecord::Base
     return [] if num_voters < 1
     priority_voters = all_voters.priority_voters.limit(num_voters)
     scheduled_voters = all_voters.scheduled.limit(num_voters)
-    return priority_voters + scheduled_voters + all_voters.to_be_dialed.without(account.blocked_numbers.for_campaign(self).map(&:number)).limit(num_voters - (priority_voters.size + scheduled_voters.size))
+    num_voters_to_call = (num_voters - (priority_voters.size + scheduled_voters.size))
+    limit_voters = num_voters_to_call <= 0 ? 0 : num_voters_to_call
+    return priority_voters + scheduled_voters + all_voters.to_be_dialed.without(account.blocked_numbers.for_campaign(self).map(&:number)).limit(limit_voters)
   end
 
   def ratio_dial?
