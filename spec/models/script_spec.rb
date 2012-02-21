@@ -72,4 +72,15 @@ describe Script do
     end
     
   end
+
+  describe "questions and responses" do
+    it "gets all questions and responses" do
+      script = Factory(:script)
+      question = Factory(:question, :script => script)
+      response_1 = Factory(:possible_response, :question => question)
+      response_2 = Factory(:possible_response, :question => question)
+      another_response = Factory(:possible_response)
+      script.questions_and_responses.should == {question.text => [response_1.value, response_2.value]}
+    end
+  end
 end

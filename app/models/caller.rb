@@ -139,4 +139,18 @@ class Caller < ActiveRecord::Base
     end
   end
 
+  def answered_call_stats(from, to, campaign_id)
+    responses = Answer.within(from, to).with_caller_id(self.id).with_campaign_id(campaign_id).count(
+      :joins => [:question, :possible_response],
+      :group => ["questions.text", "possible_responses.value"],
+    )
+    responses.inject({}) do |acc, curr|
+      question, answer = curr.first
+      total_for_question = responses.select { |r| r.first == question }.values.reduce(:+)
+      acc[question] = {:total => {:count => total_for_question, :percentage => 100 }} unless acc[question]
+      acc[question][answer] = {:count => curr.last, :percentage => curr.last / total_for_question.to_f * 100 }
+      acc
+    end
+  end
+
 end

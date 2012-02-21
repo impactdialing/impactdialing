@@ -11,4 +11,7 @@ describe Admin::CallersController do
     caller_object.reload.should be_active
     response.should redirect_to admin_callers_path
   end
+
+
+
 end

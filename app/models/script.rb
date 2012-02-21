@@ -82,5 +82,12 @@ class Script < ActiveRecord::Base
         EOS
       end
     end
+
+    def questions_and_responses
+      questions.all(:include => [:possible_responses]).inject({}) do |acc, question|
+        acc[question.text] = question.possible_responses.map(&:value)
+        acc
+      end
+    end
   
 end
