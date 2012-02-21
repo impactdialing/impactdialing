@@ -1,6 +1,6 @@
 module Callers
   class CampaignsController < ::CallerController
-    layout 'caller'
+    layout 'caller_campaign'
     
     def show
       unless @caller.account.activated?
