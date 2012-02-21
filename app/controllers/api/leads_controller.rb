@@ -1,6 +1,6 @@
 module Api
-  class LeadsController < ApiController
-  
+  class LeadsController < ApiController  
+    
     def validate_params
       begin
         Campaign.find(params[:campaign_id])
@@ -19,7 +19,6 @@ module Api
       end    
       return true
     end
-  
   
     def create
       return unless validate_params

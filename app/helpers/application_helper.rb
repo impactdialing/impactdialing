@@ -33,7 +33,7 @@ module ApplicationHelper
       }
 
       </script>";
-      ""
+    ""
   end
 
   def send_rt(channel, key, post_data)
@@ -57,7 +57,7 @@ module ApplicationHelper
     return response.body
   end
 
-  def hash_from_voter_and_script(script,voter)
+  def hash_from_voter_and_script(script, voter)
     publish_hash={:id=>voter.id, :classname=>voter.class.to_s}
     #    publish_hash={:id=>voter.id}
     if !script.voter_fields.nil?
@@ -75,10 +75,10 @@ module ApplicationHelper
   end
 
   def client_controller?(controllerName)
-    ['client/accounts', 'client', 'voter_lists', 'monitor', 'client/campaigns', 'client/scripts', 'client/callers', 'client/reports', 'campaigns', 'scripts', 'broadcast', 'reports', 'home', 'blocked_numbers', 'monitors','messages'].include?(controllerName)
+    ['client/accounts', 'client', 'voter_lists', 'monitor', 'client/campaigns', 'client/scripts', 'client/callers', 'client/reports', 'campaigns', 'scripts', 'broadcast', 'reports', 'home', 'blocked_numbers', 'monitors', 'messages'].include?(controllerName)
   end
 
-  ['title', 'full_title', 'phone', 'email', ].each do |value|
+  ['title', 'full_title', 'phone', 'email',].each do |value|
     define_method(value) do
       send("white_labeled_#{value}", request.domain)
     end
@@ -91,7 +91,7 @@ module ApplicationHelper
   def link_to_remove_fields(name, f)
     f.hidden_field(:_destroy) + link_to_function(name, "remove_fields(this)")
   end
-  
+
   def link_to_add_fields(name, f, association)
     new_object = f.object.class.reflect_on_association(association).klass.new
     fields = f.fields_for(association, new_object, :child_index => "new_#{association}") do |builder|
@@ -99,10 +99,10 @@ module ApplicationHelper
     end
     link_to_function(name, h("add_fields(this, \"#{association}\", \"#{escape_javascript(fields)}\")"))
   end
-  
+
 
   def button_tag(value, opts = {})
-    content_tag :button, value, { :type => :submit }.merge(opts)
+    content_tag :button, value, {:type => :submit}.merge(opts)
   end
 
   def in_production?
@@ -111,5 +111,9 @@ module ApplicationHelper
 
   def pusher_js
     javascript_include_tag("https://d3ds63zw57jt09.cloudfront.net/1.9/pusher.min.js")
+  end
+
+  def round_for_utilization(seconds)
+    (seconds.to_f/60).ceil.to_s
   end
 end
