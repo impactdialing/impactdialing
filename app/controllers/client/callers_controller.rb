@@ -3,6 +3,7 @@ module Client
     include DeletableController
     skip_before_filter :check_login, :only => [:reassign_to_campaign]
     before_filter :load_campaigns, :except => [:index,:destroy,:reassign_to_campaign]
+    before_filter :set_report_date_range, :only => [:usage, :call_details]
 
     def type_name
       'caller'
@@ -72,7 +73,18 @@ module Client
       caller.reassign_to_another_campaign(caller_session)
       render :nothing => true
     end
-    
+
+    def usage
+      @caller = Caller.find(params[:id])
+    end
+
+    def call_details
+      @caller = Caller.find(params[:id])
+      @campaign = params[:campaign_id] ? account.campaigns.find(params[:campaign_id]) : account.campaigns.first
+      @questions_and_responses = @campaign.questions_and_responses
+      @answered_call_stats = @caller.answered_call_stats(@from_date, @to_date, @campaign.id)
+    end
+
     private
     def load_campaigns
       @campaigns = account.campaigns.manual.active

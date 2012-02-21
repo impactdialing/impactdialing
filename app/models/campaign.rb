@@ -2,6 +2,9 @@ require Rails.root.join("lib/twilio_lib")
 
 class Campaign < ActiveRecord::Base
   include Deletable
+  include ApplicationHelper::TimeUtils
+  include ReportsHelper::Utilization
+  include ReportsHelper::Billing
 
   has_many :caller_sessions
   has_many :voter_lists, :conditions => {:active => true}
@@ -16,6 +19,8 @@ class Campaign < ActiveRecord::Base
   belongs_to :voicemail_script, :class_name => 'Script', :foreign_key => 'voicemail_script_id'
   belongs_to :account
   belongs_to :recording
+
+  delegate :questions_and_responses, :to => :script
 
   scope :robo, :conditions => {:robo => true}
   scope :manual, :conditions => {:robo => false}
@@ -53,7 +58,7 @@ class Campaign < ActiveRecord::Base
   def new_campaign
     new_record?
   end
-  
+
   def set_caller_id_error_msg
       if errors[:caller_id].any?
         errors.add(:base, 'Your Caller ID must be a 10-digit North American phone number or begin with "+" and the country code.')
@@ -73,8 +78,8 @@ class Campaign < ActiveRecord::Base
       errors.add(:base, 'You cannot change dialing modes while callers are logged in.')
     end
   end
-  
-  
+
+
   def predictive_type_change
      if predictive_type_changed? && callers_log_in?
        errors.add(:base, 'You cannot change dialing modes while callers are logged in.')
@@ -539,7 +544,7 @@ class Campaign < ActiveRecord::Base
     return false if script.robo_recordings.size == 0
     Delayed::Job.enqueue BroadcastCampaignJob.new(self.id)
     UserMailer.new.notify_broadcast_start(self,user) if Rails.env == 'heroku'
-    update_attribute(:calls_in_progress, true)    
+    update_attribute(:calls_in_progress, true)
   end
 
   def stop
@@ -636,17 +641,29 @@ class Campaign < ActiveRecord::Base
         result[question.text] << {answer: "[No response]", number: 0, percentage:  0} unless question.possible_responses.find_by_value("[No response]").present?
       end
     end
-    
+
     result
   end
-  
-  def transfers(from_date, to_date)    
+
+  def transfers(from_date, to_date)
     result = {}
     attempts = transfer_attempts.within(from_date, to_date, id)
     unless attempts.blank?
       result = TransferAttempt.aggregate(attempts)
     end
     result
+  end
+
+  def transfer_time(from_date, to_date)
+    transfer_attempts.between(from_date, to_date + 1.day).sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)').to_i
+  end
+
+  def voicemail_time(from_date, to_date)
+    call_attempts.between(from_date, to_date + 1.day).with_status([CallAttempt::Status::VOICEMAIL]).sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)').to_i
+  end
+
+  def abandoned_calls_time(from_date, to_date)
+    call_attempts.between(from_date, to_date + 1.day).with_status([CallAttempt::Status::ABANDONED]).sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)').to_i
   end
 
   def robo_answer_results(from_date, to_date)
@@ -660,6 +677,8 @@ class Campaign < ActiveRecord::Base
     end
     result
   end
+
+
 
   private
   def dial_voters

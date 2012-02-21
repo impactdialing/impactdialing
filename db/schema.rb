@@ -11,7 +11,8 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120215103023) do
+ActiveRecord::Schema.define(:version => 20120217072945) do
+
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -29,7 +30,10 @@ ActiveRecord::Schema.define(:version => 20120215103023) do
     t.integer  "possible_response_id", :null => false
     t.datetime "created_at"
     t.integer  "campaign_id"
+    t.integer  "caller_id",            :null => false
   end
+
+  add_index "answers", ["voter_id", "question_id"], :name => "index_answers_on_voter_id_and_question_id"
 
   create_table "billing_accounts", :force => true do |t|
     t.integer  "account_id"
@@ -98,7 +102,9 @@ ActiveRecord::Schema.define(:version => 20120215103023) do
   end
 
   add_index "call_attempts", ["call_end"], :name => "index_call_attempts_on_call_end"
+  add_index "call_attempts", ["caller_id", "wrapup_time"], :name => "index_call_attempts_on_caller_id_and_wrapup_time"
   add_index "call_attempts", ["caller_session_id"], :name => "index_call_attempts_on_caller_session_id"
+  add_index "call_attempts", ["campaign_id", "call_end"], :name => "index_call_attempts_on_campaign_id_and_call_end"
   add_index "call_attempts", ["campaign_id"], :name => "index_call_attempts_on_campaign_id"
   add_index "call_attempts", ["voter_id"], :name => "index_call_attempts_on_voter_id"
 
@@ -574,6 +580,7 @@ ActiveRecord::Schema.define(:version => 20120215103023) do
   add_index "voters", ["Phone"], :name => "index_voters_on_Phone"
   add_index "voters", ["attempt_id"], :name => "index_voters_on_attempt_id"
   add_index "voters", ["caller_session_id"], :name => "index_voters_on_caller_session_id"
+  add_index "voters", ["campaign_id", "active", "status", "call_back"], :name => "index_voters_on_campaign_id_and_active_and_status_and_call_back"
   add_index "voters", ["campaign_id"], :name => "index_voters_on_campaign_id"
   add_index "voters", ["status"], :name => "index_voters_on_status"
   add_index "voters", ["voter_list_id"], :name => "index_voters_on_voter_list_id"

@@ -60,5 +60,20 @@ describe Client::CallersController do
     get :reassign_to_campaign, :id => caller.id, :campaign_id => campaign2.id, :session_id => caller_session.id
     caller.reload.campaign.id.should == campaign2.id
   end
-  
+
+  describe "call details report" do
+
+    it "gets the entire list of questions and responses" do
+      script = Factory(:script)
+      caller = Factory(:caller)
+      campaign = Factory(:campaign, :script => script, :active => true, :account => user.account)
+      question = Factory(:question, :script => script)
+      another_question = Factory(:question, :script => Factory(:script))
+      2.times { Factory(:possible_response, :question => question) }
+      get :call_details, :id => caller.id, :campaign_id => campaign.id
+      response.should be_ok
+      assigns(:questions_and_responses).should have(1).item
+      assigns(:questions_and_responses)[question.text].should have(2).items
+    end
+  end
 end
