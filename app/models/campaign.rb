@@ -31,6 +31,7 @@ class Campaign < ActiveRecord::Base
       :conditions => {"caller_sessions.on_call" => true}
   }
   scope :using_web_ui, :conditions => {:use_web_ui => true}
+  scope :for_caller, lambda { |caller| {:include => [:caller_sessions], :conditions => {"caller_sessions.caller_id" => caller.id}}}
 
   before_create :create_uniq_pin
 
