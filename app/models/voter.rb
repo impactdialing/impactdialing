@@ -154,6 +154,8 @@ class Voter < ActiveRecord::Base
     capture_notes(response['notes'])
   end
 
+
+
   def selected_custom_voter_field_values
     select_custom_fields = campaign.script.try(:selected_custom_fields)
     custom_voter_field_values.try(:select) { |cvf| select_custom_fields.include?(cvf.custom_voter_field.name) } if select_custom_fields.present?
