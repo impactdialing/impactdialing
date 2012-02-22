@@ -462,8 +462,8 @@ describe "predictive_dialer" do
     it "returns campaigns having a session with the given caller" do
       caller = Factory(:caller)
       campaign = Factory(:campaign)
-      session = Factory(:caller_session, :campaign => campaign, :caller => caller)
-      another_campaign = Factory(:campaign)
+      Factory(:campaign)
+      Factory(:caller_session, :campaign => campaign, :caller => caller)
       Campaign.for_caller(caller).should == [campaign]
     end
 

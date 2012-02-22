@@ -72,7 +72,6 @@ class CallerController < ApplicationController
   end
 
   def gather_response
-    start_time = Time.now
     caller = Caller.find(params[:id])
     caller_session = caller.caller_sessions.find(params[:session_id])
     question = Question.find_by_id(params[:question_id])
@@ -145,12 +144,10 @@ class CallerController < ApplicationController
 
   def call_voter
     caller = Caller.find(params[:id])
-    caller_session = caller.caller_sessions.find_by_id(params[:session_id])
-    if caller_session
-      if params[:voter_id]
-        voter = Voter.find(params[:voter_id])
-        caller_session.preview_dial(voter)
-      end
+    caller_session = caller.caller_sessions.find(params[:session_id])
+    if params[:voter_id]
+      voter = Voter.find(params[:voter_id])
+      caller_session.preview_dial(voter)
     end
     render :nothing => true
   end
