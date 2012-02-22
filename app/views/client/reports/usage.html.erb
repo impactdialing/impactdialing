@@ -23,8 +23,6 @@
         <td>Wrap up</td>
         <td><%= @campaign.time_in_wrapup(@from_date, @to_date) %></td>
       </tr>
-
-
       <tr>
         <td>On hold</td>
         <td><%= @campaign.time_onhold(@from_date, @to_date) %></td>
@@ -63,8 +61,9 @@
 </div>
 
 <h3>Date range:</h3>
-<% form_tag (usage_client_reports_path(:id => params[:id])) do %>
+<% form_tag(usage_client_reports_url(:id => params[:id]), :method => :get) do %>
     <table>
+      <%= hidden_field_tag :id, @campaign.id %>
       <tr>
         <td>From:</td>
         <td> <%= unobtrusive_date_text_picker_tag :from_date, @from_date %> </td>
