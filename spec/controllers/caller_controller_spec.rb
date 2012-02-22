@@ -84,13 +84,6 @@ describe CallerController do
       post :call_voter, :session_id => caller_session.id , :voter_id => voter.id, id: caller.id
     end
 
-    it "does not call voter unless caller session is known" do
-      voter = Factory(:voter, :campaign => caller.campaign)
-      Twilio::Call.stub(:make)
-      Twilio::Call.should_not_receive(:make)
-      post :call_voter, :session_id => "" , :voter_id => voter.id, id: caller.id
-    end
-
     it "pushes 'calling' to the caller" do
       session_key = "caller_session_key"
       campaign = Factory(:campaign, :start_time => Time.new("2000-01-01 01:00:00"), :end_time => Time.new("2000-01-01 23:00:00"))
