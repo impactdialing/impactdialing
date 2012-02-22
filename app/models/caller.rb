@@ -9,6 +9,7 @@ class Caller < ActiveRecord::Base
   belongs_to :account
   has_many :caller_sessions
   has_many :call_attempts
+  has_many :answers
   before_create :create_uniq_pin
   validates_uniqueness_of :email, :allow_nil => true
   validates_presence_of :campaign_id
@@ -135,6 +136,20 @@ class Caller < ActiveRecord::Base
           caller_session.publish('caller_connected_dialer', {})
         end
       end
+    end
+  end
+
+  def answered_call_stats(from, to, campaign_id)
+    responses = Answer.within(from, to).with_caller_id(self.id).with_campaign_id(campaign_id).count(
+      :joins => [:question, :possible_response],
+      :group => ["questions.text", "possible_responses.value"],
+    )
+    responses.inject({}) do |acc, curr|
+      question, answer = curr.first
+      total_for_question = responses.select { |r| r.first == question }.values.reduce(:+)
+      acc[question] = {:total => {:count => total_for_question, :percentage => 100 }} unless acc[question]
+      acc[question][answer] = {:count => curr.last, :percentage => curr.last / total_for_question.to_f * 100 }
+      acc
     end
   end
 

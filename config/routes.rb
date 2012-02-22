@@ -115,7 +115,7 @@ ImpactDialing::Application.routes.draw do
     resources :callers do
       member do
         get :usage
-        get :campaign_details
+        get :call_details
       end
       member { get :reassign_to_campaign }
     end

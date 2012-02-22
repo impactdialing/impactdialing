@@ -25,4 +25,6 @@
   </div>
 </div>
 
-<%= render :partial => 'shared/date_picker', :locals => {:url => usage_client_caller_path(:id => params[:id])} %>
+<% form_tag(usage_client_caller_path(:id => params[:id]), :method => :get) do %>
+  <%= render :partial => 'shared/date_picker' %>
+<% end %>

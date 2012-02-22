@@ -213,5 +213,26 @@ describe Caller do
         caller.lead_time(from_time, time_now).should == 113
       end
     end
+
+    describe "campaign" do
+
+      let(:voter) { Factory(:voter) }
+      let(:question) { Factory(:question, :text => "what?", :script => Factory(:script)) }
+
+      it "gets stats for answered calls" do
+        response_1 = Factory(:possible_response, :value => "foo")
+        response_2 = Factory(:possible_response, :value => "bar")
+        campaign = Factory(:campaign)
+        3.times { Factory(:answer, :caller => caller, :voter => voter, :question => question, :possible_response => response_1, :campaign => campaign) }
+        2.times { Factory(:answer, :caller => caller, :voter => voter, :question => question, :possible_response => response_2, :campaign => campaign) }
+        Factory(:answer, :caller => caller, :voter => voter, :question => question, :possible_response => response_1, :campaign => Factory(:campaign))
+        stats = caller.answered_call_stats(from_time, time_now, campaign.id)
+        stats.should == {"what?" => {
+          :total => {:count => 5, :percentage => 100},
+          "foo" => {:count => 3, :percentage => 60},
+          "bar" => {:count => 2, :percentage => 40},
+        }}
+      end
+    end
   end
 end
