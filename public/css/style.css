@@ -529,6 +529,13 @@ height : 57px;
 background : transparent url(../img/impactdialing-h1.png) no-repeat 0 0;
 text-indent : -9999px; }
 
+header[role="banner"] h1.globalalliancellc {
+margin-bottom : .5em;
+width : 300px;
+height : 57px; 
+background : transparent url(../img/globalalliancellc-h1.png) no-repeat 0 0;
+text-indent : -9999px; }
+
 header[role="banner"] h1.zata3dialer {
 margin-bottom : .5em;
 width : 300px;
