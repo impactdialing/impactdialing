@@ -20,7 +20,7 @@
                   <tr>
                     <td><%= response %></td>
                     <td><%= @answered_call_stats[question][response][:count] rescue 0 %></td>
-                    <td><%= @answered_call_stats[question][response][:percentage] rescue 0 %> %</td>
+                    <td><%= @answered_call_stats[question][response][:percentage].to_i rescue 0 %> %</td>
                   </tr>
               <% end %>
             </table>
