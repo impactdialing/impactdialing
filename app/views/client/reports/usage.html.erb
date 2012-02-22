@@ -36,7 +36,7 @@
   </div>
 </div>
 
-<% form_tag(usage_client_reports_path(:id => params[:id]), :method => :get) do %>
+<% form_tag(usage_client_reports_url(:id => params[:id]), :method => :get) do %>
   <input type="hidden" name="id" value="<%= params[:id] %>" />
   <%= render :partial => 'shared/date_picker' %>
 <% end %>
