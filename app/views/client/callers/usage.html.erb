@@ -1,7 +1,7 @@
 <%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@caller.name} Usage"} %>
 <div class="content clearfix">
   <div role="main">
-    <p>Two sets of metrics are provided for you below. First, you can see how much time your callers actually spent on
+    <p>Two sets of metrics are provided for you below. First, you can see how much time your caller actually spent on
       the phone; each call is rounded to the nearest second. Next, you can see how much time you are being billed for;
       each call is rounded to the nearest minute. You caller time is only billed when your callers dial in, instead of
       using a microphone on their computer.</p>
@@ -14,7 +14,7 @@
         <th>Minutes</th>
       </tr>
       <tr>
-        <td>Callers</td>
+        <td>Caller</td>
         <td><%= @caller.caller_time(@from_date, @to_date) %></td>
       </tr>
       <tr>
@@ -25,6 +25,7 @@
   </div>
 </div>
 
+<h3>Date range:</h3>
 <% form_tag(usage_client_caller_path(:id => params[:id]), :method => :get) do %>
   <%= render :partial => 'shared/date_picker' %>
 <% end %>

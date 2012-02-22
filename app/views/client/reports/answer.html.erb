@@ -1,8 +1,8 @@
-<h3><%= "#{@campaign.name} Answered Calls Report" %></h3>
+<h1><%= "#{@campaign.name} Answered Calls Report" %></h1>
 <% i = 1 %>
 <% @results.each_pair do |question, stats| %>
 	  <h3><%= @campaign.robo == true ? "Recording" : "Question" %> <%= i %>: <%= question %></h3>
-	   <table width="100%" border="0" cellspacing="0" cellpadding="0">
+	   <table>
 	     <tr>
 	       <th>Answer</th>
 	       <th>Number</th>
@@ -20,10 +20,10 @@
 <% end %>
 
 <%unless @transfers.blank?%>
-  <table width="100%" border="0" cellspacing="0" cellpadding="0">
-    <h3>Transfer Call Details</h3>
+  <table>
+    <h3>Transfers</h3>
     <tr>
-      <th>Transfers</th>
+      <th>Transfer</th>
       <th>Number</th>
       <th>Percentage</th>
     </tr>

@@ -1,27 +1,28 @@
-<h3><%= "#{@campaign.name} Answered Calls Report" %></h3>
-<%= form_tag(call_details_client_caller_path(:id => params[:id]), :method => :get) do %>
-  <%= select_tag 'campaign_id', options_from_collection_for_select(@campaigns, 'id', 'name', @campaign.id) %>
+<h1><%= "#{@campaign.name} Answered Calls Report" %></h1>
+<p><%= form_tag(call_details_client_caller_path(:id => params[:id]), :method => :get) do %>
+  <%= select_tag 'campaign_id', options_from_collection_for_select(@campaigns, 'id', 'name', @campaign.id) %></p>
   <div class="buttons">
-    <button type="submit">Switch Campaign</button>
+    <button type="submit">Switch campaign</button>
   </div>
 
-  <% @questions_and_responses.each do |question, responses| %>
-    <h3><%= @campaign.robo == true ? "Recording" : "Question" %>: <%= question %></h3>
-     <table width="100%" border="0" cellspacing="0" cellpadding="0">
-         <tr>
-           <th>Answer</th>
-           <th>Number</th>
-           <th>Percentage</th>
-         </tr>
-         <% responses.each do |response, stats| %>
-          <tr>
-            <td><%= response %></td>
-            <td><%= @answered_call_stats[question][response][:count] rescue 0 %></td>
-            <td><%= @answered_call_stats[question][response][:percentage] rescue 0 %> %</td>
-          </tr>
-          <% end %>
-       </table>
+	  <% @questions_and_responses.each do |question, responses| %>
+	    <h3><%= @campaign.robo == true ? "Recording" : "Question" %>: <%= question %></h3>
+	     <table>
+	         <tr>
+	           <th>Answer</th>
+	           <th>Number</th>
+	           <th>Percentage</th>
+	         </tr>
+	         <% responses.each do |response, stats| %>
+	          <tr>
+	            <td><%= response %></td>
+	            <td><%= @answered_call_stats[question][response][:count] rescue 0 %></td>
+	            <td><%= @answered_call_stats[question][response][:percentage] rescue 0 %> %</td>
+	          </tr>
+	          <% end %>
+	       </table>
 
-    <%= render :partial => 'shared/date_picker' %>
-  <% end %>
-<% end %>
+		<h3>Date range:</h3>
+	    <%= render :partial => 'shared/date_picker' %>
+	  <% end %>
+	<% end %>
