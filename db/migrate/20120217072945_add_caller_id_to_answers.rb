@@ -1,6 +1,6 @@
 class AddCallerIdToAnswers < ActiveRecord::Migration
   def self.up
-  	add_column :answers, :caller_id, :integer, :null => false
+  	add_column :answers, :caller_id, :integer
   end
 
   def self.down
