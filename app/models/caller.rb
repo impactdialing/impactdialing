@@ -140,7 +140,7 @@ class Caller < ActiveRecord::Base
   end
 
   def answered_call_stats(from, to, campaign)
-    responses = self.answers.within(from, to).for_campaign(campaign).count(
+    responses = self.answers.within(from, to).with_campaign_id(campaign.id).count(
       :joins => [:question, :possible_response],
       :group => ["questions.text", "possible_responses.value"]
     )

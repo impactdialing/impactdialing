@@ -29,7 +29,7 @@ describe Answer do
 
   it "returns all answers for the given campaign" do
     other_answer = Factory(:answer, :voter => voter_4, :campaign => Factory(:campaign), :possible_response => Factory(:possible_response), :question => Factory(:question, :script => Factory(:script)), :created_at => @now+1.day, :caller => caller_2)
-    Answer.for_campaign(campaign).should == [answer_1, answer_2, answer_3, answer_4]
+    Answer.with_campaign_id(campaign.id).should == [answer_1, answer_2, answer_3, answer_4]
   end
 
 end
