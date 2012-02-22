@@ -27,13 +27,9 @@ describe Answer do
     Answer.within(@now, @now).should == [answer_3, answer_4]
   end
 
-  it "returns all answers for the given caller" do
-    Answer.with_caller_id(caller_1.id).should == [answer_1, answer_3]
-  end
-
   it "returns all answers for the given campaign" do
     other_answer = Factory(:answer, :voter => voter_4, :campaign => Factory(:campaign), :possible_response => Factory(:possible_response), :question => Factory(:question, :script => Factory(:script)), :created_at => @now+1.day, :caller => caller_2)
-    Answer.with_campaign_id(campaign.id).should == [answer_1, answer_2, answer_3, answer_4]
+    Answer.for_campaign(campaign).should == [answer_1, answer_2, answer_3, answer_4]
   end
 
 end
