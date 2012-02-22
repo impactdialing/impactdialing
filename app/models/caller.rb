@@ -139,10 +139,10 @@ class Caller < ActiveRecord::Base
     end
   end
 
-  def answered_call_stats(from, to, campaign_id)
-    responses = Answer.within(from, to).with_caller_id(self.id).with_campaign_id(campaign_id).count(
+  def answered_call_stats(from, to, campaign)
+    responses = self.answers.within(from, to).with_campaign_id(campaign.id).count(
       :joins => [:question, :possible_response],
-      :group => ["questions.text", "possible_responses.value"],
+      :group => ["questions.text", "possible_responses.value"]
     )
     responses.inject({}) do |acc, curr|
       question, answer = curr.first

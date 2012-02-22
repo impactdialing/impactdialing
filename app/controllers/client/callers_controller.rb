@@ -81,9 +81,8 @@ module Client
     def call_details
       @caller = Caller.find(params[:id])
       @campaigns = account.campaigns.manual.for_caller(@caller)
-      @campaign = params[:campaign_id] ? @campaigns.find { |c| params[:campaign_id] == c.id } : @campaigns.first
-      @questions_and_responses = @campaign.questions_and_responses
-      @answered_call_stats = @caller.answered_call_stats(@from_date, @to_date, @campaign.id)
+      @campaign = @campaigns.find_by_id(params[:campaign_id]) || @campaigns.first
+      @questions_and_responses = @campaign.try(:questions_and_responses) || {}
     end
 
     private

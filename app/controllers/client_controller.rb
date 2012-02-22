@@ -1010,7 +1010,7 @@ class ClientController < ApplicationController
     begin
       if params[:from_date]
         @from_date=Date.strptime(params[:from_date], "%m/%d/%Y")
-        @to_date = Date.strptime(params[:from_date], "%m/%d/%Y")
+        @to_date = Date.strptime(params[:to_date], "%m/%d/%Y")
       else
         firstCall = CallerSession.find_by_campaign_id(@campaign.id,:order=>"id asc", :limit=>"1")
         lastCall = CallerSession.find_by_campaign_id(@campaign.id,:order=>"id desc", :limit=>"1")
