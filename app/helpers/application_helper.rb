@@ -110,7 +110,7 @@ module ApplicationHelper
   end
 
   def pusher_js
-    javascript_include_tag("https://d3ds63zw57jt09.cloudfront.net/1.9/pusher.min.js")
+    javascript_include_tag("https://d3dy5gmtp8yhk7.cloudfront.net/1.11/pusher.min.js")
   end
 
 
