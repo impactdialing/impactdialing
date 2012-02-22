@@ -20,6 +20,8 @@ class Campaign < ActiveRecord::Base
   belongs_to :account
   belongs_to :recording
 
+  delegate :questions_and_responses, :to => :script
+
   scope :robo, :conditions => {:robo => true}
   scope :manual, :conditions => {:robo => false}
   scope :for_account, lambda { |account| {:conditions => ["account_id = ?", account.id]} }
@@ -29,6 +31,7 @@ class Campaign < ActiveRecord::Base
       :conditions => {"caller_sessions.on_call" => true}
   }
   scope :using_web_ui, :conditions => {:use_web_ui => true}
+  scope :for_caller, lambda { |caller| {:include => [:caller_sessions], :conditions => {"caller_sessions.caller_id" => caller.id}}}
 
   before_create :create_uniq_pin
 

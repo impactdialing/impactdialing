@@ -24,7 +24,6 @@
         <td>Transfers</td>
         <td><%= @campaign.transfer_time(@from_date, @to_date) %></td>
       </tr>
-
       <tr>
         <td>Voicemails</td>
         <td><%= @campaign.voicemail_time(@from_date, @to_date) %></td>
@@ -37,4 +36,7 @@
   </div>
 </div>
 
-<%= render :partial => 'shared/date_picker', :locals => {:url => usage_client_reports_path(:id => params[:id])} %>
+<% form_tag(usage_client_reports_path(:id => params[:id]), :method => :get) do %>
+  <input type="hidden" name="id" value="<%= params[:id] %>" />
+  <%= render :partial => 'shared/date_picker' %>
+<% end %>
