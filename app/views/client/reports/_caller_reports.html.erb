@@ -7,8 +7,8 @@
   <% @callers.each do |caller| %>
       <tr>
         <td><%= caller.identity_name %></td>
-        <td><%= link_to("Usage", usage_client_caller_path(caller)) %></td>
         <td><%= link_to("Answered", call_details_client_caller_path(caller)) %></td>
+        <td><%= link_to("Usage", usage_client_caller_path(caller)) %></td>
       </tr>
   <% end %>
 </table>
