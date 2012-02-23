@@ -1,10 +1,15 @@
 class Caller < ActiveRecord::Base
   include Rails.application.routes.url_helpers
   include Deletable
+  include ApplicationHelper::TimeUtils
+  include ReportsHelper::Utilization
+  include ReportsHelper::Billing
   validates_format_of :email, :allow_blank => true, :with => /^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i, :message => "Invalid email"
   belongs_to :campaign
   belongs_to :account
   has_many :caller_sessions
+  has_many :call_attempts
+  has_many :answers
   before_create :create_uniq_pin
   validates_uniqueness_of :email, :allow_nil => true
   validates_presence_of :campaign_id
@@ -131,6 +136,20 @@ class Caller < ActiveRecord::Base
           caller_session.publish('caller_connected_dialer', {})
         end
       end
+    end
+  end
+
+  def answered_call_stats(from, to, campaign)
+    responses = self.answers.within(from, to).with_campaign_id(campaign.id).count(
+      :joins => [:question, :possible_response],
+      :group => ["questions.text", "possible_responses.value"]
+    )
+    responses.inject({}) do |acc, curr|
+      question, answer = curr.first
+      total_for_question = responses.select { |r| r.first == question }.values.reduce(:+)
+      acc[question] = {:total => {:count => total_for_question, :percentage => 100 }} unless acc[question]
+      acc[question][answer] = {:count => curr.last, :percentage => curr.last / total_for_question.to_f * 100 }
+      acc
     end
   end
 

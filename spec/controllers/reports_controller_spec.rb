@@ -2,7 +2,8 @@ require "spec_helper"
 
 describe ReportsController do
   context 'when logged in' do
-    let(:user) { Factory(:user) }
+    let(:account) { Factory(:account)}
+    let(:user) { Factory(:user, :account => account) }
 
     before(:each) do
       login_as user

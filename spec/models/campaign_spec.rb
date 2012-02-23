@@ -496,6 +496,14 @@ describe "predictive_dialer" do
       campaign.voter_lists.should == [active_voterlist]
     end
 
+    it "returns campaigns having a session with the given caller" do
+      caller = Factory(:caller)
+      campaign = Factory(:campaign)
+      Factory(:campaign)
+      Factory(:caller_session, :campaign => campaign, :caller => caller)
+      Campaign.for_caller(caller).should == [campaign]
+    end
+
     describe "next voter to be dialed" do
 
       it "returns priority  not called voter first" do
