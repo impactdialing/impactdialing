@@ -37,6 +37,43 @@ describe "predictive_dialer" do
      voter = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list, :account => account)
      campaign.choose_voters_to_dial(1).should == [voter]
    end
+   
+   it "should properly choose limit of voters to dial" do
+     account = Factory(:account, :activated => true)
+     campaign = Factory(:campaign, :account => account, :caller_id => "0123456789", :caller_id_verified => true)
+     campaign.caller_id_verified=true
+     voter_list = Factory(:voter_list, :campaign => campaign, :active => true)
+     priority_voter = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list, :account => account, priority: "1")
+     scheduled_voter = Factory(:voter, :status => CallAttempt::Status::SCHEDULED, :last_call_attempt_time => 2.hours.ago, :scheduled_date => 1.minute.from_now, :campaign => campaign)
+     voter = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list, :account => account)
+     campaign.choose_voters_to_dial(1).should == [priority_voter]
+   end
+   
+   it "should properly choose limit of voters to dial for scheduled and priority" do
+     account = Factory(:account, :activated => true)
+     campaign = Factory(:campaign, :account => account, :caller_id => "0123456789", :caller_id_verified => true)
+     campaign.caller_id_verified=true
+     voter_list = Factory(:voter_list, :campaign => campaign, :active => true)
+     priority_voter = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list, :account => account, priority: "1")
+     scheduled_voter = Factory(:voter, :status => CallAttempt::Status::SCHEDULED, :last_call_attempt_time => 2.hours.ago, :scheduled_date => 1.minute.from_now, :campaign => campaign)
+     voter = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list, :account => account)
+     campaign.choose_voters_to_dial(2).should == [priority_voter,scheduled_voter]
+   end
+   
+   it "should properly choose limit of voters to dial for scheduled and priority and voters to dial" do
+     account = Factory(:account, :activated => true)
+     campaign = Factory(:campaign, :account => account, :caller_id => "0123456789", :caller_id_verified => true)
+     campaign.caller_id_verified=true
+     voter_list = Factory(:voter_list, :campaign => campaign, :active => true)
+     priority_voter = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list, :account => account, priority: "1")
+     scheduled_voter = Factory(:voter, :status => CallAttempt::Status::SCHEDULED, :last_call_attempt_time => 2.hours.ago, :scheduled_date => 1.minute.from_now, :campaign => campaign)
+     voter = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list, :account => account)
+     voter1 = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list, :account => account)
+     campaign.choose_voters_to_dial(3).should == [priority_voter,scheduled_voter,voter]
+   end
+   
+   
+   
 
   it "dials voters off enabled lists only" do
      campaign = Factory(:campaign)

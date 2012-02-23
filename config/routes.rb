@@ -128,7 +128,7 @@ ImpactDialing::Application.routes.draw do
       end
     end
     resource :account, :only => [:show, :create]
-    resources :reports, :protocol => PROTOCOL do
+    resources :reports do
       collection do
         get :usage
         get :answer
