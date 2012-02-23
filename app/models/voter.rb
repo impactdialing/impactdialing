@@ -116,7 +116,6 @@ class Voter < ActiveRecord::Base
   end
 
   def dial_predictive
-    return if (self.call_attempts.last.try(:call_end).nil? || self.call_attempts.last.try(:call_end) <= Time.now) and !self.call_attempts.blank?
     call_attempt = new_call_attempt(self.campaign.predictive_type)
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
     params = {'FallbackUrl' => TWILIO_ERROR,'StatusCallback' => end_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port), 'Timeout' => campaign.answering_machine_detect ? "30" : "15"}
