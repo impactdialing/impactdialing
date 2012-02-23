@@ -1,4 +1,4 @@
-<h3><%= "#{@campaign.name} Answered Calls Report" %></h3>
+<h3><%= "#{@campaign.try(:name)} Answered Calls Report" %></h3>
   <% if @campaign.nil? %>
   <p><%= "This caller has not called this campaign." %></p>
   <% else %>
