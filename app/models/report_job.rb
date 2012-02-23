@@ -13,7 +13,8 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
     )
 
     FileUtils.mkdir_p(Rails.root.join("tmp"))
-    filename = "#{Rails.root}/tmp/report_#{campaign.name}.csv"
+    campaign_name = campaign.name.gsub!(/[^\w\.\-]/, '_')
+    filename = "#{Rails.root}/tmp/report_#{campaign_name}.csv"
     puts @report
     report_csv = @report.split("\n")
     file = File.open(filename, "w")
