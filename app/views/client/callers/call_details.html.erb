@@ -1,16 +1,16 @@
-<% if @campaign.nil? %>
-    <h3><%= "No data for this caller" %></h3>
-<% else %>
-    <h3><%= "#{@campaign.name} Answered Calls Report" %></h3>
-    <%= form_tag(call_details_client_caller_path(:id => params[:id]), :method => :get) do %>
+<h3><%= "#{@campaign.name} Answered Calls Report" %></h3>
+  <% if @campaign.nil? %>
+  <p><%= "This caller has not called this campaign." %></p>
+  <% else %>
+    <p><%= form_tag(call_details_client_caller_path(:id => params[:id]), :method => :get) do %>
         <%= select_tag 'campaign_id', options_from_collection_for_select(@campaigns, 'id', 'name', @campaign.id) %>
-        <div class="buttons">
-          <button type="submit">Switch Campaign</button>
+        <div class="buttons"></p>
+          <button type="submit">Switch campaign</button>
         </div>
         <% @answered_call_stats = @caller.answered_call_stats(@from_date, @to_date, @campaign) %>
         <% @questions_and_responses.each do |question, responses| %>
             <h3><%= @campaign.robo == true ? "Recording" : "Question" %>: <%= question %></h3>
-            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+            <table>
               <tr>
                 <th>Answer</th>
                 <th>Number</th>
