@@ -225,16 +225,6 @@ describe Voter do
     end
   end
 
-  it "it should not dial a voter if a call_attempt is underway" do
-    campaign = Factory(:campaign, :robo => false, :predictive_type => 'algorithm1', answering_machine_detect: true)
-    voter = Factory(:voter, :campaign => campaign)
-    time_now = Time.now
-    Time.stub(:now).and_return(Time.now)
-    call_just_completed = Factory(:call_attempt, :voter => voter, :status => CallAttempt::Status::INPROGRESS, :call_end => Time.now)
-    voter.dial_predictive.should be_nil
-    ongoing_call = Factory(:call_attempt, :voter => voter, :status => CallAttempt::Status::INPROGRESS)
-    voter.dial_predictive.should be_nil
-  end
 
   describe "predictive dialing" do
     let(:campaign) { Factory(:campaign, :robo => false, :predictive_type => 'algorithm1', answering_machine_detect: true) }
