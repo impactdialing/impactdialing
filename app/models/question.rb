@@ -13,7 +13,7 @@ class Question < ActiveRecord::Base
   end
 
   def answered_within(from_date, to_date, campaign_id)
-    answers.within(from_date, to_date, campaign_id)
+    answers.within(from_date, to_date).with_campaign_id(campaign_id)
   end
 
   def read(caller_session)

@@ -29,6 +29,7 @@ ActiveRecord::Schema.define(:version => 20120222085859) do
     t.integer  "possible_response_id", :null => false
     t.datetime "created_at"
     t.integer  "campaign_id"
+    t.integer  "caller_id"
   end
 
   add_index "answers", ["voter_id", "question_id"], :name => "index_answers_on_voter_id_and_question_id"

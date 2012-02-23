@@ -7,30 +7,7 @@
       using a microphone on their computer.</p>
 
     <table>
-      <tr>
-        <th>Utilization (1-second increments)</th>
-        <th>Minutes</th>
-      </tr>
-      <tr>
-        <td>Logged in</td>
-        <td><%= @campaign.time_logged_in(@from_date, @to_date) %></td>
-      </tr>
-      <tr>
-        <td>On call</td>
-        <td><%= @campaign.time_on_call(@from_date, @to_date) %></td>
-      </tr>
-      <tr>
-        <td>Wrap up</td>
-        <td><%= @campaign.time_in_wrapup(@from_date, @to_date) %></td>
-      </tr>
-      <tr>
-        <td>On hold</td>
-        <td><%= @campaign.time_onhold(@from_date, @to_date) %></td>
-      </tr>
-      <tr>
-        <td colspan="2">&nbsp;</td>
-      </tr>
-
+      <%= render :partial => 'shared/utilization', :locals => {:report => @campaign} %>
       <tr>
         <th>Billable time (1-minute increments)</th>
         <th>Minutes</th>
@@ -47,7 +24,6 @@
         <td>Transfers</td>
         <td><%= @campaign.transfer_time(@from_date, @to_date) %></td>
       </tr>
-
       <tr>
         <td>Voicemails</td>
         <td><%= @campaign.voicemail_time(@from_date, @to_date) %></td>
@@ -62,20 +38,6 @@
 
 <h3>Date range:</h3>
 <% form_tag(usage_client_reports_url(:id => params[:id]), :method => :get) do %>
-    <table>
-      <%= hidden_field_tag :id, @campaign.id %>
-      <tr>
-        <td>From:</td>
-        <td> <%= unobtrusive_date_text_picker_tag :from_date, @from_date %> </td>
-      </tr>
-      <tr>
-        <td>To:</td>
-        <td>
-          <%= unobtrusive_date_text_picker_tag :to_date, @to_date %>
-        </td>
-      </tr>
-    </table>
-    <div class="buttons">
-      <button type="submit">Update</button>
-    </div>
+  <input type="hidden" name="id" value="<%= params[:id] %>" />
+  <%= render :partial => 'shared/date_picker' %>
 <% end %>

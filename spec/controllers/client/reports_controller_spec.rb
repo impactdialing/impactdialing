@@ -1,10 +1,21 @@
 require "spec_helper"
 
 describe Client::ReportsController do
-  let(:user) { Factory(:user) }
+  let(:account) { Factory(:account)}
+  let(:user) { Factory(:user, :account => account) }
 
   before(:each) do
     login_as user
+  end
+
+  describe "caller reports" do
+
+    it "lists all callers" do
+      3.times{Factory(:caller, :account => account)}
+      get :index
+      assigns(:callers).should == account.callers
+    end
+
   end
 
   describe 'usage report' do

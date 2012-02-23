@@ -446,13 +446,14 @@ describe Voter do
   describe 'answers' do
     let(:script) { Factory(:script, :robo => false) }
     let(:campaign) { Factory(:campaign, :script => script) }
-    let(:voter) { Factory(:voter, :campaign => campaign) }
+    let(:voter) { Factory(:voter, :campaign => campaign, :caller_session => Factory(:caller_session, :caller => Factory(:caller))) }
     let(:question) { Factory(:question, :script => script) }
     let(:response) { Factory(:possible_response, :question => question) }
+    let(:call_attempt) { Factory(:call_attempt, :caller => Factory(:caller)) }
 
     it "captures call responses" do
       response_params = {"voter_id"=>voter.id, "question"=>{question.id=>response.id}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}
-      voter.capture(response_params)
+      voter.capture(response_params, call_attempt)
       voter.result_date.should_not be_nil
       voter.answers.size.should == 1
     end
@@ -460,7 +461,7 @@ describe Voter do
     it "puts voter back in the dial list if a retry response is detected" do
       another_response = Factory(:possible_response, :question => Factory(:question, :script => script), :retry => true)
       response_params = {"voter_id"=>voter.id, "question"=>{question.id=>response.id, another_response.question.id=>another_response.id}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}
-      voter.capture(response_params)
+      voter.capture(response_params, call_attempt)
       voter.answers.size.should == 2
       voter.reload.status.should == Voter::Status::RETRY
       Voter.to_be_dialed.should == [voter]
@@ -471,12 +472,12 @@ describe Voter do
       retry_response = Factory(:possible_response, :question => question, :retry => true)
       valid_response = Factory(:possible_response, :question => question)
       response_params = {"voter_id"=>voter.id, "question"=>{response.question.id=>response.id, retry_response.question.id=> retry_response.id}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}
-      voter.capture(response_params)
+      voter.capture(response_params, call_attempt)
       voter.answers.size.should == 2
       voter.reload.status.should == Voter::Status::RETRY
       Voter.to_be_dialed.should == [voter]
       response_params_again = {"voter_id"=>voter.id, "question"=>{response.question.id=>response.id, valid_response.question.id=> valid_response.id}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}
-      voter.capture(response_params_again)
+      voter.capture(response_params_again, call_attempt)
       voter.reload.answers.size.should == 2
     end
 
@@ -495,29 +496,38 @@ describe Voter do
       voter.unanswered_questions.should == []
     end
 
+    it "associates the caller with the answer" do
+      caller = Factory(:caller)
+      session = Factory(:caller_session, :caller => caller)
+      voter = Factory(:voter, :campaign => campaign, :last_call_attempt => Factory(:call_attempt, :caller_session => session))
+      Factory(:possible_response, :question => question, :keypad => 1, :value => "response1")
+      voter.answer(question, "1", session).caller_id.should == caller.id
+    end
+
     describe "phones only" do
       let(:script) { Factory(:script) }
       let(:campaign) { Factory(:campaign, :script => script) }
       let(:voter) { Factory(:voter, :campaign => campaign, :last_call_attempt => Factory(:call_attempt, :caller_session => Factory(:caller_session))) }
       let(:question) { Factory(:question, :script => script) }
+      let(:session) { Factory(:caller_session, :caller => Factory(:caller)) }
 
       it "captures a voter response" do
         Factory(:possible_response, :question => question, :keypad => 1, :value => "response1")
-        voter.answer(question, "1").should == voter.answers.first
+        voter.answer(question, "1", session).should == voter.answers.first
         voter.answers.size.should == 1
       end
 
       it "rejects an incorrect a voter response" do
         Factory(:possible_response, :question => question, :keypad => 1, :value => "response1")
-        voter.answer(question, "2").should == nil
+        voter.answer(question, "2", session).should == nil
         voter.answers.size.should == 0
       end
 
       it "recaptures a voter response" do
-        voter.answer(question, "1")
+        voter.answer(question, "1", session)
         Factory(:possible_response, :question => question, :keypad => 1, :value => "response1")
         Factory(:possible_response, :question => question, :keypad => 2, :value => "response2")
-        voter.answer(question, "2").should == voter.answers.first
+        voter.answer(question, "2", session).should == voter.answers.first
         voter.answers.size.should == 1
       end
 
@@ -529,20 +539,21 @@ describe Voter do
     let(:script) { Factory(:script, :robo => false) }
     let(:note1) { Factory(:note, note: "Question1", script: script) }
     let(:note2) { Factory(:note, note: "Question2", script: script) }
+    let(:call_attempt) { Factory(:call_attempt, :caller => Factory(:caller)) }
 
     it "captures call notes" do
       response_params = {"voter_id"=>voter.id, "notes"=>{note1.id=>"tell", note2.id=>"no"}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}
-      voter.capture(response_params)
+      voter.capture(response_params, call_attempt)
       voter.note_responses.size.should == 2
     end
 
     it "override old note" do
       response_params = {"voter_id"=>voter.id, "notes"=>{note1.id=>"tell"}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}
-      voter.capture(response_params)
+      voter.capture(response_params, call_attempt)
       voter.note_responses.first eq('tell')
 
       response_params = {"voter_id"=>voter.id, "notes"=>{note1.id=>"say"}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}
-      voter.capture(response_params)
+      voter.capture(response_params, call_attempt)
       voter.note_responses.first eq('say')
     end
   end
@@ -578,5 +589,4 @@ describe Voter do
       voter.skipped_time.should_not be_nil
     end
   end
-
 end
