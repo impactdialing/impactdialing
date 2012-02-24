@@ -55,10 +55,13 @@ class VoterListsController < ClientController
   end
 
   def check_file_uploaded
-    return true if session[:voters_list_upload] && session[:voters_list_upload]["filename"]
-    flash_message(:error, "Please upload the file again.")
-    redirect_to @campaign_path
-    false
+    if session.try(:[], :voters_list_upload).try(:[], "filename").nil?
+      flash_message(:error, "Please upload the file again.")
+      redirect_to @campaign_path
+      return false
+    else
+      return true
+    end
   end
 
   
