@@ -15,7 +15,6 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
     FileUtils.mkdir_p(Rails.root.join("tmp"))
     @campaign_name = "#{campaign.name}_#{Time.now}".gsub!(/[^\w\.\-]/, '_')
     filename = "#{Rails.root}/tmp/report_#{@campaign_name}.csv"
-    puts @report
     report_csv = @report.split("\n")
     file = File.open(filename, "w")
     report_csv.each do |r|
@@ -24,11 +23,10 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
         file.write("\n")
       rescue Exception => e
         puts e
-        puts r
         next
-      end
-      
+      end      
     end
+    file.close    
     AWS::S3::S3Object.store("report_#{@campaign_name}.csv", File.open(filename), "download_reports", :content_type => "text/csv", :access=>:private, :expires_in => 12*60*60)
   end
 
@@ -81,6 +79,9 @@ end
 
 class CallerStrategy < CampaignStrategy
   def csv_header(fields, custom_fields)
+    puts fields
+    puts custom_fields
+    puts "ddddddddddddddddd"
     [fields, custom_fields, "Caller", "Status", "Call start", "Call end", "Attempts", "Recording", @campaign.script.questions.collect { |q| q.text }, @campaign.script.notes.collect { |note| note.note }].flatten.compact
   end
 
@@ -90,7 +91,7 @@ class CallerStrategy < CampaignStrategy
     details = if last_attempt
                 [last_attempt.try(:caller).try(:known_as), voter.status, last_attempt.try(:call_start).try(:in_time_zone, @campaign.time_zone), last_attempt.try(:call_end).try(:in_time_zone, @campaign.time_zone), voter.call_attempts.size, last_attempt.try(:report_recording_url)].flatten
               else
-                [nil, "Not Dialed"]
+                [nil, "Not Dialed","","","",""]
               end
     @campaign.script.questions.each { |q| answers << voter.answers.for(q).first.try(:possible_response).try(:value) }
     @campaign.script.notes.each { |note| notes << voter.note_responses.for(note).last.try(:response) }
