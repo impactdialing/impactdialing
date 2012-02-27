@@ -25,11 +25,11 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
         file.write("\n")
       rescue Exception => e
         puts e
-        puts r
         next
-      end
-      
+      end      
     end
+    file.close
+    
     puts "file contents"
     File.open(filename, 'r') do |f1|  
       while line = f1.gets  
