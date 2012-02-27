@@ -20,6 +20,7 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
     report_csv.each do |r|
       begin
         puts r
+        puts "ddddd"
         file.write(r)
         file.write("\n")
       rescue Exception => e
@@ -28,6 +29,12 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
         next
       end
       
+    end
+    puts "file contents"
+    File.open(filename, 'r') do |f1|  
+      while line = f1.gets  
+        puts line  
+      end  
     end
     AWS::S3::S3Object.store("report_#{@campaign_name}.csv", File.open(filename), "download_reports", :content_type => "text/csv", :access=>:private, :expires_in => 12*60*60)
   end
