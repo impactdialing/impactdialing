@@ -814,5 +814,22 @@ describe "predictive_dialer" do
         @campaign.time_period_exceed?.should == true
       end
     end
+    
+    describe "abandon rate acceptable" do
+      it "should return false if  not acceptable" do
+        campaign = Factory(:campaign, acceptable_abandon_rate: 0.03)
+        10.times { Factory(:call_attempt, :campaign => campaign, :call_start => 40.seconds.ago, call_end: 10.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::SUCCESS) }
+        10.times { Factory(:call_attempt, :campaign => campaign, :call_start => 40.seconds.ago, call_end: 10.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::ABANDONED) }
+        campaign.abandon_rate_acceptable?(campaign.call_attempts).should be_false
+      end
+      it "should return true if  acceptable" do
+        campaign = Factory(:campaign, acceptable_abandon_rate: 0.03)
+        40.times { Factory(:call_attempt, :campaign => campaign, :call_start => 40.seconds.ago, call_end: 10.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::SUCCESS) }
+        1.times { Factory(:call_attempt, :campaign => campaign, :call_start => 40.seconds.ago, call_end: 10.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::ABANDONED) }
+        campaign.abandon_rate_acceptable?(campaign.call_attempts).should be_true  
+      end
+      
+      
+    end
 
 end
