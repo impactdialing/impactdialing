@@ -81,6 +81,9 @@ end
 
 class CallerStrategy < CampaignStrategy
   def csv_header(fields, custom_fields)
+    puts fields
+    puts custom_fields
+    puts "ddddddddddddddddd"
     [fields, custom_fields, "Caller", "Status", "Call start", "Call end", "Attempts", "Recording", @campaign.script.questions.collect { |q| q.text }, @campaign.script.notes.collect { |note| note.note }].flatten.compact
   end
 
