@@ -43,6 +43,7 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
       end
     end
     save_report
+    
   end
 
   def csv_for(voter)
