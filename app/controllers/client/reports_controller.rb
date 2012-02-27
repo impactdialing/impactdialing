@@ -9,7 +9,7 @@ module Client
 
     def index
       @campaigns = params[:id].blank? ? account.campaigns.manual : Campaign.find(params[:id])
-      @callers = account.callers
+      @callers = account.callers.active
     end
     
     def dials
