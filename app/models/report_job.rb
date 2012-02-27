@@ -90,7 +90,7 @@ class CallerStrategy < CampaignStrategy
     details = if last_attempt
                 [last_attempt.try(:caller).try(:known_as), voter.status, last_attempt.try(:call_start).try(:in_time_zone, @campaign.time_zone), last_attempt.try(:call_end).try(:in_time_zone, @campaign.time_zone), voter.call_attempts.size, last_attempt.try(:report_recording_url)].flatten
               else
-                [nil, "Not Dialed"]
+                [nil, "Not Dialed","","","",""]
               end
     @campaign.script.questions.each { |q| answers << voter.answers.for(q).first.try(:possible_response).try(:value) }
     @campaign.script.notes.each { |note| notes << voter.note_responses.for(note).last.try(:response) }
