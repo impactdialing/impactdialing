@@ -11,9 +11,9 @@ describe Client::ReportsController do
   describe "caller reports" do
 
     it "lists all callers" do
-      3.times{Factory(:caller, :account => account)}
+      3.times{Factory(:caller, :account => account, active: true)}
       get :index
-      assigns(:callers).should == account.callers
+      assigns(:callers).should == account.callers.active
     end
 
   end
