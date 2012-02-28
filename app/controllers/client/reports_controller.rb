@@ -15,7 +15,7 @@ module Client
     def dials
       set_date_range
       @total_voters_count = @campaign.all_voters.count
-      dialed_voters_ids = Voter.find_all(:select=>"id",:conditions => [ "campaign_id = ? and last_call_attempt_time between  ? and ?", @campaign.id, @from_date, (@to_date + 1.day)])
+      dialed_voters_ids = Voter.select(:id ,:conditions => [ "campaign_id = ? and last_call_attempt_time between  ? and ?", @campaign.id, @from_date, (@to_date + 1.day)])
       unless dialed_voters_ids.empty?
         @answered = @campaign.answered_count(dialed_voters_ids)
         @no_answer = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status(CallAttempt::Status::NOANSWER).count
