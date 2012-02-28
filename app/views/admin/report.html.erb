@@ -20,49 +20,26 @@ Report Date Range:
 <br/>
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
   <tr>
-    <th>Campaign ID</th>
-    <th>Campaign Name</th>
-    <th>Account Id</th>
-    <th>Agent Call Count</th>
-    <th>Agent Minutes</th>
-    <th>Agent Twilio Cost</th>
-    <th>Call Count</th>
-    <th>Call Minutes</th>
-    <th>Call Twilio Cost</th>
-    <th>Total Minutes</th>
-    <th>Total Twilio Cost</th>
+    <th>Account ID</th>
+    <th>Account Email</th>
+    <th>Callers</th>
+    <th>Calls</th>
+    <th>Transfers</th>
+    <th>Total</th>
   </tr>
 
   <% @output.each do |r| %>
-    <% campaign=r["campaign"] %>
+    <% account=r["account"] %>
     <% calls=r["calls"] %>
     <% sessions=r["sessions"] %>
-    <%
-      agent_mins=0
-      agent_twilio=0
-      call_mins=0
-      call_twilio=0
-    %>
+    <% transfers=r["transfers"] %>
     <tr class="<%= cycle("odd","even") %>">
-      <td><%= campaign[0] %></td>
-      <td><%= campaign[1] %></td>
-      <td><%= campaign[2] %></td>
-      <% sessions.each do |c| %>
-        <% agent_mins=c[1] %>
-        <% agent_twilio=c[2] %>
-        <td><%= c[0] %></td>
-        <td><%= agent_mins %></td>
-        <td><%=  number_to_currency agent_twilio %></td>
-      <% end %>
-      <% calls.each do |c| %>
-        <% call_mins=c[1] %>
-        <% call_twilio=c[2] %>
-        <td><%= c[0] %></td>
-        <td><%= call_mins %></td>
-        <td><%=  number_to_currency call_twilio %></td>
-      <% end %>
-      <td><%= agent_mins.to_i +  call_mins.to_i%></td>
-      <td><%= number_to_currency(agent_twilio.to_f +  call_twilio.to_f)%></td>
+      <td><%= account.id %></td>
+      <td><%= account.users.first.email %></td>
+      <td><%= sessions %></td>
+      <td><%= calls %></td>
+      <td><%= transfers %></td>
+	  <td><%= sessions + calls + transfers %></td>
     </tr>
   <% end %>
 </table>
