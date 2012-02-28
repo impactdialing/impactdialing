@@ -15,7 +15,7 @@ module Client
     def dials
       set_date_range
       @total_voters_count = @campaign.all_voters.count
-      dialed_voters_ids = Voter.find(:all, :select => 'id' ,:conditions => [ "campaign_id = ? and last_call_attempt_time between  ? and ?", @campaign.id, @from_date, (@to_date + 1.day)])
+      dialed_voters_ids = Voter.find(:all, :select => 'id' ,:conditions => [ "(voters.campaign_id = ?) AND (last_call_attempt_time BETWEEN  ? AND ?) ", @campaign.id, @from_date, (@to_date + 1.day)])
       puts "dddddddd"
       puts dialed_voters_ids
       unless dialed_voters_ids.empty?
