@@ -54,6 +54,10 @@ describe Caller do
     end.response
   end
 
+  it "redirects to hold call" do
+    Caller.hold.should == Twilio::Verb.new { |v| v.play("#{APP_URL}/wav/hold.mp3"); v.redirect(hold_call_path(:host => Settings.host, :port => Settings.port), :method => "GET")}.response
+  end
+
   it "is known as the name unless blank" do
     name, mail = 'name', "mail@mail.com"
     web_ui_caller = Factory(:caller, :name => '', :email => mail)

@@ -11,9 +11,9 @@ describe Client::ReportsController do
   describe "caller reports" do
 
     it "lists all callers" do
-      3.times{Factory(:caller, :account => account)}
+      3.times{Factory(:caller, :account => account, active: true)}
       get :index
-      assigns(:callers).should == account.callers
+      assigns(:callers).should == account.callers.active
     end
 
   end
@@ -98,7 +98,7 @@ describe Client::ReportsController do
       campaign = Factory(:campaign, script: Factory(:script))
       Delayed::Job.should_receive(:enqueue)
       get :download, :campaign_id => campaign.id, format: 'csv'
-      response.should redirect_to 'https://test.host/client/reports'
+      response.should redirect_to 'http://test.host/client/reports'
     end
 
     it "sets the default date range according to the campaign's time zone" do

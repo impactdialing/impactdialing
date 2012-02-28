@@ -29,7 +29,7 @@ class Voter < ActiveRecord::Base
 
   scope :by_status, lambda { |status| where(:status => status) }
   scope :active, where(:active => true)
-  scope :yet_to_call, enabled.where(:call_back => false).where('status not in (?)', [CallAttempt::Status::INPROGRESS, CallAttempt::Status::RINGING, CallAttempt::Status::READY, CallAttempt::Status::SUCCESS])
+  scope :yet_to_call, enabled.where(:call_back => false).where('status not in (?) and priority is null', [CallAttempt::Status::INPROGRESS, CallAttempt::Status::RINGING, CallAttempt::Status::READY, CallAttempt::Status::SUCCESS])
   scope :last_call_attempt_before_recycle_rate, lambda { |recycle_rate| where('last_call_attempt_time is null or last_call_attempt_time < ? ', recycle_rate.hours.ago) }
   scope :to_be_dialed, yet_to_call.order(:last_call_attempt_time)
   scope :randomly, order('rand()')
@@ -116,7 +116,6 @@ class Voter < ActiveRecord::Base
   end
 
   def dial_predictive
-    return if (self.call_attempts.last.try(:call_end).nil? || self.call_attempts.last.try(:call_end) <= Time.now) and !self.call_attempts.blank?
     call_attempt = new_call_attempt(self.campaign.predictive_type)
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
     params = {'FallbackUrl' => TWILIO_ERROR,'StatusCallback' => end_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port), 'Timeout' => campaign.answering_machine_detect ? "30" : "15"}

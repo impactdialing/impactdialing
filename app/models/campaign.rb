@@ -353,7 +353,7 @@ class Campaign < ActiveRecord::Base
   end
 
    def answered_count(dialed_voters_ids)
-     answers.where('voter_id in (?)', dialed_voters_ids).group('voter_id').length
+     answers.where('voter_id in (?)', dialed_voters_ids).group('voter_id').size
    end
 
 
@@ -467,7 +467,8 @@ class Campaign < ActiveRecord::Base
     scheduled_voters = all_voters.scheduled.limit(num_voters)
     num_voters_to_call = (num_voters - (priority_voters.size + scheduled_voters.size))
     limit_voters = num_voters_to_call <= 0 ? 0 : num_voters_to_call
-    return priority_voters + scheduled_voters + all_voters.to_be_dialed.without(account.blocked_numbers.for_campaign(self).map(&:number)).limit(limit_voters)
+    voters =  priority_voters + scheduled_voters + all_voters.to_be_dialed.without(account.blocked_numbers.for_campaign(self).map(&:number)).limit(limit_voters)
+    voters[0..num_voters-1]
   end
 
   def ratio_dial?
@@ -615,16 +616,16 @@ class Campaign < ActiveRecord::Base
     results
   end
 
-  def abandon_rate_acceptable?
-    abandon_count = call_attempts.with_status(CallAttempt::Status::ABANDONED).size
-    abandon_rate = abandon_count.to_f/call_attempts.size
+  def abandon_rate_acceptable?(dials_made)
+    abandon_count = dials_made.with_status(CallAttempt::Status::ABANDONED).size
+    abandon_rate = abandon_count.to_f/dials_made.size
     abandon_rate < acceptable_abandon_rate
   end
 
   def dial_predictive_simulator
     num_to_call = 0
     dials_made = call_attempts.between(10.minutes.ago, Time.now)
-    if dials_made.size == 0 || !abandon_rate_acceptable?
+    if dials_made.size == 0 || !abandon_rate_acceptable?(dials_made)
       num_to_call= callers_available_for_call.length
     else
       num_to_call= num_to_call_predictive_simulate
