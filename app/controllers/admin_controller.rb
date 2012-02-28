@@ -23,41 +23,40 @@ class AdminController < ApplicationController
 
   def report
     set_report_date_range
-    sql="select distinct ca.campaign_id, name, c.account_id from caller_sessions ca
-      join campaigns c on c.id=ca.campaign_id
-      join accounts a on a.id=c.account_id where
+    sql="select distinct c.account_id from caller_sessions ca
+      join campaigns c on c.id=ca.campaign_id where
       ca.created_at > '#{@from_date.strftime("%Y-%m-%d")}'
       and ca.created_at  < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'
     "
     logger.info sql
-    @campaigns = ActiveRecord::Base.connection.execute(sql)
+    @accounts = ActiveRecord::Base.connection.execute(sql)
+
     @output=[]
-    @campaigns.each do |c|
-      calls_sql="
-      select count(*),  sum(ceil(tDuration/60)), sum(tPrice)
-      from call_attempts ca
-      where
-      ca.created_at > '#{@from_date.strftime("%Y-%m-%d")}'
-      and ca.created_at  < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'
-      and ca.campaign_id=#{c[0]}
-      group by ca.campaign_id"
-      session_sql="
-      select count(*),  sum(ceil(tDuration/60)), sum(tPrice)
-      from caller_sessions ca
-      join campaigns c on c.id=ca.campaign_id
-      join accounts a on a.id=c.account_id
-      where
-      ca.created_at > '#{@from_date.strftime("%Y-%m-%d")}'
-      and ca.created_at  < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'
-      and ca.campaign_id=#{c[0]}
-      group by ca.campaign_id"
-      @calls = ActiveRecord::Base.connection.execute(calls_sql)
-      @sessions = ActiveRecord::Base.connection.execute(session_sql)
-      result={}
-      result["calls"]=@calls
-      result["sessions"]=@sessions
-      result["campaign"]=c
-      @output<< result
+    @accounts.each do |account_id|
+      
+      campaigns=Campaign.where("account_id=?",account_id).map{|c| c.id}
+      if campaigns.length > 0
+        
+        sessions = CallerSession.where("campaign_id in (?) and tCaller is NOT NULL and created_at > '#{@from_date.strftime("%Y-%m-%d")}' and created_at  < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'", campaigns).inject(0) do |sum, call|
+        	sum + (call.tDuration.to_f/60).ceil
+        end
+
+        calls = CallAttempt.where("campaign_id in (?) and created_at > '#{@from_date.strftime("%Y-%m-%d")}' and created_at  < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'", campaigns).inject(0) do |sum, call|
+        	sum + (call.tDuration.to_f/60).ceil
+        end
+
+        transfers = TransferAttempt.where("campaign_id in (?) and created_at > '#{@from_date.strftime("%Y-%m-%d")}' and created_at  < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'", campaigns).inject(0) do |sum, call|
+        	sum + (call.tDuration.to_f/60).ceil
+        end
+
+        result={}
+        result["account"]=Account.find(account_id).first
+        result["calls"]=calls
+        result["sessions"]=sessions
+        result["transfers"]=transfers
+        @output<< result
+
+      end
     end
 
     render :layout=>"client"
@@ -66,8 +65,8 @@ class AdminController < ApplicationController
   def set_report_date_range
     begin
       if params[:from_date]
-        @from_date=Date.parse(params[:from_date])
-        @to_date = Date.parse(params[:to_date])
+        @from_date= Date.strptime params[:from_date], '%m/%d/%Y'
+        @to_date= Date.strptime params[:to_date], '%m/%d/%Y'
       else
         @from_date = 1.month.ago
         @to_date = DateTime.now

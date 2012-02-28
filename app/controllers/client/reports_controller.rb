@@ -14,20 +14,20 @@ module Client
     
     def dials
       set_date_range
-
-      dialed_voters = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date)
       @total_voters_count = @campaign.all_voters.count
-      dialed_voters_ids = dialed_voters.collect{|x| x.id} 
-      if dialed_voters
+      dialed_voters_ids = Voter.find(:all, :select => 'id' ,:conditions => [ "(voters.campaign_id = ?) AND (last_call_attempt_time BETWEEN  ? AND ?) ", @campaign.id, @from_date, (@to_date + 1.day)])
+      puts "dddddddd"
+      puts dialed_voters_ids
+      unless dialed_voters_ids.empty?
         @answered = @campaign.answered_count(dialed_voters_ids)
-        @no_answer = dialed_voters.by_status(CallAttempt::Status::NOANSWER).count
-        @busy_signal = dialed_voters.by_status(CallAttempt::Status::BUSY).count
-        @answering_machine = dialed_voters.by_status(CallAttempt::Status::HANGUP).count
-        @voicemail = dialed_voters.by_status(CallAttempt::Status::VOICEMAIL).count
-        @ringing = dialed_voters.by_status(CallAttempt::Status::RINGING).count
-        @abandoned = dialed_voters.by_status(CallAttempt::Status::ABANDONED).count
-        @failed = dialed_voters.by_status(CallAttempt::Status::FAILED).count
-        @scheduled = dialed_voters.by_status(CallAttempt::Status::SCHEDULED).count
+        @no_answer = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status(CallAttempt::Status::NOANSWER).count
+        @busy_signal = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status(CallAttempt::Status::BUSY).count
+        @answering_machine = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status(CallAttempt::Status::HANGUP).count
+        @voicemail = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status(CallAttempt::Status::VOICEMAIL).count
+        @ringing = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status(CallAttempt::Status::RINGING).count
+        @abandoned = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status(CallAttempt::Status::ABANDONED).count
+        @failed = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status(CallAttempt::Status::FAILED).count
+        @scheduled = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status(CallAttempt::Status::SCHEDULED).count
       end
       @total = ((@total_voters_count == 0) ? 1 : @total_voters_count)
       @ready_to_dial = params[:from_date] ? 0 : @campaign.all_voters.by_status(CallAttempt::Status::READY).count
