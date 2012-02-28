@@ -37,6 +37,43 @@ describe "predictive_dialer" do
      voter = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list, :account => account)
      campaign.choose_voters_to_dial(1).should == [voter]
    end
+   
+   it "should properly choose limit of voters to dial" do
+     account = Factory(:account, :activated => true)
+     campaign = Factory(:campaign, :account => account, :caller_id => "0123456789", :caller_id_verified => true)
+     campaign.caller_id_verified=true
+     voter_list = Factory(:voter_list, :campaign => campaign, :active => true)
+     priority_voter = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list, :account => account, priority: "1")
+     scheduled_voter = Factory(:voter, :status => CallAttempt::Status::SCHEDULED, :last_call_attempt_time => 2.hours.ago, :scheduled_date => 1.minute.from_now, :campaign => campaign)
+     voter = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list, :account => account)
+     campaign.choose_voters_to_dial(1).should == [priority_voter]
+   end
+   
+   it "should properly choose limit of voters to dial for scheduled and priority" do
+     account = Factory(:account, :activated => true)
+     campaign = Factory(:campaign, :account => account, :caller_id => "0123456789", :caller_id_verified => true)
+     campaign.caller_id_verified=true
+     voter_list = Factory(:voter_list, :campaign => campaign, :active => true)
+     priority_voter = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list, :account => account, priority: "1")
+     scheduled_voter = Factory(:voter, :status => CallAttempt::Status::SCHEDULED, :last_call_attempt_time => 2.hours.ago, :scheduled_date => 1.minute.from_now, :campaign => campaign)
+     voter = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list, :account => account)
+     campaign.choose_voters_to_dial(2).should == [priority_voter,scheduled_voter]
+   end
+   
+   it "should properly choose limit of voters to dial for scheduled and priority and voters to dial" do
+     account = Factory(:account, :activated => true)
+     campaign = Factory(:campaign, :account => account, :caller_id => "0123456789", :caller_id_verified => true)
+     campaign.caller_id_verified=true
+     voter_list = Factory(:voter_list, :campaign => campaign, :active => true)
+     priority_voter = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list, :account => account, priority: "1")
+     scheduled_voter = Factory(:voter, :status => CallAttempt::Status::SCHEDULED, :last_call_attempt_time => 2.hours.ago, :scheduled_date => 1.minute.from_now, :campaign => campaign)
+     voter = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list, :account => account)
+     voter1 = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list, :account => account)
+     campaign.choose_voters_to_dial(3).should == [priority_voter,scheduled_voter,voter]
+   end
+   
+   
+   
 
   it "dials voters off enabled lists only" do
      campaign = Factory(:campaign)
@@ -776,6 +813,23 @@ describe "predictive_dialer" do
         Time.stub!(:now).and_return(t1, t1, t2, t2, t3, t3)
         @campaign.time_period_exceed?.should == true
       end
+    end
+    
+    describe "abandon rate acceptable" do
+      it "should return false if  not acceptable" do
+        campaign = Factory(:campaign, acceptable_abandon_rate: 0.03)
+        10.times { Factory(:call_attempt, :campaign => campaign, :call_start => 40.seconds.ago, call_end: 10.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::SUCCESS) }
+        10.times { Factory(:call_attempt, :campaign => campaign, :call_start => 40.seconds.ago, call_end: 10.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::ABANDONED) }
+        campaign.abandon_rate_acceptable?(campaign.call_attempts).should be_false
+      end
+      it "should return true if  acceptable" do
+        campaign = Factory(:campaign, acceptable_abandon_rate: 0.03)
+        40.times { Factory(:call_attempt, :campaign => campaign, :call_start => 40.seconds.ago, call_end: 10.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::SUCCESS) }
+        1.times { Factory(:call_attempt, :campaign => campaign, :call_start => 40.seconds.ago, call_end: 10.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::ABANDONED) }
+        campaign.abandon_rate_acceptable?(campaign.call_attempts).should be_true  
+      end
+      
+      
     end
 
 end

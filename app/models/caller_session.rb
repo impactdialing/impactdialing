@@ -12,8 +12,8 @@ class CallerSession < ActiveRecord::Base
   scope :held_for_duration, lambda { |minutes| {:conditions => ["hold_time_start <= ?", minutes.ago]} }
   scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
   scope :on_campaign, lambda{|campaign| where("campaign_id = #{campaign.id}")}
-  has_one :voter_in_progress, :class_name => 'Voter', :conditions => {:status => CallAttempt::Status::INPROGRESS }
-  has_one :attempt_in_progress, :class_name => 'CallAttempt', :conditions => {:status => CallAttempt::Status::INPROGRESS }
+  has_one :voter_in_progress, :class_name => 'Voter'
+  has_one :attempt_in_progress, :class_name => 'CallAttempt'
   has_one :moderator
   has_many :transfer_attempts
   unloadable

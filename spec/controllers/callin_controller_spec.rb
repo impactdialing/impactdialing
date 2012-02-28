@@ -42,6 +42,11 @@ describe CallinController do
       caller_session.sid.should == call_sid
     end
 
+    it "asks the user to hold" do
+      get :hold
+      response.body.should == Caller.hold
+    end
+
     it "Prompts on incorrect pin" do
       pin = rand.to_s[2..6]
       Caller.stub(:find_by_pin).and_return(nil)

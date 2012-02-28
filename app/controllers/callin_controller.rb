@@ -28,7 +28,7 @@ class CallinController < ApplicationController
   end
 
   def hold
-    render :template => 'callin/hold.xml.builder', :layout => false
+    render :xml => Caller.hold
   end
 
 end

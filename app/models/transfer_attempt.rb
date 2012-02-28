@@ -45,10 +45,13 @@ class TransferAttempt < ActiveRecord::Base
   def self.aggregate(attempts)
     result = Hash.new
     attempts.each do |attempt|
-      if result[attempt.transfer.id].nil?
-        result[attempt.transfer.id] = {label: attempt.transfer.label, number: 0}
+      unless attempt.transfer.nil?
+        if result[attempt.transfer.id].nil?
+          result[attempt.transfer.id] = {label: attempt.transfer.label, number: 0}
+        end
+        result[attempt.transfer.id][:number] = result[attempt.transfer.id][:number]+1
       end
-      result[attempt.transfer.id][:number] = result[attempt.transfer.id][:number]+1
+
     end
     
     total = 0

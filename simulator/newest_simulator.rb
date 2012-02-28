@@ -87,13 +87,6 @@ def simulator_campaign_base_values(campaign_id, start_time)
   best_wrapup_time = longest_wrapup_time
   expected_wrapup_time = longest_wrapup_time
   
-  puts "Expected Conversation: #{expected_conversation}"
-  puts "Longest Conversation: #{longest_conversation}"    
-  puts "Longest Wrauptime: #{longest_wrapup_time}"    
-  puts "Available Callers: #{caller_statuses.length}"
-  puts "Observed Conversations: #{observed_conversations.length}"
-  puts "Observed Dials: #{observed_dials.length}"
-  puts "Answered Observed Dials: #{observed_dials.count(&:answered?)}"
   
   [expected_conversation, longest_conversation, best_conversation, mean_conversation, expected_wrapup_time, longest_wrapup_time, best_wrapup_time, caller_statuses, observed_conversations, observed_dials]
   
@@ -182,9 +175,6 @@ def simulate(campaign_id)
         finished_conversations.each{|call_attempt| call_attempt.counter += 1}
         t += 1     
       
-        puts "Number of Available Caller: #{available_callers}"                        
-        puts "Number of Active Dials: #{ringing_lines}"
-        puts "Dials to make: #{dials_to_make}"
      end
    
      finished_conversations_answered_count = finished_conversations.count(&:answered?)
@@ -201,8 +191,6 @@ def simulate(campaign_id)
      end   
 
      answer_ratio =  observed_dials.size  / observed_dials.count(&:answered?)
-     puts "Dials Needed: #{dials_needed}"
-     puts "Answer ratio: #{answer_ratio}"
     if outer_loop == 0
       dials_needed += (answer_ratio - 1)/ increment
     end
@@ -222,9 +210,6 @@ def simulate(campaign_id)
     expected_wrapup_time = best_wrapup_time
     outer_loop += 1
  end
- puts "Best Dials: #{best_dials}"
- puts "Best Conversation: #{best_conversation}"
- puts "Longest Conversation: #{longest_conversation}"
  SimulatedValues.find_or_create_by_campaign_id(campaign_id).update_attributes(best_dials: best_dials, best_conversation: best_conversation, longest_conversation: longest_conversation, best_wrapup_time: best_wrapup_time)
 end 
 
