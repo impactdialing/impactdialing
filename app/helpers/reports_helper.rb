@@ -26,7 +26,7 @@ module ReportsHelper
 
   module Billing
     def caller_time(from,to)
-      self.caller_sessions.between(from, to + 1.day).where("tCaller is NOT NULL").sum('ceil(TIMESTAMPDIFF(SECOND ,starttime,endtime)/60)').to_i
+      self.caller_sessions.between(from, to + 1.day).sum('ceil(TIMESTAMPDIFF(SECOND ,starttime,endtime)/60)').to_i
     end
 
     def lead_time(from, to)
