@@ -353,7 +353,7 @@ class Campaign < ActiveRecord::Base
   end
 
    def answered_count(dialed_voters_ids)
-     answers.where('voter_id in (?)', dialed_voters_ids).group('voter_id').count
+     answers.count(:voter_id, :distinct => true, :conditions=> 'voter_id in (?)',dialed_voters_ids)
    end
 
 
