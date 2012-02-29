@@ -173,7 +173,6 @@ function disconnect_caller() {
             success : function(response) {
                 if (FlashDetect.installed && flash_supported())
                     $("#start_calling").show();
-                // pushes 'calling_voter'' event to browsers
             }
         })
     }else{
@@ -288,6 +287,7 @@ function subscribe(session_key) {
     channel = pusher.subscribe(session_key);
     console.log(channel)
 
+	pusher.connection.bind('connected', function() {
     channel.bind('caller_connected', function(data) {
         hide_all_actions();
         $('#browserTestContainer').hide();
@@ -403,13 +403,6 @@ function subscribe(session_key) {
 	        
 		}			
     });
-
-
-
-
-
-
-
 
 
     channel.bind('caller_disconnected', function(data) {
@@ -533,5 +526,5 @@ function subscribe(session_key) {
         $('#transfer_type').val('');
     }
 
-
+});
 }
