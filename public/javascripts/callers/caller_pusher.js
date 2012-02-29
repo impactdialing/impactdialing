@@ -173,7 +173,6 @@ function disconnect_caller() {
             success : function(response) {
                 if (FlashDetect.installed && flash_supported())
                     $("#start_calling").show();
-					pusher.disconnect();
                 // pushes 'calling_voter'' event to browsers
             }
         })
