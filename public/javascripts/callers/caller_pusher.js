@@ -287,7 +287,7 @@ function subscribe(session_key) {
     channel = pusher.subscribe(session_key);
     console.log(channel)
 
-	pusher.connection.bind('subscription_succeeded', function() {
+
     channel.bind('caller_connected', function(data) {
         hide_all_actions();
         $('#browserTestContainer').hide();
@@ -526,5 +526,4 @@ function subscribe(session_key) {
         $('#transfer_type').val('');
     }
 
-});
 }
