@@ -173,6 +173,7 @@ function disconnect_caller() {
             success : function(response) {
                 if (FlashDetect.installed && flash_supported())
                     $("#start_calling").show();
+					pusher.disconnect();
                 // pushes 'calling_voter'' event to browsers
             }
         })
@@ -287,7 +288,6 @@ function set_transfer_panel(data) {
 function subscribe(session_key) {
     channel = pusher.subscribe(session_key);
     console.log(channel)
-
 
     channel.bind('caller_connected', function(data) {
         hide_all_actions();
