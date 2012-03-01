@@ -83,11 +83,11 @@
           <notes>
             <%= f.fields_for :notes do |n| %>
               <fieldset>
-                <legend>Note</legend>
+                <legend>Text Field</legend>
                 <nested_type type = 'notes'></nested_type>
                 <%= n.text_field :note %>
                 <p class = "actions">
-                  <%= n.link_to_remove " Delete this note", :class => "action secondary", :type => "notes"  %>
+                  <%= n.link_to_remove " Delete this text field", :class => "action secondary", :type => "notes"  %>
                 </p>
               </fieldset>
             <% end %>
@@ -130,7 +130,7 @@
           </transfers>
         <p class = "actions">
           <%= f.link_to_add "Add a question", :questions, :class => "action secondary", :type => "questions" %>
-          <%= f.link_to_add "Add a note", :notes, :class => "action secondary", :type => "notes" %>
+          <%= f.link_to_add "Add a text field", :notes, :class => "action secondary", :type => "notes" %>
           <%= f.link_to_add "Add a transfer", :transfers, :class => "action secondary", :type => "transfers" %>
 
         </p>
