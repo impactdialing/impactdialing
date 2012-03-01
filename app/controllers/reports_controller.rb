@@ -11,7 +11,7 @@ class ReportsController < ClientController
   end
 
   def usage
-    @minutes = @campaign.call_attempts.for_status(CallAttempt::Status::SUCCESS).inject(0) { |sum, ca| sum + ca.minutes_used }
+    @minutes = @campaign.call_attempts.for_status(CallAttempt::Status::SUCCESS).sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)').to_i
   end
   
   def answers
