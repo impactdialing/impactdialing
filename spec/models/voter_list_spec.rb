@@ -90,6 +90,7 @@ describe VoterList do
             :successCount => 2,
             :failedCount => 0
         }
+        Voter.all.count.should eq(2)
       end
 
       it "should treat a duplicate phone number as a new voter" do
