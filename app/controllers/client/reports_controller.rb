@@ -1,7 +1,7 @@
 module Client
   class ReportsController < ClientController
     before_filter :load_campaign, :except => [:index, :usage]
-    before_filter :set_report_date_range, :only => [:usage]
+
 
     def load_campaign
       @campaign = Campaign.find(params[:campaign_id])
@@ -36,6 +36,7 @@ module Client
 
     def usage
       @campaign = current_user.campaigns.find(params[:id])
+      set_date_range
     end
     
     def download_report
