@@ -66,7 +66,7 @@ $('form a.add_nested_fields').live('click', function() {
   if($(this).attr('type') == 'notes'){
     $.each($('.fields:visible'), function(){
       if($(this).find('nested_type').attr('type') == 'notes'){
-        $(this).find('legend').text("Note "+count++);
+        $(this).find('legend').text("Text Field "+count++);
       }
     });
   }
