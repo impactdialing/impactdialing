@@ -11,6 +11,7 @@ module Client
       @campaigns = params[:id].blank? ? account.campaigns.manual : Campaign.find(params[:id])
       @callers = account.callers.active
     end
+
     
     def dials
       set_date_range
@@ -57,7 +58,7 @@ module Client
     end
 
     private
-    
+  
     def set_date_range
       time_zone = ActiveSupport::TimeZone.new(@campaign.time_zone || "UTC")
       from_date = Time.strptime("#{params[:from_date]} #{time_zone.formatted_offset}", "%m/%d/%Y %:z") if params[:from_date]
