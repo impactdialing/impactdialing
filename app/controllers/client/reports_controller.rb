@@ -1,7 +1,7 @@
 module Client
   class ReportsController < ClientController
     before_filter :load_campaign, :except => [:index, :usage]
-    before_filter :set_report_date_range, :only => [:usage]
+
 
     def load_campaign
       @campaign = Campaign.find(params[:campaign_id])
@@ -11,11 +11,12 @@ module Client
       @campaigns = params[:id].blank? ? account.campaigns.manual : Campaign.find(params[:id])
       @callers = account.callers.active
     end
+
     
     def dials
       set_date_range
       @total_voters_count = @campaign.all_voters.count
-      dialed_voters_ids = Voter.select(:id ,:conditions => [ "campaign_id = ? and last_call_attempt_time between  ? and ?", @campaign.id, @from_date, (@to_date + 1.day)])
+      dialed_voters_ids = Voter.find(:all, :select => 'id' ,:conditions => [ "(voters.campaign_id = ?) AND (last_call_attempt_time BETWEEN  ? AND ?) ", @campaign.id, @from_date, (@to_date + 1.day)])
       unless dialed_voters_ids.empty?
         @answered = @campaign.answered_count(dialed_voters_ids)
         @no_answer = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status(CallAttempt::Status::NOANSWER).count
@@ -35,6 +36,7 @@ module Client
 
     def usage
       @campaign = current_user.campaigns.find(params[:id])
+      set_date_range
     end
     
     def download_report
@@ -57,7 +59,7 @@ module Client
     end
 
     private
-    
+  
     def set_date_range
       time_zone = ActiveSupport::TimeZone.new(@campaign.time_zone || "UTC")
       from_date = Time.strptime("#{params[:from_date]} #{time_zone.formatted_offset}", "%m/%d/%Y %:z") if params[:from_date]

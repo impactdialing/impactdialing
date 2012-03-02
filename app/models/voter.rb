@@ -42,7 +42,8 @@ class Voter < ActiveRecord::Base
   scope :answered_within, lambda { |from, to| where(:result_date => from.beginning_of_day..(to.end_of_day)) }
   scope :answered_within_timespan, lambda { |from, to| where(:result_date => from..to)}
   scope :last_call_attempt_within, lambda { |from, to| where(:last_call_attempt_time => from..(to + 1.day)) }
-  scope :priority_voters, enabled.where(:priority => "1", :status => Voter::Status::NOTCALLED) #:conditions => {:priority => "1", :status => 'not called'}
+  scope :priority_voters, enabled.where(:priority => "1", :status => Voter::Status::NOTCALLED)
+  
 
   before_validation :sanitize_phone
 

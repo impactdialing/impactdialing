@@ -11,7 +11,7 @@ class ReportsController < ClientController
   end
 
   def usage
-    @minutes = @campaign.call_attempts.for_status(CallAttempt::Status::SUCCESS).inject(0) { |sum, ca| sum + ca.minutes_used }
+    @minutes = @campaign.call_attempts.for_status(CallAttempt::Status::SUCCESS).sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)').to_i
   end
   
   def answers
@@ -20,21 +20,22 @@ class ReportsController < ClientController
     render :template => 'client/reports/answer'
   end
   
+  
   def dials
     set_report_period
-    
-    dialed_voters = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date)
-    @total_voters = @campaign.all_voters
-    if dialed_voters
-      @answered = dialed_voters.by_status(CallAttempt::Status::ANSWERED).count
-      @no_answer = dialed_voters.by_status(CallAttempt::Status::NOANSWER).count
-      @busy_signal = dialed_voters.by_status(CallAttempt::Status::BUSY).count
-      @answering_machine = dialed_voters.by_status(CallAttempt::Status::HANGUP).count
-      @voicemail = dialed_voters.by_status(CallAttempt::Status::VOICEMAIL).count
-      @ringing = dialed_voters.by_status(CallAttempt::Status::RINGING).count
-      @failed = dialed_voters.by_status(CallAttempt::Status::FAILED).count
+    @total_voters_count = @campaign.all_voters.count    
+    dialed_voters_ids = Voter.find(:all, :select => 'id' ,:conditions => [ "(voters.campaign_id = ?) AND (last_call_attempt_time BETWEEN  ? AND ?) ", @campaign.id, @from_date, (@to_date + 1.day)])
+
+    unless dialed_voters_ids.empty?
+      @answered = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status(CallAttempt::Status::ANSWERED).count
+      @no_answer = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status(CallAttempt::Status::NOANSWER).count
+      @busy_signal = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status(CallAttempt::Status::BUSY).count
+      @answering_machine = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status(CallAttempt::Status::HANGUP).count
+      @voicemail = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status(CallAttempt::Status::VOICEMAIL).count
+      @ringing = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status(CallAttempt::Status::RINGING).count
+      @failed = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status(CallAttempt::Status::FAILED).count
     end
-    @total = ((@total_voters.count == 0) ? 1 : @total_voters.count)
+    @total = ((@total_voters_count == 0) ? 1 : @total_voters_count)
     @not_dialed = not_dilaed_voters(params[:from_date])
     @total_dials = @answered.to_i + @no_answer.to_i + @busy_signal.to_i + @answering_machine.to_i + @voicemail.to_i + @ringing.to_i + @failed.to_i
   end
@@ -65,9 +66,9 @@ class ReportsController < ClientController
   
   def not_dilaed_voters(range_parameters)
     if range_parameters
-      @total_voters.count - (@answered.to_i + @no_answer.to_i + @busy_signal.to_i + @ringing.to_i + @failed.to_i + @answering_machine.to_i + @voicemail.to_i)
+      @total_voters_count - (@answered.to_i + @no_answer.to_i + @busy_signal.to_i + @ringing.to_i + @failed.to_i + @answering_machine.to_i + @voicemail.to_i)
     else
-      @total_voters.by_status(Voter::Status::NOTCALLED).count
+      @campaign.all_voters.by_status(Voter::Status::NOTCALLED).count
     end
   end
 end
