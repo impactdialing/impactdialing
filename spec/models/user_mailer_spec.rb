@@ -14,7 +14,7 @@ describe UserMailer do
   it "delivers confirmation for uploaded voter list" do
     domain = "dc-London"
     @uakari.should_receive(:send_email).with(anything)
-    @mailer.voter_list_upload({'success' => ['true']}, domain, "test@email.com")
+    @mailer.voter_list_upload({'success' => ['true']}, domain, "test@email.com", 'test')
 
   end
 
