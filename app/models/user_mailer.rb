@@ -29,10 +29,10 @@ class UserMailer
 
   def voter_list_upload(response, user_domain, email, voter_list_name)
     unless response['success'].blank?
-      subject = I18n.t(:voter_list_upload_succeded_subject, :list_name, voter_list_name)
+      subject = I18n.t(:voter_list_upload_succeded_subject, :list_name => voter_list_name)
       content = response['success'].join("<br/>")
     else
-      subject = I18n.t(:voter_list_upload_failed_subject, :list_name, voter_list_name)
+      subject = I18n.t(:voter_list_upload_failed_subject, :list_name => voter_list_name)
       content = response['errors'].join("<br/>")
     end
     @uakari.send_email({
