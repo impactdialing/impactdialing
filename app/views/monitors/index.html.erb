@@ -67,6 +67,15 @@
           }
     })
   }
+  
+  function kick_off(session){
+    $.ajax({
+        url : "/client/monitors/kick_off",
+        data : {session_id : session},
+        type : "GET"
+    })
+  }
+  
 
 	function switch_caller(current_session_id, next_session_id, action, status){
 		console.log("stop")
@@ -98,6 +107,9 @@
     $('.monitor').live('click', function(){
 			var session_id = $(this).attr("session_id");
 			var action = $(this).attr("action");
+			if (action == 'kickoff'){
+			  kick_off(session_id)
+			}
 			
       if($(this).parent().parent().attr("on_call") == "true"){
         switch_mode(session_id, action);
