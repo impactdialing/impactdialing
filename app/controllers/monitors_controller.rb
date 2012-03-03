@@ -24,7 +24,11 @@ class MonitorsController < ClientController
 
   def switch_mode
     type = params[:type]
-    caller_session = CallerSession.find(params[:session_id]) 
+    caller_session = CallerSession.find(params[:session_id])
+    if type == 'kickoff' 
+      caller_session.end_running_call
+      render nothing: true
+    end
     if caller_session.moderator.nil?
       render text: "Status: There is some problem in switching mode. Please refresh the page"
     else
