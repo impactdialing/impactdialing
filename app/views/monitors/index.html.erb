@@ -108,7 +108,8 @@
 			var session_id = $(this).attr("session_id");
 			var action = $(this).attr("action");
 			if (action == 'kickoff'){
-			  kick_off(session_id)
+			  kick_off(session_id);
+			  return;
 			}
 			
       if($(this).parent().parent().attr("on_call") == "true"){
@@ -211,6 +212,7 @@
             <th>Campaign</th>
 						<th>Status</th>
 						<th>Time in status</th>
+            <th></th>
             <th></th>
             <th></th>
           </tr>
