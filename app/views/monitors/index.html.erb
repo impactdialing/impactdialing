@@ -169,7 +169,7 @@
        <td>{{campaign_name}}</td>
        <td class="callers_logged_in">{{callers_logged_in}}</td>
        <td class="dials_in_progress">{{dials_in_progress}}</td>
-       <td class="voters_count">{{voters_count}}</td>
+       <td class="voters_count">{{voters_remaining}}</td>
     </tr>
   {{/campaign_fields}}
 
@@ -194,7 +194,7 @@
                   <td><%= c.name %></td>
                   <td class="callers_logged_in"><%= c.caller_sessions.on_call.length %></td>
                   <td class="dials_in_progress"><%= c.call_attempts.not_wrapped_up.try(:size) %></td>
-                  <td class="voters_count"><%= c.voters_count("not called", false).length %></td>
+                  <td class="voters_count"><%= Voter.remaining_voters_count_for("campaign_id', #{c.id}") %></td>
                 </tr>
             <% end %>
           <% end %>
