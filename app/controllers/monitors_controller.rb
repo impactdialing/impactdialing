@@ -28,6 +28,7 @@ class MonitorsController < ClientController
     if type == 'kickoff' 
       caller_session.end_running_call
       render nothing: true
+      return
     end
     if caller_session.moderator.nil?
       render text: "Status: There is some problem in switching mode. Please refresh the page"
