@@ -156,6 +156,7 @@ ImpactDialing::Application.routes.draw do
         get :deactivate_session
         get :switch_mode
         get :monitor_session
+        get :kick_off
       end
       match "toggle_call_recording" => "monitors#toggle_call_recording"
     end
