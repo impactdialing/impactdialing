@@ -193,7 +193,7 @@
                 <tr id="<%= "campaign_"+c.id.to_s %>" class="campaign <%= cycle("odd", "even") %>">
                   <td><%= c.name %></td>
                   <td class="callers_logged_in"><%= c.caller_sessions.on_call.length %></td>
-                  <td class="dials_in_progress"><%= c.call_attempts.not_wrapped_up.try(:length) %></td>
+                  <td class="dials_in_progress"><%= c.call_attempts.not_wrapped_up.try(:size) %></td>
                   <td class="voters_count"><%= c.voters_count("not called", false).length %></td>
                 </tr>
             <% end %>

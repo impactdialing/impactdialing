@@ -77,7 +77,7 @@ class CallAttempt < ActiveRecord::Base
     if caller_session.nil? || caller_session.disconnected? || !caller_session.available_for_call
       update_attributes(status: CallAttempt::Status::ABANDONED, wrapup_time: Time.now)
       voter.update_attributes(:status => CallAttempt::Status::ABANDONED, call_back: false)
-      Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.length, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
+      Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
       hangup
     else
       update_attributes(:status => CallAttempt::Status::INPROGRESS)
@@ -139,7 +139,7 @@ class CallAttempt < ActiveRecord::Base
   def fail
     voter.update_attributes(:call_back => false)
     update_attributes(wrapup_time: Time.now)
-    Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.length, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
+    Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
     if caller_session && (campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE)
       caller_session.update_attribute(:voter_in_progress, nil)      
       if caller_session.caller.is_phones_only?
