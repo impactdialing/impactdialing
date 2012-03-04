@@ -10,7 +10,7 @@ module DeletableController
 
   def restore
     class_constant.find(params["#{type_name}_id"]).tap do |s|
-      s.restore
+      s.active = true
       s.save
     end
     redirect_to :back
