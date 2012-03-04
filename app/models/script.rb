@@ -1,7 +1,7 @@
 class Script < ActiveRecord::Base
 
   include Deletable
-  validates_presence_of :name, :on => :create, :message => "can't be blank"
+  validates_presence_of :name, :message => "can't be blank"
   belongs_to :account
   has_many :robo_recordings
   has_many :questions
