@@ -93,6 +93,10 @@ module Client
         render :action=>"new"
       end
     end
+    
+    def load_deleted
+      self.instance_variable_set("@#{type_name.pluralize}", Campaign.deleted.manual.for_account(@user.account).paginate(:page => params[:page], :order => 'id desc'))
+    end
 
     def clear_calls
       if current_user.admin?

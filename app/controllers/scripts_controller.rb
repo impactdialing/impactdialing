@@ -126,4 +126,5 @@ class ScriptsController < ClientController
     end
     render :template => 'scripts/new'
   end
+  
 end
