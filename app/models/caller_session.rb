@@ -66,7 +66,7 @@ class CallerSession < ActiveRecord::Base
       return
     end    
     self.publish('calling_voter', voter.info)
-    Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id,:dials_in_progress => campaign.call_attempts.dial_in_progress.size})
+    Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id,:dials_in_progress => campaign.call_attempts.not_wrapped_up.size})
     attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])
   end
 
