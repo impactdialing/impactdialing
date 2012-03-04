@@ -25,8 +25,14 @@ describe ScriptsController do
       get :index
       assigns(:scripts).should == [interactive_script, non_interactive_script]
     end
-
-    it_should_behave_like 'all controllers of deletable entities'
+    
+    it "lists deleted entities" do
+      deleted_entity = Factory(:script, :account => user.account, :active => false, robo:true)
+      active_entity = Factory(type_name, :account => user.account, :active => true, robo:true)
+      get :deleted
+      assigns(:scripts).should == [deleted_entity]
+    end
+    
 
     it "lists active scripts" do
       active_script = Factory(:script, :account => user.account, :active => true, :robo => true)
