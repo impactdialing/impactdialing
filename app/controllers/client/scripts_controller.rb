@@ -53,6 +53,7 @@ module Client
     def update
       params[:script][:voter_fields] =  params[:voter_field] ? params[:voter_field].to_json : nil
       begin
+        params[:script].trim!
         params[:save_as] ? save_as : @script = account.scripts.find_by_id(params[:id])
 
         if params[:save_as]
