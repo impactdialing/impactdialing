@@ -18,16 +18,16 @@ class ScriptsController < ClientController
   @scripts = @user.account.scripts.active.robo.paginate(:page => params[:page])
   end
   
+  def load_deleted
+    self.instance_variable_set("@#{type_name.pluralize}", @user.account.scripts.deleted.robo.for_account(@user.account).paginate(:page => params[:page], :order => 'id desc'))
+  end    
+  
+  
   def deleted
     render 'scripts/deleted'
   end
   
   
-  def load_deleted
-    self.instance_variable_set("@#{type_name.pluralize}", @user.account.scripts.deleted.robo.for_account(@user.account).paginate(:page => params[:page], :order => 'id desc'))
-  end    
-  
-
   def new_script
     @fields = ["CustomID", "FirstName", "MiddleName", "LastName", "Suffix", "Age", "Gender", "Phone", "Email"]
     @breadcrumb=[{"Scripts"=>"/client/scripts"}, "Add Script"]
