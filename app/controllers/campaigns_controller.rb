@@ -112,7 +112,7 @@ class CampaignsController < ClientController
   end
 
   def setup_campaigns_paths
-    @deleted_campaigns_path = client_deleted_campaigns_path
+    @deleted_campaigns_path = broadcast_deleted_campaigns_path
     @campaigns_path = campaigns_path
   end
 end
