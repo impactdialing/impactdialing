@@ -110,6 +110,8 @@ class CampaignsController < ClientController
   def load_campaign
     @campaign = account.all_campaigns.find(params[:campaign_id] || params[:id])
   end
+  
+  
 
   def setup_campaigns_paths
     @deleted_campaigns_path = broadcast_deleted_campaigns_path
