@@ -46,6 +46,11 @@ class CampaignsController < ClientController
   end
 
   def destroy
+    unless @campaign.callers.empty? 
+      flash_message(:notice, "There are currently callers assigned to this campaign. Please assign them to another campaign before deleting this one.")
+      redirect_to :back
+      return
+    end    
     @campaign.update_attribute(:active, false)
     flash_message(:notice, "Campaign deleted")
     redirect_to :back
