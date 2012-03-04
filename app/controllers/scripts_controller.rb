@@ -18,6 +18,11 @@ class ScriptsController < ClientController
   @scripts = @user.account.scripts.active.robo.paginate(:page => params[:page])
   end
   
+  def deleted
+    render 'scripts/deleted'
+  end
+  
+  
   def load_deleted
     self.instance_variable_set("@#{type_name.pluralize}", @user.account.scripts.deleted.robo.for_account(@user.account).paginate(:page => params[:page], :order => 'id desc'))
   end    
