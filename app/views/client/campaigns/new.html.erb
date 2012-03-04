@@ -55,7 +55,7 @@
           </select>
         </p>
         <%= render :partial => 'shared/recycle_rate', :locals => {:recycle_hour => @campaign.recycle_rate} %>
-        <p><%= f.check_box :answering_machine_detect, {:checked => 'checked'} %>&nbsp;Automatically detect
+        <p><%= f.check_box :answering_machine_detect %>&nbsp;Automatically detect
           voicemails</p>
         <% if !@campaign.account.recordings.blank? %>
             <p><%= f.check_box :use_recordings, :onclick=>"doRecord();" %>&nbsp;Leave voicemail message</p>
