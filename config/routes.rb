@@ -103,7 +103,7 @@ ImpactDialing::Application.routes.draw do
   end
 
   namespace 'broadcast' do
-    resources :campaigns, :only => [:show, :index]
+    resources :campaigns, :only => [:show, :index,:new]
   end
 
   namespace 'client' do
