@@ -17,6 +17,12 @@ class CampaignsController < ClientController
   end
   
   def new
+    @campaign = Campaign.new(:account_id => account.id, robo:true)
+    @campaign.save(:validate => false)
+    @callers = account.callers.active
+    @lists = @campaign.voter_lists
+    @scripts = account.scripts.robo.active
+    @voter_list = @campaign.voter_lists.new
   end
 
   def create

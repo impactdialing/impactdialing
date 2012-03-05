@@ -8,8 +8,6 @@ module Client
       @callers = account.callers.active
       @lists = @campaign.voter_lists
       @scripts = account.scripts.manual.active
-
-      @show_voter_buttons = @user.show_voter_buttons
       @voter_list = @campaign.voter_lists.new
     end
 
