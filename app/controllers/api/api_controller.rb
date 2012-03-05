@@ -14,9 +14,13 @@ module Api
           :status => response[:status],
           :message => response[:message],
       }
+      render_options = {:json => json_structure}  
+      unless response[:data].nil?
+        render_options[:json][:data] = response[:data]
+      else
 
-      render_options = {:json => json_structure}
-      render_options[:status] = response[:code]
+      end      
+      render_options[:status] = response[:code]      
       render(render_options)
     end
   end
