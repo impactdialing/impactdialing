@@ -68,7 +68,7 @@ module Client
         @campaign.disable_voter_list
         params[:voter_list_ids].each { |id| VoterList.enable_voter_list(id) } unless params[:voter_list_ids].blank?
         flash_message(:notice, "Campaign saved")
-        redirect_to client_campaign_path(@campaign)
+        redirect_to client_campaigns_path
       else
         @callers = account.callers.active
         respond_to do |format|
@@ -88,7 +88,7 @@ module Client
           params[:voter_list_ids].each { |id| enable_voter_list(id) } unless params[:voter_list_ids].blank?
         end
         flash_message(:notice, "Campaign saved")
-        redirect_to client_campaign_path(@campaign)
+        redirect_to client_campaigns_path
       else
         render :action=>"new"
       end

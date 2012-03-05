@@ -95,7 +95,7 @@ class ScriptsController < ClientController
 
       @script.save
       flash_message(:notice, "Script saved")
-      redirect_to @script
+      redirect_to scripts_path
     else
       render :action => 'new'
     end
