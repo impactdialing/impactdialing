@@ -15,12 +15,15 @@ class CampaignsController < ClientController
   def type_name
     'campaign'
   end
+  
+  def new
+  end
 
   def create
     campaign = @user.account.campaigns.create((params[:campaign]||{}).merge({:robo => true}))
     campaign.script||= @user.account.scripts.robo.active.first
     campaign.save
-    redirect_to broadcast_campaign_path(campaign)
+    redirect_to broadcast_campaigns_path
   end
 
   def update
@@ -31,7 +34,7 @@ class CampaignsController < ClientController
 
     if @campaign.valid?
       flash_message(:notice, "Campaign saved") if @campaign.save
-      redirect_to campaign_path(@campaign)
+      redirect_to broadcast_campaigns_path
     else
       @scripts = @user.account.scripts.robo.active
       @callers = account.callers.active
