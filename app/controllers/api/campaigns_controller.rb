@@ -1,5 +1,4 @@
 module Api
-  module Accounts
   class CampaignsController < ApiController
     
     def validate_params
@@ -35,6 +34,5 @@ module Api
     end
 
   end
- end
   
 end  
