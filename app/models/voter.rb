@@ -71,11 +71,13 @@ class Voter < ActiveRecord::Base
   end
 
   def selected_custom_fields(selection)
-    return [] unless selection
-    selected_fields = selection.collect do |field|
-      field = account.custom_voter_fields.find_by_name(field)
-      nil and next unless field
-      CustomVoterFieldValue.voter_fields(self, field).first.try(:value)
+    selected_fields = []
+    return selected_fields unless selection
+    selection.each do |field|
+      custom_voter_field = account.custom_voter_fields.find_by_name(field)
+      unless custom_voter_field.nil?
+        selected_fields << CustomVoterFieldValue.voter_fields(self, custom_voter_field).first.try(:value)  
+      end
     end
     selected_fields
   end
