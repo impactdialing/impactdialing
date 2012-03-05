@@ -13,6 +13,9 @@ ImpactDialing::Application.routes.draw do
   namespace 'api' do
     resources :leads
     resources :callers
+    resources 'account' do
+      resources :campaigns, only: [:index]
+    end
   end
 
   namespace 'admin' do
