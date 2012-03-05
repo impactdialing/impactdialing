@@ -61,7 +61,7 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
 
   def notify_success
     mailer = UserMailer.new
-    mailer.deliver_download(user, AWS::S3::S3Object.url_for("report_#{@campaign_name}.csv", "download_reports"))
+    mailer.deliver_download(user, AWS::S3::S3Object.url_for("#{@campaign_name}.csv", "download_reports"))
   end
 
   def notify_failure(job, exception)
