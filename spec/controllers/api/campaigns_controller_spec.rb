@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Api::Accounts::CampaignsController do
+describe Api::CampaignsController do
   before :each do
     @current_user = Factory(:user)
     @campaign = Factory(:campaign, :account => @current_user.account)
