@@ -29,7 +29,7 @@ module Api
     def index
       return unless validate_params
       account = Account.find(params[:account_id])
-      campaigns = account.campaigns
+      campaigns = account.campaigns.active
       data = campaigns.collect {|campaign| {id: campaign.id, name: campaign.name}}
       render_json_response({status: 'ok', code: '200', message: "Success", data: data})      
     end

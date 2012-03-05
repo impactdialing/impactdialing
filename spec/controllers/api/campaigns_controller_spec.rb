@@ -42,13 +42,22 @@ describe Api::Accounts::CampaignsController do
     JSON.parse(response.body).should eq({"status"=>"ok", "message"=>"Success", "data"=>[]})    
   end
   
-  it "should return no campaigns if account has no campaigns" do
+  it "should return  campaigns if account has  campaigns" do
     campaign = Factory(:campaign, :account => @current_user.account)
     get :index,api_key: '1mp@ctd1@l1ng',account_id: @current_user.account.id, email: @current_user.email
     result = JSON.parse(response.body)
     response.code.should eq('200')
     JSON.parse(response.body).should eq({"status"=>"ok", "message"=>"Success", "data"=>[{"id"=>@campaign.id, "name"=>@campaign.name}, {"id"=>campaign.id, "name"=>campaign.name}]})    
   end
+  
+  it "should not return deleted campaigns" do
+    campaign = Factory(:campaign, :account => @current_user.account, active:false)
+    get :index,api_key: '1mp@ctd1@l1ng',account_id: @current_user.account.id, email: @current_user.email
+    result = JSON.parse(response.body)
+    response.code.should eq('200')
+    JSON.parse(response.body).should eq({"status"=>"ok", "message"=>"Success", "data"=>[{"id"=>@campaign.id, "name"=>@campaign.name}]})    
+  end
+  
   
   
   
