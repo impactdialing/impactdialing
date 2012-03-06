@@ -9,7 +9,7 @@ class MessagesController < ClientController
   def create
     @script = Script.new(params[:script].merge(:robo => true, :for_voicemail => true, :active => true, :account => account))
     if @script.save
-      redirect_to message_path(@script)
+      redirect_to scripts_path
     else
       render :action => 'new'
     end
@@ -22,6 +22,6 @@ class MessagesController < ClientController
   def update
     @script = Script.find(params[:id])
     @script.update_attributes(params[:script])
-    redirect_to message_path(@script)
+    redirect_to scripts_path
   end
 end

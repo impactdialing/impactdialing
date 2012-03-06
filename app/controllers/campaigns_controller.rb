@@ -15,12 +15,21 @@ class CampaignsController < ClientController
   def type_name
     'campaign'
   end
+  
+  def new
+    @campaign = Campaign.new(:account_id => account.id, robo:true)
+    @campaign.save(:validate => false)
+    @callers = account.callers.active
+    @lists = @campaign.voter_lists
+    @scripts = account.scripts.robo.active
+    @voter_list = @campaign.voter_lists.new
+  end
 
   def create
     campaign = @user.account.campaigns.create((params[:campaign]||{}).merge({:robo => true}))
     campaign.script||= @user.account.scripts.robo.active.first
     campaign.save
-    redirect_to broadcast_campaign_path(campaign)
+    redirect_to broadcast_campaigns_path
   end
 
   def update
@@ -31,7 +40,7 @@ class CampaignsController < ClientController
 
     if @campaign.valid?
       flash_message(:notice, "Campaign saved") if @campaign.save
-      redirect_to campaign_path(@campaign)
+      redirect_to broadcast_campaigns_path
     else
       @scripts = @user.account.scripts.robo.active
       @callers = account.callers.active
@@ -46,6 +55,11 @@ class CampaignsController < ClientController
   end
 
   def destroy
+    unless @campaign.callers.empty? 
+      flash_message(:notice, "There are currently callers assigned to this campaign. Please assign them to another campaign before deleting this one.")
+      redirect_to :back
+      return
+    end    
     @campaign.update_attribute(:active, false)
     flash_message(:notice, "Campaign deleted")
     redirect_to :back
@@ -105,9 +119,11 @@ class CampaignsController < ClientController
   def load_campaign
     @campaign = account.all_campaigns.find(params[:campaign_id] || params[:id])
   end
+  
+  
 
   def setup_campaigns_paths
-    @deleted_campaigns_path = client_deleted_campaigns_path
+    @deleted_campaigns_path = broadcast_deleted_campaigns_path
     @campaigns_path = campaigns_path
   end
 end

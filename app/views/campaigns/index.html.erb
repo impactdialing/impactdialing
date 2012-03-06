@@ -31,7 +31,7 @@
 
 <p class="actions">
   <% form_tag @campaigns_path, :id => 'campaign_create_form' do %>
-    <%= link_to "Add new campaign", 'javascript:void(0)', :class => "action primary", :onclick => "$('#campaign_create_form').submit()" %>
+    <%= link_to "Add new campaign",new_campaign_path , :class => "action primary"%>
   <% end %>
 </p>
 <p class="actions"><%= link_to 'View deleted campaigns', @deleted_campaigns_path, :class => 'action secondary' %></p>

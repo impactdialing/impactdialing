@@ -8,8 +8,6 @@ module Client
       @callers = account.callers.active
       @lists = @campaign.voter_lists
       @scripts = account.scripts.manual.active
-
-      @show_voter_buttons = @user.show_voter_buttons
       @voter_list = @campaign.voter_lists.new
     end
 
@@ -34,6 +32,11 @@ module Client
     end
 
     def destroy
+      unless @campaign.callers.empty? 
+        flash_message(:notice, "There are currently callers assigned to this campaign. Please assign them to another campaign before deleting this one.")
+        redirect_to :back
+        return
+      end
       if !@campaign.blank?
         @campaign.update_attribute(:active, false)
       end
@@ -63,7 +66,7 @@ module Client
         @campaign.disable_voter_list
         params[:voter_list_ids].each { |id| VoterList.enable_voter_list(id) } unless params[:voter_list_ids].blank?
         flash_message(:notice, "Campaign saved")
-        redirect_to client_campaign_path(@campaign)
+        redirect_to client_campaigns_path
       else
         @callers = account.callers.active
         respond_to do |format|
@@ -83,10 +86,14 @@ module Client
           params[:voter_list_ids].each { |id| enable_voter_list(id) } unless params[:voter_list_ids].blank?
         end
         flash_message(:notice, "Campaign saved")
-        redirect_to client_campaign_path(@campaign)
+        redirect_to client_campaigns_path
       else
         render :action=>"new"
       end
+    end
+    
+    def load_deleted
+      self.instance_variable_set("@#{type_name.pluralize}", Campaign.deleted.manual.for_account(@user.account).paginate(:page => params[:page], :order => 'id desc'))
     end
 
     def clear_calls
