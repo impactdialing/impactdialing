@@ -1,2 +1,46 @@
-Your subscriptions:
-<%= render :partial => 'billing' %>
+<% if @trial %>
+	<p>Your account is currently in trial.</p>
+	<% if @balance==0 %>Your trial credit has expired.<% end %>
+
+
+		<div id='confirm-dialog'>
+			<p class="actions"><a href="#" class="action secondary confirm">Subscribe Per Minute</a></p>
+		</div>
+		<p class="actions"><a class="action secondary" href="<%= raw recurly_subscription_url("per-caller", @user.account.recurly_account_code, @user.fname, @user.lname, @user.email) %>">Subscribe Per Caller</a></p>
+
+
+		<!-- modal content -->
+		<div id='confirm'>
+			<div class='header'><span>Confirm</span></div>
+			<div class='message'></div>
+			<div class='buttons'>
+				<div class='yes'>Continue</div><div class='no simplemodal-close'>Cancel</div>
+			</div>
+		</div>
+		<!-- preload the images -->
+		<div style='display:none'>
+			<img src='/images/confirm/header.gif' alt='' />
+			<img src='/images/confirm/button.gif' alt='' />
+		</div>
+
+
+
+<% else %>
+	<p>Your current subscription is: <%= @user.account.active_subscription %></p>
+	<p>Your current balance is <%= number_to_currency @balance %></p>
+	<p class="actions"><a href="/client/add_to_balance" class="action secondary">Add to your balance</a></p>
+	<p class="actions"><a href="/client/update_billing" class="action secondary">Update billing information</a></p>
+<% end %>
+
+
+
+<% content_for :jquery_extension_javascripts do %>
+	<script type='text/javascript' src='/javascripts/jquery.simplemodal.js'></script>
+	<script type='text/javascript' src='/javascripts/confirm.js'></script>
+	<script>
+	var confirmUrl='<%= raw recurly_subscription_url("per-minute", @user.account.recurly_account_code, @user.fname, @user.lname, @user.email) %>';
+	</script>
+<% end %>
+<% content_for :stylesheets do %>
+	<link type='text/css' href='/stylesheets/confirm.css' rel='stylesheet' media='screen' />
+<% end %>

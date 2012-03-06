@@ -12,6 +12,74 @@ class Account < ActiveRecord::Base
   has_many :families
   has_many :blocked_numbers
   has_many :moderators
+  has_many :payments
+  
+  def current_balance
+    self.payments.where("amount_remaining>0").inject(0) do |sum, payment|
+      sum + payment.amount_remaining
+    end
+  end
+  
+  def trial?
+    self.payments.count==1 && self.payments.first.notes=="Trial credit" && recurly_subscription_uuid.nil?
+  end
+  
+  def sync_subscription
+    #pull latest subscription data from recurly
+    recurly_account = Recurly::Account.find(self.recurly_account_code)
+    recurly_account.subscriptions.find_each do |subscription|
+      self.subscription_count=subscription.quantity
+      self.recurly_subscription_uuid=subscription.uuid
+      self.subscription_active=subscription.state=="active" ? true : false
+      self.subscription_name=subscription.plan.name
+      self.save
+    end
+  end
+  
+  def create_recurly_account_code
+    return self.recurly_account_code if !self.recurly_account_code.nil?
+    begin
+      user = User.where("account_id=?",self.id).order("id asc").first
+      account = Recurly::Account.create(
+        :account_code => self.id,
+        :email        => user.email,
+        :first_name   => user.fname,
+        :last_name    => user.lname,
+        :company_name => user.orgname
+      )
+      self.recurly_account_code=account.account_code
+      self.save
+      self.recurly_account_code
+    rescue
+      nil
+    end
+  end
+  
+  def create_recurly_subscription(plan_code)
+    subscription = Recurly::Subscription.create(
+      :plan_code => plan_code,
+      :account   => {
+        :account_code => '1',
+        :email        => 'verena@example.com',
+        :first_name   => 'Verena',
+        :last_name    => 'Example',
+        :billing_info => {
+          :number => '4111-1111-1111-1111',
+          :month  => 1,
+          :year   => 2014,
+        }
+      }
+    )
+  end
+  
+  def active_subscription
+    # default to per minute if not defined
+    if subscription_name!="per minute" && subscription_active
+      return subscription_name
+    else
+      return "per minute"
+    end
+  end
 
   def new_billing_account
     BillingAccount.create(:account => self)
