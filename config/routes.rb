@@ -97,6 +97,7 @@ ImpactDialing::Application.routes.draw do
       end
     end
     get '/deleted_campaigns', :to => 'broadcast/campaigns#deleted', :as => :broadcast_deleted_campaigns
+    get '/deleted_scripts', :to => 'scripts#deleted', :as => :deleted_scripts
     resources :scripts
     resources :messages
     match 'monitor', :to => 'monitor#index'
@@ -105,7 +106,7 @@ ImpactDialing::Application.routes.draw do
   end
 
   namespace 'broadcast' do
-    resources :campaigns, :only => [:show, :index]
+    resources :campaigns, :only => [:show, :index,:new]
   end
 
   namespace 'client' do
@@ -159,6 +160,7 @@ ImpactDialing::Application.routes.draw do
         get :deactivate_session
         get :switch_mode
         get :monitor_session
+        get :kick_off
       end
       match "toggle_call_recording" => "monitors#toggle_call_recording"
     end

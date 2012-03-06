@@ -14,7 +14,7 @@
       </tr>
       <% @scripts.each do |s| %>
         <tr class="<%= cycle("odd","even") %>">
-          <td><strong><a href="/client/script_add/<%= s.id %>"><%= s.name %></a></strong></td>
+          <td><strong><a href="scripts/<%= s.id %>"><%= s.name %></a></strong></td>
           <td><%= s.created_at.strftime("%m/%d/%Y") %></td>
           <td><%= s.updated_at.strftime("%m/%d/%Y") %></td>
           <td>
@@ -35,4 +35,4 @@
 
   <!-- Table -->
 <% end %>
-<p class="actions"><%= link_to 'Return to active scripts', '/client/scripts', :class => 'action primary' %></p>
+<p class="actions"><%= link_to 'Return to active scripts', 'scripts', :class => 'action primary' %></p>

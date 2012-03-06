@@ -79,6 +79,7 @@ function next_voter() {
 function call_voter() {
     console.log('called voter');
     hide_all_actions();
+	$("#stop_calling").show();
     $.ajax({
         url : "/caller/" + $("#caller").val() + "/call_voter",
         data : {id : $("#caller").val(), voter_id : $("#current_voter").val(), session_id : $("#caller_session").val() },
@@ -173,8 +174,6 @@ function disconnect_caller() {
             success : function(response) {
                 if (FlashDetect.installed && flash_supported())
                     $("#start_calling").show();
-					pusher.disconnect();
-                // pushes 'calling_voter'' event to browsers
             }
         })
     }else{
@@ -288,6 +287,10 @@ function set_transfer_panel(data) {
 function subscribe(session_key) {
     channel = pusher.subscribe(session_key);
     console.log(channel)
+	pusher.connection.bind('state_change', function(states) {
+	  // states = {previous: 'oldState', current: 'newState'}
+	  console.log("Pusher's current state is " + states.current);
+	});
 
     channel.bind('caller_connected', function(data) {
         hide_all_actions();
@@ -404,13 +407,6 @@ function subscribe(session_key) {
 	        
 		}			
     });
-
-
-
-
-
-
-
 
 
     channel.bind('caller_disconnected', function(data) {
@@ -533,6 +529,5 @@ function subscribe(session_key) {
     function cleanup_transfer_panel() {
         $('#transfer_type').val('');
     }
-
 
 }

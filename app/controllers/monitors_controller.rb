@@ -21,6 +21,12 @@ class MonitorsController < ClientController
     mute_type = params[:type]=="breakin" ? false : true
     render xml:  caller_session.join_conference(mute_type, params[:CallSid], params[:monitor_session])
   end
+  
+  def kick_off
+    caller_session = CallerSession.find(params[:session_id])
+    caller_session.end_running_call
+    render nothing: true
+  end
 
   def switch_mode
     type = params[:type]

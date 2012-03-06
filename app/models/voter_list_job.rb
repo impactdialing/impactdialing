@@ -25,7 +25,7 @@ class VoterListJob
 
     unless @voter_list.valid?
       response['errors'] << @voter_list.errors.full_messages.join("; ")
-      user_mailer.voter_list_upload(response, @domain, @email)
+      user_mailer.voter_list_upload(response, @domain, @email,@voter_list_name)
       return response
     end
     @voter_list.save!
@@ -40,7 +40,7 @@ class VoterListJob
       response['errors'] << "Invalid CSV file. Could not import."
     ensure
       VoterList.delete_from_s3 @csv_filename
-      user_mailer.voter_list_upload(response, @domain, @email)
+      user_mailer.voter_list_upload(response, @domain, @email, @voter_list_name)
       return response
     end
   end

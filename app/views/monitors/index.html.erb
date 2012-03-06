@@ -67,6 +67,15 @@
           }
     })
   }
+  
+  function kick_off(session){
+    $.ajax({
+        url : "/client/monitors/kick_off",
+        data : {session_id : session},
+        type : "GET"
+    })
+  }
+  
 
 	function switch_caller(current_session_id, next_session_id, action, status){
 		console.log("stop")
@@ -98,6 +107,10 @@
     $('.monitor').live('click', function(){
 			var session_id = $(this).attr("session_id");
 			var action = $(this).attr("action");
+			if (action == 'kickoff'){
+			  kick_off(session_id);
+			  return;
+			}
 			
       if($(this).parent().parent().attr("on_call") == "true"){
         switch_mode(session_id, action);
@@ -144,6 +157,10 @@
       <td>
         <a class ="action secondary monitor" href="#" action="breakin" session_id={{session_id}}>Break in</a>
       </td>
+      <td>
+        <a class ="action secondary monitor" href="#" action="kickoff" session_id={{session_id}}>Kick off</a>
+      </td>
+      
   </tr>
 </script>
 <script id="campaign" type="text/html">
@@ -152,7 +169,7 @@
        <td>{{campaign_name}}</td>
        <td class="callers_logged_in">{{callers_logged_in}}</td>
        <td class="dials_in_progress">{{dials_in_progress}}</td>
-       <td class="voters_count">{{voters_count}}</td>
+       <td class="voters_count">{{voters_remaining}}</td>
     </tr>
   {{/campaign_fields}}
 
@@ -176,8 +193,8 @@
                 <tr id="<%= "campaign_"+c.id.to_s %>" class="campaign <%= cycle("odd", "even") %>">
                   <td><%= c.name %></td>
                   <td class="callers_logged_in"><%= c.caller_sessions.on_call.length %></td>
-                  <td class="dials_in_progress"><%= c.call_attempts.not_wrapped_up.try(:length) %></td>
-                  <td class="voters_count"><%= c.voters_count("not called", false).length %></td>
+                  <td class="dials_in_progress"><%= c.call_attempts.not_wrapped_up.try(:size) %></td>
+                  <td class="voters_count"><%= Voter.remaining_voters_count_for("campaign_id", c.id) %></td>
                 </tr>
             <% end %>
           <% end %>
@@ -195,6 +212,7 @@
             <th>Campaign</th>
 						<th>Status</th>
 						<th>Time in status</th>
+            <th></th>
             <th></th>
             <th></th>
           </tr>
@@ -222,6 +240,10 @@
                     <td>
                       <a class ="action secondary monitor" href="#" action="breakin" session_id="<%= caller_session.id %>">Break in</a>
                     </td>
+                    <td>
+                      <a class ="action secondary monitor" href="#" action="kickoff" session_id="<%= caller_session.id %>">Kick off</a>
+                    </td>
+                    
                   </tr>
               <% end %>
           <% end %>

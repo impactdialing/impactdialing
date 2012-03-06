@@ -18,7 +18,7 @@ describe CampaignsController do
         post :create, :campaign => {:caller_id => '0123456789'}
       }.should change(user.account.campaigns.active.robo, :size).by(1)
       user.account.campaigns.active.robo.last.script.should == robo_script
-      response.should redirect_to campaign_path(user.account.campaigns.last)
+      response.should redirect_to campaigns_path
     end
 
     it "creates a new robo campaign with the first active robo script by default" do

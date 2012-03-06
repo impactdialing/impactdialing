@@ -32,6 +32,7 @@ gem 'rush', '>= 0.0.6'
 gem 'heroku_delayed_job_autoscale', '>= 0.0.7'
 gem "airbrake"
 gem "chargify_api_ares"
+gem "uuid", "~> 2.3.5"
 
 group :development, :test do
   gem 'ruby-debug19'

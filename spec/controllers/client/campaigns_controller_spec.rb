@@ -81,7 +81,7 @@ describe Client::CampaignsController do
       post :create , :campaign => {:caller_id => '0123456789'}
     }.should change(user.account.campaigns.active.manual, :size).by(1)
     user.account.campaigns.active.manual.last.script.should == manual_script
-    response.should redirect_to client_campaign_path(user.account.campaigns.last)
+    response.should redirect_to client_campaigns_path
   end
 
   it "redirects to robo campaign page if it's a robo campaign" do

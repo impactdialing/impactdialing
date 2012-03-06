@@ -51,7 +51,12 @@ module Client
     end
 
     def update
+      @script = @user.account.scripts.find(params[:id])
       params[:script][:voter_fields] =  params[:voter_field] ? params[:voter_field].to_json : nil
+      @voter_fields = VoterList::VOTER_DATA_COLUMNS.values
+      @voter_fields.concat(@user.account.custom_voter_fields.collect{ |field| field.name})
+      @voter_field_values = (JSON.parse(@script.voter_fields) if @script.voter_fields) || []
+      p "&^%&^%&^%&%&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& #{params[:script][:voter_fields]}"
       begin
         params[:save_as] ? save_as : @script = account.scripts.find_by_id(params[:id])
 
@@ -61,11 +66,11 @@ module Client
           flash_message(:notice, "Script updated")
           redirect_to :action=>"index"
         else
-          render :action=>"new"
+          render :show
         end
       rescue Exception => e
         flash_message(:notice, "Script not saved. Error:" + e.message)
-        render :action=>"new"
+        render :show
       end
     end
 
@@ -75,6 +80,11 @@ module Client
       flash_message(:notice, "Script deleted")
       redirect_to :action => "index"
     end
+    
+    def load_deleted
+      self.instance_variable_set("@#{type_name.pluralize}", Script.deleted.for_account(@user.account).paginate(:page => params[:page], :order => 'id desc'))
+    end    
+    
 
     private
 
