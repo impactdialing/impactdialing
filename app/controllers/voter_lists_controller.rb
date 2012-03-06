@@ -26,7 +26,7 @@ class VoterListsController < ClientController
     csv_filename = "#{upload.original_filename}_#{Time.now.to_i}_#{rand(999)}"
     saved_file_name = VoterList.upload_file_to_s3(csv, csv_filename)
     save_csv_filename_to_session(saved_file_name)
-    @separator = separator_from_file_extension(upload.original_filename)
+    @separator = VoterList.separator_from_file_extension(upload.original_filename)
     begin
       @csv_column_headers = CSV.new(csv, :col_sep => @separator).shift.compact
     rescue Exception => err
@@ -61,18 +61,10 @@ class VoterListsController < ClientController
     end
   end
 
-  
-  
-
   def save_csv_filename_to_session(csv_filename)
     session[:voters_list_upload] = {
         "filename" => csv_filename,
         "upload_time" => Time.now}
-  end
-
-
-  def separator_from_file_extension(filename)
-    (File.extname(filename).downcase.include?('.csv')) ? ',' : "\t"
   end
 
   def setup_based_on_type
