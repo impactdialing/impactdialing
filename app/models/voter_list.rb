@@ -88,6 +88,11 @@ class VoterList < ActiveRecord::Base
     AWS::S3::S3Object.store(s3path, file, @config['bucket'],:content_type =>"application/text", :access => :private)
     s3path
   end
+  
+  def self.valid_file?(filename)
+    ['.csv','.txt'].include? File.extname(filename).downcase
+  end
+  
 
   private
   def new_lead(phone_number)
