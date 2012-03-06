@@ -24,6 +24,7 @@ Report Date Range:
     <th>Account Email</th>
     <th>Callers</th>
     <th>Calls</th>
+    <th>Broadcast Calls</th>
     <th>Transfers</th>
     <th>Total</th>
   </tr>
@@ -33,11 +34,13 @@ Report Date Range:
     <% calls=r["calls"] %>
     <% sessions=r["sessions"] %>
     <% transfers=r["transfers"] %>
+    <% broadcast=r["broadcast"] %>
     <tr class="<%= cycle("odd","even") %>">
       <td><%= account.id %></td>
       <td><%= account.users.first.email %></td>
       <td><%= sessions %></td>
       <td><%= calls %></td>
+      <td><%= broadcast %></td>
       <td><%= transfers %></td>
 	  <td><%= sessions + calls + transfers %></td>
     </tr>
