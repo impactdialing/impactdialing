@@ -14,6 +14,7 @@ ImpactDialing::Application.routes.draw do
     resources :leads
     resources :callers
     resources :voter_lists
+    resources :reports
     resources 'account' do
       resources :campaigns, only: [:index]
     end
