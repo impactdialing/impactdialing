@@ -292,7 +292,6 @@ function subscribe(session_key) {
 	  console.log("Pusher's current state is " + states.current);
 	});
 
-
     channel.bind('caller_connected', function(data) {
         hide_all_actions();
         $('#browserTestContainer').hide();
