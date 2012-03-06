@@ -88,6 +88,20 @@ class User < ActiveRecord::Base
     @voter = Voter.new(Phone: "4152372444", LastName: "Lead", FirstName: "Demo", campaign_id: @campaign.id, account_id: self.account.id, voter_list_id: @voter_list.id)
     @voter.save  
   end
+  
+  def create_promo_balance
+    p = Payment.new(:amount_paid=>9, :amount_remaining=>9, :account_id=>self.account.id, :notes=>"Trial credit")
+    p.save
+  end
+
+  def new_payment(amount, notes, recurly_transaction_uuid)
+    p = Payment.new(:amount_paid=>amount, :amount_remaining=>amount, :account_id=>self.account.id, :notes=>notes, :recurly_transaction_uuid=>recurly_transaction_uuid)
+    p.save
+  end
+  
+  def create_recurly_account_code
+    self.account.create_recurly_account_code
+  end
 
   def send_welcome_email
     return false if Rails.env !="heroku"
