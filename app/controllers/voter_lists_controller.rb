@@ -15,7 +15,7 @@ class VoterListsController < ClientController
       return
     end
     upload = params[:upload]["datafile"]
-    unless valid_file?(upload.original_filename)
+    unless VoterList.valid_file?(upload.original_filename)
       flash_message(:error, "Wrong file format. Please upload a comma-separated value (CSV) or tab-delimited text (TXT) file. If your list is in Excel format (XLS or XLSX), use \"Save As\" to change it to one of these formats.")
       redirect_to @campaign_path
       return
@@ -46,9 +46,6 @@ class VoterListsController < ClientController
   end
   
   private
-  def valid_file?(filename)
-    ['.csv','.txt'].include? File.extname(filename).downcase
-  end
   
   def load_campaign
     @campaign = Campaign.find(params[:campaign_id])

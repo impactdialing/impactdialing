@@ -306,4 +306,27 @@ describe VoterList do
       voter_list.voters_remaining.should == 1
     end
   end
+  
+  describe "valid file" do
+     it "should conside csv file extension as valid" do
+       VoterList.valid_file?("abc.csv").should be_true
+     end
+     
+     it "should conside CSV file extension as valid" do
+       VoterList.valid_file?("abc.CSV").should be_true
+     end
+     
+     it "should conside txt file extension as valid" do
+       VoterList.valid_file?("abc.txt").should be_true
+     end
+     
+     it "should conside txt file extension as valid" do
+       VoterList.valid_file?("abc.txt").should be_true
+     end
+     
+     
+     
+    
+    
+  end
 end
