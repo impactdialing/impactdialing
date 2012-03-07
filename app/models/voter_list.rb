@@ -106,7 +106,7 @@ class VoterList < ActiveRecord::Base
       end
       system_field ||=  account.custom_voter_fields.find_by_name(header_field).try(:name)
       if system_field.nil?
-        csv_to_system_map[header_field] = "Custom #{header_field}"
+        csv_to_system_map[header_field] = "#{header_field}"
       else
         csv_to_system_map[header_field] = system_field
       end
