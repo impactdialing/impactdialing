@@ -1,4 +1,7 @@
 <html>
+	<head>
+  	<%= render :partial => "shared/kissmetrics" %>
+	</head>
 	<body>
     <%= render :partial => "shared/flash_messages", :locals => { :display => [:error, :notice, :warning] } %>
 		<%= yield %>
