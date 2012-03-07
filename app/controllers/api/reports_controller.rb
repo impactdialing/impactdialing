@@ -1,19 +1,26 @@
 module Api
   class ReportsController < ApiController
     
-    def validate_date_range(from_date, to_date)
-      begin
-        @from_date = Date.strptime(from_date, '%m/%d/%Y')
-        @to_date = Date.strptime(to_date, '%m/%d/%Y')
-      rescue ArgumentError => err
-        render_json_response({status: 'error', code: '400', message: err.to_s + " Use mm/dd/yyyy format"})
-        return false
-      end      
+    def validate_date_range(from_date, to_date, download_all_voters)
+      unless to_boolean(download_all_voters)
+        if from_date.nil? || to_date.nil?
+          render_json_response({status: 'error', code: '400', message: "From and To date cannot be nil"})
+          return false          
+        end
+        begin
+          @from_date = Date.strptime(from_date, '%m/%d/%Y')
+          @to_date = Date.strptime(to_date, '%m/%d/%Y')
+        rescue ArgumentError => err
+          render_json_response({status: 'error', code: '400', message: err.to_s + " Use mm/dd/yyyy format"})
+          return false
+        end      
+      end
       return true      
     end
     
+    
     def validate_params
-      validate_campaign(params[:campaign_id]) && validate_account(params[:account_id]) && validate_campaign_belongs_to_account(params[:campaign_id], params[:account_id]) && validate_email_belongs_to_account(params[:account_id], params[:email]) && validate_date_range(params[:from_date], params[:to_date])      
+      validate_campaign(params[:campaign_id]) && validate_account(params[:account_id]) && validate_campaign_belongs_to_account(params[:campaign_id], params[:account_id]) && validate_email_belongs_to_account(params[:account_id], params[:email]) && validate_date_range(params[:from_date], params[:to_date], params[:download_all_voters])      
     end
     
     def create
@@ -21,7 +28,7 @@ module Api
       @campaign = Campaign.find(params[:campaign_id])
       user = User.find_by_email(params[:email])
       set_date_range
-      Delayed::Job.enqueue ReportJob.new(@campaign, user, params[:voter_fields], params[:custom_voter_fields], params[:download_all_voters], @from_date, @to_date)
+      Delayed::Job.enqueue ReportJob.new(@campaign, user, params[:voter_fields], params[:custom_voter_fields], to_boolean(params[:download_all_voters]), @from_date, @to_date)
       render_json_response({status: 'ok', code: '200' , message: "An email will be sent to #{params[:email]} with the status of the report download"})
     end
     
