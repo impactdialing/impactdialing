@@ -100,6 +100,7 @@ class ClientController < ApplicationController
           message = "Your account has been created."
           session[:user]=@user.id
           flash_message(:notice, message)          
+          flash_message(:kissmetrics, "Signed Up")
           redirect_to :action=>"welcome"
           return
         else
@@ -152,6 +153,7 @@ class ClientController < ApplicationController
         @user = User.new {params[:user]}
       else
         session[:user]=@user.id
+        flash_message(:kissmetrics, "Signed In")
         redirect_to :action=>"index"
         return
       end

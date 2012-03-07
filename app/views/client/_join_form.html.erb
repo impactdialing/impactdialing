@@ -88,3 +88,7 @@
 
 		</fieldset>
 <% end -%>
+
+<% content_for :kissmetrics do %>
+_kmq.push(['record', 'viewed signup form']);
+<% end %>
