@@ -60,6 +60,31 @@ describe Api::ReportsController do
     JSON.parse(response.body).should eq({"status"=>"error", "message"=>"invalid date Use mm/dd/yyyy format"})    
   end
   
+  it "should not validate date if download all voters" do
+    Delayed::Job.should_receive(:enqueue)
+    post :create, api_key: '1mp@ctd1@l1ng',campaign_id: @campaign.id, account_id: @campaign.account.id.to_s, email: @current_user.email, download_all_voters: "true"
+    result = JSON.parse(response.body)
+    response.code.should eq('200')
+    JSON.parse(response.body).should eq({"status"=>"ok", "message"=>"An email will be sent to #{@current_user.email} with the status of the report download"})    
+  end
+  
+  it "should throw correct error if date not supplied" do
+    post :create, api_key: '1mp@ctd1@l1ng',campaign_id: @campaign.id, account_id: @campaign.account.id.to_s, email: @current_user.email, download_all_voters: "false"
+    result = JSON.parse(response.body)
+    response.code.should eq('400')
+    JSON.parse(response.body).should eq({"status"=>"error", "message"=>"From and To date cannot be nil"})    
+  end
+  
+  it "should throw correct error if date is blank" do
+    post :create, api_key: '1mp@ctd1@l1ng',campaign_id: @campaign.id, account_id: @campaign.account.id.to_s, email: @current_user.email, download_all_voters: "false", from_date: "", to_date: ""
+    result = JSON.parse(response.body)
+    response.code.should eq('400')
+    JSON.parse(response.body).should eq({"status"=>"error", "message"=>"invalid date Use mm/dd/yyyy format"})    
+  end
+  
+  
+  
+  
   it "should return 200 if report scheduled for download" do
     Delayed::Job.should_receive(:enqueue)
     post :create, api_key: '1mp@ctd1@l1ng',campaign_id: @campaign.id, account_id: @campaign.account.id.to_s, email: @current_user.email, from_date: "10/31/2011", to_date: "11/30/2011"
