@@ -358,14 +358,14 @@ describe VoterList do
      
      it "should use assign  new custom attribute for mapping" do
        account = Factory(:account)
-       VoterList.create_csv_to_system_map(['new test'], account).should eq ({"new test"=>"Custom new test"})
+       VoterList.create_csv_to_system_map(['new test'], account).should eq ({"new test"=>"new test"})
      end
      
      it "should use use primary attribute and custom field and assign new attribute" do
        account = Factory(:account)
        Factory(:custom_voter_field, name: "Region", account_id: account.id)
        Factory(:custom_voter_field, name: "Club", account_id: account.id)
-       VoterList.create_csv_to_system_map(['Phone','FirstName','Region','Club','Mobile'], account).should eq ({"Phone"=>"Phone", "FirstName"=>"FirstName", "Region"=>"Region", "Club"=>"Club", "Mobile"=>"Custom Mobile"})
+       VoterList.create_csv_to_system_map(['Phone','FirstName','Region','Club','Mobile'], account).should eq ({"Phone"=>"Phone", "FirstName"=>"FirstName", "Region"=>"Region", "Club"=>"Club", "Mobile"=>"Mobile"})
      end
      
      
