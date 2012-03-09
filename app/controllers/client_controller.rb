@@ -806,11 +806,16 @@ class ClientController < ApplicationController
   # end
   def script_delete
     @script = account.scripts.find_by_id(params[:id])
-    if !@script.blank?
-      @script.active=false
-      @script.save
+    unless @script.blank?
+      campaign = account.campaigns.active.find_by_script_id(@script.id)
+      if campaign.nil?
+        @script.active=false
+        @script.save
+        flash_message(:notice, "Script deleted")
+      else
+        flash_message(:notice, I18n.t(:script_cannot_be_deleted))
+      end
     end
-    flash_message(:notice, "Script deleted")
     redirect_to :back
   end
 
