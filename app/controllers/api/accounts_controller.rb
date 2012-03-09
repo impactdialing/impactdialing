@@ -1,7 +1,6 @@
 module Api
   class AccountsController < ApiController
     
-    
     def validate_params
       validate_email_not_blank(params[:email])
     end
