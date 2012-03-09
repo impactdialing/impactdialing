@@ -5,14 +5,24 @@ Pusher.log = function(message) {
 var channel = null;
 
 
+function doWork()
+{
+    if (window.isActive) { /* do CPU-intensive stuff */}
+}
 $(document).ready(function() {
+	window.isActive = true;
+    $(window).hover(function() { this.isActive = true; });
+    $(window).blur(function() { this.isActive = false; });
+    
     hide_all_actions();
     setInterval(function() {
+	
         if ($("#caller_session").val()) {
             //do nothing if the caller session context already exists
         } else {
-	        console.log(Date.now())
-            get_session();
+			if (window.isActive) {
+              get_session();
+			}
         }
     }, 5000); //end setInterval
 
@@ -35,14 +45,12 @@ function set_session(session_id) {
 }
 
 function get_session() {
-	console.log("get session")
     $.ajax({
         url : "/caller/active_session",
         data : {id : $("#caller").val(), campaign_id : $("#campaign").val() },
         type : "POST",
         success : function(json) {
             if (json.caller_session.id && $("#caller_session").val() === ""  ) {
-			    console.log("get session success")
                 set_session(json.caller_session.id);
                 subscribe(json.caller_session.session_key);
                 $("#callin_data").hide();
