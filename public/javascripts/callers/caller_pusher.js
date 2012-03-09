@@ -11,7 +11,7 @@ function doWork()
 }
 $(document).ready(function() {
 	window.isActive = true;
-    $(window).hover(function() { this.isActive = true; });
+    $(window).focus(function() { this.isActive = true; });
     $(window).blur(function() { this.isActive = false; });
     
     hide_all_actions();
