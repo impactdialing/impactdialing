@@ -14,6 +14,21 @@ describe Client::ScriptsController do
     delete :destroy, :id => script.id
     script.reload.should_not be_active
   end
+  
+  it "should not delete a script if assigned to an active campaign" do
+    script = Factory(:script, account: account, robo: false, active: true)
+    campaign =  Factory(:campaign, active: true, script_id: script.id, account: account)
+    delete :destroy, :id => script.id
+    script.reload.should be_active
+  end
+  
+  it "should  delete a script if assigned to an inactive campaign" do
+    script = Factory(:script, account: account, robo: false, active: true)
+    campaign =  Factory(:campaign, active: false, script_id: script.id, account: account)
+    delete :destroy, :id => script.id
+    script.reload.should_not be_active
+  end
+  
 
   it "lists voter fields to select" do
     script = Factory(:script, :account => account, :robo => false, :active => true)

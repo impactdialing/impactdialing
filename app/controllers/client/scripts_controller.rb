@@ -56,7 +56,6 @@ module Client
       @voter_fields = VoterList::VOTER_DATA_COLUMNS.values
       @voter_fields.concat(@user.account.custom_voter_fields.collect{ |field| field.name})
       @voter_field_values = (JSON.parse(@script.voter_fields) if @script.voter_fields) || []
-      p "&^%&^%&^%&%&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& #{params[:script][:voter_fields]}"
       begin
         params[:save_as] ? save_as : @script = account.scripts.find_by_id(params[:id])
 
@@ -76,8 +75,15 @@ module Client
 
     def destroy
       @script = @user.account.scripts.manual.find(params[:id])
-      @script.update_attributes(:active => false)
-      flash_message(:notice, "Script deleted")
+      unless @script.nil?
+        campaign = @user.account.campaigns.active.find_by_script_id(@script.id)
+        if campaign.nil?
+          @script.update_attributes(:active => false)
+          flash_message(:notice, "Script deleted")
+        else
+          flash_message(:notice, I18n.t(:script_cannot_be_deleted))
+        end
+      end
       redirect_to :action => "index"
     end
     
