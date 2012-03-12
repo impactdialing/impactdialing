@@ -13,7 +13,12 @@ ImpactDialing::Application.routes.draw do
   namespace 'api' do
     resources :leads
     resources :callers
+    resources :voter_lists
+    resources :reports
     resources 'account' do
+      collection do
+        get :id
+      end
       resources :campaigns, only: [:index]
     end
   end

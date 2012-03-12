@@ -2,26 +2,7 @@ module Api
   class CampaignsController < ApiController
     
     def validate_params
-      begin
-        Account.find(params[:account_id])
-      rescue Exception => err
-        render_json_response({status: 'error', code: '404', message: err.to_s})
-        return false
-      end
-      
-      if params[:email].blank?
-        render_json_response({status: 'error', code: '400', message: 'Email cannot be blank'})
-        return false
-      end      
-      
-      account = Account.find(params[:account_id])
-      emails = account.users.collect{|user| user.email}
-      unless emails.include?(params[:email])
-        render_json_response({status: 'error', code: '401' , message: 'Unauthorized: Cannot access this account'})
-        return false
-      end      
-      return true
-    
+      validate_account(params[:account_id]) && validate_email_not_blank(params[:email]) && validate_email_belongs_to_account(params[:account_id], params[:email])      
     end
     
     

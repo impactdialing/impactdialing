@@ -65,6 +65,15 @@ describe ClientController do
       entity.reload.active.should be_false
       response.should redirect_to :back
     end
+    
+    it "should not delete a script assigned to a active campaign" do
+      script = Factory(:script, account: user.account, robo: true, active: true)
+      campaign =  Factory(:campaign, active: true, script_id: script.id, account: user.account)
+      post "script_delete", :id => script.id
+      script.reload.active.should be_true
+      response.should redirect_to :back
+    end
+    
 
   end
 end
