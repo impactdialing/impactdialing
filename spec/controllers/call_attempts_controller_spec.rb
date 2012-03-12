@@ -28,6 +28,26 @@ describe CallAttemptsController do
       post :voter_response, :id => call_attempt.id, :voter_id => voter.id, :question => {question1.id=> response1.id, question2.id=>response2.id}
       voter.answers.count.should == 2
     end
+    
+    it "collects voter responses if voter id is blank from call attempt" do
+      script = Factory(:script, :robo => false)
+      voter2 = Factory(:voter, :campaign => campaign)
+      question1 = Factory(:question, :script => script)
+      response1 = Factory(:possible_response, :question => question1)
+      question2 = Factory(:question, :script => script)
+      response2 = Factory(:possible_response, :question => question2)
+
+      channel = mock
+      # Voter.stub_chain(:to_be_dialed, :first).and_return(voter)
+      Pusher.should_receive(:[]).with(anything).and_return(channel)
+      info = voter2.info
+      info[:fields]['status'] = CallAttempt::Status::READY
+      channel.should_receive(:trigger).with("voter_push", info.merge(:dialer => campaign.predictive_type))
+
+      post :voter_response, :id => call_attempt.id, :voter_id => "", :question => {question1.id=> response1.id, question2.id=>response2.id}
+      voter.answers.count.should == 2
+    end
+    
 
     it "retry responses should dial voter again later" do
       voter2 = Factory(:voter, campaign: campaign)
