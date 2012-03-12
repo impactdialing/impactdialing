@@ -306,4 +306,69 @@ describe VoterList do
       voter_list.voters_remaining.should == 1
     end
   end
+  
+  describe "valid file" do
+     it "should consider csv file extension as valid" do
+       VoterList.valid_file?("abc.csv").should be_true
+     end
+     
+     it "should consider CSV file extension as valid" do
+       VoterList.valid_file?("abc.CSV").should be_true
+     end
+     
+     it "should consider txt file extension as valid" do
+       VoterList.valid_file?("abc.txt").should be_true
+     end
+     
+     it "should consider txt file extension as valid" do
+       VoterList.valid_file?("abc.txt").should be_true
+     end
+     
+     it "should consider null fileas invalid" do
+       VoterList.valid_file?(nil).should be_false
+     end
+     
+     it "should consider non csv txt file as invalid" do
+       VoterList.valid_file?("abc.psd").should be_false
+     end
+  end
+  
+  describe "seperator from file extension" do
+    it "should return , for csv file" do
+      VoterList.separator_from_file_extension("abc.csv").should eq(',')
+    end
+    
+    it "should return \t for txt file" do
+      VoterList.separator_from_file_extension("abc.txt").should eq("\t")
+    end
+    
+  end
+  
+  describe "create csv to system map" do
+     it "should use voter primary attribute for mapping" do
+       account = Factory(:account)
+       VoterList.create_csv_to_system_map(['Phone'], account).should eq ({"Phone"=>"Phone"})
+     end
+     
+     it "should use account custom attribute for mapping" do
+       account = Factory(:account)
+       Factory(:custom_voter_field, name: "test", account_id: account.id)
+       VoterList.create_csv_to_system_map(['test'], account).should eq ({"test"=>"test"})
+     end
+     
+     it "should use assign  new custom attribute for mapping" do
+       account = Factory(:account)
+       VoterList.create_csv_to_system_map(['new test'], account).should eq ({"new test"=>"new test"})
+     end
+     
+     it "should use use primary attribute and custom field and assign new attribute" do
+       account = Factory(:account)
+       Factory(:custom_voter_field, name: "Region", account_id: account.id)
+       Factory(:custom_voter_field, name: "Club", account_id: account.id)
+       VoterList.create_csv_to_system_map(['Phone','FirstName','Region','Club','Mobile'], account).should eq ({"Phone"=>"Phone", "FirstName"=>"FirstName", "Region"=>"Region", "Club"=>"Club", "Mobile"=>"Mobile"})
+     end
+     
+     
+     
+  end
 end

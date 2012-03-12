@@ -88,6 +88,33 @@ class VoterList < ActiveRecord::Base
     AWS::S3::S3Object.store(s3path, file, @config['bucket'],:content_type =>"application/text", :access => :private)
     s3path
   end
+  
+  def self.valid_file?(filename)
+    return false if filename.nil?
+    ['.csv','.txt'].include? File.extname(filename).downcase
+  end
+  
+  def self.separator_from_file_extension(filename)
+    (File.extname(filename).downcase.include?('.csv')) ? ',' : "\t"
+  end
+  
+  def self.create_csv_to_system_map(csv_headers,account)
+    csv_to_system_map = {}
+    csv_headers.each do |header_field|
+      if Voter.new.has_attribute?(header_field)
+        system_field = header_field
+      end
+      system_field ||=  account.custom_voter_fields.find_by_name(header_field).try(:name)
+      if system_field.nil?
+        csv_to_system_map[header_field] = "#{header_field}"
+      else
+        csv_to_system_map[header_field] = system_field
+      end
+    end
+    return csv_to_system_map
+  end
+  
+  
 
   private
   def new_lead(phone_number)
