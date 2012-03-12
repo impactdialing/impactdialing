@@ -265,6 +265,26 @@ class ClientController < ApplicationController
     redirect_to client_campaigns_path(params[:campaign_id])
   end
   
+  def recharge
+    @account=@user.account
+    
+    if request.put?
+      @account.update_attributes(params[:account])
+      flash_message(:notice, "Autorecharge settings saved")
+      redirect_to :action=>"billing"
+      return
+    end
+    
+    @account.autorecharge_trigger=20.to_f if @account.autorecharge_trigger.nil?
+    @account.autorecharge_amount=40.to_f if @account.autorecharge_amount.nil?
+    @recharge_options=[]
+    @recharge_options.tap{
+     10.step(500,10).each do |n|
+       @recharge_options << ["$#{n}",n.to_f]
+      end 
+    }
+  end
+  
   def billing_updated
     # return url from recurly.js account update
     flash_message(:notice, "Billing information updated")
