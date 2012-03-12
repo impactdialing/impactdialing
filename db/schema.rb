@@ -11,16 +11,23 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120222085859) do
+ActiveRecord::Schema.define(:version => 20120312080357) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "domain"
-    t.boolean  "activated",            :default => false
-    t.boolean  "record_calls",         :default => false
-    t.integer  "chargify_customer_id"
+    t.boolean  "activated",                 :default => false
+    t.boolean  "record_calls",              :default => false
+    t.string   "recurly_account_code"
+    t.string   "subscription_name"
+    t.boolean  "subscription_active",       :default => false
+    t.string   "recurly_subscription_uuid"
+    t.integer  "subscription_count"
+    t.boolean  "autorecharge_enabled",      :default => false
+    t.float    "autorecharge_trigger"
+    t.float    "autorecharge_amount"
   end
 
   create_table "answers", :force => true do |t|
@@ -29,7 +36,7 @@ ActiveRecord::Schema.define(:version => 20120222085859) do
     t.integer  "possible_response_id", :null => false
     t.datetime "created_at"
     t.integer  "campaign_id"
-    t.integer  "caller_id",            :null => false
+    t.integer  "caller_id"
   end
 
   add_index "answers", ["voter_id", "question_id"], :name => "index_answers_on_voter_id_and_question_id"
@@ -316,6 +323,18 @@ ActiveRecord::Schema.define(:version => 20120222085859) do
   create_table "notes", :force => true do |t|
     t.text    "note",      :null => false
     t.integer "script_id", :null => false
+  end
+
+  create_table "payments", :force => true do |t|
+    t.float    "amount_paid"
+    t.integer  "account_id"
+    t.float    "amount_remaining"
+    t.integer  "recurly_account_code"
+    t.string   "notes"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string   "type"
+    t.string   "recurly_transaction_uuid"
   end
 
   create_table "possible_responses", :force => true do |t|
