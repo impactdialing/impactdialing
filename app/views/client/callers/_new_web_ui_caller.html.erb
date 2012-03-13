@@ -13,5 +13,4 @@
 		<label>Campaign</label>
 		<%= f.select("campaign_id", @campaigns.try(:collect){|c| [ c.name, c.id ]}) %>
 	</p>
-	<p>Each caller using the web interface needs their own login. Two people can't log in as the same caller at the same time.</p>
 </fieldset>
