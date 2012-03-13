@@ -29,6 +29,7 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
     end
     file.close    
     expires_in_12_hours = (Time.now + 12.hours).to_i
+    puts expires_in_12_hours
     AWS::S3::S3Object.store("#{@campaign_name}.csv", File.open(filename), "download_reports", :content_type => "text/csv", :access=>:private, :expires_in => expires_in_12_hours)
   end
 
