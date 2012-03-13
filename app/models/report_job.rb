@@ -29,7 +29,6 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
     end
     file.close    
     expires_in_12_hours = (Time.now + 12.hours).to_i
-    puts expires_in_12_hours
     AWS::S3::S3Object.store("#{@campaign_name}.csv", File.open(filename), "download_reports", :content_type => "text/csv", :access=>:private, :expires => expires_in_12_hours)
   end
 
@@ -63,7 +62,8 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
 
   def notify_success
     mailer = UserMailer.new
-    mailer.deliver_download(user, AWS::S3::S3Object.url_for("#{@campaign_name}.csv", "download_reports"))
+    expires_in_12_hours = (Time.now + 12.hours).to_i
+    mailer.deliver_download(user, AWS::S3::S3Object.url_for("#{@campaign_name}.csv", "download_reports", :expires => expires_in_12_hours))
   end
 
   def notify_failure(job, exception)
