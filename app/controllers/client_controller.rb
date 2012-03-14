@@ -325,6 +325,19 @@ class ClientController < ApplicationController
     @balance=@user.account.current_balance
     @trial=@user.account.trial?
   end
+
+  def update_billing_quantity
+    if request.post?
+      subscription = Recurly::Subscription.find(@user.account.recurly_subscription_uuid)
+      subscription.update_attributes(
+        :quantity  => params[:num_callers],
+        :timeframe => 'now'       # Update immediately.
+      )
+      @user.account.update_attribute(:subscription_count, params[:num_callers])
+      flash_message(:notice, "Number of callers updated.")
+      redirect_to :action=>"billing"
+    end
+  end
   
   def new_subscription
     render :layout=>"recurly"

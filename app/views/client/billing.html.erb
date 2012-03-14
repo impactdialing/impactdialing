@@ -26,8 +26,11 @@
 
 
 <% else %>
-	<p>Your current subscription is: <%= @user.account.active_subscription %></p>
+	<p>Your current subscription is: <%= @user.account.active_subscription %> (<%= @user.account.subscription_count %> callers)</p>
 	<p>Your current balance is <%= number_to_currency @balance %></p>
+	<% if @user.account.active_subscription=="Per Caller" %>
+		<p class="actions"><a href="/client/update_billing_quantity" class="action secondary">Change # of callers</a></p>
+	<% end %>
 	<p class="actions"><a href="/client/add_to_balance" class="action secondary">Add to your balance</a></p>
 	<p class="actions"><a href="/client/recharge" class="action secondary"><% if @user.account.autorecharge_enabled? %>Configure<% else %>Enable<% end %> auto-recharge</a></p>
 	<p class="actions"><a href="/client/update_billing" class="action secondary">Update billing information</a></p>
