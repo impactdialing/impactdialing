@@ -8,6 +8,8 @@ module WhiteLabeling
   def correct_domain(domain)
     domain = 'localhost' unless domain
     d = domain.downcase.gsub(/\..+$/, '')
+    puts "xxxxxxxxxxxxxxxx"
+    puts d
     if I18n.t("white_labeling.#{d}", :default => '').blank?
       'impactdialing'
     else
@@ -15,7 +17,4 @@ module WhiteLabeling
     end
   end
   
-  def support_email(domain)
-    "support@#{domain}"
-  end
 end
