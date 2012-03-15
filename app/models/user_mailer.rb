@@ -21,7 +21,7 @@ class UserMailer
         :html => I18n.t(:admin_invite_body_html, :title => white_labeled_title(current_user.domain), :link => link),
         :text => I18n.t(:admin_invite_body_text, :title => white_labeled_title(current_user.domain), :link => link),
         :from_name => white_labeled_title(current_user.domain),
-        :from_email => white_labeled_email(current_user.domain),
+        :from_email => support_email(current_user.domain),
         :to_email => [new_user.email]
       }
     })
