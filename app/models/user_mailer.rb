@@ -12,6 +12,8 @@ class UserMailer
   end
 
   def deliver_invitation(new_user, current_user)
+    puts "Ddddddd"
+    puts support_email(current_user.domain)
     link = reset_password_url(protocol: PROTOCOL, :host => "admin.#{current_user.domain}", :reset_code => new_user.password_reset_code)
     @uakari.send_email({
       :track_opens => true,
