@@ -78,7 +78,7 @@ module ApplicationHelper
     ['client/accounts', 'client', 'voter_lists', 'monitor', 'client/campaigns', 'client/scripts', 'client/callers', 'client/reports', 'campaigns', 'scripts', 'broadcast', 'reports', 'home', 'blocked_numbers', 'monitors', 'messages'].include?(controllerName)
   end
 
-  ['title', 'full_title', 'phone', 'email',].each do |value|
+  ['title', 'full_title', 'phone', 'email', 'billing_link'].each do |value|
     define_method(value) do
       send("white_labeled_#{value}", request.domain)
     end
