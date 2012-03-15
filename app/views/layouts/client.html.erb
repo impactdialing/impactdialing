@@ -79,7 +79,7 @@
     <li class='divider'><a href="/client">Help</a></li>
     <li class='divider'><a href="/client/user_add">Account</a></li>
     <!-- <li class='divider'><%= link_to "Users", client_account_path %></li> -->
-    <li class='divider'><a href="/client/billing">Billing</a></li>
+    <li class='divider'><a href="<%= billing_link %>">Billing</a></li>
     <li><a href="/client/logout">Log out</a></li>
   </ul>
 <% elsif logged_in_as_caller? %>
