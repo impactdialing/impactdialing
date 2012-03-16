@@ -64,7 +64,6 @@ function get_session() {
 }
 
 function get_voter() {
-	console.log('priview voter')
     $.ajax({
         url : "/caller/" + $("#caller").val() + "/preview_voter",
         data : {id : $("#caller").val(), session_id : $("#caller_session").val(), voter_id: $("#current_voter").val() },
@@ -85,7 +84,6 @@ function next_voter() {
 }
 
 function call_voter() {
-    console.log('called voter');
     hide_all_actions();
 	$("#stop_calling").show();
     $.ajax({
@@ -137,7 +135,6 @@ function kick_caller_off(){
 }
 
 function send_voter_response() {
-    console.log('submit voter response')
     $('#voter_responses').attr('action', "/call_attempts/" + $("#current_call_attempt").val() + "/voter_response");
     var vid = $('#voter_id').val($("#current_voter").val())
     $('#voter_responses').submit(function() {
@@ -294,10 +291,8 @@ function set_transfer_panel(data) {
 
 function subscribe(session_key) {
     channel = pusher.subscribe(session_key);
-    console.log(channel)
 	pusher.connection.bind('state_change', function(states) {
-	  // states = {previous: 'oldState', current: 'newState'}
-	  console.log("Pusher's current state is " + states.current);
+	  // states = {previous: 'oldState', current: 'newState'
 	});
 
     channel.bind('caller_connected', function(data) {
