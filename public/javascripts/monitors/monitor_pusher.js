@@ -65,12 +65,11 @@ function subscribe_and_bind_events_monitoring(session_id){
     $('status').text(data.status_msg);
   });
 
-	console.log('stopwatch: inside monitoring', $.fn.stopwatch, $('body').stopwatch);
   
   channel.bind('caller_session_started', function(data){
     if (!$.isEmptyObject(data)) {
-      console.log("pusher event caller session started")
-			var caller_selector = 'tr#caller_'+data.session_id;
+
+	  var caller_selector = 'tr#caller_'+data.session_id;
       var caller = ich.caller(data);
       
 			$('#caller_table').children().append(caller);
@@ -79,7 +78,6 @@ function subscribe_and_bind_events_monitoring(session_id){
 			update_campaign_row(data);		
     }
     else{
-      console.log("pusher event caller session started but no data")
     }
   });
   
