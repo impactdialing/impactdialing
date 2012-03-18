@@ -24,18 +24,36 @@ class Account < ActiveRecord::Base
     self.payments.count==1 && self.payments.first.notes=="Trial credit" && recurly_subscription_uuid.nil?
   end
   
+  def cancel_subscription
+    return if self.recurly_subscription_uuid.blank?
+    subscription = Recurly::Subscription.find(self.recurly_subscription_uuid)
+    subscription.cancel
+  end
+  
   def sync_subscription
     #pull latest subscription data from recurly
+    
     recurly_account = Recurly::Account.find(self.recurly_account_code)
+    has_active_subscriptions=false
     recurly_account.subscriptions.find_each do |subscription|
-      self.subscription_count=subscription.quantity
-      self.recurly_subscription_uuid=subscription.uuid
-      self.subscription_active=subscription.state=="active" ? true : false
-      self.subscription_name=subscription.plan.name
+      if subscription.state!="expired"
+        has_active_subscriptions=true
+        self.subscription_count=subscription.quantity
+        self.recurly_subscription_uuid=subscription.uuid
+        self.subscription_active=subscription.state=="active" ? true : false
+        self.subscription_name=subscription.plan.name
+        self.save
+      end
+    end
+    if !has_active_subscriptions
+      self.recurly_subscription_uuid=nil
+      self.subscription_count=0
+      self.subscription_active=false
+      self.subscription_name=nil
       self.save
     end
   end
-  
+    
   def create_recurly_account_code
     return self.recurly_account_code if !self.recurly_account_code.nil?
     begin

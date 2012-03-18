@@ -291,6 +291,14 @@ class ClientController < ApplicationController
     redirect_to :action=>"billing"
   end
   
+  def cancel_subscription
+    if request.post?
+      @user.account.cancel_subscription
+      flash_message(:notice, "Subscription cancelled")
+      redirect_to :action=>"billing"
+    end
+  end
+  
   def billing_success
     # return url from recurly hosted subscription form
     @user.account.sync_subscription
