@@ -188,6 +188,8 @@ function disconnect_caller() {
     }
 }
 
+function ie8(){}
+
 function disconnect_voter() {
 	alert('disconnect voter')
     $.ajax({
