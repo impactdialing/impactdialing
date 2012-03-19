@@ -170,6 +170,7 @@ function send_voter_response_and_disconnect() {
 }
 
 function disconnect_caller() {
+	alert('stop')
     var session_id = $("#caller_session").val();
     if (session_id) {
         $.ajax({
@@ -188,6 +189,7 @@ function disconnect_caller() {
 }
 
 function disconnect_voter() {
+	alert('disconnect voter')
     $.ajax({
         url : "/call_attempts/" + $("#current_call_attempt").val() + "/hangup",
         type : "POST",
