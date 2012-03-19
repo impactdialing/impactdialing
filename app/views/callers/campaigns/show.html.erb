@@ -166,7 +166,6 @@
     }
 
     $(window).bind("beforeunload", function() {
-      alert('before unload')
         if ($("#caller_session").val()) {
             $.ajax({
                 url : "/caller/" + $("#caller").val() + "/stop_calling",
