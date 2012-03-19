@@ -189,7 +189,10 @@ function disconnect_caller() {
 }
 
 function ie8(){
-	window.onbeforeunload = null;
+	if ($.browser.msie) {
+  	  window.onbeforeunload = null;
+    }
+
 }
 
 function disconnect_voter() {
