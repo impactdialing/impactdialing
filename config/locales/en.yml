@@ -34,6 +34,7 @@ en:
   broadcast_campaign_started: "Broadcast Campaign Started"
   script_cannot_be_deleted: "This script cannot be deleted, as it is currently assigned to an active campaign."
   white_labeling:
+      
     impactdialing:
       title: "Impact Dialing"
       full_title: "Impact Dialing, LLC"

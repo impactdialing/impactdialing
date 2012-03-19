@@ -15,7 +15,4 @@ module WhiteLabeling
     end
   end
   
-  def support_email(domain)
-    "support@#{domain}"
-  end
 end
