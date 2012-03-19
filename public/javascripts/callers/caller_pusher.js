@@ -187,6 +187,13 @@ function disconnect_caller() {
     }
 }
 
+function ie8(){
+	if ($.browser.msie) {
+  	  window.onbeforeunload = null;
+    }
+
+}
+
 function disconnect_voter() {
     $.ajax({
         url : "/call_attempts/" + $("#current_call_attempt").val() + "/hangup",
