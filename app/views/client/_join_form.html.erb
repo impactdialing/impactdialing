@@ -1,3 +1,4 @@
+<div id="join">
 	<% if @user.new_record? %>
 	<h1>Sign up</h1>
 	<% else %>
@@ -24,9 +25,6 @@
 			    </p>
 				<% end %>
 			      <p>
-<!--			        <label>
-						<% if !@user.new_record? %>New <% end %>password</label>
--->
 						<label>
 						<% if @user.new_record? %>
 						Pick a password
@@ -35,7 +33,6 @@
 						<% end %>
 						</label>
 
-					<%# f.password_field :password, {:class=>"field"} %>
 					<input class="field" id="user_password" name="user[new_password]" size="30" type="password" value="" />
 
 			      </p>
@@ -61,11 +58,6 @@
 				<%= f.text_field :phone, {:class=>"field"} %>
 		      </p>
 
-	<!--
-	      <p>
-	        <label><% if !@user.new_record? %>New <% end %>Password Confirmation <% if @user.new_record? %><span>(Required)</span><% end %></label>
-			<%# f.password_field :password_confirmation, {:class=>"field"} %>
-	      </p>-->
 	<% if @user.new_record? && false %>
 			<p>
         <label>	<input type="checkbox" name="tos" value="1" <% if params[:tos] %>checked<% end %>/> I agree to the <a href="<%= policies_path %>#terms" target="_blank">Terms of Service</a></label>
@@ -88,3 +80,4 @@
 
 		</fieldset>
 <% end -%>
+</div>
