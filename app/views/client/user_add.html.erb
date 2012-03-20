@@ -1,3 +1,9 @@
+<p>
+<a href="#join">My account</a><br>
+<a href="#administrators">Add administrators</a><br>
+<a href="/client/billing">Billing</a><br>
+<a href="/client/blocked_numbers">Do Not Call list</a>
+</p>
 <%= render :partial => 'join_form' %>
 <% unless @user.new_record? %>
 	<%= render :template => 'client/accounts/show' %>
