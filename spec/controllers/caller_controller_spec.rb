@@ -170,6 +170,16 @@ describe CallerController do
       post :active_session, :id => caller.id, :campaign_id => campaign.id
       response.body.should == {:caller_session => {:id => nil}}.to_json
     end
+    
+    it "should return a different session if identical caller identity used" do
+      login_as(caller)
+      campaign = Factory(:campaign)
+      campaign.callers << caller
+      session1 = Factory(:caller_session, :caller => caller, :session_key => 'key', :on_call => true, :available_for_call => true, :campaign => campaign)
+      session2 = Factory(:caller_session, :caller => caller, :session_key => 'key1', :on_call => true, :available_for_call => true, :campaign => campaign,browser_identification: "12345" )
+      post :active_session, :id => caller.id, :campaign_id => campaign.id
+      response.body.should eq(session1.to_json)      
+    end
   end
 
   describe "phones-only call" do
