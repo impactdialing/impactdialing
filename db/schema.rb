@@ -326,8 +326,6 @@ ActiveRecord::Schema.define(:version => 20120321074907) do
     t.integer "script_id", :null => false
   end
 
-<<<<<<< HEAD
-=======
   create_table "payments", :force => true do |t|
     t.float    "amount_paid"
     t.float    "amount_remaining"
@@ -338,7 +336,6 @@ ActiveRecord::Schema.define(:version => 20120321074907) do
     t.datetime "updated_at"
   end
 
->>>>>>> 103fab1... account views
   create_table "possible_responses", :force => true do |t|
     t.integer "question_id"
     t.integer "keypad"
