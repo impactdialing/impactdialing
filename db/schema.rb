@@ -18,11 +18,6 @@ ActiveRecord::Schema.define(:version => 20120321074907) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "domain"
-<<<<<<< HEAD
-    t.boolean  "activated",            :default => false
-    t.boolean  "record_calls",         :default => false
-    t.integer  "chargify_customer_id"
-=======
     t.boolean  "activated",                 :default => false
     t.boolean  "record_calls",              :default => false
     t.string   "recurly_account_code"
@@ -33,7 +28,6 @@ ActiveRecord::Schema.define(:version => 20120321074907) do
     t.boolean  "autorecharge_enabled",      :default => false
     t.float    "autorecharge_trigger"
     t.float    "autorecharge_amount"
->>>>>>> 103fab1... account views
   end
 
   create_table "answers", :force => true do |t|
