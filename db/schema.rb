@@ -18,9 +18,22 @@ ActiveRecord::Schema.define(:version => 20120321074907) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "domain"
+<<<<<<< HEAD
     t.boolean  "activated",            :default => false
     t.boolean  "record_calls",         :default => false
     t.integer  "chargify_customer_id"
+=======
+    t.boolean  "activated",                 :default => false
+    t.boolean  "record_calls",              :default => false
+    t.string   "recurly_account_code"
+    t.string   "subscription_name"
+    t.integer  "subscription_count"
+    t.boolean  "subscription_active",       :default => false
+    t.string   "recurly_subscription_uuid"
+    t.boolean  "autorecharge_enabled",      :default => false
+    t.float    "autorecharge_trigger"
+    t.float    "autorecharge_amount"
+>>>>>>> 103fab1... account views
   end
 
   create_table "answers", :force => true do |t|
@@ -319,6 +332,19 @@ ActiveRecord::Schema.define(:version => 20120321074907) do
     t.integer "script_id", :null => false
   end
 
+<<<<<<< HEAD
+=======
+  create_table "payments", :force => true do |t|
+    t.float    "amount_paid"
+    t.float    "amount_remaining"
+    t.integer  "recurly_transaction_uuid"
+    t.integer  "account_id"
+    t.string   "notes"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+>>>>>>> 103fab1... account views
   create_table "possible_responses", :force => true do |t|
     t.integer "question_id"
     t.integer "keypad"
