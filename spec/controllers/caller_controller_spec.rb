@@ -300,4 +300,16 @@ describe CallerController do
     end
 
   end
+  
+  describe "start calling" do
+    it "should start a conference for a caller who is not on call" do
+      account = Factory(:account)
+      campaign = Factory(:campaign, account: account)
+      caller = Factory(:caller, campaign: campaign, account:account)
+      post :start_calling, caller_id: caller.id, campaign_id: campaign.id,CallSid: "1234567"
+      caller.caller_sessions.on_call.size.should eq(1)
+
+    end
+    
+  end
 end

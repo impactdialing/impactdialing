@@ -5,10 +5,6 @@ Pusher.log = function(message) {
 var channel = null;
 
 
-function doWork()
-{
-    if (window.isActive) { /* do CPU-intensive stuff */}
-}
 $(document).ready(function() {
 	window.isActive = true;
     $(window).focus(function() { this.isActive = true; });
@@ -44,10 +40,16 @@ function set_session(session_id) {
     $("#caller_session").val(session_id);
 }
 
+
 function get_session() {
+	var guid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+	    var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+	    return v.toString(16);
+	});	
+	
     $.ajax({
         url : "/caller/active_session",
-        data : {id : $("#caller").val(), campaign_id : $("#campaign").val() },
+        data : {id : $("#caller").val(), campaign_id : $("#campaign").val(), browser_id: guid },
         type : "POST",
         success : function(json) {
             if (json.caller_session.id && $("#caller_session").val() === ""  ) {
