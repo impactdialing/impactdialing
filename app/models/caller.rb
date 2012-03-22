@@ -33,13 +33,20 @@ class Caller < ActiveRecord::Base
     self.pin = uniq_pin
   end
 
-  def active_session(campaign)
+  def active_session(campaign,browser_id)
     return {:caller_session => {:id => nil}} if self.campaign.nil?
-    caller_sessions.available.on_campaign(campaign).last || {:caller_session => {:id => nil}}
+    active_caller_session = caller_sessions.available.not_allocated.on_campaign(campaign).last      
+    unless active_caller_session.nil?
+      active_caller_session.lock!
+      active_caller_session.update_attributes(browser_identification: browser_id)
+      return active_caller_session
+    else
+      return {:caller_session => {:id => nil}}
+    end
   end
   
   def is_on_call?
-    caller_sessions.on_call.length > 0
+    !caller_sessions.blank? && caller_sessions.on_call.length > 0
   end
 
   class << self
