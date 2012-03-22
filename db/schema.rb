@@ -18,6 +18,9 @@ ActiveRecord::Schema.define(:version => 20120321074907) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "domain"
+    t.boolean  "activated",            :default => false
+    t.boolean  "record_calls",         :default => false
+    t.integer  "chargify_customer_id"
     t.boolean  "activated",                 :default => false
     t.boolean  "record_calls",              :default => false
     t.string   "recurly_account_code"
