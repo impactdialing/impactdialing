@@ -832,11 +832,11 @@ describe "predictive_dialer" do
       end
       
       it "should only consider answered calls for abandonment rate" do
-        campaign = Factory(:campaign, acceptable_abandon_rate: 0.03)
-        10.times { Factory(:call_attempt, :campaign => campaign, :call_start => 40.seconds.ago, call_end: 10.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::SUCCESS) }
-        9.times { Factory(:call_attempt, :campaign => campaign, :call_start => 40.seconds.ago, call_end: 10.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::FAIL) }
+        campaign = Factory(:campaign, acceptable_abandon_rate: 0.01)
+        9.times { Factory(:call_attempt, :campaign => campaign, :call_start => 40.seconds.ago, call_end: 10.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::SUCCESS) }
+        2.times { Factory(:call_attempt, :campaign => campaign, :call_start => 40.seconds.ago, call_end: 10.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::BUSY) }
         1.times { Factory(:call_attempt, :campaign => campaign, :call_start => 40.seconds.ago, call_end: 10.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::ABANDONED) }
-        campaign.abandon_rate_acceptable?.should be_true  
+        campaign.abandon_rate_acceptable?.should be_false  
       end
       
       
