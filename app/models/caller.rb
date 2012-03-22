@@ -156,5 +156,9 @@ class Caller < ActiveRecord::Base
       acc
     end
   end
+  
+  def subscription_allows_caller?
+    self.account.subscription_allows_caller?
+  end
 
 end

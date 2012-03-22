@@ -137,7 +137,11 @@ class CallerController < ApplicationController
       @session = @caller.caller_sessions.create(on_call: false, available_for_call: false,starttime: Time.now,
                                                 session_key: generate_session_key, sid: params[:CallSid], campaign: @caller.campaign)
       Moderator.caller_connected_to_campaign(@caller, @caller.campaign, @session)      
-      render :xml => @session.start
+      if @caller.subscription_allows_caller?
+        render :xml => @session.start
+      else
+        render :xml => @session.max_callers_reached
+      end
     end
   end
 
