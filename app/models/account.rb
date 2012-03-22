@@ -24,6 +24,10 @@ class Account < ActiveRecord::Base
     self.payments.count==1 && self.payments.first.notes=="Trial credit" && recurly_subscription_uuid.nil?
   end
   
+  def callers_in_progress
+    CallerSession.where("campaign_id in (?) and on_call=1", self.campaigns.map {|c| c.id})
+  end
+
   def cancel_subscription
     return if self.recurly_subscription_uuid.blank?
     subscription = Recurly::Subscription.find(self.recurly_subscription_uuid)
@@ -51,6 +55,16 @@ class Account < ActiveRecord::Base
       self.subscription_active=false
       self.subscription_name=nil
       self.save
+    end
+  end
+  
+  def subscription_allows_caller?
+    if self.trial? || self.subscription_name=="Per minute"
+      return true
+    elsif self.subscription_name=="Per Caller" && self.callers_in_progress.length <= self.subscription_count
+      return true
+    else
+      return false
     end
   end
     
