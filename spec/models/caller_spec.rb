@@ -163,14 +163,14 @@ describe Caller do
       campaign = Factory(:campaign)
       campaign.callers << caller
       session = Factory(:caller_session, :caller => caller, :session_key => 'key', :on_call => true, :available_for_call => true, :campaign => campaign)
-      caller.active_session(campaign).should == session
+      caller.active_session(campaign,"12345").should == session
     end
 
     it "returns no session if the caller is not available" do
       campaign = Factory(:campaign)
       campaign.callers << caller
       Factory(:caller_session, :caller => caller, :session_key => 'key', :on_call => true, :available_for_call => true, :campaign => Factory(:campaign))
-      caller.active_session(campaign).should == {:caller_session => {:id => nil}}
+      caller.active_session(campaign,"12345").should == {:caller_session => {:id => nil}}
     end
 
   end

@@ -7,6 +7,7 @@ class CallerSession < ActiveRecord::Base
 
   scope :on_call, :conditions => {:on_call => true}
   scope :available, :conditions => {:available_for_call => true, :on_call => true}
+  scope :not_allocated, where('browser_identification is null')
   scope :not_on_call, :conditions => {:on_call => false}
   scope :connected_to_voter, where('voter_in_progress is not null')
   scope :held_for_duration, lambda { |minutes| {:conditions => ["hold_time_start <= ?", minutes.ago]} }
