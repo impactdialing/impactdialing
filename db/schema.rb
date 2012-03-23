@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120302093433) do
+ActiveRecord::Schema.define(:version => 20120323063955) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -29,7 +29,7 @@ ActiveRecord::Schema.define(:version => 20120302093433) do
     t.integer  "possible_response_id", :null => false
     t.datetime "created_at"
     t.integer  "campaign_id"
-    t.integer  "caller_id",            :null => false
+    t.integer  "caller_id"
   end
 
   add_index "answers", ["voter_id", "question_id"], :name => "index_answers_on_voter_id_and_question_id"
@@ -127,12 +127,12 @@ ActiveRecord::Schema.define(:version => 20120302093433) do
     t.integer  "num_calls"
     t.integer  "avg_wait"
     t.string   "sid"
-    t.boolean  "available_for_call",   :default => false
+    t.boolean  "available_for_call",     :default => false
     t.integer  "voter_in_progress_id"
     t.datetime "hold_time_start"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.boolean  "on_call",              :default => false
+    t.boolean  "on_call",                :default => false
     t.string   "caller_number"
     t.string   "tCallSegmentSid"
     t.string   "tAccountSid"
@@ -147,6 +147,8 @@ ActiveRecord::Schema.define(:version => 20120302093433) do
     t.float    "tPrice"
     t.integer  "attempt_in_progress"
     t.string   "session_key"
+    t.string   "browser_identification"
+    t.integer  "lock_version",           :default => 0
   end
 
   add_index "caller_sessions", ["caller_id"], :name => "index_caller_sessions_on_caller_id"

@@ -134,6 +134,7 @@ describe CallerController do
       campaign.callers << caller
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :available_for_call => false, :on_call => true, :session_key => "some_key")
       post :pause, :id => caller.id, :session_id => session.id
+      session.reload
       response.body.should == session.start
     end
 
@@ -185,6 +186,7 @@ describe CallerController do
         Twilio::Call.stub(:make)
         Twilio::Call.should_receive(:make).with(anything, @current_voter.Phone, anything, anything).and_return("TwilioResponse"=> {"Call" => {"Sid" => 'sid'}})
         post :choose_voter, :id => caller.id, :session => @caller_session.id, :voter => @current_voter.id, :Digits => "*"
+        @caller_session.reload
         response.body.should == @caller_session.phones_only_start
       end
 
@@ -211,6 +213,7 @@ describe CallerController do
         Twilio::Call.stub(:make)
         Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, anything).and_return("TwilioResponse"=> {"Call" => {"Sid" => 'sid'}})
         post :phones_only_progressive, :id => caller.id, :session_id => caller_session.id, :voter_id => voter.id
+        caller_session.reload
         response.body.should == caller_session.phones_only_start
       end
     end

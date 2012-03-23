@@ -71,19 +71,26 @@ class CallAttempt < ActiveRecord::Base
     end
     current_recording.next ? current_recording.next.twilio_xml(self) : current_recording.hangup
   end
+  
+  def abandon_call
+    update_attributes(status: CallAttempt::Status::ABANDONED, wrapup_time: Time.now)
+    voter.update_attributes(:status => CallAttempt::Status::ABANDONED, call_back: false)
+    Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
+    hangup
+  end
 
   def connect_to_caller(caller_session=nil)
     caller_session ||= campaign.oldest_available_caller_session
     if caller_session.nil? || caller_session.disconnected? || !caller_session.available_for_call
-      update_attributes(status: CallAttempt::Status::ABANDONED, wrapup_time: Time.now)
-      voter.update_attributes(:status => CallAttempt::Status::ABANDONED, call_back: false)
-      Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
-      hangup
+      abandon_call
     else
       update_attributes(:status => CallAttempt::Status::INPROGRESS)
-      #voter.update_attributes(:status => CallAttempt::Status::INPROGRESS)
-      caller_session.update_attributes(:on_call => true, :available_for_call => false)
-      conference(caller_session)
+      begin
+        caller_session.update_attributes(:on_call => true, :available_for_call => false)
+        conference(caller_session)
+      rescue ActiveRecord::StaleObjectError
+        abandon_call
+      end
     end
   end
 
