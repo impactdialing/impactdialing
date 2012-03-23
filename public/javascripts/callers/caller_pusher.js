@@ -5,10 +5,6 @@ Pusher.log = function(message) {
 var channel = null;
 
 
-function doWork()
-{
-    if (window.isActive) { /* do CPU-intensive stuff */}
-}
 $(document).ready(function() {
 	window.isActive = true;
     $(window).focus(function() { this.isActive = true; });
@@ -44,10 +40,16 @@ function set_session(session_id) {
     $("#caller_session").val(session_id);
 }
 
+
 function get_session() {
+	var guid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+	    var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+	    return v.toString(16);
+	});	
+	
     $.ajax({
         url : "/caller/active_session",
-        data : {id : $("#caller").val(), campaign_id : $("#campaign").val() },
+        data : {id : $("#caller").val(), campaign_id : $("#campaign").val(), browser_id: guid },
         type : "POST",
         success : function(json) {
             if (json.caller_session.id && $("#caller_session").val() === ""  ) {
@@ -64,7 +66,6 @@ function get_session() {
 }
 
 function get_voter() {
-	console.log('priview voter')
     $.ajax({
         url : "/caller/" + $("#caller").val() + "/preview_voter",
         data : {id : $("#caller").val(), session_id : $("#caller_session").val(), voter_id: $("#current_voter").val() },
@@ -85,7 +86,6 @@ function next_voter() {
 }
 
 function call_voter() {
-    console.log('called voter');
     hide_all_actions();
 	$("#stop_calling").show();
     $.ajax({
@@ -137,7 +137,6 @@ function kick_caller_off(){
 }
 
 function send_voter_response() {
-    console.log('submit voter response')
     $('#voter_responses').attr('action', "/call_attempts/" + $("#current_call_attempt").val() + "/voter_response");
     var vid = $('#voter_id').val($("#current_voter").val())
     $('#voter_responses').submit(function() {
@@ -188,6 +187,13 @@ function disconnect_caller() {
         hide_all_actions();
         $("#start_calling").show();
     }
+}
+
+function ie8(){
+	if ($.browser.msie) {
+  	  window.onbeforeunload = null;
+    }
+
 }
 
 function disconnect_voter() {
@@ -294,10 +300,8 @@ function set_transfer_panel(data) {
 
 function subscribe(session_key) {
     channel = pusher.subscribe(session_key);
-    console.log(channel)
 	pusher.connection.bind('state_change', function(states) {
-	  // states = {previous: 'oldState', current: 'newState'}
-	  console.log("Pusher's current state is " + states.current);
+	  // states = {previous: 'oldState', current: 'newState'
 	});
 
     channel.bind('caller_connected', function(data) {
