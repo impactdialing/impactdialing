@@ -3,7 +3,8 @@
   <%= javascript_include_tag 'accounts' %>
 <% end %>
 
-<h1>Users</h1>
+<div id="administrators">
+<h1>Administrators</h1>
 <table>
   <tr>
     <th>Email</th>
@@ -22,7 +23,7 @@
 </table>
 
 <fieldset>
-  <legend>Invite a new user</legend>
+  <legend>Invite a new administrator</legend>
 
   <% form_tag client_user_invite_path do %>
     <p><label for="">Email</label><br>
@@ -33,3 +34,4 @@
   <% end %>
 
 </fieldset>
+</div>

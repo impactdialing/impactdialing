@@ -68,7 +68,7 @@ class CallAttemptsController < ApplicationController
       render :nothing => true
     else
       call_attempt = CallAttempt.find(params[:id])      
-      voter = params[:voter_id].blank? ? Voter.find(params[:voter_id])  : call_attempt.voter
+      voter = !params[:voter_id].blank? ? Voter.find(params[:voter_id])  : call_attempt.voter
       params[:scheduled_date].blank? ? voter.capture(params, call_attempt) : schedule_for_later(call_attempt)
       call_attempt.update_attributes(wrapup_time: Time.now)
 

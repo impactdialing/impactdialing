@@ -98,8 +98,9 @@ class CallerController < ApplicationController
 
   def active_session
     caller = Caller.find(params[:id])
+    browser_id = params[:browser_id]
     campaign = caller.campaign
-    render :json => caller.active_session(campaign).to_json
+    render :json => caller.active_session(campaign,browser_id).to_json
   end
 
   def preview_voter
@@ -235,9 +236,6 @@ class CallerController < ApplicationController
     render :text=> "var x='ok';"
   end
   
-  def transfer_call
-    
-  end
 
   def connect_to_twilio
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)

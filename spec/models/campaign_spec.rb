@@ -184,7 +184,8 @@ describe "predictive_dialer" do
  describe "simulation_dialer" do
 
    it "should dial one line per caller if no calls have been made in the last ten minutes" do
-     campaign = Factory(:campaign)
+     simulated_values = SimulatedValues.create(best_dials: 2.33345, best_conversation: 34.0076, longest_conversation: 42.0876, best_wrapup_time: 10.076)
+     campaign = Factory(:campaign, simulated_values: simulated_values)
      2.times { Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true) }
      num_to_call = campaign.dial_predictive_simulator
      campaign.should_not_receive(:num_to_call_predictive_simulate)
@@ -193,7 +194,8 @@ describe "predictive_dialer" do
    end
 
    it "should dial one line per caller if abandonment rate exceeds acceptable rate" do
-     campaign = Factory(:campaign, :acceptable_abandon_rate => 0.2)
+     simulated_values = SimulatedValues.create(best_dials: 2.33345, best_conversation: 34.0076, longest_conversation: 42.0876, best_wrapup_time: 10.076)
+     campaign = Factory(:campaign, simulated_values: simulated_values, :acceptable_abandon_rate => 0.2)
      Factory(:call_attempt, :campaign => campaign, :call_start => 20.seconds.ago)
      Factory(:call_attempt, :campaign => campaign, :call_start => 20.seconds.ago, :status => CallAttempt::Status::ABANDONED)
      2.times { Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true) }
@@ -820,14 +822,23 @@ describe "predictive_dialer" do
         campaign = Factory(:campaign, acceptable_abandon_rate: 0.03)
         10.times { Factory(:call_attempt, :campaign => campaign, :call_start => 40.seconds.ago, call_end: 10.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::SUCCESS) }
         10.times { Factory(:call_attempt, :campaign => campaign, :call_start => 40.seconds.ago, call_end: 10.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::ABANDONED) }
-        campaign.abandon_rate_acceptable?(campaign.call_attempts).should be_false
+        campaign.abandon_rate_acceptable?.should be_false
       end
       it "should return true if  acceptable" do
         campaign = Factory(:campaign, acceptable_abandon_rate: 0.03)
         40.times { Factory(:call_attempt, :campaign => campaign, :call_start => 40.seconds.ago, call_end: 10.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::SUCCESS) }
         1.times { Factory(:call_attempt, :campaign => campaign, :call_start => 40.seconds.ago, call_end: 10.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::ABANDONED) }
-        campaign.abandon_rate_acceptable?(campaign.call_attempts).should be_true  
+        campaign.abandon_rate_acceptable?.should be_true  
       end
+      
+      it "should only consider answered calls for abandonment rate" do
+        campaign = Factory(:campaign, acceptable_abandon_rate: 0.01)
+        9.times { Factory(:call_attempt, :campaign => campaign, :call_start => 40.seconds.ago, call_end: 10.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::SUCCESS) }
+        2.times { Factory(:call_attempt, :campaign => campaign, :call_start => 40.seconds.ago, call_end: 10.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::BUSY) }
+        1.times { Factory(:call_attempt, :campaign => campaign, :call_start => 40.seconds.ago, call_end: 10.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::ABANDONED) }
+        campaign.abandon_rate_acceptable?.should be_false  
+      end
+      
       
       
     end

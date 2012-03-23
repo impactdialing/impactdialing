@@ -133,7 +133,6 @@
     Twilio.Device.setup("<%= @token %>", {'debug':true});
 
     Twilio.Device.connect(function (conn) {
-        console.log("Successfully established call");
     });
     Twilio.Device.ready(function (device) {
 		client_ready=true;
