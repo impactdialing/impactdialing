@@ -133,7 +133,7 @@ class Campaign < ActiveRecord::Base
   end
 
   def oldest_available_caller_session
-    caller_sessions.available.find(:first, :order => "updated_at ASC", :lock => true)
+    caller_sessions.available.find(:first, :order => "updated_at ASC")
   end
 
   def recent_attempts(mins=10)
@@ -568,8 +568,11 @@ class Campaign < ActiveRecord::Base
     voter||= all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.where("voters.id != #{current_voter_id}").first unless current_voter_id.blank?
     voter||= all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.first
     unless voter.nil?
-      voter.lock!
-      voter.update_attributes(status: CallAttempt::Status::READY)
+      begin
+        voter.update_attributes(status: CallAttempt::Status::READY)
+      rescue ActiveRecord::StaleObjectError
+        next_voter_in_dial_queue(voter.id)
+      end
     end
     voter
   end

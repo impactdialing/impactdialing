@@ -55,8 +55,13 @@ class CallerController < ApplicationController
 
   def stop_calling
     caller = Caller.find(params[:id])
-    @session = caller.caller_sessions.find(params[:session_id])
-    @session.end_running_call
+    begin
+      @session = caller.caller_sessions.find(params[:session_id])
+      @session.end_running_call
+    rescue ActiveRecord::StaleObjectError
+      @session.reload
+      @session.end_running_call
+    end
     CallAttempt.wrapup_calls(params[:id]) unless params[:id].empty?
     render :nothing => true
   end
@@ -87,10 +92,12 @@ class CallerController < ApplicationController
 
 
   def end_session
-    CallerSession.transaction do
-      caller_session = CallerSession.find_by_sid(params[:CallSid])
-      caller_session.lock! unless caller_session.nil?      
+    caller_session = CallerSession.find_by_sid(params[:CallSid])
+    begin
       render :xml => caller_session.try(:end) || Twilio::Verb.hangup
+    rescue ActiveRecord::StaleObjectError
+      caller_session.reload
+      caller_session.end      
     end
   end
 

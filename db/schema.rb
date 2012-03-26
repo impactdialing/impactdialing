@@ -13,6 +13,7 @@
 
 ActiveRecord::Schema.define(:version => 20120321074907) do
 
+
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
     t.datetime "created_at"
@@ -158,6 +159,7 @@ ActiveRecord::Schema.define(:version => 20120321074907) do
     t.integer  "attempt_in_progress"
     t.string   "session_key"
     t.string   "browser_identification"
+    t.integer  "lock_version",           :default => 0
   end
 
   add_index "caller_sessions", ["caller_id"], :name => "index_caller_sessions_on_caller_id"
