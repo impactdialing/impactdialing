@@ -61,7 +61,7 @@ def simulator_campaign_base_values(campaign_id, start_time)
   
   number_of_call_attempts = campaign.call_attempts.between((Time.now - start_time.seconds), Time.now).size
   
-  if number_of_call_attempts > 1000
+  if number_of_call_attempts < 1000
       call_attempts_from_start_time = campaign.call_attempts.between((Time.now - start_time.seconds), Time.now)
   else
     call_attempts_from_start_time = campaign.call_attempts.last(1000)
