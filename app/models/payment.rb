@@ -8,14 +8,18 @@ class Payment < ActiveRecord::Base
   end
 
 
-  def self.add_call (model_instance)
-    return false if model_instance.payment_id!=nil || model_instance.tPrice.nil?
-    account = model_instance.campaign.account_id
+  def self.debit (model_instance, account)
+    return false if model_instance.endtime.nil? || model_instance.starttime.nil?
+    call_time = ((model_instance.endtime - model_instance.starttime)/60).ceil
+    debit_amount = call_time.to_f * 0.02
     payment_used = Payment.where("amount_remaining > 0 and account_id = ?", account).last
-    payment_used.amount_remaining -= model_instance.tPrice.abs
-    payment_used.save
-    model_instance.invoice_id=payment_id.id
-    model_instance.save
+    if payment_used.nil?
+    else
+      payment_used.amount_remaining -= debit_amount
+      payment_used.save
+      model_instance.payment_id=payment_used.id
+      model_instance.save
+    end
   end
   
   def self.charge_recurly_account(recurly_account_code, amount, notes)

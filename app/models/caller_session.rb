@@ -88,14 +88,6 @@ class CallerSession < ActiveRecord::Base
     end.response
   end
 
-  def max_callers_reached
-    response = Twilio::Verb.new do |v|
-      v.say("The maximum number of callers for this account has been reached. Wait for another caller to finish, or ask your administrator to upgrade your account.")
-      v.hangup
-    end.response
-#    self.publish("caller_disconnected", {source: "max_callers_reached"})
-  end
-
   def start
     wrapup
     unless endtime.nil?
@@ -237,6 +229,10 @@ class CallerSession < ActiveRecord::Base
      conference_sid = confs.class == Array ? confs.last['Sid'] : confs['Sid']
    end
 
+   def debit
+     self.campaign.account.debit(self)
+   end
+
   private
   
   def wrapup
@@ -270,4 +266,5 @@ class CallerSession < ActiveRecord::Base
       v.redirect(phones_only_progressive_caller_url(caller, :session_id => id, :voter_id => voter.id, :host => Settings.host, :port => Settings.port), :method => "POST")
     end.response
   end
+  
 end

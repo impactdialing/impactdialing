@@ -90,6 +90,7 @@ class CallerController < ApplicationController
     CallerSession.transaction do
       caller_session = CallerSession.find_by_sid(params[:CallSid])
       caller_session.lock! unless caller_session.nil?      
+      caller_session.debit
       render :xml => caller_session.try(:end) || Twilio::Verb.hangup
     end
   end
@@ -134,13 +135,13 @@ class CallerController < ApplicationController
       render :nothing => true
     else
       @caller = Caller.find(params[:caller_id])
-      @session = @caller.caller_sessions.create(on_call: false, available_for_call: false,starttime: Time.now,
-                                                session_key: generate_session_key, sid: params[:CallSid], campaign: @caller.campaign)
-      Moderator.caller_connected_to_campaign(@caller, @caller.campaign, @session)      
-      if @caller.subscription_allows_caller?
-        render :xml => @session.start
+      if !@caller.account.subscription_allows_caller?
+        render :xml => @caller.max_callers_reached
       else
-        render :xml => @session.max_callers_reached
+        @session = @caller.caller_sessions.create(on_call: false, available_for_call: false,starttime: Time.now,
+                                                session_key: generate_session_key, sid: params[:CallSid], campaign: @caller.campaign)
+        Moderator.caller_connected_to_campaign(@caller, @caller.campaign, @session)      
+        render :xml => @session.start
       end
     end
   end

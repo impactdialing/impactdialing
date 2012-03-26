@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120312080357) do
+ActiveRecord::Schema.define(:version => 20120325210554) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -22,9 +22,9 @@ ActiveRecord::Schema.define(:version => 20120312080357) do
     t.boolean  "record_calls",              :default => false
     t.string   "recurly_account_code"
     t.string   "subscription_name"
-    t.integer  "subscription_count"
     t.boolean  "subscription_active",       :default => false
     t.string   "recurly_subscription_uuid"
+    t.integer  "subscription_count"
     t.boolean  "autorecharge_enabled",      :default => false
     t.float    "autorecharge_trigger"
     t.float    "autorecharge_amount"
@@ -36,7 +36,7 @@ ActiveRecord::Schema.define(:version => 20120312080357) do
     t.integer  "possible_response_id", :null => false
     t.datetime "created_at"
     t.integer  "campaign_id"
-    t.integer  "caller_id",            :null => false
+    t.integer  "caller_id"
   end
 
   add_index "answers", ["voter_id", "question_id"], :name => "index_answers_on_voter_id_and_question_id"
@@ -105,6 +105,7 @@ ActiveRecord::Schema.define(:version => 20120312080357) do
     t.string   "recording_url"
     t.integer  "recording_duration"
     t.datetime "wrapup_time"
+    t.integer  "payment_id"
   end
 
   add_index "call_attempts", ["call_end"], :name => "index_call_attempts_on_call_end"
@@ -154,6 +155,7 @@ ActiveRecord::Schema.define(:version => 20120312080357) do
     t.float    "tPrice"
     t.integer  "attempt_in_progress"
     t.string   "session_key"
+    t.integer  "payment_id"
   end
 
   add_index "caller_sessions", ["caller_id"], :name => "index_caller_sessions_on_caller_id"
@@ -327,12 +329,14 @@ ActiveRecord::Schema.define(:version => 20120312080357) do
 
   create_table "payments", :force => true do |t|
     t.float    "amount_paid"
-    t.float    "amount_remaining"
-    t.integer  "recurly_transaction_uuid"
     t.integer  "account_id"
+    t.float    "amount_remaining"
+    t.integer  "recurly_account_code"
     t.string   "notes"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "type"
+    t.string   "recurly_transaction_uuid"
   end
 
   create_table "possible_responses", :force => true do |t|
