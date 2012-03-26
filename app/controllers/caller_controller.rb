@@ -55,8 +55,13 @@ class CallerController < ApplicationController
 
   def stop_calling
     caller = Caller.find(params[:id])
-    @session = caller.caller_sessions.find(params[:session_id])
-    @session.end_running_call
+    begin
+      @session = caller.caller_sessions.find(params[:session_id])
+      @session.end_running_call
+    rescue ActiveRecord::StaleObjectError
+      @session.reload
+      @session.end_running_call
+    end
     CallAttempt.wrapup_calls(params[:id]) unless params[:id].empty?
     render :nothing => true
   end
