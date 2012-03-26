@@ -15,6 +15,7 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
     FileUtils.mkdir_p(Rails.root.join("tmp"))
     uuid = UUID.new.generate
     @campaign_name = "#{uuid}_report_#{campaign.name}"
+    @campaign.tr("/\000", "")
     filename = "#{Rails.root}/tmp/#{@campaign_name}.csv"
     report_csv = @report.split("\n")
     file = File.open(filename, "w")
