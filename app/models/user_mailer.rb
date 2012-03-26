@@ -28,7 +28,7 @@ class UserMailer
   end
   
   def reset_password(user)
-      emailText="Click here to reset your password<br/> #{ reset_password_url(:reset_code => user.password_reset_code) }"
+      emailText="Click here to reset your password<br/> #{ reset_password_url(protocol: PROTOCOL, :host => "admin.#{user.domain}", :reset_code => user.password_reset_code) }"
       response = u.send_email({
           :track_opens => true,
           :track_clicks => true,
