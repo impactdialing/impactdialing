@@ -38,28 +38,8 @@ class ClientController < ApplicationController
         flash_now(:error, "We could not find an account with that email address")
       else
         user.create_reset_code!
-        #Postoffice.password_recovery(u).deliver
-
-        begin
-          emailText="Click here to reset your password<br/> #{ reset_password_url(:reset_code => user.password_reset_code) }"
-          u = Uakari.new(MAILCHIMP_API_KEY)
-
-          response = u.send_email({
-              :track_opens => true,
-              :track_clicks => true,
-              :message => {
-                  :subject => "ImpactDialing.com password recovery",
-                  :html => emailText,
-                  :text => emailText,
-                  :from_name => 'Impact Dialing',
-                  :from_email => 'email@impactdialing.com',
-                  :to_email => [user.email]
-              }
-          })
-          rescue Exception => e
-            logger.error(e.inspect)
-        end
-
+        mailer = UserMailer.new
+        mailer.reset_password(user)
         flash_message(:notice, "We emailed your password to you. Please check your spam folder in case it accidentally ends up there.")
         redirect_to :action=>"login"
       end

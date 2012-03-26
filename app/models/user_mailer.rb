@@ -26,6 +26,22 @@ class UserMailer
       }
     })
   end
+  
+  def reset_password(user)
+      emailText="Click here to reset your password<br/> #{ reset_password_url(protocol: PROTOCOL, :host => "admin.#{user.domain}", :reset_code => user.password_reset_code) }"
+      response = @uakari.send_email({
+          :track_opens => true,
+          :track_clicks => true,
+          :message => {
+              :subject => "#{white_labeled_title(user.domain)} password recovery",
+              :html => emailText,
+              :text => emailText,
+              :from_name => white_labeled_title(user.domain),
+              :from_email => white_labeled_email(user.domain),
+              :to_email => [user.email]
+          }
+      })
+  end
 
   def voter_list_upload(response, user_domain, email, voter_list_name)
     unless response['success'].blank?
