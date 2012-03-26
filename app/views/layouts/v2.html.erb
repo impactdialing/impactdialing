@@ -83,7 +83,7 @@
       <ul class="clearfix">
         <li class='divider'><%= link_to 'Help', :controller =>'broadcast', :action=>'index' %></li>
         <li class='divider'><%= link_to 'Account', :controller => 'broadcast', :action => 'user_add' %></li>
-        <li class='divider'><a href="/broadcast/billing">Billing</a></li>
+        <li class='divider'><a href="<%= billing_link %>">Billing</a></li>
         <li><%= link_to 'Log out', :action=>'logout' %></li>
       </ul>
   <% elsif logged_in_as_caller? %>
