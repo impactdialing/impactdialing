@@ -69,7 +69,7 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
 
   def notify_failure(job, exception)
     mailer = UserMailer.new
-    mailer.deliver_download_failure(user, job, exception)
+    mailer.deliver_download_failure(user, campaign, job, exception)
   end
 
 end
