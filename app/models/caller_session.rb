@@ -27,7 +27,12 @@ class CallerSession < ActiveRecord::Base
   def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
     t = ::TwilioLib.new(account, auth)
     t.end_call("#{self.sid}")
-    self.update_attributes(:on_call => false, :available_for_call => false, :endtime => Time.now)
+    begin
+      self.update_attributes(:on_call => false, :available_for_call => false, :endtime => Time.now)
+    rescue ActiveRecord::StaleObjectError
+      self.reload
+      self.end_running_call
+    end      
     Moderator.publish_event(campaign, "caller_disconnected",{:caller_session_id => id, :caller_id => caller.id, :campaign_id => campaign.id, :campaign_active => campaign.callers_log_in?,
       :no_of_callers_logged_in => campaign.caller_sessions.on_call.length})
     self.publish("caller_disconnected", {source: "end_running_call"})
