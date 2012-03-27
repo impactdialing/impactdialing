@@ -9,7 +9,7 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
   def save_report
     AWS::S3::Base.establish_connection!(
         :access_key_id => 'AKIAINGDKRFQU6S63LUQ',
-        :secret_access_key => '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'
+        # :secret_access_key => 'DSHj9+1rh9WDuXwFCvfCDh7ssyDoSNYyxqT3z3nQ'
     )
 
     FileUtils.mkdir_p(Rails.root.join("tmp"))
