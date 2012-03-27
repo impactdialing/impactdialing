@@ -202,4 +202,10 @@ class CallAttempt < ActiveRecord::Base
     ANSWERED =  [INPROGRESS, SUCCESS]
   end
 
+  def debit
+    return false if self.call_start.nil? || self.call_end.nil?
+    call_time = ((self.call_end - self.call_start)/60).ceil
+    Payment.debit(call_time, self)
+  end
+
 end

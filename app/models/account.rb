@@ -146,8 +146,4 @@ class Account < ActiveRecord::Base
     self.chargify_customer_id
   end
   
-  def debit(debit_object)
-    Payment.debit(debit_object,self)
-  end
-
 end

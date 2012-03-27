@@ -230,7 +230,9 @@ class CallerSession < ActiveRecord::Base
    end
 
    def debit
-     self.campaign.account.debit(self)
+     return false if self.endtime.nil? || self.starttime.nil?
+     call_time = ((self.endtime - self.starttime)/60).ceil
+     Payment.debit(call_time, self)
    end
 
   private

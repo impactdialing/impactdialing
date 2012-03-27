@@ -34,6 +34,7 @@ class CallAttemptsController < ApplicationController
 
   def disconnect
     call_attempt = CallAttempt.find(params[:id])
+    call_attempt.debit
     render :xml => call_attempt.disconnect(params)
   end
 
@@ -53,6 +54,7 @@ class CallAttemptsController < ApplicationController
       call_attempt.voter.update_attributes(:status => CallAttempt::Status::MAP[params[:CallStatus]], :last_call_attempt_time => Time.now)
       call_attempt.update_attributes(:status => CallAttempt::Status::MAP[params[:CallStatus]])
     end
+    call_attempt.debit
   
     response = case params[:CallStatus] #using the 2010 api
                  when "no-answer", "busy", "failed"

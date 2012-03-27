@@ -8,12 +8,13 @@ class Payment < ActiveRecord::Base
   end
 
 
-  def self.debit (model_instance, account)
-    return false if model_instance.endtime.nil? || model_instance.starttime.nil?
-    call_time = ((model_instance.endtime - model_instance.starttime)/60).ceil
+  def self.debit (call_time, model_instance)
+    return false if model_instance.payment_id!=nil
+    account = model_instance.campaign.account
     debit_amount = call_time.to_f * 0.02
     payment_used = Payment.where("amount_remaining > 0 and account_id = ?", account).last
     if payment_used.nil?
+      account.auto_recharge
     else
       payment_used.amount_remaining -= debit_amount
       payment_used.save
