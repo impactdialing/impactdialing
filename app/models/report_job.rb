@@ -9,13 +9,13 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
   def save_report
     AWS::S3::Base.establish_connection!(
         :access_key_id => 'AKIAINGDKRFQU6S63LUQ',
-        # :secret_access_key => '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'
+        :secret_access_key => 'DSHj9+1rh9WDuXwFCvfCDh7ssyDoSNYyxqT3z3nQ'
     )
 
     FileUtils.mkdir_p(Rails.root.join("tmp"))
     uuid = UUID.new.generate
     @campaign_name = "#{uuid}_report_#{campaign.name}"
-    @campaign_name = @campaign_name.tr("/\000", "")
+    # @campaign_name = @campaign_name.tr("/\000", "")
     filename = "#{Rails.root}/tmp/#{@campaign_name}.csv"
     report_csv = @report.split("\n")
     file = File.open(filename, "w")
