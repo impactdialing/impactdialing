@@ -85,6 +85,7 @@ class CallAttempt < ActiveRecord::Base
       abandon_call
     else
       update_attributes(:status => CallAttempt::Status::INPROGRESS)
+      voter.update_attributes(caller_id: caller_session.caller_id)
       begin
         caller_session.update_attributes(:on_call => true, :available_for_call => false)
         conference(caller_session)
