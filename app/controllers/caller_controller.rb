@@ -55,6 +55,8 @@ class CallerController < ApplicationController
 
   def stop_calling
     caller = Caller.find(params[:id])
+    voters = Voter.find_all_by_caller_id_and_status(caller.id, CallAttempt::Status::READY)
+    voters.each {|voter| voter.update_attributes(status: 'not called')}
     @session = caller.caller_sessions.find(params[:session_id])
     @session.end_running_call
     CallAttempt.wrapup_calls(params[:id]) unless params[:id].empty?
@@ -107,6 +109,7 @@ class CallerController < ApplicationController
     caller_session = @caller.caller_sessions.find(params[:session_id])
     if caller_session.campaign.predictive_type == Campaign::Type::PREVIEW || caller_session.campaign.predictive_type == Campaign::Type::PROGRESSIVE
       voter = caller_session.campaign.next_voter_in_dial_queue(params[:voter_id])
+      voter.update_attributes(caller_id: caller_session.caller_id)
       caller_session.publish('caller_connected', voter ? voter.info : {}) 
     else
       caller_session.publish('caller_connected_dialer', {})

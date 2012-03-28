@@ -21,6 +21,7 @@ describe CallerController do
       channel = mock
       info = voter.info
       info[:fields]['status'] = CallAttempt::Status::READY
+      info[:fields]['caller_id'] = caller.id
       Pusher.should_receive(:[]).with(session_key).and_return(channel)
       channel.should_receive(:trigger).with('caller_connected', info.merge(:dialer => campaign.predictive_type))
       post :preview_voter, :id => caller.id, :session_id => session.id
@@ -34,6 +35,7 @@ describe CallerController do
       channel = mock
       info = voter.info
       info[:fields]['status'] = CallAttempt::Status::READY
+      info[:fields]['caller_id'] = caller.id
       Pusher.should_receive(:[]).with(session_key).and_return(channel)
       channel.should_receive(:trigger).with('caller_connected', info.merge(:dialer => campaign.predictive_type))
       post :preview_voter, :id => caller.id, :session_id => session.id
@@ -47,6 +49,21 @@ describe CallerController do
       Twilio.should_receive(:connect).with(anything, anything)
       get :preview_dial, :key => session_key, :voter_id => Factory(:voter).id
     end
+    
+    it "should assign voter to caller" do
+      session_key = "sdklsjfg923784"
+      voter = Factory(:voter, :campaign => campaign, "FirstName"=>'first')
+      next_voter = Factory(:voter, :campaign => campaign, "FirstName"=>'last')
+      session = Factory(:caller_session, :campaign => campaign, :caller => caller, :session_key => session_key)
+      channel = mock
+      info = next_voter.info
+      info[:fields]['status'] = CallAttempt::Status::READY
+      info[:fields]['caller_id'] = caller.id
+      Pusher.should_receive(:[]).with(session_key).and_return(channel)
+      channel.should_receive(:trigger).with('caller_connected', info.merge(:dialer => campaign.predictive_type))
+      post :preview_voter, :id => caller.id, :session_id => session.id, :voter_id => voter.id
+      next_voter.reload.caller_id.should eq(caller.id)
+    end
 
     it "skips to the next voter to preview" do
       session_key = "sdklsjfg923784"
@@ -56,7 +73,7 @@ describe CallerController do
       channel = mock
       info = next_voter.info
       info[:fields]['status'] = CallAttempt::Status::READY
-
+      info[:fields]['caller_id'] = caller.id
       Pusher.should_receive(:[]).with(session_key).and_return(channel)
       channel.should_receive(:trigger).with('caller_connected', info.merge(:dialer => campaign.predictive_type))
       post :preview_voter, :id => caller.id, :session_id => session.id, :voter_id => voter.id
@@ -70,7 +87,7 @@ describe CallerController do
       channel = mock
       info = first_voter.info
       info[:fields]['status'] = CallAttempt::Status::READY
-
+      info[:fields]['caller_id'] = caller.id
       Pusher.should_receive(:[]).with(session_key).and_return(channel)
       channel.should_receive(:trigger).with('caller_connected', info.merge(:dialer => campaign.predictive_type))
       post :preview_voter, :id => caller.id, :session_id => session.id, :voter_id => last_voter.id
