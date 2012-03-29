@@ -27,7 +27,7 @@ class CallAttemptsController < ApplicationController
                    call_attempt.update_attributes(wrapup_time: Time.now)                    
                    (call_attempt.campaign.use_recordings? && call_attempt.campaign.answering_machine_detect) ? call_attempt.play_recorded_message : call_attempt.hangup
                  else
-                   CallerSession.transaction { call_attempt.connect_to_caller(call_attempt.voter.caller_session) }
+                   call_attempt.connect_to_caller(call_attempt.voter.caller_session)
                end
     render :xml => response
   end

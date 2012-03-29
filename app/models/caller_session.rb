@@ -27,7 +27,12 @@ class CallerSession < ActiveRecord::Base
   def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
     t = ::TwilioLib.new(account, auth)
     t.end_call("#{self.sid}")
-    self.update_attributes(:on_call => false, :available_for_call => false, :endtime => Time.now)
+    begin
+      self.update_attributes(:on_call => false, :available_for_call => false, :endtime => Time.now)
+    rescue ActiveRecord::StaleObjectError
+      self.reload
+      self.end_running_call
+    end      
     Moderator.publish_event(campaign, "caller_disconnected",{:caller_session_id => id, :caller_id => caller.id, :campaign_id => campaign.id, :campaign_active => campaign.callers_log_in?,
       :no_of_callers_logged_in => campaign.caller_sessions.on_call.length})
     self.publish("caller_disconnected", {source: "end_running_call"})
@@ -95,20 +100,24 @@ class CallerSession < ActiveRecord::Base
       return Twilio::Verb.hangup
     end
     
-    if caller_reassigned_to_another_campaign?
-      caller.is_phones_only? ? (return reassign_caller_session_to_campaign) : reassign_caller_session_to_campaign
-    end
-    return time_exceed_hangup if campaign.time_period_exceed?
-    response = Twilio::Verb.new do |v|
-      v.dial(:hangupOnStar => true, :action => caller_response_path) do
-        v.conference(self.session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
+    begin
+      if caller_reassigned_to_another_campaign?
+        caller.is_phones_only? ? (return reassign_caller_session_to_campaign) : reassign_caller_session_to_campaign
       end
-    end.response
-    update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
-    if campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE
-      publish('conference_started', {}) 
-    else
-      publish('caller_connected_dialer', {})
+      return time_exceed_hangup if campaign.time_period_exceed?
+      response = Twilio::Verb.new do |v|
+        v.dial(:hangupOnStar => true, :action => caller_response_path) do
+          v.conference(self.session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
+        end
+      end.response
+      update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
+      if campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE
+        publish('conference_started', {}) 
+      else
+        publish('caller_connected_dialer', {})
+      end
+    rescue ActiveRecord::StaleObjectError
+      Rails.logger.debug("Stale object for #{self.inspect}")
     end
     response
   end
@@ -117,13 +126,16 @@ class CallerSession < ActiveRecord::Base
     unless endtime.nil?
       return Twilio::Verb.hangup
     end
-    
-    response = Twilio::Verb.new do |v|
-      v.dial(:hangupOnStar => true, :action => gather_response_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => id)) do
-        v.conference(session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
-      end
-    end.response
-    update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
+    begin
+      response = Twilio::Verb.new do |v|
+        v.dial(:hangupOnStar => true, :action => gather_response_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => id)) do
+          v.conference(session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
+        end
+      end.response
+      update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
+    rescue ActiveRecord::StaleObjectError
+      Rails.logger.debug("Stale object for #{self.inspect}")
+    end    
     response
   end
   
