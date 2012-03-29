@@ -1,5 +1,4 @@
 class BroadcastCampaignJob
-  include HerokuDelayedJobAutoscale::Autoscale
   
   def initialize(campaign_id)
     @campaign = Campaign.find(campaign_id)
