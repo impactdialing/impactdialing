@@ -137,8 +137,6 @@ function kick_caller_off(){
 }
 
 function send_voter_response() {
-	$('#submit_and_keep_call').hide();
-	$('#submit_and_stop_call').hide();
     $('#voter_responses').attr('action', "/call_attempts/" + $("#current_call_attempt").val() + "/voter_response");
     $('#voter_responses').submit(function() {
         $(this).ajaxSubmit({});
@@ -155,7 +153,6 @@ function send_voter_response_and_disconnect() {
             disconnect_caller();
         }
     };
-    var str = $("#voter_responses").serializeArray();
     $('#voter_responses').attr('action', "/call_attempts/" + $("#current_call_attempt").val() + "/voter_response");
     $('#voter_id').val($("#current_voter").val())
     $('#voter_responses').submit(function() {
