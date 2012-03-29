@@ -137,20 +137,15 @@ function kick_caller_off(){
 }
 
 function send_voter_response() {
+	$('#submit_and_keep_call').hide();
+	$('#submit_and_stop_call').hide();
     $('#voter_responses').attr('action', "/call_attempts/" + $("#current_call_attempt").val() + "/voter_response");
-    var vid = $('#voter_id').val($("#current_voter").val())
     $('#voter_responses').submit(function() {
         $(this).ajaxSubmit({});
         return false;
     });
-    if (!vid) {
-        alert("voter context not found.")
-    } else {
-        $("#voter_responses").trigger("submit");
-        $("#voter_responses").unbind("submit");
-    }
-
-
+    $("#voter_responses").trigger("submit");
+    $("#voter_responses").unbind("submit");
 }
 
 function send_voter_response_and_disconnect() {
