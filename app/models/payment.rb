@@ -11,7 +11,7 @@ class Payment < ActiveRecord::Base
   def self.debit (call_time, model_instance)
     return false if model_instance.payment_id!=nil
     account = model_instance.campaign.account
-    debit_amount = call_time.to_f * 0.02
+    debit_amount = call_time.to_f * Payment.determine_call_cost(model_instance)
     payment_used = Payment.where("amount_remaining > 0 and account_id = ?", account).last
     if payment_used.nil?
       account.auto_recharge
@@ -22,6 +22,29 @@ class Payment < ActiveRecord::Base
       model_instance.save
     end
   end
+  
+  def self.determine_call_cost(model_instance)
+
+    #4 robo
+    #7 interactive robo
+    #9 predictive/live
+    #9 caller (client free)
+    #(7 power, 5 preview) no longer used
+
+
+    if model_instance.class==CallAttempt && model_instance.campaign.robo?
+      if model_instance.campaign.script==nil || model_instance.campaign.script.result_set_1.nil?
+        return 0.04
+      else
+        return 0.07
+      end
+    end
+
+    return 0.09
+
+  end
+
+    
   
   def self.charge_recurly_account(recurly_account_code, amount, notes)
 #    begin
