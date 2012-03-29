@@ -29,7 +29,7 @@ gem 'delayed_job', '~>2.1.4'
 gem 'heroku'
 gem "activerecord-import", ">= 0.2.0"
 gem 'rush', '>= 0.0.6'
-gem 'heroku_delayed_job_autoscale', '>= 0.0.7'
+gem 'workless'
 gem "airbrake"
 gem "chargify_api_ares"
 gem "uuid", "~> 2.3.5"

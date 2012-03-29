@@ -1,5 +1,5 @@
 class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected_custom_voter_fields, :download_all_voters, :from_date, :to_date)
-  include HerokuDelayedJobAutoscale::Autoscale
+  
 
   def initialize(campaign, user, voter_fields, custom_fields, all_voters, from, to)
     voter_fields = ["Phone"] if voter_fields.blank?
@@ -15,6 +15,7 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
     FileUtils.mkdir_p(Rails.root.join("tmp"))
     uuid = UUID.new.generate
     @campaign_name = "#{uuid}_report_#{campaign.name}"
+    # @campaign_name = @campaign_name.tr("/\000", "")
     filename = "#{Rails.root}/tmp/#{@campaign_name}.csv"
     report_csv = @report.split("\n")
     file = File.open(filename, "w")
@@ -29,7 +30,7 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
     end
     file.close    
     expires_in_12_hours = (Time.now + 12.hours).to_i
-    AWS::S3::S3Object.store("#{@campaign_name}.csv", File.open(filename), "download_reports", :content_type => "text/csv", :access=>:private, :expires => expires_in_12_hours)
+    AWS::S3::S3Object.store("#{@campaign_name}.csv", File.open(filename), "download_reports", :content_type => "application/binary", :access=>:private, :expires => expires_in_12_hours)
   end
 
   def perform
@@ -68,7 +69,7 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
 
   def notify_failure(job, exception)
     mailer = UserMailer.new
-    mailer.deliver_download_failure(user, job, exception)
+    mailer.deliver_download_failure(user, campaign, job, exception)
   end
 
 end

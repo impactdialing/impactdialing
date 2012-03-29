@@ -17,7 +17,7 @@ class VoterListJob
 
     unless @csv_to_system_map.valid?
       response["errors"].concat(@csv_to_system_map.errors)
-      user_mailer.voter_list_upload(response, @domain, @email)
+      user_mailer.voter_list_upload(response, @domain, @email,@voter_list_name)
       return response
     end
 

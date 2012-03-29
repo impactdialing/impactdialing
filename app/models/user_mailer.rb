@@ -26,6 +26,22 @@ class UserMailer
       }
     })
   end
+  
+  def reset_password(user)
+      emailText="Click here to reset your password<br/> #{ reset_password_url(protocol: PROTOCOL, :host => "admin.#{user.domain}", :reset_code => user.password_reset_code) }"
+      response = @uakari.send_email({
+          :track_opens => true,
+          :track_clicks => true,
+          :message => {
+              :subject => "#{white_labeled_title(user.domain)} password recovery",
+              :html => emailText,
+              :text => emailText,
+              :from_name => white_labeled_title(user.domain),
+              :from_email => white_labeled_email(user.domain),
+              :to_email => [user.email]
+          }
+      })
+  end
 
   def voter_list_upload(response, user_domain, email, voter_list_name)
     unless response['success'].blank?
@@ -69,10 +85,10 @@ class UserMailer
     })
   end
 
-  def deliver_download_failure(user, job, exception)
+  def deliver_download_failure(user, campaign, job, exception)
     subject = I18n.t(:report_error_occured_subject)
     content = "<br/>#{I18n.t(:report_error_occured)}"
-    exception_content = "Job : #{job.try(:inspect)}. Error details : <br/><br/> #{exception.backtrace.each{|line| "<br/>#{line}"}}"
+    exception_content = "Campaign: #{campaign.name}  Account Id: #{campaign.account.id} Job : #{job.try(:inspect)}. Error details : <br/><br/> #{exception.backtrace.each{|line| "<br/>#{line}"}}"
     @uakari.send_email({ :message => { :subject => subject, :text => content, :html => content, :from_name => white_labeled_title(user.domain), :from_email => white_labeled_email(user.domain), :to_email => [user.email]} })
     @uakari.send_email({ :message => { :subject => subject, :text => exception_content, :html => exception_content, :from_name => white_labeled_title(user.domain), :from_email => 'email@impactdialing.com', :to_email => ['nikhil@activesphere.com','michael@impactdialing.com','brian@impactdialing.com']} })
   end

@@ -268,7 +268,7 @@ describe CallAttemptsController do
       custom_field = Factory(:custom_voter_field)
       Factory(:custom_voter_field_value, :voter => voter, :custom_voter_field => custom_field, :value => 'value')
       caller_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller), :session_key => session_key)
-      voter.update_attributes(:status => CallAttempt::Status::INPROGRESS, :caller_session => caller_session)
+      voter.update_attributes(:status => CallAttempt::Status::INPROGRESS, :caller_session => caller_session, caller_id: caller_session.caller_id)
       call_attempt.update_attributes(caller_session: caller_session)
       pusher_session = mock
       pusher_session.should_receive(:trigger).with('voter_connected', {:attempt_id=> call_attempt.id, :voter => voter.info}.merge(:dialer => campaign.predictive_type))
