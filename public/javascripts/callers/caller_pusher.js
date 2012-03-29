@@ -303,6 +303,11 @@ function subscribe(session_key) {
 	channel.bind('pusher:subscription_error', function(status) {
 		alert("subscription failed");
 	});
+	
+	pusher.connection.bind('unavailable', function(delay) {
+	  alert("I haven't been able to establish a connection for this feature.  " +
+	        "I will try again in " + delay + " seconds.")
+	});
 
     channel.bind('caller_connected', function(data) {
         hide_all_actions();
