@@ -304,8 +304,12 @@ function set_transfer_panel(data) {
 
 function subscribe(session_key) {
     channel = pusher.subscribe(session_key);
-	pusher.connection.bind('state_change', function(states) {
-	  // states = {previous: 'oldState', current: 'newState'
+	channel.bind('pusher:subscription_succeeded', function() {
+		alert("subscription succeeded");
+	});
+	
+	channel.bind('pusher:subscription_error', function(status) {
+		alert("subscription failed");
 	});
 
     channel.bind('caller_connected', function(data) {
