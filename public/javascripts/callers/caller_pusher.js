@@ -142,19 +142,12 @@ function send_voter_response() {
     };
     
     $('#voter_responses').attr('action', "/call_attempts/" + $("#current_call_attempt").val() + "/voter_response");
-    var vid = $('#voter_id').val($("#current_voter").val())
     $('#voter_responses').submit(function() {
         $(this).ajaxSubmit(options);
         return false;
     });
-    if (!vid) {
-        alert("voter context not found.")
-    } else {
-        $("#voter_responses").trigger("submit");
-        $("#voter_responses").unbind("submit");
-    }
-
-
+    $("#voter_responses").trigger("submit");
+    $("#voter_responses").unbind("submit");
 }
 
 function send_voter_response_and_disconnect() {
@@ -164,7 +157,6 @@ function send_voter_response_and_disconnect() {
             disconnect_caller();
         }
     };
-    var str = $("#voter_responses").serializeArray();
     $('#voter_responses').attr('action', "/call_attempts/" + $("#current_call_attempt").val() + "/voter_response");
     $('#voter_id').val($("#current_voter").val())
     $('#voter_responses').submit(function() {
