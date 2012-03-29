@@ -137,9 +137,13 @@ function kick_caller_off(){
 }
 
 function send_voter_response() {
+	var options = {
+	    data: {caller_session:$("#caller_session").val()},
+    };
+    
     $('#voter_responses').attr('action', "/call_attempts/" + $("#current_call_attempt").val() + "/voter_response");
     $('#voter_responses').submit(function() {
-        $(this).ajaxSubmit({});
+        $(this).ajaxSubmit(options);
         return false;
     });
     $("#voter_responses").trigger("submit");
@@ -148,7 +152,7 @@ function send_voter_response() {
 
 function send_voter_response_and_disconnect() {
     var options = {
-	    data: {stop_calling: true },
+	    data: {stop_calling: true, caller_session:$("#caller_session").val() },
         success:  function() {
             disconnect_caller();
         }

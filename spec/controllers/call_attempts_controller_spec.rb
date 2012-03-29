@@ -25,7 +25,7 @@ describe CallAttemptsController do
       info[:fields]['status'] = CallAttempt::Status::READY
       channel.should_receive(:trigger).with("voter_push", info.merge(:dialer => campaign.predictive_type))
 
-      post :voter_response, :id => call_attempt.id, :voter_id => voter.id, :question => {question1.id=> response1.id, question2.id=>response2.id}
+      post :voter_response, :id => call_attempt.id, :voter_id => voter.id,caller_session:caller_session.id, :question => {question1.id=> response1.id, question2.id=>response2.id}
       voter.answers.count.should == 2
     end
     
@@ -44,7 +44,7 @@ describe CallAttemptsController do
       info[:fields]['status'] = CallAttempt::Status::READY
       channel.should_receive(:trigger).with("voter_push", info.merge(:dialer => campaign.predictive_type))
 
-      post :voter_response, :id => call_attempt.id, :voter_id => "", :question => {question1.id=> response1.id, question2.id=>response2.id}
+      post :voter_response, :id => call_attempt.id, :voter_id => "",caller_session:caller_session.id, :question => {question1.id=> response1.id, question2.id=>response2.id}
       voter.answers.count.should == 2
     end
     
@@ -64,7 +64,7 @@ describe CallAttemptsController do
 
       channel.should_receive(:trigger).with("voter_push", info.merge(:dialer => campaign.predictive_type))
 
-      post :voter_response, :id => call_attempt.id, :voter_id => voter.id, :question => {question1.id=> response1.id, question2.id=>response2.id}
+      post :voter_response, :id => call_attempt.id, :voter_id => voter.id,caller_session:caller_session.id, :question => {question1.id=> response1.id, question2.id=>response2.id}
       voter.answers.count.should == 2
       voter.reload.status.should ==Voter::Status::RETRY
     end
@@ -80,7 +80,7 @@ describe CallAttemptsController do
 
       Pusher.should_receive(:[]).with(anything).and_return(channel)
       channel.should_receive(:trigger).with("voter_push", info.merge({dialer: next_voter.campaign.predictive_type}))
-      post :voter_response, :id => call_attempt.id, :voter_id => voter.id, :answers => {}
+      post :voter_response, :id => call_attempt.id, :voter_id => voter.id,caller_session:caller_session.id, :answers => {}
     end
     
     it "not send send next voter to be dialed via voter_push Pusher event when stop calling" do
@@ -93,7 +93,7 @@ describe CallAttemptsController do
       info[:fields]['status'] = CallAttempt::Status::READY
 
       Pusher.should_not_receive(:[]).with(anything).and_return(channel)
-      post :voter_response, :id => call_attempt.id, :voter_id => voter.id, :answers => {}, stop_calling: true
+      post :voter_response, :id => call_attempt.id, :voter_id => voter.id, :answers => {},caller_session:caller_session.id, stop_calling: true
     end
     
   end
