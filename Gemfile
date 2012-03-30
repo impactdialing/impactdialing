@@ -33,6 +33,8 @@ gem 'workless'
 gem "airbrake"
 gem "chargify_api_ares"
 gem "uuid", "~> 2.3.5"
+gem "hiredis", "~>0.4.5"
+gem "redis", "~>2.2.2"
 
 group :development, :test do
   gem 'ruby-debug19'
