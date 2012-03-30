@@ -1,26 +1,21 @@
 class Payment < ActiveRecord::Base
   belongs_to :account
 
-  module PaymentTypes
-    PROMO = "Promotional credit"
-    RECURLY = "Charged through Recurly"
-    RECURLY_REFUND = "Refunded through Recurly"
-  end
-
-
   def self.debit (call_time, model_instance)
     return false if model_instance.payment_id!=nil
     account = model_instance.campaign.account
     debit_amount = call_time.to_f * Payment.determine_call_cost(model_instance)
     payment_used = Payment.where("amount_remaining > 0 and account_id = ?", account).last
-    if payment_used.nil?
-      account.auto_recharge
-    else
-      payment_used.amount_remaining -= debit_amount
-      payment_used.save
-      model_instance.payment_id=payment_used.id
-      model_instance.save
-    end
+
+    return false if payment_used.nil? #hmmm
+      
+    payment_used.amount_remaining -= debit_amount
+    payment_used.save
+    model_instance.payment_id=payment_used.id
+    model_instance.save
+    
+    account.check_autorecharge(payment_used.amount_remaining)
+    
   end
   
   def self.determine_call_cost(model_instance)
@@ -46,16 +41,24 @@ class Payment < ActiveRecord::Base
 
     
   
-  def self.charge_recurly_account(recurly_account_code, amount, notes)
+  def self.charge_recurly_account(account, amount, notes)
 #    begin
-      account = Recurly::Account.find(recurly_account_code)
-      transaction = account.transactions.create(
+      recurly_account = Recurly::Account.find(account.recurly_account_code)
+      transaction = recurly_account.transactions.create(
         :description     => notes,
         :amount_in_cents => (amount.to_f*100).to_i,
         :currency        => 'USD',
-        :account         => { :account_code => recurly_account_code }
+        :account         => { :account_code => account.recurly_account_code }
       )
-      transaction.status=="success" ? transaction.uuid : nil
+      
+      if transaction.status=="success"
+        p = Payment.new(:amount_paid=>amount, :amount_remaining=>amount, :account_id=>account.id, :notes=>notes, :recurly_transaction_uuid=>transaction.uuid)
+        p.save
+        return p
+      else
+        return nil
+      end
+      
 #    rescue
 #      return nil
 #    end

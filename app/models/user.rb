@@ -94,11 +94,6 @@ class User < ActiveRecord::Base
     p.save
   end
 
-  def new_payment(amount, notes, recurly_transaction_uuid)
-    p = Payment.new(:amount_paid=>amount, :amount_remaining=>amount, :account_id=>self.account.id, :notes=>notes, :recurly_transaction_uuid=>recurly_transaction_uuid)
-    p.save
-  end
-  
   def create_recurly_account_code
     self.account.create_recurly_account_code
   end
