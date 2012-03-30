@@ -313,13 +313,12 @@ class ClientController < ApplicationController
   
   def add_to_balance
     if request.post?
-      charge_uuid=Payment.charge_recurly_account(@user.account.recurly_account_code, params[:amount], "Add to account balance")
-      if charge_uuid.nil?
+      new_payment=Payment.charge_recurly_account(@user.account, params[:amount], "Add to account balance")
+      if new_payment.nil?
         #charge failed
          flash_now(:error, "There was a problem charging your credit card.  Please try updating your billing information or contact support for help.")
       else
         #charge succeeded
-        @user.new_payment(params[:amount], "Add to account balance", charge_uuid)
         flash_message(:notice, "Payment successful.")
         redirect_to :action=>"billing"
         return
