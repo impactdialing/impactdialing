@@ -297,7 +297,7 @@ function set_transfer_panel(data) {
 function subscribe(session_key) {
     channel = pusher.subscribe(session_key);
 	channel.bind('pusher:subscription_succeeded', function() {
-		alert("subscription succeeded");
+		alert(session_key);
 	});
 	
 	channel.bind('pusher:subscription_error', function(status) {
