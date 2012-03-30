@@ -30,7 +30,7 @@ module Api
       end
       user = User.find_by_email(params[:email])
       account = Account.find(params[:account_id])
-      Delayed::Job.enqueue VoterListJob.new(separator, csv_column_headers.to_json, VoterList.create_csv_to_system_map(csv_column_headers, account), saved_file_name, params[:voter_list_name], params[:campaign_id], params[:account_id],user.domain, params[:email])          
+      Delayed::Job.enqueue VoterListJob.new(separator, csv_column_headers.to_json, VoterList.create_csv_to_system_map(csv_column_headers, account), saved_file_name, params[:voter_list_name], params[:campaign_id], params[:account_id],user.domain, params[:email],params[:callback_url],"api")          
       render_json_response({status: 'ok', code: '200' , message: "An email will be sent to #{params[:email]} with the status of the list upload"})
     end
     

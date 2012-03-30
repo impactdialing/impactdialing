@@ -1,5 +1,5 @@
 class VoterListJob
-  def initialize(separator, column_headers, csv_to_system_map, filename, voter_list_name, campaign_id, account_id, domain, email)
+  def initialize(separator, column_headers, csv_to_system_map, filename, voter_list_name, campaign_id, account_id, domain, email,callback_url,strategy="webui")
     @separator = separator
     @csv_column_headers = JSON.parse(column_headers)
     @csv_to_system_map = CsvMapping.new(csv_to_system_map)
@@ -9,15 +9,18 @@ class VoterListJob
     @voter_list_account_id = account_id
     @domain = domain
     @email = email
+    @strategy = strategy
+    @callback_url = callback_url
   end
 
   def perform
+    response_strategy = @strategy == 'webui' ?  VoterListWebuiStrategy.new : VoterListApiStrategy.new(@voter_list_account_id, @voter_list_campaign_id, @callback_url)
     response = {"errors"=> [], "success"=> []}
     user_mailer = UserMailer.new
 
     unless @csv_to_system_map.valid?
       response["errors"].concat(@csv_to_system_map.errors)
-      user_mailer.voter_list_upload(response, @domain, @email,@voter_list_name)
+      response_strategy.response(response, {domain: @domain, email: @email, voter_list_name: @voter_list_name})
       return response
     end
 
@@ -25,7 +28,7 @@ class VoterListJob
 
     unless @voter_list.valid?
       response['errors'] << @voter_list.errors.full_messages.join("; ")
-      user_mailer.voter_list_upload(response, @domain, @email,@voter_list_name)
+      response_strategy.response(response, {domain: @domain, email: @email, voter_list_name: @voter_list_name})
       return response
     end
     @voter_list.save!
@@ -40,7 +43,7 @@ class VoterListJob
       response['errors'] << "Invalid CSV file. Could not import."
     ensure
       VoterList.delete_from_s3 @csv_filename
-      user_mailer.voter_list_upload(response, @domain, @email, @voter_list_name)
+      response_strategy.response(response, {domain: @domain, email: @email, voter_list_name: @voter_list_name})
       return response
     end
   end
