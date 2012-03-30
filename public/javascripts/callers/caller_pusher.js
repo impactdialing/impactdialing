@@ -305,9 +305,14 @@ function subscribe(session_key) {
 	});
 	
 	pusher.connection.bind('unavailable', function(delay) {
-	  alert("I haven't been able to establish a connection for this feature.  " +
-	        "I will try again in " + delay + " seconds.")
+	  alert("unavailable")
 	});
+	pusher.connection.bind('disconnected', function(delay) {
+	  alert("disconnected")
+	});
+	
+	
+	
 
     channel.bind('caller_connected', function(data) {
         hide_all_actions();
