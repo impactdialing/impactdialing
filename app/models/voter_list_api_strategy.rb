@@ -10,7 +10,7 @@ class VoterListApiStrategy
     uri = URI.parse(@callback_url)
     http = Net::HTTP.new(uri.host, uri.port)
     request = Net::HTTP::Post.new(uri.request_uri)
-    request.set_form_data({response: response, account_id: @account_id, campaign_id: @campaign_id, list_name: params[:voter_list_name]})
+    request.set_form_data({message: response, account_id: @account_id, campaign_id: @campaign_id, list_name: params[:voter_list_name]})
     response = http.request(request)
   end
   
