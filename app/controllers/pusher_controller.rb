@@ -1,9 +1,6 @@
 class PusherController < ApplicationController
   
   def add_channel
-    redis = Redis.connect
-
-    params[:session_key]
   end
 
   def webhook
