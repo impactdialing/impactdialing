@@ -312,8 +312,7 @@ function subscribe(session_key) {
 	// });
 	
 	
-	
-
+	channel.bind('pusher:subscription_succeeded', function() {
     channel.bind('caller_connected', function(data) {
         hide_all_actions();
         $('#browserTestContainer').hide();
@@ -492,6 +491,8 @@ function subscribe(session_key) {
         alert("You have been re-assigned to " + data.campaign_name + ".");
 
     });
+
+	});
 
     function set_call_attempt(id) {
         $("#current_call_attempt").val(id);
