@@ -296,20 +296,20 @@ function set_transfer_panel(data) {
 
 function subscribe(session_key) {
     channel = pusher.subscribe(session_key);
-	channel.bind('pusher:subscription_succeeded', function() {
-		alert(session_key);
-	});
-	
-	channel.bind('pusher:subscription_error', function(status) {
-		alert("subscription failed");
-	});
-	
-	pusher.connection.bind('unavailable', function(delay) {
-	  alert("unavailable")
-	});
-	pusher.connection.bind('disconnected', function(delay) {
-	  alert("disconnected")
-	});
+	// channel.bind('pusher:subscription_succeeded', function() {
+	// 	alert(session_key);
+	// });
+	// 
+	// channel.bind('pusher:subscription_error', function(status) {
+	// 	alert("subscription failed");
+	// });
+	// 
+	// pusher.connection.bind('unavailable', function(delay) {
+	//   alert("unavailable")
+	// });
+	// pusher.connection.bind('disconnected', function(delay) {
+	//   alert("disconnected")
+	// });
 	
 	
 	
