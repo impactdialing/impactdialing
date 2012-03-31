@@ -265,7 +265,7 @@ DEPENDENCIES
   guard-spork
   heroku
   heroku_san
-  hiredis
+  hiredis (~> 0.4.5)
   hoptoad_notifier (~> 2.4.11)
   hpricot (~> 0.8.4)
   in_place_editing (~> 1.1.1)
@@ -282,7 +282,7 @@ DEPENDENCIES
   rails (= 3.0.10)
   rb-fsevent
   rb-inotify
-  redis
+  redis (~> 2.2.2)
   rspec
   rspec-rails (~> 2.6.1)
   ruby-debug19
