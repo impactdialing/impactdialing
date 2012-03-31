@@ -304,10 +304,20 @@ function set_transfer_panel(data) {
 
 function subscribe(session_key) {
     channel = pusher.subscribe(session_key);
-	pusher.connection.bind('state_change', function(states) {
-	  // states = {previous: 'oldState', current: 'newState'
-	});
 
+	// channel.bind('pusher:subscription_error', function(status) {
+	// 	alert("subscription failed");
+	// });
+	// 
+	// pusher.connection.bind('unavailable', function(delay) {
+	//   alert("unavailable")
+	// });
+	// pusher.connection.bind('disconnected', function(delay) {
+	//   alert("disconnected")
+	// });
+	
+	
+ channel.bind('pusher:subscription_succeeded', function() {
     channel.bind('caller_connected', function(data) {
         hide_all_actions();
         $('#browserTestContainer').hide();
@@ -486,6 +496,8 @@ function subscribe(session_key) {
         alert("You have been re-assigned to " + data.campaign_name + ".");
 
     });
+
+	});
 
     function set_call_attempt(id) {
         $("#current_call_attempt").val(id);
