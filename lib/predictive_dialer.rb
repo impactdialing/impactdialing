@@ -6,6 +6,7 @@ ActiveRecord::Base.logger = nil #why would you want to log all the sql ??
 
 loop do
   begin
+    DIALER_LOGGER.info "starting dialer"
     logged_in_campaigns = ActiveRecord::Base.connection.execute("select distinct campaign_id from caller_sessions where on_call=1")
     DIALER_LOGGER.info "============ logged_in_campaigns: #{logged_in_campaigns.num_rows} ============"
     logged_in_campaigns.each do |k|
