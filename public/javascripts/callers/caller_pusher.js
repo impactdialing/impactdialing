@@ -56,11 +56,6 @@ function get_session() {
             if (json.caller_session.id && $("#caller_session").val() === ""  ) {
                 set_session(json.caller_session.id);
                 subscribe(json.caller_session.session_key);
-                $("#callin_data").hide();
-                $('#start_calling').hide();
-                $('#stop_calling').show();
-                $("#called_in").show();
-                get_voter();
             }
         }
     })
@@ -311,6 +306,11 @@ function subscribe(session_key) {
 	
 	
 	channel.bind('pusher:subscription_succeeded', function() {
+	    $("#callin_data").hide();
+        $('#start_calling').hide();
+        $('#stop_calling').show();
+        $("#called_in").show();
+        get_voter();      	
     channel.bind('caller_connected', function(data) {
         hide_all_actions();
         $('#browserTestContainer').hide();
