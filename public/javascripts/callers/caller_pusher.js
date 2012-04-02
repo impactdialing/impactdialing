@@ -3,6 +3,11 @@ Pusher.log = function(message) {
 };
 
 var channel = null;
+var browser_guid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+    return v.toString(16);
+});	
+
 
 
 $(document).ready(function() {
@@ -42,14 +47,10 @@ function set_session(session_id) {
 
 
 function get_session() {
-	var guid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-	    var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
-	    return v.toString(16);
-	});	
 	
     $.ajax({
         url : "/caller/active_session",
-        data : {id : $("#caller").val(), campaign_id : $("#campaign").val(), browser_id: guid },
+        data : {id : $("#caller").val(), campaign_id : $("#campaign").val(), browser_id: browser_guid },
         type : "POST",
         success : function(json) {
             if (json.caller_session.id && $("#caller_session").val() === ""  ) {
