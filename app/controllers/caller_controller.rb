@@ -101,8 +101,7 @@ class CallerController < ApplicationController
   def active_session
     caller = Caller.find(params[:id])
     if !params[:active_count].nil? && params[:active_count].to_i >= 6
-      session[:caller]=nil
-      redirect_to caller_login_path
+      render :json => {logout: true}.to_json
       return
     end    
     browser_id = params[:browser_id]

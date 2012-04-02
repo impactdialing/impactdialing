@@ -59,6 +59,10 @@ function get_session() {
                 set_session(json.caller_session.id);
                 subscribe(json.caller_session.session_key);
             }
+			if(json.logout)
+			{
+			 #('#caller_logout').trigger('click')	
+			}
         }
     })
 }
