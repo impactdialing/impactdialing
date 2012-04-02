@@ -104,6 +104,11 @@ class CallerController < ApplicationController
     campaign = caller.campaign
     render :json => caller.active_session(campaign,browser_id).to_json
   end
+  
+  def pusher_subscribed
+    caller_session = CallerSession.find_by_session_key(params[:session_key])
+    caller_session.update_attributes(websocket_connected: true)
+  end
 
   def preview_voter
     caller_session = @caller.caller_sessions.find(params[:session_id])

@@ -11,8 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120321074907) do
-
+ActiveRecord::Schema.define(:version => 20120402081433) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -22,16 +21,6 @@ ActiveRecord::Schema.define(:version => 20120321074907) do
     t.boolean  "activated",            :default => false
     t.boolean  "record_calls",         :default => false
     t.integer  "chargify_customer_id"
-    t.boolean  "activated",                 :default => false
-    t.boolean  "record_calls",              :default => false
-    t.string   "recurly_account_code"
-    t.string   "subscription_name"
-    t.integer  "subscription_count"
-    t.boolean  "subscription_active",       :default => false
-    t.string   "recurly_subscription_uuid"
-    t.boolean  "autorecharge_enabled",      :default => false
-    t.float    "autorecharge_trigger"
-    t.float    "autorecharge_amount"
   end
 
   create_table "answers", :force => true do |t|
@@ -160,6 +149,7 @@ ActiveRecord::Schema.define(:version => 20120321074907) do
     t.string   "session_key"
     t.string   "browser_identification"
     t.integer  "lock_version",           :default => 0
+    t.boolean  "websocket_connected"
   end
 
   add_index "caller_sessions", ["caller_id"], :name => "index_caller_sessions_on_caller_id"
@@ -329,16 +319,6 @@ ActiveRecord::Schema.define(:version => 20120321074907) do
   create_table "notes", :force => true do |t|
     t.text    "note",      :null => false
     t.integer "script_id", :null => false
-  end
-
-  create_table "payments", :force => true do |t|
-    t.float    "amount_paid"
-    t.float    "amount_remaining"
-    t.integer  "recurly_transaction_uuid"
-    t.integer  "account_id"
-    t.string   "notes"
-    t.datetime "created_at"
-    t.datetime "updated_at"
   end
 
   create_table "possible_responses", :force => true do |t|

@@ -15,18 +15,6 @@ describe "predictive_dialer" do
      Factory(:campaign, :predictive_type => 'power_2').should be_ratio_dial
    end
 
-   it "should determine the number of short calls to dial" do
-     Factory(:campaign).determine_short_to_dial.should == 0
-   end
-
-   #it "should not add more short callers to the pool than the number of short calls to dial"
-
-   it "should add idle callers to the dial pool" do
-     campaign = Factory(:campaign)
-     caller_session = Factory(:caller_session, :on_call => true, :available_for_call => true, :campaign => campaign)
-     campaign.determine_pool_size(0).should == campaign.call_stats(10)[:dials_needed]
-   end
-
    it "should add callers with calls over the long threshold to the dial pool"
 
    it "should properly choose the next voters to dial" do
@@ -313,89 +301,7 @@ describe "predictive_dialer" do
       end
 
     end
-
-
-    it "determines if dialing is ramping up" do
-      #less than 50 dials in the last 10 minutes
-      campaign = Factory(:campaign)
-      caller_session = Factory(:caller_session, :on_call => true, :available_for_call => true, :campaign => campaign)
-      (1..10).each do |i|
-        call_attempt = Factory(:call_attempt, :caller_session => caller_session, :voter => Factory(:voter), :campaign => campaign, :call_start=>Time.now, :status=>"Status: Call in progress")
-      end
-      campaign.should be_dials_ramping
-
-      campaign = Factory(:campaign)
-      caller_session = Factory(:caller_session, :on_call => true, :available_for_call => true, :campaign => campaign)
-      (1..60).each do |i|
-        call_attempt = Factory(:call_attempt, :caller_session => caller_session, :voter => Factory(:voter), :campaign => campaign, :call_start=>Time.now, :status=>"Status: Call in progress")
-      end
-      campaign.should_not be_dials_ramping
-    end
-
-    it "calculates callers_on_call_longer_than" do
-      campaign = Factory(:campaign, :predictive_alpha=>0.8, :predictive_beta=>0.2)
-      caller_session = Factory(:caller_session, :on_call => true, :available_for_call => false, :campaign => campaign)
-      call_attempt = Factory(:call_attempt, :caller_session => caller_session, :voter => Factory(:voter), :campaign => campaign, :call_start=>Time.now-60, :status=>CallAttempt::Status::INPROGRESS)
-      caller_session.attempt_in_progress=call_attempt
-
-      caller_session_2 = Factory(:caller_session, :on_call => true, :available_for_call => false, :campaign => campaign)
-      call_attempt_2 = Factory(:call_attempt, :caller_session => caller_session_2, :voter => Factory(:voter), :campaign => campaign, :call_start=>Time.now-30, :status=>CallAttempt::Status::INPROGRESS)
-      caller_session_2.attempt_in_progress=call_attempt_2
-
-      campaign.callers_on_call_longer_than(20).length.should==2
-      campaign.callers_on_call_longer_than(50).length.should==1
-      campaign.callers_on_call_longer_than(70).length.should==0
-    end
-
-    it "determines available callers" do
-      campaign = Factory(:campaign, :predictive_alpha=>0.8, :predictive_beta=>0.2)
-      caller_session = Factory(:caller_session, :on_call => true, :available_for_call => true, :campaign => campaign)
-      (1..25).each do |i|
-        short_call_attempt = Factory(:call_attempt, :caller_session => caller_session, :voter => Factory(:voter), :campaign => campaign, :call_start=>Time.now-30, :status=>"Call completed with success.", :call_end=>Time.now)
-      end
-      (1..25).each do |i|
-        lon_call_attempt = Factory(:call_attempt, :caller_session => caller_session, :voter => Factory(:voter), :campaign => campaign, :call_start=>Time.now-600, :status=>"Call completed with success.", :call_end=>Time.now)
-      end
-      (1..2).each do |i|
-        longer_than_expected_call_attempt = Factory(:call_attempt, :caller_session => caller_session, :voter => Factory(:voter), :campaign => campaign, :call_start=>Time.now-1400, :status=>"Call completed with success.", :call_end=>Time.now)
-      end
-      (1..10).each do |i|
-        free_caller_session = Factory(:caller_session, :on_call => true, :available_for_call => true, :campaign => campaign)
-      end
-      (1..10).each do |i|
-        busy_caller_session = Factory(:caller_session, :on_call => true, :available_for_call => false, :campaign => campaign)
-      end
-
-      # stats = campaign.call_stats(10)
-      # puts stats[:avg_duration]
-      # puts stats[:biggest_long]
-      # puts campaign.dialer_available_callers
-      campaign.dialer_available_callers.should==11
-    end
-
-    it "determines dials needed" do
-      #  α * dials_answered / dials_made
-      campaign = Factory(:campaign, :predictive_alpha=>0.8, :predictive_beta=>0.2)
-      caller_session = Factory(:caller_session, :on_call => true, :available_for_call => true, :campaign => campaign)
-      (1..25).each do |i|
-        answered_call_attempt = Factory(:call_attempt, :caller_session => caller_session, :voter => Factory(:voter), :campaign => campaign, :call_start=>Time.now-30, :status=>"Call completed with success.", :call_end=>Time.now)
-      end
-      # since all dials are answered it should be equal to alpha
-      campaign.dials_needed.should==campaign.predictive_alpha
-
-      campaign_2 = Factory(:campaign, :predictive_alpha=>0.8, :predictive_beta=>0.2)
-      caller_session_2 = Factory(:caller_session, :on_call => true, :available_for_call => true, :campaign => campaign_2)
-      (1..25).each do |i|
-        answered_call_attempt = Factory(:call_attempt, :caller_session => caller_session_2, :voter => Factory(:voter), :campaign => campaign_2, :call_start=>Time.now-30, :status=>"Call completed with success.", :call_end=>Time.now)
-      end
-      (1..25).each do |i|
-        busy_call_attempt = Factory(:call_attempt, :caller_session => caller_session_2, :voter => Factory(:voter), :campaign => campaign_2, :call_start=>Time.now, :status=>"Busy", :call_end=>Time.now)
-      end
-
-      # since half dials are answered it should be equal to alpha/2
-      campaign_2.dials_needed.should==campaign.predictive_alpha/2
-
-    end
+   
 
     it "chooses dial strategey"
     it "determines ringing lines" #need to track this by updating a flag when call is answered
