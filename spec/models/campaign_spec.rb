@@ -174,7 +174,7 @@ describe "predictive_dialer" do
    it "should dial one line per caller  if no calls have been made in the last ten minutes" do
      simulated_values = SimulatedValues.create(best_dials: 2.33345, best_conversation: 34.0076, longest_conversation: 42.0876, best_wrapup_time: 10.076)
      campaign = Factory(:campaign, simulated_values: simulated_values)
-     2.times { Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true) }
+     2.times { Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, websocket_connected: true) }
      num_to_call = campaign.dial_predictive_simulator
      campaign.should_not_receive(:num_to_call_predictive_simulate)
      caller_sessions = CallerSession.find_all_by_campaign_id(campaign.id)
@@ -186,7 +186,7 @@ describe "predictive_dialer" do
      campaign = Factory(:campaign, simulated_values: simulated_values, :acceptable_abandon_rate => 0.2)
      Factory(:call_attempt, :campaign => campaign, :call_start => 20.seconds.ago)
      Factory(:call_attempt, :campaign => campaign, :call_start => 20.seconds.ago, :status => CallAttempt::Status::ABANDONED)
-     2.times { Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true) }
+     2.times { Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, websocket_connected: true) }
      num_to_call = campaign.dial_predictive_simulator
      campaign.should_not_receive(:num_to_call_predictive_simulate)
      caller_sessions = CallerSession.find_all_by_campaign_id(campaign.id)
@@ -199,7 +199,7 @@ describe "predictive_dialer" do
      Factory(:call_attempt, :campaign => campaign, :call_start => 20.seconds.ago)
      Factory(:call_attempt, :campaign => campaign, :call_start => 20.seconds.ago, :status => CallAttempt::Status::ABANDONED)
      2.times { Factory(:call_attempt, :campaign => campaign, :call_start => 50.seconds.ago, status: CallAttempt::Status::RINGING ) }
-     3.times { Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true) }
+     3.times { Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, websocket_connected: true) }
      num_to_call = campaign.dial_predictive_simulator
      campaign.should_not_receive(:num_to_call_predictive_simulate)
      caller_sessions = CallerSession.find_all_by_campaign_id(campaign.id)
