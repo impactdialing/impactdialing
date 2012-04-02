@@ -146,10 +146,9 @@ class CallerController < ApplicationController
       render :nothing => true
     else
       @caller = Caller.find(params[:caller_id])
-      @session = @caller.caller_sessions.create(on_call: false, available_for_call: false,starttime: Time.now,
-                                                session_key: generate_session_key, sid: params[:CallSid], campaign: @caller.campaign)
-      Moderator.caller_connected_to_campaign(@caller, @caller.campaign, @session)      
-      render :xml => @session.start
+      @session = @caller.create_caller_session(generate_session_key, params[:CallSid])
+      Moderator.caller_connected_to_campaign(@caller, @caller.campaign, @session)
+      render xml:  @caller.is_on_call? ? @caller.already_on_call : @session.start
     end
   end
 

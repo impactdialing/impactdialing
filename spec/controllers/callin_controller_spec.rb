@@ -23,7 +23,7 @@ describe CallinController do
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "samplekey")
       Caller.stub(:find_by_pin).and_return(caller)
       Moderator.stub!(:caller_connected_to_campaign)
-      caller.stub_chain(:caller_sessions, :create).and_return(session)
+      # caller.stub_chain(:caller_sessions, :create).and_return(session)
       post :identify, :Digits => pin
       assigns(:caller).should == caller
     end
@@ -75,6 +75,7 @@ describe CallinController do
       caller = Factory(:caller, :pin => pin, :campaign => campaign, :account => account)
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "samplekey")
       caller.stub_chain(:caller_sessions, :create).and_return(session)
+      caller.stub(:is_on_call?).and_return(false)
       Caller.stub(:find_by_pin).and_return(caller)
       post :identify, :Digits => pin
       response.body.should == session.start
@@ -86,10 +87,25 @@ describe CallinController do
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => 'key')
       caller.stub_chain(:caller_sessions, :create).and_return(session)
       Moderator.stub!(:caller_connected_to_campaign).with(caller, campaign, session)
+      caller.stub(:is_on_call?).and_return(false)
       Caller.stub(:find_by_pin).and_return(caller)
       post :identify, :Digits => pin
       response.body.should == session.start
     end
+    
+    it "not start a conference if caller is already on call" do
+      pin = rand.to_s[2..6]
+      caller = Factory(:caller, :pin => pin, :campaign => campaign, :account => account)
+      older_session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => 'key', on_call: true)
+      session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => 'key')
+      caller.stub_chain(:caller_sessions, :create).and_return(session)
+      Moderator.stub!(:caller_connected_to_campaign).with(caller, campaign, session)
+      caller.stub(:is_on_call?).and_return(true)
+      Caller.stub(:find_by_pin).and_return(caller)
+      post :identify, :Digits => pin
+      response.body.should == caller.already_on_call
+    end
+    
     
     it "ask caller to select instructions choice, if caller is phones-only" do
       pin = rand.to_s[2..6]
@@ -104,6 +120,21 @@ describe CallinController do
       post :identify, :Digits => pin
       response.body.should == phones_only_caller.ask_instructions_choice(session)
     end
+    
+    it "update web socket is true, if caller is phones-only" do
+      pin = rand.to_s[2..6]
+      
+      phones_only_caller = Factory(:caller, :account => account, :is_phones_only => true, :campaign => campaign)
+      session = Factory(:caller_session, :caller => phones_only_caller, :campaign => campaign, :session_key => 'key')
+      phones_only_caller.stub_chain(:caller_sessions, :create).and_return(session)
+      Moderator.stub!(:caller_connected_to_campaign)#.with(phones_only_caller, campaign, session)
+      session.should_not_receive(:start)
+
+      Caller.stub(:find_by_pin).and_return(phones_only_caller)
+      post :identify, :Digits => pin
+      session.reload.websocket_connected.should be_true
+    end
+    
 
   end
 
