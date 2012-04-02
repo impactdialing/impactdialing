@@ -40,7 +40,7 @@ class Caller < ActiveRecord::Base
       begin
         active_caller_session.update_attributes(browser_identification: browser_id)
       rescue ActiveRecord::StaleObjectError
-        active_session(campaign, browser_id)
+        return {:caller_session => {:id => nil}}
       end
       return active_caller_session
     else
