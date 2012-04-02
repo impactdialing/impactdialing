@@ -7,6 +7,7 @@ var browser_guid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, funct
     var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
     return v.toString(16);
 });	
+var active_count = 0
 
 
 
@@ -22,6 +23,7 @@ $(document).ready(function() {
             //do nothing if the caller session context already exists
         } else {
 			if (window.isActive) {
+			  active_count = active_count + 1;	
               get_session();
 			}
         }
@@ -50,7 +52,7 @@ function get_session() {
 	
     $.ajax({
         url : "/caller/active_session",
-        data : {id : $("#caller").val(), campaign_id : $("#campaign").val(), browser_id: browser_guid },
+        data : {id : $("#caller").val(), campaign_id : $("#campaign").val(), browser_id: browser_guid, active_count: active_count },
         type : "POST",
         success : function(json) {
             if (json.caller_session.id && $("#caller_session").val() === ""  ) {
