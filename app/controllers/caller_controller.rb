@@ -100,7 +100,7 @@ class CallerController < ApplicationController
 
   def active_session
     caller = Caller.find(params[:id])
-    if !params[:active_count].nil? && params[:active_count] >= 6
+    if !params[:active_count].nil? && params[:active_count].to_i >= 6
       session[:caller]=nil
       redirect_to caller_login_path
       return
