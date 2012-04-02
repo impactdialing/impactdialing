@@ -61,7 +61,7 @@ function get_session() {
             }
 			if(json.logout)
 			{
-			 #('#caller_logout').trigger('click')	
+			 ('#caller_logout').trigger('click')	
 			}
         }
     })
