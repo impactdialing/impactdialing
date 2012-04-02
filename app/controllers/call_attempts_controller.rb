@@ -74,7 +74,7 @@ class CallAttemptsController < ApplicationController
       begin
         Moderator.publish_event(call_attempt.campaign, 'voter_response_submitted', {:caller_session_id => params[:caller_session], :campaign_id => call_attempt.campaign.id, :dials_in_progress => call_attempt.campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', call_attempt.campaign.id)})
       rescue Exception => e
-        
+        Rails.logger.debug("exception in publishing event to monitor.")
       end
       pusher_response_received(call_attempt, params[:stop_calling])
       render :nothing => true
