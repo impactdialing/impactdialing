@@ -51,6 +51,7 @@ ImpactDialing::Application.routes.draw do
       post :assign_campaign
       post :pause
       post :active_session
+      post :pusher_subscribed
       post :preview_voter
       post :skip_voter
       post :call_voter

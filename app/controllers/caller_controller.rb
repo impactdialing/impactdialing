@@ -2,7 +2,7 @@ require Rails.root.join("lib/twilio_lib")
 
 class CallerController < ApplicationController
   layout "caller"
-  before_filter :check_login, :except=>[:login, :feedback, :assign_campaign, :end_session, :pause, :start_calling, :gather_response, :choose_voter, :phones_only_progressive, :phones_only, :choose_instructions_option, :new_campaign_response_panel, :check_reassign, :active_session]
+  before_filter :check_login, :except=>[:login, :feedback, :assign_campaign, :end_session, :pause, :start_calling, :gather_response, :choose_voter, :phones_only_progressive, :phones_only, :choose_instructions_option, :new_campaign_response_panel, :check_reassign, :active_session,:pusher_subscribed]
   before_filter :redirect_to_ssl
   before_filter :connect_to_twilio, :only => [:preview_dial]
   
@@ -106,8 +106,9 @@ class CallerController < ApplicationController
   end
   
   def pusher_subscribed
-    caller_session = CallerSession.find_by_session_key(params[:session_key])
+    caller_session = CallerSession.find(params[:session_id])
     caller_session.update_attributes(websocket_connected: true)
+    render :nothing => true
   end
 
   def preview_voter

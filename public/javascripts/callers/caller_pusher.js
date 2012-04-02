@@ -69,6 +69,22 @@ function get_voter() {
     })
 }
 
+function pusher_subscribed() {
+    $.ajax({
+        url : "/caller/" + $("#caller").val() + "/pusher_subscribed",
+        data : {id : $("#caller").val(), session_id : $("#caller_session").val()},
+        type : "POST",
+		success : function(response){			
+		    $("#callin_data").hide();
+	        $('#start_calling').hide();
+	        $('#stop_calling').show();
+	        $("#called_in").show();
+	        get_voter(); 
+		}
+    })
+}
+
+
 
 function next_voter() {
     $.ajax({
@@ -291,14 +307,7 @@ function set_transfer_panel(data) {
 function subscribe(session_key) {
     channel = pusher.subscribe(session_key);
 
-	channel.bind('pusher:subscription_succeeded', function() {
-		
-	    $("#callin_data").hide();
-        $('#start_calling').hide();
-        $('#stop_calling').show();
-        $("#called_in").show();
-        get_voter(); 
-     	
+	channel.bind('pusher:subscription_succeeded', function() {     	
     channel.bind('caller_connected', function(data) {
         hide_all_actions();
         $('#browserTestContainer').hide();
