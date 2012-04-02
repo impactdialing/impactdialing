@@ -288,16 +288,17 @@ function set_transfer_panel(data) {
     })
 }
 
-
-
 function subscribe(session_key) {
     channel = pusher.subscribe(session_key);
+
 	channel.bind('pusher:subscription_succeeded', function() {
+		
 	    $("#callin_data").hide();
         $('#start_calling').hide();
         $('#stop_calling').show();
         $("#called_in").show();
-        get_voter();      	
+        get_voter(); 
+     	
     channel.bind('caller_connected', function(data) {
         hide_all_actions();
         $('#browserTestContainer').hide();
