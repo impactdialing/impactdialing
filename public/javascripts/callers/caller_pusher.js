@@ -307,7 +307,8 @@ function set_transfer_panel(data) {
 function subscribe(session_key) {
     channel = pusher.subscribe(session_key);
 
-	channel.bind('pusher:subscription_succeeded', function() {     	
+	channel.bind('pusher:subscription_succeeded', function() {     
+		pusher_subscribed();
     channel.bind('caller_connected', function(data) {
         hide_all_actions();
         $('#browserTestContainer').hide();
