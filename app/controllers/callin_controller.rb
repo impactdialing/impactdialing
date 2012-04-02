@@ -8,20 +8,23 @@ class CallinController < ApplicationController
 
   def identify
     @caller = Caller.find_by_pin(params[:Digits])
-
     if @caller
       unless @caller.account.activated?
-          xml =  Twilio::Verb.new do |v|
-            v.say "Your account has insufficent funds"
-            v.hangup
-         end
-         render :xml => xml.response
+         render :xml => @caller.account.insufficient_funds
          return
        end
-      @session = @caller.caller_sessions.create(:on_call => false, :available_for_call => false, :session_key => generate_session_key, :sid => params[:CallSid], :campaign => @caller.campaign,starttime: Time.now)
+      @session = @caller.caller_sessions.create(on_call: false, available_for_call: false, session_key: generate_session_key, 
+      sid: params[:CallSid], campaign: @caller.campaign, starttime: Time.now)
+      
       if @caller.is_phones_only?
         @session.update_attributes(websocket_connected: true)
       end
+            
+      if !@caller.is_phones_only? && @caller.is_on_call? 
+        render xml: @caller.already_on_call
+        return
+      end
+
       Moderator.caller_connected_to_campaign(@caller, @caller.campaign, @session)
       render :xml => @caller.is_phones_only? ? @caller.ask_instructions_choice(@session) : @session.start
     else

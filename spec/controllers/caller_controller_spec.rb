@@ -347,8 +347,17 @@ describe CallerController do
       caller = Factory(:caller, campaign: campaign, account:account)
       post :start_calling, caller_id: caller.id, campaign_id: campaign.id,CallSid: "1234567"
       caller.caller_sessions.on_call.size.should eq(1)
-
     end
+    
+    it "should not start a conference for a caller who is not on call" do
+      account = Factory(:account)
+      campaign = Factory(:campaign, account: account)
+      caller = Factory(:caller, campaign: campaign, account:account)
+      caller_session2 = Factory(:caller_session, :campaign => campaign, :session_key => "some_key", :caller => caller, :available_for_call => false, :on_call => true)
+      post :start_calling, caller_id: caller.id, campaign_id: campaign.id,CallSid: "1234567"
+      caller.caller_sessions.on_call.size.should eq(1)
+    end
+    
     
   end
 end

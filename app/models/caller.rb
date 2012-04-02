@@ -34,17 +34,16 @@ class Caller < ActiveRecord::Base
   end
 
   def active_session(campaign,browser_id)
-    return {:caller_session => {:id => nil}} if self.campaign.nil?
     active_caller_session = caller_sessions.available.not_allocated.on_campaign(campaign).last      
-    unless active_caller_session.nil?
+    if active_caller_session.nil?
+      return {:caller_session => {:id => nil}}
+    else
       begin
         active_caller_session.update_attributes(browser_identification: browser_id)
       rescue ActiveRecord::StaleObjectError
         return {:caller_session => {:id => nil}}
       end
-      return active_caller_session
-    else
-      return {:caller_session => {:id => nil}}
+      return active_caller_session      
     end
   end
   
@@ -165,6 +164,21 @@ class Caller < ActiveRecord::Base
       acc[question][answer] = {:count => curr.last, :percentage => curr.last / total_for_question.to_f * 100 }
       acc
     end
+  end
+  
+  def already_on_call
+    Twilio::Verb.new do |v|
+      v.say "Caller with similar identity is on already call"
+      v.hangup
+    end.response
+  end
+  
+  def create_caller_session(session_key, call_sid)
+    session = caller_sessions.create(on_call: false, available_for_call: false, starttime: Time.now, session_key: session_key, sid: call_sid, campaign: campaign)
+    if is_phones_only?
+      session.update_attributes(websocket_connected: true)
+    end
+    session
   end
 
 end
