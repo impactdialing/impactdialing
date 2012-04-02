@@ -37,8 +37,11 @@ class Caller < ActiveRecord::Base
     return {:caller_session => {:id => nil}} if self.campaign.nil?
     active_caller_session = caller_sessions.available.not_allocated.on_campaign(campaign).last      
     unless active_caller_session.nil?
-      active_caller_session.lock!
-      active_caller_session.update_attributes(browser_identification: browser_id)
+      begin
+        active_caller_session.update_attributes(browser_identification: browser_id)
+      rescue ActiveRecord::StaleObjectError
+        active_session(campaign, browser_id)
+      end
       return active_caller_session
     else
       return {:caller_session => {:id => nil}}
