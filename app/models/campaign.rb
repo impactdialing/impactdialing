@@ -392,7 +392,7 @@ class Campaign < ActiveRecord::Base
   def get_dial_ratio
     if self.predictive_type.index("power_")!=nil
       ratio_dial = self.predictive_type[6, 1].to_i
-      DIALER_LOGGER.info "ratio_dial: #{ratio_dial}, #{callers.length}, #{predictive_type.index("power_")}"
+      Rails.logger.info "ratio_dial: #{ratio_dial}, #{callers.length}, #{predictive_type.index("power_")}"
     end
     ratio_dial
   end
@@ -425,41 +425,6 @@ class Campaign < ActiveRecord::Base
     short_to_dial
   end
 
-  def determine_pool_size(short_to_dial)
-    stats = call_stats(10)
-
-    #determine the how many new lines to dial based on short/long thresholds
-
-    pool_size=0
-    done_short=0
-
-    callers_to_dial.each do |session|
-      if session.attempt_in_progress.blank?
-        # caller waiting idle
-        pool_size = pool_size + stats[:dials_needed]
-        #DIALER_LOGGER.info "empty to pool, session #{session.id} attempt_in_progress is blank"
-      else
-        attempt = CallAttempt.find(session.attempt_in_progress)
-        if attempt.duration!=nil &&
-            if attempt.duration < stats[:short_time] && done_short<short_to_dial
-              if attempt.duration > stats[:short_new_call_time_threshold]
-                #when stats[:short_new_call_caller_threshold] callers are on calls of length less than stats[:short_time]s, dial  stats[:dials_needed] lines at stats[:short_new_call_time_threshold]) seconds after the last call began.
-                pool_size = pool_size + stats[:dials_needed]
-                done_short+=1
-                DIALER_LOGGER.info "short to pool, duration #{attempt.duration}, done_short=#{done_short}, short_to_dial=#{short_to_dial}"
-              end
-            else
-              # if a call passes length 15s, dial stats[:dials_needed] lines at stats[:short_new_long_time_threshold]sinto the call.
-              if attempt.duration > stats[:long_new_call_time_threshold]
-                DIALER_LOGGER.info "LONG TO POOL, session #{session.id}, attempt.duration #{attempt.duration}, thresh #{stats[:long_new_call_time_threshold]}"
-                pool_size = pool_size + stats[:dials_needed]
-              end
-            end
-        end
-      end
-    end
-    pool_size
-  end
 
   def choose_voters_to_dial(num_voters)
     return [] if num_voters < 1
@@ -486,11 +451,11 @@ class Campaign < ActiveRecord::Base
       num_to_call = dial_predictive_simulator
     end
 
-    DIALER_LOGGER.info "#{self.name}: Callers logged in: #{callers.length}, Callers on call: #{callers_on_call.length}, Callers not on call:  #{callers_not_on_call}, Calls in progress: #{call_attempts_in_progress.length}"
-    DIALER_LOGGER.info "num_to_call #{num_to_call}"
+    Rails.logger.info "#{self.name}: Callers logged in: #{callers.length}, Callers on call: #{callers_on_call.length}, Callers not on call:  #{callers_not_on_call}, Calls in progress: #{call_attempts_in_progress.length}"
+    Rails.logger.info "num_to_call #{num_to_call}"
     if num_to_call > 0
       voter_ids = choose_voters_to_dial(num_to_call) #TODO check logic
-      DIALER_LOGGER.info("voters to dial #{voter_ids}")
+      Rails.logger.info("voters to dial #{voter_ids}")
       ring_predictive_voters(voter_ids)
     end
   end
