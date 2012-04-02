@@ -93,18 +93,27 @@ describe CallerController do
       post :preview_voter, :id => caller.id, :session_id => session.id, :voter_id => last_voter.id
     end
 
-    it "makes a call to the voter" do
-      caller_session = Factory(:caller_session, :caller => caller, :on_call => true, :available_for_call => true)
+    it "makes a call to the voter if web socket is connected" do
+      caller_session = Factory(:caller_session, :caller => caller, :on_call => true, :available_for_call => true, websocket_connected: true)
       voter = Factory(:voter, :campaign => caller.campaign)
       Twilio::Call.stub(:make)
       Twilio::Call.should_receive(:make).with(anything, voter.Phone,anything,anything).and_return("TwilioResponse"=> {"Call" => {"Sid" => 'sid'}})
       post :call_voter, :session_id => caller_session.id , :voter_id => voter.id, id: caller.id
     end
+    
+    it " does not make a call to the voter if web socket is connected" do
+      caller_session = Factory(:caller_session, :caller => caller, :on_call => true, :available_for_call => true)
+      voter = Factory(:voter, :campaign => caller.campaign)
+      Twilio::Call.stub(:make)
+      Twilio::Call.should_not_receive(:make).with(anything, voter.Phone,anything,anything).and_return("TwilioResponse"=> {"Call" => {"Sid" => 'sid'}})
+      post :call_voter, :session_id => caller_session.id , :voter_id => voter.id, id: caller.id
+    end
+    
 
     it "pushes 'calling' to the caller" do
       session_key = "caller_session_key"
       campaign = Factory(:campaign, :start_time => Time.new("2000-01-01 01:00:00"), :end_time => Time.new("2000-01-01 23:00:00"))
-      caller_session = Factory(:caller_session, :caller => caller, :on_call => true, :available_for_call => true, :session_key => session_key, :campaign => campaign)
+      caller_session = Factory(:caller_session, :caller => caller, :on_call => true, :available_for_call => true, :session_key => session_key, :campaign => campaign, websocket_connected: true)
       voter = Factory(:voter, :campaign =>campaign)
       channel = mock
       Twilio::Call.stub(:make).and_return("TwilioResponse"=> {"Call" => {"Sid" => 'sid'}})

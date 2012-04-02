@@ -212,7 +212,7 @@ class Campaign < ActiveRecord::Base
   end
 
   def callers_available_for_call
-    CallerSession.find_all_by_campaign_id_and_on_call_and_available_for_call(self.id, 1, 1)
+    CallerSession.find_all_by_campaign_id_and_on_call_and_available_for_call_and_websocket_connected(self.id, 1, 1, 1)
   end
 
   def call_attempts_in_progress
@@ -375,7 +375,7 @@ class Campaign < ActiveRecord::Base
     num_to_call = 0
     dials_made = call_attempts.between(10.minutes.ago, Time.now).size
     if dials_made == 0 || !abandon_rate_acceptable?
-      num_to_call = callers_available_for_call.length - call_attempts.between(1.minute.ago, Time.now).with_status(CallAttempt::Status::RINGING).size
+      num_to_call = callers_available_for_call.size - call_attempts.between(1.minute.ago, Time.now).with_status(CallAttempt::Status::RINGING).size
     else
       num_to_call = num_to_call_predictive_simulate
     end
