@@ -44,7 +44,7 @@ class CallAttemptsController < ApplicationController
   end
 
   def end
-    DIALER_LOGGER.info "callstatus: #{params[:CallStatus]}"
+    Rails.logger.info "callstatus: #{params[:CallStatus]}"
     call_attempt = CallAttempt.find(params[:id])
     if [CallAttempt::Status::HANGUP, CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED].include? call_attempt.status
       call_attempt.voter.update_attributes(:last_call_attempt_time => Time.now)
