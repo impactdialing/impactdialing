@@ -210,7 +210,7 @@ describe "predictive_dialer" do
     simulated_values = SimulatedValues.create(best_dials: 2.33345, best_conversation: 34.0076, longest_conversation: 42.0876, best_wrapup_time: 10.076)
     campaign = Factory(:campaign, :simulated_values => simulated_values)
 
-    10.times { Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true) }
+    10.times { Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true, websocket_connected: true) }
     10.times { Factory(:call_attempt, :campaign => campaign, :call_start => 40.seconds.ago, call_end: 10.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::SUCCESS) }
     10.times { Factory(:call_attempt, :campaign => campaign, :call_start => 40.seconds.ago, call_end: 8.seconds.ago, :status => CallAttempt::Status::SUCCESS) }
     3.times { Factory(:call_attempt, :campaign => campaign, :call_start => 80.seconds.ago, call_end: 38.seconds.ago, :status => CallAttempt::Status::SUCCESS) }
@@ -228,14 +228,14 @@ describe "predictive_dialer" do
   it "should determine calls to make give the simulated best_dials when call_attempts prior int the last 10 mins are present" do
       simulated_values = SimulatedValues.create(best_dials: 1, best_conversation: 0, longest_conversation: 0)
       campaign = Factory(:campaign, :simulated_values => simulated_values)
-      3.times { Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true) }
+      3.times { Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true, websocket_connected: true) }
       calls_to_make = campaign.num_to_call_predictive_simulate
       calls_to_make.should eq(3)
     end
 
     it "should determine calls to make when no simulated values" do
       campaign = Factory(:campaign)
-      3.times { Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true) }
+      3.times { Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true, websocket_connected: true) }
       calls_to_make = campaign.num_to_call_predictive_simulate
       calls_to_make.should eq(3)
     end

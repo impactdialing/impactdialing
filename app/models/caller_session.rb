@@ -173,6 +173,9 @@ class CallerSession < ActiveRecord::Base
 
 
   def pause_for_results(attempt = 0)
+    unless endtime.nil?
+      return Twilio::Verb.hangup
+    end    
     attempt = attempt.to_i || 0
     self.publish("waiting_for_result", {}) if attempt == 0
     Twilio::Verb.new { |v| v.say("Please enter your call results") if (attempt % 5 == 0); v.pause("length" => 2); v.redirect(pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => id, :attempt=>attempt+1)) }.response
