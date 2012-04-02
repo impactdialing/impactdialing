@@ -100,6 +100,11 @@ class CallerController < ApplicationController
 
   def active_session
     caller = Caller.find(params[:id])
+    if !params[:active_count].nil? && params[:active_count] >= 6
+      session[:caller]=nil
+      redirect_to caller_login_path
+      return
+    end    
     browser_id = params[:browser_id]
     campaign = caller.campaign
     render :json => caller.active_session(campaign,browser_id).to_json
