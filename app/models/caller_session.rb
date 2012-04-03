@@ -231,8 +231,8 @@ class CallerSession < ActiveRecord::Base
    
    def preview_voter
      if campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE
-       voter = campaign.next_voter_in_dial_queue(params[:voter_id])      
-       voter.update_attributes(caller_id: caller_session.caller_id) unless voter.nil?
+       voter = campaign.next_voter_in_dial_queue      
+       voter.update_attributes(caller_id: caller_id) unless voter.nil?
        publish('caller_connected', voter ? voter.info : {}) 
      else
        publish('caller_connected_dialer', {})
