@@ -45,7 +45,7 @@ function get_voter() {
 function pusher_subscribed() {
     $.ajax({
         url : "/caller/" + $("#caller").val() + "/pusher_subscribed",
-        data : {id : $("#caller").val(), session_id : $("#session_key").val()},
+        data : {id : $("#caller").val(), session_key : $("#session_key").val()},
         type : "POST",
 		success : function(response){	
 			set_session(response.caller_session_id)
