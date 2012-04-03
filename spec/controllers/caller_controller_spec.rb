@@ -170,43 +170,8 @@ describe CallerController do
       response.body.should == Twilio::Verb.hangup
     end
 
-    it "finds the campaigns callers active session" do
-      login_as(caller)
-      campaign = Factory(:campaign)
-      campaign.callers << caller
-      session = Factory(:caller_session, :caller => caller, :session_key => 'key', :on_call => true, :available_for_call => true, :campaign => campaign)
-      Factory(:caller_session, :caller => caller, :session_key => 'other_key', :on_call => true, :available_for_call => true, :campaign => Factory(:campaign))
-      post :active_session, :id => caller.id, :campaign_id => campaign
-      response.body.should == session.to_json
-    end
 
 
-    it "returns no session if caller not associated with a campaign" do
-      login_as(caller)
-      campaign = Factory(:campaign)
-      session = Factory(:caller_session, :caller => caller, :session_key => 'key', :on_call => true, :available_for_call => true, :campaign => campaign)
-      post :active_session, :id => caller.id, :campaign_id => campaign
-      response.body.should == {:caller_session => {:id => nil}}.to_json
-    end
-
-    it "returns no session if the caller is not connected" do
-      login_as(caller)
-      campaign = Factory(:campaign)
-      campaign.callers << caller
-      Factory(:caller_session, :caller => caller, :session_key => 'key', :on_call => false, :available_for_call => true, :campaign => campaign)
-      post :active_session, :id => caller.id, :campaign_id => campaign.id
-      response.body.should == {:caller_session => {:id => nil}}.to_json
-    end
-    
-    it "should return a different session if identical caller identity used" do
-      login_as(caller)
-      campaign = Factory(:campaign)
-      campaign.callers << caller
-      session1 = Factory(:caller_session, :caller => caller, :session_key => 'key', :on_call => true, :available_for_call => true, :campaign => campaign)
-      session2 = Factory(:caller_session, :caller => caller, :session_key => 'key1', :on_call => true, :available_for_call => true, :campaign => campaign,browser_identification: "12345" )
-      post :active_session, :id => caller.id, :campaign_id => campaign.id
-      response.body.should eq(session1.to_json)      
-    end
   end
 
   describe "phones-only call" do
@@ -345,7 +310,8 @@ describe CallerController do
       account = Factory(:account)
       campaign = Factory(:campaign, account: account)
       caller = Factory(:caller, campaign: campaign, account:account)
-      post :start_calling, caller_id: caller.id, campaign_id: campaign.id,CallSid: "1234567"
+      caller_session = Factory(:caller_session, on_call:false, available_for_call:false, caller: caller, session_key: "some key")
+      post :start_calling, caller_id: caller.id, campaign_id: campaign.id, CallSid: "1234567", caller_session: caller_session.id
       caller.caller_sessions.on_call.size.should eq(1)
     end
     
@@ -353,8 +319,9 @@ describe CallerController do
       account = Factory(:account)
       campaign = Factory(:campaign, account: account)
       caller = Factory(:caller, campaign: campaign, account:account)
+      caller_session = Factory(:caller_session, on_call:false, available_for_call:false, caller: caller)
       caller_session2 = Factory(:caller_session, :campaign => campaign, :session_key => "some_key", :caller => caller, :available_for_call => false, :on_call => true)
-      post :start_calling, caller_id: caller.id, campaign_id: campaign.id,CallSid: "1234567"
+      post :start_calling, caller_id: caller.id, campaign_id: campaign.id, CallSid: "1234567", caller_session: caller_session.id
       caller.caller_sessions.on_call.size.should eq(1)
     end
     

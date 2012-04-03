@@ -37,6 +37,7 @@ class CallerController < ApplicationController
         flash_now(:error, "Wrong email or password.")
       else
         session[:caller]=@caller.id
+        @caller_session = @caller.create_caller_session(generate_session_key)
         redirect_to callers_campaign_path(@caller.campaign)
       end
     end
@@ -98,16 +99,6 @@ class CallerController < ApplicationController
     end
   end
 
-  def active_session
-    caller = Caller.find(params[:id])
-    if !params[:active_count].nil? && params[:active_count].to_i >= 6
-      render :json => {logout: true}.to_json
-      return
-    end    
-    browser_id = params[:browser_id]
-    campaign = caller.campaign
-    render :json => caller.active_session(campaign,browser_id).to_json
-  end
   
   def pusher_subscribed
     caller_session = CallerSession.find(params[:session_id])
@@ -150,7 +141,8 @@ class CallerController < ApplicationController
       render :nothing => true
     else
       @caller = Caller.find(params[:caller_id])
-      @session = @caller.create_caller_session(generate_session_key, params[:CallSid])
+      @session = CallerSession.find(params[:caller_session])
+      @session.update_attributes(starttime: Time.now, sid: params[:CallSid]) 
       Moderator.caller_connected_to_campaign(@caller, @caller.campaign, @session)
       render xml:  @caller.is_on_call? ? @caller.already_on_call : @session.start
     end

@@ -156,24 +156,6 @@ describe Caller do
     web_caller.identity_name.should == "email2@gmail.com"
   end
 
-  describe "active session" do
-    let(:caller) { Factory(:caller, :account => user.account) }
-
-    it "returns the last available caller session" do
-      campaign = Factory(:campaign)
-      campaign.callers << caller
-      session = Factory(:caller_session, :caller => caller, :session_key => 'key', :on_call => true, :available_for_call => true, :campaign => campaign)
-      caller.active_session(campaign,"12345").should == session
-    end
-
-    it "returns no session if the caller is not available" do
-      campaign = Factory(:campaign)
-      campaign.callers << caller
-      Factory(:caller_session, :caller => caller, :session_key => 'key', :on_call => true, :available_for_call => true, :campaign => Factory(:campaign))
-      caller.active_session(campaign,"12345").should == {:caller_session => {:id => nil}}
-    end
-
-  end
 
   describe "reports" do
     let(:caller) { Factory(:caller, :account => user.account) }

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120402081433) do
+ActiveRecord::Schema.define(:version => 20120403014152) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -150,6 +150,7 @@ ActiveRecord::Schema.define(:version => 20120402081433) do
     t.string   "browser_identification"
     t.integer  "lock_version",           :default => 0
     t.boolean  "websocket_connected"
+    t.string   "pin"
   end
 
   add_index "caller_sessions", ["caller_id"], :name => "index_caller_sessions_on_caller_id"

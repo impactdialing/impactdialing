@@ -7,19 +7,14 @@ class CallinController < ApplicationController
   end
 
   def identify
-    @caller = Caller.find_by_pin(params[:Digits])
+    @session = CallerSession.find_by_pin(params[:Digits])
+    @caller = @session.try(:caller)
     if @caller
       unless @caller.account.activated?
          render :xml => @caller.account.insufficient_funds
          return
        end
-      @session = @caller.caller_sessions.create(on_call: false, available_for_call: false, session_key: generate_session_key, 
-      sid: params[:CallSid], campaign: @caller.campaign, starttime: Time.now)
-      
-      if @caller.is_phones_only?
-        @session.update_attributes(websocket_connected: true)
-      end
-            
+      @session.update_attributes(starttime: Time.now, sid: params[:CallSid]) 
       if !@caller.is_phones_only? && @caller.is_on_call? 
         render xml: @caller.already_on_call
         return
