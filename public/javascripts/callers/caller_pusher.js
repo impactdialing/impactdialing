@@ -269,6 +269,7 @@ function subscribe(session_key) {
 		$("#callin_data").show();
 	
 	channel.bind('start_calling', function(data) {
+		$('#connecting').hide();
 		set_session(data.caller_session_id)
 		$("#callin_data").hide();
 	    $('#start_calling').hide();
