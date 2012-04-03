@@ -266,7 +266,7 @@ function subscribe(session_key) {
         if (!$.isEmptyObject(data.fields)) {
             set_message("Status: Ready for calls.");
             set_voter(data);
-			if($.isEmptyObject(data.start_calling)) {
+			if($.isEmptyObject(data.fields.start_calling)) {
               ready_for_calls(data)
 			}
 
