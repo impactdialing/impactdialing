@@ -7,32 +7,18 @@ var browser_guid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, funct
     var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
     return v.toString(16);
 });	
-var active_count = 0
 
 
 
 $(document).ready(function() {
-	window.isActive = true;
-    $(window).focus(function() { this.isActive = true; });
-    $(window).blur(function() { this.isActive = false; });
-    
     hide_all_actions();
-    setInterval(function() {
-	
-        if ($("#caller_session").val()) {
-            //do nothing if the caller session context already exists
-        } else {
-			if (window.isActive) {
-			  active_count = active_count + 1;	
-              get_session();
-			}
-        }
-    }, 5000); //end setInterval
-
+    subscribe($('#session_key').val());
     $('#scheduled_date').datepicker();
 })
 
 function hide_all_actions() {
+	#("#start_calling").hide();
+	#("#callin_data").hide();
     $("#skip_voter").hide();
     $("#call_voter").hide();
     $("#stop_calling").hide();
@@ -48,25 +34,6 @@ function set_session(session_id) {
 }
 
 
-function get_session() {
-	
-    $.ajax({
-        url : "/caller/active_session",
-        data : {id : $("#caller").val(), campaign_id : $("#campaign").val(), browser_id: browser_guid, active_count: active_count },
-        type : "POST",
-        success : function(json) {
-            if (json.caller_session.id && $("#caller_session").val() === ""  ) {
-                set_session(json.caller_session.id);
-                subscribe(json.caller_session.session_key);
-            }
-			if(json.logout)
-			{
-			 ('#caller_logout').trigger('click')	
-			}
-        }
-    })
-}
-
 function get_voter() {
     $.ajax({
         url : "/caller/" + $("#caller").val() + "/preview_voter",
@@ -80,12 +47,17 @@ function pusher_subscribed() {
         url : "/caller/" + $("#caller").val() + "/pusher_subscribed",
         data : {id : $("#caller").val(), session_id : $("#caller_session").val()},
         type : "POST",
-		success : function(response){			
-		    $("#callin_data").hide();
-	        $('#start_calling').hide();
-	        $('#stop_calling').show();
-	        $("#called_in").show();
-	        get_voter(); 
+		success : function(response){	
+			#("#start_calling").show();
+			#("#callin_data").show();
+			
+			if(response.caller_available) {	
+		   	  $("#callin_data").hide();
+		      $('#start_calling').hide();
+		      $('#stop_calling').show();
+		      $("#called_in").show();
+		      get_voter(); 
+		     }
 		}
     })
 }
@@ -224,7 +196,7 @@ function dial_in_caller() {
 
     $.ajax({
         url : "/caller/" + $("#caller").val() + "/start_calling",
-        data : {campaign_id : $("#campaign").val() },
+        data : {campaign_id : $("#campaign").val(), caller_session:$("#caller_session").val() },
         type : "POST",
         success : function(response) {
             $('#start_calling').hide();
@@ -314,7 +286,7 @@ function subscribe(session_key) {
     channel = pusher.subscribe(session_key);
 
 	channel.bind('pusher:subscription_succeeded', function() {     
-		pusher_subscribed();
+	pusher_subscribed();
     channel.bind('caller_connected', function(data) {
         hide_all_actions();
         $('#browserTestContainer').hide();

@@ -69,7 +69,8 @@
 <%= render 'browser_test' %>
 
 <%= hidden_field_tag(:caller, @caller.id) %>
-<%= hidden_field_tag(:caller_session, nil) %>
+<%= hidden_field_tag(:caller_session, @caller_session.id) %>
+<%= hidden_field_tag(:session_key, @caller_session.session_key) %>
 <%= hidden_field_tag(:current_call_attempt, nil) %>
 <%= hidden_field_tag(:current_voter, nil) %>
 <%= hidden_field_tag(:campaign, @campaign.id) %>
@@ -110,6 +111,7 @@
 <%= render 'actions' %>
 
 <% unless @campaign.time_period_exceed? %>
+    <div id="connecting">Connecting...</div>
     <div id="start_calling" >
 	<p><b>If your computer has a mic, click here:</b></p>
       <a class="action primary" href="#" onclick="javascript:goclient();">Start calling</a>
@@ -120,7 +122,7 @@
       <p>
         <b>If you don't have a mic, use a phone:</b><br>
         Dial-in number: <%= Settings.phone %><br>
-        PIN: <%= @caller.pin %>
+        PIN: <%= @caller_session.pin %>
       </p>
     </div>
 <% end %>

@@ -33,19 +33,6 @@ class Caller < ActiveRecord::Base
     self.pin = uniq_pin
   end
 
-  def active_session(campaign,browser_id)
-    active_caller_session = caller_sessions.available.not_allocated.on_campaign(campaign).last      
-    if active_caller_session.nil?
-      return {:caller_session => {:id => nil}}
-    else
-      begin
-        active_caller_session.update_attributes(browser_identification: browser_id)
-      rescue ActiveRecord::StaleObjectError
-        return {:caller_session => {:id => nil}}
-      end
-      return active_caller_session      
-    end
-  end
   
   def is_on_call?
     !caller_sessions.blank? && caller_sessions.on_call.length > 0
@@ -173,8 +160,8 @@ class Caller < ActiveRecord::Base
     end.response
   end
   
-  def create_caller_session(session_key, call_sid)
-    session = caller_sessions.create(on_call: false, available_for_call: false, starttime: Time.now, session_key: session_key, sid: call_sid, campaign: campaign)
+  def create_caller_session(session_key)
+    session = caller_sessions.create(on_call: false, available_for_call: false, session_key: session_key, campaign: campaign, pin: create_uniq_pin)
     if is_phones_only?
       session.update_attributes(websocket_connected: true)
     end
