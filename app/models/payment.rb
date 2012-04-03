@@ -4,9 +4,9 @@ class Payment < ActiveRecord::Base
   def self.debit (call_time, model_instance)
     return false if model_instance.payment_id!=nil
     account = model_instance.campaign.account
+    return false if account.active_subscription=="manual"
     debit_amount = call_time.to_f * Payment.determine_call_cost(model_instance)
     payment_used = Payment.where("amount_remaining > 0 and account_id = ?", account).last
-
     return false if payment_used.nil? #hmmm
       
     payment_used.amount_remaining -= debit_amount
@@ -15,17 +15,18 @@ class Payment < ActiveRecord::Base
     model_instance.save
     
     account.check_autorecharge(payment_used.amount_remaining)
-    
+    payment_used
   end
   
   def self.determine_call_cost(model_instance)
+    
+    return 0.02 if model_instance.campaign.account.active_subscription=="Per Caller"
 
     #4 robo
     #7 interactive robo
     #9 predictive/live
     #9 caller (client free)
     #(7 power, 5 preview) no longer used
-
 
     if model_instance.class==CallAttempt && model_instance.campaign.robo?
       if model_instance.campaign.script==nil || model_instance.campaign.script.result_set_1.nil?
