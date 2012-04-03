@@ -37,8 +37,8 @@ class CallerController < ApplicationController
         flash_now(:error, "Wrong email or password.")
       else
         session[:caller]= @caller.id
-        @caller_session = @caller.create_caller_session(generate_session_key)
-        redirect_to callers_campaign_path(@caller.campaign, caller_session: @caller_session.id)
+        @caller_identity = @caller.create_caller_identity(generate_session_key)
+        redirect_to callers_campaign_path(@caller.campaign)
       end
     end
   end
@@ -141,8 +141,8 @@ class CallerController < ApplicationController
       render :nothing => true
     else
       @caller = Caller.find(params[:caller_id])
-      @session = CallerSession.find(params[:caller_session])
-      @session.update_attributes(starttime: Time.now, sid: params[:CallSid]) 
+      @identity = CallerIdentity.find(params[:session_key])
+      @session = @caller.create_caller_session(@identity.session_key, starttime: Time.now, sid: params[:CallSid])
       Moderator.caller_connected_to_campaign(@caller, @caller.campaign, @session)
       render xml:  @caller.is_on_call? ? @caller.already_on_call : @session.start
     end

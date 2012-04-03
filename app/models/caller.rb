@@ -8,6 +8,7 @@ class Caller < ActiveRecord::Base
   belongs_to :campaign
   belongs_to :account
   has_many :caller_sessions
+  has_many :caller_identities
   has_many :call_attempts
   has_many :answers
   before_create :create_uniq_pin
@@ -167,5 +168,10 @@ class Caller < ActiveRecord::Base
     end
     session
   end
+  
+  def create_caller_identity(session_key)
+    caller_identities.create(session_key: session_key, pin: create_uniq_pin)    
+  end
+  
 
 end

@@ -196,7 +196,7 @@ function dial_in_caller() {
 
     $.ajax({
         url : "/caller/" + $("#caller").val() + "/start_calling",
-        data : {campaign_id : $("#campaign").val(), caller_session:$("#caller_session").val() },
+        data : {campaign_id : $("#campaign").val(), session_key:$("#session_key").val() },
         type : "POST",
         success : function(response) {
             $('#start_calling').hide();
