@@ -34,14 +34,6 @@ function set_session(session_id) {
 }
 
 
-function get_voter() {
-    $.ajax({
-        url : "/caller/" + $("#caller").val() + "/preview_voter",
-        data : {id : $("#caller").val(), session_id : $("#caller_session").val(), voter_id: $("#current_voter").val() },
-        type : "POST"
-    })
-}
-
 
 function next_voter() {
     $.ajax({
@@ -263,6 +255,7 @@ function subscribe(session_key) {
 	    $('#stop_calling').show();
 	    $("#called_in").show();
 	});
+	
     channel.bind('caller_connected', function(data) {
         hide_all_actions();
         $('#browserTestContainer').hide();
