@@ -7,7 +7,7 @@ module Callers
         flash_now(:warning, "Your account is not funded. Please contact your account administrator.")
       end
       @campaign = @caller.campaign
-      @caller_identity = @caller.caller_identities.last
+      @caller_identity = @caller.create_caller_identity(generate_session_key)
       if @caller_identity.nil?
         redirect_to caller_logout_path
         return
