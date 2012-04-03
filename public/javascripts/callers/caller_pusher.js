@@ -17,8 +17,8 @@ $(document).ready(function() {
 })
 
 function hide_all_actions() {
-	#("#start_calling").hide();
-	#("#callin_data").hide();
+	$("#start_calling").hide();
+	$("#callin_data").hide();
     $("#skip_voter").hide();
     $("#call_voter").hide();
     $("#stop_calling").hide();
