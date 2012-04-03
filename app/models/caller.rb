@@ -156,7 +156,7 @@ class Caller < ActiveRecord::Base
   
   def already_on_call
     Twilio::Verb.new do |v|
-      v.say "Caller with similar identity is on already call"
+      v.say I18n.t(:indentical_caller_on_call)
       v.hangup
     end.response
   end
