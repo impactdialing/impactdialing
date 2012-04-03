@@ -31,7 +31,6 @@ gem "activerecord-import", ">= 0.2.0"
 gem 'rush', '>= 0.0.6'
 gem 'heroku_delayed_job_autoscale', '>= 0.0.7'
 gem "airbrake"
-gem "chargify_api_ares"
 gem 'recurly', '~> 2.0.11'
 
 group :development, :test do
