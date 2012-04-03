@@ -153,7 +153,7 @@
         $("#callin_data").hide();
 				$.ajax({
             url : "/caller/" + $("#caller").val() + "/check_reassign",
-            data : {campaign_id : $("#campaign").val()},
+            data : {campaign_id : $("#campaign").val(), session_key: $("#session_key").val() },
             type : "POST",
             success : function(response) {
 							if(response.reassign == 'true'){
