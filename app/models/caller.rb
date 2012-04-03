@@ -161,15 +161,15 @@ class Caller < ActiveRecord::Base
     end.response
   end
   
-  def create_caller_session(session_key)
-    session = caller_sessions.create(on_call: false, available_for_call: false, session_key: session_key, campaign: campaign, pin: create_uniq_pin)
+  def create_caller_session(session_key, sid)
+    session = caller_sessions.create(on_call: false, available_for_call: false, session_key: session_key, campaign: campaign , sid: sid, starttime: Time.now)
     if is_phones_only?
       session.update_attributes(websocket_connected: true)
     end
     session
   end
   
-  def create_caller_identity(session_key)
+  def create_caller_identity(session_key, sid)
     caller_identities.create(session_key: session_key, pin: create_uniq_pin)    
   end
   

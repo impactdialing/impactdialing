@@ -1,3 +1,3 @@
-class CallerIdentity < ActiveRecord::Base
-  
+class CallerIdentity < ActiveRecord::Base 
+ belongs_to :caller  
 end

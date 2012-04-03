@@ -8,9 +8,10 @@ class CallinController < ApplicationController
 
   def identify
     @identity = CallerIdentity.find_by_pin(params[:Digits])
-    @caller = @session.try(:caller)
-    @session = @caller.create_caller_session(@identity.session_key, starttime: Time.now, sid: params[:CallSid])
+    @caller = @identity.nil? ?  Caller.find_by_pin(params[:Digits]) : @identity.try(:caller)
     if @caller
+      session_key = @identity.nil? ? generate_session_key : @identity.session_key
+      @session = @caller.create_caller_session(session_key, params[:CallSid])
       unless @caller.account.activated?
          render :xml => @caller.account.insufficient_funds
          return
