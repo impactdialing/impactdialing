@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe CallinController do
   describe 'Caller Calling In' do
-    let(:account) { Factory(:account, :activated => true) }
+    let(:account) { Factory(:account, :activated => true, :subscription_name => "Manual") }
     let(:campaign) { Factory(:campaign, :account => account, :start_time => Time.new("2000-01-01 01:00:00"), :end_time => Time.new("2000-01-01 23:00:00"))}
     
     it "prompts for PIN for a caller " do
