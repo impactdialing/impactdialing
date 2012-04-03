@@ -11,12 +11,3 @@ else
 end
 HOLD_VERSION = File::mtime(Rails.root.join("public", "wav","hold.mp3"))
 require "csv"
-
-require 'chargify_api_ares'
-
-chargify_config = YAML::load_file(Rails.root.join("config","chargify.yml"))
-
-Chargify.configure do |c|
-  c.subdomain = chargify_config['subdomain']
-  c.api_key   = chargify_config['api_key']
-end

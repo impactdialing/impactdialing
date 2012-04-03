@@ -54,8 +54,6 @@ GEM
       net-sftp (>= 2.0.0)
       net-ssh (>= 2.0.14)
       net-ssh-gateway (>= 1.1.0)
-    chargify_api_ares (0.5.0)
-      activeresource (>= 2.3.5)
     cocaine (0.2.0)
     columnize (0.3.4)
     crack (0.1.8)
@@ -251,7 +249,6 @@ DEPENDENCIES
   airbrake
   aws-s3 (~> 0.6.2)
   capistrano (= 2.9.0)
-  chargify_api_ares
   daemons (~> 1.0.10)
   delayed_job (~> 2.1.4)
   dynamic_form (~> 1.1.4)

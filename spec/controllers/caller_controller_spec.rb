@@ -333,7 +333,7 @@ describe CallerController do
   
   describe "start calling" do
     it "should start a conference for a caller who is not on call" do
-      account = Factory(:account)
+      account = Factory(:account, :subscription_name=>"Manual")
       campaign = Factory(:campaign, account: account)
       caller = Factory(:caller, campaign: campaign, account:account)
       post :start_calling, caller_id: caller.id, campaign_id: campaign.id,CallSid: "1234567"
