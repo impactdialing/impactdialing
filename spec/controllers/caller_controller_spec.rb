@@ -93,13 +93,14 @@ describe CallerController do
       post :preview_voter, :id => caller.id, :session_id => session.id, :voter_id => last_voter.id
     end
 
-    it "makes a call to the voter" do
+    it "makes a call to the voter if web socket is connected" do
       caller_session = Factory(:caller_session, :caller => caller, :on_call => true, :available_for_call => true)
       voter = Factory(:voter, :campaign => caller.campaign)
       Twilio::Call.stub(:make)
       Twilio::Call.should_receive(:make).with(anything, voter.Phone,anything,anything).and_return("TwilioResponse"=> {"Call" => {"Sid" => 'sid'}})
       post :call_voter, :session_id => caller_session.id , :voter_id => voter.id, id: caller.id
     end
+    
 
     it "pushes 'calling' to the caller" do
       session_key = "caller_session_key"
@@ -161,43 +162,8 @@ describe CallerController do
       response.body.should == Twilio::Verb.hangup
     end
 
-    it "finds the campaigns callers active session" do
-      login_as(caller)
-      campaign = Factory(:campaign)
-      campaign.callers << caller
-      session = Factory(:caller_session, :caller => caller, :session_key => 'key', :on_call => true, :available_for_call => true, :campaign => campaign)
-      Factory(:caller_session, :caller => caller, :session_key => 'other_key', :on_call => true, :available_for_call => true, :campaign => Factory(:campaign))
-      post :active_session, :id => caller.id, :campaign_id => campaign
-      response.body.should == session.to_json
-    end
 
 
-    it "returns no session if caller not associated with a campaign" do
-      login_as(caller)
-      campaign = Factory(:campaign)
-      session = Factory(:caller_session, :caller => caller, :session_key => 'key', :on_call => true, :available_for_call => true, :campaign => campaign)
-      post :active_session, :id => caller.id, :campaign_id => campaign
-      response.body.should == {:caller_session => {:id => nil}}.to_json
-    end
-
-    it "returns no session if the caller is not connected" do
-      login_as(caller)
-      campaign = Factory(:campaign)
-      campaign.callers << caller
-      Factory(:caller_session, :caller => caller, :session_key => 'key', :on_call => false, :available_for_call => true, :campaign => campaign)
-      post :active_session, :id => caller.id, :campaign_id => campaign.id
-      response.body.should == {:caller_session => {:id => nil}}.to_json
-    end
-    
-    it "should return a different session if identical caller identity used" do
-      login_as(caller)
-      campaign = Factory(:campaign)
-      campaign.callers << caller
-      session1 = Factory(:caller_session, :caller => caller, :session_key => 'key', :on_call => true, :available_for_call => true, :campaign => campaign)
-      session2 = Factory(:caller_session, :caller => caller, :session_key => 'key1', :on_call => true, :available_for_call => true, :campaign => campaign,browser_identification: "12345" )
-      post :active_session, :id => caller.id, :campaign_id => campaign.id
-      response.body.should eq(session1.to_json)      
-    end
   end
 
   describe "phones-only call" do
@@ -336,10 +302,21 @@ describe CallerController do
       account = Factory(:account, :subscription_name=>"Manual")
       campaign = Factory(:campaign, account: account)
       caller = Factory(:caller, campaign: campaign, account:account)
-      post :start_calling, caller_id: caller.id, campaign_id: campaign.id,CallSid: "1234567"
+      caller_identity = Factory(:caller_identity, caller: caller, session_key: "some key")
+      post :start_calling, caller_id: caller.id, campaign_id: campaign.id, CallSid: "1234567", session_key: caller_identity.session_key
       caller.caller_sessions.on_call.size.should eq(1)
-
     end
+    
+    it "should not start a conference for a caller who is  on call" do
+      account = Factory(:account)
+      campaign = Factory(:campaign, account: account)
+      caller = Factory(:caller, campaign: campaign, account:account)
+      caller_identity = Factory(:caller_identity, caller: caller, session_key: "some key")
+      caller_session2 = Factory(:caller_session, :campaign => campaign, :session_key => "some_key", :caller => caller, :available_for_call => false, :on_call => true)
+      post :start_calling, caller_id: caller.id, campaign_id: campaign.id, CallSid: "1234567", session_key: caller_identity.session_key
+      caller.caller_sessions.on_call.size.should eq(1)
+    end
+    
     
   end
 end

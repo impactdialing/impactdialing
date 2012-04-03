@@ -2,7 +2,7 @@ require Rails.root.join("lib/twilio_lib")
 
 class CallerController < ApplicationController
   layout "caller"
-  before_filter :check_login, :except=>[:login, :feedback, :assign_campaign, :end_session, :pause, :start_calling, :gather_response, :choose_voter, :phones_only_progressive, :phones_only, :choose_instructions_option, :new_campaign_response_panel, :check_reassign, :active_session]
+  before_filter :check_login, :except=>[:login, :feedback, :assign_campaign, :end_session, :pause, :start_calling, :gather_response, :choose_voter, :phones_only_progressive, :phones_only, :choose_instructions_option, :new_campaign_response_panel, :check_reassign]
   before_filter :redirect_to_ssl
   before_filter :connect_to_twilio, :only => [:preview_dial]
   
@@ -36,7 +36,7 @@ class CallerController < ApplicationController
       if @caller.blank?
         flash_now(:error, "Wrong email or password.")
       else
-        session[:caller]=@caller.id
+        session[:caller]= @caller.id
         redirect_to callers_campaign_path(@caller.campaign)
       end
     end
@@ -96,22 +96,15 @@ class CallerController < ApplicationController
       render :xml => caller_session.try(:end) || Twilio::Verb.hangup
     rescue ActiveRecord::StaleObjectError
       caller_session.reload
-      caller_session.end      
+      render :xml =>  caller_session.end      
     end
-  end
-
-  def active_session
-    caller = Caller.find(params[:id])
-    browser_id = params[:browser_id]
-    campaign = caller.campaign
-    render :json => caller.active_session(campaign,browser_id).to_json
   end
 
   def preview_voter
     caller_session = @caller.caller_sessions.find(params[:session_id])
     if caller_session.campaign.predictive_type == Campaign::Type::PREVIEW || caller_session.campaign.predictive_type == Campaign::Type::PROGRESSIVE
-      voter = caller_session.campaign.next_voter_in_dial_queue(params[:voter_id])
-      voter.update_attributes(caller_id: caller_session.caller_id)
+      voter = caller_session.campaign.next_voter_in_dial_queue(params[:voter_id])      
+      voter.update_attributes(caller_id: caller_session.caller_id) unless voter.nil?
       caller_session.publish('caller_connected', voter ? voter.info : {}) 
     else
       caller_session.publish('caller_connected_dialer', {})
@@ -144,11 +137,13 @@ class CallerController < ApplicationController
       @caller = Caller.find(params[:caller_id])
       if !@caller.account.subscription_allows_caller?
         render :xml => @caller.max_callers_reached
-      else
-        @session = @caller.caller_sessions.create(on_call: false, available_for_call: false,starttime: Time.now,
-                                                session_key: generate_session_key, sid: params[:CallSid], campaign: @caller.campaign)
-        Moderator.caller_connected_to_campaign(@caller, @caller.campaign, @session)      
-        render :xml => @session.start
+      else      
+        @identity = CallerIdentity.find_by_session_key(params[:session_key])
+        @session = @caller.create_caller_session(@identity.session_key, params[:CallSid])
+        Moderator.caller_connected_to_campaign(@caller, @caller.campaign, @session)
+        @session.publish('start_calling', {caller_session_id: @session.id}) 
+        @session.preview_voter
+        render xml:  @caller.is_on_call? ? @caller.already_on_call : @session.start
       end
     end
   end

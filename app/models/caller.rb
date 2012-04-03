@@ -8,6 +8,7 @@ class Caller < ActiveRecord::Base
   belongs_to :campaign
   belongs_to :account
   has_many :caller_sessions
+  has_many :caller_identities
   has_many :call_attempts
   has_many :answers
   before_create :create_uniq_pin
@@ -33,17 +34,6 @@ class Caller < ActiveRecord::Base
     self.pin = uniq_pin
   end
 
-  def active_session(campaign,browser_id)
-    return {:caller_session => {:id => nil}} if self.campaign.nil?
-    active_caller_session = caller_sessions.available.not_allocated.on_campaign(campaign).last      
-    unless active_caller_session.nil?
-      active_caller_session.lock!
-      active_caller_session.update_attributes(browser_identification: browser_id)
-      return active_caller_session
-    else
-      return {:caller_session => {:id => nil}}
-    end
-  end
   
   def is_on_call?
     !caller_sessions.blank? && caller_sessions.on_call.length > 0
@@ -171,4 +161,20 @@ class Caller < ActiveRecord::Base
     end
   end
   
+  def already_on_call
+    Twilio::Verb.new do |v|
+      v.say I18n.t(:indentical_caller_on_call)
+      v.hangup
+    end.response
+  end
+  
+  def create_caller_session(session_key, sid)
+    caller_sessions.create(on_call: false, available_for_call: false, session_key: session_key, campaign: campaign , sid: sid, starttime: Time.now)
+  end
+  
+  def create_caller_identity(session_key)
+    caller_identities.create(session_key: session_key, pin: create_uniq_pin)    
+  end
+  
+
 end
