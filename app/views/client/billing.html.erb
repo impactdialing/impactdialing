@@ -6,7 +6,7 @@
 		<div id='confirm-dialog'>
 			<p class="actions"><a href="#" class="action secondary confirm">Subscribe Per Minute</a></p>
 		</div>
-		<p class="actions"><a class="action secondary" href="<%= raw recurly_subscription_url("per-caller", @user.account.recurly_account_code, @user.fname, @user.lname, @user.email) %>">Subscribe Per Caller</a></p>
+		<p class="actions"><a class="action secondary" href="<%= raw @recurly_per_caller_subscription_url %>">Subscribe Per Caller</a></p>
 
 
 		<!-- modal content -->
@@ -43,7 +43,7 @@
 	<script type='text/javascript' src='/javascripts/jquery.simplemodal.js'></script>
 	<script type='text/javascript' src='/javascripts/confirm.js'></script>
 	<script>
-	var confirmUrl='<%= raw recurly_subscription_url("per-minute", @user.account.recurly_account_code, @user.fname, @user.lname, @user.email) %>';
+	var confirmUrl='<%= raw @recurly_per_minute_subscription_url %>';
 	</script>
 <% end %>
 <% content_for :stylesheets do %>

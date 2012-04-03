@@ -40,12 +40,14 @@ class Account < ActiveRecord::Base
     recurly_account = Recurly::Account.find(self.recurly_account_code)
     has_active_subscriptions=false
     recurly_account.subscriptions.find_each do |subscription|
-      if subscription.state!="expired"
+      if subscription.state=="active"
         has_active_subscriptions=true
         self.subscription_count=subscription.quantity
         self.recurly_subscription_uuid=subscription.uuid
         self.subscription_active=subscription.state=="active" ? true : false
         self.subscription_name=subscription.plan.name
+        self.activated=true
+        self.card_verified=true
         self.save
       end
     end
@@ -59,7 +61,7 @@ class Account < ActiveRecord::Base
   end
   
   def subscription_allows_caller?
-    if self.trial? || self.subscription_name=="Per minute"
+    if self.trial? || self.subscription_name=="Per Minute" || self.subscription_name=="Manual"
       return true
     elsif self.subscription_name=="Per Caller" && self.callers_in_progress.length <= self.subscription_count
       return true
@@ -106,10 +108,10 @@ class Account < ActiveRecord::Base
   
   def active_subscription
     # default to per minute if not defined
-    if subscription_name!="per minute" && subscription_active
+    if subscription_name!="Per Minute" && subscription_active
       return subscription_name
     else
-      return "per minute"
+      return "Per Minute"
     end
   end
 
