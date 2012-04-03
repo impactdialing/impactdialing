@@ -163,7 +163,7 @@
 							} 
             }
         });
-        params = {"PhoneNumber": "<%= @phone_number %>", 'campaign_id': "<%= @campaign.id %>", 'caller_id': "<%= @caller.id %>" };
+        params = {"PhoneNumber": "<%= @phone_number %>", 'campaign_id': "<%= @campaign.id %>", 'caller_id': "<%= @caller.id %>" ,'session_key': "<%= @caller_identity.session_key %>"};
 				Twilio.Device.connect(params)
     }
 
