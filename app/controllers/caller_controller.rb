@@ -101,9 +101,9 @@ class CallerController < ApplicationController
 
   
   def pusher_subscribed
-    caller_session = CallerSession.find(params[:session_id])
+    caller_session = CallerSession.find_by_session_key(params[:session_key])
     caller_session.update_attributes(websocket_connected: true)
-    render :nothing => true
+    render :json => {caller_session_id: caller_session.id}
   end
 
   def preview_voter
