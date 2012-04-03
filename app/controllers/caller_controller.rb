@@ -36,9 +36,9 @@ class CallerController < ApplicationController
       if @caller.blank?
         flash_now(:error, "Wrong email or password.")
       else
-        session[:caller]=@caller.id
+        session[:caller]= @caller.id
         @caller_session = @caller.create_caller_session(generate_session_key)
-        redirect_to callers_campaign_path(@caller.campaign)
+        redirect_to callers_campaign_path(@caller.campaign, caller_session: @caller_session.id)
       end
     end
   end
