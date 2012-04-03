@@ -7,14 +7,14 @@ class CallinController < ApplicationController
   end
 
   def identify
-    @session = CallerSession.find_by_pin(params[:Digits])
+    @identity = CallerIdentity.find_by_pin(params[:Digits])
     @caller = @session.try(:caller)
+    @session = @caller.create_caller_session(@identity.session_key, starttime: Time.now, sid: params[:CallSid])
     if @caller
       unless @caller.account.activated?
          render :xml => @caller.account.insufficient_funds
          return
        end
-      @session.update_attributes(starttime: Time.now, sid: params[:CallSid]) 
       if !@caller.is_phones_only? && @caller.is_on_call? 
         render xml: @caller.already_on_call
         return

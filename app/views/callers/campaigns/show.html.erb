@@ -69,8 +69,8 @@
 <%= render 'browser_test' %>
 
 <%= hidden_field_tag(:caller, @caller.id) %>
-<%= hidden_field_tag(:caller_session, @caller_session.id) %>
-<%= hidden_field_tag(:session_key, @caller_session.session_key) %>
+<%= hidden_field_tag(:caller_session, nil) %>
+<%= hidden_field_tag(:session_key, @caller_identity.session_key) %>
 <%= hidden_field_tag(:current_call_attempt, nil) %>
 <%= hidden_field_tag(:current_voter, nil) %>
 <%= hidden_field_tag(:campaign, @campaign.id) %>
