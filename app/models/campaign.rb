@@ -212,7 +212,7 @@ class Campaign < ActiveRecord::Base
   end
 
   def callers_available_for_call
-    CallerSession.find_all_by_campaign_id_and_on_call_and_available_for_call_and_websocket_connected(self.id, 1, 1, 1)
+    CallerSession.find_all_by_campaign_id_and_on_call_and_available_for_call(self.id, 1, 1)
   end
 
   def call_attempts_in_progress
