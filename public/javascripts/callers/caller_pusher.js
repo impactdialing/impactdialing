@@ -42,25 +42,6 @@ function get_voter() {
     })
 }
 
-function pusher_subscribed() {
-    $.ajax({
-        url : "/caller/" + $("#caller").val() + "/pusher_subscribed",
-        data : {id : $("#caller").val(), session_key : $("#session_key").val()},
-        type : "POST",
-		success : function(response){	
-			set_session(response.caller_session_id)
-			$("#start_calling").show();
-			$("#callin_data").show();
-			$("#callin_data").hide();
-		    $('#start_calling').hide();
-		    $('#stop_calling').show();
-		    $("#called_in").show();
-		    get_voter(); 
-		     }
-    });
-}
-
-
 
 function next_voter() {
     $.ajax({
@@ -284,7 +265,17 @@ function subscribe(session_key) {
     channel = pusher.subscribe(session_key);
 
 	channel.bind('pusher:subscription_succeeded', function() {     
-	pusher_subscribed();
+		$("#start_calling").show();
+		$("#callin_data").show();
+	
+	channel.bind('start_calling', function(data) {
+		set_session(data.caller_session_id)
+		$("#callin_data").hide();
+	    $('#start_calling').hide();
+	    $('#stop_calling').show();
+	    $("#called_in").show();
+	    get_voter(); 
+	});
     channel.bind('caller_connected', function(data) {
         hide_all_actions();
         $('#browserTestContainer').hide();
