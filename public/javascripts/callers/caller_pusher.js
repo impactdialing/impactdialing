@@ -262,7 +262,6 @@ function subscribe(session_key) {
 	    $('#start_calling').hide();
 	    $('#stop_calling').show();
 	    $("#called_in").show();
-	    get_voter(); 
 	});
     channel.bind('caller_connected', function(data) {
         hide_all_actions();
