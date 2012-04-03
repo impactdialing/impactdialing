@@ -22,6 +22,7 @@ class CallinController < ApplicationController
       end
 
       Moderator.caller_connected_to_campaign(@caller, @caller.campaign, @session)
+      @session.publish('start_calling', {caller_session_id: @session.id}) 
       render :xml => @caller.is_phones_only? ? @caller.ask_instructions_choice(@session) : @session.start
     else
       render :xml => Caller.ask_for_pin(params[:attempt].to_i)
