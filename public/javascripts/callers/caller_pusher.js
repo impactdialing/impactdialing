@@ -48,8 +48,8 @@ function pusher_subscribed() {
         data : {id : $("#caller").val(), session_id : $("#caller_session").val()},
         type : "POST",
 		success : function(response){	
-			#("#start_calling").show();
-			#("#callin_data").show();
+			$("#start_calling").show();
+			$("#callin_data").show();
 			
 			if(response.caller_available) {	
 		   	  $("#callin_data").hide();
