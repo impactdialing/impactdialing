@@ -28,6 +28,7 @@ class TwilioController < ApplicationController
     voter.update_attributes(:result_date => Time.now)
     @call_attempt.update_attributes(call_end: Time.now, wrapup_time: Time.now)
     @call_attempt.capture_answer_as_no_response_for_robo if params['CallStatus'] == "completed"
+    @call_attempt.debit
     render :text => ''
   end
 

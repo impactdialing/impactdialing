@@ -1,2 +1,51 @@
-Your subscriptions:
-<%= render :partial => 'billing' %>
+<% if @trial %>
+	<p>Your account is currently in trial.</p>
+	<% if @balance==0 %>Your trial credit has expired.<% end %>
+
+
+		<div id='confirm-dialog'>
+			<p class="actions"><a href="#" class="action secondary confirm">Subscribe Per Minute</a></p>
+		</div>
+		<p class="actions"><a class="action secondary" href="<%= raw @recurly_per_caller_subscription_url %>">Subscribe Per Caller</a></p>
+
+
+		<!-- modal content -->
+		<div id='confirm'>
+			<div class='header'><span>Confirm</span></div>
+			<div class='message'></div>
+			<div class='buttons'>
+				<div class='yes'>Continue</div><div class='no simplemodal-close'>Cancel</div>
+			</div>
+		</div>
+		<!-- preload the images -->
+		<div style='display:none'>
+			<img src='/images/confirm/header.gif' alt='' />
+			<img src='/images/confirm/button.gif' alt='' />
+		</div>
+
+
+
+<% else %>
+	<p>Your current subscription is: <%= @user.account.active_subscription %> <% if @user.account.active_subscription=="Per Caller" %>(<%= @user.account.subscription_count %> callers)<% end %></p>
+	<p>Your current balance is <%= number_to_currency @balance %></p>
+	<p class="actions"><a href="/client/add_to_balance" class="action secondary">Add to your balance</a></p>
+	<p class="actions"><a href="/client/recharge" class="action secondary"><% if @user.account.autorecharge_enabled? %>Configure<% else %>Enable<% end %> auto-recharge</a></p>
+	<p class="actions"><a href="/client/update_billing" class="action secondary">Update billing information</a></p>
+	<% if @user.account.active_subscription=="Per Caller" %>
+		<p class="actions"><a href="/client/update_billing_quantity" class="action secondary">Change # of callers</a></p>
+		<p class="actions"><a href="/client/cancel_subscription" class="action secondary">Cancel Subscription</a></p>
+	<% end %>
+<% end %>
+
+
+
+<% content_for :jquery_extension_javascripts do %>
+	<script type='text/javascript' src='/javascripts/jquery.simplemodal.js'></script>
+	<script type='text/javascript' src='/javascripts/confirm.js'></script>
+	<script>
+	var confirmUrl='<%= raw @recurly_per_minute_subscription_url %>';
+	</script>
+<% end %>
+<% content_for :stylesheets do %>
+	<link type='text/css' href='/stylesheets/confirm.css' rel='stylesheet' media='screen' />
+<% end %>

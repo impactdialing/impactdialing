@@ -14,4 +14,5 @@ module ClientHelper
   def logged_in_as_caller?
     session[:caller] && @caller
   end
+  
 end

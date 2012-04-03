@@ -242,6 +242,12 @@ class CallerSession < ActiveRecord::Base
      conference_sid = confs.class == Array ? confs.last['Sid'] : confs['Sid']
    end
 
+   def debit
+     return false if self.endtime.nil? || self.starttime.nil?
+     call_time = ((self.endtime - self.starttime)/60).ceil
+     Payment.debit(call_time, self)
+   end
+
   private
   
   def wrapup
@@ -275,4 +281,5 @@ class CallerSession < ActiveRecord::Base
       v.redirect(phones_only_progressive_caller_url(caller, :session_id => id, :voter_id => voter.id, :host => Settings.host, :port => Settings.port), :method => "POST")
     end.response
   end
+  
 end

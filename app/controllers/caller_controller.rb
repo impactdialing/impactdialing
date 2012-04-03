@@ -59,6 +59,7 @@ class CallerController < ApplicationController
     voters.each {|voter| voter.update_attributes(status: 'not called')}
     @session = caller.caller_sessions.find(params[:session_id])
     @session.end_running_call
+    @session.debit
     CallAttempt.wrapup_calls(params[:id]) unless params[:id].empty?
     render :nothing => true
   end
@@ -90,6 +91,7 @@ class CallerController < ApplicationController
 
   def end_session
     caller_session = CallerSession.find_by_sid(params[:CallSid])
+    caller_session.debit
     begin
       render :xml => caller_session.try(:end) || Twilio::Verb.hangup
     rescue ActiveRecord::StaleObjectError
@@ -140,10 +142,14 @@ class CallerController < ApplicationController
       render :nothing => true
     else
       @caller = Caller.find(params[:caller_id])
-      @session = @caller.caller_sessions.create(on_call: false, available_for_call: false,starttime: Time.now,
+      if !@caller.account.subscription_allows_caller?
+        render :xml => @caller.max_callers_reached
+      else
+        @session = @caller.caller_sessions.create(on_call: false, available_for_call: false,starttime: Time.now,
                                                 session_key: generate_session_key, sid: params[:CallSid], campaign: @caller.campaign)
-      Moderator.caller_connected_to_campaign(@caller, @caller.campaign, @session)      
-      render :xml => @session.start
+        Moderator.caller_connected_to_campaign(@caller, @caller.campaign, @session)      
+        render :xml => @session.start
+      end
     end
   end
 
