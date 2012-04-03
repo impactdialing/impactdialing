@@ -31,8 +31,8 @@ gem "activerecord-import", ">= 0.2.0"
 gem 'rush', '>= 0.0.6'
 gem 'workless'
 gem "airbrake"
-gem "chargify_api_ares"
 gem "uuid", "~> 2.3.5"
+gem 'recurly', '~> 2.0.11'
 
 group :development, :test do
   gem 'ruby-debug19'

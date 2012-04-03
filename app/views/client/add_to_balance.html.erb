@@ -1,0 +1,22 @@
+<% form_tag do %>
+  
+	<div class="content clearfix">
+	<fieldset>
+        <legend>Add to your balance</legend>
+        <ul class="clearfix">
+            <li>
+              <input  type="text" name="amount" value="" >
+                Amount to add
+              </input>
+            </li>
+		</ul>
+	</fieldset>
+</div>
+<div class="buttons">
+<button type="button" onclick="this.form.submit();">Add Funds</button>
+</div>
+<% end -%>
+
+
+<p>We'll charge your <%= @billing_info.card_type %> ending in <%= @billing_info.last_four %>.</p>
+<p>Need to change billing information?  Click here</p>

@@ -10,6 +10,10 @@ class CallinController < ApplicationController
     @caller = Caller.find_by_pin(params[:Digits])
 
     if @caller
+      if !@caller.account.subscription_allows_caller?
+        render :xml => @caller.max_callers_reached
+        return
+      end
       unless @caller.account.activated?
           xml =  Twilio::Verb.new do |v|
             v.say "Your account has insufficent funds"

@@ -1,6 +1,7 @@
 require Rails.root.join("lib/twilio_lib")
 
 class ClientController < ApplicationController
+  protect_from_forgery :except => :billing_updated
   before_filter :check_login, :except => [:login, :user_add, :forgot]
   before_filter :check_paid
   before_filter :redirect_to_ssl
@@ -76,6 +77,8 @@ class ClientController < ApplicationController
       if @user.valid?
         @user.send_welcome_email
         @user.create_default_campaign
+        @user.create_promo_balance
+        @user.create_recurly_account_code
         if session[:user].blank?
           message = "Your account has been created."
           session[:user]=@user.id
@@ -133,6 +136,7 @@ class ClientController < ApplicationController
         @user = User.new {params[:user]}
       else
         session[:user]=@user.id
+        @user.create_recurly_account_code
         flash_message(:kissmetrics, "Signed In")
         redirect_to :action=>"index"
         return
@@ -243,8 +247,99 @@ class ClientController < ApplicationController
     flash_message(:notice, "Robo session ended")
     redirect_to client_campaigns_path(params[:campaign_id])
   end
+  
+  def recharge
+    @account=@user.account
+    
+    if request.put?
+      @account.update_attributes(params[:account])
+      flash_message(:notice, "Autorecharge settings saved")
+      redirect_to :action=>"billing"
+      return
+    end
+    
+    @account.autorecharge_trigger=20.to_f if @account.autorecharge_trigger.nil?
+    @account.autorecharge_amount=40.to_f if @account.autorecharge_amount.nil?
+    @recharge_options=[]
+    @recharge_options.tap{
+     10.step(500,10).each do |n|
+       @recharge_options << ["$#{n}",n.to_f]
+      end 
+    }
+  end
+  
+  def billing_updated
+    # return url from recurly.js account update
+    flash_message(:notice, "Billing information updated")
+    redirect_to :action=>"billing"
+  end
+  
+  def cancel_subscription
+    if request.post?
+      @user.account.cancel_subscription
+      flash_message(:notice, "Subscription cancelled")
+      redirect_to :action=>"billing"
+    end
+  end
+  
+  def billing_success
+    # return url from recurly hosted subscription form
+    @user.account.sync_subscription
+    redirect_to :action=>"billing"
+  end
+  
+  def update_billing
+    @account_code=@user.account.recurly_account_code
+    @billing_info = Recurly::Account.find(@account_code).billing_info
+    render :layout=>nil
+  end
+  
+  def add_to_balance
+    if request.post?
+      new_payment=Payment.charge_recurly_account(@user.account, params[:amount], "Add to account balance")
+      if new_payment.nil?
+        #charge failed
+         flash_now(:error, "There was a problem charging your credit card.  Please try updating your billing information or contact support for help.")
+      else
+        #charge succeeded
+        flash_message(:notice, "Payment successful.")
+        redirect_to :action=>"billing"
+        return
+      end
+    end
+    recurly_account = Recurly::Account.find(@user.account.recurly_account_code)
+    @billing_info = recurly_account.billing_info
+  end
 
   def billing
+    @balance=@user.account.current_balance
+    @trial=@user.account.trial?
+    @recurly_per_caller_subscription_url = recurly_subscription_url("per-caller", @user.account.recurly_account_code, (@user.fname.nil? ? "" : @user.fname), (@user.lname.nil? ? "" : @user.lname), @user.email)
+    @recurly_per_minute_subscription_url = recurly_subscription_url("per-minute", @user.account.recurly_account_code, (@user.fname.nil? ? "" : @user.fname), (@user.lname.nil? ? "" : @user.lname), @user.email)
+  end
+
+  def recurly_subscription_url(plan_code, account_code, first_name, last_name, email)
+    "https://impactdialing.recurly.com/subscribe/" + plan_code + "/" + account_code + "?first_name=" + URI.escape(first_name) + "&last_name=" + URI.escape(last_name) + "&email=" + URI.escape(email)
+  end
+
+  def update_billing_quantity
+    if request.post?
+      subscription = Recurly::Subscription.find(@user.account.recurly_subscription_uuid)
+      subscription.update_attributes(
+        :quantity  => params[:num_callers],
+        :timeframe => 'now'       # Update immediately.
+      )
+      @user.account.update_attribute(:subscription_count, params[:num_callers])
+      flash_message(:notice, "Number of callers updated.")
+      redirect_to :action=>"billing"
+    end
+  end
+  
+  def new_subscription
+    render :layout=>"recurly"
+  end
+
+  def billing_old
     @breadcrumb="Billing"
     @billing_account = @user.billing_account || @user.account.new_billing_account
     @oldcc = @billing_account.cc

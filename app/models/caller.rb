@@ -119,6 +119,13 @@ class Caller < ActiveRecord::Base
     end
   end
   
+  def max_callers_reached
+    response = Twilio::Verb.new do |v|
+      v.say("The maximum number of callers for this account has been reached. Wait for another caller to finish, or ask your administrator to upgrade your account.")
+      v.hangup
+    end.response
+  end
+  
   def choice_result(caller_choice, voter, caller_session)
     if caller_choice == "*"
       response = caller_session.phones_only_start
@@ -163,5 +170,5 @@ class Caller < ActiveRecord::Base
       acc
     end
   end
-
+  
 end
