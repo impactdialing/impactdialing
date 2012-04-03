@@ -13,7 +13,8 @@ describe Callers::CampaignsController do
 
   it "finds a callers campaign" do
     campaign1 = Factory(:campaign, :active => true, :use_web_ui => true)
-    get :show, :id => campaign1.id
+    caller_session = Factory(:caller_session, caller: caller)
+    get :show, id:  campaign1.id, caller_session: caller_session
     assigns(:campaign).should == campaign
   end
 

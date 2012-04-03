@@ -17,13 +17,13 @@ class CallAttemptsController < ApplicationController
                  when "machine"
                    call_attempt.voter.update_attributes(:status => CallAttempt::Status::HANGUP)
                    call_attempt.update_attributes(:status => CallAttempt::Status::HANGUP)
-                   if call_attempt.caller_session && (call_attempt.campaign.predictive_type == Campaign::Type::PREVIEW || call_attempt.campaign.predictive_type == Campaign::Type::PROGRESSIVE)
-                     call_attempt.caller_session.publish('answered_by_machine', {})
-                     call_attempt.caller_session.update_attribute(:voter_in_progress, nil)
-                     next_voter = call_attempt.campaign.next_voter_in_dial_queue(call_attempt.voter.id)
-                     call_attempt.caller_session.publish('voter_push', next_voter ? next_voter.info : {})
-                     call_attempt.caller_session.publish('conference_started', {})
-                   end
+                   # if call_attempt.caller_session && (call_attempt.campaign.predictive_type == Campaign::Type::PREVIEW || call_attempt.campaign.predictive_type == Campaign::Type::PROGRESSIVE)
+                   #   # call_attempt.caller_session.publish('answered_by_machine', {})
+                   #   # call_attempt.caller_session.update_attribute(:voter_in_progress, nil)
+                   #   # next_voter = call_attempt.campaign.next_voter_in_dial_queue(call_attempt.voter.id)
+                   #   # call_attempt.caller_session.publish('voter_push', next_voter ? next_voter.info : {})
+                   #   # call_attempt.caller_session.publish('conference_started', {})
+                   # end
                    call_attempt.update_attributes(wrapup_time: Time.now)                    
                    (call_attempt.campaign.use_recordings? && call_attempt.campaign.answering_machine_detect) ? call_attempt.play_recorded_message : call_attempt.hangup
                  else
@@ -45,7 +45,7 @@ class CallAttemptsController < ApplicationController
   end
 
   def end
-    DIALER_LOGGER.info "callstatus: #{params[:CallStatus]}"
+    Rails.logger.info "callstatus: #{params[:CallStatus]}"
     call_attempt = CallAttempt.find(params[:id])
     if [CallAttempt::Status::HANGUP, CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED].include? call_attempt.status
       call_attempt.voter.update_attributes(:last_call_attempt_time => Time.now)
@@ -76,7 +76,7 @@ class CallAttemptsController < ApplicationController
       begin
         Moderator.publish_event(call_attempt.campaign, 'voter_response_submitted', {:caller_session_id => params[:caller_session], :campaign_id => call_attempt.campaign.id, :dials_in_progress => call_attempt.campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', call_attempt.campaign.id)})
       rescue Exception => e
-        
+        Rails.logger.debug("exception in publishing event to monitor.")
       end
       pusher_response_received(call_attempt, params[:stop_calling])
       render :nothing => true

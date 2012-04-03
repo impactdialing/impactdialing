@@ -3,29 +3,22 @@ Pusher.log = function(message) {
 };
 
 var channel = null;
+var browser_guid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+    return v.toString(16);
+});	
+
 
 
 $(document).ready(function() {
-	window.isActive = true;
-    $(window).focus(function() { this.isActive = true; });
-    $(window).blur(function() { this.isActive = false; });
-    
     hide_all_actions();
-    setInterval(function() {
-	
-        if ($("#caller_session").val()) {
-            //do nothing if the caller session context already exists
-        } else {
-			if (window.isActive) {
-              get_session();
-			}
-        }
-    }, 5000); //end setInterval
-
+    subscribe($('#session_key').val());
     $('#scheduled_date').datepicker();
 })
 
 function hide_all_actions() {
+	$("#start_calling").hide();
+	$("#callin_data").hide();
     $("#skip_voter").hide();
     $("#call_voter").hide();
     $("#stop_calling").hide();
@@ -40,38 +33,6 @@ function set_session(session_id) {
     $("#caller_session").val(session_id);
 }
 
-
-function get_session() {
-	var guid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-	    var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
-	    return v.toString(16);
-	});	
-	
-    $.ajax({
-        url : "/caller/active_session",
-        data : {id : $("#caller").val(), campaign_id : $("#campaign").val(), browser_id: guid },
-        type : "POST",
-        success : function(json) {
-            if (json.caller_session.id && $("#caller_session").val() === ""  ) {
-                set_session(json.caller_session.id);
-                subscribe(json.caller_session.session_key);
-                $("#callin_data").hide();
-                $('#start_calling').hide();
-                $('#stop_calling').show();
-                $("#called_in").show();
-                get_voter();
-            }
-        }
-    })
-}
-
-function get_voter() {
-    $.ajax({
-        url : "/caller/" + $("#caller").val() + "/preview_voter",
-        data : {id : $("#caller").val(), session_id : $("#caller_session").val(), voter_id: $("#current_voter").val() },
-        type : "POST"
-    })
-}
 
 
 function next_voter() {
@@ -202,19 +163,6 @@ function disconnect_voter() {
     })
 }
 
-function dial_in_caller() {
-
-    $.ajax({
-        url : "/caller/" + $("#caller").val() + "/start_calling",
-        data : {campaign_id : $("#campaign").val() },
-        type : "POST",
-        success : function(response) {
-            $('#start_calling').hide();
-        }
-    })
-
-
-}
 
 function show_response_panel() {
     $("#response_panel").show();
@@ -292,14 +240,22 @@ function set_transfer_panel(data) {
     })
 }
 
-
-
 function subscribe(session_key) {
     channel = pusher.subscribe(session_key);
-	pusher.connection.bind('state_change', function(states) {
-	  // states = {previous: 'oldState', current: 'newState'
-	});
 
+	channel.bind('pusher:subscription_succeeded', function() {     
+		$("#start_calling").show();
+		$("#callin_data").show();
+		$('#connecting').hide();
+	
+	channel.bind('start_calling', function(data) {
+		set_session(data.caller_session_id)
+		$("#callin_data").hide();
+	    $('#start_calling').hide();
+	    $('#stop_calling').show();
+	    $("#called_in").show();
+	});
+	
     channel.bind('caller_connected', function(data) {
         hide_all_actions();
         $('#browserTestContainer').hide();
@@ -310,7 +266,10 @@ function subscribe(session_key) {
         if (!$.isEmptyObject(data.fields)) {
             set_message("Status: Ready for calls.");
             set_voter(data);
-            ready_for_calls(data)
+			if(!data.start_calling) {
+              ready_for_calls(data)
+			}
+
         } else {
             $("#stop_calling").show();
             set_message("Status: There are no more numbers to call in this campaign.");
@@ -478,6 +437,8 @@ function subscribe(session_key) {
         alert("You have been re-assigned to " + data.campaign_name + ".");
 
     });
+
+	});
 
     function set_call_attempt(id) {
         $("#current_call_attempt").val(id);

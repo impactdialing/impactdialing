@@ -134,6 +134,27 @@ class Account < ActiveRecord::Base
     custom_voter_fields
   end
   
+  def create_chargify_customer_id
+    return self.chargify_customer_id if !self.chargify_customer_id.nil?
+    user = User.find_by_account_id(self.id)
+    customer = Chargify::Customer.create(
+      :first_name   => user.fname,
+      :last_name    => user.lname,
+      :email        => user.email,
+      :organization => user.orgname
+    )
+    self.chargify_customer_id=customer.id
+    self.save
+    self.chargify_customer_id
+  end
+  
+  def insufficient_funds
+    Twilio::Verb.new do |v|
+      v.say "Your account has insufficent funds"
+      v.hangup
+    end.response
+  end
+  
 
   def check_autorecharge(amount_remaining)
     if self.autorecharge_enabled? && self.autorecharge_amount >= amount_remaining

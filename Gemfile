@@ -1,7 +1,7 @@
 source :rubygems
 
 gem 'rails', '3.0.10'
-
+gem 'thin'
 gem 'will_paginate', '~> 2.3.11'
 gem 'mysql', '~> 2.8.1'
 gem 'memcache-client', '~> 1.8.5', :require => 'memcache'

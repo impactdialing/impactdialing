@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120330054025) do
+ActiveRecord::Schema.define(:version => 20120403201140) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -22,14 +22,14 @@ ActiveRecord::Schema.define(:version => 20120330054025) do
     t.boolean  "record_calls",              :default => false
     t.string   "recurly_account_code"
     t.string   "subscription_name"
+    t.integer  "subscription_count"
     t.boolean  "subscription_active",       :default => false
     t.string   "recurly_subscription_uuid"
-    t.integer  "subscription_count"
     t.boolean  "autorecharge_enabled",      :default => false
     t.float    "autorecharge_trigger"
     t.float    "autorecharge_amount"
-    t.string   "status"
     t.integer  "lock_version",              :default => 0
+    t.string   "status"
   end
 
   create_table "answers", :force => true do |t|
@@ -129,6 +129,15 @@ ActiveRecord::Schema.define(:version => 20120330054025) do
     t.integer  "campaign_id"
   end
 
+  create_table "caller_identities", :force => true do |t|
+    t.string   "session_key"
+    t.integer  "caller_session_id"
+    t.integer  "caller_id"
+    t.string   "pin"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
   create_table "caller_sessions", :force => true do |t|
     t.integer  "caller_id"
     t.integer  "campaign_id"
@@ -137,12 +146,12 @@ ActiveRecord::Schema.define(:version => 20120330054025) do
     t.integer  "num_calls"
     t.integer  "avg_wait"
     t.string   "sid"
-    t.boolean  "available_for_call",     :default => false
+    t.boolean  "available_for_call",   :default => false
     t.integer  "voter_in_progress_id"
     t.datetime "hold_time_start"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.boolean  "on_call",                :default => false
+    t.boolean  "on_call",              :default => false
     t.string   "caller_number"
     t.string   "tCallSegmentSid"
     t.string   "tAccountSid"
@@ -157,9 +166,8 @@ ActiveRecord::Schema.define(:version => 20120330054025) do
     t.float    "tPrice"
     t.integer  "attempt_in_progress"
     t.string   "session_key"
+    t.integer  "lock_version",         :default => 0
     t.integer  "payment_id"
-    t.string   "browser_identification"
-    t.integer  "lock_version",           :default => 0
   end
 
   add_index "caller_sessions", ["caller_id"], :name => "index_caller_sessions_on_caller_id"
@@ -333,14 +341,12 @@ ActiveRecord::Schema.define(:version => 20120330054025) do
 
   create_table "payments", :force => true do |t|
     t.float    "amount_paid"
-    t.integer  "account_id"
     t.float    "amount_remaining"
-    t.integer  "recurly_account_code"
+    t.integer  "recurly_transaction_uuid"
+    t.integer  "account_id"
     t.string   "notes"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "type"
-    t.string   "recurly_transaction_uuid"
   end
 
   create_table "possible_responses", :force => true do |t|

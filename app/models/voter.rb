@@ -128,7 +128,7 @@ class Voter < ActiveRecord::Base
       call_attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
       update_attributes(status: CallAttempt::Status::FAILED)
       Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
-      DIALER_LOGGER.info "[dialer] Exception when attempted to call #{self.Phone} for campaign id:#{self.campaign_id}  Response: #{response["TwilioResponse"]["RestException"].inspect}"
+      Rails.logger.info "[dialer] Exception when attempted to call #{self.Phone} for campaign id:#{self.campaign_id}  Response: #{response["TwilioResponse"]["RestException"].inspect}"
       return
     end
     call_attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])
@@ -204,9 +204,9 @@ class Voter < ActiveRecord::Base
     self.answer_recorded_by = recorded_by_caller
     return unless possible_response
     answer = self.answers.for(question).first.try(:update_attributes, {:possible_response => possible_response}) || answers.create(:question => question, :possible_response => possible_response, campaign: Campaign.find(campaign_id), caller: recorded_by_caller.caller)
-    DIALER_LOGGER.info "??? notifying observer ???"
+    Rails.logger.info "??? notifying observer ???"
     notify_observers :answer_recorded
-    DIALER_LOGGER.info "... notified observer ..."
+    Rails.logger.info "... notified observer ..."
     answer
   end
 
