@@ -169,7 +169,7 @@ class Caller < ActiveRecord::Base
     session
   end
   
-  def create_caller_identity(session_key, sid)
+  def create_caller_identity(session_key)
     caller_identities.create(session_key: session_key, pin: create_uniq_pin)    
   end
   
