@@ -310,18 +310,18 @@ describe CallerController do
       account = Factory(:account)
       campaign = Factory(:campaign, account: account)
       caller = Factory(:caller, campaign: campaign, account:account)
-      caller_session = Factory(:caller_session, on_call:false, available_for_call:false, caller: caller, session_key: "some key")
-      post :start_calling, caller_id: caller.id, campaign_id: campaign.id, CallSid: "1234567", caller_session: caller_session.id
+      caller_identity = Factory(:caller_identity, caller: caller, session_key: "some key")
+      post :start_calling, caller_id: caller.id, campaign_id: campaign.id, CallSid: "1234567", session_key: caller_identity.session_key
       caller.caller_sessions.on_call.size.should eq(1)
     end
     
-    it "should not start a conference for a caller who is not on call" do
+    it "should not start a conference for a caller who is  on call" do
       account = Factory(:account)
       campaign = Factory(:campaign, account: account)
       caller = Factory(:caller, campaign: campaign, account:account)
-      caller_session = Factory(:caller_session, on_call:false, available_for_call:false, caller: caller)
+      caller_identity = Factory(:caller_identity, caller: caller, session_key: "some key")
       caller_session2 = Factory(:caller_session, :campaign => campaign, :session_key => "some_key", :caller => caller, :available_for_call => false, :on_call => true)
-      post :start_calling, caller_id: caller.id, campaign_id: campaign.id, CallSid: "1234567", caller_session: caller_session.id
+      post :start_calling, caller_id: caller.id, campaign_id: campaign.id, CallSid: "1234567", session_key: caller_identity.session_key
       caller.caller_sessions.on_call.size.should eq(1)
     end
     
