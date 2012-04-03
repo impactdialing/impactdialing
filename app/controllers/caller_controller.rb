@@ -2,7 +2,7 @@ require Rails.root.join("lib/twilio_lib")
 
 class CallerController < ApplicationController
   layout "caller"
-  before_filter :check_login, :except=>[:login, :feedback, :assign_campaign, :end_session, :pause, :start_calling, :gather_response, :choose_voter, :phones_only_progressive, :phones_only, :choose_instructions_option, :new_campaign_response_panel, :check_reassign, :active_session,:pusher_subscribed]
+  before_filter :check_login, :except=>[:login, :feedback, :assign_campaign, :end_session, :pause, :start_calling, :gather_response, :choose_voter, :phones_only_progressive, :phones_only, :choose_instructions_option, :new_campaign_response_panel, :check_reassign]
   before_filter :redirect_to_ssl
   before_filter :connect_to_twilio, :only => [:preview_dial]
   
@@ -99,13 +99,6 @@ class CallerController < ApplicationController
     end
   end
 
-  
-  def pusher_subscribed
-    caller_session = CallerSession.find_by_session_key(params[:session_key])
-    caller_session.update_attributes(websocket_connected: true)
-    render :json => {caller_session_id: caller_session.id}
-  end
-
   def preview_voter
     caller_session = @caller.caller_sessions.find(params[:session_id])
     if caller_session.campaign.predictive_type == Campaign::Type::PREVIEW || caller_session.campaign.predictive_type == Campaign::Type::PROGRESSIVE
@@ -144,7 +137,7 @@ class CallerController < ApplicationController
       @identity = CallerIdentity.find_by_session_key(params[:session_key])
       @session = @caller.create_caller_session(@identity.session_key, params[:CallSid])
       Moderator.caller_connected_to_campaign(@caller, @caller.campaign, @session)
-      @session.publish('start_calling', {caller_session_id: @session.id, }) 
+      @session.publish('start_calling', {caller_session_id: @session.id}) 
       @session.preview_voter
       render xml:  @caller.is_on_call? ? @caller.already_on_call : @session.start
     end

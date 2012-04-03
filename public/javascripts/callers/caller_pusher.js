@@ -266,7 +266,10 @@ function subscribe(session_key) {
         if (!$.isEmptyObject(data.fields)) {
             set_message("Status: Ready for calls.");
             set_voter(data);
-            ready_for_calls(data)
+			if($.isEmptyObject(data.start_calling)) {
+              ready_for_calls(data)
+			}
+
         } else {
             $("#stop_calling").show();
             set_message("Status: There are no more numbers to call in this campaign.");
