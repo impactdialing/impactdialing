@@ -45,21 +45,19 @@ function get_voter() {
 function pusher_subscribed() {
     $.ajax({
         url : "/caller/" + $("#caller").val() + "/pusher_subscribed",
-        data : {id : $("#caller").val(), session_id : $("#caller_session").val()},
+        data : {id : $("#caller").val(), session_id : $("#session_key").val()},
         type : "POST",
 		success : function(response){	
+			set_session(response.caller_session_id)
 			$("#start_calling").show();
 			$("#callin_data").show();
-			
-			if(response.caller_available) {	
-		   	  $("#callin_data").hide();
-		      $('#start_calling').hide();
-		      $('#stop_calling').show();
-		      $("#called_in").show();
-		      get_voter(); 
+			$("#callin_data").hide();
+		    $('#start_calling').hide();
+		    $('#stop_calling').show();
+		    $("#called_in").show();
+		    get_voter(); 
 		     }
-		}
-    })
+    });
 }
 
 
