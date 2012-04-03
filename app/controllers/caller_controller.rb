@@ -94,7 +94,7 @@ class CallerController < ApplicationController
       render :xml => caller_session.try(:end) || Twilio::Verb.hangup
     rescue ActiveRecord::StaleObjectError
       caller_session.reload
-      render xml: caller_session.end      
+      caller_session.end      
     end
   end
 
