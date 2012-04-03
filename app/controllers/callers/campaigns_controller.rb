@@ -8,6 +8,10 @@ module Callers
       end
       @campaign = @caller.campaign
       @caller_identity = @caller.caller_identities.last
+      if @caller_identity.nil?
+        redirect_to caller_logout_path
+        return
+      end
       if @campaign.time_period_exceed?
         flash_now(:warning, I18n.t(:campaign_time_period_exceed, :start_time => @campaign.start_time.hour <= 12 ? "#{@campaign.start_time.hour} AM" : "#{@campaign.start_time.hour-12} PM",
          :end_time => @campaign.end_time.hour <= 12 ? "#{@campaign.end_time.hour} AM" : "#{@campaign.end_time.hour-12} PM")) 
