@@ -54,6 +54,7 @@ module ImpactDialing
     config.i18n.fallbacks = [:en]
     config.action_view.javascript_expansions[:jdefaults] = %w(jquery jquery_ujs application)
     config.active_record.observers = :voter_observer
+    GC::Profiler.enable
 
   end
 end
