@@ -66,37 +66,10 @@ describe CallerSession do
   end
 
   describe "Calling in" do
-    let(:caller) { Factory(:caller) }
-
-    it "asks for the campaign context" do
-      session = Factory(:caller_session, :caller => caller)
-      session.ask_for_campaign.should == Twilio::Verb.new do |v|
-        v.gather(:numDigits => 5, :timeout => 10, :action => assign_campaign_caller_url(session.caller, :session => session, :host => Settings.host, :port => Settings.port, :attempt => 1), :method => "POST") do
-          v.say "Please enter your campaign ID."
-        end
-      end.response
-    end
-
-    it "asks for campaign pin context again" do
-      session = Factory(:caller_session, :caller => caller)
-      session.ask_for_campaign(1).should == Twilio::Verb.new do |v|
-        v.gather(:numDigits => 5, :timeout => 10, :action => assign_campaign_caller_url(session.caller, :session => session, :host => Settings.host, :port => Settings.port, :attempt => 2), :method => "POST") do
-          v.say "Incorrect campaign ID. Please enter your campaign ID."
-        end
-      end.response
-    end
-
-    it "hangs up on three incorrect campaign contexts" do
-      session = Factory(:caller_session, :caller => caller)
-      session.ask_for_campaign(3).should == Twilio::Verb.new do |v|
-        v.say "That campaign ID is incorrect. Please contact your campaign administrator."
-        v.hangup
-      end.response
-    end
-
     it "creates a conference" do
       campaign, conf_key = Factory(:campaign), "conference_key"
-      session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => conf_key)
+      caller = Factory(:caller, campaign: campaign)
+      session = Factory(:caller_session, caller: caller, campaign: campaign, session_key: conf_key)
       campaign.stub!(:time_period_exceed?).and_return(false)
       session.stub!(:caller_reassigned_to_another_campaign?).and_return(false)
       session.start.should == Twilio::Verb.new do |v|
@@ -110,6 +83,7 @@ describe CallerSession do
 
     it "terminates a conference" do
       campaign, conf_key = Factory(:campaign), "conference_key"
+      caller = Factory(:caller, campaign: campaign)
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => conf_key)
       time_now = Time.now
       Moderator.stub!(:publish_event).with(session.campaign, 'caller_disconnected', {:caller_session_id => session.id, :caller_id => session.caller.id, :campaign_id => campaign.id,

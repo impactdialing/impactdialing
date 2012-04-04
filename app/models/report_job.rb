@@ -1,5 +1,5 @@
 class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected_custom_voter_fields, :download_all_voters, :from_date, :to_date)
-  include HerokuDelayedJobAutoscale::Autoscale
+  
 
   def initialize(campaign, user, voter_fields, custom_fields, all_voters, from, to)
     voter_fields = ["Phone"] if voter_fields.blank?
@@ -15,7 +15,7 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
     FileUtils.mkdir_p(Rails.root.join("tmp"))
     uuid = UUID.new.generate
     @campaign_name = "#{uuid}_report_#{campaign.name}"
-    @campaign_name = @campaign_name.tr("/\000", "")
+    # @campaign_name = @campaign_name.tr("/\000", "")
     filename = "#{Rails.root}/tmp/#{@campaign_name}.csv"
     report_csv = @report.split("\n")
     file = File.open(filename, "w")

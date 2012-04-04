@@ -7,7 +7,7 @@ class CallerSession < ActiveRecord::Base
 
   scope :on_call, :conditions => {:on_call => true}
   scope :available, :conditions => {:available_for_call => true, :on_call => true}
-  scope :not_allocated, where('browser_identification is null')
+  
   scope :not_on_call, :conditions => {:on_call => false}
   scope :connected_to_voter, where('voter_in_progress is not null')
   scope :held_for_duration, lambda { |minutes| {:conditions => ["hold_time_start <= ?", minutes.ago]} }
@@ -23,6 +23,7 @@ class CallerSession < ActiveRecord::Base
     return 0 if self.tDuration.blank?
     self.tDuration/60.ceil
   end
+  
 
   def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
     t = ::TwilioLib.new(account, auth)
@@ -76,23 +77,6 @@ class CallerSession < ActiveRecord::Base
     attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])
   end
 
-  def ask_for_campaign(attempt = 0)
-    Twilio::Verb.new do |v|
-      case attempt
-        when 0
-          v.gather(:numDigits => 5, :timeout => 10, :action => assign_campaign_caller_url(self.caller, :session => self, :host => Settings.host, :port => Settings.port, :attempt => attempt + 1), :method => "POST") do
-            v.say "Please enter your campaign ID."
-          end
-        when 1, 2
-          v.gather(:numDigits => 5, :timeout => 10, :action => assign_campaign_caller_url(self.caller, :session => self, :host => Settings.host, :port => Settings.port, :attempt => attempt + 1), :method => "POST") do
-            v.say "Incorrect campaign ID. Please enter your campaign ID."
-          end
-        else
-          v.say "That campaign ID is incorrect. Please contact your campaign administrator."
-          v.hangup
-      end
-    end.response
-  end
 
   def start
     wrapup
@@ -172,6 +156,9 @@ class CallerSession < ActiveRecord::Base
 
 
   def pause_for_results(attempt = 0)
+    unless endtime.nil?
+      return Twilio::Verb.hangup
+    end    
     attempt = attempt.to_i || 0
     self.publish("waiting_for_result", {}) if attempt == 0
     Twilio::Verb.new { |v| v.say("Please enter your call results") if (attempt % 5 == 0); v.pause("length" => 2); v.redirect(pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => id, :attempt=>attempt+1)) }.response
@@ -240,6 +227,18 @@ class CallerSession < ActiveRecord::Base
      confs = conferences.parsed_response['TwilioResponse']['Conferences']['Conference']
      conference_sid = ""
      conference_sid = confs.class == Array ? confs.last['Sid'] : confs['Sid']
+   end
+   
+   def preview_voter
+     if campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE
+       voter = campaign.next_voter_in_dial_queue      
+       voter.update_attributes(caller_id: caller_id) unless voter.nil?
+       voter_info = voter ? voter.info : {}
+       voter_info.merge!({start_calling: true})
+       publish('caller_connected', voter_info) 
+     else
+       publish('caller_connected_dialer', {})
+     end     
    end
 
   private

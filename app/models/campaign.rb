@@ -168,152 +168,6 @@ class Campaign < ActiveRecord::Base
     in_progress
   end
 
-  def calls_in_ending_window(period=10, predictive_type="longest")
-      #calls predicted to end soon
-      stats = self.call_stats(period)
-      if predictive_type=="longest"
-        window = stats[:biggest_long]
-      else
-        window = stats[:avg_long]
-      end
-      window = window - 10 if window > 10
-  #   Rails.logger.debug("window: #{window}")
-      ending = CallAttempt.all(:conditions=>"
-      campaign_id=#{self.id}
-      and status like'Connected to caller%'
-      and timediff(now(),call_start) >SEC_TO_TIME(#{window})
-      ")
-      ending
-    end
-
-  def call_stats(mins=nil)
-     @stats ||= {:attempts=>[], :abandon=>0, :answer=>0, :no_answer=>0,
-                 :total=>0, :answer_pct=>0, :avg_duration=>0, :abandon_pct=>0,
-                 :avg_hold_time=>0, :total_long=>0, :total_short=>0, :avg_long=>0,
-                 :biggest_long=>0, :avg_ring_time=>0, :avg_ring_time_devation=>0,
-                 :current_short=>0, :current_long=>0,
-                 :short_deviation=>0, :avg_short=>0}.tap do |stats|
-       totduration=0
-       tothold=0
-       totholddata=0
-       totlongduration=0
-       totshortduration=0
-       totringtime=0
-       totringattempts=0
-       ringattempts=[]
-       longattempts=[]
-       shortattempts=[]
-       stats[:short_time] = 15
-   
-       if mins.blank?
-         attempts = CallAttempt.find_all_by_campaign_id(self.id, :order=>"id desc")
-       else
-         attempts = CallAttempt.find_all_by_campaign_id(self.id,:conditions=>"call_start > DATE_SUB(now(),INTERVAL #{mins} MINUTE) or call_end > DATE_SUB(now(),INTERVAL #{mins} MINUTE)", :order=>"id desc")
-       end
-   
-       stats[:attempts]=attempts
-   
-       attempts.each do |attempt|
-   
-         if attempt.status=="Call completed with success." || attempt.status.index("Connected to") #  || attempt.status=="Call in progress"
-           stats[:answer] = stats[:answer]+1
-           if attempt.ring_time!=nil
-             totringtime=totringtime+attempt.ring_time
-             totringattempts+=1
-             ringattempts << attempt.ring_time
-           end
-         elsif attempt.status=="Call abandoned"
-           stats[:abandon] = stats[:abandon]+1
-         else
-           stats[:no_answer] = stats[:no_answer]+1
-         end
-   
-         stats[:total] = stats[:total]+1
-   
-         if attempt.status.index("Connected to") && attempt.duration!=nil
-           if attempt.duration > stats[:short_time]
-             stats[:current_long]=stats[:current_long]+1
-           else
-             stats[:current_short]=stats[:current_short]+1
-           end
-         end
-   
-   
-         if attempt.duration!=nil && attempt.duration>0
-           totduration = totduration + attempt.duration
-           if attempt.duration <= stats[:short_time]
-             stats[:total_short] = stats[:total_short]+1
-             totshortduration = totshortduration + attempt.duration
-             shortattempts<<attempt.duration.to_i
-           else
-             stats[:total_long] = stats[:total_long]+1
-             totlongduration = totlongduration + attempt.duration
-             longattempts<<attempt.duration.to_i
-             stats[:biggest_long] = attempt.duration if attempt.duration > stats[:biggest_long]
-           end
-         end
-   
-         if !attempt.caller_hold_time.blank?
-           tothold = tothold + attempt.caller_hold_time
-           totholddata+=1
-         end
-       end
-       #    avg_hold_time
-       stats[:answer_pct] = (stats[:answer].to_f + stats[:abandon].to_f)/ stats[:total].to_f if stats[:total] > 0
-       stats[:abandon_pct] = stats[:abandon].to_f / (stats[:answer].to_f + stats[:abandon].to_f) if stats[:answer] > 0
-       stats[:avg_duration] = totduration / stats[:answer].to_f if stats[:answer] > 0
-       stats[:avg_hold_time] = tothold/ totholddata if totholddata> 0
-       stats[:avg_long] = totlongduration / stats[:total_long] if stats[:total_long] > 0
-       stats[:avg_short] = totshortduration / stats[:total_short] if stats[:total_short] > 0
-       stats[:avg_ring_time] = totringtime/totringattempts if totringattempts >0
-       stats[:avg_ring_time_deviation] = self.std_deviation(ringattempts)
-       stats[:long_deviation] = self.std_deviation(longattempts)
-       stats[:short_deviation] = self.std_deviation(shortattempts)
-       stats[:answer_plus_abandon_ct] = (stats[:abandon].to_f + stats[:answer].to_f) / stats[:total].to_f if stats[:total] > 0
-   
-   
-       #new algo stuff
-       if stats[:answer_plus_abandon_ct] ==nil
-         stats[:dials_needed] = 2
-       else
-         dials = 1 / stats[:answer_plus_abandon_ct]
-         dials = 2 if dials.infinite?
-         dials = dials.to_f.round
-         dials = self.max_calls_per_caller if dials > self.max_calls_per_caller
-         dials = 2 if attempts.length < 50
-         #      dials=1
-         stats[:dials_needed] = dials
-       end
-       stats[:avg_ring_time_adjusted] = stats[:avg_ring_time] - (2*stats[:avg_ring_time_deviation])
-       stats[:call_length_long] = stats[:avg_long] + (2*stats[:long_deviation])
-       stats[:call_length_short] = stats[:avg_short] + (2*stats[:short_deviation])
-   
-       if stats[:total_long]==0 && stats[:total_short]==0
-         stats[:ratio_short]=0
-       elsif stats[:total_long]==0
-         stats[:ratio_short]=1
-       elsif stats[:total_short]==0
-         stats[:ratio_short]=0
-       else
-         stats[:ratio_short] = stats[:total_short].to_f / (stats[:total_long] + stats[:total_short]).to_f
-       end
-       stats[:short_callers]= 1/(stats[:total_short].to_f / stats[:total_long].to_f).to_f
-       #final calcs
-       stats[:short_new_call_caller_threshold] = 1/(stats[:total_short].to_f / stats[:total_long].to_f).to_f
-       stats[:short_new_call_time_threshold] = (stats[:avg_short] + (2*stats[:short_deviation])) - (stats[:avg_ring_time] - (2*stats[:avg_ring_time_deviation]))
-       if self.predictive_type=="algorithm1"
-         stats[:long_new_call_time_threshold] = (stats[:avg_long] + (2*stats[:long_deviation]))- (stats[:avg_ring_time] - (2*stats[:avg_ring_time_deviation]))
-       else
-         stats[:long_new_call_time_threshold] = stats[:avg_duration]
-       end
-   
-       # bimodal pacing algorithm:
-       # when stats[:short_new_call_caller_threshold] callers are on calls of length less than stats[:short_time]s, dial  stats[:dials_needed] lines at stats[:short_new_call_time_threshold]) seconds after the last call began.
-       # if a call passes length 15s, dial stats[:dials_needed] lines at stats[:short_new_long_time_threshold]sinto the call.
-   
-     end
-   end
-
   def voters_called
     Voter.find_all_by_campaign_id(self.id, :select=>"id", :conditions=>"status <> 'not called'")
   end
@@ -326,18 +180,6 @@ class Campaign < ActiveRecord::Base
     Voter.find_all_by_active(1, :select=>"id", :conditions=>"voter_list_id in (#{active_list_ids.join(",")})  and (status='#{status}' OR (call_back=1 and last_call_attempt_time < (Now() - INTERVAL 180 MINUTE)) )")
   end
 
-
-  def std_deviation(values)
-    return 0 if values==nil || values.size==0
-    begin
-      count = values.size
-      mean = values.inject(:+) / count.to_f
-      stddev = Math.sqrt(values.inject(0) { |sum, e| sum + (e - mean) ** 2 } / count.to_f)
-    rescue
-#      Rails.logger.debug("deviation error: #{values.inspect}")
-      return 0
-    end
-  end
 
   def voters(status=nil, include_call_retries=true, limit=300)
     voters_returned = []
@@ -392,74 +234,11 @@ class Campaign < ActiveRecord::Base
   def get_dial_ratio
     if self.predictive_type.index("power_")!=nil
       ratio_dial = self.predictive_type[6, 1].to_i
-      DIALER_LOGGER.info "ratio_dial: #{ratio_dial}, #{callers.length}, #{predictive_type.index("power_")}"
+      Rails.logger.info "ratio_dial: #{ratio_dial}, #{callers.length}, #{predictive_type.index("power_")}"
     end
     ratio_dial
   end
 
-  def num_short_calls_in_progress(short_threshold)
-    #number of calls in progress of length less than stats[:short_time]
-    short_counter=0
-
-    callers_on_call.each do |session|
-      if !session.attempt_in_progress.blank?
-        attempt = CallAttempt.find(session.attempt_in_progress)
-        if attempt.duration!=nil && attempt.duration < short_threshold
-          short_counter+=1
-        end
-      end
-    end
-    short_counter
-  end
-
-  def determine_short_to_dial
-    stats = call_stats(10)
-    short_counter = num_short_calls_in_progress(stats[:short_time])
-    if stats[:ratio_short]>0 && short_counter > 0
-      max_short=(1/stats[:ratio_short]).round
-      short_to_dial = (short_counter/max_short).to_f.ceil
-    else
-      short_to_dial=0
-    end
-
-    short_to_dial
-  end
-
-  def determine_pool_size(short_to_dial)
-    stats = call_stats(10)
-
-    #determine the how many new lines to dial based on short/long thresholds
-
-    pool_size=0
-    done_short=0
-
-    callers_to_dial.each do |session|
-      if session.attempt_in_progress.blank?
-        # caller waiting idle
-        pool_size = pool_size + stats[:dials_needed]
-        #DIALER_LOGGER.info "empty to pool, session #{session.id} attempt_in_progress is blank"
-      else
-        attempt = CallAttempt.find(session.attempt_in_progress)
-        if attempt.duration!=nil &&
-            if attempt.duration < stats[:short_time] && done_short<short_to_dial
-              if attempt.duration > stats[:short_new_call_time_threshold]
-                #when stats[:short_new_call_caller_threshold] callers are on calls of length less than stats[:short_time]s, dial  stats[:dials_needed] lines at stats[:short_new_call_time_threshold]) seconds after the last call began.
-                pool_size = pool_size + stats[:dials_needed]
-                done_short+=1
-                DIALER_LOGGER.info "short to pool, duration #{attempt.duration}, done_short=#{done_short}, short_to_dial=#{short_to_dial}"
-              end
-            else
-              # if a call passes length 15s, dial stats[:dials_needed] lines at stats[:short_new_long_time_threshold]sinto the call.
-              if attempt.duration > stats[:long_new_call_time_threshold]
-                DIALER_LOGGER.info "LONG TO POOL, session #{session.id}, attempt.duration #{attempt.duration}, thresh #{stats[:long_new_call_time_threshold]}"
-                pool_size = pool_size + stats[:dials_needed]
-              end
-            end
-        end
-      end
-    end
-    pool_size
-  end
 
   def choose_voters_to_dial(num_voters)
     return [] if num_voters < 1
@@ -486,11 +265,11 @@ class Campaign < ActiveRecord::Base
       num_to_call = dial_predictive_simulator
     end
 
-    DIALER_LOGGER.info "#{self.name}: Callers logged in: #{callers.length}, Callers on call: #{callers_on_call.length}, Callers not on call:  #{callers_not_on_call}, Calls in progress: #{call_attempts_in_progress.length}"
-    DIALER_LOGGER.info "num_to_call #{num_to_call}"
+    Rails.logger.info "#{self.name}: Callers logged in: #{callers.length}, Callers on call: #{callers_on_call.length}, Callers not on call:  #{callers_not_on_call}, Calls in progress: #{call_attempts_in_progress.length}"
+    Rails.logger.info "num_to_call #{num_to_call}"
     if num_to_call > 0
       voter_ids = choose_voters_to_dial(num_to_call) #TODO check logic
-      DIALER_LOGGER.info("voters to dial #{voter_ids}")
+      Rails.logger.info("voters to dial #{voter_ids}")
       ring_predictive_voters(voter_ids)
     end
   end
@@ -519,7 +298,7 @@ class Campaign < ActiveRecord::Base
     dials_made = call_attempts.between(10.minutes.ago, Time.now)
     calls_wrapping_up = dials_made.with_status(CallAttempt::Status::SUCCESS).not_wrapped_up
     active_call_attempts = dials_made.with_status(CallAttempt::Status::INPROGRESS)
-    available_callers = caller_sessions.available.size + active_call_attempts.select { |call_attempt| ((call_attempt.duration_wrapped_up > best_conversation_simulated) && (call_attempt.duration_wrapped_up < longest_conversation_simulated))}.size + calls_wrapping_up.select{|wrapping_up_call| wrapping_up_call.time_to_wrapup > best_wrapup_simulated}.size
+    available_callers = callers_available_for_call.size + active_call_attempts.select { |call_attempt| ((call_attempt.duration_wrapped_up > best_conversation_simulated) && (call_attempt.duration_wrapped_up < longest_conversation_simulated))}.size + calls_wrapping_up.select{|wrapping_up_call| wrapping_up_call.time_to_wrapup > best_wrapup_simulated}.size
     ringing_lines = dials_made.with_status(CallAttempt::Status::RINGING).size
     dials_to_make = (best_dials_simulated * available_callers) - ringing_lines
     dials_to_make.to_i
@@ -584,34 +363,6 @@ class Campaign < ActiveRecord::Base
     all_voters.update_all(:result => nil, :status => 'not called')
   end
 
-  # simulator dialer
-  def dials_ramping?
-    self.call_stats(10)[:attempts].length > 50 ? false : true
-  end
-
-  def dials_needed
-    stats = call_stats(10)
-    dials_made = stats[:attempts].length #number of dials made in the past 10 minutes
-    dials_answered = stats[:answer] # number of dials answered in the past 10 minutes
-    dials_needed = self.predictive_alpha * dials_answered / dials_made
-  end
-
-  def dialer_available_callers
-    stats = call_stats(10)
-
-    mean_conversation = stats[:avg_duration] #the mean length of a conversation in the last 10 minutes
-    longest_conversation = stats[:biggest_long] #the length of the longest conversation in the last 10 minutes
-    expected_conversation = (1 - predictive_beta) * mean_conversation + predictive_beta * longest_conversation
-    available_callers = callers_available_for_call.length + callers_on_call_longer_than(expected_conversation).length - callers_on_call_longer_than(longest_conversation).length
-  end
-
-  def callers_on_call_longer_than(minute_threshold)
-    results=[]
-    callers_on_call.each do |caller|
-      results << caller if caller.attempt_in_progress!=nil && CallAttempt.find(caller.attempt_in_progress).duration > minute_threshold
-    end
-    results
-  end
 
   def abandon_rate_acceptable?
     answered_dials = call_attempts.between(10.minutes.ago, Time.now).with_status([CallAttempt::Status::SUCCESS, CallAttempt::Status::SCHEDULED]).size
@@ -624,7 +375,7 @@ class Campaign < ActiveRecord::Base
     num_to_call = 0
     dials_made = call_attempts.between(10.minutes.ago, Time.now).size
     if dials_made == 0 || !abandon_rate_acceptable?
-      num_to_call = callers_available_for_call.length - call_attempts.between(1.minute.ago, Time.now).with_status(CallAttempt::Status::RINGING).size
+      num_to_call = callers_available_for_call.size - call_attempts.between(1.minute.ago, Time.now).with_status(CallAttempt::Status::RINGING).size
     else
       num_to_call = num_to_call_predictive_simulate
     end
