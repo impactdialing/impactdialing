@@ -1,4 +1,7 @@
+require 'new_relic/agent/method_tracer'
 class CallAttemptsController < ApplicationController
+  include NewRelic::Agent::MethodTracer
+  
   def create
     call_attempt = CallAttempt.find(params[:id])
     robo_recording = RoboRecording.find(params[:robo_recording_id])
@@ -31,20 +34,22 @@ class CallAttemptsController < ApplicationController
                end
     render :xml => response
   end
+  add_method_tracer :connect, 'Custom/call_attempt_connect'
 
   def disconnect
     call_attempt = CallAttempt.find(params[:id])
     render :xml => call_attempt.disconnect(params)
   end
+  add_method_tracer :disconnect, 'Custom/call_attempt_disconnect'
 
   def hangup
     call_attempt = CallAttempt.find(params[:id])
     call_attempt.end_running_call if call_attempt
     render :nothing => true
   end
+  add_method_tracer :hangup, 'Custom/call_attempt_hangup'
 
   def end
-    Rails.logger.info "callstatus: #{params[:CallStatus]}"
     call_attempt = CallAttempt.find(params[:id])
     if [CallAttempt::Status::HANGUP, CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED].include? call_attempt.status
       call_attempt.voter.update_attributes(:last_call_attempt_time => Time.now)
@@ -62,6 +67,7 @@ class CallAttemptsController < ApplicationController
                end
     render :xml => response
   end
+  add_method_tracer :end, 'Custom/call_attempt_end'
 
   def voter_response
     if params[:voter_id].nil? || params[:id].nil?
@@ -80,6 +86,7 @@ class CallAttemptsController < ApplicationController
       render :nothing => true
     end
   end
+  add_method_tracer :voter_response, 'Custom/call_attempt_voter_response'
 
   private
 
