@@ -59,7 +59,7 @@ describe Api::VoterListsController do
     post :create, api_key: '1mp@ctd1@l1ng',campaign_id: @campaign.id, account_id: @campaign.account.id.to_s, email: @current_user.email, upload: {"datafile" => fixture_file_upload("/files/invalid_voters_list.csv")}
     result = JSON.parse(response.body)
     response.code.should eq('200')
-    JSON.parse(response.body).should eq({"status"=>"ok", "message"=>"An email will be sent to #{@current_user.email} with the status of the list upload"})    
+    JSON.parse(response.body).should eq({"status"=>"ok", "message"=>"Response will be sent to the callback url once the list upload is complete."})    
   end
   
   
