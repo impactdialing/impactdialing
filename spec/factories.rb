@@ -69,6 +69,11 @@ Factory.define :caller_session do |s|
   s.caller_id { Factory(:caller).id }
 end
 
+Factory.define :caller_identity do |s|
+  s.caller_id { Factory(:caller).id }
+end
+
+
 Factory.define :call_attempt do |ca|
   ca.campaign { Factory(:campaign) }
   ca.caller { Factory(:caller) }

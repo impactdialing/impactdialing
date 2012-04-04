@@ -45,5 +45,13 @@ class Account < ActiveRecord::Base
     self.save
     self.chargify_customer_id
   end
+  
+  def insufficient_funds
+    Twilio::Verb.new do |v|
+      v.say "Your account has insufficent funds"
+      v.hangup
+    end.response
+  end
+  
 
 end

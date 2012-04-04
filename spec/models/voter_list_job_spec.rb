@@ -21,14 +21,14 @@ describe VoterListJob do
     describe "requirements" do
 
       it "needs a list name" do
-        job = VoterListJob.new(@separator, @json_csv_column_headers, @csv_to_system_map, '', '', @campaign.id, @account.id, nil, nil)
+        job = VoterListJob.new(@separator, @json_csv_column_headers, @csv_to_system_map, '', '', @campaign.id, @account.id, nil, nil,"")
         mailer.should_receive(:voter_list_upload)
         job.perform['errors'].first.should include "Name can't be blank"
       end
 
       it "should not save a list if the user already has a list with the same name" do
         Factory(:voter_list, :account => @account, :campaign_id => @campaign.id, :name => "abcd")
-        job = VoterListJob.new(@separator, @json_csv_column_headers, @csv_to_system_map, '', 'abcd', @campaign.id, @account.id, nil, nil)
+        job = VoterListJob.new(@separator, @json_csv_column_headers, @csv_to_system_map, '', 'abcd', @campaign.id, @account.id, nil, nil,"")
         mailer.should_receive(:voter_list_upload)
         job.perform['errors'].should include "Name for this list is already taken."
       end
@@ -41,7 +41,7 @@ describe VoterListJob do
 
       it "saves all the voters in the csv according to the mappings" do
         Voter.delete_all
-        job = VoterListJob.new(@separator, @json_csv_column_headers, @csv_to_system_map, @csv_filename, 'abcd', @campaign.id, @account.id, nil, nil)
+        job = VoterListJob.new(@separator, @json_csv_column_headers, @csv_to_system_map, @csv_filename, 'abcd', @campaign.id, @account.id, nil, nil,"")
         mailer.should_receive(:voter_list_upload)
         s3.should_receive(:value).and_return(File.open("#{fixture_path}/files/valid_voters_list.csv").read)
 
@@ -53,7 +53,7 @@ describe VoterListJob do
 
       it "removes the temporary file from disk" do
         temp_filename = "#{Rails.root}/tmp/#{@csv_filename}"
-        job = VoterListJob.new(@separator, @json_csv_column_headers, @csv_to_system_map, @csv_filename, 'abcd', @campaign.id, @account.id, nil, nil)
+        job = VoterListJob.new(@separator, @json_csv_column_headers, @csv_to_system_map, @csv_filename, 'abcd', @campaign.id, @account.id, nil, nil,"")
         mailer.should_receive(:voter_list_upload)
         s3.should_receive(:value).and_return(File.open("#{fixture_path}/files/valid_voters_list.csv").read)
         job.perform
@@ -65,7 +65,7 @@ describe VoterListJob do
         @csv_filename = "valid_voters_list_#{Time.now.to_i}_#{rand(999)}"
         custom_field = "Custom"
         Voter.delete_all
-        job = VoterListJob.new(@separator, ["Phone", "Custom"].to_json, {"Phone"=>"Phone", custom_field=>custom_field}, @csv_filename, 'abcd', @campaign.id, @account.id, nil, nil)
+        job = VoterListJob.new(@separator, ["Phone", "Custom"].to_json, {"Phone"=>"Phone", custom_field=>custom_field}, @csv_filename, 'abcd', @campaign.id, @account.id, nil, nil,"")
         mailer.should_receive(:voter_list_upload)
         s3.should_receive(:value).and_return(File.open("#{fixture_path}/files/voters_custom_fields_list.csv").read)
 
@@ -89,7 +89,7 @@ describe VoterListJob do
       end
 
       it "should flash an error" do
-        job = VoterListJob.new(@separator, @json_csv_column_headers, @csv_to_system_map, @csv_filename, 'bui', @campaign.id, @account.id, nil, nil)
+        job = VoterListJob.new(@separator, @json_csv_column_headers, @csv_to_system_map, @csv_filename, 'bui', @campaign.id, @account.id, nil, nil,"")
         mailer.should_receive(:voter_list_upload)
         s3.should_receive(:value).and_return(File.open("#{fixture_path}/files/invalid_voters_list.csv").read)
 
@@ -97,7 +97,7 @@ describe VoterListJob do
       end
 
       it "should not save the voters list entry" do
-        job = VoterListJob.new(@separator,@json_csv_column_headers,@csv_to_system_map,@csv_filename,'hui',@campaign.id,@account.id,nil,nil)
+        job = VoterListJob.new(@separator,@json_csv_column_headers,@csv_to_system_map,@csv_filename,'hui',@campaign.id,@account.id,nil,nil,"")
         mailer.should_receive(:voter_list_upload)
         s3.should_receive(:value).and_return(File.open("#{fixture_path}/files/invalid_voters_list.csv").read)
         job.perform
