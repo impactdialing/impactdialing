@@ -152,7 +152,7 @@ class ReportApiStrategy
     @callback_url = callback_url
   end
   
-  def response(response, params)
+  def response(params)
     if @result == "success"
       link = AWS::S3::S3Object.url_for("#{params[:campaign_name]}.csv", "download_reports", :expires => expires_in_12_hours)
     else
