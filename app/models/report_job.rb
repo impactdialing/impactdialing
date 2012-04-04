@@ -69,12 +69,12 @@ class ReportJob
   end
 
   def notify_success
-    response_strategy = @strategy == 'webui' ?  ReportWebUIStrategy.new("success", @user, @campaign, nil, nil) : ReportApiStrategy.new("failure", @campaign.id, @campaign.account.id, callback_url)
+    response_strategy = @strategy == 'webui' ?  ReportWebUIStrategy.new("success", @user, @campaign, nil, nil) : ReportApiStrategy.new("failure", @campaign.id, @campaign.account.id, @callback_url)
     response_strategy.response({campaign_name: @campaign_name})
   end
 
   def notify_failure(job, exception)
-    response_strategy = strategy == 'webui' ?  ReportWebUIStrategy.new("failure", @user, @campaign, job, exception) : ReportApiStrategy.new("failure", @campaign.id, @campaign.account.id, callback_url)
+    response_strategy = strategy == 'webui' ?  ReportWebUIStrategy.new("failure", @user, @campaign, job, exception) : ReportApiStrategy.new("failure", @campaign.id, @campaign.account.id, @callback_url)
     response_strategy.response({})
   end
 
