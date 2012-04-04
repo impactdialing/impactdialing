@@ -133,7 +133,7 @@ class ReportWebUIStrategy
   def response(params)
     if @result == "success"
       expires_in_12_hours = (Time.now + 12.hours).to_i
-      @mailer.deliver_download(user, AWS::S3::S3Object.url_for("#{params[:campaign_name]}.csv", "download_reports", :expires => expires_in_12_hours))
+      @mailer.deliver_download(@user, AWS::S3::S3Object.url_for("#{params[:campaign_name]}.csv", "download_reports", :expires => expires_in_12_hours))
     else
       @mailer.deliver_download_failure(@user, @campaign, @job, @exception)
     end
