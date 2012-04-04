@@ -1,9 +1,16 @@
-class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected_custom_voter_fields, :download_all_voters, :from_date, :to_date)
+class ReportJob 
   
-
-  def initialize(campaign, user, voter_fields, custom_fields, all_voters, from, to)
-    voter_fields = ["Phone"] if voter_fields.blank?
-    super(campaign, user, voter_fields, custom_fields, all_voters, from, to)
+  def initialize(campaign, user, voter_fields, custom_fields, all_voters, from, to, callback_url, strategy="webui")
+    @campaign = campaign
+    @user = user
+    @selected_voter_fields = voter_fields
+    @selected_custom_voter_fields = custom_fields
+    @download_all_voters = all_voters
+    @from_date = from
+    @to_date = to
+    @callback_url = callback_url
+    @strategy = strategy
+    @selected_voter_fields = ["Phone"] if @selected_voter_fields.blank?
   end
 
   def save_report
@@ -14,8 +21,8 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
 
     FileUtils.mkdir_p(Rails.root.join("tmp"))
     uuid = UUID.new.generate
-    @campaign_name = "#{uuid}_report_#{campaign.name}"
-    # @campaign_name = @campaign_name.tr("/\000", "")
+    @campaign_name = "#{uuid}_report_#{@campaign.name}"
+    @campaign_name = @campaign_name.tr("/\000", "")
     filename = "#{Rails.root}/tmp/#{@campaign_name}.csv"
     report_csv = @report.split("\n")
     file = File.open(filename, "w")
@@ -34,13 +41,13 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
   end
 
   def perform
-    @campaign_strategy = campaign.robo ? BroadcastStrategy.new(campaign) : CallerStrategy.new(campaign)
+    @campaign_strategy = @campaign.robo ? BroadcastStrategy.new(@campaign) : CallerStrategy.new(@campaign)    
     @report = CSV.generate do |csv|
-      csv << @campaign_strategy.csv_header(selected_voter_fields, selected_custom_voter_fields)
-      if download_all_voters
-        campaign.all_voters.find_in_batches(:batch_size => 2000) { |voters| voters.each { |v| csv << csv_for(v) } }
+      csv << @campaign_strategy.csv_header(@selected_voter_fields, @selected_custom_voter_fields)
+      if @download_all_voters
+        @campaign.all_voters.find_in_batches(:batch_size => 2000) { |voters| voters.each { |v| csv << csv_for(v) } }
       else
-        campaign.all_voters.answered_within_timespan(from_date, to_date).find_in_batches(:batch_size => 2000) { |voters| voters.each { |v| csv << csv_for(v) } }
+        @campaign.all_voters.answered_within_timespan(@from_date, @to_date).find_in_batches(:batch_size => 2000) { |voters| voters.each { |v| csv << csv_for(v) } }
       end
     end
     save_report
@@ -48,8 +55,8 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
   end
 
   def csv_for(voter)
-    voter_fields = voter.selected_fields(selected_voter_fields.try(:compact))
-    custom_fields = voter.selected_custom_fields(selected_custom_voter_fields)
+    voter_fields = voter.selected_fields(@selected_voter_fields.try(:compact))
+    custom_fields = voter.selected_custom_fields(@selected_custom_voter_fields)
     [voter_fields, custom_fields, @campaign_strategy.call_details(voter)].flatten
   end
 
@@ -62,14 +69,13 @@ class ReportJob < Struct.new(:campaign, :user, :selected_voter_fields, :selected
   end
 
   def notify_success
-    mailer = UserMailer.new
-    expires_in_12_hours = (Time.now + 12.hours).to_i
-    mailer.deliver_download(user, AWS::S3::S3Object.url_for("#{@campaign_name}.csv", "download_reports", :expires => expires_in_12_hours))
+    response_strategy = @strategy == 'webui' ?  ReportWebUIStrategy.new("success", @user, @campaign, nil, nil) : ReportApiStrategy.new("failure", @campaign.id, @campaign.account.id, @callback_url)
+    response_strategy.response({campaign_name: @campaign_name})
   end
 
   def notify_failure(job, exception)
-    mailer = UserMailer.new
-    mailer.deliver_download_failure(user, campaign, job, exception)
+    response_strategy = strategy == 'webui' ?  ReportWebUIStrategy.new("failure", @user, @campaign, job, exception) : ReportApiStrategy.new("failure", @campaign.id, @campaign.account.id, @callback_url)
+    response_strategy.response({})
   end
 
 end
@@ -110,4 +116,54 @@ class BroadcastStrategy < CampaignStrategy
     details = last_attempt ? [last_attempt.status, (last_attempt.call_responses.collect { |call_response| call_response.recording_response.try(:response) } if last_attempt.call_responses.size > 0)].flatten : ['Not Dialed']
     details
   end
+end
+
+class ReportWebUIStrategy
+  
+  def initialize(result, user, campaign, job, exception)
+    @result = result
+    @mailer = UserMailer.new    
+    @user = user
+    @campaign = campaign
+    @job = job
+    @exception = exception
+  end
+
+    
+  def response(params)
+    if @result == "success"
+      expires_in_12_hours = (Time.now + 12.hours).to_i
+      @mailer.deliver_download(@user, AWS::S3::S3Object.url_for("#{params[:campaign_name]}.csv", "download_reports", :expires => expires_in_12_hours))
+    else
+      @mailer.deliver_download_failure(@user, @campaign, @job, @exception)
+    end
+  end
+  
+end
+
+
+class ReportApiStrategy
+  require 'net/http'
+  
+  def initialize(result, account_id, campaign_id, callback_url)
+    @result = result
+    @account_id = account_id
+    @campaign_id = campaign_id
+    @callback_url = callback_url
+  end
+  
+  def response(params)
+    if @result == "success"
+      link = AWS::S3::S3Object.url_for("#{params[:campaign_name]}.csv", "download_reports", :expires => expires_in_12_hours)
+    else
+      link = ""
+    end
+    uri = URI.parse(@callback_url)
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl=true
+    request = Net::HTTP::Post.new(uri.request_uri)
+    request.set_form_data({message: @result, download_link: link, account_id: @account_id, campaign_id: @campaign_id})
+    http.start{http.request(request)}
+  end
+  
 end

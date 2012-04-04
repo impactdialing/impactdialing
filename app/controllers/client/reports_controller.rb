@@ -16,7 +16,7 @@ module Client
     def dials
       set_date_range
       @total_voters_count = @campaign.all_voters.count
-      dialed_voters_ids = Voter.find(:all, :select => 'id' ,:conditions => [ "(voters.campaign_id = ?) AND (last_call_attempt_time BETWEEN  ? AND ?) ", @campaign.id, @from_date, (@to_date + 1.day)])
+      dialed_voters_ids = Voter.find(:all, :select => 'id' ,:conditions => [ "(voters.campaign_id = ?) AND (last_call_attempt_time BETWEEN  ? AND ?) ", @campaign.id, @from_date, @to_date])
       unless dialed_voters_ids.empty?
         @answered = @campaign.answered_count(dialed_voters_ids)
         @no_answer = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status(CallAttempt::Status::NOANSWER).count
@@ -47,7 +47,7 @@ module Client
 
     def download
       set_date_range
-      Delayed::Job.enqueue ReportJob.new(@campaign, @user, params[:voter_fields], params[:custom_voter_fields], params[:download_all_voters], @from_date, @to_date)
+      Delayed::Job.enqueue ReportJob.new(@campaign, @user, params[:voter_fields], params[:custom_voter_fields], params[:download_all_voters], @from_date, @to_date, "", "webui")
       flash_message(:notice, I18n.t(:client_report_processing))
       redirect_to client_reports_url
     end
