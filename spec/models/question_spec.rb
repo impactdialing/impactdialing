@@ -16,7 +16,7 @@ describe Question do
     answer4 = Factory(:answer, :voter => voter, campaign: campaign, :possible_response => Factory(:possible_response), :question => question, :created_at => (now + 1.day))
     question.answered_within(now, now + 1.day, campaign.id).should == [answer3, answer4]
     question.answered_within(now + 2.days, now + 3.days, campaign.id).should == []
-    question.answered_within(now, now, campaign.id).should == [answer3, answer4]
+    question.answered_within(now, now + 1.day, campaign.id).should == [answer3, answer4]
 
   end
 

@@ -212,7 +212,7 @@ describe Caller do
         3.times { Factory(:answer, :caller => caller, :voter => voter, :question => question, :possible_response => response_1, :campaign => campaign) }
         2.times { Factory(:answer, :caller => caller, :voter => voter, :question => question, :possible_response => response_2, :campaign => campaign) }
         Factory(:answer, :caller => caller, :voter => voter, :question => question, :possible_response => response_1, :campaign => Factory(:campaign))
-        stats = caller.answered_call_stats(from_time, time_now, campaign)
+        stats = caller.answered_call_stats(from_time, time_now+1.day, campaign)
         stats.should == {"what?" => {
           :total => {:count => 5, :percentage => 100},
           "foo" => {:count => 3, :percentage => 60},
