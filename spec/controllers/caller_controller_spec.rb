@@ -13,33 +13,6 @@ describe CallerController do
       login_as(caller)
     end
 
-    it "pushes a preview voter to the caller" do
-      session_key = "sdklsjfg923784"
-      voter = Factory(:voter, :campaign => campaign)
-      next_voter = Factory(:voter, :campaign => campaign)
-      session = Factory(:caller_session, :campaign => campaign, :caller => caller, :session_key => session_key)
-      channel = mock
-      info = voter.info
-      info[:fields]['status'] = CallAttempt::Status::READY
-      info[:fields]['caller_id'] = caller.id
-      Pusher.should_receive(:[]).with(session_key).and_return(channel)
-      channel.should_receive(:trigger).with('caller_connected', info.merge(:dialer => campaign.predictive_type))
-      post :preview_voter, :id => caller.id, :session_id => session.id
-    end
-
-    it "pushes a preview voter to the caller" do
-      session_key = "some_key"
-      voter = Factory(:voter, :campaign => campaign)
-      next_voter = Factory(:voter, :campaign => campaign)
-      session = Factory(:caller_session, :campaign => campaign, :caller => caller, :session_key => session_key)
-      channel = mock
-      info = voter.info
-      info[:fields]['status'] = CallAttempt::Status::READY
-      info[:fields]['caller_id'] = caller.id
-      Pusher.should_receive(:[]).with(session_key).and_return(channel)
-      channel.should_receive(:trigger).with('caller_connected', info.merge(:dialer => campaign.predictive_type))
-      post :preview_voter, :id => caller.id, :session_id => session.id
-    end
 
     it "connects to twilio before making a call" do
       session_key = "sdklsjfg923784"

@@ -235,7 +235,7 @@ class CallerSession < ActiveRecord::Base
        voter.update_attributes(caller_id: caller_id) unless voter.nil?
        voter_info = voter ? voter.info : {}
        voter_info.merge!({start_calling: true})
-       publish('caller_connected', voter_info) 
+       publish('caller_connected_initial', voter_info) 
      else
        publish('caller_connected_dialer', {})
      end     
