@@ -1,12 +1,14 @@
+<h1>Billing</h1>
+
 <% if @trial %>
 	<p>Your account is currently in trial.</p>
 	<% if @balance==0 %>Your trial credit has expired.<% end %>
 
 
 		<div id='confirm-dialog'>
-			<p class="actions"><a href="#" class="action secondary confirm">Subscribe Per Minute</a></p>
+			<p class="actions"><a href="#" class="action secondary confirm">Pay per minute</a></p>
 		</div>
-		<p class="actions"><a class="action secondary" href="<%= raw @recurly_per_caller_subscription_url %>">Subscribe Per Caller</a></p>
+		<p class="actions"><a class="action secondary" href="<%= raw @recurly_per_caller_subscription_url %>">Pay per caller</a></p>
 
 
 		<!-- modal content -->
@@ -26,14 +28,14 @@
 
 
 <% else %>
-	<p>Your current subscription is: <%= @user.account.active_subscription %> <% if @user.account.active_subscription=="Per Caller" %>(<%= @user.account.subscription_count %> callers)<% end %></p>
-	<p>Your current balance is <%= number_to_currency @balance %></p>
+	<p>Your current subscription is: <%= @user.account.active_subscription %> <% if @user.account.active_subscription=="Per caller" %>(<%= @user.account.subscription_count %> callers)<% end %></p>
+	<p>Your current balance is <%= number_to_currency @balance %>.</p>
 	<p class="actions"><a href="/client/add_to_balance" class="action secondary">Add to your balance</a></p>
 	<p class="actions"><a href="/client/recharge" class="action secondary"><% if @user.account.autorecharge_enabled? %>Configure<% else %>Enable<% end %> auto-recharge</a></p>
 	<p class="actions"><a href="/client/update_billing" class="action secondary">Update billing information</a></p>
 	<% if @user.account.active_subscription=="Per Caller" %>
 		<p class="actions"><a href="/client/update_billing_quantity" class="action secondary">Change # of callers</a></p>
-		<p class="actions"><a href="/client/cancel_subscription" class="action secondary">Cancel Subscription</a></p>
+		<p class="actions"><a href="/client/cancel_subscription" class="action secondary">Cancel subscription</a></p>
 	<% end %>
 <% end %>
 
