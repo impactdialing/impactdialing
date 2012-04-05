@@ -24,7 +24,7 @@ describe Answer do
   it "should returns all the answers within the specified period" do
     Answer.within(@now, @now + 1.day).should == [answer_3, answer_4]
     Answer.within(@now + 2.day, @now + 3.day).should == []
-    Answer.within(@now, @now).should == [answer_3, answer_4]
+    Answer.within(@now, @now+1.day).should == [answer_3, answer_4]
   end
 
   it "returns all answers for the given campaign" do
