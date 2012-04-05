@@ -65,7 +65,7 @@ describe Api::ReportsController do
     post :create, api_key: '1mp@ctd1@l1ng',campaign_id: @campaign.id, account_id: @campaign.account.id.to_s, email: @current_user.email, download_all_voters: "true"
     result = JSON.parse(response.body)
     response.code.should eq('200')
-    JSON.parse(response.body).should eq({"status"=>"ok", "message"=>"An email will be sent to #{@current_user.email} with the status of the report download"})    
+    JSON.parse(response.body).should eq({"status"=>"ok", "message"=>"Response will be sent to the callback url once the report is ready for download."})    
   end
   
   it "should throw correct error if date not supplied" do
@@ -90,7 +90,7 @@ describe Api::ReportsController do
     post :create, api_key: '1mp@ctd1@l1ng',campaign_id: @campaign.id, account_id: @campaign.account.id.to_s, email: @current_user.email, from_date: "10/31/2011", to_date: "11/30/2011"
     result = JSON.parse(response.body)
     response.code.should eq('200')
-    JSON.parse(response.body).should eq({"status"=>"ok", "message"=>"An email will be sent to #{@current_user.email} with the status of the report download"})    
+    JSON.parse(response.body).should eq({"status"=>"ok", "message"=>"Response will be sent to the callback url once the report is ready for download."})    
   end
   
   

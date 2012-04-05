@@ -1,5 +1,5 @@
 require Rails.root.join("lib/twilio_lib")
-
+require 'new_relic/agent/method_tracer'
 class CallerController < ApplicationController
   layout "caller"
   before_filter :check_login, :except=>[:login, :feedback, :assign_campaign, :end_session, :pause, :start_calling, :gather_response, :choose_voter, :phones_only_progressive, :phones_only, :choose_instructions_option, :new_campaign_response_panel, :check_reassign]
@@ -73,6 +73,7 @@ class CallerController < ApplicationController
       render :xml => caller_session.voter_in_progress ? caller_session.pause_for_results(params[:attempt]) : caller_session.start
     end
   end
+  add_method_tracer :pause, 'Custom/caller_pause'
 
   def gather_response
     caller = Caller.find(params[:id])
@@ -158,6 +159,7 @@ class CallerController < ApplicationController
     end
     render :nothing => true
   end
+  add_method_tracer :call_voter, 'Custom/caller_call_voter'
   
   def choose_voter
     caller_session = CallerSession.find(params[:session])

@@ -1,4 +1,7 @@
+require 'new_relic/agent/method_tracer'
 class CallAttemptsController < ApplicationController
+  include NewRelic::Agent::MethodTracer
+  
   def create
     call_attempt = CallAttempt.find(params[:id])
     robo_recording = RoboRecording.find(params[:robo_recording_id])
@@ -17,13 +20,13 @@ class CallAttemptsController < ApplicationController
                  when "machine"
                    call_attempt.voter.update_attributes(:status => CallAttempt::Status::HANGUP)
                    call_attempt.update_attributes(:status => CallAttempt::Status::HANGUP)
-                   # if call_attempt.caller_session && (call_attempt.campaign.predictive_type == Campaign::Type::PREVIEW || call_attempt.campaign.predictive_type == Campaign::Type::PROGRESSIVE)
-                   #   # call_attempt.caller_session.publish('answered_by_machine', {})
-                   #   # call_attempt.caller_session.update_attribute(:voter_in_progress, nil)
-                   #   # next_voter = call_attempt.campaign.next_voter_in_dial_queue(call_attempt.voter.id)
-                   #   # call_attempt.caller_session.publish('voter_push', next_voter ? next_voter.info : {})
-                   #   # call_attempt.caller_session.publish('conference_started', {})
-                   # end
+                   if call_attempt.caller_session && (call_attempt.campaign.predictive_type == Campaign::Type::PREVIEW || call_attempt.campaign.predictive_type == Campaign::Type::PROGRESSIVE)
+                     call_attempt.caller_session.publish('answered_by_machine', {})
+                     call_attempt.caller_session.update_attribute(:voter_in_progress, nil)
+                     next_voter = call_attempt.campaign.next_voter_in_dial_queue(call_attempt.voter.id)
+                     call_attempt.caller_session.publish('voter_push', next_voter ? next_voter.info : {})
+                     call_attempt.caller_session.publish('conference_started', {})
+                   end
                    call_attempt.update_attributes(wrapup_time: Time.now)                    
                    (call_attempt.campaign.use_recordings? && call_attempt.campaign.answering_machine_detect) ? call_attempt.play_recorded_message : call_attempt.hangup
                  else
@@ -31,21 +34,23 @@ class CallAttemptsController < ApplicationController
                end
     render :xml => response
   end
+  add_method_tracer :connect, 'Custom/call_attempt_connect'
 
   def disconnect
     call_attempt = CallAttempt.find(params[:id])
     call_attempt.debit
     render :xml => call_attempt.disconnect(params)
   end
+  add_method_tracer :disconnect, 'Custom/call_attempt_disconnect'
 
   def hangup
     call_attempt = CallAttempt.find(params[:id])
     call_attempt.end_running_call if call_attempt
     render :nothing => true
   end
+  add_method_tracer :hangup, 'Custom/call_attempt_hangup'
 
   def end
-    Rails.logger.info "callstatus: #{params[:CallStatus]}"
     call_attempt = CallAttempt.find(params[:id])
     if [CallAttempt::Status::HANGUP, CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED].include? call_attempt.status
       call_attempt.voter.update_attributes(:last_call_attempt_time => Time.now)
@@ -64,6 +69,7 @@ class CallAttemptsController < ApplicationController
                end
     render :xml => response
   end
+  add_method_tracer :end, 'Custom/call_attempt_end'
 
   def voter_response
     if params[:voter_id].nil? || params[:id].nil?
@@ -82,6 +88,7 @@ class CallAttemptsController < ApplicationController
       render :nothing => true
     end
   end
+  add_method_tracer :voter_response, 'Custom/call_attempt_voter_response'
 
   private
 
