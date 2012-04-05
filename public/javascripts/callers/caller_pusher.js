@@ -256,6 +256,18 @@ function subscribe(session_key) {
 	    $("#called_in").show();
 	});
 	
+	 channel.bind('caller_connected_initial', function(data) {
+		$('#browserTestContainer').hide();
+		hide_response_panel();
+		if (!$.isEmptyObject(data.fields)) {
+            set_message("Status: Ready for calls.");
+            set_voter(data);
+        } else {
+            $("#stop_calling").show();
+            set_message("Status: There are no more numbers to call in this campaign.");
+        }        
+	  });
+	
     channel.bind('caller_connected', function(data) {
         hide_all_actions();
         $('#browserTestContainer').hide();
