@@ -32,6 +32,7 @@ class Account < ActiveRecord::Base
     return if self.recurly_subscription_uuid.blank?
     subscription = Recurly::Subscription.find(self.recurly_subscription_uuid)
     subscription.cancel
+    sync_subscription
   end
   
   def sync_subscription

@@ -18,7 +18,7 @@ jQuery(function ($) {
 		// example of calling the confirm function
 		// you must use a callback function to perform the "yes" action
 		confirm("First we'll proceed to verify your card, then you can specify the amount to fund your account.", function () {
-			window.location.href = confirmUrl;//'https://impactdialing.recurly.com/subscribe/per-minute';
+			window.location.href = confirmUrl;
 		});
 	});
 });
