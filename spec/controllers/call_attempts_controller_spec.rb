@@ -290,9 +290,9 @@ describe CallAttemptsController do
       info = next_voter.info
       info[:fields]['status'] = CallAttempt::Status::READY
       Pusher.stub(:[]).with(session_key).and_return(pusher_session)
-      # pusher_session.should_receive(:trigger).with("answered_by_machine", {:dialer=>"preview"})
-      # pusher_session.should_receive(:trigger).with('voter_push', info.merge(:dialer => campaign.predictive_type))
-      # pusher_session.should_receive(:trigger).with('conference_started', {:dialer=>"preview"})
+      pusher_session.should_receive(:trigger).with("answered_by_machine", {:dialer=>"preview"})
+      pusher_session.should_receive(:trigger).with('voter_push', info.merge(:dialer => campaign.predictive_type))
+      pusher_session.should_receive(:trigger).with('conference_started', {:dialer=>"preview"})
       post :connect, :id => call_attempt.id, :AnsweredBy => "machine"
       call_attempt.reload.wrapup_time.should_not be_nil
     end

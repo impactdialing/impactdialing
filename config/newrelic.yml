@@ -15,7 +15,7 @@ heroku:
     enabled: true
     stack_trace_threshold: 0.5
     transaction_threshold: apdex_f
-  capture_params: false
+  capture_params: true
   log_level: info
   background:
     monitor_mode: true
