@@ -1,16 +1,13 @@
+<h1>Auto-recharge</h1>
 <%= form_for @account, url: "/client/recharge" do |f| %>
 <fieldset>
-  <legend>Auto-recharge</legend>
-
   <p>
     <label>Auto-recharge enabled?</label>
 <%= f.radio_button :autorecharge_enabled, true %> 
 <%= f.label :autorecharge_enabled, "Yes", {:style=>"display:inline;"} %>	
-<span style="display:block"></span>
 <%= f.radio_button :autorecharge_enabled, false %> 
 <%= f.label :autorecharge_enabled, "No", {:style=>"display:inline;"} %>
   </p>
-
 
 	  <p>
 	    <label>If the balance falls below</label>
@@ -25,5 +22,3 @@
   <button type="submit">Save</button>
 </div>
 <% end -%>
-
-
