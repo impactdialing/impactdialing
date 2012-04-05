@@ -16,7 +16,7 @@ module Client
     def dials
       set_date_range
       @total_voters_count = @campaign.all_voters.count
-      @answered = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status(CallAttempt::Status::SUCCESS).count + campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status('retry').count
+      @answered = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status(CallAttempt::Status::SUCCESS).count + @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status('retry').count
       @no_answer = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status(CallAttempt::Status::NOANSWER).count
       @busy_signal = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status(CallAttempt::Status::BUSY).count
       @answering_machine = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status(CallAttempt::Status::HANGUP).count
