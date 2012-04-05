@@ -1,27 +1,20 @@
+<h1>Billing</h1>
+<div class="content clearfix">
+
 <% form_tag do %>
   
-	<div class="content clearfix">
 	<fieldset>
-        <legend>Update # of Callers</legend>
-        <ul class="clearfix">
-			<li>
-				Current number of callers: <%= @user.account.subscription_count %>
-			</li>
-		</ul>
-		<ul>
-            <li>  
-                New number of callers:
+<p>Current number of callers: <%= @user.account.subscription_count %></p>
+<p>New number of callers:</p>
               <select name="num_callers">
-				<% (1..500).each do |n| %>
+				<% (1..99).each do |n| %>
 					<option value="<%= n %>" <% if @user.account.subscription_count.to_i==n %>selected<% end %> ><%= n %></option>
 				<% end %>
 			</select>
-            </li>
-		</ul>
 	</fieldset>
 </div>
 <div class="buttons">
-<button type="button" onclick="this.form.submit();">Update</button>
-</div>
+<button type="submit">Update</button>
 <% end -%>
 
+</div>
