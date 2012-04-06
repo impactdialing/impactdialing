@@ -14,14 +14,6 @@ describe CallerController do
     end
 
 
-    it "connects to twilio before making a call" do
-      session_key = "sdklsjfg923784"
-      session = Factory(:caller_session, :caller=> caller, :session_key => session_key)
-      CallerSession.stub(:find_by_session_key).with(session_key).and_return(session)
-      session.stub(:call)
-      Twilio.should_receive(:connect).with(anything, anything)
-      get :preview_dial, :key => session_key, :voter_id => Factory(:voter).id
-    end
     
     it "should assign voter to caller" do
       session_key = "sdklsjfg923784"
