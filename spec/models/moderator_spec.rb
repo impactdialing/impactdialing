@@ -42,7 +42,7 @@ describe Moderator do
     channel = mock
     Pusher.should_receive(:[]).with(moderator1.session).and_return(channel)
     Pusher.should_receive(:[]).with(moderator2.session).and_return(channel)
-    channel.should_receive(:trigger_async).with("voter_connected", {}).twice
+    channel.should_receive(:trigger).with("voter_connected", {}).twice
     Moderator.publish_event(caller, "voter_connected", {})
   end
   
