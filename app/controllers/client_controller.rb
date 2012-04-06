@@ -969,39 +969,6 @@ class ClientController < ApplicationController
     render :layout=>false
   end
   
-  def set_report_date_range
-      time_zone = ActiveSupport::TimeZone.new(@campaign.time_zone || "UTC")
-      from_date = Time.strptime("#{params[:from_date]} #{time_zone.formatted_offset}", "%m/%d/%Y %:z") if params[:from_date]
-      to_date = Time.strptime("#{params[:to_date]} #{time_zone.formatted_offset}", "%m/%d/%Y %:z") if params[:to_date]
-      @from_date = (from_date || CallerSession.find_by_campaign_id(@campaign.id,:order=>"id asc", :limit=>"1").try(:created_at) || Time.now).in_time_zone(time_zone).beginning_of_day      
-      @to_date = (to_date || CallerSession.find_by_campaign_id(@campaign.id,:order=>"id desc", :limit=>"1").try(:created_at) || Time.now).in_time_zone(time_zone).end_of_day
-  end
-  
-
-  # def set_report_date_range
-  #     begin
-  #       if params[:from_date]
-  #         @from_date=Date.strptime(params[:from_date], "%m/%d/%Y")
-  #         @to_date = Date.strptime(params[:to_date], "%m/%d/%Y")
-  #       else
-  #         firstCall = CallerSession.find_by_campaign_id(@campaign.id,:order=>"id asc", :limit=>"1")
-  #         lastCall = CallerSession.find_by_campaign_id(@campaign.id,:order=>"id desc", :limit=>"1")
-  #         if !firstCall.blank?
-  #           @from_date  = firstCall.created_at
-  #         end
-  #         if !lastCall.blank?
-  #           @to_date  = lastCall.created_at
-  #         end
-  #       end
-  #     rescue
-  #       #just use the defaults below
-  #     end
-  # 
-  #     @from_date = Date.parse("2010/01/01") if @from_date==nil
-  #     @to_date = DateTime.now if @to_date==nil
-  #   end
-
-
 
   def policies
     render 'home/policies'
