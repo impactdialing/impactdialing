@@ -6,7 +6,7 @@ class Answer < ActiveRecord::Base
   belongs_to :campaign
 
   scope :for, lambda{|question| where("question_id = #{question.id}")}
-  scope :within, lambda { |from, to| where(:created_at => from..(to + 1.day)) }
+  scope :within, lambda { |from, to| where(:created_at => from..to) }
   scope :with_campaign_id, lambda { |campaign_id| where(:campaign_id => campaign_id) }
   
 end

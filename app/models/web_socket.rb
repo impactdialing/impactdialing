@@ -25,7 +25,7 @@ class WebSocket
   end
   
   def self.publish_for_moderator(session_key, event, data)
-    Pusher[session_key].trigger(event, data)
+    Pusher[session_key].trigger_async(event, data)
   end
   
 end

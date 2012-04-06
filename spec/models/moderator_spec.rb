@@ -25,7 +25,7 @@ describe Moderator do
     caller = Factory(:caller, :account => account)
     channel = mock
     data= {"account_id"=>account.id, "active"=>true, "email"=>"user2@example.com", "id"=>caller.id, "multi_user"=>true, "name"=>"a caller", "password"=>nil, "pin"=>"39046", :campaign_name=>campaign.name, :session_id=>caller_session.id, :campaign_fields=>{:id=>campaign.id, :callers_logged_in=>1, :voters_count=>0, :path=>"/client/campaigns/#{campaign.id}"}}
-    channel.should_receive(:trigger).with("caller_session_started",data).twice
+    channel.should_receive(:trigger_async).with("caller_session_started",data).twice
     Pusher.should_receive(:[]).with(moderator2.session).and_return(channel)
     Pusher.should_receive(:[]).with(moderator1.session).and_return(channel)
     Pusher.should_not_receive(:[]).with(moderator3.session)
@@ -42,7 +42,7 @@ describe Moderator do
     channel = mock
     Pusher.should_receive(:[]).with(moderator1.session).and_return(channel)
     Pusher.should_receive(:[]).with(moderator2.session).and_return(channel)
-    channel.should_receive(:trigger).with("voter_connected", {}).twice
+    channel.should_receive(:trigger_async).with("voter_connected", {}).twice
     Moderator.publish_event(caller, "voter_connected", {})
   end
   

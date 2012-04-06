@@ -14,6 +14,7 @@ $(document).ready(function() {
     hide_all_actions();
     subscribe($('#session_key').val());
     $('#scheduled_date').datepicker();
+	$("#callback_time_hours option:first").attr('selected','selected');
 })
 
 function hide_all_actions() {
@@ -59,19 +60,6 @@ function call_voter() {
     })
 }
 
-
-function schedule_for_later() {
-    hide_all_actions();
-    var date = $('#scheduled_date').val();
-    var hours = $('select#callback_time_hours option:selected').val();
-    var minutes = $('select#callback_time_minutes option:selected').val();
-    var date_time = date + " " + hours + ":" + minutes;
-    $.post("/call_attempts/" + $('#current_call_attempt').val(),
-        {_method: 'PUT', call_attempt : { scheduled_date : $('#scheduled_date').val()}},
-        function(response) {
-        }
-    );
-}
 
 function transfer_call(){
 	$('#transfer_button').hide();

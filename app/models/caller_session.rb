@@ -1,5 +1,3 @@
-require Rails.root.join("lib/twilio_lib")
-
 class CallerSession < ActiveRecord::Base
   include Rails.application.routes.url_helpers
   belongs_to :caller
@@ -17,7 +15,7 @@ class CallerSession < ActiveRecord::Base
   has_one :attempt_in_progress, :class_name => 'CallAttempt'
   has_one :moderator
   has_many :transfer_attempts
-  unloadable
+
 
   def minutes_used
     return 0 if self.tDuration.blank?

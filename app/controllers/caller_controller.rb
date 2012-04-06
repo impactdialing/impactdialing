@@ -210,14 +210,6 @@ class CallerController < ApplicationController
   end
 
 
-  def drop_call
-    @session = CallerSession.find_by_session_key(params[:key])
-    return if @session.blank?
-    attempt = CallAttempt.find(params[:attempt])
-    t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-    a=t.call("POST", "Calls/#{attempt.sid}", {'CurrentUrl'=>"#{APP_URL}/callin/voterEndCall?attempt=#{attempt.id}"})
-    render :text=> "var x='ok';"
-  end
 
   def preview_choose
     @session = CallerSession.find_by_session_key(params[:key])
