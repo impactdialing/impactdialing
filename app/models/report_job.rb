@@ -49,7 +49,7 @@ class ReportJob
       if @download_all_voters
         @campaign.all_voters.find_in_batches(:batch_size => 2000) { |voters| voters.each { |v| csv << csv_for(v) } }
       else
-        @campaign.all_voters.answered_within_timespan(@from_date, @to_date).find_in_batches(:batch_size => 2000) { |voters| voters.each { |v| csv << csv_for(v) } }
+        @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).find_in_batches(:batch_size => 2000) { |voters| voters.each { |v| csv << csv_for(v) } }
       end
     end
     save_report
