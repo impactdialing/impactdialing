@@ -64,8 +64,8 @@ describe Client::CallersController do
   describe "call details report" do
 
     let(:script) { Factory(:script) }
-    let(:campaign) { Factory(:campaign, :script => script, :account => user.account) }
-    let(:caller) { Factory(:caller) }
+    let(:campaign) { Factory(:campaign, :script => script, :account => user.account, robo:false) }
+    let(:caller) { Factory(:caller, campaign_id: campaign.id) }
 
     before(:each) { Factory(:caller_session, :campaign => campaign, :caller => caller) }
 
