@@ -92,5 +92,14 @@ module Client
     def load_campaigns
       @campaigns = account.campaigns.manual.active
     end
+    
+    def set_report_date_range
+        time_zone = ActiveSupport::TimeZone.new(@campaign.time_zone || "UTC")
+        from_date = Time.strptime("#{params[:from_date]} #{time_zone.formatted_offset}", "%m/%d/%Y %:z") if params[:from_date]
+        to_date = Time.strptime("#{params[:to_date]} #{time_zone.formatted_offset}", "%m/%d/%Y %:z") if params[:to_date]
+        @from_date = (from_date || CallerSession.find_by_campaign_id(@campaign.id,:order=>"id asc", :limit=>"1").try(:created_at) || Time.now).in_time_zone(time_zone).beginning_of_day      
+        @to_date = (to_date || CallerSession.find_by_campaign_id(@campaign.id,:order=>"id desc", :limit=>"1").try(:created_at) || Time.now).in_time_zone(time_zone).end_of_day
+    end
+    
   end
 end
