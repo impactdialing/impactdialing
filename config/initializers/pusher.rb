@@ -12,7 +12,7 @@ if Rails.env == 'test'
   end
 
   class PusherObject
-    def trigger_async(*args)
+    def trigger(*args)
     end
   end
 end

@@ -25,7 +25,7 @@ describe CallerController do
       info[:fields]['status'] = CallAttempt::Status::READY
       info[:fields]['caller_id'] = caller.id
       Pusher.should_receive(:[]).with(session_key).and_return(channel)
-      channel.should_receive(:trigger_async).with('caller_connected', info.merge(:dialer => campaign.predictive_type))
+      channel.should_receive(:trigger).with('caller_connected', info.merge(:dialer => campaign.predictive_type))
       post :preview_voter, :id => caller.id, :session_id => session.id, :voter_id => voter.id
       next_voter.reload.caller_id.should eq(caller.id)
     end
@@ -40,7 +40,7 @@ describe CallerController do
       info[:fields]['status'] = CallAttempt::Status::READY
       info[:fields]['caller_id'] = caller.id
       Pusher.should_receive(:[]).with(session_key).and_return(channel)
-      channel.should_receive(:trigger_async).with('caller_connected', info.merge(:dialer => campaign.predictive_type))
+      channel.should_receive(:trigger).with('caller_connected', info.merge(:dialer => campaign.predictive_type))
       post :preview_voter, :id => caller.id, :session_id => session.id, :voter_id => voter.id
     end
 
@@ -54,7 +54,7 @@ describe CallerController do
       info[:fields]['status'] = CallAttempt::Status::READY
       info[:fields]['caller_id'] = caller.id
       Pusher.should_receive(:[]).with(session_key).and_return(channel)
-      channel.should_receive(:trigger_async).with('caller_connected', info.merge(:dialer => campaign.predictive_type))
+      channel.should_receive(:trigger).with('caller_connected', info.merge(:dialer => campaign.predictive_type))
       post :preview_voter, :id => caller.id, :session_id => session.id, :voter_id => last_voter.id
     end
 
@@ -75,7 +75,7 @@ describe CallerController do
       channel = mock
       Twilio::Call.stub(:make).and_return("TwilioResponse"=> {"Call" => {"Sid" => 'sid'}})
       Pusher.should_receive(:[]).with(session_key).and_return(channel)
-      channel.should_receive(:trigger_async).with('calling_voter', anything)
+      channel.should_receive(:trigger).with('calling_voter', anything)
       post :call_voter, :session_id => caller_session.id , :voter_id => voter.id, id: caller.id
     end
   end
