@@ -4,7 +4,7 @@ class CallResponse < ActiveRecord::Base
   belongs_to :call_attempt
   belongs_to :campaign
   
-  scope :within, lambda { |from, to, campaign_id| where(:created_at => from..(to + 1.day)).where(campaign_id: campaign_id)}
+  scope :within, lambda { |from, to, campaign_id| where(:created_at => from..to).where(campaign_id: campaign_id)}
   
   validates_uniqueness_of :call_attempt_id, :scope => :robo_recording_id
 

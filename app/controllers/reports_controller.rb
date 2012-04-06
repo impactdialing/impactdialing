@@ -24,7 +24,7 @@ class ReportsController < ClientController
   def dials
     set_report_period
     @total_voters_count = @campaign.all_voters.count    
-    dialed_voters_ids = Voter.find(:all, :select => 'id' ,:conditions => [ "(voters.campaign_id = ?) AND (last_call_attempt_time BETWEEN  ? AND ?) ", @campaign.id, @from_date, (@to_date + 1.day)])
+    dialed_voters_ids = Voter.find(:all, :select => 'id' ,:conditions => [ "(voters.campaign_id = ?) AND (last_call_attempt_time BETWEEN  ? AND ?) ", @campaign.id, @from_date, @to_date])
 
     unless dialed_voters_ids.empty?
       @answered = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status(CallAttempt::Status::ANSWERED).count

@@ -19,7 +19,6 @@ describe RoboRecording do
     call_response4 = Factory(:call_response, :call_attempt => Factory(:call_attempt), campaign: campaign, :recording_response => recording_response, :robo_recording => robo_recording, :created_at => (now + 1.day))
     robo_recording.answered_within(now, now + 1.day, campaign.id).should == [call_response3, call_response4]
     robo_recording.answered_within(now + 2.days, now + 3.days, campaign.id).should == []
-    robo_recording.answered_within(now, now, campaign.id).should == [call_response3, call_response4]
   end
   
   it "returns robo_recordings answered by a voter" do
