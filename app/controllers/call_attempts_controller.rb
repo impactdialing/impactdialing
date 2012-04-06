@@ -34,21 +34,21 @@ class CallAttemptsController < ApplicationController
                end
     render :xml => response
   end
-  add_method_tracer :connect, 'Custom/call_attempt_connect'
+  add_method_tracer :connect, "Custom/#{self.class.name}/connect"
 
   def disconnect
     call_attempt = CallAttempt.find(params[:id])
     call_attempt.debit
     render :xml => call_attempt.disconnect(params)
   end
-  add_method_tracer :disconnect, 'Custom/call_attempt_disconnect'
+  add_method_tracer :disconnect, "Custom/#{self.class.name}/disconnect"
 
   def hangup
     call_attempt = CallAttempt.find(params[:id])
     call_attempt.end_running_call if call_attempt
     render :nothing => true
   end
-  add_method_tracer :hangup, 'Custom/call_attempt_hangup'
+  add_method_tracer :hangup, "Custom/#{self.class.name}/hangup"
 
   def end
     call_attempt = CallAttempt.find(params[:id])
@@ -69,7 +69,7 @@ class CallAttemptsController < ApplicationController
                end
     render :xml => response
   end
-  add_method_tracer :end, 'Custom/call_attempt_end'
+  add_method_tracer :end, "Custom/#{self.class.name}/end"
 
   def voter_response
     if params[:voter_id].nil? || params[:id].nil?
@@ -88,7 +88,7 @@ class CallAttemptsController < ApplicationController
       render :nothing => true
     end
   end
-  add_method_tracer :voter_response, 'Custom/call_attempt_voter_response'
+  add_method_tracer :voter_response, "Custom/#{self.class.name}/voter_response"
 
   private
 
