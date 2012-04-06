@@ -216,7 +216,7 @@ class CallerSession < ActiveRecord::Base
   def publish(event, data)
     return unless self.campaign.use_web_ui?
     Rails.logger.debug("PUSHER APP ID ::::::::::::::::::::::::::::::::::::::  #{Pusher.app_id}////////////////////////////#{event}")
-    Pusher[self.session_key].trigger(event, data.merge!(:dialer => self.campaign.predictive_type))
+    Pusher[self.session_key].trigger_async(event, data.merge!(:dialer => self.campaign.predictive_type))
   end
   
   def get_conference_id

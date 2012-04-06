@@ -13,7 +13,7 @@ gem 'nokogiri', '~> 1.4.4'
 gem "activemerchant", '~> 1.15.0', :require => "active_merchant"
 gem 'hpricot', '~> 0.8.4'
 gem 'uakari', '~> 0.2.0'
-gem "pusher", "~> 0.8.2"
+gem "pusher", "~> 0.9.2"
 gem "aws-s3", "~> 0.6.2", :require => "aws/s3"
 gem "paperclip", "2.3.16"
 gem 'daemons', '~> 1.0.10'
@@ -35,6 +35,7 @@ gem "chargify_api_ares"
 gem "uuid", "~> 2.3.5"
 gem "hiredis", "~>0.4.5"
 gem "redis", "~>2.2.2"
+gem "em-http-request", "~>0.3.0"
 
 group :development, :test do
   gem 'ruby-debug19'
