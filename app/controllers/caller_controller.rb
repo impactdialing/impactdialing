@@ -1,10 +1,8 @@
-require Rails.root.join("lib/twilio_lib")
 require 'new_relic/agent/method_tracer'
 class CallerController < ApplicationController
   layout "caller"
   before_filter :check_login, :except=>[:login, :feedback, :assign_campaign, :end_session, :pause, :start_calling, :gather_response, :choose_voter, :phones_only_progressive, :phones_only, :choose_instructions_option, :new_campaign_response_panel, :check_reassign]
   before_filter :redirect_to_ssl
-  before_filter :connect_to_twilio, :only => [:preview_dial]
   
   def index
     redirect_to callers_campaign_path(@caller.campaign)
@@ -227,19 +225,7 @@ class CallerController < ApplicationController
     render :text=> "var x='ok';"
   end
 
-  def preview_dial
-    @session = CallerSession.find_by_session_key(params[:key])
-    @campaign = @session.campaign
-    @voter = Voter.find_by_campaign_id_and_id(@campaign.id, params[:voter_id])
-    @session.call(@voter)
-    send_rt(params[:key], 'waiting', 'preview_dialing')
-    render :text=> "var x='ok';"
-  end
-  
 
-  def connect_to_twilio
-    Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-  end
 
   def dpoll
     response.headers["Content-Type"] = 'text/javascript'
