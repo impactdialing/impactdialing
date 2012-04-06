@@ -41,7 +41,7 @@ module ApplicationHelper
     Pusher.app_id = PUSHER_APP_ID
     Pusher.key = PUSHER_KEY
     Pusher.secret = PUSHER_SECRET
-    Pusher[channel].trigger(key, post_data)
+    Pusher[channel].trigger_async(key, post_data)
     logger.info "SENT RT #{key} #{post_data} #{channel}"
   end
 

@@ -21,7 +21,7 @@ describe VoterObserver do
       event, data = 'voter_push', {}
       channel = mock
       Pusher.should_receive(:[]).with(caller_session.session_key).and_return(channel)
-      channel.should_receive(:trigger).with(event, data.merge(:dialer => campaign.predictive_type))
+      channel.should_receive(:trigger_async).with(event, data.merge(:dialer => campaign.predictive_type))
 
       voter.answer(question,"1")
     end

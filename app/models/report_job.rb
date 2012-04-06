@@ -31,6 +31,8 @@ class ReportJob
         file.write(r)
         file.write("\n")
       rescue Exception => e
+        puts "row from report"
+        puts r
         puts e
         next
       end      

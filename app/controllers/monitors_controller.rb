@@ -17,7 +17,7 @@ class MonitorsController < ClientController
     else
       status_msg = "Status: Caller is not connected to a lead."
     end
-    Pusher[params[:monitor_session]].trigger('set_status',{:status_msg => status_msg})
+    Pusher[params[:monitor_session]].trigger_async('set_status',{:status_msg => status_msg})
     mute_type = params[:type]=="breakin" ? false : true
     render xml:  caller_session.join_conference(mute_type, params[:CallSid], params[:monitor_session])
   end

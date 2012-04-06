@@ -11,7 +11,7 @@ class PubSub
       end
 
       on.message do |channel, message|
-        Pusher[channel].trigger(event, data.merge!(:dialer => dialer_type))
+        Pusher[channel].trigger_async(event, data.merge!(:dialer => dialer_type))
         puts "##{channel}: #{message}"
         @redis.unsubscribe if message == "exit"
       end

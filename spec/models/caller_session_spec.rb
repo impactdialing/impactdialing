@@ -139,7 +139,7 @@ describe CallerSession do
       Twilio::Call.should_receive(:make).with(anything, voter.Phone, connect_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port), {"FallbackUrl"=>"blah", 'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"RestException" => {"Status" => "400"}}})
       channel = mock
       Pusher.should_receive(:[]).with(caller_session.session_key).and_return(channel)
-      channel.should_receive(:trigger).with("call_could_not_connect", anything)
+      channel.should_receive(:trigger_async).with("call_could_not_connect", anything)
       caller_session.preview_dial(voter)
       call_attempt.status.should eq(CallAttempt::Status::FAILED)
       voter.status.should eq(CallAttempt::Status::FAILED)
@@ -279,7 +279,7 @@ describe CallerSession do
       caller_session = Factory(:caller_session, :campaign => campaign, :caller => Factory(:caller, :campaign => campaign, :is_phones_only => false))
       channel = mock
       Pusher.should_receive(:[]).with(caller_session.session_key).and_return(channel)
-      channel.should_receive(:trigger).with("caller_re_assigned_to_campaign", anything)
+      channel.should_receive(:trigger_async).with("caller_re_assigned_to_campaign", anything)
       caller_session.reassign_caller_session_to_campaign
     end
 
@@ -316,7 +316,7 @@ describe CallerSession do
       event, data = 'event', {}
       channel = mock
       Pusher.should_receive(:[]).with(session.session_key).and_return(channel)
-      channel.should_receive(:trigger).with(event, data.merge(:dialer => campaign.predictive_type))
+      channel.should_receive(:trigger_async).with(event, data.merge(:dialer => campaign.predictive_type))
       session.publish(event, data)
     end
 
@@ -355,7 +355,7 @@ describe CallerSession do
       session.stub!(:caller_reassigned_to_another_campaign?).and_return(false)
       channel = mock
       Pusher.should_receive(:[]).with(session.session_key).and_return(channel)
-      channel.should_receive(:trigger).with("caller_connected_dialer", anything)
+      channel.should_receive(:trigger_async).with("caller_connected_dialer", anything)
       session.start
     end
 
@@ -367,7 +367,7 @@ describe CallerSession do
                                                                                      :campaign_active => false, :no_of_callers_logged_in => 0})
       channel = mock
       Pusher.should_receive(:[]).with(session.session_key).and_return(channel)
-      channel.should_receive(:trigger).with("caller_disconnected", anything)
+      channel.should_receive(:trigger_async).with("caller_disconnected", anything)
       session.end
     end
 
@@ -376,7 +376,7 @@ describe CallerSession do
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sample", :on_call=> true, :available_for_call => true)
       channel = mock
       Pusher.should_receive(:[]).with(session.session_key).and_return(channel)
-      channel.should_receive(:trigger).with("waiting_for_result", anything)
+      channel.should_receive(:trigger_async).with("waiting_for_result", anything)
       session.pause_for_results
     end
 
