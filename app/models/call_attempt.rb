@@ -139,7 +139,7 @@ class CallAttempt < ActiveRecord::Base
   def disconnect(params={})
     update_attributes(:status => CallAttempt::Status::SUCCESS, :call_end => Time.now, :recording_duration=>params[:RecordingDuration], :recording_url=>params[:RecordingUrl])
     voter.update_attribute(:status, CallAttempt::Status::SUCCESS)
-    Pusher[caller_session.session_key].trigger_async('voter_disconnected', {:attempt_id => self.id, :voter => self.voter.info})
+    Pusher[caller_session.session_key].trigger('voter_disconnected', {:attempt_id => self.id, :voter => self.voter.info})
     Moderator.publish_event(campaign, 'voter_disconnected', {:caller_session_id => caller_session.id,:campaign_id => campaign.id, :caller_id => caller_session.caller.id, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
     hangup
   end

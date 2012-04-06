@@ -232,7 +232,7 @@ describe CallAttempt do
       channel = mock
       Moderator.stub!(:publish_event).with(session.campaign, 'voter_connected', {:caller_session_id => session.id, :campaign_id => campaign.id, :caller_id => session.caller.id})
       Pusher.should_receive(:[]).with(session.session_key).and_return(channel)
-      channel.should_receive(:trigger_async).with("voter_connected", anything)
+      channel.should_receive(:trigger).with("voter_connected", anything)
       attempt.voter.stub(:conference)
       attempt.conference(session)
     end
@@ -260,7 +260,7 @@ describe CallAttempt do
       Moderator.should_receive(:publish_event).with(attempt.campaign, 'voter_disconnected', {:caller_session_id => caller_session.id, :campaign_id => attempt.campaign.id,
          :caller_id => caller_session.caller.id, :voters_remaining=>0})
       Pusher.should_receive(:[]).with(anything).and_return(channel)
-      channel.should_receive(:trigger_async).with("voter_disconnected", {:attempt_id => attempt.id, :voter => attempt.voter.info})
+      channel.should_receive(:trigger).with("voter_disconnected", {:attempt_id => attempt.id, :voter => attempt.voter.info})
       attempt.disconnect
     end
 
@@ -274,8 +274,8 @@ describe CallAttempt do
       info = campaign.all_voters.to_be_dialed.first.info
       info[:fields]['status'] = CallAttempt::Status::READY
       Pusher.should_receive(:[]).twice.with(anything).and_return(channel)
-      channel.should_receive(:trigger_async).with("voter_push", info.merge(:dialer => campaign.predictive_type))
-      channel.should_receive(:trigger_async).with("conference_started", {:dialer => campaign.predictive_type})
+      channel.should_receive(:trigger).with("voter_push", info.merge(:dialer => campaign.predictive_type))
+      channel.should_receive(:trigger).with("conference_started", {:dialer => campaign.predictive_type})
       attempt.fail
     end
   end
