@@ -4,7 +4,7 @@
 			<legend>Results</legend>
 			<input type="hidden" id="voter_id" name="voter_id"/>
       <% @campaign.script.try(:questions).try(:each) do |question| %>
-          <p><label><%= question.text %><br/>
+          <p><label><%= question.text %></label><br/>
             <%= select :question, question.id, question.possible_responses.collect { |pr| [pr.value, pr.id] unless (pr.value == "[No response]")}.compact %>
           </p>
       <% end %>
