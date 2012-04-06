@@ -405,15 +405,15 @@ class Campaign < ActiveRecord::Base
   end
 
   def transfer_time(from_date, to_date)
-    transfer_attempts.between(from_date, to_date + 1.day).sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)').to_i
+    transfer_attempts.between(from_date, to_date).sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)').to_i
   end
 
   def voicemail_time(from_date, to_date)
-    call_attempts.between(from_date, to_date + 1.day).with_status([CallAttempt::Status::VOICEMAIL]).sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)').to_i
+    call_attempts.between(from_date, to_date).with_status([CallAttempt::Status::VOICEMAIL]).sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)').to_i
   end
 
   def abandoned_calls_time(from_date, to_date)
-    call_attempts.between(from_date, to_date + 1.day).with_status([CallAttempt::Status::ABANDONED]).sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)').to_i
+    call_attempts.between(from_date, to_date).with_status([CallAttempt::Status::ABANDONED]).sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)').to_i
   end
 
   def robo_answer_results(from_date, to_date)

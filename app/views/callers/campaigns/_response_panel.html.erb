@@ -2,15 +2,15 @@
    <form id="voter_responses" method="post">
      <fieldset>
 			<legend>Results</legend>
-			<input type="hidden" id="voter_id" name="voter_id">
+			<input type="hidden" id="voter_id" name="voter_id"/>
       <% @campaign.script.try(:questions).try(:each) do |question| %>
-          <p><label for><%= question.text %><br>
+          <p><label><%= question.text %></label><br/>
             <%= select :question, question.id, question.possible_responses.collect { |pr| [pr.value, pr.id] unless (pr.value == "[No response]")}.compact %>
           </p>
       <% end %>
       <% @campaign.try(:script).try(:notes).try(:each) do |note| %>
-          <p><label for><%= note.note %></label><br>
-            <input type="text" id="note_response_<%= note.id %>" name="notes[<%= note.id %>]" class="note_text"></p>
+          <p><label><%= note.note %></label><br/>
+            <input type="text" id="note_response_<%= note.id %>" name="notes[<%= note.id %>]" class="note_text"/></p>
       <% end %>
 		</fieldset>
 		
