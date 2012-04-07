@@ -76,7 +76,7 @@ module Client
     def usage
       @caller = Caller.find(params[:id])
       @campaigns = account.campaigns.manual.for_caller(@caller)
-      @campaign = @campaigns.find_by_id(params[:campaign_id]) || @caller.caller_sessions.first.try(:campaign)
+      @campaign = @campaigns.find_by_id(params[:campaign_id]) || @caller.caller_sessions.last.try(:campaign)
       set_report_date_range      
     end
 
