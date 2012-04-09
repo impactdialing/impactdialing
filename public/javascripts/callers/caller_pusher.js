@@ -126,11 +126,13 @@ function disconnect_caller() {
             success : function(response) {
                 if (FlashDetect.installed && flash_supported())
                     $("#start_calling").show();
+					$("#callin_data").show();
             }
         })
     }else{
         hide_all_actions();
         $("#start_calling").show();
+		$("#callin_data").show();
     }
 }
 
