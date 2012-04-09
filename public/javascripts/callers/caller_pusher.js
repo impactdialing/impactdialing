@@ -14,7 +14,6 @@ $(document).ready(function() {
     hide_all_actions();
     subscribe($('#session_key').val());
     $('#scheduled_date').datepicker();
-	$("#callback_time_hours option:first").attr('selected','selected');
 })
 
 function hide_all_actions() {
