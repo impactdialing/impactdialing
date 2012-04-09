@@ -491,10 +491,10 @@ function subscribe(session_key) {
 
     function cleanup_previous_call_results() {
         $("#response_panel select option:selected").attr('selected', false);
-		$("#callback_time_hours select option:selected").attr('selected', false);
-       	$("#callback_time_hours select option:first").attr('selected', 'selected');
-		$("#callback_time_minutes select option:selected").attr('selected', false);
-       	$("#callback_time_minutes select option:first").attr('selected', 'selected');
+		$("#callback_time_hours  option:selected").attr('selected', false);
+       	$("#callback_time_hours  option:first").attr('selected', 'selected');
+		$("#callback_time_minutes option:selected").attr('selected', false);
+       	$("#callback_time_minutes  option:first").attr('selected', 'selected');
 
         $('.note_text').val('');
         $('#scheduled_date').val('')
