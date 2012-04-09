@@ -383,8 +383,8 @@ function subscribe(session_key) {
         clear_voter();
         hide_response_panel();
         set_message('Status: Not connected.');
-        $("#callin_data").show();
         hide_all_actions();
+        $("#callin_data").show();
         if (FlashDetect.installed && flash_supported())
             $("#start_calling").show();
     });
