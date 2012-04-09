@@ -1,6 +1,5 @@
 class CallinController < ApplicationController
   skip_before_filter :verify_authenticity_token
-  before_filter :preload_models
 
   def create
     render :xml => Caller.ask_for_pin

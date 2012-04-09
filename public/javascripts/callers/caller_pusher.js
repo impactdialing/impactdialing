@@ -490,14 +490,14 @@ function subscribe(session_key) {
     }
 
     function cleanup_previous_call_results() {
-		$("#response_panel option:selected").each(function(index) {
-		    $(this).attr('selected', false);
+		$("#response_panel select").each(function(index) {
+			$(this).children('option:selected').attr('selected',false)
 		});
 		
-		$("#response_panel option:first").each(function(index) {
-		    $(this).attr('selected', 'selected');
+		$("#response_panel select").each(function(index) {
+			$(this).children('option:first').attr('selected', 'selected');
 		});
-						
+				
         $('.note_text').val('');
         $('#scheduled_date').val('')
         collapse_scheduler();
