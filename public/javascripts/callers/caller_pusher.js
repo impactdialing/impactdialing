@@ -493,7 +493,7 @@ function subscribe(session_key) {
 		$("#response_panel select option:selected").each(function(index) {
 		    $(this).attr('selected', false);
 		});
-		$("#response_panel select option:first").each(function(index) {
+		$("#callback_info select option:first").each(function(index) {
 		    $(this).attr('selected', 'selected');
 		});		
         $('.note_text').val('');
