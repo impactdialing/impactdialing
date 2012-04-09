@@ -491,6 +491,7 @@ function subscribe(session_key) {
 
     function cleanup_previous_call_results() {
         $("#response_panel select option:selected").attr('selected', false);
+		$("#response_panel select option:first").attr('selected', 'selected');
         $('.note_text').val('');
         $('#scheduled_date').val('')
         collapse_scheduler();
