@@ -78,13 +78,14 @@ class TwilioLib
   end
 
   def update_twilio_stats_by_model model_instance
-    require 'rubygems'
-    require 'hpricot'
+    # require 'rubygems'
+    # require 'hpricot'
     return if model_instance.sid.blank?
     t = TwilioLib.new(TWILIO_ACCOUNT,TWILIO_AUTH)
     response = t.call("GET", "Calls/" + model_instance.sid, {})
     call = twilio_xml_parse(response, model_instance)
   end
+  
   def twilio_xml_parse(response,model_instance)
     call_response = Hash.from_xml(response)['TwilioResponse']['Call']
     model_instance.tCallSegmentSid = call_response['Sid'] 

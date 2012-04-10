@@ -97,7 +97,10 @@ class CallAttemptsController < ApplicationController
       if stop_calling.blank?
         next_voter = call_attempt.campaign.next_voter_in_dial_queue(call_attempt.voter.id)
         call_attempt.caller_session.publish("voter_push", next_voter ? next_voter.info : {})
+      else
+        call_attempt.caller_session.update_attributes(endtime: Time.now)
       end
+      
     else
       call_attempt.caller_session.publish("predictive_successful_voter_response", {})
     end

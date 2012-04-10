@@ -1,4 +1,4 @@
-web:  bundle exec unicorn -p $PORT -c ./config/unicorn.rb 
+web:  bundle exec rails server thin -p $PORT 
 worker:  rake environment jobs:work
 dialer: bundle exec ruby lib/predictive_dialer.rb
 simulator: bundle exec ruby simulator/new_simulator.rb
