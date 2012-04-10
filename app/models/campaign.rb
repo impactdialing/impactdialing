@@ -365,17 +365,17 @@ class Campaign < ActiveRecord::Base
 
 
   def abandon_rate_acceptable?
-    answered_dials = call_attempts.between(10.minutes.ago, Time.now).with_status([CallAttempt::Status::SUCCESS, CallAttempt::Status::SCHEDULED]).size
-    abandon_count = call_attempts.between(10.minutes.ago, Time.now).with_status(CallAttempt::Status::ABANDONED).size
+    answered_dials = call_attempts.with_status([CallAttempt::Status::SUCCESS, CallAttempt::Status::SCHEDULED]).size
+    abandon_count = call_attempts.with_status(CallAttempt::Status::ABANDONED).size
     abandon_rate = abandon_count.to_f/answered_dials
     abandon_rate < acceptable_abandon_rate
   end
 
   def dial_predictive_simulator
     num_to_call = 0
-    dials_made = call_attempts.between(10.minutes.ago, Time.now).size
+    dials_made = call_attempts.size
     if dials_made == 0 || !abandon_rate_acceptable?
-      num_to_call = callers_available_for_call.size - call_attempts.between(1.minute.ago, Time.now).with_status(CallAttempt::Status::RINGING).size
+      num_to_call = callers_available_for_call.size - call_attempts.between(31.seconds.ago, Time.now).with_status(CallAttempt::Status::RINGING).size
     else
       num_to_call = num_to_call_predictive_simulate
     end
