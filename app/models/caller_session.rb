@@ -33,7 +33,7 @@ class CallerSession < ActiveRecord::Base
       self.end_running_call
     end      
     Moderator.publish_event(campaign, "caller_disconnected",{:caller_session_id => id, :caller_id => caller.id, :campaign_id => campaign.id, :campaign_active => campaign.callers_log_in?,
-      :no_of_callers_logged_in => campaign.caller_sessions.on_call.length})
+      :no_of_callers_logged_in => campaign.caller_sessions.on_call.size})
     self.publish("caller_disconnected", {source: "end_running_call"})
   end
 
@@ -49,9 +49,10 @@ class CallerSession < ActiveRecord::Base
   end
 
   def preview_dial(voter)
+    return if voter.status == CallAttempt::Status::RINGING
     attempt = voter.call_attempts.create(:campaign => self.campaign, :dialer_mode => campaign.predictive_type, :status => CallAttempt::Status::RINGING, :caller_session => self, :caller => caller)
     update_attribute('attempt_in_progress', attempt)
-    voter.update_attributes(:last_call_attempt => attempt, :last_call_attempt_time => Time.now, :caller_session => self)
+    voter.update_attributes(:last_call_attempt => attempt, :last_call_attempt_time => Time.now, :caller_session => self, status: CallAttempt::Status::RINGING)
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
     params = {'FallbackUrl' => TWILIO_ERROR, 'StatusCallback' => end_call_attempt_url(attempt, :host => Settings.host, :port => Settings.port),'Timeout' => campaign.answering_machine_detect ? "30" : "15"}
     params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect        
@@ -159,14 +160,14 @@ class CallerSession < ActiveRecord::Base
     end    
     attempt = attempt.to_i || 0
     self.publish("waiting_for_result", {}) if attempt == 0
-    Twilio::Verb.new { |v| v.say("Please enter your call results") if (attempt % 5 == 0); v.pause("length" => 2); v.redirect(pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => id, :attempt=>attempt+1)) }.response
+    Twilio::Verb.new { |v| v.say("Please enter your call results") if (attempt % 5 == 0); v.pause("length" => 5); v.redirect(pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => id, :attempt=>attempt+1)) }.response
   end
   
   def reassign_caller_session_to_campaign
     old_campaign = self.campaign
     self.update_attributes(:campaign => caller.campaign)
-    Moderator.publish_event(campaign, "caller_re_assigned_to_campaign", {:caller_session_id => id, :caller_id => caller.id, :campaign_fields => {:id => campaign.id, :campaign_name => campaign.name, :callers_logged_in => campaign.caller_sessions.on_call.length,
-      :voters_count => Voter.remaining_voters_count_for('campaign_id', campaign.id), :dials_in_progress => campaign.call_attempts.not_wrapped_up.size }, :old_campaign_id => old_campaign.id,:no_of_callers_logged_in_old_campaign => old_campaign.caller_sessions.on_call.length})
+    Moderator.publish_event(campaign, "caller_re_assigned_to_campaign", {:caller_session_id => id, :caller_id => caller.id, :campaign_fields => {:id => campaign.id, :campaign_name => campaign.name, :callers_logged_in => campaign.caller_sessions.on_call.size,
+      :voters_count => Voter.remaining_voters_count_for('campaign_id', campaign.id), :dials_in_progress => campaign.call_attempts.not_wrapped_up.size }, :old_campaign_id => old_campaign.id,:no_of_callers_logged_in_old_campaign => old_campaign.caller_sessions.on_call.size})
     if caller.is_phones_only? 
       read_campaign_reassign_msg
     else
@@ -193,7 +194,7 @@ class CallerSession < ActiveRecord::Base
   def end
     self.update_attributes(:on_call => false, :available_for_call => false, :endtime => Time.now)
     Moderator.publish_event(campaign, "caller_disconnected",{:caller_session_id => id, :caller_id => caller.id, :campaign_id => campaign.id, :campaign_active => campaign.callers_log_in?,
-            :no_of_callers_logged_in => campaign.caller_sessions.on_call.length})
+            :no_of_callers_logged_in => campaign.caller_sessions.on_call.size})
     attempt_in_progress.try(:update_attributes, {:wrapup_time => Time.now})
     attempt_in_progress.try(:capture_answer_as_no_response)
     self.publish("caller_disconnected", {source: "end_call"})

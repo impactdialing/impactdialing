@@ -33,7 +33,7 @@ en:
   report_error_occured: "There was a problem generating a report for your campaign. Support has been notified and is looking into the issue."
   broadcast_campaign_started: "Broadcast Campaign Started"
   script_cannot_be_deleted: "This script cannot be deleted, as it is currently assigned to an active campaign."
-  indentical_caller_on_call: "Caller with similar identity is on already call"
+  indentical_caller_on_call: "Another user is logged in as this caller. Only one user may log in as the same caller at the same time."
   white_labeling:
       
     impactdialing:

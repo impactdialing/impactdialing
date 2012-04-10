@@ -14,7 +14,6 @@ $(document).ready(function() {
     hide_all_actions();
     subscribe($('#session_key').val());
     $('#scheduled_date').datepicker();
-	$("#callback_time_hours option:first").attr('selected','selected');
 })
 
 function hide_all_actions() {
@@ -126,11 +125,13 @@ function disconnect_caller() {
             success : function(response) {
                 if (FlashDetect.installed && flash_supported())
                     $("#start_calling").show();
+					$("#callin_data").show();
             }
         })
     }else{
         hide_all_actions();
         $("#start_calling").show();
+		$("#callin_data").show();
     }
 }
 
@@ -381,8 +382,8 @@ function subscribe(session_key) {
         clear_voter();
         hide_response_panel();
         set_message('Status: Not connected.');
-        $("#callin_data").show();
         hide_all_actions();
+        $("#callin_data").show();
         if (FlashDetect.installed && flash_supported())
             $("#start_calling").show();
     });
@@ -489,7 +490,14 @@ function subscribe(session_key) {
     }
 
     function cleanup_previous_call_results() {
-        $("#response_panel select option:selected").attr('selected', false);
+		$("#response_panel select").each(function(index) {
+			$(this).children('option:selected').attr('selected',false)
+		});
+		
+		$("#response_panel select").each(function(index) {
+			$(this).children('option:first').attr('selected', 'selected');
+		});
+				
         $('.note_text').val('');
         $('#scheduled_date').val('')
         collapse_scheduler();
