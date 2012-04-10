@@ -36,7 +36,7 @@ class Caller < ActiveRecord::Base
 
   
   def is_on_call?
-    !caller_sessions.blank? && caller_sessions.on_call.length > 0
+    !caller_sessions.blank? && caller_sessions.on_call.size > 0
   end
 
   class << self
