@@ -11,7 +11,7 @@ class ReportsController < ClientController
   end
 
   def usage
-    @minutes = @campaign.call_attempts.for_status(CallAttempt::Status::SUCCESS).sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)').to_i
+    @minutes = @campaign.call_attempts.with_status([CallAttempt::Status::SUCCESS,CallAttempt::Status::VOICEMAIL,CallAttempt::Status::HANGUP,CallAttempt::Status::ABANDONED]).sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)').to_i
   end
   
   def answers
