@@ -49,7 +49,6 @@ class CallerSession < ActiveRecord::Base
   end
 
   def preview_dial(voter)
-    return if voter.status == CallAttempt::Status::RINGING
     attempt = voter.call_attempts.create(:campaign => self.campaign, :dialer_mode => campaign.predictive_type, :status => CallAttempt::Status::RINGING, :caller_session => self, :caller => caller)
     update_attribute('attempt_in_progress', attempt)
     voter.update_attributes(:last_call_attempt => attempt, :last_call_attempt_time => Time.now, :caller_session => self, status: CallAttempt::Status::RINGING)
