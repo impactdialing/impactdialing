@@ -11,8 +11,6 @@
       <div class="buttons"></p>
         <button type="submit">Switch campaign</button>
       </div>
-      <% end %>
-      
 
     <table>
       <%= render :partial => 'shared/utilization', :locals => {:report => @caller} %>
@@ -34,7 +32,6 @@
 </div>
 
 <h3>Date range:</h3>
-<% form_tag(usage_client_caller_path(:id => params[:id]), :method => :get) do %>
 
   <%= render :partial => 'shared/date_picker' %>
 <% end %>
