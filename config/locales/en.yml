@@ -34,6 +34,7 @@ en:
   broadcast_campaign_started: "Broadcast Campaign Started"
   script_cannot_be_deleted: "This script cannot be deleted, as it is currently assigned to an active campaign."
   indentical_caller_on_call: "Another user is logged in as this caller. Only one user may log in as the same caller at the same time."
+  invalid_date_format: "Invalid date format."
   white_labeling:
       
     impactdialing:
