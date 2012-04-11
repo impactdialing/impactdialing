@@ -78,10 +78,10 @@ module Client
       @campaigns = account.campaigns.manual.for_caller(@caller)
       @campaign = @campaigns.find_by_id(params[:campaign_id]) || @caller.caller_sessions.last.try(:campaign) || @caller.campaign
       set_report_date_range
-      @time_logged_in = CallerSession.time_logged_in(@caller, @campaign, @from_date, @to_date)
-      @time_on_call = CallAttempt.time_on_call(@caller, @campaign, @from_date, @to_date)
-      @time_in_wrapup = CallAttempt.time_in_wrapup(@caller, @campaign, @from_date, @to_date)
-      @time_onhold = @time_logged_in.to_f - @time_on_call.to_f - @time_in_wrapup.to_f
+      @time_logged_in = round_for_utilization(CallerSession.time_logged_in(@caller, @campaign, @from_date, @to_date))
+      @time_on_call = round_for_utilization(CallAttempt.time_on_call(@caller, @campaign, @from_date, @to_date))
+      @time_in_wrapup = round_for_utilization(CallAttempt.time_in_wrapup(@caller, @campaign, @from_date, @to_date))
+      @time_onhold = round_for_utilization(CallerSession.time_logged_in(@caller, @campaign, @from_date, @to_date).to_f - CallAttempt.time_on_call(@caller, @campaign, @from_date, @to_date).to_f - CallAttempt.time_in_wrapup(@caller, @campaign, @from_date, @to_date).to_f)
       @caller_time = CallerSession.caller_time(@caller, @campaign, @from_date, @to_date)
       @lead_time = CallAttempt.lead_time(@caller, @campaign, @from_date, @to_date)
     end
