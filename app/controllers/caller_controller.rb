@@ -137,7 +137,9 @@ class CallerController < ApplicationController
       @session = @caller.create_caller_session(@identity.session_key, params[:CallSid])
       Moderator.caller_connected_to_campaign(@caller, @caller.campaign, @session)
       @session.publish('start_calling', {caller_session_id: @session.id}) 
-      @session.preview_voter
+      unless @caller.is_on_call?
+        @session.preview_voter
+      end
       render xml:  @caller.is_on_call? ? @caller.already_on_call : @session.start
     end
   end
