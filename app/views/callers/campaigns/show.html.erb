@@ -8,7 +8,6 @@
 
     <script type="text/javascript">
         var pusher = new Pusher('<%= Pusher.key %>');
-		pusher.connection.bind('connected', function() {pusher_ready=true;})
 
       $(document).ready(function() {
         $(".hidden_script").css("display", "none");
