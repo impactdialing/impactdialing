@@ -4,20 +4,20 @@
 </tr>
 <tr>
   <td>Connected</td>
-  <td><%= report.time_logged_in(@from_date, @to_date) %></td>
+  <td><%= round_for_utilization(@time_logged_in) %></td>
 </tr>
 <tr>
   <td>On call</td>
-  <td><%= report.time_on_call(@from_date, @to_date) %></td>
+  <td><%= round_for_utilization(@time_on_call) %></td>
 </tr>
 <tr>
   <td>Wrap up</td>
-  <td><%= report.time_in_wrapup(@from_date, @to_date) %></td>
+  <td><%= round_for_utilization(@time_in_wrapup) %></td>
 </tr>
 
 <tr>
   <td>On hold</td>
-  <td><%= report.time_onhold(@from_date, @to_date) %></td>
+  <td><%= round_for_utilization(@time_onhold)  %></td>
 </tr>
 <tr>
   <td colspan="2">&nbsp;</td>
