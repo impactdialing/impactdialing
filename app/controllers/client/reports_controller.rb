@@ -34,12 +34,12 @@ module Client
     def usage
       @campaign = current_user.campaigns.find(params[:id])
       set_date_range
-      @time_logged_in = CallerSession.time_logged_in(nil, @campaign, @from_date, @to_date)
-      @time_on_call = CallAttempt.time_on_call(nil, @campaign, @from_date, @to_date)
-      @time_in_wrapup = CallAttempt.time_in_wrapup(nil, @campaign, @from_date, @to_date)
-      @time_onhold = @time_logged_in.to_f - @time_on_call.to_f - @time_in_wrapup.to_f
+      @time_logged_in = round_for_utilization(CallerSession.time_logged_in(nil, @campaign, @from_date, @to_date))
+      @time_on_call = round_for_utilization(CallAttempt.time_on_call(nil, @campaign, @from_date, @to_date))
+      @time_in_wrapup = round_for_utilization(CallAttempt.time_in_wrapup(nil, @campaign, @from_date, @to_date))
+      @time_onhold = round_for_utilization(CallerSession.time_logged_in(nil, @campaign, @from_date, @to_date).to_f - CallAttempt.time_on_call(nil, @campaign, @from_date, @to_date).to_f - CallAttempt.time_in_wrapup(nil, @campaign, @from_date, @to_date).to_f)
       @caller_time = CallerSession.caller_time(nil, @campaign, @from_date, @to_date)
-      @lead_time = CallAttempt.lead_time(nil, @campaign, @from_date, @to_date)      
+      @lead_time = CallAttempt.lead_time(nil, @campaign, @from_date, @to_date)
     end
     
     def download_report
