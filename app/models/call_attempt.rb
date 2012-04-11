@@ -11,7 +11,9 @@ class CallAttempt < ActiveRecord::Base
 
   scope :dial_in_progress, where('call_end is null')
   scope :not_wrapped_up, where('wrapup_time is null')
-  scope :for_campaign, lambda { |campaign| {:conditions => ["campaign_id = ?", campaign.id]} }
+  scope :for_campaign, lambda { |campaign| {:conditions => ["campaign_id = ?", campaign.id]}  unless campaign.nil?}
+  scope :for_caller, lambda { |caller| {:conditions => ["caller_id = ?", caller.id]}  unless caller.nil?}
+  
   scope :for_status, lambda { |status| {:conditions => ["call_attempts.status = ?", status]} }
   scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
   scope :without_status, lambda { |statuses| {:conditions => ['status not in (?)', statuses]} }
@@ -188,6 +190,18 @@ class CallAttempt < ActiveRecord::Base
       recording_response = robo_recording.recording_responses.find_by_response("[No response]") || robo_recording.recording_responses.create(:response => "[No response]", :keypad =>10)
       recording_response.call_responses.create(:robo_recording => robo_recording, :call_attempt => self, :campaign => campaign)
     end
+  end
+  
+  def self.time_on_call(caller, campaign, from, to)
+    CallAttempt.for_campaign(campaign).for_caller(caller).between(from, to).without_status([CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED]).sum('TIMESTAMPDIFF(SECOND ,connecttime,call_end)')
+  end
+  
+  def self.time_in_wrapup(caller, campaign, from, to)
+    CallAttempt.for_campaign(campaign).for_caller(caller).between(from, to).without_status([CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED]).sum('TIMESTAMPDIFF(SECOND ,call_end,wrapup_time)')
+  end
+  
+  def self.lead_time(caller, campaign, from, to)
+    CallAttempt.for_campaign(campaign).for_caller(caller).between(from, to).without_status([CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED]).sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)').to_i
   end
 
   module Status

@@ -28,7 +28,7 @@ module Api
       @campaign = Campaign.find(params[:campaign_id])
       user = User.find_by_email(params[:email])
       set_date_range
-      Delayed::Job.enqueue ReportJob.new(@campaign, user, params[:voter_fields], params[:custom_voter_fields], to_boolean(params[:download_all_voters]), @from_date, @to_date, params[:callback_url], "api")
+      Delayed::Job.enqueue ReportJob.new(@campaign, user, params[:voter_fields], params[:custom_voter_fields], to_boolean(params[:download_all_voters]),to_boolean(params[:call_attempts]), @from_date, @to_date, params[:callback_url], "api")
       render_json_response({status: 'ok', code: '200' , message: "Response will be sent to the callback url once the report is ready for download."})
     end
     

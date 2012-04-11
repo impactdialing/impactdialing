@@ -10,7 +10,8 @@ class CallerSession < ActiveRecord::Base
   scope :connected_to_voter, where('voter_in_progress is not null')
   scope :held_for_duration, lambda { |minutes| {:conditions => ["hold_time_start <= ?", minutes.ago]} }
   scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
-  scope :on_campaign, lambda{|campaign| where("campaign_id = #{campaign.id}")}
+  scope :on_campaign, lambda{|campaign| where("campaign_id = #{campaign.id}") unless campaign.nil?}  
+  scope :for_caller, lambda{|caller| where("caller_id = #{caller.id}") unless caller.nil?}  
   has_one :voter_in_progress, :class_name => 'Voter'
   has_one :attempt_in_progress, :class_name => 'CallAttempt'
   has_one :moderator
@@ -239,8 +240,17 @@ class CallerSession < ActiveRecord::Base
      end     
    end
 
+   
+   def self.time_logged_in(caller, campaign, from, to)
+     CallerSession.for_caller(caller).on_campaign(campaign).between(from, to).sum('TIMESTAMPDIFF(SECOND ,starttime,endtime)')
+   end
+   
+   def self.caller_time(caller, campaign, from, to)
+     CallerSession.for_caller(caller).on_campaign(campaign).between(from, to).where("tCaller is NOT NULL").sum('ceil(TIMESTAMPDIFF(SECOND ,starttime,endtime)/60)').to_i
+   end
+
   private
-  
+    
   def wrapup
     attempt_in_progress.try(:wrapup_now)
   end
