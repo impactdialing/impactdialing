@@ -1,5 +1,6 @@
 module Client
   class ReportsController < ClientController
+    include ApplicationHelper::TimeUtils
     before_filter :load_campaign, :except => [:index, :usage]
 
 
