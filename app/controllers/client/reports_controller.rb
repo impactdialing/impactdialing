@@ -34,6 +34,12 @@ module Client
     def usage
       @campaign = current_user.campaigns.find(params[:id])
       set_date_range
+      @time_logged_in = CallerSession.time_logged_in(nil, @campaign, @from_date, @to_date)
+      @time_on_call = CallAttempt.time_on_call(nil, @campaign, @from_date, @to_date)
+      @time_in_wrapup = CallAttempt.time_in_wrapup(nil, @campaign, @from_date, @to_date)
+      @time_onhold = @time_logged_in.to_f - @time_on_call.to_f - @time_in_wrapup.to_f
+      @caller_time = CallerSession.caller_time(nil, @campaign, @from_date, @to_date)
+      @lead_time = CallAttempt.lead_time(nil, @campaign, @from_date, @to_date)      
     end
     
     def download_report
@@ -44,7 +50,7 @@ module Client
 
     def download
       set_date_range
-      Delayed::Job.enqueue ReportJob.new(@campaign, @user, params[:voter_fields], params[:custom_voter_fields], params[:download_all_voters], @from_date, @to_date, "", "webui")
+      Delayed::Job.enqueue ReportJob.new(@campaign, @user, params[:voter_fields], params[:custom_voter_fields], params[:download_all_voters],params[:call_attempts], @from_date, @to_date, "", "webui")
       flash_message(:notice, I18n.t(:client_report_processing))
       redirect_to client_reports_url
     end

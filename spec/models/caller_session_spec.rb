@@ -412,7 +412,16 @@ describe CallerSession do
     too_new = Factory(:caller_session).tap { |ca| ca.update_attribute(:created_at, 10.minutes.from_now) }
     just_right = Factory(:caller_session).tap { |ca| ca.update_attribute(:created_at, 8.minutes.ago) }
     another_just_right = Factory(:caller_session).tap { |ca| ca.update_attribute(:created_at, 8.minutes.from_now) }
-    CallerSession.between(9.minutes.ago, 9.minutes.from_now)
+    CallerSession.between(9.minutes.ago, 9.minutes.from_now).should eq([just_right, another_just_right])
+  end
+  
+  it "sums time caller is logged in" do
+    too_old = Factory(:caller_session).tap { |ca| ca.update_attribute(:created_at, 10.minutes.ago) }
+    too_new = Factory(:caller_session).tap { |ca| ca.update_attribute(:created_at, 10.minutes.from_now) }
+    just_right = Factory(:caller_session).tap { |ca| ca.update_attributes(created_at: 8.minutes.ago, starttime: 8.minutes.ago, endtime: 7.minutes.ago ) }
+    another_just_right = Factory(:caller_session).tap { |ca| ca.update_attributes(created_at: 8.minutes.from_now, starttime: 8.minutes.ago, endtime: 7.minutes.ago) }
+    CallerSession.time_logged_in(nil,nil,9.minutes.ago, 9.minutes.from_now).should eq("120")
+    
   end
 
   describe "disconnected" do

@@ -36,7 +36,7 @@ describe Client::ReportsController do
         get :usage, :id => campaign.id
       end
       it "billable minutes" do
-        assigns(:campaign).lead_time(from_time, time_now).should == 113
+        CallAttempt.lead_time(nil, @campaign, from_time, time_now).should == 113
       end
 
       it "billable voicemails" do
@@ -57,35 +57,31 @@ describe Client::ReportsController do
     describe 'utilization' do
 
       before(:each) do
-        campaign = Factory(:campaign, :account => user.account)
-        Factory(:caller_session, tCaller: "+18583829141", starttime: Time.now, endtime: Time.now + (30.minutes + 2.seconds), :tDuration => 10.minutes + 2.seconds, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
-        Factory(:caller_session, starttime: Time.now, endtime: Time.now + (101.minutes + 57.seconds), :tDuration => 101.minutes + 57.seconds, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
-        Factory(:call_attempt, connecttime: Time.now, call_end: Time.now + (10.minutes + 10.seconds), wrapup_time: Time.now + (10.minutes + 40.seconds), :tDuration => 10.minutes + 2.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
-        Factory(:call_attempt, connecttime: Time.now, call_end: Time.now + (1.minutes), :tDuration => 1.minutes, :status => CallAttempt::Status::VOICEMAIL, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
-        Factory(:call_attempt, connecttime: Time.now, call_end: Time.now + (101.minutes + 57.seconds), wrapup_time: Time.now + (102.minutes + 57.seconds), :tDuration => 101.minutes + 57.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
-        Factory(:call_attempt, connecttime: Time.now, call_end: Time.now + (1.minutes), :tDuration => 1.minutes, :status => CallAttempt::Status::ABANDONED, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
+        @campaign = Factory(:campaign, :account => user.account)
+        Factory(:caller_session, tCaller: "+18583829141", starttime: Time.now, endtime: Time.now + (30.minutes + 2.seconds), :tDuration => 10.minutes + 2.seconds, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
+        Factory(:caller_session, starttime: Time.now, endtime: Time.now + (101.minutes + 57.seconds), :tDuration => 101.minutes + 57.seconds, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
+        Factory(:call_attempt, connecttime: Time.now, call_end: Time.now + (10.minutes + 10.seconds), wrapup_time: Time.now + (10.minutes + 40.seconds), :tDuration => 10.minutes + 2.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
+        Factory(:call_attempt, connecttime: Time.now, call_end: Time.now + (1.minutes), :tDuration => 1.minutes, :status => CallAttempt::Status::VOICEMAIL, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
+        Factory(:call_attempt, connecttime: Time.now, call_end: Time.now + (101.minutes + 57.seconds), wrapup_time: Time.now + (102.minutes + 57.seconds), :tDuration => 101.minutes + 57.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
+        Factory(:call_attempt, connecttime: Time.now, call_end: Time.now + (1.minutes), :tDuration => 1.minutes, :status => CallAttempt::Status::ABANDONED, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
 
-        get :usage, :id => campaign.id
+        get :usage, :id => @campaign.id
       end
 
       it "logged in caller session" do
-        assigns(:campaign).time_logged_in(from_time, time_now).should == "132"
+        CallerSession.time_logged_in(nil, @campaign, from_time, time_now).should == "7919"
       end
 
       it "on call time" do
-        assigns(:campaign).time_on_call(from_time, time_now).should == "113"
+        CallAttempt.time_on_call(nil, @campaign, from_time, time_now).should == "6727"
       end
 
       it "on wrapup time" do
-        assigns(:campaign).time_in_wrapup(from_time, time_now).should == "2"
+        CallAttempt.time_in_wrapup(nil, @campaign, from_time, time_now).should == "90"
       end
-      it "on hold time" do
-        assigns(:campaign).time_onhold(from_time, time_now) == "19"
-      end
-
 
       it "minutes" do
-        assigns(:campaign).caller_time(from_time, time_now).should == 31
+        CallerSession.caller_time(nil, @campaign, from_time, time_now).should == 31
       end
 
     end

@@ -1,11 +1,12 @@
 class ReportJob 
   
-  def initialize(campaign, user, voter_fields, custom_fields, all_voters, from, to, callback_url, strategy="webui")
+  def initialize(campaign, user, voter_fields, custom_fields, all_voters,call_attempt, from, to, callback_url, strategy="webui")
     @campaign = campaign
     @user = user
     @selected_voter_fields = voter_fields
     @selected_custom_voter_fields = custom_fields
     @download_all_voters = all_voters
+    @call_attempt = call_attempt
     @from_date = from
     @to_date = to
     @callback_url = callback_url
@@ -47,9 +48,18 @@ class ReportJob
     @report = CSV.generate do |csv|
       csv << @campaign_strategy.csv_header(@selected_voter_fields, @selected_custom_voter_fields)
       if @download_all_voters
-        @campaign.all_voters.find_in_batches(:batch_size => 2000) { |voters| voters.each { |v| csv << csv_for(v) } }
+        if @call_attempt
+          @campaign.call_attempts.find_in_batches(:batch_size => 2000) { |attempts| attempts.each { |a| csv << csv_for_call_attempt(a) } }
+        else
+          @campaign.all_voters.find_in_batches(:batch_size => 2000) { |voters| voters.each { |v| csv << csv_for(v) } }
+        end        
       else
-        @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).find_in_batches(:batch_size => 2000) { |voters| voters.each { |v| csv << csv_for(v) } }
+        if @call_attempt
+          @campaign.call_attempts.between(@from_date, @to_date).find_in_batches(:batch_size => 2000) { |call_attempts| call_attempts.each { |a| csv << csv_for_call_attempt(a) } }
+        else
+          @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).find_in_batches(:batch_size => 2000) { |voters| voters.each { |v| csv << csv_for(v) } }
+        end
+        
       end
     end
     save_report
@@ -61,6 +71,14 @@ class ReportJob
     custom_fields = voter.selected_custom_fields(@selected_custom_voter_fields)
     [voter_fields, custom_fields, @campaign_strategy.call_details(voter)].flatten
   end
+  
+  def csv_for_call_attempt(call_attempt)
+    voter = call_attempt.voter
+    voter_fields = voter.selected_fields(@selected_voter_fields.try(:compact))
+    custom_fields = voter.selected_custom_fields(@selected_custom_voter_fields)
+    [voter_fields, custom_fields, @campaign_strategy.call_attempt_details(call_attempt, voter)].flatten
+  end
+  
 
   def after(job)
     notify_success
@@ -93,6 +111,15 @@ class CallerStrategy < CampaignStrategy
   def csv_header(fields, custom_fields)
     [fields, custom_fields, "Caller", "Status", "Call start", "Call end", "Attempts", "Recording", @campaign.script.questions.collect { |q| q.text }, @campaign.script.notes.collect { |note| note.note }].flatten.compact
   end
+  
+  def call_attempt_details(call_attempt, voter)
+    answers, notes = [], []
+    details = [call_attempt.try(:caller).try(:known_as), call_attempt.status, call_attempt.try(:call_start).try(:in_time_zone, @campaign.time_zone), call_attempt.try(:call_end).try(:in_time_zone, @campaign.time_zone), 1, call_attempt.try(:report_recording_url)].flatten
+    @campaign.script.questions.each { |q| answers << voter.answers.for(q).first.try(:possible_response).try(:value) }
+    @campaign.script.notes.each { |note| notes << voter.note_responses.for(note).last.try(:response) }
+    [details, answers, notes].flatten
+    
+  end
 
   def call_details(voter)
     answers, notes = [], []
@@ -111,6 +138,10 @@ end
 class BroadcastStrategy < CampaignStrategy
   def csv_header(fields, custom_fields)
     [fields, custom_fields, "Status", @campaign.script.robo_recordings.collect { |rec| rec.name }].flatten.compact
+  end
+  
+  def call_attempt_details(call_attempt, voter)
+    [call_attempt.status, (call_attempt.call_responses.collect { |call_response| call_response.recording_response.try(:response) } if call_attempt.call_responses.size > 0)].flatten
   end
 
   def call_details(voter)

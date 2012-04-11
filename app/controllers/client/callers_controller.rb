@@ -77,7 +77,13 @@ module Client
       @caller = Caller.find(params[:id])
       @campaigns = account.campaigns.manual.for_caller(@caller)
       @campaign = @campaigns.find_by_id(params[:campaign_id]) || @caller.caller_sessions.last.try(:campaign) || @caller.campaign
-      set_report_date_range      
+      set_report_date_range
+      @time_logged_in = CallerSession.time_logged_in(@caller, @campaign, @from_date, @to_date)
+      @time_on_call = CallAttempt.time_on_call(@caller, @campaign, @from_date, @to_date)
+      @time_in_wrapup = CallAttempt.time_in_wrapup(@caller, @campaign, @from_date, @to_date)
+      @time_onhold = @time_logged_in.to_f - @time_on_call.to_f - @time_in_wrapup.to_f
+      @caller_time = CallerSession.caller_time(@caller, @campaign, @from_date, @to_date)
+      @lead_time = CallAttempt.lead_time(@caller, @campaign, @from_date, @to_date)
     end
 
     def call_details
