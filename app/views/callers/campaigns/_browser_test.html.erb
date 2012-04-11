@@ -7,6 +7,7 @@ var warning='';
 var client_ready=false;
 
 setTimeout('client_ready_test()',5000);
+
 function flash_supported(){
 	return (FlashDetect.major>10 || (FlashDetect.majorAtLeast(10) && FlashDetect.minorAtLeast(1)));
 }
@@ -48,8 +49,6 @@ function client_ready_test(){
 		$('#browserTestContainer').show();
 		$('#browserTest').html(warning);
 	}
-}
-
 }
 
 
