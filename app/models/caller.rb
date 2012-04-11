@@ -1,9 +1,6 @@
 class Caller < ActiveRecord::Base
   include Rails.application.routes.url_helpers
   include Deletable
-  include ApplicationHelper::TimeUtils
-  include ReportsHelper::Utilization
-  include ReportsHelper::Billing
   validates_format_of :email, :allow_blank => true, :with => /^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i, :message => "Invalid email"
   belongs_to :campaign
   belongs_to :account

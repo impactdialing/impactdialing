@@ -5,6 +5,14 @@
       the phone; each call is rounded to the nearest second. Next, you can see how much time you are being billed for;
       each call is rounded to the nearest minute. You caller time is only billed when your callers dial in, instead of
       using a microphone on their computer.</p>
+      <% form_tag(usage_client_caller_path(:id => params[:id]), :method => :get) do %>
+
+      <%= select_tag 'campaign_id', options_from_collection_for_select(@campaigns, 'id', 'name', @campaign.id) %>
+      <div class="buttons"></p>
+        <button type="submit">Switch campaign</button>
+      </div>
+      <% end %>
+      
 
     <table>
       <%= render :partial => 'shared/utilization', :locals => {:report => @caller} %>
@@ -15,11 +23,11 @@
       </tr>
       <tr>
         <td>Caller</td>
-        <td><%= @caller.caller_time(@from_date, @to_date) %></td>
+        <td><%= @caller_time %></td>
       </tr>
       <tr>
         <td>Leads</td>
-        <td><%= @caller.lead_time(@from_date, @to_date) %></td>
+        <td><%= @lead_time %></td>
       </tr>
     </table>
   </div>
@@ -27,5 +35,6 @@
 
 <h3>Date range:</h3>
 <% form_tag(usage_client_caller_path(:id => params[:id]), :method => :get) do %>
+
   <%= render :partial => 'shared/date_picker' %>
 <% end %>

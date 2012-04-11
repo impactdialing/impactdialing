@@ -173,30 +173,27 @@ describe Caller do
 
     describe "utilization" do
       it "lists time logged in" do
-        caller.time_logged_in(from_time, time_now).should == "132"
+        CallerSession.time_logged_in(caller, nil, from_time, time_now).should == "7919"
       end
 
       it "lists on call time" do
-        caller.time_on_call(from_time, time_now).should == "113"
+        CallAttempt.time_on_call(caller, nil, from_time, time_now).should == "6727"
       end
 
       it "lists on wrapup time" do
-        caller.time_in_wrapup(from_time, time_now).should == "2"
+        CallAttempt.time_in_wrapup(caller, nil, from_time, time_now).should == "90"
       end
 
-      it "lists on hold time" do
-        caller.time_onhold(from_time, time_now) == "19"
-      end
 
     end
 
     describe "billing" do
       it "lists caller time" do
-        caller.caller_time(from_time, time_now).should == 31
+        CallerSession.caller_time(caller, nil, from_time, time_now).should == 31
       end
 
       it "lists lead time" do
-        caller.lead_time(from_time, time_now).should == 113
+        CallAttempt.lead_time(caller, nil, from_time, time_now).should == 113
       end
     end
 
