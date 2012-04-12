@@ -47,6 +47,9 @@ class ReportsController < ClientController
     @custom_voter_fields = @user.account.custom_fields.collect{ |field| field.name}    
   end
   
+  def downloaded_reports
+  end
+  
   def download
     @campaign = account.campaigns.find(params[:id])
     set_report_period
