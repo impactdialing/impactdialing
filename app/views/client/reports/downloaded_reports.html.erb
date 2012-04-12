@@ -8,7 +8,7 @@
       </tr>
       <% @downloaded_reports.each do |report| %>
           <tr>
-            <td><a href="#{report.link}">Link</a></td>
+            <td><a href="<%= report.link %>">Link</a></td>
             <td><%= report.created_at%></td>
           </tr>
       <% end %>
