@@ -38,6 +38,10 @@
 	<legend>Fields to include</legend>
 
   <% form_tag(download_client_campaign_reports_path(@campaign), :method => "POST") do %>
+  <select class="field" id="lead_dial" name="lead_dial">
+  	<option value="lead">Lead</option>
+  	<option value="dial">Dial</option>
+  </select>
 		<ul>
 			<li><input type="checkbox" value="0" id="selectAll">&nbsp;Select all</li>
 		<% @voter_fields.try(:each_pair) do |key, value| %>
@@ -54,13 +58,8 @@
 	</div>		
 </fieldset>
 
-<select class="field" id="lead_dial" name="lead_dial">
-	<option value="lead">Lead</option>
-	<option value="dial">Dial</option>
-</select>
 
 <input type="checkbox" style="display:none" id="download_all_voters" name="download_all_voters"></input>
-<input type="checkbox"  id="call_attempts" name="call_attempts">Download Attempts</input>
 <div class="buttons"><button type="submit" id="download_all_voters_submit">Download entire campaign</button></div>
 
 		<h3>Date range:</h3>
