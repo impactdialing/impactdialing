@@ -14,6 +14,7 @@ class User < ActiveRecord::Base
   has_many :scripts, :through => :account
   has_many :callers, :through => :account
   has_many :blocked_numbers, :through => :account
+  has_many :downloaded_reports
 
   attr_accessor :new_password, :captcha
   validate :reverse_captcha

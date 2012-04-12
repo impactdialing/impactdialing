@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120406083908) do
+ActiveRecord::Schema.define(:version => 20120412081751) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -210,7 +210,7 @@ ActiveRecord::Schema.define(:version => 20120406083908) do
     t.string   "caller_id"
     t.boolean  "caller_id_verified",       :default => false
     t.boolean  "use_answering",            :default => true
-    t.string   "predictive_type",          :default => "preview"
+    t.string   "type",                     :default => "preview"
     t.integer  "recording_id"
     t.boolean  "use_recordings",           :default => false
     t.integer  "max_calls_per_caller",     :default => 20
@@ -261,6 +261,13 @@ ActiveRecord::Schema.define(:version => 20120406083908) do
   end
 
   add_index "delayed_jobs", ["priority", "run_at"], :name => "delayed_jobs_priority"
+
+  create_table "downloaded_reports", :force => true do |t|
+    t.integer  "user_id"
+    t.string   "link"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
   create_table "dumps", :force => true do |t|
     t.integer  "request_id"
