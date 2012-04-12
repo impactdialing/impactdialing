@@ -3,4 +3,7 @@ class DownloadedReport < ActiveRecord::Base
     belongs_to :campaign
     
     
+
+    
+    
 end
