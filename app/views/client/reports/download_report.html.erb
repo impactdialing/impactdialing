@@ -39,8 +39,8 @@
 
   <% form_tag(download_client_campaign_reports_path(@campaign), :method => "POST") do %>
   <select class="field" id="lead_dial" name="lead_dial">
-  	<option value="lead">Lead</option>
-  	<option value="dial">Dial</option>
+  	<option value="lead">One row for each lead</option>
+  	<option value="dial">One row for each dial</option>
   </select>
 		<ul>
 			<li><input type="checkbox" value="0" id="selectAll">&nbsp;Select all</li>
