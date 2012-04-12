@@ -227,6 +227,8 @@ class ApplicationController < ActionController::Base
     voter.save
 
   end
+  
+  
 
   def handle_disposition_submit
     #@session @clean_digit @caller @campaign
