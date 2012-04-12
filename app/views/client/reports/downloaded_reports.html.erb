@@ -8,7 +8,7 @@
       </tr>
       <% @downloaded_reports.each do |report| %>
           <tr>
-            <td><a href="<%= report.link %>">Link</a></td>
+            <td><a href="<%= report.link %>">Download</a></td>
             <td><%= distance_of_time_in_words_to_now(report.created_at)%> ago.</td>
           </tr>
       <% end %>
