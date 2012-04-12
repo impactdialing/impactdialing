@@ -77,8 +77,8 @@ module Client
     def usage
       @caller = Caller.find(params[:id])
       @campaigns = account.campaigns.manual.for_caller(@caller)
-      @campaign = @campaigns.find_by_id(params[:campaign_id]) || @caller.caller_sessions.last.try(:campaign) || @caller.campaign
-      set_report_date_range
+      @campaign = @campaigns.find_by_id(params[:campaign_id])
+      set_report_date_range(@campaign)
       @time_logged_in = round_for_utilization(CallerSession.time_logged_in(@caller, @campaign, @from_date, @to_date))
       @time_on_call = round_for_utilization(CallAttempt.time_on_call(@caller, @campaign, @from_date, @to_date))
       @time_in_wrapup = round_for_utilization(CallAttempt.time_in_wrapup(@caller, @campaign, @from_date, @to_date))
@@ -91,7 +91,7 @@ module Client
       @caller = Caller.find(params[:id])
       @campaigns = account.campaigns.manual.for_caller(@caller)
       @campaign = @campaigns.find_by_id(params[:campaign_id]) || @caller.caller_sessions.last.try(:campaign) || @caller.campaign
-      set_report_date_range
+      set_report_date_range(@campaign)
       @questions_and_responses = @campaign.try(:questions_and_responses) || {}
     end
 
@@ -100,18 +100,23 @@ module Client
       @campaigns = account.campaigns.manual.active
     end
     
-    def set_report_date_range
-      time_zone = ActiveSupport::TimeZone.new(@campaign.time_zone || "UTC")
-      begin
-        from_date = Time.strptime("#{params[:from_date]} #{time_zone.formatted_offset}", "%m/%d/%Y %:z") if params[:from_date]
-        to_date = Time.strptime("#{params[:to_date]} #{time_zone.formatted_offset}", "%m/%d/%Y %:z") if params[:to_date]
-      rescue Exception => e
-        flash_message(:error, I18n.t(:invalid_date_format))
-        redirect_to :back
-        return
-      end              
-      @from_date = (from_date || CallerSession.find_by_campaign_id(@campaign.id,:order=>"id asc", :limit=>"1").try(:created_at) || Time.now).in_time_zone(time_zone).beginning_of_day      
-      @to_date = (to_date || CallerSession.find_by_campaign_id(@campaign.id,:order=>"id desc", :limit=>"1").try(:created_at) || Time.now).in_time_zone(time_zone).end_of_day
+    def set_report_date_range(campaign)
+      if campaign.nil?
+        @from_date = (from_date || CallerSession.find_by_caller_id(@caller.id,:order=>"id asc", :limit=>"1").try(:created_at) || Time.now).in_time_zone("UTC").beginning_of_day      
+        @to_date = (to_date || CallerSession.find_by_caller_id(@caller.id,:order=>"id desc", :limit=>"1").try(:created_at) || Time.now).in_time_zone("UTC").end_of_day        
+      else
+        time_zone = ActiveSupport::TimeZone.new(campaign.time_zone || "UTC")
+        begin
+          from_date = Time.strptime("#{params[:from_date]} #{time_zone.formatted_offset}", "%m/%d/%Y %:z") if params[:from_date]
+          to_date = Time.strptime("#{params[:to_date]} #{time_zone.formatted_offset}", "%m/%d/%Y %:z") if params[:to_date]
+        rescue Exception => e
+          flash_message(:error, I18n.t(:invalid_date_format))
+          redirect_to :back
+          return
+        end              
+        @from_date = (from_date || CallerSession.find_by_campaign_id(campaign.id,:order=>"id asc", :limit=>"1").try(:created_at) || Time.now).in_time_zone(time_zone).beginning_of_day      
+        @to_date = (to_date || CallerSession.find_by_campaign_id(campaign.id,:order=>"id desc", :limit=>"1").try(:created_at) || Time.now).in_time_zone(time_zone).end_of_day        
+      end
     end
     
   end
