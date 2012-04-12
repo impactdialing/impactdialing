@@ -44,7 +44,7 @@ module Client
     end
     
     def downloaded_reports
-      
+      @downloaded_reports = DownloadedReport.active_reports(@campaign.id)
     end
     
     def download_report
