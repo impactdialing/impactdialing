@@ -16,6 +16,7 @@ class Campaign < ActiveRecord::Base
   belongs_to :voicemail_script, :class_name => 'Script', :foreign_key => 'voicemail_script_id'
   belongs_to :account
   belongs_to :recording
+  has_many :downloaded_reports
 
   delegate :questions_and_responses, :to => :script
 

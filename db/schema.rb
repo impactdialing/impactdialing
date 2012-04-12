@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120412081751) do
+ActiveRecord::Schema.define(:version => 20120412084330) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -267,6 +267,7 @@ ActiveRecord::Schema.define(:version => 20120412081751) do
     t.string   "link"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "campaign_id"
   end
 
   create_table "dumps", :force => true do |t|
