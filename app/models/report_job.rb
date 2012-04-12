@@ -1,12 +1,12 @@
 class ReportJob 
   
-  def initialize(campaign, user, voter_fields, custom_fields, all_voters,call_attempt, from, to, callback_url, strategy="webui")
+  def initialize(campaign, user, voter_fields, custom_fields, all_voters,lead_dial, from, to, callback_url, strategy="webui")
     @campaign = campaign
     @user = user
     @selected_voter_fields = voter_fields
     @selected_custom_voter_fields = custom_fields
     @download_all_voters = all_voters
-    @call_attempt = call_attempt
+    @lead_dial = lead_dial
     @from_date = from
     @to_date = to
     @callback_url = callback_url
@@ -48,13 +48,13 @@ class ReportJob
     @report = CSV.generate do |csv|
       csv << @campaign_strategy.csv_header(@selected_voter_fields, @selected_custom_voter_fields)
       if @download_all_voters
-        if @call_attempt
+        if @lead_dial == "dial"
           @campaign.call_attempts.find_in_batches(:batch_size => 2000) { |attempts| attempts.each { |a| csv << csv_for_call_attempt(a) } }
         else
           @campaign.all_voters.find_in_batches(:batch_size => 2000) { |voters| voters.each { |v| csv << csv_for(v) } }
         end        
       else
-        if @call_attempt
+        if @lead_dial == "dial"
           @campaign.call_attempts.between(@from_date, @to_date).find_in_batches(:batch_size => 2000) { |call_attempts| call_attempts.each { |a| csv << csv_for_call_attempt(a) } }
         else
           @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).find_in_batches(:batch_size => 2000) { |voters| voters.each { |v| csv << csv_for(v) } }
