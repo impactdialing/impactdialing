@@ -3,7 +3,7 @@
 <%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@caller.name} Usage"} %>
       <% form_tag(usage_client_caller_path(:id => params[:id]), :method => :get) do %>
 
-      <%= select_tag 'campaign_id', options_from_collection_for_select(@campaigns, 'id', 'name', @campaign.id), {:include_blank => 'Total'} %>
+      <%= select_tag 'campaign_id', options_from_collection_for_select(@campaigns, 'id', 'name', @campaign..try(:id)), {:include_blank => 'Total'} %>
       <div class="buttons"></p>
         <button type="submit">Switch campaign</button>
       </div>
