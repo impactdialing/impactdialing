@@ -132,6 +132,7 @@ ImpactDialing::Application.routes.draw do
         collection do
           get :download_report
           post :download
+          get :downloaded_reports
         end
       end
     end
