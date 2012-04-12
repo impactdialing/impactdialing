@@ -43,6 +43,10 @@ module Client
       @lead_time = CallAttempt.lead_time(nil, @campaign, @from_date, @to_date)
     end
     
+    def downloaded_reports
+      
+    end
+    
     def download_report
       set_date_range
       @voter_fields = VoterList::VOTER_DATA_COLUMNS
