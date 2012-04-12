@@ -102,8 +102,8 @@ module Client
     
     def set_report_date_range(campaign)
       if campaign.nil?
-        @from_date = (from_date || CallerSession.find_by_caller_id(@caller.id,:order=>"id asc", :limit=>"1").try(:created_at) || Time.now).in_time_zone("UTC").beginning_of_day      
-        @to_date = (to_date || CallerSession.find_by_caller_id(@caller.id,:order=>"id desc", :limit=>"1").try(:created_at) || Time.now).in_time_zone("UTC").end_of_day        
+        @from_date = (CallerSession.find_by_caller_id(@caller.id,:order=>"id asc", :limit=>"1").try(:created_at) || Time.now).in_time_zone("UTC").beginning_of_day      
+        @to_date = (CallerSession.find_by_caller_id(@caller.id,:order=>"id desc", :limit=>"1").try(:created_at) || Time.now).in_time_zone("UTC").end_of_day        
       else
         time_zone = ActiveSupport::TimeZone.new(campaign.time_zone || "UTC")
         begin
