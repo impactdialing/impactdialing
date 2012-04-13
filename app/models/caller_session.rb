@@ -160,7 +160,7 @@ class CallerSession < ActiveRecord::Base
     end    
     attempt = attempt.to_i || 0
     self.publish("waiting_for_result", {}) if attempt == 0
-    Twilio::Verb.new { |v| v.say("Please enter your call results") if (attempt % 5 == 0); v.pause("length" => 5); v.redirect(pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => id, :attempt=>attempt+1)) }.response
+    Twilio::Verb.new { |v| v.say("Please enter your call results") if (attempt % 5 == 0); v.pause("length" => 30); v.redirect(pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => id, :attempt=>attempt+1)) }.response
   end
   
   def reassign_caller_session_to_campaign
