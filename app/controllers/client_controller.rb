@@ -669,7 +669,7 @@ class ClientController < ApplicationController
 
         @voters_to_call = @campaign.voters_count("not called",false)
         @voters_called = @campaign.voters_called
-        @totalvoters = @voters_to_call.length + @voters_called.length
+        @totalvoters = @voters_to_call + @voters_called.length
 
         @call_attempts = CallAttempt.find_all_by_campaign_id(@campaign.id)
         @caller_sessions = CallerSession.find_all_by_campaign_id(@campaign.id)
@@ -753,7 +753,7 @@ class ClientController < ApplicationController
 
         @voters_to_call = @campaign.voters_count("not called",false)
         @voters_called = @campaign.voters_called
-        @totalvoters = @voters_to_call.length + @voters_called.length
+        @totalvoters = @voters_to_call + @voters_called.length
 
   end
 
