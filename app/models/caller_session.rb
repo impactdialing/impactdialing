@@ -50,7 +50,6 @@ class CallerSession < ActiveRecord::Base
   end
 
   def preview_dial(voter)
-    return if voter.status == CallAttempt::Status::RINGING
     attempt = voter.call_attempts.create(:campaign => self.campaign, :dialer_mode => campaign.predictive_type, :status => CallAttempt::Status::RINGING, :caller_session => self, :caller => caller)
     update_attribute('attempt_in_progress', attempt)
     voter.update_attributes(:last_call_attempt => attempt, :last_call_attempt_time => Time.now, :caller_session => self, status: CallAttempt::Status::RINGING)
@@ -161,7 +160,7 @@ class CallerSession < ActiveRecord::Base
     end    
     attempt = attempt.to_i || 0
     self.publish("waiting_for_result", {}) if attempt == 0
-    Twilio::Verb.new { |v| v.say("Please enter your call results") if (attempt % 5 == 0); v.pause("length" => 5); v.redirect(pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => id, :attempt=>attempt+1)) }.response
+    Twilio::Verb.new { |v| v.say("Please enter your call results") if (attempt % 5 == 0); v.pause("length" => 11); v.redirect(pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => id, :attempt=>attempt+1)) }.response
   end
   
   def reassign_caller_session_to_campaign
@@ -240,6 +239,7 @@ class CallerSession < ActiveRecord::Base
        publish('caller_connected_dialer', {})
      end     
    end
+
 
    def debit
      return false if self.endtime.nil? || self.starttime.nil?

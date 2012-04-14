@@ -175,7 +175,7 @@ class Campaign < ActiveRecord::Base
     active_lists = VoterList.find_all_by_campaign_id_and_active_and_enabled(self.id, 1, 1)
     return [] if active_lists.length==0
     active_list_ids = active_lists.collect { |x| x.id }
-    Voter.find_all_by_active(1, :select=>"id", :conditions=>"voter_list_id in (#{active_list_ids.join(",")})  and (status='#{status}' OR (call_back=1 and last_call_attempt_time < (Now() - INTERVAL 180 MINUTE)) )")
+    Voter.count(1, :select=>"id", :conditions=>"active = 1 and voter_list_id in (#{active_list_ids.join(",")})  and (status='#{status}' OR (call_back=1 and last_call_attempt_time < (Now() - INTERVAL 180 MINUTE)) )")
   end
 
 
