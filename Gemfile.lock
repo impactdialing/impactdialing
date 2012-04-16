@@ -48,6 +48,9 @@ GEM
     braintree (2.13.1)
       builder (>= 2.0.0)
     builder (2.1.2)
+    call_center (0.0.9)
+      builder
+      hsume2-state_machine (~> 1.0.5)
     capistrano (2.9.0)
       highline
       net-scp (>= 1.0.0)
@@ -91,6 +94,7 @@ GEM
     hoptoad_notifier (2.4.11)
       activesupport
       builder
+    hsume2-state_machine (1.0.5)
     httparty (0.7.8)
       crack (= 0.1.8)
     i18n (0.5.0)
@@ -229,6 +233,7 @@ DEPENDENCIES
   activerecord-import (>= 0.2.0)
   airbrake (~> 3.0.9)
   aws-s3 (~> 0.6.2)
+  call_center (~> 0.0.9)
   capistrano (= 2.9.0)
   daemons (~> 1.0.10)
   delayed_job (~> 2.1.4)

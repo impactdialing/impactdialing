@@ -80,7 +80,7 @@ class User < ActiveRecord::Base
   def create_default_campaign
     @script = Script.default_script(self.account)
     @script.save
-    @campaign = Campaign.new(name: "Demo campaign", caller_id: "4153475723", start_time: "01:00:00", end_time: "00:00:00", account_id: self.account.id, script_id: @script.id, predictive_type: "progressive")
+    @campaign = Campaign.new(name: "Demo campaign", caller_id: "4153475723", start_time: "01:00:00", end_time: "00:00:00", account_id: self.account.id, script_id: @script.id, type: "progressive")
     @campaign.save
     @caller = Caller.new(name:"", email: self.email, password:"demo123", account_id: self.account.id, active: true, campaign_id: @campaign.id)
     @caller.save

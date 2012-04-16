@@ -50,7 +50,7 @@ class CallerSession < ActiveRecord::Base
   end
 
   def preview_dial(voter)
-    attempt = voter.call_attempts.create(:campaign => self.campaign, :dialer_mode => campaign.predictive_type, :status => CallAttempt::Status::RINGING, :caller_session => self, :caller => caller)
+    attempt = voter.call_attempts.create(:campaign => self.campaign, :dialer_mode => campaign.type, :status => CallAttempt::Status::RINGING, :caller_session => self, :caller => caller)
     update_attribute('attempt_in_progress', attempt)
     voter.update_attributes(:last_call_attempt => attempt, :last_call_attempt_time => Time.now, :caller_session => self, status: CallAttempt::Status::RINGING)
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
@@ -94,7 +94,7 @@ class CallerSession < ActiveRecord::Base
         end
       end.response
       update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
-      if campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE
+      if campaign.type == Campaign::Type::PREVIEW || campaign.type == Campaign::Type::PROGRESSIVE
         publish('conference_started', {}) 
       else
         publish('caller_connected_dialer', {})
@@ -129,7 +129,7 @@ class CallerSession < ActiveRecord::Base
     else
       voter ||= campaign.next_voter_in_dial_queue
       if voter.present?
-        campaign.predictive_type == Campaign::Type::PREVIEW ? say_voter_name_ask_caller_to_choose_voter(voter, caller_choice) : say_voter_name_and_call(voter)
+        campaign.type == Campaign::Type::PREVIEW ? say_voter_name_ask_caller_to_choose_voter(voter, caller_choice) : say_voter_name_and_call(voter)
       else
         response = Twilio::Verb.new { |v| v.say I18n.t(:campaign_has_no_more_voters) }.response
       end
@@ -215,9 +215,8 @@ class CallerSession < ActiveRecord::Base
 
 
   def publish(event, data)
-    return unless self.campaign.use_web_ui?
-    Rails.logger.debug("PUSHER APP ID ::::::::::::::::::::::::::::::::::::::  #{Pusher.app_id}////////////////////////////#{event}")
-    Pusher[self.session_key].trigger(event, data.merge!(:dialer => self.campaign.predictive_type))
+    return unless campaign.use_web_ui?
+    Pusher[self.session_key].trigger(event, data.merge!(:dialer => self.campaign.type))
   end
   
   def get_conference_id
@@ -229,7 +228,7 @@ class CallerSession < ActiveRecord::Base
    end
    
    def preview_voter
-     if campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE
+     if campaign.type == Campaign::Type::PREVIEW || campaign.type == Campaign::Type::PROGRESSIVE
        voter = campaign.next_voter_in_dial_queue      
        voter.update_attributes(caller_id: caller_id) unless voter.nil?
        voter_info = voter ? voter.info : {}

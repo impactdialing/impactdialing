@@ -49,7 +49,7 @@ describe VoterList do
       temp_filename
     }
     let(:user) { Factory(:user) }
-    let(:campaign) { Factory(:campaign, :account => user.account) }
+    let(:campaign) { Factory(:preview, :account => user.account) }
     let(:voter_list) { Factory(:voter_list, :campaign => campaign, :account => user.account) }
 
     describe "import from csv" do
@@ -176,7 +176,7 @@ describe VoterList do
         s3.should_receive(:value).and_return(File.open("#{csv_file_upload}").read)        
         
         another_voter_list = Factory(:voter_list,
-                                     :campaign => Factory(:campaign, :account => user.account),
+                                     :campaign => Factory(:progressive, :account => user.account),
                                      :account => user.account)
         another_voter_list.import_leads(
             USER_MAPPINGS,
@@ -263,7 +263,7 @@ describe VoterList do
         s3.should_receive(:value).and_return(File.open("#{csv_file}").read)        
         
         custom_field = "Custom"
-        voter_list = Factory(:voter_list, :campaign => Factory(:campaign, :account => user.account), :account => user.account)
+        voter_list = Factory(:voter_list, :campaign => Factory(:predictive, :account => user.account), :account => user.account)
         voter_list.import_leads(mappings, csv_file, ",").should == {:successCount => 2, :failedCount => 0}
         CustomVoterField.find_by_name(custom_field).should_not be_nil
         CustomVoterField.all.size.should == 1

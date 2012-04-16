@@ -136,7 +136,7 @@ describe Voter do
   end
 
   describe "Dialing" do
-    let(:campaign) { Factory(:campaign, :robo => true) }
+    let(:campaign) { Factory(:robo) }
     let(:voter) { Factory(:voter, :campaign => campaign) }
 
     it "is dialed" do
@@ -227,7 +227,7 @@ describe Voter do
 
 
   describe "predictive dialing" do
-    let(:campaign) { Factory(:campaign, :robo => false, :predictive_type => 'algorithm1', answering_machine_detect: true) }
+    let(:campaign) { Factory(:predictive, answering_machine_detect: true) }
     let(:voter) { Factory(:voter, :campaign => campaign) }
     let(:client) { mock(:client).tap { |client| Twilio::REST::Client.stub(:new).and_return(client) } }
 
@@ -288,7 +288,7 @@ describe Voter do
     end
 
     it "dials the voter without IFMachine if AMD detection turned off" do
-      campaign1 = Factory(:campaign, :robo => false, :predictive_type => 'algorithm1', answering_machine_detect: false)
+      campaign1 = Factory(:campaign, :robo => false, :type => 'Predictive', answering_machine_detect: false)
       Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {"FallbackUrl"=>"blah", 'StatusCallback'=> anything, 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
       voter.campaign = campaign1
       campaign1.stub(:time_period_exceed?).and_return(false)
@@ -435,7 +435,7 @@ describe Voter do
 
   describe 'answers' do
     let(:script) { Factory(:script, :robo => false) }
-    let(:campaign) { Factory(:campaign, :script => script) }
+    let(:campaign) { Factory(:predictive, :script => script) }
     let(:voter) { Factory(:voter, :campaign => campaign, :caller_session => Factory(:caller_session, :caller => Factory(:caller))) }
     let(:question) { Factory(:question, :script => script) }
     let(:response) { Factory(:possible_response, :question => question) }
@@ -496,7 +496,7 @@ describe Voter do
 
     describe "phones only" do
       let(:script) { Factory(:script) }
-      let(:campaign) { Factory(:campaign, :script => script) }
+      let(:campaign) { Factory(:predictive, :script => script) }
       let(:voter) { Factory(:voter, :campaign => campaign, :last_call_attempt => Factory(:call_attempt, :caller_session => Factory(:caller_session))) }
       let(:question) { Factory(:question, :script => script) }
       let(:session) { Factory(:caller_session, :caller => Factory(:caller)) }

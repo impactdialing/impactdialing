@@ -356,22 +356,6 @@ class ClientController < ApplicationController
 
   end
 
-  def campaign_hash_delete
-    #    cache_delete("avail_campaign_hash")
-    ActiveRecord::Base.connection.execute("update caller_sessions set available_for_call=0")
-    @campaign = account.campaigns.find_by_id(params[:id])
-    @campaign.end_all_calls(TWILIO_ACCOUNT,TWILIO_AUTH,APP_URL)
-    @sessions = CallerSession.find_all_by_campaign_id_and_on_call(params[:id],1)
-    @sessions.each do |sess|
-      sess.on_call = false
-      sess.endtime = Time.now if sess.endtime==nil
-      sess.save
-    end
-    flash_message(:notice, "Dialer Reset.  Callers must call back in.")
-    redirect_to client_campaigns_path(params[:id])
-    return
-  end
-
   def voter_delete
     @voter = account.voters.find_by_id(params[:id])
     if !@voter.blank?

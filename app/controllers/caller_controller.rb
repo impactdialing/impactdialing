@@ -100,24 +100,12 @@ class CallerController < ApplicationController
     end
   end
 
-  def preview_voter
-    caller_session = @caller.caller_sessions.find(params[:session_id])
-    if caller_session.campaign.predictive_type == Campaign::Type::PREVIEW || caller_session.campaign.predictive_type == Campaign::Type::PROGRESSIVE
-      voter = caller_session.campaign.next_voter_in_dial_queue(params[:voter_id])      
-      voter.update_attributes(caller_id: caller_session.caller_id) unless voter.nil?
-      caller_session.publish('caller_connected', voter ? voter.info : {}) 
-    else
-      caller_session.publish('caller_connected_dialer', {})
-    end
-    render :nothing => true
-  end
-
   def skip_voter
     caller_session = @caller.caller_sessions.find(params[:session_id])
     voter = Voter.find(params[:voter_id])
     voter.skip
     next_voter = caller_session.campaign.next_voter_in_dial_queue(params[:voter_id])
-    caller_session.publish('caller_connected', next_voter ? next_voter.info : {}) if caller_session.campaign.predictive_type == Campaign::Type::PREVIEW || caller_session.campaign.predictive_type == Campaign::Type::PROGRESSIVE
+    caller_session.publish('caller_connected', next_voter ? next_voter.info : {}) 
     render :nothing => true
   end
   
@@ -202,46 +190,6 @@ class CallerController < ApplicationController
   end
   
   
-  def ping
-    #sleep 2.5
-    send_rt(params[:key], 'ping', params[:num])
-    render :text=>"pong"
-  end
-
-  def network_test
-    @rand=rand
-  end
-
-
-
-  def preview_choose
-    @session = CallerSession.find_by_session_key(params[:key])
-    @campaign = @session.campaign
-    @voters = @campaign.voters("not called", true, 25)
-    render :layout=>false
-  end
-
-  def reconnect_rt
-    send_rt(params[:key], params[:k], params[:v])
-    render :text=> "var x='ok';"
-  end
-
-
-
-  def dpoll
-    response.headers["Content-Type"] = 'text/javascript'
-
-    @on_call = CallerSession.find_by_session_key(params[:key])
-    if (@on_call==nil || @on_call.on_call==false)
-      #hungup?  the view will reload the page in this case to reset the ui
-    else
-      @campaign = @on_call.campaign
-    end
-    respond_to do |format|
-      format.js
-    end
-  end
-
   def feedback
     Postoffice.feedback(params[:issue]).deliver
     render :text=> "var x='ok';"

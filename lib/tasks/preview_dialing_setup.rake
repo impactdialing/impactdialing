@@ -3,7 +3,7 @@ desc "Update twilio call data"
 namespace :seed do
   task :pd => :environment do
     empty
-    campaign = Campaign.create(:name => "Test", :campaign_id => "12345", :user => user, :script => script, :predictive_type => Campaign::Type::PREVIEW, :use_web_ui => true, :caller_id_verified => true)
+    campaign = Campaign.create(:name => "Test", :campaign_id => "12345", :user => user, :script => script, :type => Campaign::Type::PREVIEW, :use_web_ui => true, :caller_id_verified => true)
     campaign.callers.create(:name => "aninda", :email => user.email, :user => user, :pin => "12345", :password => "password")
     campaign.all_voters.create(:Phone => "+14154486970",:campaign => campaign)
   end

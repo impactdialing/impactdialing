@@ -1,26 +1,31 @@
 require 'new_relic/agent/method_tracer'
 class CallAttemptsController < ApplicationController
   include NewRelic::Agent::MethodTracer
+  before_filter :find_call, only:  [:flow]
   
   def create
     call_attempt = CallAttempt.find(params[:id])
     robo_recording = RoboRecording.find(params[:robo_recording_id])
     call_response = CallResponse.log_response(call_attempt, robo_recording, params[:Digits])
-    xml = call_attempt.next_recording(robo_recording, call_response)
-    logger.info "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-    logger.info "[dialer] DTMF input received. call_attempt: #{params[:id]} keypad: #{params[:Digits]} Response: #{xml}"
-    render :xml => xml
+    render xml:  call_attempt.next_recording(robo_recording, call_response)
+  end
+  
+  def find_call
+    @call_attempt = CallAttempt.find(params[:id])
+  end
+  
+  def flow
+    render xml:  @call_attempt.run(params[:event])
   end
 
   def connect
     call_attempt = CallAttempt.find(params[:id])
-    Rails.logger.debug("callconnect: #{params[:AnsweredBy]}")
     call_attempt.update_attribute(:connecttime, Time.now)
     response = case params[:AnsweredBy] #using the 2010 api
                  when "machine"
                    call_attempt.voter.update_attributes(:status => CallAttempt::Status::HANGUP)
                    call_attempt.update_attributes(:status => CallAttempt::Status::HANGUP)
-                   if call_attempt.caller_session && (call_attempt.campaign.predictive_type == Campaign::Type::PREVIEW || call_attempt.campaign.predictive_type == Campaign::Type::PROGRESSIVE)
+                   if call_attempt.caller_session && (call_attempt.campaign.type == Campaign::Type::PREVIEW || call_attempt.campaign.type == Campaign::Type::PROGRESSIVE)
                      call_attempt.caller_session.publish('answered_by_machine', {})
                      call_attempt.caller_session.update_attribute(:voter_in_progress, nil)
                      next_voter = call_attempt.campaign.next_voter_in_dial_queue(call_attempt.voter.id)
@@ -93,7 +98,7 @@ class CallAttemptsController < ApplicationController
   private
 
   def pusher_response_received(call_attempt,stop_calling)
-    if call_attempt.campaign.predictive_type == Campaign::Type::PREVIEW || call_attempt.campaign.predictive_type == Campaign::Type::PROGRESSIVE 
+    if call_attempt.campaign.type == Campaign::Type::PREVIEW || call_attempt.campaign.type == Campaign::Type::PROGRESSIVE 
       if stop_calling.blank?
         next_voter = call_attempt.campaign.next_voter_in_dial_queue(call_attempt.voter.id)
         call_attempt.caller_session.publish("voter_push", next_voter ? next_voter.info : {})

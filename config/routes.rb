@@ -179,7 +179,6 @@ ImpactDialing::Application.routes.draw do
   resources :campaigns, :path_prefix => 'client', :only => [] do
     member { post :verify_callerid }
     resources :voter_lists, :collection => {:import => :post}, :except => [:new, :show], :name_prefix => 'client'
-    match 'clear_calls', :to => 'client/campaigns#clear_calls', :as => 'clear_calls'
   end
 
   resources :call_attempts, :protocol => PROTOCOL, :only => [:create, :update] do

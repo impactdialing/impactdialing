@@ -128,7 +128,7 @@ describe CallAttempt do
     end
 
     it "connects a successful call attempt to a caller_session when available" do
-      campaign = Factory(:campaign)
+      campaign = Factory(:predictive)
       voter = Factory(:voter, :campaign => campaign)
       caller_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller))
       call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign)
@@ -142,7 +142,7 @@ describe CallAttempt do
     end
 
     it "connects a successful call attempt to a specified caller_session " do
-      campaign = Factory(:campaign)
+      campaign = Factory(:preview)
       caller_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller))
       voter = Factory(:voter, :campaign => campaign, caller_session: caller_session)
       Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller))
@@ -155,7 +155,7 @@ describe CallAttempt do
     end
 
     it "connects a call to any available caller" do
-      campaign = Factory(:campaign)
+      campaign = Factory(:predictive)
       voter = Factory(:voter, :campaign => campaign)
       caller_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true, :caller => Factory(:caller))
       call_attempt = Factory(:call_attempt, :voter => voter, :campaign => campaign)
@@ -265,7 +265,7 @@ describe CallAttempt do
     end
 
     it "pushes 'voter_push' when a failed call attempt ends" do
-      campaign = Factory(:campaign, :use_web_ui => true)
+      campaign = Factory(:preview, :use_web_ui => true)
       Factory(:voter, :status => Voter::Status::NOTCALLED, :call_back => false, :campaign => campaign)
       session = Factory(:caller_session, :caller => Factory(:caller, :campaign => campaign), :campaign => campaign, :session_key => "sample")
       attempt = Factory(:call_attempt, :voter => Factory(:voter, :status => CallAttempt::Status::INPROGRESS), :caller_session => session, :campaign => campaign)
@@ -274,8 +274,8 @@ describe CallAttempt do
       info = campaign.all_voters.to_be_dialed.first.info
       info[:fields]['status'] = CallAttempt::Status::READY
       Pusher.should_receive(:[]).twice.with(anything).and_return(channel)
-      channel.should_receive(:trigger).with("voter_push", info.merge(:dialer => campaign.predictive_type))
-      channel.should_receive(:trigger).with("conference_started", {:dialer => campaign.predictive_type})
+      channel.should_receive(:trigger).with("voter_push", info.merge(:dialer => campaign.type))
+      channel.should_receive(:trigger).with("conference_started", {:dialer => campaign.type})
       attempt.fail
     end
   end
