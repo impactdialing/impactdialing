@@ -101,19 +101,19 @@ module Client
     end
     
     def set_report_date_range(campaign)
+      time_zone = ActiveSupport::TimeZone.new(campaign.try(:time_zone) || "UTC")
+      begin
+        from_date = Time.strptime("#{params[:from_date]} #{time_zone.formatted_offset}", "%m/%d/%Y %:z") if params[:from_date]
+        to_date = Time.strptime("#{params[:to_date]} #{time_zone.formatted_offset}", "%m/%d/%Y %:z") if params[:to_date]
+      rescue Exception => e
+        flash_message(:error, I18n.t(:invalid_date_format))
+        redirect_to :back
+        return
+      end                    
       if campaign.nil?
-        @from_date = (CallerSession.find_by_caller_id(@caller.id,:order=>"id asc", :limit=>"1").try(:created_at) || Time.now).in_time_zone("UTC").beginning_of_day      
-        @to_date = (CallerSession.find_by_caller_id(@caller.id,:order=>"id desc", :limit=>"1").try(:created_at) || Time.now).in_time_zone("UTC").end_of_day        
+        @from_date = (from_date || CallerSession.find_by_caller_id(@caller.id,:order=>"id asc", :limit=>"1").try(:created_at) || Time.now).in_time_zone("UTC").beginning_of_day      
+        @to_date = (to_date || CallerSession.find_by_caller_id(@caller.id,:order=>"id desc", :limit=>"1").try(:created_at) || Time.now).in_time_zone("UTC").end_of_day        
       else
-        time_zone = ActiveSupport::TimeZone.new(campaign.time_zone || "UTC")
-        begin
-          from_date = Time.strptime("#{params[:from_date]} #{time_zone.formatted_offset}", "%m/%d/%Y %:z") if params[:from_date]
-          to_date = Time.strptime("#{params[:to_date]} #{time_zone.formatted_offset}", "%m/%d/%Y %:z") if params[:to_date]
-        rescue Exception => e
-          flash_message(:error, I18n.t(:invalid_date_format))
-          redirect_to :back
-          return
-        end              
         @from_date = (from_date || CallerSession.find_by_campaign_id(campaign.id,:order=>"id asc", :limit=>"1").try(:created_at) || Time.now).in_time_zone(time_zone).beginning_of_day      
         @to_date = (to_date || CallerSession.find_by_campaign_id(campaign.id,:order=>"id desc", :limit=>"1").try(:created_at) || Time.now).in_time_zone(time_zone).end_of_day        
       end
