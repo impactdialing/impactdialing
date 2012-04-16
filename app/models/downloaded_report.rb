@@ -4,7 +4,7 @@ class DownloadedReport < ActiveRecord::Base
     
     
    def self.active_reports(campaign_id)
-     DownloadedReport.find_all_by_campaign_id(campaign_id, :conditions => [ "(created_at > ?)", 12.hours.ago])
+     DownloadedReport.find_all_by_campaign_id(campaign_id, :conditions => [ "(created_at > ?)", 12.hours.ago]).order("created_at DESC")
    end
    
    def self.active_reports_count(campaign_id)
