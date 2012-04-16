@@ -23,7 +23,7 @@
 
         <p><label for="">Dialing mode</label>
           <select class="field" id="campaign_predictive_type" name="campaign[predictive_type]" onchange="dialingModeOnChange()">
-            <% public_dialers = [["Predictive", "algorithm1"], ["Power", "progressive"], ["Preview", "preview"],] %>
+            <% public_dialers = [["Predictive", "Predictive"], ["Power", "Progressive"], ["Preview", "Preview"],] %>
             <%= options_for_select public_dialers, ["Power", "progressive"] %>
           </select>
           </p>
@@ -109,7 +109,7 @@
 <script>
     function dialingModeOnChange(){
         var dialMode = $('#campaign_predictive_type').val();
-        if(dialMode == "algorithm1"){
+        if(dialMode == "Predictive"){
             $('#abandon_rate').show();
             $('#campaign_abandon_rate').val(0.03);
         }else{

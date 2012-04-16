@@ -40,6 +40,52 @@ Factory.define :campaign do |c|
   c.script_id {Factory(:script)}
 end
 
+Factory.define :predictive do |c|
+  c.name 'a campaign'
+  c.caller_id '1234567890'
+  c.account { Factory(:account) }
+  c.recycle_rate 1
+  c.start_time (Time.now - 6.hours)
+  c.end_time (Time.now - 7.hours)
+  c.time_zone "Pacific Time (US & Canada)"
+  c.script_id {Factory(:script)}
+end
+
+Factory.define :preview do |c|
+  c.name 'a campaign'
+  c.caller_id '1234567890'
+  c.account { Factory(:account) }
+  c.recycle_rate 1
+  c.start_time (Time.now - 6.hours)
+  c.end_time (Time.now - 7.hours)
+  c.time_zone "Pacific Time (US & Canada)"
+  c.script_id {Factory(:script)}
+end
+
+Factory.define :progressive do |c|
+  c.name 'a campaign'
+  c.caller_id '1234567890'
+  c.account { Factory(:account) }
+  c.recycle_rate 1
+  c.start_time (Time.now - 6.hours)
+  c.end_time (Time.now - 7.hours)
+  c.time_zone "Pacific Time (US & Canada)"
+  c.script_id {Factory(:script)}
+end
+
+Factory.define :robo do |c|
+  c.name 'a campaign'
+  c.caller_id '1234567890'
+  c.account { Factory(:account) }
+  c.recycle_rate 1
+  c.start_time (Time.now - 6.hours)
+  c.end_time (Time.now - 7.hours)
+  c.time_zone "Pacific Time (US & Canada)"
+  c.script_id {Factory(:script)}
+end
+
+
+
 Factory.define :caller do |s|
   s.email { Factory.next(:email) }
   s.name 'a caller'

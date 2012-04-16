@@ -34,7 +34,7 @@ describe AdminController do
 
     it "reports state of the app" do
       account = Factory(:account)
-      campaign = Factory(:campaign, :account => account)
+      campaign = Factory(:preview, :account => account)
       Factory(:user, :account => account)
       caller_session = Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true)
       call_attempt = Factory(:call_attempt, :caller_session => caller_session, :call_end => nil)

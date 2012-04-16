@@ -77,7 +77,7 @@ module Client
     end
 
     def create
-      @campaign = Campaign.new(params[:campaign])
+      @campaign = new_type_campaign(params)
       @campaign.account = account
       @campaign.script ||= @campaign.account.scripts.first
       if @campaign.save
@@ -95,16 +95,19 @@ module Client
     def load_deleted
       self.instance_variable_set("@#{type_name.pluralize}", Campaign.deleted.manual.for_account(@user.account).paginate(:page => params[:page], :order => 'id desc'))
     end
-
-    def clear_calls
-      if current_user.admin?
-        campaign = Campaign.find(params[:campaign_id])
-        campaign.clear_calls
-        flash_message(:notice, "Calls cleared")
-        redirect_to client_campaign_path(campaign)
-      else
-        render :text => 'unauthorized', :status => :unauthorized
+    
+    private
+    
+    def new_type_campaign(params)
+      if params[:campaign][:type] == "Preview"
+        Preview.new(params[:campaign])
+      elsif params[:campaign][:type] == "Progressive"
+        Progressive.new(params[:campaign])
+      elsif params[:campaign][:type] == "Predictive"
+        Predictive.new(params[:campaign])
       end
     end
+    
+
   end
 end

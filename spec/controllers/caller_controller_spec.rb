@@ -25,7 +25,7 @@ describe CallerController do
       info[:fields]['status'] = CallAttempt::Status::READY
       info[:fields]['caller_id'] = caller.id
       Pusher.should_receive(:[]).with(session_key).and_return(channel)
-      channel.should_receive(:trigger).with('caller_connected', info.merge(:dialer => campaign.predictive_type))
+      channel.should_receive(:trigger).with('caller_connected', info.merge(:dialer => campaign.type))
       post :preview_voter, :id => caller.id, :session_id => session.id, :voter_id => voter.id
       next_voter.reload.caller_id.should eq(caller.id)
     end
@@ -40,7 +40,7 @@ describe CallerController do
       info[:fields]['status'] = CallAttempt::Status::READY
       info[:fields]['caller_id'] = caller.id
       Pusher.should_receive(:[]).with(session_key).and_return(channel)
-      channel.should_receive(:trigger).with('caller_connected', info.merge(:dialer => campaign.predictive_type))
+      channel.should_receive(:trigger).with('caller_connected', info.merge(:dialer => campaign.type))
       post :preview_voter, :id => caller.id, :session_id => session.id, :voter_id => voter.id
     end
 
@@ -54,7 +54,7 @@ describe CallerController do
       info[:fields]['status'] = CallAttempt::Status::READY
       info[:fields]['caller_id'] = caller.id
       Pusher.should_receive(:[]).with(session_key).and_return(channel)
-      channel.should_receive(:trigger).with('caller_connected', info.merge(:dialer => campaign.predictive_type))
+      channel.should_receive(:trigger).with('caller_connected', info.merge(:dialer => campaign.type))
       post :preview_voter, :id => caller.id, :session_id => session.id, :voter_id => last_voter.id
     end
 
@@ -132,7 +132,7 @@ describe CallerController do
   end
 
   describe "phones-only call" do
-    let(:campaign) { Factory(:campaign, :robo => false, :predictive_type => 'preview') }
+    let(:campaign) { Factory(:campaign, :robo => false, :type => 'preview') }
     let(:caller) { Factory(:caller, :is_phones_only => true, :name => "caller name", :pin => "78453", campaign:  campaign) }
     describe "preview mode" do
       before(:each) do
@@ -163,7 +163,7 @@ describe CallerController do
 
     describe "progressive mode" do
       it "add the caller to the conference and make the call to voter" do
-        campaign = Factory(:campaign, :robo => false, :predictive_type => 'preview')
+        campaign = Factory(:campaign, :robo => false, :type => 'preview')
         campaign.callers << caller
         caller_session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sessionkey")
         voter = Factory(:voter, :campaign => campaign)
@@ -177,7 +177,7 @@ describe CallerController do
     end
 
     it "ask caller to select options, i.e * for dialing or # for instructions" do
-      campaign = Factory(:campaign, :robo => false, :predictive_type => 'preview')
+      campaign = Factory(:campaign, :robo => false, :type => 'preview')
       preview_caller = Factory(:caller, :campaign => campaign)
       caller_session = Factory(:caller_session, :caller => preview_caller, :campaign => campaign, :session_key => "sessionkey")
       post :choose_instructions_option, :id => caller.id, :session => caller_session.id, :Digits => "*"
@@ -187,7 +187,7 @@ describe CallerController do
   end
   
   it "read re-assiged msg when caller reassigned to another campaign" do
-    campaign = Factory(:campaign, :robo => false, :predictive_type => 'preview')
+    campaign = Factory(:campaign, :robo => false, :type => 'preview')
     campaign.callers << caller
     caller_session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sessionkey")
     post :phones_only, :campaign_reassigned => "true", :session_id => caller_session.id
@@ -246,7 +246,7 @@ describe CallerController do
     end
 
     it "ask caller to choose voter if campaign type is either preview or progressive" do
-      campaign_preview = Factory(:campaign, :account => account, :robo => false, :use_web_ui => true, :script => script, :predictive_type => "preview")
+      campaign_preview = Factory(:campaign, :account => account, :robo => false, :use_web_ui => true, :script => script, :type => "preview")
       phones_only_caller = Factory(:caller, :is_phones_only => true, :campaign => campaign_preview)
       caller_session2 = Factory(:caller_session, :campaign => campaign_preview, :session_key => "some_key", :caller => phones_only_caller, :available_for_call => true, :on_call => true)
       post :gather_response, :id => phones_only_caller.id, :session_id => caller_session2.id, :question_id => first_question.id, :Digits => "1"

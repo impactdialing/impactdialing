@@ -3,7 +3,7 @@ require "spec_helper"
 describe CampaignsController do
   let(:account) { Factory(:account) }
   let(:user) { Factory(:user, :account => account) }
-  let(:another_users_campaign) { Factory(:campaign, :account => Factory(:account), :start_time => Time.new("2000-01-01 01:00:00"), :end_time => Time.new("2000-01-01 23:00:00")) }
+  let(:another_users_campaign) { Factory(:robo, :account => Factory(:account), :start_time => Time.new("2000-01-01 01:00:00"), :end_time => Time.new("2000-01-01 23:00:00")) }
 
   before(:each) do
     login_as user
@@ -42,33 +42,33 @@ describe CampaignsController do
 
 
   it "lists robo campaigns" do
-    robo_campaign = Factory(:campaign, :account => user.account, :robo => true)
-    manual_campaign = Factory(:campaign, :account => user.account, :robo => false)
+    robo_campaign = Factory(:robo, :account => user.account)
+    manual_campaign = Factory(:preview, :account => user.account)
     get :index
     assigns(:campaigns).should == [robo_campaign]
   end
 
   it "renders a campaign" do
-    get :show, :id => Factory(:campaign, :account => user.account, :robo => true).id
+    get :show, :id => Factory(:robo, :account => user.account).id
     response.code.should == '200'
   end
 
   it "renders all the available voicemail scripts" do
     script = Factory(:script, :account => account, :for_voicemail => true, :robo => true)
-    get :show, :id => Factory(:campaign, :account => user.account, :robo => true).id
+    get :show, :id => Factory(:robo, :account => user.account).id
     assigns[:voicemails].should == [script]
   end
 
   it "only provides robo scritps to select for a campaign" do
     robo_script = Factory(:script, :account => user.account, :robo => true)
     manual_script = Factory(:script, :account => user.account, :robo => false)
-    get :show, :id => Factory(:campaign, :account => user.account, :robo => true).id
+    get :show, :id => Factory(:robo, :account => user.account).id
     assigns(:scripts).should == [robo_script]
   end
 
   describe "update a campaign" do
     let(:default_script) { Factory(:script, :account => user.account, :robo => true, :active => true) }
-    let(:campaign) { Factory(:campaign, :account => user.account, :script => default_script, :robo =>true) }
+    let(:campaign) { Factory(:robo, :account => user.account, :script => default_script) }
 
     it "updates the campaign attributes" do
       new_script = Factory(:script, :account => user.account, :robo => true, :active => true)
@@ -108,7 +108,6 @@ describe CampaignsController do
       end
 
       it "updates a campaign with a voicemail" do
-        #campaign = Factory(:campaign, :robo => true)
         voicemail = Factory(:script, :robo => true, :active => true, :for_voicemail => true, :name => "voicemail script")
         post :update, :id=> campaign.id, :campaign => {:caller_id => "+3987", :robo => true, :voicemail_script => voicemail}
         campaign.reload.voicemail_script.should == voicemail
@@ -118,7 +117,7 @@ describe CampaignsController do
   end
 
   it "deletes a campaign" do
-    campaign = Factory(:campaign, :account => account, :robo => true)
+    campaign = Factory(:robo, :account => account, :robo => true)
     request.env['HTTP_REFERER'] = 'http://referer' if respond_to?(:request)
     delete :destroy, :id => campaign.id
     campaign.reload.should_not be_active
@@ -127,11 +126,11 @@ describe CampaignsController do
 
   describe "dial statistics" do
     before :each do
-      @campaign = Factory(:campaign, :account => user.account)
+      @campaign = Factory(:robo, :account => user.account)
     end
 
     it "renders dial statistics for a campaign" do
-      campaign = Factory(:campaign, :account => user.account)
+      campaign = Factory(:robo, :account => user.account)
       get :dial_statistics, :id => campaign.id
       assigns(:campaign).should == campaign
       response.code.should == '200'
@@ -139,7 +138,7 @@ describe CampaignsController do
   end
 
   def type_name
-    'campaign'
+    'robo'
   end
 
   it_should_behave_like 'all controllers of deletable entities'

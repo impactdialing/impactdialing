@@ -5,9 +5,9 @@ describe CallAttemptsController do
   describe "gathering responses" do
     let(:account) { Factory(:account) }
     let(:user) { Factory(:user, :account => account) }
-    let(:campaign) { Factory(:campaign, :account => account, :robo => false, :use_web_ui => true) }
+    let(:campaign) { Factory(:predictive, :account => account, :use_web_ui => true) }
     let(:voter) { Factory(:voter, :campaign => campaign) }
-    let(:caller_session) { Factory(:caller_session) }
+    let(:caller_session) { Factory(:caller_session, campaign: campaign) }
     let(:call_attempt) { Factory(:call_attempt, :voter => voter, :campaign => campaign, :caller_session => caller_session) }
 
     it "collects voter responses" do
@@ -19,11 +19,10 @@ describe CallAttemptsController do
       response2 = Factory(:possible_response, :question => question2)
 
       channel = mock
-      # Voter.stub_chain(:to_be_dialed, :first).and_return(voter)
       Pusher.should_receive(:[]).with(anything).and_return(channel)
       info = voter2.info
       info[:fields]['status'] = CallAttempt::Status::READY
-      channel.should_receive(:trigger).with("voter_push", info.merge(:dialer => campaign.predictive_type))
+      channel.should_receive(:trigger).with("voter_push", info.merge(:dialer => campaign.type))
 
       post :voter_response, :id => call_attempt.id, :voter_id => voter.id,caller_session:caller_session.id, :question => {question1.id=> response1.id, question2.id=>response2.id}
       voter.answers.count.should == 2
@@ -42,7 +41,7 @@ describe CallAttemptsController do
       Pusher.should_receive(:[]).with(anything).and_return(channel)
       info = voter2.info
       info[:fields]['status'] = CallAttempt::Status::READY
-      channel.should_receive(:trigger).with("voter_push", info.merge(:dialer => campaign.predictive_type))
+      channel.should_receive(:trigger).with("voter_push", info.merge(:dialer => campaign.type))
 
       post :voter_response, :id => call_attempt.id, :voter_id => "",caller_session:caller_session.id, :question => {question1.id=> response1.id, question2.id=>response2.id}
       voter.answers.count.should == 2
@@ -62,7 +61,7 @@ describe CallAttemptsController do
       info = voter2.info
       info[:fields]['status'] = CallAttempt::Status::READY
 
-      channel.should_receive(:trigger).with("voter_push", info.merge(:dialer => campaign.predictive_type))
+      channel.should_receive(:trigger).with("voter_push", info.merge(:dialer => campaign.type))
 
       post :voter_response, :id => call_attempt.id, :voter_id => voter.id,caller_session:caller_session.id, :question => {question1.id=> response1.id, question2.id=>response2.id}
       voter.answers.count.should == 2
@@ -79,7 +78,7 @@ describe CallAttemptsController do
       info[:fields]['status'] = CallAttempt::Status::READY
 
       Pusher.should_receive(:[]).with(anything).and_return(channel)
-      channel.should_receive(:trigger).with("voter_push", info.merge({dialer: next_voter.campaign.predictive_type}))
+      channel.should_receive(:trigger).with("voter_push", info.merge({dialer: next_voter.campaign.type}))
       post :voter_response, :id => call_attempt.id, :voter_id => voter.id,caller_session:caller_session.id, :answers => {}
     end
     
@@ -271,7 +270,7 @@ describe CallAttemptsController do
       voter.update_attributes(:status => CallAttempt::Status::INPROGRESS, :caller_session => caller_session, caller_id: caller_session.caller_id)
       call_attempt.update_attributes(caller_session: caller_session)
       pusher_session = mock
-      pusher_session.should_receive(:trigger).with('voter_connected', {:attempt_id=> call_attempt.id, :voter => voter.info}.merge(:dialer => campaign.predictive_type))
+      pusher_session.should_receive(:trigger).with('voter_connected', {:attempt_id=> call_attempt.id, :voter => voter.info}.merge(:dialer => campaign.type))
       Pusher.stub(:[]).with(session_key).and_return(pusher_session)
       Moderator.stub!(:publish_event).with(caller_session.campaign, 'voter_connected', {:caller_session_id => caller_session.id, :campaign_id => caller_session.campaign.id, :caller_id => call_attempt.caller_session.caller.id})
       post :connect, :id => call_attempt.id
@@ -291,7 +290,7 @@ describe CallAttemptsController do
       info[:fields]['status'] = CallAttempt::Status::READY
       Pusher.stub(:[]).with(session_key).and_return(pusher_session)
       pusher_session.should_receive(:trigger).with("answered_by_machine", {:dialer=>"preview"})
-      pusher_session.should_receive(:trigger).with('voter_push', info.merge(:dialer => campaign.predictive_type))
+      pusher_session.should_receive(:trigger).with('voter_push', info.merge(:dialer => campaign.type))
       pusher_session.should_receive(:trigger).with('conference_started', {:dialer=>"preview"})
       post :connect, :id => call_attempt.id, :AnsweredBy => "machine"
       call_attempt.reload.wrapup_time.should_not be_nil

@@ -6,7 +6,7 @@ describe Admin::CampaignsController do
   end
 
   it "restores a deleted campaign" do
-    campaign = Factory(:campaign, :active => false)
+    campaign = Factory(:preview, :active => false)
     put :restore, :campaign_id => campaign.id
     campaign.reload.should be_active
     response.should redirect_to admin_campaigns_path

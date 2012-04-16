@@ -49,7 +49,7 @@ describe CallerSession do
   end
 
   it "calls a voter" do
-    voter = Factory(:voter, :campaign => Factory(:campaign, :predictive_type => 'algorithm1'))
+    voter = Factory(:voter, :campaign => Factory(:campaign, :type => 'Predictive'))
     session = Factory(:caller_session, :available_for_call => true, :on_call => false)
     Twilio::Call.stub!(:make).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
     voter.should_receive(:dial_predictive)
@@ -115,7 +115,7 @@ describe CallerSession do
   end
 
   describe "preview dialing" do
-    let(:campaign) { Factory(:campaign, :robo => false, :predictive_type => 'preview', answering_machine_detect: true) }
+    let(:campaign) { Factory(:preview, :type => 'preview', answering_machine_detect: true) }
     let(:voter) { Factory(:voter, :campaign => campaign) }
     let(:caller) { Factory(:caller) }
 
@@ -147,7 +147,7 @@ describe CallerSession do
 
 
     it "does not send IFMachine if AMD turned off" do
-      campaign1 = Factory(:campaign, :robo => false, :predictive_type => 'preview', answering_machine_detect: false)
+      campaign1 = Factory(:campaign, :robo => false, :type => 'preview', answering_machine_detect: false)
       caller_session = Factory(:caller_session, :campaign => campaign1, :caller => caller, :attempt_in_progress => nil)
       call_attempt = Factory(:call_attempt, :campaign => campaign1, :dialer_mode => Campaign::Type::PREVIEW, :status => CallAttempt::Status::INPROGRESS, :caller_session => caller_session, :caller => caller)
       voter.stub_chain(:call_attempts, :create).and_return(call_attempt)
@@ -185,7 +185,7 @@ describe CallerSession do
         unless attempt % 5 == 0
           caller_session.pause_for_results(attempt).should == Twilio::Verb.new { |v| v.pause("length" => 11); v.redirect(pause_caller_url(caller, :session_id => caller_session.id, :host => Settings.host, :port => Settings.port, :attempt=>attempt+1)) }.response
         else
-          caller_session.pause_for_results(attempt).should == Twilio::Verb.new { |v| v.say("Please enter your call results"); v.pause("length" => 5); v.redirect(pause_caller_url(caller, :session_id => caller_session.id, :host => Settings.host, :port => Settings.port, :attempt => attempt +1)) }.response
+          caller_session.pause_for_results(attempt).should == Twilio::Verb.new { |v| v.say("Please enter your call results"); v.pause("length" => 11); v.redirect(pause_caller_url(caller, :session_id => caller_session.id, :host => Settings.host, :port => Settings.port, :attempt => attempt +1)) }.response
         end
       end
     end
@@ -205,7 +205,7 @@ describe CallerSession do
   describe "phones-only caller" do
 
     it "asks caller to choose voter or skip, if caller is phones-only and campaign is preview" do
-      campaign = Factory(:campaign, :robo => false, :predictive_type => 'preview')
+      campaign = Factory(:preview)
       caller = Factory(:caller, :is_phones_only => true, :name => "caller name", :pin => "78453", :campaign => campaign)
       voter = Factory(:voter, :campaign => campaign)
       caller_session = Factory(:caller_session, :caller => caller, :campaign => campaign)
@@ -219,7 +219,7 @@ describe CallerSession do
     end
 
     it "says voter first name and last name, if caller is phones-only and campaign is progressive" do
-      campaign = Factory(:campaign, :robo => false, :predictive_type => 'progressive')
+      campaign = Factory(:progressive)
       caller = Factory(:caller, :is_phones_only => true, :name => "caller name", :pin => "78453", :campaign => campaign)
       voter = Factory(:voter, :FirstName => "first name", :LastName => "last name", :campaign => campaign)
       caller_session = Factory(:caller_session, :caller => caller, :campaign => campaign)
@@ -231,7 +231,7 @@ describe CallerSession do
     end
 
     it "says 'no more voters to dial', if there are no voters to dial" do
-      campaign = Factory(:campaign, :robo => false, :predictive_type => 'progressive')
+      campaign = Factory(:progressive)
       caller = Factory(:caller, :is_phones_only => true, :name => "caller name", :pin => "78453", :campaign => campaign)
       campaign.stub!(:time_period_exceed?).and_return(false)
       voter = Factory(:voter, :FirstName => "first name", :LastName => "last name", :campaign => campaign, :status => "Call completed with success.")
@@ -275,7 +275,7 @@ describe CallerSession do
     end
 
     it "push 'caller_re_assigned_to_campaign' event, if caller is not phones_only" do
-      campaign = Factory(:campaign, :use_web_ui => true)
+      campaign = Factory(:preview, :use_web_ui => true)
       caller_session = Factory(:caller_session, :campaign => campaign, :caller => Factory(:caller, :campaign => campaign, :is_phones_only => false))
       channel = mock
       Pusher.should_receive(:[]).with(caller_session.session_key).and_return(channel)
@@ -284,8 +284,8 @@ describe CallerSession do
     end
 
     it "reassign the caller_session to campaign" do
-      campaign1 = Factory(:campaign, :use_web_ui => true, :predictive_type => 'preview')
-      campaign2 = Factory(:campaign, :use_web_ui => true, :predictive_type => 'preview')
+      campaign1 = Factory(:preview, :use_web_ui => true)
+      campaign2 = Factory(:preview, :use_web_ui => true)
       caller = Factory(:caller, :campaign => campaign2)
       caller_session = Factory(:caller_session, :caller => caller, :campaign => campaign1, :session_key => "sample", :on_call=> true, :available_for_call => true)
       caller_session.reassign_caller_session_to_campaign
@@ -293,8 +293,8 @@ describe CallerSession do
     end
 
     it "" do
-      campaign1 = Factory(:campaign, :use_web_ui => true, :predictive_type => 'preview')
-      campaign2 = Factory(:campaign, :use_web_ui => true, :predictive_type => 'preview')
+      campaign1 = Factory(:campaign, :use_web_ui => true, :type => 'preview')
+      campaign2 = Factory(:campaign, :use_web_ui => true, :type => 'preview')
       phones_only_caller = Factory(:caller, :campaign => campaign2, :is_phones_only => true)
       caller_session = Factory(:caller_session, :caller => phones_only_caller, :campaign => campaign1, :session_key => "sample", :on_call=> true, :available_for_call => true)
       Moderator.should_receive(:publish_event)
@@ -316,7 +316,7 @@ describe CallerSession do
       event, data = 'event', {}
       channel = mock
       Pusher.should_receive(:[]).with(session.session_key).and_return(channel)
-      channel.should_receive(:trigger).with(event, data.merge(:dialer => campaign.predictive_type))
+      channel.should_receive(:trigger).with(event, data.merge(:dialer => campaign.type))
       session.publish(event, data)
     end
 
@@ -338,7 +338,7 @@ describe CallerSession do
     end
 
     # it "pushes voter information when a caller is connected on preview campaign" do
-    #   campaign = Factory(:campaign, :use_web_ui => true, :predictive_type => 'preview')
+    #   campaign = Factory(:campaign, :use_web_ui => true, :type => 'preview')
     #   session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sample")
     #   2.times { Factory(:voter, :campaign => campaign) }
     #   channel = mock
@@ -348,7 +348,7 @@ describe CallerSession do
     # end
 
     it "should  push  when a caller is connected on a non preview campaign" do
-      campaign = Factory(:campaign, :use_web_ui => true, :predictive_type => 'predictive')
+      campaign = Factory(:campaign, :use_web_ui => true, :type => 'predictive')
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sample")
       2.times { Factory(:voter, :campaign => campaign) }
       campaign.stub!(:time_period_exceed?).and_return(false)
@@ -360,7 +360,7 @@ describe CallerSession do
     end
 
     it "should push 'caller_disconnected' when the caller session ends" do
-      campaign = Factory(:campaign, :use_web_ui => true, :predictive_type => 'preview')
+      campaign = Factory(:campaign, :use_web_ui => true, :type => 'preview')
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sample", :on_call=> true, :available_for_call => true)
       2.times { Factory(:voter, :campaign => campaign) }
       Moderator.stub!(:publish_event).with(session.campaign, 'caller_disconnected', {:caller_session_id => session.id, :caller_id => session.caller.id, :campaign_id => campaign.id,
@@ -372,7 +372,7 @@ describe CallerSession do
     end
 
     it "should push 'waiting_for_result' when the caller session is paused" do
-      campaign = Factory(:campaign, :use_web_ui => true, :predictive_type => 'preview')
+      campaign = Factory(:campaign, :use_web_ui => true, :type => 'preview')
       session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sample", :on_call=> true, :available_for_call => true)
       channel = mock
       Pusher.should_receive(:[]).with(session.session_key).and_return(channel)

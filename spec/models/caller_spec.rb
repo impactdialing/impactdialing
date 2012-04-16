@@ -70,7 +70,7 @@ describe Caller do
 
     describe "choose voter" do
       before(:each) do
-        @campaign = Factory(:campaign, :robo => false, :predictive_type => 'preview', :start_time => (Time.now - 8.hours), :end_time => (Time.now - 8.hours))
+        @campaign = Factory(:preview, :start_time => (Time.now - 8.hours), :end_time => (Time.now - 8.hours))
         @caller = Factory(:caller, :account => user.account, :campaign => @campaign)
         @caller_session = Factory(:caller_session, :caller => @caller, :campaign => @campaign, :session_key => "sessionkey")
         @voter = Factory(:voter, :campaign => @campaign)
@@ -107,7 +107,7 @@ describe Caller do
     end
 
     describe "caller instructions" do
-      let(:campaign) { Factory(:campaign, :robo => false, :predictive_type => 'preview') }
+      let(:campaign) { Factory(:preview) }
       let(:caller) { Factory(:caller, :account => user.account, :campaign => campaign) }
       let(:caller_session) { Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sessionkey") }
 
@@ -118,7 +118,7 @@ describe Caller do
       end
 
       it "puts the caller back into conference when * is chosen" do
-        campaign.update_attributes(:predictive_type => 'algorithm1')
+        campaign.update_attributes(:type => 'Predictive')
         phones_only_caller = Factory(:caller, :is_phones_only => true, :campaign => campaign)
         caller_session = Factory(:caller_session, :caller => phones_only_caller, :campaign => campaign, :session_key => "sessionkey")
         caller_session.should_receive(:start)

@@ -27,6 +27,7 @@ gem "activerecord-import", ">= 0.2.0"
 gem "airbrake",'~>3.0.9'
 gem 'recurly', '~> 2.0.11'
 gem "uuid", "~> 2.3.5"
+gem "call_center", "~> 0.0.9"
 
 
 group :development, :test do

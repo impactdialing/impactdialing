@@ -2,6 +2,7 @@ require Rails.root.join("lib/twilio_lib")
 
 class CallAttempt < ActiveRecord::Base
   include Rails.application.routes.url_helpers
+  include CallCenter
   belongs_to :voter
   belongs_to :campaign
   belongs_to :caller
@@ -18,6 +19,34 @@ class CallAttempt < ActiveRecord::Base
   scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
   scope :without_status, lambda { |statuses| {:conditions => ['status not in (?)', statuses]} }
   scope :with_status, lambda { |statuses| {:conditions => ['status in (?)', statuses]} }
+  
+  
+
+  call_flow :state, :initial => :initial do
+      state :initial do
+        event :incoming_call, :to => :connect
+      end 
+      
+      on_flow_to(:connect) do |call_attempt, transition|
+        call_attempt.update_attribute(:connecttime, Time.now)
+          if "machine"
+            call_attempt.voter.update_attributes(:status => CallAttempt::Status::HANGUP)
+            call_attempt.update_attributes(:status => CallAttempt::Status::HANGUP)
+            if call_attempt.campaign.type == Campaign::Type::PREVIEW || call_attempt.campaign.type == Campaign::Type::PROGRESSIVE
+              call_attempt.caller_session.publish('answered_by_machine', {})
+              call_attempt.caller_session.update_attribute(:voter_in_progress, nil)
+              next_voter = call_attempt.campaign.next_voter_in_dial_queue(call_attempt.voter.id)
+              call_attempt.caller_session.publish('voter_push', next_voter ? next_voter.info : {})
+              call_attempt.caller_session.publish('conference_started', {})
+            end
+            call_attempt.update_attributes(wrapup_time: Time.now)                    
+            (call_attempt.campaign.use_recordings? && call_attempt.campaign.answering_machine_detect) ? call_attempt.play_recorded_message : call_attempt.hangup
+          else
+            call_attempt.connect_to_caller(call_attempt.voter.caller_session)
+        end
+        
+      end
+  end 
 
 
   def report_recording_url
@@ -150,7 +179,7 @@ class CallAttempt < ActiveRecord::Base
     voter.update_attributes(:call_back => false)
     update_attributes(wrapup_time: Time.now)
     Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
-    if caller_session && (campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE)
+    if caller_session && (campaign.type == Campaign::Type::PREVIEW || campaign.type == Campaign::Type::PROGRESSIVE)
       caller_session.update_attribute(:voter_in_progress, nil)      
       if caller_session.caller.is_phones_only?
         caller_session.redirect_to_phones_only_start

@@ -1,7 +1,6 @@
 class CampaignsController < ClientController
   layout 'v2'
   include DeletableController
-  #skip_before_filter :verify_authenticity_token, :only => [:start, :stop]
   before_filter :verify_campaign_ownership, :only => [:update, :show, :start, :stop, :dial_statistics, :destroy]
   before_filter :setup_campaigns_paths, :only => [:index]
 
@@ -17,7 +16,7 @@ class CampaignsController < ClientController
   end
   
   def new
-    @campaign = Campaign.new(:account_id => account.id, robo:true)
+    @campaign = Robo.new(:account_id => account.id)
     @campaign.save(:validate => false)
     @callers = account.callers.active
     @lists = @campaign.voter_lists
@@ -26,7 +25,8 @@ class CampaignsController < ClientController
   end
 
   def create
-    campaign = @user.account.campaigns.create((params[:campaign]||{}).merge({:robo => true}))
+    campaign = Robo.create(params[:campaign])
+    campaign.account = @user.account
     campaign.script||= @user.account.scripts.robo.active.first
     campaign.save
     redirect_to broadcast_campaigns_path
@@ -70,7 +70,7 @@ class CampaignsController < ClientController
   end
 
   def show
-    unless @campaign.robo?
+    unless @campaign.type == Campaign::Type::ROBO
       redirect_to client_campaign_path(@campaign)
       return
     end
