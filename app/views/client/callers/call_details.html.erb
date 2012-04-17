@@ -7,23 +7,44 @@
         <div class="buttons"></p>
           <button type="submit">Switch campaign</button>
         </div>
-        <% @questions_and_responses.each do |question, responses| %>
-            <h3><%= @campaign.robo == true ? "Recording" : "Question" %>: <%= question %></h3>
-            <table>
-              <tr>
-                <th>Answer</th>
-                <th>Number</th>
-                <th>Percentage</th>
-              </tr>
-              <% responses.each do |response, stats| %>
-                  <tr>
-                    <td><%= response %></td>
-                    <td><%= @answered_call_stats[question][response][:count] rescue 0 %></td>
-                    <td><%= @answered_call_stats[question][response][:percentage].to_i rescue 0 %> %</td>
-                  </tr>
-              <% end %>
-            </table>
+        <% i = 1 %>
+        <% @results.each_pair do |question, stats| %>
+        	  <h3><%= @campaign.robo == true ? "Recording" : "Question" %> <%= i %>: <%= question %></h3>
+        	   <table>
+        	     <tr>
+        	       <th>Answer</th>
+        	       <th>Number</th>
+        	       <th>Percentage</th>
+        	     </tr>
+               <% stats.each do |answers| %>
+                <tr>
+                  <td><%= answers[:answer]%></td>
+                  <td><%= answers[:number]%></td>
+                  <td><%= answers[:percentage]%> %</td>
+          	    </tr>
+        	      <% end %>
+             </table>
+             <% i = i + 1%>
         <% end %>
+
+        <%unless @transfers.blank?%>
+          <table>
+            <h3>Transfers</h3>
+            <tr>
+              <th>Transfer</th>
+              <th>Number</th>
+              <th>Percentage</th>
+            </tr>
+            <%@transfers.each_pair do |key, value|%>
+            <tr>
+              <td><%= value[:label]%></td>
+              <td><%= value[:number]%></td>
+              <td><%= value[:percentage]%> %</td>
+            </tr>
+
+            <%end%>
+          </table>
+        <%end%>
         <h3>Date range:</h3>
         <%= render :partial => 'shared/date_picker' %>        
     <% end %>
