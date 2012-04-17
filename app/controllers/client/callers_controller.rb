@@ -1,5 +1,6 @@
 module Client
   class CallersController < ClientController
+    before_filter :full_access
     include DeletableController
     include ApplicationHelper::TimeUtils
     skip_before_filter :check_login, :only => [:reassign_to_campaign]
