@@ -18,9 +18,9 @@
         
         <td>
           <%= form_tag client_change_role_path(user), :method => :post do %>
-            <%= select("user_#{user.id}", "role", { "Administrator" => "admin", "Supervisor" => "supervisor"},{selected: user.role},   {name: "user[role]"}) %>
+            <%= select("user_#{user.id}", "role", { "Administrator" => "admin", "Supervisor" => "supervisor"},{selected: user.role},   {name: "user[role]", class: "user_role"}) %>
             <%= hidden_field(:user, :id, {value: user.id}) %>
-            <button type="submit">Change</button>
+            <button type="submit" style="display:none">Change</button>
           <% end %>
         </td>
         <td width="55">

@@ -7,6 +7,8 @@ class ClientController < ApplicationController
 
   layout "client"
   in_place_edit_for :campaign, :name
+  
+  
 
   def check_login
     redirect_to_login and return if session[:user].blank?
@@ -51,7 +53,7 @@ class ClientController < ApplicationController
     @title = "My Account"
 
     if session[:user].blank?
-      @user = User.new(:account => Account.new(:domain => request.domain))
+      @user = User.new(:account => Account.new(:domain => request.domain), role: User::Role::ADMINISTRATOR)
     else
       @user = User.find(session[:user])
       @account = @user.account
