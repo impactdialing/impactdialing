@@ -91,8 +91,8 @@ module Client
       @caller = Caller.find(params[:id])
       @campaigns = account.campaigns.manual.for_caller(@caller)
       @campaign = @campaigns.find_by_id(params[:campaign_id]) || @caller.caller_sessions.last.try(:campaign) || @caller.campaign
-      set_report_date_range(@campaign)
-      
+      set_report_date_range(@campaign)      
+      @answered_call_stats = @caller.answered_call_stats(@from_date, @to_date, @campaign)
       @questions_and_responses = @campaign.try(:questions_and_responses) || {}
     end
 
@@ -102,7 +102,7 @@ module Client
     end
     
     def set_report_date_range(campaign)
-      time_zone = ActiveSupport::TimeZone.new(campaign.try(:time_zone) || @caller.try(:campaign).try(:time_zone)|| "UTC")
+      time_zone = ActiveSupport::TimeZone.new(campaign.try(:time_zone) || @caller.try(:campaign).try(:time_zone) || "UTC")
       begin
         from_date = Time.strptime("#{params[:from_date]} #{time_zone.formatted_offset}", "%m/%d/%Y %:z") if params[:from_date]
         to_date = Time.strptime("#{params[:to_date]} #{time_zone.formatted_offset}", "%m/%d/%Y %:z") if params[:to_date]

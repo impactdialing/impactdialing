@@ -7,7 +7,6 @@
         <div class="buttons"></p>
           <button type="submit">Switch campaign</button>
         </div>
-        <% @answered_call_stats = @caller.answered_call_stats(@from_date, @to_date, @campaign) %>
         <% @questions_and_responses.each do |question, responses| %>
             <h3><%= @campaign.robo == true ? "Recording" : "Question" %>: <%= question %></h3>
             <table>
