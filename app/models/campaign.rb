@@ -363,10 +363,10 @@ class Campaign < ActiveRecord::Base
 
 
   def abandon_rate_acceptable?
-    answered_dials = call_attempts.with_status([CallAttempt::Status::SUCCESS, CallAttempt::Status::SCHEDULED]).size
-    abandon_count = call_attempts.with_status(CallAttempt::Status::ABANDONED).size
+    answered_dials = call_attempts.between(Time.at(1334561385) , Time.now).with_status([CallAttempt::Status::SUCCESS, CallAttempt::Status::SCHEDULED]).size
+    abandon_count = call_attempts.between(Time.at(1334561385) , Time.now).with_status(CallAttempt::Status::ABANDONED).size
     abandon_rate = abandon_count.to_f/answered_dials
-    abandon_rate < acceptable_abandon_rate
+    abandon_rate <= acceptable_abandon_rate
   end
 
   def dial_predictive_simulator
@@ -382,10 +382,11 @@ class Campaign < ActiveRecord::Base
 
   def answers_result(from_date, to_date)
     result = Hash.new
-    unless script.nil?
-      script.questions.each do |question|
-        total_answers = question.answered_within(from_date, to_date, self.id).size
-        result[question.text] = question.possible_responses.collect { |possible_response| possible_response.stats(from_date, to_date, total_answers, self.id) }
+    unless script.nil?      
+      answer_count = Answer.select("possible_response_id").where("campaign_id = ?", self.id).within(from_date, to_date).group("possible_response_id").count
+      total_answers = Answer.where("campaign_id = ?",self.id).within(from_date, to_date).group("question_id").count
+      script.questions.each do |question|        
+        result[question.text] = question.possible_responses.collect { |possible_response| possible_response.stats(answer_count, total_answers) }
         result[question.text] << {answer: "[No response]", number: 0, percentage:  0} unless question.possible_responses.find_by_value("[No response]").present?
       end
     end
