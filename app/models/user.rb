@@ -23,6 +23,11 @@ class User < ActiveRecord::Base
 
   before_save :hash_new_password, :if => :password_changed?
   
+  module Role
+    ADMINISTRATOR = "admin"
+    SUPERVISOR = "supervisor"
+  end
+  
   def reverse_captcha
     if captcha.present?
       errors.add(:base, 'Spambots aren\'t welcome here')
@@ -69,8 +74,8 @@ class User < ActiveRecord::Base
     role == "admin"
   end
   
-  def supervisior?
-    role == "supervisior"
+  def supervisor?
+    role == "supervisor"
   end
   
 

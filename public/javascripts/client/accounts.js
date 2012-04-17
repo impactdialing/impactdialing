@@ -4,4 +4,6 @@ $(document).ready(function(){
       $('#' + $(element.target).attr('data-form')).submit();
     }
   })
+
+  
 });
