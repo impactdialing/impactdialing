@@ -311,5 +311,13 @@ class ApplicationController < ActionController::Base
       flash.now[where] = [error_message]
     end
   end
+  
+  def full_access
+    if @user.supervisor?
+      flash_message(:error, I18n.t(:admin_access))
+      redirect_to '/client'
+      return
+    end
+  end
 
 end

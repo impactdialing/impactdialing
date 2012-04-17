@@ -210,7 +210,7 @@ ActiveRecord::Schema.define(:version => 20120417070443) do
     t.string   "caller_id"
     t.boolean  "caller_id_verified",       :default => false
     t.boolean  "use_answering",            :default => true
-    t.string   "type",                     :default => "preview"
+    t.string   "predictive_type",          :default => "preview"
     t.integer  "recording_id"
     t.boolean  "use_recordings",           :default => false
     t.integer  "max_calls_per_caller",     :default => 20

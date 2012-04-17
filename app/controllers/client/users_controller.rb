@@ -43,10 +43,10 @@ module Client
     def change_role
       user_to_change = User.find(params[:user][:id])
       if @user == user_to_change
-        flash_message(:notice, "You cant change your own role")
+        flash_message(:error, I18n.t(:failure_change_role))
       else
         user_to_change.update_attribute(:role, params[:user][:role])
-        flash_message(:notice, "Updated user role successfully.")
+        flash_message(:notice, I18n.t(:success_change_role))
       end
       redirect_to :back
     end

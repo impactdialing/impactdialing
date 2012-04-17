@@ -1,8 +1,10 @@
 <p>
 <a href="#join">My account</a><br>
-<a href="#administrators">Add administrators</a><br>
-<a href="/client/billing">Billing</a><br>
-<a href="/client/blocked_numbers">Do Not Call list</a>
+<% if !logged_in_as_client? || @user.administrator? %>
+  <a href="#administrators">Add administrators</a><br>
+  <a href="/client/billing">Billing</a><br>
+  <a href="/client/blocked_numbers">Do Not Call list</a>
+<%end%>
 </p>
 <%= render :partial => 'join_form' %>
 <% unless @user.new_record? %>
