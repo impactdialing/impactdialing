@@ -4,6 +4,7 @@
 class ApplicationController < ActionController::Base
   include WhiteLabeling
   helper :all # include all helpers, all the time
+  prepend_before_filter { |c| RecordCache::Strategy::RequestCache.clear }
   protect_from_forgery # See ActionController::RequestForgeryProtection for details
   before_filter :set_controller_name#, :preload_models
   # Scrub sensitive parameters from your log
