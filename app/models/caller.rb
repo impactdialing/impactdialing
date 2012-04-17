@@ -142,7 +142,7 @@ class Caller < ActiveRecord::Base
     unless campaign.script.nil?      
       answer_count = Answer.select("possible_response_id").where("campaign_id = ? and caller_id = ?", campaign.id, self.id).within(from, to).group("possible_response_id").count
       total_answers = Answer.where("campaign_id = ? and caller_id = ?",campaign.id, self.id).within(from, to).group("question_id").count
-      script.questions.each do |question|        
+      campaign.script.questions.each do |question|        
         result[question.text] = question.possible_responses.collect { |possible_response| possible_response.stats(answer_count, total_answers) }
         result[question.text] << {answer: "[No response]", number: 0, percentage:  0} unless question.possible_responses.find_by_value("[No response]").present?
       end
