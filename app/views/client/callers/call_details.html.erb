@@ -8,7 +8,7 @@
           <button type="submit">Switch campaign</button>
         </div>
         <% i = 1 %>
-        <% @results.each_pair do |question, stats| %>
+        <% @answered_call_stats.each_pair do |question, stats| %>
         	  <h3><%= @campaign.robo == true ? "Recording" : "Question" %> <%= i %>: <%= question %></h3>
         	   <table>
         	     <tr>
