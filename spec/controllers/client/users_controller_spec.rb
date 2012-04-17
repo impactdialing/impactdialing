@@ -38,7 +38,7 @@ describe Client::UsersController do
     UserMailer.stub(:new).and_return(mailer)
     mailer.should_receive(:deliver_invitation).with(anything, user)
     lambda {
-      post :invite, :email => 'foo@bar.com'
+      post :invite, :email => 'foo@bar.com', user: {role: "admin"}
     }.should change(user.account.users.reload, :count).by(1)
     user.account.users.reload.last.email.should == 'foo@bar.com'
     response.should redirect_to(:back)
