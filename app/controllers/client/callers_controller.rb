@@ -92,6 +92,7 @@ module Client
       @campaigns = account.campaigns.manual.for_caller(@caller)
       @campaign = @campaigns.find_by_id(params[:campaign_id]) || @caller.caller_sessions.last.try(:campaign) || @caller.campaign
       set_report_date_range(@campaign)
+      
       @questions_and_responses = @campaign.try(:questions_and_responses) || {}
     end
 
