@@ -1,10 +1,12 @@
 class ScriptsController < ClientController
   layout 'v2'
   include DeletableController
-
+  before_filter :full_access
   before_filter :new_script, :only => [:new, :create]
   before_filter :load_script, :only => [:update, :show, :destroy, :edit]
   before_filter :apply_changes, :only => [:create, :update]
+  
+
 
   def type_name
     'script'
