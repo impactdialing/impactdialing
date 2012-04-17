@@ -32,10 +32,21 @@ module Client
         flash_message(:error, "#{params[:email]} is already part of a different account.")
       else
         random_password = rand(Time.now.to_i)
-        new_user = account.users.create!(:email => params[:email], :new_password => random_password.to_s)
+        new_user = account.users.create!(:email => params[:email], :new_password => random_password.to_s, role: params[:user][:role])
         new_user.create_reset_code!
         UserMailer.new.deliver_invitation(new_user, @user)
         flash_message(:notice, "#{params[:email]} has been invited.")
+      end
+      redirect_to :back
+    end
+    
+    def change_role
+      user_to_change = User.find(params[:user][:id])
+      if @user == user_to_change
+        flash_message(:notice, "You cant change your own role")
+      else
+        user_to_change.update_attribute(:role, params[:user][:role])
+        flash_message(:notice, "Updated user role successfully.")
       end
       redirect_to :back
     end
