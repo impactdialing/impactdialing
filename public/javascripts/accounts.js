@@ -3,5 +3,6 @@ $(document).ready(function(){
     if(confirm($(element.target).attr('data-message'))){
       $('#' + $(element.target).attr('data-form')).submit();
     }
-  })
+  });
+
 });

@@ -64,6 +64,15 @@ class User < ActiveRecord::Base
   def admin?
     admin
   end
+  
+  def administrator?
+    role == "admin"
+  end
+  
+  def supervisior?
+    role == "supervisior"
+  end
+  
 
   def show_voter_buttons
     ["beans@beanserver.net", "wolthuis@twilio.com"].index(self.email)
