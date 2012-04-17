@@ -147,6 +147,7 @@ ImpactDialing::Application.routes.draw do
     get :update_report_real
     resources :users, :only => [:create, :destroy]
     post 'user_invite', :to => 'users#invite', :as => 'user_invite'
+    post 'change_role', :to => 'users#change_role', :as => 'change_role'
   end
 
   scope 'client' do
