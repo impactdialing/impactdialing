@@ -83,6 +83,7 @@ class CallAttempt < ActiveRecord::Base
 
   def connect_to_caller(caller_session=nil)
     caller_session ||= campaign.oldest_available_caller_session
+    puts caller_session.inspect
     if caller_session.nil? || caller_session.disconnected? || !caller_session.available_for_call
       abandon_call
     else
