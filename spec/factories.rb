@@ -16,6 +16,7 @@ Factory.define :user do |u|
   u.account { Factory(:account) }
   u.email { Factory.next(:email) }
   u.new_password 'password'
+  u.role "admin"
 end
 
 Factory.define :admin_user, :parent => :user do |u|

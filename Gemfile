@@ -27,6 +27,10 @@ gem "activerecord-import", ">= 0.2.0"
 gem "airbrake",'~>3.0.9'
 gem 'recurly', '~> 2.0.11'
 gem "uuid", "~> 2.3.5"
+gem "dalli", "~>2.0.3"
+gem 'record-cache', "~>0.1.2"
+
+
 
 
 group :development, :test do

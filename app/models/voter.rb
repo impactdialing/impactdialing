@@ -1,4 +1,6 @@
 class Voter < ActiveRecord::Base
+  
+  cache_records :store => :shared, :key => "vot", :request_cache => true
   module Status
     NOTCALLED = "not called"
     RETRY = "retry"
