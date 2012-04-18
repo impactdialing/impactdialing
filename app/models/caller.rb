@@ -145,17 +145,16 @@ class Caller < ActiveRecord::Base
   end
 
   def answered_call_stats(from, to, campaign)
-    responses = self.answers.within(from, to).with_campaign_id(campaign.id).count(
-      :joins => [:question, :possible_response],
-      :group => ["questions.text", "possible_responses.value"]
-    )
-    responses.inject({}) do |acc, curr|
-      question, answer = curr.first
-      total_for_question = responses.select { |r| r.first == question }.values.reduce(:+)
-      acc[question] = {:total => {:count => total_for_question, :percentage => 100 }} unless acc[question]
-      acc[question][answer] = {:count => curr.last, :percentage => curr.last / total_for_question.to_f * 100 }
-      acc
+    result = Hash.new
+    unless campaign.script.nil?      
+      answer_count = Answer.select("possible_response_id").where("campaign_id = ? and caller_id = ?", campaign.id, self.id).within(from, to).group("possible_response_id").count
+      total_answers = Answer.where("campaign_id = ? and caller_id = ?",campaign.id, self.id).within(from, to).group("question_id").count
+      campaign.script.questions.each do |question|        
+        result[question.text] = question.possible_responses.collect { |possible_response| possible_response.stats(answer_count, total_answers) }
+        result[question.text] << {answer: "[No response]", number: 0, percentage:  0} unless question.possible_responses.find_by_value("[No response]").present?
+      end
     end
+    result
   end
   
   def already_on_call

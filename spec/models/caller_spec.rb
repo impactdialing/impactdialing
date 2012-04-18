@@ -200,21 +200,18 @@ describe Caller do
     describe "campaign" do
 
       let(:voter) { Factory(:voter) }
-      let(:question) { Factory(:question, :text => "what?", :script => Factory(:script)) }
+      let(:script) {Factory(:script)}
+      let(:question) { Factory(:question, :text => "what?", script: script) }
 
       it "gets stats for answered calls" do
-        response_1 = Factory(:possible_response, :value => "foo")
-        response_2 = Factory(:possible_response, :value => "bar")
-        campaign = Factory(:campaign)
+        response_1 = Factory(:possible_response, :value => "foo", question: question)
+        response_2 = Factory(:possible_response, :value => "bar", question: question)
+        campaign = Factory(:campaign, script: script)
         3.times { Factory(:answer, :caller => caller, :voter => voter, :question => question, :possible_response => response_1, :campaign => campaign) }
         2.times { Factory(:answer, :caller => caller, :voter => voter, :question => question, :possible_response => response_2, :campaign => campaign) }
         Factory(:answer, :caller => caller, :voter => voter, :question => question, :possible_response => response_1, :campaign => Factory(:campaign))
         stats = caller.answered_call_stats(from_time, time_now+1.day, campaign)
-        stats.should == {"what?" => {
-          :total => {:count => 5, :percentage => 100},
-          "foo" => {:count => 3, :percentage => 60},
-          "bar" => {:count => 2, :percentage => 40},
-        }}
+        stats.should == {"what?"=>[{:answer=>"foo", :number=>3, :percentage=>60}, {:answer=>"bar", :number=>2, :percentage=>40}, {:answer=>"[No response]", :number=>0, :percentage=>0}]}
       end
     end
   end
