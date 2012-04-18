@@ -34,8 +34,8 @@ en:
   script_cannot_be_deleted: "This script cannot be deleted, as it is currently assigned to an active campaign."
   indentical_caller_on_call: "Another user is logged in as this caller. Only one user may log in as the same caller at the same time."
   invalid_date_format: "Sorry, that wasn't a valid date range."
-  admin_access: "Only a administrator can access the page."
-  failure_change_role: "You cant change your own role."
+  admin_access: "Only an administrator can access this page."
+  failure_change_role: "Sorry, you can't change your own role."
   success_change_role: "Updated user role successfully."
   white_labeling:
       
