@@ -4,7 +4,7 @@
 if Rails.env == 'heroku' || Rails.env == "heroku_staging"
   RecordCache::Base.version_store = Rails.cache
   RecordCache::Base.register_store(:local, ActiveSupport::Cache.lookup_store(:memory_store))
-  RecordCache::Base.register_store(:shared, Rails.cacje)
+  RecordCache::Base.register_store(:shared, Rails.cache)
 else
   RecordCache::Base.version_store = Rails.cache
   RecordCache::Base.register_store(:local, ActiveSupport::Cache.lookup_store(:memory_store))
