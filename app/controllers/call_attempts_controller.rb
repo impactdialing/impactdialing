@@ -102,7 +102,7 @@ class CallAttemptsController < ApplicationController
     else
       call_attempt.caller_session.publish("predictive_successful_voter_response", {})
     end
-    call_attempt.caller_session.update_attribute(:voter_in_progress, nil)
+    call_attempt.voter.update_attribute(:caller_session, nil)
   end
 
   def schedule_for_later(call_attempt)
