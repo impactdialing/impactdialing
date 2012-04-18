@@ -92,6 +92,7 @@ class CallAttempt < ActiveRecord::Base
         caller_session.update_attributes(:on_call => true, :available_for_call => false)
         conference(caller_session)
       rescue ActiveRecord::StaleObjectError
+        puts "Stale object"
         abandon_call
       end
     end
