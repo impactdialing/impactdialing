@@ -5,7 +5,6 @@ gem 'thin', '~>1.3.1'
 gem 'will_paginate', '~> 2.3.11'
 gem 'mysql', '~> 2.8.1'
 gem 'newrelic_rpm','~>3.0.1'
-gem 'hoptoad_notifier', '~> 2.4.11'
 gem 'json', '~> 1.6.1'
 gem 'nokogiri', '~> 1.4.4'
 gem "activemerchant", '~> 1.15.0', :require => "active_merchant"
