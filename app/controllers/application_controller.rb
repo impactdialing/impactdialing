@@ -1,7 +1,8 @@
 # Filters added to this controller apply to all controllers in the application.
 # Likewise, all the methods added will be available for all controllers.
-
+require 'new_relic/agent/method_tracer'
 class ApplicationController < ActionController::Base
+  include NewRelic::Agent::MethodTracer
   include WhiteLabeling
   helper :all # include all helpers, all the time
   protect_from_forgery # See ActionController::RequestForgeryProtection for details
@@ -29,6 +30,7 @@ class ApplicationController < ActionController::Base
       redirect_to "https://admin.#{request.domain}/#{@cont}/#{@act}/#{params[:id]}"
     end
   end
+  add_method_tracer :redirect_to_ssl, "Custom/#{self.class.name}/redirect_to_ssl"
 
   def testing?
     Rails.env == 'test'

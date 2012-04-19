@@ -90,9 +90,6 @@ GEM
       heroku (>= 2)
       rails (>= 2)
     highline (1.6.8)
-    hoptoad_notifier (2.4.11)
-      activesupport
-      builder
     httparty (0.7.8)
       crack (= 0.1.8)
     i18n (0.5.0)
@@ -243,7 +240,6 @@ DEPENDENCIES
   guard-spork
   heroku (~> 2.17.0)
   heroku_san
-  hoptoad_notifier (~> 2.4.11)
   in_place_editing (~> 1.1.1)
   jquery-rails (>= 1.0.12)
   json (~> 1.6.1)
