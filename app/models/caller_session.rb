@@ -54,7 +54,7 @@ class CallerSession < ActiveRecord::Base
     update_attribute('attempt_in_progress', attempt)
     voter.update_attributes(:last_call_attempt => attempt, :last_call_attempt_time => Time.now, :caller_session => self, status: CallAttempt::Status::RINGING)
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    params = {'FallbackUrl' => TWILIO_ERROR, 'StatusCallback' => end_call_attempt_url(attempt, :host => Settings.host, :port => Settings.port),'Timeout' => campaign.answering_machine_detect ? "30" : "15"}
+    params = {'FallbackUrl' => TWILIO_ERROR, 'StatusCallback' => end_call_attempt_url(attempt, :host => Settings.host, :port => Settings.port),'Timeout' => campaign.use_recordings? ? "30" : "15"}
     params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect        
     response = Twilio::Call.make(self.campaign.caller_id, voter.Phone, connect_call_attempt_url(attempt, :host => Settings.host, :port => Settings.port),params)
     

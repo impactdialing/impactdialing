@@ -121,7 +121,7 @@ class Voter < ActiveRecord::Base
   def dial_predictive
     call_attempt = new_call_attempt(self.campaign.predictive_type)
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    params = {'FallbackUrl' => TWILIO_ERROR,'StatusCallback' => end_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port), 'Timeout' => campaign.answering_machine_detect ? "30" : "15"}
+    params = {'FallbackUrl' => TWILIO_ERROR,'StatusCallback' => end_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port), 'Timeout' => campaign.use_recordings? ? "30" : "15"}
     params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect
     response = Twilio::Call.make(campaign.caller_id, self.Phone, connect_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port), params)
     if response["TwilioResponse"]["RestException"]
