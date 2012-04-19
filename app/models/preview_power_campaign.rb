@@ -17,12 +17,6 @@ module PreviewPowerCampaign
     voter
   end
   
-  def call_answered_by_machine(call_attempt)
-    call_attempt.caller_session.update_attribute(:voter_in_progress, nil)
-    next_voter = campaign.next_voter_in_dial_queue(call_attempt.voter.id)
-    call_attempt.caller_session.publish('voter_push', next_voter ? next_voter.info : {})
-    call_attempt.caller_session.publish('conference_started', {})    
-  end
   
   def push_next_voter_to_dial(call_attempt)
     next_voter = next_voter_in_dial_queue(call_attempt.voter.id)

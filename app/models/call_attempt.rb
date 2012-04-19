@@ -9,6 +9,7 @@ class CallAttempt < ActiveRecord::Base
   belongs_to :caller_session
   has_many :call_responses
   has_one :transfer_attempt
+  belongs_to :call
 
   scope :dial_in_progress, where('call_end is null')
   scope :not_wrapped_up, where('wrapup_time is null')
@@ -20,34 +21,13 @@ class CallAttempt < ActiveRecord::Base
   scope :without_status, lambda { |statuses| {:conditions => ['status not in (?)', statuses]} }
   scope :with_status, lambda { |statuses| {:conditions => ['status in (?)', statuses]} }
   
+  module Type
+    PREVIEW = "PreviewCallAttempt"
+    PREDICTIVE = "PredictiveCallAttempt"
+    PROGRESSIVE = "ProgressiveCallAttempt"
+    ROBO = "RoboCallAttempt"
+  end
   
-
-  call_flow :state, :initial => :initial do
-      state :initial do
-        event :incoming_call, :to => :connect
-      end 
-      
-      on_flow_to(:connect) do |call_attempt, transition|
-        call_attempt.update_attribute(:connecttime, Time.now)
-          if "machine"
-            call_attempt.voter.update_attributes(:status => CallAttempt::Status::HANGUP)
-            call_attempt.update_attributes(:status => CallAttempt::Status::HANGUP)
-            if call_attempt.campaign.type == Campaign::Type::PREVIEW || call_attempt.campaign.type == Campaign::Type::PROGRESSIVE
-              call_attempt.caller_session.publish('answered_by_machine', {})
-              call_attempt.caller_session.update_attribute(:voter_in_progress, nil)
-              next_voter = call_attempt.campaign.next_voter_in_dial_queue(call_attempt.voter.id)
-              call_attempt.caller_session.publish('voter_push', next_voter ? next_voter.info : {})
-              call_attempt.caller_session.publish('conference_started', {})
-            end
-            call_attempt.update_attributes(wrapup_time: Time.now)                    
-            (call_attempt.campaign.use_recordings? && call_attempt.campaign.answering_machine_detect) ? call_attempt.play_recorded_message : call_attempt.hangup
-          else
-            call_attempt.connect_to_caller(call_attempt.voter.caller_session)
-        end
-        
-      end
-  end 
-
 
   def report_recording_url
     "#{self.recording_url.gsub("api.twilio.com", "recordings.impactdialing.com")}.mp3" if recording_url
@@ -107,23 +87,61 @@ class CallAttempt < ActiveRecord::Base
     update_attributes(status: CallAttempt::Status::ABANDONED, wrapup_time: Time.now)
     voter.update_attributes(:status => CallAttempt::Status::ABANDONED, call_back: false)
     Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
-    hangup
   end
+  
+  def call_answered_by_machine
+    update_attribute(:connecttime, Time.now)
+    process_call_answered_by_machine
+    update_attribute(:wrapup_time, Time.now)                    
+    campaign.use_recordings? play_recorded_message : hangup    
+  end
+  
+  def connect_call
+    update_attribute(:connecttime, Time.now)
+    connect_to_caller(voter.caller_session)      
+  end
+  
+  def success
+    if [CallAttempt::Status::HANGUP, CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED].include? call_attempt.status
+      voter.update_attributes(:last_call_attempt_time => Time.now)
+      update_attributes(:call_end => Time.now)
+    else
+      voter.update_attributes(:status => CallAttempt::Status::MAP[params[:CallStatus]], :last_call_attempt_time => Time.now)
+      update_attributes(:status => CallAttempt::Status::MAP[params[:CallStatus]])
+    end
+    call_attempt.debit  
+    response = case params[:CallStatus] #using the 2010 api
+                 when "no-answer", "busy", "failed"
+                   call_attempt.fail
+                 else
+                   call_attempt.hangup
+               end
+    render :xml => response
+  end
+  
 
   def connect_to_caller(caller_session=nil)
     caller_session ||= campaign.oldest_available_caller_session
-    if caller_session.nil? || caller_session.disconnected? || !caller_session.available_for_call
+    abandon_call if caller_not_available?(caller_session)
+    update_attribute(:status, CallAttempt::Status::INPROGRESS)
+    voter.update_attribute(:caller_id, caller_session.caller_id)
+    begin
+      caller_session.update_attributes(:on_call => true, :available_for_call => false)
+      conference(caller_session)
+    rescue ActiveRecord::StaleObjectError
       abandon_call
-    else
-      update_attributes(:status => CallAttempt::Status::INPROGRESS)
-      voter.update_attributes(caller_id: caller_session.caller_id)
-      begin
-        caller_session.update_attributes(:on_call => true, :available_for_call => false)
-        conference(caller_session)
-      rescue ActiveRecord::StaleObjectError
-        abandon_call
-      end
     end
+  end
+  
+  
+  
+  def process_call_answered_by_machine
+    voter.update_attributes(:status => CallAttempt::Status::HANGUP)
+    update_attribute(:status, CallAttempt::Status::HANGUP)    
+  end
+  
+  def caller_not_available?(caller_session)
+    caller_session.nil? || caller_session.disconnected? || !caller_session.available_for_call?
   end
 
   def leave_voicemail
@@ -166,6 +184,15 @@ class CallAttempt < ActiveRecord::Base
       r.Redirect "#{connect_call_attempt_path(:id => self.id)}"
     end.text
   end
+  
+  def disconnected(params={})
+    update_attributes(:status => CallAttempt::Status::SUCCESS, :call_end => Time.now, :recording_duration=>params[:RecordingDuration], :recording_url=>params[:RecordingUrl])
+    voter.update_attribute(:status, CallAttempt::Status::SUCCESS)
+    Pusher[caller_session.session_key].trigger('voter_disconnected', {:attempt_id => self.id, :voter => self.voter.info})
+    Moderator.publish_event(campaign, 'voter_disconnected', {:caller_session_id => caller_session.id,:campaign_id => campaign.id, :caller_id => caller_session.caller.id, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
+    hangup
+  end
+  
 
   def disconnect(params={})
     update_attributes(:status => CallAttempt::Status::SUCCESS, :call_end => Time.now, :recording_duration=>params[:RecordingDuration], :recording_url=>params[:RecordingUrl])
