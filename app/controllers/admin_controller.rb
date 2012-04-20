@@ -1,7 +1,6 @@
 require Rails.root.join("lib/twilio_lib")
 
 class AdminController < ApplicationController
-  layout "basic"
   USER_NAME, PASSWORD = "impact", "Mb<3Ad4F@2tCallz"
   before_filter :authenticate
 
@@ -58,7 +57,7 @@ class AdminController < ApplicationController
       end
     end
 
-    render :layout=>"client"
+    # render :layout=>"client"
   end
 
   def set_report_date_range

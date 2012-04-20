@@ -1,7 +1,5 @@
 module Callers
-  class CampaignsController < ::CallerController
-    layout 'caller_campaign'
-    
+  class CampaignsController < ::CallerController    
     def show      
       unless @caller.account.activated?
         flash_now(:warning, "Your account is not funded. Please contact your account administrator.")

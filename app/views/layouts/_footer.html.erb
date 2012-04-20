@@ -1,0 +1,33 @@
+<footer role="contentinfo" class="clearfix">
+	<% if client_controller?(@controllerName) %>
+		<ul>
+		<% if @controllerName == "broadcast" %>
+	     <li><%= link_to content_tag(:span, 'Messages'), scripts_path, :class => @controllerName.index('script') ? 'active' : '' %></li>
+	     <li><%= link_to content_tag(:span, 'Campaigns'), campaigns_path, :class => @controllerName.index('campaigns') ? 'active' : '' %></li>
+	     <li><%= link_to content_tag(:span, 'Control'), control_campaigns_path, :class => @control_campaigns_active ? 'active' : '' %></li>
+	     <li><%= link_to content_tag(:span, 'Reports'), reports_path, :class => @control_campaigns_active ? 'active' : '' %></li>
+		<% elsif @controllerName == "client" %>
+			<li><a href="/client/scripts" <% if @actionName.index("script") %>class="active"<% end %>><span>Scripts</span></a></li>
+	    <li><a href="/client/campaigns" <% if @actionName.index("upload") || @actionName.index("campaign") %>class="active"<% end %>><span>Campaigns</span></a></li>
+	    <li><a href="/client/callers" <% if @actionName.index("caller") %>class="active"<% end %>><span>Callers</span></a></li>
+	    <li><a href="/client/monitor" <% if @actionName.index("monitor") %>class="active"<% end %>><span>Monitor</span></a></li>
+	    <li><a href="/client/reports" <% if @actionName.index("report") %>class="active"<% end %>><span>Reports</span></a></li>
+		<% end %>
+		</ul>
+		
+  	<div>
+	    <p class="vcard">Need help? <span class="tel"><%= phone %></span> or <a href="mailto:<%= email %>"><%= email %></a></p>
+	  </div>
+		<p></p>
+	<% end %>
+	
+	<% if logged_in_as_caller? %>
+	  <p style="float:right"><a href="/caller/logout">Log out</a></p>
+	<% end %>
+	
+	<ul class="clearfix">
+    <li class='divider'>&#169; 2012</li>
+    <li class='divider'><a href="/policies#privacy">Privacy</a></li>
+    <li><a href="/policies#terms">Terms</a></li>
+  </ul>
+</footer>

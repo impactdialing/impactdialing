@@ -26,7 +26,6 @@ class HomeController < ApplicationController
   end
 
   def tos
-    render :layout=>"client"
   end
 
   def monitor
@@ -35,6 +34,5 @@ class HomeController < ApplicationController
   end
 
   def policies
-    render :layout => 'client'
   end
 end
