@@ -3,11 +3,11 @@
 # E.g. a MemCached cluster or a Redis Store (defaults to Rails.cache)
 if Rails.env == 'heroku' || Rails.env == "heroku_staging"
   RecordCache::Base.version_store = Rails.cache
-  RecordCache::Base.register_store(:local, Rails.cache)
+  RecordCache::Base.register_store(:local, ActiveSupport::Cache.lookup_store(:memory_store))
   RecordCache::Base.register_store(:shared, Rails.cache)
 else
   RecordCache::Base.version_store = Rails.cache
-  RecordCache::Base.register_store(:local, Rails.cache)
+  RecordCache::Base.register_store(:local, ActiveSupport::Cache.lookup_store(:memory_store))
   RecordCache::Base.register_store(:shared, Rails.cache)
   
 end  
