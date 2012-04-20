@@ -129,34 +129,17 @@ class CallAttempt < ActiveRecord::Base
     update_attributes(:call_end => Time.now)
     call_attempt.debit  
   end
-  
+    
   def end_unanswered_call
     voter.update_attributes(:status => CallAttempt::Status::MAP[call.call_status], :last_call_attempt_time => Time.now, call_back: false)
     update_attributes(:status => CallAttempt::Status::MAP[call.call_status],wrapup_time: Time.now)    
     caller_session.update_attribute(:voter_in_progress, nil) unless caller_session.nil?             
   end
-
   
-  def end
-    if [CallAttempt::Status::HANGUP, CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED].include? call_attempt.status
-      voter.update_attributes(:last_call_attempt_time => Time.now)
-      update_attributes(:call_end => Time.now)
-    else
-      voter.update_attributes(:status => CallAttempt::Status::MAP[params[:CallStatus]], :last_call_attempt_time => Time.now)
-      update_attributes(:status => CallAttempt::Status::MAP[params[:CallStatus]])
-    end
-    call_attempt.debit  
-    response = case params[:CallStatus] #using the 2010 api
-                 when "no-answer", "busy", "failed"
-                   call_attempt.fail
-                 else
-                   call_attempt.hangup
-               end
-    render :xml => response
+  def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
+    t = TwilioLib.new(account, auth)
+    t.end_call("#{self.sid}")
   end
-  
-
-  
   
 
   def leave_voicemail
@@ -164,22 +147,6 @@ class CallAttempt < ActiveRecord::Base
     voter.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
     self.campaign.voicemail_script.robo_recordings.first.play_message(self)
   end
-
-  def play_recorded_message
-    update_attributes(:call_end => Time.now, :status => campaign.use_recordings? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP)
-    voter.update_attributes(:status => campaign.use_recordings? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP)
-    return hangup unless campaign.use_recordings?
-    Twilio::TwiML::Response.new do |r|
-      r.Play campaign.recording.file.url
-      r.Hangup
-    end.text
-  end
-
-  def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
-    t = TwilioLib.new(account, auth)
-    t.end_call("#{self.sid}")
-  end
-
 
 
   def wait(time)
@@ -194,38 +161,6 @@ class CallAttempt < ActiveRecord::Base
     voter.update_attribute(:status, CallAttempt::Status::SUCCESS)
   end
   
-  
-
-  def disconnect(params={})
-    update_attributes(:status => CallAttempt::Status::SUCCESS, :call_end => Time.now, :recording_duration=>params[:RecordingDuration], :recording_url=>params[:RecordingUrl])
-    voter.update_attribute(:status, CallAttempt::Status::SUCCESS)
-    Pusher[caller_session.session_key].trigger('voter_disconnected', {:attempt_id => self.id, :voter => self.voter.info})
-    Moderator.publish_event(campaign, 'voter_disconnected', {:caller_session_id => caller_session.id,:campaign_id => campaign.id, :caller_id => caller_session.caller.id, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
-    hangup
-  end
-
-  def fail
-    voter.update_attributes(:call_back => false)
-    update_attributes(wrapup_time: Time.now)
-    Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
-    if caller_session && (campaign.type == Campaign::Type::PREVIEW || campaign.type == Campaign::Type::PROGRESSIVE)
-      caller_session.update_attribute(:voter_in_progress, nil)      
-      if caller_session.caller.is_phones_only?
-        caller_session.redirect_to_phones_only_start
-      else  
-        next_voter = self.campaign.next_voter_in_dial_queue(voter.id) 
-        caller_session.publish('voter_push',next_voter.nil? ? {} : next_voter.info)         
-        caller_session.start
-      end  
-    else
-      hangup                        
-    end  
-  end
-
-  def hangup
-    Twilio::TwiML::Response.new { |r| r.Hangup }.text
-  end
-
   def schedule_for_later(scheduled_date)
     update_attributes(:scheduled_date => scheduled_date, :status => Status::SCHEDULED)
     voter.update_attributes(:scheduled_date => scheduled_date, :status => Status::SCHEDULED, :call_back => true)

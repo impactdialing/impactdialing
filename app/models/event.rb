@@ -31,6 +31,17 @@ module Event
       Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
     end
     
+    def publish_conference_started
+      Moderator.caller_connected_to_campaign(@caller, @caller.campaign, @session)
+      if campaign.type == Campaign::Type::PREVIEW || campaign.type == Campaign::Type::PROGRESSIVE
+        publish('conference_started', {}) 
+      else
+        publish('caller_connected_dialer', {})
+      end
+      
+    end
+    
+    
     
     
     

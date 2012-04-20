@@ -236,6 +236,106 @@ describe Call do
     
     
   end    
+  
+    describe "twilio detecting real user as answering machine" do
+      before(:each) do
+        @script = Factory(:script)
+        @campaign =  Factory(:campaign, script: @script)          
+        @voter = Factory(:voter, campaign: @campaign)
+        @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign)
+      end
+      
+      it "should update status as abandoned for voter" do
+        call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt)
+        call.end!
+        call.call_attempt.voter.status.should eq(CallAttempt::Status::ABANDONED)        
+      end
+      
+      it "should update caller_session for voter" do
+        call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, call_status: "success")
+        call.end!
+        call.call_attempt.voter.caller_session.should be_nil        
+      end
+      
+      it "should update  call back for voter" do
+        call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, call_status: "success")
+        call.end!
+        call.call_attempt.voter.call_back.should be_false        
+      end
+      
+      it "should update caller_id as nil for voter" do
+        call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, call_status: "success")
+        call.end!
+        call.call_attempt.voter.caller_id.should be_nil
+      end
+      
+      it "should update status as abandoned for call attempt" do
+        call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, call_status: "success")
+        call.end!
+        call.call_attempt.status.should eq(CallAttempt::Status::ABANDONED)
+      end
+      
+      it "should update wrapuptime for call attempt" do
+        call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, call_status: "success")
+        call.end!
+        call.call_attempt.wrapup_time.should_not be_nil
+      end
+      
+      it "should should render hangup to the lead" do
+        call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, call_status: "success")
+        call.end!
+        call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")      
+      end
+      
+    
+    describe "hangup on connected call"  do
+      
+      it "should render nothing" do
+        call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'connected')
+        twilio_lib = mock
+        TwilioLib.should_receive(:new).and_return(twilio_lib)
+        twilio_lib.should_receive(:end_call) 
+        call.hangup!
+        call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response></Response>")
+      end
+    end
+    
+    describe "disconnect  connected call"  do
+
+      it "should update voter status as success" do
+        call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'connected')
+        call.disconnect!
+        call.call_attempt.voter.status.should eq(CallAttempt::Status::SUCCESS)
+      end
+      
+      it "should update voter status as success" do
+        call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'connected')
+        call.disconnect!
+        call.call_attempt.voter.status.should eq(CallAttempt::Status::SUCCESS)
+      end
+      # update_attributes(status: CallAttempt::Status::SUCCESS, recording_duration: call.recording_duration, recording_url: call.recording_url)
+      
+      it "should update call attempt status as success" do
+        call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'connected')
+        call.disconnect!
+        call.call_attempt.status.should eq(CallAttempt::Status::SUCCESS)
+      end
+      
+      it "should update call attempt recording_duration" do
+        call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'connected')
+        call.disconnect!
+        call.call_attempt.status.should eq(CallAttempt::Status::SUCCESS)
+      end
+      
+      
+    end
+      
+      
+      
+      
+      
+      
+    end
     
     
   
