@@ -83,23 +83,37 @@ class CallAttempt < ActiveRecord::Base
     current_recording.next ? current_recording.next.twilio_xml(self) : current_recording.hangup
   end
   
-  def abandon_call
-    update_attributes(status: CallAttempt::Status::ABANDONED, wrapup_time: Time.now)
-    voter.update_attributes(:status => CallAttempt::Status::ABANDONED, call_back: false)
-    Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
-  end
   
   def call_answered_by_machine
     update_attribute(:connecttime, Time.now)
     process_call_answered_by_machine
     update_attribute(:wrapup_time, Time.now)                    
-    campaign.use_recordings? play_recorded_message : hangup    
+    campaign.use_recordings? ? play_recorded_message : hangup    
   end
   
   def connect_call
     update_attribute(:connecttime, Time.now)
-    connect_to_caller(voter.caller_session)      
+    connect_to_caller      
   end
+    
+  def connect_to_caller    
+    update_attribute(:status, CallAttempt::Status::INPROGRESS)
+    voter.update_attribute(:caller_id, caller_session.caller_id)
+    begin
+      caller_session.update_attributes(:on_call => true, :available_for_call => false)
+      # conference(caller_session)
+    rescue ActiveRecord::StaleObjectError
+      abandon_call
+    end
+  end
+  
+  def abandon_call
+    update_attributes(status: CallAttempt::Status::ABANDONED, wrapup_time: Time.now)
+    voter.update_attributes(:status => CallAttempt::Status::ABANDONED, call_back: false)
+    Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})    
+  end
+  
+  
   
   def success
     if [CallAttempt::Status::HANGUP, CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED].include? call_attempt.status
@@ -120,29 +134,20 @@ class CallAttempt < ActiveRecord::Base
   end
   
 
-  def connect_to_caller(caller_session=nil)
-    caller_session ||= campaign.oldest_available_caller_session
-    abandon_call if caller_not_available?(caller_session)
-    update_attribute(:status, CallAttempt::Status::INPROGRESS)
-    voter.update_attribute(:caller_id, caller_session.caller_id)
-    begin
-      caller_session.update_attributes(:on_call => true, :available_for_call => false)
-      conference(caller_session)
-    rescue ActiveRecord::StaleObjectError
-      abandon_call
-    end
-  end
-  
-  
-  
   def process_call_answered_by_machine
     voter.update_attributes(:status => CallAttempt::Status::HANGUP)
     update_attribute(:status, CallAttempt::Status::HANGUP)    
   end
   
-  def caller_not_available?(caller_session)
+  def caller_not_available?  
+    caller_session = voter.caller_session || campaign.oldest_available_caller_session
     caller_session.nil? || caller_session.disconnected? || !caller_session.available_for_call?
   end
+  
+  def caller_available?  
+    !caller_not_available?
+  end
+  
 
   def leave_voicemail
     update_attributes(:status => CallAttempt::Status::VOICEMAIL)

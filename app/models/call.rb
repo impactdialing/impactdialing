@@ -4,18 +4,32 @@ class Call < ActiveRecord::Base
   delegate :connect_call, :to => :call_attempt
   delegate :abandon_call, :to => :call_attempt
   delegate :ended, :to => :call_attempt
+  delegate :caller_not_available?, :to => :call_attempt
+  delegate :caller_available?, :to => :call_attempt
+  
   include CallCenter
   
   call_flow :state, :initial => :initial do    
     
       state :initial do
-        event :incoming_call, :to => :connected , :if => :answered_by_human?
+        event :incoming_call, :to => :connected , :if => :answered_by_human? && :caller_available?
+        event :incoming_call, :to => :abandoned , :if => :answered_by_human? && :caller_not_available?
         event :incoming_call, :to => :call_answered_by_machine , :if => :answered_by_machine?
       end 
       
       state :connected do
+        before(:always) { connect_call }
         event :put_in_conference, :to => :in_conference
         event :end, :to => :fail
+      end
+      
+      state :abandoned do
+        before(:always) {abandon_call}
+        # response do hangup
+      end
+      
+      state :call_answered_by_machine do
+        before(:always) { call_answered_by_machine }
       end
       
       state :in_conference do
@@ -23,28 +37,29 @@ class Call < ActiveRecord::Base
       end
       
       state :disconnected do
+        before(:always) { disconnected }
         event :end, :to => :success
       end
       
       state :ended do
+        before(:always) { ended }
         event :voter_response, :to => :wrapped_up
       end
       
       
       
-      on_render(:abandon_call, :disconnected) { |call, x| x.Hangup }
-      on_render(:ended) { |call, x| x.Hangup }
+      # render(:abandon_call)  do  |call, x| 
+      #   x.Hangup 
+      # end
       
-      on_flow_to(:connected) { |call, transition| call.connect_call }
-      on_flow_to(:call_answered_by_machine) { |call, transition| call.call_answered_by_machine }
-      
-      on_flow_to(:abandoned_call) { |call, transition| call.abandon_call }
-      
-      on_flow_to(:disconnected) {|call, transition| call.disconnected}
-      
-      on_flow_to(:ended) {|call, transition| call.ended}
-            
+      # on_render(:ended) { |call, x| x.Hangup }
+      #             
   end 
+  
+  def run(event)
+      send(event)
+      render
+  end
   
   def answered_by_machine?
     answered_by == "machine"
