@@ -134,10 +134,6 @@ class Voter < ActiveRecord::Base
     call_attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])
   end
 
-  def conference(session)
-    self.update_attributes(:status => CallAttempt::Status::INPROGRESS, :caller_session => session) # session.voter_in_progress.should == self
-  end
-
   def get_attribute(attribute)
     return self[attribute] if self.has_attribute? attribute
     return unless CustomVoterField.find_by_name(attribute)
