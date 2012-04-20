@@ -1,59 +1,137 @@
 class Call < ActiveRecord::Base
+  include Rails.application.routes.url_helpers
+  include CallCenter
+  include Event
+  
   has_one :call_attempt
   serialize :conference_history, Array
   delegate :connect_call, :to => :call_attempt
   delegate :abandon_call, :to => :call_attempt
-  delegate :ended, :to => :call_attempt
+  delegate :connect_lead_to_caller ,:to => :call_attempt
+  delegate :end_answered_call, :to => :call_attempt
+  delegate :end_running_call, :to => :call_attempt
+  delegate :disconnect_call, :to => :call_attempt
+  
+  delegate :process_answered_by_machine, :to => :call_attempt
   delegate :caller_not_available?, :to => :call_attempt
   delegate :caller_available?, :to => :call_attempt
+  delegate :caller_session, :to=> :call_attempt
+  delegate :campaign, :to=> :call_attempt
   
-  include CallCenter
+  
+  
+  def answered_by_machine?
+    answered_by == "machine"
+  end
+
+  def answered_by_human_and_caller_not_available?
+    answered_by == "human" && caller_not_available?
+  end
+  
+  def answered_by_human_and_caller_available?
+    answered_by == "human" && caller_available?
+  end
+  
+  def call_did_not_connect?
+    ["no-answer", "busy", "failed"].include?(call_status)
+  end
+  
+  def call_connected?
+    !call_did_not_connect?
+  end
+  
+  
+  
   
   call_flow :state, :initial => :initial do    
     
       state :initial do
-        event :incoming_call, :to => :connected , :if => :answered_by_human? && :caller_available?
-        event :incoming_call, :to => :abandoned , :if => :answered_by_human? && :caller_not_available?
-        event :incoming_call, :to => :call_answered_by_machine , :if => :answered_by_machine?
+        event :incoming_call, :to => :connected , :if => (:answered_by_human_and_caller_available?)
+        event :incoming_call, :to => :abandoned , :if => (:answered_by_human_and_caller_not_available?)
+        event :incoming_call, :to => :call_answered_by_machine , :if => (:answered_by_machine?)
+        event :end, :to => :fail
       end 
       
       state :connected do
-        before(:always) { connect_call }
-        event :put_in_conference, :to => :in_conference
-        event :end, :to => :fail
+        before(:always) {  connect_call }
+        after(:success) { publish_voter_connected }
+        event :hangup, :to => :hungup
+        event :disconnect, :to => :disconnected
+        
+        response do |xml_builder, the_call|
+          xml_builder.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(the_call.call_attempt, :host => Settings.host), :record=> campaign.account.record_calls do |d|
+            d.Conference caller_session.session_key, :waitUrl => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
+          end
+        end
+        
       end
       
       state :abandoned do
-        before(:always) {abandon_call}
-        # response do hangup
+        before(:always) { abandon_call }
+        
+        response do |xml_builder, the_call|
+          xml_builder.Hangup
+        end
+        
       end
       
       state :call_answered_by_machine do
-        before(:always) { call_answered_by_machine }
+        before(:always) { process_answered_by_machine }
+        
+        response do |xml_builder, the_call|
+          if campaign.use_recordings?
+            xml_builder.Play campaign.recording.file.url
+            xml_builder.Hangup            
+          else
+            xml_builder.Hangup
+          end
+        end
       end
       
-      state :in_conference do
+      state :hungup do
+        before(:always) { end_running_call }
         event :disconnect, :to => :disconnected
       end
       
+      
       state :disconnected do
-        before(:always) { disconnected }
+        before(:always) { disconnect_call }
+        after(:success) { publish_voter_disconnected }
         event :end, :to => :success
+        
+        response do |xml_builder, the_call|
+          xml_builder.Hangup
+        end
+        
       end
       
-      state :ended do
-        before(:always) { ended }
+      state :success do
+        before(:always) { end_answered_call }
         event :voter_response, :to => :wrapped_up
+        
+        response do |xml_builder, the_call|
+          xml_builder.Hangup
+        end        
+      end
+      
+      state :fail do
+        before(:always) { end_unanswered_call }
+        after(:success) { publish_unanswered_call_ended }        
+        response do |xml_builder, the_call|
+          if caller_session.nil?
+            xml_builder.Hangup
+          else
+            if caller_session.caller.is_phones_only?
+              caller_session.redirect_to_phones_only_start
+            else  
+            caller_session.start            
+          end
+        end  
+        
       end
       
       
       
-      # render(:abandon_call)  do  |call, x| 
-      #   x.Hangup 
-      # end
-      
-      # on_render(:ended) { |call, x| x.Hangup }
-      #             
   end 
   
   def run(event)
@@ -61,13 +139,8 @@ class Call < ActiveRecord::Base
       render
   end
   
-  def answered_by_machine?
-    answered_by == "machine"
-  end
   
-  def answered_by_human?
-    answered_by == "human"
-  end
+  
   
   
 end  
