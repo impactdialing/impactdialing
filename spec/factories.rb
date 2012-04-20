@@ -183,5 +183,8 @@ end
 Factory.define :transfer_attempt do |t|
 end
 
+Factory.define :call do |c|
+end
+
 
 

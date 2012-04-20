@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120419090349) do
+ActiveRecord::Schema.define(:version => 20120419123434) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -108,6 +108,7 @@ ActiveRecord::Schema.define(:version => 20120419090349) do
     t.integer  "recording_duration"
     t.datetime "wrapup_time"
     t.integer  "payment_id"
+    t.integer  "call_id"
   end
 
   add_index "call_attempts", ["call_end"], :name => "index_call_attempts_on_call_end"
@@ -223,6 +224,7 @@ ActiveRecord::Schema.define(:version => 20120419090349) do
     t.string   "api_version"
     t.string   "caller"
     t.string   "called_city"
+    t.string   "answered_by"
     t.datetime "waiting_at"
     t.datetime "ended_at"
     t.datetime "created_at"
@@ -601,7 +603,6 @@ ActiveRecord::Schema.define(:version => 20120419090349) do
     t.string   "password_reset_code"
     t.string   "phone"
     t.integer  "account_id"
-    t.string   "role"
   end
 
   create_table "voter_lists", :force => true do |t|
