@@ -49,7 +49,7 @@ class Call < ActiveRecord::Base
         event :incoming_call, :to => :connected , :if => (:answered_by_human_and_caller_available?)
         event :incoming_call, :to => :abandoned , :if => (:answered_by_human_and_caller_not_available?)
         event :incoming_call, :to => :call_answered_by_machine , :if => (:answered_by_machine?)
-        event :end, :to => :fail
+        event :end, :to => :abandoned
       end 
       
       state :connected do
@@ -114,6 +114,7 @@ class Call < ActiveRecord::Base
         end        
       end
       
+      
       state :fail do
         before(:always) { end_unanswered_call }
         after(:success) { publish_unanswered_call_ended }        
@@ -124,10 +125,10 @@ class Call < ActiveRecord::Base
             if caller_session.caller.is_phones_only?
               caller_session.redirect_to_phones_only_start
             else  
-            caller_session.start            
-          end
-        end  
-        
+              caller_session.start            
+            end
+          end  
+        end
       end
       
       

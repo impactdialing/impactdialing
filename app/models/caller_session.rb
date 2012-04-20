@@ -76,6 +76,15 @@ class CallerSession < ActiveRecord::Base
     attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])
   end
 
+  def conference_started
+    return if endtime.nil?
+    begin
+      update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
+    rescue ActiveRecord::StaleObjectError
+      Rails.logger.debug("Stale object for #{self.inspect}")
+    end
+    
+  end
 
   def start
     wrapup
