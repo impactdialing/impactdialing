@@ -1,7 +1,6 @@
 require 'tempfile'
 
 class VoterListsController < ClientController
-  layout 'v2'
 
   before_filter :load_campaign, :setup_based_on_type
   before_filter :check_file_uploaded, :only => [:import]

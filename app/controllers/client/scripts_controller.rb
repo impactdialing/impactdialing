@@ -2,7 +2,6 @@ module Client
   class ScriptsController < ::ScriptsController
     skip_before_filter :load_script, :apply_changes
 
-    layout 'client'
 
     def deleted
       render 'scripts/deleted'

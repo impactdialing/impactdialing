@@ -1,7 +1,7 @@
 <% if client_controller?(@controllerName) %>
 	<nav role="navigation" class="clearfix">
 	  <ul class="clearfix">
-	    <% if @controllerName == 'client' %>
+	    <% if @controllerName.split("/").first == 'client' %>
 		    <li><a href="/client/scripts" <% if @actionName.index("script") %>class="active"<% end %>><span>Scripts</span></a></li>
 		    <li><a href="/client/campaigns" <% if @actionName.index("upload") || @actionName.index("campaign") %>class="active"<% end    %>><span>Campaigns</span></a></li>
 		    <li><a href="/client/callers" <% if @actionName.index("caller") %>class="active"<% end %>><span>Callers</span></a></li>

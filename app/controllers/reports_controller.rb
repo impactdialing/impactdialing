@@ -1,5 +1,4 @@
 class ReportsController < ClientController
-  layout 'v2'
   before_filter :load_campaign, :only => [:usage, :dials, :answers]
 
   def load_campaign

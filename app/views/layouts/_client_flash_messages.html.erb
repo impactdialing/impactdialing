@@ -1,0 +1,23 @@
+<% if flash[:notice] and display.include? :notice %>
+    <% flash[:notice].reverse.each do |message| %>
+        <div class="callout clearfix">
+          <p><%= message %></p>
+        </div>
+    <% end %>
+<% end %>
+
+<% if flash[:warning] and display.include? :warning %>
+    <% flash[:warning].reverse.each do |message| %>
+        <div class="callout alert clearfix">
+          <p><%= message %></p>
+        </div>
+    <% end %>
+<% end %>
+
+<% if flash[:error] and display.include? :error %>
+    <% flash[:error].reverse.each do |message| %>
+        <div class="callout alert clearfix">
+          <p><strong><%= message %></strong></p>
+        </div>
+    <% end %>
+<% end %>

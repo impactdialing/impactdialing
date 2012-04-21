@@ -1,6 +1,5 @@
 module Client
   class CampaignsController < ::CampaignsController
-    layout 'client'
 
     def new
       @campaign = Campaign.new(:account_id => account.id)

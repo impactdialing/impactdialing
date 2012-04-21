@@ -57,7 +57,6 @@ class AdminController < ApplicationController
       end
     end
 
-    # render :layout=>"client"
   end
 
   def set_report_date_range

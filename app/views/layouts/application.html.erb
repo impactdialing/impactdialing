@@ -1,38 +1,29 @@
 <!DOCTYPE html>
+	<%= render :partial => 'layouts/ie' %>
 	<head>
-	  <%= render :partial => "shared/kissmetrics" %>  
 	  <meta charset="utf-8">
 	  <title><%= title %></title>
-		<%= render :partial => '/layouts/viewport' %>
-	  <%= csrf_meta_tag %>
-		<%#javascript_include_tag :defaults %>
-		<%# unobtrusive_datepicker_includes %>
-
-		<%# web ui scripts %>
-	  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
-	  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
-	  <%= javascript_include_tag 'application' %>
+	  <%= render :partial => 'layouts/kissmetrics' %>
+		<%= render :partial => 'layouts/viewport' %>
+		
+		<%= yield :stylesheets %>
 	  <%= yield :javascripts %>
+		
 		<%= render :partial => 'layouts/stylesheets' %>
-	  <%= yield :stylesheets %>
-
-	  <!-- JavaScript in footer except for Modernizr -->
-	  <script src="/js/libs/modernizr-custom.js"></script>
-
-		<% render :partial => 'layouts/mobile'%>
+		<%= render :partial => 'layouts/mobile' %>
+	  <%= javascript_include_tag 'application' %>
+		<script type='text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'></script>
+	  <script type='text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js'></script>
+		<script src='/js/libs/modernizr-custom.js'></script>
+		<%= csrf_meta_tag %>
 	</head>
-
 	<body class="admin clearfix">
-
-		<%= render :partial => 'layouts/header'%>
-		<%= render :partial => 'layouts/navigation'%>
-		<%= render :partial => "shared/client_flash_messages", :locals => {:display => [:notice, :error, :warning]} %>
-
+		<%= render :partial => 'layouts/header' %>
+		<%= render :partial => 'layouts/navigation' %>
+		<%= render :partial => 'layouts/client_flash_messages', :locals => {:display => [:notice, :error, :warning]} %>
 		<div class="content clearfix">
 		  <%= yield %>
-		</div>
-		
+		</div>	
 		<%= render :partial => 'layouts/footer' %>
-		
 	</body>
 </html>
