@@ -7,7 +7,7 @@ class CallerController < ApplicationController
   
   
   def flow
-    render xml:  @call_session.run(params[:event])
+    @call_session.run(params[:event])
   end
   
   
@@ -69,17 +69,6 @@ class CallerController < ApplicationController
     render :nothing => true
   end
 
-  # def pause
-  #   caller = Caller.find(params[:id])
-  #   caller_session = caller.caller_sessions.find(params[:session_id])
-  #   if caller_session.disconnected?
-  #     render :xml => Twilio::Verb.hangup
-  #   else
-  #     render :xml => caller_session.voter_in_progress ? caller_session.pause_for_results(params[:attempt]) : caller_session.start_calling
-  #   end
-  # end
-  # add_method_tracer :pause, "Custom/#{self.class.name}/pause"
-
   def gather_response
     caller = Caller.find(params[:id])
     caller_session = caller.caller_sessions.find(params[:session_id])
@@ -125,17 +114,10 @@ class CallerController < ApplicationController
   end
 
   def start_calling
-    if params[:caller_id].blank? || params[:campaign_id].blank?
-      render nothing: true
-    else
-      @caller = Caller.find(params[:caller_id])
-      @identity = CallerIdentity.find_by_session_key(params[:session_key])
-      @session = @caller.create_caller_session(@identity.session_key, params[:CallSid])
-      # Moderator.caller_connected_to_campaign(@caller, @caller.campaign, @session)      
-      # @session.publish('start_calling', {caller_session_id: @session.id}) 
-      # @session.preview_voter unless @caller.is_on_call?
-      render xml: @session.run(:start_conf)
-    end
+    @caller = Caller.find(params[:caller_id])
+    @identity = CallerIdentity.find_by_session_key(params[:session_key])
+    @session = @caller.create_caller_session(@identity.session_key, params[:CallSid])
+    render xml: @session.run(:start_conf)
   end
 
 

@@ -17,10 +17,21 @@ module PreviewPowerCampaign
     voter
   end
   
-  
-  def push_next_voter_to_dial(call_attempt)
-    next_voter = next_voter_in_dial_queue(call_attempt.voter.id)
-    call_attempt.caller_session.publish('voter_push', next_voter ? next_voter.info : {})    
+    
+  def caller_conference_started_event
+    next_voter = next_voter_in_dial_queue
+    {event: 'conference_started', data: next_voter.nil? ? {} : next_voter.info}                     
   end
+  
+  def voter_connected_event(call_attempt)
+    {event: 'voter_connected_dialer', data: {attempt_id:  call_attempt.id}}
+  end
+  
+  def call_answered_machine_event(call_attempt)    
+    next_voter = next_voter_in_dial_queue(call_attempt.voter.id)
+    {event: 'dial_next_voter', data: next_voter.nil? ? {} : next_voter.info}                         
+  end
+  
+  
   
 end

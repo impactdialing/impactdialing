@@ -1,7 +1,7 @@
 class CallerSession < ActiveRecord::Base
   include Rails.application.routes.url_helpers
   include CallCenter
-  include Event
+  include CallerEvents
   
   belongs_to :caller
   belongs_to :campaign
@@ -36,7 +36,7 @@ class CallerSession < ActiveRecord::Base
   
   
   call_flow :state, :initial => :initial do    
-    
+      
       state [:initial, :connected] do
         event :start_conf, :to => :account_not_activated, :if => :account_not_activated?
         event :start_conf, :to => :subscription_limit, :if => :subscription_limit_exceeded?
@@ -99,11 +99,8 @@ class CallerSession < ActiveRecord::Base
   
   def end_caller_session
     update_attributes(:on_call => false, :available_for_call => false, :endtime => Time.now)
-    # Moderator.publish_event(campaign, "caller_disconnected",{:caller_session_id => id, :caller_id => caller.id, :campaign_id => campaign.id, :campaign_active => campaign.callers_log_in?,
-    #         :no_of_callers_logged_in => campaign.caller_sessions.on_call.size})
     attempt_in_progress.try(:update_attributes, {:wrapup_time => Time.now})
     attempt_in_progress.try(:capture_answer_as_no_response)
-    # self.publish("caller_disconnected", {source: "end_call"})    
   end
   
   def account_not_activated?
@@ -163,14 +160,6 @@ class CallerSession < ActiveRecord::Base
     attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])
   end
   
-  def start_conference    
-    reassign_caller_session_to_campaign if caller_reassigned_to_another_campaign?
-    begin
-      update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
-    rescue ActiveRecord::StaleObjectError
-      # end conf
-    end
-  end
 
 
   def start

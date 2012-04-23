@@ -12,7 +12,7 @@ describe Call do
     before(:each) do
       @caller = Factory(:caller)
       @script = Factory(:script)
-      @campaign =  Factory(:campaign, script: @script)    
+      @campaign =  Factory(:predictive, script: @script)    
       @caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
       @voter  = Factory(:voter, campaign: @campaign)
       @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign)
@@ -99,7 +99,7 @@ describe Call do
     before(:each) do
       @caller = Factory(:caller)
       @script = Factory(:script)
-      @campaign =  Factory(:campaign, script: @script)          
+      @campaign =  Factory(:predictive, script: @script)          
       @caller_session = Factory(:caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign)
       @voter = Factory(:voter, campaign: @campaign)
       @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign)
@@ -164,9 +164,10 @@ describe Call do
     
     before(:each) do
       @script = Factory(:script)
-      @campaign =  Factory(:campaign, script: @script, use_recordings: false)          
+      @campaign =  Factory(:preview, script: @script, use_recordings: false)          
       @voter = Factory(:voter, campaign: @campaign)
       @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign)
+      
     end
         
     it "should  update connecttime for call_attempt" do
@@ -336,7 +337,8 @@ describe Call do
         @script = Factory(:script)
         @campaign =  Factory(:campaign, script: @script)          
         @voter = Factory(:voter, campaign: @campaign)
-        @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign)
+        @caller_session = Factory(:caller_session)
+        @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session)
       end
       
       it "should update voter status as success" do
@@ -389,7 +391,8 @@ describe Call do
         @script = Factory(:script)
         @campaign =  Factory(:campaign, script: @script)          
         @voter = Factory(:voter, campaign: @campaign)
-        @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign)
+        @caller_session = Factory(:caller_session)
+        @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session)
       end
       
       it "should update voter status as success" do

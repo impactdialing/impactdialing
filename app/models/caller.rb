@@ -109,12 +109,6 @@ class Caller < ActiveRecord::Base
     end
   end
   
-  def max_callers_reached
-    response = Twilio::Verb.new do |v|
-      v.say("The maximum number of callers for this account has been reached. Wait for another caller to finish, or ask your administrator to upgrade your account.")
-      v.hangup
-    end.response
-  end
   
   def choice_result(caller_choice, voter, caller_session)
     if caller_choice == "*"
@@ -161,12 +155,6 @@ class Caller < ActiveRecord::Base
     end
   end
   
-  def already_on_call
-    Twilio::Verb.new do |v|
-      v.say I18n.t(:indentical_caller_on_call)
-      v.hangup
-    end.response
-  end
   
   def create_caller_session(session_key, sid)
     caller_sessions.create(on_call: false, available_for_call: false, session_key: session_key, campaign: campaign , sid: sid, starttime: Time.now)
