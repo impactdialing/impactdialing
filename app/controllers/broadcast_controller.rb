@@ -8,6 +8,5 @@ class BroadcastController < ClientController
   end
 
   def policies
-    render 'home/policies'
   end
 end

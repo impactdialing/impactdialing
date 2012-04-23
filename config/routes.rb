@@ -8,7 +8,6 @@ ImpactDialing::Application.routes.draw do
   end
   match '/client/policies', :to => 'client#policies', :as => :client_policies
   match '/broadcast/policies', :to => 'broadcast#policies', :as => :broadcast_policies
-  match '/homecss/css/style.css', :to => 'home#homecss'
 
   namespace 'api' do
     resources :leads

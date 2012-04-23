@@ -303,7 +303,6 @@ class ClientController < ApplicationController
   end
 
   def policies
-    render 'home/policies'
   end
 
   private
