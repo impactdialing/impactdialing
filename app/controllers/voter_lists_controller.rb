@@ -33,7 +33,7 @@ class VoterListsController < ClientController
       redirect_to @campaign_path
       return
     end    
-    render "column_mapping", :layout => @layout
+    render "column_mapping"
   end
 
   def import
@@ -68,10 +68,10 @@ class VoterListsController < ClientController
 
   def setup_based_on_type
     if @campaign.robo?
-      @layout = 'v2'
+      @controllerName = 'broadcast'
       @campaign_path = campaign_path(@campaign)
     else
-      @layout = 'client'
+      @controllerName = 'client'
       @campaign_path = client_campaign_path(@campaign)
     end
   end
