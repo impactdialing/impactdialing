@@ -7,7 +7,7 @@ class CallerController < ApplicationController
   
   
   def flow
-    render xml:  @call.run(params[:event])
+    render xml:  @call_session.run(params[:event])
   end
   
   
@@ -69,16 +69,16 @@ class CallerController < ApplicationController
     render :nothing => true
   end
 
-  def pause
-    caller = Caller.find(params[:id])
-    caller_session = caller.caller_sessions.find(params[:session_id])
-    if caller_session.disconnected?
-      render :xml => Twilio::Verb.hangup
-    else
-      render :xml => caller_session.voter_in_progress ? caller_session.pause_for_results(params[:attempt]) : caller_session.start
-    end
-  end
-  add_method_tracer :pause, "Custom/#{self.class.name}/pause"
+  # def pause
+  #   caller = Caller.find(params[:id])
+  #   caller_session = caller.caller_sessions.find(params[:session_id])
+  #   if caller_session.disconnected?
+  #     render :xml => Twilio::Verb.hangup
+  #   else
+  #     render :xml => caller_session.voter_in_progress ? caller_session.pause_for_results(params[:attempt]) : caller_session.start_calling
+  #   end
+  # end
+  # add_method_tracer :pause, "Custom/#{self.class.name}/pause"
 
   def gather_response
     caller = Caller.find(params[:id])

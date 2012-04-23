@@ -18,8 +18,5 @@ class PhonesOnlyCallerSession < CallerSession
       end
   end
   
-  def reassign_caller_session_to_campaign
-    super    
-  end
     
 end

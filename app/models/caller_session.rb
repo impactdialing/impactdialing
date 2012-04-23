@@ -20,8 +20,6 @@ class CallerSession < ActiveRecord::Base
   has_one :moderator
   has_many :transfer_attempts
   
-  delegate :time_period_exceeded?, :to => :campaign
-  delegate :is_on_call?, :to => :caller
   delegate :subscription_allows_caller?, :to => :caller
   delegate :activated?, :to => :caller
 
@@ -39,15 +37,17 @@ class CallerSession < ActiveRecord::Base
   
   call_flow :state, :initial => :initial do    
     
-      state :initial do
-        event :start_conf, :to => :subscription_limit, :if => :subscription_allows_caller?
-        event :start_conf, :to => :account_not_activated, :if => :subscription_allows_caller?
-        event :start_conf, :to => :caller_on_call,  :if => :is_on_call?
+      state [:initial, :connected] do
+        event :start_conf, :to => :account_not_activated, :if => :account_not_activated?
+        event :start_conf, :to => :subscription_limit, :if => :subscription_limit_exceeded?
         event :start_conf, :to => :time_period_exceeded, :if => :time_period_exceeded?
-        event :start_conf, :to => :disconnected, :if => :caller_disconnected?
-        # event :start_conference, :to => :connected
-        event :start_conf, :to => :caller_reassigned, :if => :caller_reassigned_to_another_campaign?
+        event :start_conf, :to => :caller_on_call,  :if => :is_on_call?
+        event :start_conf, :to => :disconnected, :if => :disconnected?
       end 
+      
+      state all - [:initial] do
+        event :end_conf, :to => :conference_ended
+      end
       
       state :subscription_limit do
         
@@ -86,41 +86,44 @@ class CallerSession < ActiveRecord::Base
         end        
       end
       
-      state :any do
-        event :end_conf, :to => :conference_ended
-      end
       
       state :conference_ended do
+        before(:always) {end_caller_session}
+        response do |xml_builder, the_call|
+          xml_builder.Hangup
+        end        
+                
       end
       
-      
-      # state :connected do
-      #         before(:always) { start_conference }
-      #         
-      #         response do |xml_builder, the_call|
-      #           xml_builder.dial(:hangupOnStar => true, :action => caller_response_path) do
-      #             xml_builder.conference(caller_session.session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')        
-      #           end                
-      #         end
-      #       end
-      #       
-      
+  end
+  
+  def end_caller_session
+    update_attributes(:on_call => false, :available_for_call => false, :endtime => Time.now)
+    # Moderator.publish_event(campaign, "caller_disconnected",{:caller_session_id => id, :caller_id => caller.id, :campaign_id => campaign.id, :campaign_active => campaign.callers_log_in?,
+    #         :no_of_callers_logged_in => campaign.caller_sessions.on_call.size})
+    attempt_in_progress.try(:update_attributes, {:wrapup_time => Time.now})
+    attempt_in_progress.try(:capture_answer_as_no_response)
+    # self.publish("caller_disconnected", {source: "end_call"})    
+  end
+  
+  def account_not_activated?
+    !activated?
+  end
+  
+  def subscription_limit_exceeded?
+    !subscription_allows_caller?
+  end
+  
+  def time_period_exceeded?
+    campaign.time_period_exceeded?
+  end
+  
+  def is_on_call?
+    caller.is_on_call?
   end
     
+    
 
-  def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
-    t = ::TwilioLib.new(account, auth)
-    t.end_call("#{self.sid}")
-    begin
-      self.update_attributes(:on_call => false, :available_for_call => false, :endtime => Time.now)
-    rescue ActiveRecord::StaleObjectError
-      self.reload
-      self.end_running_call
-    end      
-    Moderator.publish_event(campaign, "caller_disconnected",{:caller_session_id => id, :caller_id => caller.id, :campaign_id => campaign.id, :campaign_active => campaign.callers_log_in?,
-      :no_of_callers_logged_in => campaign.caller_sessions.on_call.size})
-    self.publish("caller_disconnected", {source: "end_running_call"})
-  end
 
 
   def call(voter)
@@ -158,6 +161,15 @@ class CallerSession < ActiveRecord::Base
     self.publish('calling_voter', voter.info)
     Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id,:dials_in_progress => campaign.call_attempts.not_wrapped_up.size})
     attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])
+  end
+  
+  def start_conference    
+    reassign_caller_session_to_campaign if caller_reassigned_to_another_campaign?
+    begin
+      update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
+    rescue ActiveRecord::StaleObjectError
+      # end conf
+    end
   end
 
 
@@ -316,9 +328,6 @@ class CallerSession < ActiveRecord::Base
      CallerSession.for_caller(caller).on_campaign(campaign).between(from, to).where("tCaller is NOT NULL").sum('ceil(TIMESTAMPDIFF(SECOND ,starttime,endtime)/60)').to_i
    end
    
-   def caller_disconnected?
-     !endtime.nil?
-   end
    
 
   private

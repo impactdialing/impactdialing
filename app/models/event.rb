@@ -49,14 +49,14 @@ module Event
     end
     
     def publish_caller_reassignes_to_campaign_for_monitor
-      Moderator.publish_event(campaign, "caller_re_assigned_to_campaign", {:caller_session_id => id, :caller_id => caller.id, :campaign_fields => {:id => campaign.id, :campaign_name => campaign.name, :callers_logged_in => campaign.caller_sessions.on_call.size,
-        :voters_count => Voter.remaining_voters_count_for('campaign_id', campaign.id), :dials_in_progress => campaign.call_attempts.not_wrapped_up.size }, :old_campaign_id => old_campaign.id,:no_of_callers_logged_in_old_campaign => old_campaign.caller_sessions.on_call.size})      
+      # Moderator.publish_event(campaign, "caller_re_assigned_to_campaign", {:caller_session_id => id, :caller_id => caller.id, :campaign_fields => {:id => campaign.id, :campaign_name => campaign.name, :callers_logged_in => campaign.caller_sessions.on_call.size,
+      #   :voters_count => Voter.remaining_voters_count_for('campaign_id', campaign.id), :dials_in_progress => campaign.call_attempts.not_wrapped_up.size }, :old_campaign_id => old_campaign.id,:no_of_callers_logged_in_old_campaign => old_campaign.caller_sessions.on_call.size})      
     end
     
     def publish_caller_reassigned_to_campaign
-      publish_caller_reassignes_to_campaign_for_monitor
-      next_voter = caller.campaign.next_voter_in_dial_queue
-      self.publish("caller_re_assigned_to_campaign",{:campaign_name => caller.campaign.name, :campaign_id => caller.campaign.id, :script => caller.campaign.script.try(:script)}.merge!(next_voter ? next_voter.info : {}))      
+      # publish_caller_reassignes_to_campaign_for_monitor
+      # next_voter = caller.campaign.next_voter_in_dial_queue
+      # self.publish("caller_re_assigned_to_campaign",{:campaign_name => caller.campaign.name, :campaign_id => caller.campaign.id, :script => caller.campaign.script.try(:script)}.merge!(next_voter ? next_voter.info : {}))      
     end
     
     
