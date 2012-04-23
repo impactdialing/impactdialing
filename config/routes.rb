@@ -23,14 +23,6 @@ ImpactDialing::Application.routes.draw do
     end
   end
 
-  namespace 'admin' do
-    [:campaigns, :scripts, :callers].each do |entities|
-      resources entities, :only => [:index] do
-        put '/restore', :controller => entities, :action => 'restore', :as => 'restore'
-      end
-    end
-  end
-
   namespace "callers" do
     resources :campaigns do
       member do
@@ -220,8 +212,6 @@ ImpactDialing::Application.routes.draw do
   match '/twilio_callback', :to => 'twilio#callback', :as => :twilio_callback, :protocol => PROTOCOL
   match '/twilio_report_error', :to => 'twilio#report_error', :as => :twilio_report_error, :protocol => PROTOCOL
   match '/twilio_call_ended', :to => 'twilio#call_ended', :as => :twilio_call_ended, :protocol => PROTOCOL
-
-  get 'admin/status', :to => 'admin#state'
 
   resource :call_attempts, :only => :create
 

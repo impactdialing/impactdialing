@@ -21,7 +21,7 @@
 		<p></p>
 	<% end %>
 	
-	<% if logged_in_as_caller? %>
+	<% if logged_in_as_caller? && @controllerName.split("/").first != 'client' %>
 	  <p style="float:right"><a href="/caller/logout">Log out</a></p>
 	<% end %>
 	

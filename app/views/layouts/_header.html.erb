@@ -1,6 +1,6 @@
 <header role="banner" class="clearfix">
 
-<% if !logged_in_as_caller? %>
+<% if !logged_in_as_caller? || @controllerName.split("/").first == 'client' %>
 	<% if @controllerName.split("/").first == 'client' %>
 		<h1 class="<%= domain %>"><a href="/client"><%= @title %></a></h1>
 	<% elsif @controllerName == 'caller' %>
