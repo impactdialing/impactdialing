@@ -1,6 +1,4 @@
-<% content_for :javascripts do %>
-  <%= javascript_include_tag "https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js" %>
-<% end %>
+<%= javascript_include_tag 'nested_form' %>
 <h1><%= @script.new_record? ? "New script" : "Edit script" %></h1>
 <% if @script.errors.any? %>
   <div class = 'callout alert clearfix'>
