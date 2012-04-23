@@ -2,6 +2,7 @@ class CallsController < ApplicationController
   skip_before_filter :verify_authenticity_token
   before_filter :parse_params
   before_filter :find_and_update_call, :only => [:flow, :destroy]
+  before_filter :find_call, :only=> [:submit_result, :submit_result_and_stop]
   
 
   def create
@@ -12,6 +13,16 @@ class CallsController < ApplicationController
   def flow
     render xml:  @call.run(params[:event])
   end
+  
+  def submit_result
+    @call.process(params[:event])
+  end
+  
+  def submit_result_and_stop
+    @call.process(params[:event])
+  end
+  
+  
   
   private
     

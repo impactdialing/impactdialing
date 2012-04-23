@@ -220,12 +220,21 @@ describe Call do
       call.call_attempt.voter.caller_session.should be_nil
     end
     
-    it "should render the user recording and hangup if user recording present" do
-      @campaign.update_attribute(:recording, Factory(:recording))
+    it "should move to state call_answered_by_machine" do
       call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt)
       @campaign.update_attribute(:use_recordings, true)
       call.incoming_call!
-      call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Play>http://s3.amazonaws.com/impactdialing_production/test/uploads/unknown/8.mp3</Play><Hangup/></Response>")      
+      call.state.should eq('call_answered_by_machine')
+      
+    end
+    
+    it "should render the user recording and hangup if user recording present" do
+      recording = Factory(:recording)
+      @campaign.update_attribute(:recording, recording)
+      call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt)
+      @campaign.update_attribute(:use_recordings, true)
+      call.incoming_call!
+      call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Play>http://s3.amazonaws.com/impactdialing_production/test/uploads/unknown/#{recording.id}.mp3</Play><Hangup/></Response>")      
     end
     
     it "should render  and hangup if user recording is not present" do
@@ -247,98 +256,316 @@ describe Call do
       
       it "should update status as abandoned for voter" do
         call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt)
-        call.end!
+        call.call_ended!
         call.call_attempt.voter.status.should eq(CallAttempt::Status::ABANDONED)        
       end
       
       it "should update caller_session for voter" do
         call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, call_status: "success")
-        call.end!
+        call.call_ended!
         call.call_attempt.voter.caller_session.should be_nil        
       end
       
       it "should update  call back for voter" do
         call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, call_status: "success")
-        call.end!
+        call.call_ended!
         call.call_attempt.voter.call_back.should be_false        
       end
       
       it "should update caller_id as nil for voter" do
         call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, call_status: "success")
-        call.end!
+        call.call_ended!
         call.call_attempt.voter.caller_id.should be_nil
       end
       
       it "should update status as abandoned for call attempt" do
         call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, call_status: "success")
-        call.end!
+        call.call_ended!
         call.call_attempt.status.should eq(CallAttempt::Status::ABANDONED)
       end
       
       it "should update wrapuptime for call attempt" do
         call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, call_status: "success")
-        call.end!
+        call.call_ended!
         call.call_attempt.wrapup_time.should_not be_nil
       end
       
-      it "should should render hangup to the lead" do
+      it "should update wrapuptime for call attempt" do
         call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, call_status: "success")
-        call.end!
-        call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")      
+        call.call_ended!
+        call.state.should eq('abandoned')
       end
       
+      
+      it "should should render hangup to the lead" do
+        call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, call_status: "success")
+        call.call_ended!
+        call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")      
+      end
+    end  
     
     describe "hangup on connected call"  do
+      before(:each) do
+        @script = Factory(:script)
+        @campaign =  Factory(:campaign, script: @script)          
+        @voter = Factory(:voter, campaign: @campaign)
+        @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign)
+      end
       
       it "should render nothing" do
-        call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'connected')
+        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected')
         twilio_lib = mock
         TwilioLib.should_receive(:new).and_return(twilio_lib)
         twilio_lib.should_receive(:end_call) 
         call.hangup!
         call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response></Response>")
       end
+      
+      it "should move to hungup state" do
+        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected')
+        twilio_lib = mock
+        TwilioLib.should_receive(:new).and_return(twilio_lib)
+        twilio_lib.should_receive(:end_call) 
+        call.hangup!
+        call.state.should eq('hungup')
+      end
     end
     
     describe "disconnect  connected call"  do
-
+      before(:each) do
+        @script = Factory(:script)
+        @campaign =  Factory(:campaign, script: @script)          
+        @voter = Factory(:voter, campaign: @campaign)
+        @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign)
+      end
+      
       it "should update voter status as success" do
-        call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'connected')
+        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected')
         call.disconnect!
         call.call_attempt.voter.status.should eq(CallAttempt::Status::SUCCESS)
       end
       
       it "should update voter status as success" do
-        call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'connected')
+        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected')
         call.disconnect!
         call.call_attempt.voter.status.should eq(CallAttempt::Status::SUCCESS)
       end
-      # update_attributes(status: CallAttempt::Status::SUCCESS, recording_duration: call.recording_duration, recording_url: call.recording_url)
       
       it "should update call attempt status as success" do
-        call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'connected')
+        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected')
         call.disconnect!
         call.call_attempt.status.should eq(CallAttempt::Status::SUCCESS)
       end
       
       it "should update call attempt recording_duration" do
-        call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'connected')
+        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected', recording_duration: 4)
+        call.disconnect!
+        call.call_attempt.recording_duration.should eq(4)
+      end
+      
+      it "should update call attempt recording_url" do
+        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected', recording_duration: 4, recording_url: "url")
+        call.disconnect!
+        call.call_attempt.recording_url.should eq("url")
+      end
+      
+      it "should move to disconnected state" do
+        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected')        
+        call.disconnect!
+        call.state.should eq('disconnected')
+        
+      end
+      
+      it "should hangup twiml" do
+        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected')
+        call.disconnect!
+        call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")      
+      end
+      
+    end
+    
+    describe "disconnect hungup call" do
+      before(:each) do
+        @script = Factory(:script)
+        @campaign =  Factory(:campaign, script: @script)          
+        @voter = Factory(:voter, campaign: @campaign)
+        @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign)
+      end
+      
+      it "should update voter status as success" do
+        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'hungup')
+        call.disconnect!
+        call.call_attempt.voter.status.should eq(CallAttempt::Status::SUCCESS)
+      end
+      
+      it "should update voter status as success" do
+        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'hungup')
+        call.disconnect!
+        call.call_attempt.voter.status.should eq(CallAttempt::Status::SUCCESS)
+      end
+      
+      it "should update call attempt status as success" do
+        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'hungup')
         call.disconnect!
         call.call_attempt.status.should eq(CallAttempt::Status::SUCCESS)
       end
       
+      it "should update call attempt recording_duration" do
+        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'hungup', recording_duration: 4)
+        call.disconnect!
+        call.call_attempt.recording_duration.should eq(4)
+      end
       
-    end
+      it "should update call attempt recording_url" do
+        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'hungup', recording_duration: 4, recording_url: "url")
+        call.disconnect!
+        call.call_attempt.recording_url.should eq("url")
+      end
+
+      it "should change status to disconnected" do
+        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'hungup')
+        call.disconnect!
+        call.state.should eq("disconnected")
+      end      
       
-      
-      
-      
-      
+      it "should hangup twiml" do
+        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'hungup')
+        call.disconnect!
+        call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")      
+      end
       
     end
     
-    
-  
-  
-  
+    describe "end disconnected call" do
+      
+      before(:each) do
+        @script = Factory(:script)
+        @campaign =  Factory(:campaign, script: @script)          
+        @voter = Factory(:voter, campaign: @campaign)
+        @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign)
+      end
+
+     it "should update call end time" do
+       call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected', call_status: 'success')
+       call.call_ended!
+       call.call_attempt.call_end.should_not be_nil         
+     end
+     
+     it "should update voter lat call attempt time" do
+       call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected', call_status: 'success')
+       call.call_ended!
+       call.call_attempt.voter.last_call_attempt_time.should_not be_nil         
+     end
+       
+   end
+   
+    describe "end call that dint connect" do
+      
+      # voter.update_attributes(status:  CallAttempt::Status::MAP[call.call_status], last_call_attempt_time:  Time.now, call_back: false)
+      
+      before(:each) do
+        @script = Factory(:script)
+        @campaign =  Factory(:campaign, script: @script)          
+        @caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
+        @voter = Factory(:voter, campaign: @campaign)
+        @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session)
+      end
+
+     it "should update call attempt status" do
+       call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected', call_status: 'busy')
+       call.call_ended!
+       call.call_attempt.status.should eq('No answer busy signal')
+     end
+     
+     it "should update wrapup time" do
+       call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected', call_status: 'failed')
+       call.call_ended!
+       call.call_attempt.wrapup_time.should_not be_nil         
+     end
+     
+     it "should set callers voter to nil" do
+       call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected', call_status: 'no-answer')
+       call.call_ended!
+       call.caller_session.voter_in_progress.should be_nil         
+     end
+     
+     it "should set voters status to nil" do
+       call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected', call_status: 'no-answer')
+       call.call_ended!
+       call.call_attempt.voter.status.should eq('No answer')
+     end
+     
+     it "should set voters last attempt time" do
+       call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected', call_status: 'no-answer')
+       call.call_ended!
+       call.call_attempt.voter.last_call_attempt_time.should_not be_nil
+     end
+     
+     it "should set voters callback as false" do
+       call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected', call_status: 'no-answer')
+       call.call_ended!
+       call.call_attempt.voter.call_back.should be_false
+     end
+     
+     
+     
+     
+     
+     
+       
+   end
+   
+   
+   describe "submit response for successful call and continue" do
+     before(:each) do
+       @script = Factory(:script)
+       @campaign =  Factory(:campaign, script: @script)          
+       @voter = Factory(:voter, campaign: @campaign)
+       @caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
+       @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session)
+     end
+     
+     it "should wrapup call_attempt" do
+       call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'success')
+       call.submit_result!
+       call.call_attempt.wrapup_time.should_not be_nil
+     end
+     
+     it "should set callers voter to nil" do
+       call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'success')
+       call.submit_result!
+       call.caller_session.voter_in_progress.should be_nil
+     end
+   end
+   
+   describe "submit response for successful call and stop" do
+     before(:each) do
+       @script = Factory(:script)
+       @campaign =  Factory(:campaign, script: @script)          
+       @voter = Factory(:voter, campaign: @campaign)
+       @caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
+       @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session)
+     end
+     
+     it "should wrapup call_attempt" do
+       call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'success')
+       call.submit_result_and_stop!
+       call.call_attempt.wrapup_time.should_not be_nil
+     end
+     
+     it "should set callers voter to nil" do
+       call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'success')
+       call.submit_result_and_stop!
+       call.caller_session.voter_in_progress.should be_nil
+     end
+     
+     it "should set callers endtime" do
+       call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'success')
+       call.submit_result_and_stop!
+       call.caller_session.endtime.should_not be_nil
+     end
+     
+   end
+   
+        
 end

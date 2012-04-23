@@ -13,6 +13,9 @@ class Caller < ActiveRecord::Base
   validates_presence_of :campaign_id
 
   scope :active, where(:active => true)
+  
+  delegate :subscription_allows_caller?, :to => :account
+  delegate :activated?, :to => :account
 
   cattr_reader :per_page
   @@per_page = 25

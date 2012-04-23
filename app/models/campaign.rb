@@ -104,7 +104,7 @@ class Campaign < ActiveRecord::Base
   end
 
 
-  def time_period_exceed?
+  def time_period_exceeded?
     if start_time.hour < end_time.hour
       !(start_time.hour <= Time.now.utc.in_time_zone(time_zone).hour && end_time.hour > Time.now.utc.in_time_zone(time_zone).hour)
     else
