@@ -2,7 +2,6 @@ require Rails.root.join("lib/twilio_lib")
 
 class CallAttempt < ActiveRecord::Base
   include Rails.application.routes.url_helpers
-  include CallCenter
   belongs_to :voter
   belongs_to :campaign
   belongs_to :caller
@@ -125,14 +124,14 @@ class CallAttempt < ActiveRecord::Base
   
   
   def end_answered_call
-    voter.update_attributes(:last_call_attempt_time => Time.now)
-    update_attributes(:call_end => Time.now)
-    call_attempt.debit  
+    voter.update_attributes(last_call_attempt_time:  Time.now)
+    update_attributes(call_end:   Time.now)
+    # debit  
   end
     
   def end_unanswered_call
-    voter.update_attributes(:status => CallAttempt::Status::MAP[call.call_status], :last_call_attempt_time => Time.now, call_back: false)
-    update_attributes(:status => CallAttempt::Status::MAP[call.call_status],wrapup_time: Time.now)    
+    voter.update_attributes(status:  CallAttempt::Status::MAP[call.call_status], last_call_attempt_time:  Time.now, call_back: false)
+    update_attributes(status:  CallAttempt::Status::MAP[call.call_status], wrapup_time: Time.now)    
     caller_session.update_attribute(:voter_in_progress, nil) unless caller_session.nil?             
   end
   
@@ -147,13 +146,15 @@ class CallAttempt < ActiveRecord::Base
     voter.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
     self.campaign.voicemail_script.robo_recordings.first.play_message(self)
   end
-
-
-  def wait(time)
-    Twilio::TwiML::Response.new do |r|
-      r.Pause :length => time
-      r.Redirect "#{connect_call_attempt_path(:id => self.id)}"
-    end.text
+  
+  def wrapup_call
+    wrapup_now
+    caller_session.update_attribute(:voter_in_progress, nil) unless caller_session.nil?
+  end
+  
+  def wrapup_call_and_stop
+    wrapup_now
+    caller_session.update_attributes(voter_in_progress: nil, endtime: Time.now) unless caller_session.nil?
   end
   
   def disconnect_call
@@ -167,7 +168,7 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def wrapup_now
-    update_attributes(:wrapup_time => Time.now)
+    update_attribute(:wrapup_time, Time.now)
   end
   
   def capture_answer_as_no_response

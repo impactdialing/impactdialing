@@ -5,6 +5,12 @@ class CallerController < ApplicationController
   before_filter :check_login, :except=>[:login, :feedback, :assign_campaign, :end_session, :pause, :start_calling, :gather_response, :choose_voter, :phones_only_progressive, :phones_only, :choose_instructions_option, :new_campaign_response_panel, :check_reassign, :call_voter]
   before_filter :redirect_to_ssl
   
+  
+  def flow
+    render xml:  @call.run(params[:event])
+  end
+  
+  
   def index
     redirect_to callers_campaign_path(@caller.campaign)
   end
@@ -120,21 +126,15 @@ class CallerController < ApplicationController
 
   def start_calling
     if params[:caller_id].blank? || params[:campaign_id].blank?
-      render :nothing => true
+      render nothing: true
     else
       @caller = Caller.find(params[:caller_id])
-      if !@caller.account.subscription_allows_caller?
-        render :xml => @caller.max_callers_reached
-      else      
-        @identity = CallerIdentity.find_by_session_key(params[:session_key])
-        @session = @caller.create_caller_session(@identity.session_key, params[:CallSid])
-        Moderator.caller_connected_to_campaign(@caller, @caller.campaign, @session)
-        @session.publish('start_calling', {caller_session_id: @session.id}) 
-        unless @caller.is_on_call?
-          @session.preview_voter
-        end
-        render xml:  @caller.is_on_call? ? @caller.already_on_call : @session.start
-      end
+      @identity = CallerIdentity.find_by_session_key(params[:session_key])
+      @session = @caller.create_caller_session(@identity.session_key, params[:CallSid])
+      # Moderator.caller_connected_to_campaign(@caller, @caller.campaign, @session)      
+      # @session.publish('start_calling', {caller_session_id: @session.id}) 
+      # @session.preview_voter unless @caller.is_on_call?
+      render xml: @session.run(:start_conf)
     end
   end
 

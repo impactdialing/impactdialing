@@ -447,4 +447,55 @@ describe CallerSession do
 
 
   end
+  
+  it "should start a call in initial state" do
+    caller_session = Factory(:caller_session)
+    caller_session.state.should eq('initial')
+  end
+  
+  describe "Campaign time period exceeded" do
+    before(:each) do
+      @caller = Factory(:caller)
+      @script = Factory(:script)
+      @campaign =  Factory(:campaign, script: @script)    
+    end
+    
+    it "should move caller session campaign_time_period_exceeded state" do
+      caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
+      @campaign.should_receive(:time_period_exceeded?).and_return(true)
+      caller_session.start_conf!
+      caller_session.state.should eq('time_period_exceeded')
+    end
+    
+    it "should render correct twiml" do
+      caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
+      @campaign.should_receive(:time_period_exceeded?).and_return(true)
+      caller_session.start_conf!
+      caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>You can only call this campaign between 11 AM and 10 AM. Please try back during those hours.</Say><Hangup/></Response>")
+    end
+  end
+  
+  describe "Caller disconnected" do
+    before(:each) do
+      @caller = Factory(:caller)
+      @script = Factory(:script)
+      @campaign =  Factory(:campaign, script: @script)    
+      @campaign.should_receive(:time_period_exceeded?).and_return(false)
+    end
+    
+    it "should move caller session to disconnected if caller disconnected" do
+      caller_session = Factory(:caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, endtime: Time.now)
+      caller_session.start_conf!
+      caller_session.state.should eq('disconnected')
+    end
+    
+    it "should render correct twiml" do
+      caller_session = Factory(:caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, endtime: Time.now)
+      caller_session.start_conf!
+      caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
+    end
+  end
+  
+  
+  
 end

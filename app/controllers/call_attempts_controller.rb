@@ -17,43 +17,7 @@ class CallAttemptsController < ApplicationController
   def flow
     render xml:  @call_attempt.run(params[:event])
   end
-
-  def connect
-    call_attempt = CallAttempt.find(params[:id])
-    call_attempt.update_attribute(:connecttime, Time.now)
-    response = case params[:AnsweredBy] #using the 2010 api
-                 when "machine"
-                   call_attempt.voter.update_attributes(:status => CallAttempt::Status::HANGUP)
-                   call_attempt.update_attributes(:status => CallAttempt::Status::HANGUP)
-                   if call_attempt.caller_session && (call_attempt.campaign.type == Campaign::Type::PREVIEW || call_attempt.campaign.type == Campaign::Type::PROGRESSIVE)
-                     call_attempt.caller_session.publish('answered_by_machine', {})
-                     call_attempt.caller_session.update_attribute(:voter_in_progress, nil)
-                     next_voter = call_attempt.campaign.next_voter_in_dial_queue(call_attempt.voter.id)
-                     call_attempt.caller_session.publish('voter_push', next_voter ? next_voter.info : {})
-                     call_attempt.caller_session.publish('conference_started', {})
-                   end
-                   call_attempt.update_attributes(wrapup_time: Time.now)                    
-                   (call_attempt.campaign.use_recordings? && call_attempt.campaign.answering_machine_detect) ? call_attempt.play_recorded_message : call_attempt.hangup
-                 else
-                   call_attempt.connect_to_caller(call_attempt.voter.caller_session)
-               end
-    render :xml => response
-  end
-  add_method_tracer :connect, "Custom/#{self.class.name}/connect"
-
-  def disconnect
-    call_attempt = CallAttempt.find(params[:id])
-    call_attempt.debit
-    render :xml => call_attempt.disconnect(params)
-  end
-  add_method_tracer :disconnect, "Custom/#{self.class.name}/disconnect"
-
-  def hangup
-    call_attempt = CallAttempt.find(params[:id])
-    call_attempt.end_running_call if call_attempt
-    render :nothing => true
-  end
-  add_method_tracer :hangup, "Custom/#{self.class.name}/hangup"
+  
 
   def end
     call_attempt = CallAttempt.find(params[:id])

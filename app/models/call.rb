@@ -9,8 +9,11 @@ class Call < ActiveRecord::Base
   delegate :abandon_call, :to => :call_attempt
   delegate :connect_lead_to_caller ,:to => :call_attempt
   delegate :end_answered_call, :to => :call_attempt
+  delegate :end_unanswered_call, :to => :call_attempt
   delegate :end_running_call, :to => :call_attempt
   delegate :disconnect_call, :to => :call_attempt
+  delegate :wrapup_call, :to => :call_attempt
+  delegate :wrapup_call_and_stop, :to => :call_attempt
   
   delegate :process_answered_by_machine, :to => :call_attempt
   delegate :caller_not_available?, :to => :call_attempt
@@ -20,36 +23,13 @@ class Call < ActiveRecord::Base
   
   
   
-  def answered_by_machine?
-    answered_by == "machine"
-  end
-
-  def answered_by_human_and_caller_not_available?
-    answered_by == "human" && caller_not_available?
-  end
-  
-  def answered_by_human_and_caller_available?
-    answered_by == "human" && caller_available?
-  end
-  
-  def call_did_not_connect?
-    ["no-answer", "busy", "failed"].include?(call_status)
-  end
-  
-  def call_connected?
-    !call_did_not_connect?
-  end
-  
-  
-  
-  
   call_flow :state, :initial => :initial do    
     
       state :initial do
         event :incoming_call, :to => :connected , :if => (:answered_by_human_and_caller_available?)
         event :incoming_call, :to => :abandoned , :if => (:answered_by_human_and_caller_not_available?)
         event :incoming_call, :to => :call_answered_by_machine , :if => (:answered_by_machine?)
-        event :end, :to => :abandoned
+        event :call_ended, :to => :abandoned
       end 
       
       state :connected do
@@ -79,12 +59,8 @@ class Call < ActiveRecord::Base
         before(:always) { process_answered_by_machine }
         
         response do |xml_builder, the_call|
-          if campaign.use_recordings?
-            xml_builder.Play campaign.recording.file.url
-            xml_builder.Hangup            
-          else
-            xml_builder.Hangup
-          end
+          xml_builder.Play campaign.recording.file.url if campaign.use_recordings?
+          xml_builder.Hangup
         end
       end
       
@@ -95,9 +71,13 @@ class Call < ActiveRecord::Base
       
       
       state :disconnected do
+        
         before(:always) { disconnect_call }
         after(:success) { publish_voter_disconnected }
-        event :end, :to => :success
+                
+        event :call_ended, :to => :success, :if => :call_connected?
+        event :call_ended, :to => :fail, :if => :call_did_not_connect?
+        
         
         response do |xml_builder, the_call|
           xml_builder.Hangup
@@ -106,28 +86,31 @@ class Call < ActiveRecord::Base
       end
       
       state :success do
-        before(:always) { end_answered_call }
-        event :voter_response, :to => :wrapped_up
+        before(:always) { end_answered_call }        
+        event :submit_result, :to => :wrapup_and_continue
+        event :submit_result_and_stop, :to => :wrapup_and_stop
         
         response do |xml_builder, the_call|
           xml_builder.Hangup
         end        
       end
       
+      state :wrapup_and_continue do 
+        before(:always) { wrapup_call }
+        after(:always)  { publish_continue_calling }      
+      end
+      
+      state :wrapup_and_stop do
+        before(:always) { wrapup_call_and_stop }        
+      end
+            
       
       state :fail do
         before(:always) { end_unanswered_call }
-        after(:success) { publish_unanswered_call_ended }        
+        after(:success) { publish_unanswered_call_ended }  
+              
         response do |xml_builder, the_call|
-          if caller_session.nil?
-            xml_builder.Hangup
-          else
-            if caller_session.caller.is_phones_only?
-              caller_session.redirect_to_phones_only_start
-            else  
-              caller_session.start            
-            end
-          end  
+          caller_session.nil? ? xml_builder.Hangup : caller_session.run(:start_conf)
         end
       end
       
@@ -135,10 +118,31 @@ class Call < ActiveRecord::Base
       
   end 
   
-  def run(event)
+  def run(event,render_twiml=true)
       send(event)
-      render
+      render if render_twiml
   end
+  
+  def answered_by_machine?
+    answered_by == "machine"
+  end
+
+  def answered_by_human_and_caller_not_available?
+    answered_by == "human" && caller_not_available?
+  end
+  
+  def answered_by_human_and_caller_available?
+    answered_by == "human" && caller_available?
+  end
+  
+  def call_did_not_connect?
+    ["no-answer", "busy", "failed"].include?(call_status)
+  end
+  
+  def call_connected?
+    !call_did_not_connect?
+  end
+  
   
   
   
