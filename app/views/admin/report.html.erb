@@ -1,20 +1,11 @@
 <h1>Admin Reporting</h1>
 
-Report Date Range:
+<h3>Date range:</h3>
 <%= form_tag ("/admin/report") do %>
-  <table>
-    <tr>
-      <td>From:</td>
-      <td> <%= unobtrusive_date_text_picker_tag :from_date,@from_date %> </td>
-    </tr>
-    <tr>
-      <td>
-        To:</td>
-      <td>  <%= unobtrusive_date_text_picker_tag :to_date,@to_date %>
-        <!--<input type="submit" class="button" value="update" size="4">-->
-      </td>
-    </tr>
-  </table>	<button type="submit">Show results</button>
+	<%= render :partial => 'shared/date_picker' %>
+	<div class="buttons">
+	  <button type="submit">Update</button>
+	</div>
 <% end %>
 
 <br/>
