@@ -2,16 +2,20 @@
 	<% if client_controller?(@controllerName) %>
 		<ul>
 			<% if @controllerName.split("/").first == "client" %>
-				<li><a href="/client/scripts" <% if @actionName.index("script") %>class="active"<% end %>><span>Scripts</span></a></li>
-		    <li><a href="/client/campaigns" <% if @actionName.index("upload") || @actionName.index("campaign") %>class="active"<% end %>><span>Campaigns</span></a></li>
-		    <li><a href="/client/callers" <% if @actionName.index("caller") %>class="active"<% end %>><span>Callers</span></a></li>
-		    <li><a href="/client/monitor" <% if @actionName.index("monitor") %>class="active"<% end %>><span>Monitor</span></a></li>
-		    <li><a href="/client/reports" <% if @actionName.index("report") %>class="active"<% end %>><span>Reports</span></a></li>
+				<% if @user.administrator? %>
+					<li><a href="/client/scripts" <% if @actionName.index("script") %>class="active"<% end %>><span>Scripts</span></a></li>
+			    <li><a href="/client/campaigns" <% if @actionName.index("upload") || @actionName.index("campaign") %>class="active"<% end %>><span>Campaigns</span></a></li>
+			    <li><a href="/client/callers" <% if @actionName.index("caller") %>class="active"<% end %>><span>Callers</span></a></li>
+				<% end %>
+			    <li><a href="/client/monitor" <% if @actionName.index("monitor") %>class="active"<% end %>><span>Monitor</span></a></li>
+			    <li><a href="/client/reports" <% if @actionName.index("report") %>class="active"<% end %>><span>Reports</span></a></li>
 			<% else %>
-		    <li><%= link_to content_tag(:span, 'Messages'), scripts_path, :class => @controllerName.index('script') ? 'active' : '' %></li>
-		    <li><%= link_to content_tag(:span, 'Campaigns'), campaigns_path, :class => @controllerName.index('campaigns') ? 'active' : '' %></li>
-		    <li><%= link_to content_tag(:span, 'Control'), control_campaigns_path, :class => @control_campaigns_active ? 'active' : '' %></li>
-		    <li><%= link_to content_tag(:span, 'Reports'), reports_path, :class => @control_campaigns_active ? 'active' : '' %></li>
+				<% if @user.administrator? %>
+			    <li><%= link_to content_tag(:span, 'Messages'), scripts_path, :class => @controllerName.index('script') ? 'active' : '' %></li>
+			    <li><%= link_to content_tag(:span, 'Campaigns'), campaigns_path, :class => @controllerName.index('campaigns') ? 'active' : '' %></li>
+			    <li><%= link_to content_tag(:span, 'Control'), control_campaigns_path, :class => @control_campaigns_active ? 'active' : '' %></li>
+				<% end %>
+			    <li><%= link_to content_tag(:span, 'Reports'), reports_path, :class => @control_campaigns_active ? 'active' : '' %></li>
 		<% end %>
 		</ul>
 		
