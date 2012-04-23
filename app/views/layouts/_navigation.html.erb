@@ -2,7 +2,7 @@
 	<nav role="navigation" class="clearfix">
 	  <ul class="clearfix">
 	    <% if @controllerName.split("/").first == 'client' %>
-				<% if @user.administrator? %>
+				<% if !logged_in_as_client? || @user.administrator? %>
 		    	<li><a href="/client/scripts" <% if @actionName.index("script") %>class="active"<% end %>><span>Scripts</span></a></li>
 			    <li><a href="/client/campaigns" <% if @actionName.index("upload") || @actionName.index("campaign") %>class="active"<% end    %>><span>Campaigns</span></a></li>
 			    <li><a href="/client/callers" <% if @actionName.index("caller") %>class="active"<% end %>><span>Callers</span></a></li>
@@ -11,7 +11,7 @@
 			    <li><a href="/client/reports" <% if @actionName.index("report") %>class="active"<% end %>><span>Reports</span></a></li>
 			    <li><a href="/broadcast"><span>Go to Voice Broadcasting</span></a></li>
 			<% else %>
-				<% if @user.administrator? %>
+				<% if !logged_in_as_client? || @user.administrator? %>
 					<li><%= link_to content_tag(:span, 'Messages'), scripts_path, :class => @controllerName.index('script') ? 'active' : '' %></li>
 		      <li><%= link_to content_tag(:span, 'Campaigns'), campaigns_path, :class => @controllerName.index('campaigns') ? 'active' : '' %></li>
 		      <li><%= link_to content_tag(:span, 'Control'), control_campaigns_path, :class => @control_campaigns_active ? 'active' : '' %></li>
