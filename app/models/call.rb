@@ -1,7 +1,7 @@
 class Call < ActiveRecord::Base
   include Rails.application.routes.url_helpers
   include CallCenter
-  include Event
+  include LeadEvents
   
   has_one :call_attempt
   serialize :conference_history, Array
@@ -39,7 +39,7 @@ class Call < ActiveRecord::Base
         event :disconnect, :to => :disconnected
         
         response do |xml_builder, the_call|
-          xml_builder.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(the_call.call_attempt, :host => Settings.host), :record=> campaign.account.record_calls do |d|
+          xml_builder.Dial :hangupOnStar => 'false', :action => flow_call_url(the_call, :host => Settings.host), :record=> campaign.account.record_calls do |d|
             d.Conference caller_session.session_key, :waitUrl => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
           end
         end
@@ -57,6 +57,7 @@ class Call < ActiveRecord::Base
       
       state :call_answered_by_machine do
         before(:always) { process_answered_by_machine }
+        after(:always) { publish_call_answered_by_machine }
         
         response do |xml_builder, the_call|
           xml_builder.Play campaign.recording.file.url if campaign.use_recordings?

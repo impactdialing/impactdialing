@@ -8,13 +8,15 @@ class WebuiCallerSession < CallerSession
             
       state :connected do        
         before(:always) { start_conference }
-        after(:always) { }
+        after(:always) { publish_caller_conference_started }
         event :pause_conf, :to => :disconnected, :if => :disconnected?
         event :pause_conf, :to => :paused, :if => :call_not_wrapped_up?
         event :pause_conf, :to => :connected
         
         response do |xml_builder, the_call|
-          render_start_conf(xml_builder)
+          xml_builder.dial(:hangupOnStar => true, :action => pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => id)) do
+            xml_builder.conference(session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')        
+          end                              
         end
       end
       
@@ -33,8 +35,7 @@ class WebuiCallerSession < CallerSession
       end
       
       state :stopped do
-        before(:always) { end_running_call }
-        
+        before(:always) { end_running_call }        
       end
       
       
@@ -44,11 +45,16 @@ class WebuiCallerSession < CallerSession
     !voter_in_progress.nil?    
   end
   
-  def render_start_conf(xml_builder)
-    xml_builder.dial(:hangupOnStar => true, :action => pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => id)) do
-      xml_builder.conference(session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')        
-    end                    
+  def start_conference    
+    reassign_caller_session_to_campaign if caller_reassigned_to_another_campaign?
+    begin
+      update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
+    rescue ActiveRecord::StaleObjectError
+      # end conf
+    end
   end
+  
+  
   
   def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
     voters = Voter.find_all_by_caller_id_and_status(caller.id, CallAttempt::Status::READY)

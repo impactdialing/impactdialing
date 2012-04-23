@@ -84,13 +84,6 @@ describe Voter do
     Voter.answered_within_timespan(Time.new(2012, 2, 14, 0), Time.new(2012, 2, 14, 9, 59, 59)).should == []
   end
 
-  it "conferences with a caller" do
-    voter = Factory(:voter)
-    caller = Factory(:caller_session)
-
-    voter.conference(caller)
-    caller.reload.voter_in_progress.should == voter
-  end
 
   describe "voter fields" do
     let(:account) { Factory(:account) }

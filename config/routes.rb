@@ -48,6 +48,7 @@ ImpactDialing::Application.routes.draw do
     end
 
     member do
+      post :flow
       post :assign_campaign
       post :pause
       post :active_session
@@ -179,6 +180,12 @@ ImpactDialing::Application.routes.draw do
   resources :campaigns, :path_prefix => 'client', :only => [] do
     member { post :verify_callerid }
     resources :voter_lists, :collection => {:import => :post}, :except => [:new, :show], :name_prefix => 'client'
+  end
+  
+  resources :calls, :protocol => PROTOCOL do
+    member do
+      post :flow
+    end
   end
 
   resources :call_attempts, :protocol => PROTOCOL, :only => [:create, :update] do

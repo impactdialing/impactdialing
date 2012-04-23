@@ -1,15 +1,10 @@
 class CallsController < ApplicationController
   skip_before_filter :verify_authenticity_token
   before_filter :parse_params
-  before_filter :find_and_update_call, :only => [:flow, :destroy]
-  before_filter :find_call, :only=> [:submit_result, :submit_result_and_stop]
+  before_filter :find_and_update_call, :only => [:flow, :destroy,:submit_result, :submit_result_and_stop]
+  before_filter :find_call, :only => [:hangup]
+
   
-
-  def create
-    @call = Call.create!(@parsed_params)
-    render xml:  @call.run(:incoming_call)
-  end
-
   def flow
     render xml:  @call.run(params[:event])
   end
@@ -20,6 +15,10 @@ class CallsController < ApplicationController
   
   def submit_result_and_stop
     @call.process(params[:event])
+  end
+  
+  def hangup
+    @call.process(params[:hangup])
   end
   
   
@@ -44,7 +43,7 @@ class CallsController < ApplicationController
   end
 
   def find_call
-    @call = (Call.find_by_id(params["call_id"]) || Call.find_by_call_sid(params['CallSid']))
+    @call = (Call.find_by_id(params["id"]) || Call.find_by_call_sid(params['CallSid'])) 
   end
 
   def find_and_update_call

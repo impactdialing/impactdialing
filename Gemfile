@@ -34,6 +34,7 @@ group :development, :test do
   gem 'rspec'
   gem 'ruby-debug19'
   gem 'rspec-rails', '~> 2.6.1'
+  gem "ruby-graphviz"
 end
 
 group :development do

@@ -1,7 +1,6 @@
 require "spec_helper"
 
 describe WebuiCallerSession do
-  include Rails.application.routes.url_helpers
   
   describe "caller reassigned " do
     
@@ -115,28 +114,7 @@ describe WebuiCallerSession do
       caller_session.pause_conf!
       caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><dial hangupOnStar=\"true\" action=\"https://3ngz.localtunnel.com:3000/caller/#{@caller.id}/pause?session_id=#{caller_session.id}\"><conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"https://3ngz.localtunnel.com:3000/hold_call?version=2012-02-16+10%3A20%3A07+%2B0530\" waitMethod=\"GET\"></conference></dial></Response>")                      
     end
-    
-    
-    
-    
-    # it "shouild render correct twiml" do
-    #   caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "caller_reassigned_and_connected")
-    #   caller_session.should_receive(:account_not_activated?).and_return(false)
-    #   caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
-    #   caller_session.should_receive(:time_period_exceeded?).and_return(false)
-    #   caller_session.should_receive(:is_on_call?).and_return(false)
-    #   caller_session.should_receive(:caller_disconnected?).and_return(false)      
-    #   caller_session.should_receive(:caller_reassigned_to_another_campaign?).and_return(false)                  
-    #   caller_session.start_conf!
-    #   caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><dial hangupOnStar=\"true\" action=\"https://3ngz.localtunnel.com:3000/caller/#{@caller.id}/pause?session_id=#{caller_session.id}\"><conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"https://3ngz.localtunnel.com:3000/hold_call?version=2012-02-16+10%3A20%3A07+%2B0530\" waitMethod=\"GET\"></conference></dial></Response>")          
-    # end
-    
-    # it "should move to disconnected" do
-    #   caller_session = Factory(:webui_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "caller_reassigned_and_connected")
-    #   caller_session.pause_conf!
-    #   caller_session.state.should eq('disconnected')
-    # end
-    
+        
   end
   
   

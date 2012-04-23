@@ -1,29 +1,33 @@
-module Event
+module LeadEvents
   
   module ClassMethods
   end
   
   module InstanceMethods
+        
     
     def publish_voter_connected
-      # call_attempt.caller_session.publish('voter_connected', {:attempt_id => call_attempt.id, :voter => call_attempt.voter.info})
+      event_hash = campaign.voter_connected_event(call_attempt)
+      caller_session.publish(event_hash[:event], event_hash[:data])
       # Moderator.publish_event(campaign, 'voter_connected', {:caller_session_id => session.id, :campaign_id => campaign.id, :caller_id => session.caller.id})
-    end      
+    end    
+    
+    def publish_voter_disconnected
+      caller_session.publish('voter_disconnected',{})
+      # Moderator.publish_event(campaign, 'voter_disconnected', {:caller_session_id => caller_session.id,:campaign_id => campaign.id, :caller_id => caller_session.caller.id, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})      
+    end
+      
     
     def publish_call_answered_by_machine
-      # next_voter = call_attempt.campaign.next_voter_in_dial_queue(call_attempt.voter.id)
-      # call_attempt.caller_session.publish('voter_push', next_voter ? next_voter.info : {})
-      # call_attempt.caller_session.publish('conference_started', {})
+      event_hash = campaign.call_answered_machine_event(call_attempt)
+      caller_session.publish(event_hash[:event], event_hash[:data]) if caller_session
     end
+    
     
     def publish_abandoned_call
           # Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})    
     end
     
-    def publish_voter_disconnected
-      # Pusher[caller_session.session_key].trigger('voter_disconnected', {:attempt_id => self.id, :voter => self.voter.info})
-      # Moderator.publish_event(campaign, 'voter_disconnected', {:caller_session_id => caller_session.id,:campaign_id => campaign.id, :caller_id => caller_session.caller.id, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})      
-    end
     
     def publish_unanswered_call_ended
       # next_voter = self.campaign.next_voter_in_dial_queue(voter.id) 
@@ -57,6 +61,11 @@ module Event
       # publish_caller_reassignes_to_campaign_for_monitor
       # next_voter = caller.campaign.next_voter_in_dial_queue
       # self.publish("caller_re_assigned_to_campaign",{:campaign_name => caller.campaign.name, :campaign_id => caller.campaign.id, :script => caller.campaign.script.try(:script)}.merge!(next_voter ? next_voter.info : {}))      
+    end
+    
+    def publish_caller_conference_started
+      event_hash = campaign.caller_conference_started
+      publish(event_hash[:event], event_hash[:data])                     
     end
     
     

@@ -118,6 +118,10 @@ end
 Factory.define :webui_caller_session do |wcs|
 end
 
+Factory.define :phones_only_caller_session do |wcs|
+end
+
+
 Factory.define :caller_identity do |s|
   s.caller_id { Factory(:caller).id }
 end

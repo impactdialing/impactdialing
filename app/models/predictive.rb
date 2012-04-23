@@ -61,6 +61,19 @@ class Predictive < Campaign
   def best_wrapup_simulated
     simulated_values.nil? ? 0 : simulated_values.best_wrapup_time.nil? ? 0 : simulated_values.best_wrapup_time
   end
+  
+  def caller_conference_started_event
+    {event: 'caller_connected_dialer',data: {}}
+  end
+  
+  def voter_connected_event(call_attempt)
+    {event: 'voter_connected_dialer', data: {attempt_id:  call_attempt.id, voter:  call_attempt.voter.info}}
+  end
+  
+  def call_answered_machine_event(call_attempt)    
+    Hash.new                         
+  end
+  
     
   
 end

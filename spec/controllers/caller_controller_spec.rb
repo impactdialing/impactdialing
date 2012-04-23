@@ -13,51 +13,6 @@ describe CallerController do
       login_as(caller)
     end
 
-
-    
-    it "should assign voter to caller" do
-      session_key = "sdklsjfg923784"
-      voter = Factory(:voter, :campaign => campaign, "FirstName"=>'first')
-      next_voter = Factory(:voter, :campaign => campaign, "FirstName"=>'last')
-      session = Factory(:caller_session, :campaign => campaign, :caller => caller, :session_key => session_key)
-      channel = mock
-      info = next_voter.info
-      info[:fields]['status'] = CallAttempt::Status::READY
-      info[:fields]['caller_id'] = caller.id
-      Pusher.should_receive(:[]).with(session_key).and_return(channel)
-      channel.should_receive(:trigger).with('caller_connected', info.merge(:dialer => campaign.type))
-      post :preview_voter, :id => caller.id, :session_id => session.id, :voter_id => voter.id
-      next_voter.reload.caller_id.should eq(caller.id)
-    end
-
-    it "skips to the next voter to preview" do
-      session_key = "sdklsjfg923784"
-      voter = Factory(:voter, :campaign => campaign, "FirstName"=>'first')
-      next_voter = Factory(:voter, :campaign => campaign, "FirstName"=>'last')
-      session = Factory(:caller_session, :campaign => campaign, :caller => caller, :session_key => session_key)
-      channel = mock
-      info = next_voter.info
-      info[:fields]['status'] = CallAttempt::Status::READY
-      info[:fields]['caller_id'] = caller.id
-      Pusher.should_receive(:[]).with(session_key).and_return(channel)
-      channel.should_receive(:trigger).with('caller_connected', info.merge(:dialer => campaign.type))
-      post :preview_voter, :id => caller.id, :session_id => session.id, :voter_id => voter.id
-    end
-
-    it "skips to the first undialed voter if the current voter context is the last" do
-      session_key = "sdklsjfg923784"
-      first_voter = Factory(:voter, :campaign => campaign, "FirstName"=>'first')
-      last_voter = Factory(:voter, :campaign => campaign, "FirstName"=>'last')
-      session = Factory(:caller_session, :campaign => campaign, :caller => caller, :session_key => session_key)
-      channel = mock
-      info = first_voter.info
-      info[:fields]['status'] = CallAttempt::Status::READY
-      info[:fields]['caller_id'] = caller.id
-      Pusher.should_receive(:[]).with(session_key).and_return(channel)
-      channel.should_receive(:trigger).with('caller_connected', info.merge(:dialer => campaign.type))
-      post :preview_voter, :id => caller.id, :session_id => session.id, :voter_id => last_voter.id
-    end
-
     it "makes a call to the voter if web socket is connected" do
       caller_session = Factory(:caller_session, :caller => caller, :on_call => true, :available_for_call => true)
       voter = Factory(:voter, :campaign => caller.campaign)
@@ -80,56 +35,6 @@ describe CallerController do
     end
   end
 
-  describe "calling in" do
-
-    it "terminates a callers session" do
-      sid = "some_sid"
-      session = Factory(:caller_session, :caller => caller, :campaign => Factory(:campaign), :available_for_call => true, :on_call => true, :sid => sid)
-      post :end_session, :CallSid => sid
-      session.reload.available_for_call.should be_false
-      session.reload.on_call.should be_false
-      response.body.should == Twilio::Verb.hangup
-    end
-
-    it "terminates a callers session when a caller has not been identified" do
-      sid = "some_sid"
-      session = Factory(:caller_session, :caller => caller, :campaign => Factory(:campaign), :available_for_call => true, :on_call => true)
-      post :end_session, :CallSid => sid
-      response.body.should == Twilio::Verb.hangup
-    end
-
-    it "pauses a callers session while an attempt is in progress" do
-      session = Factory(:caller_session, :caller => caller, :campaign => Factory(:campaign), :available_for_call => false, :on_call => true, :session_key => 'some_key')
-      voter = Factory(:voter, :status => CallAttempt::Status::INPROGRESS, :caller_session => session)
-      post :pause, :id => caller.id, :session_id => session.id, :attempt => nil
-      response.body.should == session.pause_for_results
-    end
-
-    it "says wait message every fifth attempts when the voter is paused for results" do
-      session = Factory(:caller_session, :caller => caller, :campaign => Factory(:campaign), :available_for_call => false, :on_call => true, :session_key => 'some_key')
-      voter = Factory(:voter, :caller_session => session, :status => CallAttempt::Status::INPROGRESS)
-      post :pause, :id => caller.id, :session_id => session.id, :attempt => 5
-      response.body.should == session.pause_for_results(5)
-    end
-
-    it "resets a callers session's conference while an attempt is in progress" do
-      campaign = Factory(:campaign, :start_time => Time.new("2000-01-01 01:00:00"), :end_time => Time.new("2000-01-01 23:00:00"))
-      campaign.callers << caller
-      session = Factory(:caller_session, :caller => caller, :campaign => campaign, :available_for_call => false, :on_call => true, :session_key => "some_key")
-      post :pause, :id => caller.id, :session_id => session.id
-      session.reload
-      response.body.should == session.start
-    end
-
-    it "hangups if caller is disconnected" do
-      session = Factory(:caller_session, :caller => caller, :campaign => Factory(:campaign), :available_for_call => false, :on_call => false, :session_key => "some_key")
-      post :pause, :id => caller.id, :session_id => session.id
-      response.body.should == Twilio::Verb.hangup
-    end
-
-
-
-  end
 
   describe "phones-only call" do
     let(:campaign) { Factory(:campaign, :robo => false, :type => 'preview') }
@@ -262,26 +167,5 @@ describe CallerController do
 
   end
   
-  describe "start calling" do
-    it "should start a conference for a caller who is not on call" do
-      account = Factory(:account, :subscription_name=>"Manual")
-      campaign = Factory(:campaign, account: account)
-      caller = Factory(:caller, campaign: campaign, account:account)
-      caller_identity = Factory(:caller_identity, caller: caller, session_key: "some key")
-      post :start_calling, caller_id: caller.id, campaign_id: campaign.id, CallSid: "1234567", session_key: caller_identity.session_key
-      caller.caller_sessions.on_call.size.should eq(1)
-    end
-    
-    it "should not start a conference for a caller who is  on call" do
-      account = Factory(:account)
-      campaign = Factory(:campaign, account: account)
-      caller = Factory(:caller, campaign: campaign, account:account)
-      caller_identity = Factory(:caller_identity, caller: caller, session_key: "some key")
-      caller_session2 = Factory(:caller_session, :campaign => campaign, :session_key => "some_key", :caller => caller, :available_for_call => false, :on_call => true)
-      post :start_calling, caller_id: caller.id, campaign_id: campaign.id, CallSid: "1234567", session_key: caller_identity.session_key
-      caller.caller_sessions.on_call.size.should eq(1)
-    end
-    
-    
-  end
+ 
 end
