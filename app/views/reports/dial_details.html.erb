@@ -50,23 +50,12 @@
 		</ul>	
 		</div>	
 </fieldset>
+
 <input type="checkbox" style="display:none" id="download_all_voters" name="download_all_voters"></input>
 <div class="buttons"><button type="submit" id="download_all_voters_submit">Download entire campaign</button></div>
 
 		<h3>Date range:</h3>
-		      <table>
-		        <tr>
-		          <td>From:</td>
-		          <td> <%= unobtrusive_date_text_picker_tag :from_date, @from_date %> </td>
-		        </tr>
-		        <tr>
-		          <td>
-		            To:
-		          </td>
-		          <td>  <%= unobtrusive_date_text_picker_tag :to_date, @to_date %>
-		          </td>
-		        </tr>
-		      </table>
+    <%= render :partial => 'shared/date_picker' %>
 		<div class="buttons"><button id="range_voters_submit" type="submit">Download just this date range</button></div>
   <% end %>
 </div>

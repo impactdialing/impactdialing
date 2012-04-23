@@ -97,6 +97,7 @@ GEM
     jquery-rails (1.0.19)
       railties (~> 3.0)
       thor (~> 0.14)
+    jquery_datepicker (0.3.4)
     json (1.6.1)
     jwt (0.1.4)
       json (>= 1.2.4)
@@ -242,6 +243,7 @@ DEPENDENCIES
   heroku_san
   in_place_editing (~> 1.1.1)
   jquery-rails (>= 1.0.12)
+  jquery_datepicker
   json (~> 1.6.1)
   mysql (~> 2.8.1)
   nested_form (~> 0.1.1)

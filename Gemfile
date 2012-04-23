@@ -26,6 +26,7 @@ gem "activerecord-import", ">= 0.2.0"
 gem "airbrake",'~>3.0.9'
 gem "chargify_api_ares","~>0.5.0"
 gem "uuid", "~> 2.3.5"
+gem 'jquery_datepicker'
 
 group :development, :test do
   gem 'rspec'
