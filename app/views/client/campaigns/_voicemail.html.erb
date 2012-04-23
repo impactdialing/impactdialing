@@ -8,7 +8,6 @@
          <% end %>>
       <label for=""><p>Voicemail</label><br>
       <%= form.collection_select(:recording_id, @account.recordings.active, :id, :name, {:prompt => false}, {:class=>"field", :onchange=>"updatePreview();"}) %></p>
-      <div id="sndPreview"></div>
     </div>
 <% end %>
 
