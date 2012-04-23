@@ -3,13 +3,8 @@
 	<head>
 	  <meta charset="utf-8">
 	  <title><%= title %></title>
-	  <%= render :partial => 'layouts/kissmetrics' %>
-		<%= render :partial => 'layouts/stylesheets' %>
-		<%= stylesheet_link_tag "application", "caller" %>
-		<%= yield :stylesheets %>
-		
-		<!-- javascript at the bottom except modernizr -->
-		<script src='/js/libs/modernizr-custom.js'></script>
+		<%= render :partial => 'layouts/javascript' %>
+		<%= render :partial => 'layouts/stylesheets' %>		
 		<%= unobtrusive_datepicker_includes.html_safe %>
 		<%= csrf_meta_tag %>
 	</head>
@@ -25,7 +20,6 @@
 		</div>	
 		
 		<%= render :partial => 'layouts/footer' %>
-		<%= render :partial => 'layouts/javascript' %>
 		
 	</body>
 </html>
