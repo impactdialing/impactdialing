@@ -1,5 +1,5 @@
       @campaign = Campaign.new(:account_id => account.id, :predictive_type => 'algorithm1')<div class="box">
-	<%= render :partial => 'shared/boxtop', :locals=>{:title=>"Voters in #{@campaign.name}"} %>
+<h1>Voters in <%= @campaign.name %><h1>
 	<% if @voters.length==0 %>
 		<div class="form">
 	      <label>No voters entered.</label>

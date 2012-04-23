@@ -7,6 +7,13 @@
 <%= javascript_include_tag 'https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js' %>
 <%= javascript_include_tag 'https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js' %>
 
+<%= javascript_include_tag '/javascripts/jquery.js?1335127149' %>
+<%= javascript_include_tag '/javascripts/jquery_ujs.js?1335127149' %>
+<%= javascript_include_tag '/javascripts/application.js?1335127149' %>
+<%= javascript_include_tag '/javascripts/campaign/auto_save.js?1335127149' %>
+<%= javascript_include_tag '/javascripts/campaign/campaign.js?1335127149' %>
+<%= javascript_include_tag '/javascripts/datepicker.js?1335127149' %>
+
 <script src="/js/mylibs/jquery.fitvids.js"></script>
 <script>
   $(document).ready(function(){
@@ -14,3 +21,9 @@
     $(".video").fitVids();
   });
 </script>
+
+<!--[if (lt IE 9) & (!IEMobile)]>
+<script src="js/libs/DOMAssistantCompressed-2.8.js"></script>
+<script src="js/libs/selectivizr-1.0.1.js"></script>
+<script src="js/libs/imgsizer.js"></script>
+<![endif]-->

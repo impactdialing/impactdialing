@@ -1,5 +1,5 @@
 <div class="box" >
-	<%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@campaign.name} Download"} %>
+	<h1><%= @campaign %> Download</h1>
 	<div class="box-content">
 		<%= form_tag ("/client/report_download?id=#{ params[:id]}") do %>
 		<input type="hidden" name="from_date" value="<%= @from_date %>">

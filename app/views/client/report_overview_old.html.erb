@@ -1,4 +1,4 @@
-<%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@campaign.name} Answered calls"} %>
+<h1><%= @campaign.name} %> Answered calls</h1>
 
 <% @json_fields.each do |f| %>
 	<% num=f[f.length-1,1] %>
