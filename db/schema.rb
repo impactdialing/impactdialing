@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120422105538) do
+ActiveRecord::Schema.define(:version => 20120423070204) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -172,6 +172,7 @@ ActiveRecord::Schema.define(:version => 20120422105538) do
     t.text     "questions"
     t.text     "notes"
     t.string   "state"
+    t.string   "type"
   end
 
   add_index "caller_sessions", ["caller_id"], :name => "index_caller_sessions_on_caller_id"
