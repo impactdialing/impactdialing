@@ -1,6 +1,6 @@
 <div class="content clearfix">
   <div role="main">
-<%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@caller.name} Usage"} %>
+	<h1><%= @caller.name %> Usage</h1>
       <% form_tag(usage_client_caller_path(:id => params[:id]), :method => :get) do %>
 
       <%= select_tag 'campaign_id', options_from_collection_for_select(@campaigns, 'id', 'name', @campaign.try(:id)), {:include_blank => 'Total'} %>
@@ -32,4 +32,7 @@
 
 <h3>Date range:</h3>
   <%= render :partial => 'shared/date_picker' %>
+	<div class="buttons">
+	  <button type="submit">Update</button>
+	</div>
 <% end %>

@@ -1,0 +1,37 @@
+<script type="text/javascript">
+  var _kmq = _kmq || [];
+  function _kms(u){
+    setTimeout(function(){
+    var s = document.createElement('script'); var f = document.getElementsByTagName('script')[0]; s.type = 'text/javascript'; s.async = true;
+    s.src = u; f.parentNode.insertBefore(s, f);
+    }, 1);
+  }
+  _kms('//i.kissmetrics.com/i.js');_kms('//doug1izaerwt3.cloudfront.net/f5a82ad15f42efbbbc3ac9c36dabcf3634c6084c.1.js');
+<% if !@user.nil? && !@user.email.nil? %>_kmq.push(['identify', '<%= URI.escape @user.email %>']);<% end %>	
+<%= yield :kissmetrics %>
+<% if flash[:kissmetrics] %>
+<% flash[:kissmetrics].reverse.each do |message| %>
+_kmq.push(['record', '<%= message %>']);
+<% end %>
+<% end %>
+</script>
+
+<%= yield :javascripts %>
+<%= yield :jquery_extension_javascripts %>
+<%= javascript_include_tag :defaults %>
+<%= javascript_include_tag 'application' %>
+<%= javascript_include_tag 'https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js' %>
+<%= javascript_include_tag 'https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js' %>
+<%= javascript_include_tag 'https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js' %>
+
+<%= javascript_include_tag '/javascripts/jquery.js?1335127149' %>
+<%= javascript_include_tag '/javascripts/jquery_ujs.js?1335127149' %>
+<%= javascript_include_tag '/javascripts/application.js?1335127149' %>
+
+<%= javascript_include_tag '/js/libs/modernizr-custom.js' %>
+
+<!--[if (lt IE 9) & (!IEMobile)]>
+<script src="js/libs/DOMAssistantCompressed-2.8.js"></script>
+<script src="js/libs/selectivizr-1.0.1.js"></script>
+<script src="js/libs/imgsizer.js"></script>
+<![endif]-->

@@ -1,4 +1,3 @@
-
 <% content_for :javascripts do %>
     <%= javascript_include_tag "campaign/auto_save" %>
     <%= javascript_include_tag "campaign/campaign" %>
@@ -11,7 +10,6 @@
       <%= render "shared/error_messages", :target => @campaign %>
     </div>
     <fieldset>
-
       <%= hidden_field_tag :id, @campaign.id, {:class=>"field"} %>
       <legend>Campaign options</legend>
       <fieldset>

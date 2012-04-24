@@ -1,5 +1,4 @@
 class BroadcastController < ClientController
-  layout 'v2'
 
   def index
   end
@@ -9,6 +8,5 @@ class BroadcastController < ClientController
   end
 
   def policies
-    render 'home/policies'
   end
 end

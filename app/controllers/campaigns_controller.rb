@@ -1,5 +1,4 @@
 class CampaignsController < ClientController
-  layout 'v2'
   include DeletableController
   before_filter :full_access
   #skip_before_filter :verify_authenticity_token, :only => [:start, :stop]

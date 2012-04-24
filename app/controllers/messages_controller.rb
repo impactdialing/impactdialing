@@ -1,5 +1,4 @@
 class MessagesController < ClientController
-  layout 'v2'
 
   def new
     @script = Script.new

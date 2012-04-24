@@ -1,24 +1,14 @@
 require Rails.root.join("lib/twilio_lib")
 
 class AdminController < ApplicationController
-  layout "basic"
   USER_NAME, PASSWORD = "impact", "Mb<3Ad4F@2tCallz"
   before_filter :authenticate
 
 
   def state
-    if Time.now.hour > 0 && Time.now.hour < 6
-      @calling_status = "<font color=red>Unavailable, off hours</font>".html_safe
-    else
-      @calling_status = "Available".html_safe
-    end
     @logged_in_campaigns = Campaign.all(:conditions=>"id in (select distinct campaign_id from caller_sessions where on_call=1)")
     @logged_in_callers = CallerSession.find_all_by_on_call(1)
     @errors=""
-  end
-
-  def index
-
   end
 
   def report
@@ -58,7 +48,6 @@ class AdminController < ApplicationController
       end
     end
 
-    render :layout=>"client"
   end
 
   def set_report_date_range
@@ -107,76 +96,6 @@ class AdminController < ApplicationController
     redirect_to :back
   end
 
-  def cms
-    @version = session[:cms_version]
-    @keys = Seo.all.map { |i| i.crmkey }.uniq
-    @keys.delete_if { |x| x == nil }
-    @keys.sort!
-  end
-
-  def add_cms
-    if request.post?
-      s = Seo.new
-      s.crmkey=params[:key]
-      s.content = params[:content]
-      s.active=1
-      s.save
-      s.version=session[:cms_version]
-      s.version=nil if session[:cms_version].blank?
-      flash_message(:notice, "CMS updated successfully")
-      redirect_to :action=>"cms"
-    end
-  end
-
-  def edit_cms
-    @seo = Seo.new
-    @seoold = Seo.find(params[:id])
-    @seo.crmkey = @seoold.crmkey
-    @seo.content = @seoold.content
-    @version = session[:cms_version]
-    if request.post?
-      @seo.attributes = params[:seo]
-      @seoold.active=0
-      @seoold.save
-      @seo.active=1
-      @seo.version=session[:cms_version]
-      @seo.version=nil if session[:cms_version].blank?
-      @seo.save
-      flash_message(:notice, "CMS updated successfully")
-      redirect_to :action=>"cms"
-      return
-    end
-  end
-
-  def pick_version
-    if request.post?
-      if params[:v]
-        session[:cms_version]=params[:v]
-        session[:cms_version]=nil if params[:v].blank? || params[:v]=="Live"
-        flash_message(:notice, "CMS version changed")
-        redirect_to :action=>"cms"
-      end
-      if !params[:nv].blank?
-        test = Seo.find_by_version(params[:nv])
-        if !test.blank?
-          render :text=>"error - version already created!"
-          return
-        else
-          # x = Seo.new
-          # x.crmkey="optimizer_control_script"
-          # x.active=1
-          # x.version=params[:nv].strip
-          # x.save
-          # session[:cms_version]=x.version
-          session[:cms_version]=params[:nv].strip
-          flash_message(:notice, "CMS version added successfully")
-          redirect_to :action=>"cms"
-        end
-      end
-    end
-    @versions = Seo.all.map { |i| i.version }.uniq
-  end
-
   def robo_log_parse
     counter = 1
     out=[]
@@ -187,23 +106,6 @@ class AdminController < ApplicationController
       counter = counter + 1
     end
     render :text=>out.join(",")
-  end
-
-  def copy_cms
-    @version = session[:cms_version]
-    @source = Seo.find(params[:id])
-
-    if request.post?
-      s = Seo.new
-      s.crmkey=params[:key]
-      s.content = params[:content]
-      s.active=1
-      s.version=session[:cms_version]
-      s.version=nil if session[:cms_version].blank?
-      s.save
-      flash_message(:notice, "CMS updated successfully")
-      redirect_to :action=>"cms"
-    end
   end
 
   def charge

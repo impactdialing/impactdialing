@@ -1,5 +1,4 @@
 class ScriptsController < ClientController
-  layout 'v2'
   include DeletableController
   before_filter :full_access
   before_filter :new_script, :only => [:new, :create]

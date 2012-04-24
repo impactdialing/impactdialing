@@ -2,7 +2,7 @@
 <a href="#join">My account</a><br>
 <% if !logged_in_as_client? || @user.administrator? %>
   <a href="#administrators">Add administrators</a><br>
-  <a href="/client/billing">Billing</a><br>
+  <a href="<%= billing_link %>">Billing</a><br>
   <a href="/client/blocked_numbers">Do Not Call list</a>
 <%end%>
 </p>

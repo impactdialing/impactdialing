@@ -1,6 +1,8 @@
+<% content_for :javascripts do %>
+    <%= javascript_include_tag "campaign/auto_save" %>
+    <%= javascript_include_tag "campaign/campaign" %>
+<% end %>
 <h1>New campaign</h1>
-<%= javascript_include_tag "campaign/auto_save" %>
-<%= javascript_include_tag "https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js" %>
 <div id="callerid"></div>
 
 <%= form_for @campaign, url: "#{client_campaigns_path}/#{@campaign.id}", :html => {:name => 'callerForm', :id => 'callerForm'} do |f| %>
