@@ -133,7 +133,7 @@ describe PhonesOnlyCallerSession do
       caller_session.should_receive(:caller_reassigned_to_another_campaign?).and_return(false)
       @campaign.should_receive(:next_voter_in_dial_queue).and_return(voter)
       caller_session.start_conf!
-      caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather numDigits=\"1\" timeout=\"10\" action=\"https://3ngz.localtunnel.com:3000/caller/#{@caller.id}/flow?session=#{caller_session.id}&amp;voter=#{voter.id}\" method=\"POST\" finishOnKey=\"5\"><Say>first  last. Press star to dial or pound to skip.</Say></Gather></Response>")
+      caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather numDigits=\"1\" timeout=\"10\" action=\"https://3ngz.localtunnel.com:3000/caller/#{@caller.id}/flow?event=gather_response&amp;session=#{caller_session.id}&amp;voter=#{voter.id}\" method=\"POST\" finishOnKey=\"5\"><Say>first  last. Press star to dial or pound to skip.</Say></Gather></Response>")
     end        
     
     it "should render twiml for preview when no voters present" do

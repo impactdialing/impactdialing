@@ -9,6 +9,9 @@ module DeletableController
   end
 
   def restore
+    puts params
+    puts type_name
+    puts params["#{type_name}_id"]
     class_constant.find(params["#{type_name}_id"]).tap do |s|
       s.active = true
       s.save
