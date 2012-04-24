@@ -13,7 +13,7 @@ describe VoterListsController do
     let(:csv_file_upload) { {"datafile" => fixture_file_upload("/files/valid_voters_list.csv")} }
 
     before :each do
-      @campaign = Factory(:campaign, :account => @current_user.account)
+      @campaign = Factory(:predictive, :account => @current_user.account)
     end
 
     it "needs an uploaded file" do

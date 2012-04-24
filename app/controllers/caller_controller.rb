@@ -132,33 +132,6 @@ class CallerController < ApplicationController
   end
   add_method_tracer :call_voter, "Custom/#{self.class.name}/call_voter"
   
-  def choose_voter
-    caller_session = CallerSession.find(params[:session])
-    voter = Voter.find(params[:voter])
-    caller = Caller.find(params[:id])
-    caller_choice = params[:Digits]
-    render :xml => caller.choice_result(caller_choice, voter, caller_session)
-  end
-  
-  def phones_only_progressive
-    caller_session = CallerSession.find(params[:session_id])
-    voter = Voter.find(params[:voter_id])
-    render :xml => caller_session.phones_only_start
-    caller_session.preview_dial(voter)
-  end
-  
-  def phones_only
-    caller_session = CallerSession.find(params[:session_id])
-    xml = (params[:campaign_reassigned] == "true") ?  caller_session.read_campaign_reassign_msg : caller_session.caller.instruction_choice_result("*", caller_session)
-    render :xml => xml
-  end
-  
-  def choose_instructions_option
-    caller_session = CallerSession.find(params[:session])
-    caller = Caller.find(params[:id])
-    render :xml => caller.instruction_choice_result(params[:Digits], caller_session)
-  end
-  
   def new_campaign_response_panel
     caller = Caller.find(params[:id])
     @campaign = caller.campaign
