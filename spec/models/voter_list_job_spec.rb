@@ -7,7 +7,7 @@ describe VoterListJob do
   describe "import" do
     before :each do
       @account = Factory(:account)
-      @campaign = Factory(:campaign, :account => @account)
+      @campaign = Factory(:preview, :account => @account)
       @separator = ","
       @voter_list_name = "voter list name"
       @json_csv_column_headers = ["Phone", "LAST"].to_json

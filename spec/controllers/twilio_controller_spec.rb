@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe TwilioController do
   let(:recording) { Factory(:robo_recording, :file_file_name => 'foo.wav') }
-  let(:campaign) { Factory(:campaign, :robo => true, :script => Factory(:script, :robo_recordings => [recording])) }
+  let(:campaign) { Factory(:robo, :script => Factory(:script, :robo_recordings => [recording])) }
   let(:call_attempt) { Factory(:call_attempt, :campaign => campaign, :voter => Factory(:voter)) }
 
   it "proceeds with the call if the call was answered" do

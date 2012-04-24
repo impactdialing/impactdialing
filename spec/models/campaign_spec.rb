@@ -44,11 +44,24 @@ describe Campaign do
     end
 
     it 'return validation error, when callers are login and try to change dialing mode' do
-      campaign = Campaign.create!(:name => 'Titled', :caller_id => '0123456789', :account => Factory(:account), :type =>Campaign::Type::PREVIEW)
+      campaign = Preview.create(:name => 'Titled', :caller_id => '0123456789', :account => Factory(:account))
+      campaign = Campaign.find(campaign.id)
       campaign.caller_sessions.create!(:on_call => true)
-      campaign.update_attributes(:type => Campaign::Type::PROGRESSIVE).should be_false
+      campaign.type = Campaign::Type::PROGRESSIVE
+      campaign.save.should be_false
       campaign.errors[:base].should == ['You cannot change dialing modes while callers are logged in.']
+      campaign.reload
+      campaign.type.should eq(Campaign::Type::PREVIEW)
     end
+    
+    it 'can change dialing mode when not on call' do
+      campaign = Preview.create(:name => 'Titled', :caller_id => '0123456789', :account => Factory(:account))
+      campaign = Campaign.find(campaign.id)
+      campaign.type = Campaign::Type::PROGRESSIVE
+      campaign.save.should be_true
+      campaign.type.should eq(Campaign::Type::PROGRESSIVE)
+    end
+    
     
     it "should not invoke Twilio if caller id is not present" do
       TwilioLib.should_not_receive(:new)
@@ -155,7 +168,7 @@ describe Campaign do
       t1 = Time.parse("01/2/2011 10:00")
       t2 = Time.parse("01/2/2011 09:00")
       Time.stub!(:now).and_return(t1, t1, t2, t2)
-      @campaign.time_period_exceed?.should == false
+      @campaign.time_period_exceeded?.should == false
     end
   
     it "should not allow callers to dial, if time  expired" do
@@ -163,7 +176,7 @@ describe Campaign do
       t2 = Time.parse("01/2/2011 11:00")
       t3 = Time.parse("01/2/2011 15:00")
       Time.stub!(:now).and_return(t1, t1, t2, t2, t3, t3)
-      @campaign.time_period_exceed?.should == true
+      @campaign.time_period_exceeded?.should == true
     end
   end
        

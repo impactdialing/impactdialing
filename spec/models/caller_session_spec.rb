@@ -265,23 +265,6 @@ describe CallerSession do
       caller_session.caller_reassigned_to_another_campaign?.should be_true
     end
 
-    it "say the msg 'You have been re-assigned to campaign', if caller is phones_only" do
-      caller = Factory(:caller, :campaign => Factory(:campaign), :is_phones_only => true)
-      caller_session = Factory(:caller_session, :campaign => Factory(:campaign), :caller => caller)
-      caller_session.reassign_caller_session_to_campaign.should == Twilio::Verb.new do |v|
-        v.say I18n.t(:re_assign_caller_to_another_campaign, :campaign_name => caller.campaign.name)
-        v.redirect(choose_instructions_option_caller_url(caller, :host => Settings.host, :port => Settings.port, :session => caller_session.id, :Digits => "*"))
-      end.response
-    end
-
-    it "push 'caller_re_assigned_to_campaign' event, if caller is not phones_only" do
-      campaign = Factory(:preview, :use_web_ui => true)
-      caller_session = Factory(:caller_session, :campaign => campaign, :caller => Factory(:caller, :campaign => campaign, :is_phones_only => false))
-      channel = mock
-      Pusher.should_receive(:[]).with(caller_session.session_key).and_return(channel)
-      channel.should_receive(:trigger).with("caller_re_assigned_to_campaign", anything)
-      caller_session.reassign_caller_session_to_campaign
-    end
 
     it "reassign the caller_session to campaign" do
       campaign1 = Factory(:preview, :use_web_ui => true)
@@ -291,19 +274,7 @@ describe CallerSession do
       caller_session.reassign_caller_session_to_campaign
       caller_session.reload.campaign.should == caller.campaign
     end
-
-    it "" do
-      campaign1 = Factory(:campaign, :use_web_ui => true, :type => 'preview')
-      campaign2 = Factory(:campaign, :use_web_ui => true, :type => 'preview')
-      phones_only_caller = Factory(:caller, :campaign => campaign2, :is_phones_only => true)
-      caller_session = Factory(:caller_session, :caller => phones_only_caller, :campaign => campaign1, :session_key => "sample", :on_call=> true, :available_for_call => true)
-      Moderator.should_receive(:publish_event)
-      caller_session.start.should == Twilio::Verb.new do |v|
-        v.say I18n.t(:re_assign_caller_to_another_campaign, :campaign_name => phones_only_caller.campaign.name)
-        v.redirect(choose_instructions_option_caller_url(phones_only_caller, :host => Settings.host, :port => Settings.port, :session => caller_session.id, :Digits => "*"))
-      end.response
-    end
-
+    
   end
 
 
@@ -506,7 +477,7 @@ describe CallerSession do
     before(:each) do
       @caller = Factory(:caller)
       @script = Factory(:script)
-      @campaign =  Factory(:campaign, script: @script)    
+      @campaign =  Factory(:campaign, script: @script,:start_time => Time.new(2011, 1, 1, 9, 0, 0), :end_time => Time.new(2011, 1, 1, 21, 0, 0), :time_zone =>"Pacific Time (US & Canada)")    
     end
     
     it "should move caller session campaign_time_period_exceeded state" do
@@ -524,7 +495,7 @@ describe CallerSession do
       caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
       caller_session.should_receive(:time_period_exceeded?).and_return(true)
       caller_session.start_conf!
-      caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>You can only call this campaign between 6 AM and 5 AM. Please try back during those hours.</Say><Hangup/></Response>")
+      caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>You can only call this campaign between 9 AM and 9 PM. Please try back during those hours.</Say><Hangup/></Response>")
     end
   end
   

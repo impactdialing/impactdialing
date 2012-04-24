@@ -25,7 +25,7 @@ class CampaignsController < ClientController
   end
 
   def create
-    campaign = Robo.create(params[:campaign])
+    campaign = Robo.create(params[:campaign].merge!(account_id: account.id))
     campaign.account = @user.account
     campaign.script||= @user.account.scripts.robo.active.first
     campaign.save

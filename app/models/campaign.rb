@@ -21,7 +21,7 @@ class Campaign < ActiveRecord::Base
   delegate :questions_and_responses, :to => :script
 
   scope :robo, lambda { where(:type => 'robo') }
-  scope :manual, where("type <> 'robo'")
+  scope :manual, :conditions => [ 'campaigns.type != "robo"' ]
   scope :for_account, lambda { |account| {:conditions => ["account_id = ?", account.id]} }
   scope :with_running_caller_sessions, {
       :select => "distinct campaigns.*",
@@ -37,7 +37,7 @@ class Campaign < ActiveRecord::Base
   validates :caller_id, :presence => true, :unless => :new_campaign
   validates :caller_id, :numericality => {:on => :update}, :length => {:on => :update, :minimum => 10, :maximum => 10}, :unless => Proc.new{|campaign| campaign.caller_id && campaign.caller_id.start_with?('+')}
   validate :set_caller_id_error_msg
-  validate :type_change
+  validate :campaign_type_changed
   cattr_reader :per_page
   @@per_page = 25
 
@@ -63,7 +63,7 @@ class Campaign < ActiveRecord::Base
       end
     end
 
-  def type_change
+  def campaign_type_changed
     if type_changed? && callers_log_in?
       errors.add(:base, 'You cannot change dialing modes while callers are logged in.')
     end
