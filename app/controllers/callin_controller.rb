@@ -8,26 +8,13 @@ class CallinController < ApplicationController
   def identify
     @identity = CallerIdentity.find_by_pin(params[:Digits])
     @caller = @identity.nil? ?  Caller.find_by_pin(params[:Digits]) : @identity.try(:caller)
+    session_key = @identity.nil? ? generate_session_key : @identity.session_key
     if @caller
-      if !@caller.account.subscription_allows_caller?
-        render :xml => @caller.max_callers_reached
-        return
-      end
-      session_key = @identity.nil? ? generate_session_key : @identity.session_key
-      @session = @caller.create_caller_session(session_key, params[:CallSid])
-      unless @caller.account.activated?
-         render :xml => @caller.account.insufficient_funds
-         return
-       end
-      if !@caller.is_phones_only? && @caller.is_on_call? 
-        render xml: @caller.already_on_call
-        return
-      end
-
-      Moderator.caller_connected_to_campaign(@caller, @caller.campaign, @session)
-      @session.publish('start_calling', {caller_session_id: @session.id}) 
-      @session.preview_voter
-      render :xml => @caller.is_phones_only? ? @caller.ask_instructions_choice(@session) : @session.start
+      @session = @caller.create_caller_session(session_key, params[:CallSid])    
+      # Moderator.caller_connected_to_campaign(@caller, @caller.campaign, @session)
+      # @session.publish('start_calling', {caller_session_id: @session.id}) 
+      # @session.preview_voter
+      render xml:  @session.run(:start_conf)
     else
       render :xml => Caller.ask_for_pin(params[:attempt].to_i)
     end

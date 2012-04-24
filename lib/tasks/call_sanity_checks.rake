@@ -39,7 +39,7 @@ task :post_call_availabilty_check => :environment do
     Pusher.key = PUSHER_KEY
     Pusher.secret = PUSHER_SECRET
 
-    if @session.campaign.predictive_type=="preview"
+    if @session.campaign.type=="preview"
       Pusher[@session.session_key].trigger('waiting', 'preview')
     else
       Pusher[@session.session_key].trigger('waiting', 'ok')

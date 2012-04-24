@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120419123434) do
+ActiveRecord::Schema.define(:version => 20120424154033) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -169,6 +169,11 @@ ActiveRecord::Schema.define(:version => 20120419123434) do
     t.string   "session_key"
     t.integer  "lock_version",         :default => 0
     t.integer  "payment_id"
+    t.text     "questions"
+    t.text     "notes"
+    t.string   "state"
+    t.string   "type"
+    t.string   "digit"
   end
 
   add_index "caller_sessions", ["caller_id"], :name => "index_caller_sessions_on_caller_id"
@@ -193,6 +198,46 @@ ActiveRecord::Schema.define(:version => 20120419123434) do
     t.integer "campaign_id"
   end
 
+  create_table "calls", :force => true do |t|
+    t.integer  "call_attempt_id"
+    t.string   "state"
+    t.string   "conference_name"
+    t.text     "conference_history"
+    t.string   "account_sid"
+    t.string   "to_zip"
+    t.string   "from_state"
+    t.string   "called"
+    t.string   "from_country"
+    t.string   "caller_country"
+    t.string   "called_zip"
+    t.string   "direction"
+    t.string   "from_city"
+    t.string   "called_country"
+    t.string   "caller_state"
+    t.string   "call_sid"
+    t.string   "called_state"
+    t.string   "from"
+    t.string   "caller_zip"
+    t.string   "from_zip"
+    t.string   "application_sid"
+    t.string   "call_status"
+    t.string   "to_city"
+    t.string   "to_state"
+    t.string   "to"
+    t.string   "to_country"
+    t.string   "caller_city"
+    t.string   "api_version"
+    t.string   "caller"
+    t.string   "called_city"
+    t.string   "answered_by"
+    t.integer  "recording_duration"
+    t.string   "recording_url"
+    t.datetime "waiting_at"
+    t.datetime "ended_at"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
   create_table "campaigns", :force => true do |t|
     t.string   "campaign_id"
     t.string   "group_id"
@@ -211,7 +256,7 @@ ActiveRecord::Schema.define(:version => 20120419123434) do
     t.string   "caller_id"
     t.boolean  "caller_id_verified",       :default => false
     t.boolean  "use_answering",            :default => true
-    t.string   "predictive_type",          :default => "preview"
+    t.string   "type",                     :default => "preview"
     t.integer  "recording_id"
     t.boolean  "use_recordings",           :default => false
     t.integer  "max_calls_per_caller",     :default => 20
