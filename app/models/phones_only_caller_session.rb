@@ -56,7 +56,7 @@ class PhonesOnlyCallerSession < CallerSession
         before(:always) {select_voter(voter_in_progress)}
         response do |xml_builder, the_call|
           if voter_in_progress.present?
-            xml_builder.Gather(:numDigits => 1, :timeout => 10, :action => flow_caller_url(self.caller, :session => self, :host => Settings.host, :port => Settings.port, :voter => voter_in_progress), :method => "POST", :finishOnKey => "5") do
+            xml_builder.Gather(:numDigits => 1, :timeout => 10, :action => flow_caller_url(self.caller, :session => self, event: "gather_response", :host => Settings.host, :port => Settings.port, :voter => voter_in_progress), :method => "POST", :finishOnKey => "5") do
               xml_builder.Say I18n.t(:read_voter_name, :first_name => voter_in_progress.FirstName, :last_name => voter_in_progress.LastName) 
             end
           else
@@ -97,12 +97,17 @@ class PhonesOnlyCallerSession < CallerSession
       
       state :conference_started_phones_only do
         before(:always) {start_conference; preview_dial(voter_in_progress)}
+        event :gather_response, :to => :voter_response
         
         response do |xml_builder, the_call|
           xml_builder.Dial(:hangupOnStar => true, :action => flow_caller_url(caller, event: "gather_response", :host => Settings.host, :port => Settings.port, :session_id => id)) do
             xml_builder.Conference(session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
           end          
         end
+        
+      end
+      
+      state :voter_response do
         
       end
       

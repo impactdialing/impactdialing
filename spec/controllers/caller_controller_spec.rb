@@ -82,7 +82,7 @@ describe CallerController do
     end
 
     it "ask caller to choose voter if campaign type is either preview or progressive" do
-      campaign_preview = Factory(:campaign, :account => account, :robo => false, :use_web_ui => true, :script => script, :type => "preview")
+      campaign_preview = Factory(:preview, :account => account, :robo => false, :use_web_ui => true, :script => script, :type => "preview")
       phones_only_caller = Factory(:caller, :is_phones_only => true, :campaign => campaign_preview)
       caller_session2 = Factory(:caller_session, :campaign => campaign_preview, :session_key => "some_key", :caller => phones_only_caller, :available_for_call => true, :on_call => true)
       post :gather_response, :id => phones_only_caller.id, :session_id => caller_session2.id, :question_id => first_question.id, :Digits => "1"

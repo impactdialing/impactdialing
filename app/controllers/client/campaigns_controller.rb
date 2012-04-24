@@ -3,7 +3,7 @@ module Client
     layout 'client'
 
     def new
-      @campaign = Campaign.new(:account_id => account.id)
+      @campaign = Progressive.new(:account_id => account.id)
       @campaign.save(:validate => false)
       @callers = account.callers.active
       @lists = @campaign.voter_lists
@@ -56,13 +56,16 @@ module Client
     def update
       @campaign = Campaign.find_by_id(params[:id])
       @campaign.account = account
+      puts params[:campaign]
       @campaign.update_attributes(params[:campaign])
+      puts @campaign.inspect
+      @campaign.type = params[:campaign][:type]
+      @campaign.save!      
       @scripts = @campaign.account.scripts
       @lists = @campaign.voter_lists
       @voter_list = @campaign.voter_lists.new
       if @campaign.valid?
         @campaign.script ||= @campaign.account.scripts.first
-        @campaign.save
         @campaign.disable_voter_list
         params[:voter_list_ids].each { |id| VoterList.enable_voter_list(id) } unless params[:voter_list_ids].blank?
         flash_message(:notice, "Campaign saved")

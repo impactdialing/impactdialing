@@ -17,13 +17,13 @@
       <fieldset>
         <legend>Basic settings</legend>
         <p><label for="">Name</label><br>
-          <%= f.text_field :name, {:class=>"field size3"} %></p>
+          <%= f.text_field :name, {:class=>"field size3", name: "campaign[name]"} %></p>
 
         <p><label for="">Caller ID</label><br>
-          <%= f.text_field :caller_id, {:class=>"field size3"} %></p>
+          <%= f.text_field :caller_id, {:class=>"field size3", name: "campaign[caller_id]"} %></p>
 
         <p><label for="">Script</label><br>
-          <%= f.collection_select(:script_id, @scripts, :id, :name, {:class=>"field"}) %>
+          <%= f.collection_select(:script_id, @scripts, :id, :name, {:class=>"field", name: "campaign[script_id]"}) %>
         </p>
 
         <p><label for="">Dialing mode</label>
