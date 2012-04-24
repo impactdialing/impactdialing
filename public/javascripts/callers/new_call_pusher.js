@@ -1,14 +1,63 @@
+CallerPusherStateMachine = function() {    // my constructor function
+};
+
+CallerPusherStateMachine.prototype = {
+	
+  onpusher_subscribed: function(event, from, to) {
+	$("#start_calling").show();
+	$("#callin_data").show();
+	$('#connecting').hide();		
+  },
+
+  onconference_started: function(event, from, to, data) { 
+	set_message("Status: Ready for calls.");
+	set_voter(data);
+	ready_for_calls(data);				
+	},
+	
+  onconference_started_dialer: function(event, from, to) { 
+	  hide_all_actions();
+      $("#stop_calling").show();
+      set_message("Status: Dialing.");    
+	},
+	
+   onvoter_in_conference: function(event, from, to, data) {
+	  set_call_attempt(data.attempt_id);
+	  hide_all_actions();
+	  show_response_panel();
+   	  show_transfer_panel();
+      cleanup_previous_call_results();
+	  cleanup_transfer_panel();
+	  set_message("Status: Connected.")
+      $("#hangup_call").show();    	
+    },
+
+	onvoter_in_conference_dialer: function(event, from, to, data) {
+		set_call_attempt(data.attempt_id);
+		voter_connected();
+		set_voter(data.voter);        
+	},
+
+  // my other prototype methods
+
+};
+
+StateMachine.create({
+  target: CallerPusherStateMachine.prototype,
+  events: [
+    { name: 'pusher_subscribed', from: 'none',   to: 'channel_created'  },
+    { name: 'conference_started',    from: 'channel_created',  to: 'caller_in_conference' },
+    { name: 'conference_started_dialer',   from: 'channel_created', to: 'caller_in_conference'    },
+    { name: 'voter_connected',    from: 'conference_started',    to: 'voter_in_conference' },
+    { name: 'voter_connected_dialer',   from: 'conference_started_dialer', to: 'voter_in_conference_dialer'  }
+ ]});
+
 Pusher.log = function(message) {
     if (window.console && window.console.log) window.console.log(message);
 };
 
 var channel = null;
 
-function pusher_subscription_succeeded(){
-	$("#start_calling").show();
-	$("#callin_data").show();
-	$('#connecting').hide();	
-}
 
 function set_session(session_id) {
     $("#caller_session").val(session_id);

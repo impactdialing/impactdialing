@@ -1,5 +1,6 @@
-class WebuiCallerSession < CallerSession
+class WebuiCallerSession < CallerSession  
   include Rails.application.routes.url_helpers
+  
   call_flow :state, :initial => :initial do    
     
       state :initial do

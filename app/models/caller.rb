@@ -87,41 +87,6 @@ class Caller < ActiveRecord::Base
     attributes.reject { |k, v| (k == "created_at") ||(k == "updated_at") }
   end
   
-  def ask_instructions_choice(caller_session)
-    Twilio::Verb.new do |v|
-      v.gather(:numDigits => 1, :timeout => 10, :action => choose_instructions_option_caller_url(self, :session => caller_session, :host => Settings.host, :port => Settings.port), :method => "POST", :finishOnKey => "5") do
-        v.say I18n.t(:caller_instruction_choice)
-      end
-    end.response
-  end
-  
-  def instruction_choice_result(caller_choice, caller_session)
-    if caller_choice == "*"
-      campaign.is_preview_or_progressive ? caller_session.ask_caller_to_choose_voter : caller_session.start
-    elsif caller_choice == "#"
-      Twilio::Verb.new do |v|
-        v.gather(:numDigits => 1, :timeout => 10, :action => choose_instructions_option_caller_url(self, :session => caller_session, :host => Settings.host, :port => Settings.port), :method => "POST", :finishOnKey => "5") do
-          v.say I18n.t(:phones_only_caller_instructions)
-        end
-      end.response
-    else
-      ask_instructions_choice(caller_session)
-    end
-  end
-  
-  
-  def choice_result(caller_choice, voter, caller_session)
-    if caller_choice == "*"
-      response = caller_session.phones_only_start
-      caller_session.preview_dial(voter)
-      response
-    elsif caller_choice == "#"
-      voter.skip
-      caller_session.ask_caller_to_choose_voter
-    else
-      caller_session.ask_caller_to_choose_voter(voter, caller_choice)
-    end
-  end
   
   def reassign_to_another_campaign(caller_session)
     if caller_session.attempt_in_progress.nil?
