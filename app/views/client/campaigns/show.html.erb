@@ -17,22 +17,22 @@
       <fieldset>
         <legend>Basic settings</legend>
         <p><label for="">Name</label><br>
-          <%= f.text_field :name, {:class=>"field size3"} %></p>
+          <%= f.text_field :name, {:class=>"field size3", name: "campaign[name]"} %></p>
 
         <p><label for="">Caller ID</label><br>
-          <%= f.text_field :caller_id, {:class=>"field size3"} %></p>
+          <%= f.text_field :caller_id, {:class=>"field size3", name: "campaign[caller_id]"} %></p>
 
         <p><label for="">Script</label><br>
-          <%= f.collection_select(:script_id, @scripts, :id, :name, {:class=>"field"}) %>
+          <%= f.collection_select(:script_id, @scripts, :id, :name, {:class=>"field", name: "campaign[script_id]"}) %>
         </p>
 
         <p><label for="">Dialing mode</label>
-          <select class="field" id="campaign_predictive_type" name="campaign[predictive_type]" onchange="dialingModeOnChange()">
-            <% public_dialers = [["Predictive", "algorithm1"], ["Power", "progressive"], ["Preview", "preview"],] %>
-            <% if !public_dialers.map { |pair| pair[1] }.index(@campaign.predictive_type) %>
-                <option value="<%= @campaign.predictive_type %>" selected><%= @campaign.predictive_type %></option>
+          <select class="field" id="campaign_type" name="campaign[type]" onchange="dialingModeOnChange()">
+            <% public_dialers = [["Predictive", "Predictive"], ["Power", "Progressive"], ["Preview", "Preview"],] %>
+            <% if !public_dialers.map { |pair| pair[1] }.index(@campaign.type) %>
+                <option value="<%= @campaign.type %>" selected><%= @campaign.type %></option>
             <% end %>
-            <%= options_for_select public_dialers, @campaign.predictive_type %>
+            <%= options_for_select public_dialers, @campaign.type %>
           </select>
         </p>
         <div id="abandon_rate_edit" style="display: none">
@@ -106,8 +106,8 @@
 
 <script>
     function dialingModeOnChange() {
-        var dialMode = $('#campaign_predictive_type').val();
-        if (dialMode == "algorithm1") {
+        var dialMode = $('#campaign_type').val();
+        if (dialMode == "Predictive") {
             $('#abandon_rate_edit').show();
             $('#campaign_abandon_rate').val(0.03);
         } else {
@@ -116,7 +116,7 @@
     }
 
     $(function () {
-        if ($("#campaign_predictive_type").val() == "algorithm1") {
+        if ($("#campaign_type").val() == "Predictive") {
             $("#abandon_rate_edit").show();
 
         }

@@ -1,6 +1,9 @@
 class CallerSession < ActiveRecord::Base
   cache_records :store => :shared, :key => "c_s", :request_cache => true
   include Rails.application.routes.url_helpers
+  include CallCenter
+  include CallerEvents
+  
   belongs_to :caller
   belongs_to :campaign
 
@@ -17,6 +20,9 @@ class CallerSession < ActiveRecord::Base
   has_one :attempt_in_progress, :class_name => 'CallAttempt'
   has_one :moderator
   has_many :transfer_attempts
+  
+  delegate :subscription_allows_caller?, :to => :caller
+  delegate :activated?, :to => :caller
 
 
   def minutes_used
@@ -24,20 +30,98 @@ class CallerSession < ActiveRecord::Base
     self.tDuration/60.ceil
   end
   
-
-  def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
-    t = ::TwilioLib.new(account, auth)
-    t.end_call("#{self.sid}")
-    begin
-      self.update_attributes(:on_call => false, :available_for_call => false, :endtime => Time.now)
-    rescue ActiveRecord::StaleObjectError
-      self.reload
-      self.end_running_call
-    end      
-    Moderator.publish_event(campaign, "caller_disconnected",{:caller_session_id => id, :caller_id => caller.id, :campaign_id => campaign.id, :campaign_active => campaign.callers_log_in?,
-      :no_of_callers_logged_in => campaign.caller_sessions.on_call.size})
-    self.publish("caller_disconnected", {source: "end_running_call"})
+  def run(event,render_twiml=true)
+      send(event)
+      render if render_twiml
   end
+  
+  
+  call_flow :state, :initial => :initial do    
+      
+      state [:initial, :connected] do
+        event :start_conf, :to => :account_not_activated, :if => :account_not_activated?
+        event :start_conf, :to => :subscription_limit, :if => :subscription_limit_exceeded?
+        event :start_conf, :to => :time_period_exceeded, :if => :time_period_exceeded?
+        event :start_conf, :to => :caller_on_call,  :if => :is_on_call?
+        event :start_conf, :to => :disconnected, :if => :disconnected?
+      end 
+      
+      state all - [:initial] do
+        event :end_conf, :to => :conference_ended
+      end
+      
+      state :subscription_limit do
+        
+        response do |xml_builder, the_call|
+          xml_builder.Say("The maximum number of callers for this account has been reached. Wait for another caller to finish, or ask your administrator to upgrade your account.")
+          xml_builder.Hangup          
+        end
+        
+      end
+      
+      state :account_not_activated do
+        response do |xml_builder, the_call|          
+          xml_builder.Say "Your account has insufficent funds"
+          xml_builder.Hangup
+        end        
+      end
+      
+      state :caller_on_call do
+        response do |xml_builder, the_call|
+          xml_builder.Say I18n.t(:indentical_caller_on_call)
+          xml_builder.Hangup
+        end
+        
+      end
+      
+      state :time_period_exceeded do                        
+        response do |xml_builder, the_call|          
+          xml_builder.Say I18n.t(:campaign_time_period_exceed, :start_time => campaign.start_time.hour <= 12 ? "#{campaign.start_time.hour} AM" : "#{campaign.start_time.hour-12} PM", :end_time => campaign.end_time.hour <= 12 ? "#{campaign.end_time.hour} AM" : "#{campaign.end_time.hour-12} PM")
+          xml_builder.Hangup
+        end        
+      end
+      
+      state :disconnected do        
+        response do |xml_builder, the_call|
+          xml_builder.Hangup
+        end        
+      end
+      
+      
+      state :conference_ended do
+        before(:always) {end_caller_session}
+        response do |xml_builder, the_call|
+          xml_builder.Hangup
+        end        
+                
+      end
+      
+  end
+  
+  def end_caller_session
+    update_attributes(:on_call => false, :available_for_call => false, :endtime => Time.now)
+    attempt_in_progress.try(:update_attributes, {:wrapup_time => Time.now})
+    attempt_in_progress.try(:capture_answer_as_no_response)
+  end
+  
+  def account_not_activated?
+    !activated?
+  end
+  
+  def subscription_limit_exceeded?
+    !subscription_allows_caller?
+  end
+  
+  def time_period_exceeded?
+    campaign.time_period_exceeded?
+  end
+  
+  def is_on_call?
+    caller.is_on_call?
+  end
+    
+    
+
 
 
   def call(voter)
@@ -51,7 +135,7 @@ class CallerSession < ActiveRecord::Base
   end
 
   def preview_dial(voter)
-    attempt = voter.call_attempts.create(:campaign => self.campaign, :dialer_mode => campaign.predictive_type, :status => CallAttempt::Status::RINGING, :caller_session => self, :caller => caller)
+    attempt = voter.call_attempts.create(:campaign => self.campaign, :dialer_mode => campaign.type, :status => CallAttempt::Status::RINGING, :caller_session => self, :caller => caller)
     update_attribute('attempt_in_progress', attempt)
     voter.update_attributes(:last_call_attempt => attempt, :last_call_attempt_time => Time.now, :caller_session => self, status: CallAttempt::Status::RINGING)
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
@@ -76,6 +160,7 @@ class CallerSession < ActiveRecord::Base
     Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id,:dials_in_progress => campaign.call_attempts.not_wrapped_up.size})
     attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])
   end
+  
 
 
   def start
@@ -88,14 +173,14 @@ class CallerSession < ActiveRecord::Base
       if caller_reassigned_to_another_campaign?
         caller.is_phones_only? ? (return reassign_caller_session_to_campaign) : reassign_caller_session_to_campaign
       end
-      return time_exceed_hangup if campaign.time_period_exceed?
+      return time_exceed_hangup if campaign.time_period_exceeded?
       response = Twilio::Verb.new do |v|
         v.dial(:hangupOnStar => true, :action => caller_response_path) do
           v.conference(self.session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
         end
       end.response
       update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
-      if campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE
+      if campaign.type == Campaign::Type::PREVIEW || campaign.type == Campaign::Type::PROGRESSIVE
         publish('conference_started', {}) 
       else
         publish('caller_connected_dialer', {})
@@ -125,12 +210,12 @@ class CallerSession < ActiveRecord::Base
   
   def ask_caller_to_choose_voter(voter = nil, caller_choice = nil)
     return reassign_caller_session_to_campaign if caller_reassigned_to_another_campaign?
-    if campaign.time_period_exceed?
+    if campaign.time_period_exceeded?
       time_exceed_hangup 
     else
       voter ||= campaign.next_voter_in_dial_queue
       if voter.present?
-        campaign.predictive_type == Campaign::Type::PREVIEW ? say_voter_name_ask_caller_to_choose_voter(voter, caller_choice) : say_voter_name_and_call(voter)
+        campaign.type == Campaign::Type::PREVIEW ? say_voter_name_ask_caller_to_choose_voter(voter, caller_choice) : say_voter_name_and_call(voter)
       else
         response = Twilio::Verb.new { |v| v.say I18n.t(:campaign_has_no_more_voters) }.response
       end
@@ -166,27 +251,12 @@ class CallerSession < ActiveRecord::Base
   
   def reassign_caller_session_to_campaign
     old_campaign = self.campaign
-    self.update_attributes(:campaign => caller.campaign)
-    Moderator.publish_event(campaign, "caller_re_assigned_to_campaign", {:caller_session_id => id, :caller_id => caller.id, :campaign_fields => {:id => campaign.id, :campaign_name => campaign.name, :callers_logged_in => campaign.caller_sessions.on_call.size,
-      :voters_count => Voter.remaining_voters_count_for('campaign_id', campaign.id), :dials_in_progress => campaign.call_attempts.not_wrapped_up.size }, :old_campaign_id => old_campaign.id,:no_of_callers_logged_in_old_campaign => old_campaign.caller_sessions.on_call.size})
-    if caller.is_phones_only? 
-      read_campaign_reassign_msg
-    else
-      next_voter = caller.campaign.next_voter_in_dial_queue
-      self.publish("caller_re_assigned_to_campaign",{:campaign_name => caller.campaign.name, :campaign_id => caller.campaign.id, :script => caller.campaign.script.try(:script)}.merge!(next_voter ? next_voter.info : {}))
-    end
+    update_attribute(:campaign, caller.campaign)
   end
-  
-  def read_campaign_reassign_msg
-    Twilio::Verb.new do |v|
-      v.say I18n.t(:re_assign_caller_to_another_campaign, :campaign_name => caller.campaign.name)
-      v.redirect(choose_instructions_option_caller_url(self.caller, :host => Settings.host, :port => Settings.port, :session => id, :Digits => "*"))
-    end.response
+     
+  def caller_reassigned_to_another_campaign?
+    caller.campaign.id != self.campaign.id
   end
-   
-   def caller_reassigned_to_another_campaign?
-      caller.campaign.id != self.campaign.id
-   end
 
   def next_question
     voter_in_progress.question_not_answered
@@ -206,19 +276,11 @@ class CallerSession < ActiveRecord::Base
     !available_for_call && !on_call
   end
   
-  def time_exceed_hangup
-    Twilio::Verb.new do |v|
-      v.say I18n.t(:campaign_time_period_exceed, :start_time => @campaign.start_time.hour <= 12 ? "#{@campaign.start_time.hour} AM" : "#{@campaign.start_time.hour-12} PM",
-      :end_time => @campaign.end_time.hour <= 12 ? "#{@campaign.end_time.hour} AM" : "#{@campaign.end_time.hour-12} PM")
-      v.hangup
-    end.response
-  end
 
 
   def publish(event, data)
-    return unless self.campaign.use_web_ui?
-    Rails.logger.debug("PUSHER APP ID ::::::::::::::::::::::::::::::::::::::  #{Pusher.app_id}////////////////////////////#{event}")
-    Pusher[self.session_key].trigger(event, data.merge!(:dialer => self.campaign.predictive_type))
+    return unless campaign.use_web_ui?
+    Pusher[self.session_key].trigger(event, data.merge!(:dialer => self.campaign.type))
   end
   
   def get_conference_id
@@ -230,7 +292,7 @@ class CallerSession < ActiveRecord::Base
    end
    
    def preview_voter
-     if campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE
+     if campaign.type == Campaign::Type::PREVIEW || campaign.type == Campaign::Type::PROGRESSIVE
        voter = campaign.next_voter_in_dial_queue      
        voter.update_attributes(caller_id: caller_id) unless voter.nil?
        voter_info = voter ? voter.info : {}
@@ -255,6 +317,8 @@ class CallerSession < ActiveRecord::Base
    def self.caller_time(caller, campaign, from, to)
      CallerSession.for_caller(caller).on_campaign(campaign).between(from, to).where("tCaller is NOT NULL").sum('ceil(TIMESTAMPDIFF(SECOND ,starttime,endtime)/60)').to_i
    end
+   
+   
 
   private
     
@@ -289,5 +353,7 @@ class CallerSession < ActiveRecord::Base
       v.redirect(phones_only_progressive_caller_url(caller, :session_id => id, :voter_id => voter.id, :host => Settings.host, :port => Settings.port), :method => "POST")
     end.response
   end
+  
+  
   
 end

@@ -5,6 +5,12 @@ class CallerController < ApplicationController
   before_filter :check_login, :except=>[:login, :feedback, :assign_campaign, :end_session, :pause, :start_calling, :gather_response, :choose_voter, :phones_only_progressive, :phones_only, :choose_instructions_option, :new_campaign_response_panel, :check_reassign, :call_voter]
   before_filter :redirect_to_ssl
   
+  
+  def flow
+    @call_session.run(params[:event])
+  end
+  
+  
   def index
     redirect_to callers_campaign_path(@caller.campaign)
   end
@@ -63,17 +69,6 @@ class CallerController < ApplicationController
     render :nothing => true
   end
 
-  def pause
-    caller = Caller.find(params[:id])
-    caller_session = caller.caller_sessions.find(params[:session_id])
-    if caller_session.disconnected?
-      render :xml => Twilio::Verb.hangup
-    else
-      render :xml => caller_session.voter_in_progress ? caller_session.pause_for_results(params[:attempt]) : caller_session.start
-    end
-  end
-  add_method_tracer :pause, "Custom/#{self.class.name}/pause"
-
   def gather_response
     caller = Caller.find(params[:id])
     caller_session = caller.caller_sessions.find(params[:session_id])
@@ -100,24 +95,12 @@ class CallerController < ApplicationController
     end
   end
 
-  def preview_voter
-    caller_session = @caller.caller_sessions.find(params[:session_id])
-    if caller_session.campaign.predictive_type == Campaign::Type::PREVIEW || caller_session.campaign.predictive_type == Campaign::Type::PROGRESSIVE
-      voter = caller_session.campaign.next_voter_in_dial_queue(params[:voter_id])      
-      voter.update_attributes(caller_id: caller_session.caller_id) unless voter.nil?
-      caller_session.publish('caller_connected', voter ? voter.info : {}) 
-    else
-      caller_session.publish('caller_connected_dialer', {})
-    end
-    render :nothing => true
-  end
-
   def skip_voter
     caller_session = @caller.caller_sessions.find(params[:session_id])
     voter = Voter.find(params[:voter_id])
     voter.skip
     next_voter = caller_session.campaign.next_voter_in_dial_queue(params[:voter_id])
-    caller_session.publish('caller_connected', next_voter ? next_voter.info : {}) if caller_session.campaign.predictive_type == Campaign::Type::PREVIEW || caller_session.campaign.predictive_type == Campaign::Type::PROGRESSIVE
+    caller_session.publish('caller_connected', next_voter ? next_voter.info : {}) 
     render :nothing => true
   end
   
@@ -131,23 +114,10 @@ class CallerController < ApplicationController
   end
 
   def start_calling
-    if params[:caller_id].blank? || params[:campaign_id].blank?
-      render :nothing => true
-    else
-      @caller = Caller.find(params[:caller_id])
-      if !@caller.account.subscription_allows_caller?
-        render :xml => @caller.max_callers_reached
-      else      
-        @identity = CallerIdentity.find_by_session_key(params[:session_key])
-        @session = @caller.create_caller_session(@identity.session_key, params[:CallSid])
-        Moderator.caller_connected_to_campaign(@caller, @caller.campaign, @session)
-        @session.publish('start_calling', {caller_session_id: @session.id}) 
-        unless @caller.is_on_call?
-          @session.preview_voter
-        end
-        render xml:  @caller.is_on_call? ? @caller.already_on_call : @session.start
-      end
-    end
+    @caller = Caller.find(params[:caller_id])
+    @identity = CallerIdentity.find_by_session_key(params[:session_key])
+    @session = @caller.create_caller_session(@identity.session_key, params[:CallSid])
+    render xml: @session.run(:start_conf)
   end
 
 
@@ -162,33 +132,6 @@ class CallerController < ApplicationController
   end
   add_method_tracer :call_voter, "Custom/#{self.class.name}/call_voter"
   
-  def choose_voter
-    caller_session = CallerSession.find(params[:session])
-    voter = Voter.find(params[:voter])
-    caller = Caller.find(params[:id])
-    caller_choice = params[:Digits]
-    render :xml => caller.choice_result(caller_choice, voter, caller_session)
-  end
-  
-  def phones_only_progressive
-    caller_session = CallerSession.find(params[:session_id])
-    voter = Voter.find(params[:voter_id])
-    render :xml => caller_session.phones_only_start
-    caller_session.preview_dial(voter)
-  end
-  
-  def phones_only
-    caller_session = CallerSession.find(params[:session_id])
-    xml = (params[:campaign_reassigned] == "true") ?  caller_session.read_campaign_reassign_msg : caller_session.caller.instruction_choice_result("*", caller_session)
-    render :xml => xml
-  end
-  
-  def choose_instructions_option
-    caller_session = CallerSession.find(params[:session])
-    caller = Caller.find(params[:id])
-    render :xml => caller.instruction_choice_result(params[:Digits], caller_session)
-  end
-  
   def new_campaign_response_panel
     caller = Caller.find(params[:id])
     @campaign = caller.campaign
@@ -202,46 +145,6 @@ class CallerController < ApplicationController
   end
   
   
-  def ping
-    #sleep 2.5
-    send_rt(params[:key], 'ping', params[:num])
-    render :text=>"pong"
-  end
-
-  def network_test
-    @rand=rand
-  end
-
-
-
-  def preview_choose
-    @session = CallerSession.find_by_session_key(params[:key])
-    @campaign = @session.campaign
-    @voters = @campaign.voters("not called", true, 25)
-    render :layout=>false
-  end
-
-  def reconnect_rt
-    send_rt(params[:key], params[:k], params[:v])
-    render :text=> "var x='ok';"
-  end
-
-
-
-  def dpoll
-    response.headers["Content-Type"] = 'text/javascript'
-
-    @on_call = CallerSession.find_by_session_key(params[:key])
-    if (@on_call==nil || @on_call.on_call==false)
-      #hungup?  the view will reload the page in this case to reset the ui
-    else
-      @campaign = @on_call.campaign
-    end
-    respond_to do |format|
-      format.js
-    end
-  end
-
   def feedback
     Postoffice.feedback(params[:issue]).deliver
     render :text=> "var x='ok';"

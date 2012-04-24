@@ -17,9 +17,9 @@ describe BlockedNumbersController do
     end
 
     it "loads all active campaigns" do
-      active_user_campaigns = 3.times.map{ Factory(:campaign, :account => account, :active => true) }
-      another_users_active_campaign = Factory(:campaign, :account => Factory(:account), :active => true)
-      inactive_user_campaign = Factory(:campaign, :account => account, :active => false)
+      active_user_campaigns = 3.times.map{ Factory(:preview, :account => account, :active => true) }
+      another_users_active_campaign = Factory(:preview, :account => Factory(:account), :active => true)
+      inactive_user_campaign = Factory(:preview, :account => account, :active => false)
       get :index
       assigns(:campaigns).should == active_user_campaigns
     end
