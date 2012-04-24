@@ -109,7 +109,7 @@
 <%= render 'results' %>
 <%= render 'actions' %>
 
-<% unless @campaign.time_period_exceed? %>
+<% unless @campaign.time_period_exceeded? %>
     <div id="connecting">Connecting...</div>
     <div id="start_calling" >
 	<p><b>If your computer has a mic, click here:</b></p>
