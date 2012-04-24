@@ -209,7 +209,7 @@ class CallerSession < ActiveRecord::Base
   
   def ask_caller_to_choose_voter(voter = nil, caller_choice = nil)
     return reassign_caller_session_to_campaign if caller_reassigned_to_another_campaign?
-    if campaign.time_period_exceed?
+    if campaign.time_period_exceeded?
       time_exceed_hangup 
     else
       voter ||= campaign.next_voter_in_dial_queue
