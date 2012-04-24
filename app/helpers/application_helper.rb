@@ -2,6 +2,14 @@
 module ApplicationHelper
   include WhiteLabeling
 
+  def page_title(page_title)
+    if page_title.nil?
+      title
+    else
+      page_title + " | " + title
+    end
+  end
+  
   def send_rt(channel, key, post_data)
     require 'pusher'
     Pusher.app_id = PUSHER_APP_ID
@@ -85,4 +93,5 @@ module ApplicationHelper
       (seconds.to_f/60).ceil.to_s
     end
   end
+  
 end

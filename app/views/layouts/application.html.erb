@@ -2,7 +2,7 @@
 	<%= render :partial => 'layouts/ie' %>
 	<head>
 	  <meta charset="utf-8">
-	  <title><%= title %></title>
+	  <title><% page_title(@page_title) %></title>
 		<%= render :partial => 'layouts/javascript' %>
 		<%= render :partial => 'layouts/stylesheets' %>		
 		<%= csrf_meta_tag %>
