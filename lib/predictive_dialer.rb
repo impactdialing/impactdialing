@@ -15,7 +15,6 @@ loop do
         campaign.predictive_dial
       end
     end
-    sleep 3
   rescue Exception => e
     if e.class==SystemExit
       puts "============ EXITING  ============"
