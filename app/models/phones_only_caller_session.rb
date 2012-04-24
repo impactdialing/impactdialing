@@ -9,19 +9,28 @@ class PhonesOnlyCallerSession < CallerSession
       
       state :read_choice do     
         event :read_instruction_options, :to => :instructions_options, :if => :pound_selected?
-        event :read_instruction_options, :to => :time_period_exceeded, :if => :star_selected_and_time_period_exceeded?
-        event :read_instruction_options, :to => :reassigned_campaign, :if => :star_selected_and_caller_reassigned_to_another_campaign?
-        event :read_instruction_options, :to => :choosing_voter_to_dial, :if => :star_selected_and_preview?
-        event :read_instruction_options, :to => :choosing_voter_and_dial, :if => :star_selected_and_power?
-        event :read_instruction_options, :to => :conference_started_phones_only, :if => :star_selected_and_predictive?
+        event :read_instruction_options, :to => :ready_to_call, :if => :star_selected?
         event :read_instruction_options, :to => :read_choice
         response do |xml_builder, the_call|
-          xml_builder.gather(:numDigits => 1, :timeout => 10, :action => flow_caller_url(caller, session:  self, event: 'read_instruction_options' ,:host => Settings.host, :port => Settings.port), :method => "POST", :finishOnKey => "5") do
-            xml_builder.say I18n.t(:caller_instruction_choice)
+          xml_builder.Gather(:numDigits => 1, :timeout => 10, :action => flow_caller_url(caller, session:  self, event: 'read_instruction_options' ,:host => Settings.host, :port => Settings.port), :method => "POST", :finishOnKey => "5") do
+            xml_builder.Say I18n.t(:caller_instruction_choice)
           end              
           
         end
       end
+      
+      state :ready_to_call do
+        event :start_conf, :to => :time_period_exceeded, :if => :time_period_exceeded?
+        event :start_conf, :to => :reassigned_campaign, :if => :caller_reassigned_to_another_campaign?
+        event :start_conf, :to => :choosing_voter_to_dial, :if => :preview?
+        event :start_conf, :to => :choosing_voter_and_dial, :if => :power?
+        event :start_conf, :to => :conference_started_phones_only, :if => :predictive?
+        response do |xml_builder, the_call|
+          xml_builder.Redirect(flow_caller_url(self.caller, event: 'start_conf', :host => Settings.host, :port => Settings.port, :session => id))          
+        end        
+        
+      end
+      
       
       state :instructions_options do   
         event :callin_choice, :to => :read_choice     
@@ -39,15 +48,19 @@ class PhonesOnlyCallerSession < CallerSession
         end
       end
       
-      state :choosing_voter_to_dial do                
-        before(:always) {select_voter}
+      state :choosing_voter_to_dial do   
+        event :start_conf, :to => :conference_started_phones_only, :if => :star_selected?
+        event :start_conf, :to => :skip_voter, :if => :pound_selected?  
+        event :start_conf, :to => :ready_to_call
+                  
+        before(:always) {select_voter(voter_in_progress)}
         response do |xml_builder, the_call|
           if voter_in_progress.present?
-            xml_builder.gather(:numDigits => 1, :timeout => 10, :action => flow_caller_url(self.caller, :session => self, :host => Settings.host, :port => Settings.port, :voter => voter_in_progress), :method => "POST", :finishOnKey => "5") do
+            xml_builder.Gather(:numDigits => 1, :timeout => 10, :action => flow_caller_url(self.caller, :session => self, :host => Settings.host, :port => Settings.port, :voter => voter_in_progress), :method => "POST", :finishOnKey => "5") do
               xml_builder.Say I18n.t(:read_voter_name, :first_name => voter_in_progress.FirstName, :last_name => voter_in_progress.LastName) 
             end
           else
-            xml_builder.say I18n.t(:campaign_has_no_more_voters)
+            xml_builder.Say I18n.t(:campaign_has_no_more_voters)
           end
         end
                 
@@ -55,13 +68,13 @@ class PhonesOnlyCallerSession < CallerSession
       
       state :choosing_voter_and_dial do
         event :start_conf, :to => :conference_started_phones_only
-        before(:always) {select_voter}
+        before(:always) {select_voter(voter_in_progress)}
         response do |xml_builder, the_call|
           if voter_in_progress.present?
-            xml_builder.say "#{voter_in_progress.FirstName}  #{voter_in_progress.LastName}." 
+            xml_builder.Say "#{voter_in_progress.FirstName}  #{voter_in_progress.LastName}." 
             xml_builder.Redirect(flow_caller_url(caller, :session_id => id, :voter_id => voter_in_progress.id, :host => Settings.host, :port => Settings.port), :method => "POST")
           else
-            xml_builder.say I18n.t(:campaign_has_no_more_voters)
+            xml_builder.Say I18n.t(:campaign_has_no_more_voters)
           end
         end
       end
@@ -73,8 +86,17 @@ class PhonesOnlyCallerSession < CallerSession
         end        
       end
       
+      state :skip_voter do
+        before(:always) {voter_in_progress.skip}
+        event :skipped_voter, :to => :ready_to_call
+        response do |xml_builder, the_call|
+          xml_builder.Redirect(flow_caller_url(self.caller, event: 'skipped_voter', :host => Settings.host, :port => Settings.port, :session => id))          
+        end        
+        
+      end
+      
       state :conference_started_phones_only do
-        before(:always) {start_conference}
+        before(:always) {start_conference; preview_dial(voter_in_progress)}
         
         response do |xml_builder, the_call|
           xml_builder.Dial(:hangupOnStar => true, :action => flow_caller_url(caller, event: "gather_response", :host => Settings.host, :port => Settings.port, :session_id => id)) do
@@ -84,13 +106,16 @@ class PhonesOnlyCallerSession < CallerSession
         
       end
       
-      
-      
+  end
+    
+  
+  def select_voter(voter)
+    voter ||= campaign.next_voter_in_dial_queue(voter_in_progress)
+    update_attributes(voter_in_progress: voter)
   end
   
-  def select_voter
-    voter ||= campaign.next_voter_in_dial_queue
-    update_attributes(voter_in_progress: voter)
+  def star_selected?
+    digit == "*"    
   end
   
   
@@ -98,25 +123,20 @@ class PhonesOnlyCallerSession < CallerSession
     digit == "#"    
   end
   
-  def star_selected_and_preview?
-    digit == "*" && campaign.type == Campaign::Type::PREVIEW
+  def preview?
+    campaign.type == Campaign::Type::PREVIEW
   end
   
-  def star_selected_and_time_period_exceeded?
-    digit == "*" && time_period_exceeded?
+  
+  def power?
+    campaign.type == Campaign::Type::PROGRESSIVE
   end
   
-  def star_selected_and_power?
-    digit == "*" && campaign.type == Campaign::Type::PROGRESSIVE
+  def predictive?
+    campaign.type == Campaign::Type::PREDICTIVE
   end
   
-  def star_selected_and_predictive?
-    digit == "*" && campaign.type == Campaign::Type::PREDICTIVE
-  end
-  
-  def star_selected_and_caller_reassigned_to_another_campaign?
-    digit == "*" && caller_reassigned_to_another_campaign?
-  end
+
   
   def assign_voter_to_caller
     voter ||= campaign.next_voter_in_dial_queue
