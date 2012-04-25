@@ -20,9 +20,8 @@ class CallerController < ApplicationController
     begin
       response = call_session.run(params[:event])
     rescue ActiveRecord::StaleObjectError
-      call_session.reload!
-      response = call_session.run(params[:event])
-      
+      call_session.reload
+      response = call_session.run(params[:event])      
     end    
     render xml:  response
   end
