@@ -101,7 +101,7 @@ function send_voter_response_and_disconnect() {
             disconnect_caller();
         }
     };
-    $('#voter_responses').attr('action', "/call_attempts/" + $("#current_call").val() + "/submit_result_and_stop");
+    $('#voter_responses').attr('action', "/calls/" + $("#current_call").val() + "/submit_result_and_stop");
     $('#voter_id').val($("#current_voter").val())
     $('#voter_responses').submit(function() {
         $(this).ajaxSubmit(options);
