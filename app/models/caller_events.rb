@@ -9,12 +9,8 @@ module CallerEvents
       EM.run {
         deferrable = Pusher[session_key].trigger_async(event, data.merge!(:dialer => campaign.type))
         deferrable.callback { 
-          puts "success"
-            EM.stop
           }
         deferrable.errback { |error|
-          puts "error"
-          EM.stop
         }
       }
          
@@ -36,7 +32,7 @@ module CallerEvents
     end
     
     def publish_calling_voter
-      # publish_async('calling_voter', {})
+      publish_async('calling_voter', {})
     end
     
     def publish_caller_disconnected
