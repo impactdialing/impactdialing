@@ -85,7 +85,7 @@ function send_voter_response() {
 	    data: {caller_session:$("#caller_session").val()},
     };
     
-    $('#voter_responses').attr('action', "/call_attempts/" + $("#current_call_attempt").val() + "/voter_response");
+    $('#voter_responses').attr('action', "/calls/" + $("#current_call").val() + "/submit_result");
     $('#voter_responses').submit(function() {
         $(this).ajaxSubmit(options);
         return false;
@@ -101,7 +101,7 @@ function send_voter_response_and_disconnect() {
             disconnect_caller();
         }
     };
-    $('#voter_responses').attr('action', "/call_attempts/" + $("#current_call_attempt").val() + "/voter_response");
+    $('#voter_responses').attr('action', "/call_attempts/" + $("#current_call").val() + "/submit_result_and_stop");
     $('#voter_id').val($("#current_voter").val())
     $('#voter_responses').submit(function() {
         $(this).ajaxSubmit(options);

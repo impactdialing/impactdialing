@@ -10,11 +10,11 @@ class CallsController < ApplicationController
   end
   
   def submit_result
-    @call.process(params[:event])
+    @call.process("submit_result")
   end
   
   def submit_result_and_stop
-    @call.process(params[:event])
+    @call.process("submit_result_and_stop")
   end
   
   def hangup

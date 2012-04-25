@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120424154033) do
+ActiveRecord::Schema.define(:version => 20120425144248) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -169,8 +169,6 @@ ActiveRecord::Schema.define(:version => 20120424154033) do
     t.string   "session_key"
     t.integer  "lock_version",         :default => 0
     t.integer  "payment_id"
-    t.text     "questions"
-    t.text     "notes"
     t.string   "state"
     t.string   "type"
     t.string   "digit"
@@ -236,6 +234,8 @@ ActiveRecord::Schema.define(:version => 20120424154033) do
     t.datetime "ended_at"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.text     "questions"
+    t.text     "notes"
   end
 
   create_table "campaigns", :force => true do |t|
