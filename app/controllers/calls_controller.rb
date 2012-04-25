@@ -52,8 +52,8 @@ class CallsController < ApplicationController
   
   def find_and_update_answers_and_notes
     find_call
-    @parsed_params["questions"]  = params[:question] 
-    @parsed_params["notes"] = params[:notes]
+    @parsed_params["questions"]  = params[:question].try(:to_json) 
+    @parsed_params["notes"] = params[:notes].try(:to_json)
     puts @parsed_params
     @call.update_attributes(@parsed_params)
   end
