@@ -5,11 +5,14 @@ class CallerController < ApplicationController
   before_filter :check_login, :except=>[:login, :feedback, :assign_campaign, :end_session, :pause, :start_calling, :gather_response, :choose_voter, :phones_only_progressive, :phones_only, :choose_instructions_option, :new_campaign_response_panel, :check_reassign, :call_voter, :flow]
   before_filter :redirect_to_ssl
   
+  
   def start_calling
     @caller = Caller.find(params[:caller_id])
     @identity = CallerIdentity.find_by_session_key(params[:session_key])
     @session = @caller.create_caller_session(@identity.session_key, params[:CallSid])
-    render xml: @session.run(:start_conf)
+    response =  @session.run(:start_conf)
+    puts response
+    render xml: response
   end
   
   
