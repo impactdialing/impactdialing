@@ -43,7 +43,7 @@ class CallerSession < ActiveRecord::Base
         event :start_conf, :to => :subscription_limit, :if => :subscription_limit_exceeded?
         event :start_conf, :to => :time_period_exceeded, :if => :time_period_exceeded?
         event :start_conf, :to => :caller_on_call,  :if => :is_on_call?
-        event :start_conf, :to => :disconnected, :if => :disconnected?
+        # event :start_conf, :to => :disconnected, :if => :disconnected?
       end 
       
       state all - [:initial] do
