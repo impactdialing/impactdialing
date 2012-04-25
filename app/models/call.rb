@@ -129,7 +129,7 @@ class Call < ActiveRecord::Base
   end
 
   def answered_by_human_and_caller_not_available?
-    answered_by == "human" && caller_not_available?
+    (answered_by.nil? || answered_by == "human") && caller_not_available?
   end
   
   def answered_by_human_and_caller_available?
