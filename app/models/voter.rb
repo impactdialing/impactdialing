@@ -225,7 +225,6 @@ class Voter < ActiveRecord::Base
   def new_call_attempt(mode = 'robo')
     call_attempt = self.call_attempts.create(:campaign => self.campaign, :dialer_mode => mode, :status => CallAttempt::Status::RINGING, :call_start => Time.now)
     update_attributes!(:last_call_attempt => call_attempt, :last_call_attempt_time => Time.now, :status => CallAttempt::Status::RINGING)    
-    # Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
     Call.create(call_attempt: call_attempt)
     call_attempt
   end

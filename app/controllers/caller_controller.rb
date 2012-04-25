@@ -20,6 +20,14 @@ class CallerController < ApplicationController
     render xml:  call_session.run(params[:event])
   end
   
+  def call_voter
+    caller = Caller.find(params[:id])
+    caller_session = caller.caller_sessions.find(params[:session_id])    
+    caller_session.dial(Voter.find(params[:voter_id])) unless params[:voter_id].blank?
+    render :nothing => true
+  end
+  
+  
   
   def index
     redirect_to callers_campaign_path(@caller.campaign)
@@ -125,16 +133,6 @@ class CallerController < ApplicationController
 
 
 
-  def call_voter
-    caller = Caller.find(params[:id])
-    caller_session = caller.caller_sessions.find(params[:session_id])
-    if params[:voter_id]
-      voter = Voter.find(params[:voter_id])
-      caller_session.preview_dial(voter)
-    end
-    render :nothing => true
-  end
-  add_method_tracer :call_voter, "Custom/#{self.class.name}/call_voter"
   
   def new_campaign_response_panel
     caller = Caller.find(params[:id])

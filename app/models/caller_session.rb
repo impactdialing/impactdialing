@@ -51,7 +51,6 @@ class CallerSession < ActiveRecord::Base
       end
       
       state :subscription_limit do
-        puts "subscription_limit"
         response do |xml_builder, the_call|
           xml_builder.Say("The maximum number of callers for this account has been reached. Wait for another caller to finish, or ask your administrator to upgrade your account.")
           xml_builder.Hangup          
@@ -60,7 +59,6 @@ class CallerSession < ActiveRecord::Base
       end
       
       state :account_not_activated do
-        puts "account_not_activated"
         response do |xml_builder, the_call|          
           xml_builder.Say "Your account has insufficent funds"
           xml_builder.Hangup
@@ -68,7 +66,6 @@ class CallerSession < ActiveRecord::Base
       end
       
       state :caller_on_call do
-        puts "caller_on_call"
         response do |xml_builder, the_call|
           xml_builder.Say I18n.t(:indentical_caller_on_call)
           xml_builder.Hangup
@@ -76,8 +73,7 @@ class CallerSession < ActiveRecord::Base
         
       end
       
-      state :time_period_exceeded do    
-        puts "time_period_exceeded"                    
+      state :time_period_exceeded do                      
         response do |xml_builder, the_call|          
           xml_builder.Say I18n.t(:campaign_time_period_exceed, :start_time => campaign.start_time.hour <= 12 ? "#{campaign.start_time.hour} AM" : "#{campaign.start_time.hour-12} PM", :end_time => campaign.end_time.hour <= 12 ? "#{campaign.end_time.hour} AM" : "#{campaign.end_time.hour-12} PM")
           xml_builder.Hangup
@@ -282,7 +278,7 @@ class CallerSession < ActiveRecord::Base
 
 
   def publish(event, data)
-    Pusher[session_key].trigger_async(event, data.merge!(:dialer => self.campaign.type))
+    Pusher[session_key].trigger(event, data.merge!(:dialer => self.campaign.type))
   end
   
   def get_conference_id
