@@ -17,7 +17,14 @@ class CallerController < ApplicationController
   
   def flow
     call_session = CallerSession.find(params[:session_id])
-    render xml:  call_session.run(params[:event])
+    begin
+      response = call_session.run(params[:event])
+    rescue ActiveRecord::StaleObjectError
+      call_session.reload!
+      response = call_session.run(params[:event])
+      
+    end    
+    render xml:  response
   end
   
   def call_voter
