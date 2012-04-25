@@ -52,7 +52,7 @@ class CallsController < ApplicationController
   
   def find_and_update_answers_and_notes
     find_call
-    questions = params[:questions]
+    questions = params[:question]
     notes = params[:notes]
     
     @parsed_params.merge!(questions: questions).merge!(notes: notes)
