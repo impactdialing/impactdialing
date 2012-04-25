@@ -15,8 +15,8 @@ class WebuiCallerSession < CallerSession
         event :pause_conf, :to => :connected
         
         response do |xml_builder, the_call|
-          xml_builder.dial(:hangupOnStar => true, :action => flow_caller_url(caller, session_id:  id, event: "pause_conf", host: Settings.host, port:  Settings.port)) do
-            xml_builder.conference(session_key, startConferenceOnEnter: false, endConferenceOnExit:  true, beep: true, waitUrl: hold_call_url(host: Settings.host, port: Settings.port, version: HOLD_VERSION), waitMethod:  'GET')        
+          xml_builder.Dial(:hangupOnStar => true, :action => flow_caller_url(caller, session_id:  id, event: "pause_conf", host: Settings.host, port:  Settings.port)) do
+            xml_builder.Conference(session_key, startConferenceOnEnter: false, endConferenceOnExit:  true, beep: true, waitUrl: hold_call_url(host: Settings.host, port: Settings.port, version: HOLD_VERSION), waitMethod:  'GET')        
           end                              
         end
       end
@@ -31,7 +31,7 @@ class WebuiCallerSession < CallerSession
         response do |xml_builder, the_call|
           xml_builder.Say("Please enter your call results") 
           xml_builder.Pause("length" => 11)
-          xml_builder.Redirect(pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => id))
+          xml_builder.Redirect(flow_caller_url(caller, host: Settings.host, port: Settings.port, session_id:  id, event: "pause_conf"))
         end        
       end
       
