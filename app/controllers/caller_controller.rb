@@ -2,12 +2,21 @@ require 'new_relic/agent/method_tracer'
 class CallerController < ApplicationController
   include NewRelic::Agent::MethodTracer
   layout "caller"
-  before_filter :check_login, :except=>[:login, :feedback, :assign_campaign, :end_session, :pause, :start_calling, :gather_response, :choose_voter, :phones_only_progressive, :phones_only, :choose_instructions_option, :new_campaign_response_panel, :check_reassign, :call_voter]
+  before_filter :check_login, :except=>[:login, :feedback, :assign_campaign, :end_session, :pause, :start_calling, :gather_response, :choose_voter, :phones_only_progressive, :phones_only, :choose_instructions_option, :new_campaign_response_panel, :check_reassign, :call_voter, :flow]
   before_filter :redirect_to_ssl
+  
+  def start_calling
+    @caller = Caller.find(params[:caller_id])
+    @identity = CallerIdentity.find_by_session_key(params[:session_key])
+    @session = @caller.create_caller_session(@identity.session_key, params[:CallSid])
+    render xml: @session.run(:start_conf)
+  end
+  
   
   
   def flow
-    @call_session.run(params[:event])
+    call_session = CallerSession.find(params[:session_id])
+    call_session.run(params[:event])
   end
   
   
@@ -113,12 +122,6 @@ class CallerController < ApplicationController
     end
   end
 
-  def start_calling
-    @caller = Caller.find(params[:caller_id])
-    @identity = CallerIdentity.find_by_session_key(params[:session_key])
-    @session = @caller.create_caller_session(@identity.session_key, params[:CallSid])
-    render xml: @session.run(:start_conf)
-  end
 
 
   def call_voter
