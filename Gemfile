@@ -29,6 +29,7 @@ gem "uuid", "~> 2.3.5"
 gem "dalli", "~>2.0.3"
 gem 'record-cache', "~>0.1.2"
 gem "call_center", "~> 0.0.9"
+gem "em-http-request", "~> 0.3.0"
 
 
 
