@@ -4,12 +4,13 @@ module LeadEvents
   end
   
   module InstanceMethods
+    
+    
         
     
     def publish_voter_connected
       event_hash = campaign.voter_connected_event(call_attempt)
-      caller_session.publish(event_hash[:event], event_hash[:data])
-      # Moderator.publish_event(campaign, 'voter_connected', {:caller_session_id => session.id, :campaign_id => campaign.id, :caller_id => session.caller.id})
+      caller_session.publish_async(event_hash[:event], event_hash[:data])
     end    
     
     def publish_voter_disconnected

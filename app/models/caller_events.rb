@@ -4,24 +4,7 @@ module CallerEvents
   end
   
   module InstanceMethods
-    
-    def publish_async(event, data)
-      EM.run {
-        deferrable = Pusher[session_key].trigger_async(event, data.merge!(:dialer => campaign.type))
-        deferrable.callback { 
-          }
-        deferrable.errback { |error|
-        }
-      }
-         
-    end
-    
-    def publish_sync(event, data)
-      Pusher[session_key].trigger(event, data.merge!(:dialer => self.campaign.type))
-    end
-    
-    
-    
+            
     def publish_start_calling
       publish_sync('start_calling', {caller_session_id: id}) if state == 'initial'                     
     end    

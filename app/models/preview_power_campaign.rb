@@ -24,7 +24,7 @@ module PreviewPowerCampaign
   end
   
   def voter_connected_event(call_attempt)
-    {event: 'voter_connected_dialer', data: {attempt_id:  call_attempt.id}}
+    {event: 'voter_connected', data: {attempt_id:  call_attempt.id}}
   end
   
   def call_answered_machine_event(call_attempt)    

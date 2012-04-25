@@ -19,13 +19,13 @@ describe Call do
     end
         
     it "should move to the connected state" do
-      call = Factory(:call, answered_by: "human", call_attempt: @call_attempt)
+      call = Factory(:call, call_attempt: @call_attempt)
       call.incoming_call!
       call.state.should eq('connected')
     end
     
     it "should update connecttime" do
-      call = Factory(:call, answered_by: "human", call_attempt: @call_attempt)
+      call = Factory(:call, call_attempt: @call_attempt)
       call.incoming_call!
       call.call_attempt.connecttime.should_not be_nil  
     end
