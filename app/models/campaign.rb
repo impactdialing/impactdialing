@@ -2,7 +2,7 @@ require Rails.root.join("lib/twilio_lib")
 
 class Campaign < ActiveRecord::Base
   include Deletable
-  cache_records :store => :shared, :key => "cam", :request_cache => true
+  # cache_records :store => :shared, :key => "cam", :request_cache => true
 
   has_many :caller_sessions
   has_many :voter_lists, :conditions => {:active => true}

@@ -54,9 +54,7 @@ module Client
     def update
       @campaign = Campaign.find_by_id(params[:id])
       @campaign.account = account
-      puts params[:campaign]
       @campaign.update_attributes(params[:campaign])
-      puts @campaign.inspect
       @campaign.type = params[:campaign][:type]
       @campaign.save!      
       @scripts = @campaign.account.scripts

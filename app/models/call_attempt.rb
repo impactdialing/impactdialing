@@ -1,7 +1,7 @@
 require Rails.root.join("lib/twilio_lib")
 
 class CallAttempt < ActiveRecord::Base
-  cache_records :store => :shared, :key => "c_a", :request_cache => true
+  # cache_records :store => :shared, :key => "c_a", :request_cache => true
   include Rails.application.routes.url_helpers
   belongs_to :voter
   belongs_to :campaign
