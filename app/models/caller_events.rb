@@ -6,7 +6,16 @@ module CallerEvents
   module InstanceMethods
     
     def publish_async(event, data)
-      Pusher[session_key].trigger_async(event, data.merge!(:dialer => self.campaign.type))
+      EM.run {
+        deferrable = Pusher[session_key].trigger_async(event, data.merge!(:dialer => campaign.type))
+        deferrable.callback { 
+            EM.stop
+          }
+        deferrable.errback { |error|
+          EM.stop
+        }
+      }
+         
     end
     
     def publish_sync(event, data)
@@ -21,7 +30,11 @@ module CallerEvents
     
     def publish_caller_conference_started
       event_hash = campaign.caller_conference_started_event
-      publish(event_hash[:event], event_hash[:data])                     
+      publish_async(event_hash[:event], event_hash[:data])                     
+    end
+    
+    def publish_calling_voter
+      publish_async('calling_voter', {})
     end
     
     def publish_caller_disconnected
