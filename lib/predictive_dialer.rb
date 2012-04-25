@@ -8,7 +8,6 @@ ActiveRecord::Base.logger = Logger.new(File.open(File.join(DIALER_ROOT, 'log', "
 loop do
   begin
     logged_in_campaigns = ActiveRecord::Base.connection.execute("select distinct campaign_id from caller_sessions where on_call=1")
-    puts "============ logged_in_campaigns: #{logged_in_campaigns.num_rows} ============"
     logged_in_campaigns.each do |k|
       campaign = Campaign.find(k.first)
       if campaign.predictive_type != Campaign::Type::PREVIEW && campaign.predictive_type != Campaign::Type::PROGRESSIVE
