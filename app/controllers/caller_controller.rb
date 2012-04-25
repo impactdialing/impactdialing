@@ -112,10 +112,10 @@ class CallerController < ApplicationController
     caller_session = CallerSession.find_by_sid(params[:CallSid])
     caller_session.debit if caller_session!=nil
     begin
-      render :xml => caller_session.try(:end) || Twilio::Verb.hangup
+      render xml:  caller_session.try(:end) || Twilio::Verb.hangup
     rescue ActiveRecord::StaleObjectError
       caller_session.reload
-      render :xml =>  caller_session.end      
+      render xml: caller_session.end      
     end
   end
 
