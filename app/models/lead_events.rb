@@ -22,6 +22,13 @@ module LeadEvents
       caller_session.publish(event_hash[:event], event_hash[:data]) if caller_session
     end
     
+    def publish_continue_calling    
+      # next_voter = call_attempt.campaign.next_voter_in_dial_queue(call_attempt.voter.id)
+      # call_attempt.caller_session.publish("voter_push", next_voter ? next_voter.info : {})
+      # call_attempt.caller_session.publish("predictive_successful_voter_response", {})
+    end
+    
+    
     
     def publish_abandoned_call
           # Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})    
