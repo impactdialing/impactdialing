@@ -186,6 +186,7 @@ ImpactDialing::Application.routes.draw do
   resources :calls, :protocol => PROTOCOL do
     member do
       post :flow
+      post :hangup
     end
   end
 
