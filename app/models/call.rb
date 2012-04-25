@@ -18,8 +18,9 @@ class Call < ActiveRecord::Base
   delegate :process_answered_by_machine, :to => :call_attempt
   delegate :caller_not_available?, :to => :call_attempt
   delegate :caller_available?, :to => :call_attempt
-  delegate :caller_session, :to=> :call_attempt
   delegate :campaign, :to=> :call_attempt
+  delegate :voter, :to=> :call_attempt
+  delegate :caller_session, :to=> :call_attempt
   
   
   
@@ -34,7 +35,7 @@ class Call < ActiveRecord::Base
       
       state :connected do
         before(:always) {  connect_call }
-        after(:success) { publish_voter_connected }
+        after(:always) { publish_voter_connected }
         event :hangup, :to => :hungup
         event :disconnect, :to => :disconnected
         
@@ -137,7 +138,7 @@ class Call < ActiveRecord::Base
   end
   
   def answered_by_human_and_caller_available?
-    answered_by == "human" && caller_available?
+    (answered_by.nil? || answered_by == "human") && caller_available?
   end
   
   def call_did_not_connect?

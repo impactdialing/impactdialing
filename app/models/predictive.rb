@@ -66,8 +66,8 @@ class Predictive < Campaign
     {event: 'caller_connected_dialer',data: {}}
   end
   
-  def voter_connected_event(call_attempt)
-    {event: 'voter_connected_dialer', data: {attempt_id:  call_attempt.id, voter:  call_attempt.voter.info}}
+  def voter_connected_event(call)
+    {event: 'voter_connected_dialer', data: {call_is:  call.id, voter:  call.voter.info}}
   end
   
   def call_answered_machine_event(call_attempt)    

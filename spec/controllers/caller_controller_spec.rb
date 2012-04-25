@@ -14,18 +14,15 @@ describe CallerController do
     before(:each) do
       login_as(caller)
     end
-
     
-
     it "pushes 'calling' to the caller" do
       session_key = "caller_session_key"
       campaign = Factory(:preview, :start_time => Time.new("2000-01-01 01:00:00"), :end_time => Time.new("2000-01-01 23:00:00"))
       caller_session = Factory(:webui_caller_session, :caller => caller, :on_call => true, :available_for_call => true, :session_key => session_key, :campaign => campaign)
+      
       voter = Factory(:voter, :campaign =>campaign)
-      channel = mock
       Twilio::Call.stub(:make).and_return("TwilioResponse"=> {"Call" => {"Sid" => 'sid'}})
-      Pusher.should_receive(:[]).with(session_key).and_return(channel)
-      channel.should_receive(:trigger).with('calling_voter', anything)
+      caller_session.should_receive(:publish_calling_voter)
       post :call_voter, :session_id => caller_session.id , :voter_id => voter.id, id: caller.id
     end
   end
