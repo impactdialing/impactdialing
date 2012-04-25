@@ -39,7 +39,7 @@ class Call < ActiveRecord::Base
         event :disconnect, :to => :disconnected
         
         response do |xml_builder, the_call|
-          xml_builder.Dial :hangupOnStar => 'false', :action => flow_call_url(the_call, :host => Settings.host), :record=> campaign.account.record_calls do |d|
+          xml_builder.Dial :hangupOnStar => 'false', :action => flow_call_url(the_call, :host => Settings.host, event: "disconnect"), :record=> campaign.account.record_calls do |d|
             d.Conference caller_session.session_key, :waitUrl => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
           end
         end
