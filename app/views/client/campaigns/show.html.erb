@@ -23,7 +23,7 @@
           <%= f.text_field :caller_id, {:class=>"field size3", name: "campaign[caller_id]"} %></p>
 
         <p><label for="">Script</label><br>
-          <%= f.collection_select(:script_id, @scripts, :id, :name, {:class=>"field", name: "campaign[script_id]"}) %>
+          <%= f.collection_select(:script_id, @scripts, :id, :name,{}, {:class=>"field", name: "campaign[script_id]"}) %>
         </p>
 
         <p><label for="">Dialing mode</label>
