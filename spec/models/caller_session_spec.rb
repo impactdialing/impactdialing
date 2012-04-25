@@ -281,23 +281,7 @@ describe CallerSession do
   describe "pusher" do
     let(:caller) { Factory(:caller) }
 
-    it "publishes information to a caller in session" do
-      campaign = Factory(:campaign, :use_web_ui => true)
-      session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sample")
-      event, data = 'event', {}
-      channel = mock
-      Pusher.should_receive(:[]).with(session.session_key).and_return(channel)
-      channel.should_receive(:trigger).with(event, data.merge(:dialer => campaign.type))
-      session.publish(event, data)
-    end
 
-    it "does not publish information to a caller not using web ui" do
-      campaign = Factory(:campaign, :use_web_ui => false)
-      session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sample")
-      event, data = 'event', 'data'
-      Pusher.should_not_receive(:[])
-      session.publish(event, data)
-    end
 
     it "pushes voter data being called by a caller" do
       campaign = Factory(:campaign, :use_web_ui => true)
@@ -308,15 +292,6 @@ describe CallerSession do
       session.call(voter)
     end
 
-    # it "pushes voter information when a caller is connected on preview campaign" do
-    #   campaign = Factory(:campaign, :use_web_ui => true, :type => 'preview')
-    #   session = Factory(:caller_session, :caller => caller, :campaign => campaign, :session_key => "sample")
-    #   2.times { Factory(:voter, :campaign => campaign) }
-    #   channel = mock
-    #   Pusher.should_receive(:[]).with(session.session_key).and_return(channel)
-    #   channel.should_receive(:trigger).with("caller_connected", anything)
-    #   session.start
-    # end
 
     it "should  push  when a caller is connected on a non preview campaign" do
       campaign = Factory(:campaign, :use_web_ui => true, :type => 'predictive')

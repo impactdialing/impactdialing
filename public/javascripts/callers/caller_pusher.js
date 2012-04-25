@@ -261,6 +261,22 @@ function subscribe(session_key) {
         $("#hangup_call").show();
     });
 
+    channel.bind('voter_disconnected', function(data) {
+        hide_all_actions();
+        show_response_panel();
+		hide_transfer_panel();
+        set_message("Status: Waiting for call results.");
+        $("#submit_and_keep_call").show();
+        $("#submit_and_stop_call").show();
+		if ($('#transfer_type').val() == 'warm'){
+			$('#kick_self_out_of_conference').show();
+	        $("#submit_and_keep_call").hide();
+	        $("#submit_and_stop_call").hide();
+		}
+
+    });
+
+
     
 	
 	
@@ -318,20 +334,6 @@ function subscribe(session_key) {
     });
 
 
-    channel.bind('voter_disconnected', function(data) {
-        hide_all_actions();
-        show_response_panel();
-		hide_transfer_panel();
-        set_message("Status: Waiting for call results.");
-        $("#submit_and_keep_call").show();
-        $("#submit_and_stop_call").show();
-		if ($('#transfer_type').val() == 'warm'){
-			$('#kick_self_out_of_conference').show();
-	        $("#submit_and_keep_call").hide();
-	        $("#submit_and_stop_call").hide();
-		}
-
-    });
 
 
     channel.bind('calling_voter', function(data) {
