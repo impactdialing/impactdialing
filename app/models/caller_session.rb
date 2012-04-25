@@ -282,8 +282,7 @@ class CallerSession < ActiveRecord::Base
 
 
   def publish(event, data)
-    return unless campaign.use_web_ui?
-    Pusher[self.session_key].trigger(event, data.merge!(:dialer => self.campaign.type))
+    Pusher[session_key].trigger_async(event, data.merge!(:dialer => self.campaign.type))
   end
   
   def get_conference_id
