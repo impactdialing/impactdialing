@@ -5,6 +5,10 @@ module CallerEvents
   
   module InstanceMethods
     
+    def publish_start_calling
+      publish('start_calling', {caller_session_id: id})                     
+    end    
+    
     def publish_caller_conference_started
       event_hash = campaign.caller_conference_started_event
       publish(event_hash[:event], event_hash[:data])                     
