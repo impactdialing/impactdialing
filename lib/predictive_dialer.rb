@@ -10,7 +10,7 @@ loop do
     logged_in_campaigns = ActiveRecord::Base.connection.execute("select distinct campaign_id from caller_sessions where on_call=1")
     logged_in_campaigns.each do |k|
       campaign = Campaign.find(k.first)
-      if campaign.predictive_type != Campaign::Type::PREVIEW && campaign.predictive_type != Campaign::Type::PROGRESSIVE
+      if campaign.type != Campaign::Type::PREVIEW && campaign.type != Campaign::Type::PROGRESSIVE
         campaign.predictive_dial
       end
     end
