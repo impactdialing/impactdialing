@@ -77,7 +77,7 @@ class WebuiCallerSession < CallerSession
   def dial(voter)
     attempt = create_call_attempt(voter)
     publish_calling_voter
-    response = make_call(attempt)    
+    response = make_call(attempt,voter)    
     if response["TwilioResponse"]["RestException"]
       handle_failed_call(attempt)
       return
@@ -93,7 +93,7 @@ class WebuiCallerSession < CallerSession
     attempt    
   end
   
-  def make_call(attempt)
+  def make_call(attempt,voter)
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
     params = {'FallbackUrl' => TWILIO_ERROR, 'StatusCallback' => flow_call_url(attempt.call, host: Settings.host, port:  Settings.port, event: "call_ended"),'Timeout' => campaign.use_recordings? ? "30" : "15"}
     params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect        
