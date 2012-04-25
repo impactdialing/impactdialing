@@ -1,7 +1,8 @@
 class CallsController < ApplicationController
   skip_before_filter :verify_authenticity_token
   before_filter :parse_params
-  before_filter :find_and_update_call, :only => [:flow, :destroy,:submit_result, :submit_result_and_stop]
+  before_filter :find_and_update_call, :only => [:flow, :destroy]
+  before_filter :find_and_update_answers_and_notes, :only => [:submit_result, :submit_result_and_stop]
   before_filter :find_call, :only => [:hangup]
 
   
@@ -47,6 +48,14 @@ class CallsController < ApplicationController
 
   def find_call
     @call = (Call.find_by_id(params["id"]) || Call.find_by_call_sid(params['CallSid'])) 
+  end
+  
+  def find_and_update_answers_and_notes
+    find_call
+    questions = params[:questions]
+    notes = params[:notes]
+    @parsed_params.merge!(questions: questions).merge!(notes: notes)
+    @call.update_attributes(@parsed_params)
   end
 
   def find_and_update_call
