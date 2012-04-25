@@ -4,13 +4,12 @@ class WebuiCallerSession < CallerSession
   call_flow :state, :initial => :initial do    
     
       state :initial do
-        after(:always) {publish_start_calling}
         event :start_conf, :to => :connected
       end 
             
       state :connected do  
               
-        before(:always) { start_conference }
+        before(:always) { publish_start_calling; start_conference }
         after(:always) { publish_caller_conference_started }
         event :pause_conf, :to => :disconnected, :if => :disconnected?
         event :pause_conf, :to => :paused, :if => :call_not_wrapped_up?
