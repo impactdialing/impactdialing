@@ -275,6 +275,8 @@ function subscribe(session_key) {
 
     channel.bind('conference_started', function(data) {
 	if ($("#caller_session").val() != "" ){
+		set_message("Status: Ready for calls.");
+        set_voter(data);        
         ready_for_calls(data)		
 	}
     });
