@@ -6,7 +6,7 @@ module CallerEvents
   module InstanceMethods
     
     def publish_start_calling
-      publish('start_calling', {caller_session_id: id})                     
+      publish('start_calling', {caller_session_id: id}) if state == 'initial'                     
     end    
     
     def publish_caller_conference_started
