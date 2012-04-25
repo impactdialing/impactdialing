@@ -5,8 +5,18 @@ module CallerEvents
   
   module InstanceMethods
     
+    def publish_async(event, data)
+      Pusher[session_key].trigger_async(event, data.merge!(:dialer => self.campaign.type))
+    end
+    
+    def publish_sync(event, data)
+      Pusher[session_key].trigger(event, data.merge!(:dialer => self.campaign.type))
+    end
+    
+    
+    
     def publish_start_calling
-      publish('start_calling', {caller_session_id: id}) if state == 'initial'                     
+      publish_sync('start_calling', {caller_session_id: id}) if state == 'initial'                     
     end    
     
     def publish_caller_conference_started
