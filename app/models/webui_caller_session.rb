@@ -14,6 +14,7 @@ class WebuiCallerSession < CallerSession
         event :pause_conf, :to => :disconnected, :if => :disconnected?
         event :pause_conf, :to => :paused, :if => :call_not_wrapped_up?
         event :pause_conf, :to => :connected
+        event :stop_calling, :to=> :stopped
         
         response do |xml_builder, the_call|
           xml_builder.Dial(:hangupOnStar => true, :action => flow_caller_url(caller, session_id:  id, event: "pause_conf", host: Settings.host, port:  Settings.port)) do
@@ -29,6 +30,8 @@ class WebuiCallerSession < CallerSession
       end
       
       state :paused do        
+        event :stop_calling, :to=> :stopped
+        
         response do |xml_builder, the_call|
           xml_builder.Say("Please enter your call results") 
           xml_builder.Pause("length" => 11)
@@ -63,12 +66,14 @@ class WebuiCallerSession < CallerSession
     voters.each {|voter| voter.update_attributes(status: 'not called')}
     
     t = ::TwilioLib.new(account, auth)
-    t.end_call("#{self.sid}")
+    EM.run {
+      t.end_call("#{self.sid}")
+    }
     begin
-      self.update_attributes(:on_call => false, :available_for_call => false, :endtime => Time.now)
+      end_caller_session
     rescue ActiveRecord::StaleObjectError
-      self.reload
-      self.end_running_call
+      reload
+      end_caller_session
     end      
     debit
     
@@ -108,6 +113,22 @@ class WebuiCallerSession < CallerSession
     next_voter = campaign.next_voter_in_dial_queue(voter.id)
     publish('call_could_not_connect',next_voter.nil? ? {} : next_voter.info)    
   end
+  
+  def publish_async(event, data)
+    EM.run {
+      deferrable = Pusher[session_key].trigger_async(event, data.merge!(:dialer => campaign.type))
+      deferrable.callback { 
+        }
+      deferrable.errback { |error|
+      }
+    }
+       
+  end
+  
+  def publish_sync(event, data)
+    Pusher[session_key].trigger(event, data.merge!(:dialer => self.campaign.type))
+  end
+  
   
   
   

@@ -2,7 +2,7 @@ require 'rubygems'
 require 'spork'
 require 'spork/ext/ruby-debug'
 require 'simplecov'
-require 'pry'
+
 
 SimpleCov.start 'rails' do
   add_filter 'environment.rb'

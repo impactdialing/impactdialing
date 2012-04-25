@@ -281,20 +281,6 @@ class CallerSession < ActiveRecord::Base
     Pusher[session_key].trigger(event, data.merge!(:dialer => self.campaign.type))
   end
   
-  def publish_async(event, data)
-    EM.run {
-      deferrable = Pusher[session_key].trigger_async(event, data.merge!(:dialer => campaign.type))
-      deferrable.callback { 
-        }
-      deferrable.errback { |error|
-      }
-    }
-       
-  end
-  
-  def publish_sync(event, data)
-    Pusher[session_key].trigger(event, data.merge!(:dialer => self.campaign.type))
-  end
   
   
   def get_conference_id
