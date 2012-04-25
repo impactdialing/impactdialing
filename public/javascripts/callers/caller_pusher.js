@@ -139,6 +139,7 @@ function ie8(){
 }
 
 function disconnect_voter() {
+	$("#hangup_call").hide();
     $.ajax({
         url : "/calls/" + $("#current_call").val() + "/hangup",
         type : "POST",
@@ -250,7 +251,7 @@ function subscribe(session_key) {
     });
 
     channel.bind('voter_connected', function(data) {
-        set_current_call(data.attempt_id);
+        set_current_call(data.call_id);
         hide_all_actions();
         set_message("Status: Connected.");
         show_response_panel();
