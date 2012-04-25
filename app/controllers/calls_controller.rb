@@ -18,7 +18,7 @@ class CallsController < ApplicationController
   end
   
   def hangup
-    @call.process(params[:hangup])
+    @call.process('hangup')
   end
   
   
