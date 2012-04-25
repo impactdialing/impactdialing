@@ -139,13 +139,8 @@ class CallAttempt < ActiveRecord::Base
   def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
     t = TwilioLib.new(account, auth)    
     EM.run {
-      deferrable = t.end_call("#{self.sid}")
-      deferrable.callback { 
-        }
-      deferrable.errback { |error|
-      }
-    }
-    
+      t.end_call("#{self.sid}")
+    }    
   end
   
 
