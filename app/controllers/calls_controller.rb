@@ -11,10 +11,12 @@ class CallsController < ApplicationController
   
   def submit_result
     @call.process("submit_result")
+    render nothing: true
   end
   
   def submit_result_and_stop
     @call.process("submit_result_and_stop")
+    render nothing: true
   end
   
   def hangup
