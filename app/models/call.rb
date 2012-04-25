@@ -124,6 +124,10 @@ class Call < ActiveRecord::Base
     render
   end
   
+  def process(event)
+    send(event)
+  end
+  
   def answered_by_machine?
     answered_by == "machine"
   end
