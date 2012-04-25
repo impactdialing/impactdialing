@@ -54,7 +54,9 @@ class CallsController < ApplicationController
     find_call
     questions = params[:questions]
     notes = params[:notes]
+    
     @parsed_params.merge!(questions: questions).merge!(notes: notes)
+    puts @parsed_params
     @call.update_attributes(@parsed_params)
   end
 
