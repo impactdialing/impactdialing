@@ -19,6 +19,7 @@ class CallsController < ApplicationController
   
   def hangup
     @call.process('hangup')
+    render nothing: true
   end
   
   
