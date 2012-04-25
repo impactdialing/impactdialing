@@ -241,17 +241,27 @@ function subscribe(session_key) {
 	    $("#called_in").show();
 	});
 	
-	 channel.bind('caller_connected_initial', function(data) {
-		$('#browserTestContainer').hide();
-		hide_response_panel();
-		if (!$.isEmptyObject(data.fields)) {
-            set_message("Status: Ready for calls.");
-            set_voter(data);
-        } else {
-            $("#stop_calling").show();
-            set_message("Status: There are no more numbers to call in this campaign.");
-        }        
-	  });
+	channel.bind('conference_started', function(data) {
+	if ($("#caller_session").val() != "" ){
+		set_message("Status: Ready for calls.");
+        set_voter(data);        
+        ready_for_calls(data)		
+	}
+    });
+
+    channel.bind('voter_connected', function(data) {
+        set_call_attempt(data.attempt_id);
+        hide_all_actions();
+        set_message("Status: Connected.");
+        show_response_panel();
+		show_transfer_panel();
+        cleanup_previous_call_results();
+		cleanup_transfer_panel();
+        $("#hangup_call").show();
+    });
+
+    
+	
 	
     channel.bind('caller_connected', function(data) {
         hide_all_actions();
@@ -273,13 +283,6 @@ function subscribe(session_key) {
         }
     });
 
-    channel.bind('conference_started', function(data) {
-	if ($("#caller_session").val() != "" ){
-		set_message("Status: Ready for calls.");
-        set_voter(data);        
-        ready_for_calls(data)		
-	}
-    });
 
 
     channel.bind('caller_connected_dialer', function(data) {
@@ -329,19 +332,6 @@ function subscribe(session_key) {
 
     });
 
-    channel.bind('voter_connected', function(data) {
-        set_call_attempt(data.attempt_id);
-        hide_all_actions();
-        if (data.dialer && data.dialer != 'preview') {
-            set_voter(data.voter);
-            set_message("Status: Connected.")
-        }
-        show_response_panel();
-		show_transfer_panel();
-        cleanup_previous_call_results();
-		cleanup_transfer_panel();
-        $("#hangup_call").show();
-    });
 
     channel.bind('calling_voter', function(data) {
         set_message('Status: Call in progress.');
