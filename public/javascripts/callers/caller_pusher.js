@@ -140,7 +140,7 @@ function ie8(){
 
 function disconnect_voter() {
     $.ajax({
-        url : "/call_attempts/" + $("#current_call_attempt").val() + "/hangup",
+        url : "/calls/" + $("#current_call").val() + "/hangup",
         type : "POST",
         success : function(response) {
             // pushes 'calling_voter'' event to browsers
@@ -250,7 +250,7 @@ function subscribe(session_key) {
     });
 
     channel.bind('voter_connected', function(data) {
-        set_call_attempt(data.attempt_id);
+        set_current_call(data.attempt_id);
         hide_all_actions();
         set_message("Status: Connected.");
         show_response_panel();
@@ -429,8 +429,8 @@ function subscribe(session_key) {
 
 	});
 
-    function set_call_attempt(id) {
-        $("#current_call_attempt").val(id);
+    function set_current_call(id) {
+        $("#current_call").val(id);
     }
 
     function set_voter(data) {

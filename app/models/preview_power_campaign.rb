@@ -23,8 +23,8 @@ module PreviewPowerCampaign
     {event: 'conference_started', data: next_voter.nil? ? {} : next_voter.info}                     
   end
   
-  def voter_connected_event(call_attempt)
-    {event: 'voter_connected', data: {attempt_id:  call_attempt.id}}
+  def voter_connected_event(call)
+    {event: 'voter_connected', data: {call_id:  call.id}}
   end
   
   def call_answered_machine_event(call_attempt)    

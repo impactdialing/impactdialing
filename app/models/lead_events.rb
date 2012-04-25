@@ -9,7 +9,7 @@ module LeadEvents
         
     
     def publish_voter_connected
-      event_hash = campaign.voter_connected_event(call_attempt)
+      event_hash = campaign.voter_connected_event(self)
       caller_session.publish_async(event_hash[:event], event_hash[:data])
     end    
     
