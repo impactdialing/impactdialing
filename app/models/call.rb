@@ -119,9 +119,9 @@ class Call < ActiveRecord::Base
       
   end 
   
-  def run(event,render_twiml=true)
-      send(event)
-      render if render_twiml
+  def run(event)
+    send(event)
+    render
   end
   
   def answered_by_machine?
