@@ -55,7 +55,7 @@ class CallsController < ApplicationController
     questions = params[:question]
     notes = params[:notes]
     
-    @parsed_params.merge!(questions: questions).merge!(notes: notes)
+    @parsed_params.merge!("questions" questions.try(:to_json)).merge!(notes: notes.try(:to_json))
     puts @parsed_params
     @call.update_attributes(@parsed_params)
   end
