@@ -7,19 +7,17 @@ class CallerController < ApplicationController
   
   
   def start_calling
-    @caller = Caller.find(params[:caller_id])
-    @identity = CallerIdentity.find_by_session_key(params[:session_key])
-    @session = @caller.create_caller_session(@identity.session_key, params[:CallSid])
-    response =  @session.run(:start_conf)
-    puts response
-    render xml: response
+    caller = Caller.find(params[:caller_id])
+    identity = CallerIdentity.find_by_session_key(params[:session_key])
+    session = caller.create_caller_session(identity.session_key, params[:CallSid])
+    render xml: session.run(:start_conf)
   end
   
   
   
   def flow
     call_session = CallerSession.find(params[:session_id])
-    call_session.run(params[:event])
+    render xml:  call_session.run(params[:event])
   end
   
   

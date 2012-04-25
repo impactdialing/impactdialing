@@ -63,10 +63,6 @@ module LeadEvents
       # self.publish("caller_re_assigned_to_campaign",{:campaign_name => caller.campaign.name, :campaign_id => caller.campaign.id, :script => caller.campaign.script.try(:script)}.merge!(next_voter ? next_voter.info : {}))      
     end
     
-    def publish_caller_conference_started
-      event_hash = campaign.caller_conference_started
-      publish(event_hash[:event], event_hash[:data])                     
-    end
     
     
     

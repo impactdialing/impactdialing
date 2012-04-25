@@ -4,6 +4,8 @@ describe CallerController do
   let(:account) { Factory(:account) }
   let(:user) { Factory(:user, :account => account) }
   let(:caller) { Factory(:caller, :account => account) }
+  
+  
 
 
   describe "preview dial" do
