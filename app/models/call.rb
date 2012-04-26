@@ -98,7 +98,7 @@ class Call < ActiveRecord::Base
       end
       
       state :wrapup_and_continue do 
-        before(:always) { wrapup_now }
+        before(:always) { wrapup_now; redirect_caller }
         after(:always)  { publish_continue_calling }      
       end
       
@@ -147,6 +147,11 @@ class Call < ActiveRecord::Base
   
   def call_connected?
     !call_did_not_connect?
+  end
+  
+  def redirect_caller
+    Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
+    Twilio::Call.redirect(caller_session.sid, flow_caller_url(:host => Settings.host, :port => Settings.port, session_id: caller_session.id, event: "start_conf"))
   end
   
   
