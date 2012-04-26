@@ -13,7 +13,7 @@ class WebuiCallerSession < CallerSession
         after(:always) { publish_caller_conference_started }
         event :pause_conf, :to => :disconnected, :if => :disconnected?
         event :pause_conf, :to => :paused, :if => :call_not_wrapped_up?
-        event :pause_conf, :to => :connected
+        event :start_conf, :to => :connected
         event :stop_calling, :to=> :stopped
         
         response do |xml_builder, the_call|
