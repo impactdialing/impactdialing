@@ -35,7 +35,7 @@ class WebuiCallerSession < CallerSession
         
         response do |xml_builder, the_call|
           xml_builder.Say("Please enter your call results") 
-          xml_builder.Pause("length" => 300)
+          xml_builder.Pause("length" => 60)
           # xml_builder.Redirect(flow_caller_url(caller, host: Settings.host, port: Settings.port, session_id:  id, event: "pause_conf"))
         end        
       end
