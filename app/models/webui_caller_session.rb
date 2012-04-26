@@ -71,6 +71,7 @@ class WebuiCallerSession < CallerSession
     }
     begin
       end_caller_session
+      CallAttempt.wrapup_calls(caller_id)
     rescue ActiveRecord::StaleObjectError
       reload
       end_caller_session
