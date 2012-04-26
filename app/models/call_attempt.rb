@@ -106,7 +106,8 @@ class CallAttempt < ActiveRecord::Base
       unless voter.caller_session.nil?
         voter.caller_id = voter.caller_session.caller_id
         voter.status = CallAttempt::Status::INPROGRESS
-        voter.save      
+        voter.save
+        voter.caller_session.reload      
         voter.caller_session.update_attributes(:on_call => true, :available_for_call => false)  
       end
     rescue ActiveRecord::StaleObjectError
