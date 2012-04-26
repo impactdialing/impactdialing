@@ -153,6 +153,10 @@ class CallAttempt < ActiveRecord::Base
     # caller_session.update_attribute(:voter_in_progress, nil) unless caller_session.nil?
   end
   
+  def not_wrapped_up?
+    wrapup_time.nil?
+  end
+  
   def wrapup_call_and_stop
     wrapup_now
     # begin
