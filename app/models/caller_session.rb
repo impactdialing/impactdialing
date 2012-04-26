@@ -35,7 +35,7 @@ class CallerSession < ActiveRecord::Base
       render
   end
   
-  def process
+  def process(event)
     send(event)
   end
   
