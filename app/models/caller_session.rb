@@ -42,12 +42,17 @@ class CallerSession < ActiveRecord::Base
   
   call_flow :state, :initial => :initial do    
       
-      state [:initial, :connected] do
+      state :initial do
         event :start_conf, :to => :account_not_activated, :if => :account_not_activated?
         event :start_conf, :to => :subscription_limit, :if => :subscription_limit_exceeded?
         event :start_conf, :to => :time_period_exceeded, :if => :time_period_exceeded?
         event :start_conf, :to => :caller_on_call,  :if => :is_on_call?
       end 
+      
+      state :connected do
+        event :start_conf, :to => :subscription_limit, :if => :subscription_limit_exceeded?
+        event :start_conf, :to => :time_period_exceeded, :if => :time_period_exceeded?
+      end
       
       state all - [:initial] do
         event :end_conf, :to => :conference_ended
