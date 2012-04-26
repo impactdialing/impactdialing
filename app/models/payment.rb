@@ -7,7 +7,7 @@ class Payment < ActiveRecord::Base
     return false if account.active_subscription=="manual"
     debit_amount = call_time.to_f * Payment.determine_call_cost(model_instance)
     payment_used = Payment.where("amount_remaining > 0 and account_id = ?", account).last
-    return false if payment_used.nil? #hmmm
+    return false if payment_used.nil? #hmmm we're running negative
       
     payment_used.amount_remaining -= debit_amount
     payment_used.save
