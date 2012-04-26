@@ -12,8 +12,8 @@ class Call < ActiveRecord::Base
   delegate :end_unanswered_call, :to => :call_attempt
   delegate :end_running_call, :to => :call_attempt
   delegate :disconnect_call, :to => :call_attempt
-  delegate :wrapup_call, :to => :call_attempt
-  delegate :wrapup_call_and_stop, :to => :call_attempt
+  delegate :wrapup_now, :to => :call_attempt
+  delegate :wrapup_now, :to => :call_attempt
   
   delegate :process_answered_by_machine, :to => :call_attempt
   delegate :caller_not_available?, :to => :call_attempt
@@ -98,12 +98,12 @@ class Call < ActiveRecord::Base
       end
       
       state :wrapup_and_continue do 
-        before(:always) { wrapup_call }
+        before(:always) { wrapup_now }
         after(:always)  { publish_continue_calling }      
       end
       
       state :wrapup_and_stop do
-        before(:always) { wrapup_call_and_stop }        
+        before(:always) { wrapup_now }        
       end
             
       
