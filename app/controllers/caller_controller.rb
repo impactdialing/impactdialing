@@ -130,9 +130,6 @@ class CallerController < ApplicationController
     end
   end
 
-
-
-  
   def new_campaign_response_panel
     caller = Caller.find(params[:id])
     @campaign = caller.campaign
