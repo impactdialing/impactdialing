@@ -16,10 +16,10 @@ class CallerController < ApplicationController
   
   def flow
     begin
-      response = @call_session.run(params[:event])
+      response = @caller_session.run(params[:event])
     rescue ActiveRecord::StaleObjectError
-      @call_session.reload
-      response = @call_session.run(params[:event])      
+      @caller_session.reload
+      response = @caller_session.run(params[:event])      
     end    
     render xml:  response
   end
