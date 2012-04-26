@@ -12,7 +12,7 @@ class WebuiCallerSession < CallerSession
         before(:always) { publish_start_calling; start_conference }
         after(:always) { publish_caller_conference_started }
         event :pause_conf, :to => :disconnected, :if => :disconnected?
-        # event :pause_conf, :to => :paused, :if => :call_not_wrapped_up?
+        event :pause_conf, :to => :paused, :if => :call_not_wrapped_up?
         event :pause_conf, :to => :connected
         event :stop_calling, :to=> :stopped
         
@@ -47,7 +47,7 @@ class WebuiCallerSession < CallerSession
   end
   
   def call_not_wrapped_up?
-    !voter_in_progress.nil?    
+    attempt_in_progress.not_wrapped_up?
   end
   
   def start_conference    

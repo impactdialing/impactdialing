@@ -98,7 +98,7 @@ class Call < ActiveRecord::Base
       end
       
       state :wrapup_and_continue do 
-        before(:always) { wrapup_now; redirect_caller }
+        before(:always) { wrapup_now }
         after(:always)  { publish_continue_calling }      
       end
       
