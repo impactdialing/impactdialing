@@ -155,7 +155,12 @@ class CallAttempt < ActiveRecord::Base
   
   def wrapup_call_and_stop
     wrapup_now
-    caller_session.update_attributes(voter_in_progress: nil, endtime: Time.now) unless caller_session.nil?
+    begin
+      caller_session.update_attributes(voter_in_progress: nil, endtime: Time.now) unless caller_session.nil?
+    rescue ActiveRecord::StaleObjectError
+      caller_session.reload
+      caller_session.update_attributes(voter_in_progress: nil, endtime: Time.now) unless caller_session.nil?
+    end
   end
   
   def disconnect_call
