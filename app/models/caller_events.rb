@@ -19,10 +19,7 @@ module CallerEvents
     end
     
     def publish_caller_disconnected
-      # Moderator.publish_event(campaign, "caller_disconnected",{:caller_session_id => id, :caller_id => caller.id, :campaign_id => campaign.id, :campaign_active => campaign.callers_log_in?,
-      #         :no_of_callers_logged_in => campaign.caller_sessions.on_call.size})
-      
-      publish("caller_disconnected",{})    
+      publish_async("caller_disconnected",{})    
     end    
           
     

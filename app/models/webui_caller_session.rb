@@ -63,58 +63,19 @@ class WebuiCallerSession < CallerSession
   
   def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
     voters = Voter.find_all_by_caller_id_and_status(caller.id, CallAttempt::Status::READY)
-    voters.each {|voter| voter.update_attributes(status: 'not called')}
-    
+    voters.each {|voter| voter.update_attributes(status: 'not called')}    
     t = ::TwilioLib.new(account, auth)
-    # EM.run {
-      t.end_call("#{self.sid}")
-    # }
+    t.end_call("#{self.sid}")
     begin
       end_caller_session
       CallAttempt.wrapup_calls(caller_id)
-      # debit
     rescue ActiveRecord::StaleObjectError
       reload
       end_caller_session
-      # debit
     end      
         
   end
   
-  def dial(voter)
-    attempt = create_call_attempt(voter)
-    publish_calling_voter
-    response = make_call(attempt,voter)    
-    if response["TwilioResponse"]["RestException"]
-      handle_failed_call(attempt)
-      return
-    end    
-    attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])
-  end
-  
-  def create_call_attempt(voter)
-    attempt = voter.call_attempts.create(:campaign => campaign, :dialer_mode => campaign.type, :status => CallAttempt::Status::RINGING, :caller_session => self, :caller => caller)
-    update_attribute('attempt_in_progress', attempt)
-    voter.update_attributes(:last_call_attempt => attempt, :last_call_attempt_time => Time.now, :caller_session => self, status: CallAttempt::Status::RINGING)
-    Call.create(call_attempt: attempt)
-    attempt    
-  end
-  
-  def make_call(attempt,voter)
-    Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    params = {'FallbackUrl' => TWILIO_ERROR, 'StatusCallback' => flow_call_url(attempt.call, host: Settings.host, port:  Settings.port, event: "call_ended"),'Timeout' => campaign.use_recordings? ? "30" : "15"}
-    params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect        
-    Twilio::Call.make(self.campaign.caller_id, voter.Phone, flow_call_url(attempt.call, host: Settings.host, port: Settings.port, event: "incoming_call"),params)    
-  end
-  
-  def handle_failed_call(attempt)
-    Rails.logger.info "Exception when attempted to call #{voter.Phone} for campaign id:#{self.campaign_id}  Response: #{response["TwilioResponse"]["RestException"].inspect}"
-    attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
-    voter.update_attributes(status: CallAttempt::Status::FAILED)
-    update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil,:voter_in_progress => nil)
-    next_voter = campaign.next_voter_in_dial_queue(voter.id)
-    publish('call_could_not_connect',next_voter.nil? ? {} : next_voter.info)    
-  end
   
   def publish_async(event, data)
     EM.run {

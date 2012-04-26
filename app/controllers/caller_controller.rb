@@ -4,6 +4,7 @@ class CallerController < ApplicationController
   layout "caller"
   before_filter :check_login, :except=>[:login, :feedback, :assign_campaign, :end_session, :pause, :start_calling, :gather_response, :choose_voter, :phones_only_progressive, :phones_only, :choose_instructions_option, :new_campaign_response_panel, :check_reassign, :call_voter, :flow]
   before_filter :redirect_to_ssl
+  before_filter :find_caller_session , :only => [:flow]
   
   
   def start_calling
@@ -14,12 +15,11 @@ class CallerController < ApplicationController
   end
   
   def flow
-    call_session = CallerSession.find(params[:session_id])
     begin
-      response = call_session.run(params[:event])
+      response = @call_session.run(params[:event])
     rescue ActiveRecord::StaleObjectError
-      call_session.reload
-      response = call_session.run(params[:event])      
+      @call_session.reload
+      response = @call_session.run(params[:event])      
     end    
     render xml:  response
   end
@@ -32,11 +32,13 @@ class CallerController < ApplicationController
   end
   
   def stop_calling
-    caller_session = WebuiCallerSession.find(params[:session_id])
-    caller_session.process('stop_calling')
+    @caller_session.process('stop_calling')
     render :nothing => true
   end
   
+  def end_session
+    render xml: @caller_session.run('end_conf')
+  end
   
   def index
     redirect_to callers_campaign_path(@caller.campaign)
@@ -86,31 +88,21 @@ class CallerController < ApplicationController
   end
 
 
-  def gather_response
-    caller = Caller.find(params[:id])
-    caller_session = caller.caller_sessions.find(params[:session_id])
-    question = Question.find_by_id(params[:question_id])
-    voter = caller_session.voter_in_progress
-    voter.answer(question, params[:Digits], caller_session) if voter && question
+  # def gather_response
+  #   caller = Caller.find(params[:id])
+  #   caller_session = caller.caller_sessions.find(params[:session_id])
+  #   question = Question.find_by_id(params[:question_id])
+  #   voter = caller_session.voter_in_progress
+  #   voter.answer(question, params[:Digits], caller_session) if voter && question
+  # 
+  #   xml = Twilio::Verb.hangup if caller_session.disconnected?
+  #   xml ||= (voter.question_not_answered.try(:read, caller_session) if voter)
+  #   xml ||= caller_session.ask_caller_to_choose_voter if (caller.is_phones_only? && caller.campaign.is_preview_or_progressive)
+  #   xml ||= caller_session.start
+  #   render :xml => xml
+  # end
 
-    xml = Twilio::Verb.hangup if caller_session.disconnected?
-    xml ||= (voter.question_not_answered.try(:read, caller_session) if voter)
-    xml ||= caller_session.ask_caller_to_choose_voter if (caller.is_phones_only? && caller.campaign.is_preview_or_progressive)
-    xml ||= caller_session.start
-    render :xml => xml
-  end
 
-
-  def end_session
-    caller_session = CallerSession.find_by_sid(params[:CallSid])
-    caller_session.debit if caller_session!=nil
-    begin
-      render xml:  caller_session.try(:end) || Twilio::Verb.hangup
-    rescue ActiveRecord::StaleObjectError
-      caller_session.reload
-      render xml: caller_session.end      
-    end
-  end
 
   def skip_voter
     caller_session = @caller.caller_sessions.find(params[:session_id])
@@ -146,6 +138,10 @@ class CallerController < ApplicationController
   def feedback
     Postoffice.feedback(params[:issue]).deliver
     render :text=> "var x='ok';"
+  end
+  
+  def find_caller_session
+    @caller_session = CallerSession.find(params[:session_id]) || CallerSession.find_by_sid(params[:CallSid])
   end
 
 end
