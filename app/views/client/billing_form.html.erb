@@ -1,0 +1,76 @@
+<!DOCTYPE html> 
+<html lang="en"> 
+<head> 
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Update Billing Info</title> 
+<link rel="stylesheet" href="/stylesheets/recurly.css" type="text/css" /> 
+<link rel="stylesheet" href="/stylesheets/recurlyexamples.css" type="text/css" /> 
+<!--
+<script src="../lib/jquery-1.7.1.js"></script> 
+<script src="../build/recurly.js"></script> 
+-->
+<script src="/javascripts/jquery.js" type="text/javascript"></script>
+<script src="/javascripts/recurly.min.js" type="text/javascript"></script>
+
+
+<script>
+
+function handlePlan(selectb){
+	if (selectb.selectedIndex==0)
+		createForm('per-minute');
+	else
+		createForm('per-caller');
+}
+Recurly.config({
+    subdomain: 'impactdialing'
+  , currency: 'USD'
+  }
+);
+
+
+<% 
+minute_signature = Recurly.js.sign_subscription 'per-minute', @account_code
+caller_signature = Recurly.js.sign_subscription 'per-caller', @account_code
+	
+%>
+function createForm(plan){
+	var sig = '<%= minute_signature %>';
+	if (plan=='per-caller')
+		sig = '<%= caller_signature %>';
+	Recurly.buildSubscriptionForm({
+	  target: '#recurly-form'
+	  , accountCode: '<%= @account_code %>'
+	  , distinguishContactFromBillingInfo: false 
+	,account: {
+	    firstName: '<%= @user.fname %>'
+	  , lastName: '<%= @user.lname %>'
+	  , email: '<%= @user.email %>'
+	},
+	planCode: plan,
+	successURL: 'http://<%= Settings.host %><%= Settings.port=="80" ? "" : ":#{Settings.port}/client/billing_success" %>',
+	signature: sig,
+	afterInject: function(){
+		if (plan=='per-minute'){
+			$('.cost').hide();
+			$('.recurring_cost').hide();
+			$('.due_now').hide();
+			}
+		},
+	});
+}
+
+</script>
+</style>
+</head> 
+  <body> 
+	<div style="padding-top:30px;">
+		Select your plan: 
+		<select onchange="handlePlan(this);" style="background: transparent; width: 268px; padding: 5px; font-size: 16px; border: 1px solid #ccc; height: 34px;">
+			<option>Pay per minute</option>
+			<option>Pay per caller</option>
+		</select>
+	</div>
+    <div id="recurly-form"></div>
+	<script>createForm('per-minute');</script>
+  </body>
+</html>
