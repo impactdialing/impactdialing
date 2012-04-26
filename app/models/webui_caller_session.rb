@@ -66,18 +66,19 @@ class WebuiCallerSession < CallerSession
     voters.each {|voter| voter.update_attributes(status: 'not called')}
     
     t = ::TwilioLib.new(account, auth)
-    EM.run {
+    # EM.run {
       t.end_call("#{self.sid}")
-    }
+    # }
     begin
       end_caller_session
       CallAttempt.wrapup_calls(caller_id)
+      # debit
     rescue ActiveRecord::StaleObjectError
       reload
       end_caller_session
+      # debit
     end      
-    debit
-    
+        
   end
   
   def dial(voter)

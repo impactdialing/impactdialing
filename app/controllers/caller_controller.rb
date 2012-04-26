@@ -13,8 +13,6 @@ class CallerController < ApplicationController
     render xml: session.run(:start_conf)
   end
   
-  
-  
   def flow
     call_session = CallerSession.find(params[:session_id])
     begin
@@ -33,6 +31,11 @@ class CallerController < ApplicationController
     render :nothing => true
   end
   
+  def stop_calling
+    caller_session = WebuiCallerSession.find(params[:session_id])
+    caller_session.process('stop_calling')
+    render :nothing => true
+  end
   
   
   def index
@@ -82,16 +85,6 @@ class CallerController < ApplicationController
     render nothing: true
   end
 
-  def stop_calling
-    caller = Caller.find(params[:id])
-    voters = Voter.find_all_by_caller_id_and_status(caller.id, CallAttempt::Status::READY)
-    voters.each {|voter| voter.update_attributes(status: 'not called')}
-    @session = caller.caller_sessions.find(params[:session_id])
-    @session.end_running_call
-    @session.debit
-    CallAttempt.wrapup_calls(params[:id]) unless params[:id].empty?
-    render :nothing => true
-  end
 
   def gather_response
     caller = Caller.find(params[:id])

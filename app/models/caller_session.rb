@@ -30,9 +30,13 @@ class CallerSession < ActiveRecord::Base
     self.tDuration/60.ceil
   end
   
-  def run(event,render_twiml=true)
+  def run(event)
       send(event)
-      render if render_twiml
+      render
+  end
+  
+  def process
+    send(event)
   end
   
   
