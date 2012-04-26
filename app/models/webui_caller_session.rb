@@ -12,7 +12,7 @@ class WebuiCallerSession < CallerSession
         before(:always) { publish_start_calling; start_conference }
         after(:always) { publish_caller_conference_started }
         event :pause_conf, :to => :disconnected, :if => :disconnected?
-        event :pause_conf, :to => :paused, :if => :call_not_wrapped_up?
+        # event :pause_conf, :to => :paused, :if => :call_not_wrapped_up?
         event :pause_conf, :to => :connected
         event :stop_calling, :to=> :stopped
         
@@ -34,6 +34,7 @@ class WebuiCallerSession < CallerSession
         
         response do |xml_builder, the_call|
           xml_builder.Say("Please enter your call results") 
+          xml_builder.Pause("length" => 30)
           xml_builder.Redirect(flow_caller_url(caller, host: Settings.host, port: Settings.port, session_id:  id, event: "pause_conf"))
         end        
       end
