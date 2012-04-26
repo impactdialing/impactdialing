@@ -31,6 +31,7 @@ class WebuiCallerSession < CallerSession
       
       state :paused do        
         event :stop_calling, :to=> :stopped
+        event :start_conf, :to => :connected
         
         response do |xml_builder, the_call|
           xml_builder.Say("Please enter your call results") 
