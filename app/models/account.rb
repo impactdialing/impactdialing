@@ -70,7 +70,7 @@ class Account < ActiveRecord::Base
       return false
     end
   end
-    
+      
   def create_recurly_account_code
     return self.recurly_account_code if !self.recurly_account_code.nil?
     begin
@@ -90,21 +90,23 @@ class Account < ActiveRecord::Base
     end
   end
   
+  def set_recurly_subscription(new_subscription_name)
+    self.create_recurly_account_code
+    self.sync_subscription
+    self.cancel_subscription if self.subscription_name!=new_subscription_name
+    self.create_recurly_subscription(new_subscription_name)
+  end
+  
   def create_recurly_subscription(plan_code)
-    subscription = Recurly::Subscription.create(
-      :plan_code => plan_code,
+
+     subscription = Recurly::Subscription.create(
+      :plan_code => plan_code, 
       :account   => {
-        :account_code => '1',
-        :email        => 'verena@example.com',
-        :first_name   => 'Verena',
-        :last_name    => 'Example',
-        :billing_info => {
-          :number => '4111-1111-1111-1111',
-          :month  => 1,
-          :year   => 2014,
-        }
-      }
+         :account_code => self.recurly_account_code
+      	}
     )
+    
+    self.sync_subscription
   end
   
   def active_subscription

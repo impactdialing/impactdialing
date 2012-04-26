@@ -1,6 +1,7 @@
 require Rails.root.join("lib/twilio_lib")
 
 class ClientController < ApplicationController
+  protect_from_forgery :except => [:billing_updated, :billing_success]
   before_filter :check_login, :except => [:login, :user_add, :forgot]
   before_filter :check_paid
   before_filter :redirect_to_ssl
@@ -8,8 +9,6 @@ class ClientController < ApplicationController
   layout "client"
   in_place_edit_for :campaign, :name
   
-  
-
   def check_login
     redirect_to_login and return if session[:user].blank?
     begin
@@ -78,6 +77,8 @@ class ClientController < ApplicationController
       if @user.valid?
         @user.send_welcome_email
         @user.create_default_campaign
+        @user.create_promo_balance
+        @user.create_recurly_account_code
         if session[:user].blank?
           message = "Your account has been created."
           session[:user]=@user.id
@@ -246,117 +247,214 @@ class ClientController < ApplicationController
     redirect_to client_campaigns_path(params[:campaign_id])
   end
 
-  def billing
-    @breadcrumb="Billing"
-    @billing_account = @user.billing_account || @user.account.new_billing_account
-    @oldcc = @billing_account.cc
-    if @billing_account.last4.blank?
-      @tempcc = ""
-      @billing_account.cc = ""
-    else
-      @tempcc = "xxxx xxxx xxxx #{@billing_account.last4}"
-      @billing_account.cc = "xxxx xxxx xxxx #{@billing_account.last4}"
-    end
+  def recharge
+     @account=@user.account
 
-    if request.post?
-      @billing_account.account_id = account.id
-      @billing_account.attributes = params[:billing_account]
+     if request.put?
+       @account.update_attributes(params[:account])
+       flash_message(:notice, "Autorecharge settings saved")
+       redirect_to :action=>"billing"
+       return
+     end
 
-      if @billing_account.cc==@tempcc
-        @billing_account.cc = @oldcc
-      else
-        if @billing_account.cc.length > 4
-          @billing_account.last4 = @billing_account.cc[@billing_account.cc.length-4,4]
-        else
-          @billing_account.last4 = @billing_account.cc
-        end
-        @billing_account.encyrpt_cc
-      end
+     @account.autorecharge_trigger=20.to_f if @account.autorecharge_trigger.nil?
+     @account.autorecharge_amount=40.to_f if @account.autorecharge_amount.nil?
+     @recharge_options=[]
+     @recharge_options.tap{
+      10.step(500,10).each do |n|
+        @recharge_options << ["$#{n}",n.to_f]
+       end 
+     }
+   end
 
-      name_arr=@billing_account.name.split(" ")
-      fname=name_arr.shift
-      lname=name_arr.join(" ").strip
-      
-      billing_address = {
-          :name => "#{@user.fname} #{@user.lname}",
-          :address1 => @billing_account.address1 ,
-          :zip =>@billing_account.zip,
-          :city     => @billing_account.city,
-          :state    => @billing_account.state,
-          :country  => 'US'
-      }
-        
-      if @billing_account.cardtype=="telecheck"
-                
-       linkpoint_options = {
-         :order_id => "",
-         :address => {}, 
-         :address1 => billing_address, 
-         :billing_address => billing_address, 
-         :ip=>"127.0.0.1", 
-         :telecheck_account => @billing_account.checking_account_number,
-         :telecheck_routing => @billing_account.bank_routing_number,
-         :telecheck_checknumber => params[:check_number], 
-         :telecheck_dl => @billing_account.drivers_license_number, 
-         :telecheck_dlstate => @billing_account.drivers_license_state, 
-         :telecheck_accounttype => @billing_account.checking_account_type
+   def billing_updated
+     # return url from recurly.js account update
+     flash_message(:notice, "Billing information updated")
+     redirect_to :action=>"billing"
+   end
+
+   def cancel_subscription
+     if request.post?
+       @user.account.cancel_subscription
+       flash_message(:notice, "Subscription cancelled")
+       redirect_to :action=>"billing"
+     end
+   end
+
+   def billing_success
+     # return url from recurly hosted subscription form
+     @user.account.sync_subscription
+     redirect_to :action=>"billing"
+   end
+   
+   def billing_form
+     @account_code=@user.account.recurly_account_code
+     @billing_info = Recurly::Account.find(@account_code).billing_info
+     render :layout=>"billing"
+   end
+
+   def update_billing
+     @account_code=@user.account.recurly_account_code
+     @billing_info = Recurly::Account.find(@account_code).billing_info
+     render :layout=>"billing"
+   end
+
+   def add_to_balance
+     if request.post?
+       new_payment=Payment.charge_recurly_account(@user.account, params[:amount], "Add to account balance")
+       if new_payment.nil?
+         #charge failed
+          flash_now(:error, "There was a problem charging your credit card.  Please try updating your billing information or contact support for help.")
+       else
+         #charge succeeded
+         flash_message(:notice, "Payment successful.")
+         redirect_to :action=>"billing"
+         return
+       end
+     end
+     recurly_account = Recurly::Account.find(@user.account.recurly_account_code)
+     @billing_info = recurly_account.billing_info
+   end
+
+   def billing
+     @balance=@user.account.current_balance
+     @trial=@user.account.trial?
+     @recurly_per_caller_subscription_url = recurly_subscription_url("per-caller", @user.account.recurly_account_code, (@user.fname.nil? ? "" : @user.fname), (@user.lname.nil? ? "" : @user.lname), @user.email)
+     @recurly_per_minute_subscription_url = recurly_subscription_url("per-minute", @user.account.recurly_account_code, (@user.fname.nil? ? "" : @user.fname), (@user.lname.nil? ? "" : @user.lname), @user.email)
+   end
+
+   def recurly_subscription_url(plan_code, account_code, first_name, last_name, email)
+     "https://impactdialing.recurly.com/subscribe/" + plan_code + "/" + account_code + "?first_name=" + URI.escape(first_name) + "&last_name=" + URI.escape(last_name) + "&email=" + URI.escape(email)
+   end
+
+   def update_billing_quantity
+     if request.post?
+       subscription = Recurly::Subscription.find(@user.account.recurly_subscription_uuid)
+       subscription.update_attributes(
+         :quantity  => params[:num_callers],
+         :timeframe => 'now'       # Update immediately.
+       )
+       @user.account.update_attribute(:subscription_count, params[:num_callers])
+       flash_message(:notice, "Number of callers updated.")
+       redirect_to :action=>"billing"
+     end
+   end
+
+   def new_subscription
+     render :layout=>"recurly"
+   end
+
+   def billing_old
+     @breadcrumb="Billing"
+     @billing_account = @user.billing_account || @user.account.new_billing_account
+     @oldcc = @billing_account.cc
+     if @billing_account.last4.blank?
+       @tempcc = ""
+       @billing_account.cc = ""
+     else
+       @tempcc = "xxxx xxxx xxxx #{@billing_account.last4}"
+       @billing_account.cc = "xxxx xxxx xxxx #{@billing_account.last4}"
+     end
+
+     if request.post?
+       @billing_account.account_id = account.id
+       @billing_account.attributes = params[:billing_account]
+
+       if @billing_account.cc==@tempcc
+         @billing_account.cc = @oldcc
+       else
+         if @billing_account.cc.length > 4
+           @billing_account.last4 = @billing_account.cc[@billing_account.cc.length-4,4]
+         else
+           @billing_account.last4 = @billing_account.cc
+         end
+         @billing_account.encyrpt_cc
+       end
+
+       name_arr=@billing_account.name.split(" ")
+       fname=name_arr.shift
+       lname=name_arr.join(" ").strip
+
+       billing_address = {
+           :name => "#{@user.fname} #{@user.lname}",
+           :address1 => @billing_account.address1 ,
+           :zip =>@billing_account.zip,
+           :city     => @billing_account.city,
+           :state    => @billing_account.state,
+           :country  => 'US'
        }
 
-         response = BILLING_GW.purchase(1, nil, linkpoint_options)
+       if @billing_account.cardtype=="telecheck"
+
+        linkpoint_options = {
+          :order_id => "",
+          :address => {}, 
+          :address1 => billing_address, 
+          :billing_address => billing_address, 
+          :ip=>"127.0.0.1", 
+          :telecheck_account => @billing_account.checking_account_number,
+          :telecheck_routing => @billing_account.bank_routing_number,
+          :telecheck_checknumber => params[:check_number], 
+          :telecheck_dl => @billing_account.drivers_license_number, 
+          :telecheck_dlstate => @billing_account.drivers_license_state, 
+          :telecheck_accounttype => @billing_account.checking_account_type
+        }
+
+          response = BILLING_GW.purchase(1, nil, linkpoint_options)
+          logger.info response.inspect
+
+          if response.params["approved"]=="SUBMITTED"
+            flash_message(:notice, "eCheck verified.")
+            @billing_account.save
+            account.update_attribute(:card_verified, true)
+            redirect_to :action=>"index"
+            return
+          else
+            flash_now(:error, "There was a problem validating your eCheck.  Please contact support for help. Error #{response.params["error"]}")
+          end
+
+       else
+         # test an auth to make sure this card is good.
+         creditcard = ActiveMerchant::Billing::CreditCard.new(
+           :number     => @billing_account.decrypt_cc,
+           :month      => @billing_account.expires_month,
+           :year       => @billing_account.expires_year,
+           :type       => @billing_account.cardtype,
+           :first_name => fname,
+           :last_name  => lname,
+           :verification_value => params[:code]
+         )
+
+         if !creditcard.valid?
+           if creditcard.expired?
+             flash_now(:error, "The card expiration date you entered was invalid. Please try again.")
+             @billing_account.cc = ""
+           else
+             flash_now(:error, "The card number or security code you entered was invalid. Please try again.")
+             @billing_account.cc = ""
+           end
+           return
+         end
+
+
+         options = {:address => {}, :address1 => billing_address, :billing_address => billing_address, :ip=>"127.0.0.1", :order_id=>""}
+         response = BILLING_GW.authorize(1, creditcard,options)
          logger.info response.inspect
 
-         if response.params["approved"]=="SUBMITTED"
-           flash_message(:notice, "eCheck verified.")
+         if response.success?
+           flash_message(:notice, "Card verified.")
            @billing_account.save
            account.update_attribute(:card_verified, true)
            redirect_to :action=>"index"
            return
          else
-           flash_now(:error, "There was a problem validating your eCheck.  Please contact support for help. Error #{response.params["error"]}")
+           flash_now(:error, "There was a problem validating your credit card.  Please email info@impactdialing.com for further support.")
          end
+       end
 
-      else
-        # test an auth to make sure this card is good.
-        creditcard = ActiveMerchant::Billing::CreditCard.new(
-          :number     => @billing_account.decrypt_cc,
-          :month      => @billing_account.expires_month,
-          :year       => @billing_account.expires_year,
-          :type       => @billing_account.cardtype,
-          :first_name => fname,
-          :last_name  => lname,
-          :verification_value => params[:code]
-        )
+     end
 
-        if !creditcard.valid?
-          if creditcard.expired?
-            flash_now(:error, "The card expiration date you entered was invalid. Please try again.")
-            @billing_account.cc = ""
-          else
-            flash_now(:error, "The card number or security code you entered was invalid. Please try again.")
-            @billing_account.cc = ""
-          end
-          return
-        end
-
-
-        options = {:address => {}, :address1 => billing_address, :billing_address => billing_address, :ip=>"127.0.0.1", :order_id=>""}
-        response = BILLING_GW.authorize(1, creditcard,options)
-        logger.info response.inspect
-
-        if response.success?
-          flash_message(:notice, "Card verified.")
-          @billing_account.save
-          account.update_attribute(:card_verified, true)
-          redirect_to :action=>"index"
-          return
-        else
-          flash_now(:error, "There was a problem validating your credit card.  Please email info@impactdialing.com for further support.")
-        end
-      end
-
-    end
-
-  end
+   end
 
   def voter_delete
     @voter = account.voters.find_by_id(params[:id])
