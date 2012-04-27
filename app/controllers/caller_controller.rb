@@ -40,6 +40,15 @@ class CallerController < ApplicationController
     render xml: @caller_session.run('end_conf')
   end
   
+  def skip_voter
+    caller_session = @caller.caller_sessions.find(params[:session_id])
+    voter = Voter.find(params[:voter_id])
+    voter.skip
+    caller_session.redirect_webui_caller
+    render :nothing => true
+  end
+  
+  
   def index
     redirect_to callers_campaign_path(@caller.campaign)
   end
@@ -104,15 +113,6 @@ class CallerController < ApplicationController
 
 
 
-  def skip_voter
-    caller_session = @caller.caller_sessions.find(params[:session_id])
-    voter = Voter.find(params[:voter_id])
-    voter.skip
-    caller_session.redirect_webui_caller
-    # next_voter = caller_session.campaign.next_voter_in_dial_queue(params[:voter_id])
-    # caller_session.publish('caller_connected', next_voter ? next_voter.info : {}) 
-    render :nothing => true
-  end
   
   def check_reassign
     caller = Caller.find(params[:id])

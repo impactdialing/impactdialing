@@ -276,30 +276,21 @@ function subscribe(session_key) {
 
     });
 
-
-    
-	
-	
-    channel.bind('caller_connected', function(data) {
+    channel.bind('calling_voter', function(data) {
+        set_message('Status: Call in progress.');
         hide_all_actions();
-        $('#browserTestContainer').hide();
-        $("#start_calling").hide();
-        $("#callin_data").hide();
-        hide_response_panel();
-        $("#stop_calling").show();
-        if (!$.isEmptyObject(data.fields)) {
-            set_message("Status: Ready for calls.");
-            set_voter(data);
-			if(!data.start_calling) {
-              ready_for_calls(data)
-			}
-
-        } else {
-            $("#stop_calling").show();
-            set_message("Status: There are no more numbers to call in this campaign.");
-        }
     });
 
+    channel.bind('caller_disconnected', function(data) {
+        clear_caller();
+        clear_voter();
+        hide_response_panel();
+        set_message('Status: Not connected.');
+        hide_all_actions();
+        $("#callin_data").show();
+        if (FlashDetect.installed && flash_supported())
+            $("#start_calling").show();
+    });
 
 
     channel.bind('caller_connected_dialer', function(data) {
@@ -308,38 +299,8 @@ function subscribe(session_key) {
         set_message("Status: Dialing.");
     });
 
-    channel.bind('answered_by_machine', function(data) {
-        if (data.dialer && data.dialer == 'preview') {
-            set_message("Status: Ready for calls.");
-        }
-    });
-
-    channel.bind('voter_push', function(data) {
-        set_message("Status: Ready for calls.");
-        set_voter(data);
-        $("#start_calling").hide();
-    });
-
-    channel.bind('call_could_not_connect', function(data) {
-        set_message("Status: Ready for calls.");
-        set_voter(data);
-        $("#start_calling").hide();
-        if ($.isEmptyObject(data.fields)) {
-            $("#stop_calling").show();
-
-        }
-        else {
-            ready_for_calls(data);
-        }
-    });
 
 
-
-
-    channel.bind('calling_voter', function(data) {
-        set_message('Status: Call in progress.');
-        hide_all_actions();
-    });
     channel.bind('transfer_busy', function(data) {
         $("#hangup_call").show();
     });
@@ -365,27 +326,6 @@ function subscribe(session_key) {
 	        $("#submit_and_stop_call").show();
 	        
 		}			
-    });
-
-
-    channel.bind('caller_disconnected', function(data) {
-        clear_caller();
-        clear_voter();
-        hide_response_panel();
-        set_message('Status: Not connected.');
-        hide_all_actions();
-        $("#callin_data").show();
-        if (FlashDetect.installed && flash_supported())
-            $("#start_calling").show();
-    });
-
-    channel.bind('waiting_for_result', function(data) {
-        show_response_panel();
-        set_message('Status: Waiting for call results.');
-    });
-
-    channel.bind('no_voter_on_call', function(data) {
-        $('status').text("Status: Waiting for caller to be connected.")
     });
 
     channel.bind('predictive_successful_voter_response', function(data) {
