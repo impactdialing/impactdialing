@@ -210,8 +210,9 @@ describe CallerSession do
   end
   
   describe "initial state" do
-  
+      
     describe "account not activated" do
+      
       before(:each) do
         @caller = Factory(:caller)
         @script = Factory(:script)
@@ -233,140 +234,108 @@ describe CallerSession do
       end
     
     end
+    
+    describe "subscription limit exceeded" do
+      
+      before(:each) do
+        @caller = Factory(:caller)
+        @script = Factory(:script)
+        @campaign =  Factory(:campaign, script: @script)    
+      end
+
+      it "should move caller session subscription limit exceeded state" do
+        caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
+        caller_session.should_receive(:account_not_activated?).and_return(false)      
+        caller_session.should_receive(:subscription_limit_exceeded?).and_return(true)
+        caller_session.start_conf!
+        caller_session.state.should eq('subscription_limit')
+      end
+
+      it "should render correct twiml" do
+        caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
+        caller_session.should_receive(:account_not_activated?).and_return(false)      
+        caller_session.should_receive(:subscription_limit_exceeded?).and_return(true)
+        caller_session.start_conf!
+        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>The maximum number of callers for this account has been reached. Wait for another caller to finish, or ask your administrator to upgrade your account.</Say><Hangup/></Response>")
+      end
+
+    end
+    
+    describe "Campaign time period exceeded" do
+      
+      before(:each) do
+        @caller = Factory(:caller)
+        @script = Factory(:script)
+        @campaign =  Factory(:campaign, script: @script,:start_time => Time.new(2011, 1, 1, 9, 0, 0), :end_time => Time.new(2011, 1, 1, 21, 0, 0), :time_zone =>"Pacific Time (US & Canada)")    
+      end
+
+      it "should move caller session campaign_time_period_exceeded state" do
+        caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
+        caller_session.should_receive(:account_not_activated?).and_return(false)
+        caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
+        caller_session.should_receive(:time_period_exceeded?).and_return(true)
+        caller_session.start_conf!
+        caller_session.state.should eq('time_period_exceeded')
+      end
+
+      it "should render correct twiml" do
+        caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
+        caller_session.should_receive(:account_not_activated?).and_return(false)
+        caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
+        caller_session.should_receive(:time_period_exceeded?).and_return(true)
+        caller_session.start_conf!
+        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>You can only call this campaign between 9 AM and 9 PM. Please try back during those hours.</Say><Hangup/></Response>")
+      end
+      
+    end
+    
+    describe "Caller already on call" do
+      
+      before(:each) do
+        @caller = Factory(:caller)
+        @script = Factory(:script)
+        @campaign =  Factory(:campaign, script: @script)    
+      end
+
+      it "should move caller session caller_on_call state" do
+        caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
+        caller_session.should_receive(:account_not_activated?).and_return(false)
+        caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
+        caller_session.should_receive(:time_period_exceeded?).and_return(false)
+        caller_session.should_receive(:is_on_call?).and_return(true)
+        caller_session.start_conf!
+        caller_session.state.should eq('caller_on_call')
+      end
+
+      it "should render correct twiml" do
+        caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
+        caller_session.should_receive(:account_not_activated?).and_return(false)
+        caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
+        caller_session.should_receive(:time_period_exceeded?).and_return(false)
+        caller_session.should_receive(:is_on_call?).and_return(true)
+        caller_session.start_conf!
+        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>Another user is logged in as this caller. Only one user may log in as the same caller at the same time.</Say><Hangup/></Response>")
+      end
+      
+    end
  end
-  
-  
-  describe "subscription limit exceeded" do
+   
+  describe "conference_ended" do
     before(:each) do
       @caller = Factory(:caller)
       @script = Factory(:script)
       @campaign =  Factory(:campaign, script: @script)    
     end
     
-    it "should move caller session subscription limit exceeded state" do
-      caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
-      caller_session.should_receive(:account_not_activated?).and_return(false)      
-      caller_session.should_receive(:subscription_limit_exceeded?).and_return(true)
-      caller_session.start_conf!
-      caller_session.state.should eq('subscription_limit')
-    end
-    
-    it "should render correct twiml" do
-      caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
-      caller_session.should_receive(:account_not_activated?).and_return(false)      
-      caller_session.should_receive(:subscription_limit_exceeded?).and_return(true)
-      caller_session.start_conf!
-      caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>The maximum number of callers for this account has been reached. Wait for another caller to finish, or ask your administrator to upgrade your account.</Say><Hangup/></Response>")
-    end
-    
-  end
-  
-  describe "Campaign time period exceeded" do
-    before(:each) do
-      @caller = Factory(:caller)
-      @script = Factory(:script)
-      @campaign =  Factory(:campaign, script: @script,:start_time => Time.new(2011, 1, 1, 9, 0, 0), :end_time => Time.new(2011, 1, 1, 21, 0, 0), :time_zone =>"Pacific Time (US & Canada)")    
-    end
-    
-    it "should move caller session campaign_time_period_exceeded state" do
-      caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
-      caller_session.should_receive(:account_not_activated?).and_return(false)
-      caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
-      caller_session.should_receive(:time_period_exceeded?).and_return(true)
-      caller_session.start_conf!
-      caller_session.state.should eq('time_period_exceeded')
-    end
-    
-    it "should render correct twiml" do
-      caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
-      caller_session.should_receive(:account_not_activated?).and_return(false)
-      caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
-      caller_session.should_receive(:time_period_exceeded?).and_return(true)
-      caller_session.start_conf!
-      caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>You can only call this campaign between 9 AM and 9 PM. Please try back during those hours.</Say><Hangup/></Response>")
-    end
-  end
-  
-  
-  
-  describe "Caller already on call" do
-    before(:each) do
-      @caller = Factory(:caller)
-      @script = Factory(:script)
-      @campaign =  Factory(:campaign, script: @script)    
-    end
-    
-    it "should move caller session caller_on_call state" do
-      caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
-      caller_session.should_receive(:account_not_activated?).and_return(false)
-      caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
-      caller_session.should_receive(:time_period_exceeded?).and_return(false)
-      caller_session.should_receive(:is_on_call?).and_return(true)
-      caller_session.start_conf!
-      caller_session.state.should eq('caller_on_call')
-    end
-    
-    it "should render correct twiml" do
-      caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
-      caller_session.should_receive(:account_not_activated?).and_return(false)
-      caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
-      caller_session.should_receive(:time_period_exceeded?).and_return(false)
-      caller_session.should_receive(:is_on_call?).and_return(true)
-      caller_session.start_conf!
-      caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>Another user is logged in as this caller. Only one user may log in as the same caller at the same time.</Say><Hangup/></Response>")
-    end
-  end
-  
-  
-  
-  
-  describe "Caller disconnected" do
-    before(:each) do
-      @caller = Factory(:caller)
-      @script = Factory(:script)
-      @campaign =  Factory(:campaign, script: @script)    
-    end
-    
-    # it "should move caller session disconnected state" do
-    #   caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
-    #   caller_session.should_receive(:account_not_activated?).and_return(false)
-    #   caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
-    #   caller_session.should_receive(:time_period_exceeded?).and_return(false)
-    #   caller_session.should_receive(:is_on_call?).and_return(false)
-    #   caller_session.should_receive(:disconnected?).and_return(true)
-    #   caller_session.start_conf!
-    #   caller_session.state.should eq('disconnected')
-    # end
-    
-    # it "should render correct twiml" do
-    #       caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
-    #       caller_session.should_receive(:account_not_activated?).and_return(false)
-    #       caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
-    #       caller_session.should_receive(:time_period_exceeded?).and_return(false)
-    #       caller_session.should_receive(:is_on_call?).and_return(false)
-    #       caller_session.should_receive(:disconnected?).and_return(true)
-    #       caller_session.start_conf!
-    #       caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
-    #     end    
-    
-  end
-  
-  describe "end caller session" do
-    before(:each) do
-      @caller = Factory(:caller)
-      @script = Factory(:script)
-      @campaign =  Factory(:campaign, script: @script)    
-    end
-    
-    it "should move caller to end conference from connected" do
-      caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "connected")
+    it "should move caller to end conference from account not activated" do
+      caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "account_not_activated")
       caller_session.should_receive(:publish_caller_disconnected)   
       caller_session.end_conf!
       caller_session.state.should eq('conference_ended')
     end
     
     it "should make caller unavailable" do
-      caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "connected")
+      caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "account_not_activated")
       caller_session.should_receive(:publish_caller_disconnected)   
       caller_session.end_conf!
       caller_session.on_call.should be_false
@@ -374,14 +343,14 @@ describe CallerSession do
     end
     
     it "should set caller session endtime" do
-      caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "connected")
+      caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "account_not_activated")
       caller_session.should_receive(:publish_caller_disconnected)         
       caller_session.end_conf!
       caller_session.endtime.should_not be_nil
     end
     
     it "should render hangup twiml" do
-      caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "connected")
+      caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "account_not_activated")
       caller_session.should_receive(:publish_caller_disconnected)               
       caller_session.end_conf!
       caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")

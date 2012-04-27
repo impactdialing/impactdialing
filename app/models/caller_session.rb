@@ -49,14 +49,11 @@ class CallerSession < ActiveRecord::Base
         event :start_conf, :to => :caller_on_call,  :if => :is_on_call?
       end 
       
-      state :connected do
-        event :start_conf, :to => :subscription_limit, :if => :subscription_limit_exceeded?
-        event :start_conf, :to => :time_period_exceeded, :if => :time_period_exceeded?
-      end
       
       state all - [:initial] do
         event :end_conf, :to => :conference_ended
       end
+      
       
       state :subscription_limit do
         response do |xml_builder, the_call|
@@ -88,15 +85,8 @@ class CallerSession < ActiveRecord::Base
         end        
       end
       
-      state :disconnected do        
-        response do |xml_builder, the_call|
-          xml_builder.Hangup
-        end        
-      end
-      
-      
       state :conference_ended do
-        before(:always) {end_caller_session}
+        before(:always) { end_caller_session}
         after(:always) { publish_caller_disconnected }
         response do |xml_builder, the_call|
           xml_builder.Hangup
