@@ -108,8 +108,9 @@ class CallerController < ApplicationController
     caller_session = @caller.caller_sessions.find(params[:session_id])
     voter = Voter.find(params[:voter_id])
     voter.skip
-    next_voter = caller_session.campaign.next_voter_in_dial_queue(params[:voter_id])
-    caller_session.publish('caller_connected', next_voter ? next_voter.info : {}) 
+    caller_session.redirect_webui_caller
+    # next_voter = caller_session.campaign.next_voter_in_dial_queue(params[:voter_id])
+    # caller_session.publish('caller_connected', next_voter ? next_voter.info : {}) 
     render :nothing => true
   end
   

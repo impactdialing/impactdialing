@@ -136,6 +136,12 @@ class CallerSession < ActiveRecord::Base
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
     Twilio::Call.redirect(sid, phones_only_caller_index_url(:host => Settings.host, :port => Settings.port, session_id: id, :campaign_reassigned => caller_reassigned_to_another_campaign?))
   end
+  
+  def redirect_webui_caller
+    Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
+    Twilio::Call.redirect(sid, flow_caller_url(caller, :host => Settings.host, :port => Settings.port, session_id: id, event: "start_conf"))
+  end
+  
 
   def join_conference(mute_type, call_sid, monitor_session)
     response = Twilio::Verb.new do |v|
