@@ -209,28 +209,31 @@ describe CallerSession do
     caller_session.state.should eq('initial')
   end
   
-  describe "account not activated" do
-    before(:each) do
-      @caller = Factory(:caller)
-      @script = Factory(:script)
-      @campaign =  Factory(:campaign, script: @script)    
-    end
+  describe "initial state" do
+  
+    describe "account not activated" do
+      before(:each) do
+        @caller = Factory(:caller)
+        @script = Factory(:script)
+        @campaign =  Factory(:campaign, script: @script)    
+      end
     
-    it "should move caller session account not activated state" do
-      caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
-      caller_session.should_receive(:account_not_activated?).and_return(true)      
-      caller_session.start_conf!
-      caller_session.state.should eq('account_not_activated')
-    end
+      it "should move caller session account not activated state" do
+        caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
+        caller_session.should_receive(:account_not_activated?).and_return(true)      
+        caller_session.start_conf!
+        caller_session.state.should eq('account_not_activated')
+      end
     
-    it "should render correct twiml" do
-      caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
-      caller_session.should_receive(:account_not_activated?).and_return(true)      
-      caller_session.start_conf!
-      caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>Your account has insufficent funds</Say><Hangup/></Response>")
-    end
+      it "should render correct twiml" do
+        caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
+        caller_session.should_receive(:account_not_activated?).and_return(true)      
+        caller_session.start_conf!
+        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>Your account has insufficent funds</Say><Hangup/></Response>")
+      end
     
-  end
+    end
+ end
   
   
   describe "subscription limit exceeded" do
