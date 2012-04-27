@@ -67,7 +67,7 @@ class Call < ActiveRecord::Base
       
       
       state :abandoned do
-        before(:always) { abandon_call }
+        before(:always) { abandon_call, call_attempt.redirect_caller }
         
         response do |xml_builder, the_call|
           xml_builder.Hangup
@@ -108,7 +108,6 @@ class Call < ActiveRecord::Base
       
       state :wrapup_and_continue do 
         before(:always) { wrapup_now; call_attempt.redirect_caller }
-        after(:always)  { publish_continue_calling }      
       end
       
       state :wrapup_and_stop do
