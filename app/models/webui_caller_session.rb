@@ -47,7 +47,7 @@ class WebuiCallerSession < CallerSession
   end
   
   def call_not_wrapped_up?
-    attempt_in_progress.status == CallAttempt::Status::SUCCESS &&  attempt_in_progress.not_wrapped_up?
+    attempt_in_progress.try(:status) == CallAttempt::Status::SUCCESS &&  attempt_in_progress.try(:not_wrapped_up?)
   end
   
   def start_conference    
