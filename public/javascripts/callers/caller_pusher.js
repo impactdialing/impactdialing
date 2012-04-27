@@ -29,6 +29,17 @@ function set_session(session_id) {
     $("#caller_session").val(session_id);
 }
 
+function voter_connected(){
+	hide_all_actions();
+    show_response_panel();
+	show_transfer_panel();
+    cleanup_previous_call_results();
+	cleanup_transfer_panel();
+	set_message("Status: Connected.")
+    $("#hangup_call").show();    
+}
+
+
 
 
 function next_voter() {
@@ -260,6 +271,13 @@ function subscribe(session_key) {
 		cleanup_transfer_panel();
         $("#hangup_call").show();
     });
+
+    channel.bind('voter_connected_dialer', function(data) {
+        set_current_call(data.call_id);
+		voter_connected();
+		set_voter(data.voter);
+    });
+
 
     channel.bind('voter_disconnected', function(data) {
         hide_all_actions();
