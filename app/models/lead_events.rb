@@ -39,23 +39,7 @@ module LeadEvents
     def publish_abandoned_call
           # Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})    
     end
-    
-    
-    def publish_unanswered_call_ended
-      # next_voter = self.campaign.next_voter_in_dial_queue(voter.id) 
-      # caller_session.publish('voter_push',next_voter.nil? ? {} : next_voter.info)               
-      # Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
-    end
-    
-    def publish_conference_started
-      # Moderator.caller_connected_to_campaign(@caller, @caller.campaign, @session)
-      # if campaign.type == Campaign::Type::PREVIEW || campaign.type == Campaign::Type::PROGRESSIVE
-      #   publish('conference_started', {}) 
-      # else
-      #   publish('caller_connected_dialer', {})
-      # end
-      # 
-    end
+        
     
     def publish_continue_calling
       # Moderator.publish_event(call_attempt.campaign, 'voter_response_submitted', {:caller_session_id => params[:caller_session], :campaign_id => call_attempt.campaign.id, :dials_in_progress => call_attempt.campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', call_attempt.campaign.id)})
