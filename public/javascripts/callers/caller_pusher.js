@@ -265,13 +265,13 @@ function subscribe(session_key) {
 
     channel.bind('voter_connected_dialer', function(data) {
         set_current_call(data.call_id);
+		set_voter(data.voter);
 		hide_all_actions();
 		set_message("Status: Connected.")
 	    show_response_panel();
 		show_transfer_panel();
 	    cleanup_previous_call_results();
-		cleanup_transfer_panel();
-		set_voter(data.voter);
+		cleanup_transfer_panel();		
 		$("#hangup_call").show();
     });
 
