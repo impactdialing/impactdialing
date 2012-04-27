@@ -58,9 +58,7 @@ class Call < ActiveRecord::Base
       end
       
       state :call_answered_by_machine do
-        before(:always) { process_answered_by_machine }
-        after(:always) { redirect_caller }
-        
+        before(:always) { process_answered_by_machine }        
         response do |xml_builder, the_call|
           xml_builder.Play campaign.recording.file.url if campaign.use_recordings?
           xml_builder.Hangup
