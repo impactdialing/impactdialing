@@ -76,7 +76,7 @@ class Call < ActiveRecord::Base
       end
       
       state :call_answered_by_machine do
-        event :call_ended, :to => :fail
+        event :call_ended, :to => :call_not_answered_by_lead
         before(:always) { process_answered_by_machine }        
         response do |xml_builder, the_call|
           xml_builder.Play campaign.recording.file.url if campaign.use_recordings?
