@@ -1,5 +1,4 @@
 class CallerSession < ActiveRecord::Base
-  # cache_records :store => :shared, :key => "c_s", :request_cache => true
   include Rails.application.routes.url_helpers
   include CallCenter
   include CallerEvents
