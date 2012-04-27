@@ -22,6 +22,12 @@ module LeadEvents
       caller_session.publish(event_hash[:event], event_hash[:data]) if caller_session
     end
     
+    def publish_unanswered_call_ended
+      # next_voter = self.campaign.next_voter_in_dial_queue(voter.id) 
+      # caller_session.publish('voter_push',next_voter.nil? ? {} : next_voter.info)                   
+    end
+    
+    
     def publish_continue_calling    
       # next_voter = call_attempt.campaign.next_voter_in_dial_queue(call_attempt.voter.id)
       # call_attempt.caller_session.publish("voter_push", next_voter ? next_voter.info : {})
