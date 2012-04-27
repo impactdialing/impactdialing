@@ -1,7 +1,7 @@
 class Call < ActiveRecord::Base
   include Rails.application.routes.url_helpers
   include CallCenter
-  include LeadEvents
+
   
   has_one :call_attempt
   serialize :conference_history, Array
@@ -30,12 +30,13 @@ class Call < ActiveRecord::Base
         event :incoming_call, :to => :connected , :if => (:answered_by_human_and_caller_available?)
         event :incoming_call, :to => :abandoned , :if => (:answered_by_human_and_caller_not_available?)
         event :incoming_call, :to => :call_answered_by_machine , :if => (:answered_by_machine?)
+        event :call_ended, :to => :call_not_answered_by_lead, :if => :call_did_not_connect?
         event :call_ended, :to => :abandoned
       end 
       
       state :connected do
         before(:always) {  connect_call }
-        after(:always) { publish_voter_connected }
+        after(:always) { call_attempt.publish_voter_connected }
         event :hangup, :to => :hungup
         event :disconnect, :to => :disconnected
         
@@ -47,8 +48,26 @@ class Call < ActiveRecord::Base
         
       end
       
+      state :hungup do
+        before(:always) { end_running_call }
+        event :disconnect, :to => :disconnected
+      end
+      
+      state :disconnected do        
+        before(:always) { disconnect_call }
+        after(:success) { call_attempt.publish_voter_disconnected }                
+        event :call_ended, :to => :call_answered_by_lead, :if => :call_connected?
+        event :call_ended, :to => :call_not_answered_by_lead, :if => :call_did_not_connect?        
+        response do |xml_builder, the_call|
+          xml_builder.Hangup
+        end
+        
+      end
+      
+      
+      
       state :abandoned do
-        before(:always) { abandon_call }
+        before(:always) { abandon_call; call_attempt.redirect_caller }
         
         response do |xml_builder, the_call|
           xml_builder.Hangup
@@ -57,37 +76,18 @@ class Call < ActiveRecord::Base
       end
       
       state :call_answered_by_machine do
-        before(:always) { process_answered_by_machine }
-        after(:always) { publish_call_answered_by_machine }
-        
+        event :call_ended, :to => :call_not_answered_by_lead
+        before(:always) { process_answered_by_machine }        
         response do |xml_builder, the_call|
           xml_builder.Play campaign.recording.file.url if campaign.use_recordings?
           xml_builder.Hangup
         end
       end
       
-      state :hungup do
-        before(:always) { end_running_call }
-        event :disconnect, :to => :disconnected
-      end
       
       
-      state :disconnected do
-        
-        before(:always) { disconnect_call }
-        after(:success) { publish_voter_disconnected }
-                
-        event :call_ended, :to => :success, :if => :call_connected?
-        event :call_ended, :to => :fail, :if => :call_did_not_connect?
-        
-        
-        response do |xml_builder, the_call|
-          xml_builder.Hangup
-        end
-        
-      end
       
-      state :success do
+      state :call_answered_by_lead do
         before(:always) { end_answered_call }        
         event :submit_result, :to => :wrapup_and_continue
         event :submit_result_and_stop, :to => :wrapup_and_stop
@@ -97,9 +97,17 @@ class Call < ActiveRecord::Base
         end        
       end
       
+      state :call_not_answered_by_lead do
+        before(:always) { end_unanswered_call; call_attempt.redirect_caller }  
+              
+        response do |xml_builder, the_call|
+          xml_builder.Hangup
+        end
+      end
+      
+      
       state :wrapup_and_continue do 
-        before(:always) { wrapup_now; redirect_caller }
-        after(:always)  { publish_continue_calling }      
+        before(:always) { wrapup_now; call_attempt.redirect_caller }
       end
       
       state :wrapup_and_stop do
@@ -107,14 +115,6 @@ class Call < ActiveRecord::Base
       end
             
       
-      state :fail do
-        before(:always) { end_unanswered_call,redirect_caller }
-        after(:success) { publish_unanswered_call_ended }  
-              
-        response do |xml_builder, the_call|
-          caller_session.nil? ? xml_builder.Hangup : caller_session.run(:start_conf)
-        end
-      end
       
       
       
@@ -149,10 +149,6 @@ class Call < ActiveRecord::Base
     !call_did_not_connect?
   end
   
-  def redirect_caller
-    Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    Twilio::Call.redirect(caller_session.sid, flow_caller_url(caller_session.caller, :host => Settings.host, :port => Settings.port, session_id: caller_session.id, event: "start_conf"))
-  end
   
   
   

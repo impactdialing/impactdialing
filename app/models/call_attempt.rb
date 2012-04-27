@@ -1,8 +1,9 @@
 require Rails.root.join("lib/twilio_lib")
 
 class CallAttempt < ActiveRecord::Base
-  # cache_records :store => :shared, :key => "c_a", :request_cache => true
+
   include Rails.application.routes.url_helpers
+  include LeadEvents
   belongs_to :voter
   belongs_to :campaign
   belongs_to :caller
@@ -84,10 +85,6 @@ class CallAttempt < ActiveRecord::Base
   end
   
   
-  def process_answered_by_machine
-    update_attributes(connecttime: Time.now, call_end:  Time.now, status:  campaign.use_recordings? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP, wrapup_time: Time.now)
-    voter.update_attributes(status: campaign.use_recordings? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP, caller_session: nil)    
-  end
   
   
   def connect_call
@@ -130,11 +127,21 @@ class CallAttempt < ActiveRecord::Base
     update_attributes(call_end:   Time.now)
     # debit  
   end
+  
+  def process_answered_by_machine
+    update_attributes(connecttime: Time.now, call_end:  Time.now, status:  campaign.use_recordings? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP, wrapup_time: Time.now)
+    voter.update_attributes(status: campaign.use_recordings? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP, caller_session: nil)    
+  end
+  
     
   def end_unanswered_call
-    voter.update_attributes(status:  CallAttempt::Status::MAP[call.call_status], last_call_attempt_time:  Time.now, call_back: false)
-    update_attributes(status:  CallAttempt::Status::MAP[call.call_status], wrapup_time: Time.now)    
-    caller_session.update_attribute(:voter_in_progress, nil) unless caller_session.nil?             
+    if [CallAttempt::Status::VOICEMAIL, CallAttempt::Status::HANGUP].include?(status)
+      update_attributes(wrapup_time: Time.now)    
+      voter.update_attributes(last_call_attempt_time:  Time.now, call_back: false)            
+    else
+      voter.update_attributes(status:  CallAttempt::Status::MAP[call.call_status], last_call_attempt_time:  Time.now, call_back: false)
+      update_attributes(status:  CallAttempt::Status::MAP[call.call_status], wrapup_time: Time.now)          
+    end
   end
   
   def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
@@ -149,25 +156,11 @@ class CallAttempt < ActiveRecord::Base
     self.campaign.voicemail_script.robo_recordings.first.play_message(self)
   end
   
-  def wrapup_call
-    wrapup_now
-    # caller_session.update_attribute(:voter_in_progress, nil) unless caller_session.nil?
-  end
   
   def not_wrapped_up?
     wrapup_time.nil?
   end
-  
-  def wrapup_call_and_stop
-    wrapup_now
-    # begin
-    #   caller_session.update_attributes(voter_in_progress: nil, endtime: Time.now) unless caller_session.nil?
-    # rescue ActiveRecord::StaleObjectError
-    #   caller_session.reload
-    #   caller_session.update_attributes(voter_in_progress: nil, endtime: Time.now) unless caller_session.nil?
-    # end
-  end
-  
+    
   def disconnect_call
     update_attributes(status: CallAttempt::Status::SUCCESS, recording_duration: call.recording_duration, recording_url: call.recording_url)
     voter.update_attribute(:status, CallAttempt::Status::SUCCESS)
@@ -234,5 +227,11 @@ class CallAttempt < ActiveRecord::Base
     call_time = ((self.call_end - self.call_start)/60).ceil
     Payment.debit(call_time, self)
   end
+  
+  def redirect_caller
+    Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
+    Twilio::Call.redirect(caller_session.sid, flow_caller_url(caller_session.caller, :host => Settings.host, :port => Settings.port, session_id: caller_session.id, event: "start_conf"))
+  end
+  
 
 end
