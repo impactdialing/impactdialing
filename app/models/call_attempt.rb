@@ -134,7 +134,6 @@ class CallAttempt < ActiveRecord::Base
   def end_unanswered_call
     voter.update_attributes(status:  CallAttempt::Status::MAP[call.call_status], last_call_attempt_time:  Time.now, call_back: false)
     update_attributes(status:  CallAttempt::Status::MAP[call.call_status], wrapup_time: Time.now)    
-    caller_session.update_attribute(:voter_in_progress, nil) unless caller_session.nil?             
   end
   
   def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
