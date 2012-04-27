@@ -88,24 +88,6 @@ class Caller < ActiveRecord::Base
   end
   
   
-  def reassign_to_another_campaign(caller_session)
-    if caller_session.attempt_in_progress.nil?
-      if self.is_phones_only?
-        if (caller_session.campaign.type != "preview" && caller_session.campaign.type != "progressive")
-          Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-          Twilio::Call.redirect(caller_session.sid, phones_only_caller_index_url(:host => Settings.host, :port => Settings.port, session_id: caller_session.id, :campaign_reassigned => true))
-        end
-      else
-        caller_session.reassign_caller_session_to_campaign
-        if campaign.type == Campaign::Type::PREVIEW || campaign.type == Campaign::Type::PROGRESSIVE
-          caller_session.publish('conference_started', {}) 
-        else
-          caller_session.publish('caller_connected_dialer', {})
-        end
-      end
-    end
-  end
-
   def answered_call_stats(from, to, campaign)
     result = Hash.new
     unless campaign.script.nil?      

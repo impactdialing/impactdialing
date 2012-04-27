@@ -9,7 +9,7 @@ class WebuiCallerSession < CallerSession
             
       state :connected do                
         before(:always) { publish_start_calling; start_conference }
-        after(:always) { publish_caller_conference_started }
+        after(:success) { publish_caller_conference_started }
         event :pause_conf, :to => :disconnected, :if => :disconnected?
         event :pause_conf, :to => :paused, :if => :call_not_wrapped_up?
         event :start_conf, :to => :connected
@@ -47,7 +47,7 @@ class WebuiCallerSession < CallerSession
   end
   
   def call_not_wrapped_up?
-    attempt_in_progress.not_wrapped_up?
+    attempt_in_progress.try(:status) == CallAttempt::Status::SUCCESS &&  attempt_in_progress.try(:not_wrapped_up?)
   end
   
   def start_conference    
@@ -78,6 +78,7 @@ class WebuiCallerSession < CallerSession
   
   
   def publish_async(event, data)
+    
     EM.run {
       deferrable = Pusher[session_key].trigger_async(event, data.merge!(:dialer => campaign.type))
       deferrable.callback { 
