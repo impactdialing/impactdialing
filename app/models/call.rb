@@ -22,8 +22,6 @@ class Call < ActiveRecord::Base
   delegate :voter, :to=> :call_attempt
   delegate :caller_session, :to=> :call_attempt
   
-  
-  
   call_flow :state, :initial => :initial do    
     
       state :initial do
@@ -64,8 +62,6 @@ class Call < ActiveRecord::Base
         
       end
       
-      
-      
       state :abandoned do
         before(:always) { abandon_call; call_attempt.redirect_caller }
         
@@ -83,9 +79,6 @@ class Call < ActiveRecord::Base
           xml_builder.Hangup
         end
       end
-      
-      
-      
       
       state :call_answered_by_lead do
         before(:always) { end_answered_call }        
@@ -114,10 +107,6 @@ class Call < ActiveRecord::Base
         before(:always) { wrapup_now }        
       end
             
-      
-      
-      
-      
   end 
   
   def run(event)
