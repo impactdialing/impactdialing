@@ -29,15 +29,6 @@ function set_session(session_id) {
     $("#caller_session").val(session_id);
 }
 
-function voter_connected(){
-	hide_all_actions();
-    show_response_panel();
-	show_transfer_panel();
-    cleanup_previous_call_results();
-	cleanup_transfer_panel();
-	set_message("Status: Connected.")
-    $("#hangup_call").show();    
-}
 
 
 
@@ -455,5 +446,16 @@ function subscribe(session_key) {
     function cleanup_transfer_panel() {
         $('#transfer_type').val('');
     }
+
+	function voter_connected(){
+		hide_all_actions();
+	    show_response_panel();
+		show_transfer_panel();
+	    cleanup_previous_call_results();
+		cleanup_transfer_panel();
+		set_message("Status: Connected.")
+	    $("#hangup_call").show();    
+	}
+
 
 }
