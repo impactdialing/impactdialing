@@ -11,11 +11,8 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-<<<<<<< HEAD
+
 ActiveRecord::Schema.define(:version => 20120425144248) do
-=======
-ActiveRecord::Schema.define(:version => 20120417070443) do
->>>>>>> Use Recurly JS to create new subscriptions
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -171,13 +168,10 @@ ActiveRecord::Schema.define(:version => 20120417070443) do
     t.integer  "attempt_in_progress"
     t.string   "session_key"
     t.integer  "payment_id"
-<<<<<<< HEAD
     t.string   "state"
     t.string   "type"
     t.string   "digit"
-=======
     t.integer  "lock_version",         :default => 0
->>>>>>> Use Recurly JS to create new subscriptions
   end
 
   add_index "caller_sessions", ["caller_id"], :name => "index_caller_sessions_on_caller_id"
