@@ -108,11 +108,11 @@ class Call < ActiveRecord::Base
             
       
       state :fail do
-        before(:always) { end_unanswered_call;redirect_caller }
+        before(:always) { end_unanswered_call; redirect_caller }
         after(:success) { publish_unanswered_call_ended }  
               
         response do |xml_builder, the_call|
-          caller_session.nil? ? xml_builder.Hangup : caller_session.run(:start_conf)
+          xml_builder.Hangup
         end
       end
       
