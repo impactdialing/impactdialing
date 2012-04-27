@@ -107,10 +107,19 @@ class CallerSession < ActiveRecord::Base
   end
   
   def end_caller_session
-    update_attributes(:on_call => false, :available_for_call => false, :endtime => Time.now)
+    begin
+      end_session
+    rescue ActiveRecord::StaleObjectError
+      reload
+      end_session
+    end      
     attempt_in_progress.try(:update_attributes, {:wrapup_time => Time.now})
     attempt_in_progress.try(:capture_answer_as_no_response)
     # debit
+  end
+  
+  def end_session
+    update_attributes(on_call: false, available_for_call:  false, endtime:  Time.now)
   end
   
   def account_not_activated?
