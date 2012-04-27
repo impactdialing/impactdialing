@@ -271,8 +271,8 @@ function subscribe(session_key) {
 		show_transfer_panel();
 	    cleanup_previous_call_results();
 		cleanup_transfer_panel();
-	    $("#hangup_call").show();
 		set_voter(data.voter);
+		$("#hangup_call").show();
     });
 
 
