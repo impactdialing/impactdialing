@@ -67,7 +67,7 @@ class Call < ActiveRecord::Base
       
       
       state :abandoned do
-        before(:always) { abandon_call, call_attempt.redirect_caller }
+        before(:always) { abandon_call; call_attempt.redirect_caller }
         
         response do |xml_builder, the_call|
           xml_builder.Hangup
