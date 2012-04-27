@@ -35,7 +35,7 @@ class WebuiCallerSession < CallerSession
         
         response do |xml_builder, the_call|
           xml_builder.Say("Please enter your call results") 
-          xml_builder.Pause("length" => 60)
+          xml_builder.Pause("length" => 600)
         end        
       end
       
