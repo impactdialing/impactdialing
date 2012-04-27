@@ -85,10 +85,6 @@ class CallAttempt < ActiveRecord::Base
   end
   
   
-  def process_answered_by_machine
-    update_attributes(connecttime: Time.now, call_end:  Time.now, status:  campaign.use_recordings? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP, wrapup_time: Time.now)
-    voter.update_attributes(status: campaign.use_recordings? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP, caller_session: nil)    
-  end
   
   
   def connect_call
@@ -131,11 +127,20 @@ class CallAttempt < ActiveRecord::Base
     update_attributes(call_end:   Time.now)
     # debit  
   end
+  
+  def process_answered_by_machine
+    update_attributes(connecttime: Time.now, call_end:  Time.now, status:  campaign.use_recordings? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP, wrapup_time: Time.now)
+    voter.update_attributes(status: campaign.use_recordings? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP, caller_session: nil)    
+  end
+  
     
   def end_unanswered_call
-    unless [CallAttempt::Status::VOICEMAIL, CallAttempt::Status::HANGUP].include?(status)
+    if [CallAttempt::Status::VOICEMAIL, CallAttempt::Status::HANGUP].include?(status)
+      update_attributes(wrapup_time: Time.now)    
+      voter.update_attributes(last_call_attempt_time:  Time.now, call_back: false)            
+    else
       voter.update_attributes(status:  CallAttempt::Status::MAP[call.call_status], last_call_attempt_time:  Time.now, call_back: false)
-      update_attributes(status:  CallAttempt::Status::MAP[call.call_status], wrapup_time: Time.now)    
+      update_attributes(status:  CallAttempt::Status::MAP[call.call_status], wrapup_time: Time.now)          
     end
   end
   
