@@ -1,15 +1,15 @@
 if Rails.env == 'heroku'
   Recurly.api_key          = "16b631fa166a4c81ad9da59ea768cc88"
   Recurly.js.private_key   = "0c5819d214dd41ff94674c66d69a798a"
-  RECURLY_HOSTED_DOMAIN           = "https://impactdialing.recurly.com"
+  RECURLY_SUBDOMAIN        = "impactdialing"
 elsif Rails.env == 'heroku_staging'
-  Recurly.api_key          = "48b67eea45ec4f24b90c9544bb04d327"
-  Recurly.js.private_key   = "37f764140f4a44d3938e4bc9b24ccab5"
-  RECURLY_HOSTED_DOMAIN           = "https://impactdialingstage.recurly.com"
+  Recurly.api_key          = "57aafeeeaa0346f3ac6bfb35e9a03e56"
+  Recurly.js.private_key   = "41e7be117eb54d41b1d144815cb04809"
+  RECURLY_SUBDOMAIN        = "impact-staging"
 else
   Recurly.api_key          = "16b631fa166a4c81ad9da59ea768cc88"
   Recurly.js.private_key   = "0c5819d214dd41ff94674c66d69a798a"
-  RECURLY_HOSTED_DOMAIN           = "https://impactdialing.recurly.com"
+  RECURLY_SUBDOMAIN        = "impactdialing"
 end
   
 
