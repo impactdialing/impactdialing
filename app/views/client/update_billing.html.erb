@@ -26,7 +26,7 @@ Recurly.config({
   , accountCode: '<%= @account_code %>'
   , distinguishContactFromBillingInfo: false 
   , successURL: 'http://<%= Settings.host %><%= Settings.port=="80" ? "" : ":#{Settings.port}/client/billing_updated" %>'
-  , signature: '<%= Recurly.js.sign_billing_info @account_code %>', 
+  , signature: '<%= Recurly.js.sign :account => { :account_code =>  @account_code } %>', 
 billingInfo: {
     firstName: '<%= @billing_info.first_name %>'
   , lastName: '<%= @billing_info.last_name %>'
