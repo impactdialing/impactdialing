@@ -13,16 +13,15 @@ function handlePlan(selectb){
 		createForm('per-caller');
 }
 Recurly.config({
-    subdomain: 'impactdialing'
+    subdomain: '<%= RECURLY_SUBDOMAIN %>'
   , currency: 'USD'
   }
 );
 
 
 <% 
-minute_signature = Recurly.js.sign_subscription 'per-minute', @account_code
-caller_signature = Recurly.js.sign_subscription 'per-caller', @account_code
-	
+minute_signature = Recurly.js.sign :subscription => { :plan_code => 'per-minute' }
+caller_signature = Recurly.js.sign :subscription => { :plan_code => 'per-caller' }
 %>
 function createForm(plan){
 	var sig = '<%= minute_signature %>';
