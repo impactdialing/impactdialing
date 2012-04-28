@@ -200,7 +200,8 @@ class CallerSession < ActiveRecord::Base
   def handle_failed_call(attempt, voter)
     attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
     voter.update_attributes(status: CallAttempt::Status::FAILED)
-    update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil,:voter_in_progress => nil)
+    update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
+    redirect_webui_caller
     next_voter = campaign.next_voter_in_dial_queue(voter.id)
     # publish('call_could_not_connect',next_voter.nil? ? {} : next_voter.info)    
   end
