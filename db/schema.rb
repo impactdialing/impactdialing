@@ -108,6 +108,7 @@ ActiveRecord::Schema.define(:version => 20120425144248) do
     t.integer  "recording_duration"
     t.datetime "wrapup_time"
     t.integer  "payment_id"
+    t.integer  "call_id"
   end
 
   add_index "call_attempts", ["call_end"], :name => "index_call_attempts_on_call_end"
@@ -167,10 +168,10 @@ ActiveRecord::Schema.define(:version => 20120425144248) do
     t.integer  "attempt_in_progress"
     t.string   "session_key"
     t.integer  "payment_id"
+    t.integer  "lock_version",         :default => 0
     t.string   "state"
     t.string   "type"
     t.string   "digit"
-    t.integer  "lock_version",         :default => 0
   end
 
   add_index "caller_sessions", ["caller_id"], :name => "index_caller_sessions_on_caller_id"
