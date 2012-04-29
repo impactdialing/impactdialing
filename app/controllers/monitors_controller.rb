@@ -11,11 +11,13 @@ class MonitorsController < ClientController
   end
   
   def campaigns
-    @campaigns = account.campaigns.with_running_caller_sessions    
+    @campaigns = account.campaigns.with_running_caller_sessions   
+    render  :layout=> false 
   end
   
   def callers
     @campaigns = account.campaigns.with_running_caller_sessions        
+    render  :layout=> false
   end
 
   def start
