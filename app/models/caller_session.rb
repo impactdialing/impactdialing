@@ -15,6 +15,7 @@ class CallerSession < ActiveRecord::Base
   scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
   scope :on_campaign, lambda{|campaign| where("campaign_id = #{campaign.id}") unless campaign.nil?}  
   scope :for_caller, lambda{|caller| where("caller_id = #{caller.id}") unless caller.nil?}  
+  scope :debit_not_processed, where(debited: "0").where('call_end is not null')
   has_one :voter_in_progress, :class_name => 'Voter'
   has_one :attempt_in_progress, :class_name => 'CallAttempt'
   has_one :moderator
@@ -104,7 +105,6 @@ class CallerSession < ActiveRecord::Base
     end      
     attempt_in_progress.try(:update_attributes, {:wrapup_time => Time.now})
     attempt_in_progress.try(:capture_answer_as_no_response)
-    # debit
   end
   
   def end_session
@@ -222,7 +222,7 @@ class CallerSession < ActiveRecord::Base
    end
    
    def self.time_logged_in(caller, campaign, from, to)
-     CallerSession.for_caller(caller).on_campaign(campaign).between(from, to).sum('TIMESTAMPDIFF(SECOND ,starttime,endtime)')
+     CallerSession.for_caller(caller).on_campaign(campaign).between(from, to).sum('TIMESTAMPDIFF(SECOND ,starttime,endtime)').to_i
    end
    
    def self.caller_time(caller, campaign, from, to)

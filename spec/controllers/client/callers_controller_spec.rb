@@ -51,15 +51,6 @@ describe Client::CallersController do
     caller.is_phones_only.should be_false
   end
   
-  it "re-assigns caller to the campaign" do
-    campaign1 = Factory(:preview, :active => true, :account => user.account)
-    campaign2 = Factory(:preview, :active => true, :account => user.account)
-    caller = Factory(:caller, :campaign => campaign1)
-    caller_session = Factory(:caller_session, :caller => caller, :campaign => campaign2)
-    call_attempt = Factory(:call_attempt, :caller_session => caller_session)
-    get :reassign_to_campaign, :id => caller.id, :campaign_id => campaign2.id, :session_id => caller_session.id
-    caller.reload.campaign.id.should == campaign2.id
-  end
 
   describe "call details report" do
 

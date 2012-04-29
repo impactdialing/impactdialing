@@ -435,16 +435,13 @@ describe Voter do
     let(:call_attempt) { Factory(:call_attempt, :caller => Factory(:caller)) }
 
     it "captures call responses" do
-      response_params = {"voter_id"=>voter.id, "question"=>{question.id=>response.id}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}
-      voter.capture(response_params, call_attempt)
-      voter.result_date.should_not be_nil
+      voter.persist_answers("{\"#{question.id}\":\"#{response.id}\"}",call_attempt) 
       voter.answers.size.should == 1
     end
 
     it "puts voter back in the dial list if a retry response is detected" do
       another_response = Factory(:possible_response, :question => Factory(:question, :script => script), :retry => true)
-      response_params = {"voter_id"=>voter.id, "question"=>{question.id=>response.id, another_response.question.id=>another_response.id}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}
-      voter.capture(response_params, call_attempt)
+      voter.persist_answers("{\"#{question.id}\":\"#{response.id}\",\"#{another_response.question.id}\":\"#{another_response.id}\" }",call_attempt) 
       voter.answers.size.should == 2
       voter.reload.status.should == Voter::Status::RETRY
       Voter.to_be_dialed.should == [voter]
@@ -454,13 +451,11 @@ describe Voter do
       question = Factory(:question, :script => script)
       retry_response = Factory(:possible_response, :question => question, :retry => true)
       valid_response = Factory(:possible_response, :question => question)
-      response_params = {"voter_id"=>voter.id, "question"=>{response.question.id=>response.id, retry_response.question.id=> retry_response.id}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}
-      voter.capture(response_params, call_attempt)
+      voter.persist_answers("{\"#{response.question.id}\":\"#{response.id}\",\"#{retry_response.question.id}\":\"#{retry_response.id}\" }",call_attempt) 
       voter.answers.size.should == 2
       voter.reload.status.should == Voter::Status::RETRY
       Voter.to_be_dialed.should == [voter]
-      response_params_again = {"voter_id"=>voter.id, "question"=>{response.question.id=>response.id, valid_response.question.id=> valid_response.id}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}
-      voter.capture(response_params_again, call_attempt)
+      voter.persist_answers("{\"#{response.question.id}\":\"#{response.id}\",\"#{valid_response.question.id}\":\"#{valid_response.id}\" }",call_attempt) 
       voter.reload.answers.size.should == 2
     end
 
@@ -525,18 +520,15 @@ describe Voter do
     let(:call_attempt) { Factory(:call_attempt, :caller => Factory(:caller)) }
 
     it "captures call notes" do
-      response_params = {"voter_id"=>voter.id, "notes"=>{note1.id=>"tell", note2.id=>"no"}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}
-      voter.capture(response_params, call_attempt)
+      voter.persist_notes("{\"#{note1.id}\":\"tell\",\"#{note2.id}\":\"no\"}")
       voter.note_responses.size.should == 2
     end
 
     it "override old note" do
-      response_params = {"voter_id"=>voter.id, "notes"=>{note1.id=>"tell"}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}
-      voter.capture(response_params, call_attempt)
+      voter.persist_notes("{\"#{note1.id}\":\"tell\"}")
       voter.note_responses.first eq('tell')
 
-      response_params = {"voter_id"=>voter.id, "notes"=>{note1.id=>"say"}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}
-      voter.capture(response_params, call_attempt)
+      voter.persist_notes("{\"#{note1.id}\":\"say\"}")
       voter.note_responses.first eq('say')
     end
   end

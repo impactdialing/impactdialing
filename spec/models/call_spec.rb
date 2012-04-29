@@ -603,70 +603,137 @@ describe Call do
     end
   end
   
+  describe "call_answered_by_machine" do
+    
+    describe "call_ended for answered by machine" do
+      
+      before(:each) do
+        @script = Factory(:script)
+        @campaign =  Factory(:campaign, script: @script)          
+        @voter = Factory(:voter, campaign: @campaign)
+        @caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
+        @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session, status: CallAttempt::Status::HANGUP)
+      end
+      
+      it "should should update wrapup time" do
+        call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'call_answered_by_machine')
+        call.call_attempt.should_receive(:redirect_caller)
+        call.call_ended!
+        call.call_attempt.wrapup_time.should_not be_nil        
+      end
+      
+      it "should  update voters last_call_attempt_time" do
+        call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'call_answered_by_machine')
+        call.call_attempt.should_receive(:redirect_caller)
+        call.call_ended!
+        call.voter.last_call_attempt_time.should_not be_nil        
+      end
+      
+      it "should  update voters call_back" do
+        call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'call_answered_by_machine')
+        call.call_attempt.should_receive(:redirect_caller)
+        call.call_ended!
+        call.voter.call_back.should be_false
+      end
+      
+      it "should  return hangup twiml" do
+        call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'call_answered_by_machine')
+        call.call_attempt.should_receive(:redirect_caller)
+        call.call_ended!
+        call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
+      end
+    end
+    
+    describe "call_ended not answered" do
+      
+      before(:each) do
+        @script = Factory(:script)
+        @campaign =  Factory(:campaign, script: @script)          
+        @voter = Factory(:voter, campaign: @campaign)
+        @caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
+        @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session)
+      end
+      
+      it "should should update wrapup time" do
+        call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'call_answered_by_machine', call_status: 'busy')
+        call.call_attempt.should_receive(:redirect_caller)
+        call.call_ended!
+        call.call_attempt.wrapup_time.should_not be_nil        
+      end
+      
+      it "should update status" do
+        call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'call_answered_by_machine', call_status: 'busy')
+        call.call_attempt.should_receive(:redirect_caller)
+        call.call_ended!
+        call.call_attempt.status.should eq(CallAttempt::Status::BUSY)
+      end
+      
+      it "should  update voters last_call_attempt_time" do
+        call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'call_answered_by_machine', call_status: 'busy')
+        call.call_attempt.should_receive(:redirect_caller)
+        call.call_ended!
+        call.voter.last_call_attempt_time.should_not be_nil        
+      end
+      
+      it "should  update voters call_back" do
+        call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'call_answered_by_machine', call_status: 'busy')
+        call.call_attempt.should_receive(:redirect_caller)
+        call.call_ended!
+        call.voter.call_back.should be_false
+      end
+      
+      it "should  update voters status" do
+        call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'call_answered_by_machine', call_status: 'busy')
+        call.call_attempt.should_receive(:redirect_caller)
+        call.call_ended!
+        call.voter.status.should eq(CallAttempt::Status::BUSY)
+      end
+      
+      
+      it "should  return hangup twiml" do
+        call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'call_answered_by_machine', call_status: 'busy')
+        call.call_attempt.should_receive(:redirect_caller)
+        call.call_ended!
+        call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
+      end
+    end
+      
+  end
   
+  describe "call_answered_by_lead" do
+    describe "submit_result" do
+      
+      before(:each) do
+        @script = Factory(:script)
+        @campaign =  Factory(:campaign, script: @script)          
+        @voter = Factory(:voter, campaign: @campaign)
+        @caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
+        @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session)
+      end
+      
+      it "should wrapup call_attempt" do
+        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'call_answered_by_lead')
+        call.call_attempt.should_receive(:redirect_caller)
+        call.submit_result!
+        call.call_attempt.wrapup_time.should_not be_nil
+      end      
+    end
+    
+    describe "submit_result_and_stop" do
+      before(:each) do
+        @script = Factory(:script)
+        @campaign =  Factory(:campaign, script: @script)          
+        @voter = Factory(:voter, campaign: @campaign)
+        @caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
+        @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session)
+      end
+      
+      it "should wrapup call_attempt" do
+        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'call_answered_by_lead')
+        call.submit_result_and_stop!
+        call.call_attempt.wrapup_time.should_not be_nil
+      end
+    end
+  end
   
-  
-   #  
-   #  
-   #  
-   #  
-   #  describe "end disconnected call" do
-   #    
-   #     
-   # end
-   # 
-   # 
-   # 
-   # describe "submit response for successful call and continue" do
-   #   before(:each) do
-   #     @script = Factory(:script)
-   #     @campaign =  Factory(:campaign, script: @script)          
-   #     @voter = Factory(:voter, campaign: @campaign)
-   #     @caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
-   #     @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session)
-   #   end
-   #   
-   #   it "should wrapup call_attempt" do
-   #     call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'success')
-   #     call.submit_result!
-   #     call.call_attempt.wrapup_time.should_not be_nil
-   #   end
-   #   
-   #   it "should set callers voter to nil" do
-   #     call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'success')
-   #     call.submit_result!
-   #     call.caller_session.voter_in_progress.should be_nil
-   #   end
-   # end
-   # 
-   # describe "submit response for successful call and stop" do
-   #   before(:each) do
-   #     @script = Factory(:script)
-   #     @campaign =  Factory(:campaign, script: @script)          
-   #     @voter = Factory(:voter, campaign: @campaign)
-   #     @caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
-   #     @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session)
-   #   end
-   #   
-   #   it "should wrapup call_attempt" do
-   #     call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'success')
-   #     call.submit_result_and_stop!
-   #     call.call_attempt.wrapup_time.should_not be_nil
-   #   end
-   #   
-   #   it "should set callers voter to nil" do
-   #     call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'success')
-   #     call.submit_result_and_stop!
-   #     call.caller_session.voter_in_progress.should be_nil
-   #   end
-   #   
-   #   it "should set callers endtime" do
-   #     call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'success')
-   #     call.submit_result_and_stop!
-   #     call.caller_session.endtime.should_not be_nil
-   #   end
-   #   
-   # end
-   
-        
 end

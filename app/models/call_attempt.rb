@@ -21,13 +21,8 @@ class CallAttempt < ActiveRecord::Base
   scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
   scope :without_status, lambda { |statuses| {:conditions => ['status not in (?)', statuses]} }
   scope :with_status, lambda { |statuses| {:conditions => ['status in (?)', statuses]} }
-  
-  module Type
-    PREVIEW = "PreviewCallAttempt"
-    PREDICTIVE = "PredictiveCallAttempt"
-    PROGRESSIVE = "ProgressiveCallAttempt"
-    ROBO = "RoboCallAttempt"
-  end
+  scope :results_not_processed, lambda { where(:voter_response_processed => "0", :status => Status::SUCCESS) }
+  scope :debit_not_processed, where(debited: "0").where('call_end is not null')
   
 
   def report_recording_url
@@ -125,7 +120,6 @@ class CallAttempt < ActiveRecord::Base
   def end_answered_call
     voter.update_attributes(last_call_attempt_time:  Time.now)
     update_attributes(call_end:   Time.now)
-    # debit  
   end
   
   def process_answered_by_machine
@@ -166,7 +160,9 @@ class CallAttempt < ActiveRecord::Base
     voter.update_attribute(:status, CallAttempt::Status::SUCCESS)
   end
   
-  def schedule_for_later(scheduled_date)
+  
+  def schedule_for_later(date)
+    scheduled_date = DateTime.strptime(date, "%m/%d/%Y %H:%M").to_time
     update_attributes(:scheduled_date => scheduled_date, :status => Status::SCHEDULED)
     voter.update_attributes(:scheduled_date => scheduled_date, :status => Status::SCHEDULED, :call_back => true)
   end
@@ -191,11 +187,11 @@ class CallAttempt < ActiveRecord::Base
   end
   
   def self.time_on_call(caller, campaign, from, to)
-    CallAttempt.for_campaign(campaign).for_caller(caller).between(from, to).without_status([CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED]).sum('TIMESTAMPDIFF(SECOND ,connecttime,call_end)')
+    CallAttempt.for_campaign(campaign).for_caller(caller).between(from, to).without_status([CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED]).sum('TIMESTAMPDIFF(SECOND ,connecttime,call_end)').to_i
   end
   
   def self.time_in_wrapup(caller, campaign, from, to)
-    CallAttempt.for_campaign(campaign).for_caller(caller).between(from, to).without_status([CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED]).sum('TIMESTAMPDIFF(SECOND ,call_end,wrapup_time)')
+    CallAttempt.for_campaign(campaign).for_caller(caller).between(from, to).without_status([CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED]).sum('TIMESTAMPDIFF(SECOND ,call_end,wrapup_time)').to_i
   end
   
   def self.lead_time(caller, campaign, from, to)
@@ -229,8 +225,10 @@ class CallAttempt < ActiveRecord::Base
   end
   
   def redirect_caller
-    Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    Twilio::Call.redirect(caller_session.sid, flow_caller_url(caller_session.caller, :host => Settings.host, :port => Settings.port, session_id: caller_session.id, event: "start_conf"))
+    unless caller_session.nil?
+      Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
+      Twilio::Call.redirect(caller_session.sid, flow_caller_url(caller_session.caller, :host => Settings.host, :port => Settings.port, session_id: caller_session.id, event: "start_conf"))
+    end  
   end
   
 

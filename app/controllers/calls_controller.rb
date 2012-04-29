@@ -2,7 +2,7 @@ class CallsController < ApplicationController
   skip_before_filter :verify_authenticity_token
   before_filter :parse_params
   before_filter :find_and_update_call, :only => [:flow, :destroy]
-  before_filter :find_and_update_answers_and_notes, :only => [:submit_result, :submit_result_and_stop]
+  before_filter :find_and_update_answers_and_notes_and_scheduled_date, :only => [:submit_result, :submit_result_and_stop]
   before_filter :find_call, :only => [:hangup]
 
   
@@ -50,13 +50,18 @@ class CallsController < ApplicationController
     @call = (Call.find_by_id(params["id"]) || Call.find_by_call_sid(params['CallSid'])) 
   end
   
-  def find_and_update_answers_and_notes
+  def find_and_update_answers_and_notes_and_scheduled_date
     find_call
     @parsed_params["questions"]  = params[:question].try(:to_json) 
     @parsed_params["notes"] = params[:notes].try(:to_json)
     puts @parsed_params
     @call.update_attributes(@parsed_params)
+    unless params[:scheduled_date].blank?
+      scheduled_date = params[:scheduled_date] + " " + params[:callback_time_hours] +":" + params[:callback_time_minutes]
+      @call.call_attempt.schedule_for_later(scheduled_date)
+    end
   end
+  
 
   def find_and_update_call
     find_call

@@ -1,4 +1,3 @@
-#require File.join("../", 'config/environment')
 RAILS_ROOT = File.expand_path('../..', __FILE__)
 require File.join(RAILS_ROOT, 'config/environment')
 DIALER_ROOT = ENV['DIALER_ROOT'] || File.expand_path('..', __FILE__)

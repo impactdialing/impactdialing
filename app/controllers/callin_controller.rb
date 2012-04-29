@@ -6,20 +6,17 @@ class CallinController < ApplicationController
   end
 
   def identify
-    @identity = CallerIdentity.find_by_pin(params[:Digits])
-    @caller = @identity.nil? ?  Caller.find_by_pin(params[:Digits]) : @identity.try(:caller)
-    session_key = @identity.nil? ? generate_session_key : @identity.session_key
-    if @caller
-      @session = @caller.create_caller_session(session_key, params[:CallSid])    
-      # Moderator.caller_connected_to_campaign(@caller, @caller.campaign, @session)
-      # @session.publish('start_calling', {caller_session_id: @session.id}) 
-      # @session.preview_voter
-      render xml:  @session.run(:start_conf)
+    identity = CallerIdentity.find_by_pin(params[:Digits])
+    caller = identity.nil? ?  Caller.find_by_pin(params[:Digits]) : identity.caller
+    session_key = identity.nil? ? generate_session_key : identity.session_key
+    if caller
+      session = caller.create_caller_session(session_key, params[:CallSid])    
+      render xml:  session.run('start_conf')
     else
-      render :xml => Caller.ask_for_pin(params[:attempt].to_i)
+      render xml:  Caller.ask_for_pin(params[:attempt].to_i)
     end
   end
-
+  
   def hold
     render :xml => Caller.hold
   end

@@ -91,15 +91,15 @@ describe Caller do
 
     describe "utilization" do
       it "lists time logged in" do
-        CallerSession.time_logged_in(caller, nil, from_time, time_now).should == "7919"
+        CallerSession.time_logged_in(caller, nil, from_time, time_now).should == 7919
       end
 
       it "lists on call time" do
-        CallAttempt.time_on_call(caller, nil, from_time, time_now).should == "6727"
+        CallAttempt.time_on_call(caller, nil, from_time, time_now).should == 6727
       end
 
       it "lists on wrapup time" do
-        CallAttempt.time_in_wrapup(caller, nil, from_time, time_now).should == "90"
+        CallAttempt.time_in_wrapup(caller, nil, from_time, time_now).should == 90
       end
 
 

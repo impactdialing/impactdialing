@@ -1,6 +1,5 @@
 class Voter < ActiveRecord::Base
   
-  # cache_records :store => :shared, :key => "vot", :request_cache => true
   module Status
     NOTCALLED = "not called"
     RETRY = "retry"
@@ -148,13 +147,6 @@ class Voter < ActiveRecord::Base
     account.blocked_numbers.for_campaign(campaign).map(&:number).include?(self.Phone)
   end
 
-  def capture(response, call_attempt)
-    update_attribute(:result_date, Time.now)
-    capture_answers(response["question"], call_attempt)
-    capture_notes(response['notes'])
-  end
-
-
 
   def selected_custom_voter_field_values
     select_custom_fields = campaign.script.try(:selected_custom_fields)
@@ -202,9 +194,7 @@ class Voter < ActiveRecord::Base
     self.answer_recorded_by = recorded_by_caller
     return unless possible_response
     answer = self.answers.for(question).first.try(:update_attributes, {:possible_response => possible_response}) || answers.create(:question => question, :possible_response => possible_response, campaign: Campaign.find(campaign_id), caller: recorded_by_caller.caller)
-    Rails.logger.info "??? notifying observer ???"
     notify_observers :answer_recorded
-    Rails.logger.info "... notified observer ..."
     answer
   end
 
@@ -219,6 +209,29 @@ class Voter < ActiveRecord::Base
   def answer_recorded_by=(caller_session)
     @caller_session = caller_session
   end
+  
+  def persist_answers(questions, call_attempt)
+    return if questions.nil?
+    question_answers = JSON.parse(questions)
+    retry_response = nil
+    question_answers.try(:each_pair) do |question_id, answer_id|
+      voters_response = PossibleResponse.find(answer_id)
+      current_response = answers.find_by_question_id(question_id)
+      current_response ? current_response.update_attributes(:possible_response => voters_response, :created_at => Time.now) : answers.create(:possible_response => voters_response, :question => Question.find(question_id), :created_at => Time.now, campaign: Campaign.find(campaign_id), :caller => call_attempt.caller)
+      retry_response ||= voters_response if voters_response.retry?
+    end
+    update_attributes(:status => Voter::Status::RETRY) if retry_response
+  end
+  
+  def persist_notes(notes_json)
+    return if notes_json.nil?
+    notes = JSON.parse(notes_json)
+    notes.try(:each_pair) do |note_id, note_res|
+      note = Note.find(note_id)
+      note_response = note_responses.find_by_note_id(note_id)
+      note_response ? note_response.update_attributes(response: note_res) : note_responses.create(response: note_res, note: Note.find(note_id))
+    end
+  end
 
   private
 
@@ -228,24 +241,7 @@ class Voter < ActiveRecord::Base
     Call.create(call_attempt: call_attempt)
     call_attempt
   end
-
-  def capture_answers(questions, call_attempt)
-    retry_response = nil
-    questions.try(:each_pair) do |question_id, answer_id|
-      voters_response = PossibleResponse.find(answer_id)
-      current_response = answers.find_by_question_id(question_id)
-      current_response ? current_response.update_attributes(:possible_response => voters_response, :created_at => Time.now) : answers.create(:possible_response => voters_response, :question => Question.find(question_id), :created_at => Time.now, campaign: Campaign.find(campaign_id), :caller => call_attempt.caller)
-      retry_response ||= voters_response if voters_response.retry?
-    end
-    update_attributes(:status => Voter::Status::RETRY) if retry_response
-  end
-
-  def capture_notes(notes)
-    notes.try(:each_pair) do |note_id, note_res|
-      note = Note.find(note_id)
-      note_response = note_responses.find_by_note_id(note_id)
-      note_response ? note_response.update_attributes(response: note_res) : note_responses.create(response: note_res, note: Note.find(note_id))
-    end
-  end
+  
+  
 
 end

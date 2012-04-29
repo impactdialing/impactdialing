@@ -9,6 +9,14 @@ class MonitorsController < ClientController
     twilio_capability.allow_client_outgoing(MONITOR_TWILIO_APP_SID)
     @token = twilio_capability.generate
   end
+  
+  def campaigns
+    @campaigns = account.campaigns.with_running_caller_sessions    
+  end
+  
+  def callers
+    @campaigns = account.campaigns.with_running_caller_sessions        
+  end
 
   def start
     caller_session = CallerSession.find(params[:session_id])
