@@ -151,12 +151,11 @@
 <monitor_session style="display:none"></monitor_session>
   
 <div id="monitor_campaigns">
-  <%= link_to "Campaigns", recent_interactions_following_url(:id=>@tab_user.identity), :class=>'client-include'    %>
-  <%= render "campaigns" %>
+  <%= link_to "Campaigns", campaigns_monitors_url, :class=>'client-include' %>
 </div>
 <br>
 <div id="monitor_callers">
-  <%= render "callers" %>
+    <%= link_to "Campaigns", callers_monitors_url, :class=>'client-include' %>
 </div>
 
 <br>
