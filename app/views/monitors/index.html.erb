@@ -8,19 +8,6 @@
 
   <script type="text/javascript">
       var pusher = new Pusher('<%= Pusher.key %>');
-      setInterval(function() {
-        $('a.client-include').each(function(index,element){
-      	  var url = $(element).attr('href');
-      	  var parent = $(element).parent('div');
-         	  $.ajax({
-      	  url: url,
-      	  success: function(data){
-      		$(parent).html(data);
-      	  }
-      	});
-      	});        
-      }, 10000);
-          	
   </script>
 
 <script type="text/javascript">
@@ -155,7 +142,7 @@
 </div>
 <br>
 <div id="monitor_callers">
-    <%= link_to "Campaigns", callers_monitors_url, :class=>'client-include' %>
+    <%= link_to "Callers", callers_monitors_url, :class=>'client-include' %>
 </div>
 
 <br>
@@ -164,3 +151,18 @@
 <p>Call recording is currently <%= @account.record_calls? ? "on" : "off" %>. Links to recordings will appear in each campaign's Download report.</p>
 <p class="actions"><%= link_to "Turn call recording #{@account.record_calls? ? "off" : "on" }", {:action=>"toggle_call_recording"}, {:class => 'action secondary'}, %></p>
 <p class="actions"><%= link_to "Manage Do Not Call list", blocked_numbers_path, :class => 'action secondary' %></p>
+<script type="text/javascript">
+    setInterval(function() {
+      $('a.client-include').each(function(index,element){
+    	  var url = $(element).attr('href');
+    	  var parent = $(element).parent('div');
+       	  $.ajax({
+    	  url: url,
+    	  success: function(data){
+    		$(parent).html(data);
+    	  }
+    	});
+    	});        
+    }, 10000);
+        	
+</script>
