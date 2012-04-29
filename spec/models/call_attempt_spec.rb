@@ -39,12 +39,12 @@ describe CallAttempt do
   it "can be scheduled for later" do
     voter = Factory(:voter)
     call_attempt = Factory(:call_attempt, :voter => voter)
-    scheduled_date = 2.hours.from_now
+    scheduled_date = "10/10/2020 20:20"
     call_attempt.schedule_for_later(scheduled_date)
     call_attempt.reload.status.should == CallAttempt::Status::SCHEDULED
-    call_attempt.scheduled_date.to_s.should == scheduled_date.to_s
+    call_attempt.scheduled_date.to_s.should eq("2020-10-10 20:20:00 UTC")
     call_attempt.voter.status.should == CallAttempt::Status::SCHEDULED
-    call_attempt.voter.scheduled_date.to_s.should == scheduled_date.to_s
+    call_attempt.voter.scheduled_date.to_s.should eq("2020-10-10 20:20:00 UTC")
     call_attempt.voter.call_back.should be_true
   end
 

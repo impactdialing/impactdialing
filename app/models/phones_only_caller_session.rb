@@ -11,6 +11,7 @@ class PhonesOnlyCallerSession < CallerSession
         event :read_instruction_options, :to => :instructions_options, :if => :pound_selected?
         event :read_instruction_options, :to => :ready_to_call, :if => :star_selected?
         event :read_instruction_options, :to => :read_choice
+        
         response do |xml_builder, the_call|
           xml_builder.Gather(:numDigits => 1, :timeout => 10, :action => flow_caller_url(caller, session:  self, event: 'read_instruction_options' ,:host => Settings.host, :port => Settings.port), :method => "POST", :finishOnKey => "5") do
             xml_builder.Say I18n.t(:caller_instruction_choice)
@@ -20,6 +21,7 @@ class PhonesOnlyCallerSession < CallerSession
       end
       
       state :ready_to_call do
+        
         event :start_conf, :to => :time_period_exceeded, :if => :time_period_exceeded?
         event :start_conf, :to => :reassigned_campaign, :if => :caller_reassigned_to_another_campaign?
         event :start_conf, :to => :choosing_voter_to_dial, :if => :preview?
@@ -33,6 +35,7 @@ class PhonesOnlyCallerSession < CallerSession
       
       
       state :instructions_options do   
+        
         event :callin_choice, :to => :read_choice     
         response do |xml_builder, the_call|
           xml_builder.Say I18n.t(:phones_only_caller_instructions)
@@ -79,13 +82,13 @@ class PhonesOnlyCallerSession < CallerSession
         end
       end
       
-      state :time_period_exceeded do                        
-        response do |xml_builder, the_call|          
-          xml_builder.Say I18n.t(:campaign_time_period_exceed, :start_time => campaign.start_time.hour <= 12 ? "#{campaign.start_time.hour} AM" : "#{campaign.start_time.hour-12} PM", :end_time => campaign.end_time.hour <= 12 ? "#{campaign.end_time.hour} AM" : "#{campaign.end_time.hour-12} PM")
-          xml_builder.Hangup
-        end        
-      end
-      
+      # state :time_period_exceeded do                        
+      #    response do |xml_builder, the_call|          
+      #      xml_builder.Say I18n.t(:campaign_time_period_exceed, :start_time => campaign.start_time.hour <= 12 ? "#{campaign.start_time.hour} AM" : "#{campaign.start_time.hour-12} PM", :end_time => campaign.end_time.hour <= 12 ? "#{campaign.end_time.hour} AM" : "#{campaign.end_time.hour-12} PM")
+      #      xml_builder.Hangup
+      #    end        
+      #  end
+      #  
       state :skip_voter do
         before(:always) {voter_in_progress.skip}
         event :skipped_voter, :to => :ready_to_call

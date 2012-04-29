@@ -107,12 +107,12 @@ describe WebuiCallerSession do
       before(:each) do
         @script = Factory(:script)
         @campaign =  Factory(:preview, script: @script)    
-        @caller = Factory(:caller, campaign: @campaign, account: Factory(:account))
-        @call_attempt = Factory(:call_attempt)
+        @caller = Factory(:caller, campaign: @campaign)
+        @call_attempt = Factory(:call_attempt, status: CallAttempt::Status::SUCCESS)
       end
 
       it "should move to paused state if call not wrapped up" do
-        caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "connected", attempt_in_progress: @call_attempt )
+        caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "connected", attempt_in_progress: @call_attempt)
         caller_session.pause_conf!
         caller_session.state.should eq("paused")                
       end

@@ -39,7 +39,7 @@ class TwilioController < ApplicationController
     voter = @call_attempt.voter
     unless [CallAttempt::Status::HANGUP, CallAttempt::Status::VOICEMAIL].include? @call_attempt.status
       @call_attempt.update_attribute('status', CallAttempt::Status::MAP[params['CallStatus']])
-      voter.update_attributes(:status => Voter::MAP[params['CallStatus']])
+      voter.update_attributes(:status => CallAttempt::Status::MAP[params['CallStatus']])
     end
     @log_message = "call_attempt: #{@call_attempt.id} campaign: #{campaign.name}, phone: #{voter.Phone}\n callback parameters: #{params.inspect}"
   end

@@ -20,19 +20,13 @@ describe CallinController do
     it "verifies the logged in caller by session pin" do
       pin = rand.to_s[2..6]
       caller = Factory(:caller, :account => account, :campaign => campaign)
-      Factory(:caller_identity, :caller => caller, :session_key => 'key' , pin: pin)
-      Moderator.stub!(:caller_connected_to_campaign)
+      caller_identity = Factory(:caller_identity, :caller => caller, :session_key => 'key' , pin: pin)
+      caller_session = Factory(:webui_caller_session, caller: caller)      
+      CallerIdentity.should_receive(:find_by_pin).and_return(caller_identity)
+      caller_identity.should_receive(:caller).and_return(caller)
+      caller.should_receive(:create_caller_session).and_return(caller_session)
+      caller_session.should_receive(:run).and_return("")
       post :identify, Digits: pin
-      assigns(:caller).should == caller
-    end
-
-    it "updates a caller session on pin verification" do
-      pin = rand.to_s[2..6]
-      call_sid = "asdflkjh"
-      caller = Factory(:caller, :campaign => campaign, :account => account)
-      Factory(:caller_identity, :caller => caller, :session_key => 'key' , pin: pin)
-      post :identify, :Digits => pin, :CallSid => call_sid
-      caller.caller_sessions.last.sid.should == call_sid
     end
 
     it "asks the user to hold" do

@@ -69,15 +69,15 @@ describe Client::ReportsController do
       end
 
       it "logged in caller session" do
-        CallerSession.time_logged_in(nil, @campaign, from_time, time_now).should == "7919"
+        CallerSession.time_logged_in(nil, @campaign, from_time, time_now).should == 7919
       end
 
       it "on call time" do
-        CallAttempt.time_on_call(nil, @campaign, from_time, time_now).should == "6727"
+        CallAttempt.time_on_call(nil, @campaign, from_time, time_now).should == 6727
       end
 
       it "on wrapup time" do
-        CallAttempt.time_in_wrapup(nil, @campaign, from_time, time_now).should == "90"
+        CallAttempt.time_in_wrapup(nil, @campaign, from_time, time_now).should == 90
       end
 
       it "minutes" do
