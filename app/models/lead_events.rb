@@ -13,6 +13,11 @@ module LeadEvents
     def publish_voter_disconnected
       caller_session.publish_async('voter_disconnected',{})
     end
+    
+    def publish_monitor_response_submitted
+      Moderator.publish_event(campaign, 'voter_response_submitted', {:caller_session_id => caller_session.id, :campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
+    end
+    
       
   end
   
