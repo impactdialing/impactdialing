@@ -17,6 +17,7 @@ class MonitorsController < ClientController
   
   def callers
     @campaigns = account.campaigns.with_running_caller_sessions        
+    @all_campaigns = account.campaigns.manual.active
     render  :layout=> false
   end
 
