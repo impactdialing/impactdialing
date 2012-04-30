@@ -99,9 +99,6 @@ function send_voter_response() {
 function send_voter_response_and_disconnect() {
     var options = {
 	    data: {stop_calling: true, caller_session:$("#caller_session").val() },
-        success:  function() {
-            disconnect_caller();
-        }
     };
     $('#voter_responses').attr('action', "/calls/" + $("#current_call").val() + "/submit_result_and_stop");
     $('#voter_id').val($("#current_voter").val())
