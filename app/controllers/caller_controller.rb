@@ -11,6 +11,7 @@ class CallerController < ApplicationController
     caller = Caller.find(params[:caller_id])
     identity = CallerIdentity.find_by_session_key(params[:session_key])
     session = caller.create_caller_session(identity.session_key, params[:CallSid])
+    Moderator.caller_connected_to_campaign(caller, caller.campaign, session)
     render xml: session.run(:start_conf)
   end
   
