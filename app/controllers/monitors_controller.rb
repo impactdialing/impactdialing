@@ -27,6 +27,7 @@ class MonitorsController < ClientController
         }        
       end
     end          
+    render nothing: true
   end
   
 
