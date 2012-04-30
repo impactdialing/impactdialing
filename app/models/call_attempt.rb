@@ -23,7 +23,7 @@ class CallAttempt < ActiveRecord::Base
   scope :with_status, lambda { |statuses| {:conditions => ['status in (?)', statuses]} }
   scope :results_not_processed, lambda { where(:voter_response_processed => "0", :status => Status::SUCCESS) }
   scope :debit_not_processed, where(debited: "0").where('call_end is not null')
-  scope :current_ringing_lines_count, between(20.seconds.ago, Time.now).with_status(Status::RINGING).size
+  scope :current_ringing_lines_count, between(20.seconds.ago, Time.now).with_status([Status::RINGING]).size
   
 
   def report_recording_url
