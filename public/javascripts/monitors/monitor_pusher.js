@@ -113,9 +113,9 @@ function subscribe_and_bind_events_monitoring(session_id){
   channel.bind('voter_connected',function(data){
     if (!$.isEmptyObject(data)){
       var campaign_selector = 'tr#campaign_'+data.campaign_id;
-			var caller_selector = 'tr#caller_'+data.caller_session_id;
-			update_status_and_duration(caller_selector, "On call");
-			if($(caller_selector).attr("on_call") == "true"){
+	  var caller_selector = 'tr#caller_'+data.caller_session_id;
+	  update_status_and_duration(caller_selector, "On call");
+	  		if($(caller_selector).attr("on_call") == "true"){
 				status = "Status: Monitoring in " + $(caller_selector).attr('mode') + " mode on " + $(caller_selector).children('td.caller_name').text().split("/")[0] + ".";
     		$('status').text(status);
 			}
