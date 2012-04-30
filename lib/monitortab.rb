@@ -1,5 +1,6 @@
 RAILS_ROOT = File.expand_path('../..', __FILE__)
 require File.join(RAILS_ROOT, 'config/environment')
+require 'em-http-request'
 
 loop do
   begin
