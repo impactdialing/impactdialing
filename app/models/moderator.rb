@@ -42,6 +42,11 @@ class Moderator < ActiveRecord::Base
     end 
   end
   
+  def self.publish_event_sync(campaign, event, data)
+    campaign.account.moderators.active.each { |moderator| Pusher[moderator.session].trigger(event, data) }
+  end
+  
+  
   def get_conference_id(caller_session)
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
     conferences = Twilio::Conference.list({"FriendlyName" => caller_session.session_key})
