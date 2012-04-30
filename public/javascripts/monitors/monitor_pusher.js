@@ -5,7 +5,7 @@ Pusher.log = function(message) {
 var channel = null;
 
 function update_status_and_duration(caller_selector, status){
-	if ($($(caller_selector).find('.status')).html != status) {
+	if ($($(caller_selector).find('.status')).html() != status) {
   	  $($(caller_selector).find('.status')).html(status)
 	  $($(caller_selector).find('.timer')).stopwatch('reset');
 	}
@@ -100,7 +100,7 @@ function subscribe_and_bind_events_monitoring(session_id){
   });
 
   channel.bind('voter_event', function(data){
-	call_status = {"Call in progress": "On call", "Call completed with success.": "Wrap up", null:"On hold" }
+	call_status = {"Call in progress": "On call", "Call completed with success.": "Wrap up", null:"On hold", "Ringing":"On hold" }
 	if (!$.isEmptyObject(data)){
       var campaign_selector = 'tr#campaign_'+data.campaign_id;
 	  var caller_selector = 'tr#caller_'+data.caller_session_id;
