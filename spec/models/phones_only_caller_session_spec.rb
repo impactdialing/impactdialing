@@ -241,15 +241,13 @@ describe PhonesOnlyCallerSession do
       it "should set caller state to conference_started_phones_only" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call")
         caller_session.should_receive(:predictive?).and_return(true)
-        caller_session.should_receive(:preview_dial)
         caller_session.start_conf!
-        caller_session.state.should eq('conference_started_phones_only')
+        caller_session.state.should eq('conference_started_phones_only_predictive')
       end   
       
       it "should set on_call to true" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call")
         caller_session.should_receive(:predictive?).and_return(true)
-        caller_session.should_receive(:preview_dial)
         caller_session.start_conf!
         caller_session.on_call.should be_true        
       end
@@ -257,7 +255,6 @@ describe PhonesOnlyCallerSession do
       it "should set available_for_call to true" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call")
         caller_session.should_receive(:predictive?).and_return(true)
-        caller_session.should_receive(:preview_dial)
         caller_session.start_conf!
         caller_session.available_for_call.should be_true        
       end
@@ -265,7 +262,6 @@ describe PhonesOnlyCallerSession do
       it "should set attempt_in_progress to nil" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call")
         caller_session.should_receive(:predictive?).and_return(true)
-        caller_session.should_receive(:preview_dial)
         caller_session.start_conf!
         caller_session.attempt_in_progress.should be_nil        
       end
@@ -274,7 +270,6 @@ describe PhonesOnlyCallerSession do
       it "render correct twiml" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call")
         caller_session.should_receive(:predictive?).and_return(true)
-        caller_session.should_receive(:preview_dial)
         caller_session.start_conf!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"https://3ngz.localtunnel.com:3000/caller/#{@caller.id}/flow?event=gather_response&amp;session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"https://3ngz.localtunnel.com:3000/hold_call?version=2012-02-16+10%3A20%3A07+%2B0530\" waitMethod=\"GET\"></Conference></Dial></Response>")
       end        
@@ -317,28 +312,28 @@ describe PhonesOnlyCallerSession do
 
       it "should set caller state to conference_started_phones_only" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_to_dial", digit: "*")
-        caller_session.should_receive(:preview_dial)
+        caller_session.should_receive(:dial)
         caller_session.start_conf!
         caller_session.state.should eq('conference_started_phones_only')
       end       
       
       it "should set on_call to true" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_to_dial", digit: "*")
-        caller_session.should_receive(:preview_dial)
+        caller_session.should_receive(:dial)
         caller_session.start_conf!
         caller_session.on_call.should be_true        
       end
       
       it "should set available_for_call to true" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_to_dial", digit: "*")
-        caller_session.should_receive(:preview_dial)
+        caller_session.should_receive(:dial)
         caller_session.start_conf!
         caller_session.available_for_call.should be_true        
       end
       
       it "should set attempt_in_progress to nil" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_to_dial", digit: "*")
-        caller_session.should_receive(:preview_dial)
+        caller_session.should_receive(:dial)
         caller_session.start_conf!
         caller_session.attempt_in_progress.should be_nil        
       end
@@ -346,7 +341,7 @@ describe PhonesOnlyCallerSession do
 
       it "render correct twiml" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*")
-        caller_session.should_receive(:preview_dial)
+        caller_session.should_receive(:dial)
         caller_session.start_conf!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"https://3ngz.localtunnel.com:3000/caller/#{@caller.id}/flow?event=gather_response&amp;session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"https://3ngz.localtunnel.com:3000/hold_call?version=2012-02-16+10%3A20%3A07+%2B0530\" waitMethod=\"GET\"></Conference></Dial></Response>")
       end        
@@ -384,35 +379,35 @@ describe PhonesOnlyCallerSession do
 
       it "should set caller state to conference_started_phones_only" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*")
-        caller_session.should_receive(:preview_dial)
+        caller_session.should_receive(:dial)
         caller_session.start_conf!
         caller_session.state.should eq('conference_started_phones_only')
       end      
       
       it "should set on_call to true" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*")
-        caller_session.should_receive(:preview_dial)
+        caller_session.should_receive(:dial)
         caller_session.start_conf!
         caller_session.on_call.should be_true        
       end
       
       it "should set available_for_call to true" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*")
-        caller_session.should_receive(:preview_dial)
+        caller_session.should_receive(:dial)
         caller_session.start_conf!
         caller_session.available_for_call.should be_true        
       end
       
       it "should set attempt_in_progress to nil" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*")
-        caller_session.should_receive(:preview_dial)
+        caller_session.should_receive(:dial)
         caller_session.start_conf!
         caller_session.attempt_in_progress.should be_nil        
       end  
 
       it "render correct twiml" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*")
-        caller_session.should_receive(:preview_dial)
+        caller_session.should_receive(:dial)
         caller_session.start_conf!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"https://3ngz.localtunnel.com:3000/caller/#{@caller.id}/flow?event=gather_response&amp;session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"https://3ngz.localtunnel.com:3000/hold_call?version=2012-02-16+10%3A20%3A07+%2B0530\" waitMethod=\"GET\"></Conference></Dial></Response>")
       end        
