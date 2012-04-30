@@ -19,4 +19,5 @@ loop do
     puts "Monitor tab exception"
     puts e.backtrace
   end
+  sleep(10)
 end
