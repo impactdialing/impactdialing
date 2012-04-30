@@ -33,7 +33,7 @@ describe Moderator do
     Moderator.caller_connected_to_campaign(caller, campaign, caller_session)
   end
   
-  it "should send the event(voter connected) to monitors" do
+  xit "should send the event(voter connected) to monitors" do
     account = Factory(:account)
     moderator1 = Factory(:moderator, :account => account, :session => "s123", :active => true)
     moderator2 = Factory(:moderator, :account => account, :session => "s1234", :active => true)

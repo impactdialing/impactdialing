@@ -11,6 +11,7 @@ class CallinController < ApplicationController
     session_key = identity.nil? ? generate_session_key : identity.session_key
     if caller
       session = caller.create_caller_session(session_key, params[:CallSid])    
+      Moderator.caller_connected_to_campaign(caller, caller.campaign, session)
       render xml:  session.run('start_conf')
     else
       render xml:  Caller.ask_for_pin(params[:attempt].to_i)

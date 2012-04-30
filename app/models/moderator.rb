@@ -20,17 +20,26 @@ class Moderator < ActiveRecord::Base
   end
   
   def self.caller_connected_to_campaign(caller, campaign, caller_session)
+    return if campaign.account.moderators.active.empty?
     caller.email = caller.identity_name
     caller_info = caller.info
     data = caller_info.merge(:campaign_name => campaign.name, :session_id => caller_session.id, :campaign_fields => {:id => campaign.id, 
       :callers_logged_in => campaign.caller_sessions.on_call.size+1,
       :voters_count => campaign.voters_count("not called", false), :dials_in_progress => campaign.call_attempts.not_wrapped_up.size },
       :campaign_ids => caller.account.campaigns.manual.active.collect{|c| c.id}, :campaign_names => caller.account.campaigns.manual.active.collect{|c| c.name},:current_campaign_id => campaign.id)
-    caller.account.moderators.active.each {|moderator| Pusher[moderator.session].trigger('caller_session_started', data)}    
+      publish_event(campaign, 'caller_session_started', data)
   end
   
   def self.publish_event(campaign, event, data)
-    campaign.account.moderators.active.each {|moderator| Pusher[moderator.session].trigger(event, data)}
+    campaign.account.moderators.active.each do |moderator|
+      EM.run {
+        deferrable = Pusher[session_key].trigger_async(event, data.merge!(:dialer => campaign.type))
+        deferrable.callback { 
+          }
+        deferrable.errback { |error|
+        }
+      }
+    end 
   end
   
   def get_conference_id(caller_session)
