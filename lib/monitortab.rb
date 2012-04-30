@@ -15,5 +15,6 @@ loop do
     end
     
   rescue Exception => e
+    puts e.backtrace
   end
 end
