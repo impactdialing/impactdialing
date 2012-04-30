@@ -33,7 +33,7 @@ class Moderator < ActiveRecord::Base
   def self.publish_event(campaign, event, data)
     campaign.account.moderators.active.each do |moderator|
       EM.run {
-        deferrable = Pusher[session_key].trigger_async(event, data.merge!(:dialer => campaign.type))
+        deferrable = Pusher[moderator.session].trigger_async(event, data)
         deferrable.callback { 
           }
         deferrable.errback { |error|
