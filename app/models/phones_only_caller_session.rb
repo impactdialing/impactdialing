@@ -138,19 +138,19 @@ class PhonesOnlyCallerSession < CallerSession
       
   end
   
-  def abc
-      question = Question.find_by_id(params[:question_id])
-      voter = caller_session.voter_in_progress
-      voter.answer(question, params[:Digits], caller_session) if voter && question
-    
-      xml ||= (voter.question_not_answered.try(:read, caller_session) if voter)
-      xml ||= caller_session.ask_caller_to_choose_voter if (caller.is_phones_only? && caller.campaign.is_preview_or_progressive)
-      xml ||= caller_session.start
-      render :xml => xml
-    end
-    
-    
-  end
+  # def abc
+  #     question = Question.find_by_id(params[:question_id])
+  #     voter = caller_session.voter_in_progress
+  #     voter.answer(question, params[:Digits], caller_session) if voter && question
+  #   
+  #     xml ||= (voter.question_not_answered.try(:read, caller_session) if voter)
+  #     xml ||= caller_session.ask_caller_to_choose_voter if (caller.is_phones_only? && caller.campaign.is_preview_or_progressive)
+  #     xml ||= caller_session.start
+  #     render :xml => xml
+  #   end
+  #   
+  #   
+  # end
     
   
   def select_voter(voter)
