@@ -16,6 +16,7 @@ loop do
     end
     
   rescue Exception => e
+    puts "Monitor tab exception"
     puts e.backtrace
   end
 end
