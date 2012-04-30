@@ -25,7 +25,7 @@ class PhonesOnlyCallerSession < CallerSession
         event :start_conf, :to => :reassigned_campaign, :if => :caller_reassigned_to_another_campaign?
         event :start_conf, :to => :choosing_voter_to_dial, :if => :preview?
         event :start_conf, :to => :choosing_voter_and_dial, :if => :power?
-        event :start_conf, :to => :conference_started_phones_only, :if => :predictive?
+        event :start_conf, :to => :conference_started_phones_only_predictive, :if => :predictive?
         response do |xml_builder, the_call|
           xml_builder.Redirect(flow_caller_url(self.caller, event: 'start_conf', :host => Settings.host, :port => Settings.port, :session => id))          
         end        
@@ -82,7 +82,7 @@ class PhonesOnlyCallerSession < CallerSession
       end
       
       state :conference_started_phones_only do
-        before(:always) {start_conference; preview_dial(voter_in_progress)}
+        before(:always) {start_conference; dial(voter_in_progress)}
         event :gather_response, :to => :voter_response
         
         response do |xml_builder, the_call|
@@ -92,6 +92,21 @@ class PhonesOnlyCallerSession < CallerSession
         end
         
       end
+      
+      state :conference_started_phones_only_predictive do
+        before(:always) {start_conference}
+        event :gather_response, :to => :voter_response
+        
+        response do |xml_builder, the_call|
+          xml_builder.Dial(:hangupOnStar => true, :action => flow_caller_url(caller, event: "gather_response", :host => Settings.host, :port => Settings.port, :session_id => id)) do
+            xml_builder.Conference(session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
+          end          
+        end
+        
+      end
+      
+      
+      
       
       
       state :skip_voter do
