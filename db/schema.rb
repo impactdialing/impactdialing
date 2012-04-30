@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120429144247) do
+ActiveRecord::Schema.define(:version => 20120430094004) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -114,12 +114,15 @@ ActiveRecord::Schema.define(:version => 20120429144247) do
   end
 
   add_index "call_attempts", ["call_end"], :name => "index_call_attempts_on_call_end"
+  add_index "call_attempts", ["call_id"], :name => "index_call_attempts_on_call_id"
   add_index "call_attempts", ["caller_id", "wrapup_time"], :name => "index_call_attempts_on_caller_id_and_wrapup_time"
   add_index "call_attempts", ["caller_session_id"], :name => "index_call_attempts_on_caller_session_id"
   add_index "call_attempts", ["campaign_id", "call_end"], :name => "index_call_attempts_on_campaign_id_and_call_end"
   add_index "call_attempts", ["campaign_id", "wrapup_time"], :name => "index_call_attempts_on_campaign_id_and_wrapup_time"
   add_index "call_attempts", ["campaign_id"], :name => "index_call_attempts_on_campaign_id"
+  add_index "call_attempts", ["debited", "call_end"], :name => "index_call_attempts_on_debited_and_call_end"
   add_index "call_attempts", ["voter_id"], :name => "index_call_attempts_on_voter_id"
+  add_index "call_attempts", ["voter_response_processed", "status"], :name => "index_call_attempts_on_voter_response_processed_and_status"
 
   create_table "call_responses", :force => true do |t|
     t.integer  "call_attempt_id"
