@@ -20,8 +20,7 @@ class PhonesOnlyCallerSession < CallerSession
         end
       end
       
-      state :ready_to_call do
-        
+      state :ready_to_call do        
         event :start_conf, :to => :time_period_exceeded, :if => :time_period_exceeded?
         event :start_conf, :to => :reassigned_campaign, :if => :caller_reassigned_to_another_campaign?
         event :start_conf, :to => :choosing_voter_to_dial, :if => :preview?
@@ -82,15 +81,6 @@ class PhonesOnlyCallerSession < CallerSession
         end
       end
       
-      state :skip_voter do
-        before(:always) {voter_in_progress.skip}
-        event :skipped_voter, :to => :ready_to_call
-        response do |xml_builder, the_call|
-          xml_builder.Redirect(flow_caller_url(self.caller, event: 'skipped_voter', :host => Settings.host, :port => Settings.port, :session => id))          
-        end        
-        
-      end
-      
       state :conference_started_phones_only do
         before(:always) {start_conference; preview_dial(voter_in_progress)}
         event :gather_response, :to => :voter_response
@@ -102,6 +92,17 @@ class PhonesOnlyCallerSession < CallerSession
         end
         
       end
+      
+      
+      state :skip_voter do
+        before(:always) {voter_in_progress.skip}
+        event :skipped_voter, :to => :ready_to_call
+        response do |xml_builder, the_call|
+          xml_builder.Redirect(flow_caller_url(self.caller, event: 'skipped_voter', :host => Settings.host, :port => Settings.port, :session => id))          
+        end        
+        
+      end
+      
       
       state :voter_response do
         
