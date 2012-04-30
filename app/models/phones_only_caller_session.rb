@@ -152,8 +152,6 @@ class PhonesOnlyCallerSession < CallerSession
     end
   end
   
-  
-  
   def preview_campaign?
     campaign.type != Campaign::Type::Preview
   end
