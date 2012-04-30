@@ -82,13 +82,6 @@ class PhonesOnlyCallerSession < CallerSession
         end
       end
       
-      # state :time_period_exceeded do                        
-      #    response do |xml_builder, the_call|          
-      #      xml_builder.Say I18n.t(:campaign_time_period_exceed, :start_time => campaign.start_time.hour <= 12 ? "#{campaign.start_time.hour} AM" : "#{campaign.start_time.hour-12} PM", :end_time => campaign.end_time.hour <= 12 ? "#{campaign.end_time.hour} AM" : "#{campaign.end_time.hour-12} PM")
-      #      xml_builder.Hangup
-      #    end        
-      #  end
-      #  
       state :skip_voter do
         before(:always) {voter_in_progress.skip}
         event :skipped_voter, :to => :ready_to_call
@@ -159,21 +152,11 @@ class PhonesOnlyCallerSession < CallerSession
   end
   
   
-  def instruction_choice_result(caller_choice, caller_session)
-    if caller_choice == "*"
-      campaign.is_preview_or_progressive ? caller_session.ask_caller_to_choose_voter : caller_session.start
-    else
-      ask_instructions_choice(caller_session)
-    end
-  end
   
   def preview_campaign?
     campaign.type != Campaign::Type::Preview
   end
   
-  
-  def instruction_options_twiml(xml_builder)
-  end
   
     
 end

@@ -124,11 +124,7 @@ function subscribe_and_bind_events_monitoring(session_id){
 		}
 	});
 
-  
-  
-
-	
-	
+  	
 	channel.bind('caller_re_assigned_to_campaign', function(data){
 		if (!$.isEmptyObject(data)){
 			var caller_selector = 'tr#caller_'+data.caller_session_id;
