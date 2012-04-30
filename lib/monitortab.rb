@@ -3,7 +3,7 @@ require File.join(RAILS_ROOT, 'config/environment')
 
 loop do
   begin
-    monitors = Moderators.active
+    monitors = Moderator.active
     monitors.each do |monitor|
       monitor.account.campaigns.each do |campaign|
         caller_sessions = CallerSession.on_call.on_campaign(campaign)
