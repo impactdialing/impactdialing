@@ -30,6 +30,7 @@ gem "dalli", "~>2.0.3"
 gem 'record-cache', "~>0.1.2"
 gem "call_center", "~> 0.0.9"
 gem "em-http-request", "~> 0.3.0"
+gem "ruby-graphviz", "0.9.0"
 
 
 
@@ -38,7 +39,7 @@ group :development, :test do
   gem 'rspec'
   gem 'ruby-debug19'
   gem 'rspec-rails', '~> 2.6.1'
-  gem "ruby-graphviz"
+
 end
 
 group :development do
