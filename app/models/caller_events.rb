@@ -18,8 +18,8 @@ module CallerEvents
       publish_async('calling_voter', {})
     end
     
-    def publish_caller_disconnected
-      publish_async("caller_disconnected",{})
+    def publish_caller_disconnected      
+      publish_async("caller_disconnected",{}) unless caller.is_phones_only?
     end   
     
     def publish_moderator_dials_in_progress
