@@ -7,6 +7,7 @@ module LeadEvents
     
     def publish_voter_connected
       unless caller_session.caller.is_phones_only?
+        voter_event_deferrable = Pusher[moderator.session].trigger_async('voter_event', {caller_session_id:  caller_session.id, campaign_id:  campaign.id, caller_id:  caller_session.caller.id, call_status: caller_session.attempt_in_progress.try(:status)})
         event_hash = campaign.voter_connected_event(self.call)
         caller_session.publish_async(event_hash[:event], event_hash[:data])
       end
