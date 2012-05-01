@@ -5,10 +5,8 @@ Pusher.log = function(message) {
 var channel = null;
 
 function update_status_and_duration(caller_selector, status){
-	if ($($(caller_selector).find('.status')).html() != status) {
-  	  $($(caller_selector).find('.status')).html(status)
-	  $($(caller_selector).find('.timer')).stopwatch('reset');
-	}
+  $($(caller_selector).find('.status')).html(status)
+  $($(caller_selector).find('.timer')).stopwatch('reset');
 }
 
 function forming_select_tag(data){
