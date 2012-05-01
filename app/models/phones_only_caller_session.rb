@@ -83,12 +83,10 @@ class PhonesOnlyCallerSession < CallerSession
       
       state :conference_started_phones_only do
         before(:always) {start_conference; dial(voter_in_progress)}
-        event :gather_response, :to => :conference_ended, :if => :disconnected?
-        event :gather_response, :to => :voter_response_preview, :if => :preview?
-        event :gather_response, :to => :voter_response_power, :if => :power?
+        event :gather_response, :to => :read_next_question
         
         response do |xml_builder, the_call|
-          xml_builder.Dial(:hangupOnStar => true, :action => flow_caller_url(caller, event: "gather_response", :host => Settings.host, :port => Settings.port, :session_id => id)) do
+          xml_builder.Dial(:hangupOnStar => true, :action => flow_caller_url(caller, event: "gather_response", host:  Settings.host, port: Settings.port, session_id:  id, question: voter_in_progress.question_not_answered)) do
             xml_builder.Conference(session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
           end          
         end
@@ -97,8 +95,7 @@ class PhonesOnlyCallerSession < CallerSession
       
       state :conference_started_phones_only_predictive do
         before(:always) {start_conference}
-        event :gather_response, :to => :conference_ended, :if => :disconnected?        
-        event :gather_response, :to => :voter_response_predictive
+        event :gather_response, :to => :read_next_question
 
         response do |xml_builder, the_call|
           xml_builder.Dial(:hangupOnStar => true, :action => flow_caller_url(caller, event: "gather_response", :host => Settings.host, :port => Settings.port, :session_id => id)) do
@@ -107,9 +104,6 @@ class PhonesOnlyCallerSession < CallerSession
         end
         
       end
-      
-      
-      
       
       
       state :skip_voter do
@@ -121,37 +115,43 @@ class PhonesOnlyCallerSession < CallerSession
         
       end
       
-      
-      state :voter_response_preview do
+      state :read_next_question do
+        event :submit_response, :to => :disconnected, :if => :disconnected?
+        event :submit_response, :to => :voter_response
         
+        response do |xml_builder, the_call|
+          xml_builder.Gather(timeout: 5, finishOnKey: "*", action: flow_caller_url(caller, session_id: id, question_id: voter_in_progress.question_not_answered.id, event: "submit_response", host: Settings.host, port: Settings.port), method:  "POST") do
+            xml_builder.Say voter_in_progress.question_not_answered.text
+            voter_in_progress.question_not_answered.possible_responses.each do |response|
+              xml_builder.Say "press #{response.keypad} for #{response.value}" unless (response.value == "[No response]")
+            end
+            xml_builder.Say I18n.t(:submit_results)
+          end
+        end
       end
       
-      state :voter_response_power do
-        
-      end
       
-      state :voter_response_predictive do
-        
+      state :voter_response do
+        event :next_question, :to => :read_next_question, :if => :more_questions_to_be_answered? 
+        event :next_question, :to => :ready_to_call
+        before(:always) {
+          question = Question.find_by_id(question_id);          
+          voter_in_progress.answer(question, digit, self) if voter_in_progress && question
+          }
+          
+        response do |xml_builder, the_call|
+          xml_builder.Redirect(flow_caller_url(self.caller, event: 'next_question', :host => Settings.host, :port => Settings.port, :session => id))          
+        end        
+          
       end
-      
       
       
   end
   
-  # def abc
-  #     question = Question.find_by_id(params[:question_id])
-  #     voter = caller_session.voter_in_progress
-  #     voter.answer(question, params[:Digits], caller_session) if voter && question
-  #   
-  #     xml ||= (voter.question_not_answered.try(:read, caller_session) if voter)
-  #     xml ||= caller_session.ask_caller_to_choose_voter if (caller.is_phones_only? && caller.campaign.is_preview_or_progressive)
-  #     xml ||= caller_session.start
-  #     render :xml => xml
-  #   end
-  #   
-  #   
-  # end
-    
+  def more_questions_to_be_answered?
+    !voter_in_progress.question_not_answered.nil?
+  end
+  
   
   def select_voter(voter)
     voter ||= campaign.next_voter_in_dial_queue(voter_in_progress)

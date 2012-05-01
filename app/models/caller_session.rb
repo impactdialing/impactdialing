@@ -94,6 +94,7 @@ class CallerSession < ActiveRecord::Base
                 
       end
       
+      
   end
   
   def end_caller_session
