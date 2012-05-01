@@ -58,7 +58,7 @@ class PhonesOnlyCallerSession < CallerSession
         before(:always) {select_voter(voter_in_progress)}
         response do |xml_builder, the_call|
           if voter_in_progress.present?
-            xml_builder.Gather(:numDigits => 1, :timeout => 10, :action => flow_caller_url(self.caller, :session => self, event: "gather_response", :host => Settings.host, :port => Settings.port, :voter => voter_in_progress), :method => "POST", :finishOnKey => "5") do
+            xml_builder.Gather(:numDigits => 1, :timeout => 10, :action => flow_caller_url(self.caller, :session => self, event: "start_conf", :host => Settings.host, :port => Settings.port, :voter => voter_in_progress), :method => "POST", :finishOnKey => "5") do
               xml_builder.Say I18n.t(:read_voter_name, :first_name => voter_in_progress.FirstName, :last_name => voter_in_progress.LastName) 
             end
           else
@@ -74,7 +74,7 @@ class PhonesOnlyCallerSession < CallerSession
         response do |xml_builder, the_call|
           if voter_in_progress.present?
             xml_builder.Say "#{voter_in_progress.FirstName}  #{voter_in_progress.LastName}." 
-            xml_builder.Redirect(flow_caller_url(caller, :session_id => id, :voter_id => voter_in_progress.id, :host => Settings.host, :port => Settings.port), :method => "POST")
+            xml_builder.Redirect(flow_caller_url(caller, :session_id => id, :voter_id => voter_in_progress.id, event: "start_conf", :host => Settings.host, :port => Settings.port), :method => "POST")
           else
             xml_builder.Say I18n.t(:campaign_has_no_more_voters)
           end
