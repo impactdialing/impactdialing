@@ -120,9 +120,9 @@ class PhonesOnlyCallerSession < CallerSession
         event :submit_response, :to => :voter_response
         
         response do |xml_builder, the_call|
-          xml_builder.Gather(timeout: 5, finishOnKey: "*", action: flow_caller_url(caller, session_id: id, question_id: voter_in_progress.question_not_answered.id, event: "submit_response", host: Settings.host, port: Settings.port), method:  "POST") do
-            xml_builder.Say voter_in_progress.question_not_answered.text
-            voter_in_progress.question_not_answered.possible_responses.each do |response|
+          xml_builder.Gather(timeout: 5, finishOnKey: "*", action: flow_caller_url(caller, session_id: id, question_id: the_call.voter_in_progress.question_not_answered.id, event: "submit_response", host: Settings.host, port: Settings.port), method:  "POST") do
+            xml_builder.Say the_call.voter_in_progress.question_not_answered.text
+            the_call.voter_in_progress.question_not_answered.possible_responses.each do |response|
               xml_builder.Say "press #{response.keypad} for #{response.value}" unless (response.value == "[No response]")
             end
             xml_builder.Say I18n.t(:submit_results)
