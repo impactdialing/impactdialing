@@ -55,7 +55,7 @@ class PhonesOnlyCallerSession < CallerSession
         event :start_conf, :to => :skip_voter, :if => :pound_selected?  
         event :start_conf, :to => :ready_to_call
                   
-        before(:always) {select_voter(voter_in_progress);}
+        before(:always) {select_voter(voter_in_progress); reload}
         response do |xml_builder, the_call|
           if the_call.voter_in_progress.present?
             xml_builder.Gather(:numDigits => 1, :timeout => 10, :action => flow_caller_url(self.caller, :session => self, event: "start_conf", :host => Settings.host, :port => Settings.port, :voter => the_call.voter_in_progress), :method => "POST", :finishOnKey => "5") do
