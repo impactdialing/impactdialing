@@ -49,7 +49,7 @@ module CallerEvents
     def publish_moderator_conference_started
       EM.run {
         campaign.account.moderators.last_hour.active.each do |moderator|
-          moderator_deferrable = Pusher[moderator.session].trigger_async('voter_event', {caller_session_id:  id, campaign_id:  campaign.id, caller_id:  caller_session.caller.id, call_status: attempt_in_progress.try(:status)})      
+          moderator_deferrable = Pusher[moderator.session].trigger_async('voter_event', {caller_session_id:  id, campaign_id:  campaign.id, caller_id:  caller.id, call_status: attempt_in_progress.try(:status)})      
           moderator_deferrable.callback {}
           moderator_deferrable.errback { |error| }          
         end              
