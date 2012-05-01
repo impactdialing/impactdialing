@@ -158,7 +158,7 @@ class PhonesOnlyCallerSession < CallerSession
   end
   
   def more_questions_to_be_answered?
-    !voter_in_progress.question_not_answered.nil?
+    !current_voter.question_not_answered.nil?
   end
   
   
