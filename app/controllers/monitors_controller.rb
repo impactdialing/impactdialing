@@ -13,19 +13,11 @@ class MonitorsController < ClientController
   def poll_for_updates
     moderator = Moderator.find_by_session(params[:monitor_session]) 
     moderator.account.campaigns.each do |campaign|
-      caller_sessions = CallerSession.on_call.on_campaign(campaign)
-      caller_sessions.each do |caller_session|
-        EM.run {
-          voter_event_deferrable = Pusher[moderator.session].trigger_async('voter_event', {caller_session_id:  caller_session.id, campaign_id:  campaign.id, caller_id:  caller_session.caller.id, call_status: caller_session.attempt_in_progress.try(:status)})
-          update_dials_in_progress_deferrable = Pusher[moderator.session].trigger_async('update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
-          
-          voter_event_deferrable.callback {}
-          update_dials_in_progress_deferrable.callback{}
-            
-          voter_event_deferrable.errback {|error|}
-          update_dials_in_progress_deferrable.errback {|errback|}
-        }        
-      end
+      EM.run {          
+        update_dials_in_progress_deferrable = Pusher[moderator.session].trigger_async('update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
+        update_dials_in_progress_deferrable.callback{}
+        update_dials_in_progress_deferrable.errback {|errback|}
+      }        
     end          
     render nothing: true
   end
