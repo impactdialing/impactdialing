@@ -84,8 +84,9 @@ class PhonesOnlyCallerSession < CallerSession
       
       state :conference_started_phones_only do
         before(:always) {start_conference; dial(voter_in_progress)}
-        event :gather_response, :to => :ready_to_call
         event :gather_response, :to => :read_next_question, :if => :call_answered?
+        event :gather_response, :to => :ready_to_call
+
         
         response do |xml_builder, the_call|
           xml_builder.Dial(:hangupOnStar => true, :action => flow_caller_url(caller, event: "gather_response", host:  Settings.host, port: Settings.port, session_id:  id, question: voter_in_progress.question_not_answered)) do
@@ -97,8 +98,9 @@ class PhonesOnlyCallerSession < CallerSession
       
       state :conference_started_phones_only_predictive do
         before(:always) {start_conference}
-        event :gather_response, :to => :ready_to_call
         event :gather_response, :to => :read_next_question, :if => :call_answered?
+        event :gather_response, :to => :ready_to_call
+
 
         response do |xml_builder, the_call|
           xml_builder.Dial(:hangupOnStar => true, :action => flow_caller_url(caller, event: "gather_response", :host => Settings.host, :port => Settings.port, :session_id => id)) do
