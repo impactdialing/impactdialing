@@ -466,7 +466,7 @@ describe PhonesOnlyCallerSession do
         caller_session.should_receive(:call_answered?).and_return(true)
         caller_session.should_receive(:publish_moderator_gathering_response)
         caller_session.gather_response!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather timeout=\"5\" finishOnKey=\"*\" action=\"https://3ngz.localtunnel.com:3000/caller/#{@caller.id}/flow?event=submit_response&amp;question_id=#{@question.id}&amp;session_id=#{caller_session.id}\" method=\"POST\"><Say>How do you like Impactdialing</Say><Say>press 1 for Great</Say><Say>press 2 for Super</Say><Say>Then press star to submit your result.</Say></Gather></Response>")
+        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather timeout=\"60\" finishOnKey=\"*\" action=\"https://3ngz.localtunnel.com:3000/caller/#{@caller.id}/flow?event=submit_response&amp;question_id=#{@question.id}&amp;session_id=#{caller_session.id}\" method=\"POST\"><Say>How do you like Impactdialing</Say><Say>press 1 for Great</Say><Say>press 2 for Super</Say><Say>Then press star to submit your result.</Say></Gather></Response>")
       end
     end    
   end
@@ -500,7 +500,7 @@ describe PhonesOnlyCallerSession do
         caller_session.should_receive(:call_answered?).and_return(true)
         caller_session.should_receive(:publish_moderator_gathering_response)
         caller_session.gather_response!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather timeout=\"5\" finishOnKey=\"*\" action=\"https://3ngz.localtunnel.com:3000/caller/#{@caller.id}/flow?event=submit_response&amp;question_id=#{@question.id}&amp;session_id=#{caller_session.id}\" method=\"POST\"><Say>How do you like Impactdialing</Say><Say>press 1 for Great</Say><Say>press 2 for Super</Say><Say>Then press star to submit your result.</Say></Gather></Response>")
+        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather timeout=\"60\" finishOnKey=\"*\" action=\"https://3ngz.localtunnel.com:3000/caller/#{@caller.id}/flow?event=submit_response&amp;question_id=#{@question.id}&amp;session_id=#{caller_session.id}\" method=\"POST\"><Say>How do you like Impactdialing</Say><Say>press 1 for Great</Say><Say>press 2 for Super</Say><Say>Then press star to submit your result.</Say></Gather></Response>")
       end
     end    
   end
