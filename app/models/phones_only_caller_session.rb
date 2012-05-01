@@ -21,7 +21,7 @@ class PhonesOnlyCallerSession < CallerSession
       end
       
       state :ready_to_call do        
-        before(:always) {voter_in_progress = nil}
+        before(:always)
         event :start_conf, :to => :time_period_exceeded, :if => :time_period_exceeded?
         event :start_conf, :to => :reassigned_campaign, :if => :caller_reassigned_to_another_campaign?
         event :start_conf, :to => :choosing_voter_to_dial, :if => :preview?
@@ -121,9 +121,9 @@ class PhonesOnlyCallerSession < CallerSession
         event :submit_response, :to => :voter_response
         
         response do |xml_builder, the_call|
-          xml_builder.Gather(timeout: 5, finishOnKey: "*", action: flow_caller_url(caller, session_id: id, question_id: the_call.voter_in_progress.question_not_answered.id, event: "submit_response", host: Settings.host, port: Settings.port), method:  "POST") do
-            xml_builder.Say the_call.voter_in_progress.question_not_answered.text
-            the_call.voter_in_progress.question_not_answered.possible_responses.each do |response|
+          xml_builder.Gather(timeout: 5, finishOnKey: "*", action: flow_caller_url(caller, session_id: id, question_id: the_call.unanswered_question.id, event: "submit_response", host: Settings.host, port: Settings.port), method:  "POST") do
+            xml_builder.Say the_call.unanswered_question.text
+            the_call.unanswered_question.possible_responses.each do |response|
               xml_builder.Say "press #{response.keypad} for #{response.value}" unless (response.value == "[No response]")
             end
             xml_builder.Say I18n.t(:submit_results)
@@ -137,7 +137,7 @@ class PhonesOnlyCallerSession < CallerSession
         event :next_question, :to => :ready_to_call
         before(:always) {
           question = Question.find_by_id(question_id);          
-          voter_in_progress.answer(question, digit, self) if voter_in_progress && question
+          current_voter.answer(question, digit, self) if current_voter && question
           }
           
         response do |xml_builder, the_call|
@@ -149,13 +149,21 @@ class PhonesOnlyCallerSession < CallerSession
       
   end
   
+  def unanswered_question
+    current_voter.question_not_answered
+  end
+  
+  def current_voter
+    attempt_in_progress.voter
+  end
+  
   def more_questions_to_be_answered?
     !voter_in_progress.question_not_answered.nil?
   end
   
   
   def select_voter(voter)
-    voter ||= campaign.next_voter_in_dial_queue(voter_in_progress)
+    voter ||= campaign.next_voter_in_dial_queue(current_voter)
     update_attributes(voter_in_progress: voter)
   end
   
