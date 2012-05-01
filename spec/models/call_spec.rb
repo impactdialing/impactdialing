@@ -421,42 +421,42 @@ describe Call do
            
        it "should update voter status as success" do
          call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected')
-         @caller_session.should_receive(:publish_async)
+         @call_attempt.should_receive(:publish_voter_disconnected)
          call.disconnect!
          call.call_attempt.voter.status.should eq(CallAttempt::Status::SUCCESS)
        end
        
        it "should update voter status as success" do
          call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected')
-         @caller_session.should_receive(:publish_async)
+         @call_attempt.should_receive(:publish_voter_disconnected)
          call.disconnect!
          call.call_attempt.voter.status.should eq(CallAttempt::Status::SUCCESS)
        end
        
        it "should update call attempt status as success" do
          call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected')
-         @caller_session.should_receive(:publish_async)        
+         @call_attempt.should_receive(:publish_voter_disconnected)
          call.disconnect!
          call.call_attempt.status.should eq(CallAttempt::Status::SUCCESS)
        end
        
        it "should update call attempt recording_duration" do
          call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected', recording_duration: 4)
-         @caller_session.should_receive(:publish_async)        
+         @call_attempt.should_receive(:publish_voter_disconnected)
          call.disconnect!
          call.call_attempt.recording_duration.should eq(4)
        end
        
        it "should update call attempt recording_url" do
          call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected', recording_duration: 4, recording_url: "url")
-         @caller_session.should_receive(:publish_async)        
+         @call_attempt.should_receive(:publish_voter_disconnected)
          call.disconnect!
          call.call_attempt.recording_url.should eq("url")
        end
        
        it "should move to disconnected state" do
          call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected')        
-         @caller_session.should_receive(:publish_async)        
+         @call_attempt.should_receive(:publish_voter_disconnected)
          call.disconnect!
          call.state.should eq('disconnected')
          
@@ -464,7 +464,7 @@ describe Call do
        
        it "should hangup twiml" do
          call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected')
-         @caller_session.should_receive(:publish_async)        
+         @call_attempt.should_receive(:publish_voter_disconnected)
          call.disconnect!
          call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")      
        end
@@ -488,49 +488,49 @@ describe Call do
 
       it "should update voter status as success" do
        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'hungup')
-       @caller_session.should_receive(:publish_async)
+       @call_attempt.should_receive(:publish_voter_disconnected)
        call.disconnect!
        call.call_attempt.voter.status.should eq(CallAttempt::Status::SUCCESS)
       end
 
       it "should update voter status as success" do
        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'hungup')
-       @caller_session.should_receive(:publish_async)        
+       @call_attempt.should_receive(:publish_voter_disconnected)
        call.disconnect!
        call.call_attempt.voter.status.should eq(CallAttempt::Status::SUCCESS)
       end
 
       it "should update call attempt status as success" do
        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'hungup')
-       @caller_session.should_receive(:publish_async)        
+       @call_attempt.should_receive(:publish_voter_disconnected)
        call.disconnect!
        call.call_attempt.status.should eq(CallAttempt::Status::SUCCESS)
       end
 
       it "should update call attempt recording_duration" do
        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'hungup', recording_duration: 4)
-       @caller_session.should_receive(:publish_async)        
+       @call_attempt.should_receive(:publish_voter_disconnected)
        call.disconnect!
        call.call_attempt.recording_duration.should eq(4)
       end
 
       it "should update call attempt recording_url" do
        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'hungup', recording_duration: 4, recording_url: "url")
-       @caller_session.should_receive(:publish_async)        
+       @call_attempt.should_receive(:publish_voter_disconnected)
        call.disconnect!
        call.call_attempt.recording_url.should eq("url")
       end
 
       it "should change status to disconnected" do
        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'hungup')
-       @caller_session.should_receive(:publish_async)        
+       @call_attempt.should_receive(:publish_voter_disconnected)
        call.disconnect!
        call.state.should eq("disconnected")
       end      
 
       it "should hangup twiml" do
        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'hungup')
-       @caller_session.should_receive(:publish_async)        
+       @call_attempt.should_receive(:publish_voter_disconnected)
        call.disconnect!
        call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")      
       end
@@ -713,6 +713,7 @@ describe Call do
       
       it "should wrapup call_attempt" do
         call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'call_answered_by_lead')
+        call.call_attempt.should_receive(:publish_moderator_response_submited)
         call.call_attempt.should_receive(:redirect_caller)
         call.submit_result!
         call.call_attempt.wrapup_time.should_not be_nil

@@ -3,6 +3,7 @@ class Moderator < ActiveRecord::Base
   belongs_to :account
   
   scope :active, :conditions => {:active => true}
+  scope :last_hour, :conditions => ["created_at > ?",1.hours.ago]
   
   def switch_monitor_mode(caller_session, type)
     conference_sid = get_conference_id(caller_session)
@@ -31,7 +32,7 @@ class Moderator < ActiveRecord::Base
   end
   
   def self.publish_event(campaign, event, data)
-    campaign.account.moderators.active.each do |moderator|
+    campaign.account.moderators.last_hour.active.each do |moderator|
       EM.run {
         deferrable = Pusher[moderator.session].trigger_async(event, data)
         deferrable.callback { 
@@ -42,9 +43,6 @@ class Moderator < ActiveRecord::Base
     end 
   end
   
-  def self.publish_event_sync(campaign, event, data)
-    campaign.account.moderators.active.each { |moderator| Pusher[moderator.session].trigger(event, data) }
-  end
   
   
   def get_conference_id(caller_session)
