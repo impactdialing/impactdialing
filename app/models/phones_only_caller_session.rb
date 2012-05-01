@@ -107,7 +107,7 @@ class PhonesOnlyCallerSession < CallerSession
       
       
       state :skip_voter do
-        before(:always) {voter_in_progress.skip; voter_in_progress = nil}
+        before(:always) {voter_in_progress.skip}
         event :skipped_voter, :to => :ready_to_call
         response do |xml_builder, the_call|
           xml_builder.Redirect(flow_caller_url(self.caller, event: 'skipped_voter', :host => Settings.host, :port => Settings.port, :session => id))          
