@@ -176,9 +176,7 @@ class Voter < ActiveRecord::Base
   end
 
   def unanswered_questions
-    questions = self.campaign.script.questions.not_answered_by(self)
-    Moderator.publish_event(campaign, 'voter_response_submitted', {:caller_session_id => last_call_attempt.caller_session.id, :campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)}) unless questions.present?
-    questions
+    campaign.script.questions.not_answered_by(self)    
   end
 
   def question_not_answered
