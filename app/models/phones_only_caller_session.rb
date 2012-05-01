@@ -161,8 +161,8 @@ class PhonesOnlyCallerSession < CallerSession
   end
   
   
-  def select_voter(voter)
-    voter ||= campaign.next_voter_in_dial_queue(voter)
+  def select_voter(old_voter)
+    voter = campaign.next_voter_in_dial_queue(old_voter)
     update_attributes(voter_in_progress: voter)
   end
   
