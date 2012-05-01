@@ -466,14 +466,6 @@ describe Voter do
       voter.unanswered_questions.should == [pending_question]
     end
 
-    it "sends pusher event to moderator as 'voter_response_submitted' " do
-      voter.update_attributes(:last_call_attempt => Factory(:call_attempt, :campaign => campaign, :caller_session => Factory(:caller_session)))
-      answered_question = Factory(:question, :script => script)
-      Factory(:answer, :voter => voter, :question => answered_question, :possible_response => Factory(:possible_response, :question => answered_question))
-      Moderator.should_receive(:publish_event).with(campaign, 'voter_response_submitted', anything)
-      voter.unanswered_questions.should == []
-    end
-
     it "associates the caller with the answer" do
       caller = Factory(:caller)
       session = Factory(:caller_session, :caller => caller)

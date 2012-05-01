@@ -10,18 +10,6 @@ class MonitorsController < ClientController
     @token = twilio_capability.generate
   end
   
-  def poll_for_updates
-    moderator = Moderator.find_by_session(params[:monitor_session]) 
-    moderator.account.campaigns.each do |campaign|
-      EM.run {          
-        update_dials_in_progress_deferrable = Pusher[moderator.session].trigger_async('update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
-        update_dials_in_progress_deferrable.callback{}
-        update_dials_in_progress_deferrable.errback {|errback|}
-      }        
-    end          
-    render nothing: true
-  end
-  
 
   def start
     caller_session = CallerSession.find(params[:session_id])

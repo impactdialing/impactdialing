@@ -154,7 +154,7 @@ class PhonesOnlyCallerSession < CallerSession
       end
       
       state :wrapup_call do
-        before(:always) {wrapup_call}
+        before(:always) {wrapup_call_attempt}
         event :next_call, :to => :ready_to_call
         response do |xml_builder, the_call|
           xml_builder.Redirect(flow_caller_url(self.caller, event: 'next_call', :host => Settings.host, :port => Settings.port, :session => id))          
@@ -165,7 +165,7 @@ class PhonesOnlyCallerSession < CallerSession
       
   end
   
-  def wrapup_call
+  def wrapup_call_attempt
     attempt_in_progress.try(:update_attributes, {:wrapup_time => Time.now})
   end
   

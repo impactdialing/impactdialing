@@ -597,9 +597,8 @@ describe PhonesOnlyCallerSession do
       it "should move to read_next_question state" do        
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "voter_response", voter_in_progress: @voter, question_id: @question.id)
         caller_session.should_receive(:more_questions_to_be_answered?).and_return(false)
-        caller_session.should_receive(:publish_moderator_conference_started)
         caller_session.next_question!
-        caller_session.state.should eq('ready_to_call')
+        caller_session.state.should eq('wrapup_call')
       end
       
     end

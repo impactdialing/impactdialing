@@ -18,15 +18,30 @@ module CallerEvents
           caller_deferrable.errback { |error| }
         end
         campaign.account.moderators.last_hour.active.each do |moderator|
-          moderator_deferrable = Pusher[moderator.session].trigger_async('voter_event', {caller_session_id:  id, campaign_id:  campaign.id, caller_id:  caller.id, call_status: attempt_in_progress.try(:status)})      
-          moderator_deferrable.callback {}
-          moderator_deferrable.errback { |error| }          
+          moderator_voter_deferrable = Pusher[moderator.session].trigger_async('voter_event', {caller_session_id:  id, campaign_id:  campaign.id, caller_id:  caller.id, call_status: attempt_in_progress.try(:status)})      
+          moderator_dials_deferrable = Pusher[moderator.session].trigger_async('update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
+          moderator_voter_deferrable.callback {}
+          moderator_dials_deferrable.callback {}
+          moderator_voter_deferrable.errback { |error| }          
+          moderator_dials_deferrable.errback { |error| }          
         end              
       }   
     end
     
     def publish_calling_voter
-      publish_async('calling_voter', {}) unless caller.is_phones_only?
+      EM.run {
+        unless caller.is_phones_only? 
+          event_hash = campaign.caller_conference_started_event     
+          caller_deferrable = Pusher[session_key].trigger_async('calling_voter', {})
+          caller_deferrable.callback {}
+          caller_deferrable.errback { |error| }
+        end
+        campaign.account.moderators.last_hour.active.each do |moderator|
+          moderator_dials_deferrable = Pusher[moderator.session].trigger_async('update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
+          moderator_dials_deferrable.callback {}
+          moderator_dials_deferrable.errback { |error| }          
+        end              
+      }
     end
     
     def publish_caller_disconnected      
