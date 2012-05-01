@@ -100,7 +100,7 @@ class Call < ActiveRecord::Base
       
       
       state :wrapup_and_continue do 
-        before(:always) { wrapup_now; call_attempt.redirect_caller;call_attempt.publish_moderator_response_submited}
+        before(:always) { wrapup_now; call_attempt.redirect_caller; call_attempt.publish_moderator_response_submited}
       end
       
       state :wrapup_and_stop do
