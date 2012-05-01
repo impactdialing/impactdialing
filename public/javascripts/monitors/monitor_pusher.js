@@ -165,14 +165,5 @@ $(document).ready(function() {
     });  
   }
 
-setInterval(function() {
-    $.ajax({
-        url : "/client/monitors/poll_for_updates",
-		data : {monitor_session:$('monitor_session').text() },
-        type : "GET",
-    });  
-
-    }, 10000);
-  
 });
 

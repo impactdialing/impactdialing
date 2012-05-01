@@ -91,7 +91,6 @@ class CallAttempt < ActiveRecord::Base
   def abandon_call
     update_attributes(status: CallAttempt::Status::ABANDONED, wrapup_time: Time.now)
     voter.update_attributes(:status => CallAttempt::Status::ABANDONED, call_back: false, caller_session: nil, caller_id: nil)
-    # publish_moderator_dials_in_progress
   end
     
   def connect_lead_to_caller

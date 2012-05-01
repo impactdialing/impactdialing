@@ -204,7 +204,6 @@ class CallerSession < ActiveRecord::Base
     update_attribute('attempt_in_progress', attempt)
     voter.update_attributes(:last_call_attempt => attempt, :last_call_attempt_time => Time.now, :caller_session => self, status: CallAttempt::Status::RINGING)
     Call.create(call_attempt: attempt)
-    # publish_moderator_dials_in_progress
     attempt    
   end
   
@@ -219,7 +218,7 @@ class CallerSession < ActiveRecord::Base
     attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
     voter.update_attributes(status: CallAttempt::Status::FAILED)
     update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
-    # publish_moderator_dials_in_progress
+    Moderator.update_dials_in_progress(campaign)
     redirect_webui_caller
   end
   
