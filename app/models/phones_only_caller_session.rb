@@ -81,8 +81,10 @@ class PhonesOnlyCallerSession < CallerSession
         end
       end
       
+      
       state :conference_started_phones_only do
         before(:always) {start_conference; dial(voter_in_progress)}
+        event :gather_response, :to => :ready_to_call, :if => :call_answered?
         event :gather_response, :to => :read_next_question
         
         response do |xml_builder, the_call|
@@ -95,6 +97,7 @@ class PhonesOnlyCallerSession < CallerSession
       
       state :conference_started_phones_only_predictive do
         before(:always) {start_conference}
+        event :gather_response, :to => :ready_to_call, :if => :call_answered?
         event :gather_response, :to => :read_next_question
 
         response do |xml_builder, the_call|
@@ -158,6 +161,10 @@ class PhonesOnlyCallerSession < CallerSession
   
   def more_questions_to_be_answered?
     !current_voter.question_not_answered.nil?
+  end
+  
+  def call_answered?
+    attempt_in_progress.try(:status) == CallAttempt::Status::SUCCESS
   end
   
   
