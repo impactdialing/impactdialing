@@ -98,23 +98,6 @@ class CallerController < ApplicationController
   end
 
 
-  # def gather_response
-  #   caller = Caller.find(params[:id])
-  #   caller_session = caller.caller_sessions.find(params[:session_id])
-  #   question = Question.find_by_id(params[:question_id])
-  #   voter = caller_session.voter_in_progress
-  #   voter.answer(question, params[:Digits], caller_session) if voter && question
-  # 
-  #   xml = Twilio::Verb.hangup if caller_session.disconnected?
-  #   xml ||= (voter.question_not_answered.try(:read, caller_session) if voter)
-  #   xml ||= caller_session.ask_caller_to_choose_voter if (caller.is_phones_only? && caller.campaign.is_preview_or_progressive)
-  #   xml ||= caller_session.start
-  #   render :xml => xml
-  # end
-
-
-
-  
   def check_reassign
     caller = Caller.find(params[:id])
     if caller.campaign.id == params[:campaign_id].to_i
@@ -144,6 +127,8 @@ class CallerController < ApplicationController
   
   def find_caller_session
     @caller_session = CallerSession.find_by_id(params[:session_id]) || CallerSession.find_by_sid(params[:CallSid])
+    @caller_session.update_attributes(digit: params[Digits], question_id: params[:question_id])
+    @caller_session
   end
 
 end
