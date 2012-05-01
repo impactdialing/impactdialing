@@ -108,7 +108,7 @@ describe WebuiCallerSession do
         @script = Factory(:script)
         @campaign =  Factory(:preview, script: @script)    
         @caller = Factory(:caller, campaign: @campaign)
-        @call_attempt = Factory(:call_attempt, status: CallAttempt::Status::SUCCESS)
+        @call_attempt = Factory(:call_attempt, connecttime: Time.now)
       end
 
       it "should move to paused state if call not wrapped up" do
