@@ -13,7 +13,7 @@ module CallerEvents
       EM.run {
         unless caller.is_phones_only? 
           event_hash = campaign.caller_conference_started_event     
-          caller_deferrable = Pusher[session_key].trigger_async(event_hash[:event], event_hash[:data])
+          caller_deferrable = Pusher[session_key].trigger_async(event_hash[:event], event_hash[:data].merge!(:dialer => campaign.type))
           caller_deferrable.callback {}
           caller_deferrable.errback { |error| }
         end
