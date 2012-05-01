@@ -46,7 +46,7 @@ describe PhonesOnlyCallerSession do
       it "should render correct twiml" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, digit: "#", state: "read_choice")
         caller_session.read_instruction_options!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>After these instructions, you will be placed on hold. When someone answers the phone, the hold music will stop. You usually won't hear the person say hello, so start talking immediately. At the end of the conversation, do not hang up your phone. Instead, press star to end the call, and you will be given instructions on how to enter your call results. Press star to begin dialing or pound for instructions.</Say><Redirect>https://3ngz.localtunnel.com:3000/caller/#{@caller.id}/flow?event=callin_choice&amp;session=#{caller_session.id}</Redirect></Response>")
+        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>After these instructions, you will be placed on hold. When someone answers the phone, the hold music will stop. You usually won't hear the person say hello, so start talking immediately. At the end of the conversation, do not hang up your phone. Instead, press star to end the call, and you will be given instructions on how to enter your call results.</Say><Redirect>https://3ngz.localtunnel.com:3000/caller/#{@caller.id}/flow?event=callin_choice&amp;session=#{caller_session.id}</Redirect></Response>")
       end  
           
     end
@@ -163,30 +163,34 @@ describe PhonesOnlyCallerSession do
       end
 
       it "should set caller state to choosing_voter_to_dial" do
-        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call")
+        call_attempt = Factory(:call_attempt)
+        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call", attempt_in_progress: call_attempt)        
         caller_session.should_receive(:caller_reassigned_to_another_campaign?).and_return(false)
         caller_session.start_conf!
         caller_session.state.should eq('choosing_voter_to_dial')
       end     
       
       it "should set voter in progress for session" do
-        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call")
+        call_attempt = Factory(:call_attempt)
+        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call", attempt_in_progress: call_attempt)
         caller_session.should_receive(:caller_reassigned_to_another_campaign?).and_return(false)
         caller_session.start_conf!
         caller_session.voter_in_progress.should eq(@voter)        
       end
 
       it "should render twiml for preview when voters present" do
-        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call")
+        call_attempt = Factory(:call_attempt)
+        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call", attempt_in_progress: call_attempt)
         voter = Factory(:voter, FirstName:"first", LastName:"last")
         caller_session.should_receive(:caller_reassigned_to_another_campaign?).and_return(false)
         @campaign.should_receive(:next_voter_in_dial_queue).and_return(voter)
         caller_session.start_conf!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather numDigits=\"1\" timeout=\"10\" action=\"https://3ngz.localtunnel.com:3000/caller/#{@caller.id}/flow?event=gather_response&amp;session=#{caller_session.id}&amp;voter=#{voter.id}\" method=\"POST\" finishOnKey=\"5\"><Say>first  last. Press star to dial or pound to skip.</Say></Gather></Response>")
+        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather numDigits=\"1\" timeout=\"10\" action=\"https://3ngz.localtunnel.com:3000/caller/#{@caller.id}/flow?event=start_conf&amp;session=#{caller_session.id}&amp;voter=#{voter.id}\" method=\"POST\" finishOnKey=\"5\"><Say>first  last. Press star to dial or pound to skip.</Say></Gather></Response>")
       end        
 
       it "should render twiml for preview when no voters present" do
-        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call")
+        call_attempt = Factory(:call_attempt)
+        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call", attempt_in_progress: call_attempt)
         caller_session.should_receive(:caller_reassigned_to_another_campaign?).and_return(false)
         @campaign.should_receive(:next_voter_in_dial_queue).and_return(nil)
         caller_session.start_conf!
@@ -203,28 +207,32 @@ describe PhonesOnlyCallerSession do
       end
 
       it "should set caller state to choosing_voter_and_dial" do
-        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call")
+        call_attempt = Factory(:call_attempt)
+        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call", attempt_in_progress: call_attempt)
         caller_session.start_conf!
         caller_session.state.should eq('choosing_voter_and_dial')
       end        
       
       it "should set voter in progress" do
-        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call")
+        call_attempt = Factory(:call_attempt)
+        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call", attempt_in_progress: call_attempt)
         caller_session.start_conf!
         caller_session.voter_in_progress.should eq(@voter)
       end        
       
 
       it "should render twiml for power when voters present" do
-        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call")
+        call_attempt = Factory(:call_attempt)
+        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call", attempt_in_progress: call_attempt)
         voter = Factory(:voter, FirstName:"first", LastName:"last")
         @campaign.should_receive(:next_voter_in_dial_queue).and_return(voter)
         caller_session.start_conf!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>first  last.</Say><Redirect method=\"POST\">https://3ngz.localtunnel.com:3000/caller/#{@caller.id}/flow?session_id=#{caller_session.id}&amp;voter_id=#{voter.id}</Redirect></Response>")
+        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>first  last.</Say><Redirect method=\"POST\">https://3ngz.localtunnel.com:3000/caller/#{@caller.id}/flow?event=start_conf&amp;session_id=#{caller_session.id}&amp;voter_id=#{voter.id}</Redirect></Response>")
       end        
 
       it "should render twiml for power when no voters present" do
-        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call")
+        call_attempt = Factory(:call_attempt)
+        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call", attempt_in_progress: call_attempt)
         @campaign.should_receive(:next_voter_in_dial_queue).and_return(nil)
         caller_session.start_conf!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>There are no more numbers to call in this campaign.</Say></Response>")
@@ -432,17 +440,18 @@ describe PhonesOnlyCallerSession do
       end
       
       it "should move to voter_response state" do
-        
-        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "conference_started_phones_only", voter_in_progress: @voter, question_id: @question.id)
+        call_attempt = Factory(:call_attempt, voter: @voter)        
+        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "conference_started_phones_only", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt)
         caller_session.gather_response!
         caller_session.state.should eq('read_next_question')
       end
       
       it "should render correct twiml" do
+        call_attempt = Factory(:call_attempt, voter: @voter)
         possible_response_1 = Factory(:possible_response, question: @question, keypad: 1, value: "Great")
         possible_response_2 = Factory(:possible_response, question: @question, keypad: 2, value: "Super")
-        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "conference_started_phones_only", voter_in_progress: @voter, question_id: @question.id)
-        caller_session.voter_in_progress.should_receive(:question_not_answered).exactly(3).and_return(@question)
+        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "conference_started_phones_only", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt)
+        caller_session.should_receive(:unanswered_question).exactly(3).and_return(@question)
         caller_session.gather_response!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather timeout=\"5\" finishOnKey=\"*\" action=\"https://3ngz.localtunnel.com:3000/caller/#{@caller.id}/flow?event=submit_response&amp;question_id=#{@question.id}&amp;session_id=#{caller_session.id}\" method=\"POST\"><Say>How do you like Impactdialing</Say><Say>press 1 for Great</Say><Say>press 2 for Super</Say><Say>Then press star to submit your result.</Say></Gather></Response>")
       end
@@ -461,17 +470,18 @@ describe PhonesOnlyCallerSession do
       end
       
       it "should move to voter_response state" do
-        
-        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "conference_started_phones_only", voter_in_progress: @voter, question_id: @question.id)
+        call_attempt = Factory(:call_attempt, voter: @voter)
+        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "conference_started_phones_only", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt)
         caller_session.gather_response!
         caller_session.state.should eq('read_next_question')
       end
       
       it "should render correct twiml" do
+        call_attempt = Factory(:call_attempt, voter: @voter)
         possible_response_1 = Factory(:possible_response, question: @question, keypad: 1, value: "Great")
         possible_response_2 = Factory(:possible_response, question: @question, keypad: 2, value: "Super")
-        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "conference_started_phones_only", voter_in_progress: @voter, question_id: @question.id)
-        caller_session.voter_in_progress.should_receive(:question_not_answered).exactly(3).and_return(@question)
+        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "conference_started_phones_only", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt)
+        caller_session.should_receive(:unanswered_question).exactly(3).and_return(@question)
         caller_session.gather_response!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather timeout=\"5\" finishOnKey=\"*\" action=\"https://3ngz.localtunnel.com:3000/caller/#{@caller.id}/flow?event=submit_response&amp;question_id=#{@question.id}&amp;session_id=#{caller_session.id}\" method=\"POST\"><Say>How do you like Impactdialing</Say><Say>press 1 for Great</Say><Say>press 2 for Super</Say><Say>Then press star to submit your result.</Say></Gather></Response>")
       end
@@ -518,22 +528,25 @@ describe PhonesOnlyCallerSession do
       end
       
       it "move to voter_response state " do
-        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: false, campaign: @campaign, state: "read_next_question", voter_in_progress: @voter, question_id: @question.id)
+        call_attempt = Factory(:call_attempt, voter: @voter)
+        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: false, campaign: @campaign, state: "read_next_question", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt)
         caller_session.should_receive(:disconnected?).and_return(false)
         caller_session.submit_response!
         caller_session.state.should eq('voter_response')
       end
       
       it "should persist the answer " do
-        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: false, campaign: @campaign, state: "read_next_question", voter_in_progress: @voter, question_id: @question.id)
+        call_attempt = Factory(:call_attempt, voter: @voter)        
+        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: false, campaign: @campaign, state: "read_next_question", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt)
         caller_session.should_receive(:disconnected?).and_return(false)
         Question.should_receive(:find_by_id).and_return(@question)
-        caller_session.voter_in_progress.should_receive(:answer)
+        caller_session.attempt_in_progress.voter.should_receive(:answer)
         caller_session.submit_response!
       end
       
       it "should render correct twiml " do
-        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: false, campaign: @campaign, state: "read_next_question", voter_in_progress: @voter, question_id: @question.id)
+        call_attempt = Factory(:call_attempt, voter: @voter)        
+        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: false, campaign: @campaign, state: "read_next_question", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt)
         caller_session.should_receive(:disconnected?).and_return(false)
         caller_session.submit_response!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Redirect>https://3ngz.localtunnel.com:3000/caller/#{@caller.id}/flow?event=next_question&amp;session=#{caller_session.id}</Redirect></Response>")
