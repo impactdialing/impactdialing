@@ -21,7 +21,6 @@ class PhonesOnlyCallerSession < CallerSession
       end
       
       state :ready_to_call do        
-        before(:always)
         event :start_conf, :to => :time_period_exceeded, :if => :time_period_exceeded?
         event :start_conf, :to => :reassigned_campaign, :if => :caller_reassigned_to_another_campaign?
         event :start_conf, :to => :choosing_voter_to_dial, :if => :preview?
