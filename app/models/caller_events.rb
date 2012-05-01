@@ -15,7 +15,7 @@ module CallerEvents
     end
     
     def publish_calling_voter
-      publish_async('calling_voter', {})
+      publish_async('calling_voter', {}) unless caller.is_phones_only?
     end
     
     def publish_caller_disconnected      
