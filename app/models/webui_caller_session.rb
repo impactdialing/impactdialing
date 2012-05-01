@@ -28,6 +28,7 @@ class WebuiCallerSession < CallerSession
         end
       end
       
+      
       state :paused do        
         event :start_conf, :to => :time_period_exceeded, :if => :time_period_exceeded?        
         event :start_conf, :to => :connected
@@ -47,7 +48,7 @@ class WebuiCallerSession < CallerSession
   end
   
   def call_not_wrapped_up?
-    attempt_in_progress.try(:status) == CallAttempt::Status::SUCCESS &&  attempt_in_progress.try(:not_wrapped_up?)
+    attempt_in_progress.try(:connecttime) != nil &&  attempt_in_progress.try(:not_wrapped_up?)
   end
   
   def start_conference    
