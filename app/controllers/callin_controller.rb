@@ -12,7 +12,12 @@ class CallinController < ApplicationController
     if caller
       session = caller.create_caller_session(session_key, params[:CallSid])    
       Moderator.caller_connected_to_campaign(caller, caller.campaign, session)
-      render xml:  session.run('start_conf')
+      if caller.is_phones_only?
+        render xml:  session.run('callin_choice')
+      else
+        render xml:  session.run('start_conf')
+      end
+
     else
       render xml:  Caller.ask_for_pin(params[:attempt].to_i)
     end
