@@ -87,7 +87,7 @@ class PhonesOnlyCallerSession < CallerSession
       state :conference_started_phones_only do
         before(:always) {start_conference; dial(voter_in_progress)}
         event :gather_response, :to => :read_next_question, :if => :call_answered?
-        event :gather_response, :to => :ready_to_call
+        event :gather_response, :to => :wrapup_call
 
         
         response do |xml_builder, the_call|
@@ -101,7 +101,7 @@ class PhonesOnlyCallerSession < CallerSession
       state :conference_started_phones_only_predictive do
         before(:always) {start_conference}
         event :gather_response, :to => :read_next_question, :if => :call_answered?
-        event :gather_response, :to => :ready_to_call
+        event :gather_response, :to => :wrapup_call
 
 
         response do |xml_builder, the_call|
@@ -141,7 +141,7 @@ class PhonesOnlyCallerSession < CallerSession
       
       state :voter_response do
         event :next_question, :to => :read_next_question, :if => :more_questions_to_be_answered? 
-        event :next_question, :to => :ready_to_call
+        event :next_question, :to => :wrapup_call
         before(:always) {
           question = Question.find_by_id(question_id);          
           current_voter.answer(question, digit, self) if current_voter && question
@@ -153,7 +153,20 @@ class PhonesOnlyCallerSession < CallerSession
           
       end
       
+      state :wrapup_call do
+        before(:always) {wrapup_call}
+        event :next_call, :to => :ready_to_call
+        response do |xml_builder, the_call|
+          xml_builder.Redirect(flow_caller_url(self.caller, event: 'next_call', :host => Settings.host, :port => Settings.port, :session => id))          
+        end        
+        
+      end
       
+      
+  end
+  
+  def wrapup_call
+    attempt_in_progress.try(:update_attributes, {:wrapup_time => Time.now})
   end
   
   def publish_moderator_gathering_response

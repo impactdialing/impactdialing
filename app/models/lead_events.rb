@@ -5,8 +5,7 @@ module LeadEvents
   
   module InstanceMethods
     
-    def publish_voter_connected
-      
+    def publish_voter_connected      
       EM.run {
         unless caller_session.caller.is_phones_only?
           event_hash = campaign.voter_connected_event(self.call)        
