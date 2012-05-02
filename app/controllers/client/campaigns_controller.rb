@@ -56,7 +56,11 @@ module Client
       @campaign.account = account
       @campaign.update_attributes(params[:campaign])
       @campaign.type = params[:campaign][:type]
-      @campaign.save!      
+      begin
+        @campaign.save!      
+      rescue ActiveRecord::RecordInvalid
+        redirect :back
+      end
       @scripts = @campaign.account.scripts
       @lists = @campaign.voter_lists
       @voter_list = @campaign.voter_lists.new
