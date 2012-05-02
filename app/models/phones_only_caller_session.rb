@@ -166,7 +166,7 @@ class PhonesOnlyCallerSession < CallerSession
   end
   
   def wrapup_call_attempt
-    attempt_in_progress.try(:update_attributes, {:wrapup_time => Time.now})
+    attempt_in_progress.try(:update_attributes, {wrapup_time:  Time.now, voter_response_processed: true})
   end
   
   def publish_moderator_gathering_response
