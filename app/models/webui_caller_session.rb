@@ -64,8 +64,7 @@ class WebuiCallerSession < CallerSession
   
   
   
-  def publish_async(event, data)
-    
+  def publish_async(event, data)    
     EM.run {
       deferrable = Pusher[session_key].trigger_async(event, data.merge!(:dialer => campaign.type))
       deferrable.callback { 
