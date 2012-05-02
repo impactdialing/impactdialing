@@ -128,7 +128,7 @@ class Voter < ActiveRecord::Base
     if response["TwilioResponse"]["RestException"]
       call_attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
       update_attributes(status: CallAttempt::Status::FAILED)
-      Moderator.update_dials_in_progress(campaign)
+      # Moderator.update_dials_in_progress(campaign)
       Rails.logger.info "[dialer] Exception when attempted to call #{self.Phone} for campaign id:#{self.campaign_id}  Response: #{response["TwilioResponse"]["RestException"].inspect}"
       return
     end
@@ -236,7 +236,7 @@ class Voter < ActiveRecord::Base
     call_attempt = self.call_attempts.create(:campaign => self.campaign, :dialer_mode => mode, :status => CallAttempt::Status::RINGING, :call_start => Time.now)
     update_attributes!(:last_call_attempt => call_attempt, :last_call_attempt_time => Time.now, :status => CallAttempt::Status::RINGING)    
     Call.create(call_attempt: call_attempt)
-    Moderator.update_dials_in_progress(campaign)
+    # Moderator.update_dials_in_progress(campaign)
     call_attempt
   end
   
