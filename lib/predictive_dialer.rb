@@ -4,7 +4,7 @@ DIALER_ROOT = ENV['DIALER_ROOT'] || File.expand_path('..', __FILE__)
 FileUtils.mkdir_p(File.join(DIALER_ROOT, 'log'), :verbose => true)
 ActiveRecord::Base.logger = Logger.new(File.open(File.join(DIALER_ROOT, 'log', "dialer_#{RAILS_ENV}.log"), 'a'))
 require 'em-http-request'
-require 'mysql2'
+
 
 loop do
   begin
