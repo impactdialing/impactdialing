@@ -59,7 +59,7 @@ module Client
       begin
         @campaign.save!      
       rescue ActiveRecord::RecordInvalid
-        @campaign.errors.add(:base, 'You cannot change dialing modes while callers are logged in.')
+        flash_message(:error, "You cannot change dialing modes while callers are logged in.")
         redirect_to :back
         return
       end
