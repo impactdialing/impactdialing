@@ -3,7 +3,7 @@ source :rubygems
 gem 'rails', '3.0.10'
 gem 'thin', '~>1.3.1'
 gem 'will_paginate', '~> 2.3.11'
-gem 'mysql', '~> 2.8.1'
+gem 'mysql2', '~> 0.2.0'
 
 gem 'newrelic_rpm','~>3.0.1'
 gem 'json', '~> 1.6.1'
