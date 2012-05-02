@@ -56,7 +56,13 @@ module Client
       @campaign.account = account
       @campaign.update_attributes(params[:campaign])
       @campaign.type = params[:campaign][:type]
-      @campaign.save!      
+      begin
+        @campaign.save!      
+      rescue ActiveRecord::RecordInvalid
+        flash_message(:error, "You cannot change dialing modes while callers are logged in.")
+        redirect_to :back
+        return
+      end
       @scripts = @campaign.account.scripts
       @lists = @campaign.voter_lists
       @voter_list = @campaign.voter_lists.new
