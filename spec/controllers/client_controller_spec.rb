@@ -31,8 +31,8 @@ describe ClientController do
 
     describe "reports" do
       it "shows only manual campaigns" do
-        campaign = Factory(:campaign, :account => user.account, :robo => false)
-        Factory(:campaign, :account => user.account, :robo => true)
+        campaign = Factory(:preview, :account => user.account)
+        Factory(:robo, :account => user.account)
         get :reports
         assigns(:campaigns).should == [campaign]
       end
@@ -68,7 +68,7 @@ describe ClientController do
     
     it "should not delete a script assigned to a active campaign" do
       script = Factory(:script, account: user.account, robo: true, active: true)
-      campaign =  Factory(:campaign, active: true, script_id: script.id, account: user.account)
+      campaign =  Factory(:predictive, active: true, script_id: script.id, account: user.account)
       post "script_delete", :id => script.id
       script.reload.active.should be_true
       response.should redirect_to :back

@@ -84,13 +84,6 @@ describe Voter do
     Voter.answered_within_timespan(Time.new(2012, 2, 14, 0), Time.new(2012, 2, 14, 9, 59, 59)).should == []
   end
 
-  it "conferences with a caller" do
-    voter = Factory(:voter)
-    caller = Factory(:caller_session)
-
-    voter.conference(caller)
-    caller.reload.voter_in_progress.should == voter
-  end
 
   describe "voter fields" do
     let(:account) { Factory(:account) }
@@ -136,7 +129,7 @@ describe Voter do
   end
 
   describe "Dialing" do
-    let(:campaign) { Factory(:campaign, :robo => true) }
+    let(:campaign) { Factory(:robo) }
     let(:voter) { Factory(:voter, :campaign => campaign) }
 
     it "is dialed" do
@@ -227,7 +220,7 @@ describe Voter do
 
 
   describe "predictive dialing" do
-    let(:campaign) { Factory(:campaign, :robo => false, :predictive_type => 'algorithm1', answering_machine_detect: true) }
+    let(:campaign) { Factory(:predictive, answering_machine_detect: true) }
     let(:voter) { Factory(:voter, :campaign => campaign) }
     let(:client) { mock(:client).tap { |client| Twilio::REST::Client.stub(:new).and_return(client) } }
 
@@ -288,7 +281,7 @@ describe Voter do
     end
 
     it "dials the voter without IFMachine if AMD detection turned off" do
-      campaign1 = Factory(:campaign, :robo => false, :predictive_type => 'algorithm1', answering_machine_detect: false)
+      campaign1 = Factory(:campaign, :robo => false, :type => 'Predictive', answering_machine_detect: false)
       Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {"FallbackUrl"=>"blah", 'StatusCallback'=> anything, 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
       voter.campaign = campaign1
       campaign1.stub(:time_period_exceed?).and_return(false)
@@ -435,23 +428,20 @@ describe Voter do
 
   describe 'answers' do
     let(:script) { Factory(:script, :robo => false) }
-    let(:campaign) { Factory(:campaign, :script => script) }
+    let(:campaign) { Factory(:predictive, :script => script) }
     let(:voter) { Factory(:voter, :campaign => campaign, :caller_session => Factory(:caller_session, :caller => Factory(:caller))) }
     let(:question) { Factory(:question, :script => script) }
     let(:response) { Factory(:possible_response, :question => question) }
     let(:call_attempt) { Factory(:call_attempt, :caller => Factory(:caller)) }
 
     it "captures call responses" do
-      response_params = {"voter_id"=>voter.id, "question"=>{question.id=>response.id}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}
-      voter.capture(response_params, call_attempt)
-      voter.result_date.should_not be_nil
+      voter.persist_answers("{\"#{question.id}\":\"#{response.id}\"}",call_attempt) 
       voter.answers.size.should == 1
     end
 
     it "puts voter back in the dial list if a retry response is detected" do
       another_response = Factory(:possible_response, :question => Factory(:question, :script => script), :retry => true)
-      response_params = {"voter_id"=>voter.id, "question"=>{question.id=>response.id, another_response.question.id=>another_response.id}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}
-      voter.capture(response_params, call_attempt)
+      voter.persist_answers("{\"#{question.id}\":\"#{response.id}\",\"#{another_response.question.id}\":\"#{another_response.id}\" }",call_attempt) 
       voter.answers.size.should == 2
       voter.reload.status.should == Voter::Status::RETRY
       Voter.to_be_dialed.should == [voter]
@@ -461,13 +451,11 @@ describe Voter do
       question = Factory(:question, :script => script)
       retry_response = Factory(:possible_response, :question => question, :retry => true)
       valid_response = Factory(:possible_response, :question => question)
-      response_params = {"voter_id"=>voter.id, "question"=>{response.question.id=>response.id, retry_response.question.id=> retry_response.id}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}
-      voter.capture(response_params, call_attempt)
+      voter.persist_answers("{\"#{response.question.id}\":\"#{response.id}\",\"#{retry_response.question.id}\":\"#{retry_response.id}\" }",call_attempt) 
       voter.answers.size.should == 2
       voter.reload.status.should == Voter::Status::RETRY
       Voter.to_be_dialed.should == [voter]
-      response_params_again = {"voter_id"=>voter.id, "question"=>{response.question.id=>response.id, valid_response.question.id=> valid_response.id}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}
-      voter.capture(response_params_again, call_attempt)
+      voter.persist_answers("{\"#{response.question.id}\":\"#{response.id}\",\"#{valid_response.question.id}\":\"#{valid_response.id}\" }",call_attempt) 
       voter.reload.answers.size.should == 2
     end
 
@@ -476,14 +464,6 @@ describe Voter do
       Factory(:answer, :voter => voter, :question => answered_question, :possible_response => Factory(:possible_response, :question => answered_question))
       pending_question = Factory(:question, :script => script)
       voter.unanswered_questions.should == [pending_question]
-    end
-
-    it "sends pusher event to moderator as 'voter_response_submitted' " do
-      voter.update_attributes(:last_call_attempt => Factory(:call_attempt, :campaign => campaign, :caller_session => Factory(:caller_session)))
-      answered_question = Factory(:question, :script => script)
-      Factory(:answer, :voter => voter, :question => answered_question, :possible_response => Factory(:possible_response, :question => answered_question))
-      Moderator.should_receive(:publish_event).with(campaign, 'voter_response_submitted', anything)
-      voter.unanswered_questions.should == []
     end
 
     it "associates the caller with the answer" do
@@ -496,7 +476,7 @@ describe Voter do
 
     describe "phones only" do
       let(:script) { Factory(:script) }
-      let(:campaign) { Factory(:campaign, :script => script) }
+      let(:campaign) { Factory(:predictive, :script => script) }
       let(:voter) { Factory(:voter, :campaign => campaign, :last_call_attempt => Factory(:call_attempt, :caller_session => Factory(:caller_session))) }
       let(:question) { Factory(:question, :script => script) }
       let(:session) { Factory(:caller_session, :caller => Factory(:caller)) }
@@ -532,18 +512,15 @@ describe Voter do
     let(:call_attempt) { Factory(:call_attempt, :caller => Factory(:caller)) }
 
     it "captures call notes" do
-      response_params = {"voter_id"=>voter.id, "notes"=>{note1.id=>"tell", note2.id=>"no"}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}
-      voter.capture(response_params, call_attempt)
+      voter.persist_notes("{\"#{note1.id}\":\"tell\",\"#{note2.id}\":\"no\"}")
       voter.note_responses.size.should == 2
     end
 
     it "override old note" do
-      response_params = {"voter_id"=>voter.id, "notes"=>{note1.id=>"tell"}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}
-      voter.capture(response_params, call_attempt)
+      voter.persist_notes("{\"#{note1.id}\":\"tell\"}")
       voter.note_responses.first eq('tell')
 
-      response_params = {"voter_id"=>voter.id, "notes"=>{note1.id=>"say"}, "action"=>"voter_response", "controller"=>"call_attempts", "id"=>"11"}
-      voter.capture(response_params, call_attempt)
+      voter.persist_notes("{\"#{note1.id}\":\"say\"}")
       voter.note_responses.first eq('say')
     end
   end

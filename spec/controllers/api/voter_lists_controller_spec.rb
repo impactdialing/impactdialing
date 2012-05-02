@@ -4,7 +4,7 @@ describe Api::VoterListsController do
   
   before :each do
     @current_user = Factory(:user)
-    @campaign = Factory(:campaign, :account => @current_user.account)
+    @campaign = Factory(:predictive, :account => @current_user.account)
   end
   
   it 'should throw an error if api_key is not passed' do

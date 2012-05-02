@@ -1,13 +1,16 @@
 require Rails.root.join("lib/twilio_lib")
 
 class CallAttempt < ActiveRecord::Base
+
   include Rails.application.routes.url_helpers
+  include LeadEvents
   belongs_to :voter
   belongs_to :campaign
   belongs_to :caller
   belongs_to :caller_session
   has_many :call_responses
   has_one :transfer_attempt
+  belongs_to :call
 
   scope :dial_in_progress, where('call_end is null')
   scope :not_wrapped_up, where('wrapup_time is null')
@@ -18,7 +21,10 @@ class CallAttempt < ActiveRecord::Base
   scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
   scope :without_status, lambda { |statuses| {:conditions => ['status not in (?)', statuses]} }
   scope :with_status, lambda { |statuses| {:conditions => ['status in (?)', statuses]} }
+  scope :results_not_processed, lambda { where(:voter_response_processed => "0", :status => Status::SUCCESS) }
+  scope :debit_not_processed, where(debited: "0").where('call_end is not null')
 
+  
 
   def report_recording_url
     "#{self.recording_url.gsub("api.twilio.com", "recordings.impactdialing.com")}.mp3" if recording_url
@@ -74,107 +80,96 @@ class CallAttempt < ActiveRecord::Base
     current_recording.next ? current_recording.next.twilio_xml(self) : current_recording.hangup
   end
   
+  
+  
+  
+  def connect_call
+    session = voter.caller_session
+    update_attributes(status: CallAttempt::Status::INPROGRESS, connecttime: Time.now, caller: session.caller, call_start: Time.now, caller_session: session)
+  end
+      
   def abandon_call
     update_attributes(status: CallAttempt::Status::ABANDONED, wrapup_time: Time.now)
-    voter.update_attributes(:status => CallAttempt::Status::ABANDONED, call_back: false, caller_session: nil)
-    Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
-    hangup
+    voter.update_attributes(:status => CallAttempt::Status::ABANDONED, call_back: false, caller_session: nil, caller_id: nil)
   end
-
-  def connect_to_caller(caller_session=nil)
-    caller_session ||= campaign.oldest_available_caller_session
-    if caller_session.nil? || caller_session.disconnected? || !caller_session.available_for_call
-      abandon_call
-    else
-      update_attributes(:status => CallAttempt::Status::INPROGRESS)
-      voter.update_attributes(caller_id: caller_session.caller_id)
-      begin
-        caller_session.update_attributes(:on_call => true, :available_for_call => false)
-        conference(caller_session)
-      rescue ActiveRecord::StaleObjectError
-        abandon_call
+    
+  def connect_lead_to_caller
+    begin
+      voter.caller_session ||= campaign.oldest_available_caller_session
+      unless voter.caller_session.nil?
+        voter.caller_id = voter.caller_session.caller_id
+        voter.status = CallAttempt::Status::INPROGRESS
+        voter.save
+        voter.caller_session.reload      
+        voter.caller_session.update_attributes(:on_call => true, :available_for_call => false)  
       end
+    rescue ActiveRecord::StaleObjectError
+      abandon_call
+    end    
+  end
+  
+  def caller_not_available?
+    connect_lead_to_caller
+    voter.caller_session.nil? || voter.caller_session.disconnected?
+  end
+  
+  def caller_available?  
+    !caller_not_available?
+  end
+  
+  
+  def end_answered_call
+    voter.update_attributes(last_call_attempt_time:  Time.now, caller_session: nil)
+    update_attributes(call_end:   Time.now)
+  end
+  
+  def process_answered_by_machine
+    update_attributes(connecttime: Time.now, call_end:  Time.now, status:  campaign.use_recordings? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP, wrapup_time: Time.now)
+    voter.update_attributes(status: campaign.use_recordings? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP, caller_session: nil)    
+  end
+  
+    
+  def end_unanswered_call
+    if [CallAttempt::Status::VOICEMAIL, CallAttempt::Status::HANGUP].include?(status)
+      update_attributes(wrapup_time: Time.now)    
+      voter.update_attributes(last_call_attempt_time:  Time.now, call_back: false)            
+    else
+      voter.update_attributes(status:  CallAttempt::Status::MAP[call.call_status], last_call_attempt_time:  Time.now, call_back: false)
+      update_attributes(status:  CallAttempt::Status::MAP[call.call_status], wrapup_time: Time.now)          
     end
   end
+  
+  def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
+    t = TwilioLib.new(account, auth)    
+    t.end_call("#{self.sid}")
+  end
+  
 
   def leave_voicemail
     update_attributes(:status => CallAttempt::Status::VOICEMAIL)
     voter.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
     self.campaign.voicemail_script.robo_recordings.first.play_message(self)
   end
-
-  def play_recorded_message
-    update_attributes(:call_end => Time.now, :status => campaign.use_recordings? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP)
-    voter.update_attributes(:status => campaign.use_recordings? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP)
-    return hangup unless campaign.use_recordings?
-    Twilio::TwiML::Response.new do |r|
-      r.Play campaign.recording.file.url
-      r.Hangup
-    end.text
+  
+  
+  def not_wrapped_up?
+    wrapup_time.nil?
   end
-
-  def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
-    t = TwilioLib.new(account, auth)
-    t.end_call("#{self.sid}")
-  end
-
-
-  def conference(session)
-    self.update_attributes(:caller => session.caller, :call_start => Time.now, :caller_session => session)
-    session.publish('voter_connected', {:attempt_id => self.id, :voter => self.voter.info})
-    Moderator.publish_event(campaign, 'voter_connected', {:caller_session_id => session.id, :campaign_id => campaign.id, :caller_id => session.caller.id})
-    voter.conference(session)
-    Twilio::TwiML::Response.new do |r|
-      r.Dial :hangupOnStar => 'false', :action => disconnect_call_attempt_path(self, :host => Settings.host), :record=>self.campaign.account.record_calls do |d|
-        d.Conference session.session_key, :waitUrl => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
-      end
-    end.text
-  end
-
-  def wait(time)
-    Twilio::TwiML::Response.new do |r|
-      r.Pause :length => time
-      r.Redirect "#{connect_call_attempt_path(:id => self.id)}"
-    end.text
-  end
-
-  def disconnect(params={})
-    update_attributes(:status => CallAttempt::Status::SUCCESS, :call_end => Time.now, :recording_duration=>params[:RecordingDuration], :recording_url=>params[:RecordingUrl])
+    
+  def disconnect_call
+    update_attributes(status: CallAttempt::Status::SUCCESS, recording_duration: call.recording_duration, recording_url: call.recording_url)
     voter.update_attribute(:status, CallAttempt::Status::SUCCESS)
-    Pusher[caller_session.session_key].trigger('voter_disconnected', {:attempt_id => self.id, :voter => self.voter.info})
-    Moderator.publish_event(campaign, 'voter_disconnected', {:caller_session_id => caller_session.id,:campaign_id => campaign.id, :caller_id => caller_session.caller.id, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
-    hangup
   end
-
-  def fail
-    voter.update_attributes(:call_back => false)
-    update_attributes(wrapup_time: Time.now)
-    Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
-    if caller_session && (campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE)
-      caller_session.update_attribute(:voter_in_progress, nil)      
-      if caller_session.caller.is_phones_only?
-        caller_session.redirect_to_phones_only_start
-      else  
-        next_voter = self.campaign.next_voter_in_dial_queue(voter.id) 
-        caller_session.publish('voter_push',next_voter.nil? ? {} : next_voter.info)         
-        caller_session.start
-      end  
-    else
-      hangup                        
-    end  
-  end
-
-  def hangup
-    Twilio::TwiML::Response.new { |r| r.Hangup }.text
-  end
-
-  def schedule_for_later(scheduled_date)
+  
+  
+  def schedule_for_later(date)
+    scheduled_date = DateTime.strptime(date, "%m/%d/%Y %H:%M").to_time
     update_attributes(:scheduled_date => scheduled_date, :status => Status::SCHEDULED)
     voter.update_attributes(:scheduled_date => scheduled_date, :status => Status::SCHEDULED, :call_back => true)
   end
 
   def wrapup_now
-    update_attributes(:wrapup_time => Time.now)
+    update_attribute(:wrapup_time, Time.now)
   end
   
   def capture_answer_as_no_response
@@ -193,11 +188,11 @@ class CallAttempt < ActiveRecord::Base
   end
   
   def self.time_on_call(caller, campaign, from, to)
-    CallAttempt.for_campaign(campaign).for_caller(caller).between(from, to).without_status([CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED]).sum('TIMESTAMPDIFF(SECOND ,connecttime,call_end)')
+    CallAttempt.for_campaign(campaign).for_caller(caller).between(from, to).without_status([CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED]).sum('TIMESTAMPDIFF(SECOND ,connecttime,call_end)').to_i
   end
   
   def self.time_in_wrapup(caller, campaign, from, to)
-    CallAttempt.for_campaign(campaign).for_caller(caller).between(from, to).without_status([CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED]).sum('TIMESTAMPDIFF(SECOND ,call_end,wrapup_time)')
+    CallAttempt.for_campaign(campaign).for_caller(caller).between(from, to).without_status([CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED]).sum('TIMESTAMPDIFF(SECOND ,call_end,wrapup_time)').to_i
   end
   
   def self.lead_time(caller, campaign, from, to)
@@ -223,5 +218,19 @@ class CallAttempt < ActiveRecord::Base
     RETRY = [NOANSWER, BUSY, FAILED]
     ANSWERED =  [INPROGRESS, SUCCESS]
   end
+
+  def debit
+    return false if self.call_start.nil? || self.call_end.nil?
+    call_time = ((self.call_end - self.call_start)/60).ceil
+    Payment.debit(call_time, self)
+  end
+  
+  def redirect_caller
+    unless caller_session.nil?
+      Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
+      Twilio::Call.redirect(caller_session.sid, flow_caller_url(caller_session.caller, :host => Settings.host, :port => Settings.port, session_id: caller_session.id, event: "start_conf"))
+    end  
+  end
+  
 
 end

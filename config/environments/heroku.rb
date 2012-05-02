@@ -17,6 +17,7 @@ ImpactDialing::Application.configure do
 
   # The production environment is meant for finished, "live" apps.
   # Code is not reloaded between requests
+  config.cache_store = :dalli_store
   config.cache_classes = true
 
   # Full error reports are disabled and caching is turned on

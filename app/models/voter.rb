@@ -1,4 +1,5 @@
 class Voter < ActiveRecord::Base
+  
   module Status
     NOTCALLED = "not called"
     RETRY = "retry"
@@ -119,23 +120,19 @@ class Voter < ActiveRecord::Base
   end
 
   def dial_predictive
-    call_attempt = new_call_attempt(self.campaign.predictive_type)
+    call_attempt = new_call_attempt(self.campaign.type)
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    params = {'FallbackUrl' => TWILIO_ERROR,'StatusCallback' => end_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port), 'Timeout' => campaign.use_recordings? ? "30" : "15"}
+    params = {'FallbackUrl' => TWILIO_ERROR, 'StatusCallback' => flow_call_url(call_attempt.call, host:  Settings.host, port:  Settings.port, event: 'call_ended'), 'Timeout' => campaign.use_recordings ? "30" : "15"}
     params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect
-    response = Twilio::Call.make(campaign.caller_id, self.Phone, connect_call_attempt_url(call_attempt, :host => Settings.host, :port => Settings.port), params)
+    response = Twilio::Call.make(campaign.caller_id, self.Phone, flow_call_url(call_attempt.call, host:  Settings.host, port:  Settings.port, event:  'incoming_call'), params)
     if response["TwilioResponse"]["RestException"]
       call_attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
       update_attributes(status: CallAttempt::Status::FAILED)
-      Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
+      # Moderator.update_dials_in_progress(campaign)
       Rails.logger.info "[dialer] Exception when attempted to call #{self.Phone} for campaign id:#{self.campaign_id}  Response: #{response["TwilioResponse"]["RestException"].inspect}"
       return
     end
     call_attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])
-  end
-
-  def conference(session)
-    self.update_attributes(:status => CallAttempt::Status::INPROGRESS, :caller_session => session) # session.voter_in_progress.should == self
   end
 
   def get_attribute(attribute)
@@ -149,13 +146,6 @@ class Voter < ActiveRecord::Base
   def blocked?
     account.blocked_numbers.for_campaign(campaign).map(&:number).include?(self.Phone)
   end
-
-  def capture(response, call_attempt)
-    update_attribute(:result_date, Time.now)
-    capture_answers(response["question"], call_attempt)
-    capture_notes(response['notes'])
-  end
-
 
 
   def selected_custom_voter_field_values
@@ -186,9 +176,7 @@ class Voter < ActiveRecord::Base
   end
 
   def unanswered_questions
-    questions = self.campaign.script.questions.not_answered_by(self)
-    Moderator.publish_event(campaign, 'voter_response_submitted', {:caller_session_id => last_call_attempt.caller_session.id, :campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)}) unless questions.present?
-    questions
+    campaign.script.questions.not_answered_by(self)    
   end
 
   def question_not_answered
@@ -203,11 +191,8 @@ class Voter < ActiveRecord::Base
     possible_response = question.possible_responses.where(:keypad => response).first
     self.answer_recorded_by = recorded_by_caller
     return unless possible_response
-    answer = self.answers.for(question).first.try(:update_attributes, {:possible_response => possible_response}) || answers.create(:question => question, :possible_response => possible_response, campaign: Campaign.find(campaign_id), caller: recorded_by_caller.caller)
-    Rails.logger.info "??? notifying observer ???"
-    notify_observers :answer_recorded
-    Rails.logger.info "... notified observer ..."
-    answer
+    # notify_observers :answer_recorded
+    self.answers.for(question).first.try(:update_attributes, {:possible_response => possible_response}) || answers.create(:question => question, :possible_response => possible_response, campaign: Campaign.find(campaign_id), caller: recorded_by_caller.caller)
   end
 
   def answer_recorded_by
@@ -221,19 +206,12 @@ class Voter < ActiveRecord::Base
   def answer_recorded_by=(caller_session)
     @caller_session = caller_session
   end
-
-  private
-
-  def new_call_attempt(mode = 'robo')
-    call_attempt = self.call_attempts.create(:campaign => self.campaign, :dialer_mode => mode, :status => CallAttempt::Status::RINGING, :call_start => Time.now)
-    self.update_attributes!(:last_call_attempt => call_attempt, :last_call_attempt_time => Time.now, :status => CallAttempt::Status::RINGING)
-    Moderator.publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
-    call_attempt
-  end
-
-  def capture_answers(questions, call_attempt)
+  
+  def persist_answers(questions, call_attempt)
+    return if questions.nil?
+    question_answers = JSON.parse(questions)
     retry_response = nil
-    questions.try(:each_pair) do |question_id, answer_id|
+    question_answers.try(:each_pair) do |question_id, answer_id|
       voters_response = PossibleResponse.find(answer_id)
       current_response = answers.find_by_question_id(question_id)
       current_response ? current_response.update_attributes(:possible_response => voters_response, :created_at => Time.now) : answers.create(:possible_response => voters_response, :question => Question.find(question_id), :created_at => Time.now, campaign: Campaign.find(campaign_id), :caller => call_attempt.caller)
@@ -241,13 +219,27 @@ class Voter < ActiveRecord::Base
     end
     update_attributes(:status => Voter::Status::RETRY) if retry_response
   end
-
-  def capture_notes(notes)
+  
+  def persist_notes(notes_json)
+    return if notes_json.nil?
+    notes = JSON.parse(notes_json)
     notes.try(:each_pair) do |note_id, note_res|
       note = Note.find(note_id)
       note_response = note_responses.find_by_note_id(note_id)
       note_response ? note_response.update_attributes(response: note_res) : note_responses.create(response: note_res, note: Note.find(note_id))
     end
   end
+
+  private
+
+  def new_call_attempt(mode = 'robo')
+    call_attempt = self.call_attempts.create(:campaign => self.campaign, :dialer_mode => mode, :status => CallAttempt::Status::RINGING, :call_start => Time.now)
+    update_attributes!(:last_call_attempt => call_attempt, :last_call_attempt_time => Time.now, :status => CallAttempt::Status::RINGING)    
+    Call.create(call_attempt: call_attempt)
+    # Moderator.update_dials_in_progress(campaign)
+    call_attempt
+  end
+  
+  
 
 end

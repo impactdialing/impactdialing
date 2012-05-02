@@ -1,0 +1,63 @@
+<script src="/javascripts/jquery.js" type="text/javascript"></script>
+<script src="/javascripts/recurly.min.js" type="text/javascript"></script>
+<link rel="stylesheet" href="/stylesheets/recurly.css" type="text/css" /> 
+<link rel="stylesheet" href="/stylesheets/recurlyexamples.css" type="text/css" /> 
+
+
+<script>
+
+function handlePlan(selectb){
+	if (selectb.selectedIndex==0)
+		createForm('per-minute');
+	else
+		createForm('per-caller');
+}
+Recurly.config({
+    subdomain: '<%= RECURLY_SUBDOMAIN %>'
+  , currency: 'USD'
+  }
+);
+
+
+<% 
+minute_signature = Recurly.js.sign :subscription => { :plan_code => 'per-minute' }
+caller_signature = Recurly.js.sign :subscription => { :plan_code => 'per-caller' }
+%>
+function createForm(plan){
+	var sig = '<%= minute_signature %>';
+	if (plan=='per-caller')
+		sig = '<%= caller_signature %>';
+	Recurly.buildSubscriptionForm({
+	  target: '#recurly-form'
+	  , accountCode: '<%= @account_code %>'
+	  , distinguishContactFromBillingInfo: false 
+	,account: {
+	    firstName: '<%= @user.fname %>'
+	  , lastName: '<%= @user.lname %>'
+	  , email: '<%= @user.email %>'
+	},
+	planCode: plan,
+	successURL: 'http://<%= Settings.public_host %><%= Settings.port=="80" ? "" : ":#{Settings.port}/client/billing_success" %>',
+	signature: sig,
+	afterInject: function(){
+		if (plan=='per-minute'){
+			$('.cost').hide();
+			$('.recurring_cost').hide();
+			$('.due_now').hide();
+			}
+		},
+	});
+}
+
+</script>
+</style>
+
+<div>
+	<p>Select your plan:<br>
+		<select onchange="handlePlan(this);">
+		<option>Pay per minute</option>
+		<option>Pay per caller</option>
+	</select></p>
+</div>
+   <div id="recurly-form"></div>
+<script>createForm('per-minute');</script>

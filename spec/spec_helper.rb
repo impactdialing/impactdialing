@@ -3,6 +3,7 @@ require 'spork'
 require 'spork/ext/ruby-debug'
 require 'simplecov'
 
+
 SimpleCov.start 'rails' do
   add_filter 'environment.rb'
 end
@@ -58,6 +59,7 @@ Spork.prefork do
   def fixture_file_upload(path, mime_type = nil, binary = false)
     Rack::Test::UploadedFile.new("#{fixture_path}#{path}", mime_type, binary)
   end
+  
 end
 
 Spork.each_run do

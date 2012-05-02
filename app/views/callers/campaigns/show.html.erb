@@ -4,7 +4,7 @@
 <% end %>
 <% content_for :javascripts do %>
     <%= pusher_js %>
-    <%= javascript_include_tag 'callers/caller_pusher', 'ICanHaz.min.js', 'jquery.form.js', 'flash_detect_min.js' , 'browser_detect.js'%>
+    <%= javascript_include_tag 'state-machine','callers/caller_pusher', 'ICanHaz.min.js', 'jquery.form.js', 'flash_detect_min.js' , 'browser_detect.js'%>
 
     <script type="text/javascript">
         var pusher = new Pusher('<%= Pusher.key %>');
@@ -70,7 +70,7 @@
 <%= hidden_field_tag(:caller, @caller.id) %>
 <%= hidden_field_tag(:caller_session, nil) %>
 <%= hidden_field_tag(:session_key, @caller_identity.session_key) %>
-<%= hidden_field_tag(:current_call_attempt, nil) %>
+<%= hidden_field_tag(:current_call, nil) %>
 <%= hidden_field_tag(:current_voter, nil) %>
 <%= hidden_field_tag(:campaign, @campaign.id) %>
 
@@ -109,7 +109,7 @@
 <%= render 'results' %>
 <%= render 'actions' %>
 
-<% unless @campaign.time_period_exceed? %>
+<% unless @campaign.time_period_exceeded? %>
     <div id="connecting">Connecting...</div>
     <div id="start_calling" >
 	<p><b>If your computer has a mic, click here:</b></p>

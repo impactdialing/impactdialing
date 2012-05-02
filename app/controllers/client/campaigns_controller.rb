@@ -3,7 +3,7 @@ module Client
     layout 'client'
 
     def new
-      @campaign = Campaign.new(:account_id => account.id)
+      @campaign = Progressive.new(:account_id => account.id)
       @campaign.save(:validate => false)
       @callers = account.callers.active
       @lists = @campaign.voter_lists
@@ -18,8 +18,6 @@ module Client
       @callers = account.callers.active
       @lists = @campaign.voter_lists
       @scripts = account.scripts.manual.active
-
-      @show_voter_buttons = @user.show_voter_buttons
       @voter_list = @campaign.voter_lists.new
       if (@campaign.robo)
         redirect_to broadcast_campaign_path(@campaign)
@@ -57,12 +55,13 @@ module Client
       @campaign = Campaign.find_by_id(params[:id])
       @campaign.account = account
       @campaign.update_attributes(params[:campaign])
+      @campaign.type = params[:campaign][:type]
+      @campaign.save!      
       @scripts = @campaign.account.scripts
       @lists = @campaign.voter_lists
       @voter_list = @campaign.voter_lists.new
       if @campaign.valid?
         @campaign.script ||= @campaign.account.scripts.first
-        @campaign.save
         @campaign.disable_voter_list
         params[:voter_list_ids].each { |id| VoterList.enable_voter_list(id) } unless params[:voter_list_ids].blank?
         flash_message(:notice, "Campaign saved")
@@ -77,7 +76,7 @@ module Client
     end
 
     def create
-      @campaign = Campaign.new(params[:campaign])
+      @campaign = new_type_campaign(params)
       @campaign.account = account
       @campaign.script ||= @campaign.account.scripts.first
       if @campaign.save
@@ -95,16 +94,19 @@ module Client
     def load_deleted
       self.instance_variable_set("@#{type_name.pluralize}", Campaign.deleted.manual.for_account(@user.account).paginate(:page => params[:page], :order => 'id desc'))
     end
-
-    def clear_calls
-      if current_user.admin?
-        campaign = Campaign.find(params[:campaign_id])
-        campaign.clear_calls
-        flash_message(:notice, "Calls cleared")
-        redirect_to client_campaign_path(campaign)
-      else
-        render :text => 'unauthorized', :status => :unauthorized
+    
+    private
+    
+    def new_type_campaign(params)
+      if params[:campaign][:type] == "Preview"
+        Preview.new(params[:campaign])
+      elsif params[:campaign][:type] == "Progressive"
+        Progressive.new(params[:campaign])
+      elsif params[:campaign][:type] == "Predictive"
+        Predictive.new(params[:campaign])
       end
     end
+    
+
   end
 end

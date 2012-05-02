@@ -28,6 +28,7 @@ class TwilioController < ApplicationController
     voter.update_attributes(:result_date => Time.now)
     @call_attempt.update_attributes(call_end: Time.now, wrapup_time: Time.now)
     @call_attempt.capture_answer_as_no_response_for_robo if params['CallStatus'] == "completed"
+    @call_attempt.debit
     render :text => ''
   end
 
@@ -38,7 +39,7 @@ class TwilioController < ApplicationController
     voter = @call_attempt.voter
     unless [CallAttempt::Status::HANGUP, CallAttempt::Status::VOICEMAIL].include? @call_attempt.status
       @call_attempt.update_attribute('status', CallAttempt::Status::MAP[params['CallStatus']])
-      voter.update_attributes(:status => Voter::MAP[params['CallStatus']])
+      voter.update_attributes(:status => CallAttempt::Status::MAP[params['CallStatus']])
     end
     @log_message = "call_attempt: #{@call_attempt.id} campaign: #{campaign.name}, phone: #{voter.Phone}\n callback parameters: #{params.inspect}"
   end

@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe TwilioController do
   let(:recording) { Factory(:robo_recording, :file_file_name => 'foo.wav') }
-  let(:campaign) { Factory(:campaign, :robo => true, :script => Factory(:script, :robo_recordings => [recording])) }
+  let(:campaign) { Factory(:robo, :script => Factory(:script, :robo_recordings => [recording])) }
   let(:call_attempt) { Factory(:call_attempt, :campaign => campaign, :voter => Factory(:voter)) }
 
   it "proceeds with the call if the call was answered" do
@@ -14,7 +14,7 @@ describe TwilioController do
   ['queued', 'busy', 'failed', 'no-answer', 'canceled',].each do |call_status|
     it "hangs up if the call has a status of #{call_status}" do
       post :callback, :call_attempt_id => call_attempt.id, :CallStatus => call_status
-      call_attempt.voter.reload.status.should == Voter::MAP[call_status]
+      call_attempt.voter.reload.status.should == CallAttempt::Status::MAP[call_status]
       response.body.should == Twilio::Verb.hangup
       call_attempt.reload.status.should == CallAttempt::Status::MAP[call_status]
     end

@@ -3,7 +3,7 @@ source :rubygems
 gem 'rails', '3.0.10'
 gem 'thin', '~>1.3.1'
 gem 'will_paginate', '~> 2.3.11'
-gem 'mysql', '~> 2.8.1'
+gem 'mysql2', '~> 0.2.0'
 gem 'newrelic_rpm','~>3.0.1'
 gem 'json', '~> 1.6.1'
 gem 'nokogiri', '~> 1.4.4'
@@ -24,13 +24,22 @@ gem 'delayed_job', '~>2.1.4'
 gem 'heroku','~>2.17.0'
 gem "activerecord-import", ">= 0.2.0"
 gem "airbrake",'~>3.0.9'
-gem "chargify_api_ares","~>0.5.0"
+gem 'recurly', '~> 2.1.3'
 gem "uuid", "~> 2.3.5"
+gem "dalli", "~>2.0.3"
+gem 'record-cache', "~>0.1.2"
+gem "call_center", "~> 0.0.9"
+gem "em-http-request", "~> 0.3.0"
+gem "ruby-graphviz", "0.9.0"
+
+
+
 
 group :development, :test do
   gem 'rspec'
   gem 'ruby-debug19'
   gem 'rspec-rails', '~> 2.6.1'
+
 end
 
 group :development do

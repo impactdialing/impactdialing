@@ -4,7 +4,7 @@ describe Api::LeadsController do
   
   before :each do
     @current_user = Factory(:user)
-    @campaign = Factory(:campaign, :account => @current_user.account)
+    @campaign = Factory(:predictive, :account => @current_user.account)
   end
   it 'should throw an error if api_key is not passed' do
     post :create, phone_number: "1234567890"
