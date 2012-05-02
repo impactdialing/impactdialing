@@ -16,6 +16,7 @@ Factory.define :user do |u|
   u.account { Factory(:account) }
   u.email { Factory.next(:email) }
   u.new_password 'password'
+  u.role "admin"
 end
 
 Factory.define :admin_user, :parent => :user do |u|
@@ -39,6 +40,52 @@ Factory.define :campaign do |c|
   c.time_zone "Pacific Time (US & Canada)"
   c.script_id {Factory(:script)}
 end
+
+Factory.define :predictive do |c|
+  c.name 'a campaign'
+  c.caller_id '1234567890'
+  c.account { Factory(:account) }
+  c.recycle_rate 1
+  c.start_time (Time.now - 6.hours)
+  c.end_time (Time.now - 7.hours)
+  c.time_zone "Pacific Time (US & Canada)"
+  c.script_id {Factory(:script)}
+end
+
+Factory.define :preview do |c|
+  c.name 'a campaign'
+  c.caller_id '1234567890'
+  c.account { Factory(:account) }
+  c.recycle_rate 1
+  c.start_time (Time.now - 6.hours)
+  c.end_time (Time.now - 7.hours)
+  c.time_zone "Pacific Time (US & Canada)"
+  c.script_id {Factory(:script)}
+end
+
+Factory.define :progressive do |c|
+  c.name 'a campaign'
+  c.caller_id '1234567890'
+  c.account { Factory(:account) }
+  c.recycle_rate 1
+  c.start_time (Time.now - 6.hours)
+  c.end_time (Time.now - 7.hours)
+  c.time_zone "Pacific Time (US & Canada)"
+  c.script_id {Factory(:script)}
+end
+
+Factory.define :robo do |c|
+  c.name 'a campaign'
+  c.caller_id '1234567890'
+  c.account { Factory(:account) }
+  c.recycle_rate 1
+  c.start_time (Time.now - 6.hours)
+  c.end_time (Time.now - 7.hours)
+  c.time_zone "Pacific Time (US & Canada)"
+  c.script_id {Factory(:script)}
+end
+
+
 
 Factory.define :caller do |s|
   s.email { Factory.next(:email) }
@@ -68,6 +115,13 @@ Factory.define :caller_session do |s|
   s.campaign { Factory(:campaign, :account => Factory(:account)) }
   s.caller_id { Factory(:caller).id }
 end
+
+Factory.define :webui_caller_session do |wcs|
+end
+
+Factory.define :phones_only_caller_session do |wcs|
+end
+
 
 Factory.define :caller_identity do |s|
   s.caller_id { Factory(:caller).id }
@@ -135,6 +189,9 @@ end
 Factory.define :transfer do |t|
 end
 Factory.define :transfer_attempt do |t|
+end
+
+Factory.define :call do |c|
 end
 
 

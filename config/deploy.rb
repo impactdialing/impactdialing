@@ -93,3 +93,6 @@ task :search_libs, :hosts => 'ec2-75-101-228-54.compute-1.amazonaws.com', :user=
   set :user, 'ubuntu'
   run 'ls -x1 /usr/lib | grep -i xml'
 end
+
+        require './config/boot'
+        require 'airbrake/capistrano'

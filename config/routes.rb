@@ -48,6 +48,7 @@ ImpactDialing::Application.routes.draw do
     end
 
     member do
+      post :flow
       post :assign_campaign
       post :pause
       post :active_session
@@ -180,7 +181,16 @@ ImpactDialing::Application.routes.draw do
   resources :campaigns, :path_prefix => 'client', :only => [] do
     member { post :verify_callerid }
     resources :voter_lists, :collection => {:import => :post}, :except => [:new, :show], :name_prefix => 'client'
-    match 'clear_calls', :to => 'client/campaigns#clear_calls', :as => 'clear_calls'
+  end
+  
+  resources :calls, :protocol => PROTOCOL do
+    member do
+      post :flow
+      post :hangup
+      post :submit_result
+      post :submit_result_and_stop
+      
+    end
   end
 
   resources :call_attempts, :protocol => PROTOCOL, :only => [:create, :update] do
@@ -220,6 +230,7 @@ ImpactDialing::Application.routes.draw do
   match '/twilio_callback', :to => 'twilio#callback', :as => :twilio_callback, :protocol => PROTOCOL
   match '/twilio_report_error', :to => 'twilio#report_error', :as => :twilio_report_error, :protocol => PROTOCOL
   match '/twilio_call_ended', :to => 'twilio#call_ended', :as => :twilio_call_ended, :protocol => PROTOCOL
+  match '/recurly/notification', :to => 'recurly#notification', :as => :recurly_notification
 
   get 'admin/status', :to => 'admin#state'
 

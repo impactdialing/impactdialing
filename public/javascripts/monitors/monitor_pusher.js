@@ -5,9 +5,10 @@ Pusher.log = function(message) {
 var channel = null;
 
 function update_status_and_duration(caller_selector, status){
-	$($(caller_selector).find('.status')).html(status)
-	$($(caller_selector).find('.timer')).stopwatch('reset');
-	//$($(caller_selector).find('.timer')).stopwatch('start');
+	if ($($(caller_selector).find('.status')).html() != status) {
+  	  $($(caller_selector).find('.status')).html(status)
+	  $($(caller_selector).find('.timer')).stopwatch('reset');
+	}
 }
 
 function forming_select_tag(data){
@@ -97,32 +98,25 @@ function subscribe_and_bind_events_monitoring(session_id){
       $(campaign_selector).children('.callers_logged_in').text(data.no_of_callers_logged_in);
     }
   });
-  
-  channel.bind('voter_disconnected', function(data) {
-    if (!$.isEmptyObject(data)){
+
+  channel.bind('voter_event', function(data){
+	call_status = {"Call in progress": "On call", "Call completed with success.": "Wrap up", null:"On hold", "Ringing":"On hold" }
+	if (!$.isEmptyObject(data)){
       var campaign_selector = 'tr#campaign_'+data.campaign_id;
-			var caller_selector = 'tr#caller_'+data.caller_session_id;
-			update_status_and_duration(caller_selector, "Wrap up");
-      $(campaign_selector).children('.voters_count').text(data.voters_remaining);
- 			if($(caller_selector).attr("on_call") == "true"){
-				$('status').text("Status: Caller is not connected to a lead.");
-			}
-    }
-  });
-  
-  channel.bind('voter_connected',function(data){
-    if (!$.isEmptyObject(data)){
-      var campaign_selector = 'tr#campaign_'+data.campaign_id;
-			var caller_selector = 'tr#caller_'+data.caller_session_id;
-			update_status_and_duration(caller_selector, "On call");
-			if($(caller_selector).attr("on_call") == "true"){
-				status = "Status: Monitoring in " + $(caller_selector).attr('mode') + " mode on " + $(caller_selector).children('td.caller_name').text().split("/")[0] + ".";
-    		$('status').text(status);
-			}
-		}
+	  var caller_selector = 'tr#caller_'+data.caller_session_id;
+	  update_status_and_duration(caller_selector, call_status[data.call_status]);
+	  if($(caller_selector).attr("on_call") == "true"){
+        status = "Status: Monitoring in " + $(caller_selector).attr('mode') + " mode on " + $(caller_selector).children('td.caller_name').text().split("/")[0] + ".";
+		$('status').text(status);
+      }
+   	  if($(caller_selector).attr("on_call") == "true"){
+		$('status').text("Status: Caller is not connected to a lead.");
+	 }
+
+	}
   });
 
-	channel.bind('update_dials_in_progress', function(data){
+  channel.bind('update_dials_in_progress', function(data){
 		if (!$.isEmptyObject(data)){
 			var campaign_selector = 'tr#campaign_'+data.campaign_id;
 			$(campaign_selector).children('.dials_in_progress').text(data.dials_in_progress);
@@ -131,17 +125,8 @@ function subscribe_and_bind_events_monitoring(session_id){
 			}
 		}
 	});
-	
-	channel.bind('voter_response_submitted', function(data){
-		if (!$.isEmptyObject(data)){
-			var caller_selector = 'tr#caller_'+data.caller_session_id;
-			var campaign_selector = 'tr#campaign_'+data.campaign_id;
-			update_status_and_duration(caller_selector, "On hold");
-			$(campaign_selector).children('.dials_in_progress').text(data.dials_in_progress);
-			$(campaign_selector).children('.voters_count').text(data.voters_remaining);
-		}
-	});
-	
+
+  	
 	channel.bind('caller_re_assigned_to_campaign', function(data){
 		if (!$.isEmptyObject(data)){
 			var caller_selector = 'tr#caller_'+data.caller_session_id;
@@ -179,6 +164,6 @@ $(document).ready(function() {
         }
     });  
   }
-  
+
 });
 

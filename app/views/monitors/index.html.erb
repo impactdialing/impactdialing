@@ -82,7 +82,7 @@
         }
     });
 	}
-	
+
 	function request_to_switch(next_session_id, action, status){
 		$.ajax({
         url : "/client/monitors/start",
@@ -96,7 +96,7 @@
 		$('.stop').live('click', function(){
 			stop($(this).attr("session_id"))
 		});
-		
+
     $('.monitor').live('click', function(){
 			var session_id = $(this).attr("session_id");
 			var action = $(this).attr("action");
@@ -104,7 +104,7 @@
 			  kick_off(session_id);
 			  return;
 			}
-			
+
       if($(this).parent().parent().attr("on_call") == "true"){
         switch_mode(session_id, action);
 				$(this).parent().parent().attr("mode", action)
@@ -183,7 +183,7 @@
             <% @campaigns.each do |c| %>
                 <tr id="<%= "campaign_"+c.id.to_s %>" class="campaign <%= cycle("odd", "even") %>">
                   <td><%= c.name %></td>
-                  <td class="callers_logged_in"><%= c.caller_sessions.on_call.size %></td>
+                  <td class="callers_logged_in"><%= c.caller_sessions.on_call.length %></td>
                   <td class="dials_in_progress"><%= c.call_attempts.not_wrapped_up.try(:size) %></td>
                   <td class="voters_count"><%= Voter.remaining_voters_count_for("campaign_id", c.id) %></td>
                 </tr>

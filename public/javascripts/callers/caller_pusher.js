@@ -3,10 +3,6 @@ Pusher.log = function(message) {
 };
 
 var channel = null;
-var browser_guid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
-    return v.toString(16);
-});	
 
 
 
@@ -32,6 +28,8 @@ function hide_all_actions() {
 function set_session(session_id) {
     $("#caller_session").val(session_id);
 }
+
+
 
 
 
@@ -89,7 +87,7 @@ function send_voter_response() {
 	    data: {caller_session:$("#caller_session").val()},
     };
     
-    $('#voter_responses').attr('action', "/call_attempts/" + $("#current_call_attempt").val() + "/voter_response");
+    $('#voter_responses').attr('action', "/calls/" + $("#current_call").val() + "/submit_result");
     $('#voter_responses').submit(function() {
         $(this).ajaxSubmit(options);
         return false;
@@ -102,10 +100,10 @@ function send_voter_response_and_disconnect() {
     var options = {
 	    data: {stop_calling: true, caller_session:$("#caller_session").val() },
         success:  function() {
-            disconnect_caller();
+            window.location.reload();
         }
     };
-    $('#voter_responses').attr('action', "/call_attempts/" + $("#current_call_attempt").val() + "/voter_response");
+    $('#voter_responses').attr('action', "/calls/" + $("#current_call").val() + "/submit_result_and_stop");
     $('#voter_id').val($("#current_voter").val())
     $('#voter_responses').submit(function() {
         $(this).ajaxSubmit(options);
@@ -143,8 +141,9 @@ function ie8(){
 }
 
 function disconnect_voter() {
+	$("#hangup_call").hide();
     $.ajax({
-        url : "/call_attempts/" + $("#current_call_attempt").val() + "/hangup",
+        url : "/calls/" + $("#current_call").val() + "/hangup",
         type : "POST",
         success : function(response) {
             // pushes 'calling_voter'' event to browsers
@@ -245,74 +244,35 @@ function subscribe(session_key) {
 	    $("#called_in").show();
 	});
 	
-	 channel.bind('caller_connected_initial', function(data) {
-		$('#browserTestContainer').hide();
-		hide_response_panel();
-		if (!$.isEmptyObject(data.fields)) {
-            set_message("Status: Ready for calls.");
-            set_voter(data);
-        } else {
-            $("#stop_calling").show();
-            set_message("Status: There are no more numbers to call in this campaign.");
-        }        
-	  });
-	
-    channel.bind('caller_connected', function(data) {
-        hide_all_actions();
-        $('#browserTestContainer').hide();
-        $("#start_calling").hide();
-        $("#callin_data").hide();
-        hide_response_panel();
-        $("#stop_calling").show();
-        if (!$.isEmptyObject(data.fields)) {
-            set_message("Status: Ready for calls.");
-            set_voter(data);
-			if(!data.start_calling) {
-              ready_for_calls(data)
-			}
-
-        } else {
-            $("#stop_calling").show();
-            set_message("Status: There are no more numbers to call in this campaign.");
-        }
-    });
-
-    channel.bind('conference_started', function(data) {
+	channel.bind('conference_started', function(data) {
 	if ($("#caller_session").val() != "" ){
+		set_message("Status: Ready for calls.");
+        set_voter(data);        
         ready_for_calls(data)		
 	}
     });
 
-
-    channel.bind('caller_connected_dialer', function(data) {
+    channel.bind('voter_connected', function(data) {
+        set_current_call(data.call_id);
         hide_all_actions();
-        $("#stop_calling").show();
-        set_message("Status: Dialing.");
+        set_message("Status: Connected.");
+        show_response_panel();
+		show_transfer_panel();
+        cleanup_previous_call_results();
+		cleanup_transfer_panel();
+        $("#hangup_call").show();
     });
 
-    channel.bind('answered_by_machine', function(data) {
-        if (data.dialer && data.dialer == 'preview') {
-            set_message("Status: Ready for calls.");
-        }
-    });
-
-    channel.bind('voter_push', function(data) {
-        set_message("Status: Ready for calls.");
-        set_voter(data);
-        $("#start_calling").hide();
-    });
-
-    channel.bind('call_could_not_connect', function(data) {
-        set_message("Status: Ready for calls.");
-        set_voter(data);
-        $("#start_calling").hide();
-        if ($.isEmptyObject(data.fields)) {
-            $("#stop_calling").show();
-
-        }
-        else {
-            ready_for_calls(data);
-        }
+    channel.bind('voter_connected_dialer', function(data) {
+        set_current_call(data.call_id);
+		set_voter(data.voter);
+		hide_all_actions();
+		set_message("Status: Connected.")
+	    show_response_panel();
+		show_transfer_panel();
+	    cleanup_previous_call_results();
+		cleanup_transfer_panel();		
+		$("#hangup_call").show();
     });
 
 
@@ -331,24 +291,31 @@ function subscribe(session_key) {
 
     });
 
-    channel.bind('voter_connected', function(data) {
-        set_call_attempt(data.attempt_id);
-        hide_all_actions();
-        if (data.dialer && data.dialer != 'preview') {
-            set_voter(data.voter);
-            set_message("Status: Connected.")
-        }
-        show_response_panel();
-		show_transfer_panel();
-        cleanup_previous_call_results();
-		cleanup_transfer_panel();
-        $("#hangup_call").show();
-    });
-
     channel.bind('calling_voter', function(data) {
         set_message('Status: Call in progress.');
         hide_all_actions();
     });
+
+    channel.bind('caller_disconnected', function(data) {
+        clear_caller();
+        clear_voter();
+        hide_response_panel();
+        set_message('Status: Not connected.');
+        hide_all_actions();
+        $("#callin_data").show();
+        if (FlashDetect.installed && flash_supported())
+            $("#start_calling").show();
+    });
+
+
+    channel.bind('caller_connected_dialer', function(data) {
+        hide_all_actions();
+        $("#stop_calling").show();
+        set_message("Status: Dialing.");
+    });
+
+
+
     channel.bind('transfer_busy', function(data) {
         $("#hangup_call").show();
     });
@@ -374,27 +341,6 @@ function subscribe(session_key) {
 	        $("#submit_and_stop_call").show();
 	        
 		}			
-    });
-
-
-    channel.bind('caller_disconnected', function(data) {
-        clear_caller();
-        clear_voter();
-        hide_response_panel();
-        set_message('Status: Not connected.');
-        hide_all_actions();
-        $("#callin_data").show();
-        if (FlashDetect.installed && flash_supported())
-            $("#start_calling").show();
-    });
-
-    channel.bind('waiting_for_result', function(data) {
-        show_response_panel();
-        set_message('Status: Waiting for call results.');
-    });
-
-    channel.bind('no_voter_on_call', function(data) {
-        $('status').text("Status: Waiting for caller to be connected.")
     });
 
     channel.bind('predictive_successful_voter_response', function(data) {
@@ -441,8 +387,8 @@ function subscribe(session_key) {
 
 	});
 
-    function set_call_attempt(id) {
-        $("#current_call_attempt").val(id);
+    function set_current_call(id) {
+        $("#current_call").val(id);
     }
 
     function set_voter(data) {
@@ -506,5 +452,16 @@ function subscribe(session_key) {
     function cleanup_transfer_panel() {
         $('#transfer_type').val('');
     }
+
+	function voter_connected(){
+		hide_all_actions();
+	    show_response_panel();
+		show_transfer_panel();
+	    cleanup_previous_call_results();
+		cleanup_transfer_panel();
+		set_message("Status: Connected.")
+	    $("#hangup_call").show();    
+	}
+
 
 }

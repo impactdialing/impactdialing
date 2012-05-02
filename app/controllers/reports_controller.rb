@@ -16,7 +16,7 @@ class ReportsController < ClientController
   
   def answers
     set_report_period
-    @results = @campaign.robo_answer_results(@from_date, @to_date)
+    @results = @campaign.answer_results(@from_date, @to_date)
     render :template => 'client/reports/answer'
   end
   

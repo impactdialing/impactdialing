@@ -94,7 +94,7 @@ class User < ActiveRecord::Base
   def create_default_campaign
     @script = Script.default_script(self.account)
     @script.save
-    @campaign = Campaign.new(name: "Demo campaign", caller_id: "4153475723", start_time: "01:00:00", end_time: "00:00:00", account_id: self.account.id, script_id: @script.id, predictive_type: "progressive")
+    @campaign = Progressive.new(name: "Demo campaign", caller_id: "4153475723", start_time: "01:00:00", end_time: "00:00:00", account_id: self.account.id, script_id: @script.id)
     @campaign.save
     @caller = Caller.new(name:"", email: self.email, password:"demo123", account_id: self.account.id, active: true, campaign_id: @campaign.id)
     @caller.save
@@ -102,6 +102,15 @@ class User < ActiveRecord::Base
     @voter_list.save
     @voter = Voter.new(Phone: "4152372444", LastName: "Lead", FirstName: "Demo", campaign_id: @campaign.id, account_id: self.account.id, voter_list_id: @voter_list.id)
     @voter.save  
+  end
+  
+  def create_promo_balance
+    p = Payment.new(:amount_paid=>9, :amount_remaining=>9, :account_id=>self.account.id, :notes=>"Trial credit")
+    p.save
+  end
+
+  def create_recurly_account_code
+    self.account.create_recurly_account_code
   end
 
   def send_welcome_email
