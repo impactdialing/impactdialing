@@ -59,7 +59,7 @@ module Client
       begin
         @campaign.save!      
       rescue ActiveRecord::RecordInvalid
-        redirect :back
+        redirect_to :back
       end
       @scripts = @campaign.account.scripts
       @lists = @campaign.voter_lists
