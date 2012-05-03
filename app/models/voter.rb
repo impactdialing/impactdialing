@@ -214,7 +214,7 @@ class Voter < ActiveRecord::Base
     question_answers.try(:each_pair) do |question_id, answer_id|
       voters_response = PossibleResponse.find(answer_id)
       current_response = answers.find_by_question_id(question_id)
-      current_response ? current_response.update_attributes(:possible_response => voters_response, :created_at => Time.now) : answers.create(:possible_response => voters_response, :question => Question.find(question_id), :created_at => Time.now, campaign: Campaign.find(campaign_id), :caller => call_attempt.caller)
+      current_response ? current_response.update_attributes(:possible_response => voters_response, :created_at => call_attempt.created_at) : answers.create(:possible_response => voters_response, :question => Question.find(question_id), :created_at => call_attempt.created_at, campaign: Campaign.find(campaign_id), :caller => call_attempt.caller)
       retry_response ||= voters_response if voters_response.retry?
     end
     update_attributes(:status => Voter::Status::RETRY) if retry_response
@@ -236,7 +236,7 @@ class Voter < ActiveRecord::Base
     call_attempt = self.call_attempts.create(:campaign => self.campaign, :dialer_mode => mode, :status => CallAttempt::Status::RINGING, :call_start => Time.now)
     update_attributes!(:last_call_attempt => call_attempt, :last_call_attempt_time => Time.now, :status => CallAttempt::Status::RINGING)    
     Call.create(call_attempt: call_attempt)
-    # Moderator.update_dials_in_progress(campaign)
+    Moderator.update_dials_in_progress(campaign)
     call_attempt
   end
   
