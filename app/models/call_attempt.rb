@@ -21,7 +21,7 @@ class CallAttempt < ActiveRecord::Base
   scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
   scope :without_status, lambda { |statuses| {:conditions => ['status not in (?)', statuses]} }
   scope :with_status, lambda { |statuses| {:conditions => ['status in (?)', statuses]} }
-  scope :results_not_processed, lambda { where(:voter_response_processed => "0", :status => Status::SUCCESS) }
+  scope :results_not_processed, lambda { where(:voter_response_processed => "0", :status => Status::SUCCESS).where('wrapup_time is not null') }
   scope :debit_not_processed, where(debited: "0").where('call_end is not null')
 
   
