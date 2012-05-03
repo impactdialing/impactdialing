@@ -9,7 +9,6 @@ loop do
       call_attempt.update_attributes(voter_response_processed: true)
       call_attempt.voter.update_attribute(:result_date, Time.now)
     end
-    GC.start
   rescue Exception => e
     puts e.backtrace
   end
