@@ -33,7 +33,7 @@ class CallerController < ApplicationController
   end
   
   def stop_calling
-    @caller_session.process('stop_calling')
+    @caller_session.process('stop_calling') unless @caller_session.nil?
     render :nothing => true
   end
   
@@ -127,7 +127,7 @@ class CallerController < ApplicationController
   
   def find_caller_session
     @caller_session = CallerSession.find_by_id(params[:session_id]) || CallerSession.find_by_sid(params[:CallSid])
-    @caller_session.update_attributes(digit: params[:Digits], question_id: params[:question_id])
+    @caller_session.try(:update_attributes, {digit: params[:Digits], question_id: params[:question_id]})
     @caller_session
   end
 
