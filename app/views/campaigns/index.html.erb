@@ -16,7 +16,7 @@
     </tr>
     <% @campaigns.each do |c| %>
       <tr class="<%= cycle("odd","even") %>">
-        <td><h3><%= link_to c.name, c %></h3></td>
+        <td><h3><%= link_to c.name, campaign_path(c) %></h3></td>
         <td><%= c.created_at.strftime("%m/%d/%Y") %></td>
         <td>
           <%= form_tag campaign_path(c), :method => 'delete', :id => "campaign_delete_form_#{c.id}" do %>
