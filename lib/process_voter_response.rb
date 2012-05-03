@@ -10,6 +10,7 @@ loop do
         call_attempt.update_attribute(:voter_response_processed, true)
         call_attempt.voter.update_attribute(:result_date, Time.now)
       end
+    GC.start  
     end
   rescue Exception => e
   end

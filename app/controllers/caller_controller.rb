@@ -33,7 +33,11 @@ class CallerController < ApplicationController
   end
   
   def stop_calling
-    @caller_session.process('stop_calling') unless @caller_session.nil?
+    begin
+      @caller_session.process('stop_calling') unless @caller_session.nil?
+    rescue ActiveRecord::StaleObjectError
+      @caller_session.process('stop_calling')
+    end
     render :nothing => true
   end
   
