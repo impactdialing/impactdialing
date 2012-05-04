@@ -24,6 +24,13 @@ class Moderator < ActiveRecord::Base
     publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
   end
   
+  def self.update_dials_in_progress_sync(campaign)
+    campaign.account.moderators.last_hour.active.each do|moderator| 
+      Pusher[moderator.session].trigger!('update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
+    end
+  end
+  
+  
   def self.caller_connected_to_campaign(caller, campaign, caller_session)
     return if campaign.account.moderators.active.empty?
     caller.email = caller.identity_name
