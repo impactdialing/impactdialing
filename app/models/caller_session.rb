@@ -173,7 +173,7 @@ class CallerSession < ActiveRecord::Base
     Pusher[session_key].trigger(event, data.merge!(:dialer => self.campaign.type))
   end
   
-  def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
+  def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)    
     voters = Voter.find_all_by_caller_id_and_status(caller.id, CallAttempt::Status::READY)
     voters.each {|voter| voter.update_attributes(status: 'not called')}    
     t = ::TwilioLib.new(account, auth)
