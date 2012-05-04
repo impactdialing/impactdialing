@@ -59,7 +59,7 @@ module Client
       begin
         @campaign.save!      
       rescue ActiveRecord::RecordInvalid => invalid
-        flash_message(:error, invalid.record.errors)
+        flash_message(:error, invalid.record.errors[:base])
         redirect_to :back
         return
       end
