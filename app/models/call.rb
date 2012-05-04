@@ -22,6 +22,7 @@ class Call < ActiveRecord::Base
   delegate :voter, :to=> :call_attempt
   delegate :caller_session, :to=> :call_attempt
   
+  
   call_flow :state, :initial => :initial do    
     
       state :initial do

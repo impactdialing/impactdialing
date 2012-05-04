@@ -214,7 +214,7 @@ class Voter < ActiveRecord::Base
     question_answers.try(:each_pair) do |question_id, answer_id|
       voters_response = PossibleResponse.find(answer_id)
       current_response = answers.find_by_question_id(question_id)
-      current_response ? current_response.update_attributes(:possible_response => voters_response, :created_at => Time.now) : answers.create(:possible_response => voters_response, :question => Question.find(question_id), :created_at => Time.now, campaign: Campaign.find(campaign_id), :caller => call_attempt.caller)
+      current_response ? current_response.update_attributes(:possible_response => voters_response, :created_at => call_attempt.created_at) : answers.create(:possible_response => voters_response, :question => Question.find(question_id), :created_at => call_attempt.created_at, campaign: Campaign.find(campaign_id), :caller => call_attempt.caller)
       retry_response ||= voters_response if voters_response.retry?
     end
     update_attributes(:status => Voter::Status::RETRY) if retry_response

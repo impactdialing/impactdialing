@@ -11,6 +11,7 @@ FileUtils.mkdir_p(File.join(SIMULATOR_ROOT, 'log'), :verbose => true)
 ActiveRecord::Base.logger = Logger.new(File.open(File.join(SIMULATOR_ROOT, 'log', "simulator_#{RAILS_ENV}.log"), 'a'))
 
 
+
 class CallerSession < ActiveRecord::Base
 end
 

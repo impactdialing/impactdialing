@@ -5,7 +5,6 @@ class ApplicationController < ActionController::Base
   include NewRelic::Agent::MethodTracer
   include WhiteLabeling
   helper :all # include all helpers, all the time
-  prepend_before_filter { |c| RecordCache::Strategy::RequestCache.clear }
   protect_from_forgery # See ActionController::RequestForgeryProtection for details
   before_filter :set_controller_name#, :preload_models
   # Scrub sensitive parameters from your log
@@ -48,7 +47,7 @@ class ApplicationController < ActionController::Base
       c = CallerSession.find_all_by_campaign_id_and_on_call(campaign.id,1)
       if c.length > 0
         voters_count = campaign.voters_count("not called")
-        if voters_count < c.length * 10
+        if voters_count < (c.length * 10)
             warning+="You are running low on numbers to dial for the #{campaign.name} campaign."
           end
         end
