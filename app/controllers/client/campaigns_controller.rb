@@ -58,8 +58,8 @@ module Client
       @campaign.type = params[:campaign][:type]
       begin
         @campaign.save!      
-      rescue ActiveRecord::RecordInvalid
-        flash_message(:error, "You cannot change dialing modes while callers are logged in.")
+      rescue ActiveRecord::RecordInvalid => invalid
+        flash_message(:error, invalid.record.errors[:base].join("\n"))
         redirect_to :back
         return
       end
@@ -103,7 +103,7 @@ module Client
     
     private
     
-    def new_type_campaign(params)
+    def new_type_campaign (params)
       if params[:campaign][:type] == "Preview"
         Preview.new(params[:campaign])
       elsif params[:campaign][:type] == "Progressive"
