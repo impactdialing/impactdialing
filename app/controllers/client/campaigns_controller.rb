@@ -60,7 +60,7 @@ module Client
         @campaign.save!      
       rescue ActiveRecord::RecordInvalid => e
         puts e
-        flash_message(:error, e.to_s)
+        flash_message(:error, e.split(','))
         redirect_to :back
         return
       end
@@ -104,7 +104,7 @@ module Client
     
     private
     
-    def new_type_campaign(params)
+    def new_type_campaign (params)
       if params[:campaign][:type] == "Preview"
         Preview.new(params[:campaign])
       elsif params[:campaign][:type] == "Progressive"
