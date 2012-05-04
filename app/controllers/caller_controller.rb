@@ -42,7 +42,7 @@ class CallerController < ApplicationController
   end
   
   def end_session
-    render xml: @caller_session.run('end_conf')
+    render xml: @caller_session.run('end_conf') unless @caller_session.nil?
   end
   
   def skip_voter
