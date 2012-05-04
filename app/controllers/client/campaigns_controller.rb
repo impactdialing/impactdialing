@@ -58,7 +58,10 @@ module Client
       @campaign.type = params[:campaign][:type]
       begin
         @campaign.save!      
-      rescue ActiveRecord::RecordInvalid
+      rescue ActiveRecord::RecordInvalid => e
+        puts e.backtrace
+        puts "\n"
+        puts e
         flash_message(:error, "You cannot change dialing modes while callers are logged in.")
         redirect_to :back
         return
