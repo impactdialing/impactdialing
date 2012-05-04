@@ -58,9 +58,9 @@ module Client
       @campaign.type = params[:campaign][:type]
       begin
         @campaign.save!      
-      rescue ActiveRecord::RecordInvalid => e
+      rescue ActiveRecord::RecordInvalid => invalid
         puts e
-        flash_message(:error, e.split(','))
+        flash_message(:error, invalid.record.errors)
         redirect_to :back
         return
       end
