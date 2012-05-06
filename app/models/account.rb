@@ -151,13 +151,6 @@ class Account < ActiveRecord::Base
     self.chargify_customer_id
   end
   
-  def insufficient_funds
-    Twilio::Verb.new do |v|
-      v.say "Your account has insufficent funds"
-      v.hangup
-    end.response
-  end
-  
 
   def check_autorecharge(amount_remaining)
     if self.autorecharge_enabled? && self.autorecharge_amount >= amount_remaining
