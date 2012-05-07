@@ -123,3 +123,9 @@ en:
       phone: "(888) 593-2021"
       email: "support@gettangent.com"
       billing_link: "https://tangent.chargevault.com/create"
+    infocusdialer:
+      title: "InFocus Campaigns"
+      full_title: "InFocus Campaigns, LLC"
+      phone: "(817) 995-8004"
+      email: "campaign@infocuscampaigns.com"
+      billing_link: "/client/billing"
