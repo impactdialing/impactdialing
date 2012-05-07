@@ -33,7 +33,7 @@ module LeadEvents
         campaign.account.moderators.last_hour.active.each do |moderator|
           moderator_deferrable = Pusher[moderator.session].trigger_async('voter_event', {caller_session_id:  caller_session.id, campaign_id:  campaign.id, caller_id:  caller_session.caller.id, call_status: caller_session.attempt_in_progress.try(:status)})      
           moderator_deferrable.callback {}
-          moderator_deferrable.errback { |error| }          
+          moderator_deferrable.errback { |error|  puts error.inspect}          
         end              
       }   
     end
