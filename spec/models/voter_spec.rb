@@ -456,7 +456,7 @@ describe Voter do
       voter.reload.status.should == Voter::Status::RETRY
       Voter.to_be_dialed.should == [voter]
       voter.persist_answers("{\"#{response.question.id}\":\"#{response.id}\",\"#{valid_response.question.id}\":\"#{valid_response.id}\" }",call_attempt) 
-      voter.reload.answers.size.should == 4
+      voter.reload.answers.size.should == 2
     end
 
     it "returns all questions unanswered" do
