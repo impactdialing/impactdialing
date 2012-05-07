@@ -43,7 +43,11 @@ class CallerController < ApplicationController
   end
   
   def end_session
-    render xml: @caller_session.run('end_conf') unless @caller_session.nil?
+    unless @caller_session.nil?
+      render xml: @caller_session.run('end_conf') 
+    else
+      render xml: Twilio::Verb.hangup
+    end
   end
   
   def skip_voter
