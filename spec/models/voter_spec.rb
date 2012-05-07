@@ -447,7 +447,7 @@ describe Voter do
       Voter.to_be_dialed.should == [voter]
     end
 
-    it "overrides old responses with newer ones" do
+    it "does not override old responses with newer ones" do
       question = Factory(:question, :script => script)
       retry_response = Factory(:possible_response, :question => question, :retry => true)
       valid_response = Factory(:possible_response, :question => question)
