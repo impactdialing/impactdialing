@@ -32,7 +32,7 @@ class TwilioLib
     # http.use_ssl=true
     params = {'Url'=> redirect_url}
     deferrable = EM::DefaultDeferrable.new
-    http = EventMachine::HttpRequest.new("#{@server}:#{@port}#{@root}Calls/#{call_sid}").post({:head => {'authorization' => [@http_user, @http_password]} })
+    http = EventMachine::HttpRequest.new("https://#{@server}:#{@port}#{@root}Calls/#{call_sid}").post({:head => {'authorization' => [@http_user, @http_password]} })
     http.callback {
             begin
               deferrable.succeed
