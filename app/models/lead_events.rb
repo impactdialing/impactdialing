@@ -40,7 +40,7 @@ module LeadEvents
     
     def publish_moderator_response_submited
       EM.run {
-        t = TwilioLib.new(account, auth)    
+        t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)    
         deferrable = t.redirect_call(caller_session.sid, flow_caller_url(caller_session.caller, :host => Settings.host, :port => Settings.port, session_id: caller_session.id, event: "start_conf"))              
         deferrable.callback {}
         deferrable.errback { |error| }          
