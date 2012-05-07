@@ -468,7 +468,7 @@ describe Voter do
 
     it "associates the caller with the answer" do
       caller = Factory(:caller)
-      session = Factory(:caller_session, :caller => caller)
+      session = Factory(:caller_session, :caller => caller)      
       voter = Factory(:voter, :campaign => campaign, :last_call_attempt => Factory(:call_attempt, :caller_session => session))
       Factory(:possible_response, :question => question, :keypad => 1, :value => "response1")
       voter.answer(question, "1", session).caller_id.should == caller.id
@@ -505,22 +505,23 @@ describe Voter do
   end
 
   describe "notes" do
-    let(:voter) { Factory(:voter) }
+
     let(:script) { Factory(:script, :robo => false) }
     let(:note1) { Factory(:note, note: "Question1", script: script) }
     let(:note2) { Factory(:note, note: "Question2", script: script) }
     let(:call_attempt) { Factory(:call_attempt, :caller => Factory(:caller)) }
+    let(:voter) { Factory(:voter, last_call_attempt: call_attempt) }
 
     it "captures call notes" do
-      voter.persist_notes("{\"#{note1.id}\":\"tell\",\"#{note2.id}\":\"no\"}")
+      voter.persist_notes("{\"#{note1.id}\":\"tell\",\"#{note2.id}\":\"no\"}", call_attempt)
       voter.note_responses.size.should == 2
     end
 
     it "override old note" do
-      voter.persist_notes("{\"#{note1.id}\":\"tell\"}")
+      voter.persist_notes("{\"#{note1.id}\":\"tell\"}", call_attempt)
       voter.note_responses.first eq('tell')
 
-      voter.persist_notes("{\"#{note1.id}\":\"say\"}")
+      voter.persist_notes("{\"#{note1.id}\":\"say\"}", call_attempt)
       voter.note_responses.first eq('say')
     end
   end

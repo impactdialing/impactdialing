@@ -191,7 +191,7 @@ class Voter < ActiveRecord::Base
     possible_response = question.possible_responses.where(:keypad => response).first
     self.answer_recorded_by = recorded_by_caller
     return unless possible_response
-    answers.create(:question => question, :possible_response => possible_response, campaign: Campaign.find(campaign_id), caller: recorded_by_caller.caller)
+    answers.create(question: question, possible_response: possible_response, campaign: Campaign.find(campaign_id), caller: recorded_by_caller.caller, call_attempt_id: last_call_attempt.id)
   end
 
   def answer_recorded_by
@@ -207,24 +207,28 @@ class Voter < ActiveRecord::Base
   end
   
   def persist_answers(questions, call_attempt)
-    return if questions.nil?
-    question_answers = JSON.parse(questions)
-    retry_response = nil
-    question_answers.try(:each_pair) do |question_id, answer_id|
-      voters_response = PossibleResponse.find(answer_id)
-      answers.create(:possible_response => voters_response, :question => Question.find(question_id), :created_at => call_attempt.created_at, campaign: Campaign.find(campaign_id), :caller => call_attempt.caller)
-      retry_response ||= voters_response if voters_response.retry?
-    end
-    update_attributes(:status => Voter::Status::RETRY) if retry_response
-  end
+     return if questions.nil?
+     question_answers = JSON.parse(questions)
+     retry_response = nil
+     question_answers.try(:each_pair) do |question_id, answer_id|
+       begin
+         voters_response = PossibleResponse.find(answer_id)
+         answers.create(possible_response: voters_response, question: Question.find(question_id), created_at: call_attempt.created_at, campaign: Campaign.find(campaign_id), caller: call_attempt.caller, call_attempt_id: call_attempt.id)
+         retry_response ||= voters_response if voters_response.retry?
+       rescue Exception => e
+         Rails.logger.info "Persisting_Answers_Exception #{e.to_s}"
+         Rails.logger.info "Voter #{self.inspect}"
+       end
+     end
+     update_attributes(:status => Voter::Status::RETRY) if retry_response
+   end
   
-  def persist_notes(notes_json)
+  def persist_notes(notes_json, call_attempt)
     return if notes_json.nil?
     notes = JSON.parse(notes_json)
     notes.try(:each_pair) do |note_id, note_res|
       note = Note.find(note_id)
-      note_response = note_responses.find_by_note_id(note_id)
-      note_response ? note_response.update_attributes(response: note_res) : note_responses.create(response: note_res, note: Note.find(note_id))
+      note_responses.create(response: note_res, note: Note.find(note_id), call_attempt_id: call_attempt.id)
     end
   end
 
