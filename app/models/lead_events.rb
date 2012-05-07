@@ -28,7 +28,7 @@ module LeadEvents
         unless caller_session.caller.is_phones_only?      
           caller_deferrable = Pusher[caller_session.session_key].trigger_async("voter_disconnected", {})
           caller_deferrable.callback {}
-          caller_deferrable.errback { |error| }
+          caller_deferrable.errback { |error| puts error.inspect}
         end
         campaign.account.moderators.last_hour.active.each do |moderator|
           moderator_deferrable = Pusher[moderator.session].trigger_async('voter_event', {caller_session_id:  caller_session.id, campaign_id:  campaign.id, caller_id:  caller_session.caller.id, call_status: caller_session.attempt_in_progress.try(:status)})      
