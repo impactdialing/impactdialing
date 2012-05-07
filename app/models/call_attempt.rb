@@ -232,7 +232,7 @@ class CallAttempt < ActiveRecord::Base
       EM.run {
         t = TwilioLib.new(account, auth)    
         deferrable = t.redirect_call(caller_session.sid, flow_caller_url(caller_session.caller, :host => Settings.host, :port => Settings.port, session_id: caller_session.id, event: "start_conf"))              
-        deferrable.callback {puts deferrable; EM.stop}
+        deferrable.callback {puts deferrable.inspect; }
         deferrable.errback { |error| }          
       }         
       # Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
