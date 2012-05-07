@@ -1,5 +1,6 @@
 class TwilioLib
   require 'net/http'
+  require 'em-http'
 
   DEFAULT_SERVER = "api.twilio.com" unless const_defined?('DEFAULT_SERVER')
   DEFAULT_PORT = 443 unless const_defined?('DEFAULT_PORT')
@@ -25,6 +26,24 @@ class TwilioLib
       req.set_form_data(params)
       response = http.start{http.request(req)}
       Rails.logger.info response.body
+  end
+  
+  def redirect_call(call_sid, redirect_url)
+    # http.use_ssl=true
+    params = {'Url'=> redirect_url}
+    deferrable = EM::DefaultDeferrable.new
+    http = EventMachine::HttpRequest.new("#{@root}Calls/#{call_sid}").post({:head => {'authorization' => [@http_user, @http_password]} })
+    http.callback {
+            begin
+              deferrable.succeed
+            rescue => e
+              deferrable.fail(e)
+            end
+          }
+          http.errback {
+          }
+
+  deferrable
   end
   
   
@@ -78,8 +97,6 @@ class TwilioLib
   end
 
   def update_twilio_stats_by_model model_instance
-    # require 'rubygems'
-    # require 'hpricot'
     return if model_instance.sid.blank?
     t = TwilioLib.new(TWILIO_ACCOUNT,TWILIO_AUTH)
     response = t.call("GET", "Calls/" + model_instance.sid, {})
