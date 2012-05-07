@@ -219,7 +219,7 @@ class Voter < ActiveRecord::Base
         retry_response ||= voters_response if voters_response.retry?
       rescue Exception => e
         Rails.logger.info "Persisting_Answers_Exception #{e.to_s}"
-        Rails.logger.info "Voter #{voter.inspect}"
+        Rails.logger.info "Voter #{self.inspect}"
       end
     end
     update_attributes(:status => Voter::Status::RETRY) if retry_response
