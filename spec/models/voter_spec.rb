@@ -447,7 +447,7 @@ describe Voter do
       Voter.to_be_dialed.should == [voter]
     end
 
-    it "overrides old responses with newer ones" do
+    it "does not override old responses with newer ones" do
       question = Factory(:question, :script => script)
       retry_response = Factory(:possible_response, :question => question, :retry => true)
       valid_response = Factory(:possible_response, :question => question)
@@ -456,7 +456,7 @@ describe Voter do
       voter.reload.status.should == Voter::Status::RETRY
       Voter.to_be_dialed.should == [voter]
       voter.persist_answers("{\"#{response.question.id}\":\"#{response.id}\",\"#{valid_response.question.id}\":\"#{valid_response.id}\" }",call_attempt) 
-      voter.reload.answers.size.should == 2
+      voter.reload.answers.size.should == 4
     end
 
     it "returns all questions unanswered" do
