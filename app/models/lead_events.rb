@@ -43,7 +43,7 @@ module LeadEvents
         t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)    
         deferrable = t.redirect_call(caller_session.sid, flow_caller_url(caller_session.caller, :host => Settings.host, :port => Settings.port, session_id: caller_session.id, event: "start_conf"))              
         deferrable.callback {}
-        deferrable.errback { |error| }          
+        deferrable.errback { |error| puts error }          
                 
         campaign.account.moderators.last_hour.active.each do |moderator|
           moderator_deferrable = Pusher[moderator.session].trigger_async('voter_event', {caller_session_id:  caller_session.id, campaign_id:  campaign.id, caller_id:  caller_session.caller.id, call_status: caller_session.attempt_in_progress.try(:status)})      
