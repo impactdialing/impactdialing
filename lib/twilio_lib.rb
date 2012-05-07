@@ -31,7 +31,7 @@ class TwilioLib
   def redirect_call(call_sid, redirect_url)
     # http.use_ssl=true
     params = {'Url'=> redirect_url, "method" => 'POST'}
-    EventMachine::HttpRequest.new("https://#{@server}:#{@port}#{@root}Calls/#{call_sid}.xml").post({:head => {'authorization' => [@http_user, @http_password]},:body => {:Url => redirect_url,:Method => "POST" }})
+    EventMachine::HttpRequest.new("https://#{@server}#{@root}Calls/#{call_sid}.xml").post({:head => {'authorization' => [@http_user, @http_password]},:body => {:Url => redirect_url,:Method => "POST" }})
   end
   
   
