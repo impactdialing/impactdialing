@@ -115,8 +115,8 @@ class CallerStrategy < CampaignStrategy
   def call_attempt_details(call_attempt, voter)
     answers, notes = [], []
     details = [call_attempt.try(:caller).try(:known_as), call_attempt.status, call_attempt.try(:call_start).try(:in_time_zone, @campaign.time_zone), call_attempt.try(:call_end).try(:in_time_zone, @campaign.time_zone), 1, call_attempt.try(:report_recording_url)].flatten
-    @campaign.script.questions.each { |q| answers << voter.answers.for(q).first.try(:possible_response).try(:value) }
-    @campaign.script.notes.each { |note| notes << voter.note_responses.for(note).last.try(:response) }
+    @campaign.script.questions.each { |q| answers << call_attempt.answers.for(q).first.try(:possible_response).try(:value) }
+    @campaign.script.notes.each { |note| notes << call_attempt.note_responses.for(note).last.try(:response) }
     [details, answers, notes].flatten
     
   end
@@ -129,7 +129,7 @@ class CallerStrategy < CampaignStrategy
               else
                 [nil, "Not Dialed","","","",""]
               end
-    @campaign.script.questions.each { |q| answers << voter.answers.for(q).first.try(:possible_response).try(:value) }
+    @campaign.script.questions.each { |q| answers << voter.answers.for(q).last.try(:possible_response).try(:value) }
     @campaign.script.notes.each { |note| notes << voter.note_responses.for(note).last.try(:response) }
     [details, answers, notes].flatten
   end

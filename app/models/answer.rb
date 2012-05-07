@@ -4,6 +4,7 @@ class Answer < ActiveRecord::Base
   belongs_to :question
   belongs_to :possible_response
   belongs_to :campaign
+  belongs_to :call_attempt
 
   scope :for, lambda{|question| where("question_id = #{question.id}")}
   scope :within, lambda { |from, to| where(:created_at => from..to) }

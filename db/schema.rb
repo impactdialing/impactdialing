@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120430201333) do
+ActiveRecord::Schema.define(:version => 20120507084303) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -39,6 +39,7 @@ ActiveRecord::Schema.define(:version => 20120430201333) do
     t.datetime "created_at"
     t.integer  "campaign_id"
     t.integer  "caller_id"
+    t.integer  "call_attempt_id"
   end
 
   add_index "answers", ["voter_id", "question_id"], :name => "index_answers_on_voter_id_and_question_id"
@@ -390,9 +391,10 @@ ActiveRecord::Schema.define(:version => 20120430201333) do
   end
 
   create_table "note_responses", :force => true do |t|
-    t.integer "voter_id", :null => false
-    t.integer "note_id",  :null => false
+    t.integer "voter_id",        :null => false
+    t.integer "note_id",         :null => false
     t.string  "response"
+    t.integer "call_attempt_id"
   end
 
   create_table "notes", :force => true do |t|

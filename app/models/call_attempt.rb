@@ -11,6 +11,8 @@ class CallAttempt < ActiveRecord::Base
   has_many :call_responses
   has_one :transfer_attempt
   belongs_to :call
+  has_many :answers
+  has_many :note_responses
 
   scope :dial_in_progress, where('call_end is null')
   scope :not_wrapped_up, where('wrapup_time is null')
