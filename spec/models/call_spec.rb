@@ -331,48 +331,54 @@ describe Call do
         
         it "should update call attempt status" do
           call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, call_status: 'busy')
-          Twilio.should_receive(:connect)
-          Twilio::Call.should_receive(:redirect)
+          twilio_lib = mock
+          TwilioLib.should_receive(:new).and_return(twilio_lib)
+          twilio_lib.should_receive(:redirect_call)
           call.call_ended!
           call.call_attempt.status.should eq('No answer busy signal')
         end
           
         it "should update wrapup time" do
           call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, call_status: 'failed')
-          Twilio.should_receive(:connect)
-          Twilio::Call.should_receive(:redirect)          
+          twilio_lib = mock
+          TwilioLib.should_receive(:new).and_return(twilio_lib)
+          twilio_lib.should_receive(:redirect_call)
           call.call_ended!
           call.call_attempt.wrapup_time.should_not be_nil         
         end
         
         it "should set callers voter to nil" do
           call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, call_status: 'no-answer')
-          Twilio.should_receive(:connect)
-          Twilio::Call.should_receive(:redirect)          
+          twilio_lib = mock
+          TwilioLib.should_receive(:new).and_return(twilio_lib)
+          twilio_lib.should_receive(:redirect_call)
           call.call_ended!
           call.caller_session.voter_in_progress.should be_nil         
         end
         
         it "should set voters status to nil" do
           call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, call_status: 'no-answer')
-          Twilio.should_receive(:connect)
-          Twilio::Call.should_receive(:redirect)          
+          twilio_lib = mock
+          TwilioLib.should_receive(:new).and_return(twilio_lib)
+          twilio_lib.should_receive(:redirect_call)
           call.call_ended!
           call.call_attempt.voter.status.should eq('No answer')
         end
         
         it "should set voters last attempt time" do
           call = Factory(:call, answered_by: "human", call_attempt: @call_attempt,  call_status: 'no-answer')
-          Twilio.should_receive(:connect)
-          Twilio::Call.should_receive(:redirect)          
+          twilio_lib = mock
+          TwilioLib.should_receive(:new).and_return(twilio_lib)
+          twilio_lib.should_receive(:redirect_call)
           call.call_ended!
           call.call_attempt.voter.last_call_attempt_time.should_not be_nil
         end
         
         it "should set voters callback as false" do
           call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, call_status: 'no-answer')
-          Twilio.should_receive(:connect)
-          Twilio::Call.should_receive(:redirect)          
+          twilio_lib = mock
+          TwilioLib.should_receive(:new).and_return(twilio_lib)
+          twilio_lib.should_receive(:redirect_call)
           call.call_ended!
           call.call_attempt.voter.call_back.should be_false
         end
