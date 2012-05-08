@@ -54,6 +54,7 @@ class CallsController < ApplicationController
     find_call
     @parsed_params["questions"]  = params[:question].try(:to_json) 
     @parsed_params["notes"] = params[:notes].try(:to_json)
+    @parsed_params["all_states"] = ""
     @parsed_params["all_states"] +=  @call.state
     @call.update_attributes(@parsed_params)
     unless params[:scheduled_date].blank?
@@ -65,6 +66,7 @@ class CallsController < ApplicationController
 
   def find_and_update_call
     find_call
+    @parsed_params["all_states"] = ""
     @parsed_params["all_states"] +=  @call.state
     @call.update_attributes(@parsed_params)
   end
