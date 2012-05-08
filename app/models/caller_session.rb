@@ -208,6 +208,7 @@ class CallerSession < ActiveRecord::Base
       t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)    
       deferrable = t.make_call(campaign, voter, attempt)              
       deferrable.callback {
+        puts deferrable.inspect
        if deferrable.response["TwilioResponse"]["RestException"]
          handle_failed_call(attempt, voter)
        else
