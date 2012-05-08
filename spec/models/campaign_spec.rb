@@ -153,8 +153,8 @@ describe Campaign do
       Factory(:answer, :voter => Factory(:voter, :campaign => campaign), campaign: campaign, :possible_response => possible_response1, :question => question1, :created_at => now)
       Factory(:answer, :voter => Factory(:voter, :campaign => campaign), campaign: campaign,:possible_response => possible_response2, :question => question1, :created_at => now)
       Factory(:answer, :voter => Factory(:voter, :campaign => campaign), campaign: campaign,:possible_response => possible_response3, :question => question1, :created_at => now)
-      Factory(:answer, :voter => Factory(:voter, :campaign => campaign2), campaign: campaign2, :possible_response => possible_response2, :question => question2, :created_at => now)
-      campaign.answers_result(now, now).should == {"hw are u" => [{answer: possible_response1.value, number: 1, percentage: 33}, {answer: possible_response2.value, number: 1, percentage: 33}, {answer: possible_response3.value, number: 1, percentage: 33}], "wr r u" => [{answer: "[No response]", number: 0, percentage: 0}]}
+      Factory(:answer, :voter => Factory(:voter, :campaign => campaign), campaign: campaign, :possible_response => possible_response2, :question => question2, :created_at => now)
+      campaign.answers_result(now, now).should == {"hw are u" => [{answer: possible_response1.value, number: 1, percentage: 33}, {answer: possible_response2.value, number: 2, percentage: 66}, {answer: possible_response3.value, number: 1, percentage: 33}], "wr r u" => [{answer: "[No response]", number: 0, percentage: 0}]}
     end
   
   end
