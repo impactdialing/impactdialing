@@ -12,7 +12,7 @@
       </tr>
       <% campaigns.each do |c| %>
           <tr class="<%= cycle("odd", "even") %>">
-            <td><h3><%= link_to c.name, c %></h3></td>
+            <td><h3><%= link_to c.name, campaign_path(c) %></h3></td>
             <td><%= c.voters_dialed %></td>
             <td><%= c.voters_remaining %></td>
             <td width="20%">
