@@ -31,7 +31,7 @@ class TwilioLib
       'StatusCallback' => flow_call_url(attempt.call, host: Settings.host, port:  Settings.port, event: "call_ended"),
       'Timeout' => campaign.use_recordings? ? "30" : "15"}
     params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect        
-    EventMachine::HttpRequest.new("https://#{@server}#{@root}Calls.xml").post :head => {'authorization' => [@http_user, @http_password]},:body => params    
+    EventMachine::HttpRequest.new("https://#{@server}#{@root}Calls.json").post :head => {'authorization' => [@http_user, @http_password]},:body => params    
   end
   
   def redirect_call(call_sid, redirect_url)
