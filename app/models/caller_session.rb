@@ -209,11 +209,11 @@ class CallerSession < ActiveRecord::Base
       deferrable = t.make_call(campaign, voter, attempt)              
       deferrable.callback {
         puts deferrable.inspect
-       # if deferrable.response["TwilioResponse"]["RestException"]
-       #   handle_failed_call(attempt, voter)
-       # else
+       if deferrable.response["status"] == 400
+         handle_failed_call(attempt, voter)
+       else
          attempt.update_attributes(:sid => deferrable.response["sid"])
-       # end
+       end
       }
       deferrable.errback { |error| }          
     }             
