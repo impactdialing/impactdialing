@@ -1,6 +1,7 @@
 class TwilioLib
   require 'net/http'
   require 'em-http'
+  include Rails.application.routes.url_helpers
 
   DEFAULT_SERVER = "api.twilio.com" unless const_defined?('DEFAULT_SERVER')
   DEFAULT_PORT = 443 unless const_defined?('DEFAULT_PORT')
