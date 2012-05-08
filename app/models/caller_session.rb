@@ -203,7 +203,7 @@ class CallerSession < ActiveRecord::Base
     attempt = voter.call_attempts.create(:campaign => campaign, :dialer_mode => campaign.type, :status => CallAttempt::Status::RINGING, :caller_session => self, :caller => caller)
     update_attribute('attempt_in_progress', attempt)
     voter.update_attributes(:last_call_attempt => attempt, :last_call_attempt_time => Time.now, :caller_session => self, status: CallAttempt::Status::RINGING)
-    Call.create(call_attempt: attempt, all_states: "initial")
+    Call.create(call_attempt: attempt, all_states: "")
     attempt    
   end
   
