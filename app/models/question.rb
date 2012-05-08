@@ -19,7 +19,7 @@ class Question < ActiveRecord::Base
   
   def not_already_answered?
     script.errors.add(:base, "You cannot delete questions that have already been answered.") if answers.count > 0
-    errors.blank?
+    script.errors.blank?
   end
 
   def read(caller_session)
