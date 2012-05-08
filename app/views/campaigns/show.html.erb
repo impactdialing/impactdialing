@@ -7,7 +7,7 @@
 
 <div id="callerid"></div>
 
-<%= form_for @campaign, :html => {:name => 'callerForm', :id => 'callerForm'} do |f| %>
+<%= form_for @campaign, url: "#{campaigns_path}/#{@campaign.id}" :html => {:name => 'callerForm', :id => 'callerForm'} do |f| %>
     <div id="validationError">
       <%= render "shared/error_messages", :target => @campaign %>
     </div>
