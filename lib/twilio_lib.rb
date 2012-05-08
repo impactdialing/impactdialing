@@ -6,9 +6,6 @@ class TwilioLib
   DEFAULT_PORT = 443 unless const_defined?('DEFAULT_PORT')
   DEFAULT_ROOT= "/2010-04-01/Accounts/" unless const_defined?('DEFAULT_ROOT')
 
-  def accountguid
-  end
-
   def initialize(accountguid=TWILIO_ACCOUNT, authtoken=TWILIO_AUTH, options = {})
     @server = DEFAULT_SERVER
     @port = DEFAULT_PORT
@@ -28,9 +25,15 @@ class TwilioLib
       Rails.logger.info response.body
   end
   
+  def make_call(campaign, voter, attempt)
+    params = {'From'=> campaign.caller_id, "To"=> voter.Phone, 'FallbackUrl' => TWILIO_ERROR, "Url"=>flow_call_url(attempt.call, host: Settings.host, port: Settings.port, event: "incoming_call"),
+      'StatusCallback' => flow_call_url(attempt.call, host: Settings.host, port:  Settings.port, event: "call_ended"),
+      'Timeout' => campaign.use_recordings? ? "30" : "15"}
+    params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect        
+    EventMachine::HttpRequest.new("https://#{@server}#{@root}Calls.xml").post :head => {'authorization' => [@http_user, @http_password]},:body => params    
+  end
+  
   def redirect_call(call_sid, redirect_url)
-    # http.use_ssl=true
-    params = {'Url'=> redirect_url, "method" => 'POST'}
     EventMachine::HttpRequest.new("https://#{@server}#{@root}Calls/#{call_sid}.xml").post :head => {'authorization' => [@http_user, @http_password]},:body => {:Url => redirect_url,:Method => "POST" }
   end
   

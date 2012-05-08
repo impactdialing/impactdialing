@@ -235,8 +235,6 @@ class CallAttempt < ActiveRecord::Base
         deferrable.callback {puts deferrable.inspect; }
         deferrable.errback { |error| }          
       }         
-      # Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-      # Twilio::Call.redirect(caller_session.sid, flow_caller_url(caller_session.caller, :host => Settings.host, :port => Settings.port, session_id: caller_session.id, event: "start_conf"))
     end  
   end
   
