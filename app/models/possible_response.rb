@@ -7,5 +7,9 @@ class PossibleResponse < ActiveRecord::Base
     total_answers = total_count[question_id] || 1
     {answer: value, number: number_of_answers, percentage:  total_answers == 0 ? 0 : (number_of_answers * 100 / total_answers)}
   end
+  
+  def answered?
+    answers.count > 0
+  end
       
 end
