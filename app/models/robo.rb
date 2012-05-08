@@ -19,6 +19,10 @@ class Robo < Campaign
     update_attribute(:calls_in_progress, true)
   end
   
+  def voters_dialed
+      call_attempts.count('voter_id', :distinct => true)
+  end
+  
   def stop
     Delayed::Job.all do |job|
         if job.name == "Broadcastcampaign-job-#{self.id}"
