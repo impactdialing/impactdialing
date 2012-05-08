@@ -189,9 +189,14 @@ class CallerSession < ActiveRecord::Base
   end  
   
   def dial(voter)
-    attempt = create_call_attempt(voter)
-    publish_calling_voter
-    make_call(attempt,voter)    
+  attempt = create_call_attempt(voter)
+  publish_calling_voter
+  response = make_call(attempt,voter)    
+  if response["TwilioResponse"]["RestException"]
+    handle_failed_call(attempt, voter)
+    return
+  end    
+  attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])  
   end
   
   def create_call_attempt(voter)
@@ -204,19 +209,10 @@ class CallerSession < ActiveRecord::Base
   
   
   def make_call(attempt, voter)
-    EM.run {
-      t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)    
-      deferrable = t.make_call(campaign, voter, attempt)              
-      deferrable.callback {
-        
-       if deferrable.response["status"] == 400
-         handle_failed_call(attempt, voter)
-       else
-         attempt.update_attributes(:sid => deferrable.response["sid"])
-       end
-      }
-      deferrable.errback { |error| }          
-    }             
+  Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
+  params = {'FallbackUrl' => TWILIO_ERROR, 'StatusCallback' => flow_call_url(attempt.call, host: Settings.host, port:  Settings.port, event: "call_ended"),'Timeout' => campaign.use_recordings? ? "30" : "15"}
+  params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect        
+  Twilio::Call.make(self.campaign.caller_id, voter.Phone, flow_call_url(attempt.call, host: Settings.host, port: Settings.port, event: "incoming_call"),params)  
   end
   
   def handle_failed_call(attempt, voter)
