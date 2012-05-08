@@ -211,6 +211,7 @@ class CallerSession < ActiveRecord::Base
        if deferrable.response["TwilioResponse"]["RestException"]
          handle_failed_call(attempt, voter)
        else
+         puts deferrable.inspect
          attempt.update_attributes(:sid => deferrable.response["TwilioResponse"]["Call"]["Sid"])
        end
       }
