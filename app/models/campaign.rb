@@ -24,6 +24,7 @@ class Campaign < ActiveRecord::Base
   scope :robo, lambda { where(:type => 'robo') }
   scope :manual, :conditions => [ 'campaigns.type != "robo"' ]
   scope :for_account, lambda { |account| {:conditions => ["account_id = ?", account.id]} }
+  scope :for_script, lambda { |script| {:conditions => ["script_id = ?", script.id]} }
   scope :with_running_caller_sessions, {
       :select => "distinct campaigns.*",
       :joins => "inner join caller_sessions on (caller_sessions.campaign_id = campaigns.id)",
