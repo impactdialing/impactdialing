@@ -21,6 +21,7 @@ class CallsController < ApplicationController
   end
   
   def hangup
+    @call.update_attributes(all_states: @call.all_states + "|" + @call.state)    
     @call.process('hangup')
     render nothing: true
   end
