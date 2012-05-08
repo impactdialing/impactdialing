@@ -10,28 +10,6 @@ class ApplicationController < ActionController::Base
   # Scrub sensitive parameters from your log
   helper_method :phone_format, :phone_number_valid
 
-  # def redirect_to_ssl
-  #   return true if Rails.env == 'development' || Rails.env == 'heroku_staging' || testing? || action_name=="monitor" || request.domain.index("amazonaws")
-  #   return true if ssl?
-  #   @cont = controller_name
-  #   @act = action_name
-  #   flash.keep
-  #   if ['staging', 'preprod'].include?(request.subdomain)
-  #     redirect_to URI.join("https://#{request.subdomain}.#{request.domain}", request.fullpath).to_s
-  #   elsif ['predictive'].include?(request.subdomain)
-  #     redirect_to "https://#{APP_HOST}/caller"
-  #   elsif ['broadcast'].include?(request.subdomain)
-  #     redirect_to "https://#{APP_HOST}/broadcast"
-  #   elsif controller_name=="caller"
-  #     redirect_to "https://caller.#{request.domain}/#{@cont}/#{@act}/#{params[:id]}"
-  #   elsif controller_name == 'broadcast'
-  #     redirect_to "https://broadcast.#{request.domain}#{request.path}"
-  #   else
-  #     redirect_to "https://admin.#{request.domain}/#{@cont}/#{@act}/#{params[:id]}"
-  #   end
-  # end
-  # add_method_tracer :redirect_to_ssl, "Custom/#{self.class.name}/redirect_to_ssl"
-
   def testing?
     Rails.env == 'test'
   end
