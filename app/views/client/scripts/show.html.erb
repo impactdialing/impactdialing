@@ -70,7 +70,7 @@
                     </table>
                   <% end %>
                   <%= q.link_to_add "New response", :possible_responses, :class => "action secondary small_font", :type => "possible_responses"%>
-                  <%= q.link_to_remove "Delete this question", :class => "action secondary small_font" , :type => "questions" %>
+                  <%= q.link_to_remove "Delete this question", :class => "action secondary small_font" , :type => "questions", :answered => question.answered? %>
               </p>
               </fieldset>
             <% end %>

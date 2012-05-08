@@ -4,7 +4,6 @@ class Question < ActiveRecord::Base
   belongs_to :script
   has_many :possible_responses
   has_many :answers
-  before_destroy :not_already_answered?
   accepts_nested_attributes_for :possible_responses, :allow_destroy => true
   scope :answered_by, lambda { |voter| joins(:answers).where("answers.voter_id = ?", voter.id) }
   scope :not_answered_by, lambda { |voter| order("id ASC").where("questions.id not in (?)", Question.answered_by(voter).collect(&:id) + [-1]) }
@@ -17,10 +16,10 @@ class Question < ActiveRecord::Base
     answers.within(from_date, to_date).with_campaign_id(campaign_id)
   end
   
-  def not_already_answered?
-    script.errors.add(:base, "You cannot delete questions that have already been answered.") if answers.count > 0
-    script.errors.blank?
+  def answered?
+    answers.count > 0
   end
+  
 
   def read(caller_session)
     Twilio::Verb.new do |v|

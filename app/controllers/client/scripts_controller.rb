@@ -62,8 +62,6 @@ module Client
         if params[:save_as]
           redirect_to client_script_path(@script)
         elsif !params[:save_as] && @script.update_attributes(params[:script])
-          puts "dddd"
-          puts @script.errors
           flash_message(:notice, "Script updated")
           redirect_to :action=>"index"
         else
