@@ -23,6 +23,10 @@ class Robo < Campaign
       call_attempts.count('voter_id', :distinct => true)
   end
   
+  def voters_remaining
+     all_voters.count - voters_dialed
+   end
+  
   def stop
     Delayed::Job.all do |job|
         if job.name == "Broadcastcampaign-job-#{self.id}"
