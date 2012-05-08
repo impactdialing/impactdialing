@@ -18,7 +18,7 @@ class Question < ActiveRecord::Base
   end
   
   def not_already_answered?
-    errors.add(:base, "You cannot delete questions that have already been answered.") if answers.count > 0
+    script.errors.add(:base, "You cannot delete questions that have already been answered.") if answers.count > 0
     errors.blank?
   end
 
