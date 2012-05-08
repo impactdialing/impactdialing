@@ -49,7 +49,6 @@ module ApplicationHelper
     # msg_url="https://#{TWILIO_AUTH}:x@#{TWILIO_ACCOUNT}.twiliort.com/#{key}"
     http = Net::HTTP.new("#{TWILIO_ACCOUNT}.twiliort.com", 443)
     req = Net::HTTP::Post.new("/#{key}")
-#    http.use_ssl = true
     req.basic_auth TWILIO_AUTH, "x"
     req.set_form_data(post_data, ';')
     response = http.request(req)
