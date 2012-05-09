@@ -30,6 +30,7 @@ class WebuiCallerSession < CallerSession
       
       
       state :paused do        
+        event :start_conf, :to => :account_has_no_funds, :if => :funds_not_available?
         event :start_conf, :to => :time_period_exceeded, :if => :time_period_exceeded?        
         event :start_conf, :to => :connected
         event :stop_calling, :to=> :stopped

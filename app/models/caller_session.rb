@@ -23,6 +23,7 @@ class CallerSession < ActiveRecord::Base
   
   delegate :subscription_allows_caller?, :to => :caller
   delegate :activated?, :to => :caller
+  delegate :funds_available?, :to => :caller
 
 
   def minutes_used
@@ -44,6 +45,7 @@ class CallerSession < ActiveRecord::Base
       
       state :initial do
         event :start_conf, :to => :account_not_activated, :if => :account_not_activated?
+        event :start_conf, :to => :account_has_no_funds, :if => :funds_not_available?
         event :start_conf, :to => :subscription_limit, :if => :subscription_limit_exceeded?
         event :start_conf, :to => :time_period_exceeded, :if => :time_period_exceeded?
         event :start_conf, :to => :caller_on_call,  :if => :is_on_call?
@@ -58,6 +60,14 @@ class CallerSession < ActiveRecord::Base
       state :subscription_limit do
         response do |xml_builder, the_call|
           xml_builder.Say("The maximum number of callers for this account has been reached. Wait for another caller to finish, or ask your administrator to upgrade your account.")
+          xml_builder.Hangup          
+        end
+        
+      end
+
+      state :account_has_no_funds do
+        response do |xml_builder, the_call|
+          xml_builder.Say("There are no funds available in the account.  Please visit the billing area of the website to add funds to your account.")
           xml_builder.Hangup          
         end
         
@@ -118,6 +128,10 @@ class CallerSession < ActiveRecord::Base
   
   def subscription_limit_exceeded?
     !subscription_allows_caller?
+  end
+  
+  def funds_not_available?
+    !funds_available?
   end
   
   def time_period_exceeded?
