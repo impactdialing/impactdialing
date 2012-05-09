@@ -186,7 +186,7 @@ class PhonesOnlyCallerSession < CallerSession
   end
   
   def call_answered?
-    attempt_in_progress.try(:connecttime) != nil
+    attempt_in_progress.try(:connecttime) != nil && more_questions_to_be_answered?
   end
   
   
