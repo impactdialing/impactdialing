@@ -40,6 +40,7 @@ class Campaign < ActiveRecord::Base
   validates :caller_id, :numericality => {:on => :update}, :length => {:on => :update, :minimum => 10, :maximum => 10}, :unless => Proc.new{|campaign| campaign.caller_id && campaign.caller_id.start_with?('+')}
   validate :set_caller_id_error_msg
   validate :campaign_type_changed
+  validate :script_changed_called
   cattr_reader :per_page
   @@per_page = 25
 
@@ -68,6 +69,12 @@ class Campaign < ActiveRecord::Base
   def campaign_type_changed
     if type_changed? && callers_log_in?
       errors.add(:base, 'You cannot change dialing modes while callers are logged in.')
+    end
+  end
+  
+  def script_changed_called
+    if script_id_changed? && call_attempts.count > 0
+      errors.add(:base, I18n.t(:script_cannot_be_modified))
     end
   end
 
