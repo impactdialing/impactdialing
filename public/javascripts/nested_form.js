@@ -94,6 +94,10 @@ $('form a.add_nested_fields').live('click', function() {
 // remove the nested fields
 $('form a.remove_nested_fields').live('click', function() {
   if($(this).attr('type') == 'questions'){
+	if($(this).attr('answered') == 'true'){
+		alert("You cannot delete this question as it has already been answered.");
+		return false;
+	}
     if($('.fields:visible').find('nested_type[type=questions]').length == 1){
       alert("You must have at least one question");
       return false;
@@ -101,6 +105,11 @@ $('form a.remove_nested_fields').live('click', function() {
   }
   
   if($(this).attr('type') == 'possible_responses'){
+	if($(this).attr('answered') == 'true'){
+		alert("You cannot delete this response as it already has an answer recorded.");
+		return false;
+	}
+	
     if($(this).parents('div.fields').first().siblings('div.fields:visible').length == 0){
       alert("You must have at least one response.");
       return false;

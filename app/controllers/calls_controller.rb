@@ -21,6 +21,7 @@ class CallsController < ApplicationController
   end
   
   def hangup
+    @call.update_attributes(all_states: @call.all_states + "|" + @call.state)    
     @call.process('hangup')
     render nothing: true
   end
@@ -54,7 +55,7 @@ class CallsController < ApplicationController
     find_call
     @parsed_params["questions"]  = params[:question].try(:to_json) 
     @parsed_params["notes"] = params[:notes].try(:to_json)
-    puts @parsed_params
+    @parsed_params["all_states"] =  @call.all_states + "|" + @call.state
     @call.update_attributes(@parsed_params)
     unless params[:scheduled_date].blank?
       scheduled_date = params[:scheduled_date] + " " + params[:callback_time_hours] +":" + params[:callback_time_minutes]
@@ -65,6 +66,7 @@ class CallsController < ApplicationController
 
   def find_and_update_call
     find_call
+    @parsed_params["all_states"] =  @call.all_states + "|" + @call.state
     @call.update_attributes(@parsed_params)
   end
   

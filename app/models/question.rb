@@ -15,6 +15,11 @@ class Question < ActiveRecord::Base
   def answered_within(from_date, to_date, campaign_id)
     answers.within(from_date, to_date).with_campaign_id(campaign_id)
   end
+  
+  def answered?
+    answers.count > 0
+  end
+  
 
   def read(caller_session)
     Twilio::Verb.new do |v|
