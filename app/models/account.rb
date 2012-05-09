@@ -70,6 +70,14 @@ class Account < ActiveRecord::Base
       return false
     end
   end
+
+  def funds_available?
+    if self.subscription_name=="Per Caller" || self.subscription_name=="Manual"
+      return true
+    else
+      self.current_balance>0
+    end
+  end
       
   def create_recurly_account_code
     return self.recurly_account_code if !self.recurly_account_code.nil?

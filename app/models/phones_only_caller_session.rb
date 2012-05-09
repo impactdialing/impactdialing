@@ -23,6 +23,7 @@ class PhonesOnlyCallerSession < CallerSession
       
       state :ready_to_call do  
         after(:always)  {publish_moderator_conference_started}    
+        event :start_conf, :to => :account_has_no_funds, :if => :funds_not_available?
         event :start_conf, :to => :time_period_exceeded, :if => :time_period_exceeded?
         event :start_conf, :to => :reassigned_campaign, :if => :caller_reassigned_to_another_campaign?
         event :start_conf, :to => :choosing_voter_to_dial, :if => :preview?
