@@ -40,8 +40,12 @@ class Call < ActiveRecord::Base
         event :disconnect, :to => :disconnected
         
         response do |xml_builder, the_call|
-          xml_builder.Dial :hangupOnStar => 'false', :action => flow_call_url(the_call, :host => Settings.host, event: "disconnect"), :record=> campaign.account.record_calls do |d|
-            d.Conference caller_session.session_key, :waitUrl => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
+          unless caller_session.nil?
+            xml_builder.Dial :hangupOnStar => 'false', :action => flow_call_url(the_call, :host => Settings.host, event: "disconnect"), :record=> campaign.account.record_calls do |d|
+              d.Conference caller_session.session_key, :waitUrl => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
+            end
+          else
+            xml_builder.Hangup
           end
         end
         
@@ -102,13 +106,19 @@ class Call < ActiveRecord::Base
       
       state :wrapup_and_continue do 
         before(:always) { wrapup_now; call_attempt.redirect_caller; call_attempt.publish_moderator_response_submited}
+        after(:success){ persist_all_states}
       end
       
       state :wrapup_and_stop do
         before(:always) { wrapup_now; caller_session.run('end_conf') }        
+        after(:success){ persist_all_states}
       end
             
   end 
+  
+  def persist_all_states
+    update_attribute(:all_states, (all_states + "|" + state))
+  end
   
   def run(event)
     send(event)

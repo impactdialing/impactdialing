@@ -58,7 +58,6 @@ module Client
       @voter_field_values = (JSON.parse(@script.voter_fields) if @script.voter_fields) || []
       begin
         params[:save_as] ? save_as : @script = account.scripts.find_by_id(params[:id])
-
         if params[:save_as]
           redirect_to client_script_path(@script)
         elsif !params[:save_as] && @script.update_attributes(params[:script])

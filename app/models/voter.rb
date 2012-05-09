@@ -237,7 +237,7 @@ class Voter < ActiveRecord::Base
   def new_call_attempt(mode = 'robo')
     call_attempt = self.call_attempts.create(:campaign => self.campaign, :dialer_mode => mode, :status => CallAttempt::Status::RINGING, :call_start => Time.now)
     update_attributes!(:last_call_attempt => call_attempt, :last_call_attempt_time => Time.now, :status => CallAttempt::Status::RINGING)    
-    Call.create(call_attempt: call_attempt)
+    Call.create(call_attempt: call_attempt, all_states: "")
     Moderator.update_dials_in_progress_sync(campaign)
     call_attempt
   end
