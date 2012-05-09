@@ -32,7 +32,7 @@ en:
   report_error_occured: "There was a problem generating a report for your campaign. Support has been notified and is looking into the issue."
   broadcast_campaign_started: "Broadcast Campaign Started"
   script_cannot_be_deleted: "This script cannot be deleted, as it is currently assigned to an active campaign."
-  script_cannot_be_modified: "This script cannot be modified, as it is currently assigned to an running campaign."
+  script_cannot_be_modified: "You cannot change the script as this campaign has already been called with the existing script."
   indentical_caller_on_call: "Another user is logged in as this caller. Only one user may log in as the same caller at the same time."
   invalid_date_format: "Sorry, that wasn't a valid date range."
   admin_access: "Only an administrator can access this page."
