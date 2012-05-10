@@ -37,7 +37,7 @@ function createForm(plan){
 	  , email: '<%= @user.email %>'
 	},
 	planCode: plan,
-	successURL: 'http://<%= Settings.public_host %><%= Settings.port=="80" ? "" : ":#{Settings.port}/client/billing_success" %>',
+	successURL: 'http://<%= APP_HOST %><%= Settings.port=="80" ? "" : ":#{Settings.port}/client/billing_success" %>',
 	signature: sig,
 	afterInject: function(){
 		if (plan=='per-minute'){
