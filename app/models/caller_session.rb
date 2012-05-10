@@ -16,6 +16,8 @@ class CallerSession < ActiveRecord::Base
   scope :on_campaign, lambda{|campaign| where("campaign_id = #{campaign.id}") unless campaign.nil?}  
   scope :for_caller, lambda{|caller| where("caller_id = #{caller.id}") unless caller.nil?}  
   scope :debit_not_processed, where(debited: "0").where('call_end is not null')
+  scope :campaigns_on_call, select("campaign_id").on_call.group("campaign_id")
+  
   has_one :voter_in_progress, :class_name => 'Voter'
   has_one :attempt_in_progress, :class_name => 'CallAttempt'
   has_one :moderator
@@ -72,7 +74,7 @@ class CallerSession < ActiveRecord::Base
       
       state :caller_on_call do
         response do |xml_builder, the_call|
-          xml_builder.Say I18n.t(:indentical_caller_on_call)
+          xml_builder.Say I18n.t(:identical_caller_on_call)
           xml_builder.Hangup
         end
         
@@ -133,10 +135,7 @@ class CallerSession < ActiveRecord::Base
   end
   
   
-  def redirect_to_phones_only_start
-    Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    Twilio::Call.redirect(sid, phones_only_caller_index_url(:host => Settings.host, :port => Settings.port, session_id: id, :campaign_reassigned => caller_reassigned_to_another_campaign?))
-  end
+  
   
   def redirect_webui_caller
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
