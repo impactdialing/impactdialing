@@ -14,6 +14,7 @@ loop do
         campaign.dial
       end
     end
+    sleep 3
   rescue Exception => e
     if e.class==SystemExit
       puts "============ EXITING  ============"
