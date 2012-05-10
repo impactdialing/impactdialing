@@ -33,7 +33,7 @@ en:
   broadcast_campaign_started: "Broadcast Campaign Started"
   script_cannot_be_deleted: "This script cannot be deleted, as it is currently assigned to an active campaign."
   script_cannot_be_modified: "You cannot change the script as this campaign has already been called with the existing script."
-  indentical_caller_on_call: "Another user is logged in as this caller. Only one user may log in as the same caller at the same time."
+  identical_caller_on_call: "Another user is logged in as this caller. Only one user may log in as the same caller at the same time."
   invalid_date_format: "Sorry, that wasn't a valid date range."
   admin_access: "Only an administrator can access this page."
   failure_change_role: "Sorry, you can't change your own role."
