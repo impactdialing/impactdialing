@@ -119,7 +119,10 @@ class ClientController < ApplicationController
   end
 
   def login
-    redirect_to :action => "user_add" if session[:user]
+    if session[:user]
+      redirect_to :action => "user_add" 
+      return
+    end
 
     @breadcrumb="Login"
     @title="Join Impact Dialing"
