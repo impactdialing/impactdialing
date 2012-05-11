@@ -1,5 +1,6 @@
 <% content_for :javascripts do %>
-  <%= javascript_include_tag "https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js" %>
+  
+	
 <% end %>
 <h1><%= @script.new_record? ? "New script" : "Edit script" %></h1>
 <% if @script.errors.any? %>
@@ -7,6 +8,7 @@
     <%= error_messages_for :script %>
   </div>
 <% end %>
+
 <%= nested_form_for [:client, @script] do |f| %>
     <%= f.hidden_field :robo %>
       <p>
@@ -33,7 +35,7 @@
       </fieldset>
       <fieldset>
         <legend>Call results</legend>
-        <questions>
+        <questions class="questions_sortable">
           <% @script.questions.each_with_index do |question, index| %>
           <%= f.fields_for :questions, question do |q| %>
             <fieldset>
@@ -51,26 +53,28 @@
                       <th width = 15%>Delete</th>
                     </tr>
                   </table>
-                  <% question.possible_responses.each_with_index do |possible_response, index| %>
-                    <%= q.fields_for :possible_responses, possible_response do |r| %>
-                      <table>
-                        <tr>
-                          <td width = 30%>
-                            <%= r.text_field :value %>
-                          </td>
-                          <td width = 30%>
-                            <%= r.text_field :keypad, :class =>"keypad" %>
-                          </td>
-                          <td width = 15%>
-                            <%= r.check_box :retry %>
-                          </td>
-                          <td width = 15%>
-                            <%= r.link_to_remove " ", :class => "ico del", :type => "possible_responses", :answered => possible_response.answered? %>
-                          </td>
-                        </tr>
-                      </table>
+                  <div class="possible_response_sortable">
+                    <% question.possible_responses.each_with_index do |possible_response, index| %>
+                      <%= q.fields_for :possible_responses, possible_response do |r| %>
+                        <table>
+                          <tr>
+                            <td width = 30%>
+                              <%= r.text_field :value %>
+                            </td>
+                            <td width = 30%>
+                              <%= r.text_field :keypad, :class =>"keypad" %>
+                            </td>
+                            <td width = 15%>
+                              <%= r.check_box :retry %>
+                            </td>
+                            <td width = 15%>
+                              <%= r.link_to_remove " ", :class => "ico del", :type => "possible_responses", :answered => possible_response.answered? %>
+                            </td>
+                          </tr>
+                        </table>
+                      <% end %>
                     <% end %>
-                  <% end %>
+                  </div>
                   <%= q.link_to_add "New response", :possible_responses, :class => "action secondary small_font", :type => "possible_responses"%>
                   <%= q.link_to_remove "Delete this question", :class => "action secondary small_font" , :type => "questions", :answered => question.answered? %>
               </p>
@@ -199,10 +203,24 @@
     </div>
 
 <% end %>
+
 <script type="text/javascript">
+
 	<% if @script.name.blank? %>
-		$(function(){ $('#script_name').focus()});
+		$(function(){ 
+		  $('#script_name').focus();
+		});
 	<% end %>
+  $(document).ready(function() {
+    $(".possible_response_sortable").sortable({ cursor: 'crosshair' , containment: 'parent', axis: 'y',
+    update: function(event, ui) { alert('hi') }  });
+    $(".possible_response_sortable").disableSelection();
+    $(".questions_sortable").sortable({ cursor: 'crosshair' , axis: 'y'  });
+    $(".questions_sortable").disableSelection();
+    
+    
+  });
+  
 </script>
 
 

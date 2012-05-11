@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120508125349) do
+ActiveRecord::Schema.define(:version => 20120509125846) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -22,14 +22,14 @@ ActiveRecord::Schema.define(:version => 20120508125349) do
     t.boolean  "record_calls",              :default => false
     t.string   "recurly_account_code"
     t.string   "subscription_name"
+    t.integer  "subscription_count"
     t.boolean  "subscription_active",       :default => false
     t.string   "recurly_subscription_uuid"
-    t.integer  "subscription_count"
     t.boolean  "autorecharge_enabled",      :default => false
     t.float    "autorecharge_trigger"
     t.float    "autorecharge_amount"
-    t.string   "status"
     t.integer  "lock_version",              :default => 0
+    t.string   "status"
   end
 
   create_table "answers", :force => true do |t|
@@ -173,8 +173,8 @@ ActiveRecord::Schema.define(:version => 20120508125349) do
     t.float    "tPrice"
     t.integer  "attempt_in_progress"
     t.string   "session_key"
-    t.integer  "payment_id"
     t.integer  "lock_version",         :default => 0
+    t.integer  "payment_id"
     t.string   "state"
     t.string   "type"
     t.string   "digit"
@@ -405,14 +405,12 @@ ActiveRecord::Schema.define(:version => 20120508125349) do
 
   create_table "payments", :force => true do |t|
     t.float    "amount_paid"
-    t.integer  "account_id"
     t.float    "amount_remaining"
-    t.integer  "recurly_account_code"
+    t.integer  "recurly_transaction_uuid"
+    t.integer  "account_id"
     t.string   "notes"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "type"
-    t.string   "recurly_transaction_uuid"
   end
 
   create_table "possible_responses", :force => true do |t|
@@ -420,6 +418,7 @@ ActiveRecord::Schema.define(:version => 20120508125349) do
     t.integer "keypad"
     t.string  "value"
     t.boolean "retry",       :default => false
+    t.integer "order"
   end
 
   create_table "questions", :force => true do |t|
