@@ -183,8 +183,9 @@ class CallerSession < ActiveRecord::Base
     rescue ActiveRecord::StaleObjectError
       reload
       end_caller_session
-    end      
-        
+    end 
+    Moderator.publish_event(campaign, "caller_disconnected",{:caller_session_id => id, :caller_id => caller.id, :campaign_id => campaign.id, :campaign_active => campaign.callers_log_in?,
+          :no_of_callers_logged_in => campaign.caller_sessions.on_call.length})
   end  
   
   def dial(voter)
