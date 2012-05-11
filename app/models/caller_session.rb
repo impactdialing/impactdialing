@@ -103,8 +103,7 @@ class CallerSession < ActiveRecord::Base
     begin
       end_session
     rescue ActiveRecord::StaleObjectError
-      reload
-      end_session
+      CallerSession.connection.execute("update caller_sessions set on_call = false, available_for_call = false, endtime = '#{Time.now}' where id = #{self.id}");
     end      
     attempt_in_progress.try(:update_attributes, {:wrapup_time => Time.now})
     attempt_in_progress.try(:capture_answer_as_no_response)
