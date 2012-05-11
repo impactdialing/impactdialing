@@ -109,6 +109,10 @@ class Account < ActiveRecord::Base
     self.sync_subscription
   end
   
+  def is_manual?
+    subscription_name=="Manual"
+  end
+  
   def active_subscription
     # default to per minute if not defined
     if subscription_name!="Per Minute" && subscription_active

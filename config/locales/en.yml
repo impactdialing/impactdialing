@@ -46,10 +46,10 @@ en:
       phone: "(415) 347-5723"
       email: "email@impactdialing.com"
       billing_link: "/client/billing"
-    dc-london:
+    dclondon-dialer:
       title: "dc-London"
       full_title: "dc-London, Inc."
-      phone: "(415) 347-5723"
+      phone: "(623) 826-6436"
       email: "andrew@dc-london.com"
       billing_link: "/client/billing"
     stonesphonesdialer:
