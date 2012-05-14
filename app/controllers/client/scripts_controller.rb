@@ -38,8 +38,8 @@ module Client
       @script.questions << [Question.new(possible_responses: [PossibleResponse.new])]  if @script.questions.empty?
       @voter_fields = VoterList::VOTER_DATA_COLUMNS.values
       @voter_fields.concat(@user.account.custom_voter_fields.collect{ |field| field.name})
-      @answered_questions = Question.select("id").where("script_id = ?",@script.id).group("id").count
-      @answered_possible_response = PossibleResponse.select("id").where("question_id in (?)",@script.questions.collect{|q| q.id}).group("id").count
+      @answered_questions = Question.question_count_script(@script.id)
+      @answered_possible_response = PossibleResponse.possible_response_count(@script.questions)
       if @script.voter_fields!=nil
         begin
           @voter_field_values = JSON.parse(@script.voter_fields)
@@ -57,6 +57,9 @@ module Client
       @voter_fields = VoterList::VOTER_DATA_COLUMNS.values
       @voter_fields.concat(@user.account.custom_voter_fields.collect{ |field| field.name})
       @voter_field_values = (JSON.parse(@script.voter_fields) if @script.voter_fields) || []
+      @answered_questions = Question.question_count_script(@script.id)
+      @answered_possible_response = PossibleResponse.possible_response_count(@script.questions)  
+      puts params[:script]
       begin
         params[:save_as] ? save_as : @script = account.scripts.find_by_id(params[:id])
         if params[:save_as]
@@ -68,6 +71,7 @@ module Client
           render :show
         end
       rescue Exception => e
+        puts e.backtrace
         flash_message(:notice, "Script not saved. Error:" + e.message)
         render :show
       end
