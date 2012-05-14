@@ -74,6 +74,7 @@ $('form a.add_nested_fields').live('click', function() {
     $.each($('.fields:visible'), function(){
       if($(this).find('nested_type').attr('type') == 'questions'){
         $(this).find('legend').text("Question "+count++);
+		$(this).find('.remove_nested_fields').attr("answered","false");
       }
     });
     $(this).parent().siblings('questions').find('.fields:visible').last().find('a.add_nested_fields').trigger('click')
@@ -85,6 +86,7 @@ $('form a.add_nested_fields').live('click', function() {
     }
     $.each($(this).siblings('div.fields:visible'), function(){
       $(this).find('input').slice(1,2).val(count++ );
+	  $(this).find('.remove_nested_fields').attr("answered","false");
     });
   }
   return false;
