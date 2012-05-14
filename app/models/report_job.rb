@@ -26,6 +26,7 @@ class ReportJob
     @campaign_name = @campaign_name.tr("/\000", "")
     filename = "#{Rails.root}/tmp/#{@campaign_name}.csv"
     report_csv = @report.split("\n")
+    puts "Writing to file: #{report_csv.size}"
     file = File.open(filename, "w")
     report_csv.each do |r|
       begin
@@ -67,12 +68,14 @@ class ReportJob
   end
 
   def csv_for(voter)
+    puts "Voter_ID: #{voter.id}"
     voter_fields = voter.selected_fields(@selected_voter_fields.try(:compact))
     custom_fields = voter.selected_custom_fields(@selected_custom_voter_fields)
     [voter_fields, custom_fields, @campaign_strategy.call_details(voter)].flatten
   end
   
   def csv_for_call_attempt(call_attempt)
+    puts "CallAttempt_ID: #{call_attempt.id}"
     voter = call_attempt.voter
     voter_fields = voter.selected_fields(@selected_voter_fields.try(:compact))
     custom_fields = voter.selected_custom_fields(@selected_custom_voter_fields)
