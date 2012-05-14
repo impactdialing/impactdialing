@@ -11,6 +11,10 @@ class DownloadedReport < ActiveRecord::Base
      DownloadedReport.count(:conditions => [ "campaign_id = ? AND (created_at > ?)", campaign_id, 12.hours.ago])
    end
    
+   def self.accounts_active_report_count(campaign_ids)     
+     DownloadedReport.select("campaign_id").where("campaign_id in (?) AND (created_at > ?)", campaign_ids, 12.hours.ago).group("campaign_id").count
+   end
+   
     
     
 end

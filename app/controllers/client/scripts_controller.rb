@@ -38,7 +38,6 @@ module Client
       @script.questions << [Question.new(possible_responses: [PossibleResponse.new])]  if @script.questions.empty?
       @voter_fields = VoterList::VOTER_DATA_COLUMNS.values
       @voter_fields.concat(@user.account.custom_voter_fields.collect{ |field| field.name})
-      Answer.select("possible_response_id").where("campaign_id = ?", self.id).within(from_date, to_date).group("possible_response_id").count
       @answered_questions = Question.select("id").where("script_id = ?",@script.id).group("id").count
       @answered_possible_response = PossibleResponse.select("id").where("question_id in (?)",@script.questions.collect{|q| q.id}).group("id").count
       if @script.voter_fields!=nil
