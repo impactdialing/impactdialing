@@ -17,7 +17,7 @@ class Question < ActiveRecord::Base
   end
   
   def answered?
-    answers.count > 0
+    answers.first != nil
   end
   
 
