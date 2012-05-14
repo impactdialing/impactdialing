@@ -222,7 +222,7 @@ loop do
       campaign = Campaign.find(c.campaign_id)      
       simulate(c.campaign_id) if campaign.predictive_type == Campaign::Type::PREDICTIVE
     end
-    sleep 3
+    sleep 30
   rescue Exception => e
     if e.class == SystemExit || e.class == Interrupt
       ActiveRecord::Base.logger.info "============ EXITING  ============"
