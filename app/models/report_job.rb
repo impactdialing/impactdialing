@@ -50,15 +50,15 @@ class ReportJob
       csv << @campaign_strategy.csv_header(@selected_voter_fields, @selected_custom_voter_fields)
       if @download_all_voters
         if @lead_dial == "dial"
-          @campaign.call_attempts.find_in_batches(:batch_size => 2000) { |attempts| attempts.each { |a| csv << csv_for_call_attempt(a) } }
+          @campaign.call_attempts.find_in_batches(:batch_size => 100) { |attempts| attempts.each { |a| csv << csv_for_call_attempt(a) } }
         else
-          @campaign.all_voters.find_in_batches(:batch_size => 2000) { |voters| voters.each { |v| csv << csv_for(v) } }
+          @campaign.all_voters.find_in_batches(:batch_size => 100) { |voters| voters.each { |v| csv << csv_for(v) } }
         end        
       else
         if @lead_dial == "dial"
-          @campaign.call_attempts.between(@from_date, @to_date).find_in_batches(:batch_size => 2000) { |call_attempts| call_attempts.each { |a| csv << csv_for_call_attempt(a) } }
+          @campaign.call_attempts.between(@from_date, @to_date).find_in_batches(:batch_size => 100) { |call_attempts| call_attempts.each { |a| csv << csv_for_call_attempt(a) } }
         else
-          @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).find_in_batches(:batch_size => 2000) { |voters| voters.each { |v| csv << csv_for(v) } }
+          @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).find_in_batches(:batch_size => 100) { |voters| voters.each { |v| csv << csv_for(v) } }
         end
         
       end
