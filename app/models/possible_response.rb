@@ -9,7 +9,7 @@ class PossibleResponse < ActiveRecord::Base
   end
   
   def answered?
-    answers.count > 0
+    answers.first != nil
   end
       
 end
