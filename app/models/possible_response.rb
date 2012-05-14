@@ -11,5 +11,10 @@ class PossibleResponse < ActiveRecord::Base
   def answered?
     answers.first != nil
   end
+  
+  def self.possible_response_count(questions)
+    possible_responses = PossibleResponse.select("id").where("question_id in (?)",questions)
+    Answer.select("possible_response_id").where("possible_response_id in (?)",possible_responses).group("possible_response_id").count
+  end
       
 end
