@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120508125349) do
+ActiveRecord::Schema.define(:version => 20120515073343) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -396,6 +396,7 @@ ActiveRecord::Schema.define(:version => 20120508125349) do
     t.integer "note_id",         :null => false
     t.string  "response"
     t.integer "call_attempt_id"
+    t.integer "campaign_id"
   end
 
   create_table "notes", :force => true do |t|
@@ -418,6 +419,7 @@ ActiveRecord::Schema.define(:version => 20120508125349) do
     t.integer "keypad"
     t.string  "value"
     t.boolean "retry",       :default => false
+    t.integer "order"
   end
 
   create_table "questions", :force => true do |t|
