@@ -45,13 +45,11 @@
 
         <p><label for="">Dialing hours</label>
           <select class="field" id="campaign_start_time" name="campaign[start_time]">
-            <option value="8" selected>8 AM</option>
-            <%= options_for_select hours %>
+            <%= options_for_select hours, "8" %>
           </select>
           to
           <select class="field" id="campaign_end_time" name="campaign[end_time]">
-            <option value="21" selected>9 PM</option>
-            <%= options_for_select hours %>
+            <%= options_for_select hours, "21" %>
           </select>
         </p>
         <%= render :partial => 'shared/recycle_rate', :locals => {:recycle_hour => @campaign.recycle_rate} %>
