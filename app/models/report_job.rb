@@ -46,19 +46,21 @@ class ReportJob
 
   def perform
     @campaign_strategy = @campaign.robo ? BroadcastStrategy.new(@campaign) : CallerStrategy.new(@campaign)    
+    question_ids = Answer.all(:select=>"distinct question_id", :conditions=>"campaign_id = #{@campaign.id}")
+    note_ids = NoteResponse.all(:select=>"distinct note_id", :conditions=>"campaign_id = #{@campaign.id}")    
     @report = CSV.generate do |csv|
-      csv << @campaign_strategy.csv_header(@selected_voter_fields, @selected_custom_voter_fields)
+      csv << @campaign_strategy.csv_header(@selected_voter_fields, @selected_custom_voter_fields, question_ids, note_ids)
       if @download_all_voters
         if @lead_dial == "dial"
-          @campaign.call_attempts.find_in_batches(:batch_size => 100) { |attempts| attempts.each { |a| csv << csv_for_call_attempt(a) } }
+          @campaign.call_attempts.find_in_batches(:batch_size => 100) { |attempts| attempts.each { |a| csv << csv_for_call_attempt(a, question_ids, note_ids) } }
         else
-          @campaign.all_voters.find_in_batches(:batch_size => 100) { |voters| voters.each { |v| csv << csv_for(v) } }
+          @campaign.all_voters.find_in_batches(:batch_size => 100) { |voters| voters.each { |v| csv << csv_for(v, question_ids, note_ids) } }
         end        
       else
         if @lead_dial == "dial"
-          @campaign.call_attempts.between(@from_date, @to_date).find_in_batches(:batch_size => 100) { |call_attempts| call_attempts.each { |a| csv << csv_for_call_attempt(a) } }
+          @campaign.call_attempts.between(@from_date, @to_date).find_in_batches(:batch_size => 100) { |call_attempts| call_attempts.each { |a| csv << csv_for_call_attempt(a, question_ids, note_ids) } }
         else
-          @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).find_in_batches(:batch_size => 100) { |voters| voters.each { |v| csv << csv_for(v) } }
+          @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).find_in_batches(:batch_size => 100) { |voters| voters.each { |v| csv << csv_for(v, question_ids, note_ids) } }
         end
         
       end
@@ -67,19 +69,19 @@ class ReportJob
     
   end
 
-  def csv_for(voter)
+  def csv_for(voter, question_ids, note_ids)
     puts "Voter_ID: #{voter.id}"
     voter_fields = voter.selected_fields(@selected_voter_fields.try(:compact))
     custom_fields = voter.selected_custom_fields(@selected_custom_voter_fields)
-    [voter_fields, custom_fields, @campaign_strategy.call_details(voter)].flatten
+    [voter_fields, custom_fields, @campaign_strategy.call_details(voter, question_ids, note_ids)].flatten
   end
   
-  def csv_for_call_attempt(call_attempt)
+  def csv_for_call_attempt(call_attempt, question_ids, note_ids)
     puts "CallAttempt_ID: #{call_attempt.id}"
     voter = call_attempt.voter
     voter_fields = voter.selected_fields(@selected_voter_fields.try(:compact))
     custom_fields = voter.selected_custom_fields(@selected_custom_voter_fields)
-    [voter_fields, custom_fields, @campaign_strategy.call_attempt_details(call_attempt, voter)].flatten
+    [voter_fields, custom_fields, @campaign_strategy.call_attempt_details(call_attempt, voter, question_ids, note_ids)].flatten
   end
   
 
@@ -111,20 +113,23 @@ end
 
 
 class CallerStrategy < CampaignStrategy
-  def csv_header(fields, custom_fields)
-    [fields, custom_fields, "Caller", "Status", "Call start", "Call end", "Attempts", "Recording", @campaign.script.questions.collect { |q| q.text }, @campaign.script.notes.collect { |note| note.note }].flatten.compact
+  def csv_header(fields, custom_fields, question_ids, note_ids)
+    questions = Question.select("text").where("id in (?)",question_ids).collect{|q| q.text}
+    notes = Note.select("note").where("id in (?)",note_ids).collect{|n| n.note}
+    [fields, custom_fields, "Caller", "Status", "Call start", "Call end", "Attempts", "Recording", questions, notes].flatten.compact
   end
   
-  def call_attempt_details(call_attempt, voter)
+  def call_attempt_details(call_attempt, voter, question_ids, note_ids)
     answers, notes = [], []
     details = [call_attempt.try(:caller).try(:known_as), call_attempt.status, call_attempt.try(:call_start).try(:in_time_zone, @campaign.time_zone), call_attempt.try(:call_end).try(:in_time_zone, @campaign.time_zone), 1, call_attempt.try(:report_recording_url)].flatten
-    @campaign.script.questions.each { |q| answers << call_attempt.answers.for(q).first.try(:possible_response).try(:value) }
-    @campaign.script.notes.each { |note| notes << call_attempt.note_responses.for(note).last.try(:response) }
-    [details, answers, notes].flatten
+    answers = call_attempt.answers.for_questions(question_ids)
+    notes = call_attempt.note_responses.for_notes(note_ids)
+    answer_texts = PossibleResponse.select("value").where("id in (?)", answers.collect{|a| a.possible_response.id } )
+    [details, answer_texts, notes.collect{|n| n.try(:response)}].flatten
     
   end
 
-  def call_details(voter)
+  def call_details(voter, question_ids, note_ids)
     answers, notes = [], []
     last_attempt = voter.call_attempts.last
     details = if last_attempt
@@ -132,22 +137,23 @@ class CallerStrategy < CampaignStrategy
               else
                 [nil, "Not Dialed","","","",""]
               end
-    @campaign.script.questions.each { |q| answers << voter.answers.for(q).last.try(:possible_response).try(:value) }
-    @campaign.script.notes.each { |note| notes << voter.note_responses.for(note).last.try(:response) }
-    [details, answers, notes].flatten
+    answers = voter.answers.for_questions(question_ids)
+    answer_texts = PossibleResponse.select("value").where("id in (?)", answers.collect{|a| a.possible_response.id } )
+    notes = voter.note_responses.for_notes(note_ids)              
+    [details, answer_texts, notes.collect{|n| n.try(:response)}].flatten
   end
 end
 
 class BroadcastStrategy < CampaignStrategy
-  def csv_header(fields, custom_fields)
+  def csv_header(fields, custom_fields, question_ids, note_ids)
     [fields, custom_fields, "Status", @campaign.script.robo_recordings.collect { |rec| rec.name }].flatten.compact
   end
   
-  def call_attempt_details(call_attempt, voter)
+  def call_attempt_details(call_attempt, voter, question_ids, note_ids)
     [call_attempt.status, (call_attempt.call_responses.collect { |call_response| call_response.recording_response.try(:response) } if call_attempt.call_responses.size > 0)].flatten
   end
 
-  def call_details(voter)
+  def call_details(voter, question_ids, note_ids)
     last_attempt = voter.call_attempts.last
     details = last_attempt ? [last_attempt.status, (last_attempt.call_responses.collect { |call_response| call_response.recording_response.try(:response) } if last_attempt.call_responses.size > 0)].flatten : ['Not Dialed']
     details

@@ -12,6 +12,7 @@ class Campaign < ActiveRecord::Base
   has_many :callers
   has_one :simulated_values
   has_many :answers
+  has_many :note_responses
   has_many :call_responses
   belongs_to :script
   belongs_to :voicemail_script, :class_name => 'Script', :foreign_key => 'voicemail_script_id'
