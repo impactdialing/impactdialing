@@ -124,8 +124,8 @@ class CallerStrategy < CampaignStrategy
     details = [call_attempt.try(:caller).try(:known_as), call_attempt.status, call_attempt.try(:call_start).try(:in_time_zone, @campaign.time_zone), call_attempt.try(:call_end).try(:in_time_zone, @campaign.time_zone), 1, call_attempt.try(:report_recording_url)].flatten
     answers = call_attempt.answers.for_questions(question_ids)
     notes = call_attempt.note_responses.for_notes(note_ids)
-    answer_texts = PossibleResponse.select("value").where("id in (?)", answers.collect{|a| a.possible_response.id } )
-    [details, answer_texts, notes.collect{|n| n.try(:response)}].flatten
+    answer_texts = PossibleResponse.select("value").where("id in (?)", answers.collect{|a| a.try(:possible_response).try(:id) } )
+    [details, answer_texts.collect{|at| at.value}, notes.collect{|n| n.try(:response)}].flatten
     
   end
 
@@ -138,9 +138,9 @@ class CallerStrategy < CampaignStrategy
                 [nil, "Not Dialed","","","",""]
               end
     answers = voter.answers.for_questions(question_ids)
-    answer_texts = PossibleResponse.select("value").where("id in (?)", answers.collect{|a| a.possible_response.id } )
+    answer_texts = PossibleResponse.select("value").where("id in (?)", answers.collect{|a| a.try(:possible_response).try(:id) } )
     notes = voter.note_responses.for_notes(note_ids)              
-    [details, answer_texts, notes.collect{|n| n.try(:response)}].flatten
+    [details, answer_texts.collect{|at| at.value}, notes.collect{|n| n.try(:response)}].flatten
   end
 end
 
