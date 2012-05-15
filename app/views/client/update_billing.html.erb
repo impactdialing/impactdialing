@@ -25,17 +25,17 @@ Recurly.config({
     target: '#recurly-form'
   , accountCode: '<%= @account_code %>'
   , distinguishContactFromBillingInfo: false 
-  , successURL: 'http://<%= Settings.public_host %><%= Settings.port=="80" ? "" : ":#{Settings.port}/client/billing_updated" %>'
+  , successURL: 'http://<%= APP_HOST %><%= Settings.port=="80" ? "" : ":#{Settings.port}/client/billing_updated" %>'
   , signature: '<%= Recurly.js.sign :account => { :account_code =>  @account_code } %>', 
 billingInfo: {
-    firstName: '<%= @billing_info.first_name %>'
-  , lastName: '<%= @billing_info.last_name %>'
-  , address1: '<%= @billing_info.address1 %>'
-  , address2: '<%= @billing_info.address2 %>'
-  , country: '<%= @billing_info.country %>'
-  , city: '<%= @billing_info.city %>'
-  , state: '<%= @billing_info.state %>'
-  , zip: '<%= @billing_info.zip %>'
+    firstName: '<%= @billing_info.nil? ? @user.fname : @billing_info.first_name %>'
+  , lastName: '<%= @billing_info.nil? ? @user.lname : @billing_info.last_name %>'
+  , address1: '<%= @billing_info.nil? ? "" : @billing_info.address1 %>'
+  , address2: '<%= @billing_info.nil? ? "" : @billing_info.address2 %>'
+  , country: '<%= @billing_info.nil? ? "" : @billing_info.country %>'
+  , city: '<%= @billing_info.nil? ? "" : @billing_info.city %>'
+  , state: '<%= @billing_info.nil? ? "" : @billing_info.state %>'
+  , zip: '<%= @billing_info.nil? ? "" : @billing_info.zip %>'
   }
   });
 </script>

@@ -10,6 +10,7 @@ module Client
 
     def index
       @campaigns = params[:id].blank? ? account.campaigns.manual : Campaign.find(params[:id])
+      @download_report_count = DownloadedReport.accounts_active_report_count(@campaigns.collect{|c| c.id})
       @callers = account.callers.active
     end
 

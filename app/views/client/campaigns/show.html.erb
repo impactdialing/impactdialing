@@ -49,23 +49,11 @@
 
         <p><label for="">Dialing hours</label>
           <select class="field" id="campaign_start_time" name="campaign[start_time]">
-
-            <% if @campaign.start_time %>
-                <option value="<%= @campaign.start_time.try(:hour) %>" selected>
-                  <%= hours.map { |p| p[0] }[hours.map { |pair| pair[1] }.index(@campaign.start_time.try(:hour).to_s)] %>
-                </option>
-            <% end %>
-            <%= options_for_select hours, @campaign.start_time %>
+            <%= options_for_select hours, @campaign.start_time.try(:hour) %>
           </select>
           to
           <select class="field" id="campaign_end_time" name="campaign[end_time]">
-
-            <% if @campaign.end_time %>
-                <option value="<%= @campaign.end_time.try(:hour) %>" selected>
-                  <%= hours.map { |p| p[0] }[hours.map { |pair| pair[1] }.index((@campaign.end_time.try(:hour)).to_s)] %>
-                </option>
-            <% end %>
-            <%= options_for_select hours, @campaign.end_time %>
+            <%= options_for_select hours, @campaign.end_time.try(:hour) %>
           </select>
         </p>
 

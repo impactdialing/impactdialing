@@ -53,30 +53,28 @@
                       <th width = 15%>Delete</th>
                     </tr>
                   </table>
-                  <div class="possible_response_sortable">
-                    <% question.possible_responses.each_with_index do |possible_response, index| %>
-                      <%= q.fields_for :possible_responses, possible_response do |r| %>
-                        <table>
-                          <tr>
-                            <td width = 30%>
-                              <%= r.text_field :value %>
-                            </td>
-                            <td width = 30%>
-                              <%= r.text_field :keypad, :class =>"keypad" %>
-                            </td>
-                            <td width = 15%>
-                              <%= r.check_box :retry %>
-                            </td>
-                            <td width = 15%>
-                              <%= r.link_to_remove " ", :class => "ico del", :type => "possible_responses", :answered => possible_response.answered? %>
-                            </td>
-                          </tr>
-                        </table>
-                      <% end %>
+                  <% question.possible_responses.each_with_index do |possible_response, index| %>
+                    <%= q.fields_for :possible_responses, possible_response do |r| %>
+                      <table>
+                        <tr>
+                          <td width = 30%>
+                            <%= r.text_field :value %>
+                          </td>
+                          <td width = 30%>
+                            <%= r.text_field :keypad, :class =>"keypad" %>
+                          </td>
+                          <td width = 15%>
+                            <%= r.check_box :retry %>
+                          </td>
+                          <td width = 15%>
+                            <%= r.link_to_remove " ", :class => "ico del", :type => "possible_responses", :answered => @answered_possible_response[possible_response.id] != nil && @answered_possible_response[possible_response.id] > 0 %>
+                          </td>
+                        </tr>
+                      </table>
                     <% end %>
                   </div>
                   <%= q.link_to_add "New response", :possible_responses, :class => "action secondary small_font", :type => "possible_responses"%>
-                  <%= q.link_to_remove "Delete this question", :class => "action secondary small_font" , :type => "questions", :answered => question.answered? %>
+                  <%= q.link_to_remove "Delete this question", :class => "action secondary small_font" , :type => "questions", :answered => @answered_questions[question.id] != nil && @answered_questions[question.id] > 0 %>
               </p>
               </fieldset>
             <% end %>

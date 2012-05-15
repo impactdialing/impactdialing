@@ -46,10 +46,10 @@ en:
       phone: "(415) 347-5723"
       email: "email@impactdialing.com"
       billing_link: "/client/billing"
-    dc-london:
+    dclondon-dialer:
       title: "dc-London"
       full_title: "dc-London, Inc."
-      phone: "(415) 347-5723"
+      phone: "(623) 826-6436"
       email: "andrew@dc-london.com"
       billing_link: "/client/billing"
     stonesphonesdialer:
@@ -129,4 +129,10 @@ en:
       full_title: "InFocus Campaigns, LLC"
       phone: "(817) 995-8004"
       email: "campaign@infocuscampaigns.com"
+      billing_link: "/client/billing"
+    yourcampaign-hq:
+      title: "Campaign HQ"
+      full_title: "Campaign HQ"
+      phone: "(888) 722-4704 x208"
+      email: "support@campaign-headquarters.com"
       billing_link: "/client/billing"

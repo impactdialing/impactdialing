@@ -135,7 +135,12 @@ class CallerController < ApplicationController
   
   def find_caller_session
     @caller_session = CallerSession.find_by_id(params[:session_id]) || CallerSession.find_by_sid(params[:CallSid])
-    @caller_session.try(:update_attributes, {digit: params[:Digits], question_id: params[:question_id]})
+    begin
+      @caller_session.try(:update_attributes, {digit: params[:Digits], question_id: params[:question_id]})
+    rescue ActiveRecord::StaleObjectError
+      @caller_session = CallerSession.find_by_id(params[:session_id]) || CallerSession.find_by_sid(params[:CallSid])
+      @caller_session.try(:update_attributes, {digit: params[:Digits], question_id: params[:question_id]})
+    end
     @caller_session
   end
 
