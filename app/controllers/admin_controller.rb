@@ -16,6 +16,16 @@ class AdminController < ApplicationController
     @logged_in_callers = CallerSession.find_all_by_on_call(1)
     @errors=""
   end
+  
+  def abandonment
+    account = Account.find(params[:id])
+    if account.abandonment == "variable"
+      account.update_attributes(abandonment: "fixed")
+    else
+      account.update_attributes(abandonment: "variable")
+    end
+    redirect_to :back
+  end
 
   def index
 
