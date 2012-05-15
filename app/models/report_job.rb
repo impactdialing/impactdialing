@@ -47,8 +47,8 @@ class ReportJob
   def perform
     begin
       @campaign_strategy = @campaign.robo ? BroadcastStrategy.new(@campaign) : CallerStrategy.new(@campaign)    
-      question_ids = Answer.all(:select=>"distinct question_id", :conditions=>"campaign_id = #{@campaign.id}")
-      note_ids = NoteResponse.all(:select=>"distinct note_id", :conditions=>"campaign_id = #{@campaign.id}")    
+      question_ids = Answer.all(:select=>"distinct question_id", :conditions=>"campaign_id = #{@campaign.id}").collect{|a| a.question_id}
+      note_ids = NoteResponse.all(:select=>"distinct note_id", :conditions=>"campaign_id = #{@campaign.id}").collect{|nr| nr.note_id }    
       @report = CSV.generate do |csv|
         csv << @campaign_strategy.csv_header(@selected_voter_fields, @selected_custom_voter_fields, question_ids, note_ids)
         if @download_all_voters
@@ -130,8 +130,7 @@ class CallerStrategy < CampaignStrategy
     answers = call_attempt.answers.for_questions(question_ids)
     notes = call_attempt.note_responses.for_notes(note_ids)
     answer_texts = PossibleResponse.select("value").where("id in (?)", answers.collect{|a| a.try(:possible_response).try(:id) } )
-    [details, answer_texts.collect{|at| at.value}, notes.collect{|n| n.try(:response)}].flatten
-    
+    [details, answer_texts.collect{|at| at.value}, notes.collect{|n| n.try(:response)}].flatten    
   end
 
   def call_details(voter, question_ids, note_ids)
