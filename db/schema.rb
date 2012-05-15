@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120515073343) do
+ActiveRecord::Schema.define(:version => 20120515115512) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -30,6 +30,7 @@ ActiveRecord::Schema.define(:version => 20120515073343) do
     t.float    "autorecharge_amount"
     t.integer  "lock_version",              :default => 0
     t.string   "status"
+    t.string   "abandonment"
   end
 
   create_table "answers", :force => true do |t|

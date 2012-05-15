@@ -233,6 +233,7 @@ ImpactDialing::Application.routes.draw do
   match '/recurly/notification', :to => 'recurly#notification', :as => :recurly_notification
 
   get 'admin/status', :to => 'admin#state'
+  get 'admin/abandonment', :to => 'admin#abandonment'
 
   resource :call_attempts, :only => :create
 

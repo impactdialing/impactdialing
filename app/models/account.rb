@@ -180,4 +180,16 @@ class Account < ActiveRecord::Base
 
   end
   
+  def variable_abandonment?
+    abandonment == 'variable'
+  end
+  
+  def abandonment_value
+    if variable_abandonment?
+      "Variable"
+    else
+      "Fixed"
+    end
+  end
+  
 end
