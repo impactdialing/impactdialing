@@ -39,7 +39,6 @@ module Client
       @voter_fields = VoterList::VOTER_DATA_COLUMNS.values
       @voter_fields.concat(@user.account.custom_voter_fields.collect{ |field| field.name})
       @answered_questions = Question.question_count_script(@script.id)
-      @answered_possible_response = PossibleResponse.possible_response_count(@script.questions)
       if @script.voter_fields!=nil
         begin
           @voter_field_values = JSON.parse(@script.voter_fields)
@@ -50,6 +49,7 @@ module Client
         @voter_field_values=[]
       end
     end
+    
 
     def update
       @script = @user.account.scripts.find(params[:id])
@@ -58,13 +58,13 @@ module Client
       @voter_fields.concat(@user.account.custom_voter_fields.collect{ |field| field.name})
       @voter_field_values = (JSON.parse(@script.voter_fields) if @script.voter_fields) || []
       @answered_questions = Question.question_count_script(@script.id)
-      @answered_possible_response = PossibleResponse.possible_response_count(@script.questions)  
       puts params[:script]
       begin
         params[:save_as] ? save_as : @script = account.scripts.find_by_id(params[:id])
+        puts params[:script]
         if params[:save_as]
-          redirect_to client_script_path(@script)
-        elsif !params[:save_as] && @script.update_attributes(params[:script])
+          redirect_to client_script_path(@script)          
+        elsif !params[:save_as] &&  @script.update_attributes(params[:script])
           flash_message(:notice, "Script updated")
           redirect_to :action=>"index"
         else
