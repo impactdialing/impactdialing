@@ -16,8 +16,13 @@ class Question < ActiveRecord::Base
     answers.within(from_date, to_date).with_campaign_id(campaign_id)
   end
   
+  def self.question_count_script(script_id)
+    questions = Question.select("id").where("script_id = ?",script_id)
+    Answer.select("question_id").where("question_id in (?)",questions).group("question_id").count
+  end
+  
   def answered?
-    answers.count > 0
+    answers.first != nil
   end
   
 

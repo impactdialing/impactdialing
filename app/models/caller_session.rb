@@ -113,8 +113,7 @@ class CallerSession < ActiveRecord::Base
     begin
       end_session
     rescue ActiveRecord::StaleObjectError
-      reload
-      end_session
+      CallerSession.connection.execute("update caller_sessions set on_call = false, available_for_call = false, endtime = '#{Time.now}' where id = #{self.id}");
     end      
     attempt_in_progress.try(:update_attributes, {:wrapup_time => Time.now})
     attempt_in_progress.try(:capture_answer_as_no_response)
@@ -197,8 +196,9 @@ class CallerSession < ActiveRecord::Base
     rescue ActiveRecord::StaleObjectError
       reload
       end_caller_session
-    end      
-        
+    end 
+    Moderator.publish_event(campaign, "caller_disconnected",{:caller_session_id => id, :caller_id => caller.id, :campaign_id => campaign.id, :campaign_active => campaign.callers_log_in?,
+          :no_of_callers_logged_in => campaign.caller_sessions.on_call.length})
   end  
   
   def dial(voter)

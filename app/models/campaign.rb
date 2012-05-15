@@ -12,6 +12,7 @@ class Campaign < ActiveRecord::Base
   has_many :callers
   has_one :simulated_values
   has_many :answers
+  has_many :note_responses
   has_many :call_responses
   belongs_to :script
   belongs_to :voicemail_script, :class_name => 'Script', :foreign_key => 'voicemail_script_id'
@@ -114,6 +115,7 @@ class Campaign < ActiveRecord::Base
 
 
   def time_period_exceeded?
+    return true if start_time.nil? || end_time.nil?
     if start_time.hour < end_time.hour
       !(start_time.hour <= Time.now.utc.in_time_zone(time_zone).hour && end_time.hour > Time.now.utc.in_time_zone(time_zone).hour)
     else

@@ -119,7 +119,10 @@ class ClientController < ApplicationController
   end
 
   def login
-    redirect_to :action => "user_add" if session[:user]
+    if session[:user]
+      redirect_to :action => "user_add" 
+      return
+    end
 
     @breadcrumb="Login"
     @title="Join Impact Dialing"
@@ -318,12 +321,7 @@ class ClientController < ApplicationController
    def billing
      @balance=@user.account.current_balance
      @trial=@user.account.trial?
-     @recurly_per_caller_subscription_url = recurly_subscription_url("per-caller", @user.account.recurly_account_code, (@user.fname.nil? ? "" : @user.fname), (@user.lname.nil? ? "" : @user.lname), @user.email)
-     @recurly_per_minute_subscription_url = recurly_subscription_url("per-minute", @user.account.recurly_account_code, (@user.fname.nil? ? "" : @user.fname), (@user.lname.nil? ? "" : @user.lname), @user.email)
-   end
-
-   def recurly_subscription_url(plan_code, account_code, first_name, last_name, email)
-     "https://impactdialing.recurly.com/subscribe/" + plan_code + "/" + account_code + "?first_name=" + URI.escape(first_name) + "&last_name=" + URI.escape(last_name) + "&email=" + URI.escape(email)
+     @has_billing_info = !Recurly::Account.find(@user.account.recurly_account_code).billing_info.nil?
    end
 
    def update_billing_quantity
