@@ -12,7 +12,6 @@ class ReportJob
     NOT_DIALED = "Not Dialed"
   end
   
-  VOICEMAIL = 'Message delivered'
   
   
   def self.map_status(status)
