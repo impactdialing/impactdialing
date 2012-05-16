@@ -13,7 +13,6 @@
 
 ActiveRecord::Schema.define(:version => 20120515115512) do
 
-
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
     t.datetime "created_at"

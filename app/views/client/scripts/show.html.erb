@@ -53,8 +53,7 @@
                       <th width = 15%>Delete</th>
                     </tr>
                   </table>
-                  <% question.possible_responses.each_with_index do |possible_response, index| %>
-                    <%= q.fields_for :possible_responses, possible_response do |r| %>
+                    <%= q.fields_for :possible_responses do |r| %>
                       <table>
                         <tr>
                           <td width = 30%>
@@ -67,12 +66,11 @@
                             <%= r.check_box :retry %>
                           </td>
                           <td width = 15%>
-                            <%= r.link_to_remove " ", :class => "ico del", :type => "possible_responses", :answered => @answered_possible_response[possible_response.id] != nil && @answered_possible_response[possible_response.id] > 0 %>
+                            <%= r.link_to_remove " ", :class => "ico del", :type => "possible_responses" %>
                           </td>
                         </tr>
                       </table>
                     <% end %>
-                  </div>
                   <%= q.link_to_add "New response", :possible_responses, :class => "action secondary small_font", :type => "possible_responses"%>
                   <%= q.link_to_remove "Delete this question", :class => "action secondary small_font" , :type => "questions", :answered => @answered_questions[question.id] != nil && @answered_questions[question.id] > 0 %>
               </p>

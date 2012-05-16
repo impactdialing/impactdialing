@@ -223,7 +223,7 @@ class CallerSession < ActiveRecord::Base
   
   def make_call(attempt, voter)
   Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-  params = {'FallbackUrl' => TWILIO_ERROR, 'StatusCallback' => flow_call_url(attempt.call, host: Settings.host, port:  Settings.port, event: "call_ended"),'Timeout' => campaign.use_recordings? ? "30" : "15"}
+  params = {'FallbackUrl' => TWILIO_ERROR, 'StatusCallback' => flow_call_url(attempt.call, host: Settings.host, port:  Settings.port, event: "call_ended"),'Timeout' => campaign.use_recordings? ? "20" : "15"}
   params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect        
   Twilio::Call.make(self.campaign.caller_id, voter.Phone, flow_call_url(attempt.call, host: Settings.host, port: Settings.port, event: "incoming_call"),params)  
   end
