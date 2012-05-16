@@ -1,5 +1,30 @@
 class ReportJob 
   
+  module AttemptStatus
+    ANSWERED = "Answered"
+    ABANDONED = "Abandoned"
+    FAILED = "Failed"
+    BUSY = "Busy"
+    NOANSWER = 'No answer'
+    ANSWERING_MACHINE = "Answering machine"
+    ANSWERING_MACHINE_MESSAGE = "Answering machine message delivered"
+    SCHEDULED = 'Scheduled for later'
+    NOT_DIALED = "Not Dialed"
+  end
+  
+  VOICEMAIL = 'Message delivered'
+  
+  
+  def self.map_status(status)
+    statuses = {CallAttempt::Status::SUCCESS => AttemptStatus::ANSWERED, Voter::Status::RETRY => AttemptStatus::ANSWERED, 
+      Voter::Status::NOTCALLED => AttemptStatus::NOT_DIALED, CallAttempt::Status::NOANSWER => AttemptStatus::NOANSWER, 
+      CallAttempt::Status::ABANDONED => AttemptStatus::ABANDONED, CallAttempt::Status::BUSY => AttemptStatus::BUSY,
+      CallAttempt::Status::FAILED => AttemptStatus::FAILED, CallAttempt::Status::Hangup => AttemptStatus::ANSWERING_MACHINE,
+      CallAttempt::Status::SCHEDULED => AttemptStatus::SCHEDULED, CallAttempt::Status::VOICEMAIL => AttemptStatus::ANSWERING_MACHINE_MESSAGE}
+      statuses[status] || status
+  end
+  
+  
   def initialize(campaign, user, voter_fields, custom_fields, all_voters,lead_dial, from, to, callback_url, strategy="webui")
     @campaign = campaign
     @user = user
@@ -126,7 +151,7 @@ class CallerStrategy < CampaignStrategy
   
   def call_attempt_details(call_attempt, voter, question_ids, note_ids)
     answers, notes = [], []
-    details = [call_attempt.try(:caller).try(:known_as), call_attempt.status, call_attempt.try(:call_start).try(:in_time_zone, @campaign.time_zone), call_attempt.try(:call_end).try(:in_time_zone, @campaign.time_zone), 1, call_attempt.try(:report_recording_url)].flatten
+    details = [call_attempt.try(:caller).try(:known_as), ReportJob.map_status(call_attempt.status), call_attempt.try(:call_start).try(:in_time_zone, @campaign.time_zone), call_attempt.try(:call_end).try(:in_time_zone, @campaign.time_zone), 1, call_attempt.try(:report_recording_url)].flatten
     answers = call_attempt.answers.for_questions(question_ids)
     notes = call_attempt.note_responses.for_notes(note_ids)
     answer_texts = PossibleResponse.select("value").where("id in (?)", answers.collect{|a| a.try(:possible_response).try(:id) } )
@@ -138,7 +163,7 @@ class CallerStrategy < CampaignStrategy
     answers, notes = [], []
     last_attempt = voter.call_attempts.last
     details = if last_attempt
-                [last_attempt.try(:caller).try(:known_as), voter.status, last_attempt.try(:call_start).try(:in_time_zone, @campaign.time_zone), last_attempt.try(:call_end).try(:in_time_zone, @campaign.time_zone), voter.call_attempts.size, last_attempt.try(:report_recording_url)].flatten
+                [last_attempt.try(:caller).try(:known_as), ReportJob.map_status(voter.status), last_attempt.try(:call_start).try(:in_time_zone, @campaign.time_zone), last_attempt.try(:call_end).try(:in_time_zone, @campaign.time_zone), voter.call_attempts.size, last_attempt.try(:report_recording_url)].flatten
               else
                 [nil, "Not Dialed","","","",""]
               end
