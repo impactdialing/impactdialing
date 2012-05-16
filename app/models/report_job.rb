@@ -71,8 +71,8 @@ class ReportJob
   def perform
     begin
       @campaign_strategy = @campaign.robo ? BroadcastStrategy.new(@campaign) : CallerStrategy.new(@campaign)    
-      question_ids = Answer.all(:select=>"distinct question_id", :conditions=>"campaign_id = #{@campaign.id}")
-      note_ids = NoteResponse.all(:select=>"distinct note_id", :conditions=>"campaign_id = #{@campaign.id}")    
+      question_ids = Answer.all(:select=>"distinct question_id", :conditions=>"campaign_id = #{@campaign.id}", :order => "question_id").collect{|a| a.question_id}
+      note_ids = NoteResponse.all(:select=>"distinct note_id", :conditions=>"campaign_id = #{@campaign.id}", :order => "note_id").collect{|nr| nr.note_id }    
       @report = CSV.generate do |csv|
         csv << @campaign_strategy.csv_header(@selected_voter_fields, @selected_custom_voter_fields, question_ids, note_ids)
         if @download_all_voters
@@ -143,19 +143,18 @@ end
 
 class CallerStrategy < CampaignStrategy
   def csv_header(fields, custom_fields, question_ids, note_ids)
-    questions = Question.select("text").where("id in (?)",question_ids).collect{|q| q.text}
-    notes = Note.select("note").where("id in (?)",note_ids).collect{|n| n.note}
+    questions = Question.select("id, text").where("id in (?)",question_ids).order('id').collect{|q| q.text}
+    notes = Note.select("id, note").where("id in (?)",note_ids).order('id').collect{|n| n.note}
     [fields, custom_fields, "Caller", "Status", "Call start", "Call end", "Attempts", "Recording", questions, notes].flatten.compact
   end
   
   def call_attempt_details(call_attempt, voter, question_ids, note_ids)
     answers, notes = [], []
     details = [call_attempt.try(:caller).try(:known_as), ReportJob.map_status(call_attempt.status), call_attempt.try(:call_start).try(:in_time_zone, @campaign.time_zone), call_attempt.try(:call_end).try(:in_time_zone, @campaign.time_zone), 1, call_attempt.try(:report_recording_url)].flatten
-    answers = call_attempt.answers.for_questions(question_ids)
-    notes = call_attempt.note_responses.for_notes(note_ids)
-    answer_texts = PossibleResponse.select("value").where("id in (?)", answers.collect{|a| a.try(:possible_response).try(:id) } )
-    [details, answer_texts.collect{|at| at.value}, notes.collect{|n| n.try(:response)}].flatten
-    
+    answers = call_attempt.answers.for_questions(question_ids).order('question_id')
+    notes = call_attempt.note_responses.for_notes(note_ids).order('note_id')
+    answer_texts = PossibleResponse.select("value").where("id in (?)", answers.collect{|a| a.try(:possible_response).try(:id) } ).order('question_id')
+    [details, answer_texts.collect{|at| at.value}, notes.collect{|n| n.try(:response)}].flatten    
   end
 
   def call_details(voter, question_ids, note_ids)
@@ -166,9 +165,9 @@ class CallerStrategy < CampaignStrategy
               else
                 [nil, "Not Dialed","","","",""]
               end
-    answers = voter.answers.for_questions(question_ids)
-    answer_texts = PossibleResponse.select("value").where("id in (?)", answers.collect{|a| a.try(:possible_response).try(:id) } )
-    notes = voter.note_responses.for_notes(note_ids)              
+    answers = voter.answers.for_questions(question_ids).order('question_id')
+    answer_texts = PossibleResponse.select("value").where("id in (?)", answers.collect{|a| a.try(:possible_response).try(:id) } ).order('question_id')
+    notes = voter.note_responses.for_notes(note_ids).order('note_id')              
     [details, answer_texts.collect{|at| at.value}, notes.collect{|n| n.try(:response)}].flatten
   end
 end
