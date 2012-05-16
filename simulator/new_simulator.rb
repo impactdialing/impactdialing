@@ -205,7 +205,7 @@ loop do
     logged_in_campaigns.each do |k|     
       puts "Simulating #{k.first}"
       campaign = Campaign.find(k.first)      
-      simulate(k.first) if campaign.predictive_type == Campaign::Type::PREDICTIVE
+      simulate(k.first) if campaign.type == Campaign::Type::PREDICTIVE
     end
     sleep 3
   rescue Exception => e
