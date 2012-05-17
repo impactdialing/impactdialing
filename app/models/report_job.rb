@@ -153,7 +153,7 @@ class CallerStrategy < CampaignStrategy
     details = [call_attempt.try(:caller).try(:known_as), ReportJob.map_status(call_attempt.status), call_attempt.try(:call_start).try(:in_time_zone, @campaign.time_zone), call_attempt.try(:call_end).try(:in_time_zone, @campaign.time_zone), 1, call_attempt.try(:report_recording_url)].flatten
     answers = call_attempt.answers.for_questions(question_ids).order('question_id')
     notes = call_attempt.note_responses.for_notes(note_ids).order('note_id')
-    answer_texts = PossibleResponse.select("value").where("id in (?)", answers.collect{|a| a.try(:possible_response).try(:id) } ).order('question_id')
+    answer_texts = PossibleResponse.select("question_id, value").where("id in (?)", answers.collect{|a| a.try(:possible_response).try(:id) } ).order('question_id')
     modified_answers = []
     
     question_ids.each_with_index do |question_id, index|
