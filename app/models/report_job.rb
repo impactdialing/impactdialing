@@ -188,7 +188,7 @@ class CallerStrategy < CampaignStrategy
       end
       notes = last_attempt.note_responses.for_notes(note_ids).order('note_id')              
     else
-      answer_texts = []
+      modified_answers = []
       notes = []
     end
     [details, modified_answers.collect{|at| at.value}, notes.collect{|n| n.try(:response)}].flatten
