@@ -165,9 +165,14 @@ class CallerStrategy < CampaignStrategy
               else
                 [nil, "Not Dialed","","","",""]
               end
-    answers = voter.answers.for_questions(question_ids).order('question_id')
-    answer_texts = PossibleResponse.select("value").where("id in (?)", answers.collect{|a| a.try(:possible_response).try(:id) } ).order('question_id')
-    notes = voter.note_responses.for_notes(note_ids).order('note_id')              
+    if last_attempt          
+      answers = last_attempt.answers.for_questions(question_ids).order('question_id')
+      answer_texts = PossibleResponse.select("value").where("id in (?)", answers.collect{|a| a.try(:possible_response).try(:id) } ).order('question_id')
+      notes = last_attempt.note_responses.for_notes(note_ids).order('note_id')              
+    else
+      answer_texts = []
+      notes = []
+    end
     [details, answer_texts.collect{|at| at.value}, notes.collect{|n| n.try(:response)}].flatten
   end
 end
