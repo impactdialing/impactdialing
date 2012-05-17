@@ -140,7 +140,7 @@ class User < ActiveRecord::Base
               :from_name => 'Michael Kaiser-Nyman, Impact Dialing',
               :from_email => 'email@impactdialing.com',
               :to_email => [self.email],
-              :bcc_email=>['michael@impactdialing.com','brian@impactdialing.com']
+              :bcc_email=>['michael@impactdialing.com','brian@impactdialing.com','nikhil@impactdialing.com']
           }
       })
       rescue Exception => e
@@ -164,7 +164,7 @@ class User < ActiveRecord::Base
               :text => emailText,
               :from_name => 'Impact Dialing',
               :from_email => 'email@impactdialing.com',
-              :to_email=>['michael@impactdialing.com','brian@impactdialing.com']
+              :to_email=>['michael@impactdialing.com','brian@impactdialing.com','nikhil@impactdialing.com']
           }
       })
       rescue Exception => e
