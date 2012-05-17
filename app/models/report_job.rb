@@ -130,7 +130,17 @@ class CallerStrategy < CampaignStrategy
     answers = call_attempt.answers.for_questions(question_ids).order('question_id')
     notes = call_attempt.note_responses.for_notes(note_ids).order('note_id')
     answer_texts = PossibleResponse.select("value").where("id in (?)", answers.collect{|a| a.try(:possible_response).try(:id) } ).order('question_id')
-    [details, answer_texts.collect{|at| at.value}, notes.collect{|n| n.try(:response)}].flatten    
+    modified_answers = []
+    
+    question_ids.each_with_index do |question_id, index|
+      unless answer_texts.collect{|x| x.question_id}.include?(question_id)
+        modified_answers << PossibleResponse.new(value: "")
+      else
+        modified_answers << PossibleResponse.new(value: answer_texts.detect{|at| at.question_id == question_id}.value)
+      end
+    end
+    
+    [details, modified_answers.collect{|at| at.value}, notes.collect{|n| n.try(:response)}].flatten    
   end
 
   def call_details(voter, question_ids, note_ids)
@@ -143,13 +153,21 @@ class CallerStrategy < CampaignStrategy
               end
     if last_attempt          
       answers = last_attempt.answers.for_questions(question_ids).order('question_id')
-      answer_texts = PossibleResponse.select("value").where("id in (?)", answers.collect{|a| a.try(:possible_response).try(:id) } ).order('question_id')
+      answer_texts = PossibleResponse.select("question_id, value").where("id in (?)", answers.collect{|a| a.try(:possible_response).try(:id) } ).order('question_id')
+      modified_answers = []
+      question_ids.each_with_index do |question_id, index|
+        unless answer_texts.collect{|x| x.question_id}.include?(question_id)
+          modified_answers << PossibleResponse.new(value: "")
+        else
+          modified_answers << PossibleResponse.new(value: answer_texts.detect{|at| at.question_id == question_id}.value)
+        end
+      end
       notes = last_attempt.note_responses.for_notes(note_ids).order('note_id')              
     else
       answer_texts = []
       notes = []
     end
-    [details, answer_texts.collect{|at| at.value}, notes.collect{|n| n.try(:response)}].flatten
+    [details, modified_answers.collect{|at| at.value}, notes.collect{|n| n.try(:response)}].flatten
   end
 end
 
