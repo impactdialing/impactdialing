@@ -30,7 +30,6 @@ gem "uuid", "~> 2.3.5"
 gem "dalli", "~>2.0.3"
 gem "call_center", "~> 0.0.9"
 gem "em-http-request", "~> 1.0.1"
-gem "ruby-graphviz", "0.9.0"
 gem "rack_timer", "0.0.4"
 
 
