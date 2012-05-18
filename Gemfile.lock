@@ -194,7 +194,6 @@ GEM
       columnize (>= 0.3.1)
       linecache19 (>= 0.5.11)
       ruby-debug-base19 (>= 0.11.19)
-    ruby-graphviz (0.9.0)
     ruby-hmac (0.4.0)
     ruby_core_source (0.1.5)
       archive-tar-minitar (>= 0.5.2)
@@ -273,7 +272,6 @@ DEPENDENCIES
   rspec
   rspec-rails (~> 2.6.1)
   ruby-debug19
-  ruby-graphviz (= 0.9.0)
   settingslogic (~> 2.0.6)
   shoulda (~> 2.11.3)
   simplecov
