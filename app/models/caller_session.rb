@@ -102,8 +102,9 @@ class CallerSession < ActiveRecord::Base
   def end_caller_session
     begin
       end_session
-    rescue ActiveRecord::StaleObjectError
-      CallerSession.connection.execute("update caller_sessions set on_call = false, available_for_call = false, endtime = '#{Time.now}' where id = #{self.id}");
+    rescue ActiveRecord::StaleObjectError => exception
+      reloaded_caller_session = CallerSession.find(self.id)
+      reloaded_caller_session.end_session
     end      
     attempt_in_progress.try(:update_attributes, {:wrapup_time => Time.now})
     attempt_in_progress.try(:capture_answer_as_no_response)
@@ -133,9 +134,6 @@ class CallerSession < ActiveRecord::Base
     Twilio::Verb.new { |v| v.play "#{Settings.host}:#{Settings.port}/wav/hold.mp3"; v.redirect(:method => 'GET'); }.response
   end
   
-  
-  
-  
   def redirect_webui_caller
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
     Twilio::Call.redirect(sid, flow_caller_url(caller, :host => Settings.host, :port => Settings.port, session_id: id, event: "start_conf"))
@@ -156,7 +154,7 @@ class CallerSession < ActiveRecord::Base
   def reassign_caller_session_to_campaign
     old_campaign = self.campaign
     update_attribute(:campaign, caller.campaign)    
-    # publish_moderator_caller_reassigned_to_campaign(old_campaign)
+    publish_moderator_caller_reassigned_to_campaign(old_campaign)
   end
      
   def caller_reassigned_to_another_campaign?
@@ -176,15 +174,10 @@ class CallerSession < ActiveRecord::Base
     voters.each {|voter| voter.update_attributes(status: 'not called')}    
     t = ::TwilioLib.new(account, auth)
     t.end_call("#{self.sid}")
-    begin
-      end_caller_session
-      CallAttempt.wrapup_calls(caller_id)
-    rescue ActiveRecord::StaleObjectError
-      reload
-      end_caller_session
-    end 
+    end_caller_session
+    CallAttempt.wrapup_calls(caller_id)
     Moderator.publish_event(campaign, "caller_disconnected",{:caller_session_id => id, :caller_id => caller.id, :campaign_id => campaign.id, :campaign_active => campaign.callers_log_in?,
-          :no_of_callers_logged_in => campaign.caller_sessions.on_call.length})
+    :no_of_callers_logged_in => campaign.caller_sessions.on_call.length})
   end  
   
   def dial(voter)
