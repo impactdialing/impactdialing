@@ -24,8 +24,8 @@ class ReportJob
   end
   
   
-  def initialize(campaign, user, voter_fields, custom_fields, all_voters,lead_dial, from, to, callback_url, strategy="webui")
-    @campaign = campaign
+  def initialize(campaign_id, user, voter_fields, custom_fields, all_voters,lead_dial, from, to, callback_url, strategy="webui")
+    @campaign = Campaign.find(campaign_id)
     @user = user
     @selected_voter_fields = voter_fields
     @selected_custom_voter_fields = custom_fields
