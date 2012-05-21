@@ -34,6 +34,7 @@ gem "rack_timer", "0.0.4"
 gem "resque", "~> 1.19.0"
 gem "resque-scheduler", "~> 1.9.9"
 gem 'resque-lock', "~> 1.0.0"
+gem	"resque-director", "~> 2.2.4"
 
 
 

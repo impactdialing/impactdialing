@@ -1,3 +1,4 @@
+require Rails.root.join("jobs/report_download_job")
 module Api
   class ReportsController < ApiController
     

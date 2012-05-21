@@ -1,3 +1,4 @@
+require Rails.root.join("jobs/voter_list_upload_job")
 module Api
   class VoterListsController < ApiController
     

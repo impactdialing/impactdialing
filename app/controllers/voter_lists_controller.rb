@@ -1,4 +1,5 @@
 require 'tempfile'
+require Rails.root.join("jobs/voter_list_upload_job")
 
 class VoterListsController < ClientController
   layout 'v2'
