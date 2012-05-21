@@ -31,6 +31,9 @@ gem "dalli", "~>2.0.3"
 gem "call_center", "~> 0.0.9"
 gem "em-http-request", "~> 1.0.1"
 gem "rack_timer", "0.0.4"
+gem "resque", "~> 1.19.0"
+gem "resque-scheduler", "~> 1.9.9"
+gem 'resque-lock', "~> 1.0.0"
 
 
 
