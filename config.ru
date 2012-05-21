@@ -4,6 +4,6 @@ require ::File.expand_path('../config/environment',  __FILE__)
 run ImpactDialing::Application
 
 run Rack::URLMap.new \
-  "/"       => Impactdialing::Application,
+  "/"       => ImpactDialing::Application,
   "/resque" => Resque::Server.new
 
