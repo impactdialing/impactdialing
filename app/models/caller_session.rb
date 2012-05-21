@@ -188,6 +188,7 @@ class CallerSession < ActiveRecord::Base
   end  
   
   def dial(voter)
+  return if voter.nil?
   attempt = create_call_attempt(voter)
   publish_calling_voter
   response = make_call(attempt,voter)    
