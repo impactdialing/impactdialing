@@ -5,8 +5,8 @@ class ReportDownloadJob
   @queue = :report_download
 
 
-   def self.perform(campaign, user, voter_fields, custom_fields, all_voters,lead_dial, from, to, callback_url, strategy="webui")
-     report_job = ReportJob.new(campaign.id, user, voter_fields, custom_fields, all_voters,lead_dial, from, to, callback_url, strategy="webui")
+   def self.perform(campaign_id, user_id, voter_fields, custom_fields, all_voters,lead_dial, from, to, callback_url, strategy="webui")
+     report_job = ReportJob.new(campaign_id, user_id, voter_fields, custom_fields, all_voters,lead_dial, from, to, callback_url, strategy="webui")
      report_job.perform     
    end
 end
