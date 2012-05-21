@@ -29,7 +29,7 @@ module Api
       @campaign = Campaign.find(params[:campaign_id])
       user = User.find_by_email(params[:email])
       set_date_range
-      Resque.enqueue(ReportDownloadJob, @campaign, user, params[:voter_fields], params[:custom_voter_fields], to_boolean(params[:download_all_voters]),params[:lead_dial], @from_date, @to_date, params[:callback_url], "api")
+      Resque.enqueue(ReportDownloadJob, @campaign.id, user.id, params[:voter_fields], params[:custom_voter_fields], to_boolean(params[:download_all_voters]),params[:lead_dial], @from_date, @to_date, params[:callback_url], "api")
       render_json_response({status: 'ok', code: '200' , message: "Response will be sent to the callback url once the report is ready for download."})
     end
     
