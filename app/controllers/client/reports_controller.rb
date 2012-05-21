@@ -1,3 +1,4 @@
+require Rails.root.join("jobs/report_download_job")
 module Client
   class ReportsController < ClientController
     include ApplicationHelper::TimeUtils

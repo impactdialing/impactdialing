@@ -1,3 +1,4 @@
+require Rails.root.join("jobs/report_download_job")
 class ReportsController < ClientController
   layout 'v2'
   before_filter :load_campaign, :only => [:usage, :dials, :answers]
