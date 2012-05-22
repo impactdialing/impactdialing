@@ -25,6 +25,8 @@ module HerokuResqueAutoScale
   end
 
   def after_perform_scale_down(*args)
+    puts "xxxxdertt"
+    puts Scaler.working_job_count.zero?
     Scaler.workers(0) if Scaler.working_job_count.zero?
   end
 
