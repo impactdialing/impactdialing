@@ -34,6 +34,8 @@ class Caller < ActiveRecord::Base
     end
     self.pin = uniq_pin
   end
+  
+  
 
   
   def is_on_call?
@@ -114,7 +116,7 @@ class Caller < ActiveRecord::Base
   end
   
   def create_caller_identity(session_key)
-    caller_identities.create(session_key: session_key, pin: create_uniq_pin)    
+    caller_identities.create(session_key: session_key, pin: CallerIdentity.create_uniq_pin)    
   end
   
 
