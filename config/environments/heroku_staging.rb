@@ -1,5 +1,3 @@
-require 'resque/plugins/resque_heroku_autoscaler'
-
 ImpactDialing::Application.configure do
   TWILIO_ACCOUNT="AC422d17e57a30598f8120ee67feae29cd"
   TWILIO_AUTH="897298ab9f34357f651895a7011e1631"
@@ -39,12 +37,6 @@ ImpactDialing::Application.configure do
     )
   end
   
-  Resque::Plugins::HerokuAutoscaler.config do |c|
-    c.heroku_user = 'michael@impactdialing.com'
-    c.heroku_pass = 'Mb<3Heroku4F@2tCallz'
-    c.heroku_app  = "impactdialing-staging"
-    c.new_worker_count { |pending| pending }
-  end
 
   # Use a different logger for distributed setups
   # config.logger = SyslogLogger.new
