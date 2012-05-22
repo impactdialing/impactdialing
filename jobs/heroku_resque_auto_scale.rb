@@ -5,9 +5,8 @@ module HerokuResqueAutoScale
     class << self
       @@heroku = Heroku::Client.new(ENV['HEROKU_USER'], ENV['HEROKU_PASS'])
 
-      def workers
+      def worker_count
         Resque.info[:workers].to_i
-        # @@heroku.ps(ENV['HEROKU_APP']).count { |a| a["process"] =~ /worker/ }
       end
 
       def workers=(qty)
@@ -30,7 +29,7 @@ module HerokuResqueAutoScale
   end
 
   def after_enqueue_scale_up(*args)
-    workers_to_scale = Scaler.working_job_count + Scaler.pending_job_count - Scaler.workers
+    workers_to_scale = Scaler.working_job_count + Scaler.pending_job_count - Scaler.worker_count
     if workers_to_scale > 0
       Scaler.workers(workers_to_scale)
     end
