@@ -1,7 +1,7 @@
-require 'resque/plugins/lock'
+require 'resque/plugins/resque_heroku_autoscaler'
+
 class ReportDownloadJob 
-  extend Resque::Plugins::Director
-  direct :min_workers => 1, :max_workers => 10, :max_time => 60, :max_queue => 0, :wait_time => 30
+  extend Resque::Plugins::HerokuAutoscaler
   @queue = :worker_job
 
 

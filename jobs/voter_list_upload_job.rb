@@ -1,8 +1,7 @@
-require 'resque/plugins/lock'
+require 'resque/plugins/resque_heroku_autoscaler'
 
 class VoterListUploadJob 
-  extend Resque::Plugins::Director
-  direct :min_workers => 1, :max_workers => 10, :max_time => 60, :max_queue => 0, :wait_time => 30
+  extend Resque::Plugins::HerokuAutoscaler
   @queue = :worker_job
 
    def self.perform(separator, column_headers, csv_to_system_map, filename, voter_list_name, campaign_id, account_id, domain, email, callback_url, strategy="webui")
