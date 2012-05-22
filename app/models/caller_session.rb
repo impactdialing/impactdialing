@@ -33,8 +33,13 @@ class CallerSession < ActiveRecord::Base
   end
   
   def run(event)
+    begin
       send(event)
-      render
+    rescue ActiveRecord::StaleObjectError => exception
+      reloaded_caller_session = CallerSession.find(self.id)
+      reloaded_caller_session.send(event)
+    end
+    render
   end
   
   def process(event)
@@ -102,12 +107,17 @@ class CallerSession < ActiveRecord::Base
   def end_caller_session
     begin
       end_session
+      wrapup_attempt_in_progress
     rescue ActiveRecord::StaleObjectError => exception
       reloaded_caller_session = CallerSession.find(self.id)
       reloaded_caller_session.end_session
+      reloaded_caller_session.wrapup_attempt_in_progress
     end      
+  end
+  
+  def wrapup_attempt_in_progress
     attempt_in_progress.try(:update_attributes, {:wrapup_time => Time.now})
-    attempt_in_progress.try(:capture_answer_as_no_response)
+    attempt_in_progress.try(:capture_answer_as_no_response)          
   end
   
   def end_session
