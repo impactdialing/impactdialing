@@ -1,5 +1,5 @@
 class ReportDownloadJob 
-  extend ::HerokuResqueAutoScale
+  extend HerokuResqueAutoScale
   @queue = :worker_job
 
 
