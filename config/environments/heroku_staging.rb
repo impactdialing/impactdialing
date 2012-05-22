@@ -1,4 +1,4 @@
-require 'resque/plugins/resque_heroku_autoscaler'
+
 
 ImpactDialing::Application.configure do
   TWILIO_ACCOUNT="AC422d17e57a30598f8120ee67feae29cd"
