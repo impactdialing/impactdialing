@@ -9,7 +9,7 @@ module HerokuResqueAutoScale
         Resque.info[:workers].to_i
       end
 
-      def workers=(qty)
+      def workers(qty)
         @@heroku.ps_scale(ENV['HEROKU_APP'], :type=>'worker_job', :qty=>qty)
       end
 
@@ -25,7 +25,7 @@ module HerokuResqueAutoScale
   end
 
   def after_perform_scale_down(*args)
-    Scaler.workers = 0 if Scaler.job_count.zero?
+    Scaler.workers(0) if Scaler.job_count.zero?
   end
 
   def after_enqueue_scale_up(*args)
