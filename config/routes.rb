@@ -2,6 +2,47 @@ PROTOCOL = Rails.env == 'development' || Rails.env == 'heroku_staging' ? 'http:/
 
 ImpactDialing::Application.routes.draw do
   root :to => "home#index"
+  
+  resources :calls, :protocol => PROTOCOL do
+    member do
+      post :flow
+      post :hangup
+      post :submit_result
+      post :submit_result_and_stop
+      
+    end
+  end
+  
+  namespace "callers" do
+    resources :campaigns do
+      member do
+        post :callin
+        match :caller_ready
+      end
+    end
+  end
+
+  resources :caller, :protocol => PROTOCOL, :only => [:index] do
+    collection do
+      get :login
+      post :end_session
+      post :phones_only
+    end
+
+    member do
+      post :start_calling
+      post :flow
+      post :call_voter
+      post :stop_calling
+      post :skip_voter
+      post :kick_caller_off_conference
+      post :check_reassign
+      post :new_campaign_response_panel
+      post :transfer_panel
+    end
+
+  end
+  
 
   ['monitor', 'how_were_different', 'pricing', 'contact', 'policies'].each do |path|
     match "/#{path}", :to => "home##{path}", :as => path
@@ -31,42 +72,6 @@ ImpactDialing::Application.routes.draw do
     end
   end
 
-  namespace "callers" do
-    resources :campaigns do
-      member do
-        post :callin
-        match :caller_ready
-      end
-    end
-  end
-
-  resources :caller, :protocol => PROTOCOL, :only => [:index] do
-    collection do
-      get :login
-      post :end_session
-      post :phones_only
-    end
-
-    member do
-      post :flow
-      post :assign_campaign
-      post :pause
-      post :active_session
-      post :skip_voter
-      post :call_voter
-      post :stop_calling
-      post :start_calling
-      post :gather_response
-      post :choose_voter
-      post :phones_only_progressive
-      post :choose_instructions_option
-      post :check_reassign
-      post :kick_caller_off_conference
-      post :new_campaign_response_panel
-      post :transfer_panel
-    end
-
-  end
 
   post :receive_call, :to => 'callin#create', :protocol => PROTOCOL
   post :end_caller_session, :to =>'caller/end_session'
@@ -183,15 +188,6 @@ ImpactDialing::Application.routes.draw do
     resources :voter_lists, :collection => {:import => :post}, :except => [:new, :show], :name_prefix => 'client'
   end
   
-  resources :calls, :protocol => PROTOCOL do
-    member do
-      post :flow
-      post :hangup
-      post :submit_result
-      post :submit_result_and_stop
-      
-    end
-  end
 
   resources :call_attempts, :protocol => PROTOCOL, :only => [:create, :update] do
     member do

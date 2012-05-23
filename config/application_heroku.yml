@@ -1,5 +1,5 @@
 default: &default_settings
-  host: impactdialing.herokuapp.com
+  host: twilio.impactdialing.com
   public_host: www.impactdialing.com
   port: 80
   phone: 4155787571
@@ -13,7 +13,7 @@ test:
 
 heroku:
   <<: *default_settings
-  host: impactdialing.herokuapp.com
+  host: twilio.impactdialing.com
   port: 80
 
 production:

@@ -34,8 +34,13 @@ class CallerSession < ActiveRecord::Base
   end
   
   def run(event)
+    begin
       send(event)
-      render
+    rescue ActiveRecord::StaleObjectError => exception
+      reloaded_caller_session = CallerSession.find(self.id)
+      reloaded_caller_session.send(event)
+    end
+    render
   end
   
   def process(event)
@@ -112,11 +117,17 @@ class CallerSession < ActiveRecord::Base
   def end_caller_session
     begin
       end_session
-    rescue ActiveRecord::StaleObjectError
-      CallerSession.connection.execute("update caller_sessions set on_call = false, available_for_call = false, endtime = '#{Time.now}' where id = #{self.id}");
+      wrapup_attempt_in_progress
+    rescue ActiveRecord::StaleObjectError => exception
+      reloaded_caller_session = CallerSession.find(self.id)
+      reloaded_caller_session.end_session
+      reloaded_caller_session.wrapup_attempt_in_progress
     end      
+  end
+  
+  def wrapup_attempt_in_progress
     attempt_in_progress.try(:update_attributes, {:wrapup_time => Time.now})
-    attempt_in_progress.try(:capture_answer_as_no_response)
+    attempt_in_progress.try(:capture_answer_as_no_response)          
   end
   
   def end_session
@@ -167,7 +178,7 @@ class CallerSession < ActiveRecord::Base
   def reassign_caller_session_to_campaign
     old_campaign = self.campaign
     update_attribute(:campaign, caller.campaign)    
-    # publish_moderator_caller_reassigned_to_campaign(old_campaign)
+    publish_moderator_caller_reassigned_to_campaign(old_campaign)
   end
      
   def caller_reassigned_to_another_campaign?
@@ -187,18 +198,14 @@ class CallerSession < ActiveRecord::Base
     voters.each {|voter| voter.update_attributes(status: 'not called')}    
     t = ::TwilioLib.new(account, auth)
     t.end_call("#{self.sid}")
-    begin
-      end_caller_session
-      CallAttempt.wrapup_calls(caller_id)
-    rescue ActiveRecord::StaleObjectError
-      reload
-      end_caller_session
-    end 
+    end_caller_session
+    CallAttempt.wrapup_calls(caller_id)
     Moderator.publish_event(campaign, "caller_disconnected",{:caller_session_id => id, :caller_id => caller.id, :campaign_id => campaign.id, :campaign_active => campaign.callers_log_in?,
-          :no_of_callers_logged_in => campaign.caller_sessions.on_call.length})
+    :no_of_callers_logged_in => campaign.caller_sessions.on_call.length})
   end  
   
   def dial(voter)
+  return if voter.nil?
   attempt = create_call_attempt(voter)
   publish_calling_voter
   response = make_call(attempt,voter)    

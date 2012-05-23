@@ -2,7 +2,7 @@ require 'new_relic/agent/method_tracer'
 class CallerController < ApplicationController
   include NewRelic::Agent::MethodTracer
   layout "caller"
-  before_filter :check_login, :except=>[:login, :feedback, :assign_campaign, :end_session, :pause, :start_calling, :gather_response, :choose_voter, :phones_only_progressive, :phones_only, :choose_instructions_option, :new_campaign_response_panel, :check_reassign, :call_voter, :flow]
+  before_filter :check_login, :except=>[:login, :feedback, :end_session, :start_calling, :phones_only, :new_campaign_response_panel, :check_reassign, :call_voter, :flow]
   before_filter :find_caller_session , :only => [:flow, :stop_calling, :end_session]
   
   
@@ -32,12 +32,7 @@ class CallerController < ApplicationController
   end
   
   def stop_calling
-    begin
-      @caller_session.process('stop_calling') unless @caller_session.nil?
-    rescue ActiveRecord::StaleObjectError
-      caller_session = CallerSession.find_by_id(params[:session_id]) || CallerSession.find_by_sid(params[:CallSid])
-      caller_session.process('stop_calling')
-    end
+    @caller_session.process('stop_calling') unless @caller_session.nil?
     render :nothing => true
   end
   
