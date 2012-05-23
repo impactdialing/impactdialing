@@ -8,10 +8,10 @@ module PreviewPowerCampaign
         voter = next_voter(current_voter_id)
       else
         puts "0"
-        caller_session.redirect_caller
+        voter = next_voter_in_dial_queue(current_voter_id, caller_session)
       end
     rescue ActiveRecord::StaleObjectError
-      caller_session.redirect_caller
+      next_voter_in_dial_queue(voter.id, caller_session)
     end
     voter
   end
