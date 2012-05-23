@@ -10,7 +10,7 @@ class AnsweredJob
          call_attempt.voter.persist_notes(call_attempt.call.notes, call_attempt)
          call_attempt.update_attributes(voter_response_processed: true)
          call_attempt.voter.update_attribute(:result_date, Time.now)
-         Redis.decr('answer_counter')
+         # Redis.decr('answer_counter')
        rescue Exception => e
          puts e.backtrace
        end      
