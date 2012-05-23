@@ -147,10 +147,7 @@ class CallerSession < ActiveRecord::Base
     Twilio::Verb.new { |v| v.play "#{Settings.host}:#{Settings.port}/wav/hold.mp3"; v.redirect(:method => 'GET'); }.response
   end
   
-  
-  
-  
-  def redirect_webui_caller
+  def redirect_caller
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
     Twilio::Call.redirect(sid, flow_caller_url(caller, :host => Settings.host, :port => Settings.port, session_id: id, event: "start_conf"))
   end
@@ -233,7 +230,7 @@ class CallerSession < ActiveRecord::Base
     voter.update_attributes(status: CallAttempt::Status::FAILED)
     update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
     Moderator.update_dials_in_progress(campaign)
-    redirect_webui_caller
+    redirect_caller
   end
   
   

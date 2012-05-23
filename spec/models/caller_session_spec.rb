@@ -91,7 +91,7 @@ describe CallerSession do
       Twilio::Call.should_receive(:make).with(anything, voter.Phone, flow_call_url(call_attempt.call, :host => Settings.host, :port => Settings.port, event: 'incoming_call'), {"FallbackUrl"=>"blah", 'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"RestException" => {"Status" => "400"}}})
       caller_session.should_receive(:publish_calling_voter) 
       Moderator.should_receive(:update_dials_in_progress)
-      caller_session.should_receive(:redirect_webui_caller)
+      caller_session.should_receive(:redirect_caller)
       caller_session.dial(voter)
       call_attempt.status.should eq(CallAttempt::Status::FAILED)
       voter.status.should eq(CallAttempt::Status::FAILED)

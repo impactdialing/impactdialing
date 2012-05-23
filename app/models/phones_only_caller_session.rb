@@ -90,7 +90,6 @@ class PhonesOnlyCallerSession < CallerSession
         before(:always) {start_conference; dial(voter_in_progress)}
         event :gather_response, :to => :read_next_question, :if => :call_answered?
         event :gather_response, :to => :wrapup_call
-
         
         response do |xml_builder, the_call|
           xml_builder.Dial(:hangupOnStar => true, :action => flow_caller_url(caller, event: "gather_response", host:  Settings.host, port: Settings.port, session_id:  id, question: voter_in_progress.question_not_answered)) do
@@ -193,7 +192,7 @@ class PhonesOnlyCallerSession < CallerSession
   
   
   def select_voter(old_voter)
-    voter = campaign.next_voter_in_dial_queue(old_voter.try(:id))
+    voter = campaign.next_voter_in_dial_queue(old_voter.try(:id), self)
     update_attributes(voter_in_progress: voter)
   end
   
@@ -218,13 +217,7 @@ class PhonesOnlyCallerSession < CallerSession
   def predictive?
     campaign.type == Campaign::Type::PREDICTIVE
   end
-  
-
-  
-  def assign_voter_to_caller
-    voter ||= campaign.next_voter_in_dial_queue
-  end
-  
+    
   def start_conference    
     begin
       update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
