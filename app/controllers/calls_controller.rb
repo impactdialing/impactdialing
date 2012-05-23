@@ -12,13 +12,13 @@ class CallsController < ApplicationController
   
   def submit_result
     @call.process("submit_result")
-    Resque.enqueue(AnsweredJob, @call.call_attempt.campaign_id)
+    Redis.incr('answer_counter')
     render nothing: true
   end
   
   def submit_result_and_stop
     @call.process("submit_result_and_stop")
-    Resque.enqueue(AnsweredJob, @call.call_attempt.campaign_id)
+    Redis.incr('answer_counter')
     render nothing: true
   end
   
