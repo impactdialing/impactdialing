@@ -28,8 +28,8 @@ module PreviewPowerCampaign
   end
   
     
-  def caller_conference_started_event(current_voter_id)
-    next_voter = next_voter_in_dial_queue(current_voter_id)
+  def caller_conference_started_event(current_voter_id, caller_session)
+    next_voter = next_voter_in_dial_queue(current_voter_id, caller_session)
     {event: 'conference_started', data: next_voter.nil? ? {} : next_voter.info}                     
   end
   
