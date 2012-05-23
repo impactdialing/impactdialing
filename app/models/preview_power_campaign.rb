@@ -2,7 +2,14 @@ module PreviewPowerCampaign
   
   def next_voter_in_dial_queue(current_voter_id = nil, caller_session)
     begin
-      voter = next_voter(current_voter_id)
+      puts "dddddddddd"
+      if Random.rand(2) == 1        
+        puts "1"
+        voter = next_voter(current_voter_id)
+      else
+        puts "0"
+        caller_session.redirect_caller
+      end
     rescue ActiveRecord::StaleObjectError
       caller_session.redirect_caller
     end
