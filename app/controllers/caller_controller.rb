@@ -53,7 +53,7 @@ class CallerController < ApplicationController
     caller_session = @caller.caller_sessions.find(params[:session_id])
     voter = Voter.find(params[:voter_id])
     voter.skip
-    caller_session.redirect_webui_caller
+    caller_session.redirect_caller
     render :nothing => true
   end
   
