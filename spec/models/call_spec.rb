@@ -137,10 +137,10 @@ describe Call do
         call.call_attempt.wrapup_time.should_not be_nil
       end
 
-      it "should update call_attempt wrapup time" do
+      it "should update call_attempt connecttime " do
         call = Factory(:call, answered_by: "human", call_attempt: @call_attempt)
         call.incoming_call!
-        call.call_attempt.wrapup_time.should_not be_nil
+        call.call_attempt.connecttime.should_not be_nil
       end
 
       it "should change voter status to abandoned" do

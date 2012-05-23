@@ -55,21 +55,26 @@ class CallsController < ApplicationController
   
   def find_and_update_answers_and_notes_and_scheduled_date
     find_call
-    @parsed_params["questions"]  = params[:question].try(:to_json) 
-    @parsed_params["notes"] = params[:notes].try(:to_json)
-    @parsed_params["all_states"] =  @call.all_states + "|" + @call.state unless @call.all_states.nil?
-    @call.update_attributes(@parsed_params)
-    unless params[:scheduled_date].blank?
-      scheduled_date = params[:scheduled_date] + " " + params[:callback_time_hours] +":" + params[:callback_time_minutes]
-      @call.call_attempt.schedule_for_later(scheduled_date)
+    
+    unless @call.nil?      
+      @parsed_params["questions"]  = params[:question].try(:to_json) 
+      @parsed_params["notes"] = params[:notes].try(:to_json)
+      @parsed_params["all_states"] =  @call.all_states + "|" + @call.state unless @call.all_states.nil?
+      @call.update_attributes(@parsed_params)
+      unless params[:scheduled_date].blank?
+        scheduled_date = params[:scheduled_date] + " " + params[:callback_time_hours] +":" + params[:callback_time_minutes]
+        @call.call_attempt.schedule_for_later(scheduled_date)
+      end
     end
   end
   
 
   def find_and_update_call
     find_call
-    @parsed_params["all_states"] =  @call.all_states + "|" + @call.state unless @call.all_states.nil?
-    @call.update_attributes(@parsed_params)
+    unless @call.nil?    
+      @parsed_params["all_states"] =  @call.all_states + "|" + @call.state unless @call.all_states.nil?
+      @call.update_attributes(@parsed_params)
+    end
   end
   
   

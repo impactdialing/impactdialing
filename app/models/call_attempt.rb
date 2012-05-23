@@ -91,7 +91,7 @@ class CallAttempt < ActiveRecord::Base
   end
       
   def abandon_call
-    update_attributes(status: CallAttempt::Status::ABANDONED, wrapup_time: Time.now)
+    update_attributes(status: CallAttempt::Status::ABANDONED, connecttime: Time.now, wrapup_time: Time.now)
     voter.update_attributes(:status => CallAttempt::Status::ABANDONED, call_back: false, caller_session: nil, caller_id: nil)
   end
     
@@ -122,7 +122,7 @@ class CallAttempt < ActiveRecord::Base
   
   def end_answered_call
     voter.update_attributes(last_call_attempt_time:  Time.now, caller_session: nil)
-    update_attributes(call_end:   Time.now)
+    update_attributes(call_end: Time.now)
   end
   
   def process_answered_by_machine
@@ -133,11 +133,11 @@ class CallAttempt < ActiveRecord::Base
     
   def end_unanswered_call
     if [CallAttempt::Status::VOICEMAIL, CallAttempt::Status::HANGUP].include?(status)
-      update_attributes(wrapup_time: Time.now)    
+      update_attributes(wrapup_time: Time.now, call_end: Time.now)    
       voter.update_attributes(last_call_attempt_time:  Time.now, call_back: false)            
     else
       voter.update_attributes(status:  CallAttempt::Status::MAP[call.call_status], last_call_attempt_time:  Time.now, call_back: false)
-      update_attributes(status:  CallAttempt::Status::MAP[call.call_status], wrapup_time: Time.now)          
+      update_attributes(status:  CallAttempt::Status::MAP[call.call_status], wrapup_time: Time.now, call_end: Time.now)          
     end
   end
   
