@@ -71,7 +71,7 @@ class Predictive < Campaign
     simulated_values.nil? ? 0 : simulated_values.best_wrapup_time.nil? ? 0 : simulated_values.best_wrapup_time
   end
   
-  def caller_conference_started_event(current_voter_id, caller_session)
+  def caller_conference_started_event(current_voter_id)
     {event: 'caller_connected_dialer',data: {}}
   end
   
