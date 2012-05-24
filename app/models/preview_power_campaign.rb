@@ -1,17 +1,10 @@
 module PreviewPowerCampaign
   
-  def next_voter_in_dial_queue(current_voter_id = nil, caller_session)
+  def next_voter_in_dial_queue(current_voter_id = nil)
     begin
-      puts "dddddddddd"
-      if Random.rand(2) == 1        
-        puts "1"
         voter = next_voter(current_voter_id)
-      else
-        puts "0"
-        voter = next_voter_in_dial_queue(current_voter_id, caller_session)
-      end
     rescue ActiveRecord::StaleObjectError
-      next_voter_in_dial_queue(voter.id, caller_session)
+      voter = next_voter_in_dial_queue(voter.try(:id))
     end
     voter
   end
@@ -28,8 +21,8 @@ module PreviewPowerCampaign
   end
   
     
-  def caller_conference_started_event(current_voter_id, caller_session)
-    next_voter = next_voter_in_dial_queue(current_voter_id, caller_session)
+  def caller_conference_started_event(current_voter_id)
+    next_voter = next_voter_in_dial_queue(current_voter_id)
     {event: 'conference_started', data: next_voter.nil? ? {} : next_voter.info}                     
   end
   
