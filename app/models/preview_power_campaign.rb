@@ -2,24 +2,18 @@ module PreviewPowerCampaign
   
   def next_voter_in_dial_queue(current_voter_id = nil)
     begin
-        voter = next_voter(current_voter_id)
+      voter = all_voters.priority_voters.first
+      voter||= all_voters.scheduled.first
+      voter||= all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.not_skipped.where("voters.id > #{current_voter_id}").first unless current_voter_id.blank?
+      voter||= all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.not_skipped.first
+      voter||= all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.where("voters.id != #{current_voter_id}").first unless current_voter_id.blank?
+      voter||= all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.first    
+      voter.update_attributes(status: CallAttempt::Status::READY) unless voter.nil?        
     rescue ActiveRecord::StaleObjectError
-      voter = next_voter_in_dial_queue(voter.try(:id))
+      voter = all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.first
     end
     voter
-  end
-  
-  def next_voter(current_voter_id)
-    voter = all_voters.priority_voters.first
-    voter||= all_voters.scheduled.first
-    voter||= all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.not_skipped.where("voters.id > #{current_voter_id}").first unless current_voter_id.blank?
-    voter||= all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.not_skipped.first
-    voter||= all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.where("voters.id != #{current_voter_id}").first unless current_voter_id.blank?
-    voter||= all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.first    
-    voter.update_attributes(status: CallAttempt::Status::READY) unless voter.nil?
-    voter
-  end
-  
+  end  
     
   def caller_conference_started_event(current_voter_id)
     next_voter = next_voter_in_dial_queue(current_voter_id)
