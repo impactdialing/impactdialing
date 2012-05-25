@@ -84,7 +84,7 @@ function kick_caller_off(){
 
 function validate_schedule_date(){
   scheduled_date = $("#scheduled_date").val().trim();
-  if scheduled_date != "" {
+  if (scheduled_date != "") {
 	Date.parseExact(scheduled_date, "M/d/yyyy")
   }
   else {
