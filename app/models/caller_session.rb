@@ -167,7 +167,7 @@ class CallerSession < ActiveRecord::Base
   def join_conference(mute_type, call_sid, monitor_session)
     response = Twilio::Verb.new do |v|
       v.dial(:hangupOnStar => true) do
-        v.conference(self.session_key, :startConferenceOnEnter => false, :endConferenceOnExit => false, :beep => false, :waitUrl => "#{APP_URL}/callin/hold", :waitMethod =>"GET", :muted => mute_type)
+        v.conference(self.session_key, :startConferenceOnEnter => false, :endConferenceOnExit => false, :beep => false, :waitUrl => HOLD_MUSIC_URL, :waitMethod =>"GET", :muted => mute_type)
       end
     end.response
     moderator = Moderator.find_by_session(monitor_session)
