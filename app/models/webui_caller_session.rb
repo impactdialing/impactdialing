@@ -17,7 +17,7 @@ class WebuiCallerSession < CallerSession
         
         response do |xml_builder, the_call|
           xml_builder.Dial(:hangupOnStar => true, :action => flow_caller_url(caller, session_id:  id, event: "pause_conf", host: Settings.host, port:  Settings.port)) do
-            xml_builder.Conference(session_key, startConferenceOnEnter: false, endConferenceOnExit:  true, beep: true, waitUrl: hold_call_url(host: Settings.host, port: Settings.port, version: HOLD_VERSION), waitMethod:  'GET')        
+            xml_builder.Conference(session_key, startConferenceOnEnter: false, endConferenceOnExit:  true, beep: true, waitUrl: HOLD_MUSIC_URL, waitMethod:  'GET')        
           end                              
         end
       end

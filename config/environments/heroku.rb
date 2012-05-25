@@ -12,6 +12,7 @@ ImpactDialing::Application.configure do
   PUSHER_SECRET="b9a1cfc2c1ab4b64ad03"
   MONITOR_TWILIO_APP_SID="APe95d3960a26f46e69697b6840149655b"
   TWILIO_ERROR = "http://status-impactdialing.heroku.com/twilio/error_production"
+  HOLD_MUSIC_URL = "https://s3.amazonaws.com/hold_music/impactdialing_holdmusic_v1.mp3?AWSAccessKeyId=ASIAIXC6RZWGL7IUWZ4Q&Expires=1337945535&Signature=2zf6cI8x0JCVi/9x1UUrEDffO4Q%3D&x-amz-security-token=AQoDYXdzEFwa8AESdjOyYsd5EPrEqOWWmwT5opVrSMzmUWYnc58ZsMw515LiSM7c6u/R3hKj5pwDcwpbqSVi9qQDbyj7LBS6kD/86enCnZ0sCW4qox2qZX5kcdi9vdglDdOP67GkQTX615VuRJA59dLFRkKlqQeBaQDTEpdL%2BrfsDWmvGUXCTa8KAKEz3zsur9g5pKeF%2BUDQQ5msSu9jUJ5j2fHPwiG%2BIy4W%2BApG4/LsfBZWScCjdCCxUSf4k0c2%2BjA%2BsZo3qcg2MOG%2BZC7NDQlPrECN/eqv2XHIUdw/05h75d/CZ8oETenOGTJ/AcjkmxKkyPBAWfD1vCIg4NX9/QQ%3D"
 
   # Settings specified here will take precedence over those in config/environment.rb
 

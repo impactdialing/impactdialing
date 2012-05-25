@@ -144,7 +144,7 @@ describe CallerSession do
       session = Factory(:caller_session, :moderator => Factory(:moderator, :call_sid => "123"), :session_key => "gjgdfdkg232hl")
       session.join_conference(true, "123new", "monitorsession12").should == Twilio::Verb.new do |v|
         v.dial(:hangupOnStar => true) do
-          v.conference("gjgdfdkg232hl", :startConferenceOnEnter => false, :endConferenceOnExit => false, :beep => false, :waitUrl => "#{APP_URL}/callin/hold", :waitMethod =>"GET", :muted => true)
+          v.conference("gjgdfdkg232hl", :startConferenceOnEnter => false, :endConferenceOnExit => false, :beep => false, :waitUrl => "hold_music", :waitMethod =>"GET", :muted => true)
         end
       end.response
       session.moderator.call_sid.should == "123"
@@ -155,7 +155,7 @@ describe CallerSession do
       session = Factory(:caller_session, :session_key => "gjgdfdkg232hl")
       session.join_conference(true, "123", "monitorsession12").should == Twilio::Verb.new do |v|
         v.dial(:hangupOnStar => true) do
-          v.conference("gjgdfdkg232hl", :startConferenceOnEnter => false, :endConferenceOnExit => false, :beep => false, :waitUrl => "#{APP_URL}/callin/hold", :waitMethod =>"GET", :muted => true)
+          v.conference("gjgdfdkg232hl", :startConferenceOnEnter => false, :endConferenceOnExit => false, :beep => false, :waitUrl => "hold_music", :waitMethod =>"GET", :muted => true)
         end
       end.response
     end

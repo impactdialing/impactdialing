@@ -105,7 +105,7 @@ describe Call do
         call = Factory(:call, answered_by: "human", call_attempt: @call_attempt)
         @call_attempt.should_receive(:publish_voter_connected)
         call.incoming_call!  
-        call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"false\" action=\"https://3ngz.localtunnel.com/calls/#{call.id}/flow?event=disconnect\" record=\"false\"><Conference waitUrl=\"https://3ngz.localtunnel.com/hold_call\" waitMethod=\"GET\" beep=\"false\" endConferenceOnExit=\"true\" maxParticipants=\"2\"></Conference></Dial></Response>")      
+        call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"false\" action=\"https://3ngz.localtunnel.com/calls/#{call.id}/flow?event=disconnect\" record=\"false\"><Conference waitUrl=\"hold_music\" waitMethod=\"GET\" beep=\"false\" endConferenceOnExit=\"true\" maxParticipants=\"2\"></Conference></Dial></Response>")      
       end
     end
     
