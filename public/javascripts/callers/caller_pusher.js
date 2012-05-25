@@ -85,11 +85,11 @@ function kick_caller_off(){
 function validate_schedule_date(){
   scheduled_date = $("#scheduled_date").val().trim();
   if (scheduled_date != "") {
-	Date.parseExact(scheduled_date, "M/d/yyyy")
+	if (Date.parseExact(scheduled_date, "M/d/yyyy") == null){
+		return false;
+	}	
   }
-  else {
-	
-  }
+  return true;
     
 }
 
@@ -98,6 +98,10 @@ function send_voter_response() {
 	var options = {
 	    data: {caller_session:$("#caller_session").val()},
     };
+    if !validate_schedule_date(){
+	  alert('The Schedule callback date is invalid');
+	  return false;
+    }
     
     $('#voter_responses').attr('action', "/calls/" + $("#current_call").val() + "/submit_result");
     $('#voter_responses').submit(function() {
@@ -115,6 +119,11 @@ function send_voter_response_and_disconnect() {
             window.location.reload();
         }
     };
+    if !validate_schedule_date(){
+	  alert('The Schedule callback date is invalid');
+	  return false;
+    }
+
     $('#voter_responses').attr('action', "/calls/" + $("#current_call").val() + "/submit_result_and_stop");
     $('#voter_id').val($("#current_voter").val())
     $('#voter_responses').submit(function() {
