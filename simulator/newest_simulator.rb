@@ -211,7 +211,7 @@ def simulate(campaign_id)
     expected_wrapup_time = best_wrapup_time
     outer_loop += 1
  end
- ActiveRecord::Base.logger.info "Simulated_#{campaign_id} , Lines To Dial: #{best_dials}, Expected Call Time: #{best_conversation}, Expected Wrapup Time: #{best_wrapup_time} "
+ puts "Simulated_#{campaign_id} , Lines To Dial: #{best_dials}, Expected Call Time: #{best_conversation}, Expected Wrapup Time: #{best_wrapup_time} "
  SimulatedValues.find_or_create_by_campaign_id(campaign_id).update_attributes(best_dials: best_dials, best_conversation: best_conversation, longest_conversation: longest_conversation, best_wrapup_time: best_wrapup_time)
 end 
 
