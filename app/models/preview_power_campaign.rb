@@ -11,7 +11,7 @@ module PreviewPowerCampaign
       begin
         voter.update_attributes(status: CallAttempt::Status::READY)
       rescue ActiveRecord::StaleObjectError
-        next_voter_in_dial_queue(voter.id)
+        voter = all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.first
       end
     end
     voter

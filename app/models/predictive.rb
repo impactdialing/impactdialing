@@ -25,15 +25,7 @@ class Predictive < Campaign
     num_voters_to_call = (num_voters - (priority_voters.size + scheduled_voters.size))
     limit_voters = num_voters_to_call <= 0 ? 0 : num_voters_to_call
     voters =  priority_voters + scheduled_voters + all_voters.to_be_dialed.without(account.blocked_numbers.for_campaign(self).map(&:number)).limit(limit_voters)
-    selected_voters = voters[0..num_voters-1]    
-    selected_voters.each  do |selected_voter| 
-      begin
-        selected_voter.update_attributes(status: CallAttempt::Status::READY)
-      rescue ActiveRecord::StaleObjectError
-        next
-      end
-    end
-   selected_voters    
+    voters[0..num_voters-1]    
   end
   
   
