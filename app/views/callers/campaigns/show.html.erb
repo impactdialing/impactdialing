@@ -4,7 +4,7 @@
 <% end %>
 <% content_for :javascripts do %>
     <%= pusher_js %>
-    <%= javascript_include_tag 'state-machine','callers/caller_pusher', 'ICanHaz.min.js', 'jquery.form.js', 'flash_detect_min.js' , 'browser_detect.js'%>
+    <%= javascript_include_tag 'state-machine','callers/caller_pusher', 'ICanHaz.min.js', 'jquery.form.js', 'flash_detect_min.js' , 'browser_detect.js', 'date.js'%>
 
     <script type="text/javascript">
         var pusher = new Pusher('<%= Pusher.key %>');
