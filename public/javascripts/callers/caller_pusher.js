@@ -98,7 +98,7 @@ function send_voter_response() {
 	var options = {
 	    data: {caller_session:$("#caller_session").val()},
     };
-    if !validate_schedule_date(){
+    if validate_schedule_date() == false{
 	  alert('The Schedule callback date is invalid');
 	  return false;
     }
@@ -119,7 +119,7 @@ function send_voter_response_and_disconnect() {
             window.location.reload();
         }
     };
-    if !validate_schedule_date(){
+    if validate_schedule_date() == false{
 	  alert('The Schedule callback date is invalid');
 	  return false;
     }
