@@ -1,21 +1,16 @@
 desc "Update twilio call data" 
 
 task :update_twilio_stats => :environment do
-  #include Twilio
-  #require 'active_record'
-  attempts = CallAttempt.all(:conditions=>"tPrice is NULL and (tStatus is NULL or tStatus = 'completed')")
-  attempts.each do |attempt|
-    TwilioLib.new.update_twilio_stats_by_model attempt
+  CallAttempt.where("tPrice is NULL and (tStatus is NULL or tStatus = 'completed')").find_in_batches(:batch_size => 10) do |attempts|
+    attempts.each { |attempt| TwilioLib.new.update_twilio_stats_by_model attempt }
   end
   
-  transfer_attempts = TransferAttempt.all(:conditions=>"tPrice is NULL and (tStatus is NULL or tStatus = 'completed')")
-  transfer_attempts.each do |transfer_attempt|
-    TwilioLib.new.update_twilio_stats_by_model transfer_attempt
+  TransferAttempt.where("tPrice is NULL and (tStatus is NULL or tStatus = 'completed')").find_in_batches(:batch_size => 10) do |transfer_attempts|
+    transfer_attempts.each { |transfer_attempt| TwilioLib.new.update_twilio_stats_by_model transfer_attempt }
   end
   
-  sessions = CallerSession.all(:conditions=>"tPrice is NULL and (tStatus is NULL or tStatus = 'completed')")
-  sessions.each do |session|
-    TwilioLib.new.update_twilio_stats_by_model session
+  CallerSession.where("tPrice is NULL and (tStatus is NULL or tStatus = 'completed')").find_in_batches(:batch_size => 10) do |sessions|
+    sessions.each { |session| TwilioLib.new.update_twilio_stats_by_model session }
   end
 end
 
