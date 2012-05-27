@@ -1,15 +1,15 @@
 desc "Update twilio call data" 
 
 task :update_twilio_stats => :environment do
-  CallAttempt.all(:conditions=>"tPrice is NULL and (tStatus is NULL or tStatus = 'completed')").find_in_batches(:batch_size => 100) do |attempts|
+  CallAttempt.all(:conditions=>"tPrice is NULL and (tStatus is NULL or tStatus = 'completed')").find_in_batches(:batch_size => 10) do |attempts|
     attempts.each { |attempt| TwilioLib.new.update_twilio_stats_by_model attempt }
   end
   
-  TransferAttempt.all(:conditions=>"tPrice is NULL and (tStatus is NULL or tStatus = 'completed')").find_in_batches(:batch_size => 100) do |transfer_attempts|
+  TransferAttempt.all(:conditions=>"tPrice is NULL and (tStatus is NULL or tStatus = 'completed')").find_in_batches(:batch_size => 10) do |transfer_attempts|
     transfer_attempts.each { |transfer_attempt| TwilioLib.new.update_twilio_stats_by_model transfer_attempt }
   end
   
-  CallerSession.all(:conditions=>"tPrice is NULL and (tStatus is NULL or tStatus = 'completed')").find_in_batches(:batch_size => 100) do |sessions|
+  CallerSession.all(:conditions=>"tPrice is NULL and (tStatus is NULL or tStatus = 'completed')").find_in_batches(:batch_size => 10) do |sessions|
     sessions.each { |session| TwilioLib.new.update_twilio_stats_by_model session }
   end
 end
