@@ -31,10 +31,10 @@ class ApplicationController < ActionController::Base
               warning+="You are running low on numbers to dial for the #{campaign.name} campaign."
           end
         rescue Exception => e
-          return
-        end
+          # do nothing
         end
       end
+    end
     warning
   end
 
