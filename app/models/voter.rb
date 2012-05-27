@@ -228,7 +228,7 @@ class Voter < ActiveRecord::Base
     notes = JSON.parse(notes_json)
     notes.try(:each_pair) do |note_id, note_res|
       note = Note.find(note_id)
-      note_responses.create(response: note_res, note: Note.find(note_id), call_attempt_id: call_attempt.id)
+      note_responses.create(response: note_res, note: Note.find(note_id), call_attempt_id: call_attempt.id, campaign_id: campaign_id)
     end
   end
 
