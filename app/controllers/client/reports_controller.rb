@@ -42,6 +42,10 @@ module Client
       @time_onhold = round_for_utilization(CallerSession.time_logged_in(nil, @campaign, @from_date, @to_date).to_f - CallAttempt.time_on_call(nil, @campaign, @from_date, @to_date).to_f - CallAttempt.time_in_wrapup(nil, @campaign, @from_date, @to_date).to_f)
       @caller_time = CallerSession.caller_time(nil, @campaign, @from_date, @to_date)
       @lead_time = CallAttempt.lead_time(nil, @campaign, @from_date, @to_date)
+      @transfer_time = @campaign.transfer_time(@from_date, @to_date)
+      @voice_mail_time = @campaign.voicemail_time(@from_date, @to_date)
+      @abandoned_time = @campaign.abandoned_calls_time(@from_date, @to_date)
+      @total_time = @caller_time + @lead_time + @transfer_time + @voicemail_time + @abandoned_calls_time
     end
     
     def downloaded_reports
