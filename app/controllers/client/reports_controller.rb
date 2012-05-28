@@ -18,7 +18,7 @@ module Client
     
     def dials
       set_date_range
-      @total_voters_count = @campaign.all_voters.count
+      @total_voters_count = @campaign.all_voters.for_dials_report.count
       @dials = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).group("status").count
       @total = ((@total_voters_count == 0) ? 1 : @total_voters_count)
       @ready_to_dial = params[:from_date] ? 0 : sanitize_dials(@dials[CallAttempt::Status::READY])
