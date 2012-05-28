@@ -8,7 +8,7 @@
 		        <th>Dials</th>
 		        <th>Percentage</th>
 		      </tr>			
-		      
+
 		      <%= render partial: 'dial_row', locals: {row_title:"Answered", dial_count: sanitize_dials(@dials[CallAttempt::Status::SUCCESS]) + sanitize_dials(@dials['retry']) }%>
 		      <%= render partial: 'dial_row', locals: {row_title:"No answer", dial_count: @dials[CallAttempt::Status::NOANSWER] }%>  
 		      <%= render partial: 'dial_row', locals: {row_title:"Busy signal", dial_count: @dials[CallAttempt::Status::BUSY] }%>  		      

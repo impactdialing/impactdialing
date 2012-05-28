@@ -27,6 +27,8 @@ class Voter < ActiveRecord::Base
   scope :default_order, :order => 'LastName, FirstName, Phone'
 
   scope :enabled, {:include => :voter_list, :conditions => {'voter_lists.enabled' => true}}
+  
+  scope :for_dials_report, {:include => :voter_list, :conditions => ["voter_lists.enabled = true or status != 'not called'"]}
 
   scope :by_status, lambda { |status| where(:status => status) }
   scope :active, where(:active => true)
