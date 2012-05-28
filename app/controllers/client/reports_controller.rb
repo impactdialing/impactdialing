@@ -45,7 +45,7 @@ module Client
       @transfer_time = @campaign.transfer_time(@from_date, @to_date)
       @voice_mail_time = @campaign.voicemail_time(@from_date, @to_date)
       @abandoned_time = @campaign.abandoned_calls_time(@from_date, @to_date)
-      @total_time = @caller_time + @lead_time + @transfer_time + @voicemail_time + @abandoned_calls_time
+      @total_time = @caller_time + @lead_time + @transfer_time + @voice_mail_time + @abandoned_time
     end
     
     def downloaded_reports
