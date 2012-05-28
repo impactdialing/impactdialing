@@ -4,52 +4,28 @@
 		<div class="table">
 		    <table width="100%" border="0" cellspacing="0" cellpadding="0">
 		      <tr>
-		        <th width="300">Call status</th>
+		        <th width="300">Call status(Per Lead)</th>
 		        <th>Dials</th>
 		        <th>Percentage</th>
 		      </tr>			
-		
-					<tr class="<%= cycle("odd","even") %>">
-						<td>Answered</td><td><%= @answered %></td><td><%= ((@answered.to_f/@total)*100).round %>%</td>
-					</tr>
-					<tr class="<%= cycle("odd","even") %>">
-						<td>No answer</td><td><%= @no_answer %></td><td><%= ((@no_answer.to_f/@total)*100).round %>%</td>
-					</tr>
-					<tr class="<%= cycle("odd","even") %>">
-						<td>Busy signal</td><td><%= @busy_signal %></td><td><%= ((@busy_signal.to_f/@total)*100).round %>%</td>
-					</tr>
-					<tr class="<%= cycle("odd","even") %>">
-						<td>Answering machine</td><td><%= @answering_machine %></td><td><%= ((@answering_machine.to_f/@total)*100).round %>%</td>
-					</tr>
-					<tr class="<%= cycle("odd","even") %>">
-						<td>Voicemail left</td><td><%= @voicemail %></td><td><%= ((@voicemail.to_f/@total)*100).round %>%</td>
-					</tr>
-					<tr class="<%= cycle("odd","even") %>">
-						<td>Failed</td><td><%= @failed %></td><td><%= ((@failed.to_f/@total)*100).round %>%</td>
-					</tr>
-					<tr class="<%= cycle("odd","even") %>">
-						<td>Scheduled for later</td><td><%= @scheduled %></td><td><%= ((@scheduled.to_f/@total)*100).round %>%</td>
-					</tr>
-					<tr class="<%= cycle("odd","even") %>">
-						<td>Abandoned</td><td><%= @abandoned %></td><td><%= ((@abandoned.to_f/@total)*100).round %>%</td>
-					</tr>
-					<tr class="<%= cycle("odd","even") %>">
-						<td>Ringing</td><td><%= @ringing %></td><td><%= ((@ringing.to_f/@total)*100).round %>%</td>
-					</tr>
-					<tr class="<%= cycle("odd","even") %>">
-						<td>Ready to dial</td><td><%= @ready_to_dial %></td><td><%= ((@ready_to_dial.to_f/@total)*100).round %>%</td>
-					</tr>
-					<tr class="<%= cycle("odd","even") %>">
-						<td>Not dialed</td><td><%= @not_dialed %></td><td><%= ((@not_dialed.to_f/@total)*100).round %>%</td>
-					</tr>
-					<tr class="<%= cycle("odd","even") %>">
-						<td>Total dials</td><td><%= @total_dials %></td><td><%= ((@total_dials.to_f/@total)*100).round %>%</td>
-					</tr>
-			
+		      
+		      <%= render partial: 'dial_row', locals: {row_title:"Answered", dial_count: sanitize_dials(@dials[CallAttempt::Status::SUCCESS]) + sanitize_dials(@dials['retry']) }%>
+		      <%= render partial: 'dial_row', locals: {row_title:"No answer", dial_count: @dials[CallAttempt::Status::NOANSWER] }%>  
+		      <%= render partial: 'dial_row', locals: {row_title:"Busy signal", dial_count: @dials[CallAttempt::Status::BUSY] }%>  		      
+          <%= render partial: 'dial_row', locals: {row_title:"Answering machine", dial_count: @dials[CallAttempt::Status::HANGUP] }%>  		      
+          <%= render partial: 'dial_row', locals: {row_title:"Voicemail left", dial_count: @dials[CallAttempt::Status::VOICEMAIL] }%>  		      
+          <%= render partial: 'dial_row', locals: {row_title:"Failed", dial_count: @dials[CallAttempt::Status::FAILED] }%>  		      
+          <%= render partial: 'dial_row', locals: {row_title:"Scheduled for later", dial_count: @dials[CallAttempt::Status::SCHEDULED] }%>  		                
+          <%= render partial: 'dial_row', locals: {row_title:"Abandoned", dial_count: @dials[CallAttempt::Status::ABANDONED] }%>  		                      
+          <%= render partial: 'dial_row', locals: {row_title:"Ringing", dial_count: @dials[CallAttempt::Status::RINGING] }%>
+          <%= render partial: 'dial_row', locals: {row_title:"Ready to dial", dial_count: @ready_to_dial }%>
+          <%= render partial: 'dial_row', locals: {row_title:"Not dialed", dial_count: @not_dialed }%>          
+          <%= render partial: 'dial_row', locals: {row_title:"Total dials", dial_count: @total_dials }%>                    
 		    </table>
 		</div>
 	</div>
 </div>
+
 
 <h3>Date range:</h3>
 <% form_tag(dials_client_reports_path, :method => :get) do %>

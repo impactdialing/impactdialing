@@ -111,6 +111,11 @@ module ApplicationHelper
   def pusher_js
     javascript_include_tag("https://d3dy5gmtp8yhk7.cloudfront.net/1.11/pusher.min.js")
   end
+  
+  def sanitize_dials(dial_count)
+    dial_count.nil? ? 0 : dial_count
+  end
+  
 
 
   module TimeUtils
