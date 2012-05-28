@@ -1,5 +1,5 @@
 <tr class="<%= cycle("odd","even") %>">
 	<td><%= row_title %></td>
-	<td><%=  dial_count %></td>
-	<td><%= ((dial_count.to_f/@total)*100).round %>%</td>
+	<td><%=  sanitize_dials(dial_count) %></td>
+	<td><%= ((sanitize_dials(dial_count).to_f/@total)*100).round %>%</td>
 </tr>
