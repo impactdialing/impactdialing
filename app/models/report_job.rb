@@ -40,8 +40,8 @@ class ReportJob
       end      
     end
     file.close    
-    expires_in_12_hours = (Time.now + 12.hours).to_i
-    AWS::S3::S3Object.store("#{@campaign_name}.csv", File.open(filename), "download_reports", :content_type => "application/binary", :access=>:private, :expires => expires_in_12_hours)
+    expires_in_24_hours = (Time.now + 24.hours).to_i
+    AWS::S3::S3Object.store("#{@campaign_name}.csv", File.open(filename), "download_reports", :content_type => "application/binary", :access=>:private, :expires => expires_in_24_hours)
   end
 
   def perform
@@ -201,8 +201,8 @@ class ReportWebUIStrategy
     
   def response(params)
     if @result == "success"
-      expires_in_12_hours = (Time.now + 12.hours).to_i
-      link = AWS::S3::S3Object.url_for("#{params[:campaign_name]}.csv", "download_reports", :expires => expires_in_12_hours)
+      expires_in_24_hours = (Time.now + 24.hours).to_i
+      link = AWS::S3::S3Object.url_for("#{params[:campaign_name]}.csv", "download_reports", :expires => expires_in_24_hours)
       DownloadedReport.create(link: link, user: @user, campaign_id: @campaign.id)
       @mailer.deliver_download(@user, link)
     else
