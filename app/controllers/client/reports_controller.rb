@@ -19,19 +19,23 @@ module Client
     def dials
       set_date_range
       @total_voters_count = @campaign.all_voters.count
-      @answered = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status(CallAttempt::Status::SUCCESS).count + @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status('retry').count
-      @no_answer = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status(CallAttempt::Status::NOANSWER).count
-      @busy_signal = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status(CallAttempt::Status::BUSY).count
-      @answering_machine = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status(CallAttempt::Status::HANGUP).count
-      @voicemail = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status(CallAttempt::Status::VOICEMAIL).count
-      @ringing = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status(CallAttempt::Status::RINGING).count
-      @abandoned = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status(CallAttempt::Status::ABANDONED).count
-      @failed = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status(CallAttempt::Status::FAILED).count
-      @scheduled = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status(CallAttempt::Status::SCHEDULED).count
+      dials = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).group("status").count
+      @answered = sanitize_dials(dials[CallAttempt::Status::SUCCESS]) + sanitize_dials(dials['retry'])
+      @no_answer = sanitize_dials(dials[CallAttempt::Status::NOANSWER])
+      @busy_signal = sanitize_dials(dials[CallAttempt::Status::BUSY])
+      @voicemail = sanitize_dials(dials[CallAttempt::Status::VOICEMAIL])
+      @ringing = sanitize_dials(dials[CallAttempt::Status::RINGING])
+      @abandoned = sanitize_dials(dials[CallAttempt::Status::ABANDONED])
+      @failed = sanitize_dials(dials[CallAttempt::Status::FAILED])
+      @scheduled = sanitize_dials(dials[CallAttempt::Status::SCHEDULED])
       @total = ((@total_voters_count == 0) ? 1 : @total_voters_count)
       @ready_to_dial = params[:from_date] ? 0 : @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status(CallAttempt::Status::READY).count
       @not_dialed = not_dialed_voters(@from_date)
       @total_dials = @answered.to_i + @no_answer.to_i + @busy_signal.to_i + @ringing.to_i + @abandoned.to_i + @failed.to_i + @voicemail.to_i + @scheduled.to_i + @answering_machine.to_i
+    end
+    
+    def sanitize_dials(dial_count)
+      dial_count.nil? ? 0 : dial_count
     end
 
     def usage
