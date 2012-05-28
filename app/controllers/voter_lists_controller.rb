@@ -39,7 +39,9 @@ class VoterListsController < ClientController
   end
 
   def import
-    Resque.enqueue(VoterListUploadJob, params["separator"], params["json_csv_column_headers"], params["csv_to_system_map"], session[:voters_list_upload]["filename"], params[:voter_list_name], params[:campaign_id], account.id,current_user.domain, current_user.email,"")
+    Delayed::Job.enqueue VoterListJob.new(params["separator"], params["json_csv_column_headers"], params["csv_to_system_map"], 
+          session[:voters_list_upload]["filename"], params[:voter_list_name], params[:campaign_id], account.id,current_user.domain, current_user.email,"")
+    # Resque.enqueue(VoterListUploadJob, params["separator"], params["json_csv_column_headers"], params["csv_to_system_map"], session[:voters_list_upload]["filename"], params[:voter_list_name], params[:campaign_id], account.id,current_user.domain, current_user.email,"")
     session[:voters_list_upload] = nil    ,
     flash_message(:notice,I18n.t(:voter_list_upload_scheduled))
     redirect_to @campaign_path  
