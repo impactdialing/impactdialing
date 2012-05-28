@@ -29,7 +29,7 @@ module Client
       @scheduled = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status(CallAttempt::Status::SCHEDULED).count
       @total = ((@total_voters_count == 0) ? 1 : @total_voters_count)
       @ready_to_dial = params[:from_date] ? 0 : @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).by_status(CallAttempt::Status::READY).count
-      @not_dialed = not_dilaed_voters(@from_date)
+      @not_dialed = not_dialed_voters(@from_date)
       @total_dials = @answered.to_i + @no_answer.to_i + @busy_signal.to_i + @ringing.to_i + @abandoned.to_i + @failed.to_i + @voicemail.to_i + @scheduled.to_i + @answering_machine.to_i
     end
 
@@ -87,7 +87,7 @@ module Client
       @to_date = (to_date || @campaign.call_attempts.last.try(:created_at) || Time.now).in_time_zone(time_zone).end_of_day
     end
     
-    def not_dilaed_voters(range_parameters)
+    def not_dialed_voters(range_parameters)
       if range_parameters
         @total_voters_count - (@answered.to_i + @no_answer.to_i + @busy_signal.to_i + @ringing.to_i + @abandoned.to_i + @failed.to_i + @voicemail.to_i + @scheduled.to_i + @answering_machine.to_i)
       else
