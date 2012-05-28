@@ -16,14 +16,8 @@ class TwilioLib
   end
 
   def end_call(call_id)
-      http = Net::HTTP.new(@server, @port)
-      http.use_ssl=true
-      req = Net::HTTP::Post.new("#{@root}Calls/#{call_id}?Status=completed")
-      req.basic_auth @http_user, @http_password
-      params = {'Status'=>"completed"}
-      req.set_form_data(params)
-      response = http.start{http.request(req)}
-      Rails.logger.info response.body
+    params = {'Status'=>"completed"}
+    EventMachine::HttpRequest.new("https://#{@server}#{@root}Calls/#{call_id}").post :head => {'authorization' => [@http_user, @http_password]},:body => params    
   end
   
   def make_call(campaign, voter, attempt)
