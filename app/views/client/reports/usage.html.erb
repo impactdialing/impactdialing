@@ -22,16 +22,22 @@
       </tr>
       <tr>
         <td>Transfers</td>
-        <td><%= @campaign.transfer_time(@from_date, @to_date) %></td>
+        <td><%= @transfer_time %></td>
       </tr>
       <tr>
         <td>Voicemails</td>
-        <td><%= @campaign.voicemail_time(@from_date, @to_date) %></td>
+        <td><%= @voice_mail_time %></td>
       </tr>
       <tr>
         <td>Abandoned calls</td>
-        <td><%= @campaign.abandoned_calls_time(@from_date, @to_date) %></td>
+        <td><%= @abandoned_time %></td>
       </tr>
+      
+      <tr>
+        <td>Total </td>
+        <td><%= @total_time %></td>
+      </tr>
+      
     </table>
   </div>
 </div>

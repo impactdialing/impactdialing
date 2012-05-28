@@ -86,6 +86,7 @@ module Client
       @time_onhold = round_for_utilization(CallerSession.time_logged_in(@caller, @campaign, @from_date, @to_date).to_f - CallAttempt.time_on_call(@caller, @campaign, @from_date, @to_date).to_f - CallAttempt.time_in_wrapup(@caller, @campaign, @from_date, @to_date).to_f)
       @caller_time = CallerSession.caller_time(@caller, @campaign, @from_date, @to_date)
       @lead_time = CallAttempt.lead_time(@caller, @campaign, @from_date, @to_date)
+      @total_time = @caller_time + @lead_time
     end
 
     def call_details
