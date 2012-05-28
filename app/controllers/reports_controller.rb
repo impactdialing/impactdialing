@@ -54,7 +54,8 @@ class ReportsController < ClientController
   def download
     @campaign = account.campaigns.find(params[:id])
     set_report_period
-    Resque.enqueue(ReportDownloadJob, @campaign.id, @user.id, params[:voter_fields], params[:custom_voter_fields], params[:download_all_voters], params[:lead_dial], @from_date, @to_date, "", "webui")
+    Delayed::Job.enqueue ReportJob.new(@campaign, @user, params[:voter_fields], params[:custom_voter_fields], params[:download_all_voters], params[:lead_dial], @from_date, @to_date, "", "webui")
+    # Resque.enqueue(ReportDownloadJob, @campaign.id, @user.id, params[:voter_fields], params[:custom_voter_fields], params[:download_all_voters], params[:lead_dial], @from_date, @to_date, "", "webui")
     flash_message(:notice, I18n.t(:client_report_processing))
     redirect_to reports_url
   end
