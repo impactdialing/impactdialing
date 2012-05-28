@@ -22,12 +22,13 @@ module Client
       @dials = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).group("status").count
       @total = ((@total_voters_count == 0) ? 1 : @total_voters_count)
       @ready_to_dial = params[:from_date] ? 0 : sanitize_dials(@dials[CallAttempt::Status::READY])
-      @not_dialed = not_dialed_voters(@from_date)
+      
       @total_dials = sanitize_dials(@dials[CallAttempt::Status::SUCCESS]).to_i + sanitize_dials(@dials['retry']).to_i + 
       sanitize_dials(@dials[CallAttempt::Status::NOANSWER]).to_i + sanitize_dials(@dials[CallAttempt::Status::BUSY]).to_i + 
       sanitize_dials(@dials[CallAttempt::Status::HANGUP]).to_i + sanitize_dials(@dials[CallAttempt::Status::VOICEMAIL]).to_i + 
       sanitize_dials(@dials[CallAttempt::Status::FAILED]).to_i + sanitize_dials(@dials[CallAttempt::Status::SCHEDULED]).to_i + 
       sanitize_dials(@dials[CallAttempt::Status::ABANDONED]).to_i + sanitize_dials(@dials[CallAttempt::Status::RINGING]).to_i
+      @not_dialed = not_dialed_voters(@from_date, @total_dials)
     end
         
     def sanitize_dials(dial_count)
@@ -91,9 +92,9 @@ module Client
       @to_date = (to_date || @campaign.call_attempts.last.try(:created_at) || Time.now).in_time_zone(time_zone).end_of_day
     end
     
-    def not_dialed_voters(range_parameters)
+    def not_dialed_voters(range_parameters, total_dials)
       if range_parameters
-        @total_voters_count - (@answered.to_i + @no_answer.to_i + @busy_signal.to_i + @ringing.to_i + @abandoned.to_i + @failed.to_i + @voicemail.to_i + @scheduled.to_i + @answering_machine.to_i)
+        @total_voters_count - total_dials
       else
         @campaign.all_voters.by_status(Voter::Status::NOTCALLED).count
       end
