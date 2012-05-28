@@ -25,6 +25,7 @@ describe Client::ReportsController do
     describe 'call attempts' do
       before(:each) do
         campaign = Factory(:predictive, :account => user.account)
+        Factory(:caller_session, campaign: campaign)
         Factory(:call_attempt, connecttime: Time.now, call_end: Time.now + (10.minutes + 2.seconds), :tDuration => 10.minutes + 2.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
         Factory(:call_attempt, connecttime: Time.now, call_end: Time.now + (1.minutes), :tDuration => 1.minutes, :status => CallAttempt::Status::VOICEMAIL, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
         Factory(:call_attempt, connecttime: Time.now, call_end: Time.now + (1.minutes + 3.seconds), :tDuration => 1.minutes, :status => CallAttempt::Status::VOICEMAIL, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
@@ -35,6 +36,7 @@ describe Client::ReportsController do
         Factory(:transfer_attempt, connecttime: Time.now, call_end: Time.now + (1.minutes + 20.seconds), :status => CallAttempt::Status::SUCCESS, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
         get :usage, :id => campaign.id
       end
+      
       it "billable minutes" do
         CallAttempt.lead_time(nil, @campaign, from_time, time_now).should == 113
       end
@@ -50,7 +52,6 @@ describe Client::ReportsController do
       it "billable transfer calls" do
         assigns(:campaign).transfer_time(from_time, time_now).should == 13
       end
-
 
     end
 
