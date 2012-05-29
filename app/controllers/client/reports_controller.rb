@@ -28,7 +28,7 @@ module Client
       @total_attempt_dials = ((@total_attempts_count == 0) ? 1 : @total_attempts_count)
       @ready_to_dial_attempts = params[:from_date] ? 0 : sanitize_dials(@per_attempt_dials[CallAttempt::Status::READY])
       @total_dials_made_attempts = total_dials(@per_attempt_dials)
-      @attempt_leads_not_dialed = not_dialed_voters(@from_date, @total_dials_made_attempts)      
+      @attempt_leads_not_dialed = not_dialed_voters(@from_date, @total_dials_made_leads)      
       
     end
     
