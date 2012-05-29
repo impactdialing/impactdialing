@@ -62,7 +62,6 @@ GEM
     cookiejar (0.3.0)
     crack (0.1.8)
     daemons (1.0.10)
-    dalli (2.0.3)
     delayed_job (2.1.4)
       activesupport (~> 3.0)
       daemons
@@ -246,7 +245,6 @@ DEPENDENCIES
   call_center (~> 0.0.9)
   capistrano (= 2.9.0)
   daemons (~> 1.0.10)
-  dalli (~> 2.0.3)
   delayed_job (~> 2.1.4)
   dynamic_form (~> 1.1.4)
   em-http-request (~> 1.0.1)
