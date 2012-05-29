@@ -27,8 +27,6 @@ class Voter < ActiveRecord::Base
   scope :default_order, :order => 'LastName, FirstName, Phone'
 
   scope :enabled, {:include => :voter_list, :conditions => {'voter_lists.enabled' => true}}
-  
-  scope :for_dials_report, {:include => :voter_list, :conditions => ["voter_lists.enabled = true or status != 'not called'"]}
 
   scope :by_status, lambda { |status| where(:status => status) }
   scope :active, where(:active => true)
@@ -45,6 +43,7 @@ class Voter < ActiveRecord::Base
   scope :answered_within, lambda { |from, to| where(:result_date => from.beginning_of_day..(to.end_of_day)) }
   scope :answered_within_timespan, lambda { |from, to| where(:result_date => from..to)}
   scope :last_call_attempt_within, lambda { |from, to| where(:last_call_attempt_time => (from..to)) }
+  scope :call_attempts_within, lambda {|from, to| where('call_attempts.created_at' => (from..to)).includes('call_attempts')}
   scope :priority_voters, enabled.where(:priority => "1", :status => Voter::Status::NOTCALLED)
   
 
