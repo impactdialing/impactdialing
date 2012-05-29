@@ -114,7 +114,7 @@ module Client
       if range_parameters
         @total_voters_count - total_dials
       else
-        @campaign.all_voters.by_status(Voter::Status::NOTCALLED).count
+        @campaign.all_voters.enabled.by_status(Voter::Status::NOTCALLED).count
       end
     end
   end
