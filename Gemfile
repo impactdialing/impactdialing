@@ -27,7 +27,6 @@ gem "activerecord-import", ">= 0.2.0"
 gem "airbrake",'~>3.0.9'
 gem 'recurly', '~> 2.1.3'
 gem "uuid", "~> 2.3.5"
-gem "dalli", "~>2.0.3"
 gem "call_center", "~> 0.0.9"
 gem "em-http-request", "~> 1.0.1"
 gem "rack_timer", "0.0.4"
