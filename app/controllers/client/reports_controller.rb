@@ -28,7 +28,7 @@ module Client
       @total_attempt_dials = ((@total_attempts_count == 0) ? 1 : @total_attempts_count)
       @ready_to_dial_attempts = params[:from_date] ? 0 : sanitize_dials(@per_attempt_dials[CallAttempt::Status::READY])
       @total_dials_made_attempts = total_dials(@per_attempt_dials)
-      @attempt_leads_not_dialed = not_dialed_voters(@from_date, @total_dials_made_leads)      
+      @attempt_leads_not_dialed = @campaign.all_voters.enabled.by_status(Voter::Status::NOTCALLED).count
       
     end
     
@@ -38,7 +38,7 @@ module Client
       @total_lead_dials = ((@total_voters_count == 0) ? 1 : @total_voters_count)
       @ready_to_dial_leads = params[:from_date] ? 0 : sanitize_dials(@lead_dials[CallAttempt::Status::READY])
       @total_dials_made_leads = total_dials(@lead_dials)
-      @leads_not_dialed = not_dialed_voters(@from_date, @total_dials_made_leads)      
+      @leads_not_dialed = @campaign.all_voters.enabled.by_status(Voter::Status::NOTCALLED).count
     end
     
     def total_dials(dials_made)
