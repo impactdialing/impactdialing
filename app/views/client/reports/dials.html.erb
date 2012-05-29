@@ -4,26 +4,29 @@
 		<div class="table">
 		    <table width="100%" border="0" cellspacing="0" cellpadding="0">
 		      <tr>
-		        <th width="300">Call status(Per Lead)</th>
+		        <th width="300">Call status (Per Lead)</th>
 		        <th>Dials</th>
 		        <th>Percentage</th>
 		      </tr>			
-
-		      <%= render partial: 'dial_row', locals: {row_title:"Answered", dial_count: sanitize_dials(@dials[CallAttempt::Status::SUCCESS]) + sanitize_dials(@dials['retry']) }%>
-		      <%= render partial: 'dial_row', locals: {row_title:"No answer", dial_count: @dials[CallAttempt::Status::NOANSWER] }%>  
-		      <%= render partial: 'dial_row', locals: {row_title:"Busy signal", dial_count: @dials[CallAttempt::Status::BUSY] }%>  		      
-          <%= render partial: 'dial_row', locals: {row_title:"Answering machine", dial_count: @dials[CallAttempt::Status::HANGUP] }%>  		      
-          <%= render partial: 'dial_row', locals: {row_title:"Voicemail left", dial_count: @dials[CallAttempt::Status::VOICEMAIL] }%>  		      
-          <%= render partial: 'dial_row', locals: {row_title:"Failed", dial_count: @dials[CallAttempt::Status::FAILED] }%>  		      
-          <%= render partial: 'dial_row', locals: {row_title:"Scheduled for later", dial_count: @dials[CallAttempt::Status::SCHEDULED] }%>  		                
-          <%= render partial: 'dial_row', locals: {row_title:"Abandoned", dial_count: @dials[CallAttempt::Status::ABANDONED] }%>  		                      
-          <%= render partial: 'dial_row', locals: {row_title:"Ringing", dial_count: @dials[CallAttempt::Status::RINGING] }%>
-          <%= render partial: 'dial_row', locals: {row_title:"Ready to dial", dial_count: @ready_to_dial }%>
-          <%= render partial: 'dial_row', locals: {row_title:"Not dialed", dial_count: @not_dialed }%>          
-          <%= render partial: 'dial_row', locals: {row_title:"Total dials", dial_count: @total_dials }%>                    
+		      <%= render partial: 'dial_table', locals: {dials: @lead_dials, read_to_dial: @ready_to_dial_leads, not_dialed: @leads_not_dialed, total_dials_made: @total_dials_made_leads, total_dials: @total_lead_dials }%>		      
 		    </table>
 		</div>
 	</div>
+	</br>
+	<div class="box-content">
+		<div class="table">
+		    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+		      <tr>
+		        <th width="300">Call status (Per Dial)</th>
+		        <th>Dials</th>
+		        <th>Percentage</th>
+		      </tr>			
+		      <%= render partial: 'dial_table', locals: {dials: @per_attempt_dials, read_to_dial: @ready_to_dial_attempts, not_dialed: @attempt_leads_not_dialed, total_dials_made: @total_dials_made_attempts, total_dials: @total_attempt_dials }%>		      
+		    </table>
+		</div>
+	</div>
+	
+	
 </div>
 
 
