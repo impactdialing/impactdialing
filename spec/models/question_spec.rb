@@ -39,5 +39,31 @@ describe Question do
     Factory(:answer, :voter => voter, :possible_response => Factory(:possible_response), :question => answered_question, :created_at => (Time.now - 2.days))
     script.questions.not_answered_by(voter).should == [pending_question]
   end
+  
+  describe "question texts" do
+    let(:script) { Factory(:script) }
+    let(:campaign) { Factory(:campaign, :script => script) }
+    let(:voter) { Factory(:voter, :campaign => campaign) }
+    
+    it "should return the text of all questions not deleted" do
+      question1 = Factory(:question, text: "Q1", script: script)
+      question2 = Factory(:question, text: "Q12", script: script)
+      Question.question_texts([question1.id, question2.id]).should eq(["Q1", "Q12"])
+    end
+    
+    it "should return the text of all questions not deleted in correct order" do
+      question1 = Factory(:question, text: "Q1", script: script)
+      question2 = Factory(:question, text: "Q12", script: script)
+      Question.question_texts([question2.id, question1.id]).should eq(["Q12", "Q1"])
+    end
+    
+    it "should return the blank text for questions that dont exist" do
+      question1 = Factory(:question, text: "Q1", script: script)
+      question2 = Factory(:question, text: "Q12", script: script)
+      Question.question_texts([question2.id, 12343 ,question1.id]).should eq(["Q12","", "Q1"])
+    end
+    
+    
+  end
 
 end

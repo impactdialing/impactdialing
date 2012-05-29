@@ -1,0 +1,3 @@
+class BroadcastCampaignReportStrategy < CampaignReportStrategy
+  
+end

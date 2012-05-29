@@ -26,17 +26,16 @@ class Question < ActiveRecord::Base
   end
   
 
-  def read(caller_session)
-    Twilio::Verb.new do |v|
-      v.gather(:timeout => 5, :finishOnKey=>"*", :action => gather_response_caller_url(caller_session.caller, :session_id => caller_session.id, :question_id => self, :host => Settings.host, :port => Settings.port), :method => "POST") do
-        v.say self.text
-        possible_responses.each do |response|
-          v.say "press #{response.keypad} for #{response.value}" unless (response.value == "[No response]")
-        end
-        v.say I18n.t(:submit_results)
+  def self.question_texts(question_ids)
+    texts = []
+    questions = Question.select("id, text").where("id in (?)",question_ids).order('id')
+    question_ids.each_with_index do |question_id, index|
+      unless questions.collect{|x| x.id}.include?(question_id)
+        texts << ""
+      else
+        texts << questions.detect{|at| at.id == question_id}.text
       end
-      v.redirect(gather_response_caller_url(caller_session.caller, :session_id => caller_session.id, :question_id =>id, :host => Settings.host, :port => Settings.port), :method => "POST")
-    end.response
+    end
+    texts    
   end
-
 end

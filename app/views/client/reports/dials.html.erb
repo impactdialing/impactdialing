@@ -1,5 +1,6 @@
 <div class="box" style="width:600px;">
 	<%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@campaign.name} Dials"} %>
+	<h4> <%=" #{@leads_not_dialed} leads to be dialed."%> </h4>
 	<div class="box-content">
 		<div class="table">
 		    <table width="100%" border="0" cellspacing="0" cellpadding="0">
