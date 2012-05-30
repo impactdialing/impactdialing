@@ -3,6 +3,15 @@ require "twilio"
 class TwilioController < ApplicationController
   include ::Twilio
   before_filter :retrieve_call_details
+  
+  def create_call
+     call_attempt = CallAttempt.find(params[:id])
+     robo_recording = RoboRecording.find(params[:robo_recording_id])
+     call_response = CallResponse.log_response(call_attempt, robo_recording, params[:Digits])
+     xml = call_attempt.next_recording(robo_recording, call_response)
+     render xml:  xml
+   end
+  
 
   def callback
     #TWILIO_LOG.info "New Call to : #{@call_attempt.voter.Phone}"
