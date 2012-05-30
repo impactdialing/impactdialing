@@ -1,7 +1,7 @@
 class CallerCampaignReportStrategy < CampaignReportStrategy
   
   def csv_header
-    header_fields = [@selected_voter_fields, @selected_custom_voter_fields, "Caller", "Status", "Call start", "Call end" ]    
+    header_fields = [@selected_voter_fields, @selected_custom_voter_fields, "Caller", "Status", "Time Dialed","Time Answered", "Time Ended" ]    
     header_fields << "Attempts" if @mode == CampaignReportStrategy::Mode::PER_LEAD
     header_fields.concat(["Recording", Question.question_texts(@question_ids) , Note.note_texts(@note_ids)])
     header_fields.flatten.compact
@@ -32,7 +32,6 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
   end
   
   def call_attempt_details(call_attempt, voter)
-    puts call_attempt.answers.for_questions(@question_ids).order('question_id')[0].inspect
     answers = call_attempt.answers.for_questions(@question_ids).order('question_id')
     note_responses = call_attempt.note_responses.for_notes(@note_ids).order('note_id')    
     [call_attempt_info(call_attempt), PossibleResponse.possible_response_text(@question_ids, answers), NoteResponse.response_texts(@note_ids, note_responses)].flatten    

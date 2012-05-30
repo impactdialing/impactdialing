@@ -14,12 +14,12 @@ describe CallerCampaignReportStrategy do
     
      it "should create csv headers" do
        strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_LEAD, @selected_voter_fields, @selected_custom_voter_fields)
-       strategy.csv_header.should eq(["CustomID", "FirstName", "MiddleName", "VAN", "Designation", "Caller", "Status", "Call start", "Call end", "Attempts", "Recording"])       
+       strategy.csv_header.should eq(["CustomID", "FirstName", "MiddleName", "VAN", "Designation", "Caller", "Status", "Time Dialed", "Time Answered", "Time Ended", "Attempts", "Recording"])       
      end
      
      it "should create csv headers and not have Attempts if per dial" do
        strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_DIAL, @selected_voter_fields, @selected_custom_voter_fields)
-       strategy.csv_header.should eq(["CustomID", "FirstName", "MiddleName", "VAN", "Designation", "Caller", "Status", "Call start", "Call end", "Recording"])       
+       strategy.csv_header.should eq(["CustomID", "FirstName", "MiddleName", "VAN", "Designation", "Caller", "Status", "Time Dialed", "Time Answered", "Time Ended", "Recording"])       
      end
      
      it "should create csv headers with question texts" do
@@ -28,7 +28,7 @@ describe CallerCampaignReportStrategy do
        answer1 = Factory(:answer, campaign: @campaign, question: question1 , voter: Factory(:voter), possible_response: Factory(:possible_response))
        answer2 = Factory(:answer, campaign: @campaign, question: question2, voter: Factory(:voter), possible_response: Factory(:possible_response))           
        strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_DIAL, @selected_voter_fields, @selected_custom_voter_fields)
-       strategy.csv_header.should eq(["CustomID", "FirstName", "MiddleName", "VAN", "Designation", "Caller", "Status", "Call start", "Call end", "Recording", "Q1", "Q12"])       
+       strategy.csv_header.should eq(["CustomID", "FirstName", "MiddleName", "VAN", "Designation", "Caller", "Status", "Time Dialed", "Time Answered", "Time Ended", "Recording", "Q1", "Q12"])       
      end
      
      it "should create csv headers with notes " do
@@ -37,7 +37,7 @@ describe CallerCampaignReportStrategy do
        note_response1 = Factory(:note_response, campaign: @campaign, note: note1 , voter: Factory(:voter))
        note_response2 = Factory(:note_response, campaign: @campaign, note: note2, voter: Factory(:voter))
        strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_DIAL, @selected_voter_fields, @selected_custom_voter_fields)
-       strategy.csv_header.should eq(["CustomID", "FirstName", "MiddleName", "VAN", "Designation", "Caller", "Status", "Call start", "Call end", "Recording", "note1", "note2"])       
+       strategy.csv_header.should eq(["CustomID", "FirstName", "MiddleName", "VAN", "Designation", "Caller", "Status", "Time Dialed", "Time Answered", "Time Ended", "Recording", "note1", "note2"])       
      end
      
      it "should create csv headers with questions and  notes " do
@@ -51,7 +51,7 @@ describe CallerCampaignReportStrategy do
        note_response1 = Factory(:note_response, campaign: @campaign, note: note1 , voter: Factory(:voter))
        note_response2 = Factory(:note_response, campaign: @campaign, note: note2, voter: Factory(:voter))
        strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_DIAL, @selected_voter_fields, @selected_custom_voter_fields)
-       strategy.csv_header.should eq(["CustomID", "FirstName", "MiddleName", "VAN", "Designation", "Caller", "Status", "Call start", "Call end", "Recording", "Q1", "Q12", "note1", "note2"])       
+       strategy.csv_header.should eq(["CustomID", "FirstName", "MiddleName", "VAN", "Designation", "Caller", "Status", "Time Dialed", "Time Answered", "Time Ended", "Recording", "Q1", "Q12", "note1", "note2"])       
      end
   end
   
@@ -67,17 +67,17 @@ describe CallerCampaignReportStrategy do
     it "should create the basic info for per dial" do
       caller = Factory(:caller, email: "abc@hui.com")
       voter = Factory(:voter)
-      call_attempt = Factory(:call_attempt, voter: voter, status: CallAttempt::Status::SUCCESS, call_start: Time.at(1338292076), call_end: Time.at(1338293196), recording_url: "xyz")
+      call_attempt = Factory(:call_attempt, voter: voter, status: CallAttempt::Status::SUCCESS, call_start: Time.at(1338292076), connecttime: Time.at(1338292476), call_end: Time.at(1338293196), recording_url: "xyz")
       strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_DIAL, @selected_voter_fields, @selected_custom_voter_fields)
-      strategy.call_attempt_info(call_attempt).should eq(["a caller", "Answered", Time.at(1338292076).in_time_zone(@campaign.time_zone), Time.at(1338293196).in_time_zone(@campaign.time_zone), "xyz.mp3"])
+      strategy.call_attempt_info(call_attempt).should eq(["a caller", "Answered", Time.at(1338292076).in_time_zone(@campaign.time_zone), Time.at(1338292476).in_time_zone(@campaign.time_zone), Time.at(1338293196).in_time_zone(@campaign.time_zone), "xyz.mp3"])
     end
     
     it "should create the basic info for per lead" do
       caller = Factory(:caller, email: "abc@hui.com")
       voter = Factory(:voter)
-      call_attempt = Factory(:call_attempt, voter: voter, status: CallAttempt::Status::SUCCESS, call_start: Time.at(1338292076), call_end: Time.at(1338293196), recording_url: "xyz")
+      call_attempt = Factory(:call_attempt, voter: voter, status: CallAttempt::Status::SUCCESS, call_start: Time.at(1338292076), connecttime: Time.at(1338292476), call_end: Time.at(1338293196), recording_url: "xyz")
       strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_LEAD, @selected_voter_fields, @selected_custom_voter_fields)
-      strategy.call_attempt_info(call_attempt).should eq(["a caller", "Answered", Time.at(1338292076).in_time_zone(@campaign.time_zone), Time.at(1338293196).in_time_zone(@campaign.time_zone), 1 ,"xyz.mp3"])
+      strategy.call_attempt_info(call_attempt).should eq(["a caller", "Answered", Time.at(1338292076).in_time_zone(@campaign.time_zone), Time.at(1338292476).in_time_zone(@campaign.time_zone), Time.at(1338293196).in_time_zone(@campaign.time_zone), 1 ,"xyz.mp3"])
     end
     
   end
@@ -93,21 +93,58 @@ describe CallerCampaignReportStrategy do
     
     it "should create the csv row" do
       caller = Factory(:caller, email: "abc@hui.com")
-      voter = Factory(:voter)
-      call_attempt = Factory(:call_attempt, voter: voter, status: CallAttempt::Status::SUCCESS, call_start: Time.at(1338292076), call_end: Time.at(1338293196), recording_url: "xyz")
+      voter = Factory(:voter)      
+      call_attempt = Factory(:call_attempt, voter: voter, status: CallAttempt::Status::SUCCESS, call_start: Time.at(1338292076), connecttime: Time.at(1338292476), call_end: Time.at(1338293196), recording_url: "xyz")
       question1 = Factory(:question, text: "Q1", script: @script)
       question2 = Factory(:question, text: "Q12", script: @script)   
-      answer1 = Factory(:answer, campaign: @campaign, question: question1 , voter: voter, possible_response: Factory(:possible_response, value: "Hey"), call_attempt: call_attempt)
-      answer2 = Factory(:answer, campaign: @campaign, question: question2, voter: voter, possible_response: Factory(:possible_response, value: "Wee"), call_attempt: call_attempt)           
-      
+      answer1 = Factory(:answer, campaign: @campaign, question_id: question1.id , voter: voter, possible_response: Factory(:possible_response, question_id: question1.id, value: "Hey"), call_attempt: call_attempt)
+      answer2 = Factory(:answer, campaign: @campaign, question_id: question2.id, voter: voter, possible_response: Factory(:possible_response, question_id: question2.id, value: "Wee"), call_attempt: call_attempt)           
       note1 = Factory(:note, script: @script, note:"note1")
       note2 = Factory(:note, script: @script, note:"note2")
-      note_response1 = Factory(:note_response, campaign: @campaign, note: note1 , voter: Factory(:voter), call_attempt: call_attempt)
-      note_response2 = Factory(:note_response, campaign: @campaign, note: note2, voter: Factory(:voter), call_attempt: call_attempt)
+      note_response1 = Factory(:note_response, campaign: @campaign, note: note1 , voter: Factory(:voter), call_attempt: call_attempt, response: "Test2")
+      note_response2 = Factory(:note_response, campaign: @campaign, note: note2, voter: Factory(:voter), call_attempt: call_attempt, response: "Test1")
       strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_DIAL, 
       @selected_voter_fields, @selected_custom_voter_fields)
-      strategy.call_attempt_details(call_attempt, voter).should eq(["a caller", "Answered", Time.at(1338292076).in_time_zone(@campaign.time_zone), Time.at(1338293196).in_time_zone(@campaign.time_zone), "xyz.mp3"])
+      strategy.call_attempt_details(call_attempt, voter).should eq(["a caller", "Answered", Time.at(1338292076).in_time_zone(@campaign.time_zone), Time.at(1338292476).in_time_zone(@campaign.time_zone), Time.at(1338293196).in_time_zone(@campaign.time_zone), "xyz.mp3","Hey", "Wee", "Test2", "Test1"])
     end
+        
+  end
+  
+  describe "csv_for_call_attempt" do
+    before (:each) do      
+      @account = Factory(:account)
+      @script = Factory(:script, account: @account)
+      @campaign = Factory(:campaign, script: @script, account: @account)
+      @csv = CSV.generate {}
+      @selected_voter_fields = ["CustomID", "FirstName", "MiddleName"]
+      @selected_custom_voter_fields = ["VAN", "Designation"]
+    end
+    
+    it "should create the csv row when a question is deleted" do
+       caller = Factory(:caller, email: "abc@hui.com")       
+       voter = Factory(:voter, account: @account)     
+       phone, custom_id, firstname = "39045098753", "24566", "first"
+       voter.update_attributes(:Phone => phone, :CustomID => custom_id, :FirstName => firstname)        
+       field1  = Factory(:custom_voter_field, :name => "field1", :account => @account)
+       field2 = Factory(:custom_voter_field, :name => "field2", :account => @account)
+       
+       value1 = Factory(:custom_voter_field_value, :voter => voter, :custom_voter_field => field1, :value => "value1")
+       value2 = Factory(:custom_voter_field_value, :voter => voter, :custom_voter_field => field2, :value => "value2")
+       
+       call_attempt = Factory(:call_attempt, voter: voter, status: CallAttempt::Status::SUCCESS, call_start: Time.at(1338292076), connecttime: Time.at(1338292476), call_end: Time.at(1338293196), recording_url: "xyz")
+       question1 = Factory(:question, text: "Q1", script: @script)
+       question2 = Factory(:question, text: "Q12", script: @script)   
+       answer1 = Factory(:answer, campaign: @campaign, question_id: question1.id , voter: voter, possible_response: Factory(:possible_response, question_id: question1.id, value: "Hey"), call_attempt: call_attempt)
+       answer2 = Factory(:answer, campaign: @campaign, question_id: question2.id, voter: voter, possible_response: Factory(:possible_response, question_id: question2.id, value: "Wee"), call_attempt: call_attempt)           
+       answer3 = Factory(:answer, campaign: @campaign, question_id: 13456, voter: voter, possible_response: Factory(:possible_response, question_id: 13456, value: "Wee"), call_attempt: call_attempt)                  
+       note1 = Factory(:note, script: @script, note:"note1")
+       note2 = Factory(:note, script: @script, note:"note2")
+       note_response1 = Factory(:note_response, campaign: @campaign, note: note1 , voter: Factory(:voter), call_attempt: call_attempt, response: "Test2")
+       note_response2 = Factory(:note_response, campaign: @campaign, note: note2, voter: Factory(:voter), call_attempt: call_attempt, response: "Test1")
+       strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_DIAL, 
+       @selected_voter_fields, @selected_custom_voter_fields)
+       strategy.csv_for_call_attempt(call_attempt).should eq(["a caller", "Answered", Time.at(1338292076).in_time_zone(@campaign.time_zone), Time.at(1338292476).in_time_zone(@campaign.time_zone), Time.at(1338293196).in_time_zone(@campaign.time_zone), "xyz.mp3","Hey", "Wee", "Test2", "Test1"])
+     end
     
   end
   
