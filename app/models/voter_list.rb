@@ -21,12 +21,14 @@ class VoterList < ActiveRecord::Base
   def self.disable_all
     self.all.each do |voter_list|
       voter_list.update_attribute(:enabled, false)
+      voter_list.voters.update_all(enabled: false)
     end
   end
 
   def self.enable_all
     self.all.each do |voter_list|
       voter_list.update_attribute(:enabled, true)
+      voter_list.voters.update_all(enabled: true)
     end
   end
 
