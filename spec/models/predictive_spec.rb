@@ -51,8 +51,8 @@ describe Predictive do
        campaign = Factory(:predictive)
        enabled_list = Factory(:voter_list, :campaign => campaign, :active => true, :enabled => true)
        disabled_list = Factory(:voter_list, :campaign => campaign, :active => true, :enabled => false)
-       voter1 = Factory(:voter, :campaign => campaign, :voter_list => enabled_list)
-       voter2 = Factory(:voter, :campaign => campaign, :voter_list => disabled_list)
+       voter1 = Factory(:voter, :campaign => campaign, :voter_list => enabled_list, enabled: true)
+       voter2 = Factory(:voter, :campaign => campaign, :voter_list => disabled_list, enabled: false)
        campaign.choose_voters_to_dial(2).should == [voter1]
     end
 
