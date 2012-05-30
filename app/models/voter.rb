@@ -26,7 +26,8 @@ class Voter < ActiveRecord::Base
 
   scope :default_order, :order => 'LastName, FirstName, Phone'
 
-  scope :enabled, {:include => :voter_list, :conditions => {'voter_lists.enabled' => true}}
+  # scope :enabled, {:include => :voter_list, :conditions => {'voter_lists.enabled' => true}}
+  scope :enabled, where(:enabled => true)
 
   scope :by_status, lambda { |status| where(:status => status) }
   scope :active, where(:active => true)

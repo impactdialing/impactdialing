@@ -54,8 +54,8 @@ describe Voter do
   end
 
   it "returns voters from an enabled list" do
-    voter_from_enabled_list = Factory(:voter, :voter_list => Factory(:voter_list, :enabled => true))
-    voter_from_disabled_list = Factory(:voter, :voter_list => Factory(:voter_list, :enabled => false))
+    voter_from_enabled_list = Factory(:voter, :voter_list => Factory(:voter_list, :enabled => true), enabled: true)
+    voter_from_disabled_list = Factory(:voter, :voter_list => Factory(:voter_list, :enabled => false), enabled: false)
     Voter.enabled.should == [voter_from_enabled_list]
   end
 
