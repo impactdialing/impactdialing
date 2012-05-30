@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120527055805) do
+ActiveRecord::Schema.define(:version => 20120530075125) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -674,6 +674,7 @@ ActiveRecord::Schema.define(:version => 20120527055805) do
     t.datetime "skipped_time"
     t.string   "priority"
     t.integer  "lock_version",           :default => 0
+    t.boolean  "enabled",                :default => true
   end
 
   add_index "voters", ["Phone", "voter_list_id"], :name => "index_voters_on_Phone_and_voter_list_id"
