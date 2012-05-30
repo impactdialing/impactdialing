@@ -53,9 +53,62 @@ describe CallerCampaignReportStrategy do
        strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_DIAL, @selected_voter_fields, @selected_custom_voter_fields)
        strategy.csv_header.should eq(["CustomID", "FirstName", "MiddleName", "VAN", "Designation", "Caller", "Status", "Call start", "Call end", "Recording", "Q1", "Q12", "note1", "note2"])       
      end
-     
-     
-     
+  end
+  
+  describe "call_attempt_info" do
+    before (:each) do      
+      @script = Factory(:script)
+      @campaign = Factory(:campaign, script: @script)
+      @csv = CSV.generate {}
+      @selected_voter_fields = ["CustomID", "FirstName", "MiddleName"]
+      @selected_custom_voter_fields = ["VAN", "Designation"]
+    end
+    
+    it "should create the basic info for per dial" do
+      caller = Factory(:caller, email: "abc@hui.com")
+      voter = Factory(:voter)
+      call_attempt = Factory(:call_attempt, voter: voter, status: CallAttempt::Status::SUCCESS, call_start: Time.at(1338292076), call_end: Time.at(1338293196), recording_url: "xyz")
+      strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_DIAL, @selected_voter_fields, @selected_custom_voter_fields)
+      strategy.call_attempt_info(call_attempt).should eq(["a caller", "Answered", Time.at(1338292076).in_time_zone(@campaign.time_zone), Time.at(1338293196).in_time_zone(@campaign.time_zone), "xyz.mp3"])
+    end
+    
+    it "should create the basic info for per lead" do
+      caller = Factory(:caller, email: "abc@hui.com")
+      voter = Factory(:voter)
+      call_attempt = Factory(:call_attempt, voter: voter, status: CallAttempt::Status::SUCCESS, call_start: Time.at(1338292076), call_end: Time.at(1338293196), recording_url: "xyz")
+      strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_LEAD, @selected_voter_fields, @selected_custom_voter_fields)
+      strategy.call_attempt_info(call_attempt).should eq(["a caller", "Answered", Time.at(1338292076).in_time_zone(@campaign.time_zone), Time.at(1338293196).in_time_zone(@campaign.time_zone), 1 ,"xyz.mp3"])
+    end
+    
+  end
+  
+  describe "call_attempt_details" do
+    before (:each) do      
+      @script = Factory(:script)
+      @campaign = Factory(:campaign, script: @script)
+      @csv = CSV.generate {}
+      @selected_voter_fields = ["CustomID", "FirstName", "MiddleName"]
+      @selected_custom_voter_fields = ["VAN", "Designation"]
+    end
+    
+    it "should create the csv row" do
+      caller = Factory(:caller, email: "abc@hui.com")
+      voter = Factory(:voter)
+      call_attempt = Factory(:call_attempt, voter: voter, status: CallAttempt::Status::SUCCESS, call_start: Time.at(1338292076), call_end: Time.at(1338293196), recording_url: "xyz")
+      question1 = Factory(:question, text: "Q1", script: @script)
+      question2 = Factory(:question, text: "Q12", script: @script)   
+      answer1 = Factory(:answer, campaign: @campaign, question: question1 , voter: voter, possible_response: Factory(:possible_response, value: "Hey"), call_attempt: call_attempt)
+      answer2 = Factory(:answer, campaign: @campaign, question: question2, voter: voter, possible_response: Factory(:possible_response, value: "Wee"), call_attempt: call_attempt)           
+      
+      note1 = Factory(:note, script: @script, note:"note1")
+      note2 = Factory(:note, script: @script, note:"note2")
+      note_response1 = Factory(:note_response, campaign: @campaign, note: note1 , voter: Factory(:voter), call_attempt: call_attempt)
+      note_response2 = Factory(:note_response, campaign: @campaign, note: note2, voter: Factory(:voter), call_attempt: call_attempt)
+      strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_DIAL, 
+      @selected_voter_fields, @selected_custom_voter_fields)
+      strategy.call_attempt_details(call_attempt, voter).should eq(["a caller", "Answered", Time.at(1338292076).in_time_zone(@campaign.time_zone), Time.at(1338293196).in_time_zone(@campaign.time_zone), "xyz.mp3"])
+    end
+    
   end
   
 end

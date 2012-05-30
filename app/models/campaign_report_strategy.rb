@@ -55,8 +55,31 @@ class CampaignReportStrategy
     [voter_fields, custom_fields, call_attempt_details(call_attempt, voter, @question_ids, @note_ids)].flatten
   end
   
-  def call_attempt_details(call_attempt)
-    [call_attempt.try(:caller).try(:known_as), CampaignReportStrategy.map_status(call_attempt.status), call_attempt.try(:call_start).try(:in_time_zone, @campaign.time_zone), call_attempt.try(:call_end).try(:in_time_zone, @campaign.time_zone), 1, call_attempt.try(:report_recording_url)].flatten
+  def call_attempt_info(call_attempt)
+    if @mode == CampaignReportStrategy::Mode::PER_LEAD
+      [caller_name(call_attempt), CampaignReportStrategy.map_status(call_attempt.status), call_start_time(call_attempt),
+       call_end_time(call_attempt),number_of_attempts(call_attempt.voter), call_attempt.try(:report_recording_url)].flatten
+    else
+      [caller_name(call_attempt), CampaignReportStrategy.map_status(call_attempt.status), call_start_time(call_attempt),
+       call_end_time(call_attempt), call_attempt.try(:report_recording_url)].flatten      
+    end
+     
+  end
+  
+  def caller_name(call_attempt)
+    call_attempt.try(:caller).try(:known_as)
+  end
+  
+  def call_start_time(call_attempt)
+    call_attempt.try(:call_start).try(:in_time_zone, @campaign.time_zone)
+  end
+  
+  def number_of_attempts(voter)
+    voter.call_attempts.size
+  end
+  
+  def call_end_time(call_attempt)
+    call_attempt.try(:call_end).try(:in_time_zone, @campaign.time_zone)
   end
   
   def answers(call_attempt)
