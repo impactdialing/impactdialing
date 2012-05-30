@@ -58,6 +58,7 @@ class VoterList < ActiveRecord::Base
     voter_list = VoterList.find(id)
     voter_list.enabled = true
     voter_list.save
+    voters.update_all(enabled: true)
   end
   
   def self.read_from_s3(file_name)
