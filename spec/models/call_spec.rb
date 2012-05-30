@@ -387,18 +387,14 @@ describe Call do
        
        it "should render nothing" do
          call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected')
-         twilio_lib = mock
-         TwilioLib.should_receive(:new).and_return(twilio_lib)
-         twilio_lib.should_receive(:end_call) 
+         @call_attempt.should_receive(:end_running_call)
          call.hangup!
          call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response></Response>")
        end
        
        it "should move to hungup state" do
          call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected')
-         twilio_lib = mock
-         TwilioLib.should_receive(:new).and_return(twilio_lib)
-         twilio_lib.should_receive(:end_call) 
+         @call_attempt.should_receive(:end_running_call)
          call.hangup!
          call.state.should eq('hungup')
        end

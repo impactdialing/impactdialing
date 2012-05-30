@@ -161,9 +161,7 @@ describe WebuiCallerSession do
       
       it "should end caller session if stop calling" do
         caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "connected", voter_in_progress: nil)
-        twilio_lib = mock
-        TwilioLib.should_receive(:new).and_return(twilio_lib)
-        twilio_lib.should_receive(:end_call)
+        caller_session.should_receive(:end_running_call)
         caller_session.stop_calling!
         caller_session.state.should eq("stopped")                      
       end
@@ -232,9 +230,7 @@ describe WebuiCallerSession do
       
       it "should end caller session if stop calling" do
         caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "paused", voter_in_progress: nil)
-        twilio_lib = mock
-        TwilioLib.should_receive(:new).and_return(twilio_lib)
-        twilio_lib.should_receive(:end_call)
+        caller_session.should_receive(:end_running_call)
         caller_session.stop_calling!
         caller_session.state.should eq("stopped")                      
       end
