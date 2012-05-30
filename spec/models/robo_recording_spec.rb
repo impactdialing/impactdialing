@@ -103,7 +103,7 @@ describe RoboRecording do
 
       expected = Twilio::Verb.new do |v|
         v.play URI.escape recording1.file.url;
-        recording2.prompt_message(call_attempts_url(:host => Settings.host, :id => @call_attempt.id, :robo_recording_id => recording2.id), v)
+        recording2.prompt_message(twilio_create_url(:host => Settings.host, :id => @call_attempt.id, :robo_recording_id => recording2.id), v)
       end
 
       recording1.twilio_xml(@call_attempt).should == expected.response
