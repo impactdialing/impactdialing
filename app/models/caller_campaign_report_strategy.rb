@@ -32,10 +32,10 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
   end
   
   def call_attempt_details(call_attempt, voter)
+    puts call_attempt.answers.for_questions(@question_ids).order('question_id')[0].inspect
     answers = call_attempt.answers.for_questions(@question_ids).order('question_id')
-    note_responses = call_attempt.note_responses.for_notes(@note_ids).order('note_id')
-    answer_texts = PossibleResponse.select("question_id, value").where("id in (?)", answers.collect{|a| a.try(:possible_response).try(:id) } ).order('question_id')
-    [call_attempt_details(call_attempt), PossibleResponse.possible_response_text(@question_ids, answer_texts), NoteResponse.response_texts(@note_ids, note_responses)].flatten    
+    note_responses = call_attempt.note_responses.for_notes(@note_ids).order('note_id')    
+    [call_attempt_info(call_attempt), PossibleResponse.possible_response_text(@question_ids, answers), NoteResponse.response_texts(@note_ids, note_responses)].flatten    
   end
   
   def call_details(voter, question_ids, note_ids)
