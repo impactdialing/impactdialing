@@ -674,6 +674,7 @@ ActiveRecord::Schema.define(:version => 20120530110740) do
     t.datetime "skipped_time"
     t.string   "priority"
     t.integer  "lock_version",           :default => 0
+    t.boolean  "enabled",                :default => true
   end
 
   add_index "voters", ["Phone", "voter_list_id"], :name => "index_voters_on_Phone_and_voter_list_id"
