@@ -34,7 +34,7 @@ describe CallerCampaignReportStrategy do
        answer1 = Factory(:answer, campaign: @campaign, question: question1 , voter: Factory(:voter), possible_response: Factory(:possible_response))
        answer2 = Factory(:answer, campaign: @campaign, question: question2, voter: Factory(:voter), possible_response: Factory(:possible_response))           
        strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_DIAL, @selected_voter_fields, @selected_custom_voter_fields)
-       strategy.csv_header.should eq(["CustomID", "FirstName", "MiddleName", "VAN", "Designation", "Caller", "Status", "Time Dialed", "Time Answered", "Time Ended", "Recording", "Q1", "Q12"])       
+       strategy.csv_header.should eq(["ID", "First name", "Middle name", "VAN", "Designation", "Caller", "Status", "Time Dialed", "Time Answered", "Time Ended", "Recording", "Q1", "Q12"])       
      end
      
      it "should create csv headers with notes " do
@@ -43,7 +43,7 @@ describe CallerCampaignReportStrategy do
        note_response1 = Factory(:note_response, campaign: @campaign, note: note1 , voter: Factory(:voter))
        note_response2 = Factory(:note_response, campaign: @campaign, note: note2, voter: Factory(:voter))
        strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_DIAL, @selected_voter_fields, @selected_custom_voter_fields)
-       strategy.csv_header.should eq(["CustomID", "FirstName", "MiddleName", "VAN", "Designation", "Caller", "Status", "Time Dialed", "Time Answered", "Time Ended", "Recording", "note1", "note2"])       
+       strategy.csv_header.should eq(["ID", "First name", "Middle name", "VAN", "Designation", "Caller", "Status", "Time Dialed", "Time Answered", "Time Ended", "Recording", "note1", "note2"])       
      end
      
      it "should create csv headers with questions and  notes " do
@@ -57,7 +57,7 @@ describe CallerCampaignReportStrategy do
        note_response1 = Factory(:note_response, campaign: @campaign, note: note1 , voter: Factory(:voter))
        note_response2 = Factory(:note_response, campaign: @campaign, note: note2, voter: Factory(:voter))
        strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_DIAL, @selected_voter_fields, @selected_custom_voter_fields)
-       strategy.csv_header.should eq(["CustomID", "FirstName", "MiddleName", "VAN", "Designation", "Caller", "Status", "Time Dialed", "Time Answered", "Time Ended", "Recording", "Q1", "Q12", "note1", "note2"])       
+       strategy.csv_header.should eq(["ID", "First name", "Middle name", "VAN", "Designation", "Caller", "Status", "Time Dialed", "Time Answered", "Time Ended", "Recording", "Q1", "Q12", "note1", "note2"])       
      end
   end
   
