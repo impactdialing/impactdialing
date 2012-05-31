@@ -1,10 +1,9 @@
- <%= render partial: 'dial_row', locals: {row_title:"Answered", dial_count: sanitize_dials(dials[CallAttempt::Status::SUCCESS]) + sanitize_dials(dials['retry']), total_dials: total_dials }%>
+ <%= render partial: 'dial_row', locals: {row_title:"Answered", dial_count: sanitize_dials(dials[CallAttempt::Status::SUCCESS]) + sanitize_dials(dials['retry']) + sanitize_dials(dials[CallAttempt::Status::SCHEDULED]), total_dials: total_dials }%>
   <%= render partial: 'dial_row', locals: {row_title:"No answer", dial_count: dials[CallAttempt::Status::NOANSWER], total_dials: total_dials }%>  
   <%= render partial: 'dial_row', locals: {row_title:"Busy signal", dial_count: dials[CallAttempt::Status::BUSY], total_dials: total_dials }%>  		      
   <%= render partial: 'dial_row', locals: {row_title:"Answering machine", dial_count: dials[CallAttempt::Status::HANGUP], total_dials: total_dials }%>  		      
   <%= render partial: 'dial_row', locals: {row_title:"Voicemail left", dial_count: dials[CallAttempt::Status::VOICEMAIL], total_dials: total_dials }%>  		      
   <%= render partial: 'dial_row', locals: {row_title:"Failed", dial_count: dials[CallAttempt::Status::FAILED], total_dials: total_dials }%>  		      
-  <%= render partial: 'dial_row', locals: {row_title:"Scheduled for later", dial_count: dials[CallAttempt::Status::SCHEDULED], total_dials: total_dials }%>  		                
   <%= render partial: 'dial_row', locals: {row_title:"Abandoned", dial_count: dials[CallAttempt::Status::ABANDONED], total_dials: total_dials }%>  		                      
   <%= render partial: 'dial_row', locals: {row_title:"Ringing", dial_count: dials[CallAttempt::Status::RINGING], total_dials: total_dials }%>
   <%= render partial: 'dial_row', locals: {row_title:"Ready to dial", dial_count: read_to_dial, total_dials: total_dials }%>
