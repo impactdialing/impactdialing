@@ -35,7 +35,7 @@ class RoboRecording < ActiveRecord::Base
   end
   
   def twilio_xml(call_attempt)
-    ivr_url = twilio_create_url(:host => Settings.host, :id => call_attempt.id, :robo_recording_id => self.id)
+    ivr_url = twilio_create_call_url(:host => Settings.host, :id => call_attempt.id, :robo_recording_id => self.id)
     recording_responses.count > 0 ? ivr_prompt(ivr_url) : play_message(call_attempt)
   end
 
@@ -48,7 +48,7 @@ class RoboRecording < ActiveRecord::Base
       recording = self
       while (recording) do
         unless recording.recording_responses.empty?
-          recording.prompt_message(twilio_create_url(:host => Settings.host, :id => call_attempt.id, :robo_recording_id => recording.id), v)
+          recording.prompt_message(twilio_create_call_url(:host => Settings.host, :id => call_attempt.id, :robo_recording_id => recording.id), v)
           break
         end
         v.play URI.escape(recording.file.url)
