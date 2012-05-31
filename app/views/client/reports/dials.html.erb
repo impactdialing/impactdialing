@@ -1,37 +1,7 @@
 <div role="main">
 	<h1><%= @campaign.name %> Dials</h1>
 
-	<!-- <h4><%= @leads_not_dialed %> leads not dialed.</h4> -->
-
-	<p>The data in the overview table gives the current state of the campaign.</p>
-
-	<table>
-		<tr>
-			<th>Status</th>
-			<th>Number</th>
-			<th>Percent</th>
-		</tr>
-		<tr>
-			<td>Complete</td>
-			<td></td>
-			<td></td>
-		</tr>
-		<tr>
-			<td>Available for retry</td>
-			<td></td>
-			<td></td>
-		</tr>
-		<tr>
-			<td>Not yet available for retry</td>
-			<td></td>
-			<td></td>
-		</tr>
-		<tr>
-			<td>Not dialed</td>
-			<td></td>
-			<td></td>
-		</tr>	
-	</table>
+  <%= render partial: 'summary_dial' %>		      
 
 	<p>The data in the per lead table includes only the most recent status for each lead.</p>
 
