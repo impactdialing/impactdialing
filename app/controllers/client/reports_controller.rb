@@ -20,7 +20,12 @@ module Client
       set_date_range      
       per_lead_dials
       per_attempt_dials  
+      @dialed_and_completed = completed_dials
       @leads_not_dialed = @campaign.all_voters.enabled.by_status(Voter::Status::NOTCALLED).count    
+    end
+    
+    def completed_dials
+      sanitize_dials(@lead_dials[CallAttempt::Status::SUCCESS]) + sanitize_dials(@lead_dials[CallAttempt::Status::FAILED])
     end
     
     def per_attempt_dials

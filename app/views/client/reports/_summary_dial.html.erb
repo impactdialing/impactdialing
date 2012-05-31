@@ -1,0 +1,29 @@
+<p>The data in the overview table gives the current state of the campaign.</p>
+
+<table>
+	<tr>
+		<th>Status</th>
+		<th>Number</th>
+		<th>Percent</th>
+	</tr>
+	<tr>
+		<td>Complete</td>
+		<td><%= @dialed_and_completed %></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>Available for retry</td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>Not yet available for retry</td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>Not dialed</td>
+		<td><%= @leads_not_dialed %></td>
+		<td></td>
+	</tr>	
+</table>
