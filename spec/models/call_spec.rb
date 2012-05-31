@@ -70,12 +70,6 @@ describe Call do
         call.call_attempt.connecttime.should_not be_nil
       end
 
-      it "should update  call attempt call_start time" do
-        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt)
-        @call_attempt.should_receive(:publish_voter_connected)
-        call.incoming_call!
-        call.call_attempt.call_start.should_not be_nil
-      end
 
       it "should assign caller_session  to call attempt" do
         call = Factory(:call, answered_by: "human", call_attempt: @call_attempt)

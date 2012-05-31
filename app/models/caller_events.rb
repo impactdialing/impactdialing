@@ -31,7 +31,6 @@ module CallerEvents
     def publish_calling_voter
       EM.run {
         unless caller.is_phones_only? 
-          event_hash = campaign.caller_conference_started_event(voter_in_progress.try(:id))     
           caller_deferrable = Pusher[session_key].trigger_async('calling_voter', {})
           caller_deferrable.callback {}
           caller_deferrable.errback { |error| }
