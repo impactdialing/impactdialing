@@ -25,7 +25,7 @@ module Client
       @leads_not_dialed = @campaign.all_voters.enabled.by_status(Voter::Status::NOTCALLED).count    
       @leads_available_retry = @campaign.all_voters.enabled.avialable_to_be_retried(@campaign.recycle_rate).count + 
       scheduled_for_now + @campaign.all_voters.by_status(CallAttempt::Status::ABANDONED).count
-      @leads_not_available_for_retry = (@campaign.all_voters.by_status(CallAttempt::Status::ABANDONED).count - scheduled_for_now) + 
+      @leads_not_available_for_retry = (@campaign.all_voters.by_status(CallAttempt::Status::SCHEDULED).count - scheduled_for_now) + 
       @campaign.all_voters.enabled.not_avialable_to_be_retried(@campaign.recycle_rate).count
       
     end
