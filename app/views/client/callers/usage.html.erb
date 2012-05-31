@@ -1,20 +1,20 @@
 <div class="content clearfix">
   <div role="main">
-<%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@caller.name} Usage"} %>
-      <% form_tag(usage_client_caller_path(:id => params[:id]), :method => :get) do %>
+	<%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@caller.name} Usage"} %>
+    <% form_tag(usage_client_caller_path(:id => params[:id]), :method => :get) do %>
 
-      <%= select_tag 'campaign_id', options_from_collection_for_select(@campaigns, 'id', 'name', @campaign.try(:id)), {:include_blank => 'Total'} %>
-      <div class="buttons"></p>
-        <button type="submit">Switch campaign</button>
-      </div>
-    <p>Two sets of metrics are provided for you below. First, you can see how much time your caller actually spent on
-      the phone; each call is rounded to the nearest second. Next, you can see how much time you are being billed for;
-      each call is rounded to the nearest minute. You caller time is only billed when your callers dial in, instead of
-      using a microphone on their computer.</p>
+    <%= select_tag 'campaign_id', options_from_collection_for_select(@campaigns, 'id', 'name', @campaign.try(:id)), {:include_blank => 'Total'} %>
+    <div class="buttons"></p>
+      <button type="submit">Switch campaign</button>
+    </div>
+	  <p>The utilization table shows how much time your callers actually spent on the phone. Each call is rounded to the nearest second.</p>
     <table>
       <%= render :partial => 'shared/utilization', :locals => {:report => @caller} %>
+		</table>
+		<p>The billable table shows how much time you are being billed for. Each call is rounded to the nearest minute. Your caller time is only billed when your callers dial in, instead of using a microphone on their computer.</p>
+		<table>
       <tr>
-        <th>Billable time (1-minute increments)</th>
+        <th>Billable time</th>
         <th>Minutes</th>
       </tr>
       <tr>
