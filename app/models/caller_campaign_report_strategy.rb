@@ -1,10 +1,19 @@
 class CallerCampaignReportStrategy < CampaignReportStrategy
   
   def csv_header
-    header_fields = [@selected_voter_fields, @selected_custom_voter_fields, "Caller", "Status", "Time Dialed","Time Answered", "Time Ended" ]    
+    manipulate_header_fields
+    header_fields = [@selected_voter_fields, @selected_custom_voter_fields, "Caller", "Status", "Time Dialed", "Time Answered", "Time Ended" ]    
     header_fields << "Attempts" if @mode == CampaignReportStrategy::Mode::PER_LEAD
     header_fields.concat(["Recording", Question.question_texts(@question_ids) , Note.note_texts(@note_ids)])
     header_fields.flatten.compact
+  end
+  
+  def manipulate_header_fields
+    headers = {"CustomID" => "ID", "LastName"=> "Last name", "FirstName"=>  "First name", "MiddleName"=> "Middle name",
+      "address"=> "Address", "city"=>  "City", "state"=> "State", "zip_code"=>  "Zip code", "country"=> "Country"} 
+      headers.each_pair do |key, value|      
+        @selected_voter_fields.map! { |x| x == key ? value : x }
+      end
   end
   
   def process_dial(attempts)
@@ -37,7 +46,7 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
     [call_attempt_info(call_attempt), PossibleResponse.possible_response_text(@question_ids, answers), NoteResponse.response_texts(@note_ids, note_responses)].flatten    
   end
   
-  def call_details(voter, question_ids, note_ids)
+  def call_details(voter)
     last_attempt = voter.call_attempts.last
     if last_attempt
       call_attempt_details(last_attempt, voter)
