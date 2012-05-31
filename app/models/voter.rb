@@ -226,10 +226,15 @@ class Voter < ActiveRecord::Base
   def persist_notes(notes_json, call_attempt)
     return if notes_json.nil?
     notes = JSON.parse(notes_json)
-    notes.try(:each_pair) do |note_id, note_res|
-      note = Note.find(note_id)
-      note_responses.create(response: note_res, note: Note.find(note_id), call_attempt_id: call_attempt.id, campaign_id: campaign_id)
-    end
+    begin
+      notes.try(:each_pair) do |note_id, note_res|
+        note = Note.find(note_id)
+        note_responses.create(response: note_res, note: Note.find(note_id), call_attempt_id: call_attempt.id, campaign_id: campaign_id)
+      end
+    rescue Exception => e
+      Rails.logger.info "Persisting_Notes_Exception #{e.to_s}"
+      Rails.logger.info "Voter #{self.inspect}"
+    end    
   end
 
   private
