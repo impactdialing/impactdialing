@@ -110,6 +110,7 @@ class Campaign < ActiveRecord::Base
     voter_lists.each do |voter_list|
       voter_list.enabled = false
       voter_list.save
+      voter_list.voters.update_all(enabled: false)
     end
   end
 
