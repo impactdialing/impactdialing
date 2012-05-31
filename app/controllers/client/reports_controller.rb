@@ -20,6 +20,10 @@ module Client
       set_date_range      
       per_lead_dials
       per_attempt_dials  
+      summary_calls      
+    end
+    
+    def summary_calls
       @dialed_and_completed = completed_dials
       scheduled_for_now = @campaign.all_voters.scheduled.count
       @leads_not_dialed = @campaign.all_voters.enabled.by_status(Voter::Status::NOTCALLED).count    
@@ -27,7 +31,7 @@ module Client
       scheduled_for_now + @campaign.all_voters.by_status(CallAttempt::Status::ABANDONED).count
       @leads_not_available_for_retry = (@campaign.all_voters.by_status(CallAttempt::Status::SCHEDULED).count - scheduled_for_now) + 
       @campaign.all_voters.enabled.not_avialable_to_be_retried(@campaign.recycle_rate).count
-      
+      @total_summary = @dialed_and_completed + @leads_not_dialed + @leads_not_available_for_retry + @leads_available_retry
     end
     
     def completed_dials
