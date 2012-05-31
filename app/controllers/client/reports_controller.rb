@@ -22,6 +22,7 @@ module Client
       per_attempt_dials  
       @dialed_and_completed = completed_dials
       @leads_not_dialed = @campaign.all_voters.enabled.by_status(Voter::Status::NOTCALLED).count    
+      @dialed_available_retry = @campaign.all_voters.enabled.avialable_to_be_retried(@campaign.recycle_rate)
     end
     
     def completed_dials
