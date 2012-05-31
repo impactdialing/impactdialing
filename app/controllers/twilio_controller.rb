@@ -2,7 +2,7 @@ require "twilio"
 
 class TwilioController < ApplicationController
   include ::Twilio
-  before_filter :retrieve_call_details
+  before_filter :retrieve_call_details, :except => [:create_call]
   
   def create_call
      call_attempt = CallAttempt.find(params[:id])
