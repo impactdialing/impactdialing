@@ -9,21 +9,21 @@
 	<tr>
 		<td>Complete</td>
 		<td><%= @dialed_and_completed %></td>
-		<td> <% =((@dialed_and_completed.to_f/@total_summary)*100).round %></td>
+		<td> <%= ((@dialed_and_completed.to_f/@total_summary)*100).round %></td>
 	</tr>
 	<tr>
 		<td>Available for retry</td>
 		<td><%= @leads_available_retry %></td>
-		<td> <% =((@leads_available_retry.to_f/@total_summary)*100).round %></td>
+		<td> <%= ((@leads_available_retry.to_f/@total_summary)*100).round %></td>
 	</tr>
 	<tr>
 		<td>Not yet available for retry</td>
 		<td><%= @leads_not_available_for_retry %></td>
-		<td> <% =((@leads_not_available_for_retry.to_f/@total_summary)*100).round %></td>
+		<td> <%= ((@leads_not_available_for_retry.to_f/@total_summary)*100).round %></td>
 	</tr>
 	<tr>
 		<td>Not dialed</td>
 		<td><%= @leads_not_dialed %></td>
-		<td><% =((@leads_not_dialed.to_f/@total_summary)*100).round %></td>
+		<td><%= ((@leads_not_dialed.to_f/@total_summary)*100).round %></td>
 	</tr>	
 </table>
