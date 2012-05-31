@@ -349,7 +349,7 @@ describe Voter do
       Voter.to_be_dialed.should == [voter]
     end
 
-    (CallAttempt::Status::ALL - [CallAttempt::Status::INPROGRESS, CallAttempt::Status::RINGING, CallAttempt::Status::READY, CallAttempt::Status::SUCCESS]).each do |status|
+    (CallAttempt::Status::ALL - [CallAttempt::Status::INPROGRESS, CallAttempt::Status::RINGING, CallAttempt::Status::READY, CallAttempt::Status::SUCCESS, CallAttempt::Status::FAILED]).each do |status|
       it "includes voters with a status of #{status} " do
         voter = Factory(:voter, :status => status)
         Voter.to_be_dialed.should == [voter]
