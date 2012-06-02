@@ -128,7 +128,7 @@ class Voter < ActiveRecord::Base
     call_attempt = new_call_attempt(self.campaign.type)
     twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)        
     fiber = Fiber.current
-    http = twilio_lib.make_call(campaign, call_attempt, self)
+    http = twilio_lib.make_call(campaign, self, call_attempt)
     http.callback { fiber.resume(http) }
     http.errback  { fiber.resume(http) }
     return Fiber.yield
