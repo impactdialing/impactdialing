@@ -129,7 +129,7 @@ class Voter < ActiveRecord::Base
     twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)        
     http = twilio_lib.make_call(campaign, self, call_attempt)
     http.callback { 
-      response = JSON.parse(deferrable.http)  
+      response = JSON.parse(http.response)  
       if response["RestException"]
         handle_failed_call(call_attempt, self)
       else
