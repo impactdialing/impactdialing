@@ -1,9 +1,20 @@
+require "em-synchrony"
+require "em-synchrony/em-http"
+
 class Predictive < Campaign
     
   def dial
     num_to_call = number_of_voters_to_dial
     Rails.logger.info "num_to_call #{num_to_call}"    
-    choose_voters_to_dial(num_to_call).each { |voter| voter.dial_predictive1 } if num_to_call > 0
+    return if if num_to_call <= 0
+    EM.synchrony do
+      concurrency = 4
+      voters_to_dial = choose_voters_to_dial(num_to_call)
+      EM::Synchrony::Iterator.new(voters_to_dial, concurrency).map do |voter, iter|
+        voter.dial_predictive1
+      end
+      EventMachine.stop
+    end
   end
   
   def number_of_voters_to_dial
