@@ -138,6 +138,7 @@ class Voter < ActiveRecord::Base
     EventMachine.run do
       Fiber.new{
         deferrable = make_call
+        puts deferrable.inspect
         if deferrable.response["TwilioResponse"]["RestException"]
           handle_failed_call(self.last_call_attempt, self)
         else
