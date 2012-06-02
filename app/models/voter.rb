@@ -143,6 +143,7 @@ class Voter < ActiveRecord::Base
         else
           call_attempt.update_attributes(:sid => response["sid"])
         end
+        EM.stop
       }
       deferrable.errback { |error| }
      end
