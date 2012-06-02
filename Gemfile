@@ -29,6 +29,7 @@ gem 'recurly', '~> 2.1.3'
 gem "uuid", "~> 2.3.5"
 gem "call_center", "~> 0.0.9"
 gem "em-http-request", "~> 1.0.1"
+gem "em-synchrony"
 gem "rack_timer", "0.0.4"
 gem "resque", "~> 1.19.0"
 gem "resque-scheduler", "~> 1.9.9"
