@@ -139,11 +139,11 @@ class Voter < ActiveRecord::Base
       Fiber.new{
         deferrable = make_call
         puts deferrable.inspect
-        if deferrable.response["TwilioResponse"]["RestException"]
-          handle_failed_call(self.last_call_attempt, self)
-        else
-          self.last_call_attempt.update_attributes(:sid => deferrable.response["TwilioResponse"]["Call"]["Sid"])
-        end
+        # if deferrable.response["TwilioResponse"]["RestException"]
+        #   handle_failed_call(self.last_call_attempt, self)
+        # else
+        self.last_call_attempt.update_attributes(:sid => deferrable.response["sid"])
+        # end
       }.resume
      end
   end
