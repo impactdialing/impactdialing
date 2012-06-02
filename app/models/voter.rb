@@ -1,3 +1,4 @@
+require 'fiber'
 class Voter < ActiveRecord::Base
   
   module Status
