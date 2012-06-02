@@ -137,6 +137,7 @@ class Voter < ActiveRecord::Base
     EM.run do
       deferrable = twilio_lib.make_call(campaign, self, call_attempt)
       deferrable.callback {
+        puts "Entered callback."
         response = JSON.parse(deferrable.response)  
         if response["RestException"]
           handle_failed_call(call_attempt, self)
