@@ -137,15 +137,17 @@ class Voter < ActiveRecord::Base
     call_attempt = new_call_attempt(self.campaign.type)
     twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)                  
     EM.run do
-      deferrable = make_call(call_attempt)
-      response = JSON.parse(deferrable.response)  
-      if response["RestException"]
-        handle_failed_call(call_attempt, self)
-      else
-        call_attempt.update_attributes(:sid => response["sid"])
-      end
-    EM.stop
+      Fiber.new{
+        deferrable = make_call(call_attempt)
+        response = JSON.parse(deferrable.response)  
+        if response["RestException"]
+          handle_failed_call(call_attempt, self)
+        else
+          puts "entered callback"
+          call_attempt.update_attributes(:sid => response["sid"])
+        end
       }.resume
+      EM.stop
      end
   end
   
