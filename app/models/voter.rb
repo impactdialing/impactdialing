@@ -127,7 +127,7 @@ class Voter < ActiveRecord::Base
   def make_call
     call_attempt = new_call_attempt(self.campaign.type)
     twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)        
-    fiber = Fiber.current
+    # fiber = Fiber.current
     http = twilio_lib.make_call(campaign, self, call_attempt)
     http.callback { fiber.resume(http) }
     http.errback  { fiber.resume(http) }
@@ -135,33 +135,22 @@ class Voter < ActiveRecord::Base
   end
   
   def dial_predictive1
-    EventMachine.run do
-      Fiber.new{
-        deferrable = make_call
-        puts deferrable.inspect
-        # if deferrable.response["TwilioResponse"]["RestException"]
-        #   handle_failed_call(self.last_call_attempt, self)
-        # else
-        puts JSON.parse(deferrable.response)['sid']
-        self.last_call_attempt.update_attributes(:sid => JSON.parse(deferrable.response)["sid"])
-        # end
-      }.resume
+    call_attempt = new_call_attempt(self.campaign.type)
+    twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)                  
+    EM.run do
+      deferrable = twilio_lib.make_call(campaign, self, call_attempt)
+      deferrable.callback {
+        response = JSON.parse(deferrable.response)  
+        if response["RestException"]
+          handle_failed_call(call_attempt, self)
+        else
+          call_attempt.update_attributes(:sid => response["sid"])
+        end
+      }
+      deferrable.errback { |error| }
      end
   end
   
-  # def make_call(attempt, voter)
-  #   EM.run {
-  #     t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)    
-  #     deferrable = t.make_call(campaign, voter, attempt)              
-  #     deferrable.callback {
-  #       if deferrable.response["TwilioResponse"]["RestException"]
-  #         handle_failed_call(attempt, voter)
-  #       else
-  #         attempt.update_attributes(:sid => deferrable.response["TwilioResponse"]["Call"]["Sid"])
-  #       end
-  #     deferrable.errback { |error| }          
-  #   }
-  # end
 
   def dial_predictive
     call_attempt = new_call_attempt(self.campaign.type)
