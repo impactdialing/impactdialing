@@ -6,7 +6,7 @@ class Predictive < Campaign
   def dial
     num_to_call = number_of_voters_to_dial
     Rails.logger.info "num_to_call #{num_to_call}"    
-    return if if num_to_call <= 0
+    return if  num_to_call <= 0
     EM.synchrony do
       concurrency = 4
       voters_to_dial = choose_voters_to_dial(num_to_call)
