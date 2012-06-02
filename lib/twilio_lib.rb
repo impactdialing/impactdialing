@@ -20,7 +20,7 @@ class TwilioLib
     EventMachine::HttpRequest.new("https://#{@server}#{@root}Calls/#{call_id}").post :head => {'authorization' => [@http_user, @http_password]},:body => params    
   end
   
-  def make_call(campaign, voter, attempt)
+  def make_call(campaign, voter, attempt)    
     params = {'From'=> campaign.caller_id, "To"=> voter.Phone, 'FallbackUrl' => TWILIO_ERROR, "Url"=>flow_call_url(attempt.call, host: Settings.host, port: Settings.port, event: "incoming_call"),
       'StatusCallback' => flow_call_url(attempt.call, host: Settings.host, port:  Settings.port, event: "call_ended"),
       'Timeout' => campaign.use_recordings? ? "30" : "15"}

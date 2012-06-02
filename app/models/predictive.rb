@@ -3,7 +3,7 @@ class Predictive < Campaign
   def dial
     num_to_call = number_of_voters_to_dial
     Rails.logger.info "num_to_call #{num_to_call}"    
-    choose_voters_to_dial(num_to_call).each { |voter| voter.dial_predictive } if num_to_call > 0
+    choose_voters_to_dial(num_to_call).each { |voter| voter.dial_predictive1 } if num_to_call > 0
   end
   
   def number_of_voters_to_dial

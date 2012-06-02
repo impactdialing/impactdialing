@@ -122,6 +122,42 @@ class Voter < ActiveRecord::Base
     call_attempt.update_attributes!(:sid => response["TwilioResponse"]["Call"]["Sid"])
     true
   end
+  
+  def make_call
+    call_attempt = new_call_attempt(self.campaign.type)
+    twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)        
+    fibre = Fibre.current
+    http = twilio_lib.make_call(campaign, call_attempt, self)
+    http.callback { fibre.resume(http) }
+    http.errback  { fibre.resume(http) }
+    return Fiber.yield
+  end
+  
+  def dial_predictive1
+    EventMachine.run do
+      Fiber.new{
+        deferrable = make_call
+        if deferrable.response["TwilioResponse"]["RestException"]
+          handle_failed_call(self.last_call_attempt, self)
+        else
+          self.last_call_attempt.update_attributes(:sid => deferrable.response["TwilioResponse"]["Call"]["Sid"])
+        end
+      }.resume
+  end
+  
+  # def make_call(attempt, voter)
+  #   EM.run {
+  #     t = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)    
+  #     deferrable = t.make_call(campaign, voter, attempt)              
+  #     deferrable.callback {
+  #       if deferrable.response["TwilioResponse"]["RestException"]
+  #         handle_failed_call(attempt, voter)
+  #       else
+  #         attempt.update_attributes(:sid => deferrable.response["TwilioResponse"]["Call"]["Sid"])
+  #       end
+  #     deferrable.errback { |error| }          
+  #   }
+  # end
 
   def dial_predictive
     call_attempt = new_call_attempt(self.campaign.type)
