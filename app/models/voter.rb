@@ -122,30 +122,23 @@ class Voter < ActiveRecord::Base
   end
   
   def make_call(call_attempt)
-    twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)        
-    fiber = Fiber.current
-    http = twilio_lib.make_call(campaign, self, call_attempt)
-    http.callback { fiber.resume(http) }
-    http.errback  { fiber.resume(http) }
-    return Fiber.yield
   end
   
   def dial_predictive1
     call_attempt = new_call_attempt(self.campaign.type)
-    twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)                  
-    EM.run do
-      Fiber.new{
-        deferrable = make_call(call_attempt)
-        response = JSON.parse(deferrable.response)  
-        if response["RestException"]
-          handle_failed_call(call_attempt, self)
-        else
-          puts "entered callback"
-          call_attempt.update_attributes(:sid => response["sid"])
-        end
-      }.resume
-      EM.stop
-     end
+    twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)        
+    http = twilio_lib.make_call(campaign, self, call_attempt)
+    http.callback { 
+      response = JSON.parse(deferrable.http)  
+      if response["RestException"]
+        handle_failed_call(call_attempt, self)
+      else
+        puts "entered callback"
+        call_attempt.update_attributes(:sid => response["sid"])
+      end
+      iter.return(http)      
+       }
+    http.errback { iter.return(http) }    
   end
   
 
