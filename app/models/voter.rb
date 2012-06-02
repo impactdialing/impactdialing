@@ -139,11 +139,8 @@ class Voter < ActiveRecord::Base
         # if deferrable.response["TwilioResponse"]["RestException"]
         #   handle_failed_call(self.last_call_attempt, self)
         # else
-        puts "ddddd"
-        puts deferrable.response
-        puts deferrable.response.class
-        puts deferrable.response['sid']
-        self.last_call_attempt.update_attributes(:sid => deferrable.response["sid"])
+        puts JSON.parse(deferrable.response)['sid']
+        self.last_call_attempt.update_attributes(:sid => JSON.parse(deferrable.response)["sid"])
         # end
       }.resume
      end
