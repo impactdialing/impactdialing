@@ -143,6 +143,7 @@ class Voter < ActiveRecord::Base
           self.last_call_attempt.update_attributes(:sid => deferrable.response["TwilioResponse"]["Call"]["Sid"])
         end
       }.resume
+     end
   end
   
   # def make_call(attempt, voter)
