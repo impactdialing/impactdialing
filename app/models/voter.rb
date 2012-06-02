@@ -124,7 +124,7 @@ class Voter < ActiveRecord::Base
   def make_call(call_attempt)
   end
   
-  def dial_predictive1
+  def dial_predictive1(iter)
     call_attempt = new_call_attempt(self.campaign.type)
     twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)        
     http = twilio_lib.make_call(campaign, self, call_attempt)
