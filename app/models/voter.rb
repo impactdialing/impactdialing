@@ -141,6 +141,7 @@ class Voter < ActiveRecord::Base
         # else
         puts "ddddd"
         puts deferrable.response
+        puts deferrable.response.class
         puts deferrable.response['sid']
         self.last_call_attempt.update_attributes(:sid => deferrable.response["sid"])
         # end
