@@ -11,7 +11,7 @@ class Predictive < Campaign
       concurrency = 4
       voters_to_dial = choose_voters_to_dial(num_to_call)
       EM::Synchrony::Iterator.new(voters_to_dial, concurrency).map do |voter, iter|
-        voter.dial_predictive1
+        voter.dial_predictive1(iter)
       end
       EventMachine.stop
     end
