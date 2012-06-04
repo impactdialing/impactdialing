@@ -36,7 +36,8 @@ class DialReport
   def overview_summary
    leads_available_for_retry
    leads_not_available_for_retry
-   @total_summary = dialed_and_completed + leads_not_dialed + @leads_not_available_for_retry + @leads_available_retry  
+   total_overview = dialed_and_completed + leads_not_dialed + @leads_not_available_for_retry + @leads_available_retry
+   @total_summary = total_overview == 0 ? 1 : total_overview
   end
   
   def leads_grouped_by_status_filtered
