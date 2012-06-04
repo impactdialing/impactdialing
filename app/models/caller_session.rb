@@ -1,3 +1,6 @@
+require "em-synchrony"
+require "em-synchrony/em-http"
+
 class CallerSession < ActiveRecord::Base
   include Rails.application.routes.url_helpers
   include CallCenter
