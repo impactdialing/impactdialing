@@ -225,8 +225,7 @@ class CallerSession < ActiveRecord::Base
   
   def dial_em(voter)
     return if voter.nil?
-    call_attempt = create_call_attempt(voter)
-    publish_calling_voter
+    call_attempt = create_call_attempt(voter)    
     twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)        
     EM.synchrony do
       concurrency = 1
