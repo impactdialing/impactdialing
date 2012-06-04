@@ -1,5 +1,3 @@
-require "em-synchrony/em-http"
-
 class CallerSession < ActiveRecord::Base
   include Rails.application.routes.url_helpers
   include CallCenter
@@ -227,7 +225,7 @@ class CallerSession < ActiveRecord::Base
     call_attempt = create_call_attempt(voter)    
     twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)        
     EM.run do
-      http = twilio_lib.make_call(campaign, voter, call_attempt)
+      http = twilio_lib.make_call_em(campaign, voter, call_attempt)
       http.callback { 
         response = JSON.parse(http.response)  
         if response["RestException"]
