@@ -220,7 +220,7 @@ class CallerSession < ActiveRecord::Base
   attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])  
   end
   
-  def dial_em
+  def dial_em(voter)
     return if voter.nil?
     attempt = create_call_attempt(voter)
     publish_calling_voter
