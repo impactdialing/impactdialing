@@ -226,7 +226,7 @@ class CallerSession < ActiveRecord::Base
     publish_calling_voter
     twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)        
     EM.run {
-      http = twilio_lib.make_call(campaign, self, call_attempt)
+      http = twilio_lib.make_call(campaign, voter, call_attempt)
       http.callback { 
         response = JSON.parse(http.response)  
         if response["RestException"]
