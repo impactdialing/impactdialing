@@ -69,8 +69,7 @@ class DialReport
     sanitize_dials(dials_made[CallAttempt::Status::SUCCESS]).to_i + sanitize_dials(dials_made['retry']).to_i + 
     sanitize_dials(dials_made[CallAttempt::Status::NOANSWER]).to_i + sanitize_dials(dials_made[CallAttempt::Status::BUSY]).to_i + 
     sanitize_dials(dials_made[CallAttempt::Status::HANGUP]).to_i + sanitize_dials(dials_made[CallAttempt::Status::VOICEMAIL]).to_i + 
-    sanitize_dials(dials_made[CallAttempt::Status::FAILED]).to_i + sanitize_dials(dials_made[CallAttempt::Status::SCHEDULED]).to_i + 
-    sanitize_dials(dials_made[CallAttempt::Status::ABANDONED]).to_i + sanitize_dials(dials_made[CallAttempt::Status::RINGING]).to_i
+    sanitize_dials(dials_made[CallAttempt::Status::SCHEDULED]).to_i + sanitize_dials(dials_made[CallAttempt::Status::ABANDONED]).to_i
   end
   
   
