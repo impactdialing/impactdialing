@@ -18,9 +18,11 @@ module Client
     
     def dials
       set_date_range      
-      per_lead_dials
-      per_attempt_dials  
-      summary_calls      
+      @dials_report = DialReport.new
+      @dials_report.compute_campaign_report(@campaign, @from_date, @to_date)
+      # per_lead_dials
+      # per_attempt_dials  
+      # summary_calls      
     end
     
     def summary_calls
