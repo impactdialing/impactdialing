@@ -12,7 +12,7 @@ class DialReport
   end
   
   def dialed_and_completed
-    sanitize_dials(@leads_grouped_by_status[CallAttempt::Status::SUCCESS]) + sanitize_dials(@leads_grouped_by_status[CallAttempt::Status::FAILED])
+    sanitize_dials(@leads_grouped_by_status[CallAttempt::Status::SUCCESS]) + sanitize_dials(@leads_grouped_by_status[CallAttempt::Status::FAILED]) + sanitize_dials(@leads_grouped_by_status['retry'])
   end
   
   def scheduled_for_now
