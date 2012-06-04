@@ -220,6 +220,24 @@ class CallerSession < ActiveRecord::Base
   attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])  
   end
   
+  def dial_em
+    return if voter.nil?
+    attempt = create_call_attempt(voter)
+    publish_calling_voter
+    twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)        
+    http = twilio_lib.make_call(campaign, self, call_attempt)
+    http.callback { 
+      response = JSON.parse(http.response)  
+      if response["RestException"]
+        handle_failed_call(call_attempt, self)
+      else
+        puts "entered callback"
+        call_attempt.update_attributes(:sid => response["sid"])
+      end
+       }
+    http.errback {}    
+  end
+  
   def create_call_attempt(voter)
     attempt = voter.call_attempts.create(:campaign => campaign, :dialer_mode => campaign.type, :status => CallAttempt::Status::RINGING, :caller_session => self, :caller => caller, call_start:  Time.now)
     update_attribute('attempt_in_progress', attempt)
