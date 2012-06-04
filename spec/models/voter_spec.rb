@@ -549,12 +549,67 @@ describe Voter do
   end
 
   describe "skip voter" do
-
     it "should skip voter but adding skipped_time" do
       campaign = Factory(:campaign)
       voter = Factory(:voter, :campaign => campaign)
       voter.skip
       voter.skipped_time.should_not be_nil
     end
+  end
+  
+  describe "avialable_to_be_retried" do
+    
+    it "should not consider voters who have not been dialed" do
+      campaign = Factory(:campaign)
+      voter = Factory(:voter, :campaign => campaign, last_call_attempt_time: nil)
+      Voter.avialable_to_be_retried(campaign.recycle_rate).should eq([])
+    end
+    
+    it "should not consider voters who last call attempt is within recycle rate" do
+      campaign = Factory(:campaign, recycle_rate: 4)
+      voter = Factory(:voter, :campaign => campaign, last_call_attempt_time: Time.now - 2.hours)
+      Voter.avialable_to_be_retried(campaign.recycle_rate).should eq([])
+    end
+    
+    it "should  consider voters who last call attempt is not within recycle rate for hangup status" do
+      campaign = Factory(:campaign, recycle_rate: 1)
+      voter = Factory(:voter, :campaign => campaign, last_call_attempt_time: Time.now - 2.hours, status: CallAttempt::Status::HANGUP)
+      Voter.avialable_to_be_retried(campaign.recycle_rate).size.should eq(1)
+    end
+    
+    it "should not  consider voters who last call attempt is not within recycle rate for success status" do
+      campaign = Factory(:campaign, recycle_rate: 1)
+      voter = Factory(:voter, :campaign => campaign, last_call_attempt_time: Time.now - 2.hours, status: CallAttempt::Status::SUCCESS)
+      Voter.avialable_to_be_retried(campaign.recycle_rate).should eq([])
+    end
+        
+  end
+  
+  describe "not_avialable_to_be_retried" do
+    
+    it "should not consider voters who have not been dialed" do
+      campaign = Factory(:campaign)
+      voter = Factory(:voter, :campaign => campaign, last_call_attempt_time: nil)
+      Voter.not_avialable_to_be_retried(campaign.recycle_rate).should eq([])
+    end
+    
+    it "should not consider voters who last call attempt is not within recycle rate" do
+      campaign = Factory(:campaign, recycle_rate: 1)
+      voter = Factory(:voter, :campaign => campaign, last_call_attempt_time: Time.now - 2.hours)
+      Voter.not_avialable_to_be_retried(campaign.recycle_rate).should eq([])
+    end
+    
+    it "should  not consider voters who last call attempt is  within recycle rate for hangup status" do
+      campaign = Factory(:campaign, recycle_rate: 1)
+      voter = Factory(:voter, :campaign => campaign, last_call_attempt_time: Time.now - 2.hours, status: CallAttempt::Status::HANGUP)
+      Voter.not_avialable_to_be_retried(campaign.recycle_rate).should eq([])
+    end
+    
+    it "should   consider voters who last call attempt is not within recycle rate for hangup status" do
+      campaign = Factory(:campaign, recycle_rate: 3)
+      voter = Factory(:voter, :campaign => campaign, last_call_attempt_time: Time.now - 2.hours, status: CallAttempt::Status::HANGUP)
+      Voter.not_avialable_to_be_retried(campaign.recycle_rate).should eq([voter])
+    end
+            
   end
 end

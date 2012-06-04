@@ -8,22 +8,22 @@
 	</tr>
 	<tr>
 		<td>Complete</td>
-		<td><%= @dialed_and_completed %></td>
-		<td> <%= ((@dialed_and_completed.to_f/@total_summary)*100).round %>%</td>
+		<td><%= dials_report.dialed_and_completed %></td>
+		<td> <%= ((dials_report.dialed_and_completed.to_f/dials_report.overview_summary)*100).round %>%</td>
 	</tr>
 	<tr>
 		<td>Available for retry</td>
-		<td><%= @leads_available_retry %></td>
-		<td> <%= ((@leads_available_retry.to_f/@total_summary)*100).round %>%</td>
+		<td><%= dials_report.leads_available_for_retry %></td>
+		<td> <%= ((dials_report.leads_available_for_retry.to_f/dials_report.overview_summary)*100).round %>%</td>
 	</tr>
 	<tr>
 		<td>Not yet available for retry</td>
-		<td><%= @leads_not_available_for_retry %></td>
-		<td> <%= ((@leads_not_available_for_retry.to_f/@total_summary)*100).round %>%</td>
+		<td><%= dials_report.leads_not_available_for_retry %></td>
+		<td> <%= ((dials_report.leads_not_available_for_retry.to_f/dials_report.overview_summary)*100).round %>%</td>
 	</tr>
 	<tr>
 		<td>Not dialed</td>
-		<td><%= @leads_not_dialed %></td>
-		<td><%= ((@leads_not_dialed.to_f/@total_summary)*100).round %>%</td>
+		<td><%= dials_report.leads_not_dialed %></td>
+		<td><%= ((dials_report.leads_not_dialed.to_f/dials_report.overview_summary)*100).round %>%</td>
 	</tr>	
 </table>
