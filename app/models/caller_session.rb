@@ -1,4 +1,3 @@
-require "em-synchrony"
 require "em-synchrony/em-http"
 
 class CallerSession < ActiveRecord::Base
@@ -227,21 +226,18 @@ class CallerSession < ActiveRecord::Base
     return if voter.nil?
     call_attempt = create_call_attempt(voter)    
     twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)        
-    EM.synchrony do
-      concurrency = 1
-      EM::Synchrony::Iterator.new([voter], concurrency).each do |voter_to_dial, iter|
-        http = twilio_lib.make_call(campaign, voter, call_attempt)
-        http.callback { 
-          response = JSON.parse(http.response)  
-          if response["RestException"]
-            handle_failed_call(call_attempt, self)
-          else
-            puts "entered callback"
-            call_attempt.update_attributes(:sid => response["sid"])
-          end
-           }
-        http.errback {}            
-      end
+    EM.run do
+      http = twilio_lib.make_call(campaign, voter, call_attempt)
+      http.callback { 
+        response = JSON.parse(http.response)  
+        if response["RestException"]
+          handle_failed_call(call_attempt, self)
+        else
+          puts "entered callback"
+          call_attempt.update_attributes(:sid => response["sid"])
+        end
+         }
+      http.errback {}            
     end
   end
   
