@@ -12,3 +12,8 @@
   
   <%= render partial: 'dial_row', locals: {row_title:"Abandoned", dial_count: dials[CallAttempt::Status::ABANDONED], total_dials: total_dials }%>  		                      
     
+  <tr class="<%= cycle("odd","even") %>">
+  	<td>Total dials</td>
+  	<td><%=  total_dials %></td>
+  	<td></td>
+  </tr>
