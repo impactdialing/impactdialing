@@ -144,6 +144,13 @@ class Voter < ActiveRecord::Base
     http.errback { iter.return(http) }    
   end
   
+  def handle_failed_call(attempt, voter)
+    attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
+    voter.update_attributes(status: CallAttempt::Status::FAILED)
+    Moderator.update_dials_in_progress(campaign)
+  end
+  
+  
 
   def dial_predictive
     call_attempt = new_call_attempt(self.campaign.type)

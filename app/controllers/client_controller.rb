@@ -151,23 +151,6 @@ class ClientController < ApplicationController
     redirect_to_login
   end
 
-  def call_now
-    campaign = Campaign.find(params[:id])
-    if !phone_number_valid(params[:num])
-      flash_now(:error, "Phone number entered is invalid!")
-    elsif list = VoterList.find_all_by_campaign_id(params[:id]).length==0
-      flash_now(:error, "No voter list available")
-    else
-      list = VoterList.find_all_by_campaign_id(params[:id]).first
-      num = params[:num].gsub(/[^0-9]/, "")
-      voter = Voter.find_by_campaign_id_and_Phone(params[:id], num)
-      voter.dial_predictive
-      flash_message(:notice, "Calling you now!")
-    end
-
-    redirect_to client_campaign_path(campaign)
-    return
-  end
 
 
   def recording_add
