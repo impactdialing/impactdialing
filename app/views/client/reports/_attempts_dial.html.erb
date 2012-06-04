@@ -1,0 +1,11 @@
+<p>The data in the per dial table includes every status for each lead.</p>
+
+<table>
+  <tr>
+    <th>Per dial</th>
+    <th>Dials</th>
+    <th>Percentage</th>
+  </tr>			
+  <%= render partial: 'dial_table', locals: {dials: @per_attempt_dials, total_dials: @total_attempt_dials }%>		      
+</table>
+      
