@@ -2,7 +2,7 @@
  
   <%= render partial: 'dial_row', locals: {row_title:"No answer", dial_count: dials[CallAttempt::Status::NOANSWER], total_dials: total_dials }%>  
   
-  <%= render partial: 'dial_row', locals: {row_title:"Busy signal", dial_count: dials[CallAttempt::Status::BUSY], total_dials: total_dials }%>  		      
+  <%= render partial: 'dial_row', locals: {row_title:"Busy", dial_count: dials[CallAttempt::Status::BUSY], total_dials: total_dials }%>  		      
   
   <%= render partial: 'dial_row', locals: {row_title:"Answering machine", dial_count: dials[CallAttempt::Status::HANGUP], total_dials: total_dials }%>  		      
   
