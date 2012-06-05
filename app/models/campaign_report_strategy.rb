@@ -12,8 +12,8 @@ class CampaignReportStrategy
     BUSY = "Busy"
     NOANSWER = 'No answer'
     ANSWERING_MACHINE = "Answering machine"
-    ANSWERING_MACHINE_MESSAGE = "Answering machine message delivered"
-    SCHEDULED = 'Scheduled for later'
+    ANSWERING_MACHINE_MESSAGE = "Voicemail left"
+    SCHEDULED = 'Answered'
     NOT_DIALED = "Not Dialed"
   end
   
