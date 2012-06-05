@@ -40,6 +40,7 @@ class CampaignReportStrategy
   
   def construct_csv
     @csv << csv_header    
+    self.send(@download_all_voters)
   end
   
   def csv_for(voter)
