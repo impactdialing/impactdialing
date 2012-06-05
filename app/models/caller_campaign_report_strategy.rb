@@ -49,6 +49,7 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
   def call_details(voter)
     last_attempt = voter.call_attempts.last
     if last_attempt
+      puts "ddddd"
       call_attempt_details(last_attempt, voter)
     else
       [nil, "Not Dialed","","","","", [], [] ]
