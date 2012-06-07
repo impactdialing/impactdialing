@@ -1,5 +1,5 @@
 process_answered_attempts:
-  cron: "0-59/1 * * * *"
+  cron: "*/1 * * * *"
   class: AnsweredJob
   queue: answered_worker
   args: 

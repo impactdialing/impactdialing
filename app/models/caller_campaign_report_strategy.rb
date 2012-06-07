@@ -23,7 +23,7 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
   
  
   def download_all_voters_lead
-    @campaign.all_voters.find_in_batches(:batch_size => 100) do |voters|
+    @campaign.all_voters.order('last_call_attempt_time').find_in_batches(:batch_size => 100) do |voters|
       voters.each {|voter| @csv << csv_for(voter)}
     end    
   end
