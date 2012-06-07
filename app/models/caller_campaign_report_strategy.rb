@@ -47,9 +47,13 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
   end
   
   def call_attempt_details(call_attempt, voter)
-    answers = call_attempt.answers.for_questions(@question_ids).order('question_id')
-    note_responses = call_attempt.note_responses.for_notes(@note_ids).order('note_id')    
-    [call_attempt_info(call_attempt), PossibleResponse.possible_response_text(@question_ids, answers), NoteResponse.response_texts(@note_ids, note_responses)].flatten    
+    if [CallAttempt::Status::RINGING, CallAttempt::Status::READY ].include?(call_attempt.status)
+      [nil, "Not Dialed","","","","", [], [] ]
+    else
+      answers = call_attempt.answers.for_questions(@question_ids).order('question_id')
+      note_responses = call_attempt.note_responses.for_notes(@note_ids).order('note_id')    
+      [call_attempt_info(call_attempt), PossibleResponse.possible_response_text(@question_ids, answers), NoteResponse.response_texts(@note_ids, note_responses)].flatten    
+    end
   end
   
   def call_details(voter)
