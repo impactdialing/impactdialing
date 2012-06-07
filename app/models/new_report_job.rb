@@ -22,22 +22,21 @@ class NewReportJob
      end
    end
    
-   def on_failure_report(exception, *args)
-     
-   end
    
    def perform
-     begin
-       @report = CSV.generate do |csv|
-         @campaign_strategy = report_strategy(csv)
-         @campaign_strategy.construct_csv      
-       end
-     rescue Exception => e
-       puts e
-       puts e.backtrace
-     end
-     save_report
+    @report = CSV.generate do |csv|
+     @campaign_strategy = report_strategy(csv)
+     @campaign_strategy.construct_csv      
+    end
+    save_report
+    notify_success 
    end
+   
+   def notify_success
+     response_strategy = @strategy == 'webui' ?  ReportWebUIStrategy.new("success", @user, @campaign, nil, nil) : ReportApiStrategy.new("failure", @campaign.id, @campaign.account.id, @callback_url)
+     response_strategy.response({campaign_name: @campaign_name})
+   end
+   
    
    def file_name
     FileUtils.mkdir_p(Rails.root.join("tmp"))
