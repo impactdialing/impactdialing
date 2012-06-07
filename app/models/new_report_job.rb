@@ -51,14 +51,15 @@ class NewReportJob
          :access_key_id => 'AKIAINGDKRFQU6S63LUQ',
          :secret_access_key => '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'
      )
-     write_csv_to_file
+     csv_file_name = file_name
+     write_csv_to_file(csv_file_name)
      expires_in_24_hours = (Time.now + 24.hours).to_i
-     AWS::S3::S3Object.store("#{@campaign_name}.csv", File.open(filename), "download_reports", :content_type => "application/binary", :access=>:private, :expires => expires_in_24_hours)
+     AWS::S3::S3Object.store("#{@campaign_name}.csv", File.open(csv_file_name), "download_reports", :content_type => "application/binary", :access=>:private, :expires => expires_in_24_hours)
    end
    
-   def write_csv_to_file
+   def write_csv_to_file(csv_file_name)
      report_csv = @report.split("\n")
-     file = File.open(file_name(), "w")
+     file = File.open(csv_file_name, "w")
      report_csv.each do |r|
        begin
          file.write(r)
