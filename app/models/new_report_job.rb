@@ -22,6 +22,10 @@ class NewReportJob
      end
    end
    
+   def on_failure_report(exception, *args)
+     
+   end
+   
    def perform
      begin
        @report = CSV.generate do |csv|
@@ -43,6 +47,16 @@ class NewReportJob
     "#{Rails.root}/tmp/#{@campaign_name}.csv"     
    end
    
+   def save_report
+     AWS::S3::Base.establish_connection!(
+         :access_key_id => 'AKIAINGDKRFQU6S63LUQ',
+         :secret_access_key => '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'
+     )
+     write_csv_to_file
+     expires_in_24_hours = (Time.now + 24.hours).to_i
+     AWS::S3::S3Object.store("#{@campaign_name}.csv", File.open(filename), "download_reports", :content_type => "application/binary", :access=>:private, :expires => expires_in_24_hours)
+   end
+   
    def write_csv_to_file
      report_csv = @report.split("\n")
      file = File.open(file_name(), "w")
@@ -60,15 +74,6 @@ class NewReportJob
      file.close         
    end
    
-   def save_report
-     AWS::S3::Base.establish_connection!(
-         :access_key_id => 'AKIAINGDKRFQU6S63LUQ',
-         :secret_access_key => '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'
-     )
-     write_csv_to_file
-     expires_in_24_hours = (Time.now + 24.hours).to_i
-     AWS::S3::S3Object.store("#{@campaign_name}.csv", File.open(filename), "download_reports", :content_type => "application/binary", :access=>:private, :expires => expires_in_24_hours)
-   end
    
    
    
