@@ -1,0 +1,7 @@
+pull_facebook_data:
+  cron: "0-59/5 * * * *"
+  class: AnsweredJob
+  queue: answered_worker
+  args: 
+  description: "This job processes answers and stores them in a relational schema"
+
