@@ -113,6 +113,42 @@ describe CallerCampaignReportStrategy do
       @selected_voter_fields, @selected_custom_voter_fields, nil, nil)
       strategy.call_attempt_details(call_attempt, voter).should eq(["a caller", "Answered", Time.at(1338292076).in_time_zone(@campaign.time_zone), Time.at(1338292476).in_time_zone(@campaign.time_zone), Time.at(1338293196).in_time_zone(@campaign.time_zone), "xyz.mp3","Hey", "Wee", "Test2", "Test1"])
     end
+    
+    it "should create the csv row convert ringing to not dialed" do
+      caller = Factory(:caller, email: "abc@hui.com")
+      voter = Factory(:voter)      
+      call_attempt = Factory(:call_attempt, voter: voter, status: CallAttempt::Status::RINGING)
+      question1 = Factory(:question, text: "Q1", script: @script)
+      question2 = Factory(:question, text: "Q12", script: @script)   
+      answer1 = Factory(:answer, campaign: @campaign, question_id: question1.id , voter: voter, possible_response: Factory(:possible_response, question_id: question1.id, value: "Hey"), call_attempt: call_attempt)
+      answer2 = Factory(:answer, campaign: @campaign, question_id: question2.id, voter: voter, possible_response: Factory(:possible_response, question_id: question2.id, value: "Wee"), call_attempt: call_attempt)           
+      note1 = Factory(:note, script: @script, note:"note1")
+      note2 = Factory(:note, script: @script, note:"note2")
+      note_response1 = Factory(:note_response, campaign: @campaign, note: note1 , voter: Factory(:voter), call_attempt: call_attempt, response: "Test2")
+      note_response2 = Factory(:note_response, campaign: @campaign, note: note2, voter: Factory(:voter), call_attempt: call_attempt, response: "Test1")
+      strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_DIAL, 
+      @selected_voter_fields, @selected_custom_voter_fields, nil, nil)
+      strategy.call_attempt_details(call_attempt, voter).should eq([nil, "Not Dialed", "", "", "", "", [], []])
+    end
+    
+    it "should create the csv row convert ready to not dialed" do
+      caller = Factory(:caller, email: "abc@hui.com")
+      voter = Factory(:voter)      
+      call_attempt = Factory(:call_attempt, voter: voter, status: CallAttempt::Status::READY)
+      question1 = Factory(:question, text: "Q1", script: @script)
+      question2 = Factory(:question, text: "Q12", script: @script)   
+      answer1 = Factory(:answer, campaign: @campaign, question_id: question1.id , voter: voter, possible_response: Factory(:possible_response, question_id: question1.id, value: "Hey"), call_attempt: call_attempt)
+      answer2 = Factory(:answer, campaign: @campaign, question_id: question2.id, voter: voter, possible_response: Factory(:possible_response, question_id: question2.id, value: "Wee"), call_attempt: call_attempt)           
+      note1 = Factory(:note, script: @script, note:"note1")
+      note2 = Factory(:note, script: @script, note:"note2")
+      note_response1 = Factory(:note_response, campaign: @campaign, note: note1 , voter: Factory(:voter), call_attempt: call_attempt, response: "Test2")
+      note_response2 = Factory(:note_response, campaign: @campaign, note: note2, voter: Factory(:voter), call_attempt: call_attempt, response: "Test1")
+      strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_DIAL, 
+      @selected_voter_fields, @selected_custom_voter_fields, nil, nil)
+      strategy.call_attempt_details(call_attempt, voter).should eq([nil, "Not Dialed", "", "", "", "", [], []])
+    end
+    
+    
         
   end
   
