@@ -31,8 +31,8 @@ module Api
       end
       user = User.find_by_email(params[:email]) 
       account = Account.find(params[:account_id])
-      # Resque.enqueue(VoterListUploadJob, separator, csv_column_headers.to_json, VoterList.create_csv_to_system_map(csv_column_headers, account), saved_file_name, params[:voter_list_name], params[:campaign_id], params[:account_id],user.domain, params[:email],params[:callback_url], "api")
-      Delayed::Job.enqueue VoterListJob.new(separator, csv_column_headers.to_json, VoterList.create_csv_to_system_map(csv_column_headers, account), saved_file_name, params[:voter_list_name], params[:campaign_id], params[:account_id],user.domain, params[:email],params[:callback_url],"api") 
+      Resque.enqueue(VoterListUploadJob, separator, csv_column_headers.to_json, VoterList.create_csv_to_system_map(csv_column_headers, account), saved_file_name, params[:voter_list_name], params[:campaign_id], params[:account_id],user.domain, params[:email],params[:callback_url], "api")
+      # Delayed::Job.enqueue VoterListJob.new(separator, csv_column_headers.to_json, VoterList.create_csv_to_system_map(csv_column_headers, account), saved_file_name, params[:voter_list_name], params[:campaign_id], params[:account_id],user.domain, params[:email],params[:callback_url],"api") 
       render_json_response({status: 'ok', code: '200' , message: "Response will be sent to the callback url once the list upload is complete."})
     end
     
