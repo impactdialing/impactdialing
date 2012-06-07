@@ -2,6 +2,8 @@
 
 require ::File.expand_path('../config/environment',  __FILE__)
 require 'resque/server'
+require 'resque_scheduler'
+require 'resque_scheduler/server'
 
 Resque::Server.use Rack::Auth::Basic do |username, password|
    username == 'impact' && password == 'Mb<3Ad4F@2tCallz' 
