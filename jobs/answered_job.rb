@@ -1,4 +1,3 @@
-require Rails.root.join("jobs/heroku_resque_answered_auto_scale")
 require 'resque/plugins/lock'
 require 'resque-loner'
 
