@@ -28,7 +28,7 @@ class Caller < ActiveRecord::Base
     uniq_pin=0
     while uniq_pin==0 do
       pin = rand.to_s[2..6]
-      check = Caller.find_by_pin(pin)
+      check = Caller.find_by_pin(pin) || CallerIdentity.find_by_pin(pin)
       uniq_pin=pin if check.blank?
     end
     self.pin = uniq_pin
