@@ -119,11 +119,25 @@ class CallerSession < ActiveRecord::Base
       end_session
       wrapup_attempt_in_progress
     rescue ActiveRecord::StaleObjectError => exception
-      reloaded_caller_session = CallerSession.find(self.id)
-      reloaded_caller_session.end_session
-      reloaded_caller_session.wrapup_attempt_in_progress
+      Resque.enqueue(PhantomCallerJob, self.sid)
     end      
   end
+  
+  def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)    
+    voters = Voter.find_all_by_caller_id_and_status(caller.id, CallAttempt::Status::READY)
+    voters.each {|voter| voter.update_attributes(status: 'not called')}    
+    EM.run {
+      t = TwilioLib.new(account, auth)    
+      deferrable = t.end_call("#{self.sid}")              
+      deferrable.callback {}
+      deferrable.errback { |error| }          
+    }             
+    end_caller_session
+    CallAttempt.wrapup_calls(caller_id)
+    Moderator.publish_event(campaign, "caller_disconnected",{:caller_session_id => id, :caller_id => caller.id, :campaign_id => campaign.id, :campaign_active => campaign.callers_log_in?,
+    :no_of_callers_logged_in => campaign.caller_sessions.on_call.length})
+  end  
+  
   
   def wrapup_attempt_in_progress
     attempt_in_progress.try(:update_attributes, {:wrapup_time => Time.now})
@@ -193,20 +207,6 @@ class CallerSession < ActiveRecord::Base
     Pusher[session_key].trigger(event, data.merge!(:dialer => self.campaign.type))
   end
   
-  def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)    
-    voters = Voter.find_all_by_caller_id_and_status(caller.id, CallAttempt::Status::READY)
-    voters.each {|voter| voter.update_attributes(status: 'not called')}    
-    EM.run {
-      t = TwilioLib.new(account, auth)    
-      deferrable = t.end_call("#{self.sid}")              
-      deferrable.callback {}
-      deferrable.errback { |error| }          
-    }             
-    end_caller_session
-    CallAttempt.wrapup_calls(caller_id)
-    Moderator.publish_event(campaign, "caller_disconnected",{:caller_session_id => id, :caller_id => caller.id, :campaign_id => campaign.id, :campaign_active => campaign.callers_log_in?,
-    :no_of_callers_logged_in => campaign.caller_sessions.on_call.length})
-  end  
   
   def dial(voter)
   return if voter.nil?
