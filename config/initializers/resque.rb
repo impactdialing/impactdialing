@@ -5,4 +5,7 @@ require 'resque_scheduler'
 redis_config = YAML.load_file(rails_root + '/config/redis.yml')
 Resque.redis = redis_config[rails_env]
 Resque.schedule = YAML.load_file("#{Rails.root}/config/resque_schedule.yml")
-require "#{Rails.root}/jobs/*.rb"
+
+Dir[File.dirname(__FILE__) + '/../jobs/*.rb'].each do |file| 
+  require File.basename(file, File.extname(file))
+end
