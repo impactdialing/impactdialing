@@ -17,43 +17,13 @@ module Client
 
     
     def dials
-      set_date_range      
+      set_date_range
+      @show_summary = true if params[:from_date].blank? || params[:to_date].blank?
       @dials_report = DialReport.new
       @dials_report.compute_campaign_report(@campaign, @from_date, @to_date)
-      # per_lead_dials
-      # per_attempt_dials  
-      # summary_calls      
     end
     
     
-    def per_attempt_dials
-      @total_attempts_count = @campaign.call_attempts.between(@from_date, @to_date).count
-      @per_attempt_dials = @campaign.call_attempts.between(@from_date, @to_date).group("status").count
-      @total_attempt_dials = ((@total_attempts_count == 0) ? 1 : @total_attempts_count)
-      @ready_to_dial_attempts = params[:from_date] ? 0 : sanitize_dials(@per_attempt_dials[CallAttempt::Status::READY])
-      @total_dials_made_attempts = total_dials(@per_attempt_dials)
-    end
-    
-    def per_lead_dials      
-      @total_voters_count = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).count      
-      @lead_dials = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).group("status").count      
-      @total_lead_dials = ((@total_voters_count == 0) ? 1 : @total_voters_count)
-      @ready_to_dial_leads = params[:from_date] ? 0 : sanitize_dials(@lead_dials[CallAttempt::Status::READY])
-      @total_dials_made_leads = total_dials(@lead_dials)
-    end
-    
-    def total_dials(dials_made)
-      sanitize_dials(dials_made[CallAttempt::Status::SUCCESS]).to_i + sanitize_dials(dials_made['retry']).to_i + 
-      sanitize_dials(dials_made[CallAttempt::Status::NOANSWER]).to_i + sanitize_dials(dials_made[CallAttempt::Status::BUSY]).to_i + 
-      sanitize_dials(dials_made[CallAttempt::Status::HANGUP]).to_i + sanitize_dials(dials_made[CallAttempt::Status::VOICEMAIL]).to_i + 
-      sanitize_dials(dials_made[CallAttempt::Status::FAILED]).to_i + sanitize_dials(dials_made[CallAttempt::Status::SCHEDULED]).to_i + 
-      sanitize_dials(dials_made[CallAttempt::Status::ABANDONED]).to_i + sanitize_dials(dials_made[CallAttempt::Status::RINGING]).to_i
-    end
-        
-    def sanitize_dials(dial_count)
-      dial_count.nil? ? 0 : dial_count
-    end
-
     def usage
       @campaign = current_user.campaigns.find(params[:id])
       set_date_range
@@ -83,8 +53,8 @@ module Client
 
     def download
       set_date_range
-      Delayed::Job.enqueue ReportJob.new(@campaign, @user, params[:voter_fields], params[:custom_voter_fields], params[:download_all_voters],params[:lead_dial], @from_date, @to_date, "", "webui")
-      # Resque.enqueue(ReportDownloadJob, @campaign.id, @user.id, params[:voter_fields], params[:custom_voter_fields], params[:download_all_voters],params[:lead_dial], @from_date, @to_date, "", "webui")
+      # Delayed::Job.enqueue ReportJob.new(@campaign, @user, params[:voter_fields], params[:custom_voter_fields], params[:download_all_voters],params[:lead_dial], @from_date, @to_date, "", "webui")
+      Resque.enqueue(ReportDownloadJob, @campaign.id, @user.id, params[:voter_fields], params[:custom_voter_fields], params[:download_all_voters],params[:lead_dial], @from_date, @to_date, "", "webui")
       flash_message(:notice, I18n.t(:client_report_processing))
       redirect_to client_reports_url
     end
