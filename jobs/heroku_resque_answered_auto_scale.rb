@@ -1,6 +1,7 @@
 require 'heroku'
 
 module HerokuResqueAnsweredAutoScale
+  
   module Scaler
     class << self
       @@heroku = Heroku::Client.new(ENV['HEROKU_USER'], ENV['HEROKU_PASS'])
