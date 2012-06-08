@@ -34,4 +34,9 @@ module HerokuResqueAutoScale
       Scaler.workers(workers_to_scale)
     end
   end
+  
+  def before_delayed_enqueue_scale_up(*args)
+    Scaler.workers(1)
+  end
+  
 end
