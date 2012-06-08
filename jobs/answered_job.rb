@@ -5,8 +5,8 @@ require 'resque-loner'
 class AnsweredJob 
   extend Resque::Plugins::Lock
   include Resque::Plugins::UniqueJob
-  extend ::HerokuResqueAnsweredAutoScale
-  @queue = :answered_worker
+  extend ::HerokuResqueAutoScale
+  @queue = :worker_job
   
    def self.perform     
      CallAttempt.results_not_processed.limit(100).each do |call_attempt|
