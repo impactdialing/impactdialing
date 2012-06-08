@@ -22,12 +22,12 @@ class CampaignReportStrategy
       Voter::Status::NOTCALLED => AttemptStatus::NOT_DIALED, CallAttempt::Status::NOANSWER => AttemptStatus::NOANSWER, 
       CallAttempt::Status::ABANDONED => AttemptStatus::ABANDONED, CallAttempt::Status::BUSY => AttemptStatus::BUSY,
       CallAttempt::Status::FAILED => AttemptStatus::FAILED, CallAttempt::Status::HANGUP => AttemptStatus::ANSWERING_MACHINE,
-      CallAttempt::Status::SCHEDULED => AttemptStatus::SCHEDULED, CallAttempt::Status::VOICEMAIL => AttemptStatus::ANSWERING_MACHINE_MESSAGE}
+      CallAttempt::Status::SCHEDULED => AttemptStatus::ANSWERED, CallAttempt::Status::VOICEMAIL => AttemptStatus::ANSWERING_MACHINE_MESSAGE}
       statuses[status] || status
   end
   
   
-  def initialize(campaign, csv, download_all_voters, mode, selected_voter_fields, selected_custom_voter_fields)
+  def initialize(campaign, csv, download_all_voters, mode, selected_voter_fields, selected_custom_voter_fields, from_date, to_date)
     @campaign = campaign
     @download_all_voters = download_all_voters ? ("download_all_voters_" + mode) : ("download_for_date_range_" + mode)
     @mode = mode
@@ -36,10 +36,14 @@ class CampaignReportStrategy
     @selected_custom_voter_fields = selected_custom_voter_fields
     @question_ids = Answer.question_ids(@campaign.id)
     @note_ids = NoteResponse.note_ids(@campaign.id)           
+    @from_date = from_date
+    @to_date = to_date
   end
   
   def construct_csv
     @csv << csv_header    
+    self.send(@download_all_voters)
+    @csv
   end
   
   def csv_for(voter)

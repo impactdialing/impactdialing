@@ -55,7 +55,7 @@ describe Api::VoterListsController do
   
   it "should return 200 if list scheduled for upload" do
     VoterList.should_receive(:upload_file_to_s3)    
-    Delayed::Job.should_receive(:enqueue)
+    Resque.should_receive(:enqueue)
     post :create, api_key: '1mp@ctd1@l1ng',campaign_id: @campaign.id, account_id: @campaign.account.id.to_s, email: @current_user.email, upload: {"datafile" => fixture_file_upload("/files/invalid_voters_list.csv")}
     result = JSON.parse(response.body)
     response.code.should eq('200')

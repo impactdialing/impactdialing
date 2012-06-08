@@ -16,24 +16,27 @@ class NewReportJob
    
    def report_strategy(csv)
      if @campaign.robo
-       BroadcastCampaignReportStrategy.new(@campaign, csv, @download_all_voters, @lead_dial, @selected_voter_fields, @selected_custom_voter_fields)
+       BroadcastCampaignReportStrategy.new(@campaign, csv, @download_all_voters, @lead_dial, @selected_voter_fields, @selected_custom_voter_fields, @from_date, @to_date)
      else
-       CallerCampaignReportStrategy.new(@campaign, csv, @download_all_voters, @lead_dial, @selected_voter_fields, @selected_custom_voter_fields)
+       CallerCampaignReportStrategy.new(@campaign, csv, @download_all_voters, @lead_dial, @selected_voter_fields, @selected_custom_voter_fields, @from_date, @to_date)
      end
    end
    
+   
    def perform
-     begin
-       @report = CSV.generate do |csv|
-         @campaign_strategy = report_strategy(csv)
-         @campaign_strategy.construct_csv      
-       end
-     rescue Exception => e
-       puts e
-       puts e.backtrace
-     end
-     save_report
+    @report = CSV.generate do |csv|
+     @campaign_strategy = report_strategy(csv)
+     @campaign_strategy.construct_csv      
+    end
+    save_report
+    notify_success 
    end
+   
+   def notify_success
+     response_strategy = @strategy == 'webui' ?  ReportWebUIStrategy.new("success", @user, @campaign, nil, nil) : ReportApiStrategy.new("failure", @campaign.id, @campaign.account.id, @callback_url)
+     response_strategy.response({campaign_name: @campaign_name})
+   end
+   
    
    def file_name
     FileUtils.mkdir_p(Rails.root.join("tmp"))
@@ -43,9 +46,20 @@ class NewReportJob
     "#{Rails.root}/tmp/#{@campaign_name}.csv"     
    end
    
-   def write_csv_to_file
+   def save_report
+     AWS::S3::Base.establish_connection!(
+         :access_key_id => 'AKIAINGDKRFQU6S63LUQ',
+         :secret_access_key => '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'
+     )
+     csv_file_name = file_name
+     write_csv_to_file(csv_file_name)
+     expires_in_24_hours = (Time.now + 24.hours).to_i
+     AWS::S3::S3Object.store("#{@campaign_name}.csv", File.open(csv_file_name), "download_reports", :content_type => "application/binary", :access=>:private, :expires => expires_in_24_hours)
+   end
+   
+   def write_csv_to_file(csv_file_name)
      report_csv = @report.split("\n")
-     file = File.open(file_name(), "w")
+     file = File.open(csv_file_name, "w")
      report_csv.each do |r|
        begin
          file.write(r)
@@ -60,15 +74,6 @@ class NewReportJob
      file.close         
    end
    
-   def save_report
-     AWS::S3::Base.establish_connection!(
-         :access_key_id => 'AKIAINGDKRFQU6S63LUQ',
-         :secret_access_key => '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'
-     )
-     write_csv_to_file
-     expires_in_24_hours = (Time.now + 24.hours).to_i
-     AWS::S3::S3Object.store("#{@campaign_name}.csv", File.open(filename), "download_reports", :content_type => "application/binary", :access=>:private, :expires => expires_in_24_hours)
-   end
    
    
    
