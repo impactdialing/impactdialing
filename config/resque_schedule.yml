@@ -1,7 +1,7 @@
 process_answered_attempts:
   cron: "*/1 * * * *"
   class: AnsweredJob
-  queue: worker_job
+  queue: background_worker_job
   args: 
   description: "This job processes answers and stores them in a relational schema"
 
