@@ -1,14 +1,23 @@
-<fieldset>
+<fieldset id="call_results">
   <legend>Call results</legend>
-  <% @script.questions.each_with_index do |question, index| %>
-    <%= f.fields_for :questions, question do |builder| %>  
-      <%= render "question_fields", f: builder %>   
+
+  <div id="script_questions"> 
+    <% @script.questions.each_with_index do |question, index| %>
+      <%= f.fields_for :questions, question do |builder| %>  
+        <%= render "question_fields", f: builder %>   
+      <% end %>
+    <%end%>
+  </div>
+    
+  <div id="script_notes">
+    <%= f.fields_for :notes do |builder| %>
+      <%= render "note_fields", f: builder %>   
     <% end %>
-  <%end%>
-  <%= f.fields_for :notes do |builder| %>
-    <%= render "notes_fields", f: builder %>   
-  <% end %>
-  <%= link_to_add_fields "Add a question", f, :questions %>
-  <%= link_to_add_fields "Add a note", f, :notes %>
-  </fieldset>  
+  </div>
+  
+  <%= link_to_add_association 'Add a question', f, :questions, {:class => "action secondary add_question", "data-association-insertion-node"=> "#script_questions", "data-association-insertion-method"=>"append",  partial: 'script_new_question_fields' }%>
+  
+  <%= link_to_add_association 'Add a text field', f, :notes , {:class => "action secondary", "data-association-insertion-node"=> "#script_notes", "data-association-insertion-method"=>"append", partial: 'note_fields' }%>
+    
+</fieldset>  
   

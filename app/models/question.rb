@@ -25,6 +25,12 @@ class Question < ActiveRecord::Base
     answers.first != nil
   end
   
+  def delete_question?
+    if script.questions.size == 1
+      return {response: 'error', message: 'Yo Yp'}
+    end
+  end
+  
 
   def self.question_texts(question_ids)
     texts = []
