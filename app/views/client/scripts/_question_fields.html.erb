@@ -1,9 +1,11 @@
-<fieldset>
-  <legend>Question 1</legend>
+<fieldset class="nested-fields question">
+  <legend class="question_label">Question 1</legend>
+  
   <p>
     <label>Question:</label>
-    <nested_type type = 'questions'></nested_type>
     <%= f.text_field :text%>
   </p>
+  
   <%= render "script_possible_response", f: f %>  
+  
 </fieldset>
