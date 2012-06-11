@@ -2,7 +2,7 @@
   <legend class="question_label">Question</legend>
   <p>
     <label>Question:</label>
-    <%= f.text_field :text%>
+ <input id="script_questions_attributes_1339334137460_text" name="script[questions_attributes][1339334137460][text]" size="30" type="text">
   </p>
   
   <table>
@@ -27,15 +27,14 @@
           <input name="script[questions_attributes][1339334137460][possible_responses_attributes][1339335954597][retry]" type="hidden" value="0"><input id="script_questions_attributes_1339334137460_possible_responses_attributes_1339335954597_retry" name="script[questions_attributes][1339334137460][possible_responses_attributes][1339335954597][retry]" type="checkbox" value="1">
         </td>
         <td width="15%">
-          <input id="script_questions_attributes_1339334137460_possible_responses_attributes_1339335954597__destroy" name="script[questions_attributes][1339334137460][possible_responses_attributes][1339335954597][_destroy]" type="hidden"><a href="#" class="ico del remove_fields dynamic" data-removal-validation="possible_response_delete"></a>
+          <input id="script_questions_attributes_1339334137460_possible_responses_attributes_1339335954597__destroy" name="script[questions_attributes][1339334137460][possible_responses_attributes][1339335954597][_destroy]" type="hidden" value="false"><a href="#" class="ico del remove_fields dynamic" data-removal-validation="possible_response_delete"></a>
         </td>
       </tr>
     </tbody>
   </table>
   
   <%= link_to_add_association "New Response", f, :possible_responses , {:class => "action secondary", "data-association-insertion-node"=> "this", "data-association-insertion-method"=>"before", partial: 'possible_response_fields' } %>
-
-  <%= link_to_remove_association "Delete this question", f , {:class => "action secondary", "data-removal-validation"=>"question_delete"}%>
-
+<input id="script_questions_attributes_1339334137460__destroy" name="script[questions_attributes][1339334137460][_destroy]" type="hidden" value="false">
+<a href="#" class="action secondary remove_fields dynamic" data-removal-validation="question_delete">Delete this question</a>
 
 </fieldset>

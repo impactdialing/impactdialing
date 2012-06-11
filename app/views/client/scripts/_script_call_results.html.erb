@@ -15,7 +15,7 @@
     <% end %>
   </div>
   
-  <%= link_to_add_association 'Add a question', f, :questions, {:class => "action secondary add_question", "data-association-insertion-node"=> "#script_questions", "data-association-insertion-method"=>"append",  partial: 'script_new_question_fields' }%>
+  <%= link_to_add_association 'Add a question', f, :questions, {:class => "action secondary add_question", "data-association-insertion-node"=> "#script_questions", "data-association-insertion-method"=>"append",  partial: 'question_fields' }%>
   
   <%= link_to_add_association 'Add a text field', f, :notes , {:class => "action secondary", "data-association-insertion-node"=> "#script_notes", "data-association-insertion-method"=>"append", partial: 'note_fields' }%>
     
