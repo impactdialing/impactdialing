@@ -38,7 +38,7 @@ module Client
       @script.questions << [Question.new(possible_responses: [PossibleResponse.new])]  if @script.questions.empty?
       @voter_fields = VoterList::VOTER_DATA_COLUMNS.values
       @voter_fields.concat(@user.account.custom_voter_fields.collect{ |field| field.name})
-      @answered_questions = Question.question_count_script(@script.id)
+      @answered_questions = Question.question_count_script(@script.id).to_json
       if @script.voter_fields!=nil
         begin
           @voter_field_values = JSON.parse(@script.voter_fields)
