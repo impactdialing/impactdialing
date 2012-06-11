@@ -12,8 +12,10 @@ Scripts.prototype.display_question_numbers = function(){
 
 Scripts.prototype.mark_questions_answered = function(answered_questions){
 	questions_json = jQuery.parseJSON( answered_questions )
+	alert(questions_json)
 	$.each($('.delete_question'), function(){
 	  var question_id = $($(this).parent('.nested-fields').children('.identity')[0]).val();
+	  alert(question_id)
 	  $(this).attr('answered',questions_json[question_id])
     });    
 }
