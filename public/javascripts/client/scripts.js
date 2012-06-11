@@ -11,11 +11,11 @@ Scripts.prototype.display_question_numbers = function(){
 }
 
 Scripts.prototype.mark_questions_answered = function(answered_questions){
-	questions_json = jQuery.parseJSON( answered_questions )
-	$.each($('.delete_question'), function(){
-	  var question_id = $($(this).parent('.nested-fields').children('.identity')[0]).val();
-	  $(this).attr('answered',questions_json[question_id])
-    });    
+	// questions_json = jQuery.parseJSON( answered_questions )
+	// $.each($('.delete_question'), function(){
+	//   var question_id = $($(this).parent('.nested-fields').children('.identity')[0]).val();
+	//   $(this).attr('answered',questions_json[question_id])
+	//     });    
 }
 
 Scripts.prototype.display_text_field_numbers = function(){
@@ -36,15 +36,16 @@ Scripts.prototype.add_new_response_when_question_added = function(){
 }
 
 function question_delete(question_node){
+if($('#script_questions').children('.nested-fields').length == 1){
+      alert("You must have at least one question");
+      return false;
+    }
+    else{
+ 	  return true;
+    }    	
+  
   var question_id = $($(question_node).parent('.nested-fields').children('.identity')[0]).val();
-  question_answered(question_id);
-  if($('#script_questions').children('.nested-fields').length == 1){
-       alert("You must have at least one question");
-       return false;
-     }
-     else{
-  	  return true;
-     }    	
+  return question_answered(question_id);
 }
 
 function question_answered(question_id){
