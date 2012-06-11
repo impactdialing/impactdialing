@@ -4,7 +4,7 @@
   <div id="script_questions"> 
     <% @script.questions.each_with_index do |question, index| %>
       <%= f.fields_for :questions, question do |builder| %>  
-        <%= render "question_fields", f: builder %>   
+        <%= render "question_fields", {f: builder}  %>   
       <% end %>
     <%end%>
   </div>

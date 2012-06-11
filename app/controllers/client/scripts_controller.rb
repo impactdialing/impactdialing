@@ -1,6 +1,6 @@
 module Client
   class ScriptsController < ::ScriptsController
-    skip_before_filter :load_script, :apply_changes
+    skip_before_filter :load_script, :apply_changes, :question_answered
 
     layout 'client'
 
@@ -91,8 +91,9 @@ module Client
       redirect_to :action => "index"
     end
     
-    def delete_question
-      
+    def question_answered
+      question = Question.find(params[:question_id])
+      render :json => { :data => question.answered? }
     end
     
     def load_deleted

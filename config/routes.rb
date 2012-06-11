@@ -120,12 +120,20 @@ ImpactDialing::Application.routes.draw do
   end
 
   namespace 'client' do
+    resources :scripts do
+      collection do
+        get :question_answered
+      end
+      
+    end
+    
     [:campaigns, :scripts, :callers].each do |type_plural|
       get "/deleted_#{type_plural}", :to => "#{type_plural}#deleted", :as => "deleted_#{type_plural}"
       resources type_plural, :only => [:new, :index, :show, :destroy, :create, :update] do
         put 'restore', :to => "#{type_plural}#restore"
       end
     end
+    
     resources :callers do
       member do
         get :usage
