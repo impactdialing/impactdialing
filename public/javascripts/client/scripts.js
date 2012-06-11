@@ -42,7 +42,19 @@ if($('#script_questions').children('.nested-fields').length == 1){
     }
     else{
  	  var question_id = $($(question_node).parent('.nested-fields').children('.identity')[0]).val();
-	  return question_answered(question_id);
+	  $.ajax({
+	    url : "/client/scripts/question_answered",
+	    data : {question_id : question_id },
+	    type : "GET",
+		async : false,
+	    success : function(response) {
+		 if (response["data"] == true) {
+			alert("You cannot delete this question as it has already been answered.");
+			return false;		
+		 }
+		return true;
+	    }
+	  });	  
     }    	
   
 }
