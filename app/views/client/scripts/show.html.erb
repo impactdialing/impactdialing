@@ -27,7 +27,6 @@
       script = new Scripts();
       script.display_question_numbers();
       script.display_text_field_numbers();          
-      alert("<%= @answered_questions %>")
       script.mark_questions_answered("<%= @answered_questions %>")
       
       $('#call_results').bind('insertion-callback',            
