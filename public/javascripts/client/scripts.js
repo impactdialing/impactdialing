@@ -41,11 +41,10 @@ if($('#script_questions').children('.nested-fields').length == 1){
       return false;
     }
     else{
- 	  return true;
+ 	  var question_id = $($(question_node).parent('.nested-fields').children('.identity')[0]).val();
+	  return question_answered(question_id);
     }    	
   
-  var question_id = $($(question_node).parent('.nested-fields').children('.identity')[0]).val();
-  return question_answered(question_id);
 }
 
 function question_answered(question_id){
