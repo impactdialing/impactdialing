@@ -23,64 +23,23 @@
 <% end %>
 <% content_for :javascripts do %>
   <script type ="text/javascript">
-  
-    function question_delete(question_node){
-      if($('#script_questions').children('.nested-fields').length == 1){
-          alert("You must have at least one question");
-          return false;
-        }
-        else{
-    	  return true;
-        }    	
-    }
-    
-    function possible_response_delete(response_node){
-      var question = $(response_node).parents('.question');
-      if($(question).children('.possible_response').length == 1) {
-        alert("You must have at least one response.");
-        return false;
-      }
-      else{
-    	  return true;
-      }    	
-    }
-    
     $(document).ready(function() {
+      script = new Scripts();
+      script.display_question_numbers();
+      script.display_text_field_numbers();          
       
       $('#call_results').bind('insertion-callback',            
         function() {
-          var question_count = 1;
-          var text_field_count = 1;
-          $.each($('.question_label'), function(){
-            $(this).text("Question "+question_count++);
-          });
-          $.each($('.text_field_label'), function(){
-            $(this).text("Text Field "+text_field_count++);
-          });
+          script.display_question_numbers();
+          script.display_text_field_numbers();                              
+          script.add_new_response_when_question_added();
       });
-      
-      
+            
       $('#script_questions').bind('after-removal-callback',            
-        function() {
-          var count = 1;
-          $.each($('.question_label'), function(){
-            $(this).text("Question "+count++);
-          });
-      });
+        function() { script.display_question_numbers(); });
       
       $('#script_notes').bind('after-removal-callback',            
-        function() {
-          var count = 1;
-          $.each($('.text_field_label'), function(){
-            $(this).text("Text Field "+count++);
-          });
-      });
-      
-      
-      
-      
-      
-      
+        function() {  script.display_text_field_numbers();});      
     });
     
   </script>

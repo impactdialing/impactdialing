@@ -69,12 +69,18 @@
 
   $('.remove_fields.existing').live('click', function(e) {
     var $this = $(this);
-    var trigger_node = $this.closest(".nested-fields").parent().parent();
+	var removalValidation = $this.data('removal-validation');
+    var trigger_node = $this.closest(".nested-fields").parent();
+ if (!removalValidation || window[removalValidation](this)){	  
     trigger_removal_callback(trigger_node);
     e.preventDefault();
     $this.prev("input[type=hidden]").val("1");
     $this.closest(".nested-fields").hide();
+	$this.closest(".nested-fields").attr('deleted', true);
     trigger_after_removal_callback(trigger_node);
+	} else {
+	
+	}
   });
 
 })(jQuery);
