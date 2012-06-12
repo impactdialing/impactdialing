@@ -25,12 +25,15 @@
 <% content_for :javascripts do %>
   <script type ="text/javascript">
     $(document).ready(function() {
-      $("#script_questions").sortable({ cursor: 'crosshair' , axis: 'y'  });
+      script = new Scripts();
+      $("#script_questions").sortable({ cursor: 'crosshair' , axis: 'y', stop: function(event, ui) { 
+        script.display_question_numbers();
+        } 
+      });
       $("#script_questions").disableSelection();
       $(".possible_response_sortable").sortable({ cursor: 'crosshair' , containment: 'parent', axis: 'y' });
       $(".possible_response_sortable").disableSelection();
       
-      script = new Scripts();
       script.display_question_numbers();
       script.display_text_field_numbers();          
       script.mark_answered();
