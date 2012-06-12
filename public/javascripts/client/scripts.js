@@ -18,6 +18,19 @@ Scripts.prototype.set_question_order = function(){
 
 }
 
+Scripts.prototype.set_possible_response_order = function(){
+  var responses = $('.possible_response_sortable')
+  $.each(responses, function(){
+	var possible_response_order = 1;    
+	var possible_responses = $(this).find('.possible_response_order');
+	$.each($(possible_responses), function(){
+	  $(this).val(possible_response_order++);			
+	});	
+  });
+
+}
+
+
 
 Scripts.prototype.mark_answered = function(){
 	question_ids = new Array();
