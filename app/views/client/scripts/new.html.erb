@@ -25,8 +25,25 @@
   <script type ="text/javascript">
     $(document).ready(function() {
       script = new Scripts();
+      
+      $("#script_questions").sortable({ cursor: 'crosshair' , axis: 'y', stop: function(event, ui) { 
+        script.display_question_numbers();
+        } 
+      });
+      $("#script_questions").disableSelection();
+      $(".possible_response_sortable").sortable({ cursor: 'crosshair' , containment: 'parent', axis: 'y' });
+      $(".possible_response_sortable").disableSelection();
+      
+      $('#script_submit').click(function() {
+        script.set_question_order();
+        script.set_possible_response_order();
+        return true;
+      });
+      
       script.display_question_numbers();
       script.display_text_field_numbers();          
+      script.set_question_order();
+      script.set_possible_response_order();
       
       $('#call_results').bind('insertion-callback',            
         function() {

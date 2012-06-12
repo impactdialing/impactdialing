@@ -16,9 +16,12 @@
   <%= render "script_text", f: form %>
   <%= render "script_call_results", f: form %>  
   
-  
   <div class= "buttons">
-    <button id ="script_submit" type="submit">Save</button>
+  	<input type="checkbox" id="save_as" name="save_as" style="display:none">
+    <button id= "script_submit" type="submit">Save</button>
+  	<% unless @script.name.blank? %>
+  		<button onclick="document.getElementById('save_as').checked = true;">Save as</button>
+  	<% end %>
   </div>
 
 <% end %>
