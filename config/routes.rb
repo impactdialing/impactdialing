@@ -123,6 +123,7 @@ ImpactDialing::Application.routes.draw do
     resources :scripts do
       collection do
         get :questions_answered
+        get :possible_responses_answered
       end
       
     end

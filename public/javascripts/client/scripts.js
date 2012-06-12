@@ -10,8 +10,13 @@ Scripts.prototype.display_question_numbers = function(){
 
 }
 
-Scripts.prototype.mark_questions_answered = function(){
+Scripts.prototype.mark_answered = function(){
+	question_ids = new Array();
+	$('#script_questions').find('.identity').each(function(){ 
+	   question_ids.push($(this).val());
+	})
 	questions_answered();
+	possible_response_answered(question_ids);
 
 }
 
@@ -45,6 +50,27 @@ if($('#script_questions').children('.nested-fields').length == 1){
 }
   return true;   
 }
+
+function possible_response_answered(question_ids){
+  $.ajax({
+    url : "/client/scripts/possible_responses_answered",
+    data : {question_ids : question_ids },
+    type : "GET",
+	async : false,
+    success : function(response) {
+		for (myKey in response["data"]){
+			$('#call_results').find('.possible_response_identity').each(function(){
+				if ($(this).val() == myKey) {					
+					$(this).attr('answered', true)
+				}
+			});
+		}
+	}
+  });
+}
+
+
+
 
 function questions_answered(){
   $.ajax({
