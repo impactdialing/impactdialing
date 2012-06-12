@@ -18,7 +18,7 @@
   
   
   <div class= "buttons">
-    <button type="submit">Save</button>
+    <button id ="script_submit" type="submit">Save</button>
   </div>
 
 <% end %>
@@ -34,8 +34,14 @@
       $(".possible_response_sortable").sortable({ cursor: 'crosshair' , containment: 'parent', axis: 'y' });
       $(".possible_response_sortable").disableSelection();
       
+      $('#script_submit').click(function() {
+        script.set_question_order();
+        return true;
+      });
+      
       script.display_question_numbers();
       script.display_text_field_numbers();          
+      script.set_question_order();
       script.mark_answered();
       
       $('#call_results').bind('insertion-callback',            
