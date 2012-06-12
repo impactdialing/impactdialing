@@ -8,13 +8,6 @@ class Question < ActiveRecord::Base
   scope :answered_by, lambda { |voter| joins(:answers).where("answers.voter_id = ?", voter.id) }
   scope :not_answered_by, lambda { |voter| order("id ASC").where("questions.id not in (?)", Question.answered_by(voter).collect(&:id) + [-1]) }
   
-  before_destroy :check_for_answered
-  
-  def check_for_answered
-    errors.add(:base, "Cannot delete questions that are already answered") if answered?
-    puts errors
-    errors.blank? #return false, to not destroy the element, otherwise, it will delete.
-  end
 
   def stats(from_date, to_date)
     question.possible_responses.collect { |possible_response| possible_response.stats(from_date, to_date) }

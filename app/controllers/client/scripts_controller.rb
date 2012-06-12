@@ -62,9 +62,7 @@ module Client
         params[:save_as] ? save_as : @script = account.scripts.find_by_id(params[:id])
         if params[:save_as]
           redirect_to client_script_path(@script)          
-          result = @script.update_attributes!(params[:script])
-          puts result
-        elsif !params[:save_as]
+        elsif !params[:save_as] && @script.update_attributes!(params[:script])
           flash_message(:notice, "Script updated")
           redirect_to :action=>"index"
         else
