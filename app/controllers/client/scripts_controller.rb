@@ -93,6 +93,10 @@ module Client
       render :json => { :data => Question.question_count_script(params[:id]) }
     end
     
+    def possible_responses_answered
+      render :json => { :data => PossibleResponse.possible_response_count(params[:question_ids]) }
+    end
+    
     def load_deleted
       self.instance_variable_set("@#{type_name.pluralize}", Script.deleted.for_account(@user.account).paginate(:page => params[:page], :order => 'id desc'))
     end    
