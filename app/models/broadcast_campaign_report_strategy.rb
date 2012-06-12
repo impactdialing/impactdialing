@@ -29,11 +29,11 @@ class BroadcastCampaignReportStrategy < CampaignReportStrategy
   end
   
     
-  def call_attempt_details(call_attempt, voter, question_ids, note_ids)
+  def call_attempt_details(call_attempt, voter)
     [call_attempt.status, (call_attempt.call_responses.collect { |call_response| call_response.recording_response.try(:response) } if call_attempt.call_responses.size > 0)].flatten
   end
 
-  def call_details(voter, question_ids, note_ids)
+  def call_details(voter)
     last_attempt = voter.call_attempts.last
     details = last_attempt ? [last_attempt.status, (last_attempt.call_responses.collect { |call_response| call_response.recording_response.try(:response) } if last_attempt.call_responses.size > 0)].flatten : ['Not Dialed']
     details
