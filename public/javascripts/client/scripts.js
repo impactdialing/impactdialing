@@ -10,6 +10,15 @@ Scripts.prototype.display_question_numbers = function(){
 
 }
 
+Scripts.prototype.set_question_order = function(){
+  var question_order = 1;    
+  $.each($('.question_order'), function(element){
+      $(this).val(question_order++);
+  });
+
+}
+
+
 Scripts.prototype.mark_answered = function(){
 	question_ids = new Array();
 	$('#script_questions').find('.identity').each(function(){ 
