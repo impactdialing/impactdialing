@@ -22,7 +22,7 @@ class Campaign < ActiveRecord::Base
 
   delegate :questions_and_responses, :to => :script
 
-  scope :robo, lambda { where(:type => 'robo') }
+  scope :robo, lambda { where(:type => 'Robo') }
   scope :manual, :conditions => [ 'campaigns.type != "robo"' ]
   scope :for_account, lambda { |account| {:conditions => ["account_id = ?", account.id]} }
   scope :for_script, lambda { |script| {:conditions => ["script_id = ?", script.id]} }
