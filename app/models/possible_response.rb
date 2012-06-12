@@ -2,6 +2,8 @@ class PossibleResponse < ActiveRecord::Base
   belongs_to :question
   has_many :answers
   
+  default_scope :order=>"possible_response_order" 
+  
   def stats(answer_count, total_count)
     number_of_answers = answer_count[self.id] || 0
     total_answers = total_count[question_id] || 1
