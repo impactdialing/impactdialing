@@ -7,6 +7,7 @@ class Question < ActiveRecord::Base
   accepts_nested_attributes_for :possible_responses, :allow_destroy => true
   scope :answered_by, lambda { |voter| joins(:answers).where("answers.voter_id = ?", voter.id) }
   scope :not_answered_by, lambda { |voter| order("id ASC").where("questions.id not in (?)", Question.answered_by(voter).collect(&:id) + [-1]) }
+  default_scope :order=>"question_order" 
   
 
   def stats(from_date, to_date)
