@@ -97,6 +97,10 @@ function possible_response_delete(response_node){
     return false;
   }
   else{
-	  return true;
+    if( $($(response_node).parent('.possible_response').children('.identity')[0]).attr('answered') == "true"){
+	  alert("You cannot delete this question as it has already been answered.");
+	  return false;		
+	}
   }    	
+  return true;
 }
