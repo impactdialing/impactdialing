@@ -37,6 +37,12 @@ if($('#script_questions').children('.nested-fields').length == 1){
       alert("You must have at least one question");
       return false;
     }
+ else {
+	if( $($(question_node).parent('.question').children('.identity')[0]).attr('answered') == "true"){
+		alert("You cannot delete this question as it has already been answered.");
+		return false;		
+	}
+}
   return true;   
 }
 
