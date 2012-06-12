@@ -13,7 +13,6 @@ Scripts.prototype.display_question_numbers = function(){
 Scripts.prototype.mark_questions_answered = function(){
 	questions_answered();
 
-	
 }
 
 Scripts.prototype.display_text_field_numbers = function(){
@@ -50,7 +49,7 @@ function questions_answered(){
     success : function(response) {
 		for (myKey in response["data"]){
 			$('#script_questions').find('.identity').each(function(){
-				if ($(this).val() == response["data"][myKey]) {
+				if ($(this).val() == myKey) {					
 					$(this).attr('answered', true)
 				}
 			});
