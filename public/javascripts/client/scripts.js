@@ -98,7 +98,7 @@ function possible_response_delete(response_node){
   }
   else{
     if( $($($(response_node).parents('.possible_response')[0]).children('.possible_response_identity')[0]).attr('answered') == "true"){
-	  alert("You cannot delete this question as it has already been answered.");
+	  alert("You cannot delete this response as it already has an answer recorded.");
 	  return false;		
 	}
   }    	
