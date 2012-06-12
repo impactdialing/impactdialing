@@ -8,6 +8,7 @@
     <%= error_messages_for :script %>
   </div>
 <% end %>
+<input id="script_id" type="hidden" value="<%= @script.id %>"/>
 
 <%= semantic_form_for [:client, @script] do |form| %>
   <%= render "script_name", f: form %>
@@ -27,7 +28,7 @@
       script = new Scripts();
       script.display_question_numbers();
       script.display_text_field_numbers();          
-      script.mark_questions_answered("<%= @answered_questions %>")
+      script.mark_questions_answered();
       
       $('#call_results').bind('insertion-callback',            
         function() {

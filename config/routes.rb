@@ -122,7 +122,7 @@ ImpactDialing::Application.routes.draw do
   namespace 'client' do
     resources :scripts do
       collection do
-        get :question_answered
+        get :questions_answered
       end
       
     end

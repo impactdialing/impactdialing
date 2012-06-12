@@ -10,12 +10,10 @@ Scripts.prototype.display_question_numbers = function(){
 
 }
 
-Scripts.prototype.mark_questions_answered = function(answered_questions){
-	// questions_json = jQuery.parseJSON( answered_questions )
-	// $.each($('.delete_question'), function(){
-	//   var question_id = $($(this).parent('.nested-fields').children('.identity')[0]).val();
-	//   $(this).attr('answered',questions_json[question_id])
-	//     });    
+Scripts.prototype.mark_questions_answered = function(){
+	questions_answered();
+
+	
 }
 
 Scripts.prototype.display_text_field_numbers = function(){
@@ -40,38 +38,24 @@ if($('#script_questions').children('.nested-fields').length == 1){
       alert("You must have at least one question");
       return false;
     }
-    else{
- 	  var question_id = $($(question_node).parent('.nested-fields').children('.identity')[0]).val();
-	  $.ajax({
-	    url : "/client/scripts/question_answered",
-	    data : {question_id : question_id },
-	    type : "GET",
-		async : false,
-	    success : function(response) {
-		 if (response["data"] == true) {
-			alert("You cannot delete this question as it has already been answered.");
-			return false;		
-		 }
-		return true;
-	    }
-	  });	  
-    }    	
-  
+  return true;   
 }
 
-function question_answered(question_id){
+function questions_answered(){
   $.ajax({
-    url : "/client/scripts/question_answered",
-    data : {question_id : question_id },
+    url : "/client/scripts/questions_answered",
+    data : {id : $("#script_id").val() },
     type : "GET",
 	async : false,
     success : function(response) {
-	 if (response["data"] == true) {
-		alert("You cannot delete this question as it has already been answered.");
-		return false;		
-	 }
-	return true;
-    }
+		for (myKey in response["data"]){
+			$('#script_questions').find('.identity').each(function(){
+				if ($(this).val() == response["data"][myKey]) {
+					$(this).attr('answered', true)
+				}
+			});
+		}
+	}
   });
 }
 

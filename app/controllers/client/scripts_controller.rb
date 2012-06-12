@@ -1,6 +1,6 @@
 module Client
   class ScriptsController < ::ScriptsController
-    skip_before_filter :load_script, :apply_changes, :question_answered
+    skip_before_filter :load_script, :apply_changes, :questions_answered
 
     layout 'client'
 
@@ -58,13 +58,13 @@ module Client
       @voter_fields.concat(@user.account.custom_voter_fields.collect{ |field| field.name})
       @voter_field_values = (JSON.parse(@script.voter_fields) if @script.voter_fields) || []
       @answered_questions = Question.question_count_script(@script.id)
-      puts params[:script]
       begin
         params[:save_as] ? save_as : @script = account.scripts.find_by_id(params[:id])
-        puts params[:script]
         if params[:save_as]
           redirect_to client_script_path(@script)          
-        elsif !params[:save_as] &&  @script.update_attributes(params[:script])
+          result = @script.update_attributes!(params[:script])
+          puts result
+        elsif !params[:save_as]
           flash_message(:notice, "Script updated")
           redirect_to :action=>"index"
         else
@@ -91,9 +91,8 @@ module Client
       redirect_to :action => "index"
     end
     
-    def question_answered
-      question = Question.find(params[:question_id])
-      render :json => { :data => question.answered? }
+    def questions_answered
+      render :json => { :data => Question.question_count_script(params[:id]) }
     end
     
     def load_deleted
