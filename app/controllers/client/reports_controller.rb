@@ -2,7 +2,7 @@ require Rails.root.join("jobs/report_download_job")
 module Client
   class ReportsController < ClientController
     include ApplicationHelper::TimeUtils
-    before_filter :load_campaign, :except => [:index, :usage]
+    before_filter :load_campaign, :except => [:index, :usage, :account_campaigns_usage]
 
 
     def load_campaign
@@ -22,6 +22,29 @@ module Client
       @dials_report = DialReport.new
       @dials_report.compute_campaign_report(@campaign, @from_date, @to_date)
     end
+    
+    def account_campaigns_usage
+      @account = Account.find(params[:id])
+      time_zone = ActiveSupport::TimeZone.new("UTC")
+      @from_date = (@account.try(:created_at)).in_time_zone(time_zone).beginning_of_day      
+      @to_date = (Time.now).in_time_zone(time_zone).end_of_day
+
+      @campaigns = @account.campaigns
+      campaign_ids = @campaigns.collect{|x| x.id}
+      @caller_times = CallerSession.where("campaign_id in (?)",campaign_ids).between(@from_date, @to_date).where("tCaller is NOT NULL").group("campaign_id").sum('ceil(TIMESTAMPDIFF(SECOND ,starttime,endtime)/60)')      
+      @lead_times =   CallAttempt.where("campaign_id in (?)",campaign_ids).between(@from_date, @to_date).without_status([CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED]).group("campaign_id").sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)')
+      @transfer_times = TransferAttempt.where("campaign_id in (?)",campaign_ids).between(@from_date, @to_date).group("campaign_id").sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)')
+      @voice_mail_times = CallAttempt.where("campaign_id in (?)",campaign_ids).between(@from_date, @to_date).with_status([CallAttempt::Status::VOICEMAIL]).group('campaign_id').sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)')
+      @abandoned_times = CallAttempt.where("campaign_id in (?)",campaign_ids).between(@from_date, @to_date).with_status([CallAttempt::Status::ABANDONED]).group('campaign_id').sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)')
+      
+      @total_times = {}      
+      campaign_ids.each do |campaign_id|
+        @total_times[campaign_id] = sanitize(@caller_times[campaign_id]).to_i + sanitize(@lead_times[campaign_id]).to_i + sanitize(@transfer_times[campaign_id]).to_i +
+        sanitize(@voice_mail_times[campaign_id]).to_i + sanitize(@abandoned_times[campaign_id]).to_i
+      end
+      
+    end
+        
     
     
     def usage
@@ -80,6 +103,11 @@ module Client
       @from_date = (from_date || @campaign.call_attempts.first.try(:created_at) || Time.now).in_time_zone(time_zone).beginning_of_day      
       @to_date = (to_date || @campaign.call_attempts.last.try(:created_at) || Time.now).in_time_zone(time_zone).end_of_day
     end
+    
+    def sanitize(count)
+      count.nil? ? 0 : count
+    end
+    
     
     def not_dialed_voters(range_parameters, total_dials)
       if range_parameters
