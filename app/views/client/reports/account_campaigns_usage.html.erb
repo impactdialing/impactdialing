@@ -2,20 +2,17 @@
   <table>
     <tr>
       <th>Campaign</th>
-      <th>Billable Minutes</th>
-      <th>Total Minutes</th>
+      <th>Total Billable Minutes</th>
     </tr>
     <% @campaigns.each do |campaign| %>
       <tr>
         <td><a href="<%= usage_client_reports_path(:id => campaign.id) %>"><%= campaign.name %></a></td>
         <td><%= @billiable_total[campaign.id] %></td>
-        <td><%= @total_minutes[campaign.id] %></td>
       </tr>
     <%end%>
     <tr>
       <td>Total</td>
       <td><%= @billiable_total.values.inject(0){|sum,x| sum+x} %></td>
-      <td><%= @total_minutes.values.inject(0){|sum,x| sum+x} %></td>
     </tr>
     
     
