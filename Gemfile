@@ -30,8 +30,16 @@ gem "uuid", "~> 2.3.5"
 gem "call_center", "~> 0.0.9"
 gem "em-http-request", "~> 1.0.1"
 gem "ruby-graphviz", "0.9.0"
-gem "em-synchrony"
+gem "em-synchrony", "~> 1.0.1"
 gem "rack_timer", "0.0.4"
+gem "resque", "~> 1.19.0"
+gem "resque-scheduler", "~> 1.9.9", :require => 'resque_scheduler'
+gem 'resque-lock', "~> 1.0.0"
+gem "resque-loner", "~>1.2.1"
+gem "redis", "~>2.2.2"
+gem "hiredis", "~>0.4.5"
+gem "formtastic", "~>2.2.1"
+gem "cocoon", "~>1.0.22"
 
 
 

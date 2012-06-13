@@ -26,7 +26,7 @@ describe Payment do
 
     ##### CALL_ATTEMPT (9c) #####
     
-    call_attempt = Factory(:call_attempt, :call_start => Time.now, :call_end => (Time.now + 150.seconds), :campaign=>campaign)
+    call_attempt = Factory(:call_attempt, call_start: Time.now, connecttime: Time.now, call_end:  (Time.now + 150.seconds), campaign: campaign)
     payment = call_attempt.debit
     payment.class.should == Payment
     user.account.current_balance.should == 8.73
@@ -34,7 +34,7 @@ describe Payment do
     ##### ROBO CALL_ATTEMPT (4c) #####
     
     campaign.robo=true
-    call_attempt2 = Factory(:call_attempt, :call_start => Time.now, :call_end => (Time.now + 150.seconds), :campaign=>campaign)
+    call_attempt2 = Factory(:call_attempt, call_start: Time.now, connecttime: Time.now, call_end:  (Time.now + 150.seconds), campaign: campaign)
     payment = call_attempt2.debit
     payment.class.should == Payment
     user.account.current_balance.should == 8.61
@@ -62,7 +62,7 @@ describe Payment do
 
     ##### CALL_ATTEMPT (2c) #####
     
-    call_attempt = Factory(:call_attempt, :call_start => Time.now, :call_end => (Time.now + 150.seconds), :campaign=>campaign)
+    call_attempt = Factory(:call_attempt, call_start: Time.now, connecttime: Time.now, call_end:  (Time.now + 150.seconds), campaign: campaign)
     payment = call_attempt.debit
     payment.class.should == Payment
     user.account.current_balance.should == 8.94
@@ -70,7 +70,7 @@ describe Payment do
     ##### ROBO CALL_ATTEMPT (2c) #####
     
     campaign.robo=true
-    call_attempt2 = Factory(:call_attempt, :call_start => Time.now, :call_end => (Time.now + 150.seconds), :campaign=>campaign)
+    call_attempt2 = Factory(:call_attempt, call_start: Time.now, connecttime: Time.now, call_end:  (Time.now + 150.seconds), campaign: campaign)
     payment = call_attempt2.debit
     payment.class.should == Payment
     user.account.current_balance.should == 8.88

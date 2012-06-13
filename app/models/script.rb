@@ -20,10 +20,12 @@ class Script < ActiveRecord::Base
   scope :interactive, robo.where("for_voicemail is NULL or for_voicemail = #{false}")
   scope :message, robo.where(:for_voicemail => true)
 
+
   after_find :set_result_set
 
   cattr_reader :per_page
   @@per_page = 25
+  
 
   def set_result_set
     if self.result_set_1.blank?

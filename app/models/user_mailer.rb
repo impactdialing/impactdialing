@@ -72,7 +72,7 @@ class UserMailer
   def deliver_download(user, download_link)
     subject = I18n.t(:report_ready_for_download)
 
-    content = "<br/>The report that you had requested for is ready for download. Follow this link to retrieve it :: <br/> #{download_link}<br/> Please note that this link expires in 12 hours."
+    content = "<br/>The report you requested for is ready for download. Follow this link to retrieve it :: <br/> #{download_link}<br/> Please note that this link expires in 24 hours."
     @uakari.send_email({
       :message => {
         :subject => subject,
@@ -85,10 +85,10 @@ class UserMailer
     })
   end
 
-  def deliver_download_failure(user, campaign, job, exception)
+  def deliver_download_failure(user, campaign, account_id, exception)
     subject = I18n.t(:report_error_occured_subject)
     content = "<br/>#{I18n.t(:report_error_occured)}"
-    exception_content = "Campaign: #{campaign.name}  Account Id: #{campaign.account.id} Job : #{job.try(:inspect)}. Error details : <br/><br/> #{exception.backtrace.each{|line| "<br/>#{line}"}}"
+    exception_content = "Campaign: #{campaign.name}  Account Id: #{account.id}. Error details : <br/><br/> #{exception.backtrace.each{|line| "<br/>#{line}"}}"
     @uakari.send_email({ :message => { :subject => subject, :text => content, :html => content, :from_name => white_labeled_title(user.domain), :from_email => white_labeled_email(user.domain), :to_email => [user.email]} })
     @uakari.send_email({ :message => { :subject => subject, :text => exception_content, :html => exception_content, :from_name => white_labeled_title(user.domain), :from_email => 'email@impactdialing.com', :to_email => ['nikhil@activesphere.com','michael@impactdialing.com','brian@impactdialing.com']} })
   end

@@ -6,14 +6,16 @@ describe WebuiCallerSession do
     
     describe "caller moves to connected" do
       before(:each) do
+        @account = Factory(:account)
         @script = Factory(:script)
         @campaign =  Factory(:preview, script: @script)    
         @callers_campaign =  Factory(:preview, script: @script)    
-        @caller = Factory(:caller, campaign: @callers_campaign)
+        @caller = Factory(:caller, campaign: @callers_campaign, account: @account)
       end
 
       it "set state to caller connected" do
         caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
+        caller_session.should_receive(:funds_not_available?).and_return(false)
         caller_session.should_receive(:account_not_activated?).and_return(false)
         caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
         caller_session.should_receive(:time_period_exceeded?).and_return(false)
@@ -26,6 +28,7 @@ describe WebuiCallerSession do
 
       it "shouild render correct twiml" do
         caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
+        caller_session.should_receive(:funds_not_available?).and_return(false)        
         caller_session.should_receive(:account_not_activated?).and_return(false)
         caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
         caller_session.should_receive(:time_period_exceeded?).and_return(false)
@@ -33,7 +36,7 @@ describe WebuiCallerSession do
         caller_session.should_receive(:caller_reassigned_to_another_campaign?).and_return(false)   
         caller_session.should_receive(:publish_caller_conference_started)         
         caller_session.start_conf!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"https://3ngz.localtunnel.com:3000/caller/#{@caller.id}/flow?event=pause_conf&amp;session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"https://3ngz.localtunnel.com:3000/hold_call?version=2012-02-16+10%3A20%3A07+%2B0530\" waitMethod=\"GET\"></Conference></Dial></Response>")          
+        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"https://3ngz.localtunnel.com:3000/caller/#{@caller.id}/flow?event=pause_conf&amp;session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"></Conference></Dial></Response>")          
       end
 
     end
@@ -41,14 +44,16 @@ describe WebuiCallerSession do
     describe "caller reassigned " do
 
       before(:each) do
+        @account = Factory(:account)
         @script = Factory(:script)
         @campaign =  Factory(:preview, script: @script)    
         @callers_campaign =  Factory(:preview, script: @script)    
-        @caller = Factory(:caller, campaign: @callers_campaign)
+        @caller = Factory(:caller, campaign: @callers_campaign, account: @account)
       end
 
       it "set state to connected when campaign changes" do
         caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
+        caller_session.should_receive(:funds_not_available?).and_return(false)
         caller_session.should_receive(:account_not_activated?).and_return(false)
         caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
         caller_session.should_receive(:time_period_exceeded?).and_return(false)
@@ -62,6 +67,7 @@ describe WebuiCallerSession do
 
       it "shouild render correct twiml" do
         caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
+        caller_session.should_receive(:funds_not_available?).and_return(false)
         caller_session.should_receive(:account_not_activated?).and_return(false)
         caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
         caller_session.should_receive(:time_period_exceeded?).and_return(false)
@@ -69,7 +75,7 @@ describe WebuiCallerSession do
         caller_session.should_receive(:caller_reassigned_to_another_campaign?).and_return(true)  
         caller_session.should_receive(:publish_caller_conference_started)          
         caller_session.start_conf!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"https://3ngz.localtunnel.com:3000/caller/#{@caller.id}/flow?event=pause_conf&amp;session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"https://3ngz.localtunnel.com:3000/hold_call?version=2012-02-16+10%3A20%3A07+%2B0530\" waitMethod=\"GET\"></Conference></Dial></Response>")          
+        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"https://3ngz.localtunnel.com:3000/caller/#{@caller.id}/flow?event=pause_conf&amp;session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"></Conference></Dial></Response>")          
       end
 
     end
@@ -147,7 +153,7 @@ describe WebuiCallerSession do
         caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "connected", attempt_in_progress: @call_attempt)    
         caller_session.should_receive(:publish_caller_conference_started)
         caller_session.start_conf!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"https://3ngz.localtunnel.com:3000/caller/#{@caller.id}/flow?event=pause_conf&amp;session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"https://3ngz.localtunnel.com:3000/hold_call?version=2012-02-16+10%3A20%3A07+%2B0530\" waitMethod=\"GET\"></Conference></Dial></Response>")                      
+        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"https://3ngz.localtunnel.com:3000/caller/#{@caller.id}/flow?event=pause_conf&amp;session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"></Conference></Dial></Response>")                      
       end
     end
     
@@ -174,13 +180,15 @@ describe WebuiCallerSession do
     describe "time_period_exceeded" do
       
       before(:each) do
+        @account = Factory(:account)
         @script = Factory(:script)
         @campaign =  Factory(:preview, script: @script,:start_time => Time.new(2011, 1, 1, 9, 0, 0), :end_time => Time.new(2011, 1, 1, 21, 0, 0), :time_zone =>"Pacific Time (US & Canada)")    
-        @caller = Factory(:caller, campaign: @campaign)
+        @caller = Factory(:caller, campaign: @campaign, account: @account)
       end
 
       it "set state to time_period_exceeded" do
         caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "paused")
+        caller_session.should_receive(:funds_not_available?).and_return(false)
         caller_session.should_receive(:time_period_exceeded?).and_return(true)
         caller_session.start_conf!
         caller_session.state.should eq("time_period_exceeded")          
@@ -188,6 +196,7 @@ describe WebuiCallerSession do
 
       it "shouild render correct twiml" do
         caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "paused")
+        caller_session.should_receive(:funds_not_available?).and_return(false)        
         caller_session.should_receive(:time_period_exceeded?).and_return(true)
         caller_session.start_conf!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>You can only call this campaign between 9 AM and 9 PM. Please try back during those hours.</Say><Hangup/></Response>")          
@@ -204,6 +213,7 @@ describe WebuiCallerSession do
 
       it "set state to connected" do
         caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "paused")
+        caller_session.should_receive(:funds_not_available?).and_return(false)        
         caller_session.should_receive(:time_period_exceeded?).and_return(false)
         caller_session.should_receive(:publish_caller_conference_started)
         caller_session.start_conf!
@@ -212,10 +222,11 @@ describe WebuiCallerSession do
 
       it "shouild render correct twiml" do
         caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "paused")
+        caller_session.should_receive(:funds_not_available?).and_return(false)        
         caller_session.should_receive(:time_period_exceeded?).and_return(false)
         caller_session.should_receive(:publish_caller_conference_started)        
         caller_session.start_conf!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"https://3ngz.localtunnel.com:3000/caller/#{@caller.id}/flow?event=pause_conf&amp;session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"https://3ngz.localtunnel.com:3000/hold_call?version=2012-02-16+10%3A20%3A07+%2B0530\" waitMethod=\"GET\"></Conference></Dial></Response>")          
+        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"https://3ngz.localtunnel.com:3000/caller/#{@caller.id}/flow?event=pause_conf&amp;session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"></Conference></Dial></Response>")          
       end      
       
     end

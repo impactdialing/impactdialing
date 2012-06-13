@@ -43,7 +43,7 @@ describe ReportsController do
 
         Factory(:call_response, :call_attempt => voter1.call_attempts.last, :robo_recording => recording1, :recording_response => response1)
         Factory(:call_response, :call_attempt => voter1.call_attempts.last, :robo_recording => recording2, :recording_response => response4)
-
+        Resque.should_receive(:enqueue)
         post :download, :id => campaign.id,:voter_fields => ["Phone"], :custom_voter_fields => []
         assigns(:campaign).should == campaign
 

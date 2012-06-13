@@ -91,7 +91,7 @@ describe CallerSession do
       Twilio::Call.should_receive(:make).with(anything, voter.Phone, flow_call_url(call_attempt.call, :host => Settings.host, :port => Settings.port, event: 'incoming_call'), {"FallbackUrl"=>"blah", 'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"RestException" => {"Status" => "400"}}})
       caller_session.should_receive(:publish_calling_voter) 
       Moderator.should_receive(:update_dials_in_progress)
-      caller_session.should_receive(:redirect_webui_caller)
+      caller_session.should_receive(:redirect_caller)
       caller_session.dial(voter)
       call_attempt.status.should eq(CallAttempt::Status::FAILED)
       voter.status.should eq(CallAttempt::Status::FAILED)
@@ -144,7 +144,7 @@ describe CallerSession do
       session = Factory(:caller_session, :moderator => Factory(:moderator, :call_sid => "123"), :session_key => "gjgdfdkg232hl")
       session.join_conference(true, "123new", "monitorsession12").should == Twilio::Verb.new do |v|
         v.dial(:hangupOnStar => true) do
-          v.conference("gjgdfdkg232hl", :startConferenceOnEnter => false, :endConferenceOnExit => false, :beep => false, :waitUrl => "#{APP_URL}/callin/hold", :waitMethod =>"GET", :muted => true)
+          v.conference("gjgdfdkg232hl", :startConferenceOnEnter => false, :endConferenceOnExit => false, :beep => false, :waitUrl => "hold_music", :waitMethod =>"GET", :muted => true)
         end
       end.response
       session.moderator.call_sid.should == "123"
@@ -155,7 +155,7 @@ describe CallerSession do
       session = Factory(:caller_session, :session_key => "gjgdfdkg232hl")
       session.join_conference(true, "123", "monitorsession12").should == Twilio::Verb.new do |v|
         v.dial(:hangupOnStar => true) do
-          v.conference("gjgdfdkg232hl", :startConferenceOnEnter => false, :endConferenceOnExit => false, :beep => false, :waitUrl => "#{APP_URL}/callin/hold", :waitMethod =>"GET", :muted => true)
+          v.conference("gjgdfdkg232hl", :startConferenceOnEnter => false, :endConferenceOnExit => false, :beep => false, :waitUrl => "hold_music", :waitMethod =>"GET", :muted => true)
         end
       end.response
     end
@@ -237,7 +237,8 @@ describe CallerSession do
     describe "subscription limit exceeded" do
       
       before(:each) do
-        @caller = Factory(:caller)
+        @account = Factory(:account)
+        @caller = Factory(:caller, account: @account)
         @script = Factory(:script)
         @campaign =  Factory(:campaign, script: @script)    
       end
@@ -246,6 +247,7 @@ describe CallerSession do
         caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
         caller_session.should_receive(:account_not_activated?).and_return(false)      
         caller_session.should_receive(:subscription_limit_exceeded?).and_return(true)
+        caller_session.should_receive(:funds_not_available?).and_return(false)
         caller_session.start_conf!
         caller_session.state.should eq('subscription_limit')
       end
@@ -254,6 +256,7 @@ describe CallerSession do
         caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
         caller_session.should_receive(:account_not_activated?).and_return(false)      
         caller_session.should_receive(:subscription_limit_exceeded?).and_return(true)
+        caller_session.should_receive(:funds_not_available?).and_return(false)
         caller_session.start_conf!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>The maximum number of callers for this account has been reached. Wait for another caller to finish, or ask your administrator to upgrade your account.</Say><Hangup/></Response>")
       end
@@ -263,13 +266,15 @@ describe CallerSession do
     describe "Campaign time period exceeded" do
       
       before(:each) do
-        @caller = Factory(:caller)
+        @account = Factory(:account)
+        @caller = Factory(:caller, account: @account)
         @script = Factory(:script)
         @campaign =  Factory(:campaign, script: @script,:start_time => Time.new(2011, 1, 1, 9, 0, 0), :end_time => Time.new(2011, 1, 1, 21, 0, 0), :time_zone =>"Pacific Time (US & Canada)")    
       end
 
       it "should move caller session campaign_time_period_exceeded state" do
         caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
+        caller_session.should_receive(:funds_not_available?).and_return(false)
         caller_session.should_receive(:account_not_activated?).and_return(false)
         caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
         caller_session.should_receive(:time_period_exceeded?).and_return(true)
@@ -279,6 +284,7 @@ describe CallerSession do
 
       it "should render correct twiml" do
         caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
+        caller_session.should_receive(:funds_not_available?).and_return(false)
         caller_session.should_receive(:account_not_activated?).and_return(false)
         caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
         caller_session.should_receive(:time_period_exceeded?).and_return(true)
@@ -291,13 +297,15 @@ describe CallerSession do
     describe "Caller already on call" do
       
       before(:each) do
-        @caller = Factory(:caller)
+        @account = Factory(:account)
+        @caller = Factory(:caller, account: @account)        
         @script = Factory(:script)
         @campaign =  Factory(:campaign, script: @script)    
       end
 
       it "should move caller session caller_on_call state" do
         caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
+        caller_session.should_receive(:funds_not_available?).and_return(false)
         caller_session.should_receive(:account_not_activated?).and_return(false)
         caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
         caller_session.should_receive(:time_period_exceeded?).and_return(false)
@@ -308,6 +316,7 @@ describe CallerSession do
 
       it "should render correct twiml" do
         caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
+        caller_session.should_receive(:funds_not_available?).and_return(false)        
         caller_session.should_receive(:account_not_activated?).and_return(false)
         caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
         caller_session.should_receive(:time_period_exceeded?).and_return(false)

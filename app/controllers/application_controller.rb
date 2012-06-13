@@ -13,6 +13,7 @@ class ApplicationController < ActionController::Base
   def testing?
     Rails.env == 'test'
   end
+  
 
   def ssl?
     request.env['HTTPS'] == 'on' || request.env['HTTP_X_FORWARDED_PROTO'] == 'https'

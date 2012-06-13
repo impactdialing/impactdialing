@@ -1,16 +1,18 @@
-<table>
+<table class="nested-fields possible_response">
+  <%= f.hidden_field :id, {"class"=> "possible_response_identity"} %>
+  <%= f.hidden_field :possible_response_order, {"class"=> "possible_response_order"} %>
   <tr>
     <td width = 30%>
       <%= f.text_field :value %>
     </td>
     <td width = 30%>
-      <%= f.text_field :keypad, :value => 1, :class =>"keypad" %>
+      <%= f.text_field :keypad, :class =>"keypad" %>
     </td>
     <td width = 15%>
       <%= f.check_box :retry %>
     </td>
     <td width = 15%>
-      <%= link_to_remove_fields "", f %>
+      <%= link_to_remove_association "", f , {:class => "ico del", "data-removal-validation"=>"possible_response_delete"}%>
     </td>
   </tr>
 </table>

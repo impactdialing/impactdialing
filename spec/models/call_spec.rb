@@ -70,12 +70,6 @@ describe Call do
         call.call_attempt.connecttime.should_not be_nil
       end
 
-      it "should update  call attempt call_start time" do
-        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt)
-        @call_attempt.should_receive(:publish_voter_connected)
-        call.incoming_call!
-        call.call_attempt.call_start.should_not be_nil
-      end
 
       it "should assign caller_session  to call attempt" do
         call = Factory(:call, answered_by: "human", call_attempt: @call_attempt)
@@ -105,7 +99,7 @@ describe Call do
         call = Factory(:call, answered_by: "human", call_attempt: @call_attempt)
         @call_attempt.should_receive(:publish_voter_connected)
         call.incoming_call!  
-        call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"false\" action=\"https://3ngz.localtunnel.com/calls/#{call.id}/flow?event=disconnect\" record=\"false\"><Conference waitUrl=\"https://3ngz.localtunnel.com/hold_call\" waitMethod=\"GET\" beep=\"false\" endConferenceOnExit=\"true\" maxParticipants=\"2\"></Conference></Dial></Response>")      
+        call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"false\" action=\"https://3ngz.localtunnel.com/calls/#{call.id}/flow?event=disconnect\" record=\"false\"><Conference waitUrl=\"hold_music\" waitMethod=\"GET\" beep=\"false\" endConferenceOnExit=\"true\" maxParticipants=\"2\"></Conference></Dial></Response>")      
       end
     end
     

@@ -1,8 +1,5 @@
-<fieldset>
-  <legend>Text field</legend>
-  <nested_type type = 'notes'></nested_type>
+<fieldset class="nested-fields">
+  <legend class="text_field_label">Text field</legend>
   <%= f.text_field :note %>
-  <p class = "actions">
-    <%= link_to_remove_fields "Delete this text field", f  %>
-  </p>
+  <%= link_to_remove_association "Delete this text field", f , {:class => "action secondary note_delete"}%>
 </fieldset>

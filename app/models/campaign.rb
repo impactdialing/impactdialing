@@ -2,7 +2,7 @@ require Rails.root.join("lib/twilio_lib")
 
 class Campaign < ActiveRecord::Base
   include Deletable
-  # cache_records :store => :shared, :key => "cam", :request_cache => true
+
 
   has_many :caller_sessions
   has_many :voter_lists, :conditions => {:active => true}
@@ -22,7 +22,7 @@ class Campaign < ActiveRecord::Base
 
   delegate :questions_and_responses, :to => :script
 
-  scope :robo, lambda { where(:type => 'robo') }
+  scope :robo, lambda { where(:type => 'Robo') }
   scope :manual, :conditions => [ 'campaigns.type != "robo"' ]
   scope :for_account, lambda { |account| {:conditions => ["account_id = ?", account.id]} }
   scope :for_script, lambda { |script| {:conditions => ["script_id = ?", script.id]} }

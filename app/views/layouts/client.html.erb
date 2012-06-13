@@ -18,7 +18,7 @@
 <meta name="HandheldFriendly" content="True">
 <meta name="MobileOptimized" content="320">
 <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1">
-<%= javascript_include_tag :defaults %>
+<%= javascript_include_tag :jdefaults%>
 <%= unobtrusive_datepicker_includes.html_safe %>
 
 
@@ -61,11 +61,11 @@
 
 <!-- http://t.co/y1jPVnT -->
 <link rel="canonical" href="/">
+
 <%= stylesheet_link_tag "application" %>
 </head>
 
 <body class="admin clearfix">
-
 <header role="banner" class="clearfix">
 <h1 class="<%= domain %>"><a href="<% if client_controller?(@controllerName) %>/client<% else %>/caller<% end %>"><%= title %></a></h1>
 
@@ -139,7 +139,6 @@
 
 </footer>
 
-<%= javascript_include_tag "https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js" %>
 <%= yield :jquery_extension_javascripts %>
 <%= javascript_include_tag 'nested_form' %>
 <script src="/js/mylibs/jquery.fitvids.js"></script>

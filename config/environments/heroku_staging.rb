@@ -12,6 +12,7 @@ ImpactDialing::Application.configure do
   PUSHER_SECRET="b9a1cfc2c1ab4b64ad03"
   MONITOR_TWILIO_APP_SID="AP06c5b96cedaf433b9fe0e6d865aab104"
   TWILIO_ERROR = "http://status-impactdialing.heroku.com/twilio/error_staging"
+  HOLD_MUSIC_URL = "https://s3.amazonaws.com/hold_music/impactdialing_holdmusic_v1.mp3"
 
   # Settings specified here will take precedence over those in config/environment.rb
 
@@ -35,6 +36,7 @@ ImpactDialing::Application.configure do
       :login => "1383715"
     )
   end
+  
 
   # Use a different logger for distributed setups
   # config.logger = SyslogLogger.new

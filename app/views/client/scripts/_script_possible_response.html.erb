@@ -6,11 +6,14 @@
     <th width = 15%>Delete</th>
   </tr>
 </table>
-<p>
-  <%= f.fields_for :possible_responses do |builder| %>
-    <%= render "possible_response_fields", f: builder %>  
-  <%end%>
-  <%= link_to_add_fields "New Response", f, :possible_responses %>
-  <%= link_to_remove_fields "Delete this question", f %>
-</p>
+
+  <div class="possible_response_sortable">
+    <%= f.semantic_fields_for :possible_responses do |form, possible_response| %>
+      <%= render "possible_response_fields", f: form %>  
+    <%end%>
+  </div>
+  
+  <%= link_to_add_association "New Response", f, :possible_responses , {:class => "action secondary add_response", "data-association-insertion-node"=> "this", "data-association-insertion-method"=>"before", partial: 'possible_response_fields' } %>
+  
+  <%= link_to_remove_association "Delete this question", f , {:class => "action secondary delete_question", "data-removal-validation"=>"question_delete" }%>
 

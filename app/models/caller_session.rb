@@ -15,7 +15,7 @@ class CallerSession < ActiveRecord::Base
   scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
   scope :on_campaign, lambda{|campaign| where("campaign_id = #{campaign.id}") unless campaign.nil?}  
   scope :for_caller, lambda{|caller| where("caller_id = #{caller.id}") unless caller.nil?}  
-  scope :debit_not_processed, where(debited: "0").where('call_end is not null')
+  scope :debit_not_processed, where(debited: "0").where('endtime is not null')
   scope :campaigns_on_call, select("campaign_id").on_call.group("campaign_id")
   
   has_one :voter_in_progress, :class_name => 'Voter'
@@ -25,6 +25,7 @@ class CallerSession < ActiveRecord::Base
   
   delegate :subscription_allows_caller?, :to => :caller
   delegate :activated?, :to => :caller
+  delegate :funds_available?, :to => :caller
 
 
   def minutes_used
@@ -51,6 +52,7 @@ class CallerSession < ActiveRecord::Base
       
       state :initial do
         event :start_conf, :to => :account_not_activated, :if => :account_not_activated?
+        event :start_conf, :to => :account_has_no_funds, :if => :funds_not_available?
         event :start_conf, :to => :subscription_limit, :if => :subscription_limit_exceeded?
         event :start_conf, :to => :time_period_exceeded, :if => :time_period_exceeded?
         event :start_conf, :to => :caller_on_call,  :if => :is_on_call?
@@ -65,6 +67,14 @@ class CallerSession < ActiveRecord::Base
       state :subscription_limit do
         response do |xml_builder, the_call|
           xml_builder.Say("The maximum number of callers for this account has been reached. Wait for another caller to finish, or ask your administrator to upgrade your account.")
+          xml_builder.Hangup          
+        end
+        
+      end
+
+      state :account_has_no_funds do
+        response do |xml_builder, the_call|
+          xml_builder.Say("There are no funds available in the account.  Please visit the billing area of the website to add funds to your account.")
           xml_builder.Hangup          
         end
         
@@ -109,11 +119,25 @@ class CallerSession < ActiveRecord::Base
       end_session
       wrapup_attempt_in_progress
     rescue ActiveRecord::StaleObjectError => exception
-      reloaded_caller_session = CallerSession.find(self.id)
-      reloaded_caller_session.end_session
-      reloaded_caller_session.wrapup_attempt_in_progress
+      Resque.enqueue(PhantomCallerJob, self.sid)
     end      
   end
+  
+  def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)    
+    voters = Voter.find_all_by_caller_id_and_status(caller.id, CallAttempt::Status::READY)
+    voters.each {|voter| voter.update_attributes(status: 'not called')}    
+    EM.run {
+      t = TwilioLib.new(account, auth)    
+      deferrable = t.end_call("#{self.sid}")              
+      deferrable.callback {}
+      deferrable.errback { |error| }          
+    }             
+    end_caller_session
+    CallAttempt.wrapup_calls(caller_id)
+    Moderator.publish_event(campaign, "caller_disconnected",{:caller_session_id => id, :caller_id => caller.id, :campaign_id => campaign.id, :campaign_active => campaign.callers_log_in?,
+    :no_of_callers_logged_in => campaign.caller_sessions.on_call.length})
+  end  
+  
   
   def wrapup_attempt_in_progress
     attempt_in_progress.try(:update_attributes, {:wrapup_time => Time.now})
@@ -132,6 +156,10 @@ class CallerSession < ActiveRecord::Base
     !subscription_allows_caller?
   end
   
+  def funds_not_available?
+    !funds_available?
+  end
+  
   def time_period_exceeded?
     campaign.time_period_exceeded?
   end
@@ -144,7 +172,7 @@ class CallerSession < ActiveRecord::Base
     Twilio::Verb.new { |v| v.play "#{Settings.host}:#{Settings.port}/wav/hold.mp3"; v.redirect(:method => 'GET'); }.response
   end
   
-  def redirect_webui_caller
+  def redirect_caller
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
     Twilio::Call.redirect(sid, flow_caller_url(caller, :host => Settings.host, :port => Settings.port, session_id: id, event: "start_conf"))
   end
@@ -153,7 +181,7 @@ class CallerSession < ActiveRecord::Base
   def join_conference(mute_type, call_sid, monitor_session)
     response = Twilio::Verb.new do |v|
       v.dial(:hangupOnStar => true) do
-        v.conference(self.session_key, :startConferenceOnEnter => false, :endConferenceOnExit => false, :beep => false, :waitUrl => "#{APP_URL}/callin/hold", :waitMethod =>"GET", :muted => mute_type)
+        v.conference(self.session_key, :startConferenceOnEnter => false, :endConferenceOnExit => false, :beep => false, :waitUrl => HOLD_MUSIC_URL, :waitMethod =>"GET", :muted => mute_type)
       end
     end.response
     moderator = Moderator.find_by_session(monitor_session)
@@ -179,20 +207,6 @@ class CallerSession < ActiveRecord::Base
     Pusher[session_key].trigger(event, data.merge!(:dialer => self.campaign.type))
   end
   
-  def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)    
-    voters = Voter.find_all_by_caller_id_and_status(caller.id, CallAttempt::Status::READY)
-    voters.each {|voter| voter.update_attributes(status: 'not called')}    
-    EM.run {
-      t = TwilioLib.new(account, auth)    
-      deferrable = t.end_call("#{self.sid}")              
-      deferrable.callback {}
-      deferrable.errback { |error| }          
-    }             
-    end_caller_session
-    CallAttempt.wrapup_calls(caller_id)
-    Moderator.publish_event(campaign, "caller_disconnected",{:caller_session_id => id, :caller_id => caller.id, :campaign_id => campaign.id, :campaign_active => campaign.callers_log_in?,
-    :no_of_callers_logged_in => campaign.caller_sessions.on_call.length})
-  end  
   
   def dial(voter)
   return if voter.nil?
@@ -206,8 +220,27 @@ class CallerSession < ActiveRecord::Base
   attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])  
   end
   
+  def dial_em(voter)
+    return if voter.nil?
+    call_attempt = create_call_attempt(voter)    
+    twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)        
+    EM.run do
+      http = twilio_lib.make_call_em(campaign, voter, call_attempt)
+      http.callback { 
+        response = JSON.parse(http.response)  
+        if response["RestException"]
+          handle_failed_call(call_attempt, self)
+        else
+          puts "entered callback"
+          call_attempt.update_attributes(:sid => response["sid"])
+        end
+         }
+      http.errback {}            
+    end
+  end
+  
   def create_call_attempt(voter)
-    attempt = voter.call_attempts.create(:campaign => campaign, :dialer_mode => campaign.type, :status => CallAttempt::Status::RINGING, :caller_session => self, :caller => caller)
+    attempt = voter.call_attempts.create(:campaign => campaign, :dialer_mode => campaign.type, :status => CallAttempt::Status::RINGING, :caller_session => self, :caller => caller, call_start:  Time.now)
     update_attribute('attempt_in_progress', attempt)
     voter.update_attributes(:last_call_attempt => attempt, :last_call_attempt_time => Time.now, :caller_session => self, status: CallAttempt::Status::RINGING)
     Call.create(call_attempt: attempt, all_states: "")
@@ -227,7 +260,7 @@ class CallerSession < ActiveRecord::Base
     voter.update_attributes(status: CallAttempt::Status::FAILED)
     update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
     Moderator.update_dials_in_progress(campaign)
-    redirect_webui_caller
+    redirect_caller
   end
   
   
