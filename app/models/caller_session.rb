@@ -284,7 +284,7 @@ class CallerSession < ActiveRecord::Base
    
    def self.caller_time(caller, campaign, from, to)
      CallerSession.for_caller(caller).on_campaign(campaign).between(from, to).where("tCaller is NOT NULL").sum('ceil(TIMESTAMPDIFF(SECOND ,starttime,endtime)/60)').to_i
-   end
+   end   
    
   private
     
