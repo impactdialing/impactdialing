@@ -3,7 +3,6 @@ class CallerIdentity < ActiveRecord::Base
  
  def self.create_uniq_pin
    uniq_pin=0
-   
    while uniq_pin==0 do
      pin = rand.to_s[2..6]
      check = find_by_pin(pin) || Caller.find_by_pin(pin)

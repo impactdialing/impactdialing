@@ -23,6 +23,7 @@ class PhonesOnlyCallerSession < CallerSession
       
       state :ready_to_call do  
         after(:always)  {publish_moderator_conference_started}    
+        event :start_conf, :to => :account_has_no_funds, :if => :funds_not_available?
         event :start_conf, :to => :time_period_exceeded, :if => :time_period_exceeded?
         event :start_conf, :to => :reassigned_campaign, :if => :caller_reassigned_to_another_campaign?
         event :start_conf, :to => :choosing_voter_to_dial, :if => :preview?
@@ -89,11 +90,10 @@ class PhonesOnlyCallerSession < CallerSession
         before(:always) {start_conference; dial(voter_in_progress)}
         event :gather_response, :to => :read_next_question, :if => :call_answered?
         event :gather_response, :to => :wrapup_call
-
         
         response do |xml_builder, the_call|
           xml_builder.Dial(:hangupOnStar => true, :action => flow_caller_url(caller, event: "gather_response", host:  Settings.host, port: Settings.port, session_id:  id, question: voter_in_progress.question_not_answered)) do
-            xml_builder.Conference(session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
+            xml_builder.Conference(session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET')
           end          
         end
         
@@ -217,13 +217,7 @@ class PhonesOnlyCallerSession < CallerSession
   def predictive?
     campaign.type == Campaign::Type::PREDICTIVE
   end
-  
-
-  
-  def assign_voter_to_caller
-    voter ||= campaign.next_voter_in_dial_queue
-  end
-  
+    
   def start_conference    
     begin
       update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)

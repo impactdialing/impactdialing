@@ -1,143 +1,64 @@
-<% content_for :javascripts do %>
-  <%= javascript_include_tag "https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js" %>
-    <script typ ="text/javascript">
-      $(function() {
-        $('#script_questions_attributes_0_possible_responses_attributes_0_value').val('No response');
-      });
-    </script>
-<% end %>
-<h1><%= @script.new_record? ? "New script" : "Edit script" %></h1>
+<%= javascript_include_tag :cocoon %>
+<%= javascript_include_tag "client/scripts" %>
+
+<h1>New script</h1>
+
 <% if @script.errors.any? %>
   <div class = 'callout alert clearfix'>
     <%= error_messages_for :script %>
   </div>
 <% end %>
-<%= nested_form_for [:client, @script] do |f| %>
-    <%= f.hidden_field :robo %>
-      <p>
-        <label>Script name</label>
-        <%= f.text_field :name, {:class => "field"} %>
-      </p>
 
-      <fieldset>
-        <legend>Display above script</legend>
-        <ul class="clearfix">
-          <% @voter_fields.try(:each) do |field| %>
-            <li>
-              <input  type="checkbox" name="voter_field[]" value="<%= field %>" <% if @voter_field_values.try(:index, field) %>checked<% end %>>
-                <%= field %>
-              </input>
-            </li>
-          <% end %>
-        </ul>
-      </fieldset>
-
-      <fieldset>
-        <legend>Script</legend>
-        <%= f.text_area :script %>
-      </fieldset>
-      <fieldset>
-        <legend>Call results</legend>
-        <questions>
-          <% @script.questions.each_with_index do |question, index| %>
-          <%= f.fields_for :questions, question do |q| %>
-            <fieldset>
-              <legend>Question 1</legend>
-              <p>
-                <label>Question:</label>
-                <nested_type type = 'questions'></nested_type>
-                <%= q.text_field :text%>
-              </p>
-                   <table>
-                    <tr>
-                      <th width = 30%>Response</th>
-                      <th width = 30%>Phones-only keypad</th>
-                      <th width = 15%>Retry</th>
-                      <th width = 15%>Delete</th>
-                    </tr>
-                  </table>
-                  <%= q.fields_for :possible_responses do |r| %>
-                    <table>
-                      <tr>
-                        <td width = 30%>
-                          <%= r.text_field :value %>
-                        </td>
-                        <td width = 30%>
-                          <%= r.text_field :keypad, :value => 1, :class =>"keypad" %>
-                        </td>
-                        <td width = 15%>
-                          <%= r.check_box :retry %>
-                        </td>
-                        <td width = 15%>
-                          <%= r.link_to_remove " ", :class => "ico del", :type => "possible_responses"%>
-                        </td>
-                      </tr>
-                    </table>
-                  <% end %>
-                  <%= q.link_to_add "New response", :possible_responses, :class => "action secondary small_font", :type => "possible_responses"%>
-                  <%= q.link_to_remove "Delete this question", :class => "action secondary small_font", :type => "questions"%></p>
-              </fieldset>
-            <% end %>
-            <% end %>
-          </questions>
-          <notes>
-            <%= f.fields_for :notes do |n| %>
-              <fieldset>
-                <legend>Text Field</legend>
-                <nested_type type = 'notes'></nested_type>
-                <%= n.text_field :note %>
-                <p class = "actions">
-                  <%= n.link_to_remove " Delete this text field", :class => "action secondary", :type => "notes"  %>
-                </p>
-              </fieldset>
-            <% end %>
-          </notes>
-          <transfers <% unless @script.transfers.present? %>style="display:none"<% end %>>
-            <fieldset class="transfers_fields">
-              <legend>Transfer</legend>            
-              <table>
-                <tr>
-                  <th width = 25%>Label</th>
-                  <th width = 25%>Number</th>
-                  <th width = 25%>Type</th>
-                  <th width = 25%>Delete</th>
-                </tr>
-              </table>
-            
-            <%= f.fields_for :transfers do |t| %>
-                <nested_type type = 'transfers'></nested_type>
-                <table>
-                  <tr>
-                    <td width = 25%>
-                      <%= t.text_field :label %>
-                    </td>
-                    <td width = 25%>
-                      <%= t.text_field :phone_number %>
-                    </td>
-                    <td width = 25%>
-                      <%= t.select(:transfer_type,[['Warm','warm'],['Cold','cold']]) %>
-                    </td>
-                    
-                    <td width = 25%>
-                      <%= t.link_to_remove " ", :class => "ico del", :type => "transfers"%>
-                    </td>
-                                    
-                  </tr>
-                </table>
-
-            <% end %>
-            </fieldset>            
-          </transfers>
-        <p class = "actions">
-          <%= f.link_to_add "Add a question", :questions, :class => "action secondary", :type => "questions" %>
-          <%= f.link_to_add "Add a text field", :notes, :class => "action secondary", :type => "notes" %>
-          <%= f.link_to_add "Add a transfer", :transfers, :class => "action secondary", :type => "transfers" %>
-
-        </p>
-
-      </fieldset>
-    <div class= "buttons">
-      <button type="submit">Save</button>
-    </div>
+<%= semantic_form_for [:client, @script] do |form| %>
+  <%= render "script_name", f: form %>
+  <%= render "script_voter_fields", f: form, voter_fields: @voter_fields, voter_field_values: @voter_field_values %>  
+  <%= render "script_text", f: form %>
+  <%= render "script_call_results", f: form %>  
+  
+  
+  <div class= "buttons">
+    <button type="submit">Save</button>
+  </div>
 
 <% end %>
+<% content_for :javascripts do %>
+  <script type ="text/javascript">
+    $(document).ready(function() {
+      script = new Scripts();
+      
+      $("#script_questions").sortable({ cursor: 'crosshair' , axis: 'y', stop: function(event, ui) { 
+        script.display_question_numbers();
+        } 
+      });
+      $("#script_questions").disableSelection();
+      $(".possible_response_sortable").sortable({ cursor: 'crosshair' , containment: 'parent', axis: 'y' });
+      $(".possible_response_sortable").disableSelection();
+      
+      $('#script_submit').click(function() {
+        script.set_question_order();
+        script.set_possible_response_order();
+        return true;
+      });
+      
+      script.display_question_numbers();
+      script.display_text_field_numbers();          
+      script.set_question_order();
+      script.set_possible_response_order();
+      
+      $('#call_results').bind('insertion-callback',            
+        function() {
+          script.display_question_numbers();
+          script.display_text_field_numbers();                              
+          script.add_new_response_when_question_added();
+      });
+            
+      $('#script_questions').bind('after-removal-callback',            
+        function() { script.display_question_numbers(); });
+      
+      $('#script_notes').bind('after-removal-callback',            
+        function() {  script.display_text_field_numbers();});      
+    });
+    
+  </script>
+<% end %>
+

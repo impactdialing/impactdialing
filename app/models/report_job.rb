@@ -1,8 +1,32 @@
 class ReportJob 
   
-  def initialize(campaign, user, voter_fields, custom_fields, all_voters,lead_dial, from, to, callback_url, strategy="webui")
-    @campaign = campaign
-    @user = user
+  module AttemptStatus
+    ANSWERED = "Answered"
+    ABANDONED = "Abandoned"
+    FAILED = "Failed"
+    BUSY = "Busy"
+    NOANSWER = 'No answer'
+    ANSWERING_MACHINE = "Answering machine"
+    ANSWERING_MACHINE_MESSAGE = "Answering machine message delivered"
+    SCHEDULED = 'Scheduled for later'
+    NOT_DIALED = "Not Dialed"
+  end
+  
+  
+  
+  def self.map_status(status)
+    statuses = {CallAttempt::Status::SUCCESS => AttemptStatus::ANSWERED, Voter::Status::RETRY => AttemptStatus::ANSWERED, 
+      Voter::Status::NOTCALLED => AttemptStatus::NOT_DIALED, CallAttempt::Status::NOANSWER => AttemptStatus::NOANSWER, 
+      CallAttempt::Status::ABANDONED => AttemptStatus::ABANDONED, CallAttempt::Status::BUSY => AttemptStatus::BUSY,
+      CallAttempt::Status::FAILED => AttemptStatus::FAILED, CallAttempt::Status::HANGUP => AttemptStatus::ANSWERING_MACHINE,
+      CallAttempt::Status::SCHEDULED => AttemptStatus::SCHEDULED, CallAttempt::Status::VOICEMAIL => AttemptStatus::ANSWERING_MACHINE_MESSAGE}
+      statuses[status] || status
+  end
+  
+  
+  def initialize(campaign_id, user_id, voter_fields, custom_fields, all_voters, lead_dial, from, to, callback_url, strategy="webui")
+    @campaign = Campaign.find(campaign_id)
+    @user = User.find(user_id)
     @selected_voter_fields = voter_fields
     @selected_custom_voter_fields = custom_fields
     @download_all_voters = all_voters
@@ -40,8 +64,8 @@ class ReportJob
       end      
     end
     file.close    
-    expires_in_12_hours = (Time.now + 12.hours).to_i
-    AWS::S3::S3Object.store("#{@campaign_name}.csv", File.open(filename), "download_reports", :content_type => "application/binary", :access=>:private, :expires => expires_in_12_hours)
+    expires_in_24_hours = (Time.now + 24.hours).to_i
+    AWS::S3::S3Object.store("#{@campaign_name}.csv", File.open(filename), "download_reports", :content_type => "application/binary", :access=>:private, :expires => expires_in_24_hours)
   end
 
   def perform
@@ -119,18 +143,40 @@ end
 
 class CallerStrategy < CampaignStrategy
   def csv_header(fields, custom_fields, question_ids, note_ids)
-    questions = Question.select("id, text").where("id in (?)",question_ids).order('id').collect{|q| q.text}
-    notes = Note.select("id, note").where("id in (?)",note_ids).order('id').collect{|n| n.note}
-    [fields, custom_fields, "Caller", "Status", "Call start", "Call end", "Attempts", "Recording", questions, notes].flatten.compact
+    modified_questions = []
+    modified_notes = []
+    questions = Question.select("id, text").where("id in (?)",question_ids).order('id')
+    
+    question_ids.each_with_index do |question_id, index|
+      unless questions.collect{|x| x.id}.include?(question_id)
+        modified_questions << Question.new(text: "")
+      else
+        modified_questions << Question.new(text: questions.detect{|at| at.id == question_id}.text)
+      end
+    end
+    
+    notes = Note.select("id, note").where("id in (?)",note_ids).order('id')
+    
+    note_ids.each_with_index do |note_id, index|
+      unless notes.collect{|x| x.id}.include?(note_id)
+        modified_notes << Note.new(note: "")
+      else
+        modified_notes << Note.new(note: notes.detect{|at| at.id == note_id}.note)
+      end
+    end
+    
+    
+    [fields, custom_fields, "Caller", "Status", "Call start", "Call end", "Attempts", "Recording", modified_questions.collect{|m_q| m_q.text}, modified_notes.collect{|m_n| m_n.note}].flatten.compact
   end
   
   def call_attempt_details(call_attempt, voter, question_ids, note_ids)
     answers, notes = [], []
-    details = [call_attempt.try(:caller).try(:known_as), call_attempt.status, call_attempt.try(:call_start).try(:in_time_zone, @campaign.time_zone), call_attempt.try(:call_end).try(:in_time_zone, @campaign.time_zone), 1, call_attempt.try(:report_recording_url)].flatten
+    details = [call_attempt.try(:caller).try(:known_as), ReportJob.map_status(call_attempt.status), call_attempt.try(:call_start).try(:in_time_zone, @campaign.time_zone), call_attempt.try(:call_end).try(:in_time_zone, @campaign.time_zone), 1, call_attempt.try(:report_recording_url)].flatten
     answers = call_attempt.answers.for_questions(question_ids).order('question_id')
-    notes = call_attempt.note_responses.for_notes(note_ids).order('note_id')
+    note_responses = call_attempt.note_responses.for_notes(note_ids).order('note_id')
     answer_texts = PossibleResponse.select("question_id, value").where("id in (?)", answers.collect{|a| a.try(:possible_response).try(:id) } ).order('question_id')
     modified_answers = []
+    modified_notes = []
     
     question_ids.each_with_index do |question_id, index|
       unless answer_texts.collect{|x| x.question_id}.include?(question_id)
@@ -140,14 +186,22 @@ class CallerStrategy < CampaignStrategy
       end
     end
     
-    [details, modified_answers.collect{|at| at.value}, notes.collect{|n| n.try(:response)}].flatten    
+      note_ids.each_with_index do |note_id, index|
+        unless note_responses.collect{|x| x.note_id}.include?(note_id)
+          modified_notes << NoteResponse.new(response: "")
+        else
+          modified_notes << NoteResponse.new(response: note_responses.detect{|at| at.note_id == note_id}.response)
+        end
+      end
+    
+    [details, modified_answers.collect{|at| at.value}, modified_notes.collect{|n| n.response}].flatten    
   end
 
   def call_details(voter, question_ids, note_ids)
     answers, notes = [], []
     last_attempt = voter.call_attempts.last
     details = if last_attempt
-                [last_attempt.try(:caller).try(:known_as), voter.status, last_attempt.try(:call_start).try(:in_time_zone, @campaign.time_zone), last_attempt.try(:call_end).try(:in_time_zone, @campaign.time_zone), voter.call_attempts.size, last_attempt.try(:report_recording_url)].flatten
+                [last_attempt.try(:caller).try(:known_as), ReportJob.map_status(voter.status), last_attempt.try(:call_start).try(:in_time_zone, @campaign.time_zone), last_attempt.try(:call_end).try(:in_time_zone, @campaign.time_zone), voter.call_attempts.size, last_attempt.try(:report_recording_url)].flatten
               else
                 [nil, "Not Dialed","","","",""]
               end
@@ -155,6 +209,7 @@ class CallerStrategy < CampaignStrategy
       answers = last_attempt.answers.for_questions(question_ids).order('question_id')
       answer_texts = PossibleResponse.select("question_id, value").where("id in (?)", answers.collect{|a| a.try(:possible_response).try(:id) } ).order('question_id')
       modified_answers = []
+      modified_notes = []
       question_ids.each_with_index do |question_id, index|
         unless answer_texts.collect{|x| x.question_id}.include?(question_id)
           modified_answers << PossibleResponse.new(value: "")
@@ -162,12 +217,19 @@ class CallerStrategy < CampaignStrategy
           modified_answers << PossibleResponse.new(value: answer_texts.detect{|at| at.question_id == question_id}.value)
         end
       end
-      notes = last_attempt.note_responses.for_notes(note_ids).order('note_id')              
+      notes = last_attempt.note_responses.for_notes(note_ids).order('note_id')   
+      note_ids.each_with_index do |note_id, index|
+        unless note_responses.collect{|x| x.note_id}.include?(note_id)
+          modified_notes << NoteResponse.new(response: "")
+        else
+          modified_notes << NoteResponse.new(response: note_responses.detect{|at| at.note_id == note_id}.response)
+        end
+      end           
     else
       modified_answers = []
-      notes = []
+      modified_notes = []
     end
-    [details, modified_answers.collect{|at| at.value}, notes.collect{|n| n.try(:response)}].flatten
+    [details, modified_answers.collect{|at| at.value}, modified_notes.collect{|n| n.response}].flatten
   end
 end
 
@@ -201,8 +263,8 @@ class ReportWebUIStrategy
     
   def response(params)
     if @result == "success"
-      expires_in_12_hours = (Time.now + 12.hours).to_i
-      link = AWS::S3::S3Object.url_for("#{params[:campaign_name]}.csv", "download_reports", :expires => expires_in_12_hours)
+      expires_in_24_hours = (Time.now + 24.hours).to_i
+      link = AWS::S3::S3Object.url_for("#{params[:campaign_name]}.csv", "download_reports", :expires => expires_in_24_hours)
       DownloadedReport.create(link: link, user: @user, campaign_id: @campaign.id)
       @mailer.deliver_download(@user, link)
     else

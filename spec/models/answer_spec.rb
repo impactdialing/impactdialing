@@ -31,5 +31,15 @@ describe Answer do
     other_answer = Factory(:answer, :voter => voter_4, :campaign => Factory(:campaign), :possible_response => Factory(:possible_response), :question => Factory(:question, :script => Factory(:script)), :created_at => @now+1.day, :caller => caller_2)
     Answer.with_campaign_id(campaign.id).should == [answer_1, answer_2, answer_3, answer_4]
   end
+  
+  it "should return question ids for a campaign" do
+    campaign = Factory(:campaign)
+    script = Factory(:script)
+    question1 = Factory(:question, script: script)
+    question2 = Factory(:question, script: script)
+    answer1 = Factory(:answer, campaign: campaign, question: question1 , voter: Factory(:voter), possible_response: Factory(:possible_response))
+    answer2 = Factory(:answer, campaign: campaign, question: question2, voter: Factory(:voter), possible_response: Factory(:possible_response))
+    Answer.question_ids(campaign.id).should eq([question1.id, question2.id])
+  end
 
 end

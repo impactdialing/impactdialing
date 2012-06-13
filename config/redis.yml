@@ -1,0 +1,8 @@
+development:
+  localhost:6379
+  
+test:
+  localhost:6379
+    
+heroku_staging:
+  redis://redistogo:d71d12bad7803b45796a690bb9fe89d3@guppy.redistogo.com:9307

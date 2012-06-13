@@ -6,9 +6,9 @@ class Predictive < Campaign
     Rails.logger.info "Campaign: #{self.id} - num_to_call #{num_to_call}"    
     return if  num_to_call <= 0
     EM.synchrony do
-      concurrency = 4
+      concurrency = 15
       voters_to_dial = choose_voters_to_dial(num_to_call)
-      EM::Synchrony::Iterator.new(voters_to_dial, concurrency).map do |voter, iter|
+      EM::Synchrony::Iterator.new(voters_to_dial, concurrency).each do |voter, iter|
         voter.dial_predictive_em(iter)
       end
       EventMachine.stop
@@ -72,7 +72,7 @@ class Predictive < Campaign
     simulated_values.nil? ? 0 : simulated_values.best_wrapup_time.nil? ? 0 : simulated_values.best_wrapup_time
   end
   
-  def caller_conference_started_event
+  def caller_conference_started_event(current_voter_id)
     {event: 'caller_connected_dialer',data: {}}
   end
   

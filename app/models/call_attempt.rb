@@ -41,13 +41,13 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def duration
-    return nil unless call_start
-    ((call_end || Time.now) - call_start).to_i
+    return nil unless connecttime
+    ((call_end || Time.now) - connecttime).to_i
   end
     
 
   def duration_wrapped_up
-    ((wrapup_time || Time.now) - (self.call_start || Time.now)).to_i
+    ((wrapup_time || Time.now) - (self.connecttime || Time.now)).to_i
   end
   
   def time_to_wrapup
@@ -87,7 +87,7 @@ class CallAttempt < ActiveRecord::Base
   
   def connect_call
     session = voter.caller_session
-    update_attributes(status: CallAttempt::Status::INPROGRESS, connecttime: Time.now, caller: session.caller, call_start: Time.now, caller_session: session)
+    update_attributes(status: CallAttempt::Status::INPROGRESS, connecttime: Time.now, caller: session.caller, caller_session: session)
   end
       
   def abandon_call
@@ -226,8 +226,8 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def debit
-    return false if self.call_start.nil? || self.call_end.nil?
-    call_time = ((self.call_end - self.call_start)/60).ceil
+    return false if self.connecttime.nil? || self.call_end.nil?
+    call_time = ((self.call_end - self.connecttime)/60).ceil
     Payment.debit(call_time, self)
   end
   

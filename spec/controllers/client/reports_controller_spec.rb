@@ -25,6 +25,7 @@ describe Client::ReportsController do
     describe 'call attempts' do
       before(:each) do
         campaign = Factory(:predictive, :account => user.account)
+        Factory(:caller_session, campaign: campaign)
         Factory(:call_attempt, connecttime: Time.now, call_end: Time.now + (10.minutes + 2.seconds), :tDuration => 10.minutes + 2.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
         Factory(:call_attempt, connecttime: Time.now, call_end: Time.now + (1.minutes), :tDuration => 1.minutes, :status => CallAttempt::Status::VOICEMAIL, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
         Factory(:call_attempt, connecttime: Time.now, call_end: Time.now + (1.minutes + 3.seconds), :tDuration => 1.minutes, :status => CallAttempt::Status::VOICEMAIL, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
@@ -35,6 +36,7 @@ describe Client::ReportsController do
         Factory(:transfer_attempt, connecttime: Time.now, call_end: Time.now + (1.minutes + 20.seconds), :status => CallAttempt::Status::SUCCESS, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
         get :usage, :id => campaign.id
       end
+      
       it "billable minutes" do
         CallAttempt.lead_time(nil, @campaign, from_time, time_now).should == 113
       end
@@ -51,7 +53,6 @@ describe Client::ReportsController do
         assigns(:campaign).transfer_time(from_time, time_now).should == 13
       end
 
-
     end
 
     describe 'utilization' do
@@ -64,7 +65,6 @@ describe Client::ReportsController do
         Factory(:call_attempt, connecttime: Time.now, call_end: Time.now + (1.minutes), :tDuration => 1.minutes, :status => CallAttempt::Status::VOICEMAIL, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
         Factory(:call_attempt, connecttime: Time.now, call_end: Time.now + (101.minutes + 57.seconds), wrapup_time: Time.now + (102.minutes + 57.seconds), :tDuration => 101.minutes + 57.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
         Factory(:call_attempt, connecttime: Time.now, call_end: Time.now + (1.minutes), :tDuration => 1.minutes, :status => CallAttempt::Status::ABANDONED, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
-
         get :usage, :id => @campaign.id
       end
 
@@ -92,7 +92,7 @@ describe Client::ReportsController do
 
     it "pulls up report downloads page" do
       campaign = Factory(:preview, script: Factory(:script))
-      Delayed::Job.should_receive(:enqueue)
+      Resque.should_receive(:enqueue)
       get :download, :campaign_id => campaign.id, format: 'csv'
       response.should redirect_to 'http://test.host/client/reports'
     end

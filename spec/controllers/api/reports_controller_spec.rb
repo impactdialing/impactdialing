@@ -61,7 +61,7 @@ describe Api::ReportsController do
   end
   
   it "should not validate date if download all voters" do
-    Delayed::Job.should_receive(:enqueue)
+    Resque.should_receive(:enqueue)
     post :create, api_key: '1mp@ctd1@l1ng',campaign_id: @campaign.id, account_id: @campaign.account.id.to_s, email: @current_user.email, download_all_voters: "true"
     result = JSON.parse(response.body)
     response.code.should eq('200')
@@ -81,12 +81,9 @@ describe Api::ReportsController do
     response.code.should eq('400')
     JSON.parse(response.body).should eq({"status"=>"error", "message"=>"invalid date Use mm/dd/yyyy format"})    
   end
-  
-  
-  
-  
+    
   it "should return 200 if report scheduled for download" do
-    Delayed::Job.should_receive(:enqueue)
+    Resque.should_receive(:enqueue)
     post :create, api_key: '1mp@ctd1@l1ng',campaign_id: @campaign.id, account_id: @campaign.account.id.to_s, email: @current_user.email, from_date: "10/31/2011", to_date: "11/30/2011"
     result = JSON.parse(response.body)
     response.code.should eq('200')

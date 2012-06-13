@@ -17,8 +17,8 @@ end
 
 class CallAttempt < ActiveRecord::Base
   def duration
-    return nil unless call_start
-    ((wrapup_time || Time.now) - self.call_start).to_i
+    return nil unless connecttime
+    ((wrapup_time || Time.now) - self.connecttime).to_i
   end
 
   def ringing_duration

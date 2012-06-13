@@ -12,10 +12,9 @@ class TransferAttempt < ActiveRecord::Base
   
   
   def conference
-    update_attributes(call_start: Time.now)
     Twilio::TwiML::Response.new do |r|
       r.Dial :hangupOnStar => 'false', :action => disconnect_transfer_path(self, :host => Settings.host), :record=>caller_session.campaign.account.record_calls do |d|
-        d.Conference session_key, :waitUrl => hold_call_url(:host => Settings.host), :waitMethod => 'GET', :beep => false, :endConferenceOnExit => false
+        d.Conference session_key, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET', :beep => false, :endConferenceOnExit => false
       end
     end.text
   end

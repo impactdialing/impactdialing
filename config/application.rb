@@ -25,7 +25,8 @@ module ImpactDialing
     # -- all .rb files in that directory are automatically loaded.
 
     # Add additional load paths for your own custom dirs
-    # config.load_paths += %W( #{Rails.root.to_s}/extras )
+    config.autoload_paths += %W(#{config.root}/jobs)
+    # config.load_paths += %W( #{Rails.root.to_s}/jobs )
 
     # Specify gems that this application depends on and have them installed with rake gems:install
     # config.gem "bj"
@@ -51,7 +52,7 @@ module ImpactDialing
     # config.i18n.load_path += Dir[Rails.root.join('my', 'locales', '*.{rb,yml}')]
     config.i18n.default_locale = :en
     config.i18n.fallbacks = [:en]
-    config.action_view.javascript_expansions[:jdefaults] = %w(jquery jquery_ujs application)
+    config.action_view.javascript_expansions[:jdefaults] = %w(jquery jquery-ui jquery_ujs application)
     config.active_record.observers = :voter_observer
     GC::Profiler.enable
 

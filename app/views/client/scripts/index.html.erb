@@ -1,7 +1,6 @@
 <%= javascript_include_tag "application" %>
-
-<%= javascript_include_tag "https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js" %>
 <%= csrf_meta_tag%>
+
 <h1>Scripts</h1>
 <% if @scripts.length==0 %>
     <div class="form">
@@ -13,7 +12,7 @@
         <tr>
           <th>Name</th>
           <th>Date added</th>
-          <th width="55" class="ac"></th>
+          <th width="55"></th>
         </tr>
         <% @scripts.each do |s| %>
             <tr class="<%= cycle("odd", "even") %>">
@@ -32,6 +31,7 @@
     <p><%= page_entries_info @scripts %> <%= will_paginate @scripts %></p>
 
 <% end %>
+
 <p><strong>Phones-only users: </strong>The "Phones-only keypad" values refer to the buttons that your callers press on their phones to enter results after each call. Callers can press * to hang up the current call, then enter their results on their keypad and press * again to submit each result.</p>
 <p class="actions"><%= link_to 'Add new script', new_client_script_path, :class => 'action primary' %></p>
 <p class="actions"><%= link_to 'View deleted scripts', client_deleted_scripts_path, :class => 'action secondary' %></p>

@@ -11,4 +11,8 @@ class Answer < ActiveRecord::Base
   scope :within, lambda { |from, to| where(:created_at => from..to) }
   scope :with_campaign_id, lambda { |campaign_id| where(:campaign_id => campaign_id) }
   
+  def self.question_ids(cam_id)
+    Answer.all(:select=>"distinct question_id", :conditions=>"campaign_id = #{cam_id}", :order => "question_id").collect{|a| a.question_id}
+  end
+  
 end

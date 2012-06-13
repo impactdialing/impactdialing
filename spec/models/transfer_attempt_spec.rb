@@ -9,7 +9,6 @@ describe TransferAttempt do
       transfer = Factory(:transfer, phone_number: "1234567890")
       transfer_attempt = Factory(:transfer_attempt, caller_session: caller_session, call_attempt: call_attempt)
       transfer_attempt.conference.should_not be_nil
-      transfer_attempt.call_start.should_not be_nil
     end
   end
   

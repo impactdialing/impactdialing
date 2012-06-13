@@ -18,20 +18,20 @@ describe CallAttempt do
 
   it "rounds up the duration to the nearest minute" do
     now = Time.now
-    call_attempt = Factory(:call_attempt, :call_start => Time.now, :call_end => (Time.now + 150.seconds))
+    call_attempt = Factory(:call_attempt, call_start:  Time.now, connecttime:  Time.now, call_end:  (Time.now + 150.seconds))
     Time.stub(:now).and_return(now + 150.seconds)
     call_attempt.duration_rounded_up.should == 3
   end
 
   it "rounds up the duration up to now if the call is still running" do
     now = Time.now
-    call_attempt = Factory(:call_attempt, :call_start => now, :call_end => nil)
+    call_attempt = Factory(:call_attempt, call_start:  now, connecttime:  Time.now, call_end:  nil)
     Time.stub(:now).and_return(now + 1.minute + 30.seconds)
     call_attempt.duration_rounded_up.should == 2
   end
 
   it "reports 0 minutes if the call hasn't even started" do
-    call_attempt = Factory(:call_attempt, :call_start => nil, :call_end => nil)
+    call_attempt = Factory(:call_attempt, call_start: nil, connecttime:  Time.now, call_end:  nil)
     call_attempt.duration_rounded_up.should == 0
   end
 
@@ -119,13 +119,13 @@ describe CallAttempt do
 
   describe "total call length" do
     it "should include the wrap up time if the call has been wrapped up" do
-      call_attempt = Factory(:call_attempt, :call_start => Time.now - 3.minute, :wrapup_time => Time.now)
+      call_attempt = Factory(:call_attempt, call_start:  Time.now - 3.minute, connecttime:  Time.now - 3.minute, wrapup_time:  Time.now)
       total_time = (call_attempt.wrapup_time - call_attempt.call_start).to_i
       call_attempt.duration_wrapped_up.should eq(total_time)
     end
 
     it "should return the duration from start to now if call has not been wrapped up " do
-      call_attempt = Factory(:call_attempt, :call_start => Time.now - 3.minute)
+      call_attempt = Factory(:call_attempt, call_start: Time.now - 3.minute, connecttime:  Time.now - 3.minute)
       total_time = (Time.now - call_attempt.call_start).to_i
       call_attempt.duration_wrapped_up.should eq(total_time)
     end
