@@ -2,7 +2,7 @@ require Rails.root.join("jobs/report_download_job")
 module Client
   class ReportsController < ClientController
     include ApplicationHelper::TimeUtils
-    before_filter :load_campaign, :except => [:index, :usage, :account_campaigns_usage]
+    before_filter :load_campaign, :except => [:index, :usage, :account_campaigns_usage, :account_callers_usage]
 
 
     def load_campaign
@@ -26,20 +26,19 @@ module Client
     def account_campaigns_usage
       @account = Account.find(params[:id])
       @campaigns = @account.campaigns
-       begin
-          from_date = Time.strptime("#{params[:from_date]} #{time_zone.formatted_offset}", "%m/%d/%Y %:z") if params[:from_date]
-          to_date = Time.strptime("#{params[:to_date]} #{time_zone.formatted_offset}", "%m/%d/%Y %:z") if params[:to_date]
-        rescue Exception => e
-          flash_message(:error, I18n.t(:invalid_date_format))
-          redirect_to :back
-          return
-        end
-      time_zone = ActiveSupport::TimeZone.new("UTC")
-      @from_date = (from_date || @account.try(:created_at)).in_time_zone(time_zone).beginning_of_day      
-      @to_date = (to_date || Time.now).in_time_zone(time_zone).end_of_day
+      set_date_range_account
       account_usage = AccountUsage.new(@account, @from_date, @to_date)
       @billiable_total = account_usage.billable_usage
     end
+    
+    def account_callers_usage
+      @account = Account.find(params[:id])
+      @callers = @account.callers
+      set_date_range_account
+      account_usage = AccountUsage.new(@account, @from_date, @to_date)
+      @billiable_total = account_usage.callers_billable_usage
+    end
+    
         
     
     
@@ -85,6 +84,20 @@ module Client
     end
 
     private
+    
+  def set_date_range_account
+    begin
+      from_date = Time.strptime("#{params[:from_date]} #{time_zone.formatted_offset}", "%m/%d/%Y %:z") if params[:from_date]
+      to_date = Time.strptime("#{params[:to_date]} #{time_zone.formatted_offset}", "%m/%d/%Y %:z") if params[:to_date]
+    rescue Exception => e
+      flash_message(:error, I18n.t(:invalid_date_format))
+      redirect_to :back
+      return
+    end
+    time_zone = ActiveSupport::TimeZone.new("UTC")
+    @from_date = (from_date || @account.try(:created_at)).in_time_zone(time_zone).beginning_of_day      
+    @to_date = (to_date || Time.now).in_time_zone(time_zone).end_of_day
+  end
   
     def set_date_range
       time_zone = ActiveSupport::TimeZone.new(@campaign.time_zone || "UTC")

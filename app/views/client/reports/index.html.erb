@@ -1,28 +1,6 @@
 <h1>Reports</h1>
-<% if @account.campaigns.length==0 %>
-    <p>You haven't created any campaigns yet.</p>
-<% else %>
-    <table>
-      <tr>
-        <th>Account</th>
-        <th></th>
-        <th></th>
-      </tr>
-      <tr>
-        <td>All Campaigns</td>
-        <td><a href="<%= account_campaigns_usage_client_reports_path(:id => @account.id) %>">Usage</a></td>
-        <td></td>                
-      </tr>
-      <tr>
-        <td>All Callers</td>
-        <td><a href="<%= account_campaigns_usage_client_reports_path(:id => @account.id) %>">Usage</a></td>
-        <td></td>        
-      </tr>
-    </table>
-<% end %>
-
+<%= render :partial => 'account_reports' %>
 <br/>
-
 <%= render :partial => 'campaign_reports' %>
 <br/>
 <%= render :partial => 'caller_reports' %>
