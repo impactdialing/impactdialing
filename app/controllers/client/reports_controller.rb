@@ -25,24 +25,12 @@ module Client
     
     def account_campaigns_usage
       @account = Account.find(params[:id])
+      @campaigns = @account.campaigns
       time_zone = ActiveSupport::TimeZone.new("UTC")
       @from_date = (@account.try(:created_at)).in_time_zone(time_zone).beginning_of_day      
       @to_date = (Time.now).in_time_zone(time_zone).end_of_day
-
-      @campaigns = @account.campaigns
-      campaign_ids = @campaigns.collect{|x| x.id}
-      @caller_times = CallerSession.where("campaign_id in (?)",campaign_ids).between(@from_date, @to_date).where("tCaller is NOT NULL").group("campaign_id").sum('ceil(TIMESTAMPDIFF(SECOND ,starttime,endtime)/60)')      
-      @lead_times =   CallAttempt.where("campaign_id in (?)",campaign_ids).between(@from_date, @to_date).without_status([CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED]).group("campaign_id").sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)')
-      @transfer_times = TransferAttempt.where("campaign_id in (?)",campaign_ids).between(@from_date, @to_date).group("campaign_id").sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)')
-      @voice_mail_times = CallAttempt.where("campaign_id in (?)",campaign_ids).between(@from_date, @to_date).with_status([CallAttempt::Status::VOICEMAIL]).group('campaign_id').sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)')
-      @abandoned_times = CallAttempt.where("campaign_id in (?)",campaign_ids).between(@from_date, @to_date).with_status([CallAttempt::Status::ABANDONED]).group('campaign_id').sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)')
-      
-      @total_times = {}      
-      campaign_ids.each do |campaign_id|
-        @total_times[campaign_id] = sanitize(@caller_times[campaign_id]).to_i + sanitize(@lead_times[campaign_id]).to_i + sanitize(@transfer_times[campaign_id]).to_i +
-        sanitize(@voice_mail_times[campaign_id]).to_i + sanitize(@abandoned_times[campaign_id]).to_i
-      end
-      
+      account_usage = AccountUsage.new(@account, @from_date, @to_date)
+      @billiable_total = account_usage.billable_usage
     end
         
     

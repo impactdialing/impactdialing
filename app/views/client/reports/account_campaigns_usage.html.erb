@@ -8,7 +8,7 @@
     <% @campaigns.each do |campaign| %>
       <tr>
         <td><a href="<%= usage_client_reports_path(:id => campaign.id) %>"><%= campaign.name %></a></td>
-        <td><%= @total_times[campaign.id] %></td>
+        <td><%= @billiable_total[campaign.id] %></td>
         <td></td>
       </tr>
     <%end%>
