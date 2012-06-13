@@ -26,9 +26,17 @@ module Client
     def account_campaigns_usage
       @account = Account.find(params[:id])
       @campaigns = @account.campaigns
+       begin
+          from_date = Time.strptime("#{params[:from_date]} #{time_zone.formatted_offset}", "%m/%d/%Y %:z") if params[:from_date]
+          to_date = Time.strptime("#{params[:to_date]} #{time_zone.formatted_offset}", "%m/%d/%Y %:z") if params[:to_date]
+        rescue Exception => e
+          flash_message(:error, I18n.t(:invalid_date_format))
+          redirect_to :back
+          return
+        end
       time_zone = ActiveSupport::TimeZone.new("UTC")
-      @from_date = (@account.try(:created_at)).in_time_zone(time_zone).beginning_of_day      
-      @to_date = (Time.now).in_time_zone(time_zone).end_of_day
+      @from_date = (from_date || @account.try(:created_at)).in_time_zone(time_zone).beginning_of_day      
+      @to_date = (to_date || Time.now).in_time_zone(time_zone).end_of_day
       account_usage = AccountUsage.new(@account, @from_date, @to_date)
       @billiable_total = account_usage.billable_usage
       @total_minutes = account_usage.total_minutes
