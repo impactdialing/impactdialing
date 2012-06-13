@@ -12,6 +12,12 @@
         <td></td>
       </tr>
     <%end%>
+    <tr>
+      <th>Total</th>
+      <th><%= @billiable_total.values.inject(0){|sum,x| sum+x} %></th>
+      <th>Total Minutes</th>
+    </tr>
+    
     
     
   </table>
