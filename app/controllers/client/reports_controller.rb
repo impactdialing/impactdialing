@@ -31,6 +31,7 @@ module Client
       @to_date = (Time.now).in_time_zone(time_zone).end_of_day
       account_usage = AccountUsage.new(@account, @from_date, @to_date)
       @billiable_total = account_usage.billable_usage
+      @total_minutes = account_usage.total_minutes
     end
         
     

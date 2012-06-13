@@ -9,13 +9,13 @@
       <tr>
         <td><a href="<%= usage_client_reports_path(:id => campaign.id) %>"><%= campaign.name %></a></td>
         <td><%= @billiable_total[campaign.id] %></td>
-        <td></td>
+        <td><%= @total_minutes[campaign.id] %></td>
       </tr>
     <%end%>
     <tr>
-      <th>Total</th>
-      <th><%= @billiable_total.values.inject(0){|sum,x| sum+x} %></th>
-      <th>Total Minutes</th>
+      <td>Total</td>
+      <td><%= @billiable_total.values.inject(0){|sum,x| sum+x} %></td>
+      <td><%= @total_minutes.values.inject(0){|sum,x| sum+x} %></td>
     </tr>
     
     
