@@ -15,12 +15,6 @@ class AccountUsage
     calculate_total_billable_times(caller_times, lead_times, transfer_times)
   end
   
-  def total_minutes
-    total_usage = {}
-    time_logged_in = CallerSession.where("campaign_id in (?)",@campaign_ids).between(@from_date, @to_date).group('campaign_id').sum('TIMESTAMPDIFF(SECOND ,starttime,endtime)')    
-    @campaign_ids.each {|campaign_id| total_usage[campaign_id] = sanitize(total_usage[campaign_id]).to_i}
-    total_usage
-  end
   
   def calculate_total_billable_times(caller_times, lead_times, transfer_times)
     total_times = {}      
@@ -32,10 +26,6 @@ class AccountUsage
   
   def sanitize(count)
     count.nil? ? 0 : count
-  end
-  
-  def round_for_utilization(seconds)
-    (seconds.to_f/60).ceil.to_s
   end
   
   
