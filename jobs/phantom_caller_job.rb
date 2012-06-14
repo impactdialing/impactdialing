@@ -8,7 +8,7 @@ class PhantomCallerJob
   @queue = :background_worker_job
   
    def self.perform(caller_session_id)
-     caller_session = CallerSession.fin(caller_session_id)
+     caller_session = CallerSession.find(caller_session_id)
      caller_session.end_running_call
    end
 end
