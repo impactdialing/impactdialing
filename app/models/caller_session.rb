@@ -44,7 +44,12 @@ class CallerSession < ActiveRecord::Base
   end
   
   def process(event)
-    send(event)
+    begin
+      send(event)
+    rescue ActiveRecord::StaleObjectError => exception
+      reloaded_caller_session = CallerSession.find(self.id)
+      reloaded_caller_session.send(event)
+    end
   end
   
   
