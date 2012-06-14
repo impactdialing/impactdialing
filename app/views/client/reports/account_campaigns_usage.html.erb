@@ -6,7 +6,7 @@
     </tr>
     <% @campaigns.each do |campaign| %>
       <tr>
-        <td><a href="<%= usage_client_reports_path(:id => campaign.id) %>"><%= campaign.name %></a></td>
+        <td><%= campaign.name %></td>
         <td><%= @billiable_total[campaign.id] %></td>
       </tr>
     <%end%>

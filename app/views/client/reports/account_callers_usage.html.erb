@@ -6,7 +6,7 @@
     </tr>
     <% @callers.each do |caller| %>
       <tr>
-        <td><a href="<%= usage_client_caller_path(caller) %>"><%= caller.email %></a></td>
+        <td><%= caller.email %></td>
         <td><%= @billiable_total[caller.id] %></td>
       </tr>
     <%end%>
