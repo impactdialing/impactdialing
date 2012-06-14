@@ -46,7 +46,7 @@ class Voter < ActiveRecord::Base
   scope :answered, where('result_date is not null')
   scope :answered_within, lambda { |from, to| where(:result_date => from.beginning_of_day..(to.end_of_day)) }
   scope :answered_within_timespan, lambda { |from, to| where(:result_date => from..to)}
-  scope :last_call_attempt_within, lambda { |from, to| where(:last_call_attempt_time => (from.utc..to.utc)) }
+  scope :last_call_attempt_within, lambda { |from, to| where(:last_call_attempt_time => (from.to_time.utc..to.to_time.utc)) }
   scope :call_attempts_within, lambda {|from, to| where('call_attempts.created_at' => (from..to)).includes('call_attempts')}
   scope :priority_voters, enabled.where(:priority => "1", :status => Voter::Status::NOTCALLED)
   
