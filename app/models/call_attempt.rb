@@ -20,7 +20,7 @@ class CallAttempt < ActiveRecord::Base
   scope :for_caller, lambda { |caller| {:conditions => ["caller_id = ?", caller.id]}  unless caller.nil?}
   
   scope :for_status, lambda { |status| {:conditions => ["call_attempts.status = ?", status]} }
-  scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
+  scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date.utc..to_date.utc}} }
   scope :without_status, lambda { |statuses| {:conditions => ['status not in (?)', statuses]} }
   scope :with_status, lambda { |statuses| {:conditions => ['status in (?)', statuses]} }
   scope :results_not_processed, lambda { where(:voter_response_processed => "0", :status => Status::SUCCESS).where('wrapup_time is not null') }
