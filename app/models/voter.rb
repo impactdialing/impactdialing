@@ -129,9 +129,11 @@ class Voter < ActiveRecord::Base
   
   def dial_predictive_em(iter)
     call_attempt = new_call_attempt(self.campaign.type)
-    twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)        
+    twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)  
+    puts "#{call_attempt.id} - before call"                
     http = twilio_lib.make_call(campaign, self, call_attempt)
     http.callback { 
+      puts "#{call_attempt.id} - after call"      
       response = JSON.parse(http.response)  
       if response["RestException"]
         handle_failed_call(call_attempt, self)
