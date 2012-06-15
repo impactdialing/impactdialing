@@ -12,7 +12,7 @@ Scripts.prototype.display_question_numbers = function(){
 
 Scripts.prototype.set_question_order = function(){
   var question_order = 1;    
-  $.each($('.question_order'), function(element){
+  $.each($('.question_order'), function(){
       $(this).val(question_order++);
   });
 
@@ -53,21 +53,21 @@ Scripts.prototype.display_text_field_numbers = function(){
 
 Scripts.prototype.add_new_response_when_question_added = function(){
   $.each($('.question'), function(){
-    if ($(this).children('.possible_response').length == 0) {
+    if ($(this).find('.possible_response').length == 0) {
       $(this).children('.add_response').trigger('click')
     }      
   });    
 }
 
 function question_delete(question_node){
-if($('#script_questions').children('.nested-fields').length == 1){
+if(($('#script_questions').children('.nested-fields').length - $('fieldset.question[deleted="true"]').length) == 1){
       alert("You must have at least one question");
       return false;
     }
  else {
 	if( $($(question_node).parent('.question').children('.identity')[0]).attr('answered') == "true"){
-		alert("You cannot delete this question as it has already been answered.");
-		return false;		
+      var confirm_delete = confirm("This question has already been answered. Are you sure you want to delete it? You will lose all of its data.");
+ 	  return confirm_delete
 	}
 }
   return true;   
@@ -92,8 +92,6 @@ function possible_response_answered(question_ids){
 }
 
 
-
-
 function questions_answered(){
   $.ajax({
     url : "/client/scripts/questions_answered",
@@ -113,15 +111,16 @@ function questions_answered(){
 }
 
 function possible_response_delete(response_node){
-  var question = $(response_node).parents('.question');
-  if($(question).children('.possible_response').length == 1) {
+	
+  question = $(response_node).parents('.question')[0];
+  if(( $(question).find('table.possible_response').length  - $(question).find('table.possible_response[deleted="true"]').length ) == 1) {
     alert("You must have at least one response.");
     return false;
   }
   else{
     if( $($($(response_node).parents('.possible_response')[0]).children('.possible_response_identity')[0]).attr('answered') == "true"){
-	  alert("You cannot delete this response as it already has an answer recorded.");
-	  return false;		
+	  var confirm_delete = confirm("This response has already been chosen. Are you sure you want to delete it? You will lose all of its data.");
+	  return confirm_delete
 	}
   }    	
   return true;

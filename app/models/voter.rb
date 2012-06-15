@@ -46,7 +46,7 @@ class Voter < ActiveRecord::Base
   scope :answered, where('result_date is not null')
   scope :answered_within, lambda { |from, to| where(:result_date => from.beginning_of_day..(to.end_of_day)) }
   scope :answered_within_timespan, lambda { |from, to| where(:result_date => from..to)}
-  scope :last_call_attempt_within, lambda { |from, to| where(:last_call_attempt_time => (from..to)) }
+  scope :last_call_attempt_within, lambda { |from, to| where(:last_call_attempt_time => (from.to_time.utc..to.to_time.utc)) }
   scope :call_attempts_within, lambda {|from, to| where('call_attempts.created_at' => (from..to)).includes('call_attempts')}
   scope :priority_voters, enabled.where(:priority => "1", :status => Voter::Status::NOTCALLED)
   
@@ -129,14 +129,15 @@ class Voter < ActiveRecord::Base
   
   def dial_predictive_em(iter)
     call_attempt = new_call_attempt(self.campaign.type)
-    twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)        
+    twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)  
+    Rails.logger.info "#{call_attempt.id} - before call"        
     http = twilio_lib.make_call(campaign, self, call_attempt)
     http.callback { 
+      Rails.logger.info "#{call_attempt.id} - after call"    
       response = JSON.parse(http.response)  
       if response["RestException"]
         handle_failed_call(call_attempt, self)
       else
-        puts "entered callback"
         call_attempt.update_attributes(:sid => response["sid"])
       end
       iter.return(http)      
