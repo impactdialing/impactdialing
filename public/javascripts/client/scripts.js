@@ -66,8 +66,8 @@ if(($('#script_questions').children('.nested-fields').length - $('fieldset.quest
     }
  else {
 	if( $($(question_node).parent('.question').children('.identity')[0]).attr('answered') == "true"){
-		alert("You cannot delete this question as it has already been answered.");
-		return false;		
+      var confirm_delete = confirm("This question has already been answered. Are you sure you want to delete it? You will lose all of its data.");
+ 	  return confirm_delete
 	}
 }
   return true;   
@@ -119,8 +119,8 @@ function possible_response_delete(response_node){
   }
   else{
     if( $($($(response_node).parents('.possible_response')[0]).children('.possible_response_identity')[0]).attr('answered') == "true"){
-	  alert("You cannot delete this response as it already has an answer recorded.");
-	  return false;		
+	  var confirm_delete = confirm("This response has already been chosen. Are you sure you want to delete it? You will lose all of its data.");
+	  return confirm_delete
 	}
   }    	
   return true;
