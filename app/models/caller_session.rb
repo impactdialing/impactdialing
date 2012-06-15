@@ -236,7 +236,6 @@ class CallerSession < ActiveRecord::Base
         if response["RestException"]
           handle_failed_call(call_attempt, self)
         else
-          puts "entered callback"
           call_attempt.update_attributes(:sid => response["sid"])
         end
          }
