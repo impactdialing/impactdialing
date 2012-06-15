@@ -12,7 +12,7 @@ Scripts.prototype.display_question_numbers = function(){
 
 Scripts.prototype.set_question_order = function(){
   var question_order = 1;    
-  $.each($('.question_order'), function(element){
+  $.each($('.question_order'), function(){
       $(this).val(question_order++);
   });
 
@@ -53,7 +53,7 @@ Scripts.prototype.display_text_field_numbers = function(){
 
 Scripts.prototype.add_new_response_when_question_added = function(){
   $.each($('.question'), function(){
-    if ($(this).children('.possible_response').length == 0) {
+    if ($(this).find('.possible_response').length == 0) {
       $(this).children('.add_response').trigger('click')
     }      
   });    
