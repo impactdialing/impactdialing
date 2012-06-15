@@ -124,7 +124,7 @@ class CallerSession < ActiveRecord::Base
       end_session
       wrapup_attempt_in_progress
     rescue ActiveRecord::StaleObjectError => exception
-      Resque.enqueue(PhantomCallerJob, self.sid)
+      Resque.enqueue(PhantomCallerJob, self.id)
     end      
   end
   
