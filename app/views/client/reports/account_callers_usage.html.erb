@@ -1,0 +1,25 @@
+<div class="content clearfix">
+  <table>
+    <tr>
+      <th>Caller</th>
+      <th>Total Billable Minutes</th>
+    </tr>
+    <% @callers.each do |caller| %>
+      <tr>
+        <td><%= caller.email %></td>
+        <td><%= @billiable_total[caller.id] %></td>
+      </tr>
+    <%end%>
+    <tr>
+      <td>Total</td>
+      <td><%= @billiable_total.values.inject(0){|sum,x| sum+x} %></td>
+    </tr>
+  </table>
+	
+</div>
+
+<h3>Date range:</h3>
+<% form_tag(usage_client_reports_url(:id => params[:id]), :method => :get) do %>
+  <input type="hidden" name="id" value="<%= params[:id] %>" />
+  <%= render :partial => 'shared/date_picker' %>
+<% end %>

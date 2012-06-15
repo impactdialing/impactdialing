@@ -142,6 +142,7 @@ ImpactDialing::Application.routes.draw do
       end
       member { get :reassign_to_campaign }
     end
+    
     resources :campaigns, :only => [] do
       resources :reports do
         collection do
@@ -157,6 +158,8 @@ ImpactDialing::Application.routes.draw do
         get :usage
         get :answer
         get :dials
+        get :account_campaigns_usage
+        get :account_callers_usage
       end
     end
     get :update_report_real

@@ -44,7 +44,12 @@ class CallerSession < ActiveRecord::Base
   end
   
   def process(event)
-    send(event)
+    begin
+      send(event)
+    rescue ActiveRecord::StaleObjectError => exception
+      reloaded_caller_session = CallerSession.find(self.id)
+      reloaded_caller_session.send(event)
+    end
   end
   
   
@@ -231,7 +236,6 @@ class CallerSession < ActiveRecord::Base
         if response["RestException"]
           handle_failed_call(call_attempt, self)
         else
-          puts "entered callback"
           call_attempt.update_attributes(:sid => response["sid"])
         end
          }
@@ -284,7 +288,7 @@ class CallerSession < ActiveRecord::Base
    
    def self.caller_time(caller, campaign, from, to)
      CallerSession.for_caller(caller).on_campaign(campaign).between(from, to).where("tCaller is NOT NULL").sum('ceil(TIMESTAMPDIFF(SECOND ,starttime,endtime)/60)').to_i
-   end
+   end   
    
   private
     

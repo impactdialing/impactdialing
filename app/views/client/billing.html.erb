@@ -20,6 +20,11 @@
 	<% end %>
 <% end %>
 
+<p>
+  <a href="<%= account_campaigns_usage_client_reports_path(:id => @account.id) %>">View usage by campaign</a>
+  <br>
+  <a href="<%= account_callers_usage_client_reports_path(:id => @account.id) %>">View usage by caller</a>
+</p>
 
 
 <% content_for :jquery_extension_javascripts do %>

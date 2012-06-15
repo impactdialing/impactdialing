@@ -19,8 +19,8 @@ describe Client::ReportsController do
   end
 
   describe 'usage report' do
-    let!(:from_time) { 5.minutes.ago }
-    let!(:time_now) { Time.now }
+    let!(:from_time) { 5.minutes.ago.to_s }
+    let!(:time_now) { Time.now.to_s }
 
     describe 'call attempts' do
       before(:each) do
