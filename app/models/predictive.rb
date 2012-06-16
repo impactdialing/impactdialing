@@ -5,14 +5,15 @@ class Predictive < Campaign
     num_to_call = number_of_voters_to_dial
     Rails.logger.info "Campaign: #{self.id} - num_to_call #{num_to_call}"    
     return if  num_to_call <= 0
-    EM.synchrony do
-      concurrency = 8
-      voters_to_dial = choose_voters_to_dial(num_to_call)
-      EM::Synchrony::Iterator.new(voters_to_dial, concurrency).map do |voter, iter|
-        voter.dial_predictive_em(iter)
-      end
-      EventMachine.stop
-    end
+    Sidekiq::Client.enqueue(DialerJob, self.id, num_to_call)
+    # EM.synchrony do
+    #   concurrency = 8
+    #   voters_to_dial = choose_voters_to_dial(num_to_call)
+    #   EM::Synchrony::Iterator.new(voters_to_dial, concurrency).map do |voter, iter|
+    #     voter.dial_predictive_em(iter)
+    #   end
+    #   EventMachine.stop
+    # end
   end
   
   def number_of_voters_to_dial
