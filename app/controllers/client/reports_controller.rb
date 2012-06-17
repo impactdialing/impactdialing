@@ -71,7 +71,6 @@ module Client
 
     def download
       set_date_range
-      # Delayed::Job.enqueue ReportJob.new(@campaign, @user, params[:voter_fields], params[:custom_voter_fields], params[:download_all_voters],params[:lead_dial], @from_date, @to_date, "", "webui")
       Resque.enqueue(ReportDownloadJob, @campaign.id, @user.id, params[:voter_fields], params[:custom_voter_fields], params[:download_all_voters],params[:lead_dial], @from_date, @to_date, "", "webui")
       flash_message(:notice, I18n.t(:client_report_processing))
       redirect_to client_reports_url

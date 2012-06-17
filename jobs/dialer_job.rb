@@ -1,3 +1,7 @@
+require 'em-http-request'
+require "em-synchrony"
+require "em-synchrony/em-http"
+
 class DialerJob 
   include Sidekiq::Worker
   sidekiq_options :queue => :dialer_worker
