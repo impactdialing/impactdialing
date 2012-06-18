@@ -6,3 +6,9 @@ process_answered_attempts:
   description: "This job processes answers and stores them in a relational schema"
 
 
+debit_amount_from_accounts:
+  cron: "*/5 * * * *"
+  class: DebiterJob
+  queue: background_worker_job
+  args: 
+  description: "This job debits from user account"
