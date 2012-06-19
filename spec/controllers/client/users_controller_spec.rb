@@ -34,9 +34,7 @@ describe Client::UsersController do
 
   it "invites a new user to the current user's account" do
     user = Factory(:user).tap{|u| login_as u}
-    mailer = mock(UserMailer)
-    UserMailer.stub(:new).and_return(mailer)
-    mailer.should_receive(:deliver_invitation).with(anything, user)
+    Resque.should_receive(:enqueue)
     lambda {
       post :invite, :email => 'foo@bar.com', user: {role: "admin"}
     }.should change(user.account.users.reload, :count).by(1)
