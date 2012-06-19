@@ -34,7 +34,7 @@ module Client
         random_password = rand(Time.now.to_i)
         new_user = account.users.create!(:email => params[:email], :new_password => random_password.to_s, role: params[:user][:role])
         new_user.create_reset_code!
-        UserMailer.new.deliver_invitation(new_user, @user)
+        Resque.enqueue(DeliverInvitationEmailJob, new_user.id, current_user.id)
         flash_message(:notice, "#{params[:email]} has been invited.")
       end
       redirect_to :back
