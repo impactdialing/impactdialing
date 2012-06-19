@@ -116,7 +116,7 @@ class User < ActiveRecord::Base
   def send_welcome_email
     mailer = UserMailer.new
     return false if Rails.env !="heroku"
-    Resque.enqueue(WelcomeUserJob, self.id)
+    Resque.enqueue(WelcomeEmailJob, self.id)
   end
 
 
