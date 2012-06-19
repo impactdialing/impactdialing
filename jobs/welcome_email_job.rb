@@ -4,7 +4,7 @@ class WelcomeEmailJob
   @queue = :worker_job
   
   
-  def perform(user_id)
+  def self.perform(user_id)
     user = User.find(user_id)
     user_mailer = UserMailer.new
     user_mailer.welcome_email(user)
