@@ -132,9 +132,7 @@ class Voter < ActiveRecord::Base
     twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)  
     Rails.logger.info "#{call_attempt.id} - before call"        
     http = twilio_lib.make_call(campaign, self, call_attempt)
-    pusher_http = Moderator.update_dials_in_progress_async(campaign)
-    pusher_http.callback{}
-    pusher_http.errback{}
+    Moderator.update_dials_in_progress_async(campaign)
     http.callback { 
       Rails.logger.info "#{call_attempt.id} - after call"    
       response = JSON.parse(http.response)  
