@@ -132,7 +132,6 @@ class Voter < ActiveRecord::Base
     twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)  
     Rails.logger.info "#{call_attempt.id} - before call"        
     http = twilio_lib.make_call(campaign, self, call_attempt)
-    Moderator.update_dials_in_progress_async(campaign)
     http.callback { 
       Rails.logger.info "#{call_attempt.id} - after call"    
       response = JSON.parse(http.response)  
@@ -149,7 +148,6 @@ class Voter < ActiveRecord::Base
   def handle_failed_call(attempt, voter)
     attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
     voter.update_attributes(status: CallAttempt::Status::FAILED)
-    Moderator.update_dials_in_progress_async(campaign)
   end
   
   
@@ -164,7 +162,6 @@ class Voter < ActiveRecord::Base
     if response["TwilioResponse"]["RestException"]
       call_attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
       update_attributes(status: CallAttempt::Status::FAILED)
-      Moderator.update_dials_in_progress_async(campaign)
       Rails.logger.info "[dialer] Exception when attempted to call #{self.Phone} for campaign id:#{self.campaign_id}  Response: #{response["TwilioResponse"]["RestException"].inspect}"
       return
     end
@@ -279,7 +276,6 @@ class Voter < ActiveRecord::Base
     call_attempt = self.call_attempts.create(campaign:  self.campaign, dialer_mode:  mode, status:  CallAttempt::Status::RINGING, call_start:  Time.now)
     update_attributes(:last_call_attempt => call_attempt, :last_call_attempt_time => Time.now, :status => CallAttempt::Status::RINGING)    
     Call.create(call_attempt: call_attempt, all_states: "")
-    Moderator.update_dials_in_progress_async(campaign)
     call_attempt
   end
   
