@@ -26,9 +26,11 @@ class Moderator < ActiveRecord::Base
   
   def self.update_dials_in_progress_async(campaign)
     campaign.account.moderators.last_hour.active.each do|moderator|
-     pusher_http = Pusher[moderator.session].trigger_async('update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
-     pusher_http.callback{}
-     pusher_http.errback{}     
+    EM.run {  
+       pusher_http = Pusher[moderator.session].trigger_async('update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
+       pusher_http.callback{}
+       pusher_http.errback{}     
+      }
     end 
   end
   
