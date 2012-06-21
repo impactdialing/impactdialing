@@ -94,8 +94,25 @@ describe Predictive do
        campaign = Factory(:predictive, :account => account)
        voter = Factory(:voter, :campaign => campaign, :status => CallAttempt::Status::SUCCESS)
        Factory(:call_attempt, :voter => voter, :status => CallAttempt::Status::SUCCESS)
-       campaign.choose_voters_to_dial(20).should_not include(voter.id)
+       campaign.choose_voters_to_dial(20).should_not include(voter)
      end     
+     
+     it "does not dial voter who has been just dialed recycle rate" do
+      account = Factory(:account, :activated => true)
+      campaign = Factory(:predictive, :account => account, recycle_rate: 3)
+      voter = Factory(:voter, :campaign => campaign, :status => CallAttempt::Status::BUSY, last_call_attempt_time: Time.now - 1.hour)
+      Factory(:call_attempt, :voter => voter, :status => CallAttempt::Status::BUSY)
+      campaign.choose_voters_to_dial(20).should_not include(voter)
+     end
+     
+     it "dials voter who has been dialed passed recycle rate" do
+      account = Factory(:account, :activated => true)
+      campaign = Factory(:predictive, :account => account, recycle_rate: 3)
+      voter = Factory(:voter, :campaign => campaign, :status => CallAttempt::Status::BUSY, last_call_attempt_time: Time.now - 4.hours)
+      Factory(:call_attempt, :voter => voter, :status => CallAttempt::Status::BUSY)
+      campaign.choose_voters_to_dial(20).should include(voter)
+     end
+     
   end
   
   describe "best dials simulated" do
