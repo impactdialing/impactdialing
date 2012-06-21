@@ -19,7 +19,7 @@ Scripts.prototype.set_question_order = function(){
 }
 
 Scripts.prototype.set_possible_response_order = function(){
-  var responses = $('.possible_response_sortable')
+  responses = $('.possible_response_sortable')
   $.each(responses, function(){
 	var possible_response_order = 1;    
 	var possible_responses = $(this).find('.possible_response_order');

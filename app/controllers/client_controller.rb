@@ -38,8 +38,7 @@ class ClientController < ApplicationController
         flash_now(:error, "We could not find an account with that email address")
       else
         user.create_reset_code!
-        mailer = UserMailer.new
-        mailer.reset_password(user)
+        Resque.enqueue(ResetPasswordEmailJob, user.id)
         flash_message(:notice, "We emailed your password to you. Please check your spam folder in case it accidentally ends up there.")
         redirect_to :action=>"login"
       end
