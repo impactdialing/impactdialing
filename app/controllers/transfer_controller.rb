@@ -67,8 +67,8 @@ class TransferController < ApplicationController
     caller_session = CallerSession.find(params[:caller_session])
     caller = Caller.find(caller_session.caller_id)
     response = Twilio::Verb.new do |v|
-      v.dial(:hangupOnStar => true, action: flow_caller_url(caller, session_id:  id, event: "pause_conf", host: Settings.host, port:  Settings.port)) do
-        v.conference(params[:session_key], :startConferenceOnEnter => true, :endConferenceOnExit => false, :beep => false, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
+      v.dial(:hangupOnStar => true, action: flow_caller_url(caller, session_id:  caller_session.id, event: "pause_conf", host: Settings.host, port:  Settings.port)) do
+        v.conference(params[:session_key], :startConferenceOnEnter => true, :endConferenceOnExit => false, :beep => false, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET')
       end    
     end.response
     render xml: response
