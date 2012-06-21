@@ -141,10 +141,10 @@ class PhonesOnlyCallerSession < CallerSession
       
       
       state :voter_response do
+        event :next_question, :to => :wrapup_call, :to => :skip_all_questions?
         event :next_question, :to => :read_next_question, :if => :more_questions_to_be_answered? 
         event :next_question, :to => :wrapup_call
         before(:always) {
-          puts digit
           question = Question.find_by_id(question_id);          
           current_voter.answer(question, digit, self) if current_voter && question
           }
@@ -165,6 +165,10 @@ class PhonesOnlyCallerSession < CallerSession
       end
       
       
+  end
+  
+  def skip_all_questions?
+    digit == "999"
   end
   
   def wrapup_call_attempt
