@@ -126,7 +126,7 @@ class PhonesOnlyCallerSession < CallerSession
       state :read_next_question do
         after(:always) {publish_moderator_gathering_response}
         event :submit_response, :to => :disconnected, :if => :disconnected?
-        event :next_question, :to => :wrapup_call, :if => :skip_all_questions?
+        event :submit_response, :to => :wrapup_call, :if => :skip_all_questions?
         event :submit_response, :to => :voter_response
         
         response do |xml_builder, the_call|
