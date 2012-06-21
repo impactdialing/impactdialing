@@ -64,6 +64,7 @@ class TransferController < ApplicationController
   end
   
   def caller
+    
     caller_session = CallerSession.find(params[:caller_session])
     caller = Caller.find(caller_session.caller_id)
     response = Twilio::Verb.new do |v|
