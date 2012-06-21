@@ -25,11 +25,11 @@ module HerokuResqueAutoScale
   end
 
   def after_perform_scale_down(*args)
-    Scaler.workers(0) if Scaler.job_count.zero?
+    Scaler.workers(1) if Scaler.job_count.zero?
   end
 
   def after_enqueue_scale_up(*args)
-    workers_to_scale = Scaler.working_job_count + Scaler.pending_job_count - Scaler.workers_count + 1
+    workers_to_scale = Scaler.working_job_count + Scaler.pending_job_count - Scaler.workers_count 
     if workers_to_scale > 0
       Scaler.workers(workers_to_scale)
     end

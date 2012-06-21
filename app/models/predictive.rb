@@ -11,8 +11,7 @@ class Predictive < Campaign
       EM::Synchrony::Iterator.new(voters_to_dial, concurrency).map do |voter, iter|
         voter.dial_predictive_em(iter)
         Moderator.update_dials_in_progress_sync(self)
-      end
-      
+      end      
       EventMachine.stop
     end
   end
