@@ -47,9 +47,9 @@ class TransferController < ApplicationController
   def dial
     transfer = Transfer.find(params[:transfer][:id])
     caller_session = CallerSession.find(params[:caller_session])    
-    call_attempt = CallAttempt.find(params[:call_attempt])
+    call = Call.find(params[:call])
     voter = Voter.find(params[:voter])
-    transfer.dial(caller_session, call_attempt, voter, transfer.transfer_type)    
+    transfer.dial(caller_session, call.call_attempt, voter, transfer.transfer_type)    
     render json: {type: transfer.transfer_type}
   end
   
