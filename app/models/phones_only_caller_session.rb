@@ -144,6 +144,7 @@ class PhonesOnlyCallerSession < CallerSession
         event :next_question, :to => :read_next_question, :if => :more_questions_to_be_answered? 
         event :next_question, :to => :wrapup_call
         before(:always) {
+          puts digit
           question = Question.find_by_id(question_id);          
           current_voter.answer(question, digit, self) if current_voter && question
           }
