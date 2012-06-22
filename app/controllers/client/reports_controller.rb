@@ -97,8 +97,8 @@ module Client
       return
     end
     time_zone = ActiveSupport::TimeZone.new("UTC")
-    @from_date = (from_date || @account.try(:created_at)).in_time_zone(time_zone).beginning_of_day      
-    @to_date = (to_date || Time.now).in_time_zone(time_zone).end_of_day
+    @from_date = (from_date || @account.try(:created_at)).in_time_zone(time_zone).beginning_of_day.to_s
+    @to_date = (to_date || Time.now).in_time_zone(time_zone).end_of_day.to_s
   end
   
     def set_date_range
@@ -111,8 +111,8 @@ module Client
         redirect_to :back
         return
       end      
-      @from_date = (from_date || @campaign.call_attempts.first.try(:created_at) || Time.now).in_time_zone(time_zone).beginning_of_day      
-      @to_date = (to_date || @campaign.call_attempts.last.try(:created_at) || Time.now).in_time_zone(time_zone).end_of_day
+      @from_date = (from_date || @campaign.call_attempts.first.try(:created_at) || Time.now).in_time_zone(time_zone).beginning_of_day.to_s      
+      @to_date = (to_date || @campaign.call_attempts.last.try(:created_at) || Time.now).in_time_zone(time_zone).end_of_day.to_s
     end
     
     def sanitize(count)
