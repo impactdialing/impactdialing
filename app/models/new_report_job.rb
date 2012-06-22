@@ -28,8 +28,8 @@ class NewReportJob
      @campaign_strategy = report_strategy(csv)
      @campaign_strategy.construct_csv      
     end
-    save_report
-    notify_success 
+    # save_report
+    # notify_success 
    end
    
    def notify_success
