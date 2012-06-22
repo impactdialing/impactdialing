@@ -41,8 +41,6 @@ class CampaignReportStrategy
   end
   
   def construct_csv
-    puts "dddddddddd"
-    puts @download_all_voters
     @csv << csv_header    
     self.send(@download_all_voters)
     @csv
