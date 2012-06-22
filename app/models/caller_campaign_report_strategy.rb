@@ -36,7 +36,9 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
   
   def download_for_date_range_lead
     @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).order('created_at').find_in_batches(:batch_size => 100) do |voters|
-      voters.each {|voter| @csv << csv_for(voter)}
+      voters.each do |voter|
+         @csv << csv_for(voter)
+      end
     end
   end
   
