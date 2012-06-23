@@ -103,8 +103,8 @@ describe Client::ReportsController do
       Time.stub(:now => Time.utc(2012, 2, 13, 0, 0, 0))
       get :download_report, :campaign_id => campaign.id
       response.should be_ok
-      assigns(:from_date).to_i.should == time_zone.local(2012, 2, 12, 0).to_i
-      assigns(:to_date).to_i.should == time_zone.local(2012, 2, 12, 23, 59, 59).to_i
+      assigns(:from_date).should == "2012-02-12 00:00:00 -0800"
+      assigns(:to_date).should == "2012-02-12 23:59:59 -0800"
     end
 
   end

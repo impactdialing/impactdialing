@@ -1,6 +1,7 @@
 require Rails.root.join("jobs/report_download_job")
 module Api
   class ReportsController < ApiController
+    include TimeZoneHelper
     
     def validate_date_range(from_date, to_date, download_all_voters)
       unless to_boolean(download_all_voters)
@@ -28,26 +29,9 @@ module Api
       return unless validate_params
       @campaign = Campaign.find(params[:campaign_id])
       user = User.find_by_email(params[:email])
-      set_date_range
-      # Delayed::Job.enqueue ReportJob.new(@campaign, user, params[:voter_fields], params[:custom_voter_fields], to_boolean(params[:download_all_voters]),params[:lead_dial], @from_date, @to_date, params[:callback_url], "api")      
+      @from_date, @to_date = set_date_range(@campaign, params[:from_date], params[:to_date])
       Resque.enqueue(ReportDownloadJob, @campaign.id, user.id, params[:voter_fields], params[:custom_voter_fields], to_boolean(params[:download_all_voters]),params[:lead_dial], @from_date, @to_date, params[:callback_url], "api")
       render_json_response({status: 'ok', code: '200' , message: "Response will be sent to the callback url once the report is ready for download."})
-    end
-    
-    def set_date_range
-      time_zone = ActiveSupport::TimeZone.new(@campaign.time_zone || "UTC")
-      begin
-        from_date = Time.strptime("#{params[:from_date]} #{time_zone.formatted_offset}", "%m/%d/%Y %:z") if params[:from_date]
-        to_date = Time.strptime("#{params[:to_date]} #{time_zone.formatted_offset}", "%m/%d/%Y %:z") if params[:to_date]
-      rescue Exception => e
-        flash_message(:error, I18n.t(:invalid_date_format))
-        redirect_to :back
-        return
-      end      
-      @from_date = (from_date || @campaign.call_attempts.first.try(:created_at) || Time.now).in_time_zone(time_zone).beginning_of_day
-      @to_date = (to_date || @campaign.call_attempts.last.try(:created_at) || Time.now).in_time_zone(time_zone).end_of_day
-    end
-    
-    
+    end        
   end
 end  
