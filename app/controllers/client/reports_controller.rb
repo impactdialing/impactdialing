@@ -18,7 +18,7 @@ module Client
 
     
     def dials
-      set_date_range
+      set_date_range(@campaign, params[:from_date], params[:to_date])
       @show_summary = true if params[:from_date].blank? || params[:to_date].blank?
       @dials_report = DialReport.new
       @dials_report.compute_campaign_report(@campaign, @from_date, @to_date)
