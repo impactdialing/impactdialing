@@ -19,7 +19,6 @@ class AdminController < ApplicationController
   
   def abandonment
     account = Account.find(params[:id])
-    puts account.abandonment
     if account.abandonment == "variable"
       account.update_attributes(abandonment: "fixed")
     else
