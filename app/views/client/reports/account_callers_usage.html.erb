@@ -20,8 +20,7 @@
 </div>
 
 <h3>Date range:</h3>
-<% form_tag(usage_client_reports_url(:id => params[:id]), :method => :get) do %>
-  <input type="hidden" name="id" value="<%= params[:id] %>" />
+<% form_tag(account_callers_usage_client_reports_path(:id => @account.id), :method => :get) do %>
   <%= render :partial => 'shared/date_picker' %>
   <div class="buttons">
     <button type="submit">Update</button>
