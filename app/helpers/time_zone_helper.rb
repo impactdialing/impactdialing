@@ -10,8 +10,8 @@ module TimeZoneHelper
       redirect_to :back
       return
     end      
-    converted_from_date = (from_date || campaign.call_attempts.first.try(:created_at) || Time.now).in_time_zone(time_zone).beginning_of_day.to_s      
-    converted_to_date = (to_date || campaign.call_attempts.last.try(:created_at) || Time.now).in_time_zone(time_zone).end_of_day.to_s
+    converted_from_date = (from_date || campaign.call_attempts.first.try(:created_at) || Time.now).in_time_zone(time_zone).beginning_of_day.utc      
+    converted_to_date = (to_date || campaign.call_attempts.last.try(:created_at) || Time.now).in_time_zone(time_zone).end_of_day.utc
     [converted_from_date, converted_to_date]
   end
   
@@ -25,8 +25,8 @@ module TimeZoneHelper
       return
     end
     time_zone = ActiveSupport::TimeZone.new("UTC")
-    converted_from_date = (from_date || account.try(:created_at)).in_time_zone(time_zone).beginning_of_day.to_s
-    converted_to_date = (to_date || Time.now).in_time_zone(time_zone).end_of_day.to_s
+    converted_from_date = (from_date || account.try(:created_at)).in_time_zone(time_zone).beginning_of_day
+    converted_to_date = (to_date || Time.now).in_time_zone(time_zone).end_of_day
     [converted_from_date, converted_to_date]
   end
   
