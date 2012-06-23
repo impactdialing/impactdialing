@@ -2,6 +2,7 @@ require Rails.root.join("jobs/report_download_job")
 module Client
   class ReportsController < ClientController
     include ApplicationHelper::TimeUtils
+    include TimeZoneHelper
     before_filter :load_campaign, :except => [:index, :usage, :account_campaigns_usage, :account_callers_usage]
 
 
@@ -44,7 +45,7 @@ module Client
     
     def usage
       @campaign = current_user.campaigns.find(params[:id])
-      set_date_range
+      @from_date, @to_date = set_date_range
       @time_logged_in = round_for_utilization(CallerSession.time_logged_in(nil, @campaign, @from_date, @to_date))
       @time_on_call = round_for_utilization(CallAttempt.time_on_call(nil, @campaign, @from_date, @to_date))
       @time_in_wrapup = round_for_utilization(CallAttempt.time_in_wrapup(nil, @campaign, @from_date, @to_date))
@@ -71,9 +72,6 @@ module Client
 
     def download
       set_date_range
-      puts "xxxx"
-      puts @from_date
-      puts @to_date
       Resque.enqueue(ReportDownloadJob, @campaign.id, @user.id, params[:voter_fields], params[:custom_voter_fields], params[:download_all_voters],params[:lead_dial], @from_date, @to_date, "", "webui")
       flash_message(:notice, I18n.t(:client_report_processing))
       redirect_to client_reports_url
@@ -101,19 +99,6 @@ module Client
     @to_date = (to_date || Time.now).in_time_zone(time_zone).end_of_day.to_s
   end
   
-    def set_date_range
-      time_zone = ActiveSupport::TimeZone.new(@campaign.time_zone || "UTC")
-      begin
-        from_date = Time.strptime("#{params[:from_date]} #{time_zone.formatted_offset}", "%m/%d/%Y %:z") if params[:from_date]
-        to_date = Time.strptime("#{params[:to_date]} #{time_zone.formatted_offset}", "%m/%d/%Y %:z") if params[:to_date]
-      rescue Exception => e
-        flash_message(:error, I18n.t(:invalid_date_format))
-        redirect_to :back
-        return
-      end      
-      @from_date = (from_date || @campaign.call_attempts.first.try(:created_at) || Time.now).in_time_zone(time_zone).beginning_of_day.to_s      
-      @to_date = (to_date || @campaign.call_attempts.last.try(:created_at) || Time.now).in_time_zone(time_zone).end_of_day.to_s
-    end
     
     def sanitize(count)
       count.nil? ? 0 : count
