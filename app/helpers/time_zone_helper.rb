@@ -30,5 +30,10 @@ module TimeZoneHelper
     [converted_from_date, converted_to_date]
   end
   
+  def time_for_date_picker(campaign, date)
+    time_zone = ActiveSupport::TimeZone.new(campaign.try(:time_zone) || "UTC")
+    date.in_time_zone(time_zone)    
+  end
+  
     
 end
