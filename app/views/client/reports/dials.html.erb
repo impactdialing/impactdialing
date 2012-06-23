@@ -12,11 +12,11 @@
     <table>
       <tr>
         <td>From:</td>
-        <td><%= unobtrusive_date_text_picker_tag :from_date,@from_date %></td>
+        <td><%= unobtrusive_date_text_picker_tag :from_date,@from_date.to_time %></td>
       </tr>
       <tr>
         <td>To:</td>
-        <td><%= unobtrusive_date_text_picker_tag :to_date,@to_date %></td>
+        <td><%= unobtrusive_date_text_picker_tag :to_date,@to_date.to_time %></td>
       </tr>
     </table>
     <input name="campaign_id" type="hidden" value="<%= params[:campaign_id]%>"></input>
