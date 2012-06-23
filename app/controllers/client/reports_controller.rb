@@ -18,7 +18,7 @@ module Client
 
     
     def dials
-      set_date_range(@campaign, params[:from_date], params[:to_date])
+      @from_date, @to_date = set_date_range(@campaign, params[:from_date], params[:to_date])
       @show_summary = true if params[:from_date].blank? || params[:to_date].blank?
       @dials_report = DialReport.new
       @dials_report.compute_campaign_report(@campaign, @from_date, @to_date)
@@ -45,7 +45,7 @@ module Client
     
     def usage
       @campaign = current_user.campaigns.find(params[:id])
-      @from_date, @to_date = set_date_range
+      @from_date, @to_date = set_date_range(@campaign, params[:from_date], params[:to_date])
       @time_logged_in = round_for_utilization(CallerSession.time_logged_in(nil, @campaign, @from_date, @to_date))
       @time_on_call = round_for_utilization(CallAttempt.time_on_call(nil, @campaign, @from_date, @to_date))
       @time_in_wrapup = round_for_utilization(CallAttempt.time_in_wrapup(nil, @campaign, @from_date, @to_date))
@@ -65,20 +65,20 @@ module Client
     end
     
     def download_report
-      set_date_range
+      @from_date, @to_date = set_date_range(@campaign, params[:from_date], params[:to_date])
       @voter_fields = VoterList::VOTER_DATA_COLUMNS
       @custom_voter_fields = @user.account.custom_voter_fields.collect{ |field| field.name}      
     end
 
     def download
-      set_date_range
+      @from_date, @to_date = set_date_range(@campaign, params[:from_date], params[:to_date])
       Resque.enqueue(ReportDownloadJob, @campaign.id, @user.id, params[:voter_fields], params[:custom_voter_fields], params[:download_all_voters],params[:lead_dial], @from_date, @to_date, "", "webui")
       flash_message(:notice, I18n.t(:client_report_processing))
       redirect_to client_reports_url
     end
 
     def answer
-      set_date_range
+      @from_date, @to_date = set_date_range(@campaign, params[:from_date], params[:to_date])
       @results = @campaign.answers_result(@from_date, @to_date)
       @transfers = @campaign.transfers(@from_date, @to_date)
     end
