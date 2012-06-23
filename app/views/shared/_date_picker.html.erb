@@ -1,12 +1,12 @@
 <table>
   <tr>
     <td>From:</td>
-    <td> <%= unobtrusive_date_text_picker_tag :from_date, @from_date.to_time.utc %> </td>
+    <td> <%= unobtrusive_date_text_picker_tag :from_date, time_for_date_picker(@campaign, @from_date) %> </td>
   </tr>
   <tr>
     <td>To:</td>
     <td>
-      <%= unobtrusive_date_text_picker_tag :to_date, @to_date.to_time.utc %>
+      <%= unobtrusive_date_text_picker_tag :to_date, time_for_date_picker(@campaign, @to_date) %>
     </td>
   </tr>
 </table>
