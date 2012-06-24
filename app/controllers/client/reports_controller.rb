@@ -27,6 +27,8 @@ module Client
     def account_campaigns_usage
       @account = Account.find(params[:id])
       @campaigns = @account.campaigns
+      puts params[:from_date]
+      puts params[:to_date]
       @from_date, @to_date = set_date_range_account(@account, params[:from_date], params[:to_date])
       account_usage = AccountUsage.new(@account, @from_date, @to_date)
       @billiable_total = account_usage.billable_usage
