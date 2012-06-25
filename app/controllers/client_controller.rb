@@ -175,61 +175,8 @@ class ClientController < ApplicationController
     end
   end
 
-  def save_s3(filepath,recording)
-    require 'right_aws'
-    @file_data = File.new(filepath, "r")
-    extension = filepath.split(".").last
-    @config = YAML::load(File.open("#{Rails.root}/config/amazon_s3.yml"))
-    s3 = RightAws::S3.new(@config["access_key_id"], @config["secret_access_key"])
-    bucket = s3.bucket("impactdialingapp")
-    s3path="#{Rails.env}/uploads/#{@user.id}/#{recording.id}.#{extension}"
-    key = bucket.key(s3path)
-    key.data = File.open(filepath)
-    key = bucket.key(s3path)
-    key.data = File.open(filepath)
-    content_type=""
-    content_type="audio/wav" if extension=='wav'
-    content_type="audio/mpeg" if extension=='mp3'
-    content_type="audio/aiff" if extension=='aiff'
-    content_type="audio/aiff" if extension=='aif'
-    key.put(nil, 'public-read', {'Content-type' => content_type}.merge({}))
-    awsurl = "http://s3.amazonaws.com/#{bucket}/#{s3path}"
-    recording.file.url = awsurl
-    recording.save
-    awsurl
-  end
 
-  def robo_session_start
-    @campaign = Campaign.find(params[:campaign_id])
-    @caller = Caller.find(params[:caller_id])
-    @session = CallerSession.new
-    @session.caller_number = phone_format("Robo")
-    @session.caller_id = @caller.id
-    @session.campaign_id = @campaign.id
-    @session.save
-    @session.starttime = Time.now
-    @session.available_for_call = true
-    @session.on_call = true
-    @session.save
-    flash_message(:notice, "Robo session started")
-    redirect_to client_campaigns_path(params[:campaign_id])
-  end
 
-  def robo_session_end
-    require 'net/http'
-    require 'net/https'
-    require 'uri'
-
-    sessions = CallerSession.find_all_by_caller_id_and_on_call(params[:caller_id],true)
-    sessions.each do |session|
-      session.endtime = Time.now
-      session.available_for_call = false
-      session.on_call = false
-      session.save
-    end
-    flash_message(:notice, "Robo session ended")
-    redirect_to client_campaigns_path(params[:campaign_id])
-  end
 
   def recharge
      @account=@user.account
@@ -435,60 +382,7 @@ class ClientController < ApplicationController
 
    end
 
-  def voter_delete
-    @voter = account.voters.find_by_id(params[:id])
-    if !@voter.blank?
-      @voter.active = false
-      @voter.save
-    end
-    flash_message(:notice, "Voter deleted")
-    redirect_to client_campaigns_path(@voter.campaign_id)
-    return
-  end
-
-  def voter_add
-    @campaign = Campaign.find(params[:campaign_id])
-    @voter = account.voters.find_by_id(params[:id]) || Voter.new
-    if @voter.new_record?
-      @label="Add Voter"
-    else
-      @label="Edit Voter"
-    end
-    @breadcrumb=[{"Campaigns"=>"/client/campaigns"},{@campaign.name=>client_campaign_path(@campaign)}, @label]
-    if request.post?
-      if params[:voterList]=="0" && params[:new_list_name].blank?
-        flash_now(:error, "List name cannot be blank")
-        return
-        elseif params[:voterList]=="0"
-        l = account.voter_lists.find_by_name(params[:new_list_name])
-        if !l.blank?
-          flash_now(:error, "List name cannot be blank")
-          return
-        end
-      end
-      if params[:voterList]=="0"
-        list = VoterList.new
-        list.campaign_id = @campaign.id
-        list.name = params[:new_list_name]
-        list.account_id = account.id
-        list.save
-      else
-        list = VoterList.find(params[:voterList])
-      end
-
-      @voter.voter_list_id = list.id
-      @voter.account_id = account.id
-      @voter.campaign_id = @campaign.id
-      @voter.update_attributes(params[:voter])
-      if @voter.valid?
-        @voter.save
-        flash_message(:notice, "Voter saved")
-        redirect_to client_campaigns_path(@campaign.id)
-        return
-      end
-    end
-
-  end
+ 
 
   def campaign_clear_calls
     ActiveRecord::Base.connection.execute("update voters set result=NULL, status='not called' where campaign_id=#{params[:id]}")
