@@ -29,7 +29,7 @@ class Payment < ActiveRecord::Base
     #(7 power, 5 preview) no longer used
 
     if model_instance.class==CallAttempt && model_instance.campaign.robo?
-      if model_instance.campaign.script==nil || model_instance.campaign.script.result_set_1.nil?
+      if model_instance.campaign.script==nil 
         return 0.04
       else
         return 0.07
