@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120625052858) do
+ActiveRecord::Schema.define(:version => 20120625060803) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -241,26 +241,18 @@ ActiveRecord::Schema.define(:version => 20120625052858) do
     t.string   "campaign_id"
     t.string   "group_id"
     t.string   "name"
-    t.string   "keypad_0"
     t.integer  "account_id"
     t.integer  "script_id"
     t.boolean  "active",                   :default => true
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.float    "ratio_2",                  :default => 33.0
-    t.float    "ratio_3",                  :default => 20.0
-    t.float    "ratio_4",                  :default => 12.0
     t.float    "ratio_override",           :default => 0.0
-    t.string   "ending_window_method",     :default => "Not used"
     t.string   "caller_id"
-    t.boolean  "caller_id_verified",       :default => false
     t.boolean  "use_answering",            :default => true
     t.string   "type",                     :default => "preview"
     t.integer  "recording_id"
     t.boolean  "use_recordings",           :default => false
-    t.integer  "max_calls_per_caller",     :default => 20
     t.string   "callin_number",            :default => "4157020991"
-    t.boolean  "use_web_ui",               :default => true
     t.integer  "answer_detection_timeout", :default => 20
     t.boolean  "calls_in_progress",        :default => false
     t.boolean  "robo",                     :default => false

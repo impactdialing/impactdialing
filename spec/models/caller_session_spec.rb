@@ -118,8 +118,8 @@ describe CallerSession do
 
 
     it "reassign the caller_session to campaign" do
-      campaign1 = Factory(:preview, :use_web_ui => true)
-      campaign2 = Factory(:preview, :use_web_ui => true)
+      campaign1 = Factory(:preview)
+      campaign2 = Factory(:preview)
       caller = Factory(:caller, :campaign => campaign2)
       caller_session = Factory(:caller_session, :caller => caller, :campaign => campaign1, :session_key => "sample", :on_call=> true, :available_for_call => true)
       caller_session.reassign_caller_session_to_campaign
