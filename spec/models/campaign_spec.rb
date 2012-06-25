@@ -187,11 +187,6 @@ describe Campaign do
    end
       
    describe "scopes" do
-     it "returns campaigns using web ui" do
-       campaign1 = Factory(:preview, :use_web_ui => true)
-       campaign2 = Factory(:preview, :use_web_ui => false)
-       Campaign.using_web_ui.should == [campaign1]
-     end
      
      it "gives only active voter lists" do
        campaign = Factory(:preview)
