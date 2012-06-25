@@ -30,9 +30,7 @@
         script.display_question_numbers();
         } 
       });
-      $("#script_questions").disableSelection();
       $(".possible_response_sortable").sortable({ cursor: 'crosshair' , containment: 'parent', axis: 'y' });
-      $(".possible_response_sortable").disableSelection();
       
       $('#script_submit').click(function() {
         script.set_question_order();
