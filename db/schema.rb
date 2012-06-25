@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120612075728) do
+ActiveRecord::Schema.define(:version => 20120625050447) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -86,7 +86,6 @@ ActiveRecord::Schema.define(:version => 20120612075728) do
     t.integer  "caller_id"
     t.datetime "connecttime"
     t.integer  "caller_session_id"
-    t.integer  "caller_hold_time"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "result"
@@ -102,9 +101,7 @@ ActiveRecord::Schema.define(:version => 20120612075728) do
     t.datetime "tStartTime"
     t.datetime "tEndTime"
     t.float    "tPrice"
-    t.datetime "answertime"
     t.string   "dialer_mode"
-    t.text     "result_json"
     t.datetime "scheduled_date"
     t.string   "recording_url"
     t.integer  "recording_duration"

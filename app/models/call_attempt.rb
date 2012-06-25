@@ -32,13 +32,6 @@ class CallAttempt < ActiveRecord::Base
     "#{self.recording_url.gsub("api.twilio.com", "recordings.impactdialing.com")}.mp3" if recording_url
   end
 
-  def ring_time
-    if self.answertime!=nil && self.created_at!=nil
-      (self.answertime - self.created_at).to_i
-    else
-      nil
-    end
-  end
 
   def duration
     return nil unless connecttime
