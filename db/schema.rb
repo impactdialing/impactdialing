@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120625063150) do
+ActiveRecord::Schema.define(:version => 20120625063637) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -300,35 +300,6 @@ ActiveRecord::Schema.define(:version => 20120625063150) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "campaign_id"
-  end
-
-  create_table "families", :force => true do |t|
-    t.integer  "voter_id"
-    t.string   "Phone"
-    t.string   "CustomID"
-    t.string   "LastName"
-    t.string   "FirstName"
-    t.string   "MiddleName"
-    t.string   "Suffix"
-    t.string   "Email"
-    t.string   "result"
-    t.integer  "campaign_id"
-    t.integer  "account_id"
-    t.boolean  "active",                 :default => true
-    t.datetime "created_at"
-    t.datetime "updated_at"
-    t.string   "status",                 :default => "not called"
-    t.integer  "voter_list_id"
-    t.integer  "caller_session_id"
-    t.boolean  "call_back",              :default => false
-    t.integer  "caller_id"
-    t.string   "result_digit"
-    t.string   "Age"
-    t.string   "Gender"
-    t.integer  "attempt_id"
-    t.datetime "result_date"
-    t.integer  "last_call_attempt_id"
-    t.datetime "last_call_attempt_time"
   end
 
   create_table "moderators", :force => true do |t|
