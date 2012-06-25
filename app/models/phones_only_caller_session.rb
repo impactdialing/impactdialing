@@ -126,6 +126,7 @@ class PhonesOnlyCallerSession < CallerSession
       state :read_next_question do
         after(:always) {publish_moderator_gathering_response}
         event :submit_response, :to => :disconnected, :if => :disconnected?
+        event :submit_response, :to => :wrapup_call, :if => :skip_all_questions?
         event :submit_response, :to => :voter_response
         
         response do |xml_builder, the_call|
@@ -164,6 +165,10 @@ class PhonesOnlyCallerSession < CallerSession
       end
       
       
+  end
+  
+  def skip_all_questions?
+    digit == "999"
   end
   
   def wrapup_call_attempt
