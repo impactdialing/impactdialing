@@ -62,7 +62,7 @@ function transfer_call(){
 	$('#transfer_button').hide();
 	$('#hangup_call').hide();
 	var options = {
-	    data: {voter: $("#current_voter").val(), call_attempt: $("#current_call_attempt").val(), caller_session:$("#caller_session").val()  }
+	    data: {voter: $("#current_voter").val(), call: $("#current_call").val(), caller_session:$("#caller_session").val()  }
     };
     $('#transfer_form').attr('action', "/transfer/dial")    
 	$('#transfer_form').submit(function() {

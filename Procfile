@@ -6,4 +6,3 @@ background_worker_job: rake environment resque:work QUEUE=background_worker_job
 answered_worker_job: rake environment resque:work QUEUE=answered_worker_job
 clock:   rake environment resque:scheduler
 worker:  rake environment jobs:work
-

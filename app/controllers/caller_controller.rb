@@ -96,7 +96,7 @@ class CallerController < ApplicationController
     conference_sid = caller_session.get_conference_id
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
     Twilio::Conference.kick_participant(conference_sid, caller_session.sid)
-    Twilio::Call.redirect(caller_session.sid, pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => caller_session.id))            
+    Twilio::Call.redirect(caller_session.sid, flow_caller_url(caller, session_id:  caller_session.id, event: "pause_conf", host: Settings.host, port:  Settings.port))            
     caller_session.publish('caller_kicked_off', {}) 
     render nothing: true
   end
