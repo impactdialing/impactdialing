@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120625060803) do
+ActiveRecord::Schema.define(:version => 20120625063150) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -266,11 +266,6 @@ ActiveRecord::Schema.define(:version => 20120625060803) do
     t.integer  "voicemail_script_id"
   end
 
-  create_table "campaigns_voter_lists", :id => false, :force => true do |t|
-    t.integer "campaign_id"
-    t.integer "voter_list_id"
-  end
-
   create_table "custom_voter_field_values", :force => true do |t|
     t.integer "voter_id"
     t.integer "custom_voter_field_id"
@@ -307,25 +302,6 @@ ActiveRecord::Schema.define(:version => 20120625060803) do
     t.string   "campaign_id"
   end
 
-  create_table "dumps", :force => true do |t|
-    t.integer  "request_id"
-    t.integer  "first_line"
-    t.integer  "last_line"
-    t.integer  "completed_id"
-    t.integer  "completed_lineno"
-    t.float    "duration"
-    t.integer  "status"
-    t.string   "url"
-    t.integer  "params_id"
-    t.integer  "params_line"
-    t.string   "params"
-    t.string   "guid"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-  end
-
-  add_index "dumps", ["guid"], :name => "index_dumps_on_guid"
-
   create_table "families", :force => true do |t|
     t.integer  "voter_id"
     t.string   "Phone"
@@ -353,14 +329,6 @@ ActiveRecord::Schema.define(:version => 20120625060803) do
     t.datetime "result_date"
     t.integer  "last_call_attempt_id"
     t.datetime "last_call_attempt_time"
-  end
-
-  create_table "lists", :force => true do |t|
-    t.string   "name"
-    t.integer  "group_id"
-    t.integer  "user_id"
-    t.datetime "created_at"
-    t.datetime "updated_at"
   end
 
   create_table "moderators", :force => true do |t|
