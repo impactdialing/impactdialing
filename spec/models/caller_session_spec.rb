@@ -10,13 +10,6 @@ describe CallerSession do
     CallerSession.on_call.all.should =~ [call1, call3]
   end
 
-  it "lists callers with hold for duration" do
-    Factory(:caller_session, :on_call=> false, :hold_time_start=> Time.now)
-    Factory(:caller_session, :on_call=> true, :hold_time_start=> Time.now)
-    call3 = Factory(:caller_session, :on_call=> false, :hold_time_start=> 3.minutes.ago)
-    call4 = Factory(:caller_session, :on_call=> false, :hold_time_start=> 6.minutes.ago)
-    CallerSession.held_for_duration(3.minutes).should == [call3, call4]
-  end
 
   it "lists available caller sessions" do
     call1 = Factory(:caller_session, :available_for_call=> true, :on_call=>true)

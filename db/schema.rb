@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120625050447) do
+ActiveRecord::Schema.define(:version => 20120625051748) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -148,12 +148,9 @@ ActiveRecord::Schema.define(:version => 20120625050447) do
     t.integer  "campaign_id"
     t.datetime "endtime"
     t.datetime "starttime"
-    t.integer  "num_calls"
-    t.integer  "avg_wait"
     t.string   "sid"
     t.boolean  "available_for_call",   :default => false
     t.integer  "voter_in_progress_id"
-    t.datetime "hold_time_start"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.boolean  "on_call",              :default => false
