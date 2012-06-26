@@ -14,6 +14,12 @@ class Account < ActiveRecord::Base
   has_many :moderators
   has_many :payments
   
+  module Subscription_Type
+    MANUAL = "Manual"
+    PER_MINUTE = "Per Minute"
+    PER_CALLER = "Per Caller"    
+  end
+  
   def current_balance
     self.payments.where("amount_remaining>0").inject(0) do |sum, payment|
       sum + payment.amount_remaining
@@ -62,21 +68,29 @@ class Account < ActiveRecord::Base
   end
   
   def subscription_allows_caller?
-    if self.trial? || self.subscription_name=="Per Minute" || self.subscription_name=="Manual"
+    if self.trial? || per_minute_subscription? || manual_subscription?
       return true
-    elsif self.subscription_name=="Per Caller" && self.callers_in_progress.length <= self.subscription_count
+    elsif per_caller_subscription? && self.callers_in_progress.length <= self.subscription_count
       return true
     else
       return false
     end
   end
+  
+  def per_minute_subscription?
+    subscription_name == Subscription_Type::PER_MINUTE
+  end
+  
+  def manual_subscription?
+    subscription_name == Subscription_Type::Manual
+  end
+  
+  def per_caller_subscription?
+    subscription_name == Subscription_Type::PER_CALLER
+  end
 
   def funds_available?
-    if self.subscription_name=="Per Caller" || self.subscription_name=="Manual"
-      return true
-    else
-      self.current_balance>0
-    end
+    (per_caller_subscription? || manual_subscription?) ? true : current_balance>0
   end
       
   def create_recurly_account_code

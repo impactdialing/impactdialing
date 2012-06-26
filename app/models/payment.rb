@@ -2,9 +2,9 @@ class Payment < ActiveRecord::Base
   belongs_to :account
 
   def self.debit (call_time, model_instance)
-    return false if model_instance.payment_id!=nil
+    return if model_instance.payment_id!=nil
     account = model_instance.campaign.account
-    return false if account.active_subscription=="manual"
+    return if account.active_subscription=="manual"
     debit_amount = call_time.to_f * Payment.determine_call_cost(model_instance)
     payment_used = Payment.where("amount_remaining > 0 and account_id = ?", account).last
     return false if payment_used.nil? #hmmm we're running negative
