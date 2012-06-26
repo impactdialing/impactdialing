@@ -180,4 +180,26 @@ describe CallAttempt do
       CallAttempt.not_wrapped_up.find_all_by_caller_id(caller.id).length.should eq(0)
     end
   end
+  
+  describe "debit for calls" do
+    it "should not debit if call not ended" do
+      call_attempt = Factory(:call_attempt, call_end: (Time.now - 3.minutes))
+      Payment.should_not_receive(:debit)      
+      call_attempt.debit
+    end
+    
+    it "should not debit if call not connected" do
+      call_attempt = Factory(:call_attempt, connecttime: (Time.now - 3.minutes))
+      Payment.should_not_receive(:debit)      
+      call_attempt.debit
+    end
+    
+    it "should should debit if call connected and ended" do
+      call_attempt = Factory(:call_attempt, connecttime: (Time.now - 3.minutes), call_end: (Time.now - 2.minutes))
+      Payment.should_receive(:debit)      
+      call_attempt.debit
+    end
+    
+    
+  end
 end

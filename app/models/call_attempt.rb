@@ -219,7 +219,7 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def debit
-    return false if self.connecttime.nil? || self.call_end.nil?
+    return false if connecttime.nil? || call_end.nil?
     call_time = ((self.call_end - self.connecttime)/60).ceil
     Payment.debit(call_time, self)
   end
