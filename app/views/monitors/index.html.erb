@@ -7,91 +7,16 @@
 
 
   <script type="text/javascript">
-      var pusher = new Pusher('<%= Pusher.key %>');
+      var pusher = new Pusher('<%= Pusher.key %>');      
+      var monitors = new Monitors()
+      monitors.setup_twilio("<%= @token %>")
+      $(window).bind("beforeunload", function(){
+         monitors.de_activate_monitor($('monitor_session').text());
+      });
+      
   </script>
 
 <script type="text/javascript">
-
-  Twilio.Device.setup("<%= @token %>", {'debug':true});
-
-  Twilio.Device.connect(function (conn) {
-  });
-  Twilio.Device.ready(function (device) {})
-  Twilio.Device.error(function (error) {
-    alert(error.message);
-  });
-  
-  
-  function de_activate_monitor(){
-    $.ajax({
-        url : "/client/monitors/deactivate_session",
-        data : {monitor_session : $('monitor_session').text()},
-        type : "GET",
-        async : false,
-        success : function(response) {}
-      });
-  }
-  
-  $(window).bind("beforeunload", function(){
-      de_activate_monitor();
-    })
-
-  function monitor(session_id, action){
-    params = {'session_id': session_id, 'type': action, 'monitor_session' : $('monitor_session').text()};
-    $('.stop_monitor').show();
-    Twilio.Device.connect(params)
-  }
-  function disconnect_all(){
-    $('status').text("Status: Disconnected.")
-    $('.stop_monitor').hide();
-    $.each($('tr.caller'), function(){
-      $(this).removeAttr("on_call");
-	  $(this).removeAttr("mode");
-    });
-    Twilio.Device.disconnectAll();
-    return false;
-  }
-  
-  function switch_mode(session, mode){
-    $.ajax({
-        url : "/client/monitors/switch_mode",
-        data : {session_id : session,type : mode,monitor_session : $('monitor_session').text()},
-        type : "GET",
-        success : function(response) {
-          $('status').text(response)
-          }
-    })
-  }
-  
-  function kick_off(session){
-    $.ajax({
-        url : "/client/monitors/kick_off",
-        data : {session_id : session},
-        type : "GET"
-    })
-  }
-  
-
-	function switch_caller(current_session_id, next_session_id, action, status){
-		$.ajax({
-        url : "/client/monitors/stop",
-        data : {session_id : current_session_id},
-        type : "GET",
-        success : function(response) {
-          request_to_switch(next_session_id, action, status);
-        }
-    });
-	}
-
-	function request_to_switch(next_session_id, action, status){
-		$.ajax({
-        url : "/client/monitors/start",
-        data : {'session_id' : next_session_id, 'type': action, 'monitor_session' : $('monitor_session').text()},
-        type : "GET",
-        success : function(response) {}
-    });
-	}
-
   $(function() {
 		$('.stop').live('click', function(){
 			stop($(this).attr("session_id"))
@@ -159,8 +84,10 @@
     <tr id="campaign_{{id}}" class="campaign <%= cycle("odd", "even") %>" campaign_id={{id}}>
        <td>{{campaign_name}}</td>
        <td class="callers_logged_in">{{callers_logged_in}}</td>
-       <td class="dials_in_progress">{{dials_in_progress}}</td>
+       <td class="live_lines">{{live_lines}}</td>       
+       <td class="ringing_lines">{{ringing_lines}}</td>              
        <td class="voters_count">{{voters_remaining}}</td>
+       <td class="num_voters_available">{{num_voters_available}}</td>
     </tr>
   {{/campaign_fields}}
 
