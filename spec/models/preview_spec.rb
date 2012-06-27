@@ -57,6 +57,19 @@ describe Preview do
       current_voter = Factory(:voter, :status => CallAttempt::Status::SUCCESS, :campaign => campaign)
       campaign.next_voter_in_dial_queue(current_voter.id).should be_nil
     end
+    
+    it "returns next voter is stale object error" do
+      campaign = Factory(:preview)
+      caller_session = Factory(:caller_session)
+      uncalled_voter = Factory(:voter, :status => Voter::Status::NOTCALLED, :campaign => campaign)
+      current_voter = Factory(:voter, :status => Voter::Status::NOTCALLED, :campaign => campaign)
+      next_voter = Factory(:voter, :status => Voter::Status::NOTCALLED, :campaign => campaign)
+      next_voter.update_attributes(updated_at: Time.now)
+      campaign.should_receive(:update_voter_status_to_ready).and_raise(ActiveRecord::StaleObjectError)
+      campaign.next_voter_in_dial_queue(current_voter.id).should_not eq(next_voter)
+    end
+    
+    
   end
   
 end
