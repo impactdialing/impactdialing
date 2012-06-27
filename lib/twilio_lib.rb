@@ -20,7 +20,7 @@ class TwilioLib
     EventMachine::HttpRequest.new("https://#{@server}#{@root}Calls/#{call_id}").post :head => {'authorization' => [@http_user, @http_password]},:body => params    
   end
   
-  def end_call_sync
+  def end_call_sync(call_id)
     http = Net::HTTP.new(@server, @port)
     http.use_ssl=true
     req = Net::HTTP::Post.new("#{@root}Calls/#{call_id}?Status=completed")
