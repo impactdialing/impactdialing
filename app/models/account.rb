@@ -82,7 +82,7 @@ class Account < ActiveRecord::Base
   end
   
   def manual_subscription?
-    subscription_name == Subscription_Type::Manual
+    subscription_name == Subscription_Type::MANUAL
   end
   
   def per_caller_subscription?
