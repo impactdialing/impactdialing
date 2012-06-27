@@ -1,4 +1,5 @@
 class Account < ActiveRecord::Base
+  
   has_many :users
   has_many :campaigns, :conditions => {:active => true}
   has_many :all_campaigns, :class_name => 'Campaign'
@@ -179,18 +180,15 @@ class Account < ActiveRecord::Base
   
 
   def check_autorecharge(amount_remaining)
-    payment = payments.last
     if autorecharge_enabled? && autorecharge_amount >= amount_remaining
-
       begin
-        if self.status != 'autorecharge_pending'
-          self.update_attribute(:status, 'autorecharge_pending')
-          new_payment=Payment.charge_recurly_account(self, self.autorecharge_amount, "Auto-recharge")
+        if status != 'autorecharge_pending'
+          update_attribute(:status, 'autorecharge_pending')
+          new_payment = Payment.charge_recurly_account(self, self.autorecharge_amount, "Auto-recharge")
           if new_payment.nil?
-            #charge failed
              flash_now(:error, "There was a problem charging your credit card.  Please try updating your billing information or contact support for help.")
           end
-          self.update_attribute(:status, '')
+          update_attribute(:status, '')
           return new_payment
        end
       rescue ActiveRecord::StaleObjectError
@@ -198,9 +196,6 @@ class Account < ActiveRecord::Base
       end
       
     end
-
-    return false
-
   end
   
   def variable_abandonment?

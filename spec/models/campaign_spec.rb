@@ -238,10 +238,16 @@ describe Campaign do
      it "which are manual" do
        Campaign.manual.should == [@manual_campaign]
      end
-   end
-     
-     
-     
+   end     
+  end
+  
+  describe "cost_per_minute" do
+    
+    it "should be .09" do
+      campaign = Factory(:preview)
+      campaign.cost_per_minute.should eq(0.09)
+    end
+    
   end
      
 end
