@@ -209,7 +209,7 @@ describe PhonesOnlyCallerSession do
         caller_session.should_receive(:caller_reassigned_to_another_campaign?).and_return(false)
         @campaign.should_receive(:next_voter_in_dial_queue).and_return(nil)
         caller_session.start_conf!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>There are no more numbers to call in this campaign.</Say></Response>")
+        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>There are no more numbers to call in this campaign.</Say><Hangup/></Response>")
       end        
     end
     
@@ -254,7 +254,7 @@ describe PhonesOnlyCallerSession do
         caller_session.should_receive(:funds_not_available?).and_return(false)        
         @campaign.should_receive(:next_voter_in_dial_queue).and_return(nil)
         caller_session.start_conf!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>There are no more numbers to call in this campaign.</Say></Response>")
+        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>There are no more numbers to call in this campaign.</Say><Hangup/></Response>")
       end        
     end    
     
