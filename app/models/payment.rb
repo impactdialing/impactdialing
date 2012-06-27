@@ -18,6 +18,13 @@ class Payment < ActiveRecord::Base
     payment_used
   end
   
+  def self.debit_call_charge(call_charge)
+    payment = Payment.where("amount_remaining > 0 and account_id = ?", account).last
+    return if payment.nil?
+    payment.amount_remaining -= call_charge
+    payment.save    
+  end
+  
   def self.determine_call_cost(model_instance)
     
     return 0.02 if model_instance.campaign.account.active_subscription=="Per Caller"
@@ -43,26 +50,20 @@ class Payment < ActiveRecord::Base
     
   
   def self.charge_recurly_account(account, amount, notes)
-#    begin
       recurly_account = Recurly::Account.find(account.recurly_account_code)
       transaction = recurly_account.transactions.create(
         :description     => notes,
         :amount_in_cents => (amount.to_f*100).to_i,
         :currency        => 'USD',
         :account         => { :account_code => account.recurly_account_code }
-      )
-      
+      )      
       if transaction.status=="success"
         p = Payment.new(:amount_paid=>amount, :amount_remaining=>amount, :account_id=>account.id, :notes=>notes, :recurly_transaction_uuid=>transaction.uuid)
         p.save
         return p
       else
         return nil
-      end
-      
-#    rescue
-#      return nil
-#    end
+      end      
   end
 
 end

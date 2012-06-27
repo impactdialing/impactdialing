@@ -198,6 +198,11 @@ class Campaign < ActiveRecord::Base
   def abandoned_calls_time(from_date, to_date)
     call_attempts.between(from_date, to_date).with_status([CallAttempt::Status::ABANDONED]).sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)').to_i
   end
+  
+  def cost_per_minute
+    0.09
+  end
+  
 
 
 end

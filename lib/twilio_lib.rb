@@ -20,6 +20,16 @@ class TwilioLib
     EventMachine::HttpRequest.new("https://#{@server}#{@root}Calls/#{call_id}").post :head => {'authorization' => [@http_user, @http_password]},:body => params    
   end
   
+  def end_call_sync
+    http = Net::HTTP.new(@server, @port)
+    http.use_ssl=true
+    req = Net::HTTP::Post.new("#{@root}Calls/#{call_id}?Status=completed")
+    req.basic_auth @http_user, @http_password
+    params = {'Status'=>"completed"}
+    req.set_form_data(params)
+    response = http.start{http.request(req)}
+  end
+  
   def make_call_em(campaign, voter, attempt)    
     params = {'From'=> campaign.caller_id, "To"=> voter.Phone, 'FallbackUrl' => TWILIO_ERROR, "Url"=>flow_call_url(attempt.call, host: Settings.host, port: Settings.port, event: "incoming_call"),
       'StatusCallback' => flow_call_url(attempt.call, host: Settings.host, port:  Settings.port, event: "call_ended"),
