@@ -1,53 +1,9 @@
 class Payment < ActiveRecord::Base
   belongs_to :account
-
-  def self.debit (call_time, model_instance)
-    return if model_instance.payment_id!=nil
-    account = model_instance.campaign.account
-    return if account.active_subscription=="manual"
-    debit_amount = call_time.to_f * Payment.determine_call_cost(model_instance)
-    payment_used = Payment.where("amount_remaining > 0 and account_id = ?", account).last
-    return false if payment_used.nil? #hmmm we're running negative
-      
-    payment_used.amount_remaining -= debit_amount
-    payment_used.save
-    model_instance.payment_id=payment_used.id
-    model_instance.save
-    
-    account.check_autorecharge(payment_used.amount_remaining)
-    payment_used
-  end
   
-  def self.debit_call_charge(call_charge)
-    payment = Payment.where("amount_remaining > 0 and account_id = ?", account).last
-    return if payment.nil?
-    payment.amount_remaining -= call_charge
-    payment.save    
+  def debit_call_charge(call_charge, account)
+    update_attributes(amount_remaining: (amount_remaining-call_charge))
   end
-  
-  def self.determine_call_cost(model_instance)
-    
-    return 0.02 if model_instance.campaign.account.active_subscription=="Per Caller"
-
-    #4 robo
-    #7 interactive robo
-    #9 predictive/live
-    #9 caller (client free)
-    #(7 power, 5 preview) no longer used
-
-    if model_instance.class==CallAttempt && model_instance.campaign.robo?
-      if model_instance.campaign.script==nil 
-        return 0.04
-      else
-        return 0.07
-      end
-    end
-
-    return 0.09
-
-  end
-
-    
   
   def self.charge_recurly_account(account, amount, notes)
       recurly_account = Recurly::Account.find(account.recurly_account_code)

@@ -4,6 +4,7 @@ class CallAttempt < ActiveRecord::Base
 
   include Rails.application.routes.url_helpers
   include LeadEvents
+  include CallPayment
   belongs_to :voter
   belongs_to :campaign
   belongs_to :caller
@@ -218,11 +219,6 @@ class CallAttempt < ActiveRecord::Base
     ANSWERED =  [INPROGRESS, SUCCESS]
   end
 
-  def debit
-    return false if connecttime.nil? || call_end.nil?
-    call_time = ((self.call_end - self.connecttime)/60).ceil
-    Payment.debit(call_time, self)
-  end
   
   def redirect_caller(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
     unless caller_session.nil?
