@@ -179,7 +179,8 @@ class Account < ActiveRecord::Base
   
 
   def check_autorecharge(amount_remaining)
-    if self.autorecharge_enabled? && self.autorecharge_amount >= amount_remaining
+    payment = payments.last
+    if autorecharge_enabled? && autorecharge_amount >= amount_remaining
 
       begin
         if self.status != 'autorecharge_pending'
