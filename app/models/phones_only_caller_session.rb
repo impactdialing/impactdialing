@@ -66,7 +66,8 @@ class PhonesOnlyCallerSession < CallerSession
               xml_builder.Say I18n.t(:read_voter_name, :first_name => the_call.voter_in_progress.FirstName, :last_name => the_call.voter_in_progress.LastName) 
             end
           else
-            xml_builder.Say I18n.t(:campaign_has_no_more_voters)
+            xml_builder.Say I18n.t(:campaign_has_no_more_voters)         
+            xml_builder.Hangup   
           end
         end
                 
@@ -81,6 +82,7 @@ class PhonesOnlyCallerSession < CallerSession
             xml_builder.Redirect(flow_caller_url(caller, :session_id => id, :voter_id => voter_in_progress.id, event: "start_conf", :host => Settings.host, :port => Settings.port), :method => "POST")
           else
             xml_builder.Say I18n.t(:campaign_has_no_more_voters)
+            xml_builder.Hangup
           end
         end
       end
