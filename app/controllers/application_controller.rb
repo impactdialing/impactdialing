@@ -9,9 +9,17 @@ class ApplicationController < ActionController::Base
   before_filter :set_controller_name#, :preload_models
   # Scrub sensitive parameters from your log
   helper_method :phone_format, :phone_number_valid
+  rescue_from Timeout::Error, :with => :return_service_unavialble
 
   def testing?
     Rails.env == 'test'
+  end
+  
+  def return_service_unavialble
+    respond_to do |type|
+      type.all  { render :nothing => true, :status => 503 }
+    end
+    true
   end
   
 
