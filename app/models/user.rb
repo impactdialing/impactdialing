@@ -115,7 +115,8 @@ class User < ActiveRecord::Base
 
   def send_welcome_email
     mailer = UserMailer.new
-    return false if Rails.env !="heroku"
+    return if Rails.env !="heroku"
+    return if domain!="impactdialing.com" && domain!="localhost"
     Resque.enqueue(WelcomeEmailJob, self.id)
   end
 
