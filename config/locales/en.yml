@@ -136,3 +136,9 @@ en:
       phone: "(888) 722-4704 x208"
       email: "support@campaign-headquarters.com"
       billing_link: "/client/billing"
+    bfgcalls:
+      title: "Bulldog Finance Group"
+      full_title: "Bulldog Finance Group, LLC"
+      phone: "(202) 263-4628"
+      email: "help@bulldogfinancegroup.com"
+      billing_link: "/client/billing"
