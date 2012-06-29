@@ -122,11 +122,11 @@ class Caller < ActiveRecord::Base
   # end
   
   
-  def create_caller_session(session_key, sid)
+  def create_caller_session(session_key, sid, caller_type)
     if is_phones_only?
-      caller_session = PhonesOnlyCallerSession.create(on_call: false, available_for_call: false, session_key: session_key, campaign: campaign , sid: sid, starttime: Time.now)
+      caller_session = PhonesOnlyCallerSession.create(on_call: false, available_for_call: false, session_key: session_key, campaign: campaign , sid: sid, starttime: Time.now, caller_type: caller_type)
     else
-      caller_session =  WebuiCallerSession.create(on_call: false, available_for_call: false, session_key: session_key, campaign: campaign , sid: sid, starttime: Time.now)
+      caller_session =  WebuiCallerSession.create(on_call: false, available_for_call: false, session_key: session_key, campaign: campaign , sid: sid, starttime: Time.now, caller_type: caller_type)
     end
     caller_sessions << caller_session
     caller_session

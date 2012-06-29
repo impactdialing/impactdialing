@@ -2,7 +2,8 @@ class Payment < ActiveRecord::Base
   belongs_to :account
   
   def debit_call_charge(call_charge, account)
-    update_attributes(amount_remaining: (amount_remaining-call_charge))
+    remaining_amount = amount_remaining - call_charge
+    update_attributes(amount_remaining: remaining_amount)
   end
   
   def self.charge_recurly_account(account, amount, notes)

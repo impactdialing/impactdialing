@@ -24,8 +24,6 @@ module CallPayment
       campaign.cost_per_minute
     end
     
-    
-    
   end
   
   def self.included(receiver)
