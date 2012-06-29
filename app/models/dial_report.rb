@@ -9,6 +9,8 @@ class DialReport
     @attempts_grouped_by_status_filtered = @campaign.call_attempts.between(@from_date, @to_date).group("status").count
     @scheduled_for_now = @campaign.all_voters.scheduled.count
     @abandoned_count = @campaign.all_voters.by_status(CallAttempt::Status::ABANDONED).count
+    @voters_not_available_for_retry = @campaign.all_voters.enabled.not_avialable_to_be_retried(@campaign.recycle_rate).count
+    @voters_available_for_retry = @campaign.all_voters.enabled.avialable_to_be_retried(@campaign.recycle_rate).count
     overview_summary
     per_lead_dials
     per_attempt_dials
@@ -20,11 +22,11 @@ class DialReport
   
   
   def leads_available_for_retry
-    @leads_available_retry = sanitize_dials(@campaign.all_voters.enabled.avialable_to_be_retried(@campaign.recycle_rate).count + @scheduled_for_now + @abandoned_count)
+    @leads_available_retry = sanitize_dials(@voters_available_for_retry + @scheduled_for_now + @abandoned_count)
   end
   
   def leads_not_available_for_retry
-    @leads_not_available_for_retry = sanitize_dials((sanitize_dials(@leads_grouped_by_status[CallAttempt::Status::SCHEDULED]) - @scheduled_for_now) + @campaign.all_voters.enabled.not_avialable_to_be_retried(@campaign.recycle_rate).count)
+    @leads_not_available_for_retry = sanitize_dials((sanitize_dials(@leads_grouped_by_status[CallAttempt::Status::SCHEDULED]) - @scheduled_for_now) + @voters_not_available_for_retry)
   end
   
   def leads_not_dialed
