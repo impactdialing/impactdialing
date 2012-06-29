@@ -198,6 +198,15 @@ class CallAttempt < ActiveRecord::Base
   def self.lead_time(caller, campaign, from, to)
     CallAttempt.for_campaign(campaign).for_caller(caller).between(from, to).without_status([CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED]).sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)').to_i
   end
+  
+  def call_not_connected?
+    connecttime.nil? || call_end.nil?
+  end
+  
+  def call_time
+  ((call_end - connecttime)/60).ceil
+  end
+  
 
   module Status
     VOICEMAIL = 'Message delivered'

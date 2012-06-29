@@ -25,13 +25,6 @@ module CallPayment
     end
     
     
-    def call_not_connected?
-      connecttime.nil? || call_end.nil?
-    end
-    
-    def call_time
-    ((call_end - connecttime)/60).ceil
-    end
     
   end
   
