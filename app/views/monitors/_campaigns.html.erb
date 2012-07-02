@@ -13,17 +13,18 @@
       <th>Numbers Available</th>
     </tr>
     
-    <% if @campaigns.present? %>
-      <% @campaigns.each do |c| %>
-        <tr id="<%= "campaign_"+c.id.to_s %>" class="campaign <%= cycle("odd", "even") %>">
-          <td><%= c.name %></td>
-          <td class="callers_logged_in"><%= c.caller_sessions.on_call.length %></td>
-          <td class="live_lines"></td>       
-          <td class="ringing_lines"></td>              
-          <td class="voters_count"><%= Voter.remaining_voters_count_for("campaign_id", c.id) %></td>
-          <td class="dials_in_progress"><%= c.call_attempts.not_wrapped_up.try(:size) %></td>
-          <td class="voters_count"><%= Voter.remaining_voters_count_for("campaign_id", c.id) %></td>
-          <td class="num_voters_available"></td>          
+    <% unless @campaigns_information.empty? %>
+      <% @campaigns_information.each do |information| %>
+        <tr id="<%= "campaign_"+information[:id].to_s %>" class="campaign <%= cycle("odd", "even") %>">
+          <td><%= information[:name] %></td>
+          <td class="callers_logged_in"><%= information[:logged_in] %></td>
+          <td class="on_call"><%= information[:logged_in] %></td>       
+          <td class="wrap_up"><%= information[:wrap_up] %></td>       
+          <td class="on_hold"><%= information[:on_hold] %></td>                 
+          <td class="live_lines"><%= information[:live_lines] %></td>       
+          <td class="ringing_lines"><%= information[:ringing_lines] %></td>              
+          <td class="numbers_remaining"><%= information[:numbers_remaining] %></td>
+          <td class="numbers_available"><%= information[:numbers_available] %></td>
         </tr>
       <% end %>
     <% end %>
