@@ -204,10 +204,10 @@ class Campaign < ActiveRecord::Base
   end
   
   def callers_status
-    campaign_callers = caller_sessions.on_call.size
+    campaign_callers = caller_sessions.on_call
     on_hold = campaign_callers.count {|caller| caller.on_call && caller.available}
     on_call = campaign_callers.count {|caller| caller.on_call && !caller.available}
-    [campaign_callers, on_hold, on_call]
+    [campaign_callers.size, on_hold, on_call]
   end
   
   def call_status
