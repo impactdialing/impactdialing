@@ -21,21 +21,10 @@ class Script < ActiveRecord::Base
   scope :message, robo.where(:for_voicemail => true)
 
 
-  after_find :set_result_set
-
   cattr_reader :per_page
   @@per_page = 25
   
 
-  def set_result_set
-    if self.result_set_1.blank?
-      json={}
-      for i in 1..49 do
-        json["keypad_#{i}"] = self.send("keypad_#{i}")
-      end
-      self.result_set_1 = json.to_json
-    end
-  end
   
   def selected_fields
     JSON.parse(voter_fields).select{ |field| VoterList::VOTER_DATA_COLUMNS.values.include?(field) } if voter_fields
@@ -55,19 +44,6 @@ class Script < ActiveRecord::Base
 
   
     def self.default_script(account)
-      @rs={
-        'keypad_1' => 'Strong supportive',
-        'keypad_2' => 'Lean supportive',
-        'keypad_3' => 'Undecided',
-        'keypad_4' => 'Lean opposed',
-        'keypad_5' => 'Strong opposed',
-        'keypad_6' => 'Refused',
-        'keypad_7' => 'Not home/call back',
-        'keypad_8' => 'Language barrier',
-        'keypad_9' => 'Wrong number',
-        'name' => 'How supportive was the voter?'
-      }
-      
       possible_responses = []
       possible_responses << PossibleResponse.new(keypad: 1, value:"It's great.", retry: false)
       possible_responses << PossibleResponse.new(keypad: 2, value: "It's amazing!", retry: false)
@@ -75,7 +51,7 @@ class Script < ActiveRecord::Base
       possible_responses << PossibleResponse.new(keypad: 4, value: "How did I get here? I'm so lost.", retry: false)
       question = Question.new(text: "How do you like the predictive dialer so far?")
       question.possible_responses = possible_responses
-      Script.new(name: 'Demo script',  active: 1, account_id: account.id, result_set_1: @rs.to_json).tap do |script|
+      Script.new(name: 'Demo script',  active: 1, account_id: account.id).tap do |script|
         script.voter_fields='["FirstName","LastName","Phone"]'
         script.notes << Note.new(note:"What's your favorite feature?")
         script.questions << question

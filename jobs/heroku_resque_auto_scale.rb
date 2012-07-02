@@ -21,6 +21,10 @@ module HerokuResqueAutoScale
         Resque.info[:working].to_i
       end
       
+      def restart_web_dyno(dyno)
+        @heroku.restart(ENV['HEROKU_APP'], dyno)
+      end
+      
     end
   end
 

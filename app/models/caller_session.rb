@@ -2,6 +2,7 @@ class CallerSession < ActiveRecord::Base
   include Rails.application.routes.url_helpers
   include CallCenter
   include CallerEvents
+  include CallPayment
   
   belongs_to :caller
   belongs_to :campaign
@@ -11,7 +12,6 @@ class CallerSession < ActiveRecord::Base
   
   scope :not_on_call, :conditions => {:on_call => false}
   scope :connected_to_voter, where('voter_in_progress is not null')
-  scope :held_for_duration, lambda { |minutes| {:conditions => ["hold_time_start <= ?", minutes.ago]} }
   scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
   scope :on_campaign, lambda{|campaign| where("campaign_id = #{campaign.id}") unless campaign.nil?}  
   scope :for_caller, lambda{|caller| where("caller_id = #{caller.id}") unless caller.nil?}  
@@ -26,6 +26,11 @@ class CallerSession < ActiveRecord::Base
   delegate :subscription_allows_caller?, :to => :caller
   delegate :activated?, :to => :caller
   delegate :funds_available?, :to => :caller
+  
+  module CallerType
+    TWILIO_CLIENT = "Twilio client"
+    PHONE = "Phone"
+  end
 
 
   def minutes_used
@@ -289,6 +294,15 @@ class CallerSession < ActiveRecord::Base
    def self.caller_time(caller, campaign, from, to)
      CallerSession.for_caller(caller).on_campaign(campaign).between(from, to).where("tCaller is NOT NULL").sum('ceil(TIMESTAMPDIFF(SECOND ,starttime,endtime)/60)').to_i
    end   
+   
+   def call_not_connected?
+     starttime.nil? || endtime.nil? || caller_type == CallerType::TWILIO_CLIENT
+   end
+
+   def call_time
+   ((starttime - endtime)/60).ceil
+   end
+   
    
   private
     

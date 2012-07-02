@@ -9,9 +9,17 @@ class ApplicationController < ActionController::Base
   before_filter :set_controller_name#, :preload_models
   # Scrub sensitive parameters from your log
   helper_method :phone_format, :phone_number_valid
+  rescue_from Timeout::Error, :with => :return_service_unavialble
 
   def testing?
     Rails.env == 'test'
+  end
+  
+  def return_service_unavialble
+    respond_to do |type|
+      type.all  { render :nothing => true, :status => 503 }
+    end
+    true
   end
   
 
@@ -165,117 +173,6 @@ class ApplicationController < ActionController::Base
     logger.info "SENT RT #{key} #{post_data} #{channel}"
   end
 
-
-  def handle_multi_disposition_submit(result_set_num,attempt_id)
-    #@session
-    logger.info "handle_multi_disposition_submit called for attempt #{attempt_id} result #{result_set_num}"
-    return if @session.blank?
-    @campaign = @session.campaign
-    @script = @campaign.script
-    @clean_incomplete=nil
-    if @script.incompletes!=nil && @script.incompletes.index("{")
-      incompletes=JSON.parse(@script.incompletes)
-    else
-      incompletes={}
-    end
-
-
-    #new style results
-    attempt = CallAttempt.find(attempt_id)
-    begin
-      result_json=YAML.load(attempt.result_json)
-    rescue
-      result_json={}
-    end
-    logger.info "before result_json=#{result_json.inspect}"
-
-    r=result_set_num
-    this_result_set = JSON.parse(eval("@script.result_set_#{r}" ))
-    thisKeypadval= params[:Digits].gsub("#","").gsub("*","").slice(0..1)
-    this_result_text=this_result_set["keypad_#{thisKeypadval}"]
-    result_json["result_#{r}"]=[this_result_text,thisKeypadval]
-    this_incomplete = incompletes[r.to_s] || []
-    logger.info "after result_json=#{result_json.inspect}"
-
-    if this_incomplete.index(thisKeypadval.to_s)
-      @clean_incomplete=true
-    else
-      @clean_incomplete=false
-    end
-
-    attempt = CallAttempt.find(attempt_id)
-    attempt.result_json=result_json
-    attempt.save
-
-    voter = attempt.voter
-    voter.result_json=result_json
-    voter.save
-
-  end
-  
-  
-
-  def handle_disposition_submit
-    #@session @clean_digit @caller @campaign
-    if @session.voter_in_progress!=nil
-      voter = Voter.find(@session.voter_in_progress)
-      voter.status='Call finished'
-      voter.result_digit=@clean_digit
-      voter.result_date=Time.now
-      voter.caller_id=@caller.id
-      attempt = CallAttempt.find(@session.attempt_in_progress)
-      #attempt = CallAttempt.find_by_voter_id(@session.voter_in_progress, :order=>"id desc", :limit=>1)
-      attempt.result_digit=@clean_digit
-
-      voter.attempt_id=attempt.id if attempt!=nil
-      if @campaign.script!=nil
-        if @clean_response.blank?
-          #old format
-          voter.result=eval("@campaign.script.keypad_" + @clean_digit)
-          attempt.result=eval("@campaign.script.keypad_" + @clean_digit)
-        else
-          voter.result=@clean_response
-          attempt.result=@clean_response
-        end
-        begin
-          if @campaign.script.incompletes!=nil
-            if @clean_incomplete!=nil
-              voter.call_back=@clean_incomplete
-            else
-              #old format
-              if @campaign.script.incompletes.index("{")==nil
-                if eval(@campaign.script.incompletes).index(@clean_digit)
-                  voter.call_back=true
-                else
-                  voter.call_back=false
-                end
-              end
-            end
-          end
-        rescue
-        end
-      end
-      attempt.save
-      if !@family_submitted.blank?
-        if @family_submitted.split("_").first=="Voter"
-          #this voter (primary family member anwered)
-          voter.family_id_answered=0
-        else
-          #another family member
-          voter.family_id_answered=@family_submitted.split("_").last
-        end
-      end
-      voter.save
-    end
-
-#    @session = CallerSession.find(params[:session])
-    if @session.endtime==nil
-#      @session.available_for_call=true
-      @session.voter_in_progress=nil
-      @session.attempt_in_progress=nil
-      @session.save
-    end
-  end
 
   def flash_message(where, error_message)
     if flash[where] and flash[where].class == Array

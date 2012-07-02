@@ -1,4 +1,5 @@
 class Account < ActiveRecord::Base
+  
   has_many :users
   has_many :campaigns, :conditions => {:active => true}
   has_many :all_campaigns, :class_name => 'Campaign'
@@ -13,6 +14,12 @@ class Account < ActiveRecord::Base
   has_many :blocked_numbers
   has_many :moderators
   has_many :payments
+  
+  module Subscription_Type
+    MANUAL = "Manual"
+    PER_MINUTE = "Per Minute"
+    PER_CALLER = "Per Caller"    
+  end
   
   def current_balance
     self.payments.where("amount_remaining>0").inject(0) do |sum, payment|
@@ -62,21 +69,29 @@ class Account < ActiveRecord::Base
   end
   
   def subscription_allows_caller?
-    if self.trial? || self.subscription_name=="Per Minute" || self.subscription_name=="Manual"
+    if self.trial? || per_minute_subscription? || manual_subscription?
       return true
-    elsif self.subscription_name=="Per Caller" && self.callers_in_progress.length <= self.subscription_count
+    elsif per_caller_subscription? && self.callers_in_progress.length <= self.subscription_count
       return true
     else
       return false
     end
   end
+  
+  def per_minute_subscription?
+    subscription_name == Subscription_Type::PER_MINUTE
+  end
+  
+  def manual_subscription?
+    subscription_name == Subscription_Type::MANUAL
+  end
+  
+  def per_caller_subscription?
+    subscription_name == Subscription_Type::PER_CALLER
+  end
 
   def funds_available?
-    if self.subscription_name=="Per Caller" || self.subscription_name=="Manual"
-      return true
-    else
-      self.current_balance>0
-    end
+    (per_caller_subscription? || manual_subscription?) ? true : current_balance>0
   end
       
   def create_recurly_account_code
@@ -165,17 +180,15 @@ class Account < ActiveRecord::Base
   
 
   def check_autorecharge(amount_remaining)
-    if self.autorecharge_enabled? && self.autorecharge_amount >= amount_remaining
-
+    if autorecharge_enabled? && autorecharge_amount >= amount_remaining
       begin
-        if self.status != 'autorecharge_pending'
-          self.update_attribute(:status, 'autorecharge_pending')
-          new_payment=Payment.charge_recurly_account(self, self.autorecharge_amount, "Auto-recharge")
+        if status != 'autorecharge_pending'
+          update_attribute(:status, 'autorecharge_pending')
+          new_payment = Payment.charge_recurly_account(self, self.autorecharge_amount, "Auto-recharge")
           if new_payment.nil?
-            #charge failed
              flash_now(:error, "There was a problem charging your credit card.  Please try updating your billing information or contact support for help.")
           end
-          self.update_attribute(:status, '')
+          update_attribute(:status, '')
           return new_payment
        end
       rescue ActiveRecord::StaleObjectError
@@ -183,9 +196,6 @@ class Account < ActiveRecord::Base
       end
       
     end
-
-    return false
-
   end
   
   def variable_abandonment?

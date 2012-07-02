@@ -116,24 +116,5 @@ class VoterList < ActiveRecord::Base
     end
     return csv_to_system_map
   end
-  
-  
 
-  private
-  def new_lead(phone_number)
-    existing_voter_entry = Voter.existing_phone_in_campaign(phone_number, self.campaign_id)
-    if existing_voter_entry.present?
-      if existing_voter_entry.detect { |entry| entry.voter_list_id == self.id }
-        existing_voter_entry = existing_voter_entry.first
-        existing_voter_entry.num_family += 1
-        existing_voter_entry.save
-        lead = Family.new(:voter => existing_voter_entry, :Phone => phone_number, :voter_list_id => id, :account_id => account_id, :campaign_id => campaign_id)
-      else
-        return nil
-      end
-    else
-      lead = Voter.create(:Phone => phone_number, :voter_list => self, :account_id => account_id, :campaign_id => campaign_id)
-    end
-    lead
-  end
 end

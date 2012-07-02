@@ -4,6 +4,7 @@ class CallAttempt < ActiveRecord::Base
 
   include Rails.application.routes.url_helpers
   include LeadEvents
+  include CallPayment
   belongs_to :voter
   belongs_to :campaign
   belongs_to :caller
@@ -32,13 +33,6 @@ class CallAttempt < ActiveRecord::Base
     "#{self.recording_url.gsub("api.twilio.com", "recordings.impactdialing.com")}.mp3" if recording_url
   end
 
-  def ring_time
-    if self.answertime!=nil && self.created_at!=nil
-      (self.answertime - self.created_at).to_i
-    else
-      nil
-    end
-  end
 
   def duration
     return nil unless connecttime
@@ -204,6 +198,15 @@ class CallAttempt < ActiveRecord::Base
   def self.lead_time(caller, campaign, from, to)
     CallAttempt.for_campaign(campaign).for_caller(caller).between(from, to).without_status([CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED]).sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)').to_i
   end
+  
+  def call_not_connected?
+    connecttime.nil? || call_end.nil?
+  end
+  
+  def call_time
+  ((call_end - connecttime)/60).ceil
+  end
+  
 
   module Status
     VOICEMAIL = 'Message delivered'
@@ -225,11 +228,6 @@ class CallAttempt < ActiveRecord::Base
     ANSWERED =  [INPROGRESS, SUCCESS]
   end
 
-  def debit
-    return false if self.connecttime.nil? || self.call_end.nil?
-    call_time = ((self.call_end - self.connecttime)/60).ceil
-    Payment.debit(call_time, self)
-  end
   
   def redirect_caller(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
     unless caller_session.nil?
