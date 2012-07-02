@@ -48,6 +48,10 @@ class Robo < Campaign
     result
   end
   
+  def cost_per_minute
+    script.nil? ? 0.04 : 0.07
+  end
+  
   private
   def dial_voters
     self.voter_lists.each do |voter_list|

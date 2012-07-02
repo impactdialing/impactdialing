@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120612075728) do
+ActiveRecord::Schema.define(:version => 20120629090241) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -86,7 +86,6 @@ ActiveRecord::Schema.define(:version => 20120612075728) do
     t.integer  "caller_id"
     t.datetime "connecttime"
     t.integer  "caller_session_id"
-    t.integer  "caller_hold_time"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "result"
@@ -102,9 +101,7 @@ ActiveRecord::Schema.define(:version => 20120612075728) do
     t.datetime "tStartTime"
     t.datetime "tEndTime"
     t.float    "tPrice"
-    t.datetime "answertime"
     t.string   "dialer_mode"
-    t.text     "result_json"
     t.datetime "scheduled_date"
     t.string   "recording_url"
     t.integer  "recording_duration"
@@ -151,12 +148,9 @@ ActiveRecord::Schema.define(:version => 20120612075728) do
     t.integer  "campaign_id"
     t.datetime "endtime"
     t.datetime "starttime"
-    t.integer  "num_calls"
-    t.integer  "avg_wait"
     t.string   "sid"
     t.boolean  "available_for_call",   :default => false
     t.integer  "voter_in_progress_id"
-    t.datetime "hold_time_start"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.boolean  "on_call",              :default => false
@@ -181,6 +175,7 @@ ActiveRecord::Schema.define(:version => 20120612075728) do
     t.string   "digit"
     t.boolean  "debited",              :default => false
     t.integer  "question_id"
+    t.string   "caller_type"
   end
 
   add_index "caller_sessions", ["caller_id"], :name => "index_caller_sessions_on_caller_id"
@@ -198,11 +193,6 @@ ActiveRecord::Schema.define(:version => 20120612075728) do
     t.string   "password"
     t.boolean  "is_phones_only", :default => false
     t.integer  "campaign_id"
-  end
-
-  create_table "callers_campaigns", :id => false, :force => true do |t|
-    t.integer "caller_id"
-    t.integer "campaign_id"
   end
 
   create_table "calls", :force => true do |t|
@@ -252,26 +242,18 @@ ActiveRecord::Schema.define(:version => 20120612075728) do
     t.string   "campaign_id"
     t.string   "group_id"
     t.string   "name"
-    t.string   "keypad_0"
     t.integer  "account_id"
     t.integer  "script_id"
     t.boolean  "active",                   :default => true
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.float    "ratio_2",                  :default => 33.0
-    t.float    "ratio_3",                  :default => 20.0
-    t.float    "ratio_4",                  :default => 12.0
     t.float    "ratio_override",           :default => 0.0
-    t.string   "ending_window_method",     :default => "Not used"
     t.string   "caller_id"
-    t.boolean  "caller_id_verified",       :default => false
     t.boolean  "use_answering",            :default => true
     t.string   "type",                     :default => "preview"
     t.integer  "recording_id"
     t.boolean  "use_recordings",           :default => false
-    t.integer  "max_calls_per_caller",     :default => 20
     t.string   "callin_number",            :default => "4157020991"
-    t.boolean  "use_web_ui",               :default => true
     t.integer  "answer_detection_timeout", :default => 20
     t.boolean  "calls_in_progress",        :default => false
     t.boolean  "robo",                     :default => false
@@ -283,11 +265,6 @@ ActiveRecord::Schema.define(:version => 20120612075728) do
     t.string   "time_zone"
     t.float    "acceptable_abandon_rate"
     t.integer  "voicemail_script_id"
-  end
-
-  create_table "campaigns_voter_lists", :id => false, :force => true do |t|
-    t.integer "campaign_id"
-    t.integer "voter_list_id"
   end
 
   create_table "custom_voter_field_values", :force => true do |t|
@@ -324,62 +301,6 @@ ActiveRecord::Schema.define(:version => 20120612075728) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "campaign_id"
-  end
-
-  create_table "dumps", :force => true do |t|
-    t.integer  "request_id"
-    t.integer  "first_line"
-    t.integer  "last_line"
-    t.integer  "completed_id"
-    t.integer  "completed_lineno"
-    t.float    "duration"
-    t.integer  "status"
-    t.string   "url"
-    t.integer  "params_id"
-    t.integer  "params_line"
-    t.string   "params"
-    t.string   "guid"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-  end
-
-  add_index "dumps", ["guid"], :name => "index_dumps_on_guid"
-
-  create_table "families", :force => true do |t|
-    t.integer  "voter_id"
-    t.string   "Phone"
-    t.string   "CustomID"
-    t.string   "LastName"
-    t.string   "FirstName"
-    t.string   "MiddleName"
-    t.string   "Suffix"
-    t.string   "Email"
-    t.string   "result"
-    t.integer  "campaign_id"
-    t.integer  "account_id"
-    t.boolean  "active",                 :default => true
-    t.datetime "created_at"
-    t.datetime "updated_at"
-    t.string   "status",                 :default => "not called"
-    t.integer  "voter_list_id"
-    t.integer  "caller_session_id"
-    t.boolean  "call_back",              :default => false
-    t.integer  "caller_id"
-    t.string   "result_digit"
-    t.string   "Age"
-    t.string   "Gender"
-    t.integer  "attempt_id"
-    t.datetime "result_date"
-    t.integer  "last_call_attempt_id"
-    t.datetime "last_call_attempt_time"
-  end
-
-  create_table "lists", :force => true do |t|
-    t.string   "name"
-    t.integer  "group_id"
-    t.integer  "user_id"
-    t.datetime "created_at"
-    t.datetime "updated_at"
   end
 
   create_table "moderators", :force => true do |t|
@@ -463,90 +384,8 @@ ActiveRecord::Schema.define(:version => 20120612075728) do
     t.integer  "account_id"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.text     "keypad_1"
-    t.text     "keypad_2"
-    t.text     "keypad_3"
-    t.text     "keypad_4"
-    t.text     "keypad_5"
-    t.text     "keypad_6"
-    t.text     "keypad_7"
-    t.text     "keypad_8"
-    t.text     "keypad_9"
-    t.text     "keypad_10"
-    t.text     "keypad_11"
-    t.text     "keypad_12"
-    t.text     "keypad_13"
-    t.text     "keypad_14"
-    t.text     "keypad_15"
-    t.text     "keypad_16"
-    t.text     "keypad_17"
-    t.text     "keypad_18"
-    t.text     "keypad_19"
-    t.text     "keypad_20"
-    t.text     "keypad_21"
-    t.text     "keypad_22"
-    t.text     "keypad_23"
-    t.text     "keypad_24"
-    t.text     "keypad_25"
-    t.text     "keypad_26"
-    t.text     "keypad_27"
-    t.text     "keypad_28"
-    t.text     "keypad_29"
-    t.text     "keypad_30"
-    t.text     "keypad_31"
-    t.text     "keypad_32"
-    t.text     "keypad_33"
-    t.text     "keypad_34"
-    t.text     "keypad_35"
-    t.text     "keypad_36"
-    t.text     "keypad_37"
-    t.text     "keypad_38"
-    t.text     "keypad_39"
-    t.text     "keypad_40"
-    t.text     "keypad_41"
-    t.text     "keypad_42"
-    t.text     "keypad_43"
-    t.text     "keypad_44"
-    t.text     "keypad_45"
-    t.text     "keypad_46"
-    t.text     "keypad_47"
-    t.text     "keypad_48"
-    t.text     "keypad_49"
-    t.string   "incompletes"
     t.text     "voter_fields",  :limit => 2147483647
-    t.text     "result_set_1"
-    t.text     "result_set_2"
-    t.text     "result_set_3"
-    t.text     "result_set_4"
-    t.text     "result_set_5"
-    t.text     "result_set_6"
-    t.text     "result_set_7"
-    t.text     "result_set_8"
-    t.text     "result_set_9"
-    t.text     "result_set_10"
-    t.string   "note_1"
-    t.string   "note_2"
-    t.string   "note_3"
-    t.string   "note_4"
-    t.string   "note_5"
-    t.string   "note_6"
-    t.string   "note_7"
-    t.string   "note_8"
-    t.string   "note_9"
-    t.string   "note_10"
     t.boolean  "robo",                                :default => false
-    t.text     "result_set_11"
-    t.text     "result_set_12"
-    t.text     "result_set_13"
-    t.text     "result_set_14"
-    t.text     "result_set_15"
-    t.text     "result_set_16"
-    t.string   "note_11"
-    t.string   "note_12"
-    t.string   "note_13"
-    t.string   "note_14"
-    t.string   "note_15"
-    t.string   "note_16"
     t.boolean  "for_voicemail"
   end
 
@@ -683,7 +522,10 @@ ActiveRecord::Schema.define(:version => 20120612075728) do
   add_index "voters", ["attempt_id"], :name => "index_voters_on_attempt_id"
   add_index "voters", ["caller_session_id"], :name => "index_voters_on_caller_session_id"
   add_index "voters", ["campaign_id", "active", "status", "call_back"], :name => "index_voters_on_campaign_id_and_active_and_status_and_call_back"
+  add_index "voters", ["campaign_id", "status", "id"], :name => "index_voters_on_campaign_id_and_status_and_id"
+  add_index "voters", ["campaign_id", "status"], :name => "index_voters_on_campaign_id_and_status"
   add_index "voters", ["campaign_id"], :name => "index_voters_on_campaign_id"
+  add_index "voters", ["enabled", "campaign_id", "last_call_attempt_time", "status"], :name => "voters_enabled_campaign_time_status"
   add_index "voters", ["status"], :name => "index_voters_on_status"
   add_index "voters", ["voter_list_id"], :name => "index_voters_on_voter_list_id"
 

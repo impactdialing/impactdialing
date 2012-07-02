@@ -112,5 +112,18 @@ describe Robo do
     
   end
   
+  describe "cost per call" do
+    it "should be .04 for non interactive calls" do
+      robo = Factory(:robo)
+      robo.cost_per_minute.should eq(0.04)
+    end
+    
+    it "should be .04 for  interactive calls" do
+      robo = Factory(:robo, script: Factory(:script))
+      robo.cost_per_minute.should eq(0.07)
+    end
+    
+  end
+  
 
 end

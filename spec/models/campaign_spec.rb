@@ -187,11 +187,6 @@ describe Campaign do
    end
       
    describe "scopes" do
-     it "returns campaigns using web ui" do
-       campaign1 = Factory(:preview, :use_web_ui => true)
-       campaign2 = Factory(:preview, :use_web_ui => false)
-       Campaign.using_web_ui.should == [campaign1]
-     end
      
      it "gives only active voter lists" do
        campaign = Factory(:preview)
@@ -243,10 +238,16 @@ describe Campaign do
      it "which are manual" do
        Campaign.manual.should == [@manual_campaign]
      end
-   end
-     
-     
-     
+   end     
+  end
+  
+  describe "cost_per_minute" do
+    
+    it "should be .09" do
+      campaign = Factory(:preview)
+      campaign.cost_per_minute.should eq(0.09)
+    end
+    
   end
      
 end

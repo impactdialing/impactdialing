@@ -130,26 +130,6 @@ describe VoterList do
         voter.Suffix.should be_blank
       end
 
-      it "should add a family member when two voters in the same voters list have same phone number" do
-        pending "family functionality has been turned off" do
-          Family.count.should == 1
-          Voter.first.num_family.should == 2
-
-          family_member = Family.first
-          family_member.campaign_id.should == campaign.id
-          family_member.account_id.should == user.account.id
-          family_member.voter_list_id.should == voter_list.id
-
-          # check some values from the csv fixture
-          family_member.Phone.should == "1234567895"
-          family_member.FirstName.should == "Chocolate"
-          family_member.LastName.should == "Bar"
-          family_member.Email.should == "choco@bar.com"
-          family_member.MiddleName.should be_blank
-          family_member.Suffix.should be_blank
-        end
-      end
-
       it "should ignore the same phone is repeated in another voters list for the same campaign" do
         s3 = mock
         VoterList.should_receive(:read_from_s3).twice.and_return(s3)
