@@ -1,10 +1,10 @@
 <% if @downloaded_reports.nil? || @downloaded_reports.size==0 %>
-    <p>You haven't any active downloaded report.</p>
+    <p>You don't have any available download reports.</p>
 <% else %>
     <table>
       <tr>
         <th>Link</th>
-        <th>Created At</th>
+        <th>Created at</th>
       </tr>
       <% @downloaded_reports.each do |report| %>
           <tr>
