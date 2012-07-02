@@ -17,7 +17,7 @@ class Moderator < ActiveRecord::Base
   def self.campaigns_information(campaigns)
     results = []
     campaigns.each do |campaign|
-      callers = campaign.caller_sessions.on_call
+      callers = campaign.caller_sessions.on_call.size
       on_hold = campaign.caller_sessions.available.size
       on_call = campaign.caller_sessions.not_available.size
       wrap_up = campaign.call_attempts.between(3.minutes.ago, Time.now).with_status(CallAttempt::Status::SUCCESS).not_wrapped_up.size
