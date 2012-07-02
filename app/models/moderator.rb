@@ -24,7 +24,7 @@ class Moderator < ActiveRecord::Base
       ringing_lines = campaign.call_attempts.between(20.seconds.ago, Time.now).with_status(CallAttempt::Status::RINGING).size
       live_lines = campaign.call_attempts.between(5.minutes.ago, Time.now).with_status(CallAttempt::Status::INPROGRESS).size
       numbers_remaining = Voter.remaining_voters_count_for("campaign_id", campaign.id)
-      numbers_available = campaign.all_voters.enabled.avialable_to_be_retried(@campaign.recycle_rate).count + campaign.all_voters.scheduled.count + campaign.all_voters.by_status(CallAttempt::Status::ABANDONED).count
+      numbers_available = campaign.all_voters.enabled.avialable_to_be_retried(campaign.recycle_rate).count + campaign.all_voters.scheduled.count + campaign.all_voters.by_status(CallAttempt::Status::ABANDONED).count
       results << {id: campaign.id, name: campaign.name, logged_in: callers, on_call: on_call, wrap_up: wrap_up , on_hold: on_hold ,  
         live_lines: live_lines, ringing_lines: ringing_lines,  numbers_remaining: numbers_remaining , numbers_available: numbers_available}
     end
