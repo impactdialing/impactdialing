@@ -15,16 +15,16 @@ class Moderator < ActiveRecord::Base
   end
   
   def self.campaigns_information(campaigns)
-    results = []
-    campaigns.each do |campaign|
-      callers, on_hold, on_call = campaign.callers_status
-      wrap_up, ringing_lines, live_lines = campaign.call_status
-      numbers_remaining = Voter.remaining_voters_count_for("campaign_id", campaign.id)
-      numbers_available = campaign.leads_available_now      
-      results << {id: campaign.id, name: campaign.name, logged_in: callers, on_call: on_call, wrap_up: wrap_up , on_hold: on_hold ,  
-      live_lines: live_lines, ringing_lines: ringing_lines,  numbers_remaining: numbers_remaining , numbers_available: numbers_available}
-    end
-    results    
+    campaigns.collect { |campaign| campaign_information(campaign) }
+  end
+  
+  def self.campaign_information(campaign)
+    callers, on_hold, on_call = campaign.callers_status
+    wrap_up, ringing_lines, live_lines = campaign.call_status
+    numbers_remaining = Voter.remaining_voters_count_for("campaign_id", campaign.id)
+    numbers_available = campaign.leads_available_now          
+    {id: campaign.id, name: campaign.name, logged_in: callers, on_call: on_call, wrap_up: wrap_up , on_hold: on_hold ,  
+    live_lines: live_lines, ringing_lines: ringing_lines,  numbers_remaining: numbers_remaining , numbers_available: numbers_available}    
   end
   
   def stop_monitoring(caller_session)
@@ -34,12 +34,12 @@ class Moderator < ActiveRecord::Base
   end
   
   def self.update_dials_in_progress(campaign)
-    publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
+    publish_event(campaign, 'update_dials_in_progress',campaign_information(campaign))
   end
   
   def self.update_dials_in_progress_sync(campaign)
     campaign.account.moderators.last_hour.active.each do|moderator|
-      Pusher[moderator.session].trigger!('update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
+      Pusher[moderator.session].trigger!('update_dials_in_progress', campaign_information(campaign))
     end 
   end
   
