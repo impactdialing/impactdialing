@@ -40,7 +40,7 @@ gem "redis", "~>2.2.2"
 gem "hiredis", "~>0.4.5"
 gem "formtastic", "~>2.2.1"
 gem "cocoon", "~>1.0.22"
-gem "rack-timeout", "~>0.0.3"
+
 
 
 
