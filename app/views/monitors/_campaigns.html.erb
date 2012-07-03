@@ -18,7 +18,7 @@
         <tr id="<%= "campaign_"+information[:id].to_s %>" class="campaign <%= cycle("odd", "even") %>">
           <td><%= information[:name] %></td>
           <td class="callers_logged_in"><%= information[:logged_in] %></td>
-          <td class="on_call"><%= information[:logged_in] %></td>       
+          <td class="on_call"><%= information[:on_call] %></td>       
           <td class="wrap_up"><%= information[:wrap_up] %></td>       
           <td class="on_hold"><%= information[:on_hold] %></td>                 
           <td class="live_lines"><%= information[:live_lines] %></td>       
