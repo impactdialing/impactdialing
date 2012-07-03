@@ -251,25 +251,22 @@ describe Campaign do
   
   describe "callers_status" do
     
+    before (:each) do
+      @campaign = Factory(:preview, :type => 'preview')
+      @caller_session1 = Factory(:caller_session, on_call:true, available_for_call: true, campaign_id: @campaign.id)
+      @caller_session2 = Factory(:caller_session, on_call:true, available_for_call: false, campaign_id: @campaign.id)            
+    end
+    
     it "should return callers logged in" do
-      campaign = Factory(:preview, :type => 'preview')
-      caller_session1 = Factory(:caller_session, on_call:true, available_for_call: true, campaign_id: campaign.id)
-      caller_session2 = Factory(:caller_session, on_call:true, available_for_call: true, campaign_id: campaign.id)      
-      campaign.callers_status[0].should eq(2)
+      @campaign.callers_status[0].should eq(2)
+    end
+    
+    it "should return callers on hold" do
+      @campaign.callers_status[1].should eq(1)
     end
     
     it "should return callers on call" do
-      campaign = Factory(:preview, :type => 'preview')
-      caller_session1 = Factory(:caller_session, on_call:true, available_for_call: false, campaign_id: campaign.id)
-      caller_session2 = Factory(:caller_session, on_call:true, available_for_call: false, campaign_id: campaign.id)      
-      campaign.callers_status[1].should eq(2)
-    end
-    
-    it "should return callers on call" do
-      campaign = Factory(:preview, :type => 'preview')
-      caller_session1 = Factory(:caller_session, on_call:true, available_for_call: true, campaign_id: campaign.id)
-      caller_session2 = Factory(:caller_session, on_call:true, available_for_call: false, campaign_id: campaign.id)      
-      campaign.callers_status[2].should eq(2)
+      @campaign.callers_status[2].should eq(1)
     end
     
     
