@@ -42,9 +42,6 @@ gem "formtastic", "~>2.2.1"
 gem "cocoon", "~>1.0.22"
 
 
-
-
-
 group :development, :test do
   gem 'rspec'
   gem 'ruby-debug19'
