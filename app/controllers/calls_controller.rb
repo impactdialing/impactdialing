@@ -6,8 +6,12 @@ class CallsController < ApplicationController
   before_filter :find_call, :only => [:hangup]
 
   
-  def flow
-    render xml:  @call.run(params[:event])
+  def flow    
+    unless @call.nil?
+      render xml:  @call.run(params[:event]) 
+    else      
+      render xml: Twilio::Verb.hangup
+    end
   end
   
   def submit_result
