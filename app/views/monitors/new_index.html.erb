@@ -8,7 +8,8 @@
 
   <script type="text/javascript">
       var pusher = new Pusher('<%= Pusher.key %>');      
-      var monitors = new Monitors()
+      var channel = pusher.subscribe(session_id);  
+      var monitors = new Monitors(channel)
       monitors.setup_twilio("<%= @token %>")
       $(window).bind("beforeunload", function(){
          monitors.de_activate_monitor($('monitor_session').text());

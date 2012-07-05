@@ -1,5 +1,4 @@
 class Moderator < ActiveRecord::Base
-  include Redis::Objects
   belongs_to :caller_session
   belongs_to :account
   
