@@ -1,4 +1,6 @@
-var Monitors = {}
+var Monitors = function(channel){
+	this.channel = channel;	
+}
 
 
 Monitors.prototype.setup_twilio = function(token){
@@ -9,6 +11,25 @@ Monitors.prototype.setup_twilio = function(token){
     alert(error.message);
   });
 };
+
+Monitors.prototype.create_monitor_session = function(){
+	$.ajax({
+        url : "/client/monitors/monitor_session",
+        type : "GET",
+        success : function(response) {
+           monitor_session = response;
+           $('monitor_session').text(monitor_session)
+           subscribe_and_bind_events_monitoring(monitor_session);
+        }
+    });      
+};
+
+Monitors.prototype.abc = function(){
+  this.channel.bind('set_status', function(data){
+    $('status').text(data.status_msg);
+  });
+  
+}
 
 Monitors.prototype.monitor = function(session_id, action, monitor_session_id){
   params = {'session_id': session_id, 'type': action, 'monitor_session' : monitor_session_id};
