@@ -1,0 +1,33 @@
+<% content_for :javascripts do %>
+<script type="text/javascript" src="https://static.twilio.com/libs/twiliojs/1.0/twilio.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js"></script>
+<script src="https://d3dy5gmtp8yhk7.cloudfront.net/1.11/pusher.min.js" type="text/javascript" ></script>
+<%= javascript_include_tag %>
+<%= javascript_include_tag 'monitors/jquery.stopwatch', 'monitors/monitor_pusher', 'monitors/assign_caller_to_campaign','ICanHaz.min.js' %>
+
+
+  <script type="text/javascript">
+      var pusher = new Pusher('<%= Pusher.key %>');      
+      var monitors = new Monitors()
+      monitors.setup_twilio("<%= @token %>")
+      $(window).bind("beforeunload", function(){
+         monitors.de_activate_monitor($('monitor_session').text());
+      });
+      
+  </script>
+
+
+<% end %>
+<h1>Monitor</h1>
+<monitor_session style="display:none"></monitor_session>
+
+<%= render :partial => 'campaigns' %>
+<br>
+
+
+<br>
+
+<h2>System-wide settings</h2>
+<p>Call recording is currently <%= @account.record_calls? ? "on" : "off" %>. Links to recordings will appear in each campaign's Download report.</p>
+<p class="actions"><%= link_to "Turn call recording #{@account.record_calls? ? "off" : "on" }", {:action=>"toggle_call_recording"}, {:class => 'action secondary'}, %></p>
+<p class="actions"><%= link_to "Manage Do Not Call list", blocked_numbers_path, :class => 'action secondary' %></p>

@@ -11,6 +11,15 @@ class MonitorsController < ClientController
     @token = twilio_capability.generate
   end
   
+  def new_index
+    @campaigns = account.campaigns.with_running_caller_sessions
+    @campaigns_information = Moderator.campaigns_information(@campaigns)
+    @all_campaigns = account.campaigns.manual.active
+    twilio_capability = Twilio::Util::Capability.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+    twilio_capability.allow_client_outgoing(MONITOR_TWILIO_APP_SID)
+    @token = twilio_capability.generate    
+  end
+  
 
   def start
     caller_session = CallerSession.find(params[:session_id])
@@ -53,7 +62,6 @@ class MonitorsController < ClientController
   
   def deactivate_session
     moderator = Moderator.find_by_session(params[:monitor_session]) 
-    puts moderator.inspect
     moderator.update_attributes(:active => false) unless moderator.nil?
     render nothing: true
   end
