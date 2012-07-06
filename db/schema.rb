@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120706030646) do
+ActiveRecord::Schema.define(:version => 20120706043413) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -314,6 +314,7 @@ ActiveRecord::Schema.define(:version => 20120706030646) do
   end
 
   add_index "moderators", ["active", "account_id", "created_at"], :name => "index_moderators_on_active_and_account_id_and_created_at"
+  add_index "moderators", ["session", "active"], :name => "index_moderators_on_session_and_active"
 
   create_table "note_responses", :force => true do |t|
     t.integer "voter_id",        :null => false
