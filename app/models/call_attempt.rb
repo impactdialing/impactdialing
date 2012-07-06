@@ -163,7 +163,12 @@ class CallAttempt < ActiveRecord::Base
     
   def disconnect_call
     update_attributes(status: CallAttempt::Status::SUCCESS, recording_duration: call.recording_duration, recording_url: call.recording_url)
-    voter.update_attribute(:status, CallAttempt::Status::SUCCESS)
+    begin
+      voter.update_attribute(:status, CallAttempt::Status::SUCCESS)
+    rescue ActiveRecord::StaleObjectError
+      voter_to_update = Voter.find(voter.id)
+      voter_to_update.update_attribute(:status, CallAttempt::Status::SUCCESS)
+    end
   end
   
   
