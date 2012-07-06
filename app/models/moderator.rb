@@ -38,9 +38,17 @@ class Moderator < ActiveRecord::Base
     publish_event(campaign, 'update_dials_in_progress',campaign_information(campaign))
   end
   
+  def self.active_moderators(campaign)
+    campaign.account.moderators.last_hour.active.select('session')
+  end
+  
   def self.update_dials_in_progress_sync(campaign)
-    campaign.account.moderators.last_hour.active.each do|moderator|
-      Pusher[moderator.session].trigger!('update_dials_in_progress', campaign_information(campaign))
+    Moderator.active_moderators(campaign).each do|moderator|
+      begin
+        Pusher[moderator.session].trigger!('update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
+      rescue Exception => e
+        Rails.logger.error "Pusher exception: #{e}"    
+      end
     end 
   end
   
@@ -57,7 +65,7 @@ class Moderator < ActiveRecord::Base
   end
   
   def self.publish_event(campaign, event, data)
-    campaign.account.moderators.last_hour.active.each do |moderator|
+    Moderator.active_moderators(campaign).each do |moderator|
       EM.run {
         deferrable = Pusher[moderator.session].trigger_async(event, data)
         deferrable.callback { 
