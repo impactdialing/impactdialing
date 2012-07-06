@@ -13,3 +13,9 @@ deactivate_monitor:
   description: "This job processes deactivates unnecessary monitor tabs"
 
 
+debit_job:
+  cron: "*/5 * * * *"
+  class: DebiterJob
+  queue: background_worker_job
+  args: 
+  description: "This job processes debits from user account"
