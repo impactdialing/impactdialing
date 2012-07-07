@@ -27,10 +27,28 @@ class Account < ActiveRecord::Base
     end
   end
   
+  def update_caller_password(password)
+    hash_caller_password(password)
+    self.save
+  end
+  
   def hash_caller_password(password)
     self.caller_hashed_password_salt = ActiveSupport::SecureRandom.base64(8)
     self.caller_password = Digest::SHA2.hexdigest(caller_hashed_password_salt + password)    
   end
+  
+  def self.authenticate_caller?(pin, password)
+    return false unless password
+    caller = Caller.find_by_pin(pin)
+    return nil if caller.nil?
+    account = caller.account
+    if account.caller_password == Digest::SHA2.hexdigest(account.caller_hashed_password_salt + password)
+      caller
+    else
+      nil
+    end
+  end
+  
   
   
   def trial?

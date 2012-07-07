@@ -9,7 +9,7 @@
     </div>
 	  <p>The utilization table shows how much time your callers actually spent on the phone. Each call is rounded to the nearest second.</p>
     <table>
-      <%= render :partial => 'shared/utilization', :locals => {:report => @caller} %>
+      <%= render :partial => 'shared/utilization', :locals => {:report => @caller, :usage=> @caller_usage} %>
 		</table>
 		<p>The billable table shows how much time you are being billed for. Each call is rounded to the nearest minute. Your caller time is only billed when your callers dial in, instead of using a microphone on their computer.</p>
 		<table>
@@ -19,15 +19,15 @@
       </tr>
       <tr>
         <td>Caller</td>
-        <td><%= @caller_time %></td>
+        <td><%= @caller_usage.caller_time %></td>
       </tr>
       <tr>
         <td>Leads</td>
-        <td><%= @lead_time %></td>
+        <td><%= @caller_usage.lead_time %></td>
       </tr>
       <tr>
         <td>Total</td>
-        <td><%= @total_time %></td>
+        <td><%= @caller_usage.total_time %></td>
       </tr>
       
     </table>
