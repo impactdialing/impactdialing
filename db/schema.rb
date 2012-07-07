@@ -11,26 +11,28 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120706081540) do
+ActiveRecord::Schema.define(:version => 20120706090013) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "domain"
-    t.boolean  "activated",                 :default => false
-    t.boolean  "record_calls",              :default => false
+    t.boolean  "activated",                   :default => false
+    t.boolean  "record_calls",                :default => false
     t.string   "recurly_account_code"
     t.string   "subscription_name"
     t.integer  "subscription_count"
-    t.boolean  "subscription_active",       :default => false
+    t.boolean  "subscription_active",         :default => false
     t.string   "recurly_subscription_uuid"
-    t.boolean  "autorecharge_enabled",      :default => false
+    t.boolean  "autorecharge_enabled",        :default => false
     t.float    "autorecharge_trigger"
     t.float    "autorecharge_amount"
-    t.integer  "lock_version",              :default => 0
+    t.integer  "lock_version",                :default => 0
     t.string   "status"
     t.string   "abandonment"
+    t.text     "caller_password"
+    t.text     "caller_hashed_password_salt"
   end
 
   create_table "answers", :force => true do |t|
