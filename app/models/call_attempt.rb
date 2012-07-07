@@ -140,7 +140,7 @@ class CallAttempt < ActiveRecord::Base
         voter.update_attributes(status:  CallAttempt::Status::MAP[call.call_status], last_call_attempt_time:  Time.now, call_back: false)
       rescue ActiveRecord::StaleObjectError
         voter_to_update = Voter.find(voter.id)
-        voter.update_attributes(status:  CallAttempt::Status::MAP[call.call_status], last_call_attempt_time:  Time.now, call_back: false)
+        voter_to_update.update_attributes(status:  CallAttempt::Status::MAP[call.call_status], last_call_attempt_time:  Time.now, call_back: false)
       end
     end
   end
