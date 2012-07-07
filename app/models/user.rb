@@ -42,6 +42,7 @@ class User < ActiveRecord::Base
     self.salt = ActiveSupport::SecureRandom.base64(8)
     self.hashed_password = Digest::SHA2.hexdigest(self.salt + @new_password)
   end
+  
 
   def self.authenticate(email, password)
     if user = find_by_email(email)

@@ -27,6 +27,12 @@ class Account < ActiveRecord::Base
     end
   end
   
+  def hash_caller_password(password)
+    self.caller_hashed_password_salt = ActiveSupport::SecureRandom.base64(8)
+    self.caller_password = Digest::SHA2.hexdigest(caller_hashed_password_salt + password)    
+  end
+  
+  
   def trial?
     self.payments.count==1 && self.payments.first.notes=="Trial credit" && recurly_subscription_uuid.nil?
   end
