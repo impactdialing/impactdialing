@@ -5,7 +5,7 @@ module Callers
     layout "phones_only_caller"
     
     def check_login
-       redirect_to_login and return if session[:phones_only_caller].blank?
+       redirect_to :action =>"index" and return if session[:phones_only_caller].blank?
        begin
          @caller = Caller.find(session[:phones_only_caller])
          @account = @caller.account
