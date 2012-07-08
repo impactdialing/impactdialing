@@ -25,6 +25,7 @@ ImpactDialing::Application.routes.draw do
         get :report
         get :usage
         get :call_details
+        get :logout
       end
     end
   end
