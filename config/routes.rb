@@ -23,6 +23,7 @@ ImpactDialing::Application.routes.draw do
     resources :phones_only do
       collection do
         get :report
+        get :usage
       end
     end
   end

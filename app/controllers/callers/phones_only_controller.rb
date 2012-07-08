@@ -1,6 +1,7 @@
 module Callers
   class PhonesOnlyController < ApplicationController
-    before_filter :check_login, :only=> [:report]
+    before_filter :check_login, :only=> [:report, :usage]
+    include TimeZoneHelper
     layout "client"
     
     def check_login
