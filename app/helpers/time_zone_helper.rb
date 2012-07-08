@@ -19,7 +19,7 @@ module TimeZoneHelper
     time_zone = ActiveSupport::TimeZone.new(campaign.try(:time_zone) || caller.try(:campaign).try(:time_zone) || "UTC")
       begin
         formatted_from_date = format_time(from_date, time_zone)
-        formatted_from_date = format_time(to_date, time_zone) 
+        formatted_to_date = format_time(to_date, time_zone) 
       rescue Exception => e
         flash_message(:error, I18n.t(:invalid_date_format))
         redirect_to :back
