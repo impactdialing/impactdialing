@@ -64,7 +64,8 @@ module TimeZoneHelper
   
   def time_for_date_picker_callers(campaign, caller, date)
    time_zone = ActiveSupport::TimeZone.new(campaign.try(:time_zone) || caller.try(:campaign).try(:time_zone) || "UTC")
-    date.in_time_zone(time_zone)    
+   puts time_zone
+   date.in_time_zone(time_zone)    
   end
   
   
