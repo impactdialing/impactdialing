@@ -44,6 +44,17 @@ class ClientController < ApplicationController
       end
     end
   end
+  
+  def caller_password    
+    password = params[:caller_password]
+    if password.blank? || password.length < 5
+      flash_message(:error, "The Account caller password can't be less than 5 characters.")
+      redirect_to :back
+      return
+    end
+    @account.update_caller_password(params[:caller_password])
+    redirect_to :back
+  end
 
   def user_add
     @breadcrumb = "My Account"
