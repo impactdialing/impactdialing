@@ -15,4 +15,9 @@ module ClientHelper
     session[:caller] && @caller
   end
   
+  def logged_in_as_phones_only_caller?
+    session[:phones_only_caller] && @caller
+  end
+  
+  
 end

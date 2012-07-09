@@ -20,6 +20,14 @@ ImpactDialing::Application.routes.draw do
         match :caller_ready
       end
     end
+    resources :phones_only do
+      collection do
+        get :report
+        get :usage
+        get :call_details
+        get :logout
+      end
+    end
   end
 
   resources :caller, :protocol => PROTOCOL, :only => [:index] do
@@ -42,6 +50,8 @@ ImpactDialing::Application.routes.draw do
     end
 
   end
+  
+  
   
 
   ['monitor', 'how_were_different', 'pricing', 'contact', 'policies'].each do |path|
@@ -144,6 +154,8 @@ ImpactDialing::Application.routes.draw do
       member { get :reassign_to_campaign }
     end
     
+    
+    
     resources :campaigns, :only => [] do
       resources :reports do
         collection do
@@ -166,6 +178,7 @@ ImpactDialing::Application.routes.draw do
     get :update_report_real
     resources :users, :only => [:create, :destroy]
     post 'user_invite', :to => 'users#invite', :as => 'user_invite'
+    post 'caller_password', :to => 'users#caller_password', :as => 'caller_password'
     post 'change_role', :to => 'users#change_role', :as => 'change_role'
   end
 

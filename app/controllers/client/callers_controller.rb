@@ -1,5 +1,6 @@
 module Client
   class CallersController < ClientController
+    include TimeZoneHelper
     before_filter :full_access, :except =>[:reassign_to_campaign]
     include DeletableController
     include ApplicationHelper::TimeUtils
@@ -79,21 +80,15 @@ module Client
       @caller = Caller.find(params[:id])
       @campaigns = account.campaigns.manual.for_caller(@caller)
       @campaign = @campaigns.find_by_id(params[:campaign_id])
-      set_report_date_range(@campaign)
-      @time_logged_in = round_for_utilization(CallerSession.time_logged_in(@caller, @campaign, @from_date, @to_date))
-      @time_on_call = round_for_utilization(CallAttempt.time_on_call(@caller, @campaign, @from_date, @to_date))
-      @time_in_wrapup = round_for_utilization(CallAttempt.time_in_wrapup(@caller, @campaign, @from_date, @to_date))
-      @time_onhold = round_for_utilization(CallerSession.time_logged_in(@caller, @campaign, @from_date, @to_date).to_f - CallAttempt.time_on_call(@caller, @campaign, @from_date, @to_date).to_f - CallAttempt.time_in_wrapup(@caller, @campaign, @from_date, @to_date).to_f)
-      @caller_time = CallerSession.caller_time(@caller, @campaign, @from_date, @to_date)
-      @lead_time = CallAttempt.lead_time(@caller, @campaign, @from_date, @to_date)
-      @total_time = @caller_time + @lead_time
+      @from_date, @to_date = set_date_range_callers(@campaign, @caller, params[:from_date], params[:to_date])
+      @caller_usage = CallerUsage.new(@caller, @campaign, @from_date, @to_date)
     end
 
     def call_details
       @caller = Caller.find(params[:id])
       @campaigns = account.campaigns.manual.for_caller(@caller)
       @campaign = @campaigns.find_by_id(params[:campaign_id]) || @caller.caller_sessions.last.try(:campaign) || @caller.campaign
-      set_report_date_range(@campaign)      
+      @from_date, @to_date = set_date_range_callers(@campaign, @caller, params[:from_date], params[:to_date])   
       @answered_call_stats = @caller.answered_call_stats(@from_date, @to_date, @campaign)
       @questions_and_responses = @campaign.try(:questions_and_responses) || {}
     end
@@ -101,26 +96,6 @@ module Client
     private
     def load_campaigns
       @campaigns = account.campaigns.manual.active
-    end
-    
-    def set_report_date_range(campaign)
-      time_zone = ActiveSupport::TimeZone.new(campaign.try(:time_zone) || @caller.try(:campaign).try(:time_zone) || "UTC")
-      begin
-        from_date = Time.strptime("#{params[:from_date]} #{time_zone.formatted_offset}", "%m/%d/%Y %:z") if params[:from_date]
-        to_date = Time.strptime("#{params[:to_date]} #{time_zone.formatted_offset}", "%m/%d/%Y %:z") if params[:to_date]
-      rescue Exception => e
-        flash_message(:error, I18n.t(:invalid_date_format))
-        redirect_to :back
-        return
-      end                    
-      if campaign.nil?
-        @from_date = (from_date || CallerSession.find_by_caller_id(@caller.id,:order=>"id asc", :limit=>"1").try(:created_at) || Time.now).in_time_zone(time_zone).beginning_of_day      
-        @to_date = (to_date || CallerSession.find_by_caller_id(@caller.id,:order=>"id desc", :limit=>"1").try(:created_at) || Time.now).in_time_zone(time_zone).end_of_day        
-      else
-        @from_date = (from_date || CallerSession.find_by_campaign_id(campaign.id,:order=>"id asc", :limit=>"1").try(:created_at) || Time.now).in_time_zone(time_zone).beginning_of_day      
-        @to_date = (to_date || CallerSession.find_by_campaign_id(campaign.id,:order=>"id desc", :limit=>"1").try(:created_at) || Time.now).in_time_zone(time_zone).end_of_day        
-      end
-    end
-    
+    end        
   end
 end
