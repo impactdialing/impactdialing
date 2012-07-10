@@ -118,7 +118,7 @@ module ApplicationHelper
   
   def percent_dials(dial_count, total_dials)
     begin
-      (sanitize_dials(dial_count).to_f/total_dials)*100).round
+      ((sanitize_dials(dial_count).to_f/total_dials)*100).round
     rescue FloatDomainError
       0
     end
