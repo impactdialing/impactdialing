@@ -95,7 +95,7 @@ class Caller < ActiveRecord::Base
     result = Hash.new
     question_ids = Answer.all(:select=>"distinct question_id", :conditions=>"campaign_id = #{campaign.id}")
     answer_count = Answer.select("possible_response_id").where("campaign_id = ? and caller_id = ?", campaign.id, self.id).within(from, to).group("possible_response_id").count
-    total_answers = Answer.select("question_id").where("campaign_id = ? and caller_id = ?",campaign.id, self.id).within(from, to).group("question_id").count
+    total_answers = Answer.select("question_id").from("answers use index (index_answers_count_question_id)").where("campaign_id = ? and caller_id = ?",campaign.id, self.id).within(from, to).group("question_id").count
     questions = Question.where("id in (?)",question_ids.collect{|q| q.question_id})
     questions.each do |question|        
       result[question.text] = question.possible_responses.collect { |possible_response| possible_response.stats(answer_count, total_answers) }
