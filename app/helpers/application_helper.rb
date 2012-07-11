@@ -116,6 +116,14 @@ module ApplicationHelper
     dial_count.nil? ? 0 : dial_count
   end
   
+  def percent_dials(dial_count, total_dials)
+    begin
+      ((sanitize_dials(dial_count).to_f/total_dials)*100).round
+    rescue FloatDomainError
+      0
+    end
+  end
+  
 
 
   module TimeUtils
