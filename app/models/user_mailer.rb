@@ -24,7 +24,7 @@ class UserMailer
               :text => emailText,
               :from_name => 'Impact Dialing',
               :from_email => 'email@impactdialing.com',
-              :to_email=>['michael@impactdialing.com','brian@impactdialing.com','nikhil@impactdialing.com']
+              :to_email=>['michael@impactdialing.com','nikhil@impactdialing.com']
           }
       })
       rescue Exception => e
@@ -56,7 +56,7 @@ class UserMailer
               :from_name => 'Michael Kaiser-Nyman, Impact Dialing',
               :from_email => 'email@impactdialing.com',
               :to_email => [user.email],
-              :bcc_email=>['michael@impactdialing.com','brian@impactdialing.com','nikhil@impactdialing.com']
+              :bcc_email=>['michael@impactdialing.com','nikhil@impactdialing.com']
           }
       })
       rescue Exception => e
@@ -144,6 +144,6 @@ class UserMailer
     content = "<br/>#{I18n.t(:report_error_occured)}"
     exception_content = "Campaign: #{campaign.name}  Account Id: #{account.id}. Error details : <br/><br/> #{exception.backtrace.each{|line| "<br/>#{line}"}}"
     @uakari.send_email({ :message => { :subject => subject, :text => content, :html => content, :from_name => white_labeled_title(user.domain), :from_email => white_labeled_email(user.domain), :to_email => [user.email]} })
-    @uakari.send_email({ :message => { :subject => subject, :text => exception_content, :html => exception_content, :from_name => white_labeled_title(user.domain), :from_email => 'email@impactdialing.com', :to_email => ['nikhil@activesphere.com','michael@impactdialing.com','brian@impactdialing.com']} })
+    @uakari.send_email({ :message => { :subject => subject, :text => exception_content, :html => exception_content, :from_name => white_labeled_title(user.domain), :from_email => 'email@impactdialing.com', :to_email => ['nikhil@activesphere.com','michael@impactdialing.com']} })
   end
 end
