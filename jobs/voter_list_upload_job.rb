@@ -15,7 +15,7 @@ class VoterListUploadJob
    def after_enqueue_scale_up(*args)
       workers_to_scale = Scaler.working_job_count(@queue.to_s) + Scaler.pending_job_count(@queue.to_s) - Scaler.worker_count(@queue.to_s)
       if workers_to_scale > 0 && Scaler.working_job_count(@queue.to_s) <= 3
-        Scaler.workers(@queue.to_s, Scaler.working_job_count(@queue) + Scaler.pending_job_count(@queue.to_s) + 1)
+        Scaler.workers(@queue, Scaler.working_job_count(@queue.to_s) + Scaler.pending_job_count(@queue.to_s) + 1)
       end
     end
    
