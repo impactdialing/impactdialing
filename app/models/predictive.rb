@@ -22,7 +22,6 @@ class Predictive < Campaign
     return if  num_to_call <= 0    
     update_attributes(calls_in_progress: true)
     Resque.enqueue(DialerJob, self.id, num_to_call)
-    update_attributes(calls_in_progress: false)
   end
   
   def number_of_voters_to_dial
