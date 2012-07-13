@@ -164,8 +164,8 @@ def simulate(campaign_id)
         end               
      
         available_callers = caller_statuses.count(&:available?) + 
-                          active_conversations.count{|active_conversation| (active_conversation.counter > expected_conversation) && (active_conversation.counter < longest_conversation)} +
-                          active_wrapups.count{|active_wrapup| active_wrapup > expected_wrapup_time}          
+                          active_conversations.count{|active_conversation| (active_conversation.counter > expected_conversation) && (active_conversation.counter < expected_conversation + 15)} +
+                          active_wrapups.count{|active_wrapup| (active_wrapup > expected_wrapup_time) && (active_wrapup < expected_wrapup_time + 15)}          
       
         ringing_lines = active_dials.length
         dials_to_make = (( dials_needed * available_callers ) - ringing_lines).to_i
