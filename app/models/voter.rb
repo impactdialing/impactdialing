@@ -46,7 +46,7 @@ class Voter < ActiveRecord::Base
   scope :answered, where('result_date is not null')
   scope :answered_within, lambda { |from, to| where(:result_date => from.beginning_of_day..(to.end_of_day)) }
   scope :answered_within_timespan, lambda { |from, to| where(:result_date => from..to)}
-  scope :last_call_attempt_within, lambda { |from, to| where(:last_call_attempt_time => (from.to_time.utc..to.to_time.utc)) }
+  scope :last_call_attempt_within, lambda { |from, to| where(:last_call_attempt_time => (from..to)) }
   scope :call_attempts_within, lambda {|from, to| where('call_attempts.created_at' => (from..to)).includes('call_attempts')}
   scope :priority_voters, enabled.where(:priority => "1", :status => Voter::Status::NOTCALLED)
   
@@ -148,7 +148,6 @@ class Voter < ActiveRecord::Base
   def handle_failed_call(attempt, voter)
     attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
     voter.update_attributes(status: CallAttempt::Status::FAILED)
-    Moderator.update_dials_in_progress(campaign)
   end
   
   
@@ -163,7 +162,6 @@ class Voter < ActiveRecord::Base
     if response["TwilioResponse"]["RestException"]
       call_attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
       update_attributes(status: CallAttempt::Status::FAILED)
-      Moderator.update_dials_in_progress_sync(campaign)
       Rails.logger.info "[dialer] Exception when attempted to call #{self.Phone} for campaign id:#{self.campaign_id}  Response: #{response["TwilioResponse"]["RestException"].inspect}"
       return
     end
@@ -278,7 +276,6 @@ class Voter < ActiveRecord::Base
     call_attempt = self.call_attempts.create(campaign:  self.campaign, dialer_mode:  mode, status:  CallAttempt::Status::RINGING, call_start:  Time.now)
     update_attributes(:last_call_attempt => call_attempt, :last_call_attempt_time => Time.now, :status => CallAttempt::Status::RINGING)    
     Call.create(call_attempt: call_attempt, all_states: "")
-    Moderator.update_dials_in_progress_sync(campaign)
     call_attempt
   end
   

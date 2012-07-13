@@ -180,4 +180,77 @@ describe CallAttempt do
       CallAttempt.not_wrapped_up.find_all_by_caller_id(caller.id).length.should eq(0)
     end
   end
+  
+  describe "payments" do
+    
+    describe "debit for calls" do
+      it "should not debit if call not ended" do
+        call_attempt = Factory(:call_attempt, call_end: (Time.now - 3.minutes))
+        Payment.should_not_receive(:debit_call_charge)      
+        call_attempt.debit
+      end
+
+      it "should not debit if call not connected" do
+        call_attempt = Factory(:call_attempt, connecttime: (Time.now - 3.minutes))
+        Payment.should_not_receive(:debit_call_charge)      
+        call_attempt.debit
+      end
+
+      it "should not debit if manual subscription type" do
+        account = Factory(:account, subscription_name: Account::Subscription_Type::MANUAL)
+        campaign = Factory(:campaign, account: account)
+        call_attempt = Factory(:call_attempt, connecttime: (Time.now - 3.minutes), call_end: (Time.now - 2.minutes), campaign: campaign)
+        Payment.should_not_receive(:debit_call_charge)      
+        call_attempt.debit
+      end
+
+      it "should  debit if call connected " do
+        account = Factory(:account, subscription_name: Account::Subscription_Type::PER_MINUTE)
+        campaign = Factory(:campaign, account: account)
+        payment = Factory(:payment, account: account, amount_remaining: 10.0)
+        call_attempt = Factory(:call_attempt, connecttime: (Time.now - 3.minutes), call_end: (Time.now - 2.minutes), campaign: campaign)
+        Payment.should_receive(:where).and_return([payment])
+        payment.should_receive(:debit_call_charge)      
+        call_attempt.debit
+        call_attempt.payment_id.should_not be_nil
+      end
+
+    end
+    
+    describe "call_time" do
+      it "should give correct call time" do
+        call_attempt = Factory(:call_attempt, connecttime: (Time.now - 3.minutes), call_end: (Time.now - 2.minutes))
+        call_attempt.call_time.should eq(2)
+      end
+    end
+    
+    describe "amount_to_debit" do
+      
+      it "should retrun amount to debit" do
+        call_attempt = Factory(:call_attempt, connecttime: (Time.now - 3.minutes), call_end: (Time.now - 2.minutes))
+        call_attempt.amount_to_debit.should eq(0.18)
+      end
+      
+    end
+    
+    describe "determine_call_cost" do
+      
+      it "should return .02 for per caller" do
+        account = Factory(:account, subscription_name: Account::Subscription_Type::PER_CALLER)
+        campaign = Factory(:campaign, account: account)      
+        call_attempt = Factory(:call_attempt, connecttime: (Time.now - 3.minutes), call_end: (Time.now - 2.minutes), campaign: campaign)
+        call_attempt.determine_call_cost.should eq(0.02)
+      end
+      
+      it "should return .09 for per minute" do
+        account = Factory(:account, subscription_name: Account::Subscription_Type::PER_MINUTE)
+        campaign = Factory(:campaign, account: account)      
+        call_attempt = Factory(:call_attempt, connecttime: (Time.now - 3.minutes), call_end: (Time.now - 2.minutes), campaign: campaign)
+        call_attempt.determine_call_cost.should eq(0.09)
+      end
+      
+    end  
+      
+  end
+  
 end

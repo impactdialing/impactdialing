@@ -15,7 +15,7 @@ class NewReportJob
    end
    
    def report_strategy(csv)
-     if @campaign.robo
+     if @campaign.type == "Robo"
        BroadcastCampaignReportStrategy.new(@campaign, csv, @download_all_voters, @lead_dial, @selected_voter_fields, @selected_custom_voter_fields, @from_date, @to_date)
      else
        CallerCampaignReportStrategy.new(@campaign, csv, @download_all_voters, @lead_dial, @selected_voter_fields, @selected_custom_voter_fields, @from_date, @to_date)
@@ -42,7 +42,7 @@ class NewReportJob
     FileUtils.mkdir_p(Rails.root.join("tmp"))
     uuid = UUID.new.generate
     @campaign_name = "#{uuid}_report_#{@campaign.name}"
-    @campaign_name = @campaign_name.tr("/\000", "")
+    @campaign_name = @campaign_name.tr("/\000", "").tr("'","_")
     "#{Rails.root}/tmp/#{@campaign_name}.csv"     
    end
    

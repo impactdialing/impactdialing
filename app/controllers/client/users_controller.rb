@@ -17,8 +17,12 @@ module Client
       if @user.password_reset_code == params[:reset_code]
         @user.new_password = params[:password]
         @user.clear_reset_code
-        flash_message(:notice, 'Your password needs to be 5 characters or greater.') unless @user.save
-        flash_message(:notice, 'Your password has been successfully reset')
+        if @user.save
+          session[:user]=@user.id
+          flash_message(:notice, 'Your password has been successfully reset')
+        else
+          flash_message(:notice, 'Your password needs to be 5 characters or greater.')
+        end
       else
         flash_message(:error, INVALID_RESET_TOKEN)
       end
@@ -34,7 +38,7 @@ module Client
         random_password = rand(Time.now.to_i)
         new_user = account.users.create!(:email => params[:email], :new_password => random_password.to_s, role: params[:user][:role])
         new_user.create_reset_code!
-        UserMailer.new.deliver_invitation(new_user, @user)
+        Resque.enqueue(DeliverInvitationEmailJob, new_user.id, current_user.id)
         flash_message(:notice, "#{params[:email]} has been invited.")
       end
       redirect_to :back

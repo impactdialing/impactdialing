@@ -23,8 +23,8 @@ describe DialReport do
         call_attempt4 = Factory(:call_attempt, campaign: @campaign, status: CallAttempt::Status::BUSY, created_at: Time.now, voter: voter4)
         voter4.update_attributes(last_call_attempt_time: call_attempt4.created_at)            
       
-        from_date = CallAttempt.find_all_by_campaign_id(@campaign.id).first.try(:created_at).in_time_zone(ActiveSupport::TimeZone.new("UTC")).beginning_of_day
-        to_date = CallAttempt.find_all_by_campaign_id(@campaign.id).last.try(:created_at).in_time_zone(ActiveSupport::TimeZone.new("UTC")).end_of_day
+        from_date = CallAttempt.find_all_by_campaign_id(@campaign.id).first.try(:created_at).beginning_of_day.to_s
+        to_date = CallAttempt.find_all_by_campaign_id(@campaign.id).last.try(:created_at).end_of_day.to_s
         dial_report = DialReport.new
         dial_report.compute_campaign_report(@campaign, from_date, to_date)
         dial_report.dialed_and_completed.should eq(2)      
@@ -46,8 +46,8 @@ describe DialReport do
         call_attempt4 = Factory(:call_attempt, campaign: @campaign, status: CallAttempt::Status::BUSY, created_at: Time.now, voter: voter4)
         voter4.update_attributes(last_call_attempt_time: call_attempt4.created_at)            
       
-        from_date = CallAttempt.find_all_by_campaign_id(@campaign.id).first.try(:created_at).in_time_zone(ActiveSupport::TimeZone.new("UTC")).beginning_of_day
-        to_date = CallAttempt.find_all_by_campaign_id(@campaign.id).last.try(:created_at).in_time_zone(ActiveSupport::TimeZone.new("UTC")).end_of_day
+        from_date = CallAttempt.find_all_by_campaign_id(@campaign.id).first.try(:created_at).in_time_zone(ActiveSupport::TimeZone.new("UTC")).beginning_of_day.to_s
+        to_date = CallAttempt.find_all_by_campaign_id(@campaign.id).last.try(:created_at).in_time_zone(ActiveSupport::TimeZone.new("UTC")).end_of_day.to_s
         dial_report = DialReport.new
         dial_report.compute_campaign_report(@campaign, from_date, to_date)
         dial_report.dialed_and_completed.should eq(2)      
@@ -69,8 +69,8 @@ describe DialReport do
         call_attempt4 = Factory(:call_attempt, campaign: @campaign, status: CallAttempt::Status::BUSY, created_at: Time.now, voter: voter4)
         voter4.update_attributes(last_call_attempt_time: call_attempt4.created_at)            
       
-        from_date = CallAttempt.find_all_by_campaign_id(@campaign.id).first.try(:created_at).in_time_zone(ActiveSupport::TimeZone.new("UTC")).beginning_of_day
-        to_date = CallAttempt.find_all_by_campaign_id(@campaign.id).last.try(:created_at).in_time_zone(ActiveSupport::TimeZone.new("UTC")).end_of_day
+        from_date = CallAttempt.find_all_by_campaign_id(@campaign.id).first.try(:created_at).in_time_zone(ActiveSupport::TimeZone.new("UTC")).beginning_of_day.to_s
+        to_date = CallAttempt.find_all_by_campaign_id(@campaign.id).last.try(:created_at).in_time_zone(ActiveSupport::TimeZone.new("UTC")).end_of_day.to_s
         dial_report = DialReport.new
         dial_report.compute_campaign_report(@campaign, from_date, to_date)
         dial_report.dialed_and_completed.should eq(2)      
@@ -86,8 +86,8 @@ describe DialReport do
         voter3 = Factory(:voter, campaign: @campaign, last_call_attempt_time: Time.now - 2.hours, status: CallAttempt::Status::HANGUP)
         voter4 = Factory(:voter, campaign: @campaign, :scheduled_date => 2.minutes.ago, :status => CallAttempt::Status::SCHEDULED)
         voter5 = Factory(:voter, campaign: @campaign, :status => CallAttempt::Status::ABANDONED)
-        from_date = @campaign.try(:created_at).in_time_zone(ActiveSupport::TimeZone.new("UTC")).beginning_of_day
-        to_date = Time.now.in_time_zone(ActiveSupport::TimeZone.new("UTC")).end_of_day
+        from_date = @campaign.try(:created_at).in_time_zone(ActiveSupport::TimeZone.new("UTC")).beginning_of_day.to_s
+        to_date = Time.now.in_time_zone(ActiveSupport::TimeZone.new("UTC")).end_of_day.to_s
         dial_report = DialReport.new
         dial_report.compute_campaign_report(@campaign, from_date, to_date)
         dial_report.leads_available_for_retry.should eq(3)      
@@ -105,8 +105,8 @@ describe DialReport do
         voter5 = Factory(:voter, campaign: @campaign, :scheduled_date => 2.minutes.ago, :status => CallAttempt::Status::SCHEDULED, enabled: true)
         voter6 = Factory(:voter, campaign: @campaign, :scheduled_date => 12.minutes.ago, :status => CallAttempt::Status::SCHEDULED)
         voter7 = Factory(:voter, campaign: @campaign, :status => CallAttempt::Status::ABANDONED)
-        from_date = @campaign.try(:created_at).in_time_zone(ActiveSupport::TimeZone.new("UTC")).beginning_of_day
-        to_date = Time.now.in_time_zone(ActiveSupport::TimeZone.new("UTC")).end_of_day
+        from_date = @campaign.try(:created_at).in_time_zone(ActiveSupport::TimeZone.new("UTC")).beginning_of_day.to_s
+        to_date = Time.now.in_time_zone(ActiveSupport::TimeZone.new("UTC")).end_of_day.to_s
         dial_report = DialReport.new
         dial_report.compute_campaign_report(@campaign, from_date, to_date)
         dial_report.leads_not_available_for_retry.should eq(2)      
@@ -125,8 +125,8 @@ describe DialReport do
         voter5 = Factory(:voter, campaign: @campaign, :status => CallAttempt::Status::ABANDONED)
         voter6 = Factory(:voter, campaign: @campaign, status: CallAttempt::Status::READY)
         voter7 = Factory(:voter, campaign: @campaign, status: CallAttempt::Status::RINGING)
-        from_date = @campaign.try(:created_at).in_time_zone(ActiveSupport::TimeZone.new("UTC")).beginning_of_day
-        to_date = Time.now.in_time_zone(ActiveSupport::TimeZone.new("UTC")).end_of_day
+        from_date = @campaign.try(:created_at).in_time_zone(ActiveSupport::TimeZone.new("UTC")).beginning_of_day.to_s
+        to_date = Time.now.in_time_zone(ActiveSupport::TimeZone.new("UTC")).end_of_day.to_s
         dial_report = DialReport.new
         dial_report.compute_campaign_report(@campaign, from_date, to_date)
         dial_report.leads_not_dialed.should eq(3)      

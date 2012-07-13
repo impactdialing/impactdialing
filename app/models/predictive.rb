@@ -5,15 +5,28 @@ class Predictive < Campaign
     num_to_call = number_of_voters_to_dial
     Rails.logger.info "Campaign: #{self.id} - num_to_call #{num_to_call}"    
     return if  num_to_call <= 0
-    Sidekiq::Client.enqueue(DialerJob, self.id, num_to_call)
-    # EM.synchrony do
-    #   concurrency = 8
-    #   voters_to_dial = choose_voters_to_dial(num_to_call)
-    #   EM::Synchrony::Iterator.new(voters_to_dial, concurrency).map do |voter, iter|
-    #     voter.dial_predictive_em(iter)
-    #   end
-    #   EventMachine.stop
-    # end
+    EM.synchrony do
+      concurrency = 8
+      voters_to_dial = choose_voters_to_dial(num_to_call)
+      EM::Synchrony::Iterator.new(voters_to_dial, concurrency).map do |voter, iter|
+        voter.dial_predictive_em(iter)
+        Moderator.update_dials_in_progress_sync(self)
+      end      
+      EventMachine.stop
+    end
+  end
+  
+  def abc
+        Sidekiq::Client.enqueue(DialerJob, self.id, num_to_call)
+        # EM.synchrony do
+        #   concurrency = 8
+        #   voters_to_dial = choose_voters_to_dial(num_to_call)
+        #   EM::Synchrony::Iterator.new(voters_to_dial, concurrency).map do |voter, iter|
+        #     voter.dial_predictive_em(iter)
+        #   end
+        #   EventMachine.stop
+        # end
+    
   end
   
   def number_of_voters_to_dial
@@ -34,7 +47,7 @@ class Predictive < Campaign
     scheduled_voters = all_voters.scheduled.limit(num_voters)
     num_voters_to_call = (num_voters - (priority_voters.size + scheduled_voters.size))
     limit_voters = num_voters_to_call <= 0 ? 0 : num_voters_to_call
-    voters =  priority_voters + scheduled_voters + all_voters.to_be_dialed.without(account.blocked_numbers.for_campaign(self).map(&:number)).limit(limit_voters)
+    voters =  priority_voters + scheduled_voters + all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.without(account.blocked_numbers.for_campaign(self).map(&:number)).limit(limit_voters)
     voters[0..num_voters-1]    
   end
   
@@ -58,7 +71,7 @@ class Predictive < Campaign
   
   
   def best_dials_simulated
-    simulated_values.nil? ? 1 : simulated_values.best_dials.nil? ? 1 : simulated_values.best_dials.ceil
+    simulated_values.nil? ? 1 : simulated_values.best_dials.nil? ? 1 : simulated_values.best_dials.ceil > 3 ? 3 : simulated_values.best_dials.ceil
   end
 
   def best_conversation_simulated

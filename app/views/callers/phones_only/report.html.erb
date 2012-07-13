@@ -1,0 +1,14 @@
+<h1>Reports</h1>
+
+<table>
+  <tr>
+    <th>Caller</th>
+    <th></th>
+    <th></th>
+  </tr>
+  <tr>
+    <td><%= @caller.identity_name %></td>
+    <td><%= link_to("Answered", call_details_callers_phones_only_index_path) %></td>
+    <td><%= link_to("Usage", usage_callers_phones_only_index_path) %></td>
+  </tr>
+</table>

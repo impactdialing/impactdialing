@@ -31,7 +31,6 @@ class Campaign < ActiveRecord::Base
       :joins => "inner join caller_sessions on (caller_sessions.campaign_id = campaigns.id)",
       :conditions => {"caller_sessions.on_call" => true}
   }
-  scope :using_web_ui, :conditions => {:use_web_ui => true}
   scope :for_caller, lambda { |caller| {:include => [:caller_sessions], :conditions => {"caller_sessions.caller_id" => caller.id}}}
 
   before_create :create_uniq_pin
@@ -199,6 +198,11 @@ class Campaign < ActiveRecord::Base
   def abandoned_calls_time(from_date, to_date)
     call_attempts.between(from_date, to_date).with_status([CallAttempt::Status::ABANDONED]).sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)').to_i
   end
+  
+  def cost_per_minute
+    0.09
+  end
+  
 
 
 end

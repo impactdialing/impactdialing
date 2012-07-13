@@ -55,10 +55,6 @@
             </table>
             <input type="hidden" name="listsSent" value="1">
 
-            <% if @user.id==1 && @user.show_voter_buttons? %>
-                <a href="/client/voter_add?campaign_id=<%= @campaign.id %>" class="add-button"><span>Enter Voter</span></a>
-                <a href="/client/voter_view?campaign_id=<%= @campaign.id %>" class="button"><span>View Voters</span></a>
-            <% end %>
         <% end %>
       </fieldset>
       <div class="buttons">

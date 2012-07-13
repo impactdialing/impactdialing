@@ -9,4 +9,5 @@
 <%= render :partial => 'join_form' %>
 <% unless @user.new_record? %>
 	<%= render :template => 'client/accounts/show' %>
+  <%= render :partial => 'client/accounts/caller_password' %>
 <% end %>
