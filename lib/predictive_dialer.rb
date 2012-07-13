@@ -15,7 +15,7 @@ loop do
     logged_in_campaigns.each do |c|
       campaign = Campaign.find(c.campaign_id)
       if campaign.type != Campaign::Type::PREVIEW && campaign.type != Campaign::Type::PROGRESSIVE
-        campaign.dial
+        campaign.dial_sidekiq
       end
     end
     sleep 3
