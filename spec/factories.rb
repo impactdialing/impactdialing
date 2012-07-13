@@ -198,5 +198,8 @@ end
 Factory.define :call do |c|
 end
 
+Factory.define :payment do |c|
+end
+
 
 

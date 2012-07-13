@@ -6,8 +6,7 @@ describe Predictive do
 
     it "should properly choose the next voters to dial" do
       account = Factory(:account, :activated => true)
-      campaign = Factory(:predictive, :account => account, :caller_id => "0123456789", :caller_id_verified => true)
-      campaign.caller_id_verified=true
+      campaign = Factory(:predictive, :account => account, :caller_id => "0123456789")
       voter_list = Factory(:voter_list, :campaign => campaign, :active => true)
       voter = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list, :account => account)
       campaign.choose_voters_to_dial(1).should == [voter]
@@ -15,8 +14,7 @@ describe Predictive do
   
     it "should properly choose limit of voters to dial" do
       account = Factory(:account, :activated => true)
-      campaign = Factory(:predictive, :account => account, :caller_id => "0123456789", :caller_id_verified => true)
-      campaign.caller_id_verified=true
+      campaign = Factory(:predictive, :account => account, :caller_id => "0123456789")
       voter_list = Factory(:voter_list, :campaign => campaign, :active => true)
       priority_voter = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list, :account => account, priority: "1")
       scheduled_voter = Factory(:voter, :status => CallAttempt::Status::SCHEDULED, :last_call_attempt_time => 2.hours.ago, :scheduled_date => 1.minute.from_now, :campaign => campaign)
@@ -26,8 +24,7 @@ describe Predictive do
   
     it "should properly choose limit of voters to dial for scheduled and priority" do
       account = Factory(:account, :activated => true)
-      campaign = Factory(:predictive, :account => account, :caller_id => "0123456789", :caller_id_verified => true)
-      campaign.caller_id_verified=true
+      campaign = Factory(:predictive, :account => account, :caller_id => "0123456789")
       voter_list = Factory(:voter_list, :campaign => campaign, :active => true)
       priority_voter = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list, :account => account, priority: "1")
       scheduled_voter = Factory(:voter, :status => CallAttempt::Status::SCHEDULED, :last_call_attempt_time => 2.hours.ago, :scheduled_date => 1.minute.from_now, :campaign => campaign)
@@ -37,8 +34,7 @@ describe Predictive do
   
     it "should properly choose limit of voters to dial for scheduled and priority and voters to dial" do
       account = Factory(:account, :activated => true)
-      campaign = Factory(:predictive, :account => account, :caller_id => "0123456789", :caller_id_verified => true)
-      campaign.caller_id_verified=true
+      campaign = Factory(:predictive, :account => account, :caller_id => "0123456789")
       voter_list = Factory(:voter_list, :campaign => campaign, :active => true)
       priority_voter = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list, :account => account, priority: "1")
       scheduled_voter = Factory(:voter, :status => CallAttempt::Status::SCHEDULED, :last_call_attempt_time => 2.hours.ago, :scheduled_date => 1.minute.from_now, :campaign => campaign)
@@ -58,8 +54,7 @@ describe Predictive do
 
      it "should  choose priority voter as the next voters to dial" do
        account = Factory(:account, :activated => true)
-       campaign = Factory(:predictive, :account => account, :caller_id => "0123456789", :caller_id_verified => true)
-       campaign.caller_id_verified=true
+       campaign = Factory(:predictive, :account => account, :caller_id => "0123456789")
        voter_list = Factory(:voter_list, :campaign => campaign, :active => true)
        voter = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list, :account => account)
        priority_voter = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list, :account => account, priority: "1")
@@ -69,7 +64,6 @@ describe Predictive do
      it "excludes system blocked numbers" do
        account = Factory(:account, :activated => true)
        campaign = Factory(:predictive, :account => account)
-       campaign.caller_id_verified=true
        voter_list = Factory(:voter_list, :campaign => campaign, :active => true)
        unblocked_voter = Factory(:voter, :campaign => campaign, :status => 'not called', :voter_list => voter_list, :account => account)
        blocked_voter = Factory(:voter, :campaign => campaign, :status => 'not called', :voter_list => voter_list, :account => account)
@@ -80,7 +74,6 @@ describe Predictive do
      it "excludes campaign blocked numbers" do
        account = Factory(:account, :activated => true)
        campaign = Factory(:predictive, :account => account)
-       campaign.caller_id_verified=true
        voter_list = Factory(:voter_list, :campaign => campaign, :active => true)
        unblocked_voter = Factory(:voter, :campaign => campaign, :status => 'not called', :voter_list => voter_list, :account => account)
        blocked_voter = Factory(:voter, :campaign => campaign, :status => 'not called', :voter_list => voter_list, :account => account)
@@ -94,8 +87,25 @@ describe Predictive do
        campaign = Factory(:predictive, :account => account)
        voter = Factory(:voter, :campaign => campaign, :status => CallAttempt::Status::SUCCESS)
        Factory(:call_attempt, :voter => voter, :status => CallAttempt::Status::SUCCESS)
-       campaign.choose_voters_to_dial(20).should_not include(voter.id)
+       campaign.choose_voters_to_dial(20).should_not include(voter)
      end     
+     
+     it "does not dial voter who has been just dialed recycle rate" do
+      account = Factory(:account, :activated => true)
+      campaign = Factory(:predictive, :account => account, recycle_rate: 3)
+      voter = Factory(:voter, :campaign => campaign, :status => CallAttempt::Status::BUSY, last_call_attempt_time: Time.now - 1.hour)
+      Factory(:call_attempt, :voter => voter, :status => CallAttempt::Status::BUSY)
+      campaign.choose_voters_to_dial(20).should_not include(voter)
+     end
+     
+     it "dials voter who has been dialed passed recycle rate" do
+      account = Factory(:account, :activated => true)
+      campaign = Factory(:predictive, :account => account, recycle_rate: 3)
+      voter = Factory(:voter, :campaign => campaign, :status => CallAttempt::Status::BUSY, last_call_attempt_time: Time.now - 4.hours)
+      Factory(:call_attempt, :voter => voter, :status => CallAttempt::Status::BUSY)
+      campaign.choose_voters_to_dial(20).should include(voter)
+     end
+     
   end
   
   describe "best dials simulated" do
@@ -114,6 +124,12 @@ describe Predictive do
       simulated_values = SimulatedValues.create(best_dials: 1.8, best_conversation: 0, longest_conversation: 0)
       campaign = Factory(:predictive, :simulated_values => simulated_values)
       campaign.best_dials_simulated.should eq(2)
+    end
+    
+   it "should return best dials  as 4 if  best_dials simulated_values is greater than 4" do
+      simulated_values = SimulatedValues.create(best_dials: 6.0, best_conversation: 0, longest_conversation: 0)
+      campaign = Factory(:predictive, :simulated_values => simulated_values)
+      campaign.best_dials_simulated.should eq(3)
     end
 
 

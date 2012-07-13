@@ -47,9 +47,9 @@ class TransferController < ApplicationController
   def dial
     transfer = Transfer.find(params[:transfer][:id])
     caller_session = CallerSession.find(params[:caller_session])    
-    call_attempt = CallAttempt.find(params[:call_attempt])
+    call = Call.find(params[:call])
     voter = Voter.find(params[:voter])
-    transfer.dial(caller_session, call_attempt, voter, transfer.transfer_type)    
+    transfer.dial(caller_session, call.call_attempt, voter, transfer.transfer_type)    
     render json: {type: transfer.transfer_type}
   end
   
@@ -64,11 +64,12 @@ class TransferController < ApplicationController
   end
   
   def caller
+    
     caller_session = CallerSession.find(params[:caller_session])
     caller = Caller.find(caller_session.caller_id)
     response = Twilio::Verb.new do |v|
-      v.dial(:hangupOnStar => true, action: pause_caller_url(caller, :host => Settings.host, :port => Settings.port, :session_id => caller_session.id)) do
-        v.conference(params[:session_key], :startConferenceOnEnter => true, :endConferenceOnExit => false, :beep => false, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
+      v.dial(:hangupOnStar => true, action: flow_caller_url(caller, session_id:  caller_session.id, event: "pause_conf", host: Settings.host, port:  Settings.port)) do
+        v.conference(params[:session_key], :startConferenceOnEnter => true, :endConferenceOnExit => false, :beep => false, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET')
       end    
     end.response
     render xml: response

@@ -69,7 +69,6 @@ module Client
           render :show
         end
       rescue Exception => e
-        puts e.backtrace
         flash_message(:notice, "Script not saved. Error:" + e.message)
         render :show
       end

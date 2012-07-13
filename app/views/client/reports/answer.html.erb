@@ -42,4 +42,8 @@
 <% form_tag( @campaign.robo == true ? answers_reports_path : answer_client_reports_path, :method => :get) do %>
   <input type="hidden" name="campaign_id" value="<%= params[:campaign_id] %>" />
   <%= render :partial => 'shared/date_picker' %>
+  <div class="buttons">
+    <button type="submit">Update</button>
+  </div>
+  
 <%end %>

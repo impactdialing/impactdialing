@@ -57,6 +57,7 @@ describe Preview do
       current_voter = Factory(:voter, :status => CallAttempt::Status::SUCCESS, :campaign => campaign)
       campaign.next_voter_in_dial_queue(current_voter.id).should be_nil
     end
+    
   end
   
 end

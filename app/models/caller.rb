@@ -95,7 +95,7 @@ class Caller < ActiveRecord::Base
     result = Hash.new
     question_ids = Answer.all(:select=>"distinct question_id", :conditions=>"campaign_id = #{campaign.id}")
     answer_count = Answer.select("possible_response_id").where("campaign_id = ? and caller_id = ?", campaign.id, self.id).within(from, to).group("possible_response_id").count
-    total_answers = Answer.where("campaign_id = ? and caller_id = ?",campaign.id, self.id).within(from, to).group("question_id").count
+    total_answers = Answer.select("question_id").from("answers use index (index_answers_count_question_id)").where("campaign_id = ? and caller_id = ?",campaign.id, self.id).within(from, to).group("question_id").count
     questions = Question.where("id in (?)",question_ids.collect{|q| q.question_id})
     questions.each do |question|        
       result[question.text] = question.possible_responses.collect { |possible_response| possible_response.stats(answer_count, total_answers) }
@@ -122,11 +122,11 @@ class Caller < ActiveRecord::Base
   # end
   
   
-  def create_caller_session(session_key, sid)
+  def create_caller_session(session_key, sid, caller_type)
     if is_phones_only?
-      caller_session = PhonesOnlyCallerSession.create(on_call: false, available_for_call: false, session_key: session_key, campaign: campaign , sid: sid, starttime: Time.now)
+      caller_session = PhonesOnlyCallerSession.create(on_call: false, available_for_call: false, session_key: session_key, campaign: campaign , sid: sid, starttime: Time.now, caller_type: caller_type)
     else
-      caller_session =  WebuiCallerSession.create(on_call: false, available_for_call: false, session_key: session_key, campaign: campaign , sid: sid, starttime: Time.now)
+      caller_session =  WebuiCallerSession.create(on_call: false, available_for_call: false, session_key: session_key, campaign: campaign , sid: sid, starttime: Time.now, caller_type: caller_type)
     end
     caller_sessions << caller_session
     caller_session

@@ -4,6 +4,7 @@ class CallAttempt < ActiveRecord::Base
 
   include Rails.application.routes.url_helpers
   include LeadEvents
+  include CallPayment
   belongs_to :voter
   belongs_to :campaign
   belongs_to :caller
@@ -20,7 +21,7 @@ class CallAttempt < ActiveRecord::Base
   scope :for_caller, lambda { |caller| {:conditions => ["caller_id = ?", caller.id]}  unless caller.nil?}
   
   scope :for_status, lambda { |status| {:conditions => ["call_attempts.status = ?", status]} }
-  scope :between, lambda { |from, to| where(:created_at => (from.to_time.utc..to.to_time.utc)) }
+  scope :between, lambda { |from, to| where(:created_at => (from..to)) }
   scope :without_status, lambda { |statuses| {:conditions => ['status not in (?)', statuses]} }
   scope :with_status, lambda { |statuses| {:conditions => ['status in (?)', statuses]} }
   scope :results_not_processed, lambda { where(:voter_response_processed => "0", :status => Status::SUCCESS).where('wrapup_time is not null') }
@@ -32,13 +33,6 @@ class CallAttempt < ActiveRecord::Base
     "#{self.recording_url.gsub("api.twilio.com", "recordings.impactdialing.com")}.mp3" if recording_url
   end
 
-  def ring_time
-    if self.answertime!=nil && self.created_at!=nil
-      (self.answertime - self.created_at).to_i
-    else
-      nil
-    end
-  end
 
   def duration
     return nil unless connecttime
@@ -121,7 +115,12 @@ class CallAttempt < ActiveRecord::Base
   
   
   def end_answered_call
-    voter.update_attributes(last_call_attempt_time:  Time.now, caller_session: nil)
+    begin
+      voter.update_attributes(last_call_attempt_time:  Time.now, caller_session: nil)
+    rescue ActiveRecord::StaleObjectError
+      voter_to_update = Voter.find(voter.id)
+      voter_to_update.update_attributes(last_call_attempt_time:  Time.now, caller_session: nil)
+    end  
     update_attributes(call_end: Time.now)
   end
   
@@ -136,8 +135,13 @@ class CallAttempt < ActiveRecord::Base
       update_attributes(wrapup_time: Time.now, call_end: Time.now)    
       voter.update_attributes(last_call_attempt_time:  Time.now, call_back: false)            
     else
-      voter.update_attributes(status:  CallAttempt::Status::MAP[call.call_status], last_call_attempt_time:  Time.now, call_back: false)
       update_attributes(status:  CallAttempt::Status::MAP[call.call_status], wrapup_time: Time.now, call_end: Time.now)          
+      begin
+        voter.update_attributes(status:  CallAttempt::Status::MAP[call.call_status], last_call_attempt_time:  Time.now, call_back: false)
+      rescue ActiveRecord::StaleObjectError
+        voter_to_update = Voter.find(voter.id)
+        voter_to_update.update_attributes(status:  CallAttempt::Status::MAP[call.call_status], last_call_attempt_time:  Time.now, call_back: false)
+      end
     end
   end
   
@@ -164,7 +168,12 @@ class CallAttempt < ActiveRecord::Base
     
   def disconnect_call
     update_attributes(status: CallAttempt::Status::SUCCESS, recording_duration: call.recording_duration, recording_url: call.recording_url)
-    voter.update_attribute(:status, CallAttempt::Status::SUCCESS)
+    begin
+      voter.update_attribute(:status, CallAttempt::Status::SUCCESS)
+    rescue ActiveRecord::StaleObjectError
+      voter_to_update = Voter.find(voter.id)
+      voter_to_update.update_attribute(:status, CallAttempt::Status::SUCCESS)
+    end
   end
   
   
@@ -204,6 +213,15 @@ class CallAttempt < ActiveRecord::Base
   def self.lead_time(caller, campaign, from, to)
     CallAttempt.for_campaign(campaign).for_caller(caller).between(from, to).without_status([CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED]).sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)').to_i
   end
+  
+  def call_not_connected?
+    connecttime.nil? || call_end.nil?
+  end
+  
+  def call_time
+  ((call_end - connecttime)/60).ceil
+  end
+  
 
   module Status
     VOICEMAIL = 'Message delivered'
@@ -225,11 +243,6 @@ class CallAttempt < ActiveRecord::Base
     ANSWERED =  [INPROGRESS, SUCCESS]
   end
 
-  def debit
-    return false if self.connecttime.nil? || self.call_end.nil?
-    call_time = ((self.call_end - self.connecttime)/60).ceil
-    Payment.debit(call_time, self)
-  end
   
   def redirect_caller(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
     unless caller_session.nil?

@@ -1,8 +1,15 @@
 process_answered_attempts:
   cron: "*/5 * * * *"
   class: AnsweredJob
-  queue: background_worker_job
+  queue: answered_worker_job
   args: 
   description: "This job processes answers and stores them in a relational schema"
+
+deactivate_monitor:
+  cron: "*/5 * * * *"
+  class: DeactiveUnnecessaryMonitorTabsJob
+  queue: background_worker_job
+  args: 
+  description: "This job processes deactivates unnecessary monitor tabs"
 
 

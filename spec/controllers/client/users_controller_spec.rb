@@ -21,6 +21,16 @@ describe Client::UsersController do
     User.authenticate(user.email, 'new_password').should == user
     user.reload.password_reset_code.should be_nil
   end
+  
+  
+  it "logins the user" do
+    user = Factory(:user)
+    user.create_reset_code!
+    put :update_password, :user_id => user.id, :reset_code => user.password_reset_code, :password => 'new_password'
+    flash[:error].should be_blank
+    User.authenticate(user.email, 'new_password').should == user
+    session[:user].should eq(user.id)
+  end
 
   it "does not change the password if the reset code is invalid" do
     user = Factory(:user, :new_password => 'xyzzy')
@@ -34,9 +44,7 @@ describe Client::UsersController do
 
   it "invites a new user to the current user's account" do
     user = Factory(:user).tap{|u| login_as u}
-    mailer = mock(UserMailer)
-    UserMailer.stub(:new).and_return(mailer)
-    mailer.should_receive(:deliver_invitation).with(anything, user)
+    Resque.should_receive(:enqueue)
     lambda {
       post :invite, :email => 'foo@bar.com', user: {role: "admin"}
     }.should change(user.account.users.reload, :count).by(1)

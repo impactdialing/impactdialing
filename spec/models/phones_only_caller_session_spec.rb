@@ -209,7 +209,7 @@ describe PhonesOnlyCallerSession do
         caller_session.should_receive(:caller_reassigned_to_another_campaign?).and_return(false)
         @campaign.should_receive(:next_voter_in_dial_queue).and_return(nil)
         caller_session.start_conf!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>There are no more numbers to call in this campaign.</Say></Response>")
+        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>There are no more numbers to call in this campaign.</Say><Hangup/></Response>")
       end        
     end
     
@@ -254,7 +254,7 @@ describe PhonesOnlyCallerSession do
         caller_session.should_receive(:funds_not_available?).and_return(false)        
         @campaign.should_receive(:next_voter_in_dial_queue).and_return(nil)
         caller_session.start_conf!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>There are no more numbers to call in this campaign.</Say></Response>")
+        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>There are no more numbers to call in this campaign.</Say><Hangup/></Response>")
       end        
     end    
     
@@ -303,7 +303,7 @@ describe PhonesOnlyCallerSession do
         caller_session.should_receive(:funds_not_available?).and_return(false)        
         caller_session.should_receive(:predictive?).and_return(true)
         caller_session.start_conf!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"https://3ngz.localtunnel.com:3000/caller/#{@caller.id}/flow?event=gather_response&amp;session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"https://3ngz.localtunnel.com:3000/hold_call?version=2012-02-16+10%3A20%3A07+%2B0530\" waitMethod=\"GET\"></Conference></Dial></Response>")
+        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"https://3ngz.localtunnel.com:3000/caller/#{@caller.id}/flow?event=gather_response&amp;session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"></Conference></Dial></Response>")
       end        
     end
   end
@@ -551,6 +551,35 @@ describe PhonesOnlyCallerSession do
       end
       
     end
+    
+     describe "wrapup_call" do
+
+      before(:each) do
+        @script = Factory(:script)
+        @campaign =  Factory(:progressive, script: @script)    
+        @caller = Factory(:caller, campaign: @campaign)
+        @voter = Factory(:voter)
+        @question = Factory(:question, script: @script)
+      end
+
+
+      it "move to wrapup state if caller has skipped all questions" do
+        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: false, campaign: @campaign, state: "read_next_question", voter_in_progress: @voter, question_id: @question.id)
+        caller_session.should_receive(:disconnected?).and_return(false)
+        caller_session.should_receive(:skip_all_questions?).and_return(true)
+        caller_session.submit_response!
+        caller_session.state.should eq('wrapup_call')
+      end
+
+      it "render correct twiml" do
+        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: false, campaign: @campaign, state: "read_next_question", voter_in_progress: @voter, question_id: @question.id)
+        caller_session.should_receive(:disconnected?).and_return(false)
+        caller_session.should_receive(:skip_all_questions?).and_return(true)
+        caller_session.submit_response!
+        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Redirect>https://3ngz.localtunnel.com:3000/caller/#{@caller.id}/flow?event=next_call&amp;session=#{caller_session.id}</Redirect></Response>")
+      end
+
+      end
     
     describe "voter response" do
       before(:each) do

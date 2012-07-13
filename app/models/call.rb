@@ -125,7 +125,11 @@ class Call < ActiveRecord::Base
   end
   
   def process(event)
-    send(event)
+    begin
+      send(event)
+    rescue ActiveRecord::StaleObjectError => exception      
+      Resque.enqueue(PhantomCallerJob, caller_session.id)  unless caller_session.nil?
+    end          
   end
   
   def answered_by_machine?

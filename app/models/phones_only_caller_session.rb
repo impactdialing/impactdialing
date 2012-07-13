@@ -66,7 +66,8 @@ class PhonesOnlyCallerSession < CallerSession
               xml_builder.Say I18n.t(:read_voter_name, :first_name => the_call.voter_in_progress.FirstName, :last_name => the_call.voter_in_progress.LastName) 
             end
           else
-            xml_builder.Say I18n.t(:campaign_has_no_more_voters)
+            xml_builder.Say I18n.t(:campaign_has_no_more_voters)         
+            xml_builder.Hangup   
           end
         end
                 
@@ -81,6 +82,7 @@ class PhonesOnlyCallerSession < CallerSession
             xml_builder.Redirect(flow_caller_url(caller, :session_id => id, :voter_id => voter_in_progress.id, event: "start_conf", :host => Settings.host, :port => Settings.port), :method => "POST")
           else
             xml_builder.Say I18n.t(:campaign_has_no_more_voters)
+            xml_builder.Hangup
           end
         end
       end
@@ -107,7 +109,7 @@ class PhonesOnlyCallerSession < CallerSession
 
         response do |xml_builder, the_call|
           xml_builder.Dial(:hangupOnStar => true, :action => flow_caller_url(caller, event: "gather_response", :host => Settings.host, :port => Settings.port, :session_id => id)) do
-            xml_builder.Conference(session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => hold_call_url(:host => Settings.host, :port => Settings.port, :version => HOLD_VERSION), :waitMethod => 'GET')
+            xml_builder.Conference(session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET')
           end          
         end
         
@@ -126,6 +128,7 @@ class PhonesOnlyCallerSession < CallerSession
       state :read_next_question do
         after(:always) {publish_moderator_gathering_response}
         event :submit_response, :to => :disconnected, :if => :disconnected?
+        event :submit_response, :to => :wrapup_call, :if => :skip_all_questions?
         event :submit_response, :to => :voter_response
         
         response do |xml_builder, the_call|
@@ -164,6 +167,10 @@ class PhonesOnlyCallerSession < CallerSession
       end
       
       
+  end
+  
+  def skip_all_questions?
+    digit == "999"
   end
   
   def wrapup_call_attempt
