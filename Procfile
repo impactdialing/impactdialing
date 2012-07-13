@@ -1,6 +1,6 @@
 web:  bundle exec rails server thin -p $PORT 
 dialer: bundle exec ruby lib/predictive_dialer.rb
-dialer: bundle exec ruby lib/resque_predictive_dialer.rb
+resque_dialer: bundle exec ruby lib/resque_predictive_dialer.rb
 new_simulator: bundle exec ruby simulator/newest_simulator.rb
 email_worker_job: rake environment resque:work QUEUE=email_worker_job
 voter_list_upload_worker_job: rake environment resque:work QUEUE=voter_list_upload_worker_job
