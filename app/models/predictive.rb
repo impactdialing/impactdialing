@@ -17,6 +17,9 @@ class Predictive < Campaign
   end
   
   def dial_sidekiq
+    num_to_call = number_of_voters_to_dial
+    Rails.logger.info "Campaign: #{self.id} - num_to_call #{num_to_call}"    
+    return if  num_to_call <= 0    
     Sidekiq::Client.enqueue(DialerJob, self.id, num_to_call)
   end
   
