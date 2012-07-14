@@ -85,8 +85,10 @@ def simulator_campaign_base_values(campaign_id, start_time)
 
   expected_conversation = longest_conversation
   best_conversation = longest_conversation
-  best_wrapup_time = longest_wrapup_time
   expected_wrapup_time = longest_wrapup_time
+  best_wrapup_time = longest_wrapup_time
+  dials_needed = 1
+  best_dials = 1  
   
   
   [expected_conversation, longest_conversation, best_conversation, mean_conversation, expected_wrapup_time, longest_wrapup_time, best_wrapup_time, caller_statuses, observed_conversations, observed_dials]
@@ -98,8 +100,6 @@ def simulate(campaign_id)
   start_time = 60 * 10
   simulator_length = 60 * 60
   abandon_count = 0
-  dials_needed = 1
-  best_dials = 1  
   increment = 10.0
   outer_loop = 0
   inner_loop = 0
@@ -108,12 +108,16 @@ def simulate(campaign_id)
   
   while outer_loop < 3
     best_utilization = 0
+    if outer_loop == 0
+      expected_wrapup_time = 0
+    end
+    
     if outer_loop == 1
       expected_conversation = mean_conversation
     end
     
     if outer_loop == 2
-      expected_wrapup_time = 0
+      dials_needed = 1
     end        
     
     while inner_loop < increment
@@ -193,7 +197,7 @@ def simulate(campaign_id)
 
      answer_ratio =  observed_dials.size  / observed_dials.count(&:answered?)
     if outer_loop == 0
-      dials_needed += (answer_ratio - 1)/ increment
+      expected_wrapup_time += (longest_wrapup_time/increment)
     end
   
     if outer_loop == 1
@@ -201,7 +205,7 @@ def simulate(campaign_id)
     end
   
     if outer_loop == 2
-      expected_wrapup_time += (longest_wrapup_time/increment)
+      dials_needed += (answer_ratio - 1)/ increment
     end
     
     inner_loop += 1
