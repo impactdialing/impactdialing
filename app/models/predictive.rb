@@ -16,6 +16,14 @@ class Predictive < Campaign
     end
   end
   
+  def dial_resque
+    num_to_call = number_of_voters_to_dial
+    Rails.logger.info "Campaign: #{self.id} - num_to_call #{num_to_call}"    
+    return if  num_to_call <= 0    
+    update_attributes(calls_in_progress: true)
+    Resque.enqueue(DialerJob, self.id, num_to_call)
+  end
+  
   def number_of_voters_to_dial
     num_to_call = 0
     dials_made = call_attempts.size
@@ -58,7 +66,7 @@ class Predictive < Campaign
   
   
   def best_dials_simulated
-    simulated_values.nil? ? 1 : simulated_values.best_dials.nil? ? 1 : simulated_values.best_dials.ceil > 4 ? 4 : simulated_values.best_dials.ceil
+    simulated_values.nil? ? 1 : simulated_values.best_dials.nil? ? 1 : simulated_values.best_dials.ceil > 3 ? 3 : simulated_values.best_dials.ceil
   end
 
   def best_conversation_simulated
