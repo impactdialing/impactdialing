@@ -34,6 +34,10 @@ class Moderator < ActiveRecord::Base
     Twilio::Conference.kick_participant(conference_sid, call_sid)
   end
   
+  def self.update_ringing_lines(campaign)
+    
+  end
+  
   def self.update_dials_in_progress(campaign)
     publish_event(campaign, 'update_dials_in_progress',campaign_information(campaign))
   end
