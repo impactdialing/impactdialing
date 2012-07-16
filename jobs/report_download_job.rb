@@ -19,11 +19,11 @@ class ReportDownloadJob
      response_strategy.response({})
    end 
    
-   def after_perform_scale_down(*args)
+   def self.after_perform_scale_down(*args)
      Scaler.workers('report_download_worker_job',1) if Scaler.working_job_count('report_download_worker_job') == 1
    end
    
-   def after_enqueue_scale_up(*args)
+   def self.after_enqueue_scale_up(*args)
       workers_to_scale = Scaler.working_job_count('report_download_worker_job') + Scaler.pending_job_count('report_download_worker_job') - Scaler.worker_count('report_download_worker_job')
       if workers_to_scale > 0 && Scaler.working_job_count('report_download_worker_job') <= 3
         Scaler.workers('report_download_worker_job', (Scaler.working_job_count('report_download_worker_job') + Scaler.pending_job_count('report_download_worker_job')))
