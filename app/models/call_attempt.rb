@@ -116,12 +116,12 @@ class CallAttempt < ActiveRecord::Base
   
   def end_answered_call
     begin
+      update_attributes(call_end: Time.now)
       voter.update_attributes(last_call_attempt_time:  Time.now, caller_session: nil)
     rescue ActiveRecord::StaleObjectError
       voter_to_update = Voter.find(voter.id)
       voter_to_update.update_attributes(last_call_attempt_time:  Time.now, caller_session: nil)
     end  
-    update_attributes(call_end: Time.now)
   end
   
   def process_answered_by_machine
