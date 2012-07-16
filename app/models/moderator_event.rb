@@ -5,7 +5,7 @@ module ModeratorEvent
   
   module InstanceMethods
     
-    def pub
+
   end
   
   def self.included(receiver)
