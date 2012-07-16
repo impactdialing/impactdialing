@@ -136,8 +136,6 @@ class Voter < ActiveRecord::Base
       Rails.logger.info "#{call_attempt.id} - after call"    
       response = JSON.parse(http.response)  
       if response["status"] == 400
-        puts "dddddddd"
-        puts response        
         handle_failed_call(call_attempt, self)
       else
         call_attempt.update_attributes(:sid => response["sid"])
@@ -277,7 +275,7 @@ class Voter < ActiveRecord::Base
   def new_call_attempt(mode = 'robo')
     call_attempt = self.call_attempts.create(campaign:  self.campaign, dialer_mode:  mode, status:  CallAttempt::Status::RINGING, call_start:  Time.now)
     update_attributes(:last_call_attempt => call_attempt, :last_call_attempt_time => Time.now, :status => CallAttempt::Status::RINGING)    
-    Call.create(call_attempt: call_attempt, all_states: "")
+    Call.create(call_attempt: call_attempt, all_states: "")    
     call_attempt
   end
   
