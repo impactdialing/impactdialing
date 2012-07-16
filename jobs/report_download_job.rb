@@ -26,7 +26,7 @@ class ReportDownloadJob
    def after_enqueue_scale_up(*args)
       workers_to_scale = Scaler.working_job_count('report_download_worker_job') + Scaler.pending_job_count('report_download_worker_job') - Scaler.worker_count('report_download_worker_job')
       if workers_to_scale > 0 && Scaler.working_job_count('report_download_worker_job') <= 3
-        Scaler.workers('report_download_worker_job', Scaler.working_job_count('report_download_worker_job') + Scaler.pending_job_count('report_download_worker_job'))
+        Scaler.workers('report_download_worker_job', (Scaler.working_job_count('report_download_worker_job') + Scaler.pending_job_count('report_download_worker_job')))
       end
     end
    
