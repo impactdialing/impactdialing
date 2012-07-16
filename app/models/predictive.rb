@@ -58,7 +58,7 @@ class Predictive < Campaign
     dials_made = call_attempts.between(10.minutes.ago, Time.now)
     calls_wrapping_up = dials_made.with_status(CallAttempt::Status::SUCCESS).not_wrapped_up
     active_call_attempts = dials_made.with_status(CallAttempt::Status::INPROGRESS)
-    available_callers = callers_available_for_call.size + active_call_attempts.select { |call_attempt| ((call_attempt.duration_wrapped_up > best_conversation_simulated) && (call_attempt.duration_wrapped_up < longest_conversation_simulated))}.size + calls_wrapping_up.select{|wrapping_up_call| wrapping_up_call.time_to_wrapup > best_wrapup_simulated}.size
+    available_callers = callers_available_for_call.size + active_call_attempts.select { |call_attempt| ((call_attempt.duration_wrapped_up > best_conversation_simulated) && (call_attempt.duration_wrapped_up < best_conversation_simulated + 15))}.size + calls_wrapping_up.select{|wrapping_up_call| (wrapping_up_call.time_to_wrapup > best_wrapup_simulated) && ((wrapping_up_call.time_to_wrapup > best_wrapup_simulated + 15))}.size
     ringing_lines = dials_made.with_status(CallAttempt::Status::RINGING).between(20.seconds.ago, Time.now).size
     dials_to_make = (best_dials_simulated * available_callers) - ringing_lines
     dials_to_make.to_i
