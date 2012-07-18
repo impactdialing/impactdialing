@@ -9,6 +9,22 @@ describe ModeratorEvent do
     @dummy_class = DummyClass.new
   end
   
+  describe "incoming call" do
+       
+       before (:each) do
+         @campaign = Factory(:campaign)
+         caller_session = Factory(:caller_session)
+         moderator_event = ModeratorCampaign.new(@campaign.id, 5, 2, 3, 2, 7, 3)
+         @dummy_class.incoming_call(@campaign)      
+       end
+           
+       it "should decrement ringing lines" do
+         ModeratorCampaign.ringing_lines(@campaign.id).should eq(["2"])
+       end
+           
+     end
+  
+  
   describe "voter connected" do
     
     before (:each) do
@@ -30,10 +46,6 @@ describe ModeratorEvent do
       ModeratorCampaign.live_lines(@campaign.id).should eq(["8"])
     end
     
-    it "should decrement ringing lines" do
-      ModeratorCampaign.ringing_lines(@campaign.id).should eq(["2"])
-    end
-        
   end
   
   describe "voter disconnected" do

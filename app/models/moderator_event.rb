@@ -10,10 +10,17 @@ module ModeratorEvent
       redis.pipelined do
         ModeratorCampaign.increment_on_call(campaign.id, 1)
         ModeratorCampaign.decrement_on_hold(campaign.id, 1)
-        ModeratorCampaign.increment_live_lines(campaign.id, 1)                        
+        ModeratorCampaign.increment_live_lines(campaign.id, 1)                            
+      end
+    end
+    
+    def incoming_call(campaign)
+      redis = Redis.current
+      redis.pipelined do      
         ModeratorCampaign.decrement_ringing_lines(campaign.id, 1)        
       end
     end
+    
     
     def voter_disconnected(campaign, caller_session)
       redis = Redis.current
