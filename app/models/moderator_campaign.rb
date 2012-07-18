@@ -2,6 +2,13 @@ class ModeratorCampaign
   
   def initialize(campaign_id, num_callers_logged_in, num_on_call, num_wrapup, num_on_hold, num_live_lines, num_ringing_lines)
     redis = Redis.current
+    redis.hdel  "moderator:#{campaign_id}", "callers_logged_in"
+    redis.hdel  "moderator:#{campaign_id}", "on_call"
+    redis.hdel  "moderator:#{campaign_id}", "on_hold"
+    redis.hdel  "moderator:#{campaign_id}", "ringing_lines"
+    redis.hdel  "moderator:#{campaign_id}", "wrapup"
+    redis.hdel  "moderator:#{campaign_id}", "live_lines"
+    
     redis.hincrby "moderator:#{campaign_id}", "callers_logged_in", num_callers_logged_in
     redis.hincrby "moderator:#{campaign_id}", "on_call", num_on_call
     redis.hincrby "moderator:#{campaign_id}", "on_hold", num_on_hold
