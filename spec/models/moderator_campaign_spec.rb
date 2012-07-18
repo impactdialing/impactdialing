@@ -4,7 +4,7 @@ describe ModeratorCampaign do
   
   before(:each) do
     @campaign = Factory(:campaign)
-    @moderator_campaign = ModeratorCampaign.new(@campaign.id,5,2,3,2,7,3)
+    @moderator_campaign = ModeratorCampaign.new(@campaign.id, 5, 2, 3, 2, 7, 3, 100, 300)
   end
   
   
