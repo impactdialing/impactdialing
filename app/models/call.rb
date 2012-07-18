@@ -27,7 +27,6 @@ class Call < ActiveRecord::Base
     
       state :initial do
         before(:always) {  connect_call }
-        after(:always) { }
         event :incoming_call, :to => :connected , :if => (:answered_by_human_and_caller_available?)
         event :incoming_call, :to => :abandoned , :if => (:answered_by_human_and_caller_not_available?)
         event :incoming_call, :to => :call_answered_by_machine , :if => (:answered_by_machine?)
