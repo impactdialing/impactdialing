@@ -17,6 +17,7 @@ module CallerEvents
           caller_deferrable.callback {}
           caller_deferrable.errback { |error| }
         end
+      }
     end
     
     def publish_calling_voter
@@ -26,6 +27,7 @@ module CallerEvents
           caller_deferrable.callback {}
           caller_deferrable.errback { |error| }
         end
+      }
     end
     
     def publish_caller_disconnected      
@@ -45,8 +47,6 @@ module CallerEvents
     
     def publish_moderator_conference_started
     end
-    
-    
   end
   
   def self.included(receiver)
