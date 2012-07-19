@@ -21,7 +21,8 @@ class Predictive < Campaign
     Rails.logger.info "Campaign: #{self.id} - num_to_call #{num_to_call}"    
     return if  num_to_call <= 0    
     update_attributes(calls_in_progress: true)
-    DialerJob.perform_async(self.id, num_to_call)
+    # DialerJob.perform_async(self.id, num_to_call)
+    Sidekiq::Client.push('queue' => 'dialer_worker', 'class' => DialerJob, 'args' => [self.id, num_to_call])
     # Sidekiq::Client.enqueue(DialerJob, self.id, num_to_call)
     # Resque.enqueue(DialerJob, self.id, num_to_call)
   end
