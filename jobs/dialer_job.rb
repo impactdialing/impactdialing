@@ -3,10 +3,12 @@ require "em-synchrony"
 require "em-synchrony/em-http"
 
 class DialerJob 
+  include Sidekiq::Worker
   @queue = :dialer_worker
+  sidekiq_options :queue => :dialer_worker
 
 
-   def self.perform(campaign_id, nums_to_call)
+   def perform(campaign_id, nums_to_call)
      campaign = Campaign.find(campaign_id)
      EM.synchrony do
        concurrency = 8
