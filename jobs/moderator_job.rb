@@ -6,6 +6,8 @@ class ModeratorJob
   include Resque::Plugins::UniqueJob
   @queue = :moderator_job
   
-   def self.perform     
+   def self.perform(campaign_id) 
+     pub_sub = MonitorPubSub.new    
+     pub_sub.push_to_monitor_screen
    end
 end
