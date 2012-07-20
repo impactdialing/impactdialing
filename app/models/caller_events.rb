@@ -42,7 +42,7 @@ module CallerEvents
     end
     
     def publish_moderator_caller_disconnected
-      ModeratorCampaign.caller_disconnected(campaign, self)
+      # ModeratorCampaign.caller_disconnected(campaign, self)
     end
     
     def publish_moderator_conference_started

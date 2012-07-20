@@ -20,7 +20,7 @@ class ModeratorCampaign
     redis.hincrby "moderator:#{campaign_id}", "wrapup", num_wrapup    
     redis.hincrby "moderator:#{campaign_id}", "live_lines", num_live_lines        
     redis.hincrby "moderator:#{campaign_id}", "available", num_available        
-    redis.hincrby "moderator:#{campaign_id}", "available", num_remaining            
+    redis.hincrby "moderator:#{campaign_id}", "remaining", num_remaining            
   end
   
   ['callers_logged_in', 'on_call', 'on_hold', 'wrapup', 'live_lines', 'ringing_lines' ].each do |value|
