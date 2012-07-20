@@ -1,13 +1,10 @@
-require 'resque/plugins/lock'
-require 'resque-loner'
-
 class ModeratorJob 
-  extend Resque::Plugins::Lock
-  include Resque::Plugins::UniqueJob
-  @queue = :moderator_job
+  include Sidekiq::Worker
+  sidekiq_options :queue => :monitor_worker
   
-   def self.perform(campaign_id) 
+  
+   def self.perform(campaign_id, caller_session_id, event, time_now) 
      pub_sub = MonitorPubSub.new    
-     pub_sub.push_to_monitor_screen
+     pub_sub.push_to_monitor_screen(campaign_id, caller_session_id, event, time_now)
    end
 end

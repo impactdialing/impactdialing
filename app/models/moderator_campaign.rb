@@ -3,6 +3,7 @@ class ModeratorCampaign
   def initialize(campaign_id, num_callers_logged_in, num_on_call, num_wrapup, num_on_hold, num_live_lines, num_ringing_lines, 
     num_available, num_remaining)
     redis = Redis.current
+    redis.hset "moderator:#{campaign_id}", "timestamp", Time.now
     redis.hdel  "moderator:#{campaign_id}", "callers_logged_in"
     redis.hdel  "moderator:#{campaign_id}", "on_call"
     redis.hdel  "moderator:#{campaign_id}", "on_hold"
