@@ -697,7 +697,7 @@ describe Call do
       
       it "should wrapup call_attempt" do
         call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'call_answered_by_lead', all_states: "")
-        call.call_attempt.should_receive(:publish_moderator_response_submited)
+        # call.call_attempt.should_receive(:publish_moderator_response_submited)
         call.call_attempt.should_receive(:redirect_caller)
         call.submit_result!
         call.call_attempt.wrapup_time.should_not be_nil
