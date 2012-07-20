@@ -3,11 +3,7 @@ require "spec_helper"
 describe ModeratorEvent do
   
   before(:each) do
-    class DummyClass
-      include ModeratorEvent
-    end
-    
-    @dummy_class = DummyClass.new    
+    @moderator_event = ModeratorEvent.new
     @campaign = Factory(:campaign)
     @caller_session = Factory(:caller_session)
     ModeratorCampaign.new(@campaign.id, 5, 2, 3, 2, 7, 3, 100, 200)
@@ -15,7 +11,7 @@ describe ModeratorEvent do
   
   describe "incoming call" do                  
      it "should decrement ringing lines" do
-       @dummy_class.incoming_call(@campaign)      
+       @moderator_event.incoming_call(@campaign)      
        ModeratorCampaign.ringing_lines(@campaign.id).should eq(["2"])
      end           
   end
@@ -24,7 +20,7 @@ describe ModeratorEvent do
   describe "voter connected" do
     
     before (:each) do
-      @dummy_class.voter_connected(@campaign,@caller_session)      
+      @moderator_event.voter_connected(@campaign)      
     end
         
     it "should increment callers on call" do
@@ -44,7 +40,7 @@ describe ModeratorEvent do
   describe "voter disconnected" do
 
     before (:each) do
-      @dummy_class.voter_disconnected(@campaign,@caller_session)      
+      @moderator_event.voter_disconnected(@campaign)      
     end
     
     it "should decrement callers on call" do
@@ -64,7 +60,7 @@ describe ModeratorEvent do
   describe "voter response submitted" do
     
     before (:each) do
-      @dummy_class.voter_response_submitted(@campaign,@caller_session)      
+      @moderator_event.voter_response_submitted(@campaign)      
     end
     
     it "should decrement wrapup" do
@@ -80,7 +76,7 @@ describe ModeratorEvent do
   describe "caller disconnected" do
     
     before (:each) do
-      @dummy_class.caller_disconnected(@campaign,@caller_session)      
+      @moderator_event.caller_disconnected(@campaign)      
     end    
     
     it "should decrement callers logged in" do
