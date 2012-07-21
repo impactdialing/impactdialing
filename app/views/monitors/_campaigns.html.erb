@@ -13,18 +13,18 @@
       <th>Numbers Available</th>
     </tr>
     
-    <% unless @campaigns_information.empty? %>
-      <% @campaigns_information.each do |information| %>
-        <tr id="<%= "campaign_"+information[:id].to_s %>" class="campaign <%= cycle("odd", "even") %>">
-          <td><%= information[:name] %></td>
-          <td class="callers_logged_in"><%= information[:logged_in] %></td>
-          <td class="on_call"><%= information[:on_call] %></td>       
-          <td class="wrap_up"><%= information[:wrap_up] %></td>       
-          <td class="on_hold"><%= information[:on_hold] %></td>                 
-          <td class="live_lines"><%= information[:live_lines] %></td>       
-          <td class="ringing_lines"><%= information[:ringing_lines] %></td>              
-          <td class="numbers_remaining"><%= information[:numbers_remaining] %></td>
-          <td class="numbers_available"><%= information[:numbers_available] %></td>
+    <% unless @campaigns.empty? %>
+      <% @campaigns.each do |campaign| %>
+        <tr id="<%= "campaign_"+ campaign.id.to_s %>" class="campaign <%= cycle("odd", "even") %>">
+          <td><%= ModeratorCampaign.name(campaign.id) %></td>
+          <td class="callers_logged_in"><%= ModeratorCampaign.callers_logged_in(campaign.id) %></td>
+          <td class="on_call"><%= ModeratorCampaign.on_call(campaign.id) %></td>       
+          <td class="wrap_up"><%= ModeratorCampaign.wrapup(campaign.id) %></td>       
+          <td class="on_hold"><%= ModeratorCampaign.on_hold(campaign.id) %></td>                 
+          <td class="live_lines"><%= ModeratorCampaign.live_lines(campaign.id) %></td>       
+          <td class="ringing_lines"><%= ModeratorCampaign.ringing_lines(campaign.id) %></td>              
+          <td class="numbers_remaining"><%= ModeratorCampaign.available(campaign.id) %></td>
+          <td class="numbers_available"><%= ModeratorCampaign.remaining(campaign.id) %></td>
         </tr>
       <% end %>
     <% end %>
