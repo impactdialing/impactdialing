@@ -1,8 +1,9 @@
 require 'redis'
+require Rails.root.join("lib/redis_connection")
 class MonitorPubSub 
   
   def initialize
-   @redis = Redis.current    
+   @redis = RedisConnection.monitor_connection    
   end
   
 
