@@ -4,7 +4,7 @@ describe ModeratorEvent do
   
   before(:each) do
     @moderator_event = ModeratorEvent.new
-    @campaign = Factory(:campaign)
+    @campaign = Factory(:predictive)
     @caller_session = Factory(:caller_session)
     ModeratorCampaign.new(@campaign.id, 5, 2, 3, 2, 7, 3, 100, 200)
   end
@@ -12,7 +12,7 @@ describe ModeratorEvent do
   describe "incoming call" do                  
      it "should decrement ringing lines" do
        @moderator_event.incoming_call(@campaign)      
-       ModeratorCampaign.ringing_lines(@campaign.id).should eq(["2"])
+       ModeratorCampaign.ringing_lines(@campaign.id).should eq("2")
      end           
   end
   
@@ -24,15 +24,15 @@ describe ModeratorEvent do
     end
         
     it "should increment callers on call" do
-      ModeratorCampaign.on_call(@campaign.id).should eq(["3"])
+      ModeratorCampaign.on_call(@campaign.id).should eq("3")
     end
     
     it "should decrement callers on hold" do
-      ModeratorCampaign.on_hold(@campaign.id).should eq(["1"])
+      ModeratorCampaign.on_hold(@campaign.id).should eq("1")
     end
 
     it "should increment live lines" do
-      ModeratorCampaign.live_lines(@campaign.id).should eq(["8"])
+      ModeratorCampaign.live_lines(@campaign.id).should eq("8")
     end
     
   end
@@ -44,15 +44,15 @@ describe ModeratorEvent do
     end
     
     it "should decrement callers on call" do
-      ModeratorCampaign.on_call(@campaign.id).should eq(["1"])
+      ModeratorCampaign.on_call(@campaign.id).should eq("1")
     end
     
     it "should increment callers on wrapup" do
-      ModeratorCampaign.wrapup(@campaign.id).should eq(["4"])
+      ModeratorCampaign.wrapup(@campaign.id).should eq("4")
     end
 
     it "should decrement live lines" do
-      ModeratorCampaign.live_lines(@campaign.id).should eq(["6"])
+      ModeratorCampaign.live_lines(@campaign.id).should eq("6")
     end
     
   end
@@ -64,11 +64,11 @@ describe ModeratorEvent do
     end
     
     it "should decrement wrapup" do
-      ModeratorCampaign.wrapup(@campaign.id).should eq(["2"])
+      ModeratorCampaign.wrapup(@campaign.id).should eq("2")
     end
     
     it "should increment callers on hold" do
-      ModeratorCampaign.on_hold(@campaign.id).should eq(["3"])
+      ModeratorCampaign.on_hold(@campaign.id).should eq("3")
     end
     
   end
@@ -80,7 +80,7 @@ describe ModeratorEvent do
     end    
     
     it "should decrement callers logged in" do
-      ModeratorCampaign.callers_logged_in(@campaign.id).should eq(["4"])
+      ModeratorCampaign.callers_logged_in(@campaign.id).should eq("4")
     end
     
   end
