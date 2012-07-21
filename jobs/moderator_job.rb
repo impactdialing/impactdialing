@@ -3,7 +3,6 @@ class ModeratorJob
   include Sidekiq::Worker
   sidekiq_options :queue => :monitor_worker
   
-  
    def self.perform(campaign_id, event, time_now) 
      redis = RedisConnection.monitor_connection
      time_refreshed = redis.hmget "moderator:#{campaign_id}", "timestamp"      
