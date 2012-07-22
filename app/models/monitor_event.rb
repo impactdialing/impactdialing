@@ -2,7 +2,7 @@ require Rails.root.join("lib/redis_connection")
 class MonitorEvent
   
   def self.create_job(campaign_id, event)
-    Sidekiq::Client.push('queue' => 'monitor_worker', 'class' => ::ModeratorJob, 'args' => [campaign_id, event, Time.now])
+    Sidekiq::Client.push('queue' => 'monitor_worker', 'class' => ::MonitorJob, 'args' => [campaign_id, event, Time.now])
   end
   
   def call_ringing(campaign)
