@@ -228,7 +228,7 @@ class CallerSession < ActiveRecord::Base
         if response["status"] == 400
           handle_failed_call(call_attempt, self)
         else
-          ModeratorEvent.create_job(campaign.id, 'call_ringing')
+          MonitorEvent.create_job(campaign.id, 'call_ringing')
           call_attempt.update_attributes(:sid => response["sid"])
         end
          }
@@ -249,7 +249,6 @@ class CallerSession < ActiveRecord::Base
     attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
     voter.update_attributes(status: CallAttempt::Status::FAILED)
     update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
-    ModeratorEvent.create_job(campaign.id, 'making_call')
     redirect_caller
   end
   
