@@ -1,8 +1,10 @@
 class ModeratorSession
     
   def self.add_session(campaign_id)
+    key = generate_session_key
     redis = RedisConnection.monitor_connection
-    redis.sadd("monitor:#{campaign_id}", generate_session_key)    
+    redis.sadd("monitor:#{campaign_id}", key)
+    key        
   end
   
   def self.remove_session(campaign_id, session_key)
