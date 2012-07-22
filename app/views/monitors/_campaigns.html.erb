@@ -14,15 +14,15 @@
     </tr>
     
     <tr id="<%= "campaign_"+ @campaign.id.to_s %>" class="campaign <%= cycle("odd", "even") %>">
-      <td><%= ModeratorCampaign.name(@campaign.id) %></td>
-      <td class="callers_logged_in"><%= ModeratorCampaign.callers_logged_in(@campaign.id) %></td>
-      <td class="on_call"><%= ModeratorCampaign.on_call(@campaign.id) %></td>       
-      <td class="wrap_up"><%= ModeratorCampaign.wrapup(@campaign.id) %></td>       
-      <td class="on_hold"><%= ModeratorCampaign.on_hold(@campaign.id) %></td>                 
-      <td class="live_lines"><%= ModeratorCampaign.live_lines(@campaign.id) %></td>       
-      <td class="ringing_lines"><%= ModeratorCampaign.ringing_lines(@campaign.id) %></td>              
-      <td class="numbers_available"><%= ModeratorCampaign.available(@campaign.id) %></td>
-      <td class="numbers_remianing"><%= ModeratorCampaign.remaining(@campaign.id) %></td>
+      <td><%= MonitorCampaign.name(@campaign.id) %></td>
+      <td class="callers_logged_in"><%= MonitorCampaign.callers_logged_in(@campaign.id) %></td>
+      <td class="on_call"><%= MonitorCampaign.on_call(@campaign.id) %></td>       
+      <td class="wrap_up"><%= MonitorCampaign.wrapup(@campaign.id) %></td>       
+      <td class="on_hold"><%= MonitorCampaign.on_hold(@campaign.id) %></td>                 
+      <td class="live_lines"><%= MonitorCampaign.live_lines(@campaign.id) %></td>       
+      <td class="ringing_lines"><%= MonitorCampaign.ringing_lines(@campaign.id) %></td>              
+      <td class="numbers_available"><%= MonitorCampaign.available(@campaign.id) %></td>
+      <td class="numbers_remianing"><%= MonitorCampaign.remaining(@campaign.id) %></td>
     </tr>
   </table>
 </div>

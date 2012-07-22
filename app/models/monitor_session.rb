@@ -1,4 +1,4 @@
-class ModeratorSession
+class MonitorSession
     
   def self.add_session(campaign_id)
     key = generate_session_key

@@ -1,5 +1,5 @@
 require Rails.root.join("lib/redis_connection")
-class ModeratorCampaign
+class MonitorCampaign
   
   def initialize(campaign_id, num_callers_logged_in, num_on_call, num_wrapup, num_on_hold, num_live_lines, num_ringing_lines, 
     num_available, num_remaining)
