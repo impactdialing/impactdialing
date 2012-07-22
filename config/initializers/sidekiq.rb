@@ -1,3 +1,6 @@
+rails_root = ENV['RAILS_ROOT'] || File.dirname(__FILE__) + '/../..'
+rails_env = ENV['RAILS_ENV'] || 'development'
+redis_config = YAML.load_file(rails_root + '/config/redis.yml')
 Sidekiq.configure_server do |config|
-  config.redis = { :size => (Sidekiq.options[:concurrency] + 2) }
+  config.redis = { :url => redis_config[rails_env] , :size => (Sidekiq.options[:concurrency] + 2)}
 end
