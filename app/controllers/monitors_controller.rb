@@ -29,7 +29,7 @@ class MonitorsController < ClientController
   
   
   def show
-    campaign = Campaign.find(params[:id])
+    @campaign = Campaign.find(params[:id])
     num_logged_in = campaign.caller_sessions.on_call.size
     num_on_call = campaign.caller_sessions.not_available.size
     num_wrapup = campaign.call_attempts.not_wrapped_up.between(3.minutes.ago, Time.now).size
