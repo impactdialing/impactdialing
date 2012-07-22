@@ -1,3 +1,4 @@
+require 'em-http-request'
 class WebuiCallerSession < CallerSession  
   include Rails.application.routes.url_helpers
   

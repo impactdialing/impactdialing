@@ -1,4 +1,3 @@
-require 'em-http-request'
 module CallerEvents
   
   module ClassMethods
