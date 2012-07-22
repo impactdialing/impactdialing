@@ -191,7 +191,7 @@ ImpactDialing::Application.routes.draw do
       end
     end
     resources :blocked_numbers, :only => [:index, :create, :destroy]
-    resources :monitors do
+    resources :monitors , :only=>[:index, :show] , :name_prefix => 'client' do
       collection do
         get :start
         get :new_index
