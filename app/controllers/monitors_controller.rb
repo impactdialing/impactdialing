@@ -4,17 +4,6 @@ class MonitorsController < ClientController
   
   def index
     @campaigns = account.campaigns.with_running_caller_sessions
-    @campaigns.each do |campaign|      
-      num_logged_in = campaign.caller_sessions.on_call.size
-      num_on_call = campaign.caller_sessions.not_available.size
-      num_wrapup = campaign.call_attempts.not_wrapped_up.between(3.minutes.ago, Time.now).size
-      num_on_hold = campaign.caller_sessions.available.size
-      num_live_lines = campaign.call_attempts.between(5.minutes.ago, Time.now).with_status(CallAttempt::Status::INPROGRESS).size
-      num_ringing_lines = campaign.call_attempts.between(20.seconds.ago, Time.now).with_status(CallAttempt::Status::RINGING).size
-      num_available = num_voter_available(campaign)
-      num_remaining = campaign.all_voters.by_status('not called').count
-      ModeratorCampaign.new(campaign.id, num_logged_in, num_on_call, num_wrapup, num_on_hold, num_live_lines, num_ringing_lines, num_available, num_remaining)
-    end    
     @all_campaigns = account.campaigns.manual.active
     twilio_capability = Twilio::Util::Capability.new(TWILIO_ACCOUNT, TWILIO_AUTH)
     twilio_capability.allow_client_outgoing(MONITOR_TWILIO_APP_SID)
@@ -30,15 +19,20 @@ class MonitorsController < ClientController
   
   def show
     @campaign = Campaign.find(params[:id])
-    num_logged_in = @campaign.caller_sessions.on_call.size
-    num_on_call = @campaign.caller_sessions.not_available.size
-    num_wrapup = @campaign.call_attempts.not_wrapped_up.between(3.minutes.ago, Time.now).size
-    num_on_hold = @campaign.caller_sessions.available.size
-    num_live_lines = @campaign.call_attempts.between(5.minutes.ago, Time.now).with_status(CallAttempt::Status::INPROGRESS).size
-    num_ringing_lines = @campaign.call_attempts.between(20.seconds.ago, Time.now).with_status(CallAttempt::Status::RINGING).size
-    num_available = num_voter_available(@campaign)
-    num_remaining = @campaign.all_voters.by_status('not called').count
-    ModeratorCampaign.new(@campaign.id, num_logged_in, num_on_call, num_wrapup, num_on_hold, num_live_lines, num_ringing_lines, num_available + num_remaining, num_remaining)    
+    num_logged_in, num_on_call, num_wrapup, num_on_hold, num_live_lines, num_ringing_lines, num_available, num_remaining = campaign_overview_info(campaign)
+    ModeratorCampaign.new(@campaign.id, num_logged_in, num_on_call, num_wrapup, num_on_hold, num_live_lines, num_ringing_lines, (num_available + num_remaining), num_remaining)    
+  end
+  
+  def campaign_overview_info(campaign)
+    num_logged_in = campaign.caller_sessions.on_call.size
+    num_on_call = campaign.caller_sessions.not_available.size
+    num_wrapup = campaign.call_attempts.not_wrapped_up.between(3.minutes.ago, Time.now).size
+    num_on_hold = campaign.caller_sessions.available.size
+    num_live_lines = campaign.call_attempts.between(5.minutes.ago, Time.now).with_status(CallAttempt::Status::INPROGRESS).size
+    num_ringing_lines = campaign.call_attempts.between(20.seconds.ago, Time.now).with_status(CallAttempt::Status::RINGING).size
+    num_available = num_voter_available(campaign)
+    num_remaining = campaign.all_voters.by_status('not called').count
+    [num_logged_in, num_on_call, num_wrapup, num_on_hold, num_live_lines, num_ringing_lines, num_available, num_remaining]
   end
   
   def num_voter_available(campaign)
@@ -88,16 +82,18 @@ class MonitorsController < ClientController
     render text: "Switching to different caller"
   end
   
-  def deactivate_session
-    moderator = Moderator.find_by_session(params[:monitor_session]) 
-    moderator.update_attributes(:active => false) unless moderator.nil?
+  def deactivate_session(campaign_id, session_key)
+    redis = RedisConnection.monitor_connection
+    redis.srem("monitor:#{campaign_id}", session_key)    
     render nothing: true
   end
   
   
-  def monitor_session
-    @moderator = Moderator.create!(:session => generate_session_key, :account => @user.account, :active => true)
-    render json: @moderator.session.to_json
+  def monitor_session(campaign_id)
+    key = generate_session_key
+    redis = RedisConnection.monitor_connection
+    redis.sadd("monitor:#{campaign_id}", key)
+    render json: {monitor_session: key}
   end
   
   def toggle_call_recording
