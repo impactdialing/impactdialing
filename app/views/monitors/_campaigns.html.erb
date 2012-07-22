@@ -9,8 +9,8 @@
       <th>On hold</th>            
       <th>Live lines</th>
       <th>Ringing lines</th>      
-      <th>Numbers remaining</th>
       <th>Numbers Available</th>
+      <th>Numbers remaining</th>
     </tr>
     
     <tr id="<%= "campaign_"+ @campaign.id.to_s %>" class="campaign <%= cycle("odd", "even") %>">
@@ -21,8 +21,8 @@
       <td class="on_hold"><%= ModeratorCampaign.on_hold(@campaign.id) %></td>                 
       <td class="live_lines"><%= ModeratorCampaign.live_lines(@campaign.id) %></td>       
       <td class="ringing_lines"><%= ModeratorCampaign.ringing_lines(@campaign.id) %></td>              
-      <td class="numbers_remaining"><%= ModeratorCampaign.available(@campaign.id) %></td>
-      <td class="numbers_available"><%= ModeratorCampaign.remaining(@campaign.id) %></td>
+      <td class="numbers_available"><%= ModeratorCampaign.available(@campaign.id) %></td>
+      <td class="numbers_remianing"><%= ModeratorCampaign.remaining(@campaign.id) %></td>
     </tr>
   </table>
 </div>
