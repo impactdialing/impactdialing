@@ -38,7 +38,7 @@ class MonitorsController < ClientController
     num_ringing_lines = @campaign.call_attempts.between(20.seconds.ago, Time.now).with_status(CallAttempt::Status::RINGING).size
     num_available = num_voter_available(@campaign)
     num_remaining = @campaign.all_voters.by_status('not called').count
-    ModeratorCampaign.new(@campaign.id, num_logged_in, num_on_call, num_wrapup, num_on_hold, num_live_lines, num_ringing_lines, num_available, num_remaining)    
+    ModeratorCampaign.new(@campaign.id, num_logged_in, num_on_call, num_wrapup, num_on_hold, num_live_lines, num_ringing_lines, num_available+ num_remaining, num_remaining)    
   end
   
   def num_voter_available(campaign)
