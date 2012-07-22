@@ -13,20 +13,16 @@
       <th>Numbers Available</th>
     </tr>
     
-    <% unless @campaigns.empty? %>
-      <% @campaigns.each do |campaign| %>
-        <tr id="<%= "campaign_"+ campaign.id.to_s %>" class="campaign <%= cycle("odd", "even") %>">
-          <td><%= ModeratorCampaign.name(campaign.id) %></td>
-          <td class="callers_logged_in"><%= ModeratorCampaign.callers_logged_in(campaign.id) %></td>
-          <td class="on_call"><%= ModeratorCampaign.on_call(campaign.id) %></td>       
-          <td class="wrap_up"><%= ModeratorCampaign.wrapup(campaign.id) %></td>       
-          <td class="on_hold"><%= ModeratorCampaign.on_hold(campaign.id) %></td>                 
-          <td class="live_lines"><%= ModeratorCampaign.live_lines(campaign.id) %></td>       
-          <td class="ringing_lines"><%= ModeratorCampaign.ringing_lines(campaign.id) %></td>              
-          <td class="numbers_remaining"><%= ModeratorCampaign.available(campaign.id) %></td>
-          <td class="numbers_available"><%= ModeratorCampaign.remaining(campaign.id) %></td>
-        </tr>
-      <% end %>
-    <% end %>
+    <tr id="<%= "campaign_"+ campaign.id.to_s %>" class="campaign <%= cycle("odd", "even") %>">
+      <td><%= ModeratorCampaign.name(@campaign.id) %></td>
+      <td class="callers_logged_in"><%= ModeratorCampaign.callers_logged_in(@campaign.id) %></td>
+      <td class="on_call"><%= ModeratorCampaign.on_call(@campaign.id) %></td>       
+      <td class="wrap_up"><%= ModeratorCampaign.wrapup(@campaign.id) %></td>       
+      <td class="on_hold"><%= ModeratorCampaign.on_hold(@campaign.id) %></td>                 
+      <td class="live_lines"><%= ModeratorCampaign.live_lines(@campaign.id) %></td>       
+      <td class="ringing_lines"><%= ModeratorCampaign.ringing_lines(@campaign.id) %></td>              
+      <td class="numbers_remaining"><%= ModeratorCampaign.available(@campaign.id) %></td>
+      <td class="numbers_available"><%= ModeratorCampaign.remaining(@campaign.id) %></td>
+    </tr>
   </table>
 </div>
