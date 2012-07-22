@@ -10,7 +10,7 @@ module CallerEvents
     end    
     
     def publish_caller_conference_started
-      EM.run {
+      EM.synchrony {
         unless caller.is_phones_only? 
           event_hash = campaign.caller_conference_started_event(voter_in_progress.try(:id))     
           caller_deferrable = Pusher[session_key].trigger_async(event_hash[:event], event_hash[:data].merge!(:dialer => campaign.type))
