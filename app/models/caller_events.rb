@@ -21,7 +21,7 @@ module CallerEvents
     end
     
     def publish_calling_voter
-      EM.run {
+      EM.synchrony {
         unless caller.is_phones_only? 
           caller_deferrable = Pusher[session_key].trigger_async('calling_voter', {})
           caller_deferrable.callback {}
