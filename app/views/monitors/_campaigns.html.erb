@@ -13,7 +13,7 @@
       <th>Numbers Available</th>
     </tr>
     
-    <tr id="<%= "campaign_"+ campaign.id.to_s %>" class="campaign <%= cycle("odd", "even") %>">
+    <tr id="<%= "campaign_"+ @campaign.id.to_s %>" class="campaign <%= cycle("odd", "even") %>">
       <td><%= ModeratorCampaign.name(@campaign.id) %></td>
       <td class="callers_logged_in"><%= ModeratorCampaign.callers_logged_in(@campaign.id) %></td>
       <td class="on_call"><%= ModeratorCampaign.on_call(@campaign.id) %></td>       
