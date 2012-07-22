@@ -83,17 +83,13 @@ class MonitorsController < ClientController
   end
   
   def deactivate_session(campaign_id, session_key)
-    redis = RedisConnection.monitor_connection
-    redis.srem("monitor:#{campaign_id}", session_key)    
+    ModeratorSession.remove_session(campaign_id, session_key)
     render nothing: true
   end
   
   
   def monitor_session(campaign_id)
-    key = generate_session_key
-    redis = RedisConnection.monitor_connection
-    redis.sadd("monitor:#{campaign_id}", key)
-    render json: {monitor_session: key}
+    render json: {monitor_session: ModeratorSession.add_session(campaign_id)}
   end
   
   def toggle_call_recording
