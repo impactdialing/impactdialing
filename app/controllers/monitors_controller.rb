@@ -3,7 +3,7 @@ class MonitorsController < ClientController
   layout 'client'
   
   def index
-    @campaigns = account.campaigns
+    @campaigns = account.campaigns.with_running_caller_sessions
     @campaigns.each do |campaign|      
       num_logged_in = campaign.caller_sessions.on_call.size
       num_on_call = campaign.caller_sessions.not_available.size
