@@ -4,3 +4,7 @@ redis_config = YAML.load_file(rails_root + '/config/redis.yml')
 Sidekiq.configure_server do |config|
   config.redis = { :url => redis_config[rails_env] , :size => (Sidekiq.options[:concurrency] + 2)}
 end
+
+Sidekiq.configure_client do |config|
+  config.redis = { :url => redis_config[rails_env] , :size => (Sidekiq.options[:concurrency] + 2)}
+end
