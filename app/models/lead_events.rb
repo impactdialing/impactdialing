@@ -16,8 +16,7 @@ module LeadEvents
           end
         }      
       end
-      MonitorEvent.voter_connected(campaign, caller_session)
-      
+      MonitorEvent.create_job(campaign.id, "voter_connected")      
     end    
     
     def publish_voter_disconnected
@@ -30,11 +29,11 @@ module LeadEvents
           end          
         }   
       end
-      MonitorEvent.voter_disconnected(campaign, caller_session)
+      MonitorEvent.create_job(campaign.id, "voter_disconnected")            
     end
     
     def publish_moderator_response_submited
-      MonitorEvent.voter_response_submitted(campaign, caller_session)
+      MonitorEvent.create_job(campaign.id, "voter_response_submitted")                  
     end
     
   end
