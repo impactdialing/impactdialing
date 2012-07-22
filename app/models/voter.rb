@@ -138,6 +138,7 @@ class Voter < ActiveRecord::Base
       if response["status"] == 400
         handle_failed_call(call_attempt, self)
       else
+        ModeratorEvent.create_job(campaign.id, 'call_ringing')
         call_attempt.update_attributes(:sid => response["sid"])
       end
       iter.return(http)      
