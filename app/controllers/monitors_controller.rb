@@ -22,7 +22,8 @@ class MonitorsController < ClientController
   end
   
   def new_index
-    @campaigns = account.campaigns.manual.active
+    @active_campaigns = account.campaigns.with_running_caller_sessions
+    @inactive_campaigns = account.campaigns.with_non_running_caller_sessions
   end
   
   

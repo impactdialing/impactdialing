@@ -31,6 +31,13 @@ class Campaign < ActiveRecord::Base
       :joins => "inner join caller_sessions on (caller_sessions.campaign_id = campaigns.id)",
       :conditions => {"caller_sessions.on_call" => true}
   }
+  
+  scope :with_non_running_caller_sessions, {
+      :select => "distinct campaigns.*",
+      :joins => "inner join caller_sessions on (caller_sessions.campaign_id = campaigns.id)",
+      :conditions => {"caller_sessions.on_call" => false}
+  }
+  
   scope :for_caller, lambda { |caller| {:include => [:caller_sessions], :conditions => {"caller_sessions.caller_id" => caller.id}}}
 
   before_create :create_uniq_pin

@@ -5,15 +5,15 @@
 
 <h1>Monitor</h1>
 
-<% if @campaigns.empty? %>
-    <p>You haven't created any campaigns yet.</p>
+<% if @active_campaigns.empty? %>
+    <p>None of your campaigns are running currently</p>
 <% else %>
     <table>
       <tr>
         <th>Name</th>
         <th></th>
       </tr>
-      <% @campaigns.each do |c| %>
+      <% @active_campaigns.each do |c| %>
           <tr>
             <td><%= link_to c.name, client_monitor_path(c) %></td>
           </tr>
