@@ -9,10 +9,10 @@ class MonitorPubSub
 
   def push_to_monitor_screen(campaign_id, event, time_now)
     campaign = Campaign.find(campaign_id)
-    moderator_event = ModeratorEvent.new
+    moderator_event = MonitorEvent.new
     moderator_event.send(event, campaign)
 
-    ModeratorSession.sessions(campaign_id).each do|monitor_session|
+    MonitorSession.sessions(campaign_id).each do|monitor_session|
       begin
         campaign_info = @redis.hgetall "moderator:#{campaign.id}"
         Pusher[monitor_session].trigger_async('update_campaign_info',campaign_info )

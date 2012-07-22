@@ -1,5 +1,5 @@
 require Rails.root.join("lib/redis_connection")
-class ModeratorJob 
+class MonitorJob 
   include Sidekiq::Worker
   sidekiq_options :queue => :monitor_worker
   

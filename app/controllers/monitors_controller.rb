@@ -20,8 +20,8 @@ class MonitorsController < ClientController
   def show
     @campaign = Campaign.find(params[:id])
     num_logged_in, num_on_call, num_wrapup, num_on_hold, num_live_lines, num_ringing_lines, num_available, num_remaining = campaign_overview_info(@campaign)
-    ModeratorCampaign.new(@campaign.id, num_logged_in, num_on_call, num_wrapup, num_on_hold, num_live_lines, num_ringing_lines, (num_available + num_remaining), num_remaining)    
-    @monitor_session = ModeratorSession.add_session(@campaign.id)
+    MonitorCampaign.new(@campaign.id, num_logged_in, num_on_call, num_wrapup, num_on_hold, num_live_lines, num_ringing_lines, (num_available + num_remaining), num_remaining)    
+    @monitor_session = MonitorSession.add_session(@campaign.id)
   end
   
   def campaign_overview_info(campaign)
@@ -84,7 +84,7 @@ class MonitorsController < ClientController
   end
   
   def deactivate_session(campaign_id, session_key)
-    ModeratorSession.remove_session(campaign_id, session_key)
+    MonitorSession.remove_session(campaign_id, session_key)
     render nothing: true
   end
       

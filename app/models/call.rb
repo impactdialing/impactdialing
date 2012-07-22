@@ -27,7 +27,7 @@ class Call < ActiveRecord::Base
     
       state :initial do
         before(:always) {  connect_call }
-        after(:always) {ModeratorEvent.create_job(campaign.id , "incoming")}
+        after(:always) {MonitorEvent.create_job(campaign.id , "incoming")}
         event :incoming_call, :to => :connected , :if => (:answered_by_human_and_caller_available?)
         event :incoming_call, :to => :abandoned , :if => (:answered_by_human_and_caller_not_available?)
         event :incoming_call, :to => :call_answered_by_machine , :if => (:answered_by_machine?)
@@ -37,7 +37,7 @@ class Call < ActiveRecord::Base
       
       state :connected do
         before(:always) {  connect_call }
-        after(:always) { call_attempt.publish_voter_connected;  ModeratorEvent.create_job(campaign.id , "voter_connected")}
+        after(:always) { call_attempt.publish_voter_connected;  MonitorEvent.create_job(campaign.id , "voter_connected")}
         event :hangup, :to => :hungup
         event :disconnect, :to => :disconnected
         
@@ -60,7 +60,7 @@ class Call < ActiveRecord::Base
       
       state :disconnected do        
         before(:always) { disconnect_call }
-        after(:success) { call_attempt.publish_voter_disconnected; ModeratorEvent.create_job(campaign.id , "voter_disconnected") }                
+        after(:success) { call_attempt.publish_voter_disconnected; MonitorEvent.create_job(campaign.id , "voter_disconnected") }                
         event :call_ended, :to => :call_answered_by_lead, :if => :call_connected?
         event :call_ended, :to => :call_not_answered_by_lead, :if => :call_did_not_connect?        
         response do |xml_builder, the_call|
