@@ -1,4 +1,8 @@
 require Rails.root.join("lib/redis_connection")
+require 'em-http-request'
+require "em-synchrony"
+require "em-synchrony/em-http"
+
 class MonitorJob 
   
   include Sidekiq::Worker

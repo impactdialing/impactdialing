@@ -1,5 +1,9 @@
 require 'redis'
 require Rails.root.join("lib/redis_connection")
+require 'em-http-request'
+require "em-synchrony"
+require "em-synchrony/em-http"
+
 class MonitorPubSub 
   
   def initialize
