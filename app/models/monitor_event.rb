@@ -5,7 +5,11 @@ class MonitorEvent
     Sidekiq::Client.push('queue' => 'monitor_worker', 'class' => ::ModeratorJob, 'args' => [campaign_id, event, Time.now])
   end
   
-    
+  def call_ringing(campaign)
+    redis = RedisConnection.monitor_connection
+    MonitorCampaign.increment_ringing_lines(campaign.id, 1)        
+  end
+      
   def incoming_call(campaign)
     redis = RedisConnection.monitor_connection
     redis.pipelined do      
