@@ -21,20 +21,29 @@ class MonitorsController < ClientController
     @token = twilio_capability.generate
   end
   
+  def new_index
+    @campaigns = account.campaigns.manual.active
+  end
+  
+  
+  def show
+    campaign = Campaign.find(params[:id])
+    num_logged_in = campaign.caller_sessions.on_call.size
+    num_on_call = campaign.caller_sessions.not_available.size
+    num_wrapup = campaign.call_attempts.not_wrapped_up.between(3.minutes.ago, Time.now).size
+    num_on_hold = campaign.caller_sessions.available.size
+    num_live_lines = campaign.call_attempts.between(5.minutes.ago, Time.now).with_status(CallAttempt::Status::INPROGRESS).size
+    num_ringing_lines = campaign.call_attempts.between(20.seconds.ago, Time.now).with_status(CallAttempt::Status::RINGING).size
+    num_available = num_voter_available(campaign)
+    num_remaining = campaign.all_voters.by_status('not called').count
+    ModeratorCampaign.new(campaign.id, num_logged_in, num_on_call, num_wrapup, num_on_hold, num_live_lines, num_ringing_lines, num_available, num_remaining)    
+  end
+  
   def num_voter_available(campaign)
     voters_available_for_retry = campaign.all_voters.enabled.avialable_to_be_retried(campaign.recycle_rate).count
     scheduled_for_now = campaign.all_voters.scheduled.count
     abandoned_count = campaign.all_voters.by_status(CallAttempt::Status::ABANDONED).count
     sanitize_dials(voters_available_for_retry + scheduled_for_now + abandoned_count)
-  end
-  
-  def new_index
-    @campaigns = account.campaigns.with_running_caller_sessions
-    @campaigns_information = Moderator.campaigns_information(@campaigns)
-    @all_campaigns = account.campaigns.manual.active
-    twilio_capability = Twilio::Util::Capability.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-    twilio_capability.allow_client_outgoing(MONITOR_TWILIO_APP_SID)
-    @token = twilio_capability.generate    
   end
   
 
