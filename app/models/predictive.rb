@@ -1,4 +1,4 @@
-
+require File.join(RAILS_ROOT, 'config/initializers/sidekiq')
 class Predictive < Campaign
     
   def dial
