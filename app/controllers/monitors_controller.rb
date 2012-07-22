@@ -21,6 +21,7 @@ class MonitorsController < ClientController
     @campaign = Campaign.find(params[:id])
     num_logged_in, num_on_call, num_wrapup, num_on_hold, num_live_lines, num_ringing_lines, num_available, num_remaining = campaign_overview_info(campaign)
     ModeratorCampaign.new(@campaign.id, num_logged_in, num_on_call, num_wrapup, num_on_hold, num_live_lines, num_ringing_lines, (num_available + num_remaining), num_remaining)    
+    @monitor_session = ModeratorSession.add_session(@campaign.id)
   end
   
   def campaign_overview_info(campaign)
@@ -86,12 +87,7 @@ class MonitorsController < ClientController
     ModeratorSession.remove_session(campaign_id, session_key)
     render nothing: true
   end
-  
-  
-  def monitor_session(campaign_id)
-    render json: {monitor_session: ModeratorSession.add_session(campaign_id)}
-  end
-  
+      
   def toggle_call_recording
     account.toggle_call_recording!
     flash_message(:notice, "Call recording turned #{account.record_calls? ? "on" : "off"}.")
