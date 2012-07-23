@@ -35,6 +35,7 @@ Monitors.prototype.update_campaign_info = function(){
     $("#campaign_info").children('#callers_logged_in').text(data.callers_logged_in);			
     $("#campaign_info").children('#on_call').text(data.on_call);			
     $("#campaign_info").children('#wrap_up').text(data.wrapup);
+    $("#campaign_info").children('#on_hold').text(data.on_hold);
     $("#campaign_info").children('#live_lines').text(data.live_lines);						
     $("#campaign_info").children('#ringing_lines').text(data.ringing_lines);						
     $("#campaign_info").children('#numbers_available').text(data.numbers_available);						
