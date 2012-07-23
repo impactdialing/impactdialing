@@ -137,7 +137,7 @@ class CallerSession < ActiveRecord::Base
   def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)    
     voters = Voter.find_all_by_caller_id_and_status(caller.id, CallAttempt::Status::READY)
     voters.each {|voter| voter.update_attributes(status: 'not called')}    
-    EM.run {
+    EM.synchrony {
       t = TwilioLib.new(account, auth)    
       deferrable = t.end_call("#{self.sid}")              
       deferrable.callback {}
@@ -221,7 +221,7 @@ class CallerSession < ActiveRecord::Base
     return if voter.nil?
     call_attempt = create_call_attempt(voter)    
     twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)        
-    EM.run do
+    EM.synchrony do
       http = twilio_lib.make_call_em(campaign, voter, call_attempt)
       http.callback { 
         response = JSON.parse(http.response)  

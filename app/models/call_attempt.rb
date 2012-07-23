@@ -146,7 +146,7 @@ class CallAttempt < ActiveRecord::Base
   end
   
   def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
-    EM.run {
+    EM.synchrony {
       t = TwilioLib.new(account, auth)    
       deferrable = t.end_call("#{self.sid}")              
       deferrable.callback {}
@@ -246,7 +246,7 @@ class CallAttempt < ActiveRecord::Base
   
   def redirect_caller(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
     unless caller_session.nil?
-      EM.run {
+      EM.synchrony {
         t = TwilioLib.new(account, auth)    
         deferrable = t.redirect_call(caller_session.sid, flow_caller_url(caller_session.caller, :host => Settings.host, :port => Settings.port, session_id: caller_session.id, event: "start_conf"))              
         deferrable.callback {}
