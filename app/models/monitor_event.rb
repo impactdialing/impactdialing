@@ -12,9 +12,7 @@ class MonitorEvent
       
   def incoming_call(campaign)
     redis = RedisConnection.monitor_connection
-    redis.pipelined do      
-      MonitorCampaign.decrement_ringing_lines(campaign.id, 1)        
-    end
+    MonitorCampaign.decrement_ringing_lines(campaign.id, 1)        
   end
     
     
