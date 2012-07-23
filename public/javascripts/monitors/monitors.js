@@ -1,7 +1,7 @@
 var Monitors = function(channel){
 	this.channel = channel;	
-	this.update_campaign_info();
-}
+	this.update_campaign_info()
+};
 
 
 Monitors.prototype.setup_twilio = function(token){
@@ -87,15 +87,15 @@ Monitors.prototype.kick_off = function(session){
 	
 };
 
-Monitors.prototype.switch_caller = function(current_session_id, next_session_id, action, status){
-	$.ajax({
-    url : "/client/monitors/stop",
-    data : {session_id : current_session_id},
-    type : "GET",
-    success : function(response) {
-      request_to_switch(next_session_id, action, status);
-    }	
-};
+// Monitors.prototype.switch_caller = function(current_session_id, next_session_id, action, status){
+// 	$.ajax({
+//     url : "/client/monitors/stop",
+//     data : {session_id : current_session_id},
+//     type : "GET",
+//     success : function(response) {
+//       request_to_switch(next_session_id, action, status);
+//     }	
+// };
 
 Monitors.prototype.request_to_switch = function(next_session_id, action, status) {
   $.ajax({
