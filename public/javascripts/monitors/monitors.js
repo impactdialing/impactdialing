@@ -1,6 +1,10 @@
+Pusher.log = function(message) {
+    if (window.console && window.console.log) window.console.log(message);
+};
+
 var Monitors = function(channel){
 	this.channel = channel;	
-	this.update_campaign_info()
+	this.update_campaign_info();
 };
 
 
@@ -27,6 +31,7 @@ Monitors.prototype.create_monitor_session = function(){
 
 Monitors.prototype.update_campaign_info = function(){
   this.channel.bind('update_campaign_info', function(data){
+	Pusher.log(data);
     $("#campaign_info").children('#callers_logged_in').text(data.callers_logged_in);			
     $("#campaign_info").children('#on_call').text(data.on_call);			
     $("#campaign_info").children('#wrap_up').text(data.wrapup);
