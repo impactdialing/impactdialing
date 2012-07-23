@@ -14,7 +14,7 @@ class MonitorCampaign
     redis.hdel  "moderator:#{campaign_id}", "ringing_lines"
     redis.hdel  "moderator:#{campaign_id}", "wrapup"
     redis.hdel  "moderator:#{campaign_id}", "live_lines"
-    redis.hdel  "moderator:#{campaign_id}", "avaialble"
+    redis.hdel  "moderator:#{campaign_id}", "available"
     redis.hdel  "moderator:#{campaign_id}", "remaining"    
     
     redis.hincrby "moderator:#{campaign_id}", "callers_logged_in", num_callers_logged_in
