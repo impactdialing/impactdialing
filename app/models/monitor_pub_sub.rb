@@ -13,18 +13,16 @@ class MonitorPubSub
     campaign = Campaign.find(campaign_id)
     moderator_event = MonitorEvent.new
     moderator_event.send(event, campaign)
-    EM.run {
-      MonitorSession.sessions(campaign_id).each do|monitor_session|
-        begin
-          campaign_info = @redis.hgetall "moderator:#{campaign.id}"
-          caller_deferrable = Pusher[monitor_session].trigger_async('update_campaign_info',campaign_info )
-          caller_deferrable.callback {}
-          caller_deferrable.errback { |error| }          
-        rescue Exception => e
-          Rails.logger.error "Pusher exception: #{e}"    
-        end
+    MonitorSession.sessions(campaign_id).each do|monitor_session|
+      begin
+        campaign_info = @redis.hgetall "moderator:#{campaign.id}"
+        caller_deferrable = Pusher[monitor_session].trigger_async('update_campaign_info',campaign_info )
+        caller_deferrable.callback {}
+        caller_deferrable.errback { |error| }          
+      rescue Exception => e
+       Rails.logger.error "Pusher exception: #{e}"    
+      end
       end         
-    }
   end
   
 end
