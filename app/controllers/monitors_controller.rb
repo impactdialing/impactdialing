@@ -20,7 +20,7 @@ class MonitorsController < ClientController
   def show
     @campaign = Campaign.find(params[:id])
     num_logged_in, num_on_call, num_wrapup, num_on_hold, num_live_lines, num_ringing_lines, num_available, num_remaining = campaign_overview_info(@campaign)
-    MonitorCampaign.new(@campaign.id, num_logged_in, num_on_call, num_wrapup, num_on_hold, num_live_lines, num_ringing_lines, (num_available + num_remaining), num_remaining)    
+    MonitorCampaign.new(@campaign.id, num_logged_in, num_on_call, num_wrapup, num_on_hold, num_live_lines, num_ringing_lines, num_available, num_remaining)    
     @monitor_session = MonitorSession.add_session(@campaign.id)
   end
   
@@ -31,8 +31,8 @@ class MonitorsController < ClientController
     num_on_hold = campaign.caller_sessions.available.size
     num_live_lines = campaign.call_attempts.between(5.minutes.ago, Time.now).with_status(CallAttempt::Status::INPROGRESS).size
     num_ringing_lines = campaign.call_attempts.between(20.seconds.ago, Time.now).with_status(CallAttempt::Status::RINGING).size
-    num_available = num_voter_available(campaign)
     num_remaining = campaign.all_voters.by_status('not called').count
+    num_available = num_voter_available(campaign) + num_remaining
     [num_logged_in, num_on_call, num_wrapup, num_on_hold, num_live_lines, num_ringing_lines, num_available, num_remaining]
   end
   
