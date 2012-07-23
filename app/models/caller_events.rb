@@ -6,7 +6,10 @@ module CallerEvents
   module InstanceMethods
             
     def publish_start_calling
-      publish_sync('start_calling', {caller_session_id: id}) if state == 'initial'                     
+      if state == "initial"
+        publish_sync('start_calling', {caller_session_id: id})
+        MonitorEvent.create_job(campaign.id , "caller_connected")
+      end
     end    
     
     def publish_caller_conference_started
