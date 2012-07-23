@@ -1,5 +1,4 @@
 require Rails.root.join("lib/redis_connection")
-require 'em-http-request'
 
 class MonitorJob 
   
