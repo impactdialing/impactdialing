@@ -28,6 +28,7 @@ gem "airbrake",'~>3.0.9'
 gem 'recurly', '~> 2.1.3'
 gem "uuid", "~> 2.3.5"
 gem "call_center", "~> 0.0.9"
+gem "eventmachine", "1.0.0.rc.4"
 gem "em-http-request", "~> 1.0.1"
 gem "ruby-graphviz", "0.9.0"
 gem "em-synchrony", "~> 1.0.1"
