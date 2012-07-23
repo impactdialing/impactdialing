@@ -1,4 +1,3 @@
-require 'redis'
 require Rails.root.join("lib/redis_connection")
 require 'em-http-request'
 
