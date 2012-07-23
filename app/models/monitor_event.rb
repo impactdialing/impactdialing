@@ -18,30 +18,24 @@ class MonitorEvent
     
   def voter_connected(campaign)
     redis = RedisConnection.monitor_connection
-    redis.pipelined do
-      MonitorCampaign.increment_on_call(campaign.id, 1)
-      MonitorCampaign.decrement_on_hold(campaign.id, 1)
-      MonitorCampaign.increment_live_lines(campaign.id, 1)                            
-    end
+    MonitorCampaign.increment_on_call(campaign.id, 1)
+    MonitorCampaign.decrement_on_hold(campaign.id, 1)
+    MonitorCampaign.increment_live_lines(campaign.id, 1)                            
   end
     
     
     
   def voter_disconnected(campaign)
     redis = RedisConnection.monitor_connection
-    redis.pipelined do
-      MonitorCampaign.decrement_on_call(campaign.id, 1)
-      MonitorCampaign.increment_wrapup(campaign.id, 1)
-      MonitorCampaign.decrement_live_lines(campaign.id, 1)
-    end
+    MonitorCampaign.decrement_on_call(campaign.id, 1)
+    MonitorCampaign.increment_wrapup(campaign.id, 1)
+    MonitorCampaign.decrement_live_lines(campaign.id, 1)
   end
     
   def voter_response_submitted(campaign)
     redis = RedisConnection.monitor_connection
-    redis.pipelined do
-      MonitorCampaign.decrement_wrapup(campaign.id, 1)
-      MonitorCampaign.increment_on_hold(campaign.id, 1)
-    end
+    MonitorCampaign.decrement_wrapup(campaign.id, 1)
+    MonitorCampaign.increment_on_hold(campaign.id, 1)
   end
     
   def caller_disconnected(campaign)
