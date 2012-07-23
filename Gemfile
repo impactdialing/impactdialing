@@ -41,6 +41,9 @@ gem "hiredis", "~>0.4.5"
 gem "formtastic", "~>2.2.1"
 gem "cocoon", "~>1.0.22"
 gem "sidekiq", "~>1.2.1"
+gem "slim", "~>1.2.2"
+gem "sinatra", "~>1.2.8"
+gem "sprockets", "~>2.4.5"
 
 
 
