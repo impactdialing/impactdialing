@@ -15,7 +15,7 @@ class MonitorPubSub
     MonitorSession.sessions(campaign_id).each do|monitor_session|
       begin
         campaign_info = @redis.hgetall "moderator:#{campaign.id}"
-        Pusher[monitor_session].trigger!('update_campaign_info',campaign_info )
+        Pusher[monitor_session].trigger!('update_campaign_info',campaign_info.merge!(action_name: event) )
       rescue Exception => e
        Rails.logger.error "Pusher exception: #{e}"    
       end
