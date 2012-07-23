@@ -11,7 +11,9 @@ class MonitorJob
      time_refreshed = redis.hmget "moderator:#{campaign_id}", "timestamp"      
      return if time_now.to_time < time_refreshed[0].to_time
      pub_sub = MonitorPubSub.new  
-     pub_sub.push_to_monitor_screen(campaign_id, event, time_now)
+     EM.run {
+       pub_sub.push_to_monitor_screen(campaign_id, event, time_now)
+     }
    end
    
 end
