@@ -22,8 +22,13 @@ class MonitorEvent
     MonitorCampaign.decrement_on_hold(campaign.id, 1)
     MonitorCampaign.increment_live_lines(campaign.id, 1)                            
   end
-    
-    
+  
+  def caller_connected(campaign)
+    redis = RedisConnection.monitor_connection
+    MonitorCampaign.increment_callers_logged_in(campaign.id, 1)
+    MonitorCampaign.increment_on_hold(campaign.id, 1)
+  end
+  
     
   def voter_disconnected(campaign)
     redis = RedisConnection.monitor_connection
