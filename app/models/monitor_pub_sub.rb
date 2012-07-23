@@ -19,7 +19,9 @@ class MonitorPubSub
       MonitorSession.sessions(campaign_id).each do|monitor_session|
         begin
           campaign_info = @redis.hgetall "moderator:#{campaign.id}"
-          Pusher[monitor_session].trigger_async('update_campaign_info',campaign_info )
+          caller_deferrable = Pusher[monitor_session].trigger_async('update_campaign_info',campaign_info )
+          caller_deferrable.callback {}
+          caller_deferrable.errback { |error| }          
         rescue Exception => e
           Rails.logger.error "Pusher exception: #{e}"    
         end
