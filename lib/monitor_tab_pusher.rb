@@ -6,7 +6,7 @@ require 'em-http-request'
 module MonitorTab
   module Pusher
     def self.redis
-      @redis = RedisConnection.monitor_connection
+      @redis = RedisConnection.monitor_connection_em
     end
 
     def self.next

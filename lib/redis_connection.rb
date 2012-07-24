@@ -14,4 +14,11 @@ class RedisConnection
     end
   end
   
+  def self.monitor_connection_em
+    rails_env = ENV['RAILS_ENV'] || 'development'
+    redis_config = YAML.load_file(Rails.root.to_s + "/config/redis.yml")
+    EM::Hiredis.connect(redis_config[rails_env])
+  end
+  
+  
 end
