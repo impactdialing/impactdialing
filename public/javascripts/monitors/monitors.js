@@ -38,8 +38,8 @@ Monitors.prototype.update_campaign_info = function(){
     $("#campaign_info").children('#on_hold').text(data.on_hold);
     $("#campaign_info").children('#live_lines').text(data.live_lines);						
     $("#campaign_info").children('#ringing_lines').text(data.ringing_lines);						
-    $("#campaign_info").children('#numbers_available').text(data.numbers_available);						
-    $("#campaign_info").children('#numbers_remaining').text(data.numbers_available);						
+    $("#campaign_info").children('#numbers_available').text(data.available);						
+    $("#campaign_info").children('#numbers_remaining').text(data.remaining);						
    });	
 }
 
