@@ -76,9 +76,6 @@ class CallAttempt < ActiveRecord::Base
     current_recording.next ? current_recording.next.twilio_xml(self) : current_recording.hangup
   end
   
-  
-  
-  
   def connect_call
     session = voter.caller_session
     update_attributes(status: CallAttempt::Status::INPROGRESS, connecttime: Time.now, caller: session.caller, caller_session: session)
