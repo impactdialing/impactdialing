@@ -11,7 +11,9 @@ class MonitorEvent
   
   def self.call_ringing(campaign)
     redis = RedisConnection.monitor_connection
-    MonitorCampaign.increment_ringing_lines(campaign.id, 1)            
+    MonitorCampaign.increment_ringing_lines(campaign.id, 1)
+    MonitorCampaign.decrement_available(campaign.id, 1)            
+    MonitorCampaign.decrement_remaining(campaign.id, 1)            
     create_notifications(campaign.id)
   end
       
