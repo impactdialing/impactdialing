@@ -45,7 +45,7 @@ module CallerEvents
     end
     
     def publish_moderator_caller_disconnected
-      # MonitorCampaign.caller_disconnected(campaign, self)
+      MonitorEvent.caller_disconnected(campaign)
     end
     
     def publish_moderator_conference_started
