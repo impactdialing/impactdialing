@@ -115,7 +115,7 @@ class CallerSession < ActiveRecord::Base
       
       state :conference_ended do
         before(:always) { end_caller_session}
-        after(:always) { publish_caller_disconnected; publish_moderator_caller_disconnected} 
+        after(:always) { publish_caller_disconnected} 
         response do |xml_builder, the_call|
           xml_builder.Hangup
         end        
@@ -129,6 +129,7 @@ class CallerSession < ActiveRecord::Base
     begin
       end_session
       wrapup_attempt_in_progress
+      MonitorEvent.caller_disconnected(campaign)
     rescue ActiveRecord::StaleObjectError => exception
       Resque.enqueue(PhantomCallerJob, self.id)
     end      
