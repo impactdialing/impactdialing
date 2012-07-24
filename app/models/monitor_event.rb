@@ -15,9 +15,11 @@ class MonitorEvent
     create_notifications(campaign.id)
   end
       
-  def self.incoming_call(campaign)
+  def self.incoming_call_request(campaign)
     redis = RedisConnection.monitor_connection
+    puts "abcd"
     MonitorCampaign.decrement_ringing_lines(campaign.id, 1)        
+    puts "defg"
     create_notifications(campaign.id)
   end
     
