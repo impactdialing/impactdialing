@@ -87,7 +87,7 @@ class Call < ActiveRecord::Base
       end
       
       state :call_answered_by_lead do
-        before(:always) { end_answered_call }        
+        before(:always) { end_answered_call;call_attempt.publish_moderator_response_submited }        
         event :submit_result, :to => :wrapup_and_continue
         event :submit_result_and_stop, :to => :wrapup_and_stop
         
