@@ -11,11 +11,15 @@ module MonitorTab
 
     def self.next
       redis.blpop('monitor_notifications', 0).callback do |list, data|
+        puts data
         notification = JSON.parse(data)
         channel = notification.delete('channel')
         campaign_id = notification.delete('campaign')
         redis.hgetall("moderator:#{campaign_id}").callback { |campaign_info|
-          ::Pusher[channel].trigger_async('update_campaign_info', Hash[*campaign_info.flatten])
+          caller_deferrable = ::Pusher[channel].trigger_async('update_campaign_info', Hash[*campaign_info.flatten])
+          caller_deferrable.callback {}
+          caller_deferrable.errback { |error| puts error }
+          
           EM.next_tick(&method(:next))
          }
       end
