@@ -4,7 +4,7 @@ class MonitorEvent
   def self.create_notifications(campaign_id)
     redis = RedisConnection.monitor_connection
     MonitorSession.sessions(campaign_id).each do|monitor_session|
-      redis.rpush('monitor_notifications', {channel: monitor_session, campaign: campaign_id})
+      redis.rpush('monitor_notifications', {channel: monitor_session, campaign: campaign_id}.to_json)
     end
   end
   
@@ -61,7 +61,7 @@ class MonitorEvent
     create_notifications(campaign.id)
   end
     
-  def self.caller_disconnected(campaign)
+  def caller_disconnected(campaign)
     redis = RedisConnection.monitor_connection
     MonitorCampaign.decrement_callers_logged_in(campaign.id, 1)
     create_notifications(campaign.id)
