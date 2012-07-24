@@ -111,7 +111,7 @@ class Call < ActiveRecord::Base
       
       state :wrapup_and_stop do
         before(:always) { wrapup_now; caller_session.run('end_conf') }        
-        after(:success){ persist_all_states}
+        after(:success){ persist_all_states;; call_attempt.publish_moderator_response_submited}
       end
             
   end 
