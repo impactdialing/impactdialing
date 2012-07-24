@@ -1,4 +1,6 @@
-require Rails.root.join("lib/redis_connection")
+RAILS_ROOT = File.expand_path('../..', __FILE__)
+require File.join(RAILS_ROOT, 'config/environment')
+require File.join(RAILS_ROOT, 'lib/redis_connection')
 require 'em-http-request'
 
 module Monitor
