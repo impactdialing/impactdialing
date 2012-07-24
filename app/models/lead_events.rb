@@ -5,6 +5,10 @@ module LeadEvents
   
   module InstanceMethods
     
+    def publish_incoming_call
+      MonitorEvent.incoming_call(campaign)
+    end
+    
     def publish_voter_connected      
       unless caller_session.nil?
         EM.synchrony {
@@ -16,7 +20,7 @@ module LeadEvents
           end
         }      
       end
-      MonitorEvent.create_job(campaign.id, "voter_connected")      
+      MonitorEvent.voter_connected(campaign)      
     end    
     
     def publish_voter_disconnected
@@ -29,11 +33,11 @@ module LeadEvents
           end          
         }   
       end
-      MonitorEvent.create_job(campaign.id, "voter_disconnected")            
+      MonitorEvent.voter_disconnected(campaign)
     end
     
     def publish_moderator_response_submited
-      MonitorEvent.create_job(campaign.id, "voter_response_submitted")                  
+      MonitorEvent.voter_response_submitted(campaign)
     end
     
   end
