@@ -44,9 +44,6 @@ module CallerEvents
         :voters_count => Voter.remaining_voters_count_for('campaign_id', campaign.id), :dials_in_progress => campaign.call_attempts.not_wrapped_up.size }, :old_campaign_id => old_campaign.id,:no_of_callers_logged_in_old_campaign => old_campaign.caller_sessions.on_call.size})          
     end
     
-    def publish_moderator_caller_disconnected
-      MonitorEvent.caller_disconnected(campaign)
-    end
     
     def publish_moderator_conference_started
     end
