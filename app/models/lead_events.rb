@@ -6,7 +6,6 @@ module LeadEvents
   module InstanceMethods
     
     def publish_incoming_call
-      puts "xxxxxxxxxxx"
       MonitorEvent.incoming_call_request(campaign)
     end
     
