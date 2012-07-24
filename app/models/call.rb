@@ -87,7 +87,7 @@ class Call < ActiveRecord::Base
       end
       
       state :call_answered_by_lead do
-        before(:always) { end_answered_call;call_attempt.publish_moderator_response_submited }        
+        before(:always) { end_answered_call }        
         event :submit_result, :to => :wrapup_and_continue
         event :submit_result_and_stop, :to => :wrapup_and_stop
         
@@ -106,7 +106,7 @@ class Call < ActiveRecord::Base
       
       
       state :wrapup_and_continue do 
-        before(:always) { wrapup_now; call_attempt.redirect_caller; }
+        before(:always) { wrapup_now; call_attempt.redirect_caller; call_attempt.publish_moderator_response_submited}
         after(:success){ persist_all_states}
       end
       
