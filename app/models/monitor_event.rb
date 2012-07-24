@@ -1,53 +1,70 @@
 require Rails.root.join("lib/redis_connection")
 class MonitorEvent
   
-  def self.create_job(campaign_id, event)
-    puts "ddddddddddd"
-    puts event
-    Sidekiq::Client.push('queue' => 'monitor_worker', 'class' => MonitorJob, 'args' => [campaign_id, event, Time.now])
+  def self.create_notifications(campaign_id)
+    redis = RedisConnection.monitor_connection
+    MonitorSession.sessions(campaign_id).each do|monitor_session|
+      redis.rpush('monitor_notifications', {channel: monitor_session, campaign: campaign_id})
+    end
   end
   
-  def call_ringing(campaign)
+  
+  def self.call_ringing(campaign)
     redis = RedisConnection.monitor_connection
-    MonitorCampaign.increment_ringing_lines(campaign.id, 1)        
+    MonitorCampaign.increment_ringing_lines(campaign.id, 1)            
+    create_notifications(campaign.id)
   end
       
-  def incoming_call(campaign)
+  def self.incoming_call(campaign)
     redis = RedisConnection.monitor_connection
     MonitorCampaign.decrement_ringing_lines(campaign.id, 1)        
+    create_notifications(campaign.id)
   end
     
     
-  def voter_connected(campaign)
+  def self.voter_connected(campaign)
     redis = RedisConnection.monitor_connection
-    MonitorCampaign.increment_on_call(campaign.id, 1)
-    MonitorCampaign.decrement_on_hold(campaign.id, 1)
-    MonitorCampaign.increment_live_lines(campaign.id, 1)                            
+    redis.pipelined do
+      MonitorCampaign.increment_on_call(campaign.id, 1)
+      MonitorCampaign.decrement_on_hold(campaign.id, 1)
+      MonitorCampaign.increment_live_lines(campaign.id, 1)                            
+    end
+    create_notifications(campaign.id)
   end
   
-  def caller_connected(campaign)
+  def self.caller_connected(campaign)
     redis = RedisConnection.monitor_connection
-    MonitorCampaign.increment_callers_logged_in(campaign.id, 1)
-    MonitorCampaign.increment_on_hold(campaign.id, 1)
+    redis.pipelined do
+      MonitorCampaign.increment_callers_logged_in(campaign.id, 1)
+      MonitorCampaign.increment_on_hold(campaign.id, 1)
+    end
+    create_notifications(campaign.id)
   end
   
     
-  def voter_disconnected(campaign)
+  def self.voter_disconnected(campaign)
     redis = RedisConnection.monitor_connection
-    MonitorCampaign.decrement_on_call(campaign.id, 1)
-    MonitorCampaign.increment_wrapup(campaign.id, 1)
-    MonitorCampaign.decrement_live_lines(campaign.id, 1)
+    redis.pipelined do
+      MonitorCampaign.decrement_on_call(campaign.id, 1)
+      MonitorCampaign.increment_wrapup(campaign.id, 1)
+      MonitorCampaign.decrement_live_lines(campaign.id, 1)
+    end
+    create_notifications(campaign.id)
   end
     
-  def voter_response_submitted(campaign)
+  def self.voter_response_submitted(campaign)
     redis = RedisConnection.monitor_connection
-    MonitorCampaign.decrement_wrapup(campaign.id, 1)
-    MonitorCampaign.increment_on_hold(campaign.id, 1)
+    redis.pipelined do
+      MonitorCampaign.decrement_wrapup(campaign.id, 1)
+      MonitorCampaign.increment_on_hold(campaign.id, 1)
+    end
+    create_notifications(campaign.id)
   end
     
-  def caller_disconnected(campaign)
+  def self.caller_disconnected(campaign)
     redis = RedisConnection.monitor_connection
     MonitorCampaign.decrement_callers_logged_in(campaign.id, 1)
+    create_notifications(campaign.id)
   end    
   
 end

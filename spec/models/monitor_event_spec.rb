@@ -3,7 +3,6 @@ require "spec_helper"
 describe MonitorEvent do
   
   before(:each) do
-    @moderator_event = MonitorEvent.new
     @campaign = Factory(:predictive)
     @caller_session = Factory(:caller_session)
     MonitorCampaign.new(@campaign.id, 5, 2, 3, 2, 7, 3, 100, 200)
@@ -11,7 +10,7 @@ describe MonitorEvent do
   
   describe "incoming call" do                  
      it "should decrement ringing lines" do
-       @moderator_event.incoming_call(@campaign)      
+       MonitorEvent.incoming_call(@campaign)      
        MonitorCampaign.ringing_lines(@campaign.id).should eq("2")
      end           
   end
@@ -20,7 +19,7 @@ describe MonitorEvent do
   describe "voter connected" do
     
     before (:each) do
-      @moderator_event.voter_connected(@campaign)      
+      MonitorEvent.voter_connected(@campaign)      
     end
         
     it "should increment callers on call" do
@@ -40,7 +39,7 @@ describe MonitorEvent do
   describe "voter disconnected" do
 
     before (:each) do
-      @moderator_event.voter_disconnected(@campaign)      
+      MonitorEvent.voter_disconnected(@campaign)      
     end
     
     it "should decrement callers on call" do
@@ -60,7 +59,7 @@ describe MonitorEvent do
   describe "voter response submitted" do
     
     before (:each) do
-      @moderator_event.voter_response_submitted(@campaign)      
+      MonitorEvent.voter_response_submitted(@campaign)      
     end
     
     it "should decrement wrapup" do
@@ -76,7 +75,7 @@ describe MonitorEvent do
   describe "caller disconnected" do
     
     before (:each) do
-      @moderator_event.caller_disconnected(@campaign)      
+      MonitorEvent.caller_disconnected(@campaign)      
     end    
     
     it "should decrement callers logged in" do

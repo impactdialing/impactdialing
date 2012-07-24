@@ -8,7 +8,7 @@ module CallerEvents
     def publish_start_calling
       if state == "initial"
         publish_sync('start_calling', {caller_session_id: id})
-        MonitorEvent.create_job(campaign.id , "caller_connected")
+        MonitorEvent.caller_connected(campaign)
       end
     end    
     
