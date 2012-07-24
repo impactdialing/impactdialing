@@ -49,12 +49,9 @@ class MonitorCampaign
     redis.hmget("moderator:#{campaign_id}", 'name')[0]    
   end
   
-  
-  
   def self.add_caller_status(caller_id, status)
     redis = RedisConnection.monitor_connection 
     redis.hset "moderator:#{campaign_id}" "caller:#{caller_id}", status
-    redis.publish "event", "moderator:#{campaign_id}"
   end
   
   def self.remove_caller(caller_id)
