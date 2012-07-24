@@ -14,9 +14,10 @@ module MonitorTab
         notification = JSON.parse(data)
         channel = notification.delete('channel')
         campaign_id = notification.delete('campaign')
-        campaign_info = @redis.hgetall "moderator:#{campaign_id}"
-        ::Pusher[channel].trigger_async('update_campaign_info', campaign_info)
-        EM.next_tick(&method(:next))
+        @redis.hgetall("moderator:#{campaign_id}").callback { |campaign_info|
+          ::Pusher[channel].trigger_async('update_campaign_info', campaign_info)
+          EM.next_tick(&method(:next))
+         }
       end
     end
   end
