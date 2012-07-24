@@ -9,5 +9,5 @@ background_worker_job: rake environment resque:work QUEUE=background_worker_job
 answered_worker_job: rake environment resque:work QUEUE=answered_worker_job
 clock:   rake environment resque:scheduler
 dialer_worker:  bundle exec sidekiq -c 2 -q dialer_worker
-monitor_worker: bundle exec ruby lib/monitor_pusher.rb
+monitor_worker: bundle exec ruby lib/monitor_tab_pusher.rb
 
