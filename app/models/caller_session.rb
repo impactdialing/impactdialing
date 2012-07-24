@@ -128,8 +128,7 @@ class CallerSession < ActiveRecord::Base
   def end_caller_session
     begin
       end_session
-      wrapup_attempt_in_progress
-      MonitorEvent.caller_disconnected(campaign)
+      wrapup_attempt_in_progress      
     rescue ActiveRecord::StaleObjectError => exception
       Resque.enqueue(PhantomCallerJob, self.id)
     end      
