@@ -79,6 +79,7 @@ class CallAttempt < ActiveRecord::Base
   def connect_call
     session = voter.caller_session
     update_attributes(status: CallAttempt::Status::INPROGRESS, connecttime: Time.now, caller: session.caller, caller_session: session)
+    MonitorEvent.incoming_call_request(campaign)
   end
       
   def abandon_call
