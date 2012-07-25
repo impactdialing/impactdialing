@@ -55,13 +55,12 @@ Monitors.prototype.update_campaign_info = function(){
 
 Monitors.prototype.add_caller_connected = function(){
   this.channel.bind('caller_connected', function(data){
+	Pusher.log(data);
     if (!$.isEmptyObject(data)) {
-	  var caller_selector = 'tr#caller_'+data.session_id;
+	  var caller_selector = 'tr#caller_'+data.caller_session;
       var caller = ich.caller(data);
 	  $('#caller_table').children().append(caller);
-	  $(caller_selector).find(".campaigns").html(forming_select_tag(data));
 	  $($(caller_selector).find('.timer')).stopwatch();
-	  update_campaign_row(data);		
     }
   });  
 }

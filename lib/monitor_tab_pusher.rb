@@ -14,25 +14,34 @@ module MonitorTab
         notification = JSON.parse(data)        
         channel = notification.delete('channel')
         campaign_id = notification.delete('campaign')
+        caller_session_id = notification.delete('caller_session')
         type = notification.delete('type')
-        puts type
-        if type == "campaign"        
-          redis.hgetall("moderator:#{campaign_id}").callback { |campaign_info|
-            campaign_deferrable = ::Pusher[channel].trigger_async('update_campaign_info', Hash[*campaign_info.flatten])
-            campaign_deferrable.callback {}
-            campaign_deferrable.errback { |error| puts error }                    
-           }
-        else
-          caller_session_id = notification.delete('caller_session')
-          event = notification.delete('event')  
-          puts "Monitor Pusher Caller: #{event}"        
-          caller_deferrable = ::Pusher[channel].trigger_async('update_caller_info', {caller_session: caller_session_id, event: event})
-          caller_deferrable.callback {}
-          caller_deferrable.errback { |error| puts error }                    
-        end
-      EM.next_tick(&method(:next))   
+        event = notification.delete('event')
+        self.send(type, channel, campaign_id, caller_session_id, event )
+        EM.next_tick(&method(:next))   
       end      
     end
+    
+    def self.update_campaign_info(channel, campaign_id, caller_session_id, event)
+      redis.hgetall("moderator:#{campaign_id}").callback { |campaign_info|
+        campaign_deferrable = ::Pusher[channel].trigger_async('update_campaign_info', Hash[*campaign_info.flatten].merge!(event: event))
+        campaign_deferrable.callback {}
+        campaign_deferrable.errback { |error| puts error }                    
+       }      
+    end
+    
+    def self.update_caller_info(channel, campaign_id, caller_session_id, event)
+      caller_deferrable = ::Pusher[channel].trigger_async('update_caller_info', {campaign_id: campaign_id, caller_session: caller_session_id, event: event})
+      caller_deferrable.callback {}
+      caller_deferrable.errback { |error| puts error }                          
+    end
+    
+    def self.add_caller(channel, campaign_id, caller_session_id, event)
+      caller_deferrable = ::Pusher[channel].trigger_async('caller_connected', {campaign_id: campaign_id, caller_session: caller_session_id, event: event})
+      caller_deferrable.callback {}
+      caller_deferrable.errback { |error| puts error }                                
+    end
+    
   end
 end
 

@@ -124,10 +124,8 @@ class Voter < ActiveRecord::Base
     true
   end
   
-  def make_call(call_attempt)
-  end
   
-  def dial_predictive_em(iter)
+  def dial_em(iter)
     call_attempt = new_call_attempt(self.campaign.type)
     twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)  
     Rails.logger.info "#{call_attempt.id} - before call"        
@@ -151,24 +149,6 @@ class Voter < ActiveRecord::Base
     voter.update_attributes(status: CallAttempt::Status::FAILED)
   end
   
-  
-
-  def dial_predictive
-    call_attempt = new_call_attempt(self.campaign.type)
-    Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    params = {'FallbackUrl' => TWILIO_ERROR, 'StatusCallback' => flow_call_url(call_attempt.call, host:  Settings.host, port:  Settings.port, event: 'call_ended'), 'Timeout' => campaign.use_recordings ? "20" : "15"}
-    params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect
-    response = Twilio::Call.make(campaign.caller_id, self.Phone, flow_call_url(call_attempt.call, host:  Settings.host, port:  Settings.port, event:  'incoming_call'), params)
-    puts "Entered callback."
-    if response["TwilioResponse"]["RestException"]
-      call_attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
-      update_attributes(status: CallAttempt::Status::FAILED)
-      Rails.logger.info "[dialer] Exception when attempted to call #{self.Phone} for campaign id:#{self.campaign_id}  Response: #{response["TwilioResponse"]["RestException"].inspect}"
-      return
-    end
-    call_attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])
-  end
-
   def get_attribute(attribute)
     return self[attribute] if self.has_attribute? attribute
     return unless CustomVoterField.find_by_name(attribute)
@@ -280,6 +260,4 @@ class Voter < ActiveRecord::Base
     call_attempt
   end
   
-  
-
 end
