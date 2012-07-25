@@ -15,7 +15,7 @@ module MonitorTab
         channel = notification.delete('channel')
         campaign_id = notification.delete('campaign')
         type = notification.delete('type')
-        
+        puts type
         if type == "campaign"        
           redis.hgetall("moderator:#{campaign_id}").callback { |campaign_info|
             campaign_deferrable = ::Pusher[channel].trigger_async('update_campaign_info', Hash[*campaign_info.flatten])
