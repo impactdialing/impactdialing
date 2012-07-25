@@ -18,11 +18,10 @@ module MonitorTab
         redis.hgetall("moderator:#{campaign_id}").callback { |campaign_info|
           caller_deferrable = ::Pusher[channel].trigger_async('update_campaign_info', Hash[*campaign_info.flatten])
           caller_deferrable.callback {}
-          caller_deferrable.errback { |error| puts error }
-          
-          EM.next_tick(&method(:next))
+          caller_deferrable.errback { |error| puts error }                    
          }
       end
+      EM.next_tick(&method(:next))
     end
   end
 end
