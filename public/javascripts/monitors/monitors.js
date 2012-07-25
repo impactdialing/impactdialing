@@ -35,6 +35,8 @@ Monitors.prototype.update_caller_info = function(){
 	Pusher.log(data);
   });
 
+};
+
 
 Monitors.prototype.update_campaign_info = function(){
   this.channel.bind('update_campaign_info', function(data){
