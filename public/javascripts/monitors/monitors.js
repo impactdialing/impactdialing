@@ -7,6 +7,7 @@ var Monitors = function(channel){
 	this.update_campaign_info();
 	this.add_caller_connected();
 	this.update_caller_info();
+	this.call_status = {"Call in progress": "On call", "Call completed with success.": "Wrap up", null:"On hold", "Ringing":"On hold" }
 };
 
 
@@ -32,12 +33,21 @@ Monitors.prototype.create_monitor_session = function(){
 };
 
 Monitors.prototype.update_caller_info = function(){
+  var self = this;	
   this.channel.bind('update_caller_info', function(data){
-	Pusher.log(data);
+	if (!$.isEmptyObject(data)){
+	  var caller_selector = 'tr#caller_'+data.caller_session_id;
+	  self.update_status_and_duration(caller_selector, self.call_status[data.call_status]);
+	}	
   });
-
 };
 
+Monitors.prototype.update_status_and_duration = function(caller_selector, status){
+  if ($($(caller_selector).find('.status')).html() != status) {
+    $($(caller_selector).find('.status')).html(status)
+	$($(caller_selector).find('.timer')).stopwatch('reset');
+  }	
+};
 
 Monitors.prototype.update_campaign_info = function(){
   this.channel.bind('update_campaign_info', function(data){
