@@ -7,7 +7,7 @@ var Monitors = function(channel){
 	this.update_campaign_info();
 	this.add_caller_connected();
 	this.update_caller_info();
-	this.call_status = {"Call in progress": "On call", "Call completed with success.": "Wrap up", null:"On hold", "Ringing":"On hold" }
+	this.call_status = {"Call in progress": "On call", "Call completed with success.": "Wrap up", "On hold": "On hold", "Ringing":"On hold" }
 };
 
 

@@ -39,8 +39,8 @@ module LeadEvents
     end
     
     def publish_moderator_response_submited
-      MonitorEvent.create_caller_notification(campaign.id, caller_session.id, status)  
       MonitorEvent.voter_response_submitted(campaign)
+      MonitorEvent.create_caller_notification(campaign.id, caller_session.id, "On hold")  
     end
     
   end
