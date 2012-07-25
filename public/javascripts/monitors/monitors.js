@@ -36,8 +36,7 @@ Monitors.prototype.update_caller_info = function(){
   var self = this;	
   this.channel.bind('update_caller_info', function(data){
 	if (!$.isEmptyObject(data)){
-	  var caller_selector = 'tr#caller_'+data.caller_session_id;
-	  alert(self.call_status[data.event])	
+	  var caller_selector = 'tr#caller_'+data.caller_session;
 	  self.update_status_and_duration(caller_selector, self.call_status[data.event]);
 	}	
   });
