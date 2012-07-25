@@ -81,7 +81,6 @@ class MonitorEvent
       MonitorCampaign.decrement_callers_logged_in(campaign.id, 1)      
     end
     create_campaign_notification(campaign.id, "caller_disconnected")
-    MonitorEvent.create_caller_notification(campaign.id, caller_session.id, "", "remove_caller")
   end    
   
 end
