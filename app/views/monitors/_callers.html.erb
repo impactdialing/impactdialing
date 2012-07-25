@@ -1,5 +1,5 @@
 <script id="caller" type="text/html">
-  <tr id="caller_{{session_id}}" class="caller <%= cycle("odd", "even") %> " session_id={{session_id}} caller_id={{id}}>
+  <tr id="caller_{{caller_session}}" class="caller <%= cycle("odd", "even") %> " session_id={{caller_session}} caller_id={{id}}>
       <td class="caller_name">{{email}}</td>
 			<td class="status">On hold</td>
 			<td>
@@ -8,13 +8,13 @@
 				<div>
 			</td>
       <td>
-        <a class ="action secondary monitor" href="#" action="eavesdrop" session_id={{session_id}}>Eavesdrop</a>
+        <a class ="action secondary monitor" href="#" action="eavesdrop" session_id={{caller_session}}>Eavesdrop</a>
       </td>
       <td>
-        <a class ="action secondary monitor" href="#" action="breakin" session_id={{session_id}}>Break in</a>
+        <a class ="action secondary monitor" href="#" action="breakin" session_id={{caller_session}}>Break in</a>
       </td>
       <td>
-        <a class ="action secondary monitor" href="#" action="kickoff" session_id={{session_id}}>Kick off</a>
+        <a class ="action secondary monitor" href="#" action="kickoff" session_id={{caller_session}}>Kick off</a>
       </td>      
   </tr>
 </script>
