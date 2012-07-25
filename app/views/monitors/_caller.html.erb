@@ -1,0 +1,34 @@
+<tr id="<%= "caller_"+ caller_session.id.to_s %>" class="caller <%= cycle("odd", "even") %> " older="true" session_id="<%= caller_session.id %>" caller_id="<%= caller_session.caller.id %> ">  
+  <td class="caller_name"> <%= caller_session.caller.identity_name %> </td>
+  
+  <td>
+	  <select class='assign_campaign'>
+		  <%= options_for_select(@all_campaigns.collect {|c| [ c.name, c.id ] }, caller_session.campaign.id) %>
+		</select>
+	</td>
+	
+	<% status, d = caller_status_and_duration(caller_session) %>
+	
+	<td class="status"><%= status %></td>
+	
+	<td>
+	  <div class="timer">
+		  <div class="display">
+		  <span class="hr"><%= d[0]+d[1] %></span>:<span class="min"><%= d[3]+d[4] %></span>:<span class="sec"><%= d[6]+d[7] %></span>
+		</div>
+		<div>
+	</td>
+	
+  <td>
+    <a class ="action secondary monitor" href="#" action="eavesdrop" session_id="<%= caller_session.id %>">Eavesdrop</a>
+  </td>
+  
+  <td>
+    <a class ="action secondary monitor" href="#" action="breakin" session_id="<%= caller_session.id %>">Break in</a>
+  </td>
+  
+  <td>
+    <a class ="action secondary monitor" href="#" action="kickoff" session_id="<%= caller_session.id %>">Kick off</a>
+  </td>
+      
+</tr>

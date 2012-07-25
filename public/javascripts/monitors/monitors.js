@@ -5,6 +5,7 @@ Pusher.log = function(message) {
 var Monitors = function(channel){
 	this.channel = channel;	
 	this.update_campaign_info();
+	this.add_caller_connected();
 	this.update_caller_info();
 };
 
@@ -50,6 +51,19 @@ Monitors.prototype.update_campaign_info = function(){
     $("#campaign_info").children('#numbers_available').text(data.available);						
     $("#campaign_info").children('#numbers_remaining').text(data.remaining);						
    });	
+};
+
+Monitors.prototype.add_caller_connected = function(){
+  this.channel.bind('caller_connected', function(data){
+    if (!$.isEmptyObject(data)) {
+	  var caller_selector = 'tr#caller_'+data.session_id;
+      var caller = ich.caller(data);
+	  $('#caller_table').children().append(caller);
+	  $(caller_selector).find(".campaigns").html(forming_select_tag(data));
+	  $($(caller_selector).find('.timer')).stopwatch();
+	  update_campaign_row(data);		
+    }
+  });  
 }
 
 
