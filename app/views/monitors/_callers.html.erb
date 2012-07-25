@@ -11,8 +11,7 @@
         <th></th>
         <th></th>
       </tr>
-    <% @campaigns.each do |c| %>
-      <% c.caller_sessions.on_call.each do |caller_session| %>
+      <% @campaign.caller_sessions.on_call.each do |caller_session| %>
         <tr id="<%= "caller_"+caller_session.id.to_s %>" class="caller <%= cycle("odd", "even") %> " older="true" session_id="<%= caller_session.id %>" caller_id="<%= caller_session.caller.id %>">
           <td class="caller_name"><%= caller_session.caller.identity_name %></td>
           <td>
@@ -40,7 +39,6 @@
               </td>
               
         </tr>
-      <% end %>
     <% end %>
   </table>
   <a class ="action primary stop_monitor" href="#" onclick="javascript:new Monitors().disconnect_all();">Stop monitoring</a>
