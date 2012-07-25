@@ -10,7 +10,7 @@ describe MonitorEvent do
   
   describe "incoming call" do                  
      it "should decrement ringing lines" do
-       MonitorEvent.incoming_call(@campaign)      
+       MonitorEvent.incoming_call_request(@campaign)      
        MonitorCampaign.ringing_lines(@campaign.id).should eq("2")
      end           
   end
