@@ -24,7 +24,8 @@ module MonitorTab
            }
         else
           caller_session_id = notification.delete('caller_session')
-          event = notification.delete('event')          
+          event = notification.delete('event')  
+          puts "Monitor Pusher Caller: #{event}"        
           caller_deferrable = ::Pusher[channel].trigger_async('update_caller_info', {caller_session: caller_session_id, event: event})
           caller_deferrable.callback {}
           caller_deferrable.errback { |error| puts error }                    
