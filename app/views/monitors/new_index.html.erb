@@ -19,13 +19,6 @@
             <td>Active</td>
           </tr>
       <% end %>
-      <% @inactive_campaigns.each do |c| %>
-          <tr>
-            <td><%= link_to c.name, client_monitor_path(c) %></td>
-            <td>InActive</td>
-          </tr>
-      <% end %>
-      
     </table>
 <% end %>
 <br>
