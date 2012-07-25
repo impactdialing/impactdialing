@@ -18,6 +18,7 @@ class MonitorsController < ClientController
   
   
   def show
+    @all_campaigns = account.campaigns.manual.active
     @campaign = Campaign.find(params[:id])
     num_logged_in, num_on_call, num_wrapup, num_on_hold, num_live_lines, num_ringing_lines, num_available, num_remaining = campaign_overview_info(@campaign)
     MonitorCampaign.new(@campaign.id, num_logged_in, num_on_call, num_wrapup, num_on_hold, num_live_lines, num_ringing_lines, num_available, num_remaining)    
