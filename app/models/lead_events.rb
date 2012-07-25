@@ -19,6 +19,7 @@ module LeadEvents
             caller_deferrable.errback { |error| }
           end
         }      
+      MonitorEvent.create_caller_notification(campaign, caller_session, status)  
       end
       MonitorEvent.voter_connected(campaign)      
     end    
@@ -32,6 +33,7 @@ module LeadEvents
             caller_deferrable.errback { |error| puts error.inspect}
           end          
         }   
+      MonitorEvent.create_caller_notification(campaign, caller_session, status)  
       end
       MonitorEvent.voter_disconnected(campaign)
     end
