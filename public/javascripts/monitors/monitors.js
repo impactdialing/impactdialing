@@ -5,6 +5,7 @@ Pusher.log = function(message) {
 var Monitors = function(channel){
 	this.channel = channel;	
 	this.update_campaign_info();
+	this.update_caller_info();
 };
 
 
@@ -28,6 +29,12 @@ Monitors.prototype.create_monitor_session = function(){
         }
     });      
 };
+
+Monitors.prototype.update_caller_info = function(){
+  this.channel.bind('update_caller_info', function(data){
+	Pusher.log(data);
+  });
+
 
 Monitors.prototype.update_campaign_info = function(){
   this.channel.bind('update_campaign_info', function(data){
