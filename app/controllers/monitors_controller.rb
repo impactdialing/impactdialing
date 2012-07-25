@@ -3,14 +3,6 @@ class MonitorsController < ClientController
   layout 'client'
   
   def index
-    @campaigns = account.campaigns.with_running_caller_sessions
-    @all_campaigns = account.campaigns.manual.active
-    twilio_capability = Twilio::Util::Capability.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-    twilio_capability.allow_client_outgoing(MONITOR_TWILIO_APP_SID)
-    @token = twilio_capability.generate
-  end
-  
-  def new_index
     @campaigns = account.campaigns.manual.active
     @active_campaigns = account.campaigns.manual.active.with_running_caller_sessions
   end

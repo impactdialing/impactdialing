@@ -11,7 +11,6 @@ class MonitorEvent
   def self.create_caller_notification(campaign_id, caller_session_id, event)    
     redis = RedisConnection.monitor_connection
     MonitorSession.sessions(campaign_id).each do|monitor_session|
-      puts "dddddddddddddddddddd"
       redis.rpush('monitor_notifications', {channel: monitor_session, campaign: campaign_id, caller_session: caller_session_id, event: event, type: "caller"}.to_json)
     end
   end
