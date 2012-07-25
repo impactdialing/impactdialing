@@ -1,3 +1,18 @@
+<script id="campaign" type="text/html">
+  {{update_campaign_info}}
+    <tr id="campaign_info" class="campaign <%= cycle("odd", "even") %>" >
+       <td id="callers_logged_in">{{callers_logged_in}}</td>
+       <td id="on_call">{{on_call}}</td>
+       <td id="on_hold">{{on_hold}}</td>       
+       <td id="wrap_up">{{wrap_up}}</td>       
+       <td id="live_lines">{{live_lines}}</td>       
+       <td id="ringing_lines">{{ringing_lines}}</td>              
+       <td id="numbers_available">{{numbers_available}}</td>
+       <td id="numbers_remaining">{{numbers_remaining}}</td>       
+    </tr>
+  {{/update_campaign_info}}
+</script>
+
 <h2><%= @campaign.name %></h2>
 <div class="table">
   <table id="campaign_table" width="100%" border="0" cellspacing="0" cellpadding="0">
