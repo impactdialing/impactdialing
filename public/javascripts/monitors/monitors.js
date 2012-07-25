@@ -7,6 +7,7 @@ var Monitors = function(channel){
 	this.update_campaign_info();
 	this.add_caller_connected();
 	this.update_caller_info();
+	this.remove_caller();
 	this.call_status = {"Call in progress": "On call", "Call completed with success.": "Wrap up", "On hold": "On hold", "Ringing":"On hold" }
 };
 
@@ -74,6 +75,13 @@ Monitors.prototype.add_caller_connected = function(){
     }
   });  
 }
+
+Monitors.prototype.remove_caller = function(){
+  this.channel.bind('caller_disconnected', function(data) {
+    var caller_selector = 'tr#caller_'+data.caller_session;
+    $(caller_selector).remove();
+  });  
+};
 
 
 Monitors.prototype.monitor = function(session_id, action, monitor_session_id){
