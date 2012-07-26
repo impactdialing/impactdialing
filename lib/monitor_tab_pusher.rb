@@ -47,7 +47,7 @@ module MonitorTab
     end
     
     def self.remove_caller(channel, campaign_id, caller_session_id, event)
-      caller_deferrable = ::Pusher[channel].trigger_async({campaign_id: campaign_id, caller_session: caller_session_id, event: event})
+      caller_deferrable = ::Pusher[channel].trigger_async('caller_disconnected', {campaign_id: campaign_id, caller_session: caller_session_id, event: event})
       caller_deferrable.callback {}
       caller_deferrable.errback { |error| puts error }                                
     end
