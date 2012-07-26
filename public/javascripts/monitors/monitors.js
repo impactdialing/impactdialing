@@ -90,10 +90,10 @@ Monitors.prototype.monitor = function(session_id, action, monitor_session_id){
   Twilio.Device.connect(params)
 };
 
-Monitors.prototype.de_activate_monitor = function(monitor_session_id){
+Monitors.prototype.de_activate_monitor = function(campaign_id, monitor_session_id){
   $.ajax({
       url : "/client/monitors/deactivate_session",
-      data : {monitor_session : monitor_session_id},
+      data : {campaign_id: campaign_id, monitor_session : monitor_session_id},
       type : "GET",
       async : false,
       success : function(response) {}
