@@ -8,8 +8,26 @@ var Monitors = function(channel){
 	this.add_caller_connected();
 	this.update_caller_info();
 	this.remove_caller();
+	this.bind_caller_actions();
 	this.call_status = {"Call in progress": "On call", "Call completed with success.": "Wrap up", "On hold": "On hold", "Ringing":"On hold" }
 };
+
+Monitors.prototype.bind_caller_actions = function(){
+  var self = this;	
+  $(function() {
+    $('.stop').live('click', function(){
+	  stop($(this).attr("session_id"))
+	});
+
+    $('.monitor').live('click', function(){
+	  var session_id = $(this).attr("session_id");
+	  var action = $(this).attr("action");
+	  if (action == 'kickoff'){
+	    self.kick_off(session_id);
+	    return;
+	  }
+  });
+}
 
 
 Monitors.prototype.setup_twilio = function(token){
