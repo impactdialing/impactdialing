@@ -7,6 +7,7 @@
 
 
 <head>
+<%= render :partial => "shared/errorception" %>
 <%= render :partial => "shared/kissmetrics" %>
 <meta charset="utf-8">
 
@@ -67,6 +68,7 @@
 </head>
 
 <body class="admin clearfix">
+<img src="" class="blah" />
 <header role="banner" class="clearfix">
 <h1 class="<%= domain %>"><a href="<% if client_controller?(@controllerName) %>/client<% else %>/caller<% end %>"><%= title %></a></h1>
 
