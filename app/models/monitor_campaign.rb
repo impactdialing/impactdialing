@@ -79,6 +79,9 @@ class MonitorCampaign
     sanitize_dials(voters_available_for_retry + scheduled_for_now + abandoned_count)
   end
   
+  def sanitize_dials(dial_count)
+    dial_count.nil? ? 0 : dial_count
+  end
   
   
   
