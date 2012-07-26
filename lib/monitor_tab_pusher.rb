@@ -23,7 +23,7 @@ module MonitorTab
     end
     
     def self.update_campaign_info(channel, campaign_id, caller_session_id, event)
-      redis.hgetall("moderator:#{campaign_id}").callback { |campaign_info|
+      redis.hgetall("monitor:#{campaign_id}").callback { |campaign_info|
         campaign_deferrable = ::Pusher[channel].trigger_async('update_campaign_info', Hash[*campaign_info.flatten].merge!(event: event))
         campaign_deferrable.callback {}
         campaign_deferrable.errback { |error| puts error }                    
