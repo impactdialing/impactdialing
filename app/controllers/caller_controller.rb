@@ -39,7 +39,7 @@ class CallerController < ApplicationController
   def end_session
     unless @caller_session.nil?
       MonitorEvent.caller_disconnected(@caller_session.campaign)
-      MonitorEvent.create_caller_notification(@caller_session.campaign.id, @caller_session.id, "", "remove_caller")
+      MonitorEvent.create_caller_notification(@caller_session.campaign.id, @caller_session.id, "caller_disconnected", "remove_caller")
       render xml: @caller_session.run('end_conf') 
     else
       render xml: Twilio::Verb.hangup
