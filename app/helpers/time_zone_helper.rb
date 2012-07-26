@@ -38,8 +38,8 @@ module TimeZoneHelper
   def set_date_range_account(account, from_date, to_date)
     time_zone = ActiveSupport::TimeZone.new("UTC")
     begin
-      formatted_from_date = format_time(from_date)
-      formatted_to_date = format_time(to_date)
+      formatted_from_date = format_time(from_date, time_zone)
+      formatted_to_date = format_time(to_date, time_zone)
     rescue Exception => e
       puts "exception"
       flash_message(:error, I18n.t(:invalid_date_format))
