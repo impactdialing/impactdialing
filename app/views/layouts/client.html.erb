@@ -19,7 +19,6 @@
 <meta name="HandheldFriendly" content="True">
 <meta name="MobileOptimized" content="320">
 <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1">
-<%= javascript_include_tag :jdefaults%>
 <%= unobtrusive_datepicker_includes.html_safe %>
 
 
@@ -34,6 +33,8 @@
 <!-- For Retina displays -->
 <link rel="stylesheet" media="only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (-o-min-device-pixel-ratio: 3/2), only screen and (min-device-pixel-ratio: 1.5)" href="/css/2x.css?v=1">
 
+<%= yield :stylesheets %>
+<%= yield :javascripts %>
 
 <!-- JavaScript at bottom except for Modernizr -->
 <script src="/js/libs/modernizr-custom.js"></script>
