@@ -79,8 +79,8 @@ class MonitorsController < ClientController
     render text: "Switching to different caller"
   end
   
-  def deactivate_session(campaign_id, session_key)
-    MonitorSession.remove_session(campaign_id, session_key)
+  def deactivate_session
+    MonitorSession.remove_session(params[:campaign_id], params[:monitor_session])
     render nothing: true
   end
       
