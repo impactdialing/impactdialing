@@ -20,8 +20,6 @@ class MonitorsController < ClientController
     
   end
   
-  
-  
 
   def start
     caller_session = CallerSession.find(params[:session_id])
@@ -71,9 +69,6 @@ class MonitorsController < ClientController
     account.toggle_call_recording!
     flash_message(:notice, "Call recording turned #{account.record_calls? ? "on" : "off"}.")
     redirect_to monitors_path
-  end
-  def sanitize_dials(dial_count)
-    dial_count.nil? ? 0 : dial_count
   end
   
 
