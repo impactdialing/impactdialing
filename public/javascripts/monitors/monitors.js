@@ -14,11 +14,7 @@ var Monitors = function(channel){
 
 Monitors.prototype.bind_caller_actions = function(){
   var self = this;	
-  $(function() {
-    $('.stop').live('click', function(){
-	  stop($(this).attr("session_id"))
-	});
-
+  $( function() {
     $('.monitor').live('click', function(){
 	  var session_id = $(this).attr("session_id");
 	  var action = $(this).attr("action");
@@ -26,6 +22,7 @@ Monitors.prototype.bind_caller_actions = function(){
 	    self.kick_off(session_id);
 	    return;
 	  }
+    });
   });
 }
 
