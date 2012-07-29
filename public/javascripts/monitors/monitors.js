@@ -15,14 +15,18 @@ var Monitors = function(channel){
 Monitors.prototype.bind_caller_actions = function(){
   var self = this;	
   $( function() {
-    $('.monitor').live('click', function(){
+	
+    $('.kick_off').live('click', function(){
 	  var session_id = $(this).attr("session_id");
-	  var action = $(this).attr("action");
-	  if (action == 'kickoff'){
-	    self.kick_off(session_id);
-	    return;
-	  }
+	  self.kick_off(session_id);
+	  return;
     });
+
+    $('.stop_monitor').live('click', function(){
+	  self.disconnect_all();
+	  return;
+    });
+
   });
 }
 
