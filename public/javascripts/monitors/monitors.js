@@ -16,6 +16,25 @@ Monitors.prototype.bind_caller_actions = function(){
   var self = this;	
   $( function() {
 	
+	
+	$('.break_in').live('click', function(){
+	  if($(this).parent().parent().attr("on_call") == "true"){
+		var session_id = $(this).attr("session_id");
+        self.switch_mode(session_id, 'breakin');
+		$(this).parent().parent().attr("mode", 'breakin')
+      }
+    });
+
+	$('.eaves_drop').live('click', function(){
+	  if($(this).parent().parent().attr("on_call") == "true"){
+		var session_id = $(this).attr("session_id");
+        self.switch_mode(session_id, 'eaves_drop');
+		$(this).parent().parent().attr("mode", 'eaves_drop')
+      }
+    });
+
+    
+	
     $('.kick_off').live('click', function(){
 	  var session_id = $(this).attr("session_id");
 	  self.kick_off(session_id);
@@ -128,8 +147,7 @@ Monitors.prototype.disconnect_all = function(){
 	$(this).removeAttr("mode");
   });
   Twilio.Device.disconnectAll();
-  return false;
-	
+  return false;	
 };
 
 Monitors.prototype.switch_mode = function(session, mode, monitor_session_id){
