@@ -52,7 +52,7 @@ module ImpactDialing
     # config.i18n.load_path += Dir[Rails.root.join('my', 'locales', '*.{rb,yml}')]
     config.i18n.default_locale = :en
     config.i18n.fallbacks = [:en]
-    config.action_view.javascript_expansions[:jdefaults] = %w(jquery jquery-ui jquery_ujs application)
+    config.action_view.javascript_expansions[:jdefaults] = %w(jquery jquery-ui jquery_ujs)
     GC::Profiler.enable
 
   end
