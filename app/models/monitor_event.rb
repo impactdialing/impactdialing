@@ -76,10 +76,8 @@ class MonitorEvent
     
   def self.caller_disconnected(campaign)
     redis = RedisConnection.monitor_connection
-    redis.pipelined do
-      MonitorCampaign.decrement_on_hold(campaign.id, 1)
-      MonitorCampaign.decrement_callers_logged_in(campaign.id, 1)      
-    end
+    num_logged_in, num_on_call, num_wrapup, num_on_hold, num_live_lines, num_ringing_lines, num_available, num_remaining = MonitorCampaign.campaign_overview_info(campaign)
+    MonitorCampaign.new(campaign.id, num_logged_in, num_on_call, num_wrapup, num_on_hold, num_live_lines, num_ringing_lines, num_available, num_remaining)        
     create_campaign_notification(campaign.id, "caller_disconnected")
   end    
   

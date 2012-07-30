@@ -31,9 +31,7 @@ Monitors.prototype.bind_caller_actions = function(){
         self.switch_mode(session_id, 'eaves_drop');
 		$(this).parent().parent().attr("mode", 'eaves_drop')
       }
-    });
-
-    
+    });    
 	
     $('.kick_off').live('click', function(){
 	  var session_id = $(this).attr("session_id");

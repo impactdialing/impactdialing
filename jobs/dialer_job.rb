@@ -15,7 +15,7 @@ class DialerJob
        EM::Synchrony::Iterator.new(voters_to_dial, concurrency).map do |voter, iter|
          voter.dial_em(iter)
        end
-       campaign.update_attributes(calls_in_progress: false)
+       redis.set "dial:#{campaign.id}" false
        EventMachine.stop
      end
    end
