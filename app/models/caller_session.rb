@@ -282,11 +282,6 @@ class CallerSession < ActiveRecord::Base
      conference_sid = confs.class == Array ? confs.last['Sid'] : confs['Sid']
    end
    
-   def debit
-     return false if self.endtime.nil? || self.starttime.nil?
-     call_time = ((self.endtime - self.starttime)/60).ceil
-     Payment.debit(call_time, self)
-   end
    
    def self.time_logged_in(caller, campaign, from, to)
      CallerSession.for_caller(caller).on_campaign(campaign).between(from, to).sum('TIMESTAMPDIFF(SECOND ,starttime,endtime)').to_i
