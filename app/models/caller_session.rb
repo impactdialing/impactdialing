@@ -156,7 +156,8 @@ class CallerSession < ActiveRecord::Base
   end
   
   def end_session
-    update_attributes(on_call: false, available_for_call:  false, endtime:  Time.now)
+    RedisCallerSession.end_session(self.id)
+    # update_attributes(on_call: false, available_for_call:  false, endtime:  Time.now)
   end
   
   def account_not_activated?
@@ -250,7 +251,9 @@ class CallerSession < ActiveRecord::Base
   end
   
   def create_call_attempt(voter)
-    attempt = voter.call_attempts.create(:campaign => campaign, :dialer_mode => campaign.type, :status => CallAttempt::Status::RINGING, :caller_session => self, :caller => caller, call_start:  Time.now)
+    attempt = voter.call_attempts.create()    
+    RedisCallAttempt.new(attempt.id, voter.id, campaign.id, CallAttempt::Status::RINGING, caller.id)
+    # attempt = voter.call_attempts.create(:campaign => campaign, :dialer_mode => campaign.type, :status => CallAttempt::Status::RINGING, :caller_session => self, :caller => caller, call_start:  Time.now)
     update_attribute('attempt_in_progress', attempt)
     voter.update_attributes(:last_call_attempt => attempt, :last_call_attempt_time => Time.now, :caller_session => self, status: CallAttempt::Status::RINGING)
     Call.create(call_attempt: attempt, all_states: "")

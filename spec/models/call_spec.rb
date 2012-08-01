@@ -31,7 +31,7 @@ describe Call do
         call = Factory(:call, call_attempt: @call_attempt)
         @call_attempt.should_receive(:publish_voter_connected)
         call.incoming_call!
-        call.call_attempt.connecttime.should_not be_nil  
+        RedisCallAttempt.connect_time(@call_attempt.id).should_not be_nil
       end
 
       it "should update voters caller id" do

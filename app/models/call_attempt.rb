@@ -81,12 +81,16 @@ class CallAttempt < ActiveRecord::Base
   
   def connect_call
     session = voter.caller_session
-    update_attributes(status: CallAttempt::Status::INPROGRESS, connecttime: Time.now, caller: session.caller, caller_session: session)
+    # call_attempt_id, caller_id, caller_session_id
+    # RedisCallAttempt.connect_call(self.id, )
+    # update_attributes(status: CallAttempt::Status::INPROGRESS, connecttime: Time.now, caller: session.caller, caller_session: session)
   end
       
   def abandon_call
-    update_attributes(status: CallAttempt::Status::ABANDONED, connecttime: Time.now, wrapup_time: Time.now)
-    voter.update_attributes(:status => CallAttempt::Status::ABANDONED, call_back: false, caller_session: nil, caller_id: nil)
+    RedisCallAttempt.abandon_call(self.id)
+    RedisVoter.abandon_call(voter.id)
+    # update_attributes(status: CallAttempt::Status::ABANDONED, connecttime: Time.now, wrapup_time: Time.now)
+    # voter.update_attributes(:status => CallAttempt::Status::ABANDONED, call_back: false, caller_session: nil, caller_id: nil)
   end
     
   def connect_lead_to_caller
