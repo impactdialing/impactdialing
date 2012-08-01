@@ -19,4 +19,15 @@ class RedisVoter
       redis.hset "voter:#{voter_id}", "caller_id", nil      
     end
   end
+  
+  def self.assigned_to_caller?(voter_id)
+    redis = RedisConnection.call_flow_connection
+    redis.hexists "voter:#{voter_id}", "caller_session_id"
+  end
+  
+  def self.assign_to_caller(voter_id, caller_session_id)
+    redis = RedisConnection.call_flow_connection
+    redis.hset "voter:#{voter_id}", "caller_session_id" caller_session_id
+  end
+  
 end

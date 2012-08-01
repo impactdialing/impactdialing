@@ -35,4 +35,8 @@ class RedisCallAttempt
     redis = RedisConnection.call_flow_connection
     redis.hget "call_attempt:#{call_attempt_id}", "connecttime"
   end
+  
+  def self.call_attempt(call_attempt_id)
+    redis = RedisConnection.call_flow_connection
+    redis.hgetall "call_attempt:#{call_attempt_id}"
 end
