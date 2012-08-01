@@ -95,8 +95,11 @@ class CallAttempt < ActiveRecord::Base
     
   def connect_lead_to_caller
     begin
-      voter.caller_session ||= campaign.oldest_available_caller_session
-      unless voter.caller_session.nil?
+      unless RedisVoter.assigned_to_caller?(voter.id)
+        RedisVoter.assign_to_caller(voter.id, RedisAvailableCaller.longest_waiting_caller("xxxx"))
+      end
+      # voter.caller_session ||= campaign.oldest_available_caller_session
+      if RedisVoter.assigned_to_caller?(voter.id)
         voter.caller_id = voter.caller_session.caller_id
         voter.status = CallAttempt::Status::INPROGRESS
         voter.save
