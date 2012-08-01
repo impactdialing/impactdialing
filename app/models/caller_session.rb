@@ -296,7 +296,7 @@ class CallerSession < ActiveRecord::Base
    end
 
    def call_time
-   ((starttime - endtime)/60).ceil
+   ((endtime - starttime)/60).ceil
    end
    
    
