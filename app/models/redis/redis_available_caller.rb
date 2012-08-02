@@ -13,4 +13,8 @@ class RedisAvailableCaller
   def self.longest_waiting_caller(campaign_id)
   end
   
+  def self.assign_longest_available_caller(campaign_id)
+    
+  end
+  
 end
