@@ -30,4 +30,24 @@ class RedisVoter
     redis.hset "voter:#{voter_id}", "caller_session_id" caller_session_id
   end
   
+  def self.connect_lead_to_caller(voter_id, campaign_id)
+    redis = RedisConnection.call_flow_connection
+    begin
+      unless RedisVoter.assigned_to_caller?(voter.id)
+        RedisVoter.assign_to_caller(voter_id, RedisAvailableCaller.longest_waiting_caller(campaign_id))
+      end
+      if RedisVoter.assigned_to_caller?(voter.id)
+        redis.pipelined do
+          redis.hset "voter:#{voter_id}", "caller_id", nil      
+          redis.hset "voter:#{voter_id}", "status", CallAttempt::Status::INPROGRESS      
+        end
+        voter.caller_session.reload      
+        voter.caller_session.update_attributes(:on_call => true, :available_for_call => false)  
+      end
+    rescue ActiveRecord::StaleObjectError
+      abandon_call
+    end    
+  end
+  
+  
 end
