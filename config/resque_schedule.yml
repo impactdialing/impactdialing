@@ -14,7 +14,7 @@ deactivate_monitor:
 
 
 deactivate_monitor:
-  cron: "*/5 * * * *"
+  cron: "*/2 * * * *"
   class: DebiterJob
   queue: debit_worker_job
   args: 

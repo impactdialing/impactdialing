@@ -292,7 +292,7 @@ class CallerSession < ActiveRecord::Base
    end   
    
    def call_not_connected?
-     starttime.nil? || endtime.nil? || caller_type == CallerType::TWILIO_CLIENT
+     starttime.nil? || endtime.nil? || caller_type == nil || caller_type == CallerType::TWILIO_CLIENT
    end
 
    def call_time
