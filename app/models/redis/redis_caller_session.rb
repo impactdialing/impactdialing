@@ -1,13 +1,11 @@
 class RedisCallerSession
   
-  def initialize(caller_session_id, session_key, call_sid ,campaign_id, on_call, available_for_call)
+  def initialize(caller_session_id, session_key, call_sid ,campaign_id)
     redis = RedisConnection.call_flow_connection
     redis.pipelined do
       redis.hset "caller_session:#{caller_session_id}", "session_key", session_key 
       redis.hset "caller_session:#{caller_session_id}", "campaign_id", campaign_id
       redis.hset "caller_session:#{caller_session_id}", "sid", call_sid
-      redis.hset "caller_session:#{caller_session_id}", "on_call", false
-      redis.hset "caller_session:#{caller_session_id}", "available_for_call", false  
       redis.hset "caller_session:#{caller_session_id}", "start_time", Time.now
     end
   end
@@ -28,12 +26,7 @@ class RedisCallerSession
   
   def self.end_session(caller_session_id)
     redis = RedisConnection.call_flow_connection
-    redis.pipelined do
-      redis.hset "caller_session:#{caller_session_id}", "on_call", false
-      redis.hset "caller_session:#{caller_session_id}", "available_for_call", false
-      redis.hset "caller_session:#{caller_session_id}", "end_time", Time.now     
-    end
-    
+    redis.hset "caller_session:#{caller_session_id}", "end_time", Time.now         
   end
   
 end
