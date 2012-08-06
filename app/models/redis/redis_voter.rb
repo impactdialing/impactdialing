@@ -1,4 +1,11 @@
 class RedisVoter
+  include Redis::Objects
+  
+  def self.load_voter_info(voter_id,voter)
+    redis = RedisConnection.call_flow_connection
+    voter_hash = Redis::HashKey.new("voter:#{voter_id}", redis)
+    voter_hash.bulk_set(voter.attributes.to_options)
+  end
   
   def self.update_voter_with_attempt(voter_id, attempt_id, caller_session_id)
     redis = RedisConnection.call_flow_connection
@@ -27,7 +34,7 @@ class RedisVoter
   
   def self.assign_to_caller(voter_id, caller_session_id)
     redis = RedisConnection.call_flow_connection
-    redis.hset "voter:#{voter_id}", "caller_session_id" caller_session_id
+    redis.hset "voter:#{voter_id}", "caller_session_id", caller_session_id
   end
   
   def self.connect_lead_to_caller(voter_id, campaign_id)

@@ -11,6 +11,7 @@ class CallinController < ApplicationController
     session_key = identity.nil? ? generate_session_key : identity.session_key
     if caller
       session = caller.create_caller_session(session_key, params[:CallSid], CallerSession::CallerType::PHONE)    
+      RedisCampaign.add_running_campaign(caller.campaign.id, caller.campaign.type)
       Moderator.caller_connected_to_campaign(caller, caller.campaign, session)
       render xml:  caller.is_phones_only? ? session.run('callin_choice') : session.run('start_conf')
     else
