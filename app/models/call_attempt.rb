@@ -82,15 +82,13 @@ class CallAttempt < ActiveRecord::Base
   def connect_call
     session = voter.caller_session
     # call_attempt_id, caller_id, caller_session_id
-    # RedisCallAttempt.connect_call(self.id, )
+    RedisCallAttempt.connect_call(self.id, )
     # update_attributes(status: CallAttempt::Status::INPROGRESS, connecttime: Time.now, caller: session.caller, caller_session: session)
   end
       
   def abandon_call
     RedisCallAttempt.abandon_call(self.id)
     RedisVoter.abandon_call(voter.id)
-    # update_attributes(status: CallAttempt::Status::ABANDONED, connecttime: Time.now, wrapup_time: Time.now)
-    # voter.update_attributes(:status => CallAttempt::Status::ABANDONED, call_back: false, caller_session: nil, caller_id: nil)
   end
     
   def connect_lead_to_caller
@@ -116,17 +114,13 @@ class CallAttempt < ActiveRecord::Base
   
   
   def end_answered_call
-    begin
-      update_attributes(call_end: Time.now)
-      voter.update_attributes(last_call_attempt_time:  Time.now, caller_session: nil)
-    rescue ActiveRecord::StaleObjectError
-      voter_to_update = Voter.find(voter.id)
-      voter_to_update.update_attributes(last_call_attempt_time:  Time.now, caller_session: nil)
-    end  
+    RedisCallAttempt.end_answered_call(1)
+    voter.update_attributes(last_call_attempt_time:  Time.now, caller_session: nil)
   end
   
   def process_answered_by_machine
-    update_attributes(connecttime: Time.now, call_end:  Time.now, status:  campaign.use_recordings? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP, wrapup_time: Time.now)
+    status = RedisCampaign.call_status_use_recordings(campaign.id)
+    RedisCallAttempt.answered_by_machine(self.id, status)
     voter.update_attributes(status: campaign.use_recordings? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP, caller_session: nil)    
   end
   
@@ -157,7 +151,7 @@ class CallAttempt < ActiveRecord::Base
   
 
   def leave_voicemail
-    update_attributes(:status => CallAttempt::Status::VOICEMAIL)
+    RedisCallAttempt.set_status(CallAttempt::Status::VOICEMAIL)
     voter.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
     self.campaign.voicemail_script.robo_recordings.first.play_message(self)
   end
@@ -168,7 +162,7 @@ class CallAttempt < ActiveRecord::Base
   end
     
   def disconnect_call
-    update_attributes(status: CallAttempt::Status::SUCCESS, recording_duration: call.recording_duration, recording_url: call.recording_url)
+    RedisCallAttempt.disconnect_call(self,id, call.recording_duration, call.recording_url)
     begin
       voter.update_attribute(:status, CallAttempt::Status::SUCCESS)
     rescue ActiveRecord::StaleObjectError
@@ -180,12 +174,12 @@ class CallAttempt < ActiveRecord::Base
   
   def schedule_for_later(date)
     scheduled_date = DateTime.strptime(date, "%m/%d/%Y %H:%M").to_time
-    update_attributes(:scheduled_date => scheduled_date, :status => Status::SCHEDULED)
+    RedisCallAttempt.schedule_for_later(self.id, scheduled_date)
     voter.update_attributes(:scheduled_date => scheduled_date, :status => Status::SCHEDULED, :call_back => true)
   end
 
   def wrapup_now
-    update_attribute(:wrapup_time, Time.now)
+    RedisCallAttempt.wrapup(self.id)
   end
   
   def capture_answer_as_no_response

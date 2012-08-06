@@ -1,4 +1,5 @@
 class RedisCallerSession
+    include Redis::Objects
   
   def initialize(caller_session_id, session_key, call_sid ,campaign_id)
     redis = RedisConnection.call_flow_connection

@@ -23,6 +23,9 @@ Spork.prefork do
   #Dir[Rails.root.join("simulator/new_simulator.rb")].each {|f| require f}
 
   RSpec.configure do |config|
+    config.before(:each) do
+      RedisConnection.call_flow_connection.flushAll
+    end
     # == Mock Framework
     #
     # If you prefer to use mocha, flexmock or RR, uncomment the appropriate line:

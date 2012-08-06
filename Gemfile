@@ -42,6 +42,7 @@ gem "em-hiredis", "~>0.1.1"
 gem "formtastic", "~>2.2.1"
 gem "cocoon", "~>1.0.22"
 gem "sidekiq", "~>1.2.1"
+gem "redis-objects", "~>0.5.3",:require => 'redis/objects'
 
 
 

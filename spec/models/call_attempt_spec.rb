@@ -253,4 +253,11 @@ describe CallAttempt do
       
   end
   
+  describe "abandon call" do
+    call_attempt = Factory(:call_attempt)
+    RedisCallAttempt.should_receive(:abandon_call)
+    RedisVoter.should_receive(:abandon_call).with
+    call_attempt.abandon_call
+  end
+  
 end
