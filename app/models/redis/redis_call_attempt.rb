@@ -44,11 +44,11 @@ class RedisCallAttempt
   end
   
   def self.wrapup(call_attempt_id)
-    call_attempt["wrapup_time"] = Time.now        
+    call_attempt(call_attempt_id)["wrapup_time"] = Time.now        
   end
   
   def self.schedule_for_later(call_attempt_id, scheduled_date)
-    call_attempt.bulk_set({status: CallAttempt::Status::SCHEDULED, scheduled_date: scheduled_date})            
+    call_attempt(call_attempt_id).bulk_set({status: CallAttempt::Status::SCHEDULED, scheduled_date: scheduled_date})            
   end
   
 end

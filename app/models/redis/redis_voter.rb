@@ -1,31 +1,46 @@
 class RedisVoter
   include Redis::Objects
   
-  def self.load_voter_info(voter_id,voter)
-    redis = RedisConnection.call_flow_connection
-    voter_hash = Redis::HashKey.new("voter:#{voter_id}", redis)
-    voter_hash.bulk_set(voter.attributes.to_options)
+  def self.load_voter_info(voter_id, voter)
+    voter(voter_id).bulk_set(voter.attributes.to_options)
   end
   
-  def self.update_voter_with_attempt(voter_id, attempt_id, caller_session_id)
+  def self.read(voter_id)
+    voter(voter_id).all    
+  end
+  
+  def self.voter(voter_id)
     redis = RedisConnection.call_flow_connection
-    redis.pipelined do
-      redis.hset "voter:#{voter_id}", "last_call_attempt", attempt_id 
-      redis.hset "voter:#{voter_id}", "last_call_attempt_time", Time.now       
-      redis.hset "voter:#{voter_id}", "caller_session_id", caller_session_id      
-      redis.hset "voter:#{voter_id}", "status", CallAttempt::Status::RINGING
-    end
+    Redis::HashKey.new("voter:#{voter_id}", redis)    
   end
   
   def self.abandon_call(voter_id)
-    redis = RedisConnection.call_flow_connection
-    redis.pipelined do
-      redis.hset "voter:#{voter_id}", "status", CallAttempt::Status::ABANDONED
-      redis.hset "voter:#{voter_id}", "call_back", false
-      redis.hset "voter:#{voter_id}", "caller_session", nil
-      redis.hset "voter:#{voter_id}", "caller_id", nil      
-    end
+    voter(voter_id).bulk_set({status: CallAttempt::Status::ABANDONED, call_back: false, 
+      caller_session_id: nil, caller_id: nil})    
   end
+  
+  
+  def self.end_answered_call(voter_id)
+    voter(voter_id).bulk_set({last_call_attempt_time: Time.now, caller_session_id: nil})
+  end
+  
+  def self.answered_by_machine(voter_id, status)
+    voter(voter_id).bulk_set({status: status, caller_session_id: nil})
+  end
+  
+  def self.set_status(voter_id, status)
+    voter(voter_id)["status"] = status    
+  end
+  
+  def self.schedule_for_later(voter_id, scheduled_date)
+    voter(voter_id).bulk_set({status: CallAttempt::Status::SCHEDULED, scheduled_date: scheduled_date, call_back: true})
+  end
+  
+  def self.update_voter_with_attempt(voter_id, attempt_id, caller_session_id)
+    voter(voter_id).bulk_set({last_call_attempt: attempt_id, last_call_attempt_time: Time.now, 
+      caller_session_id: caller_session_id, status: CallAttempt::Status::RINGING})
+  end
+  
   
   def self.assigned_to_caller?(voter_id)
     redis = RedisConnection.call_flow_connection
