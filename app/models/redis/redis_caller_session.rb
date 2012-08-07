@@ -1,14 +1,17 @@
 class RedisCallerSession
-    include Redis::Objects
+  include Redis::Objects
   
-  def initialize(caller_session_id, session_key, call_sid ,campaign_id)
+  def self.load_caller_session_info(caller_session_id, caller_session)
+    caller_session(caller_session_id).bulk_set(caller_session.attributes.to_options)
+  end
+  
+  def self.read(caller_session_id)
+    caller_session(caller_session_id).all    
+  end
+  
+  def self.caller_session(caller_session_id)
     redis = RedisConnection.call_flow_connection
-    redis.pipelined do
-      redis.hset "caller_session:#{caller_session_id}", "session_key", session_key 
-      redis.hset "caller_session:#{caller_session_id}", "campaign_id", campaign_id
-      redis.hset "caller_session:#{caller_session_id}", "sid", call_sid
-      redis.hset "caller_session:#{caller_session_id}", "start_time", Time.now
-    end
+    Redis::HashKey.new("caller_session:#{caller_session_id}", redis)    
   end
   
   def self.start_conference(caller_session_id)
@@ -28,6 +31,6 @@ class RedisCallerSession
   def self.end_session(caller_session_id)
     redis = RedisConnection.call_flow_connection
     redis.hset "caller_session:#{caller_session_id}", "end_time", Time.now         
-  end
+  end    
   
 end
