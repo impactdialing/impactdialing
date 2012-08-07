@@ -35,41 +35,24 @@ class RedisVoter
   def self.schedule_for_later(voter_id, scheduled_date)
     voter(voter_id).bulk_set({status: CallAttempt::Status::SCHEDULED, scheduled_date: scheduled_date, call_back: true})
   end
-  
-  def self.update_voter_with_attempt(voter_id, attempt_id, caller_session_id)
-    voter(voter_id).bulk_set({last_call_attempt: attempt_id, last_call_attempt_time: Time.now, 
-      caller_session_id: caller_session_id, status: CallAttempt::Status::RINGING})
-  end
-  
-  
+    
   def self.assigned_to_caller?(voter_id)
-    redis = RedisConnection.call_flow_connection
-    redis.hexists "voter:#{voter_id}", "caller_session_id"
+    voter(voter_id).has_key?("caller_session_id")
   end
   
   def self.assign_to_caller(voter_id, caller_session_id)
-    redis = RedisConnection.call_flow_connection
-    redis.hset "voter:#{voter_id}", "caller_session_id", caller_session_id
+    voter(voter_id)["caller_session_id"] = caller_session_id    
   end
   
-  def self.connect_lead_to_caller(voter_id, campaign_id)
-    redis = RedisConnection.call_flow_connection
-    begin
-      unless RedisVoter.assigned_to_caller?(voter.id)
-        RedisVoter.assign_to_caller(voter_id, RedisAvailableCaller.longest_waiting_caller(campaign_id))
-      end
-      if RedisVoter.assigned_to_caller?(voter.id)
-        redis.pipelined do
-          redis.hset "voter:#{voter_id}", "caller_id", nil      
-          redis.hset "voter:#{voter_id}", "status", CallAttempt::Status::INPROGRESS      
-        end
-        voter.caller_session.reload      
-        voter.caller_session.update_attributes(:on_call => true, :available_for_call => false)  
-      end
-    rescue ActiveRecord::StaleObjectError
-      abandon_call
-    end    
+  def self.connect_lead_to_caller(voter_id, campaign_id)    
+    if RedisVoter.assigned_to_caller?(voter_id)
+      caller_session_id = RedisVoter.read(voter_id)['caller_session_id']   
+    else 
+      caller_session_id = RedisAvailableCaller.longest_waiting_caller(campaign_id)
+      RedisVoter.assign_to_caller(voter_id, caller_session_id) 
+      RedisAvailableCaller.remove_caller(caller_session_id)      
+    end
+    voter(voter_id).bulk_set({caller_id: RedisCallerSession.read(caller_session_id)["caller_id"], status: CallAttempt::Status::INPROGRESS})
   end
-  
   
 end

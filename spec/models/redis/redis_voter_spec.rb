@@ -118,4 +118,47 @@ describe RedisVoter do
     
   end
 
+  describe "assign_to_caller" do
+    
+    it "should assign caller session to voter" do
+      RedisVoter.assign_to_caller(1, 1)
+      RedisVoter.assigned_to_caller?(1).should eq(true)
+    end
+  end
+  
+  describe "connect_lead_to_caller" do
+    
+    it "should set caller id when caller session already assigned to voter" do
+      caller_session = Factory(:caller_session, caller_id: 1)
+      RedisCallerSession.load_caller_session_info(caller_session.id, caller_session)
+      RedisVoter.assign_to_caller(1, caller_session.id)
+      RedisVoter.should_receive(:assigned_to_caller?).and_return(true)
+      RedisVoter.connect_lead_to_caller(1, 1)
+      RedisVoter.read(1)["caller_id"].should eq("1")
+    end
+    
+    it "should set status as inprogress when caller session already assigned to voter" do
+      caller_session = Factory(:caller_session, caller_id: 1)
+      RedisCallerSession.load_caller_session_info(caller_session.id, caller_session)
+      RedisVoter.assign_to_caller(1, caller_session.id)
+      RedisVoter.should_receive(:assigned_to_caller?).and_return(true)
+      RedisVoter.connect_lead_to_caller(1, 1)
+      RedisVoter.read(1)["status"].should eq(CallAttempt::Status::INPROGRESS)
+    end
+    
+    it "should set caller as longest available if not already assigned" do
+      caller_session = Factory(:caller_session, caller_id: 2)
+      RedisCallerSession.load_caller_session_info(caller_session.id, caller_session)
+      RedisVoter.should_receive(:assigned_to_caller?).and_return(false)
+      RedisAvailableCaller.should_receive(:longest_waiting_caller).and_return(caller_session.id)
+      RedisVoter.should_receive(:assign_to_caller).with(1, caller_session.id) 
+      RedisAvailableCaller.should_receive(:remove_caller).with(caller_session.id)      
+      RedisVoter.connect_lead_to_caller(1, 1)
+      RedisVoter.read(1)["caller_id"].should eq("2")
+      RedisVoter.read(1)["status"].should eq(CallAttempt::Status::INPROGRESS)
+    end
+    
+    
+    
+  end
 end

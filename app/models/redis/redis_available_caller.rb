@@ -8,14 +8,19 @@ class RedisAvailableCaller
   end
   
   def self.add_caller(campaign_id, caller_session_id)
-    available_callers_set(campaign_id).zadd(Time.now.to_i, caller_session_id)
+    available_callers_set(campaign_id).add(caller_session_id, Time.now.to_i)
   end
   
   def self.remove_caller(campaign_id, caller_session_id)
-    available_callers_set(campaign_id).zrem(caller_session_id)
+    available_callers_set(campaign_id).delete(caller_session_id)
+  end
+  
+  def self.caller?(campaign_id, caller_session_id)
+    available_callers_set(campaign_id).member?(caller_session_id)
   end
   
   def self.longest_waiting_caller(campaign_id)
+    available_callers_set(campaign_id).range(-1,-1)
   end
   
   def self.assign_longest_available_caller(campaign_id)    
