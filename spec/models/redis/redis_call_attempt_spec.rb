@@ -79,4 +79,94 @@ describe RedisCallAttempt do
     end        
     
   end
+  
+  describe "answered_by_machine" do
+    
+    it "should set status" do
+      RedisCallAttempt.new(1, 1, 1, "predictive", 1)
+      RedisCallAttempt.answered_by_machine(1, CallAttempt::Status::VOICEMAIL)      
+      RedisCallAttempt.read(1)['status'].should eq(CallAttempt::Status::VOICEMAIL)
+    end
+    
+    it "should set connecttime" do
+      RedisCallAttempt.new(1, 1, 1, "predictive", 1)
+      RedisCallAttempt.answered_by_machine(1, CallAttempt::Status::VOICEMAIL)      
+      RedisCallAttempt.read(1)['connecttime'].should_not be_nil
+    end
+    
+    it "should set call_end" do
+      RedisCallAttempt.new(1, 1, 1, "predictive", 1)
+      RedisCallAttempt.answered_by_machine(1, CallAttempt::Status::VOICEMAIL)      
+      RedisCallAttempt.read(1)['call_end'].should_not be_nil
+    end
+    
+    it "should set wrapup_time" do
+      RedisCallAttempt.new(1, 1, 1, "predictive", 1)
+      RedisCallAttempt.answered_by_machine(1, CallAttempt::Status::VOICEMAIL)      
+      RedisCallAttempt.read(1)['wrapup_time'].should_not be_nil
+    end
+    
+    
+    
+  end
+  
+  describe "set_status" do
+    it "should set status for attempt" do
+      RedisCallAttempt.new(1, 1, 1, "predictive", 1)
+      RedisCallAttempt.set_status(1, CallAttempt::Status::SUCCESS)
+      RedisCallAttempt.read(1)['status'].should eq(CallAttempt::Status::SUCCESS)      
+    end
+  end
+
+  describe "disconnect_call" do
+    
+    it "should set status for attempt" do
+      RedisCallAttempt.new(1, 1, 1, "predictive", 1)
+      RedisCallAttempt.disconnect_call(1, 12, "url")
+      RedisCallAttempt.read(1)['status'].should eq(CallAttempt::Status::SUCCESS)      
+    end
+    
+    it "should set recording duration for attempt" do
+      RedisCallAttempt.new(1, 1, 1, "predictive", 1)
+      RedisCallAttempt.disconnect_call(1, 12, "url")
+      RedisCallAttempt.read(1)['recording_duration'].should eq("12")      
+    end
+    
+    it "should set recording url for attempt" do
+      RedisCallAttempt.new(1, 1, 1, "predictive", 1)
+      RedisCallAttempt.disconnect_call(1, 12, "url")
+      RedisCallAttempt.read(1)['recording_url'].should eq("url")      
+    end
+    
+    
+  end
+  
+  describe "wrapup" do
+    
+    it "should set wrapup for attempt" do
+      RedisCallAttempt.new(1, 1, 1, "predictive", 1)
+      RedisCallAttempt.wrapup(1)
+      RedisCallAttempt.read(1)['wrapup_time'].should_not be_nil
+    end
+    
+    
+  end
+  
+  describe "schedule_for_later" do
+
+    it "should set status for attempt" do
+      RedisCallAttempt.new(1, 1, 1, "predictive", 1)
+      RedisCallAttempt.schedule_for_later(1, Time.now)
+      RedisCallAttempt.read(1)['status'].should eq(CallAttempt::Status::SCHEDULED)
+    end
+
+    it "should set scheduled date for attempt" do
+      RedisCallAttempt.new(1, 1, 1, "predictive", 1)
+      RedisCallAttempt.schedule_for_later(1, Time.now)
+      RedisCallAttempt.read(1)['scheduled_date'].should_not be_nil
+    end
+    
+    
+  end
+
 end

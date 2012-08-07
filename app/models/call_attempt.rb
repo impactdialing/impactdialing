@@ -76,14 +76,10 @@ class CallAttempt < ActiveRecord::Base
     current_recording.next ? current_recording.next.twilio_xml(self) : current_recording.hangup
   end
   
-  
-  
-  
   def connect_call
-    session = voter.caller_session
-    # call_attempt_id, caller_id, caller_session_id
-    RedisCallAttempt.connect_call(self.id, )
-    # update_attributes(status: CallAttempt::Status::INPROGRESS, connecttime: Time.now, caller: session.caller, caller_session: session)
+    redis_call_attempt = RedisCallAttempt.call_attempt(self.id)
+    redis_voter = RedisVoter.voter(redis_call_attempt['voter_id'])
+    RedisCallAttempt.connect_call(self.id, redis_voter.caller_id, redis_voter.caller_session_id )
   end
       
   def abandon_call
@@ -114,14 +110,14 @@ class CallAttempt < ActiveRecord::Base
   
   
   def end_answered_call
-    RedisCallAttempt.end_answered_call(1)
-    voter.update_attributes(last_call_attempt_time:  Time.now, caller_session: nil)
+    RedisCallAttempt.end_answered_call(self.id)
+    RedisVoter.end_answered_call(voter.id)
   end
   
   def process_answered_by_machine
     status = RedisCampaign.call_status_use_recordings(campaign.id)
     RedisCallAttempt.answered_by_machine(self.id, status)
-    voter.update_attributes(status: campaign.use_recordings? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP, caller_session: nil)    
+    RedisVoter.answered_by_machine(voter.id, status)
   end
   
     
@@ -152,7 +148,7 @@ class CallAttempt < ActiveRecord::Base
 
   def leave_voicemail
     RedisCallAttempt.set_status(CallAttempt::Status::VOICEMAIL)
-    voter.update_attributes(:status => CallAttempt::Status::VOICEMAIL)
+    RedisVoter.set_status(CallAttempt::Status::VOICEMAIL)
     self.campaign.voicemail_script.robo_recordings.first.play_message(self)
   end
   
@@ -163,19 +159,14 @@ class CallAttempt < ActiveRecord::Base
     
   def disconnect_call
     RedisCallAttempt.disconnect_call(self,id, call.recording_duration, call.recording_url)
-    begin
-      voter.update_attribute(:status, CallAttempt::Status::SUCCESS)
-    rescue ActiveRecord::StaleObjectError
-      voter_to_update = Voter.find(voter.id)
-      voter_to_update.update_attribute(:status, CallAttempt::Status::SUCCESS)
-    end
+    RedisVoter.set_status(CallAttempt::Status::SUCCESS)
   end
   
   
   def schedule_for_later(date)
     scheduled_date = DateTime.strptime(date, "%m/%d/%Y %H:%M").to_time
     RedisCallAttempt.schedule_for_later(self.id, scheduled_date)
-    voter.update_attributes(:scheduled_date => scheduled_date, :status => Status::SCHEDULED, :call_back => true)
+    RedisVoter.schedule_for_later(self.id, scheduled_date)
   end
 
   def wrapup_now
