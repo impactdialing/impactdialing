@@ -2,7 +2,7 @@ class RedisCallerSession
   include Redis::Objects
   
   def self.load_caller_session_info(caller_session_id, caller_session)
-    caller_session(caller_session_id).bulk_set(caller_session.attributes.to_options)
+    caller_session(caller_session_id).bulk_set(caller_session.attributes)
   end
   
   def self.read(caller_session_id)
