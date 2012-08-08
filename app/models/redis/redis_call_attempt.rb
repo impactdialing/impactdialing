@@ -1,3 +1,4 @@
+require Rails.root.join("lib/redis_connection")
 require 'redis/hash_key'
 class RedisCallAttempt
   include Redis::Objects

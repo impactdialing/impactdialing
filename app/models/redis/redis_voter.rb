@@ -1,3 +1,4 @@
+require Rails.root.join("lib/redis_connection")
 class RedisVoter
   include Redis::Objects
   

@@ -1,3 +1,4 @@
+require Rails.root.join("lib/redis_connection")
 class RedisCallerSession
   include Redis::Objects
   
