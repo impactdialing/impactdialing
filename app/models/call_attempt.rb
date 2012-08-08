@@ -78,8 +78,8 @@ class CallAttempt < ActiveRecord::Base
   
   def connect_call
     redis_call_attempt = RedisCallAttempt.call_attempt(self.id)
-    redis_voter = RedisVoter.voter(redis_call_attempt['voter_id'])
-    RedisCallAttempt.connect_call(self.id, redis_voter.caller_id, redis_voter.caller_session_id )
+    redis_voter = RedisVoter.read(redis_call_attempt['voter_id'])
+    RedisCallAttempt.connect_call(self.id, redis_voter["caller_id"], redis_voter["caller_session_id"] )
   end
       
   def abandon_call
@@ -139,8 +139,8 @@ class CallAttempt < ActiveRecord::Base
   
 
   def leave_voicemail
-    RedisCallAttempt.set_status(CallAttempt::Status::VOICEMAIL)
-    RedisVoter.set_status(CallAttempt::Status::VOICEMAIL)
+    RedisCallAttempt.set_status(self.id, CallAttempt::Status::VOICEMAIL)
+    RedisVoter.set_status(voter.id, CallAttempt::Status::VOICEMAIL)
     self.campaign.voicemail_script.robo_recordings.first.play_message(self)
   end
   
@@ -158,7 +158,7 @@ class CallAttempt < ActiveRecord::Base
   def schedule_for_later(date)
     scheduled_date = DateTime.strptime(date, "%m/%d/%Y %H:%M").to_time
     RedisCallAttempt.schedule_for_later(self.id, scheduled_date)
-    RedisVoter.schedule_for_later(self.id, scheduled_date)
+    RedisVoter.schedule_for_later(voter.id, scheduled_date)
   end
 
   def wrapup_now
