@@ -10,7 +10,6 @@ class CallerController < ApplicationController
     caller = Caller.find(params[:caller_id])
     identity = CallerIdentity.find_by_session_key(params[:session_key])
     session = caller.create_caller_session(identity.session_key, params[:CallSid], CallerSession::CallerType::TWILIO_CLIENT)    
-    # RedisCampaign.add_running_campaign(caller.campaign.id, caller.campaign.type)
     Moderator.caller_connected_to_campaign(caller, caller.campaign, session)
     render xml: session.run(:start_conf)
   end
@@ -27,9 +26,12 @@ class CallerController < ApplicationController
   
   def call_voter
     caller = Caller.find(params[:id])
-    caller_session = caller.caller_sessions.find(params[:session_id])    
+    caller_session = RedisCallerSession.read(params[:session_id])
+    # caller_session = caller.caller_sessions.find(params[:session_id])    
+    voter = RedisVoter.read(params[:voter_id])
     caller_session.publish_calling_voter
-    caller_session.dial_em(Voter.find(params[:voter_id])) unless params[:voter_id].blank?
+    Twilio.dial(voter)
+    # caller_session.dial_em(Voter.find(params[:voter_id])) unless params[:voter_id].blank?
     render :nothing => true
   end
   
