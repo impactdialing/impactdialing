@@ -26,11 +26,10 @@ class CallerController < ApplicationController
   
   def call_voter
     caller = Caller.find(params[:id])
-    caller_session = RedisCallerSession.read(params[:session_id])
-    # caller_session = caller.caller_sessions.find(params[:session_id])    
+    caller_session = caller.caller_sessions.find(params[:session_id])    
     voter = RedisVoter.read(params[:voter_id])
     caller_session.publish_calling_voter
-    Twilio.dial(voter)
+    Twilio.dial(voter, caller_session)
     # caller_session.dial_em(Voter.find(params[:voter_id])) unless params[:voter_id].blank?
     render :nothing => true
   end

@@ -20,7 +20,10 @@ class RedisVoter
       caller_session_id: nil, caller_id: nil})    
   end
   
-  
+  def self.failed_call(voter_id)
+    voter(voter_id).bulk_set({status: CallAttempt::Status::FAILED})
+  end
+
   def self.end_answered_call(voter_id)
     voter(voter_id).bulk_set({last_call_attempt_time: Time.now, caller_session_id: nil})
   end
@@ -43,6 +46,10 @@ class RedisVoter
   
   def self.assign_to_caller(voter_id, caller_session_id)
     voter(voter_id)["caller_session_id"] = caller_session_id    
+  end
+  
+  def self.setup_call(voter_id, call_attempt_id, caller_session_id)
+    voter(voter_id).bulk_set({status: CallAttempt::Status::RINGING, last_call_attempt: call_attempt_id, last_call_attempt_time: Time.now, caller_session_id: caller_session_id })
   end
   
   def self.connect_lead_to_caller(voter_id, campaign_id)    
