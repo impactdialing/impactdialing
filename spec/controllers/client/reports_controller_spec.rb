@@ -59,7 +59,7 @@ describe Client::ReportsController do
 
       before(:each) do
         @campaign = Factory(:preview, :account => user.account)
-        Factory(:caller_session, tCaller: "+18583829141", starttime: Time.now, endtime: Time.now + (30.minutes + 2.seconds), :tDuration => 10.minutes + 2.seconds, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
+        Factory(:caller_session, caller_type: "Phone", starttime: Time.now, endtime: Time.now + (30.minutes + 2.seconds), :tDuration => 10.minutes + 2.seconds, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
         Factory(:caller_session, starttime: Time.now, endtime: Time.now + (101.minutes + 57.seconds), :tDuration => 101.minutes + 57.seconds, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
         Factory(:call_attempt, connecttime: Time.now, call_end: Time.now + (10.minutes + 10.seconds), wrapup_time: Time.now + (10.minutes + 40.seconds), :tDuration => 10.minutes + 2.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
         Factory(:call_attempt, connecttime: Time.now, call_end: Time.now + (1.minutes), :tDuration => 1.minutes, :status => CallAttempt::Status::VOICEMAIL, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
