@@ -1,0 +1,42 @@
+class Twillio
+  
+  def self.dial(voter_info, caller_session)
+    voter = Voter.find(voter_info["id"])
+    campaign = caller_session.campaign
+    call_attempt = setup_call(voter, caller_session, campaign)    
+    twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)        
+    EM.run do
+      http = twilio_lib.make_call_em(campaign, voter, call_attempt)
+      http.callback { 
+        response = JSON.parse(http.response)  
+        if response["RestException"]
+          handle_failed_call(call_attempt, caller_session)
+        else
+          RedisCallAttempt.update_call_sid(call_attempt.id, response["sid"])
+        end
+         }
+      http.errback {}            
+    end    
+  end
+  
+  
+  def self.setup_call(voter, caller_session, campaign)
+    attempt = voter.call_attempts.create(:campaign => campaign, :dialer_mode => campaign.type, :status => CallAttempt::Status::RINGING, :caller_session => caller_session, :caller => caller_session.caller, call_start:  Time.now)    
+    RedisCallAttempt.load_call_attempt_info(attempt.id, attempt)
+    RedisVoter.setup_call(voter.id, attempt.id, caller_session.id)
+    caller_session.update_attribute('attempt_in_progress', attempt)
+    Call.create(call_attempt: attempt, all_states: "")
+    attempt    
+  end
+  
+  def handle_failed_call(attempt, caller_session, voter)
+    RedisCallAttempt.failed_call(attempt.id)
+    RedisVoter.failed_call(voter.id)
+    RedisAvailableCaller.add_caller(campaign_id, caller_session.id)
+    # update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
+    caller_session.redirect_caller
+  end
+  
+  
+  
+end

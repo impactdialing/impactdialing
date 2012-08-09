@@ -3,13 +3,11 @@ require 'redis/hash_key'
 class RedisCallAttempt
   include Redis::Objects
   
-  def initialize(call_attempt_id, voter_id, campaign_id, dialer_mode, caller_id)
-    redis = RedisConnection.call_flow_connection
-    call_attempt = Redis::HashKey.new("call_attempt:#{call_attempt_id}", redis)            
-    call_attempt.bulk_set({voter_id: voter_id, campaign_id: campaign_id, dialer_mode: dialer_mode, 
-      status: CallAttempt::Status::RINGING, caller_id: caller_id, call_start: Time.now})
+  def self.load_call_attempt_info(call_attempt_id, call_attempt)
+    call_attempt(call_attempt_id).bulk_set(call_attempt.attributes.to_options)
   end
   
+    
   def self.call_attempt(call_attempt_id)
     redis = RedisConnection.call_flow_connection
     Redis::HashKey.new("call_attempt:#{call_attempt_id}", redis)        
@@ -34,6 +32,14 @@ class RedisCallAttempt
   
   def self.read(call_attempt_id)
     call_attempt(call_attempt_id).all
+  end
+  
+  def self.update_call_sid(call_attempt_id, sid)
+    call_attempt(call_attempt_id)["sid"] = sid
+  end
+  
+  def self.failed_call(call_attempt_id)
+    call_attempt(call_attempt_id).bulk_set({status: CallAttempt::Status::FAILED, wrapup_time: Time.now})
   end
   
   def self.set_status(call_attempt_id, status)
