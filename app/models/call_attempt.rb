@@ -93,6 +93,7 @@ class CallAttempt < ActiveRecord::Base
   
   def caller_not_available?
     connect_lead_to_caller
+    !RedisVoter.assigned_to_caller?(voter.id) || 
     voter.caller_session.nil? || voter.caller_session.disconnected?
   end
   
