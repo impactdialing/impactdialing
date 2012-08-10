@@ -16,8 +16,10 @@ class RedisVoter
   end
   
   def self.abandon_call(voter_id)
-    voter(voter_id).bulk_set({status: CallAttempt::Status::ABANDONED, call_back: false, 
-      caller_session_id: nil, caller_id: nil})    
+    voter_hash = voter(voter_id)
+    voter_hash.bulk_set({status: CallAttempt::Status::ABANDONED, call_back: false})
+    voter_hash.delete('caller_session_id') 
+    voter_hash.delete('caller_id') 
   end
   
   def self.failed_call(voter_id)
@@ -25,15 +27,19 @@ class RedisVoter
   end
 
   def self.end_answered_call(voter_id)
-    voter(voter_id).bulk_set({last_call_attempt_time: Time.now, caller_session_id: nil})
+    voter_hash = voter(voter_id)
+    voter_hash.store("last_call_attempt_time", Time.now)
+    voter_hash.delete(caller_session_id: nil)
   end
   
   def self.answered_by_machine(voter_id, status)
-    voter(voter_id).bulk_set({status: status, caller_session_id: nil})
+    voter_hash = voter(voter_id)
+    voter_hash.store("status", status)
+    voter_hash.delete(caller_session_id: nil)
   end
   
   def self.set_status(voter_id, status)
-    voter(voter_id)["status"] = status    
+    voter(voter_id).store('status', status)
   end
   
   def self.schedule_for_later(voter_id, scheduled_date)
@@ -45,7 +51,7 @@ class RedisVoter
   end
   
   def self.assign_to_caller(voter_id, caller_session_id)
-    voter(voter_id)["caller_session_id"] = caller_session_id    
+    voter(voter_id).store('caller_session_id', caller_session_id) 
   end
   
   def self.setup_call(voter_id, call_attempt_id, caller_session_id)
@@ -61,6 +67,11 @@ class RedisVoter
       RedisAvailableCaller.remove_caller(caller_session_id)      
     end
     voter(voter_id).bulk_set({caller_id: RedisCallerSession.read(caller_session_id)["caller_id"], status: CallAttempt::Status::INPROGRESS})
+  end
+  
+  def self.connected_to_available_caller?(voter_id)
+    # check caller disconnected
+    !assigned_to_caller?(voter_id)
   end
   
 end
