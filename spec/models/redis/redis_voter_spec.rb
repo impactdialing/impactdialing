@@ -32,13 +32,13 @@ describe RedisVoter do
     it "should set caller session to nil" do
       voter = Factory(:voter)
       RedisVoter.abandon_call(voter.id)
-      RedisVoter.read(voter.id)['caller_session_id'].should eq("")
+      RedisVoter.read(voter.id)['caller_session_id'].should be_nil
     end
 
     it "should set caller  to nil" do
       voter = Factory(:voter)
       RedisVoter.abandon_call(voter.id)
-      RedisVoter.read(voter.id)['caller_id'].should eq("")
+      RedisVoter.read(voter.id)['caller_id'].should be_nil
     end
     
     
@@ -55,7 +55,7 @@ describe RedisVoter do
     it "should set caller session to nil" do
       voter = Factory(:voter)
       RedisVoter.end_answered_call(voter.id)
-      RedisVoter.read(voter.id)['caller_session_id'].should eq("") 
+      RedisVoter.read(voter.id)['caller_session_id'].should be_nil
     end
     
   end
@@ -71,13 +71,13 @@ describe RedisVoter do
     it "should set caller_session as nil" do
       voter = Factory(:voter)
       RedisVoter.answered_by_machine(voter.id, "status")
-      RedisVoter.read(voter.id)['caller_session_id'].should eq("")
+      RedisVoter.read(voter.id)['caller_session_id'].should be_nil
     end
     
   end
 
   describe "set status" do
-    
+        
     it "should set status" do
       voter = Factory(:voter)
       RedisVoter.set_status(voter.id, "status")
