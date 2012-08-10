@@ -153,7 +153,7 @@ class CallAttempt < ActiveRecord::Base
     
   def disconnect_call
     RedisCallAttempt.disconnect_call(self.id, call.recording_duration, call.recording_url)
-    RedisVoter.set_status(CallAttempt::Status::SUCCESS)
+    RedisVoter.set_status(voter.id, CallAttempt::Status::SUCCESS)
   end
   
   
