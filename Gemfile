@@ -48,9 +48,8 @@ gem "sidekiq", "~>1.2.1"
 
 group :development, :test do
   gem 'rspec'
-  gem 'ruby-debug19'
   gem 'rspec-rails', '~> 2.6.1'
-
+  gem 'debugger'
 end
 
 group :development do
