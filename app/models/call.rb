@@ -10,6 +10,7 @@ class Call < ActiveRecord::Base
   delegate :connect_lead_to_caller ,:to => :call_attempt
   delegate :end_answered_call, :to => :call_attempt
   delegate :end_unanswered_call, :to => :call_attempt
+  delegate :end_answered_by_machine, :to => :call_attempt
   delegate :end_running_call, :to => :call_attempt
   delegate :disconnect_call, :to => :call_attempt
   delegate :wrapup_now, :to => :call_attempt
@@ -76,8 +77,9 @@ class Call < ActiveRecord::Base
       end
       
       state :call_answered_by_machine do
-        event :call_ended, :to => :call_not_answered_by_lead
+        event :call_ended, :to => :call_end_machine
         before(:always) { process_answered_by_machine; call_attempt.redirect_caller }        
+        
         response do |xml_builder, the_call|
           xml_builder.Play campaign.recording.file.url if campaign.use_recordings?
           xml_builder.Hangup
@@ -94,9 +96,16 @@ class Call < ActiveRecord::Base
         end        
       end
       
+      state :call_end_machine do
+        before(:always) { end_answered_by_machine }                
+        response do |xml_builder, the_call|
+          xml_builder.Hangup
+        end
+      end
+      
+      
       state :call_not_answered_by_lead do
-        before(:always) { end_unanswered_call; call_attempt.redirect_caller }  
-              
+        before(:always) { end_unanswered_call; call_attempt.redirect_caller }                
         response do |xml_builder, the_call|
           xml_builder.Hangup
         end
