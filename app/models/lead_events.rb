@@ -14,11 +14,11 @@ module LeadEvents
             caller_deferrable.callback {}
             caller_deferrable.errback { |error| }
           end
-          Moderator.active_moderators(campaign).each do |moderator|
-            moderator_deferrable = Pusher[moderator.session].trigger_async('voter_event', {caller_session_id:  caller_session.id, campaign_id:  campaign.id, caller_id:  caller_session.caller.id, call_status: caller_session.attempt_in_progress.try(:status)})      
-            moderator_deferrable.callback {}
-            moderator_deferrable.errback { |error| }          
-          end              
+          # Moderator.active_moderators(campaign).each do |moderator|
+          #   moderator_deferrable = Pusher[moderator.session].trigger_async('voter_event', {caller_session_id:  caller_session.id, campaign_id:  campaign.id, caller_id:  caller_session.caller.id, call_status: caller_session.attempt_in_progress.try(:status)})      
+          #   moderator_deferrable.callback {}
+          #   moderator_deferrable.errback { |error| }          
+          # end              
            }
       end
     end    
@@ -31,25 +31,25 @@ module LeadEvents
             caller_deferrable.callback {}
             caller_deferrable.errback { |error| puts error.inspect}
           end
-          Moderator.active_moderators(campaign).each do |moderator|
-            moderator_deferrable = Pusher[moderator.session].trigger_async('voter_event', {caller_session_id:  caller_session.id, campaign_id:  campaign.id, caller_id:  caller_session.caller.id, call_status: caller_session.attempt_in_progress.try(:status)})      
-            moderator_deferrable.callback {}
-            moderator_deferrable.errback { |error|  puts error.inspect}          
-          end              
+          # Moderator.active_moderators(campaign).each do |moderator|
+          #   moderator_deferrable = Pusher[moderator.session].trigger_async('voter_event', {caller_session_id:  caller_session.id, campaign_id:  campaign.id, caller_id:  caller_session.caller.id, call_status: caller_session.attempt_in_progress.try(:status)})      
+          #   moderator_deferrable.callback {}
+          #   moderator_deferrable.errback { |error|  puts error.inspect}          
+          # end              
         }   
       end
     end
     
     def publish_moderator_response_submited
-      unless caller_session.nil?
-        EM.run {
-          Moderator.active_moderators(campaign).each do |moderator|
-            moderator_deferrable = Pusher[moderator.session].trigger_async('voter_event', {caller_session_id:  caller_session.id, campaign_id:  campaign.id, caller_id:  caller_session.caller.id, call_status: caller_session.attempt_in_progress.try(:status)})      
-            moderator_deferrable.callback {}
-            moderator_deferrable.errback { |error| }          
-          end              
-        }   
-      end      
+      # unless caller_session.nil?
+      #   EM.run {
+      #     Moderator.active_moderators(campaign).each do |moderator|
+      #       moderator_deferrable = Pusher[moderator.session].trigger_async('voter_event', {caller_session_id:  caller_session.id, campaign_id:  campaign.id, caller_id:  caller_session.caller.id, call_status: caller_session.attempt_in_progress.try(:status)})      
+      #       moderator_deferrable.callback {}
+      #       moderator_deferrable.errback { |error| }          
+      #     end              
+      #   }   
+      # end      
     end
     
   end
