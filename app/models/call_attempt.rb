@@ -134,7 +134,7 @@ class CallAttempt < ActiveRecord::Base
     call_sid = RedisCallAttempt.read(self.id)["sid"]
     EM.run {
       t = TwilioLib.new(account, auth)    
-      deferrable = t.end_call("call_sid")              
+      deferrable = t.end_call(call_sid)              
       deferrable.callback {}
       deferrable.errback { |error| }          
     }         
