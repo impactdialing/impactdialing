@@ -29,13 +29,13 @@ class RedisVoter
   def self.end_answered_call(voter_id)
     voter_hash = voter(voter_id)
     voter_hash.store("last_call_attempt_time", Time.now)
-    voter_hash.delete(caller_session_id: nil)
+    voter_hash.delete('caller_session_id')
   end
   
   def self.answered_by_machine(voter_id, status)
     voter_hash = voter(voter_id)
     voter_hash.store("status", status)
-    voter_hash.delete(caller_session_id: nil)
+    voter_hash.delete('caller_session_id')
   end
   
   def self.set_status(voter_id, status)
@@ -53,6 +53,7 @@ class RedisVoter
   def self.assign_to_caller(voter_id, caller_session_id)
     voter(voter_id).store('caller_session_id', caller_session_id) 
   end
+  
   
   def self.setup_call(voter_id, call_attempt_id, caller_session_id)
     voter(voter_id).bulk_set({status: CallAttempt::Status::RINGING, last_call_attempt: call_attempt_id, last_call_attempt_time: Time.now, caller_session_id: caller_session_id })
