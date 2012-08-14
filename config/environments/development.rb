@@ -14,7 +14,7 @@ ImpactDialing::Application.configure do
   #TWILIO_AUTH="4e179c64daa7c9f5108bd6623c98aea6"
   #APP_NUMBER="5104048117"
 
-  APP_HOST = '4x9s.localtunnel.com'
+  APP_HOST = 'https://impactdialing.showoff.io/'
 
   TEST_CALLER_NUMBER="4155130942"
   TEST_VOTER_NUMBER="4155130242"
