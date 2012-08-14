@@ -54,6 +54,10 @@ class RedisVoter
     voter(voter_id).store('caller_session_id', caller_session_id) 
   end
   
+  def self.caller_session_id(voter_id)
+    read(voter_id)['caller_session_id']
+  end
+  
   
   def self.setup_call(voter_id, call_attempt_id, caller_session_id)
     voter(voter_id).bulk_set({status: CallAttempt::Status::RINGING, last_call_attempt: call_attempt_id, last_call_attempt_time: Time.now, caller_session_id: caller_session_id })
@@ -70,9 +74,9 @@ class RedisVoter
     voter(voter_id).bulk_set({caller_id: RedisCallerSession.read(caller_session_id)["caller_id"], status: CallAttempt::Status::INPROGRESS})
   end
   
-  def self.connected_to_available_caller?(voter_id)
+  def self.could_not_connect_to_available_caller?(voter_id)
     # check caller disconnected
-    !assigned_to_caller?(voter_id)
+    !assigned_to_caller?(voter_id) || RedisCallerSession.disconnected?(caller_session_id(voter_id))
   end
   
 end
