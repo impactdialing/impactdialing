@@ -1,20 +1,20 @@
 ImpactDialing::Application.configure do
   #michael
-  TWILIO_APP_SID="APf055ab9e23cb25799a3e420e81b85182"
+  TWILIO_APP_SID="APadb3c9ca324d3f265164c7c66624c19f"
   TWILIO_ACCOUNT="AC422d17e57a30598f8120ee67feae29cd"
   TWILIO_AUTH="897298ab9f34357f651895a7011e1631"
   APP_NUMBER="8582254595"
   HOLD_MUSIC_URL = "https://s3.amazonaws.com/hold_music/impactdialing_holdmusic_v1.mp3"
 
   #monitor
-   MONITOR_TWILIO_APP_SID="AP7a2d44762a9c4ff39e963868133c9ce5"
+   MONITOR_TWILIO_APP_SID="APa5ea5d37745f53d3289b4326051743b0"
 
   #Brian?
   #TWILIO_ACCOUNT="ACc0208d4be3e204d5812af2813683243a"
   #TWILIO_AUTH="4e179c64daa7c9f5108bd6623c98aea6"
   #APP_NUMBER="5104048117"
 
-  APP_HOST = '4x9s.localtunnel.com'
+  APP_HOST = 'https://impactdialing.showoff.io/'
 
   TEST_CALLER_NUMBER="4155130942"
   TEST_VOTER_NUMBER="4155130242"
