@@ -212,7 +212,7 @@ class CallerSession < ActiveRecord::Base
   end
 
   def disconnected?
-    !available_for_call && !on_call
+    RedisCallerSession.disconnected?(self.id)
   end
   
   def publish(event, data)

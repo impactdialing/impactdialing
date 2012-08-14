@@ -53,18 +53,9 @@ class WebuiCallerSession < CallerSession
   end
   
   def start_conference    
-    # reassign_caller_session_to_campaign if caller_reassigned_to_another_campaign?
-    # begin
-      RedisAvailableCaller.add_caller(campaign.id, self.id)
-      # update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
-    # rescue ActiveRecord::StaleObjectError
-      # end conf
-    # end
+    RedisAvailableCaller.add_caller(campaign.id, self.id)
+    RedisCallerSession.start_conference(self.id)
   end
-  
-  
-  
-  
   
   def publish_async(event, data)    
     EM.run {
