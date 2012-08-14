@@ -45,9 +45,6 @@ gem "sidekiq", "~>1.2.1"
 gem "redis-objects", "~>0.5.3",:require => 'redis/objects'
 
 
-
-
-
 group :development, :test do
   gem 'rspec'
   gem 'ruby-debug19'
@@ -63,6 +60,7 @@ group :development do
   gem 'guard-rails'
   gem 'capistrano', '2.9.0'
   gem 'heroku_san'
+  gem 'showoff-io'
 end
 
 
