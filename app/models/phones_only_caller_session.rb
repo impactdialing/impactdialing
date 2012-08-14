@@ -226,11 +226,8 @@ class PhonesOnlyCallerSession < CallerSession
   end
     
   def start_conference    
-    begin
-      update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
-    rescue ActiveRecord::StaleObjectError
-      # end conf
-    end
+    RedisAvailableCaller.add_caller(campaign.id, self.id)
+    RedisCallerSession.start_conference(self.id)
   end
   
   def preview_campaign?
