@@ -2,7 +2,7 @@ require Rails.root.join("lib/redis_connection")
 class RedisCallerSession
   include Redis::Objects
   
-  def self.load_caller_session_info(caller_session_id, caller_session)
+  def self.load_caller_session_info(caller_session_id, caller_session)    
     caller_session(caller_session_id).bulk_set(caller_session.attributes)
   end
   
@@ -27,6 +27,10 @@ class RedisCallerSession
   def self.set_attempt_in_progress(caller_session_id, attempt_id)
     redis = RedisConnection.call_flow_connection
     redis.hset "caller_session:#{caller_session_id}", "attempt_in_progress", attempt_id 
+  end
+  
+  def self.caller_web_ui?(caller_session_id)
+    read(caller_session_id)['caller_type'] == "true"    
   end
   
   def self.end_session(caller_session_id)

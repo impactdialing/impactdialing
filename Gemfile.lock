@@ -120,6 +120,7 @@ GEM
       railties (~> 3.0)
       thor (~> 0.14)
     json (1.6.1)
+    json_pure (1.7.4)
     jwt (0.1.4)
       json (>= 1.2.4)
     launchy (2.0.5)
@@ -229,6 +230,11 @@ GEM
       tzinfo (>= 0.3.23)
     settingslogic (2.0.6)
     shoulda (2.11.3)
+    showoff-io (0.3.0)
+      highline (>= 1.6.1)
+      json_pure
+      net-ssh (>= 2.1.0)
+      rest-client
     sidekiq (1.2.1)
       celluloid (~> 0.10.0)
       connection_pool (~> 0.9.0)
@@ -326,6 +332,7 @@ DEPENDENCIES
   ruby-graphviz (= 0.9.0)
   settingslogic (~> 2.0.6)
   shoulda (~> 2.11.3)
+  showoff-io
   sidekiq (~> 1.2.1)
   simplecov
   spork (~> 0.9.0.rc9)
