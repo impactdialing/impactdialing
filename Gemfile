@@ -61,6 +61,8 @@ group :development do
   gem 'guard-rails'
   gem 'capistrano', '2.9.0'
   gem 'heroku_san'
+  gem 'showoff-io'
+  gem 'foreman'
 end
 
 
