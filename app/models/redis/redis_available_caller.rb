@@ -1,6 +1,7 @@
 require Rails.root.join("lib/redis_connection")
 require 'redis/hash_key'
-class RedisAvailableCaller
+
+class RedisAvailableCaller  
   include Redis::Objects
   
   def self.available_callers_set(campaign_id)
