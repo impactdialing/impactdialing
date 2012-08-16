@@ -24,8 +24,7 @@ class RedisCallerSession
   end
   
   def self.set_attempt_in_progress(caller_session_id, attempt_id)
-    redis = RedisConnection.call_flow_connection
-    redis.hset "caller_session:#{caller_session_id}", "attempt_in_progress", attempt_id 
+    caller_session(caller_session_id).store("attempt_in_progress", attempt_id)
   end
     
   def self.end_session(caller_session_id)
