@@ -93,12 +93,14 @@ class CallAttempt < ActiveRecord::Base
   end
     
   def connect_lead_to_caller
-    RedisVoter.connect_lead_to_caller(voter.id, campaign.id, self.id)
+    redis = RedisConnection.call_flow_connection
+    RedisVoter.connect_lead_to_caller(voter.id, campaign.id, self.id, redis)
   end
   
   def caller_not_available?
+    redis = RedisConnection.call_flow_connection
     connect_lead_to_caller
-    RedisVoter.could_not_connect_to_available_caller?(voter.id) 
+    RedisVoter.could_not_connect_to_available_caller?(voter.id, redis) 
   end
   
   def caller_available?  
