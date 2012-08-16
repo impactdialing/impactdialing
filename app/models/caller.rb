@@ -1,3 +1,4 @@
+require Rails.root.join("lib/redis_connection")
 class Caller < ActiveRecord::Base
   include Rails.application.routes.url_helpers
   include Deletable

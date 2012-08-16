@@ -1,3 +1,4 @@
+require Rails.root.join("lib/redis_connection")
 class CallerSession < ActiveRecord::Base
   include Rails.application.routes.url_helpers
   include CallCenter
