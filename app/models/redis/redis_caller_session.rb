@@ -29,8 +29,8 @@ class RedisCallerSession
   end
     
   def self.end_session(caller_session_id)
-    redis = RedisConnection.call_flow_connection
-    redis.hset "caller_session:#{caller_session_id}", "end_time", Time.now         
+    caller_session(caller_session_id).store("end_time", Time.now)
+    # update_attributes(on_call: false, available_for_call:  false, endtime:  Time.now)       
   end
   
   def self.disconnected?(caller_session_id)
