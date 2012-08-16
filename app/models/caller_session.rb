@@ -310,7 +310,7 @@ class CallerSession < ActiveRecord::Base
    
    def start_conference    
      redis_connection = RedisConnection.call_flow_connection
-     redis.pipelined do
+     redis_connection.pipelined do
        RedisAvailableCaller.add_caller(campaign.id, self.id, redis_connection)
        RedisCallerSession.start_conference(self.id, redis_connection)
      end
