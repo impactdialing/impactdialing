@@ -1,4 +1,0 @@
-class RedisCall
-  
-  
-end
