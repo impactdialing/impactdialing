@@ -48,8 +48,9 @@ class WebuiCallerSession < CallerSession
       
   end
   
-  def call_not_wrapped_up?
-    attempt_in_progress.try(:connecttime) != nil &&  attempt_in_progress.try(:not_wrapped_up?)
+  def call_not_wrapped_up?    
+    attempt_in_progress_id = RedisCallerSession.read(self.id)['attempt_in_progress']
+    RedisCallAttempt.call_not_wrapped_up?(attempt_in_progress_id)
   end
   
   def start_conference    
