@@ -213,7 +213,8 @@ class CallerSession < ActiveRecord::Base
   end
 
   def disconnected?
-    RedisCallerSession.disconnected?(self.id)
+    redis_connection = RedisConnection.call_flow_connection
+    RedisCallerSession.disconnected?(self.id, redis_connection)
   end
   
   def publish(event, data)
