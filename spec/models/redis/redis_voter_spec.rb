@@ -152,7 +152,7 @@ describe RedisVoter do
       RedisVoter.should_receive(:assigned_to_caller?).and_return(false)
       RedisAvailableCaller.should_receive(:longest_waiting_caller).and_return(caller_session.id)
       RedisVoter.should_receive(:assign_to_caller).with(1, caller_session.id) 
-      RedisAvailableCaller.should_receive(:remove_caller).with(caller_session.id)      
+      RedisAvailableCaller.should_receive(:remove_caller).with(1, caller_session.id)      
       RedisVoter.connect_lead_to_caller(1, 1)
       RedisVoter.read(1)["caller_id"].should eq("2")
       RedisVoter.read(1)["status"].should eq(CallAttempt::Status::INPROGRESS)

@@ -6,6 +6,7 @@ module LeadEvents
   module InstanceMethods
     
     def publish_voter_connected
+      puts self.id
       caller_session_id = RedisVoter.read(voter.id)['caller_session_id']
       caller_session = RedisCallerSession.read(caller_session_id)      
       unless caller_session_id.nil?

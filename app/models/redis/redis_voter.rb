@@ -69,7 +69,7 @@ class RedisVoter
     else 
       caller_session_id = RedisAvailableCaller.longest_waiting_caller(campaign_id)
       RedisVoter.assign_to_caller(voter_id, caller_session_id) 
-      RedisAvailableCaller.remove_caller(caller_session_id)      
+      RedisAvailableCaller.remove_caller(campaign_id, caller_session_id)      
     end
     voter(voter_id).bulk_set({caller_id: RedisCallerSession.read(caller_session_id)["caller_id"], status: CallAttempt::Status::INPROGRESS})
   end

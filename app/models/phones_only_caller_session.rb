@@ -200,7 +200,7 @@ class PhonesOnlyCallerSession < CallerSession
   
   def select_voter(old_voter)
     voter = campaign.next_voter_in_dial_queue(old_voter.try(:id))
-    update_attributes(voter_in_progress: voter)
+    RedisCallerSession.set_voter_in_progress(self.id, voter.id)
   end
   
   def star_selected?
@@ -225,10 +225,6 @@ class PhonesOnlyCallerSession < CallerSession
     campaign.type == Campaign::Type::PREDICTIVE
   end
     
-  def start_conference    
-    RedisAvailableCaller.add_caller(campaign.id, self.id)
-    RedisCallerSession.start_conference(self.id)
-  end
   
   def preview_campaign?
     campaign.type != Campaign::Type::Preview
