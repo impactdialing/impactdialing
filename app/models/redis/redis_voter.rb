@@ -77,7 +77,7 @@ class RedisVoter
   
   def self.could_not_connect_to_available_caller?(voter_id, redis_connection)
     # check caller disconnected
-    !assigned_to_caller?(voter_id, redis_connection) || RedisCallerSession.disconnected?(caller_session_id(voter_id, redis_connection))
+    !assigned_to_caller?(voter_id, redis_connection) || RedisCallerSession.disconnected?(caller_session_id(voter_id, redis_connection), redis_connection)
   end
   
 end
