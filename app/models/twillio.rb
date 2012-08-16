@@ -14,7 +14,7 @@ class Twillio
         if response["RestException"]
           handle_failed_call(call_attempt, caller_session, redis_connection)
         else
-          RedisCallAttempt.update_call_sid(call_attempt.id, response["sid"])
+          RedisCallAttempt.update_call_sid(call_attempt.id, response["sid"], redis_connection)
         end
          }
       http.errback {}            
