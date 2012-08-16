@@ -1,5 +1,6 @@
 # Load the rails application
 require File.expand_path('../application', __FILE__)
+require Rails.root.join("lib/redis_connection")
 
 # Initialize the rails application
 ImpactDialing::Application.initialize!
