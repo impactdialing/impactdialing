@@ -80,7 +80,7 @@ class CallAttempt < ActiveRecord::Base
     redis_call_attempt = RedisCallAttempt.read(self.id)
     redis_voter = RedisVoter.read(redis_call_attempt['voter_id'])
     RedisCallAttempt.connect_call(self.id, redis_voter["caller_id"], redis_voter["caller_session_id"] )
-    RedisCallerSession.set_attempt_in_progress(redis_voter["caller_session_id"], self.id)
+    # RedisCallerSession.set_attempt_in_progress(redis_voter["caller_session_id"], self.id)
   end
       
   def abandon_call
