@@ -307,6 +307,12 @@ class CallerSession < ActiveRecord::Base
    ((starttime - endtime)/60).ceil
    end
    
+   def start_conference    
+     RedisAvailableCaller.add_caller(campaign.id, self.id)
+     RedisCallerSession.start_conference(self.id)
+   end
+   
+   
    
   private
     
