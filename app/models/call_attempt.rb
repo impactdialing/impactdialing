@@ -80,7 +80,6 @@ class CallAttempt < ActiveRecord::Base
     redis_call_attempt = RedisCallAttempt.read(self.id)
     redis_voter = RedisVoter.read(redis_call_attempt['voter_id'])
     RedisCallAttempt.connect_call(self.id, redis_voter["caller_id"], redis_voter["caller_session_id"] )
-    # RedisCallerSession.set_attempt_in_progress(redis_voter["caller_session_id"], self.id)
   end
       
   def abandon_call
@@ -89,7 +88,7 @@ class CallAttempt < ActiveRecord::Base
   end
     
   def connect_lead_to_caller
-    RedisVoter.connect_lead_to_caller(voter.id, campaign.id)
+    RedisVoter.connect_lead_to_caller(voter.id, campaign.id, self.id)
   end
   
   def caller_not_available?
@@ -156,7 +155,6 @@ class CallAttempt < ActiveRecord::Base
     RedisVoter.set_status(voter.id, CallAttempt::Status::SUCCESS)
     caller_session_id = RedisVoter.read(voter.id)["caller_session_id"]
     RedisCallerSession.read(caller_session_id)['session_key']
-    CallEvents.publish_voter_disconnected(RedisCallerSession.read(caller_session_id)['session_key'])
   end
   
   
