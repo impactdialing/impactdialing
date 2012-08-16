@@ -142,7 +142,8 @@ class CallAttempt < ActiveRecord::Base
   end
   
   def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
-    call_sid = RedisCallAttempt.read(self.id)["sid"]
+    redis = RedisConnection.call_flow_connection    
+    call_sid = RedisCallAttempt.read(self.id, redis)["sid"]
     EM.run {
       t = TwilioLib.new(account, auth)    
       deferrable = t.end_call(call_sid)              
@@ -153,6 +154,7 @@ class CallAttempt < ActiveRecord::Base
   
 
   def leave_voicemail
+    redis = RedisConnection.call_flow_connection    
     redis.pipelined do
       RedisCallAttempt.set_status(self.id, CallAttempt::Status::VOICEMAIL, redis)
       RedisVoter.set_status(voter.id, CallAttempt::Status::VOICEMAIL, redis)
