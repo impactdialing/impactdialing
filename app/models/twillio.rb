@@ -24,7 +24,7 @@ class Twillio
     attempt = voter.call_attempts.create(:campaign => campaign, :dialer_mode => campaign.type, :status => CallAttempt::Status::RINGING, :caller_session => caller_session, :caller => caller_session.caller, call_start:  Time.now)    
     RedisCallAttempt.load_call_attempt_info(attempt.id, attempt)
     RedisVoter.setup_call(voter.id, attempt.id, caller_session.id)
-    caller_session.update_attribute('attempt_in_progress', attempt)
+    RedisCallerSession.set_attempt_in_progress(caller_session.id, attempt.id)
     Call.create(call_attempt: attempt, all_states: "")
     attempt    
   end

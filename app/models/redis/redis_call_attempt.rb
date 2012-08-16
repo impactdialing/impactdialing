@@ -36,7 +36,7 @@ class RedisCallAttempt
   end
   
   def self.update_call_sid(call_attempt_id, sid)
-    call_attempt(call_attempt_id)["sid"] = sid
+    call_attempt(call_attempt_id).store("sid", sid)
   end
   
   def self.failed_call(call_attempt_id)
@@ -44,7 +44,7 @@ class RedisCallAttempt
   end
   
   def self.set_status(call_attempt_id, status)
-    call_attempt(call_attempt_id)["status"] = status    
+    call_attempt(call_attempt_id).store("status", status)    
   end
   
   def self.disconnect_call(call_attempt_id, recording_duration, recording_url)
@@ -52,7 +52,7 @@ class RedisCallAttempt
   end
   
   def self.wrapup(call_attempt_id)
-    call_attempt(call_attempt_id)["wrapup_time"] = Time.now        
+    call_attempt(call_attempt_id).store("wrapup_time", Time.now)
   end
   
   def self.schedule_for_later(call_attempt_id, scheduled_date)
