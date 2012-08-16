@@ -5,7 +5,7 @@ class RedisAvailableCaller
   include Redis::Objects
   
   def self.available_callers_set(campaign_id, redis_connection)
-    Redis::SortedSet.new("available_caller:#{campaign_id}", redis)    
+    Redis::SortedSet.new("available_caller:#{campaign_id}", redis_connection)    
   end
   
   def self.add_caller(campaign_id, caller_session_id, redis_connection)
