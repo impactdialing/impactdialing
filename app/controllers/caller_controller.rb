@@ -1,4 +1,5 @@
 require 'new_relic/agent/method_tracer'
+require Rails.root.join("lib/redis_connection")
 class CallerController < ApplicationController
   include NewRelic::Agent::MethodTracer
   layout "caller"

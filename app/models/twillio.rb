@@ -1,3 +1,4 @@
+require Rails.root.join("lib/redis_connection")
 class Twillio
   
   def self.dial(voter_info, caller_session)
