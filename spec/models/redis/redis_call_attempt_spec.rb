@@ -2,10 +2,15 @@ require "spec_helper"
 
 describe RedisCallAttempt do
   
+  before(:each) do
+    @redis = RedisConnection.call_flow_connection
+  end
+  
+  
   it "should create a new call attempt" do 
     call_attempt = Factory(:call_attempt, caller_id: 1, campaign_id: 1)   
-    RedisCallAttempt.load_call_attempt_info(call_attempt.id, call_attempt)
-    RedisCallAttempt.read(call_attempt.id).should eq({"call_end"=>"", "call_id"=>"", "call_start"=>"", "caller_id"=>"1", 
+    RedisCallAttempt.load_call_attempt_info(call_attempt.id, call_attempt, @redis)
+    RedisCallAttempt.read(call_attempt.id, @redis).should eq({"call_end"=>"", "call_id"=>"", "call_start"=>"", "caller_id"=>"1", 
     "caller_session_id"=>"", "campaign_id"=>"1", "connecttime"=>"", "created_at"=>"#{Time.now.utc}", "debited"=>"false", 
     "dialer_mode"=>"", "id"=>"#{call_attempt.id}", "payment_id"=>"", "recording_duration"=>"", "recording_url"=>"", 
     "result"=>"", "result_digit"=>"", "scheduled_date"=>"", "sid"=>"", "status"=>"", "tAccountSid"=>"", "tCallSegmentSid"=>"", 
@@ -16,26 +21,26 @@ describe RedisCallAttempt do
   
   describe "connect call" do
     it "should set connect time" do
-      RedisCallAttempt.connect_call(1, 2, 3)      
-      RedisCallAttempt.read(1)['connecttime'].should_not eq(nil)
+      RedisCallAttempt.connect_call(1, 2, 3, @redis)      
+      RedisCallAttempt.read(1, @redis)['connecttime'].should_not eq(nil)
     end
     
     it "should set status to In progress" do
       RedisCallAttempt.new(1, 1, 1, "predictive", 1)
-      RedisCallAttempt.connect_call(1, 2, 3)      
-      RedisCallAttempt.read(1)['status'].should eq(CallAttempt::Status::INPROGRESS)
+      RedisCallAttempt.connect_call(1, 2, 3, @redis)      
+      RedisCallAttempt.read(1, @redis)['status'].should eq(CallAttempt::Status::INPROGRESS)
     end
     
     it "should set new caller id" do
-      RedisCallAttempt.new(1, 1, 1, "predictive", 1)
-      RedisCallAttempt.connect_call(1, 2, 3)      
-      RedisCallAttempt.read(1)['caller_id'].should eq("2")
+      RedisCallAttempt.new(1, 1, 1, "predictive", 1, @redis)
+      RedisCallAttempt.connect_call(1, 2, 3, @redis)      
+      RedisCallAttempt.read(1, @redis)['caller_id'].should eq("2")
     end
 
     it "should set caller_session_id" do
-      RedisCallAttempt.new(1, 1, 1, "predictive", 1)
-      RedisCallAttempt.connect_call(1, 2, 3)      
-      RedisCallAttempt.read(1)['caller_session_id'].should eq("3")
+      RedisCallAttempt.new(1, 1, 1, "predictive", 1, @redis)
+      RedisCallAttempt.connect_call(1, 2, 3, @redis)      
+      RedisCallAttempt.read(1, @redis)['caller_session_id'].should eq("3")
     end    
     
   end
@@ -43,26 +48,26 @@ describe RedisCallAttempt do
   describe "abandon_call" do
     it "should set connect time" do
       RedisCallAttempt.new(1, 1, 1, "predictive", 1)
-      RedisCallAttempt.abandon_call(1)      
-      RedisCallAttempt.read(1)['connecttime'].should_not eq(nil)
+      RedisCallAttempt.abandon_call(1, @redis)      
+      RedisCallAttempt.read(1, @redis)['connecttime'].should_not eq(nil)
     end
     
     it "should set end time" do
       RedisCallAttempt.new(1, 1, 1, "predictive", 1)
-      RedisCallAttempt.abandon_call(1)      
-      RedisCallAttempt.read(1)['call_end'].should_not eq(nil)
+      RedisCallAttempt.abandon_call(1, @redis)      
+      RedisCallAttempt.read(1, @redis)['call_end'].should_not eq(nil)
     end
     
     it "should set wrapup time" do
       RedisCallAttempt.new(1, 1, 1, "predictive", 1)
-      RedisCallAttempt.abandon_call(1)      
-      RedisCallAttempt.read(1)['wrapup_time'].should_not eq(nil)
+      RedisCallAttempt.abandon_call(1, @redis)      
+      RedisCallAttempt.read(1, @redis)['wrapup_time'].should_not eq(nil)
     end
     
     it "should set status to Abandoned" do
       RedisCallAttempt.new(1, 1, 1, "predictive", 1)
-      RedisCallAttempt.abandon_call(1)      
-      RedisCallAttempt.read(1)['status'].should eq(CallAttempt::Status::ABANDONED)
+      RedisCallAttempt.abandon_call(1, @redis)      
+      RedisCallAttempt.read(1, @redis)['status'].should eq(CallAttempt::Status::ABANDONED)
     end    
   end
   
@@ -70,8 +75,8 @@ describe RedisCallAttempt do
     
     it "should set end time" do
       RedisCallAttempt.new(1, 1, 1, "predictive", 1)
-      RedisCallAttempt.end_answered_call(1)      
-      RedisCallAttempt.read(1)['call_end'].should_not eq(nil)
+      RedisCallAttempt.end_answered_call(1, @redis)      
+      RedisCallAttempt.read(1, @redis)['call_end'].should_not eq(nil)
     end        
     
   end
@@ -80,8 +85,8 @@ describe RedisCallAttempt do
     
     it "should set end time" do
       RedisCallAttempt.new(1, 1, 1, "predictive", 1)
-      RedisCallAttempt.end_answered_call(1)      
-      RedisCallAttempt.read(1)['call_end'].should_not eq(nil)
+      RedisCallAttempt.end_answered_call(1, @redis)      
+      RedisCallAttempt.read(1, @redis)['call_end'].should_not eq(nil)
     end        
     
   end
@@ -90,26 +95,26 @@ describe RedisCallAttempt do
     
     it "should set status" do
       RedisCallAttempt.new(1, 1, 1, "predictive", 1)
-      RedisCallAttempt.answered_by_machine(1, CallAttempt::Status::VOICEMAIL)      
-      RedisCallAttempt.read(1)['status'].should eq(CallAttempt::Status::VOICEMAIL)
+      RedisCallAttempt.answered_by_machine(1, CallAttempt::Status::VOICEMAIL, @redis)      
+      RedisCallAttempt.read(1, @redis)['status'].should eq(CallAttempt::Status::VOICEMAIL)
     end
     
     it "should set connecttime" do
       RedisCallAttempt.new(1, 1, 1, "predictive", 1)
-      RedisCallAttempt.answered_by_machine(1, CallAttempt::Status::VOICEMAIL)      
-      RedisCallAttempt.read(1)['connecttime'].should_not be_nil
+      RedisCallAttempt.answered_by_machine(1, CallAttempt::Status::VOICEMAIL, @redis)      
+      RedisCallAttempt.read(1, @redis)['connecttime'].should_not be_nil
     end
     
     it "should set call_end" do
       RedisCallAttempt.new(1, 1, 1, "predictive", 1)
-      RedisCallAttempt.answered_by_machine(1, CallAttempt::Status::VOICEMAIL)      
-      RedisCallAttempt.read(1)['call_end'].should_not be_nil
+      RedisCallAttempt.answered_by_machine(1, CallAttempt::Status::VOICEMAIL, @redis)      
+      RedisCallAttempt.read(1, @redis)['call_end'].should_not be_nil
     end
     
     it "should set wrapup_time" do
       RedisCallAttempt.new(1, 1, 1, "predictive", 1)
-      RedisCallAttempt.answered_by_machine(1, CallAttempt::Status::VOICEMAIL)      
-      RedisCallAttempt.read(1)['wrapup_time'].should_not be_nil
+      RedisCallAttempt.answered_by_machine(1, CallAttempt::Status::VOICEMAIL, @redis)      
+      RedisCallAttempt.read(1, @redis)['wrapup_time'].should_not be_nil
     end
     
     
@@ -119,8 +124,8 @@ describe RedisCallAttempt do
   describe "set_status" do
     it "should set status for attempt" do
       RedisCallAttempt.new(1, 1, 1, "predictive", 1)
-      RedisCallAttempt.set_status(1, CallAttempt::Status::SUCCESS)
-      RedisCallAttempt.read(1)['status'].should eq(CallAttempt::Status::SUCCESS)      
+      RedisCallAttempt.set_status(1, CallAttempt::Status::SUCCESS, @redis)
+      RedisCallAttempt.read(1, @redis)['status'].should eq(CallAttempt::Status::SUCCESS)      
     end
   end
 
@@ -128,20 +133,20 @@ describe RedisCallAttempt do
     
     it "should set status for attempt" do
       RedisCallAttempt.new(1, 1, 1, "predictive", 1)
-      RedisCallAttempt.disconnect_call(1, 12, "url")
-      RedisCallAttempt.read(1)['status'].should eq(CallAttempt::Status::SUCCESS)      
+      RedisCallAttempt.disconnect_call(1, 12, "url", @redis)
+      RedisCallAttempt.read(1, @redis)['status'].should eq(CallAttempt::Status::SUCCESS)      
     end
     
     it "should set recording duration for attempt" do
       RedisCallAttempt.new(1, 1, 1, "predictive", 1)
-      RedisCallAttempt.disconnect_call(1, 12, "url")
-      RedisCallAttempt.read(1)['recording_duration'].should eq("12")      
+      RedisCallAttempt.disconnect_call(1, 12, "url", @redis)
+      RedisCallAttempt.read(1, @redis)['recording_duration'].should eq("12")      
     end
     
     it "should set recording url for attempt" do
       RedisCallAttempt.new(1, 1, 1, "predictive", 1)
-      RedisCallAttempt.disconnect_call(1, 12, "url")
-      RedisCallAttempt.read(1)['recording_url'].should eq("url")      
+      RedisCallAttempt.disconnect_call(1, 12, "url", @redis)
+      RedisCallAttempt.read(1, @redis)['recording_url'].should eq("url")      
     end
     
     
@@ -151,8 +156,8 @@ describe RedisCallAttempt do
     
     it "should set wrapup for attempt" do
       RedisCallAttempt.new(1, 1, 1, "predictive", 1)
-      RedisCallAttempt.wrapup(1)
-      RedisCallAttempt.read(1)['wrapup_time'].should_not be_nil
+      RedisCallAttempt.wrapup(1, @redis)
+      RedisCallAttempt.read(1, @redis)['wrapup_time'].should_not be_nil
     end
     
     
@@ -162,14 +167,14 @@ describe RedisCallAttempt do
 
     it "should set status for attempt" do
       RedisCallAttempt.new(1, 1, 1, "predictive", 1)
-      RedisCallAttempt.schedule_for_later(1, Time.now)
-      RedisCallAttempt.read(1)['status'].should eq(CallAttempt::Status::SCHEDULED)
+      RedisCallAttempt.schedule_for_later(1, Time.now, @redis)
+      RedisCallAttempt.read(1, @redis)['status'].should eq(CallAttempt::Status::SCHEDULED)
     end
 
     it "should set scheduled date for attempt" do
       RedisCallAttempt.new(1, 1, 1, "predictive", 1)
-      RedisCallAttempt.schedule_for_later(1, Time.now)
-      RedisCallAttempt.read(1)['scheduled_date'].should_not be_nil
+      RedisCallAttempt.schedule_for_later(1, Time.now, @redis)
+      RedisCallAttempt.read(1, @redis)['scheduled_date'].should_not be_nil
     end
     
     
