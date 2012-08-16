@@ -157,8 +157,8 @@ class CallerSession < ActiveRecord::Base
   end
   
   def end_session
-    RedisCallerSession.end_session(self.id)
-
+    redis_connection = RedisConnection.call_flow_connection
+    RedisCallerSession.end_session(self.id, redis_connection)
   end
   
   def account_not_activated?
