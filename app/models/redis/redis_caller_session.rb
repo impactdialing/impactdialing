@@ -14,7 +14,7 @@ class RedisCallerSession
   end
   
   def self.caller_session(caller_session_id, redis_connection)
-    Redis::HashKey.new("caller_session:#{caller_session_id}", redis)    
+    Redis::HashKey.new("caller_session:#{caller_session_id}", redis_connection)    
   end
   
   def self.start_conference(caller_session_id, redis_connection)
