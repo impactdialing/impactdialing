@@ -77,14 +77,18 @@ class CallAttempt < ActiveRecord::Base
   end
   
   def connect_call
-    redis_call_attempt = RedisCallAttempt.read(self.id)
-    redis_voter = RedisVoter.read(redis_call_attempt['voter_id'])
-    RedisCallAttempt.connect_call(self.id, redis_voter["caller_id"], redis_voter["caller_session_id"] )
+    redis = RedisConnection.call_flow_connection
+    redis_call_attempt = RedisCallAttempt.read(self.id, redis)
+    redis_voter = RedisVoter.read(redis_call_attempt['voter_id'], redis)
+    RedisCallAttempt.connect_call(self.id, redis_voter["caller_id"], redis_voter["caller_session_id"] , redis)
   end
       
   def abandon_call
-    RedisCallAttempt.abandon_call(self.id)
-    RedisVoter.abandon_call(voter.id)
+    redis = RedisConnection.call_flow_connection
+    redis.pipelined do
+      RedisCallAttempt.abandon_call(self.id, redis)
+      RedisVoter.abandon_call(voter.id, redis)
+    end
   end
     
   def connect_lead_to_caller
@@ -102,14 +106,20 @@ class CallAttempt < ActiveRecord::Base
   
   
   def end_answered_call
-    RedisCallAttempt.end_answered_call(self.id)
-    RedisVoter.end_answered_call(voter.id)
+    redis = RedisConnection.call_flow_connection
+    redis.pipelined do
+      RedisCallAttempt.end_answered_call(self.id, redis)
+      RedisVoter.end_answered_call(voter.id, redis)
+    end      
   end
   
   def process_answered_by_machine
-    status = RedisCampaign.call_status_use_recordings(campaign.id)
-    RedisCallAttempt.answered_by_machine(self.id, status)
-    RedisVoter.answered_by_machine(voter.id, status)
+    redis = RedisConnection.call_flow_connection    
+    status = RedisCampaign.call_status_use_recordings(campaign.id, redis)
+    redis.pipelined do
+      RedisCallAttempt.answered_by_machine(self.id, status, redis)
+      RedisVoter.answered_by_machine(voter.id, status, redis)
+    end
   end
   
     
@@ -140,8 +150,10 @@ class CallAttempt < ActiveRecord::Base
   
 
   def leave_voicemail
-    RedisCallAttempt.set_status(self.id, CallAttempt::Status::VOICEMAIL)
-    RedisVoter.set_status(voter.id, CallAttempt::Status::VOICEMAIL)
+    redis.pipelined do
+      RedisCallAttempt.set_status(self.id, CallAttempt::Status::VOICEMAIL, redis)
+      RedisVoter.set_status(voter.id, CallAttempt::Status::VOICEMAIL, redis)
+    end
     self.campaign.voicemail_script.robo_recordings.first.play_message(self)
   end
   
@@ -151,21 +163,27 @@ class CallAttempt < ActiveRecord::Base
   end
     
   def disconnect_call
-    RedisCallAttempt.disconnect_call(self.id, call.recording_duration, call.recording_url)
-    RedisVoter.set_status(voter.id, CallAttempt::Status::SUCCESS)
-    caller_session_id = RedisVoter.read(voter.id)["caller_session_id"]
-    RedisCallerSession.read(caller_session_id)['session_key']
+    redis = RedisConnection.call_flow_connection    
+    redis.pipelined do
+      RedisCallAttempt.disconnect_call(self.id, call.recording_duration, call.recording_url, redis)
+      RedisVoter.set_status(voter.id, CallAttempt::Status::SUCCESS, redis)
+      RedisVoter.read(voter.id, redis)["caller_session_id"]
+    end    
   end
   
   
   def schedule_for_later(date)
     scheduled_date = DateTime.strptime(date, "%m/%d/%Y %H:%M").to_time
-    RedisCallAttempt.schedule_for_later(self.id, scheduled_date)
-    RedisVoter.schedule_for_later(voter.id, scheduled_date)
+    redis = RedisConnection.call_flow_connection    
+    redis.pipelined do    
+      RedisCallAttempt.schedule_for_later(self.id, scheduled_date, redis)
+      RedisVoter.schedule_for_later(voter.id, scheduled_date, redis)
+    end
   end
 
   def wrapup_now
-    RedisCallAttempt.wrapup(self.id)
+    redis = RedisConnection.call_flow_connection    
+    RedisCallAttempt.wrapup(self.id, redis)
   end
   
   def capture_answer_as_no_response
