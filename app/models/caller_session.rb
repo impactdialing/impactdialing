@@ -157,7 +157,7 @@ class CallerSession < ActiveRecord::Base
   
   def end_session
     RedisCallerSession.end_session(self.id)
-    # update_attributes(on_call: false, available_for_call:  false, endtime:  Time.now)
+
   end
   
   def account_not_activated?
