@@ -127,19 +127,19 @@ class CallAttempt < ActiveRecord::Base
     voter.update_attributes(status: campaign.use_recordings? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP, caller_session: nil)    
   end
   
+  def end_answered_by_machine
+    update_attributes(wrapup_time: Time.now, call_end: Time.now)    
+    voter.update_attributes(last_call_attempt_time:  Time.now, call_back: false)                
+  end
+  
     
   def end_unanswered_call
-    if [CallAttempt::Status::VOICEMAIL, CallAttempt::Status::HANGUP].include?(status)
-      update_attributes(wrapup_time: Time.now, call_end: Time.now)    
-      voter.update_attributes(last_call_attempt_time:  Time.now, call_back: false)            
-    else
-      update_attributes(status:  CallAttempt::Status::MAP[call.call_status], wrapup_time: Time.now, call_end: Time.now)          
-      begin
-        voter.update_attributes(status:  CallAttempt::Status::MAP[call.call_status], last_call_attempt_time:  Time.now, call_back: false)
-      rescue ActiveRecord::StaleObjectError
-        voter_to_update = Voter.find(voter.id)
-        voter_to_update.update_attributes(status:  CallAttempt::Status::MAP[call.call_status], last_call_attempt_time:  Time.now, call_back: false)
-      end
+    update_attributes(status:  CallAttempt::Status::MAP[call.call_status], wrapup_time: Time.now, call_end: Time.now)          
+    begin
+      voter.update_attributes(status:  CallAttempt::Status::MAP[call.call_status], last_call_attempt_time:  Time.now, call_back: false)
+    rescue ActiveRecord::StaleObjectError
+      voter_to_update = Voter.find(voter.id)
+      voter_to_update.update_attributes(status:  CallAttempt::Status::MAP[call.call_status], last_call_attempt_time:  Time.now, call_back: false)
     end
   end
   

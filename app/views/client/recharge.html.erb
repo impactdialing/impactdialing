@@ -11,11 +11,11 @@
 
 	  <p>
 	    <label>If the balance falls below</label>
-		<%= select(:account, :autorecharge_trigger, @recharge_options) %>
+  	  <%= f.text_field :autorecharge_trigger %>  
 	  </p>
 	  <p>
 	    <label>Add this amount to the balance</label>
-		<%= select(:account, :autorecharge_amount, @recharge_options) %>
+      <%= f.text_field :autorecharge_amount %> 
 	  </p>
 </fieldset>
 <div class="buttons">
