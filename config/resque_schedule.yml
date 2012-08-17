@@ -20,3 +20,11 @@ debit_job:
   args: 
   description: "This job processes debits from user account"
 
+deactivate_monitor:
+  cron: "*/2 * * * *"
+  class: DebiterJob
+  queue: debit_worker_job
+  args: 
+  description: "This job debits money"
+
+

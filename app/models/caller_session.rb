@@ -16,7 +16,7 @@ class CallerSession < ActiveRecord::Base
   scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
   scope :on_campaign, lambda{|campaign| where("campaign_id = #{campaign.id}") unless campaign.nil?}  
   scope :for_caller, lambda{|caller| where("caller_id = #{caller.id}") unless caller.nil?}  
-  scope :debit_not_processed, where(debited: "0").where('endtime is not null')
+  scope :debit_not_processed, lambda { where(:debited => "0", :caller_type => CallerType::PHONE).where('endtime is not null') }
   scope :campaigns_on_call, select("campaign_id").on_call.group("campaign_id")
   
   has_one :voter_in_progress, :class_name => 'Voter'
@@ -150,7 +150,7 @@ class CallerSession < ActiveRecord::Base
   
   def wrapup_attempt_in_progress
     attempt_in_progress.try(:update_attributes, {:wrapup_time => Time.now})
-    attempt_in_progress.try(:capture_answer_as_no_response)          
+    # attempt_in_progress.try(:capture_answer_as_no_response)          
   end
   
   def end_session
@@ -267,15 +267,15 @@ class CallerSession < ActiveRecord::Base
    end
    
    def self.caller_time(caller, campaign, from, to)
-     CallerSession.for_caller(caller).on_campaign(campaign).between(from, to).where("tCaller is NOT NULL").sum('ceil(TIMESTAMPDIFF(SECOND ,starttime,endtime)/60)').to_i
+     CallerSession.for_caller(caller).on_campaign(campaign).between(from, to).where("caller_type = 'Phone' ").sum('ceil(TIMESTAMPDIFF(SECOND ,starttime,endtime)/60)').to_i
    end   
    
    def call_not_connected?
-     starttime.nil? || endtime.nil? || caller_type == CallerType::TWILIO_CLIENT
+     starttime.nil? || endtime.nil? || caller_type == nil || caller_type == CallerType::TWILIO_CLIENT
    end
 
    def call_time
-   ((starttime - endtime)/60).ceil
+   ((endtime - starttime)/60).ceil
    end
    
    

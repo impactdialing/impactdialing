@@ -12,7 +12,7 @@ module CallPayment
       return if payment.nil?      
       payment.debit_call_charge(amount_to_debit, account)
       self.update_attributes(payment_id: payment.try(:id))
-      account.check_autorecharge(payment.amount_remaining)
+      account.check_autorecharge(account.current_balance)
     end
     
     def amount_to_debit
