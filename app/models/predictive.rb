@@ -19,9 +19,14 @@ class Predictive < Campaign
   def dial_resque
     num_to_call = number_of_voters_to_dial
     Rails.logger.info "Campaign: #{self.id} - num_to_call #{num_to_call}"    
-    return if  num_to_call <= 0    
-    update_attributes(calls_in_progress: true)
-    Resque.enqueue(DialerJob, self.id, num_to_call)
+    return if  num_to_call <= 0
+    set_calls_in_progress
+    Sidekiq::Client.push('queue' => 'dialer_worker', 'class' => DialerJob, 'args' => [self.id, num_to_call])
+  end
+  
+  def set_calls_in_progress
+    Resque.redis.set("dial:#{campaign.id}", true)
+    Resque.redis.expire("dial:#{campaign.id}", 60)        
   end
   
   def number_of_voters_to_dial
