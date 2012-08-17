@@ -3,7 +3,7 @@ rails_env = ENV['RAILS_ENV'] || 'development'
 require 'resque_scheduler'
 
 redis_config = YAML.load_file(Rails.root.to_s + "/config/redis.yml")
-uri = URI.parse(redis_config[rails_env])
+uri = URI.parse(redis_config[rails_env]['resque_sidekiq'])
 Resque.redis = Redis.new(:host => uri.host, :port => uri.port)
 Resque.schedule = YAML.load_file("#{Rails.root}/config/resque_schedule.yml")
 
