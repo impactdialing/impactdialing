@@ -13,9 +13,9 @@ class DialerJob
        concurrency = 8
        voters_to_dial = campaign.choose_voters_to_dial(nums_to_call)
        EM::Synchrony::Iterator.new(voters_to_dial, concurrency).map do |voter, iter|
-         voter.dial_em(iter)
+         voter.dial_predictive_em(iter)
        end
-       redis.set "dial:#{campaign.id}" false
+       Resque.redis.del("dial:#{campaign.id}")
        EventMachine.stop
      end
    end
