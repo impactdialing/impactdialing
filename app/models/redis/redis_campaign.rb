@@ -1,4 +1,3 @@
-require Rails.root.join("lib/redis_connection")
 require 'redis/hash_key'
 require 'redis/set'
 
@@ -10,19 +9,16 @@ class RedisCampaign
   end
   
   def self.campaign(campaign_id)
-    redis = RedisConnection.call_flow_connection
-    Redis::HashKey.new("campaign:#{campaign_id}", redis)    
+    Redis::HashKey.new("campaign:#{campaign_id}", $redis_call_flow_connection)    
   end
   
   def self.add_running_campaign(campaign_id, type)
-    redis = RedisConnection.call_flow_connection
-    campaign_set = Redis::Set.new("running_campaigns", redis)
+    campaign_set = Redis::Set.new("running_campaigns", $redis_call_flow_connection)
     campaign_set << {campaign_id: campaign_id, type: type}
   end
   
   def self.running_campaigns
-    redis = RedisConnection.call_flow_connection
-    campaign_set = Redis::Set.new("running_campaigns", redis)
+    campaign_set = Redis::Set.new("running_campaigns", $redis_call_flow_connection)
     campaign_set.members
   end
   

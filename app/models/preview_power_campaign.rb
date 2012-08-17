@@ -13,8 +13,7 @@ module PreviewPowerCampaign
       sample_voters = all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.limit(7)
       voter = sample_voters.sample
     end
-    redis_connection = RedisConnection.call_flow_connection
-    RedisVoter.load_voter_info(voter.id, voter, redis_connection) unless voter.nil?
+    RedisVoter.load_voter_info(voter.id, voter) unless voter.nil?
     voter
   end  
   

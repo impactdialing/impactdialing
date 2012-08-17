@@ -6,9 +6,8 @@ module LeadEvents
   module InstanceMethods
     
     def publish_voter_connected
-      redis_connection = RedisConnection.call_flow_connection
-      caller_session_id = RedisVoter.read(voter.id, redis_connection)['caller_session_id']
-      caller_session = RedisCallerSession.read(caller_session_id, redis_connection)      
+      caller_session_id = RedisVoter.read(voter.id)['caller_session_id']
+      caller_session = RedisCallerSession.read(caller_session_id)      
       unless caller_session_id.nil?
         EM.run {
           if caller_session['type'] == 'WebuiCallerSession'
@@ -22,9 +21,8 @@ module LeadEvents
     end    
     
     def publish_voter_disconnected
-      redis_connection = RedisConnection.call_flow_connection
-      caller_session_id = RedisVoter.read(voter.id, redis_connection)['caller_session_id']
-      caller_session = RedisCallerSession.read(caller_session_id, redis_connection)      
+      caller_session_id = RedisVoter.read(voter.id)['caller_session_id']
+      caller_session = RedisCallerSession.read(caller_session_id)      
       unless caller_session_id.nil?
         EM.run {
           if caller_session['type'] == 'WebuiCallerSession'

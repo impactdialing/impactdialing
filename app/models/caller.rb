@@ -1,4 +1,3 @@
-require Rails.root.join("lib/redis_connection")
 class Caller < ActiveRecord::Base
   include Rails.application.routes.url_helpers
   include Deletable
@@ -129,8 +128,7 @@ class Caller < ActiveRecord::Base
     else
       caller_session =  WebuiCallerSession.create(on_call: false, available_for_call: false, session_key: session_key, campaign: campaign , sid: sid, starttime: Time.now, caller_type: caller_type)
     end
-    redis_connection = RedisConnection.call_flow_connection
-    RedisCallerSession.load_caller_session_info(caller_session.id, caller_session, redis_connection)        
+    RedisCallerSession.load_caller_session_info(caller_session.id, caller_session)        
     caller_sessions << caller_session
     caller_session
   end

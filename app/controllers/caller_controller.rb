@@ -1,5 +1,4 @@
 require 'new_relic/agent/method_tracer'
-require Rails.root.join("lib/redis_connection")
 class CallerController < ApplicationController
   include NewRelic::Agent::MethodTracer
   layout "caller"
@@ -28,8 +27,7 @@ class CallerController < ApplicationController
   def call_voter
     caller = Caller.find(params[:id])
     caller_session = caller.caller_sessions.find(params[:session_id])    
-    redis_connection = RedisConnection.call_flow_connection
-    voter = RedisVoter.read(params[:voter_id], redis_connection)
+    voter = RedisVoter.read(params[:voter_id], $redis_call_flow_connection)
     caller_session.publish_calling_voter
     Twillio.dial(voter, caller_session)
     # caller_session.dial_em(Voter.find(params[:voter_id])) unless params[:voter_id].blank?
