@@ -1,8 +1,8 @@
 development:
-  localhost:6379
-  
+  resque_sidekiq: localhost:6379    
+    
 test:
-  localhost:6379
+  resque_sidekiq: localhost:6379
     
 heroku_staging:
   resque_sidekiq: redis://10.254.238.226:6379    
