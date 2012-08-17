@@ -49,9 +49,8 @@ class WebuiCallerSession < CallerSession
   end
   
   def call_not_wrapped_up?    
-    redis_connection = RedisConnection.call_flow_connection
-    attempt_in_progress_id = RedisCallerSession.read(self.id, redis_connection)['attempt_in_progress']
-    RedisCallAttempt.call_not_wrapped_up?(attempt_in_progress_id, redis_connection)
+    attempt_in_progress_id = RedisCallerSession.read(self.id)['attempt_in_progress']
+    RedisCallAttempt.call_not_wrapped_up?(attempt_in_progress_id)
   end
     
   def publish_async(event, data)    

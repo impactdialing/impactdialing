@@ -1,4 +1,3 @@
-require Rails.root.join("lib/redis_connection")
 class CallerSession < ActiveRecord::Base
   include Rails.application.routes.url_helpers
   include CallCenter
@@ -157,8 +156,7 @@ class CallerSession < ActiveRecord::Base
   end
   
   def end_session
-    redis_connection = RedisConnection.call_flow_connection
-    RedisCallerSession.end_session(self.id, redis_connection)
+    RedisCallerSession.end_session(self.id)
   end
   
   def account_not_activated?
@@ -213,8 +211,7 @@ class CallerSession < ActiveRecord::Base
   end
 
   def disconnected?
-    redis_connection = RedisConnection.call_flow_connection
-    RedisCallerSession.disconnected?(self.id, redis_connection)
+    RedisCallerSession.disconnected?(self.id)
   end
   
   def publish(event, data)
@@ -310,10 +307,9 @@ class CallerSession < ActiveRecord::Base
    end
    
    def start_conference    
-     redis_connection = RedisConnection.call_flow_connection
-     redis_connection.pipelined do
-       RedisAvailableCaller.add_caller(campaign.id, self.id, redis_connection)
-       RedisCallerSession.start_conference(self.id, redis_connection)
+     $redis_call_flow_connection.pipelined do
+       RedisAvailableCaller.add_caller(campaign.id, self.id)
+       RedisCallerSession.start_conference(self.id)
      end
    end
    
