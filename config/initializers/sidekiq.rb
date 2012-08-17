@@ -7,5 +7,5 @@ Sidekiq.configure_server do |config|
 end
 
 Sidekiq.configure_client do |config|
-  config.redis = { :url => redis_config[rails_env]['resque_sidekiq']}
+  config.redis = { :url => redis_config[rails_env]['resque_sidekiq'] }
 end
