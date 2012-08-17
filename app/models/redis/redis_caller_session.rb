@@ -30,6 +30,10 @@ class RedisCallerSession
     caller_session(caller_session_id, redis_connection).store("voter_in_progress", voter_id)
   end
   
+  def self.voter_in_progress?(caller_session_id, redis_connection)
+    caller_session_id(caller_session_id, redis_connection).has_key?("voter_in_progress")
+  end
+  
     
   def self.end_session(caller_session_id, redis_connection)
     caller_session(caller_session_id, redis_connection).store("end_time", Time.now)
