@@ -4,7 +4,7 @@ class MonitorCampaign
   def initialize(campaign_id, num_callers_logged_in, num_on_call, num_wrapup, num_on_hold, num_live_lines, num_ringing_lines, 
     num_available, num_remaining)
     campaign = Campaign.find(campaign_id)
-    redis = RedisConnection.monitor_connection
+    redis = $redis_monitor_connection
     redis.hset "monitor_campaign:#{campaign_id}", "timestamp", Time.now
     redis.hset "monitor_campaign:#{campaign_id}", "name", campaign.name
     redis.hset "monitor_campaign:#{campaign_id}", "id", campaign.id
