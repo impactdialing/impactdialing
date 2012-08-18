@@ -232,7 +232,7 @@ describe Voter do
       it "is dialed" do
         caller_session = Factory(:caller_session, :available_for_call => true, :on_call => true, campaign: campaign)
         campaign.stub(:time_period_exceed?).and_return(false)
-        voter.dial_em
+        voter.dial
         call_attempt = CallAttempt.first
         call_attempt.sid.should == "sid"
         call_attempt.status.should == CallAttempt::Status::RINGING
@@ -243,7 +243,7 @@ describe Voter do
         Time.stub!(:now).and_return(time_now)
         caller_session = Factory(:caller_session, :available_for_call => true, :on_call => true, campaign: campaign)
         campaign.stub(:time_period_exceed?).and_return(false)
-        voter.dial_predictive
+        voter.dial
         call_attempt = voter.call_attempts.last
         voter.last_call_attempt.should == call_attempt
         DateTime.parse(voter.last_call_attempt_time.to_s).should == DateTime.parse(time_now.utc.to_s)
@@ -252,7 +252,7 @@ describe Voter do
       it "updates the call_attempts campaign" do
         caller_session = Factory(:caller_session, :available_for_call => true, :on_call => true, campaign: campaign)
         campaign.stub(:time_period_exceed?).and_return(false)
-        voter.dial_em
+        voter.dial
         call_attempt = voter.call_attempts.last
         call_attempt.campaign.should == voter.campaign
       end
@@ -261,7 +261,7 @@ describe Voter do
     it "dials the voter and hangs up on answering machine when not using recordings" do
       Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {"FallbackUrl"=>"blah", 'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
       campaign.stub(:time_period_exceed?).and_return(false)
-      voter.dial_em
+      voter.dial
     end
 
     it "dials the voter and continues on answering machine when using recordings" do
@@ -270,7 +270,7 @@ describe Voter do
       call_back = mock
       twilio_lib.should_receive(:make_call).and_return(call_back)
       voter.campaign = campaign
-      voter.dial_em
+      voter.dial
     end
 
     it "dials the voter with the campaigns answer detection timeout" do
@@ -279,7 +279,7 @@ describe Voter do
       Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {"FallbackUrl"=>"blah", 'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
       voter.campaign = campaign
       campaign.stub(:time_period_exceed?).and_return(false)
-      voter.dial_em
+      voter.dial
     end
 
     it "dials the voter without IFMachine if AMD detection turned off" do
@@ -287,7 +287,7 @@ describe Voter do
       Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {"FallbackUrl"=>"blah", 'StatusCallback'=> anything, 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
       voter.campaign = campaign1
       campaign1.stub(:time_period_exceed?).and_return(false)
-      voter.dial_em
+      voter.dial
     end
 
 

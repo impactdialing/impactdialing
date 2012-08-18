@@ -27,34 +27,34 @@ class MonitorCampaign
     $redis_monitor_connection.zadd("monitoring", Time.now.to_i,  "monitor_campaign:#{campaign_id}")
   end
   
-  def monitor_campaign(campaign_id)
+  def self.monitor_campaign(campaign_id)
     Redis::HashKey.new("monitor_campaign:#{campaign_id}", $redis_monitor_connection)    
   end   
   
   ['callers_logged_in', 'on_call', 'on_hold', 'wrapup', 'live_lines', 'ringing_lines', 'available', 'remaining' ].each do |value|
     define_singleton_method("increment_#{value}") do |campaign_id, num|
-      monitor_campaign.incrby(value, num)
+      monitor_campaign(campaign_id).incrby(value, num)
     end
     
     define_singleton_method("decrement_#{value}") do |campaign_id, num|
-      monitor_campaign.incrby(value, -num)
+      monitor_campaign(campaign_id).incrby(value, -num)
     end
     
     define_singleton_method("#{value}") do |campaign_id|
-      monitor_campaign.fetch(value)
+      monitor_campaign(campaign_id).fetch(value)
     end
   end
   
   def self.name(campaign_id)
-    monitor_campaign.fetch('name')
+    monitor_campaign(campaign_id).fetch('name')
   end
   
   def self.add_caller_status(caller_id, status)
-    monitor_connection.store("caller:#{caller_id}", status)
+    monitor_campaign(campaign_id).store("caller:#{caller_id}", status)
   end
   
   def self.remove_caller(caller_id)
-    monitor_connection.delete("caller:#{caller_id}")
+    monitor_campaign(campaign_id).delete("caller:#{caller_id}")
   end
   
   def self.campaign_overview_info(campaign)
