@@ -1,12 +1,15 @@
 RAILS_ROOT = File.expand_path('../..', __FILE__)
 require File.join(RAILS_ROOT, 'config/environment')
 require File.join(RAILS_ROOT, 'lib/redis_connection')
+require "eventmachine"
+require 'em-http'
+require 'em-hiredis'
 require 'em-http-request'
 
 module MonitorTab
   module Pusher
     def self.redis
-      @redis = RedisConnection.monitor_connection_em
+      @redis = EM::Hiredis.connect(redis_config[rails_env]['monitor_redis'])      
     end
 
     def self.next

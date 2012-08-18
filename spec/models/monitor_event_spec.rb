@@ -79,7 +79,7 @@ describe MonitorEvent do
     end    
     
     it "should decrement callers logged in" do
-      MonitorCampaign.callers_logged_in(@campaign.id).should eq("4")
+      MonitorCampaign.callers_logged_in(@campaign.id).should eq("0")
     end
     
   end
