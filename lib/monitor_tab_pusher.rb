@@ -11,7 +11,7 @@ module MonitorTab
     
     def self.redis
       redis_config = YAML.load_file(Rails.root.to_s + "/config/redis.yml")
-      @redis ||= EM::Hiredis.connect(redis_config[rails_env]['monitor_redis'])      
+      @redis ||= EM::Hiredis.connect(redis_config[ENV['RAILS_ENV']]['monitor_redis'])      
     end
 
     def self.next
