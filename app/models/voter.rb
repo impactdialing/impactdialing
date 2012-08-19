@@ -125,7 +125,7 @@ class Voter < ActiveRecord::Base
   end
   
   
-  def dial_em(iter)
+  def dial_predictive_em(iter)
     call_attempt = new_call_attempt(self.campaign.type)
     twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)  
     Rails.logger.info "#{call_attempt.id} - before call"        
