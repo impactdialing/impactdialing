@@ -28,7 +28,7 @@ class AccountUsage
   end
   
   def callers_status_times
-   CallAttempt.where("campaign_id in (?)",@campaign_ids).between(@from_date, @to_date).group("status").sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)')
+   CallAttempt.where("campaign_id in (?) and caller_id is null",@campaign_ids).between(@from_date, @to_date).group("status").sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)')
   end
   
   
