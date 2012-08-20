@@ -9,7 +9,7 @@ class MonitorEvent
   
   def self.create_caller_notification(campaign_id, caller_session_id, event, type="update_caller_info")    
     MonitorSession.sessions(campaign_id).each do|monitor_session|
-      $redis_monitor_connection.rpush('monitor_notifications', {channel: monitor_session, campaign: campaign_id, caller_session: caller_session_id, event: event, type: type}.to_json)
+      $redis_monitor_connection.rpush('monitor_notifications', {channel: monitor_session, campaign: campaign_id, caller_session: caller_session_id.to_s, event: event, type: type}.to_json)
     end
   end
   
