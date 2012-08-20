@@ -114,7 +114,7 @@ Monitors.prototype.add_caller_connected = function(){
 	  var caller_selector = 'tr#caller_'+data.caller_session;
       var caller = ich.caller(data);
 	  $('#caller_table').children().append(caller);
-	  $($(caller_selector).find('.timer')).stopwatch();
+	  $($(caller_selector).find('.timer')).stopwatch('start');
     }
   });  
 }
