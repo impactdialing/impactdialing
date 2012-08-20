@@ -26,7 +26,7 @@ class Predictive < Campaign
   
   def set_calls_in_progress
     Resque.redis.set("dial:#{self.id}", true)
-    Resque.redis.expire("dial:#{self.id}", 60)        
+    Resque.redis.expire("dial:#{self.id}", 20)        
   end
   
   def number_of_voters_to_dial
