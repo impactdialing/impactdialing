@@ -14,12 +14,12 @@
     
     <tr>
       <td>Abandoned Calls</td>
-      <td><%= sanitize_dials(@status_usage[CallAttempt::Status::ABANDONED]) %></td>
+      <td><%= sanitize_dials(@status_usage[CallAttempt::Status::ABANDONED]).to_i %></td>
     </tr>
     
     <tr>
       <td>Voice Mail</td>
-      <td><%= sanitize_dials(@status_usage[CallAttempt::Status::VOICEMAIL]) + sanitize_dials(@status_usage[CallAttempt::Status::HANGUP]) %></td>
+      <td><%= sanitize_dials(@status_usage[CallAttempt::Status::VOICEMAIL]).to_i + sanitize_dials(@status_usage[CallAttempt::Status::HANGUP]).to_i %></td>
     </tr>
     
     
