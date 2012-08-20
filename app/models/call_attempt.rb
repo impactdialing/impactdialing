@@ -85,7 +85,7 @@ class CallAttempt < ActiveRecord::Base
   end
       
   def abandon_call
-    update_attributes(status: CallAttempt::Status::ABANDONED, connecttime: Time.now, wrapup_time: Time.now)
+    update_attributes(status: CallAttempt::Status::ABANDONED, connecttime: Time.now, wrapup_time: Time.now, call_end: Time.now)
     voter.update_attributes(:status => CallAttempt::Status::ABANDONED, call_back: false, caller_session: nil, caller_id: nil)
   end
     
