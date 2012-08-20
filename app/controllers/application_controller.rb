@@ -201,5 +201,10 @@ class ApplicationController < ActionController::Base
       return
     end
   end
+  
+  def sanitize_dials(dial_count)
+    dial_count.nil? ? 0 : dial_count
+  end
+  
 
 end
