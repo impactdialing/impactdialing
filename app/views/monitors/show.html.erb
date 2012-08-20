@@ -18,5 +18,6 @@
   monitors.setup_twilio("<%= @token %>")
   $(window).bind("beforeunload", function(){
     monitors.de_activate_monitor("<%= @campaign.id %>", $('#monitor_session_id').val());
+    pusher.disconnect();
   });      
 </script>
