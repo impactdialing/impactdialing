@@ -41,8 +41,8 @@ module Client
       account_usage = AccountUsage.new(@account, @from_date, @to_date)
       @billiable_total = account_usage.callers_billable_usage
       @status_usage = account_usage.callers_status_times
-      @final_total = @billiable_total.values.inject(0){|sum,x| sum+x} + sanitize_dials(@status_usage[CallAttempt::Status::ABANDONED]) +
-      sanitize_dials(@status_usage[CallAttempt::Status::VOICEMAIL]) + sanitize_dials(@status_usage[CallAttempt::Status::HANGUP])
+      @final_total = @billiable_total.values.inject(0){|sum,x| sum+x} + sanitize_dials(@status_usage[CallAttempt::Status::ABANDONED]).to_i +
+      sanitize_dials(@status_usage[CallAttempt::Status::VOICEMAIL]).to_i + sanitize_dials(@status_usage[CallAttempt::Status::HANGUP]).to_i
     end
     
         
