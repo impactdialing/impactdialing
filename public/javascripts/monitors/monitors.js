@@ -10,6 +10,11 @@ var Monitors = function(channel){
 	this.remove_caller();
 	this.bind_caller_actions();
 	this.call_status = {"Call in progress": "On call", "Call completed with success.": "Wrap up", "On hold": "On hold", "Ringing":"On hold" }
+	var timers = $('.timer');
+	$.each(timers, function(){
+		$(this).stopwatch('start');
+	});
+	
 };
 
 Monitors.prototype.bind_caller_actions = function(){
