@@ -22,9 +22,13 @@ class AccountUsage
     lead_times = CallAttempt.where("caller_id in (?)",@caller_ids).between(@from_date, @to_date).group("caller_id").sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)')
     total_times = {}      
     @caller_ids.each do |caller_id|
-      total_times[caller_id] = sanitize(caller_times[caller_id]).to_i + sanitize(lead_times[caller_id]).to_i
+      total_times[caller_id] = sanitize(caller_times[caller_id]).to_i + sanitize(lead_times[caller_id]).to_i      
     end
     total_times    
+  end
+  
+  def callers_status_times
+   CallAttempt.where("campaign_id in (?)",@campaign_ids).between(@from_date, @to_date).group("status").sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)')
   end
   
   

@@ -40,6 +40,9 @@ module Client
       @from_date, @to_date = set_date_range_account(@account, params[:from_date], params[:to_date])
       account_usage = AccountUsage.new(@account, @from_date, @to_date)
       @billiable_total = account_usage.callers_billable_usage
+      @status_usage = account_usage.callers_status_times
+      @final_total = @billiable_total.values.inject(0){|sum,x| sum+x} + sanitize_dials(@status_usage[CallAttempt::Status::ABANDONED]) +
+      sanitize_dials(@status_usage[CallAttempt::Status::VOICEMAIL]) + sanitize_dials(@status_usage[CallAttempt::Status::HANGUP])
     end
     
         
