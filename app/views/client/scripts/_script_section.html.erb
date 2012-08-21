@@ -1,0 +1,13 @@
+<fieldset class="nested-fields script_section">
+  <div class="ui-icon ui-icon-arrowthick-2-n-s" style="top: -42px;left: -14px;position: relative;"></div>
+  <legend class="script_label">Script Text 1</legend>
+    <%= f.hidden_field :id, {"class"=> "identity"} %>  
+
+  <p>
+    <label>Script Text:</label>
+    <%= f.text_field :section %>
+  </p>
+  
+  <%= link_to_remove_association "Delete this script text", f , {:class => "action secondary delete_script_text"}%>
+  
+</fieldset>
