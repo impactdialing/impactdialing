@@ -90,8 +90,6 @@
 
 <!-- end form tag hack -->
 
-<fieldset>
-  <legend>Script</legend>
   
   <% unless @campaign.script %>
     <div id="script" class="rt script">There is no script assigned to this campaign.</div>
@@ -130,7 +128,6 @@
   <% end %>
   
   
-</fieldset>
 
 <%= render "transfer" %>
 <%= render 'actions' %>
