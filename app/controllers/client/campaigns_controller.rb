@@ -2,118 +2,73 @@ module Client
   class CampaignsController < ::CampaignsController
     layout 'client'
 
+    before_filter :new_campaign, :only => [:new, :create]
+    before_filter :load_campaign, :only => [:show, :update, :destroy]
+    before_filter :load_other_stuff, :only => [:new, :create, :show, :update]
+
     def new
-      @campaign = Progressive.new(:account_id => account.id)
-      @campaign.save(:validate => false)
-      @callers = account.callers.active
-      @lists = @campaign.voter_lists
-      @scripts = account.scripts.manual.active
-      @voter_list = @campaign.voter_lists.new
+      @campaign.type = "Progressive"
+      @campaign.time_zone = "Pacific Time (US & Canada)"
+      @campaign.start_time = Time.parse("9am")
+      @campaign.end_time = Time.parse("9pm")
+    end
+
+    def create
+      @error_action = 'new'
+      save_campaign
     end
 
     def show
-      check_warning
-      @breadcrumb=[{"Campaigns" => client_campaigns_path}, @campaign.name]
+    end
 
-      @callers = account.callers.active
-      @lists = @campaign.voter_lists
-      @scripts = account.scripts.manual.active
-      @voter_list = @campaign.voter_lists.new
-      if (@campaign.robo)
-        redirect_to broadcast_campaign_path(@campaign)
-      end
+    def update
+      @error_action = 'show'
+      save_campaign
     end
 
     def index
-      @breadcrumb="Campaigns"
       @campaigns = account.campaigns.active.manual.paginate :page => params[:page], :order => 'id desc'
     end
 
     def destroy
-      unless @campaign.callers.empty? 
+      if @campaign.callers.any?
         flash_message(:notice, "There are currently callers assigned to this campaign. Please assign them to another campaign before deleting this one.")
-        redirect_to :back
-        return
-      end
-      if !@campaign.blank?
+      else
         @campaign.update_attribute(:active, false)
+        flash_message(:notice, "Campaign deleted")
       end
-      flash_message(:notice, "Campaign deleted")
-      redirect_to :back
+      redirect_to :index
     end
 
     def deleted
+      self.instance_variable_set("@#{type_name.pluralize}", Campaign.deleted.manual.for_account(@user.account).paginate(:page => params[:page], :order => 'id desc'))
       render 'campaigns/deleted'
     end
 
-    def setup_campaigns_paths
-      @deleted_campaigns_path = client_deleted_campaigns_path
-      @campaigns_path = client_campaigns_path
+    private
+
+    def new_campaign
+      @campaign = account.campaigns.new
     end
 
-    def update
-      @campaign = Campaign.find_by_id(params[:id])
-      @campaign.account = account
-      
-      @campaign.update_attributes(params[:campaign])
-      @campaign.type = params[:campaign][:type]
-      begin
-        @campaign.save!      
-      rescue ActiveRecord::RecordInvalid => invalid
-        flash_message(:error, invalid.record.errors[:base].join("\n"))
-        redirect_to :back
-        return
-      end
-      @scripts = @campaign.account.scripts
+    def load_campaign
+      @campaign = Campaign.find(params[:id])
+    end
+
+    def load_other_stuff
+      @callers = account.callers.active
+      @scripts = account.scripts.manual.active
       @lists = @campaign.voter_lists
       @voter_list = @campaign.voter_lists.new
-      if @campaign.valid?
-        @campaign.script ||= @campaign.account.scripts.first
-        @campaign.disable_voter_list
-        params[:voter_list_ids].each { |id| VoterList.enable_voter_list(id) } unless params[:voter_list_ids].blank?
+    end
+
+    def save_campaign
+      if @campaign.update_attributes(params[:campaign])
         flash_message(:notice, "Campaign saved")
         redirect_to client_campaigns_path
       else
-        @callers = account.callers.active
-        respond_to do |format|
-          format.js 
-          format.html{render :action =>"show"}
-        end
+        render :action => @error_action
       end
     end
-
-    def create
-      @campaign = new_type_campaign(params)
-      @campaign.account = account
-      @campaign.script ||= @campaign.account.scripts.first
-      if @campaign.save
-        if params[:listsSent]
-          @campaign.disable_voter_list
-          params[:voter_list_ids].each { |id| enable_voter_list(id) } unless params[:voter_list_ids].blank?
-        end
-        flash_message(:notice, "Campaign saved")
-        redirect_to client_campaigns_path
-      else
-        render :action=>"new"
-      end
-    end
-    
-    def load_deleted
-      self.instance_variable_set("@#{type_name.pluralize}", Campaign.deleted.manual.for_account(@user.account).paginate(:page => params[:page], :order => 'id desc'))
-    end
-    
-    private
-    
-    def new_type_campaign (params)
-      if params[:campaign][:type] == "Preview"
-        Preview.new(params[:campaign])
-      elsif params[:campaign][:type] == "Progressive"
-        Progressive.new(params[:campaign])
-      elsif params[:campaign][:type] == "Predictive"
-        Predictive.new(params[:campaign])
-      end
-    end
-    
-
   end
 end

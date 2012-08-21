@@ -3,6 +3,7 @@ require Rails.root.join("lib/twilio_lib")
 class Campaign < ActiveRecord::Base
   include Deletable
 
+  attr_accessible :type, :name, :caller_id, :script_id, :acceptable_abandon_rate, :time_zone, :start_time, :end_time, :recycle_rate, :answering_machine_detect
 
   has_many :caller_sessions
   has_many :voter_lists, :conditions => {:active => true}
@@ -20,6 +21,8 @@ class Campaign < ActiveRecord::Base
   belongs_to :recording
   has_many :downloaded_reports
 
+  accepts_nested_attributes_for :voter_lists
+
   delegate :questions_and_responses, :to => :script
 
   scope :robo, lambda { where(:type => 'Robo') }
@@ -33,10 +36,8 @@ class Campaign < ActiveRecord::Base
   }
   scope :for_caller, lambda { |caller| {:include => [:caller_sessions], :conditions => {"caller_sessions.caller_id" => caller.id}}}
 
-  before_create :create_uniq_pin
-
   validates :name, :presence => true
-  validates :caller_id, :presence => true, :unless => :new_campaign
+  validates :caller_id, :presence => true
   validates :caller_id, :numericality => {:on => :update}, :length => {:on => :update, :minimum => 10, :maximum => 10}, :unless => Proc.new{|campaign| campaign.caller_id && campaign.caller_id.start_with?('+')}
   validate :set_caller_id_error_msg
   validate :campaign_type_changed
@@ -44,8 +45,6 @@ class Campaign < ActiveRecord::Base
   cattr_reader :per_page
   @@per_page = 25
 
-  before_validation :set_untitled_name
-  before_save :set_untitled_name
   before_validation :sanitize_caller_id
 
   module Type
@@ -61,8 +60,8 @@ class Campaign < ActiveRecord::Base
 
   def set_caller_id_error_msg
       if errors[:caller_id].any?
-        errors.add(:base, 'Your Caller ID must be a 10-digit North American phone number or begin with "+" and the country code.')
         errors[:caller_id].clear
+        errors.add(:caller_id, 'ID must be a 10-digit North American phone number or begin with "+" and the country code.')
       end
     end
 
@@ -71,7 +70,7 @@ class Campaign < ActiveRecord::Base
       errors.add(:base, 'You cannot change dialing modes while callers are logged in.')
     end
   end
-  
+
   def script_changed_called
     if script_id_changed? && call_attempts.count > 0
       errors.add(:base, I18n.t(:script_cannot_be_modified))
@@ -83,22 +82,8 @@ class Campaign < ActiveRecord::Base
     type == Type::PREVIEW || type == Type::PROGRESSIVE
   end
 
-  def set_untitled_name
-    self.name = "Untitled #{account.campaigns.count + 1}" if self.name.blank?
-  end
-
   def sanitize_caller_id
     self.caller_id = Voter.sanitize_phone(self.caller_id)
-  end
-
-  def create_uniq_pin
-    pin = nil
-
-    loop do
-      pin = rand.to_s[2..6]
-      break unless Campaign.find_by_campaign_id(pin)
-    end
-    self.campaign_id = pin
   end
 
   def set_answering_machine_detect
@@ -171,7 +156,7 @@ class Campaign < ActiveRecord::Base
     answer_count = Answer.select("possible_response_id").where("campaign_id = ?", self.id).within(from_date, to_date).group("possible_response_id").count
     total_answers = Answer.from("answers use index (index_answers_count_question)").where("campaign_id = ?",self.id).within(from_date, to_date).group("question_id").count
     questions = Question.where("id in (?)",question_ids.collect{|q| q.question_id})
-    questions.each do |question|        
+    questions.each do |question|
       result[question.text] = question.possible_responses.collect { |possible_response| possible_response.stats(answer_count, total_answers) }
       result[question.text] << {answer: "[No response]", number: 0, percentage:  0} unless question.possible_responses.find_by_value("[No response]").present?
     end
@@ -198,11 +183,8 @@ class Campaign < ActiveRecord::Base
   def abandoned_calls_time(from_date, to_date)
     call_attempts.between(from_date, to_date).with_status([CallAttempt::Status::ABANDONED]).sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)').to_i
   end
-  
+
   def cost_per_minute
     0.09
   end
-  
-
-
 end
