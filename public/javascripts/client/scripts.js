@@ -3,7 +3,8 @@ var Scripts = function(){
   var self = this;		
 
   self.display_question_numbers();
-  self.display_text_field_numbers();          
+  self.display_text_field_numbers();
+  self.display_script_text_numbers();          
 
 
   $("#script_elements").sortable({ cursor: 'crosshair' , axis: 'y' ,stop: function(event, ui) { 
