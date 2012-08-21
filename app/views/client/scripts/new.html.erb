@@ -29,6 +29,12 @@
         script.display_question_numbers();
         } 
       });
+      
+      $("#script_texts").sortable({ cursor: 'crosshair' , axis: 'y', stop: function(event, ui) { 
+        script.display_script_text_numbers();
+        } 
+      });
+      
       $(".possible_response_sortable").sortable({ cursor: 'crosshair' , containment: 'parent', axis: 'y' });
       
       $('#script_submit').click(function() {
@@ -42,6 +48,7 @@
       
       $('#call_results').bind('insertion-callback',            
         function() {
+          script.display_script_text_numbers();
           script.display_question_numbers();
           script.display_text_field_numbers();                              
           script.add_new_response_when_question_added();

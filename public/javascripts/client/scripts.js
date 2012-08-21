@@ -10,6 +10,17 @@ Scripts.prototype.display_question_numbers = function(){
 
 }
 
+Scripts.prototype.display_script_text_numbers = function(){
+  var script_text_count = 1;    
+  $.each($('.script_label'), function(){
+	if ($(this).parent('fieldset').attr('deleted') != "true") {
+      $(this).text("Script Text "+script_text_count++);
+    }
+  });
+
+}
+
+
 Scripts.prototype.set_question_order = function(){
   var question_order = 1;    
   $.each($('.question_order'), function(){
