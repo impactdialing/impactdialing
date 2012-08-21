@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120716080402) do
+ActiveRecord::Schema.define(:version => 20120821004658) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -255,7 +255,7 @@ ActiveRecord::Schema.define(:version => 20120716080402) do
     t.float    "ratio_override",           :default => 0.0
     t.string   "caller_id"
     t.boolean  "use_answering",            :default => true
-    t.string   "type",                     :default => "preview"
+    t.string   "type"
     t.integer  "recording_id"
     t.boolean  "use_recordings",           :default => false
     t.string   "callin_number",            :default => "4157020991"

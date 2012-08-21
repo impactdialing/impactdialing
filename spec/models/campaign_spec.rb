@@ -2,9 +2,9 @@ require "spec_helper"
 
 
 describe Campaign do
-  
+
   describe "voter" do
-  
+
    it "should return zero voters, if active_voter_list_ids is empty" do
      campaign = Factory(:campaign, :account => Factory(:account, :activated => true), type: Campaign::Type::PREVIEW)
      VoterList.should_receive(:active_voter_list_ids).with(campaign.id).and_return([])
@@ -18,22 +18,18 @@ describe Campaign do
      Voter.should_not_receive(:just_called_voters_call_back).with(campaign.id, [12, 123])
      campaign.voters("not called").length.should == 3
    end
-  
+
   end
 
   describe "validations" do
-    
+
     it 'return validation error, if caller id is either blank, not a number or not a valid length' do
       campaign = Campaign.new(:account => Factory(:account))
       campaign.save(:validate => false)
       campaign.update_attributes(:caller_id => '23456yuiid').should be_false
-      campaign.errors[:base].should == ['Your Caller ID must be a 10-digit North American phone number or begin with "+" and the country code.']
-      campaign.errors[:caller_id].should == []
-    end
-
-    it "should not have a blank caller_id" do
-      campaign = Factory(:campaign, :caller_id => nil)
-      campaign.should_not be_valid
+      campaign.errors[:caller_id].should == ['ID must be a 10-digit North American phone number or begin with "+" and the country code.']
+      campaign.update_attributes(:called_id => '').should be_false
+      campaign.errors[:caller_id].should == ['ID must be a 10-digit North American phone number or begin with "+" and the country code.']
     end
 
     it "skips validations for an international phone number" do
@@ -53,7 +49,7 @@ describe Campaign do
       campaign.reload
       campaign.type.should eq(Campaign::Type::PREVIEW)
     end
-    
+
     it 'can change dialing mode when not on call' do
       campaign = Preview.create(:name => 'Titled', :caller_id => '0123456789', :account => Factory(:account))
       campaign = Campaign.find(campaign.id)
@@ -61,61 +57,37 @@ describe Campaign do
       campaign.save.should be_true
       campaign.type.should eq(Campaign::Type::PROGRESSIVE)
     end
-    
-    
+
+
     it "should not invoke Twilio if caller id is not present" do
       TwilioLib.should_not_receive(:new)
       campaign = Factory(:campaign, :type =>Campaign::Type::PREVIEW)
       campaign.caller_id = nil
       campaign.save
     end
-    
-    it "generates its own name if one isn't provided" do
-      user = Factory(:user)
-      campaign = user.account.campaigns.create!(:caller_id => '0123456789')
-      campaign.name.should == 'Untitled 1'
-      campaign = user.account.campaigns.create!(:caller_id => '0123456789')
-      campaign.name.should == 'Untitled 2'
-    end
-    
-    it "doesn't overwrite a name that has been explicitly set" do
-      user = Factory(:user)
-      campaign = user.account.campaigns.create!(:name => 'Titled', :caller_id => '0123456789')
-      campaign.name.should == 'Titled'
-    end
-    
-    it "generates its campaign pin" do
-      user = Factory(:user)
-      campaign = user.account.campaigns.create!(:caller_id => '0123456789')
-      campaign.campaign_id.should_not be_nil
-    end
-    
-    
-    
-    
   end
-  
-  
+
+
   describe "campaigns with caller sessions that are on call" do
     let(:user) { Factory(:user) }
     let(:campaign) { Factory(:preview, :account => user.account) }
-  
+
     it "should give the campaign only once even if it has multiple caller sessions" do
       Factory(:caller_session, :campaign => campaign, :on_call => true)
       Factory(:caller_session, :campaign => campaign, :on_call => true)
       user.account.campaigns.with_running_caller_sessions.should == [campaign]
     end
-  
+
     it "should not give campaigns without on_call caller sessions" do
       Factory(:caller_session, :campaign => campaign, :on_call => false)
       user.account.campaigns.with_running_caller_sessions.should be_empty
     end
-  
+
     it "should not give another user's campaign'" do
       Factory(:caller_session, :campaign => Factory(:campaign, :account => Factory(:account)), :on_call => true)
       user.account.campaigns.with_running_caller_sessions.should be_empty
     end
-  
+
     it "should return caller session, which is oldest and available to take call" do
       campaign = Factory(:campaign, :type =>Campaign::Type::PREVIEW)
       caller_session1 = Factory(:caller_session, :campaign => campaign, :on_call => true)
@@ -125,10 +97,10 @@ describe Campaign do
       caller_session1.update_attributes(:available_for_call => true, :updated_at => Time.now + 1.second)
       caller_session3.update_attributes(:updated_at => Time.now + 5.second)
       campaign.oldest_available_caller_session.should == caller_session2
-  
+
     end
   end
-  
+
   describe "answer report" do
       let(:script) { Factory(:script)}
       let(:campaign) { Factory(:predictive, :script => script) }
@@ -136,12 +108,12 @@ describe Campaign do
       let(:call_attempt2) { Factory(:call_attempt,:campaign => campaign) }
       let(:call_attempt3) { Factory(:call_attempt,:campaign => campaign) }
       let(:call_attempt4) { Factory(:call_attempt,:campaign => campaign) }
-  
+
       let(:voter1) { Factory(:voter, :campaign => campaign, :last_call_attempt => call_attempt1)}
       let(:voter2) { Factory(:voter, :campaign => campaign, :last_call_attempt => call_attempt2)}
       let(:voter3) { Factory(:voter, :campaign => campaign, :last_call_attempt => call_attempt3)}
       let(:voter4) { Factory(:voter, :campaign => campaign, :last_call_attempt => call_attempt4)}
-  
+
     it "should give the final results of a campaign as a Hash" do
       now = Time.now
       campaign2 = Factory(:predictive)
@@ -156,21 +128,21 @@ describe Campaign do
       Factory(:answer, :voter => Factory(:voter, :campaign => campaign), campaign: campaign, :possible_response => possible_response2, :question => question2, :created_at => now)
       campaign.answers_result(now, now).should == {"hw are u" => [{answer: possible_response1.value, number: 1, percentage: 33}, {answer: possible_response2.value, number: 2, percentage: 66}, {answer: possible_response3.value, number: 1, percentage: 33}], "wr r u" => [{answer: "[No response]", number: 0, percentage: 0}]}
     end
-  
+
   end
-  
+
   describe "time period" do
     before(:each) do
       @campaign = Factory(:preview, :start_time => Time.new(2011, 1, 1, 9, 0, 0), :end_time => Time.new(2011, 1, 1, 21, 0, 0), :time_zone =>"Pacific Time (US & Canada)")
     end
-  
+
     it "should allow callers to dial, if time not expired" do
       t1 = Time.parse("01/2/2011 10:00")
       t2 = Time.parse("01/2/2011 09:00")
       Time.stub!(:now).and_return(t1, t1, t2, t2)
       @campaign.time_period_exceeded?.should == false
     end
-  
+
     it "should not allow callers to dial, if time  expired" do
       t1 = Time.parse("01/2/2011 22:20")
       t2 = Time.parse("01/2/2011 11:00")
@@ -179,22 +151,22 @@ describe Campaign do
       @campaign.time_period_exceeded?.should == true
     end
   end
-       
+
    it "restoring makes it active" do
      campaign = Factory(:campaign, :active => false)
      campaign.restore
      campaign.should be_active
    end
-      
+
    describe "scopes" do
-     
+
      it "gives only active voter lists" do
        campaign = Factory(:preview)
        active_voterlist = Factory(:voter_list, :campaign => campaign, :active => true)
        inactive_voterlist = Factory(:voter_list, :campaign => campaign, :active => false)
        campaign.voter_lists.should == [active_voterlist]
      end
-     
+
      it "returns campaigns having a session with the given caller" do
        caller = Factory(:caller)
        campaign = Factory(:preview)
@@ -202,7 +174,7 @@ describe Campaign do
        Factory(:caller_session, :campaign => campaign, :caller => caller)
        Campaign.for_caller(caller).should == [campaign]
      end
-     
+
      it "sorts by the updated date" do
        Campaign.record_timestamps = false
        older_campaign = Factory(:progressive).tap { |c| c.update_attribute(:updated_at, 2.days.ago) }
@@ -210,46 +182,46 @@ describe Campaign do
        Campaign.record_timestamps = true
        Campaign.by_updated.all.should == [newer_campaign, older_campaign]
      end
-     
+
      it "lists deleted campaigns" do
        deleted_campaign = Factory(:progressive, :active => false)
        other_campaign = Factory(:progressive, :active => true)
        Campaign.deleted.should == [deleted_campaign]
      end
-     
+
      it "should return active campaigns" do
        campaign1 = Factory(:progressive)
        campaign2 = Factory(:preview)
        campaign3 = Factory(:predictive, :active => false)
-     
+
        Campaign.active.should == [campaign1, campaign2]
      end
-     
-     
+
+
    describe 'lists campaigns' do
      before(:each) do
        @robo_campaign = Factory(:robo)
        @manual_campaign = Factory(:preview)
      end
-   
+
      it "which are robo" do
        Campaign.robo.should == [@robo_campaign]
      end
      it "which are manual" do
        Campaign.manual.should == [@manual_campaign]
      end
-   end     
+   end
   end
-  
+
   describe "cost_per_minute" do
-    
+
     it "should be .09" do
       campaign = Factory(:preview)
       campaign.cost_per_minute.should eq(0.09)
     end
-    
+
   end
-     
+
 end
-  
+
 
