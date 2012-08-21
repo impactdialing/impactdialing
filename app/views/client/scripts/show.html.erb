@@ -13,7 +13,6 @@
 <%= semantic_form_for [:client, @script] do |form| %>
   <%= render "script_name", f: form %>
   <%= render "script_voter_fields", f: form, voter_fields: @voter_fields, voter_field_values: @voter_field_values %>  
-  <%= render "script_text", f: form %>
   <%= render "script_call_results", f: form %>  
   
   <div class= "buttons">
