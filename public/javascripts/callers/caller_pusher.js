@@ -417,7 +417,8 @@ function subscribe(session_key) {
             $("#voter_info_message").hide();
             $("#current_voter").val(data.fields.id);
             bind_voter(data);
-            hide_response_panel();
+            cleanup_previous_call_results();
+			cleanup_transfer_panel();
             hide_all_actions();
 
         } else {
@@ -478,8 +479,6 @@ function subscribe(session_key) {
 		hide_all_actions();
 	    show_response_panel();
 		show_transfer_panel();
-	    cleanup_previous_call_results();
-		cleanup_transfer_panel();
 		set_message("Status: Connected.")
 	    $("#hangup_call").show();    
 	}
