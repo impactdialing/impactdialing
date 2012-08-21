@@ -457,11 +457,11 @@ function subscribe(session_key) {
     }
 
     function cleanup_previous_call_results() {
-		$("#response_panel select").each(function(index) {
+		$(".script_element select").each(function(index) {
 			$(this).children('option:selected').attr('selected',false)
 		});
 		
-		$("#response_panel select").each(function(index) {
+		$(".script_element select").each(function(index) {
 			$(this).children('option:first').attr('selected', 'selected');
 		});
 				
