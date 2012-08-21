@@ -415,6 +415,7 @@ function subscribe(session_key) {
             bind_voter(data);
             cleanup_previous_call_results();
 			cleanup_transfer_panel();
+			hide_response_panel();
             hide_all_actions();
 
         } else {
