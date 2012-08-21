@@ -6,6 +6,7 @@
   <p>
     <label>Script Text:</label>
     <%= f.text_area :section %>
+    <%= f.hidden_field :script_order  , {"class" => "script_element"}%>
   </p>
   
   <%= link_to_remove_association "Delete this script text", f , {:class => "action secondary delete_script_text"}%>
