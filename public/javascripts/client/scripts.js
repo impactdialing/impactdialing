@@ -17,7 +17,6 @@ var Scripts = function(){
   $(".possible_response_sortable").sortable({ cursor: 'crosshair' , containment: 'parent', axis: 'y' });
 
   $('#script_submit').click(function() {
-	alert('ji')
     self.set_question_order();
     self.set_possible_response_order();
     self.set_elements_order();
