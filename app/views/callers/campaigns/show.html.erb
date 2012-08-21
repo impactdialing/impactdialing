@@ -117,8 +117,8 @@
       <% @campaign.script.try(:notes).try(:each) do |note| %>
         <fieldset class="script_element" script_order="<%= note.script_order %>">
           <p><label><%= note.note %></label><br/>
-            <input type="text" id="note_response_<%= note.id %>" name="notes[<%= note.id %>]" class="note_text"/></p>
-              </p>
+            <input type="text" id="note_response_<%= note.id %>" name="notes[<%= note.id %>]" class="note_text"/>
+          </p>
         </fieldset>            
       <% end %>
       
