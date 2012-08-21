@@ -1,5 +1,14 @@
 <fieldset id="call_results">
   <legend>Call results</legend>
+  
+  <div id="script_texts"> 
+    <% @script.script_texts.each_with_index do |text, index| %>
+      <%= f.fields_for :script_texts, text do |builder| %>  
+        <%= render "script_section", {f: builder}  %>   
+      <% end %>
+    <%end%>
+  </div>
+  
 
   <div id="script_questions"> 
     <% @script.questions.each_with_index do |question, index| %>
@@ -33,6 +42,8 @@
    </fieldset>        
   </div>
 
+
+  <%= link_to_add_association 'Add a script text', f, :script_texts, {:class => "action secondary add_script_text", "data-association-insertion-node"=> "#script_texts", "data-association-insertion-method"=>"append",  partial: 'script_section' }%>
           
   
   <%= link_to_add_association 'Add a question', f, :questions, {:class => "action secondary add_question", "data-association-insertion-node"=> "#script_questions", "data-association-insertion-method"=>"append",  partial: 'question_fields' }%>
