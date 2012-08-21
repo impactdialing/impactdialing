@@ -10,7 +10,7 @@
   }
 
   function trigger_after_removal_callback(node) {
-    node.trigger('after-removal-callback');
+    node.parent().trigger('after-removal-callback');
   }
 
 
@@ -59,6 +59,7 @@
     insertionNode[insertionMethod](contentNode);
 
     $this.parent().trigger('insertion-callback');
+    
 
   });
 
