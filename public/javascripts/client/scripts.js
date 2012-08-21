@@ -6,15 +6,13 @@ var Scripts = function(){
   self.display_text_field_numbers();          
 
 
-  $("#script_questions").sortable({ cursor: 'crosshair' , axis: 'y', stop: function(event, ui) { 
+  $("#script_elements").sortable({ cursor: 'crosshair' , axis: 'y' ,stop: function(event, ui) { 
     self.display_question_numbers();
+	self.display_script_text_numbers();
+	self.display_text_field_numbers();
   } 
   });
 
-  $("#script_texts").sortable({ cursor: 'crosshair' , axis: 'y', stop: function(event, ui) { 
-    self.display_script_text_numbers();
-    } 
-  });
 
   $(".possible_response_sortable").sortable({ cursor: 'crosshair' , containment: 'parent', axis: 'y' });
 
@@ -32,11 +30,17 @@ var Scripts = function(){
       self.add_new_response_when_question_added();
   });
 
-  $('#script_questions').bind('after-removal-callback',            
-    function() { self.display_question_numbers(); });
+
+
+  $('#call_results').bind('after-removal-callback',            
+    function() { 
+	  self.display_script_text_numbers();
+      self.display_question_numbers();
+      self.display_text_field_numbers();                              
+      self.add_new_response_when_question_added();
+    
+	});
   
-  $('#script_notes').bind('after-removal-callback',            
-    function() {  self.display_text_field_numbers();});      
 
 
 }
