@@ -279,8 +279,6 @@ function subscribe(session_key) {
         set_message("Status: Connected.");
         show_response_panel();
 		show_transfer_panel();
-        cleanup_previous_call_results();
-		cleanup_transfer_panel();
         $("#hangup_call").show();
     });
 
@@ -291,8 +289,6 @@ function subscribe(session_key) {
 		set_message("Status: Connected.")
 	    show_response_panel();
 		show_transfer_panel();
-	    cleanup_previous_call_results();
-		cleanup_transfer_panel();		
 		$("#hangup_call").show();
     });
 
