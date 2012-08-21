@@ -1,4 +1,45 @@
-var Scripts = function(){}
+var Scripts = function(){
+	
+  var self = this;		
+
+  self.display_question_numbers();
+  self.display_text_field_numbers();          
+
+
+  $("#script_questions").sortable({ cursor: 'crosshair' , axis: 'y', stop: function(event, ui) { 
+    self.display_question_numbers();
+  } 
+  });
+
+  $("#script_texts").sortable({ cursor: 'crosshair' , axis: 'y', stop: function(event, ui) { 
+    self.display_script_text_numbers();
+    } 
+  });
+
+  $(".possible_response_sortable").sortable({ cursor: 'crosshair' , containment: 'parent', axis: 'y' });
+
+  $('#script_submit').click(function() {
+    self.set_question_order();
+    self.set_possible_response_order();
+    return true;
+  });
+
+  $('#call_results').bind('insertion-callback',            
+    function() {
+      self.display_script_text_numbers();
+      self.display_question_numbers();
+      self.display_text_field_numbers();                              
+      self.add_new_response_when_question_added();
+  });
+
+  $('#script_questions').bind('after-removal-callback',            
+    function() { self.display_question_numbers(); });
+  
+  $('#script_notes').bind('after-removal-callback',            
+    function() {  self.display_text_field_numbers();});      
+
+
+}
 
 Scripts.prototype.display_question_numbers = function(){
   var question_count = 1;    

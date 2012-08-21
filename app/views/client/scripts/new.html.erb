@@ -23,42 +23,7 @@
 <% content_for :javascripts do %>
   <script type ="text/javascript">
     $(document).ready(function() {
-      script = new Scripts();
-      
-      $("#script_questions").sortable({ cursor: 'crosshair' , axis: 'y', stop: function(event, ui) { 
-        script.display_question_numbers();
-        } 
-      });
-      
-      $("#script_texts").sortable({ cursor: 'crosshair' , axis: 'y', stop: function(event, ui) { 
-        script.display_script_text_numbers();
-        } 
-      });
-      
-      $(".possible_response_sortable").sortable({ cursor: 'crosshair' , containment: 'parent', axis: 'y' });
-      
-      $('#script_submit').click(function() {
-        script.set_question_order();
-        script.set_possible_response_order();
-        return true;
-      });
-      
-      script.display_question_numbers();
-      script.display_text_field_numbers();          
-      
-      $('#call_results').bind('insertion-callback',            
-        function() {
-          script.display_script_text_numbers();
-          script.display_question_numbers();
-          script.display_text_field_numbers();                              
-          script.add_new_response_when_question_added();
-      });
-            
-      $('#script_questions').bind('after-removal-callback',            
-        function() { script.display_question_numbers(); });
-      
-      $('#script_notes').bind('after-removal-callback',            
-        function() {  script.display_text_field_numbers();});      
+      new Scripts();
     });
     
   </script>
