@@ -1,4 +1,4 @@
-<tr id="<%= "caller_"+ caller_session.id.to_s %>" class="caller <%= cycle("odd", "even") %> " older="true" session_id="<%= caller_session.id %>" caller_id="<%= caller_session.caller.id %> " on_call="<%= caller_session.not_available %>">  
+<tr id="<%= "caller_"+ caller_session.id.to_s %>" class="caller <%= cycle("odd", "even") %> " older="true" session_id="<%= caller_session.id %>" caller_id="<%= caller_session.caller.id %> " on_call="<%= !caller_session.available_for_call %>">  
   <td class="caller_name"> <%= caller_session.caller.identity_name %> </td>
   
 	
