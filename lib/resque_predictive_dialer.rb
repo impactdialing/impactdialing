@@ -14,7 +14,7 @@ loop do
     logged_in_campaigns = CallerSession.campaigns_on_call
     logged_in_campaigns.each do |c|
       campaign = Campaign.find(c.campaign_id)
-      if campaign.type != Campaign::Type::PREVIEW && campaign.type != Campaign::Type::PROGRESSIVE && !campaign.calls_in_progress?
+      if campaign.type != Campaign::Type::PREVIEW && campaign.type != Campaign::Type::PROGRESSIVE && !Resque.redis.exists("dial:#{campaign.id}")
         campaign.dial_resque
       end
     end
