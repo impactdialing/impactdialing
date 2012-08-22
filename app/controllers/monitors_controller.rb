@@ -42,16 +42,12 @@ class MonitorsController < ClientController
   def switch_mode
     type = params[:type]
     caller_session = CallerSession.find(params[:session_id])
-    if caller_session.moderator.nil?
-      render text: "Status: There is some problem in switching mode. Please refresh the page"
+    MonitorCampaign.switch_monitor_mode(caller_session, type)
+    if caller_session.voter_in_progress && (caller_session.voter_in_progress.call_attempts.last.status == "Call in progress")
+      render text: "Status: Monitoring in "+ type + " mode on "+ caller_session.caller.identity_name + "."
     else
-      caller_session.moderator.switch_monitor_mode(caller_session, type)
-      if caller_session.voter_in_progress && (caller_session.voter_in_progress.call_attempts.last.status == "Call in progress")
-        render text: "Status: Monitoring in "+ type + " mode on "+ caller_session.caller.identity_name + "."
-      else
-        render text: "Status: Caller is not connected to a lead."
-      end 
-    end
+      render text: "Status: Caller is not connected to a lead."
+    end 
   end
 
   def stop
