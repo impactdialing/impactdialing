@@ -1,73 +1,52 @@
 module Client
   class CallersController < ClientController
-    include TimeZoneHelper
-    before_filter :full_access, :except =>[:reassign_to_campaign]
     include DeletableController
-    include ApplicationHelper::TimeUtils
     skip_before_filter :check_login, :only => [:reassign_to_campaign]
-    before_filter :load_campaigns, :except => [:index,:destroy,:reassign_to_campaign]
-
-    def type_name
-      'caller'
-    end
+    before_filter :full_access, :except => [:reassign_to_campaign]
+    before_filter :load_caller, :only => [:show, :update, :destroy]
+    before_filter :load_campaigns, :except => [:index, :destroy, :reassign_to_campaign]
 
     def index
-      @breadcrumb="Callers"
       @callers = Caller.where(:active => true, :account_id => account.id).order(:name).paginate(:page => params[:page])
     end
 
     def new
-      @breadcrumb=[{"Callers"=>"/client/callers"}, "Add Caller"]
-      @caller = Caller.new(:is_phones_only => params[:is_phones_only])
+      @caller = account.callers.new(:is_phones_only => params[:is_phones_only])
     end
 
     def show
-      @breadcrumb=[{"Callers"=>"/client/callers"}, "Add Caller"]
-      @caller = account.callers.find_by_id(params[:id])
-      @caller ||= Caller.new
-      if @caller.new_record?
-        flash[:error] = ["No caller found. Create a new caller?"]
-        render :action => "new"
-      end
     end
 
-
     def update
-      @caller = account.callers.find_by_id(params[:id])
       if @caller.is_on_call? && (params[:caller][:campaign_id] != @caller.campaign.id)
         flash_message(:error, "This caller is logged in and so can't be changed to a new campaign from this screen. To reassign them to a new campaign, please use the Monitor tab.")
-        render :action=>"new"
+        render :action => "new"
       else
         if @caller.update_attributes(params[:caller])
-          flash_message(:notice, "Caller updated")
-          redirect_to :action=>"index"
+          flash_message(:notice, "Caller saved")
+          redirect_to :action => "index"
         else
-          render :action=>"new"
+          render :action => "new"
         end
       end
     end
 
     def create
-      @caller = Caller.new(params[:caller])
-      @caller.account_id = account.id
+      @caller = account.callers.new(params[:caller])
       if @caller.save
         flash_message(:notice, "Caller saved")
-        redirect_to :action=>"index"
+        redirect_to :action => "index"
       else
-        render :action=>"new"
+        render :action => "new"
       end
     end
 
     def destroy
-      @caller = account.callers.find_by_id(params[:id])
-      if !@caller.blank?
-        @caller.active = false
-        @caller.save
-      end
+      @caller.update_attribute(:active, false)
       flash_message(:notice, "Caller deleted")
       redirect_to :action=>"index"
     end
-    
+
     def reassign_to_campaign
       caller = Caller.find_by_id(params[:id])
       caller.update_attributes(:campaign_id => params[:campaign_id])
@@ -88,14 +67,23 @@ module Client
       @caller = Caller.find(params[:id])
       @campaigns = account.campaigns.manual.for_caller(@caller)
       @campaign = @campaigns.find_by_id(params[:campaign_id]) || @caller.caller_sessions.last.try(:campaign) || @caller.campaign
-      @from_date, @to_date = set_date_range_callers(@campaign, @caller, params[:from_date], params[:to_date])   
+      @from_date, @to_date = set_date_range_callers(@campaign, @caller, params[:from_date], params[:to_date])
       @answered_call_stats = @caller.answered_call_stats(@from_date, @to_date, @campaign)
       @questions_and_responses = @campaign.try(:questions_and_responses) || {}
     end
 
+    def type_name
+      'caller'
+    end
+
     private
+
     def load_campaigns
       @campaigns = account.campaigns.manual.active
-    end        
+    end
+
+    def load_caller
+      @caller = account.callers.find_by_id(params[:id])
+    end
   end
 end
