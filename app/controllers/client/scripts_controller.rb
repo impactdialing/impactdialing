@@ -13,7 +13,7 @@ module Client
     end
 
     def new
-      @script = Script.new(:robo => false, questions: [Question.new(possible_responses: [PossibleResponse.new])])
+      @script = Script.new(:robo => false, questions: [Question.new(possible_responses: [PossibleResponse.new])], script_texts: [ScriptText.new])
       @voter_fields = VoterList::VOTER_DATA_COLUMNS.values
       @voter_fields.concat(@user.account.custom_voter_fields.collect{ |field| field.name})
       @voter_field_values=[]
