@@ -8,11 +8,11 @@ if rails_env == 'development' || rails_env == "test"
 else
   
   Sidekiq.configure_server do |config|
-    config.redis = { :url => redis_config[rails_env]['resque_sidekiq'] }
+    config.redis = { :url => redis_config[rails_env] }
   end
 
   Sidekiq.configure_client do |config|
-    config.redis = { :url => redis_config[rails_env]['resque_sidekiq']}
+    config.redis = { :url => redis_config[rails_env]}
   end  
   
 end  

@@ -1,11 +1,11 @@
 development:
-  resque_sidekiq: localhost:6379    
+  localhost:6379    
     
 test:
-  resque_sidekiq: localhost:6379
+  localhost:6379
     
 heroku_staging:
-  resque_sidekiq: redis://10.254.238.226:6379    
+  redis://10.254.238.226:6379    
   
 heroku:
-  resque_sidekiq: redis://10.208.71.208:6379  
+  redis://redistogo:acc06af2ea8dfd06606c3e641fe0febd@koi.redistogo.com:9090
