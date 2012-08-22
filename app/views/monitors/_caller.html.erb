@@ -1,11 +1,6 @@
 <tr id="<%= "caller_"+ caller_session.id.to_s %>" class="caller <%= cycle("odd", "even") %> " older="true" session_id="<%= caller_session.id %>" caller_id="<%= caller_session.caller.id %> ">  
   <td class="caller_name"> <%= caller_session.caller.identity_name %> </td>
   
-  <td>
-	  <select class='assign_campaign'>
-		  <%= options_for_select(@all_campaigns.collect {|c| [ c.name, c.id ] }, caller_session.campaign.id) %>
-		</select>
-	</td>
 	
 	<% status, d = caller_status_and_duration(caller_session) %>
 	
