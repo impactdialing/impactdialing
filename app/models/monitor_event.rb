@@ -25,7 +25,6 @@ class MonitorEvent
   end
       
   def self.incoming_call_request(campaign)
-    puts "decrement ringing line"
     MonitorCampaign.decrement_ringing_lines(campaign.id, 1)        
     create_campaign_notification(campaign.id, "incoming")
   end

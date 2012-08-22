@@ -85,6 +85,7 @@ class CallAttempt < ActiveRecord::Base
   def abandon_call
     update_attributes(status: CallAttempt::Status::ABANDONED, connecttime: Time.now, wrapup_time: Time.now, call_end: Time.now)
     voter.update_attributes(:status => CallAttempt::Status::ABANDONED, call_back: false, caller_session: nil, caller_id: nil)
+    MonitorEvent.incoming_call_request(campaign)
   end
     
   def connect_lead_to_caller
@@ -125,11 +126,13 @@ class CallAttempt < ActiveRecord::Base
   def process_answered_by_machine
     update_attributes(connecttime: Time.now, call_end:  Time.now, status:  campaign.use_recordings? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP, wrapup_time: Time.now)
     voter.update_attributes(status: campaign.use_recordings? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP, caller_session: nil)    
+    MonitorEvent.incoming_call_request(campaign)
   end
   
   def end_answered_by_machine
     update_attributes(wrapup_time: Time.now, call_end: Time.now)    
-    voter.update_attributes(last_call_attempt_time:  Time.now, call_back: false)                
+    voter.update_attributes(last_call_attempt_time:  Time.now, call_back: false)  
+    MonitorEvent.incoming_call_request(campaign)              
   end
   
     
