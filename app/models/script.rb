@@ -3,10 +3,12 @@ class Script < ActiveRecord::Base
   include Deletable
   validates_presence_of :name, :message => "can't be blank"
   belongs_to :account
+  has_many :script_texts
   has_many :robo_recordings
   has_many :questions
   has_many :notes
   has_many :transfers
+  accepts_nested_attributes_for :script_texts, :allow_destroy => true
   accepts_nested_attributes_for :questions, :allow_destroy => true
   accepts_nested_attributes_for :notes, :allow_destroy => true
   accepts_nested_attributes_for :transfers, :allow_destroy => true

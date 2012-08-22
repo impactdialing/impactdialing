@@ -279,8 +279,6 @@ function subscribe(session_key) {
         set_message("Status: Connected.");
         show_response_panel();
 		show_transfer_panel();
-        cleanup_previous_call_results();
-		cleanup_transfer_panel();
         $("#hangup_call").show();
     });
 
@@ -291,8 +289,6 @@ function subscribe(session_key) {
 		set_message("Status: Connected.")
 	    show_response_panel();
 		show_transfer_panel();
-	    cleanup_previous_call_results();
-		cleanup_transfer_panel();		
 		$("#hangup_call").show();
     });
 
@@ -417,7 +413,9 @@ function subscribe(session_key) {
             $("#voter_info_message").hide();
             $("#current_voter").val(data.fields.id);
             bind_voter(data);
-            hide_response_panel();
+            cleanup_previous_call_results();
+			cleanup_transfer_panel();
+			hide_response_panel();
             hide_all_actions();
 
         } else {
@@ -457,11 +455,11 @@ function subscribe(session_key) {
     }
 
     function cleanup_previous_call_results() {
-		$("#response_panel select").each(function(index) {
+		$(".script_element select").each(function(index) {
 			$(this).children('option:selected').attr('selected',false)
 		});
 		
-		$("#response_panel select").each(function(index) {
+		$(".script_element select").each(function(index) {
 			$(this).children('option:first').attr('selected', 'selected');
 		});
 				
@@ -478,8 +476,6 @@ function subscribe(session_key) {
 		hide_all_actions();
 	    show_response_panel();
 		show_transfer_panel();
-	    cleanup_previous_call_results();
-		cleanup_transfer_panel();
 		set_message("Status: Connected.")
 	    $("#hangup_call").show();    
 	}
