@@ -1,10 +1,6 @@
 require 'em-http-request'
 require "em-synchrony"
 require "em-synchrony/em-http"
-redis_config = YAML.load_file(Rails.root.to_s + "/config/redis.yml")
-uri = URI.parse(redis_config[rails_env])
-Resque.redis = Redis.new(:host => uri.host, :port => uri.port)
-
 
 class DialerJob 
   @queue = :dialer_worker
