@@ -132,6 +132,7 @@ Monitors.prototype.start_monitoring_call = function(element, action) {
 
 Monitors.prototype.monitor_caller = function(session_id, action) {
 	if (this.monitoring) {
+		this.switch_mode(session_id, action)
 		
 	}
 	else{
@@ -171,10 +172,10 @@ Monitors.prototype.disconnect_all = function(){
   return false;	
 };
 
-Monitors.prototype.switch_mode = function(session, mode, monitor_session_id){
+Monitors.prototype.switch_mode = function(session, mode){
   $.ajax({
       url : "/client/monitors/switch_mode",
-      data : {session_id : session,type : mode,monitor_session : monitor_session_id},
+      data : {session_id : session, type : mode, monitor_session : $('monitor_session').val()},
       type : "GET",
       success : function(response) {
         $('status').text(response)
@@ -204,7 +205,7 @@ Monitors.prototype.kick_off = function(session){
 Monitors.prototype.request_to_switch = function(next_session_id, action, status) {
   $.ajax({
     url : "/client/monitors/start",
-	data : {'session_id' : next_session_id, 'type': action, 'monitor_session' : $('monitor_session').text()},
+	data : {'session_id' : next_session_id, 'type': action, 'monitor_session' : $('monitor_session').val()},
 	type : "GET",
 	success : function(response) {}
   });	
