@@ -56,22 +56,6 @@ module ApplicationHelper
     return response.body
   end
 
-  def hash_from_voter_and_script(script, voter)
-    publish_hash={:id=>voter.id, :classname=>voter.class.to_s}
-    #    publish_hash={:id=>voter.id}
-    if !script.voter_fields.nil?
-      fields = JSON.parse(script.voter_fields)
-      fields.each do |field|
-        #        logger.info "field: #{field}"
-        if voter.has_attribute?(field)
-          publish_hash[field] = voter.get_attribute(field)
-        else
-          logger.info "FAMILY ERROR could not find #{field}  in #{voter.id}"
-        end
-      end
-    end
-    publish_hash
-  end
 
   def client_controller?(controllerName)
     ['client/accounts', 'client', 'voter_lists', 'monitor', 'client/campaigns', 'client/scripts', 'client/callers', 'client/reports', 'campaigns', 'scripts', 'broadcast', 'reports', 'home', 'blocked_numbers', 'monitors', 'messages'].include?(controllerName)

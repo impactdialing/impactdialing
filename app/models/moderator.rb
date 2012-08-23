@@ -2,6 +2,7 @@ class Moderator < ActiveRecord::Base
   belongs_to :caller_session
   belongs_to :account
   
+  
   scope :active, :conditions => {:active => true}
   scope :last_hour, :conditions => ["created_at > ?",1.hours.ago]
   
@@ -14,14 +15,31 @@ class Moderator < ActiveRecord::Base
     end
   end
   
+  def self.campaigns_information(campaigns)
+    campaigns.collect { |campaign| campaign_information(campaign) }
+  end
+  
+  def self.campaign_information(campaign)
+    callers, on_hold, on_call = campaign.callers_status
+    wrap_up, ringing_lines, live_lines = campaign.call_status
+    numbers_remaining = Voter.remaining_voters_count_for("campaign_id", campaign.id)
+    numbers_available = campaign.leads_available_now          
+    {id: campaign.id, name: campaign.name, logged_in: callers, on_call: on_call, wrap_up: wrap_up , on_hold: on_hold ,  
+    live_lines: live_lines, ringing_lines: ringing_lines,  numbers_remaining: numbers_remaining , numbers_available: numbers_available}    
+  end
+  
   def stop_monitoring(caller_session)
     conference_sid = get_conference_id(caller_session)
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
     Twilio::Conference.kick_participant(conference_sid, call_sid)
   end
   
+  def self.update_ringing_lines(campaign)
+    
+  end
+  
   def self.update_dials_in_progress(campaign)
-    publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
+    publish_event(campaign, 'update_dials_in_progress',campaign_information(campaign))
   end
   
   def self.active_moderators(campaign)
@@ -52,7 +70,7 @@ class Moderator < ActiveRecord::Base
   
   def self.publish_event(campaign, event, data)
     Moderator.active_moderators(campaign).each do |moderator|
-      EM.run {
+      EM.synchrony {
         deferrable = Pusher[moderator.session].trigger_async(event, data)
         deferrable.callback { 
           }

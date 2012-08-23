@@ -35,8 +35,7 @@ class Call < ActiveRecord::Base
       end 
       
       state :connected do
-        before(:always) {  connect_call }
-        after(:always) { call_attempt.publish_voter_connected }
+        after(:always) { connect_call; call_attempt.publish_voter_connected}
         event :hangup, :to => :hungup
         event :disconnect, :to => :disconnected
         
@@ -59,7 +58,7 @@ class Call < ActiveRecord::Base
       
       state :disconnected do        
         before(:always) { disconnect_call }
-        after(:success) { call_attempt.publish_voter_disconnected }                
+        after(:success) { call_attempt.publish_voter_disconnected}                
         event :call_ended, :to => :call_answered_by_lead, :if => :call_connected?
         event :call_ended, :to => :call_not_answered_by_lead, :if => :call_did_not_connect?        
         response do |xml_builder, the_call|
@@ -113,13 +112,13 @@ class Call < ActiveRecord::Base
       
       
       state :wrapup_and_continue do 
-        before(:always) { wrapup_now; call_attempt.redirect_caller; call_attempt.publish_moderator_response_submited}
+        before(:always) { wrapup_now; call_attempt.redirect_caller; call_attempt.publish_moderator_response_submited }
         after(:success){ persist_all_states}
       end
       
       state :wrapup_and_stop do
         before(:always) { wrapup_now; caller_session.run('end_conf') }        
-        after(:success){ persist_all_states}
+        after(:success){ persist_all_states;; call_attempt.publish_moderator_response_submited}
       end
             
   end 
