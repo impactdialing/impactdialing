@@ -33,7 +33,7 @@
       script.set_possible_response_order();
       script.mark_answered(); 
       $('.orderable_element').sortElements(function(a, b){
-          return $(a).find('.script_element').val() > $(b).find('.script_element').val() ? 1 : -1;
+          return parseInt($(a).find('.script_element').val()) > parseInt($(b).find('.script_element').val()) ? 1 : -1;
       });     
     });
     
