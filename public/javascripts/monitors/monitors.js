@@ -3,6 +3,7 @@ Pusher.log = function(message) {
 };
 
 var Monitors = function(channel){
+	this.monitoring = false;
 	this.channel = channel;	
 	this.update_campaign_info();
 	this.add_caller_connected();
@@ -11,6 +12,23 @@ var Monitors = function(channel){
 	this.bind_caller_actions();
 	this.call_status = {"Call in progress": "On call", "Call completed with success.": "Wrap up", "On hold": "On hold", "Ringing":"On hold" }
 };
+
+Monitors.prototype.start_monitoring_call = function(element, action) {
+  if($(element).parent().parent().attr("on_call") == "true"){
+    var session_id = $(element).attr("session_id");
+    monitor(session_id, action);
+    $(element).parent().parent().attr("mode", action)	
+  }
+  else{
+    alert("Caller is not connected to a lead.")	
+  }
+}
+
+Monitors.prototype.monitor_caller = function(session_id, action) {
+	
+}
+
+
 
 Monitors.prototype.bind_caller_actions = function(){
   var self = this;	
@@ -21,19 +39,11 @@ Monitors.prototype.bind_caller_actions = function(){
 	  });
 	
 	$('.break_in').live('click', function(){
-	  if($(this).parent().parent().attr("on_call") == "true"){
-		var session_id = $(this).attr("session_id");
-        self.switch_mode(session_id, 'breakin');
-		$(this).parent().parent().attr("mode", 'breakin')
-      }
+		self.start_monitoring_call(this, 'breakin')
     });
 
 	$('.eaves_drop').live('click', function(){
-	  if($(this).parent().parent().attr("on_call") == "true"){
-		var session_id = $(this).attr("session_id");
-        self.switch_mode(session_id, 'eaves_drop');
-		$(this).parent().parent().attr("mode", 'eaves_drop')
-      }
+	  self.start_monitoring_call(this, 'eaves_drop')
     });    
 	
     $('.kick_off').live('click', function(){
