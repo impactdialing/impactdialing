@@ -98,11 +98,11 @@
       <input type="hidden" id="voter_id" name="voter_id"/>
       <% @campaign.script.try(:script_texts).try(:each) do |script_section| %>
         <fieldset class="script_element" script_order="<%= script_section.script_order %>">
-          <%= raw script_section.section.gsub(/(\n|\[hide\]|\[\/hide\])/, {
-            "\n" => "<br />",
-            "[hide]" => '<div class="hidden_script">',
-            "[/hide]" => "</div>",
-            }) %>
+            <%= raw script_section.section.gsub(/(\n|\[hide\]|\[\/hide\])/, {
+              "\n" => "</p>",
+              "[hide]" => '<div class="hidden_script">',
+              "[/hide]" => "</div>",
+              }) %>
         </fieldset>            
       <% end %>
       
