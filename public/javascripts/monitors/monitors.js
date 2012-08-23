@@ -122,7 +122,7 @@ Monitors.prototype.remove_caller = function(){
 Monitors.prototype.start_monitoring_call = function(element, action) {
   if($(element).parent().parent().attr("on_call") == "true"){
     var session_id = $(element).attr("session_id");
-    monitor_caller(session_id, action);
+    this.monitor_caller(session_id, action);
     $(element).parent().parent().attr("mode", action)	
   }
   else{
