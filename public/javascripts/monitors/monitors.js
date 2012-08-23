@@ -13,22 +13,6 @@ var Monitors = function(channel){
 	this.call_status = {"Call in progress": "On call", "Call completed with success.": "Wrap up", "On hold": "On hold", "Ringing":"On hold" }
 };
 
-Monitors.prototype.start_monitoring_call = function(element, action) {
-  if($(element).parent().parent().attr("on_call") == "true"){
-    var session_id = $(element).attr("session_id");
-    monitor(session_id, action);
-    $(element).parent().parent().attr("mode", action)	
-  }
-  else{
-    alert("Caller is not connected to a lead.")	
-  }
-}
-
-Monitors.prototype.monitor_caller = function(session_id, action) {
-	
-}
-
-
 
 Monitors.prototype.bind_caller_actions = function(){
   var self = this;	
@@ -134,6 +118,28 @@ Monitors.prototype.remove_caller = function(){
     $(caller_selector).remove();
   });  
 };
+
+Monitors.prototype.start_monitoring_call = function(element, action) {
+  if($(element).parent().parent().attr("on_call") == "true"){
+    var session_id = $(element).attr("session_id");
+    monitor_caller(session_id, action);
+    $(element).parent().parent().attr("mode", action)	
+  }
+  else{
+    alert("Caller is not connected to a lead.")	
+  }
+}
+
+Monitors.prototype.monitor_caller = function(session_id, action) {
+	if (this.monitoring) {
+		
+	}
+	else{
+		self.monitor()
+	}
+	
+}
+
 
 
 Monitors.prototype.monitor = function(session_id, action, monitor_session_id){
