@@ -132,13 +132,11 @@ Monitors.prototype.start_monitoring_call = function(element, action) {
 
 Monitors.prototype.monitor_caller = function(session_id, action) {
 	if (this.monitoring) {
-		this.switch_mode(session_id, action)
-		
+		this.switch_mode(session_id, action)		
 	}
 	else{
 		this.monitor(session_id, action)
-	}
-	
+	}	
 }
 
 
