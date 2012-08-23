@@ -1,0 +1,17 @@
+class MonitorConference
+  
+  def self.monitor_conference(monitor_session)
+    Redis::HashSet.new("monitor:#{monitor_session}", $redis_monitor_connection)
+  end
+  
+  def self.join_conference(monitor_session, caller_session, call_sid)
+    hash = monitor_conference(monitor_session)
+    hash.store('caller_session', caller_session)
+    hash.store('call_sid', call_sid)        
+  end
+  
+  def self.call_sid(monitor_session)
+    monitor_conference(monitor_session).fetch("call_sid")
+  end
+  
+end
