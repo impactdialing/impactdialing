@@ -39,7 +39,7 @@ class MonitorsController < ClientController
   def switch_mode
     type = params[:type]
     caller_session = CallerSession.find(params[:session_id])
-    MonitorCampaign.switch_monitor_mode(caller_session, type)
+    MonitorCampaign.switch_monitor_mode(caller_session, type, monitor_session)
     if caller_session.voter_in_progress && (caller_session.voter_in_progress.call_attempts.last.status == "Call in progress")
       render text: "Status: Monitoring in "+ type + " mode on "+ caller_session.caller.identity_name + "."
     else

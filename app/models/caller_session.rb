@@ -193,8 +193,7 @@ class CallerSession < ActiveRecord::Base
         v.conference(self.session_key, :startConferenceOnEnter => false, :endConferenceOnExit => false, :beep => false, :waitUrl => HOLD_MUSIC_URL, :waitMethod =>"GET", :muted => mute_type)
       end
     end.response
-    moderator = Moderator.find_by_session(monitor_session)
-    moderator.update_attributes(:caller_session_id => self.id, :call_sid => call_sid) unless moderator.nil?
+    MonitorConference.join_conference(monitor_session, self.id, call_sid)
     response
   end
   
