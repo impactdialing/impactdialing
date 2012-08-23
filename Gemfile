@@ -28,6 +28,7 @@ gem "airbrake",'~>3.0.9'
 gem 'recurly', '~> 2.1.3'
 gem "uuid", "~> 2.3.5"
 gem "call_center", "~> 0.0.9"
+gem "eventmachine", "1.0.0.rc.4"
 gem "em-http-request", "~> 1.0.1"
 gem "ruby-graphviz", "0.9.0"
 gem "em-synchrony", "~> 1.0.1"
@@ -36,17 +37,16 @@ gem "resque", "~> 1.19.0"
 gem "resque-scheduler", "~> 1.9.9", :require => 'resque_scheduler'
 gem 'resque-lock', "~> 1.0.0"
 gem "resque-loner", "~>1.2.1"
-gem "redis", "~>2.2.2"
 gem "hiredis", "~>0.4.5"
+gem "em-hiredis", "~>0.1.1"
+gem "redis", "~>2.2.2"
+gem "redis-objects", "~>0.5.3",:require => 'redis/objects'
 gem "formtastic", "~>2.2.1"
 gem "cocoon", "~>1.0.22"
 gem "sidekiq", "~>1.2.1"
 gem "slim", "~>1.2.2"
 gem "sinatra", "~>1.2.8"
 gem "sprockets", "~>2.4.5"
-
-
-
 
 
 

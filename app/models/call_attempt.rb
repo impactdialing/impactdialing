@@ -76,17 +76,16 @@ class CallAttempt < ActiveRecord::Base
     current_recording.next ? current_recording.next.twilio_xml(self) : current_recording.hangup
   end
   
-  
-  
-  
   def connect_call
     session = voter.caller_session
     update_attributes(status: CallAttempt::Status::INPROGRESS, connecttime: Time.now, caller: session.caller, caller_session: session)
+    MonitorEvent.incoming_call_request(campaign)
   end
       
   def abandon_call
     update_attributes(status: CallAttempt::Status::ABANDONED, connecttime: Time.now, wrapup_time: Time.now, call_end: Time.now)
     voter.update_attributes(:status => CallAttempt::Status::ABANDONED, call_back: false, caller_session: nil, caller_id: nil)
+    MonitorEvent.incoming_call_request(campaign)
   end
     
   def connect_lead_to_caller
@@ -127,11 +126,13 @@ class CallAttempt < ActiveRecord::Base
   def process_answered_by_machine
     update_attributes(connecttime: Time.now, call_end:  Time.now, status:  campaign.use_recordings? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP, wrapup_time: Time.now)
     voter.update_attributes(status: campaign.use_recordings? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP, caller_session: nil)    
+    MonitorEvent.incoming_call_request(campaign)
   end
   
   def end_answered_by_machine
     update_attributes(wrapup_time: Time.now, call_end: Time.now)    
-    voter.update_attributes(last_call_attempt_time:  Time.now, call_back: false)                
+    voter.update_attributes(last_call_attempt_time:  Time.now, call_back: false)  
+    MonitorEvent.incoming_call_request(campaign)              
   end
   
     
@@ -146,7 +147,7 @@ class CallAttempt < ActiveRecord::Base
   end
   
   def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
-    EM.run {
+    EM.synchrony {
       t = TwilioLib.new(account, auth)    
       deferrable = t.end_call("#{self.sid}")              
       deferrable.callback {}
@@ -246,7 +247,7 @@ class CallAttempt < ActiveRecord::Base
   
   def redirect_caller(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
     unless caller_session.nil?
-      EM.run {
+      EM.synchrony {
         t = TwilioLib.new(account, auth)    
         deferrable = t.redirect_call(caller_session.sid, flow_caller_url(caller_session.caller, :host => Settings.host, :port => Settings.port, session_id: caller_session.id, event: "start_conf"))              
         deferrable.callback {}

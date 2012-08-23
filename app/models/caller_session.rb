@@ -115,7 +115,7 @@ class CallerSession < ActiveRecord::Base
       
       state :conference_ended do
         before(:always) { end_caller_session}
-        after(:always) { publish_caller_disconnected; publish_moderator_caller_disconnected} 
+        after(:always) { publish_caller_disconnected} 
         response do |xml_builder, the_call|
           xml_builder.Hangup
         end        
@@ -128,7 +128,7 @@ class CallerSession < ActiveRecord::Base
   def end_caller_session
     begin
       end_session
-      wrapup_attempt_in_progress
+      wrapup_attempt_in_progress      
     rescue ActiveRecord::StaleObjectError => exception
       Resque.enqueue(PhantomCallerJob, self.id)
     end      
@@ -137,7 +137,7 @@ class CallerSession < ActiveRecord::Base
   def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)    
     voters = Voter.find_all_by_caller_id_and_status(caller.id, CallAttempt::Status::READY)
     voters.each {|voter| voter.update_attributes(status: 'not called')}    
-    EM.run {
+    EM.synchrony {
       t = TwilioLib.new(account, auth)    
       deferrable = t.end_call("#{self.sid}")              
       deferrable.callback {}
@@ -145,8 +145,6 @@ class CallerSession < ActiveRecord::Base
     }             
     end_caller_session
     CallAttempt.wrapup_calls(caller_id)
-    Moderator.publish_event(campaign, "caller_disconnected",{:caller_session_id => id, :caller_id => caller.id, :campaign_id => campaign.id, :campaign_active => campaign.callers_log_in?,
-    :no_of_callers_logged_in => campaign.caller_sessions.on_call.length})
   end  
   
   
@@ -219,27 +217,15 @@ class CallerSession < ActiveRecord::Base
   end
   
   
-  def dial(voter)
-  return if voter.nil?
-  attempt = create_call_attempt(voter)
-  publish_calling_voter
-  response = make_call(attempt,voter)    
-  if response["TwilioResponse"]["RestException"]
-    handle_failed_call(attempt, voter)
-    return
-  end    
-  attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])  
-  end
-  
   def dial_em(voter)
     return if voter.nil?
     call_attempt = create_call_attempt(voter)    
     twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)        
-    EM.run do
+    EM.synchrony do
       http = twilio_lib.make_call_em(campaign, voter, call_attempt)
       http.callback { 
         response = JSON.parse(http.response)  
-        if response["RestException"]
+        if response["status"] == 400
           handle_failed_call(call_attempt, self)
         else
           call_attempt.update_attributes(:sid => response["sid"])
@@ -254,22 +240,15 @@ class CallerSession < ActiveRecord::Base
     update_attribute('attempt_in_progress', attempt)
     voter.update_attributes(:last_call_attempt => attempt, :last_call_attempt_time => Time.now, :caller_session => self, status: CallAttempt::Status::RINGING)
     Call.create(call_attempt: attempt, all_states: "")
+    MonitorEvent.call_ringing(campaign)
     attempt    
   end
   
-  
-  def make_call(attempt, voter)
-  Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-  params = {'FallbackUrl' => TWILIO_ERROR, 'StatusCallback' => flow_call_url(attempt.call, host: Settings.host, port:  Settings.port, event: "call_ended"),'Timeout' => campaign.use_recordings? ? "20" : "15"}
-  params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect        
-  Twilio::Call.make(self.campaign.caller_id, voter.Phone, flow_call_url(attempt.call, host: Settings.host, port: Settings.port, event: "incoming_call"),params)  
-  end
   
   def handle_failed_call(attempt, voter)
     attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
     voter.update_attributes(status: CallAttempt::Status::FAILED)
     update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
-    Moderator.update_dials_in_progress(campaign)
     redirect_caller
   end
   
