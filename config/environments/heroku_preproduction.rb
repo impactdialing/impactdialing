@@ -7,9 +7,9 @@ ImpactDialing::Application.configure do
   PORT = 80
   TEST_CALLER_NUMBER="8583679749"
   TEST_VOTER_NUMBER="4154486970"
-  PUSHER_APP_ID="6964"
-  PUSHER_KEY="6f37f3288a3762e60f94"
-  PUSHER_SECRET="b9a1cfc2c1ab4b64ad03"
+  PUSHER_APP_ID="26332"
+  PUSHER_KEY="24bce1c0c525a40f99dd"
+  PUSHER_SECRET="54a5d3a1c3c75f417b94"
   MONITOR_TWILIO_APP_SID="APb502b0d114da3333a1e2a1e912c823ba"
   TWILIO_ERROR = "http://status-impactdialing.heroku.com/twilio/error_production"
   HOLD_MUSIC_URL = "https://s3.amazonaws.com/hold_music/impactdialing_holdmusic_v1.mp3"
