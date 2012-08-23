@@ -135,17 +135,18 @@ Monitors.prototype.monitor_caller = function(session_id, action) {
 		
 	}
 	else{
-		self.monitor()
+		self.monitor(session_id, action)
 	}
 	
 }
 
 
 
-Monitors.prototype.monitor = function(session_id, action, monitor_session_id){
-  params = {'session_id': session_id, 'type': action, 'monitor_session' : monitor_session_id};
+Monitors.prototype.monitor = function(session_id, action){
+  params = {'session_id': session_id, 'type': action, 'monitor_session' : $("#monitor_session_id").val()};
   $('.stop_monitor').show();
   Twilio.Device.connect(params)
+  this.monitoring = true;
 };
 
 Monitors.prototype.de_activate_monitor = function(campaign_id, monitor_session_id){
