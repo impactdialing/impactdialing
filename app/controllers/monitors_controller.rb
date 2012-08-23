@@ -16,8 +16,18 @@ class MonitorsController < ClientController
     @monitor_session = MonitorSession.add_session(@campaign.id)
     twilio_capability = Twilio::Util::Capability.new(TWILIO_ACCOUNT, TWILIO_AUTH)
     twilio_capability.allow_client_outgoing(MONITOR_TWILIO_APP_SID)
-    @token = twilio_capability.generate
-    
+    @token = twilio_capability.generate    
+  end
+  
+  def join_conference
+    caller_session = CallerSession.find(params[:session_id])
+    if caller_session.voter_in_progress && (caller_session.voter_in_progress.call_attempts.last.status == "Call in progress")
+      status_msg = "Status: Monitoring in "+ params[:type] + " mode on "+ caller_session.caller.identity_name + "."
+    else
+      status_msg = "Status: Caller is not connected to a lead."
+    end
+    Pusher[params[:monitor_session]].trigger('set_status',{:status_msg => status_msg})
+    render xml:  caller_session.join_conference(params[:type]=="eaves_drop", params[:CallSid], params[:monitor_session])    
   end
   
 
