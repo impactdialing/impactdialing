@@ -90,7 +90,7 @@ class MonitorCampaign
   
   def self.switch_monitor_mode(caller_session, type, monitor_session)
     conference_sid = get_conference_id(caller_session)
-    MonitorConference.call_sid(monitor_session)
+    call_sid = MonitorConference.call_sid(monitor_session)
     if type == "breakin"
       Twilio::Conference.unmute_participant(conference_sid, call_sid)
     else
