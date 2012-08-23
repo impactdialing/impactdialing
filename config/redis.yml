@@ -9,6 +9,10 @@ test:
 heroku_staging:
   resque_sidekiq: redis://10.254.238.226:6379
   monitor_redis: redis://10.254.238.226:6379    
-      
+  
+heroku_preproduction:
+  resque_sidekiq: redis://10.50.209.9:6379
+  monitor_redis: redis://10.50.209.9:6379    
+        
 heroku:
   redis://redistogo:acc06af2ea8dfd06606c3e641fe0febd@koi.redistogo.com:9090
