@@ -34,7 +34,8 @@
       script.mark_answered(); 
       $('.orderable_element').sortElements(function(a, b){
           return parseInt($(a).find('.script_element').val()) > parseInt($(b).find('.script_element').val()) ? 1 : -1;
-      });     
+      });  
+      script.display_script_text_numbers();   
     });
     
   </script>
