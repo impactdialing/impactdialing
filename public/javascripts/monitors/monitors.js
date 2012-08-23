@@ -135,7 +135,7 @@ Monitors.prototype.monitor_caller = function(session_id, action) {
 		
 	}
 	else{
-		self.monitor(session_id, action)
+		this.monitor(session_id, action)
 	}
 	
 }
