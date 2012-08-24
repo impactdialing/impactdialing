@@ -11,7 +11,7 @@ class CallinController < ApplicationController
     session_key = identity.nil? ? generate_session_key : identity.session_key
     if caller
       session = caller.create_caller_session(session_key, params[:CallSid], CallerSession::CallerType::PHONE)
-      MonitorEvent.create_caller_notification(session.campaign.id, id, "caller_connected", "add_caller")    
+      MonitorEvent.create_caller_notification(session.campaign.id, session.id, "caller_connected", "add_caller")    
       render xml:  caller.is_phones_only? ? session.run('callin_choice') : session.run('start_conf')
     else
       render xml:  Caller.ask_for_pin(params[:attempt].to_i)

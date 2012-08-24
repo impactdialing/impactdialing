@@ -182,7 +182,7 @@ describe Voter do
           callback_url,
           'FallbackUrl' => fallback_url,
           'StatusCallback' => callended_url,
-          'Timeout' => '30',
+          'Timeout' => '15',
           'IfMachine' => 'Continue'
       ).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
       voter.dial
