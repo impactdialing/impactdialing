@@ -19,7 +19,7 @@ class MonitorsController < ClientController
     @token = twilio_capability.generate    
   end
   
-  def join_conference
+  def start
     caller_session = CallerSession.find(params[:session_id])
     if caller_session.voter_in_progress && (caller_session.voter_in_progress.call_attempts.last.status == "Call in progress")
       status_msg = "Status: Monitoring in "+ params[:type] + " mode on "+ caller_session.caller.identity_name + "."
@@ -29,20 +29,7 @@ class MonitorsController < ClientController
     Pusher[params[:monitor_session]].trigger('set_status',{:status_msg => status_msg})
     render xml:  caller_session.join_conference(params[:type]=="eaves_drop", params[:CallSid], params[:monitor_session])    
   end
-  
-
-  def start
-    caller_session = CallerSession.find(params[:session_id])
-    if caller_session.voter_in_progress && (caller_session.voter_in_progress.call_attempts.last.status == "Call in progress")
-      status_msg = "Status: Monitoring in "+ params[:type] + " mode on "+ caller_session.caller.identity_name + "."
-    else
-      status_msg = "Status: Caller is not connected to a lead."
-    end
-    Pusher[params[:monitor_session]].trigger('set_status',{:status_msg => status_msg})
-    mute_type = params[:type]=="breakin" ? false : true
-    render xml:  caller_session.join_conference(mute_type, params[:CallSid], params[:monitor_session])
-  end
-  
+    
   def kick_off
     caller_session = CallerSession.find(params[:session_id])
     caller_session.end_running_call
@@ -52,7 +39,7 @@ class MonitorsController < ClientController
   def switch_mode
     type = params[:type]
     caller_session = CallerSession.find(params[:session_id])
-    MonitorCampaign.switch_monitor_mode(caller_session, type)
+    MonitorCampaign.switch_monitor_mode(caller_session, type, params[:monitor_session])
     if caller_session.voter_in_progress && (caller_session.voter_in_progress.call_attempts.last.status == "Call in progress")
       render text: "Status: Monitoring in "+ type + " mode on "+ caller_session.caller.identity_name + "."
     else

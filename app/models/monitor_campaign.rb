@@ -88,8 +88,9 @@ class MonitorCampaign
      conference_sid = confs.class == Array ? confs.last['Sid'] : confs['Sid']
   end
   
-  def self.switch_monitor_mode(caller_session, type)
+  def self.switch_monitor_mode(caller_session, type, monitor_session)
     conference_sid = get_conference_id(caller_session)
+    call_sid = MonitorConference.call_sid(monitor_session)
     if type == "breakin"
       Twilio::Conference.unmute_participant(conference_sid, call_sid)
     else
