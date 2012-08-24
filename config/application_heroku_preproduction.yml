@@ -11,9 +11,9 @@ development:
 test:
   <<: *default_settings
 
-heroku:
+heroku_preproduction:
   <<: *default_settings
-  host: twilio.impactdialing.com
+  host: beta-twilio.impactdialing.com
   port: 80
 
 production:
