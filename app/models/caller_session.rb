@@ -152,7 +152,7 @@ class CallerSession < ActiveRecord::Base
   
   def wrapup_attempt_in_progress
     attempt_in_progress.try(:update_attributes, {:wrapup_time => Time.now})
-    attempt_in_progress.try(:capture_answer_as_no_response)          
+    # attempt_in_progress.try(:capture_answer_as_no_response)          
   end
   
   def end_session

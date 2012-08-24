@@ -27,9 +27,9 @@ module Client
     def account_campaigns_usage
       @account = Account.find(params[:id])
       @campaigns = @account.campaigns
-      puts params[:from_date]
-      puts params[:to_date]
       @from_date, @to_date = set_date_range_account(@account, params[:from_date], params[:to_date])
+      puts @from_date
+      puts @to_date
       account_usage = AccountUsage.new(@account, @from_date, @to_date)
       @billiable_total = account_usage.billable_usage
     end
@@ -40,6 +40,9 @@ module Client
       @from_date, @to_date = set_date_range_account(@account, params[:from_date], params[:to_date])
       account_usage = AccountUsage.new(@account, @from_date, @to_date)
       @billiable_total = account_usage.callers_billable_usage
+      @status_usage = account_usage.callers_status_times
+      @final_total = @billiable_total.values.inject(0){|sum,x| sum+x} + sanitize_dials(@status_usage[CallAttempt::Status::ABANDONED]).to_i +
+      sanitize_dials(@status_usage[CallAttempt::Status::VOICEMAIL]).to_i + sanitize_dials(@status_usage[CallAttempt::Status::HANGUP]).to_i
     end
     
         

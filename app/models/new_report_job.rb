@@ -42,7 +42,7 @@ class NewReportJob
     FileUtils.mkdir_p(Rails.root.join("tmp"))
     uuid = UUID.new.generate
     @campaign_name = "#{uuid}_report_#{@campaign.name}"
-    @campaign_name = @campaign_name.tr("/\000", "").tr("'","_")
+    @campaign_name = @campaign_name.tr("/\000", "").tr("'","_").tr("-","_").tr(" ", "")
     "#{Rails.root}/tmp/#{@campaign_name}.csv"     
    end
    
