@@ -62,4 +62,8 @@ class RedisCallAttempt
     call_attempt['connecttime'] != nil && call_attempt['wrapup_time'] != nil
   end
   
+  def self.delete(call_attempt_id)
+    call_attempt(call_attempt_id).clear 
+  end
+  
 end
