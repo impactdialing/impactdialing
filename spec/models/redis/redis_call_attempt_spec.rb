@@ -2,9 +2,6 @@ require "spec_helper"
 
 describe RedisCallAttempt do
   
-  before(:each) do
-    @redis = RedisConnection.call_flow_connection
-  end
   
   
   it "should create a new call attempt" do 

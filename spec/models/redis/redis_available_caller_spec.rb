@@ -2,9 +2,6 @@ require "spec_helper"
 
 describe RedisAvailableCaller do
   
-  before(:each) do
-    @redis = RedisConnection.call_flow_connection
-  end
   
   
   it "should add caller" do

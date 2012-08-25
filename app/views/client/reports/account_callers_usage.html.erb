@@ -11,9 +11,21 @@
         <td><%= @billiable_total[caller.id] %></td>
       </tr>
     <%end%>
+    
+    <tr>
+      <td>Abandoned Calls</td>
+      <td><%= sanitize_dials(@status_usage[CallAttempt::Status::ABANDONED]).to_i %></td>
+    </tr>
+    
+    <tr>
+      <td>Voice Mail</td>
+      <td><%= sanitize_dials(@status_usage[CallAttempt::Status::VOICEMAIL]).to_i + sanitize_dials(@status_usage[CallAttempt::Status::HANGUP]).to_i %></td>
+    </tr>
+    
+    
     <tr>
       <td>Total</td>
-      <td><%= @billiable_total.values.inject(0){|sum,x| sum+x} %></td>
+      <td><%= @final_total %></td>
     </tr>
   </table>
 	

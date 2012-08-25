@@ -121,6 +121,7 @@ ImpactDialing::Application.routes.draw do
     resources :scripts
     resources :messages
     match 'monitor', :to => 'monitor#index'
+
     match '/', :to => 'broadcast#index', :as => 'broadcast_root'
     match '/login', :to => 'broadcast#login', :as => 'broadcast_login'
   end
@@ -190,9 +191,10 @@ ImpactDialing::Application.routes.draw do
       end
     end
     resources :blocked_numbers, :only => [:index, :create, :destroy]
-    resources :monitors do
+    resources :monitors , :only=>[:index, :show] , :name_prefix => 'client' do
       collection do
         get :start
+        get :new_index
         get :stop
         get :deactivate_session
         get :switch_mode

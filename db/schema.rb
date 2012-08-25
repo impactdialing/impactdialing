@@ -11,7 +11,8 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120716080402) do
+ActiveRecord::Schema.define(:version => 20120822072207) do
+
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -308,6 +309,10 @@ ActiveRecord::Schema.define(:version => 20120716080402) do
     t.string   "campaign_id"
   end
 
+  create_table "moderator_campaigns", :force => true do |t|
+    t.string "name"
+  end
+
   create_table "moderators", :force => true do |t|
     t.integer  "caller_session_id"
     t.string   "call_sid"
@@ -331,8 +336,9 @@ ActiveRecord::Schema.define(:version => 20120716080402) do
   end
 
   create_table "notes", :force => true do |t|
-    t.text    "note",      :null => false
-    t.integer "script_id", :null => false
+    t.text    "note",         :null => false
+    t.integer "script_id",    :null => false
+    t.integer "script_order"
   end
 
   create_table "payments", :force => true do |t|
@@ -357,6 +363,7 @@ ActiveRecord::Schema.define(:version => 20120716080402) do
     t.integer "script_id",      :null => false
     t.text    "text",           :null => false
     t.integer "question_order"
+    t.integer "script_order"
   end
 
   create_table "recording_responses", :force => true do |t|
@@ -384,6 +391,12 @@ ActiveRecord::Schema.define(:version => 20120716080402) do
     t.string   "file_content_type"
     t.integer  "file_file_size"
     t.datetime "file_updated_at"
+  end
+
+  create_table "script_texts", :force => true do |t|
+    t.integer "script_id"
+    t.text    "section"
+    t.integer "script_order"
   end
 
   create_table "scripts", :force => true do |t|

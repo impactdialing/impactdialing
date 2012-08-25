@@ -1,0 +1,41 @@
+<script id="campaign" type="text/html">
+  {{update_campaign_info}}
+    <tr id="campaign_info" class="campaign <%= cycle("odd", "even") %>" >
+       <td id="callers_logged_in">{{callers_logged_in}}</td>
+       <td id="on_call">{{on_call}}</td>
+       <td id="on_hold">{{on_hold}}</td>       
+       <td id="wrap_up">{{wrap_up}}</td>       
+       <td id="live_lines">{{live_lines}}</td>       
+       <td id="ringing_lines">{{ringing_lines}}</td>              
+       <td id="numbers_available">{{numbers_available}}</td>
+       <td id="numbers_remaining">{{numbers_remaining}}</td>       
+    </tr>
+  {{/update_campaign_info}}
+</script>
+
+<h2><%= @campaign.name %></h2>
+<div class="table">
+  <table id="campaign_table" width="100%" border="0" cellspacing="0" cellpadding="0">
+    <tr class="">
+      <th>Callers logged in</th>
+      <th>On Call</th>
+      <th>Wrap up</th>      
+      <th>On hold</th>            
+      <th>Live lines</th>
+      <th>Ringing lines</th>      
+      <th>Numbers Available</th>
+      <th>Numbers remaining</th>
+    </tr>
+    
+    <tr id="campaign_info" class="campaign <%= cycle("odd", "even") %>">
+      <td id="callers_logged_in"><%= MonitorCampaign.callers_logged_in(@campaign.id) %></td>
+      <td id="on_call"><%= MonitorCampaign.on_call(@campaign.id) %></td>       
+      <td id="wrap_up"><%= MonitorCampaign.wrapup(@campaign.id) %></td>       
+      <td id="on_hold"><%= MonitorCampaign.on_hold(@campaign.id) %></td>                 
+      <td id="live_lines"><%= MonitorCampaign.live_lines(@campaign.id) %></td>       
+      <td id="ringing_lines"><%= MonitorCampaign.ringing_lines(@campaign.id) %></td>              
+      <td id="numbers_available"><%= MonitorCampaign.available(@campaign.id) %></td>
+      <td id="numbers_remaining"><%= MonitorCampaign.remaining(@campaign.id) %></td>
+    </tr>
+  </table>
+</div>

@@ -5,6 +5,10 @@ module LeadEvents
   
   module InstanceMethods
     
+    def publish_incoming_call
+      MonitorEvent.incoming_call_request(campaign)
+    end
+    
     def publish_voter_connected
       caller_session_id = RedisVoter.read(voter.id)['caller_session_id']
       caller_session = RedisCallerSession.read(caller_session_id)      
@@ -16,8 +20,10 @@ module LeadEvents
             caller_deferrable.callback {}
             caller_deferrable.errback { |error| }
           end
-           }
+        }      
+      MonitorEvent.create_caller_notification(campaign.id, caller_session.id, status)  
       end
+      MonitorEvent.voter_connected(campaign)      
     end    
     
     def publish_voter_disconnected
@@ -31,19 +37,14 @@ module LeadEvents
             caller_deferrable.errback { |error| puts error.inspect}
           end
         }   
+      MonitorEvent.create_caller_notification(campaign.id, caller_session.id, status)  
       end
+      MonitorEvent.voter_disconnected(campaign)
     end
     
     def publish_moderator_response_submited
-      # unless caller_session.nil?
-      #   EM.run {
-      #     Moderator.active_moderators(campaign).each do |moderator|
-      #       moderator_deferrable = Pusher[moderator.session].trigger_async('voter_event', {caller_session_id:  caller_session.id, campaign_id:  campaign.id, caller_id:  caller_session.caller.id, call_status: caller_session.attempt_in_progress.try(:status)})      
-      #       moderator_deferrable.callback {}
-      #       moderator_deferrable.errback { |error| }          
-      #     end              
-      #   }   
-      # end      
+      MonitorEvent.voter_response_submitted(campaign)
+      MonitorEvent.create_caller_notification(campaign.id, caller_session.id, "On hold")  
     end
     
   end

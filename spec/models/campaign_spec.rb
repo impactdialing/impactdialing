@@ -198,7 +198,6 @@ describe Campaign do
      it "returns campaigns having a session with the given caller" do
        caller = Factory(:caller)
        campaign = Factory(:preview)
-       Factory(:preview)
        Factory(:caller_session, :campaign => campaign, :caller => caller)
        Campaign.for_caller(caller).should == [campaign]
      end
@@ -247,6 +246,56 @@ describe Campaign do
       campaign = Factory(:preview)
       campaign.cost_per_minute.should eq(0.09)
     end
+    
+  end
+  
+  describe "callers_status" do
+    
+    before (:each) do
+      @campaign = Factory(:preview, :type => 'preview')
+      @caller_session1 = Factory(:caller_session, on_call:true, available_for_call: true, campaign_id: @campaign.id)
+      @caller_session2 = Factory(:caller_session, on_call:true, available_for_call: false, campaign_id: @campaign.id)            
+    end
+    
+    it "should return callers logged in" do
+      @campaign.callers_status[0].should eq(2)
+    end
+    
+    it "should return callers on hold" do
+      @campaign.callers_status[1].should eq(1)
+    end
+    
+    it "should return callers on call" do
+      @campaign.callers_status[2].should eq(1)
+    end
+    
+    
+  end
+  
+  describe "call_status" do
+    
+    it "should return attempts in wrapup" do
+      campaign = Factory(:preview, :type => 'preview')
+      caller_attempt1 = Factory(:call_attempt, wrapup_time: nil, created_at: 3.minutes.ago, status:  CallAttempt::Status::SUCCESS, campaign_id: campaign.id)
+      caller_attempt2 = Factory(:call_attempt, wrapup_time: nil, created_at: 7.minutes.ago, status:  CallAttempt::Status::SUCCESS, campaign_id: campaign.id)      
+      campaign.call_status[0].should eq(1)
+    end
+    
+    it "should return live calls" do
+      campaign = Factory(:preview, :type => 'preview')
+      caller_attempt1 = Factory(:call_attempt, wrapup_time: nil, created_at: 3.minutes.ago, status:  CallAttempt::Status::INPROGRESS, campaign_id: campaign.id)
+      caller_attempt2 = Factory(:call_attempt, wrapup_time: nil, created_at: 7.minutes.ago, status:  CallAttempt::Status::INPROGRESS, campaign_id: campaign.id)      
+      campaign.call_status[2].should eq(1)
+    end
+    
+    it "should return ringing_lines" do
+      campaign = Factory(:preview, :type => 'preview')
+      caller_attempt1 = Factory(:call_attempt, wrapup_time: nil, created_at: 12.seconds.ago, status:  CallAttempt::Status::RINGING, campaign_id: campaign.id)
+      caller_attempt2 = Factory(:call_attempt, wrapup_time: nil, created_at: 7.minutes.ago, status:  CallAttempt::Status::RINGING, campaign_id: campaign.id)      
+      campaign.call_status[1].should eq(1)
+    end
+    
+    
     
   end
      
