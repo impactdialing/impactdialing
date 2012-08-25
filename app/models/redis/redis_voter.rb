@@ -78,4 +78,9 @@ class RedisVoter
     !assigned_to_caller?(voter_id) || RedisCallerSession.disconnected?(caller_session_id(voter_id))
   end
   
+  def self.delete(voter_id)
+    voter(voter_id).clear 
+  end
+  
+  
 end
