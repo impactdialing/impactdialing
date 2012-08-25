@@ -29,6 +29,14 @@ class RedisCallAttempt
     call_attempt(call_attempt_id).bulk_set({status: status, connecttime: Time.now, call_end: Time.now, wrapup_time: Time.now})  
   end
   
+  def self.end_answered_by_machine(call_attempt_id)
+    call_attempt(call_attempt_id).bulk_set({call_end: Time.now, wrapup_time: Time.now})  
+  end
+  
+  def self.end_unanswered_call(call_attempt_id, status)
+    call_attempt(call_attempt_id).bulk_set({status: status, call_end: Time.now, wrapup_time: Time.now})  
+  end
+  
   def self.read(call_attempt_id)
     call_attempt(call_attempt_id).all
   end
