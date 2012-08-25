@@ -9,6 +9,7 @@ class Caller < ActiveRecord::Base
   has_many :call_attempts
   has_many :answers
   before_create :create_uniq_pin
+  before_save :reassign_caller_campaign
   validates_uniqueness_of :email, :allow_nil => true
   validates_presence_of :campaign_id
 
@@ -24,6 +25,17 @@ class Caller < ActiveRecord::Base
   def identity_name
     is_phones_only?  ? name : email
   end
+  
+  def reassign_caller_campaign
+    if campaign_id_changed? && is_on_call?
+      if is_phones_only?
+        caller_session.campaign.redirect_campaign_reassigned(caller_session) 
+      else
+        caller_session.reassign_caller_session_to_campaign        
+      end
+    end  
+  end
+  
   
   def create_uniq_pin
     uniq_pin=0
