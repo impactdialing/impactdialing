@@ -36,6 +36,15 @@ class RedisVoter
     voter_hash.delete('caller_session_id')
   end
   
+  def self.end_answered_by_machine(voter_id)
+    voter(voter_id).bulk_set({last_call_attempt_time: Time.now, call_back: false})
+  end
+  
+  def self.end_unanswered_call(voter_id, status)
+    voter(voter_id).bulk_set({status: status, last_call_attempt_time: Time.now, call_back: false})
+  end
+  
+  
   def self.set_status(voter_id, status)
     voter(voter_id).store('status', status)
   end

@@ -123,19 +123,19 @@ class CallAttempt < ActiveRecord::Base
   end
   
   def end_answered_by_machine
-    update_attributes(wrapup_time: Time.now, call_end: Time.now)    
-    voter.update_attributes(last_call_attempt_time:  Time.now, call_back: false)  
+    $redis_call_flow_connection.pipelined do
+      RedisCallAttempt.end_answered_by_machine(self.id)
+      RedisVoter.end_answered_by_machine(voter.id)
+    end
     MonitorEvent.incoming_call_request(campaign)              
   end
   
     
   def end_unanswered_call
-    update_attributes(status:  CallAttempt::Status::MAP[call.call_status], wrapup_time: Time.now, call_end: Time.now)          
-    begin
-      voter.update_attributes(status:  CallAttempt::Status::MAP[call.call_status], last_call_attempt_time:  Time.now, call_back: false)
-    rescue ActiveRecord::StaleObjectError
-      voter_to_update = Voter.find(voter.id)
-      voter_to_update.update_attributes(status:  CallAttempt::Status::MAP[call.call_status], last_call_attempt_time:  Time.now, call_back: false)
+    status = CallAttempt::Status::MAP[call.call_status]
+    $redis_call_flow_connection.pipelined do
+      RedisCallAttempt.end_unanswered_call(self.id, status)
+      RedisVoter.end_unanswered_call(voter.id, status)
     end
   end
   
