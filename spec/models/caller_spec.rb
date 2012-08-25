@@ -81,7 +81,7 @@ describe Caller do
     let!(:time_now) { Time.now }
 
     before(:each) do
-      Factory(:caller_session, tCaller: "+18583829141", starttime: Time.now, endtime: Time.now + (30.minutes + 2.seconds), :tDuration => 10.minutes + 2.seconds, :caller => caller).tap { |ca| ca.update_attribute(:created_at, from_time) }
+      Factory(:caller_session, caller_type: "Phone", starttime: Time.now, endtime: Time.now + (30.minutes + 2.seconds), :tDuration => 10.minutes + 2.seconds, :caller => caller).tap { |ca| ca.update_attribute(:created_at, from_time) }
       Factory(:caller_session, starttime: Time.now, endtime: Time.now + (101.minutes + 57.seconds), :tDuration => 101.minutes + 57.seconds, :caller => caller).tap { |ca| ca.update_attribute(:created_at, from_time) }
       Factory(:call_attempt, connecttime: Time.now, call_end: Time.now + (10.minutes + 10.seconds), wrapup_time: Time.now + (10.minutes + 40.seconds), :tDuration => 10.minutes + 2.seconds, :status => CallAttempt::Status::SUCCESS, :caller => caller).tap { |ca| ca.update_attribute(:created_at, from_time) }
       Factory(:call_attempt, connecttime: Time.now, call_end: Time.now + (1.minutes), :tDuration => 1.minutes, :status => CallAttempt::Status::VOICEMAIL, :caller => caller).tap { |ca| ca.update_attribute(:created_at, from_time) }
@@ -132,5 +132,34 @@ describe Caller do
         stats.should == {"what?"=>[{:answer=>"foo", :number=>3, :percentage=>60}, {:answer=>"bar", :number=>2, :percentage=>40}, {:answer=>"[No response]", :number=>0, :percentage=>0}]}
       end
     end
+  end
+  
+  describe "reassign caller campaign" do
+    it "should do nothing if campaign not changed" do
+      campaign = Factory(:campaign)
+      caller = Factory(:caller, campaign: campaign)
+      caller.should_not_receive(:is_phones_only?)
+      caller.save
+    end
+    
+    it "should do nothing if campaign changed but caller not logged in" do
+      campaign = Factory(:campaign)
+      caller_session = Factory(:caller_session, on_call: false)
+      caller = Factory(:caller, campaign: campaign)
+      caller.should_not_receive(:is_phones_only?)      
+      caller.save
+    end
+    
+    it "should redirect if live phones only caller" do
+      campaign = Factory(:campaign)
+      other_campaign = Factory(:campaign)
+      caller = Factory(:caller, campaign: campaign, is_phones_only: true)
+      caller_session = Factory(:caller_session, on_call: true, campaign: other_campaign, caller_id: caller.id)
+      caller.caller_sessions << caller_session      
+      other_campaign.should_receive(:redirect_campaign_reassigned)
+      caller.update_attributes(campaign_id: other_campaign.id)
+    end
+    
+    
   end
 end

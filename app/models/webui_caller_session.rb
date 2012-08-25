@@ -1,3 +1,4 @@
+require 'em-http-request'
 class WebuiCallerSession < CallerSession  
   include Rails.application.routes.url_helpers
   
@@ -54,7 +55,7 @@ class WebuiCallerSession < CallerSession
   end
     
   def publish_async(event, data)    
-    EM.run {
+    EM.synchrony {
       deferrable = Pusher[session_key].trigger_async(event, data.merge!(:dialer => campaign.type))
       deferrable.callback { 
         }

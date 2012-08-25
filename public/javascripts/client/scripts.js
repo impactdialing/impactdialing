@@ -1,4 +1,59 @@
-var Scripts = function(){}
+var Scripts = function(){
+	
+  var self = this;		
+
+  self.display_question_numbers();
+  self.display_text_field_numbers();
+  self.display_script_text_numbers();          
+
+
+  $("#script_elements").sortable({ cursor: 'crosshair' , axis: 'y' ,stop: function(event, ui) { 
+    self.display_question_numbers();
+	self.display_script_text_numbers();
+	self.display_text_field_numbers();
+  } 
+  });
+
+
+  $(".possible_response_sortable").sortable({ cursor: 'crosshair' , containment: 'parent', axis: 'y' });
+
+  $('#script_submit').click(function() {
+    self.set_question_order();
+    self.set_possible_response_order();
+    self.set_elements_order();
+    return true;
+  });
+
+  $('#call_results').bind('insertion-callback',            
+    function() {
+      self.display_script_text_numbers();
+      self.display_question_numbers();
+      self.display_text_field_numbers();                              
+      self.add_new_response_when_question_added();
+  });
+
+
+
+  $('#call_results').bind('after-removal-callback',            
+    function() { 
+	  self.display_script_text_numbers();
+      self.display_question_numbers();
+      self.display_text_field_numbers();                              
+      self.add_new_response_when_question_added();
+    
+	});
+  
+
+
+}
+
+Scripts.prototype.set_elements_order = function(){
+  var count = 1;    
+  $.each($('.script_element'), function(){
+      $(this).val(count++);
+  });
+}
+
 
 Scripts.prototype.display_question_numbers = function(){
   var question_count = 1;    
@@ -9,6 +64,17 @@ Scripts.prototype.display_question_numbers = function(){
   });
 
 }
+
+Scripts.prototype.display_script_text_numbers = function(){
+  var script_text_count = 1;    
+  $.each($('.script_label'), function(){
+	if ($(this).parent('fieldset').attr('deleted') != "true") {
+      $(this).text("Script Text "+script_text_count++);
+    }
+  });
+
+}
+
 
 Scripts.prototype.set_question_order = function(){
   var question_order = 1;    
@@ -57,6 +123,10 @@ Scripts.prototype.add_new_response_when_question_added = function(){
       $(this).children('.add_response').trigger('click')
     }      
   });    
+}
+
+Scripts.prototype.reorder_script_elements = function(){
+	
 }
 
 function question_delete(question_node){
@@ -125,3 +195,4 @@ function possible_response_delete(response_node){
   }    	
   return true;
 }
+

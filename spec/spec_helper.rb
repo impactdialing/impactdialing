@@ -24,7 +24,7 @@ Spork.prefork do
 
   RSpec.configure do |config|
     config.before(:each) do
-      RedisConnection.call_flow_connection.flushAll
+      $redis_call_flow_connection.flushALL
     end
     # == Mock Framework
     #

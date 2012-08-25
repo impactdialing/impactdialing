@@ -16,7 +16,7 @@ class CallerSession < ActiveRecord::Base
   scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
   scope :on_campaign, lambda{|campaign| where("campaign_id = #{campaign.id}") unless campaign.nil?}  
   scope :for_caller, lambda{|caller| where("caller_id = #{caller.id}") unless caller.nil?}  
-  scope :debit_not_processed, where(debited: "0").where('endtime is not null')
+  scope :debit_not_processed, lambda { where(:debited => "0", :caller_type => CallerType::PHONE).where('endtime is not null') }
   scope :campaigns_on_call, select("campaign_id").on_call.group("campaign_id")
   
   has_one :voter_in_progress, :class_name => 'Voter'
@@ -115,7 +115,7 @@ class CallerSession < ActiveRecord::Base
       
       state :conference_ended do
         before(:always) { end_caller_session}
-        after(:always) { publish_caller_disconnected; publish_moderator_caller_disconnected} 
+        after(:always) { publish_caller_disconnected} 
         response do |xml_builder, the_call|
           xml_builder.Hangup
         end        
@@ -128,7 +128,7 @@ class CallerSession < ActiveRecord::Base
   def end_caller_session
     begin
       end_session
-      wrapup_attempt_in_progress
+      wrapup_attempt_in_progress      
     rescue ActiveRecord::StaleObjectError => exception
       Resque.enqueue(PhantomCallerJob, self.id)
     end      
@@ -137,7 +137,7 @@ class CallerSession < ActiveRecord::Base
   def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)    
     voters = Voter.find_all_by_caller_id_and_status(caller.id, CallAttempt::Status::READY)
     voters.each {|voter| voter.update_attributes(status: 'not called')}    
-    EM.run {
+    EM.synchrony {
       t = TwilioLib.new(account, auth)    
       deferrable = t.end_call("#{self.sid}")              
       deferrable.callback {}
@@ -145,14 +145,12 @@ class CallerSession < ActiveRecord::Base
     }             
     end_caller_session
     CallAttempt.wrapup_calls(caller_id)
-    Moderator.publish_event(campaign, "caller_disconnected",{:caller_session_id => id, :caller_id => caller.id, :campaign_id => campaign.id, :campaign_active => campaign.callers_log_in?,
-    :no_of_callers_logged_in => campaign.caller_sessions.on_call.length})
   end  
   
   
   def wrapup_attempt_in_progress
     attempt_in_progress.try(:update_attributes, {:wrapup_time => Time.now})
-    attempt_in_progress.try(:capture_answer_as_no_response)          
+    # attempt_in_progress.try(:capture_answer_as_no_response)          
   end
   
   def end_session
@@ -195,15 +193,14 @@ class CallerSession < ActiveRecord::Base
         v.conference(self.session_key, :startConferenceOnEnter => false, :endConferenceOnExit => false, :beep => false, :waitUrl => HOLD_MUSIC_URL, :waitMethod =>"GET", :muted => mute_type)
       end
     end.response
-    moderator = Moderator.find_by_session(monitor_session)
-    moderator.update_attributes(:caller_session_id => self.id, :call_sid => call_sid) unless moderator.nil?
+    MonitorConference.join_conference(monitor_session, self.id, call_sid)
     response
   end
   
   def reassign_caller_session_to_campaign
     old_campaign = self.campaign
     update_attribute(:campaign, caller.campaign)    
-    publish_moderator_caller_reassigned_to_campaign(old_campaign)
+    # publish_moderator_caller_reassigned_to_campaign(old_campaign)
   end
      
   def caller_reassigned_to_another_campaign?
@@ -219,27 +216,15 @@ class CallerSession < ActiveRecord::Base
   end
   
   
-  def dial(voter)
-  return if voter.nil?
-  attempt = create_call_attempt(voter)
-  publish_calling_voter
-  response = make_call(attempt,voter)    
-  if response["TwilioResponse"]["RestException"]
-    handle_failed_call(attempt, voter)
-    return
-  end    
-  attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])  
-  end
-  
   def dial_em(voter)
     return if voter.nil?
     call_attempt = create_call_attempt(voter)    
     twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)        
-    EM.run do
+    EM.synchrony do
       http = twilio_lib.make_call_em(campaign, voter, call_attempt)
       http.callback { 
         response = JSON.parse(http.response)  
-        if response["RestException"]
+        if response["status"] == 400
           handle_failed_call(call_attempt, self)
         else
           call_attempt.update_attributes(:sid => response["sid"])
@@ -256,22 +241,15 @@ class CallerSession < ActiveRecord::Base
     update_attribute('attempt_in_progress', attempt)
     voter.update_attributes(:last_call_attempt => attempt, :last_call_attempt_time => Time.now, :caller_session => self, status: CallAttempt::Status::RINGING)
     Call.create(call_attempt: attempt, all_states: "")
+    MonitorEvent.call_ringing(campaign)
     attempt    
   end
   
-  
-  def make_call(attempt, voter)
-  Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-  params = {'FallbackUrl' => TWILIO_ERROR, 'StatusCallback' => flow_call_url(attempt.call, host: Settings.host, port:  Settings.port, event: "call_ended"),'Timeout' => campaign.use_recordings? ? "20" : "15"}
-  params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect        
-  Twilio::Call.make(self.campaign.caller_id, voter.Phone, flow_call_url(attempt.call, host: Settings.host, port: Settings.port, event: "incoming_call"),params)  
-  end
   
   def handle_failed_call(attempt, voter)
     attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
     voter.update_attributes(status: CallAttempt::Status::FAILED)
     update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
-    Moderator.update_dials_in_progress(campaign)
     redirect_caller
   end
   
@@ -284,26 +262,21 @@ class CallerSession < ActiveRecord::Base
      conference_sid = confs.class == Array ? confs.last['Sid'] : confs['Sid']
    end
    
-   def debit
-     return false if self.endtime.nil? || self.starttime.nil?
-     call_time = ((self.endtime - self.starttime)/60).ceil
-     Payment.debit(call_time, self)
-   end
    
    def self.time_logged_in(caller, campaign, from, to)
      CallerSession.for_caller(caller).on_campaign(campaign).between(from, to).sum('TIMESTAMPDIFF(SECOND ,starttime,endtime)').to_i
    end
    
    def self.caller_time(caller, campaign, from, to)
-     CallerSession.for_caller(caller).on_campaign(campaign).between(from, to).where("tCaller is NOT NULL").sum('ceil(TIMESTAMPDIFF(SECOND ,starttime,endtime)/60)').to_i
+     CallerSession.for_caller(caller).on_campaign(campaign).between(from, to).where("caller_type = 'Phone' ").sum('ceil(TIMESTAMPDIFF(SECOND ,starttime,endtime)/60)').to_i
    end   
    
    def call_not_connected?
-     starttime.nil? || endtime.nil? || caller_type == CallerType::TWILIO_CLIENT
+     starttime.nil? || endtime.nil? || caller_type == nil || caller_type == CallerType::TWILIO_CLIENT
    end
 
    def call_time
-   ((starttime - endtime)/60).ceil
+   ((endtime - starttime)/60).ceil
    end
    
    def start_conference    

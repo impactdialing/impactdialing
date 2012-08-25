@@ -204,7 +204,7 @@ class Account < ActiveRecord::Base
   
 
   def check_autorecharge(amount_remaining)
-    if autorecharge_enabled? && autorecharge_amount >= amount_remaining
+    if autorecharge_enabled? && autorecharge_trigger >= amount_remaining
       begin
         if status != 'autorecharge_pending'
           update_attribute(:status, 'autorecharge_pending')

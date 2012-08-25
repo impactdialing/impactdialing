@@ -4,7 +4,7 @@
 <% end %>
 <% content_for :javascripts do %>
     <%= pusher_js %>
-    <%= javascript_include_tag 'state-machine','callers/caller_pusher', 'ICanHaz.min.js', 'jquery.form.js', 'flash_detect_min.js' , 'browser_detect.js', 'date.js'%>
+    <%= javascript_include_tag 'orderable', 'state-machine','callers/caller_pusher', 'ICanHaz.min.js', 'jquery.form.js', 'flash_detect_min.js' , 'browser_detect.js', 'date.js'%>
 
     <script type="text/javascript">
         var pusher = new Pusher('<%= Pusher.key %>');
@@ -65,7 +65,7 @@
       {{/custom_field_list}}
     </script>
 <% end %>
-<%= render 'browser_test' %>
+<%= render 'shared/browser_test' %>
 
 <%= hidden_field_tag(:caller, @caller.id) %>
 <%= hidden_field_tag(:caller_session, nil) %>
@@ -90,23 +90,45 @@
 
 <!-- end form tag hack -->
 
-<fieldset>
-  <legend>Script</legend>
-  <% if @campaign.script %>
-      <div id="script" class="rt script">
-        <%= raw @campaign.script.script.gsub(/(\n|\[hide\]|\[\/hide\])/, {
-          "\n" => "<br />",
-          "[hide]" => '<div class="hidden_script">',
-          "[/hide]" => "</div>",
-          }) %>
-      </div>
+  
+  <% unless @campaign.script %>
+    <div id="script" class="rt script">There is no script assigned to this campaign.</div>
   <% else %>
-      <div id="script" class="rt script">There is no script assigned to this campaign.</div>
-  <% end %>
-</fieldset>
+    <form id="voter_responses" method="post">
+      <input type="hidden" id="voter_id" name="voter_id"/>
+      <% @campaign.script.try(:script_texts).try(:each) do |script_section| %>
+        <fieldset class="script_element" script_order="<%= script_section.script_order %>">
+            <%= raw script_section.section.gsub(/(\n|\[hide\]|\[\/hide\])/, {
+              "\n" => "</p>",
+              "[hide]" => '<div class="hidden_script">',
+              "[/hide]" => "</div>",
+              }) %>
+        </fieldset>            
+      <% end %>
+      
+      <% @campaign.script.try(:questions).try(:each) do |question| %>
+        <fieldset class="script_element" script_order="<%= question.script_order %>">
+              <p><label><%= question.text %></label><br/>
+                <%= select :question, question.id, question.possible_responses.collect { |pr| [pr.value, pr.id] unless (pr.value == "[No response]")}.compact %>
+              </p>
+        </fieldset>            
+      <% end %>
 
-<%= render "transfer" %>
-<%= render 'results' %>
+      <% @campaign.script.try(:notes).try(:each) do |note| %>
+        <fieldset class="script_element" script_order="<%= note.script_order %>">
+          <p><label><%= note.note %></label><br/>
+            <input type="text" id="note_response_<%= note.id %>" name="notes[<%= note.id %>]" class="note_text"/>
+          </p>
+        </fieldset>            
+      <% end %>
+      
+
+    </form>
+  
+  <% end %>
+  
+<%= render "transfer" %>  
+<%= render "results" %>
 <%= render 'actions' %>
 
 <% unless @campaign.time_period_exceeded? %>
@@ -128,6 +150,10 @@
 
 <%= javascript_include_tag "https://static.twilio.com/libs/twiliojs/1.0/twilio.js" %>
 <script type="text/javascript">
+   $('.script_element').sortElements(function(a, b){
+    return parseInt($(a).attr('script_order')) > parseInt($(b).attr('script_order')) ? 1 : -1;
+   });     
+
 	if (!FlashDetect.installed || !flash_supported())
 		$("#start_calling").hide();
 

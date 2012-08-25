@@ -9,8 +9,7 @@ class CallerController < ApplicationController
   def start_calling
     caller = Caller.find(params[:caller_id])
     identity = CallerIdentity.find_by_session_key(params[:session_key])
-    session = caller.create_caller_session(identity.session_key, params[:CallSid], CallerSession::CallerType::TWILIO_CLIENT)    
-    Moderator.caller_connected_to_campaign(caller, caller.campaign, session)
+    session = caller.create_caller_session(identity.session_key, params[:CallSid], CallerSession::CallerType::TWILIO_CLIENT)
     render xml: session.run(:start_conf)
   end
   
@@ -41,6 +40,8 @@ class CallerController < ApplicationController
   
   def end_session
     unless @caller_session.nil?
+      MonitorEvent.caller_disconnected(@caller_session.campaign)
+      MonitorEvent.create_caller_notification(@caller_session.campaign.id, @caller_session.id, "caller_disconnected", "remove_caller")
       render xml: @caller_session.run('end_conf') 
     else
       render xml: Twilio::Verb.hangup

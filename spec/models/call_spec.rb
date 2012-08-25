@@ -442,8 +442,7 @@ describe Call do
          call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected')        
          @call_attempt.should_receive(:publish_voter_disconnected)
          call.disconnect!
-         call.state.should eq('disconnected')
-         
+         call.state.should eq('disconnected')         
        end
        
        it "should hangup twiml" do
@@ -601,34 +600,30 @@ describe Call do
       
       it "should should update wrapup time" do
         call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'call_answered_by_machine')
-        call.call_attempt.should_receive(:redirect_caller)
         call.call_ended!
         call.call_attempt.wrapup_time.should_not be_nil        
       end
       
       it "should  update voters last_call_attempt_time" do
         call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'call_answered_by_machine')
-        call.call_attempt.should_receive(:redirect_caller)
         call.call_ended!
         call.voter.last_call_attempt_time.should_not be_nil        
       end
       
       it "should  update voters call_back" do
         call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'call_answered_by_machine')
-        call.call_attempt.should_receive(:redirect_caller)
         call.call_ended!
         call.voter.call_back.should be_false
       end
       
       it "should  return hangup twiml" do
         call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'call_answered_by_machine')
-        call.call_attempt.should_receive(:redirect_caller)
         call.call_ended!
         call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
       end
     end
     
-    describe "call_ended not answered" do
+    describe "call_ended not answered machine" do
       
       before(:each) do
         @script = Factory(:script)
@@ -639,35 +634,35 @@ describe Call do
       end
       
       it "should should update wrapup time" do
-        call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'call_answered_by_machine', call_status: 'busy')
+        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected', call_status: 'busy')
         call.call_attempt.should_receive(:redirect_caller)
         call.call_ended!
         call.call_attempt.wrapup_time.should_not be_nil        
       end
       
       it "should update status" do
-        call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'call_answered_by_machine', call_status: 'busy')
-        call.call_attempt.should_receive(:redirect_caller)
+        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected', call_status: 'busy')
+        call.call_attempt.should_receive(:redirect_caller)        
         call.call_ended!
         call.call_attempt.status.should eq(CallAttempt::Status::BUSY)
       end
       
       it "should  update voters last_call_attempt_time" do
-        call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'call_answered_by_machine', call_status: 'busy')
+        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected', call_status: 'busy')
         call.call_attempt.should_receive(:redirect_caller)
         call.call_ended!
         call.voter.last_call_attempt_time.should_not be_nil        
       end
       
       it "should  update voters call_back" do
-        call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'call_answered_by_machine', call_status: 'busy')
+        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected', call_status: 'busy')
         call.call_attempt.should_receive(:redirect_caller)
         call.call_ended!
         call.voter.call_back.should be_false
       end
       
       it "should  update voters status" do
-        call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'call_answered_by_machine', call_status: 'busy')
+        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected', call_status: 'busy')
         call.call_attempt.should_receive(:redirect_caller)
         call.call_ended!
         call.voter.status.should eq(CallAttempt::Status::BUSY)
@@ -675,7 +670,7 @@ describe Call do
       
       
       it "should  return hangup twiml" do
-        call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'call_answered_by_machine', call_status: 'busy')
+        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected', call_status: 'busy')
         call.call_attempt.should_receive(:redirect_caller)
         call.call_ended!
         call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
@@ -697,7 +692,7 @@ describe Call do
       
       it "should wrapup call_attempt" do
         call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'call_answered_by_lead', all_states: "")
-        call.call_attempt.should_receive(:publish_moderator_response_submited)
+        # call.call_attempt.should_receive(:publish_moderator_response_submited)
         call.call_attempt.should_receive(:redirect_caller)
         call.submit_result!
         call.call_attempt.wrapup_time.should_not be_nil

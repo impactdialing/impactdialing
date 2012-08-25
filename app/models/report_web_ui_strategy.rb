@@ -1,4 +1,4 @@
-class ReportWebUiStrategy
+class ReportWebUIStrategy
 
   def initialize(result, user, campaign, exception)
     @result = result

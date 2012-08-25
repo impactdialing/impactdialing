@@ -88,7 +88,9 @@ class CallAttempt < ActiveRecord::Base
       RedisCallAttempt.abandon_call(self.id)
       RedisVoter.abandon_call(voter.id)
     end
+    MonitorEvent.incoming_call_request(campaign)
   end
+      
     
   def connect_lead_to_caller
     RedisVoter.connect_lead_to_caller(voter.id, campaign.id, self.id)
@@ -117,21 +119,23 @@ class CallAttempt < ActiveRecord::Base
       RedisCallAttempt.answered_by_machine(self.id, status)
       RedisVoter.answered_by_machine(voter.id, status)
     end
+    MonitorEvent.incoming_call_request(campaign)
+  end
+  
+  def end_answered_by_machine
+    update_attributes(wrapup_time: Time.now, call_end: Time.now)    
+    voter.update_attributes(last_call_attempt_time:  Time.now, call_back: false)  
+    MonitorEvent.incoming_call_request(campaign)              
   end
   
     
   def end_unanswered_call
-    if [CallAttempt::Status::VOICEMAIL, CallAttempt::Status::HANGUP].include?(status)
-      update_attributes(wrapup_time: Time.now, call_end: Time.now)    
-      voter.update_attributes(last_call_attempt_time:  Time.now, call_back: false)            
-    else
-      update_attributes(status:  CallAttempt::Status::MAP[call.call_status], wrapup_time: Time.now, call_end: Time.now)          
-      begin
-        voter.update_attributes(status:  CallAttempt::Status::MAP[call.call_status], last_call_attempt_time:  Time.now, call_back: false)
-      rescue ActiveRecord::StaleObjectError
-        voter_to_update = Voter.find(voter.id)
-        voter_to_update.update_attributes(status:  CallAttempt::Status::MAP[call.call_status], last_call_attempt_time:  Time.now, call_back: false)
-      end
+    update_attributes(status:  CallAttempt::Status::MAP[call.call_status], wrapup_time: Time.now, call_end: Time.now)          
+    begin
+      voter.update_attributes(status:  CallAttempt::Status::MAP[call.call_status], last_call_attempt_time:  Time.now, call_back: false)
+    rescue ActiveRecord::StaleObjectError
+      voter_to_update = Voter.find(voter.id)
+      voter_to_update.update_attributes(status:  CallAttempt::Status::MAP[call.call_status], last_call_attempt_time:  Time.now, call_back: false)
     end
   end
   
@@ -239,7 +243,7 @@ class CallAttempt < ActiveRecord::Base
   
   def redirect_caller(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
     unless caller_session.nil?
-      EM.run {
+      EM.synchrony {
         t = TwilioLib.new(account, auth)    
         deferrable = t.redirect_call(caller_session.sid, flow_caller_url(caller_session.caller, :host => Settings.host, :port => Settings.port, session_id: caller_session.id, event: "start_conf"))              
         deferrable.callback {}
