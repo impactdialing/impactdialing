@@ -9,7 +9,7 @@ class Predictive < Campaign
       concurrency = 8
       voters_to_dial = choose_voters_to_dial(num_to_call)
       EM::Synchrony::Iterator.new(voters_to_dial, concurrency).map do |voter, iter|
-        voter.dial_predictive_em(iter)
+        Twillio.dial_predictive_em(iter, voter)
         Moderator.update_dials_in_progress_sync(self)
       end      
       EventMachine.stop
