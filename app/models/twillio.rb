@@ -42,7 +42,7 @@ class Twillio
     call_attempt = voter.call_attempts.create(campaign:  self.campaign, dialer_mode:  mode, status:  CallAttempt::Status::RINGING, call_start:  Time.now)
     $redis_call_flow_connection.pipelined do
       RedisCallAttempt.load_call_attempt_info(attempt.id, attempt)
-      RedisVoter.setup_call(voter.id, attempt.id, nil)
+      RedisVoter.setup_call_predictive(voter.id, attempt.id)
     end
     Call.create(call_attempt: attempt, all_states: "")    
     RedisCampaignCall.add_to_ringing(call_attempt.id)
