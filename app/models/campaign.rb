@@ -163,7 +163,8 @@ class Campaign < ActiveRecord::Base
 
 
   def callers_available_for_call
-    CallerSession.find_all_by_campaign_id_and_on_call_and_available_for_call(self.id, 1, 1)
+    RedisAvailableCaller.count(self.id)
+    # CallerSession.find_all_by_campaign_id_and_on_call_and_available_for_call(self.id, 1, 1)
   end
 
 

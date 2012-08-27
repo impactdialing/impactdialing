@@ -14,11 +14,12 @@ class RedisCallAttempt
   
   def self.connect_call(call_attempt_id, caller_id, caller_session_id)
     call_attempt(call_attempt_id).bulk_set({status: CallAttempt::Status::INPROGRESS, connecttime: Time.now, caller_id: caller_id, 
-      caller_session_id: caller_session_id})      
+    caller_session_id: caller_session_id})      
   end
   
   def self.abandon_call(call_attempt_id)
-    call_attempt(call_attempt_id).bulk_set({status: CallAttempt::Status::ABANDONED, connecttime: Time.now, call_end: Time.now, wrapup_time: Time.now})
+    call_attempt(call_attempt_id).bulk_set({status: CallAttempt::Status::ABANDONED, connecttime: Time.now, call_end: Time.now, 
+    wrapup_time: Time.now})
   end
   
   def self.end_answered_call(call_attempt_id)
