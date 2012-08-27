@@ -20,7 +20,7 @@ class Twillio
   end
   
   def self.dial_predictive_em(iter, voter)
-    call_attempt = setup_call_predictive(voter, self.campaign.type)
+    call_attempt = setup_call_predictive(voter)
     twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)  
     Rails.logger.info "#{call_attempt.id} - before call"        
     http = twilio_lib.make_call(campaign, self, call_attempt)
@@ -38,16 +38,16 @@ class Twillio
     
   end
   
-  def self.setup_call_predictive(voter, mode = 'robo')
-    call_attempt = voter.call_attempts.create(campaign:  self.campaign, dialer_mode:  mode, status:  CallAttempt::Status::RINGING, call_start:  Time.now)
+  def self.setup_call_predictive(voter)
+    attempt = voter.call_attempts.create(campaign:  voter.campaign, dialer_mode:  voter.campaign.type, status:  CallAttempt::Status::RINGING, call_start:  Time.now)
     $redis_call_flow_connection.pipelined do
       RedisCallAttempt.load_call_attempt_info(attempt.id, attempt)
       RedisVoter.setup_call_predictive(voter.id, attempt.id)
     end
     Call.create(call_attempt: attempt, all_states: "")    
-    RedisCampaignCall.add_to_ringing(call_attempt.id)
+    RedisCampaignCall.add_to_ringing(attempt.id)
     MonitorEvent.call_ringing(campaign)
-    call_attempt
+    attempt
   end
   
   
