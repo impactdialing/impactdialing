@@ -181,7 +181,7 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def wrapup_now
-    RedisCallAttempt.wrapup(self.id)
+    RedisCallAttempt.wrapup(self.id)    
   end
   
   def capture_answer_as_no_response
