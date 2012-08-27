@@ -14,7 +14,7 @@ class RedisCampaign
   
   def self.add_running_predictive_campaign(campaign_id, type)
     campaign_set = Redis::Set.new("running_campaigns", $redis_call_flow_connection)    
-    campaign_set << {campaign_id: campaign_id, type: type} if type == Campaign::Type::PREDICTIVE
+    campaign_set << campaign_id if type == Campaign::Type::PREDICTIVE
   end
   
   def self.running_campaigns
