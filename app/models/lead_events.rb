@@ -37,14 +37,15 @@ module LeadEvents
             caller_deferrable.errback { |error| puts error.inspect}
           end
         }   
-      MonitorEvent.create_caller_notification(campaign.id, caller_session.id, status)  
+      MonitorEvent.create_caller_notification(campaign.id, caller_session_id, status)  
       end
       MonitorEvent.voter_disconnected(campaign)
     end
     
     def publish_moderator_response_submited
       MonitorEvent.voter_response_submitted(campaign)
-      MonitorEvent.create_caller_notification(campaign.id, caller_session.id, "On hold")  
+      caller_session_id = RedisVoter.read(voter.id)['caller_session_id']
+      MonitorEvent.create_caller_notification(campaign.id, caller_session_id, "On hold")  
     end
     
   end
