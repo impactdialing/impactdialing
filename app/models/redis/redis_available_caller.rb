@@ -24,7 +24,8 @@ class RedisAvailableCaller
   end
   
   def self.longest_waiting_caller(campaign_id)
-    available_callers_set(campaign_id).range(-1,-1)
+    callers = available_callers_set(campaign_id).range(-1,-1)
+    callers.empty? ? nil : callers.first
   end
     
 end
