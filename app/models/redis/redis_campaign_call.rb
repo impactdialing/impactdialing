@@ -52,7 +52,7 @@ class RedisCampaignCall
   end
   
   def self.above_average_wrapup_calls_count(campaign_id, average_wrapup_length)
-    wrapup(campaign_id).rangebyscore((Time.now.to_i-average_call_length-15), (Time.now.to_i-average_call_length)).length
+    wrapup(campaign_id).rangebyscore((Time.now.to_i-average_wrapup_length-15), (Time.now.to_i-average_wrapup_length)).length
   end
   
   
