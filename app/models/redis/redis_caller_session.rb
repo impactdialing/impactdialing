@@ -30,7 +30,11 @@ class RedisCallerSession
   end
   
   def self.voter_in_progress?(caller_session_id)
-    caller_session_id(caller_session_id).has_key?("voter_in_progress")
+    caller_session(caller_session_id).has_key?("voter_in_progress")
+  end
+  
+  def self.voter_in_progress(caller_session_id)
+    caller_session(caller_session_id).fetch("voter_in_progress")
   end
   
     

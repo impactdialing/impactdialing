@@ -9,7 +9,7 @@ class Twillio
       http = twilio_lib.make_call_em(campaign, voter, call_attempt)
       http.callback { 
         response = JSON.parse(http.response)  
-        if response["RestException"]
+        if response["status"] == 400
           handle_failed_call(call_attempt, caller_session)
         else
           RedisCallAttempt.update_call_sid(call_attempt.id, response["sid"])
@@ -27,7 +27,7 @@ class Twillio
     http.callback { 
       Rails.logger.info "#{call_attempt.id} - after call"    
       response = JSON.parse(http.response)  
-      if response["RestException"]
+      if response["status"] == 400
         handle_failed_call(call_attempt, nil, voter)
       else
         RedisCallAttempt.update_call_sid(call_attempt.id, response["sid"])
