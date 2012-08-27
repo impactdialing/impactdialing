@@ -10,8 +10,8 @@ module LeadEvents
     end
     
     def publish_voter_connected
-      redis_voter = RedisVoter.read(voter.id)
-      caller_session_id = redis_voter['caller_session_id']
+      redis_call_attempt = RedisCallAttempt.read(self.id)
+      caller_session_id = redis_call_attempt['caller_session_id']
       caller_session = RedisCallerSession.read(caller_session_id)      
       unless caller_session_id.nil?
         EM.run {
@@ -28,8 +28,8 @@ module LeadEvents
     end    
     
     def publish_voter_disconnected
-      redis_voter = RedisVoter.read(voter.id)
-      caller_session_id = redis_voter['caller_session_id']
+      redis_call_attempt = RedisCallAttempt.read(self.id)
+      caller_session_id = redis_call_attempt['caller_session_id']
       caller_session = RedisCallerSession.read(caller_session_id)      
       unless caller_session_id.nil?
         EM.run {
@@ -46,7 +46,8 @@ module LeadEvents
     
     def publish_moderator_response_submited
       MonitorEvent.voter_response_submitted(campaign)
-      caller_session_id = RedisVoter.read(voter.id)['caller_session_id']
+      redis_call_attempt = RedisCallAttempt.read(self.id)
+      caller_session_id = redis_call_attempt['caller_session_id']      
       MonitorEvent.create_caller_notification(campaign.id, caller_session_id, "On hold")  
     end
     
