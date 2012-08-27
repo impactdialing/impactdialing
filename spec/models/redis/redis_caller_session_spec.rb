@@ -2,10 +2,6 @@ require "spec_helper"
 
 describe RedisCallerSession do
   
-  before(:each) do
-    @redis = RedisConnection.call_flow_connection
-  end
-  
   
   it "should load caller session" do
     caller_session = Factory(:webui_caller_session)
