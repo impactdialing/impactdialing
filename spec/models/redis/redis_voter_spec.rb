@@ -2,9 +2,7 @@ require "spec_helper"
 
 describe RedisVoter do
   
-  before(:each) do
-    @redis = RedisConnection.call_flow_connection
-  end
+
   
   it "should redis voter" do
     voter_list = Factory(:voter_list)

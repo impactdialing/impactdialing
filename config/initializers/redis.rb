@@ -9,4 +9,9 @@ $redis_call_flow_connection = Redis.new(:host => call_flow_uri.host, :port => ca
 monitor_uri = URI.parse(redis_config[rails_env]['monitor_redis'])
 $redis_monitor_connection = Redis.new(:host => monitor_uri.host, :port => monitor_uri.port)
 
+dialer_uri = URI.parse(redis_config[rails_env]['dialer'])
+$redis_dialer_connection = Redis.new(:host => monitor_uri.host, :port => monitor_uri.port)
+
+
+
 

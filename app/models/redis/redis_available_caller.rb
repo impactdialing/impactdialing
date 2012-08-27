@@ -26,9 +26,5 @@ class RedisAvailableCaller
   def self.longest_waiting_caller(campaign_id)
     available_callers_set(campaign_id).range(-1,-1)
   end
-  
-  def self.assign_longest_available_caller(campaign_id)  
-      
-  end
-  
+    
 end
