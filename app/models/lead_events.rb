@@ -21,7 +21,7 @@ module LeadEvents
             caller_deferrable.errback { |error| }
           end
         }      
-      MonitorEvent.create_caller_notification(campaign.id, caller_session.id, status)  
+      MonitorEvent.create_caller_notification(campaign.id, caller_session_id, status)  
       end
       MonitorEvent.voter_connected(campaign)      
     end    
