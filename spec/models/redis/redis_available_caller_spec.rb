@@ -18,14 +18,14 @@ describe RedisAvailableCaller do
   it "should return the longest waiting caller" do
     RedisAvailableCaller.add_caller(1, 1)
     RedisAvailableCaller.add_caller(2, 1)
-    RedisAvailableCaller.longest_waiting_caller(1).should eq(["1"])
+    RedisAvailableCaller.longest_waiting_caller(1).should eq("1")
   end
   
   it "should return the longest waiting caller when caller is updated" do
     RedisAvailableCaller.add_caller(1, 1)
     RedisAvailableCaller.add_caller(1, 2)
     RedisAvailableCaller.add_caller(1, 1)
-    RedisAvailableCaller.longest_waiting_caller(1).should eq(["2"])
+    RedisAvailableCaller.longest_waiting_caller(1).should eq("2")
   end
   
   
