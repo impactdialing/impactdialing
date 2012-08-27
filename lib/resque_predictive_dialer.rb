@@ -13,7 +13,7 @@ loop do
   begin
     predictive_campaigns = RedisCampaign.running_campaigns
     predictive_campaigns.each do |c|
-      campaign = Campaign.find(c.campaign_id)
+      campaign = Campaign.find(c["campaign_id"])
       if !Resque.redis.exists("dial:#{campaign.id}")
         campaign.dial_resque
       end
