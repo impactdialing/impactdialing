@@ -81,6 +81,7 @@ class CallAttempt < ActiveRecord::Base
     redis_call_attempt = RedisCallAttempt.read(self.id)
     redis_voter = RedisVoter.read(redis_call_attempt['voter_id'])
     RedisCallAttempt.connect_call(self.id, redis_voter["caller_id"], redis_voter["caller_session_id"])
+    MonitorEvent.incoming_call_request(campaign)
   end
       
   def abandon_call
