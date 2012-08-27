@@ -22,7 +22,7 @@ module LeadEvents
             caller_deferrable.errback { |error| }
           end
         }      
-      MonitorEvent.create_caller_notification(campaign.id, caller_session_id, redis_voter["status"])  
+      MonitorEvent.create_caller_notification(campaign.id, caller_session_id, redis_call_attempt["status"])  
       end
       MonitorEvent.voter_connected(campaign)      
     end    
@@ -39,7 +39,7 @@ module LeadEvents
             caller_deferrable.errback { |error| puts error.inspect}
           end
         }   
-      MonitorEvent.create_caller_notification(campaign.id, caller_session_id, redis_voter["status"])  
+      MonitorEvent.create_caller_notification(campaign.id, caller_session_id, redis_call_attempt["status"])  
       end
       MonitorEvent.voter_disconnected(campaign)
     end
