@@ -15,6 +15,10 @@ class RedisAvailableCaller
     available_callers_set(campaign_id).delete(caller_session_id)
   end
   
+  def self.count(campaign_id)
+    available_callers_set(campaign_id).length
+  end
+  
   def self.caller?(campaign_id, caller_session_id)
     available_callers_set(campaign_id).member?(caller_session_id)
   end
@@ -23,7 +27,8 @@ class RedisAvailableCaller
     available_callers_set(campaign_id).range(-1,-1)
   end
   
-  def self.assign_longest_available_caller(campaign_id)    
+  def self.assign_longest_available_caller(campaign_id)  
+      
   end
   
 end

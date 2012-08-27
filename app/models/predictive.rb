@@ -33,7 +33,7 @@ class Predictive < Campaign
     dials_made = call_attempts.size
     # if dials_made == 0 || !abandon_rate_acceptable?
     if dials_made == 0
-      num_to_call = callers_available_for_call.size - call_attempts.between(20.seconds.ago, Time.now).with_status(CallAttempt::Status::RINGING).size
+      num_to_call = callers_available_for_call - call_attempts.between(20.seconds.ago, Time.now).with_status(CallAttempt::Status::RINGING).size
     else
       num_to_call = number_of_simulated_voters_to_dial
     end
