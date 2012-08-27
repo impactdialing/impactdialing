@@ -10,7 +10,8 @@ module LeadEvents
     end
     
     def publish_voter_connected
-      caller_session_id = RedisVoter.read(voter.id)['caller_session_id']
+      redis_voter = RedisVoter.read(voter.id)
+      caller_session_id = redis_voter['caller_session_id']
       caller_session = RedisCallerSession.read(caller_session_id)      
       unless caller_session_id.nil?
         EM.run {
@@ -21,13 +22,14 @@ module LeadEvents
             caller_deferrable.errback { |error| }
           end
         }      
-      MonitorEvent.create_caller_notification(campaign.id, caller_session_id, status)  
+      MonitorEvent.create_caller_notification(campaign.id, caller_session_id, redis_voter["status"])  
       end
       MonitorEvent.voter_connected(campaign)      
     end    
     
     def publish_voter_disconnected
-      caller_session_id = RedisVoter.read(voter.id)['caller_session_id']
+      redis_voter = RedisVoter.read(voter.id)
+      caller_session_id = redis_voter['caller_session_id']
       caller_session = RedisCallerSession.read(caller_session_id)      
       unless caller_session_id.nil?
         EM.run {
@@ -37,7 +39,7 @@ module LeadEvents
             caller_deferrable.errback { |error| puts error.inspect}
           end
         }   
-      MonitorEvent.create_caller_notification(campaign.id, caller_session_id, status)  
+      MonitorEvent.create_caller_notification(campaign.id, caller_session_id, redis_voter["status"])  
       end
       MonitorEvent.voter_disconnected(campaign)
     end
