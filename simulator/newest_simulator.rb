@@ -221,7 +221,7 @@ loop do
     logged_in_campaigns.each do |c|     
       puts "Simulating #{c.campaign_id}"
       campaign = Campaign.find(c.campaign_id)      
-      simulate(c.campaign_id) if campaign.type == Campaign::Type::PREDICTIVE && Resque.redis.exists("hardcoded:#{campaign.id}")
+      simulate(c.campaign_id) if campaign.type == Campaign::Type::PREDICTIVE
     end
     sleep 30
   rescue Exception => e
