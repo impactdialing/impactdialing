@@ -1,0 +1,4 @@
+[<%= @campaigns.map do |campaign|
+  @campaign = campaign
+  render 'campaign'
+  end.join(',') %>]

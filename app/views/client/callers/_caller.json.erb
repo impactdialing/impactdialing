@@ -1,0 +1,2 @@
+<% attributes = ['id', 'is_phones_only', 'name', 'email', 'password', 'pin', 'campaign_id', 'created_at', 'updated_at'] %>
+{'caller':{<%= attributes.map { |attribute| "'#{attribute}'" + ":" + @caller.send(attribute).to_s }.join(",") %>}}

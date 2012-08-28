@@ -1,0 +1,4 @@
+[<%= @scripts.map do |script|
+  @script = script
+  render 'script'
+  end.join(',') %>]

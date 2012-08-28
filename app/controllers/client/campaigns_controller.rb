@@ -6,6 +6,9 @@ module Client
     before_filter :load_campaign, :only => [:show, :update, :destroy]
     before_filter :load_other_stuff, :only => [:new, :create, :show, :update]
 
+    respond_to :html
+    respond_to :json, :only => [:index, :create, :show, :update, :destroy]
+
     def new
       @campaign.type = "Progressive"
       @campaign.time_zone = "Pacific Time (US & Canada)"
@@ -27,7 +30,10 @@ module Client
     end
 
     def index
-      @campaigns = account.campaigns.active.manual.paginate :page => params[:page], :order => 'id desc'
+      respond_to do |format|
+        format.html {@campaigns = account.campaigns.active.manual.paginate :page => params[:page], :order => 'id desc'}
+        format.json {@campaigns = account.campaigns.where(:active => true)}
+      end
     end
 
     def destroy
@@ -63,11 +69,16 @@ module Client
     end
 
     def save_campaign
-      if @campaign.update_attributes(params[:campaign])
-        flash_message(:notice, "Campaign saved")
-        redirect_to client_campaigns_path
-      else
-        render :action => @error_action
+      respond_to do |format|
+        format.html do
+          if @campaign.update_attributes(params[:campaign])
+            flash_message(:notice, "Campaign saved")
+            redirect_to client_campaigns_path
+          else
+            render :action => @error_action
+          end
+        end
+        format.json {respond_with @campaign.update_attributes(params[:campaign])}
       end
     end
   end

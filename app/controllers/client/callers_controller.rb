@@ -6,8 +6,14 @@ module Client
     before_filter :load_caller, :only => [:show, :update, :destroy]
     before_filter :load_campaigns, :except => [:index, :destroy, :reassign_to_campaign]
 
+    respond_to :html
+    respond_to :json, :only => [:index, :create, :show, :update, :destroy]
+
     def index
-      @callers = Caller.where(:active => true, :account_id => account.id).order(:name).paginate(:page => params[:page])
+      respond_to do |format|
+        format.html { @callers = Caller.where(:active => true, :account_id => account.id).order(:name).paginate(:page => params[:page]) }
+        format.json { @callers = account.callers.where(:active => true) }
+      end
     end
 
     def new
@@ -18,33 +24,25 @@ module Client
     end
 
     def update
-      if @caller.is_on_call? && (params[:caller][:campaign_id] != @caller.campaign.id)
-        flash_message(:error, "This caller is logged in and so can't be changed to a new campaign from this screen. To reassign them to a new campaign, please use the Monitor tab.")
-        render :action => "new"
-      else
-        if @caller.update_attributes(params[:caller])
-          flash_message(:notice, "Caller saved")
-          redirect_to :action => "index"
-        else
-          render :action => "new"
-        end
-      end
+      @error_action = 'show'
+      save_caller
     end
 
     def create
-      @caller = account.callers.new(params[:caller])
-      if @caller.save
-        flash_message(:notice, "Caller saved")
-        redirect_to :action => "index"
-      else
-        render :action => "new"
-      end
+      @caller = account.callers.new
+      @error_action = 'new'
+      save_caller
     end
 
     def destroy
       @caller.update_attribute(:active, false)
-      flash_message(:notice, "Caller deleted")
-      redirect_to :action=>"index"
+      respond_to do |format|
+        format.html do
+          flash_message(:notice, "Caller deleted")
+          redirect_to :action => "index"
+        end
+        format.json { head :no_content }
+      end
     end
 
     def reassign_to_campaign
@@ -84,6 +82,20 @@ module Client
 
     def load_caller
       @caller = account.callers.find_by_id(params[:id])
+    end
+
+    def save_caller
+      respond_to do |format|
+        format.html do
+          if @caller.update_attributes(params[:caller])
+            flash_message(:notice, "Caller saved")
+            redirect_to :action => "index"
+          else
+            render :action => @error_action
+          end
+        end
+        format.json {respond_with @caller.update_attributes(params[:caller])}
+      end
     end
   end
 end
