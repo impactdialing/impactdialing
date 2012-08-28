@@ -271,15 +271,6 @@ describe Voter do
       voter.dial_predictive
     end
 
-    it "dials the voter with the campaigns answer detection timeout" do
-      campaign.use_recordings = true
-      campaign.answer_detection_timeout = "10"
-      Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {"FallbackUrl"=>"blah", 'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
-      voter.campaign = campaign
-      campaign.stub(:time_period_exceed?).and_return(false)
-      voter.dial_predictive
-    end
-
     it "dials the voter without IFMachine if AMD detection turned off" do
       campaign1 = Factory(:campaign, :robo => false, :type => 'Predictive', answering_machine_detect: false)
       Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {"FallbackUrl"=>"blah", 'StatusCallback'=> anything, 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
@@ -435,13 +426,13 @@ describe Voter do
     let(:call_attempt) { Factory(:call_attempt, :caller => Factory(:caller)) }
 
     it "captures call responses" do
-      voter.persist_answers("{\"#{question.id}\":\"#{response.id}\"}",call_attempt) 
+      voter.persist_answers("{\"#{question.id}\":\"#{response.id}\"}",call_attempt)
       voter.answers.size.should == 1
     end
 
     it "puts voter back in the dial list if a retry response is detected" do
       another_response = Factory(:possible_response, :question => Factory(:question, :script => script), :retry => true)
-      voter.persist_answers("{\"#{question.id}\":\"#{response.id}\",\"#{another_response.question.id}\":\"#{another_response.id}\" }",call_attempt) 
+      voter.persist_answers("{\"#{question.id}\":\"#{response.id}\",\"#{another_response.question.id}\":\"#{another_response.id}\" }",call_attempt)
       voter.answers.size.should == 2
       voter.reload.status.should == Voter::Status::RETRY
       Voter.to_be_dialed.should == [voter]
@@ -451,11 +442,11 @@ describe Voter do
       question = Factory(:question, :script => script)
       retry_response = Factory(:possible_response, :question => question, :retry => true)
       valid_response = Factory(:possible_response, :question => question)
-      voter.persist_answers("{\"#{response.question.id}\":\"#{response.id}\",\"#{retry_response.question.id}\":\"#{retry_response.id}\" }",call_attempt) 
+      voter.persist_answers("{\"#{response.question.id}\":\"#{response.id}\",\"#{retry_response.question.id}\":\"#{retry_response.id}\" }",call_attempt)
       voter.answers.size.should == 2
       voter.reload.status.should == Voter::Status::RETRY
       Voter.to_be_dialed.should == [voter]
-      voter.persist_answers("{\"#{response.question.id}\":\"#{response.id}\",\"#{valid_response.question.id}\":\"#{valid_response.id}\" }",call_attempt) 
+      voter.persist_answers("{\"#{response.question.id}\":\"#{response.id}\",\"#{valid_response.question.id}\":\"#{valid_response.id}\" }",call_attempt)
       voter.reload.answers.size.should == 4
     end
 
@@ -468,7 +459,7 @@ describe Voter do
 
     it "associates the caller with the answer" do
       caller = Factory(:caller)
-      session = Factory(:caller_session, :caller => caller)      
+      session = Factory(:caller_session, :caller => caller)
       voter = Factory(:voter, :campaign => campaign, :last_call_attempt => Factory(:call_attempt, :caller_session => session))
       Factory(:possible_response, :question => question, :keypad => 1, :value => "response1")
       voter.answer(question, "1", session).caller_id.should == caller.id
@@ -556,60 +547,60 @@ describe Voter do
       voter.skipped_time.should_not be_nil
     end
   end
-  
+
   describe "avialable_to_be_retried" do
-    
+
     it "should not consider voters who have not been dialed" do
       campaign = Factory(:campaign)
       voter = Factory(:voter, :campaign => campaign, last_call_attempt_time: nil)
       Voter.avialable_to_be_retried(campaign.recycle_rate).should eq([])
     end
-    
+
     it "should not consider voters who last call attempt is within recycle rate" do
       campaign = Factory(:campaign, recycle_rate: 4)
       voter = Factory(:voter, :campaign => campaign, last_call_attempt_time: Time.now - 2.hours)
       Voter.avialable_to_be_retried(campaign.recycle_rate).should eq([])
     end
-    
+
     it "should  consider voters who last call attempt is not within recycle rate for hangup status" do
       campaign = Factory(:campaign, recycle_rate: 1)
       voter = Factory(:voter, :campaign => campaign, last_call_attempt_time: Time.now - 2.hours, status: CallAttempt::Status::HANGUP)
       Voter.avialable_to_be_retried(campaign.recycle_rate).size.should eq(1)
     end
-    
+
     it "should not  consider voters who last call attempt is not within recycle rate for success status" do
       campaign = Factory(:campaign, recycle_rate: 1)
       voter = Factory(:voter, :campaign => campaign, last_call_attempt_time: Time.now - 2.hours, status: CallAttempt::Status::SUCCESS)
       Voter.avialable_to_be_retried(campaign.recycle_rate).should eq([])
     end
-        
+
   end
-  
+
   describe "not_avialable_to_be_retried" do
-    
+
     it "should not consider voters who have not been dialed" do
       campaign = Factory(:campaign)
       voter = Factory(:voter, :campaign => campaign, last_call_attempt_time: nil)
       Voter.not_avialable_to_be_retried(campaign.recycle_rate).should eq([])
     end
-    
+
     it "should not consider voters who last call attempt is not within recycle rate" do
       campaign = Factory(:campaign, recycle_rate: 1)
       voter = Factory(:voter, :campaign => campaign, last_call_attempt_time: Time.now - 2.hours)
       Voter.not_avialable_to_be_retried(campaign.recycle_rate).should eq([])
     end
-    
+
     it "should  not consider voters who last call attempt is  within recycle rate for hangup status" do
       campaign = Factory(:campaign, recycle_rate: 1)
       voter = Factory(:voter, :campaign => campaign, last_call_attempt_time: Time.now - 2.hours, status: CallAttempt::Status::HANGUP)
       Voter.not_avialable_to_be_retried(campaign.recycle_rate).should eq([])
     end
-    
+
     it "should   consider voters who last call attempt is not within recycle rate for hangup status" do
       campaign = Factory(:campaign, recycle_rate: 3)
       voter = Factory(:voter, :campaign => campaign, last_call_attempt_time: Time.now - 2.hours, status: CallAttempt::Status::HANGUP)
       Voter.not_avialable_to_be_retried(campaign.recycle_rate).should eq([voter])
     end
-            
+
   end
 end
