@@ -17,6 +17,7 @@ describe RedisCallAttempt do
   end
   
   describe "connect call" do
+    
     it "should set connect time" do
       RedisCallAttempt.connect_call(1, 2, 3)      
       RedisCallAttempt.read(1)['connecttime'].should_not eq(nil)
@@ -43,6 +44,7 @@ describe RedisCallAttempt do
   end
   
   describe "abandon_call" do
+    
     it "should set connect time" do
       RedisCallAttempt.new(1, 1, 1, "predictive", 1)
       RedisCallAttempt.abandon_call(1)      
@@ -77,17 +79,7 @@ describe RedisCallAttempt do
     end        
     
   end
-  
-  describe "call_status_use_recordings" do
     
-    it "should set end time" do
-      RedisCallAttempt.new(1, 1, 1, "predictive", 1)
-      RedisCallAttempt.end_answered_call(1)      
-      RedisCallAttempt.read(1)['call_end'].should_not eq(nil)
-    end        
-    
-  end
-  
   describe "answered_by_machine" do
     
     it "should set status" do
@@ -118,6 +110,23 @@ describe RedisCallAttempt do
     
   end
   
+  describe "end_answered_by_machine" do
+    
+    it "should set call_end" do
+      RedisCallAttempt.new(1, 1, 1, "predictive", 1)
+      RedisCallAttempt.end_answered_by_machine(1)      
+      RedisCallAttempt.read(1)['call_end'].should_not be_nil            
+    end
+    
+    it "should set wrapup" do
+      RedisCallAttempt.new(1, 1, 1, "predictive", 1)
+      RedisCallAttempt.end_answered_by_machine(1)      
+      RedisCallAttempt.read(1)['wrapup_time'].should_not be_nil            
+    end
+    
+    
+  end
+
   describe "set_status" do
     it "should set status for attempt" do
       RedisCallAttempt.new(1, 1, 1, "predictive", 1)
@@ -177,4 +186,80 @@ describe RedisCallAttempt do
     
   end
 
+  describe "end_unanswered_call" do
+    
+    it "should set status" do
+      RedisCallAttempt.new(1, 1, 1, "predictive", 1)
+      RedisCallAttempt.end_unanswered_call(1, "status")
+      RedisCallAttempt.read(1)['status'].should eq('status')            
+    end
+    
+    it "should set call_end" do
+      RedisCallAttempt.new(1, 1, 1, "predictive", 1)
+      RedisCallAttempt.end_unanswered_call(1, "status")
+      RedisCallAttempt.read(1)['call_end'].should_not be_nil
+    end
+
+    it "should set wrapup time" do
+      RedisCallAttempt.new(1, 1, 1, "predictive", 1)
+      RedisCallAttempt.end_unanswered_call(1, "status")
+      RedisCallAttempt.read(1)['wrapup_time'].should_not be_nil
+    end
+    
+  end
+
+  describe "update_call_sid" do
+    
+    it "should set call sid" do
+      RedisCallAttempt.new(1, 1, 1, "predictive", 1)
+      RedisCallAttempt.update_call_sid(1, "1234")
+      RedisCallAttempt.read(1)['sid'].should eq("1234")
+    end
+    
+  end
+
+  describe "failed_call" do
+    
+    it "should update status as failed" do
+      RedisCallAttempt.new(1, 1, 1, "predictive", 1)
+      RedisCallAttempt.failed_call(1)
+      RedisCallAttempt.read(1)["status"].should eq(CallAttempt::Status::FAILED)      
+    end
+    
+    it "should update wrapuptime" do
+      RedisCallAttempt.new(1, 1, 1, "predictive", 1)
+      RedisCallAttempt.failed_call(1)
+      RedisCallAttempt.read(1)["wrapup_time"].should_not be_nil      
+    end
+  end
+  
+  describe "call_not_wrapped_up" do
+    
+    it"should be false of conencttime is nil" do
+      call_attempt = RedisCallAttempt.call_attempt(1)
+      call_attempt.store("wrapup_time", "abc")
+      RedisCallAttempt.call_not_wrapped_up?(1).should be_false
+    end
+    
+    it"should be false of wrapuptime is nil" do
+      call_attempt = RedisCallAttempt.call_attempt(1)
+      call_attempt.store("connecttime", "abc")
+      RedisCallAttempt.call_not_wrapped_up?(1).should be_false
+    end
+    
+    it"should be false if connecttime and wrapuptime is nil" do
+      call_attempt = RedisCallAttempt.call_attempt(1)
+      RedisCallAttempt.call_not_wrapped_up?(1).should be_false
+    end
+    
+    it"should be true if connecttime and wrapuptime have values" do
+      call_attempt = RedisCallAttempt.call_attempt(1)
+      call_attempt.store("connecttime", "abc")
+      call_attempt.store("wrapup_time", "abc")
+      RedisCallAttempt.call_not_wrapped_up?(1).should be_false
+    end
+    
+    
+    
+  end
 end

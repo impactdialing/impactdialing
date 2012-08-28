@@ -23,7 +23,7 @@ class RedisCallAttempt
   end
   
   def self.end_answered_call(call_attempt_id)
-    call_attempt(call_attempt_id)["call_end"] = Time.now
+    call_attempt(call_attempt_id).store("call_end", Time.now)
   end
   
   def self.answered_by_machine(call_attempt_id, status)
@@ -32,22 +32,6 @@ class RedisCallAttempt
   
   def self.end_answered_by_machine(call_attempt_id)
     call_attempt(call_attempt_id).bulk_set({call_end: Time.now, wrapup_time: Time.now})  
-  end
-  
-  def self.end_unanswered_call(call_attempt_id, status)
-    call_attempt(call_attempt_id).bulk_set({status: status, call_end: Time.now, wrapup_time: Time.now})  
-  end
-  
-  def self.read(call_attempt_id)
-    call_attempt(call_attempt_id).all
-  end
-  
-  def self.update_call_sid(call_attempt_id, sid)
-    call_attempt(call_attempt_id).store("sid", sid)
-  end
-  
-  def self.failed_call(call_attempt_id)
-    call_attempt(call_attempt_id).bulk_set({status: CallAttempt::Status::FAILED, wrapup_time: Time.now})
   end
   
   def self.set_status(call_attempt_id, status)
@@ -64,6 +48,23 @@ class RedisCallAttempt
   
   def self.schedule_for_later(call_attempt_id, scheduled_date)
     call_attempt(call_attempt_id).bulk_set({status: CallAttempt::Status::SCHEDULED, scheduled_date: scheduled_date})            
+  end
+  
+
+  def self.end_unanswered_call(call_attempt_id, status)
+    call_attempt(call_attempt_id).bulk_set({status: status, call_end: Time.now, wrapup_time: Time.now})  
+  end
+  
+  def self.read(call_attempt_id)
+    call_attempt(call_attempt_id).all
+  end
+  
+  def self.update_call_sid(call_attempt_id, sid)
+    call_attempt(call_attempt_id).store("sid", sid)
+  end
+  
+  def self.failed_call(call_attempt_id)
+    call_attempt(call_attempt_id).bulk_set({status: CallAttempt::Status::FAILED, wrapup_time: Time.now})
   end
   
   def self.call_not_wrapped_up?(call_attempt_id)
