@@ -1,0 +1,2 @@
+<% attributes = ["id", "name", "caller_id", "script_id", "type", "acceptable_abandon_rate", "answering_machine_detect", "recycle_rate", "time_zone", "start_time", "end_time", 'created_at', 'updated_at'] %>
+{'campaign':{<%= attributes.map { |attribute| "'#{attribute}'" + ":" + @campaign.send(attribute).to_s }.join(",") %>}}

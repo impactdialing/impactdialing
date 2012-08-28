@@ -6,8 +6,14 @@ module Client
 
     layout 'client'
 
+    respond_to :html
+    respond_to :json, :only => [:index, :create, :show, :update, :destroy]
+
     def index
-      @scripts = @user.scripts.manual.active.paginate(:page => params[:page])
+      respond_to do |format|
+        format.html {@scripts = @user.scripts.manual.active.paginate(:page => params[:page])}
+        format.json {@scripts = account.scripts.where(:active => true)}
+      end
     end
 
     def new
@@ -78,11 +84,16 @@ module Client
 
     def save_script
       params[:script][:voter_fields] =  params[:voter_field] ? params[:voter_field].to_json : nil
-      if @script.update_attributes(params[:script])
-        flash_message(:notice, "Script saved")
-        redirect_to :action=>"index"
-      else
-        render :action => @error_action
+      respond_to do |format|
+        format.html do
+          if @script.update_attributes(params[:script])
+            flash_message(:notice, "Script saved")
+            redirect_to :action=>"index"
+          else
+            render :action => @error_action
+          end
+        end
+        format.json {respond_with @script.update_attributes(params[:script])}
       end
     end
   end
