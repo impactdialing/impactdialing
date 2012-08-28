@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120821004658) do
+ActiveRecord::Schema.define(:version => 20120828162729) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -245,25 +245,19 @@ ActiveRecord::Schema.define(:version => 20120821004658) do
 
   create_table "campaigns", :force => true do |t|
     t.string   "campaign_id"
-    t.string   "group_id"
     t.string   "name"
     t.integer  "account_id"
     t.integer  "script_id"
     t.boolean  "active",                   :default => true
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.float    "ratio_override",           :default => 0.0
     t.string   "caller_id"
-    t.boolean  "use_answering",            :default => true
     t.string   "type"
     t.integer  "recording_id"
     t.boolean  "use_recordings",           :default => false
-    t.string   "callin_number",            :default => "4157020991"
-    t.integer  "answer_detection_timeout", :default => 20
     t.boolean  "calls_in_progress",        :default => false
     t.boolean  "robo",                     :default => false
     t.integer  "recycle_rate",             :default => 1
-    t.boolean  "amd_turn_off"
     t.boolean  "answering_machine_detect"
     t.time     "start_time"
     t.time     "end_time"
@@ -308,17 +302,13 @@ ActiveRecord::Schema.define(:version => 20120821004658) do
     t.string   "campaign_id"
   end
 
-  create_table "moderator_campaigns", :force => true do |t|
-    t.string "name"
-  end
-
   create_table "moderators", :force => true do |t|
     t.integer  "caller_session_id"
     t.string   "call_sid"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "session"
-    t.string   "active"
+    t.string   "active",            :default => "true"
     t.integer  "account_id"
   end
 
