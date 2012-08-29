@@ -2,6 +2,7 @@
   <div id="validationError">
     <%= render "shared/error_messages", :target => @campaign %>
   </div>
+  <%= f.hidden_field :account_id %>
   <fieldset>
     <legend>Settings</legend>
     <p>
@@ -62,7 +63,7 @@
 
   <fieldset>
     <legend>Lists</legend>
-    <% if @lists.length==0 %>
+    <% if @lists.blank? %>
         <p>You haven't uploaded any lists yet.</p>
     <% else %>
         <table>
@@ -116,22 +117,6 @@
             $("#abandon_rate_edit").show();
 
         }
-        if ($('#callers input[name^= "campaign[caller_ids]"]:checked').length == <%= @callers.length %>) {
-            $('#selectAll').attr('checked', true)
-        }
-
-        $('#selectAll').click(function () {
-            $('#callers').find(':checkbox').attr('checked', this.checked);
-        });
-
-        $('#callers input[name^= "campaign[caller_ids]"]').change(function() {
-            if ($('#callers input[name^= "campaign[caller_ids]"]:checked').length == <%= @callers.length %>) {
-                $('#selectAll').attr('checked', true)
-            }
-            if ($('#callers input[name^= "campaign[caller_ids]"]:checked').length < <%= @callers.length %>) {
-                $('#selectAll').attr('checked', false)
-            }
-        });
 
         $('#campaign_answering_machine_detect').click(function () {
             if ($('#campaign_answering_machine_detect').attr('checked') == false) {
