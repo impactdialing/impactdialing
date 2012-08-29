@@ -65,6 +65,26 @@ describe Campaign do
       campaign.caller_id = nil
       campaign.save
     end
+    
+    describe "delete campaign" do
+
+      it "should not delete a campaign that has active callers" do
+        caller = Factory(:caller)
+        campaign = Factory(:preview, callers: [caller])
+        campaign.active = false
+        campaign.save.should be_false
+        campaign.errors[:base].should == ['You cannot delete a campaign that has callers assigned.']
+      end
+      
+      it "should  delete a campaign that has no active callers" do
+        caller = Factory(:caller)
+        campaign = Factory(:preview)
+        campaign.active = false
+        campaign.save.should be_true
+      end
+      
+    end
+    
   end
 
 
@@ -221,6 +241,7 @@ describe Campaign do
     end
 
   end
+  
 
 end
 

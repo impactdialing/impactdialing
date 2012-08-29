@@ -27,6 +27,7 @@ class CampaignsController < ClientController
 
   def create
     campaign = Robo.create(params[:robo].merge!(account_id: account.id))
+    campaign.voicemail_script_id = params[:robo][:voicemail_script_id]
     campaign.account = @user.account
     campaign.script||= @user.account.scripts.robo.active.first
     campaign.save
@@ -35,6 +36,7 @@ class CampaignsController < ClientController
 
   def update
     @campaign.attributes = params[:robo]
+    @campaign.voicemail_script_id = params[:robo].try(:[], :voicemail_script_id)
     @campaign.script ||= account.scripts.robo.active.first
     @campaign.voter_lists.disable_all
     @campaign.voter_lists.by_ids(params[:voter_list_ids]).enable_all
