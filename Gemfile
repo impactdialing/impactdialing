@@ -63,6 +63,7 @@ group :development do
   gem 'guard-rspec'
   gem 'guard-spork'
   gem 'guard-rails'
+  gem 'rb-fsevent'
   gem 'capistrano', '2.9.0'
   gem 'heroku_san'
   gem 'showoff-io'
