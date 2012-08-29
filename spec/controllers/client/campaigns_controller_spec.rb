@@ -45,7 +45,7 @@ describe Client::CampaignsController do
     script = Factory(:script, :account => account)
     callers = 3.times.map{Factory(:caller, :account => account)}
     lambda {
-      post :create , :campaign => {:caller_id => '0123456789', type: "Preview"}
+      post :create , :campaign => {:caller_id => '0123456789', type: "Preview", name: "campaign 1", script_id: script.id}
     }.should change {account.reload.campaigns.size} .by(1)
     campaign = account.campaigns.last
     campaign.type.should == 'Preview'
