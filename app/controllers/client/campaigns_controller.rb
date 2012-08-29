@@ -43,7 +43,7 @@ module Client
         @campaign.update_attribute(:active, false)
         flash_message(:notice, "Campaign deleted")
       end
-      redirect_to :index
+      redirect_to :back
     end
 
     def deleted
