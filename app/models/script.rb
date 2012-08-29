@@ -2,6 +2,7 @@ class Script < ActiveRecord::Base
 
   include Deletable
   validates_presence_of :name, :message => "can't be blank"
+  validate :no_campaign_using_on_deletion
   belongs_to :account
   has_many :script_texts
   has_many :robo_recordings
@@ -27,26 +28,26 @@ class Script < ActiveRecord::Base
 
   cattr_reader :per_page
   @@per_page = 25
-  
 
-  
+
+
   def selected_fields
     JSON.parse(voter_fields).select{ |field| VoterList::VOTER_DATA_COLUMNS.values.include?(field) } if voter_fields
   end
-  
+
   def selected_custom_fields
     JSON.parse(voter_fields).select{ |field| !VoterList::VOTER_DATA_COLUMNS.values.include?(field) } if voter_fields
   end
-  
+
   def selected_fields_json
     result = Hash.new
     selected_fields.try(:each) do |x|
       result[x+"_flag"] = true
     end
     result
-  end    
+  end
 
-  
+
     def self.default_script(account)
       possible_responses = []
       possible_responses << PossibleResponse.new(keypad: 1, value:"It's great.", retry: false)
@@ -60,7 +61,7 @@ class Script < ActiveRecord::Base
         script.notes << Note.new(note:"What's your favorite feature?")
         script.questions << question
         script.script = <<-EOS
-  Hi, I'm calling to tell you about how great Impact Dialing is. 
+  Hi, I'm calling to tell you about how great Impact Dialing is.
         EOS
       end
     end
@@ -71,5 +72,11 @@ class Script < ActiveRecord::Base
         acc
       end
     end
-  
+
+  def no_campaign_using_on_deletion
+    if active_change == [true, false] && !campaigns.empty?
+      errors.add(:base, I18n.t(:script_cannot_be_deleted))
+    end
+  end
+
 end

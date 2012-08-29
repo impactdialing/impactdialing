@@ -9,27 +9,6 @@ describe Client::ScriptsController do
     request.env['HTTP_REFERER'] = 'http://referer'
   end
 
-  it "deletes a script" do
-    script = Factory(:script, :account=> account, :robo => false, :active => true)
-    delete :destroy, :id => script.id
-    script.reload.should_not be_active
-  end
-  
-  it "should not delete a script if assigned to an active campaign" do
-    script = Factory(:script, account: account, robo: false, active: true)
-    campaign =  Factory(:preview, active: true, script_id: script.id, account: account)
-    delete :destroy, :id => script.id
-    script.reload.should be_active
-  end
-  
-  it "should  delete a script if assigned to an inactive campaign" do
-    script = Factory(:script, account: account, robo: false, active: true)
-    campaign =  Factory(:predictive, active: false, script_id: script.id, account: account)
-    delete :destroy, :id => script.id
-    script.reload.should_not be_active
-  end
-  
-
   it "lists voter fields to select" do
     script = Factory(:script, :account => account, :robo => false, :active => true)
     post :create, :script => script
