@@ -302,13 +302,17 @@ ActiveRecord::Schema.define(:version => 20120828162729) do
     t.string   "campaign_id"
   end
 
+  create_table "moderator_campaigns", :force => true do |t|
+    t.string "name"
+  end
+
   create_table "moderators", :force => true do |t|
     t.integer  "caller_session_id"
     t.string   "call_sid"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "session"
-    t.string   "active",            :default => "true"
+    t.string   "active"
     t.integer  "account_id"
   end
 

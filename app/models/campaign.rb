@@ -16,7 +16,7 @@ class Campaign < ActiveRecord::Base
   has_many :note_responses
   has_many :call_responses
   belongs_to :script
-  belongs_to :voicemail_script, :class_name => 'Script', :foreign_key => 'voicemail_script_id'
+  belongs_to :voicemail_script, :class_name => 'Script'
   belongs_to :account
   belongs_to :recording
   has_many :downloaded_reports
@@ -42,6 +42,7 @@ class Campaign < ActiveRecord::Base
   validate :set_caller_id_error_msg
   validate :campaign_type_changed
   validate :script_changed_called
+  validate :no_caller_assigned_on_deletion
   cattr_reader :per_page
   @@per_page = 25
 
@@ -57,6 +58,14 @@ class Campaign < ActiveRecord::Base
   def new_campaign
     new_record?
   end
+  
+  def no_caller_assigned_on_deletion
+    if active_change == [true, false] && !callers.empty?
+      errors.add(:base, 'You cannot delete a campaign that has callers assigned.')
+    end
+  end
+  
+  
 
   def set_caller_id_error_msg
       if errors[:caller_id].any?

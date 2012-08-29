@@ -15,7 +15,7 @@ describe CampaignsController do
       manual_script = Factory(:script, :account => user.account, :robo => false)
       robo_script = Factory(:script, :account => user.account, :robo => true)
       lambda {
-        post :create, :robo => {:caller_id => '0123456789'}
+        post :create, :robo => {name: "Robo1", caller_id:  '0123456789'}
       }.should change(user.account.campaigns.active.robo, :size).by(1)
       user.account.campaigns.active.robo.last.script.should == robo_script
       response.should redirect_to campaigns_path
@@ -25,7 +25,7 @@ describe CampaignsController do
       deleted_script = Factory(:script, :account => user.account, :robo => true, :active => false)
       active_script = Factory(:script, :account => user.account, :robo => true, :active => true)
       lambda {
-        post :create, :robo => {:caller_id => '0123456789'}
+        post :create, :robo => {name: "Robo1", caller_id:  '0123456789'}
       }.should change(user.account.campaigns.active.robo, :size).by(1)
       user.account.campaigns.active.robo.last.script.should == active_script
     end
@@ -33,7 +33,7 @@ describe CampaignsController do
     describe "voicemails" do
       it "creates a campaign with a voicemail" do
         voicemail = Factory(:script, :robo => true, :active => true, :for_voicemail => true, :name => "voicemail script")
-        post :create, :robo => {:caller_id => "+3987", :robo => true, :voicemail_script => voicemail}
+        post :create, :robo => {:caller_id => "+3987", :robo => true, :voicemail_script_id => voicemail.id, name: "Robo1"}
         user.account.campaigns.active.robo.last.voicemail_script.should == voicemail
       end
     end
@@ -71,8 +71,8 @@ describe CampaignsController do
     let(:campaign) { Factory(:robo, :account => user.account, :script => default_script) }
 
     it "updates the campaign attributes" do
-      new_script = Factory(:script, :account => user.account, :robo => true, :active => true)
-      post :update, :id => campaign.id, :robo => {:name => "an impactful campaign", :script => new_script}
+      new_script = Factory(:script, :account => user.account, :robo => true, :active => true, name: "new script")
+      post :update, :id => campaign.id, :robo => {:name => "an impactful campaign", :script_id => new_script.id}
       campaign.reload.name.should == "an impactful campaign"
       campaign.reload.script.should == new_script
     end
@@ -100,7 +100,8 @@ describe CampaignsController do
       let(:recording) { Factory(:recording) }
 
       it "updates with voicemail attributes" do
-        post :update, :id => campaign.id, :robo => {:answering_machine_detect => true, :use_recordings => true, :recording_id => recording.id}
+        puts recording.id
+        post :update, :id => campaign.id, :robo => {:answering_machine_detect => 1, :use_recordings => 1, :recording_id => recording.id}
         current_campaign = campaign.reload
         current_campaign.answering_machine_detect.should be_true
         current_campaign.use_recordings.should be_true
@@ -109,7 +110,7 @@ describe CampaignsController do
 
       it "updates a campaign with a voicemail" do
         voicemail = Factory(:script, :robo => true, :active => true, :for_voicemail => true, :name => "voicemail script")
-        post :update, :id=> campaign.id, :robo => {:caller_id => "+3987", :robo => true, :voicemail_script => voicemail}
+        post :update, :id=> campaign.id, :robo => {:caller_id => "+3987", :robo => true, :voicemail_script_id => voicemail.id}
         campaign.reload.voicemail_script.should == voicemail
       end
 
