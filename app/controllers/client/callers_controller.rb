@@ -4,7 +4,6 @@ module Client
     include TimeZoneHelper
     skip_before_filter :check_login, :only => [:reassign_to_campaign]
     before_filter :full_access, :except => [:reassign_to_campaign]
-    before_filter :load_caller, :only => [:show, :update, :destroy]
     before_filter :load_campaigns, :except => [:index, :destroy, :reassign_to_campaign]
 
     respond_to :html
@@ -22,10 +21,12 @@ module Client
     end
 
     def show
+      @caller = Caller.find_by_id(params[:id])
     end
 
     def update
       @error_action = 'show'
+      @caller = Caller.find_by_id(params[:id])
       save_caller
     end
 
@@ -36,6 +37,7 @@ module Client
     end
 
     def destroy
+      @caller = Caller.find_by_id(params[:id])
       @caller.update_attribute(:active, false)
       respond_to do |format|
         format.html do
@@ -79,10 +81,6 @@ module Client
 
     def load_campaigns
       @campaigns = account.campaigns.manual.active
-    end
-
-    def load_caller
-      @caller = account.callers.find_by_id(params[:id])
     end
 
     def save_caller
