@@ -37,12 +37,8 @@ module Client
     end
 
     def destroy
-      if @campaign.callers.any?
-        flash_message(:notice, "There are currently callers assigned to this campaign. Please assign them to another campaign before deleting this one.")
-      else
-        @campaign.update_attribute(:active, false)
-        flash_message(:notice, "Campaign deleted")
-      end
+      @campaign.active = false
+      flash_message(:notice, "Campaign deleted") if @campaign.save
       redirect_to :back
     end
 

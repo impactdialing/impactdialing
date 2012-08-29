@@ -61,7 +61,7 @@ class Campaign < ActiveRecord::Base
   
   def no_caller_assigned_on_deletion
     if active_change == [true, false] && !callers.empty?
-      errors.add(:base, 'You cannot delete a campaign that has callers assigned.')
+      errors.add(:base, 'There are currently callers assigned to this campaign. Please assign them to another campaign before deleting this one.')
     end
   end
   

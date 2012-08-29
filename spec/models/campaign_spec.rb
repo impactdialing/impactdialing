@@ -73,7 +73,7 @@ describe Campaign do
         campaign = Factory(:preview, callers: [caller])
         campaign.active = false
         campaign.save.should be_false
-        campaign.errors[:base].should == ['You cannot delete a campaign that has callers assigned.']
+        campaign.errors[:base].should == ['There are currently callers assigned to this campaign. Please assign them to another campaign before deleting this one.']
       end
       
       it "should  delete a campaign that has no active callers" do
