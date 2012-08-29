@@ -18,6 +18,8 @@ class Account < ActiveRecord::Base
   has_many :script_texts, :through => :scripts
   has_many :notes, :through => :scripts
   has_many :possible_responses, :through => :scripts, :source => :questions
+  
+  attr_accessible :api_key
 
   module Subscription_Type
     MANUAL = "Manual"
@@ -159,6 +161,19 @@ class Account < ActiveRecord::Base
 
     self.sync_subscription
   end
+    
+  
+  def enable_api!
+    self.generate_api_key!
+  end
+
+  def disable_api!
+    self.update_attribute(:api_key, "")
+  end
+
+  def api_is_enabled?
+    !api_key.empty?
+  end
 
   def is_manual?
     subscription_name=="Manual"
@@ -236,6 +251,14 @@ class Account < ActiveRecord::Base
     else
       "Fixed"
     end
+  end
+  
+  def secure_digest(*args)
+    Digest::SHA1.hexdigest(args.flatten.join('--'))
+  end
+
+  def generate_api_key!
+    self.update_attribute(:api_key, secure_digest(Time.now, (1..10).map{ rand.to_s }))
   end
 
 end

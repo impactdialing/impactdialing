@@ -2,14 +2,32 @@ require Rails.root.join("lib/twilio_lib")
 
 class ClientController < ApplicationController
   protect_from_forgery :except => [:billing_updated, :billing_success]
+  before_filter :authenticate_api
   before_filter :check_login, :except => [:login, :user_add, :forgot]
   before_filter :check_paid
 
   layout "client"
   in_place_edit_for :campaign, :name
   
+  
+  def authenticate_api
+    unless params[:api_key].blank?
+      @account = Account.find_by_api_key(params[:api_key])
+      return if @account.nil?
+      @user = @account.users.first
+      session[:user] = @user.id
+    end    
+  end
+  
+  
   def check_login
-    redirect_to_login and return if session[:user].blank?
+    if session[:user].blank?
+      respond_to do |format|
+        format.json { render :json => {status: 'error', code: '401' , message: 'Unauthorized'}, :status => :unauthorized }
+        format.html { redirect_to login_path }
+      end
+      return
+    end
     begin
       @user = User.find(session[:user])
       @account = @user.account
@@ -55,6 +73,16 @@ class ClientController < ApplicationController
     @account.update_caller_password(params[:caller_password])
     redirect_to :back
   end
+  
+  def generate_api_key    
+    @account.enable_api!
+    redirect_to :back
+  end
+  
+  def login_from_api_key
+    self.current_user = Account.find_by_api_key(params[:api_key]) unless params[:api_key].empty?
+  end
+  
 
   def user_add
     @breadcrumb = "My Account"

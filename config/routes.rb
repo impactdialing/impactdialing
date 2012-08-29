@@ -183,6 +183,7 @@ ImpactDialing::Application.routes.draw do
     resources :users, :only => [:create, :destroy]
     post 'user_invite', :to => 'users#invite', :as => 'user_invite'
     post 'caller_password', :to => 'users#caller_password', :as => 'caller_password'
+    post 'generate_api_key', :to => 'users#generate_api_key', :as => 'generate_api_key'
     post 'change_role', :to => 'users#change_role', :as => 'change_role'
   end
 
