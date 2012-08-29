@@ -3,6 +3,14 @@ module Client
     layout 'client'
     respond_to :html
     respond_to :json, :only => [:index, :create, :show, :update, :destroy]
+    
+    def index
+      respond_to do |format|
+        format.html {@campaigns = account.campaigns.active.manual.paginate :page => params[:page], :order => 'id desc'}
+        format.json {@campaigns = account.campaigns.where(:active => true)}
+      end
+    end
+    
 
     def new
       @campaign = account.campaigns.new(type: Campaign::Type::PROGRESSIVE, time_zone: "Pacific Time (US & Canada)", start_time: Time.parse("9am"), 
@@ -13,7 +21,6 @@ module Client
 
     def create
       @error_action = 'new'
-      account = Account.find(params[:campaign][:account_id])
       @campaign = account.campaigns.new
       save_campaign
     end
@@ -30,12 +37,6 @@ module Client
       save_campaign
     end
 
-    def index
-      respond_to do |format|
-        format.html {@campaigns = account.campaigns.active.manual.paginate :page => params[:page], :order => 'id desc'}
-        format.json {@campaigns = account.campaigns.where(:active => true)}
-      end
-    end
 
     def destroy
       @campaign = Campaign.find(params[:id])

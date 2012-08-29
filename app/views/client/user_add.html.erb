@@ -10,4 +10,5 @@
 <% unless @user.new_record? %>
 	<%= render :template => 'client/accounts/show' %>
   <%= render :partial => 'client/accounts/caller_password' %>
+  <%= render :partial => 'client/accounts/api_key' %>
 <% end %>

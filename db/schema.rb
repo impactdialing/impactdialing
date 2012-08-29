@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120828162729) do
+ActiveRecord::Schema.define(:version => 20120829103452) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -33,6 +33,7 @@ ActiveRecord::Schema.define(:version => 20120828162729) do
     t.string   "abandonment"
     t.text     "caller_password"
     t.text     "caller_hashed_password_salt"
+    t.string   "api_key",                     :default => ""
   end
 
   create_table "answers", :force => true do |t|
