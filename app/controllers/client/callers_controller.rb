@@ -1,6 +1,7 @@
 module Client
   class CallersController < ClientController
     include DeletableController
+    include TimeZoneHelper
     skip_before_filter :check_login, :only => [:reassign_to_campaign]
     before_filter :full_access, :except => [:reassign_to_campaign]
     before_filter :load_caller, :only => [:show, :update, :destroy]
