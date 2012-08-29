@@ -1,6 +1,9 @@
 <% content_for :javascripts do %>
   <%= javascript_include_tag "https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js" %>
 <% end %>
+<div id="validationError">
+  <%= render "shared/error_messages", :target => @campaign %>
+</div>
 
 <h1>Campaigns</h1>
 <% if @campaigns.length==0 %>
