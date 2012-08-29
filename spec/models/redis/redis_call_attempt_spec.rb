@@ -70,8 +70,7 @@ describe RedisCallAttempt do
     end    
   end
   
-  describe "end_answered_call" do
-    
+  describe "end_answered_call" do    
     it "should set end time" do
       RedisCallAttempt.new(1, 1, 1, "predictive", 1)
       RedisCallAttempt.end_answered_call(1)      
@@ -241,10 +240,10 @@ describe RedisCallAttempt do
       RedisCallAttempt.call_not_wrapped_up?(1).should be_false
     end
     
-    it"should be false of wrapuptime is nil" do
+    it"should be true of wrapuptime is nil" do
       call_attempt = RedisCallAttempt.call_attempt(1)
       call_attempt.store("connecttime", "abc")
-      RedisCallAttempt.call_not_wrapped_up?(1).should be_false
+      RedisCallAttempt.call_not_wrapped_up?(1).should be_true
     end
     
     it"should be false if connecttime and wrapuptime is nil" do
@@ -252,7 +251,7 @@ describe RedisCallAttempt do
       RedisCallAttempt.call_not_wrapped_up?(1).should be_false
     end
     
-    it"should be true if connecttime and wrapuptime have values" do
+    it"should be false if connecttime and wrapuptime have values" do
       call_attempt = RedisCallAttempt.call_attempt(1)
       call_attempt.store("connecttime", "abc")
       call_attempt.store("wrapup_time", "abc")

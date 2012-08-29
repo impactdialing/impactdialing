@@ -69,7 +69,7 @@ class RedisCallAttempt
   
   def self.call_not_wrapped_up?(call_attempt_id)
     call_attempt = read(call_attempt_id)
-    call_attempt['connecttime'] != nil && call_attempt['wrapup_time'] != nil
+    call_attempt['connecttime'] != nil && call_attempt['wrapup_time'].nil?
   end
   
   def self.delete(call_attempt_id)
