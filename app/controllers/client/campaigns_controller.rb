@@ -1,10 +1,6 @@
 module Client
   class CampaignsController < ::CampaignsController
     layout 'client'
-
-    before_filter :load_campaign, :only => [:show, :update, :destroy]
-    before_filter :load_other_stuff, :only => [:create, :show, :update]
-
     respond_to :html
     respond_to :json, :only => [:index, :create, :show, :update, :destroy]
 
@@ -23,10 +19,14 @@ module Client
     end
 
     def show
+      @campaign = Campaign.find(params[:id])
+      @scripts = account.scripts.manual.active
+      @voter_list = @campaign.voter_lists.new
     end
 
     def update
       @error_action = 'show'
+      @campaign = Campaign.find(params[:id])
       save_campaign
     end
 
@@ -38,6 +38,7 @@ module Client
     end
 
     def destroy
+      @campaign = Campaign.find(params[:id])
       @campaign.active = false
       @campaign.save ? flash_message(:notice, "Campaign deleted") : flash_message(:error, @campaign.errors.full_messages.join)
       redirect_to :back
@@ -49,21 +50,6 @@ module Client
     end
 
     private
-
-    def new_campaign
-      @campaign = account.campaigns.new
-    end
-
-    def load_campaign
-      @campaign = Campaign.find(params[:id])
-    end
-
-    def load_other_stuff
-      @callers = account.callers.active
-      @scripts = account.scripts.manual.active
-      # @lists = @campaign.voter_lists
-      # @voter_list = @campaign.voter_lists.new
-    end
 
     def save_campaign
       respond_to do |format|
