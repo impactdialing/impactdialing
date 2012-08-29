@@ -2,22 +2,23 @@ module Client
   class CampaignsController < ::CampaignsController
     layout 'client'
 
-    before_filter :new_campaign, :only => [:new, :create]
     before_filter :load_campaign, :only => [:show, :update, :destroy]
-    before_filter :load_other_stuff, :only => [:new, :create, :show, :update]
+    before_filter :load_other_stuff, :only => [:create, :show, :update]
 
     respond_to :html
     respond_to :json, :only => [:index, :create, :show, :update, :destroy]
 
     def new
-      @campaign.type = "Progressive"
-      @campaign.time_zone = "Pacific Time (US & Canada)"
-      @campaign.start_time = Time.parse("9am")
-      @campaign.end_time = Time.parse("9pm")
+      @campaign = account.campaigns.new(type: Campaign::Type::PROGRESSIVE, time_zone: "Pacific Time (US & Canada)", start_time: Time.parse("9am"), 
+      end_time: Time.parse("9pm"), account_id: account.id)
+      @scripts = account.scripts.manual.active
+      @voter_list = @campaign.voter_lists.new
     end
 
     def create
       @error_action = 'new'
+      account = Account.find(params[:campaign][:account_id])
+      @campaign = account.campaigns.new
       save_campaign
     end
 
@@ -38,7 +39,7 @@ module Client
 
     def destroy
       @campaign.active = false
-      flash_message(:notice, "Campaign deleted") if @campaign.save
+      @campaign.save ? flash_message(:notice, "Campaign deleted") : flash_message(:error, @campaign.errors.full_messages.join)
       redirect_to :back
     end
 
@@ -60,8 +61,8 @@ module Client
     def load_other_stuff
       @callers = account.callers.active
       @scripts = account.scripts.manual.active
-      @lists = @campaign.voter_lists
-      @voter_list = @campaign.voter_lists.new
+      # @lists = @campaign.voter_lists
+      # @voter_list = @campaign.voter_lists.new
     end
 
     def save_campaign
