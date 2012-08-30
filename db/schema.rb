@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120829103452) do
+ActiveRecord::Schema.define(:version => 20120830165015) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -140,6 +140,13 @@ ActiveRecord::Schema.define(:version => 20120829103452) do
     t.integer  "campaign_id"
   end
 
+  create_table "caller_groups", :force => true do |t|
+    t.string   "name",        :null => false
+    t.integer  "campaign_id", :null => false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
   create_table "caller_identities", :force => true do |t|
     t.string   "session_key"
     t.integer  "caller_session_id"
@@ -193,12 +200,13 @@ ActiveRecord::Schema.define(:version => 20120829103452) do
     t.string   "email"
     t.string   "pin"
     t.integer  "account_id"
-    t.boolean  "active",         :default => true
+    t.boolean  "active",          :default => true
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "password"
-    t.boolean  "is_phones_only", :default => false
+    t.boolean  "is_phones_only",  :default => false
     t.integer  "campaign_id"
+    t.integer  "caller_group_id"
   end
 
   create_table "calls", :force => true do |t|
@@ -303,17 +311,13 @@ ActiveRecord::Schema.define(:version => 20120829103452) do
     t.string   "campaign_id"
   end
 
-  create_table "moderator_campaigns", :force => true do |t|
-    t.string "name"
-  end
-
   create_table "moderators", :force => true do |t|
     t.integer  "caller_session_id"
     t.string   "call_sid"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "session"
-    t.string   "active"
+    t.string   "active",            :default => "true"
     t.integer  "account_id"
   end
 

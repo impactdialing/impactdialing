@@ -212,5 +212,8 @@ end
 Factory.define :payment do |c|
 end
 
-
+Factory.define :caller_group do |cg|
+  cg.name 'Caller group'
+  cg.campaign {Factory(:campaign)}
+end
 
