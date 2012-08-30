@@ -185,6 +185,9 @@ Factory.define :caller_campaign do |cc|
 end
 
 Factory.define :note do |n|
+  n.note 'here is a note'
+  n.script {Factory :script}
+  n.script_order '1'
 end
 
 Factory.define :note_response do |n|
