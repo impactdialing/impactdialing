@@ -164,6 +164,7 @@ end
 
 Factory.define :question do |q|
   q.text "question text"
+  q.script_order '1'
   q.script {Factory(:script)}
 end
 
