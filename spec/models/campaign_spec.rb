@@ -34,6 +34,7 @@ describe Campaign do
     it {should validate_presence_of :start_time}
     it {should validate_presence_of :end_time}
     it {should validate_numericality_of :acceptable_abandon_rate}
+    it {should have_many :caller_groups}
 
     it 'return validation error, if caller id is either blank, not a number or not a valid length' do
       campaign = Campaign.new(:account => Factory(:account))

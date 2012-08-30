@@ -3,6 +3,8 @@ require "spec_helper"
 describe Caller do
   include Rails.application.routes.url_helpers
 
+  it {should belong_to :caller_group}
+
   let(:user) { Factory(:user) }
   it "restoring makes it active" do
     caller_object = Factory(:caller, :active => false)
@@ -116,12 +118,12 @@ describe Caller do
     end
 
     describe "campaign" do
-      
+
 
       it "gets stats for answered calls" do
-        @voter =  Factory(:voter) 
+        @voter =  Factory(:voter)
         @script = Factory(:script)
-        @question = Factory(:question, :text => "what?", script: @script)         
+        @question = Factory(:question, :text => "what?", script: @script)
         response_1 = Factory(:possible_response, :value => "foo", question: @question)
         response_2 = Factory(:possible_response, :value => "bar", question: @question)
         campaign = Factory(:campaign, script: @script)
