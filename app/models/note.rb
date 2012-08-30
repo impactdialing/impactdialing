@@ -1,7 +1,12 @@
 class Note < ActiveRecord::Base
-  validates_presence_of :note
+  attr_accessible :note, :script_id, :script_order
+
+  validates :note, presence: true
+  validates :script_id, presence: true, numericality: true
+  validates :script_order, presence: true, numericality: true
+
   belongs_to :script
-  
+
   def self.note_texts(note_ids)
     texts = []
     notes = Note.select("id, note").where("id in (?)",note_ids).order('id')
