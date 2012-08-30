@@ -39,6 +39,15 @@ class Campaign < ActiveRecord::Base
   validates :name, :presence => true
   validates :caller_id, :presence => true
   validates :caller_id, :numericality => {:on => :update}, :length => {:on => :update, :minimum => 10, :maximum => 10}, :unless => Proc.new{|campaign| campaign.caller_id && campaign.caller_id.start_with?('+')}
+  validates :script_id, :presence => true, :numericality => true
+  validates :type, :presence => true, :inclusion => {:in => ['Preview', 'Progressive', 'Predictive', 'Robo']}
+  validates :acceptable_abandon_rate,
+            :numericality => {:greater_than_or_equal_to => 0.01, :less_than_or_equal_to => 0.10},
+            :allow_blank => true
+  validates :recycle_rate, :presence => true, :numericality => true
+  validates :time_zone, :presence => true, :inclusion => {:in => ActiveSupport::TimeZone.zones_map.map {|z| z.first}}
+  validates :start_time, :presence => true
+  validates :end_time, :presence => true
   validate :set_caller_id_error_msg
   validate :campaign_type_changed
   validate :script_changed_called
@@ -58,14 +67,14 @@ class Campaign < ActiveRecord::Base
   def new_campaign
     new_record?
   end
-  
+
   def no_caller_assigned_on_deletion
     if active_change == [true, false] && !callers.empty?
       errors.add(:base, 'There are currently callers assigned to this campaign. Please assign them to another campaign before deleting this one.')
     end
   end
-  
-  
+
+
 
   def set_caller_id_error_msg
       if errors[:caller_id].any?
