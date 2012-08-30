@@ -54,6 +54,7 @@ gem "sprockets", "~>2.4.5"
 group :development, :test do
   gem 'rspec'
   gem 'rspec-rails', '~> 2.6.1'
+  gem 'debugger'
 end
 
 group :development do
