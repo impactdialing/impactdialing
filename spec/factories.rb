@@ -164,14 +164,20 @@ end
 
 Factory.define :question do |q|
   q.text "question text"
+  q.script {Factory(:script)}
 end
 
 Factory.define :possible_response do |pr|
   pr.value "no_response"
+  pr.possible_response_order '1'
+  pr.question {Factory(:question)}
 end
 
 Factory.define :answer do |a|
   a.caller { Factory(:caller) }
+  pr = Factory(:possible_response)
+  a.possible_response pr
+  a.question pr.question
 end
 
 Factory.define :caller_campaign do |cc|
