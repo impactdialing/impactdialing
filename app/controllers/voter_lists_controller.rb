@@ -3,38 +3,41 @@ require Rails.root.join("jobs/voter_list_upload_job")
 
 class VoterListsController < ClientController
   layout 'v2'
-
   before_filter :load_campaign, :setup_based_on_type
   before_filter :check_file_uploaded, :only => [:import]
   skip_before_filter :check_paid
 
   def create
-
-    if params[:upload].blank?
-      flash_message(:error, "Please click \"Choose file\" and select your list before clicking Upload.")
-      redirect_to @campaign_path
-      return
-    end
-    upload = params[:upload]["datafile"]
-    unless VoterList.valid_file?(upload.original_filename)
-      flash_message(:error, "Wrong file format. Please upload a comma-separated value (CSV) or tab-delimited text (TXT) file. If your list is in Excel format (XLS or XLSX), use \"Save As\" to change it to one of these formats.")
-      redirect_to @campaign_path
-      return
-    end
-
-    
+    upload = params[:upload].try(:[], "datafile")
+    @temp_voter_list = TempVoterList.new(name: upload.try(:original_filename))    
     csv = upload.read
-    csv_filename = "#{upload.original_filename}_#{Time.now.to_i}_#{rand(999)}"
-    saved_file_name = VoterList.upload_file_to_s3(csv, csv_filename)
-    save_csv_filename_to_session(saved_file_name)
-    @separator = VoterList.separator_from_file_extension(upload.original_filename)
-    begin
-      @csv_column_headers = CSV.new(csv, :col_sep => @separator).shift.compact
-    rescue Exception => err
-      flash_message(:error, I18n.t(:invalid_file_uploaded))      
-      redirect_to @campaign_path
-      return
-    end    
+    @temp_voter_list.read_column_headers(csv)
+    @temp_voter_list.upload_file_to_s3!(csv)
+    
+    header = File.open(csv, &:readline)
+    temp_voter_list.save
+    
+    # if params[:upload].blank?
+    #   flash_message(:error, "Please click \"Choose file\" and select your list before clicking Upload.")
+    #   redirect_to @campaign_path
+    #   return
+    # end
+    
+    # upload = params[:upload]["datafile"]
+    # unless VoterList.valid_file?(upload.original_filename)
+    #   flash_message(:error, "Wrong file format. Please upload a comma-separated value (CSV) or tab-delimited text (TXT) file. If your list is in Excel format (XLS or XLSX), use \"Save As\" to change it to one of these formats.")
+    #   redirect_to @campaign_path
+    #   return
+    # end
+
+    # @separator = VoterList.separator_from_file_extension(upload.original_filename)
+    # begin
+    #   @csv_column_headers = CSV.new(csv, :col_sep => @separator).shift.compact
+    # rescue Exception => err
+    #   flash_message(:error, I18n.t(:invalid_file_uploaded))      
+    #   redirect_to @campaign_path
+    #   return
+    # end    
     render "column_mapping", :layout => @layout
   end
 
