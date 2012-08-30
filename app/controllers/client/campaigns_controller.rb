@@ -37,12 +37,21 @@ module Client
       save_campaign
     end
 
-
     def destroy
       @campaign = Campaign.find(params[:id])
       @campaign.active = false
       @campaign.save ? flash_message(:notice, "Campaign deleted") : flash_message(:error, @campaign.errors.full_messages.join)
-      redirect_to :back
+      
+      respond_to do |format|
+        format.html {
+          @campaign.save ? flash_message(:notice, "Campaign deleted") : flash_message(:error, @campaign.errors.full_messages.join) 
+          redirect_to :back
+        }
+        format.json { 
+          respond_with @campaign.save
+          }
+      end
+      
     end
 
     def deleted
