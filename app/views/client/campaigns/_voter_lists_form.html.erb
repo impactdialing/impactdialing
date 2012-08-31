@@ -1,0 +1,31 @@
+<%= form_for @campaign, url: "#{client_campaigns_path}/#{@campaign.id}" do |f| %>
+<fieldset>
+  <legend>Lists</legend>
+  <% if @campaign.voter_lists.blank? %>
+      <p>You haven't uploaded any lists yet.</p>
+  <% else %>
+      <table>
+        <tr>
+          <th>Name</th>
+          <th>Phone #s</th>
+          <th>Remaining</th>
+        </tr>
+        <% @campaign.voter_lists.each do |list| %>
+            <tr>
+              <td valign="top">
+                <%= f.fields_for :voter_lists, list do |list_fields| %>
+                  <%= list_fields.check_box :enabled %> <%= list.name %></td>
+                <% end %>
+              </td>
+              <td valign="top"><%= list.voters.size %></td>
+              <td valign="top"><%= Voter.remaining_voters_count_for('voter_list_id', list.id) %></td>
+            </tr>
+        <% end %>
+      </table>
+  <% end %>
+  <div class="buttons">
+    <button type="submit">Save</button>
+  </div>
+  
+</fieldset>
+<%end%>

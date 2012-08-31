@@ -1,2 +1,17 @@
 <h1>New campaign</h1>
-<%= render 'form' %>
+<div id="campaign_details">
+  = link_to "Recent Interactions", recent_interactions_activity_detail_url(:id=>@tab_user.identity), :class=>'client-include' 
+</div>   
+
+<div id="campaign_voter_lists">
+  = link_to "Recent Interactions", recent_interactions_activity_detail_url(:id=>@tab_user.identity), :class=>'client-include' 
+</div>   
+
+<div id="campaign_voter_lists_upload">
+  = link_to "Recent Interactions", recent_interactions_activity_detail_url(:id=>@tab_user.identity), :class=>'client-include' 
+</div>   
+
+
+<%= render 'settings_form' %>
+<%= render 'voter_lists_form' %>
+<%= render 'voter_lists_upload_form' %>
