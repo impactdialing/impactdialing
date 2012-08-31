@@ -2,7 +2,6 @@ class CallerGroup < ActiveRecord::Base
   attr_accessible :name, :campaign_id
 
   validates :name, presence: true
-
   has_many :callers
   belongs_to :campaign
 
@@ -10,19 +9,7 @@ class CallerGroup < ActiveRecord::Base
 
   private
 
-  def reassign_callers
-    puts 'self.campaign_id from model:'
-    p self.campaign_id
-    puts 'campaign_id_changed? from model:'
-    p campaign_id_changed?
-    p 'self.callers.all from model:'
-    p self.callers.all
-    if campaign_id_changed?
-      self.callers.all.each do |c|
-        puts 'self.campaign.id:'
-        p self.campaign.id
-        c.update_attributes(campaign_id: self.campaign.id)
-      end
-    end
+  def reassign_callers    
+    self.callers.each { |c| c.update_attributes(campaign_id: campaign_id) } if campaign_id_changed?
   end
 end
