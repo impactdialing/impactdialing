@@ -1,6 +1,6 @@
 class BlockedNumbersController < ClientController
   def index
-    @blocked_numbers = account.blocked_numbers.all.paginate :page => params[:page], :order => 'id'
+    @blocked_numbers = account.blocked_numbers.paginate :page => params[:page], :order => 'id'
     @campaigns = account.campaigns.active
   end
 
