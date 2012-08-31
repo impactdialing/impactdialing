@@ -7,9 +7,27 @@ class VoterListsController < ClientController
   before_filter :check_file_uploaded, :only => [:import]
   skip_before_filter :check_paid
   
+  respond_to :html
+  respond_to :json, :only => [:index, :create, :show, :update, :destroy]
+  
+  
   def index
-    campaign = Campaign.find(params[:campaign_id])    
+    campaign = account.campaigns.find_by_id(params[:campaign_id])
+    respond_with campaign.voter_lists    
   end
+  
+  def enable
+    campaign = account.campaigns.find_by_id(params[:campaign_id])
+    voter_list_ids = params[:voter_list_ids] || []
+    voter_list_ids.each { |id| VoterList.enable_voter_list(id)}
+  end
+  
+  def disable
+    campaign = account.campaigns.find_by_id(params[:campaign_id])
+    voter_list_ids = params[:voter_list_ids] || []
+    voter_list_ids.each { |id| VoterList.disable_voter_list(id)}
+  end
+  
 
   def create
     upload = params[:upload].try(:[], "datafile")

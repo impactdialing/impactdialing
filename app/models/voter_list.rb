@@ -63,6 +63,14 @@ class VoterList < ActiveRecord::Base
     voter_list.voters.update_all(enabled: true)
   end
   
+  def self.disable_voter_list(id)
+    voter_list = VoterList.find(id)
+    voter_list.enabled = false
+    voter_list.save
+    voter_list.voters.update_all(enabled: false)
+  end
+  
+  
   def self.read_from_s3(file_name)
     @config = YAML::load(File.open("#{Rails.root}/config/amazon_s3.yml"))
     AWS::S3::Base.establish_connection!(
