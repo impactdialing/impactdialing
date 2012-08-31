@@ -5,6 +5,13 @@ describe Caller do
 
   it {should belong_to :caller_group}
 
+  it 'assigns itself to the campaign of its caller group' do
+    campaign = Factory(:preview)
+    caller_group = Factory(:caller_group, campaign_id: campaign.id)
+    caller = Factory(:caller, caller_group_id: caller_group.id)
+    caller.campaign.should eq campaign
+  end
+
   let(:user) { Factory(:user) }
   it "restoring makes it active" do
     caller_object = Factory(:caller, :active => false)
