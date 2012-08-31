@@ -2,105 +2,18 @@
   <div id="validationError">
     <%= render "shared/error_messages", :target => @campaign %>
   </div>
-  <%= f.hidden_field :account_id %>
-  <fieldset>
-    <legend>Settings</legend>
-    <p>
-      <label for="">Name</label><br>
-      <%= f.text_field :name, {:class=>"field size3", name: "campaign[name]"} %>
-    </p>
-
-    <p>
-      <label for="">Caller ID</label><br>
-      <%= f.text_field :caller_id, {:class=>"field size3", name: "campaign[caller_id]"} %>
-    </p>
-
-    <p>
-      <label for="">Script</label><br>
-      <%= f.collection_select(:script_id, @scripts, :id, :name,{}, {:class=>"field", name: "campaign[script_id]"}) %>
-    </p>
-
-    <p>
-      <label for="">Dialing mode</label>
-      <select class="field" id="campaign_type" name="campaign[type]" onchange="dialingModeOnChange()">
-        <%= options_for_select [["Predictive", "Predictive"],
-                                ["Power", "Progressive"],
-                                ["Preview", "Preview"]],
-                               @campaign.type %>
-      </select>
-    </p>
-    <div id="abandon_rate_edit" style="display: none">
-      <p><label>Abandonment rate</label>
-        <select class="field" id="campaign_abandon_rate" name="campaign[acceptable_abandon_rate]">
-          <% if @campaign.account.variable_abandonment? %>
-            <%= options_for_select [["1%", 0.01], ["2%", 0.02], ["3%", 0.03],["4%", 0.04], ["5%", 0.05], ["6%", 0.06],["7%", 0.07], ["8%", 0.08], ["9%", 0.09],["10%", 0.1]], @campaign.acceptable_abandon_rate %>
-          <%else%>
-            <%= options_for_select [["1%", 0.01], ["2%", 0.02], ["3%", 0.03]], @campaign.acceptable_abandon_rate %>
-          <%end%>
-        </select>
-      </p>
-    </div>
-
-    <p>
-      <label for="">Time zone</label>
-      <%= time_zone_select("campaign", 'time_zone', ActiveSupport::TimeZone.us_zones, :default => @campaign.time_zone) %>
-    </p>
-
-    <p>
-      <label for="">Dialing hours</label>
-      <select class="field" id="campaign_start_time" name="campaign[start_time]">
-        <%= options_for_select hours, @campaign.start_time.try(:hour) %>
-      </select>
-      to
-      <select class="field" id="campaign_end_time" name="campaign[end_time]">
-        <%= options_for_select hours, @campaign.end_time.try(:hour) %>
-      </select>
-    </p>
-
-    <%= render :partial => 'shared/recycle_rate', :locals => {:recycle_hour => @campaign.recycle_rate} %>
-    <%= render :partial => 'voicemail', :locals => {:form => f} %>
-  </fieldset>
-
-  <fieldset>
-    <legend>Lists</legend>
-    <% if @campaign.voter_lists.blank? %>
-        <p>You haven't uploaded any lists yet.</p>
-    <% else %>
-        <table>
-          <tr>
-            <th>Name</th>
-            <th>Phone #s</th>
-            <th>Remaining</th>
-          </tr>
-          <% @campaign.voter_lists.each do |list| %>
-              <tr>
-                <td valign="top">
-                  <%= f.fields_for :voter_lists, list do |list_fields| %>
-                    <%= list_fields.check_box :enabled %> <%= list.name %></td>
-                  <% end %>
-                </td>
-                <td valign="top"><%= list.voters.size %></td>
-                <td valign="top"><%= Voter.remaining_voters_count_for('voter_list_id', list.id) %></td>
-              </tr>
-          <% end %>
-        </table>
-    <% end %>
+  
+  <fieldset>  
+    <%= render :partial => 'settings_form', :locals => {:f => f} %>
+    <%= render :partial => 'voter_lists_form', :locals => {:f => f} %>
     <div class="buttons">
       <button type="submit">Save</button>
-    </div>
-    
+    </div>    
   </fieldset>
-  <fieldset>
-    <legend>Add a list</legend>
-    <p>
-      Please upload a comma-separated value (CSV) or tab-delimited text (TXT) file.
-      If your list is in Excel format (XLS or XLSX), use "Save As" to change it to one of these formats.
-    </p>
-    <%= f.fields_for @voter_list do |ff| %>
-      <%= ff.file_field :file %>
-    <% end %>
-  </fieldset>
+  
+  <%= render :partial => 'voter_lists_upload_form'%>
 <% end %>
+
 
 <script>
     function dialingModeOnChange() {
