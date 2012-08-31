@@ -10,8 +10,9 @@ class Caller < ActiveRecord::Base
   has_many :call_attempts
   has_many :answers
   before_create :create_uniq_pin
+  before_validation :assign_to_caller_group_campaign
   validates_uniqueness_of :email, :allow_nil => true
-  validates_presence_of :campaign_id
+  validates :campaign_id, presence: true
 
   scope :active, where(:active => true)
 
@@ -137,5 +138,9 @@ class Caller < ActiveRecord::Base
     caller_identities.create(session_key: session_key, pin: CallerIdentity.create_uniq_pin)
   end
 
+  private
 
+  def assign_to_caller_group_campaign
+    self.campaign_id = CallerGroup.find(caller_group_id).campaign_id if caller_group_id_changed?
+  end
 end
