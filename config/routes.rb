@@ -191,7 +191,7 @@ ImpactDialing::Application.routes.draw do
     match '/', :to => 'client#index', :as => 'client_root'
     resources :campaigns, :only => [] do
       member { post :verify_callerid }
-      resources :voter_lists, :except => [:new, :show, :index], :name_prefix => 'client' do
+      resources :voter_lists, :except => [:new, :show, :index] do
         collection { post :import }
       end
     end

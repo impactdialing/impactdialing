@@ -6,6 +6,10 @@ class VoterListsController < ClientController
   before_filter :load_campaign, :setup_based_on_type
   before_filter :check_file_uploaded, :only => [:import]
   skip_before_filter :check_paid
+  
+  def index
+    campaign = Campaign.find(params[:campaign_id])    
+  end
 
   def create
     upload = params[:upload].try(:[], "datafile")
