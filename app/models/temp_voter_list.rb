@@ -28,8 +28,6 @@ class TempVoterList < ActiveRecord::Base
     (File.extname(file_name).downcase.include?('.csv')) ? ',' : "\t"
   end
   
-  def before_save(list)
-  end
   
     
 end

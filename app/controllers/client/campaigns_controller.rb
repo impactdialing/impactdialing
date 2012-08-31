@@ -26,19 +26,19 @@ module Client
     end
 
     def show
-      @campaign = Campaign.find(params[:id])
+      @campaign = account.campaigns.find_by_id(params[:id])
       @scripts = account.scripts.manual.active
       @voter_list = @campaign.voter_lists.new
     end
 
     def update
       @error_action = 'show'
-      @campaign = Campaign.find(params[:id])
+      @campaign = account.campaigns.find_by_id(params[:id])
       save_campaign
     end
 
     def destroy
-      @campaign = Campaign.find(params[:id])
+      @campaign = account.campaigns.find_by_id(params[:id])
       @campaign.active = false
       @campaign.save ? flash_message(:notice, "Campaign deleted") : flash_message(:error, @campaign.errors.full_messages.join)
       
