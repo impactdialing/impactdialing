@@ -61,5 +61,5 @@ group :test do
   gem 'factory_girl', '~> 1.3.3'
   gem 'shoulda'
   gem 'simplecov'
-  gem 'spork', '~> 1.0rc'
+  gem 'spork-rails'
 end
