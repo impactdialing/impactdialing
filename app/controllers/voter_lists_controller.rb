@@ -3,7 +3,7 @@ require Rails.root.join("jobs/voter_list_upload_job")
 
 class VoterListsController < ClientController
   layout 'v2'
-  before_filter :load_campaign, :setup_based_on_type
+  before_filter  :setup_based_on_type
   before_filter :check_file_uploaded, :only => [:import]
   skip_before_filter :check_paid
   
@@ -14,6 +14,11 @@ class VoterListsController < ClientController
   def index
     campaign = account.campaigns.find_by_id(params[:campaign_id])
     respond_with campaign.voter_lists    
+  end
+  
+  def show
+    campaign = account.campaigns.find_by_id(params[:campaign_id])
+    respond_with campaign.voter_lists.find_by_id(params[:id])
   end
   
   def enable
@@ -72,9 +77,6 @@ class VoterListsController < ClientController
   
   private
   
-  def load_campaign
-    @campaign = Campaign.find(params[:campaign_id])
-  end
 
   def check_file_uploaded
     if session.try(:[], :voters_list_upload).try(:[], "filename").nil?
