@@ -1,7 +1,5 @@
+<%= render "shared/error_messages", :target => @campaign %>
 <%= form_for @campaign, url: "#{client_campaigns_path}/#{@campaign.id}" do |f| %>
-  <div id="validationError">
-    <%= render "shared/error_messages", :target => @campaign %>
-  </div>
   <%= f.hidden_field :account_id %>
   <fieldset>
     <legend>Settings</legend>

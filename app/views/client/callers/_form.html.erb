@@ -1,3 +1,4 @@
+<%= render "shared/error_messages", :target => @caller %>
 <%= form_for @caller, url: "#{client_callers_path}/#{@caller.id}" do |f| -%>
   <fieldset>
   <legend>Settings</legend>
