@@ -215,5 +215,6 @@ end
 Factory.define :caller_group do |cg|
   cg.name 'Caller group'
   cg.campaign {Factory(:campaign)}
+  cg.account {Factory(:account)}
 end
 
