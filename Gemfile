@@ -50,7 +50,6 @@ gem "sprockets", "~>2.4.5"
 
 
 
-
 group :development, :test do
   gem 'rspec'
   gem 'rspec-rails', '~> 2.6.1'
@@ -63,6 +62,7 @@ group :development do
   gem 'guard-rspec'
   gem 'guard-spork'
   gem 'guard-rails'
+  gem 'rb-fsevent'
   gem 'capistrano', '2.9.0'
   gem 'heroku_san'
   gem 'showoff-io'
@@ -73,7 +73,7 @@ end
 
 group :test do
   gem 'factory_girl', '~> 1.3.3'
-  gem 'shoulda', '~> 2.11.3'
+  gem 'shoulda'
   gem 'simplecov'
   gem 'spork', '~> 0.9.0.rc9'
 end

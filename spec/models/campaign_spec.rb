@@ -22,6 +22,18 @@ describe Campaign do
   end
 
   describe "validations" do
+    it {should validate_presence_of :name}
+    it {should validate_presence_of :script_id}
+    it {should validate_numericality_of :script_id}
+    it {should validate_presence_of :type}
+    it {should ensure_inclusion_of(:type).in_array(['Preview', 'Progressive', 'Predictive', 'Robo'])}
+    it {should validate_presence_of :recycle_rate}
+    it {should validate_numericality_of :recycle_rate}
+    it {should validate_presence_of :time_zone}
+    it {should ensure_inclusion_of(:time_zone).in_array(ActiveSupport::TimeZone.zones_map.map {|z| z.first})}
+    it {should validate_presence_of :start_time}
+    it {should validate_presence_of :end_time}
+    it {should validate_numericality_of :acceptable_abandon_rate}
 
     it 'return validation error, if caller id is either blank, not a number or not a valid length' do
       campaign = Campaign.new(:account => Factory(:account))
@@ -40,8 +52,7 @@ describe Campaign do
     end
 
     it 'return validation error, when callers are login and try to change dialing mode' do
-      campaign = Preview.create(:name => 'Titled', :caller_id => '0123456789', :account => Factory(:account))
-      campaign = Campaign.find(campaign.id)
+      campaign = Factory(:preview)
       campaign.caller_sessions.create!(:on_call => true)
       campaign.type = Campaign::Type::PROGRESSIVE
       campaign.save.should be_false
@@ -51,8 +62,7 @@ describe Campaign do
     end
 
     it 'can change dialing mode when not on call' do
-      campaign = Preview.create(:name => 'Titled', :caller_id => '0123456789', :account => Factory(:account))
-      campaign = Campaign.find(campaign.id)
+      campaign = Factory(:preview)
       campaign.type = Campaign::Type::PROGRESSIVE
       campaign.save.should be_true
       campaign.type.should eq(Campaign::Type::PROGRESSIVE)
@@ -65,7 +75,7 @@ describe Campaign do
       campaign.caller_id = nil
       campaign.save
     end
-    
+
     describe "delete campaign" do
 
       it "should not delete a campaign that has active callers" do
@@ -75,16 +85,16 @@ describe Campaign do
         campaign.save.should be_false
         campaign.errors[:base].should == ['There are currently callers assigned to this campaign. Please assign them to another campaign before deleting this one.']
       end
-      
+
       it "should  delete a campaign that has no active callers" do
         caller = Factory(:caller)
         campaign = Factory(:preview)
         campaign.active = false
         campaign.save.should be_true
       end
-      
+
     end
-    
+
   end
 
 
@@ -241,7 +251,7 @@ describe Campaign do
     end
 
   end
-  
+
 
 end
 

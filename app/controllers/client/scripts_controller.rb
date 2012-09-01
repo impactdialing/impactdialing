@@ -1,7 +1,6 @@
 module Client
   class ScriptsController < ::ScriptsController
     skip_before_filter :apply_changes, :questions_answered
-    before_filter :load_script, :only => [:show, :update, :destroy]
     before_filter :load_voter_fields, :only => [:new, :show]
 
     layout 'client'
@@ -29,21 +28,29 @@ module Client
     end
 
     def show
+      load_script
     end
 
     def update
+      load_script
       @error_action = 'show'
       save_script
     end
 
     def destroy
-      if @user.account.campaigns.active.find_by_script_id(@script.id).nil?
-        @script.update_attributes(:active => false)
-        flash_message(:notice, "Script deleted")
-      else
-        flash_message(:notice, I18n.t(:script_cannot_be_deleted))
+      load_script
+      @script.active = false
+      respond_to do |format|
+        format.html do
+          if @script.save
+            flash_message(:notice, "Script deleted")
+          else
+            flash_message(:error, @script.errors.full_messages.join)
+          end
+          redirect_to :action => "index"
+        end
+        format.json {respond_with @script.save}
       end
-      redirect_to :action => "index"
     end
 
     def questions_answered
