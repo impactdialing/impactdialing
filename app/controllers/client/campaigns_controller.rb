@@ -11,12 +11,11 @@ module Client
       end
     end
 
-
     def new
       @campaign = account.campaigns.new(type: Campaign::Type::PROGRESSIVE, time_zone: "Pacific Time (US & Canada)", start_time: Time.parse("9am"),
       end_time: Time.parse("9pm"), account_id: account.id)
-      @scripts = account.scripts.manual.active
-      @voter_list = @campaign.voter_lists.new
+      load_scripts
+      new_list
     end
 
     def create
@@ -27,8 +26,8 @@ module Client
 
     def show
       @campaign = Campaign.find(params[:id])
-      @scripts = account.scripts.manual.active
-      @voter_list = @campaign.voter_lists.new
+      load_scripts
+      new_list
     end
 
     def update
@@ -61,6 +60,14 @@ module Client
 
     private
 
+    def load_scripts
+      @scripts = account.scripts.manual.active
+    end
+
+    def new_list
+      @voter_list = @campaign.voter_lists.new
+    end
+
     def save_campaign
       respond_to do |format|
         format.html do
@@ -68,6 +75,8 @@ module Client
             flash_message(:notice, "Campaign saved")
             redirect_to client_campaigns_path
           else
+            new_list
+            load_scripts
             render :action => @error_action
           end
         end
