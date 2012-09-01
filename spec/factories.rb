@@ -38,7 +38,8 @@ Factory.define :campaign do |c|
   c.start_time (Time.now - 6.hours)
   c.end_time (Time.now - 7.hours)
   c.time_zone "Pacific Time (US & Canada)"
-  c.script_id {Factory(:script)}
+  c.script_id {Factory(:script).id}
+  c.type 'Preview'
 end
 
 Factory.define :predictive do |c|
@@ -49,7 +50,7 @@ Factory.define :predictive do |c|
   c.start_time (Time.now - 6.hours)
   c.end_time (Time.now - 7.hours)
   c.time_zone "Pacific Time (US & Canada)"
-  c.script_id {Factory(:script)}
+  c.script_id {Factory(:script).id}
 end
 
 Factory.define :preview do |c|
@@ -60,7 +61,7 @@ Factory.define :preview do |c|
   c.start_time (Time.now - 6.hours)
   c.end_time (Time.now - 7.hours)
   c.time_zone "Pacific Time (US & Canada)"
-  c.script_id {Factory(:script)}
+  c.script_id {Factory(:script).id}
 end
 
 Factory.define :progressive do |c|
@@ -71,7 +72,7 @@ Factory.define :progressive do |c|
   c.start_time (Time.now - 6.hours)
   c.end_time (Time.now - 7.hours)
   c.time_zone "Pacific Time (US & Canada)"
-  c.script_id {Factory(:script)}
+  c.script_id {Factory(:script).id}
 end
 
 Factory.define :robo do |c|
@@ -82,7 +83,7 @@ Factory.define :robo do |c|
   c.start_time (Time.now - 6.hours)
   c.end_time (Time.now - 7.hours)
   c.time_zone "Pacific Time (US & Canada)"
-  c.script_id {Factory(:script)}
+  c.script_id {Factory(:script).id}
 end
 
 
@@ -164,20 +165,30 @@ end
 
 Factory.define :question do |q|
   q.text "question text"
+  q.script_order '1'
+  q.script {Factory(:script)}
 end
 
 Factory.define :possible_response do |pr|
   pr.value "no_response"
+  pr.possible_response_order '1'
+  pr.question {Factory(:question)}
 end
 
 Factory.define :answer do |a|
   a.caller { Factory(:caller) }
+  pr = Factory(:possible_response)
+  a.possible_response pr
+  a.question pr.question
 end
 
 Factory.define :caller_campaign do |cc|
 end
 
 Factory.define :note do |n|
+  n.note 'here is a note'
+  n.script {Factory :script}
+  n.script_order '1'
 end
 
 Factory.define :note_response do |n|

@@ -3,17 +3,17 @@ module Client
     layout 'client'
     respond_to :html
     respond_to :json, :only => [:index, :create, :show, :update, :destroy]
-    
+
     def index
       respond_to do |format|
         format.html {@campaigns = account.campaigns.active.manual.paginate :page => params[:page], :order => 'id desc'}
         format.json {@campaigns = account.campaigns.where(:active => true)}
       end
     end
-    
+
 
     def new
-      @campaign = account.campaigns.new(type: Campaign::Type::PROGRESSIVE, time_zone: "Pacific Time (US & Canada)", start_time: Time.parse("9am"), 
+      @campaign = account.campaigns.new(type: Campaign::Type::PROGRESSIVE, time_zone: "Pacific Time (US & Canada)", start_time: Time.parse("9am"),
       end_time: Time.parse("9pm"), account_id: account.id)
       @scripts = account.scripts.manual.active
       @voter_list = @campaign.voter_lists.new
@@ -40,18 +40,18 @@ module Client
     def destroy
       @campaign = account.campaigns.find_by_id(params[:id])
       @campaign.active = false
-      @campaign.save ? flash_message(:notice, "Campaign deleted") : flash_message(:error, @campaign.errors.full_messages.join)
-      
+      @campaign.save ? flash_message(:notice, "Campaign deleted") : flash_message(:error, @campaign.errors.full_messages.join)      
       respond_to do |format|
-        format.html {
-          @campaign.save ? flash_message(:notice, "Campaign deleted") : flash_message(:error, @campaign.errors.full_messages.join) 
+        format.html do
+          if @campaign.save
+            flash_message(:notice, "Campaign deleted")
+          else
+            flash_message(:error, @campaign.errors.full_messages.join)
+          end
           redirect_to :back
-        }
-        format.json { 
-          respond_with @campaign.save
-          }
+        end
+        format.json {respond_with @campaign.save}
       end
-      
     end
 
     def deleted
