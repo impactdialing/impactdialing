@@ -141,6 +141,8 @@ class Caller < ActiveRecord::Base
   private
 
   def assign_to_caller_group_campaign
-    self.campaign_id = CallerGroup.find(caller_group_id).campaign_id if caller_group_id_changed?
+    if caller_group_id_changed? && !caller_group_id.nil?
+      self.campaign_id = CallerGroup.find(caller_group_id).campaign_id
+    end
   end
 end
