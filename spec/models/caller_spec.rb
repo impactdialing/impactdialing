@@ -12,6 +12,14 @@ describe Caller do
     caller.campaign.should eq campaign
   end
 
+  it 'saves successfully if it does not have a caller group' do
+    caller_group = Factory(:caller_group)
+    caller = Factory(:caller, caller_group_id: caller_group.id)
+    campaign = Factory(:preview)
+    caller.update_attributes(caller_group_id: nil, campaign: campaign)
+    caller.save.should be_true
+  end
+
   let(:user) { Factory(:user) }
   it "restoring makes it active" do
     caller_object = Factory(:caller, :active => false)
