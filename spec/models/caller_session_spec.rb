@@ -19,36 +19,25 @@ describe CallerSession do
     CallerSession.available.should == [call1]
   end
 
-  xit "has one attempt in progress" do
+  it "has one attempt in progress" do
     session = Factory(:caller_session)
     attempt = Factory(:call_attempt, :status => CallAttempt::Status::ANSWERED, :caller_session => session)
     current_attempt = Factory(:call_attempt, :status => CallAttempt::Status::INPROGRESS, :caller_session => session)
     new_attempt = Factory(:call_attempt, :status => CallAttempt::Status::INPROGRESS)
-    session.update_attribute(:attempt_in_progress, new_attempt)
-    current_attempt.reload.caller_session.should be_nil
-    attempt.reload.caller_session.should == session
-    new_attempt.reload.caller_session.should == session
+    session.update_attributes(attempt_in_progress: new_attempt)
+    session.attempt_in_progress.should eq(new_attempt)
   end
 
-  xit "has one voter in progress" do
+  it "has one voter in progress" do
     session = Factory(:caller_session)
     voter = Factory(:voter, :status => CallAttempt::Status::ANSWERED, :caller_session => session)
     current_voter = Factory(:voter, :status => CallAttempt::Status::INPROGRESS, :caller_session => session)
     new_voter = Factory(:voter, :status => CallAttempt::Status::INPROGRESS)
     session.update_attribute(:voter_in_progress, new_voter)
-    current_voter.reload.caller_session.should be_nil
-    voter.reload.caller_session.should == session
-    new_voter.reload.caller_session.should == session
+    session.voter_in_progress.should eq(new_voter)
   end
 
 
-  it "sets an the last call attempted on a caller session as the attempt in progress" do
-    caller_session = Factory(:caller_session)
-    first_attempt = Factory(:call_attempt, :caller_session => caller_session)
-    caller_session.update_attributes(:attempt_in_progress => nil)
-    latest_attempt = Factory(:call_attempt, :caller_session => caller_session, :status => CallAttempt::Status::INPROGRESS)
-    caller_session.attempt_in_progress.should == latest_attempt
-  end
 
   describe "Calling in" do
     it "puts the caller on hold" do
@@ -57,56 +46,6 @@ describe CallerSession do
     end
   end
 
-  describe "dialing" do
-    let(:campaign) { Factory(:preview, answering_machine_detect: true) }
-    let(:voter) { Factory(:voter, :campaign => campaign) }
-    let(:caller) { Factory(:caller) }
-
-    it "dials a voter for a caller session" do
-      caller_session = Factory(:webui_caller_session, :campaign => campaign, :caller => caller, :attempt_in_progress => nil)
-      call_attempt = Factory(:call_attempt, :campaign => campaign, :dialer_mode => Campaign::Type::PREVIEW, :status => CallAttempt::Status::INPROGRESS, :caller_session => caller_session, :caller => caller)
-      call = Factory(:call, call_attempt: call_attempt)
-      voter.stub_chain(:call_attempts, :create).and_return(call_attempt)
-      Twilio::Call.should_receive(:make).with(anything, voter.Phone, flow_call_url(call_attempt.call, :host => Settings.host, :port => Settings.port, event: 'incoming_call'), {"FallbackUrl"=>"blah", 'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
-      caller_session.should_receive(:publish_calling_voter)
-      caller_session.dial(voter)
-      voter.caller_session.should == caller_session
-      caller_session.reload.attempt_in_progress.should == call_attempt
-      call_attempt.sid.should == "sid"
-      call_attempt.caller.should_not be_nil
-    end
-
-    it "catches exception and pushes next voter if call cannot be made" do
-      caller_session = Factory(:webui_caller_session, :campaign => campaign, :caller => caller, :attempt_in_progress => nil)
-      call_attempt = Factory(:call_attempt, :campaign => campaign, :dialer_mode => Campaign::Type::PREVIEW, :status => CallAttempt::Status::INPROGRESS, :caller_session => caller_session, :caller => caller)
-      call = Factory(:call, call_attempt: call_attempt)
-      voter.stub_chain(:call_attempts, :create).and_return(call_attempt)
-      Twilio::Call.should_receive(:make).with(anything, voter.Phone, flow_call_url(call_attempt.call, :host => Settings.host, :port => Settings.port, event: 'incoming_call'), {"FallbackUrl"=>"blah", 'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"RestException" => {"Status" => "400"}}})
-      caller_session.should_receive(:publish_calling_voter)
-      Moderator.should_receive(:update_dials_in_progress)
-      caller_session.should_receive(:redirect_caller)
-      caller_session.dial(voter)
-      call_attempt.status.should eq(CallAttempt::Status::FAILED)
-      voter.status.should eq(CallAttempt::Status::FAILED)
-    end
-
-
-    it "does not send IFMachine if AMD turned off" do
-      campaign1 = Factory(:campaign, :robo => false, :type => 'Preview', answering_machine_detect: false)
-      caller_session = Factory(:caller_session, :campaign => campaign1, :caller => caller, :attempt_in_progress => nil)
-      call_attempt = Factory(:call_attempt, :campaign => campaign1, :dialer_mode => Campaign::Type::PREVIEW, :status => CallAttempt::Status::INPROGRESS, :caller_session => caller_session, :caller => caller)
-      call = Factory(:call, call_attempt: call_attempt)
-      voter.stub_chain(:call_attempts, :create).and_return(call_attempt)
-      Twilio::Call.should_receive(:make).with(anything, voter.Phone, flow_call_url(call_attempt.call, :host => Settings.host, :port => Settings.port, event: 'incoming_call'), {"FallbackUrl"=>"blah", 'StatusCallback'=> anything, 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
-      caller_session.should_receive(:publish_calling_voter)
-      caller_session.dial(voter)
-      voter.caller_session.should == caller_session
-      caller_session.reload.attempt_in_progress.should == call_attempt
-      call_attempt.sid.should == "sid"
-      call_attempt.caller.should_not be_nil
-
-    end
-  end
 
   describe "reassigned caller to another campaign" do
 
@@ -127,9 +66,6 @@ describe CallerSession do
     end
 
   end
-
-
-
 
   describe "monitor" do
     it "should join the moderator into conference and update moderator call_sid" do
