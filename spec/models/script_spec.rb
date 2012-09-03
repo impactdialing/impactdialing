@@ -1,6 +1,7 @@
 require "spec_helper"
 
 describe Script do
+  
   it "restoring makes it active" do
     script = Factory(:script, :active => false)
     script.restore

@@ -218,19 +218,7 @@ class CallerSession < ActiveRecord::Base
     Pusher[session_key].trigger(event, data.merge!(:dialer => self.campaign.type))
   end
   
-  
-  def dial(voter)
-  return if voter.nil?
-  attempt = create_call_attempt(voter)
-  publish_calling_voter
-  response = make_call(attempt,voter)    
-  if response["TwilioResponse"]["RestException"]
-    handle_failed_call(attempt, voter)
-    return
-  end    
-  attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])  
-  end
-  
+    
   def dial_em(voter)
     return if voter.nil?
     call_attempt = create_call_attempt(voter)    
