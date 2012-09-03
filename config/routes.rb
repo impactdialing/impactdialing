@@ -143,6 +143,8 @@ ImpactDialing::Application.routes.draw do
     resources :script_texts, :only => [:index, :create, :show, :update, :destroy]
     resources :notes, :only => [:index, :create, :show, :update, :destroy]
 
+    resources :caller_groups
+
     [:campaigns, :scripts, :callers].each do |type_plural|
       get "/deleted_#{type_plural}", :to => "#{type_plural}#deleted", :as => "deleted_#{type_plural}"
       resources type_plural, :only => [:new, :index, :show, :destroy, :create, :update] do

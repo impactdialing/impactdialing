@@ -1,9 +1,4 @@
-<% if @script.errors.any? %>
-  <div class = 'callout alert clearfix'>
-    <%= error_messages_for :script %>
-  </div>
-<% end %>
-
+<%= render "shared/error_messages", :target => @script %>
 <%= semantic_form_for [:client, @script] do |form| %>
   <%= render "script_name", f: form %>
   <%= render "script_voter_fields", f: form, voter_fields: @voter_fields, voter_field_values: @voter_field_values %>

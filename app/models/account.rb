@@ -18,7 +18,8 @@ class Account < ActiveRecord::Base
   has_many :script_texts, :through => :scripts
   has_many :notes, :through => :scripts
   has_many :possible_responses, :through => :scripts, :source => :questions
-  
+  has_many :caller_groups
+
   attr_accessible :api_key
 
   module Subscription_Type
@@ -161,8 +162,8 @@ class Account < ActiveRecord::Base
 
     self.sync_subscription
   end
-    
-  
+
+
   def enable_api!
     self.generate_api_key!
   end
@@ -252,7 +253,7 @@ class Account < ActiveRecord::Base
       "Fixed"
     end
   end
-  
+
   def secure_digest(*args)
     Digest::SHA1.hexdigest(args.flatten.join('--'))
   end

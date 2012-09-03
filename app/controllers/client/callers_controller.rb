@@ -18,10 +18,12 @@ module Client
 
     def new
       @caller = account.callers.new(:is_phones_only => params[:is_phones_only])
+      load_caller_groups
     end
 
     def show
       @caller = Caller.find_by_id(params[:id])
+      load_caller_groups
     end
 
     def update
@@ -83,6 +85,10 @@ module Client
       @campaigns = account.campaigns.manual.active
     end
 
+    def load_caller_groups
+      @caller_groups = account.caller_groups
+    end
+
     def save_caller
       respond_to do |format|
         format.html do
@@ -90,6 +96,8 @@ module Client
             flash_message(:notice, "Caller saved")
             redirect_to :action => "index"
           else
+            load_campaigns
+            load_caller_groups
             render :action => @error_action
           end
         end
