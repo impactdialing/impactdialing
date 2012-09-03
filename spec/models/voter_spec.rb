@@ -151,7 +151,6 @@ describe Voter do
     end
 
     it "hangs up after detecting answering machine" do
-      #campaign.update_attributes(:voicemail_script => Factory(:script))
       call_attempt = Factory(:call_attempt)
       voter.should_receive(:new_call_attempt).and_return(call_attempt)
       callback_url = twilio_callback_url(:call_attempt_id => call_attempt, :host => Settings.host, :port => Settings.port)
@@ -170,7 +169,7 @@ describe Voter do
     end
 
     it "continues after detecting answering machine" do
-      campaign.update_attributes(:voicemail_script => Factory(:script))
+      campaign.update_attributes!(answering_machine_detect: true)
       call_attempt = Factory(:call_attempt)
       voter.should_receive(:new_call_attempt).and_return(call_attempt)
       callback_url = twilio_callback_url(:call_attempt_id => call_attempt, :host => Settings.host, :port => Settings.port)
@@ -182,7 +181,7 @@ describe Voter do
           callback_url,
           'FallbackUrl' => fallback_url,
           'StatusCallback' => callended_url,
-          'Timeout' => '30',
+          'Timeout' => '15',
           'IfMachine' => 'Continue'
       ).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
       voter.dial
@@ -508,13 +507,6 @@ describe Voter do
       voter.note_responses.size.should == 2
     end
 
-    it "override old note" do
-      voter.persist_notes("{\"#{note1.id}\":\"tell\"}", call_attempt)
-      voter.note_responses.first eq('tell')
-
-      voter.persist_notes("{\"#{note1.id}\":\"say\"}", call_attempt)
-      voter.note_responses.first eq('say')
-    end
   end
 
   describe "last_call_attempt_before_recycle_rate" do
