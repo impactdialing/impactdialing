@@ -10,6 +10,7 @@
           <th>Remaining</th>
         </tr>
         <% @campaign.voter_lists.each do |list| %>
+          <% unless list.new_record? %>
             <tr>
               <td valign="top">
                 <%= f.fields_for :voter_lists, list do |list_fields| %>
@@ -19,6 +20,7 @@
               <td valign="top"><%= list.voters.size %></td>
               <td valign="top"><%= Voter.remaining_voters_count_for('voter_list_id', list.id) %></td>
             </tr>
+          <% end %>
         <% end %>
       </table>
   <% end %>  
