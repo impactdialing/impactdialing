@@ -1,10 +1,10 @@
 class PossibleResponse < ActiveRecord::Base
   attr_accessible :question_id, :keypad, :value, :retry, :possible_response_order
 
-  belongs_to :question
+  belongs_to :question, inverse_of: :possible_responses
   has_many :answers
 
-  validates :question_id, presence: true, numericality: true
+  validates :question, presence: true
   validates :value, presence: true
   validates :possible_response_order, presence: true, numericality: true
 
