@@ -1,13 +1,12 @@
 source :rubygems
 
-gem 'rails', '3.1.0'
+gem 'rails', '~> 3.2.0'
 gem 'thin', '~>1.3.1'
 gem 'will_paginate', '~> 3.0'
 gem 'mysql2', '~> 0.3.0'
 gem 'newrelic_rpm','~>3.0.1'
 gem 'json', '~> 1.6.1'
 gem 'nokogiri', '~> 1.4.4'
-gem "activemerchant", '~> 1.15.0', :require => "active_merchant"
 gem 'uakari', '~> 0.2.0'
 gem "pusher", "~> 0.9.2"
 gem "aws-s3", "~> 0.6.2", :require => "aws/s3"
