@@ -1,6 +1,6 @@
 <% content_for :javascripts do %>
   <%= javascript_include_tag "https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js" %>
-  <%= javascript_include_tag 'accounts' %>  
+  <%= javascript_include_tag 'accounts' %>
 <% end %>
 
 <% if @user.administrator? %>
@@ -15,7 +15,7 @@
     <% @account.users.each do |user| %>
       <tr class="<%= cycle("odd","even") %>">
         <td><%= user.email %></td>
-        
+
         <td>
           <%= form_tag client_change_role_path(user), :method => :post do %>
             <%= select("user_#{user.id}", "role", { "Administrator" => "admin", "Supervisor" => "supervisor"},{selected: user.role},   {name: "user[role]", class: "user_role"}) %>
@@ -35,7 +35,7 @@
   <fieldset>
     <legend>Invite a new user</legend>
 
-    <% form_tag client_user_invite_path do %>
+    <%= form_tag client_user_invite_path do %>
       <p><label for="">Email</label><br>
        <%= text_field_tag :email %></p>
        <p><%= select( "user", "role", { "Administrator" => "admin", "Supervisor" => "supervisor"}) %></p>
@@ -47,5 +47,5 @@
 
   </fieldset>
   </div>
-<% end %>  
+<% end %>
 

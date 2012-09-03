@@ -4,10 +4,10 @@ class Script < ActiveRecord::Base
   validates_presence_of :name, :message => "can't be blank"
   validate :no_campaign_using_on_deletion
   belongs_to :account
-  has_many :script_texts
+  has_many :script_texts, :inverse_of => :script
   has_many :robo_recordings
-  has_many :questions
-  has_many :notes
+  has_many :questions, :inverse_of => :script
+  has_many :notes, :inverse_of => :script
   has_many :transfers
   has_many :campaigns
   accepts_nested_attributes_for :campaigns
@@ -16,6 +16,7 @@ class Script < ActiveRecord::Base
   accepts_nested_attributes_for :notes, :allow_destroy => true
   accepts_nested_attributes_for :transfers, :allow_destroy => true
   accepts_nested_attributes_for :robo_recordings, :allow_destroy => true
+
 
   default_scope :order => :name
 
