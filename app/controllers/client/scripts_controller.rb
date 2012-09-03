@@ -92,7 +92,6 @@ module Client
 
     def save_script
       params[:script][:voter_fields] =  params[:voter_field] ? params[:voter_field].to_json : nil
-      puts params
       respond_to do |format|
         format.html do
           if @script.update_attributes!(params[:script])
