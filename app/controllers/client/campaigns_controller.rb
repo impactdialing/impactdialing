@@ -71,7 +71,7 @@ module Client
     def save_campaign
       respond_to do |format|
         format.html do
-          if @campaign.update_attributes!(params[:campaign])
+          if @campaign.update_attributes(params[:campaign])
             flash_message(:notice, "Campaign saved")
             redirect_to client_campaigns_path
           else

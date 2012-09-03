@@ -73,7 +73,7 @@ module Client
     private
 
     def load_script
-      @script = Script.find(params[:id])
+      @script = account.scripts.find(params[:id])
     end
 
     def load_voter_fields
@@ -92,9 +92,10 @@ module Client
 
     def save_script
       params[:script][:voter_fields] =  params[:voter_field] ? params[:voter_field].to_json : nil
+      puts params
       respond_to do |format|
         format.html do
-          if @script.update_attributes(params[:script])
+          if @script.update_attributes!(params[:script])
             flash_message(:notice, "Script saved")
             redirect_to :action=>"index"
           else

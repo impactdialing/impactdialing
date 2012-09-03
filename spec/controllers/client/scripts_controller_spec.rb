@@ -10,18 +10,17 @@ describe Client::ScriptsController do
   end
 
   it "lists voter fields to select" do
-    script = Factory(:script, :account => account, :robo => false, :active => true)
-    post :create, :script => script
-    response.should be_success
-    assigns[:voter_fields].should eq(Voter.upload_fields)
+    post :create, script: {name: "script1"}, voter_field: ["Phone", "CustomID", "LastName", "FirstName", "MiddleName", "Suffix", "Email", "address", "city", "state", "zip_code", "country"]
+    response.should redirect_to(client_scripts_url)
+    Script.find_by_name("script1").voter_fields.should eq(Voter.upload_fields.to_json)
   end
 
   it "shows the list of voter fields which were selected" do
     script = Factory(:script, :account => account, :robo => false, :active => true)
-    selected_voter_fields = ["CustomID", "FirstName", "MiddleName"]
-    post :create, :script => script, :voter_field => selected_voter_fields
-    response.should be_success
-    assigns[:voter_field_values].should eq(selected_voter_fields)
+    selected_voter_fields = ["Phone", "CustomID", "LastName", "FirstName"]
+    post :create, script: {name: "script1"}, voter_field: selected_voter_fields
+    response.should redirect_to(client_scripts_url)
+    Script.find_by_name("script1").voter_fields.should eq(selected_voter_fields.to_json)
   end
 
 end
