@@ -10,7 +10,7 @@ ImpactDialing::Application.configure do
   PUSHER_APP_ID="7054"
   PUSHER_KEY="e6c025759382ac4172ad"
   PUSHER_SECRET="feb564060d2c27aa9d2b"
-  
+
   MONITOR_TWILIO_APP_SID="AP00cfdf8773e2425bb4748ada7478c0fd"
   REDIS="redis://redistogo:d71d12bad7803b45796a690bb9fe89d3@guppy.redistogo.com:9307/"
 
@@ -29,16 +29,6 @@ ImpactDialing::Application.configure do
 
   config.active_support.deprecation = :log
 
-  config.after_initialize do
-    #  ActiveMerchant::Billing::Base.mode = :test
-    ActiveMerchant::Billing::LinkpointGateway.pem_file  = File.read(Rails.root.join('1383715.pem'))
-    ::BILLING_GW = gateway = ActiveMerchant::Billing::LinkpointGateway.new(
-      :login => "1383715"
-    )
-    ActiveMerchant::Billing::LinkpointGateway.wiredump_device = File.open("/tmp/linkpoint.log", "a+")
-    ActiveMerchant::Billing::LinkpointGateway.wiredump_device.sync = true
-  end
-
   # Use a different logger for distributed setups
   # config.logger = SyslogLogger.new
 
@@ -53,30 +43,4 @@ ImpactDialing::Application.configure do
 
   # Enable threaded mode
   # config.threadsafe!
-
-
-  # memcache_options = {
-  #   :c_threshold => 10000,
-  #   :compression => true,
-  #   :debug => false,
-  #   :namespace => 'some_ns',
-  #   :readonly => false,
-  #   :urlencode => false
-  # }
-  #
-  # CACHE = MemCache.new memcache_options
-  # #CACHE.servers = '127.0.0.1:11211'
-  # CACHE.servers = 'domU-12-31-39-10-89-26.compute-1.internal:11211'
-  #
-  # begin
-  #    PhusionPassenger.on_event(:starting_worker_process) do |forked|
-  #      if forked
-  #        # We're in smart spawning mode, so...
-  #        # Close duplicated memcached connections - they will open themselves
-  #        CACHE.reset
-  #      end
-  #    end
-  # # In case you're not running under Passenger (i.e. devmode with mongrel)
-  # rescue NameError => error
-  # end
 end
