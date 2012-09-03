@@ -108,6 +108,7 @@ class ClientController < ApplicationController
         flash_now(:error, "Current password incorrect")
         return
       else
+        puts @user.inspect
         @user.save
       end
 
