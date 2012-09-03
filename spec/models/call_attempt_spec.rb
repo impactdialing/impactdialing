@@ -131,48 +131,13 @@ describe CallAttempt do
     end
   end
 
-  describe "capture voter response, when call disconnected unexpectedly" do
-    it "capture response as 'No response' for the questions, which are not answered" do
-      script = Factory(:script)
-      campaign = Factory(:campaign, :script => script)
-      voter = Factory(:voter, :campaign => campaign)
-      question = Factory(:question, :script => script)
-      unanswered_question = Factory(:question, :script => script)
-      possible_response = Factory(:possible_response, :question => question, :value => "ok")
-      answer = Factory(:answer, :question => question, :campaign => campaign, :possible_response => possible_response, :voter => voter)
-      call_attempt = Factory(:call_attempt, :connecttime => Time.now, :status => CallAttempt::Status::SUCCESS, :voter => voter, :campaign => campaign)
-      call_attempt.capture_answer_as_no_response
-      question.possible_responses.count.should == 1
-      question.answers.count.should == 1
-      unanswered_question.possible_responses.count.should == 1
-      unanswered_question.answers.count.should == 1
-    end
-
-    it "capture response as 'No response' for the robo_recordings, for which voter not responded" do
-      script = Factory(:script)
-      campaign = Factory(:campaign, :script => script)
-      voter = Factory(:voter, :campaign => campaign)
-      call_attempt = Factory(:call_attempt, :status => CallAttempt::Status::SUCCESS, :campaign => campaign, :voter => voter)
-      voter.update_attribute(:last_call_attempt, call_attempt)
-      robo_recording = Factory(:robo_recording, :script => script)
-      not_respond_robo_recording = Factory(:robo_recording, :script => script)
-      recording_response = Factory(:recording_response, :robo_recording => robo_recording, :response => "ok")
-      call_response = Factory(:call_response, :robo_recording => robo_recording, :campaign => campaign, :recording_response => recording_response, :call_attempt => call_attempt)
-
-      call_attempt.capture_answer_as_no_response_for_robo
-      robo_recording.recording_responses.count.should == 1
-      robo_recording.call_responses.count.should == 1
-      not_respond_robo_recording.recording_responses.count.should == 1
-      not_respond_robo_recording.call_responses.count.should == 1
-    end
-  end
 
   describe "wrapup call_attempts" do
     it "should wrapup all call_attempts that are not" do
       caller = Factory(:caller)
       another_caller = Factory(:caller)
       Factory(:call_attempt, caller_id: caller.id)
-      Factory(:call_attempt, caller_id: another_caller)
+      Factory(:call_attempt, caller_id: another_caller.id)
       Factory(:call_attempt, caller_id: caller.id)
       Factory(:call_attempt, wrapup_time: Time.now-2.hours,caller_id: caller.id)
       CallAttempt.not_wrapped_up.find_all_by_caller_id(caller.id).length.should eq(2)
