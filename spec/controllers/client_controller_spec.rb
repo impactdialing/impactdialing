@@ -7,7 +7,7 @@ describe ClientController do
 
   describe "when not logged in" do
     it "creates a new user with the appropriate domain" do
-      request.stub!(:domain).and_return('domain.com')
+      request.should_receive(:domain).and_return('domain.com')
       lambda {
         post :user_add, :user => { :email => 'email@example.com', :new_password => 'something' }, :tos => true
       }.should change(User, :count).by(1)
