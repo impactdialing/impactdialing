@@ -44,39 +44,4 @@ ImpactDialing::Application.configure do
   config.action_mailer.delivery_method = :test
 
   config.active_support.deprecation = :log
-  #
-  # config.after_initialize do
-  #   ActiveMerchant::Billing::Base.mode = :test
-  #   ActiveMerchant::Billing::LinkpointGateway.pem_file  = File.read(Rails.root.join('1909897530.pem'))
-  #   ::BILLING_GW = gateway = ActiveMerchant::Billing::LinkpointGateway.new(
-  #     :login => "1909897530"
-  #   )
-  # end
-
-  config.after_initialize do
-    #  ActiveMerchant::Billing::Base.mode = :test
-    ActiveMerchant::Billing::LinkpointGateway.pem_file  = File.read(Rails.root.join('1383715.pem'))
-    ::BILLING_GW = gateway = ActiveMerchant::Billing::LinkpointGateway.new(
-      :login => "1383715"
-    )
-    ActiveMerchant::Billing::LinkpointGateway.wiredump_device = File.open("/tmp/linkpoint.log", "a+")
-    ActiveMerchant::Billing::LinkpointGateway.wiredump_device.sync = true
-  end
-
-
-
-  #require 'memcached_fix.rb'
-
-
-  # memcache_options = {
-  #   :c_threshold => 10000,
-  #   :compression => true,
-  #   :debug => false,
-  #   :namespace => 'some_ns',
-  #   :readonly => false,
-  #   :urlencode => false
-  # }
-  #
-  # CACHE = MemCache.new memcache_options
-  # CACHE.servers = '127.0.0.1:11211'
 end

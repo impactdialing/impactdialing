@@ -115,12 +115,15 @@ end
 Factory.define :caller_session do |s|
   s.campaign { Factory(:campaign, :account => Factory(:account)) }
   s.caller_id { Factory(:caller).id }
+  s.state 'initial'
 end
 
 Factory.define :webui_caller_session do |wcs|
+    wcs.state 'initial'
 end
 
 Factory.define :phones_only_caller_session do |wcs|
+  wcs.state 'initial'
 end
 
 
@@ -207,6 +210,7 @@ Factory.define :transfer_attempt do |t|
 end
 
 Factory.define :call do |c|
+  c.state 'initial'
 end
 
 Factory.define :payment do |c|

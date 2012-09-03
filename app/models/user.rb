@@ -39,7 +39,7 @@ class User < ActiveRecord::Base
   end
 
   def hash_new_password
-    self.salt = ActiveSupport::SecureRandom.base64(8)
+    self.salt = SecureRandom.base64(8)
     self.hashed_password = Digest::SHA2.hexdigest(self.salt + @new_password)
   end
   
