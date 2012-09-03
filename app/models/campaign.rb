@@ -15,6 +15,7 @@ class Campaign < ActiveRecord::Base
   has_many :answers
   has_many :note_responses
   has_many :call_responses
+  has_many :caller_groups
   belongs_to :script
   belongs_to :voicemail_script, :class_name => 'Script'
   belongs_to :account

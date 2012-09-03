@@ -74,7 +74,7 @@ module ApplicationHelper
   end
 
   def client_controller?(controllerName)
-    ['client/accounts', 'client', 'voter_lists', 'monitor', 'client/campaigns', 'client/scripts', 'client/callers', 'client/reports', 'campaigns', 'scripts', 'broadcast', 'reports', 'home', 'blocked_numbers', 'monitors', 'messages'].include?(controllerName)
+    ['client/accounts', 'client', 'voter_lists', 'monitor', 'client/campaigns', 'client/scripts', 'client/callers', 'client/reports', 'campaigns', 'scripts', 'client/caller_groups', 'broadcast', 'reports', 'home', 'blocked_numbers', 'monitors', 'messages'].include?(controllerName)
   end
 
   ['title', 'full_title', 'phone', 'email', 'billing_link'].each do |value|
@@ -111,11 +111,11 @@ module ApplicationHelper
   def pusher_js
     javascript_include_tag("https://d3dy5gmtp8yhk7.cloudfront.net/1.11/pusher.min.js")
   end
-  
+
   def sanitize_dials(dial_count)
     dial_count.nil? ? 0 : dial_count
   end
-  
+
   def percent_dials(dial_count, total_dials)
     begin
       ((sanitize_dials(dial_count).to_f/total_dials)*100).round
@@ -123,7 +123,7 @@ module ApplicationHelper
       0
     end
   end
-  
+
 
 
   module TimeUtils
