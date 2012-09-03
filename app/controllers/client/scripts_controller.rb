@@ -16,9 +16,10 @@ module Client
     end
 
     def new
-      @script = Script.new(robo: false,
-                           questions: [Question.new(possible_responses: [PossibleResponse.new])],
-                           script_texts: [ScriptText.new])
+      @script = Script.new(robo: false)
+      @script.script_texts.new(script_order: 1)
+      @question = @script.questions.new(script_order: 2)
+      @question.possible_responses.new(possible_response_order: 1)
     end
 
     def create

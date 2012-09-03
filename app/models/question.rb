@@ -1,14 +1,14 @@
 class Question < ActiveRecord::Base
   include Rails.application.routes.url_helpers
 
-  attr_accessible :text, :script_id, :script_order
+  attr_accessible :text, :script_id, :script_order, :possible_responses_attributes
 
   validates :text, presence: true
-  validates :script_id, presence: true, numericality: true
+  validates :script, presence: true
   validates :script_order, presence:true, numericality: true
 
-  belongs_to :script
-  has_many :possible_responses
+  belongs_to :script, :inverse_of => :questions
+  has_many :possible_responses, :inverse_of => :question
   has_many :answers
   accepts_nested_attributes_for :possible_responses, :allow_destroy => true
   scope :answered_by, lambda { |voter| joins(:answers).where("answers.voter_id = ?", voter.id) }
