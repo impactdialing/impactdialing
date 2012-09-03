@@ -4,7 +4,7 @@ class Question < ActiveRecord::Base
   attr_accessible :text, :script_id, :script_order, :possible_responses_attributes
 
   validates :text, presence: true
-  validates :script, presence: true
+  validates :script_id, presence: true
   validates :script_order, presence:true, numericality: true
 
   belongs_to :script, :inverse_of => :questions
