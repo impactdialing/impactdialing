@@ -54,7 +54,7 @@ describe Campaign do
 
     it 'return validation error, when callers are login and try to change dialing mode' do
       campaign = Factory(:preview)
-      campaign.caller_sessions.create!(:on_call => true)
+      campaign.caller_sessions.create!(on_call: true, state: "initial")
       campaign.type = Campaign::Type::PROGRESSIVE
       campaign.save.should be_false
       campaign.errors[:base].should == ['You cannot change dialing modes while callers are logged in.']
