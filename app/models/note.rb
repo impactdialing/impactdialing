@@ -2,7 +2,7 @@ class Note < ActiveRecord::Base
   attr_accessible :note, :script_id, :script_order
 
   validates :note, presence: true
-  validates :script, presence: true
+  validates :script_id, presence: true
   validates :script_order, presence: true, numericality: true
 
   belongs_to :script, inverse_of: :questions
