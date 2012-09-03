@@ -312,13 +312,17 @@ ActiveRecord::Schema.define(:version => 20120831195033) do
     t.string   "campaign_id"
   end
 
+  create_table "moderator_campaigns", :force => true do |t|
+    t.string "name"
+  end
+
   create_table "moderators", :force => true do |t|
     t.integer  "caller_session_id"
     t.string   "call_sid"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "session"
-    t.string   "active",            :default => "true"
+    t.string   "active"
     t.integer  "account_id"
   end
 
@@ -432,6 +436,12 @@ ActiveRecord::Schema.define(:version => 20120831195033) do
     t.float    "best_conversation"
     t.float    "longest_conversation"
     t.float    "best_wrapup_time"
+  end
+
+  create_table "temp_voter_lists", :force => true do |t|
+    t.string   "name"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "transfer_attempts", :force => true do |t|
