@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe PossibleResponse do
   context 'validations' do
-    it {should validate_presence_of :question_id}
+    # it {should validate_presence_of :question_id}
     it {should validate_presence_of :value}
     it {should validate_presence_of :possible_response_order}
     it {should validate_numericality_of :possible_response_order}
