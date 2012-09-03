@@ -19,7 +19,6 @@ module Client
     end
 
     def create
-      @error_action = 'new'
       @campaign = account.campaigns.new
       save_campaign
     end
@@ -29,9 +28,14 @@ module Client
       load_scripts
       new_list
     end
+    
+    def edit
+      @campaign = account.campaigns.find_by_id(params[:id])
+      load_scripts
+      new_list
+    end
 
     def update
-      @error_action = 'show'
       @campaign = account.campaigns.find_by_id(params[:id])
       save_campaign
     end
@@ -39,18 +43,8 @@ module Client
     def destroy
       @campaign = account.campaigns.find_by_id(params[:id])
       @campaign.active = false
-      @campaign.save ? flash_message(:notice, "Campaign deleted") : flash_message(:error, @campaign.errors.full_messages.join)      
-      respond_to do |format|
-        format.html do
-          if @campaign.save
-            flash_message(:notice, "Campaign deleted")
-          else
-            flash_message(:error, @campaign.errors.full_messages.join)
-          end
-          redirect_to :back
-        end
-        format.json {respond_with @campaign.save}
-      end
+      @campaign.save ? flash_message(:notice, "Campaign deleted") : flash_message(:error, @campaign.errors.full_messages.join)
+      respond_with(@campaign, location:  client_campaigns_url)
     end
 
     def deleted
@@ -69,19 +63,11 @@ module Client
     end
 
     def save_campaign
-      respond_to do |format|
-        format.html do
-          if @campaign.update_attributes(params[:campaign])
-            flash_message(:notice, "Campaign saved")
-            redirect_to client_campaigns_path
-          else
-            new_list
-            load_scripts
-            render :action => @error_action
-          end
-        end
-        format.json {respond_with @campaign.update_attributes(params[:campaign])}
-      end
+      if @campaign.update_attributes(params[:campaign])
+        flash_message(:notice, "Campaign saved")
+      end 
+      respond_with(@campaign, location: client_campaigns_url)
     end
+    
   end
 end
