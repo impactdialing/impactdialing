@@ -61,4 +61,5 @@ group :test do
   gem 'shoulda'
   gem 'simplecov'
   gem 'spork-rails'
+  gem "database_cleaner"
 end

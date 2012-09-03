@@ -49,6 +49,7 @@ GEM
     columnize (0.3.6)
     cookiejar (0.3.0)
     daemons (1.0.10)
+    database_cleaner (0.8.0)
     debugger (1.2.0)
       columnize (>= 0.3.1)
       debugger-linecache (~> 1.1.1)
@@ -281,6 +282,7 @@ DEPENDENCIES
   call_center (~> 0.0.9)
   cocoon (~> 1.0.22)
   daemons (~> 1.0.10)
+  database_cleaner
   debugger
   delayed_job
   dynamic_form (~> 1.1.4)
