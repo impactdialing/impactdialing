@@ -7,19 +7,19 @@ module Client
     end
 
     def create
-      respond_with(PossibleResponse.create(params[:possible_response]))
+      respond_with(account.possible_responses.create(params[:possible_response]))
     end
 
     def show
-      respond_with(PossibleResponse.find(params[:id]))
+      respond_with(account.possible_responses.find(params[:id]))
     end
 
     def update
-      respond_with(PossibleResponse.find(params[:id]).update_attributes(params[:possible_response]))
+      respond_with(account.possible_responses.find(params[:id]).update_attributes(params[:possible_response]))
     end
 
     def destroy
-      respond_with(PossibleResponse.find(params[:id].destroy))
+      respond_with(account.possible_responses.find(params[:id]).destroy)
     end
   end
 end

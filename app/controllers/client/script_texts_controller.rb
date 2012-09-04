@@ -7,19 +7,19 @@ module Client
     end
 
     def create
-      respond_with(ScriptText.create(params[:script_text]))
+      respond_with(account.script_texts.create(params[:script_text]))
     end
 
     def show
-      respond_with(ScriptText.find(params[:id]))
+      respond_with(account.script_texts.find(params[:id]))
     end
 
     def update
-      respond_with(ScriptText.find(params[:id]).update_attriubtes(params[:script_text]))
+      respond_with(account.script_texts.find(params[:id]).update_attriubtes(params[:script_text]))
     end
 
     def destroy
-      respond_with(ScriptText.find(params[:id].destroy))
+      respond_with(account.script_texts.find(params[:id]).destroy)
     end
   end
 end
