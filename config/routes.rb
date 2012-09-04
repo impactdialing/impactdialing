@@ -74,15 +74,6 @@ ImpactDialing::Application.routes.draw do
     end
   end
 
-  namespace 'admin' do
-    [:campaigns, :scripts, :callers].each do |entities|
-      resources entities, :only => [:index] do
-        put '/restore', :controller => entities, :action => 'restore', :as => 'restore'
-      end
-    end
-  end
-
-
   post :receive_call, :to => 'callin#create', :protocol => PROTOCOL
   post :end_caller_session, :to =>'caller/end_session'
   post :identify_caller, :to => 'callin#identify', :protocol => PROTOCOL
