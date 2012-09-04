@@ -37,24 +37,5 @@ describe ClientController do
         assigns(:campaigns).should == [campaign]
       end
     end
-
-
-
-    it "deleting a script redirects to the referer" do
-      entity = Factory(:script, :account => user.account, :active => true)
-      post "script_delete", :id => entity.id
-      entity.reload.active.should be_false
-      response.should redirect_to :back
-    end
-    
-    it "should not delete a script assigned to a active campaign" do
-      script = Factory(:script, account: user.account, robo: true, active: true)
-      campaign =  Factory(:predictive, active: true, script_id: script.id, account: user.account)
-      post "script_delete", :id => script.id
-      script.reload.active.should be_true
-      response.should redirect_to :back
-    end
-    
-
   end
 end

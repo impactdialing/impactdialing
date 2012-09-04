@@ -23,7 +23,7 @@ describe Campaign do
 
   describe "validations" do
     it {should validate_presence_of :name}
-    it {should validate_presence_of :script_id}
+    it {should validate_presence_of :script}
     it {should validate_presence_of :type}
     it {should ensure_inclusion_of(:type).in_array(['Preview', 'Progressive', 'Predictive', 'Robo'])}
     it {should validate_presence_of :recycle_rate}
