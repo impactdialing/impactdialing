@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120831195033) do
+ActiveRecord::Schema.define(:version => 20120904170536) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -398,7 +398,7 @@ ActiveRecord::Schema.define(:version => 20120831195033) do
 
   create_table "script_texts", :force => true do |t|
     t.integer "script_id"
-    t.text    "section"
+    t.text    "content"
     t.integer "script_order"
   end
 
