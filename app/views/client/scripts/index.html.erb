@@ -16,7 +16,7 @@
         </tr>
         <% @scripts.each do |s| %>
             <tr class="<%= cycle("odd", "even") %>">
-              <td><strong><%= link_to s.name, client_script_path(s) %></strong></td>
+              <td><strong><%= link_to s.name, edit_client_script_path(s) %></strong></td>
               <td><%= s.created_at.strftime("%m/%d/%Y") %></td>
               <td>
                 <div style="display:none"><%= button_to "delete", client_script_path(s), :method => :delete, :id => "delete-button-#{s.id}" %></div>

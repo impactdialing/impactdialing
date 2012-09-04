@@ -11,7 +11,7 @@
     </tr>
     <% @caller_groups.each do |caller_group| %>
       <tr class="<%= cycle("odd","even") %>">
-        <td><strong><%= link_to caller_group.name, client_caller_group_path(caller_group) %></strong></td>
+        <td><strong><%= link_to caller_group.name, edit_client_caller_group_path(caller_group) %></strong></td>
         <td><%= caller_group.campaign.name %></td>
         <td><%= caller_group.created_at.strftime("%m/%d/%Y") %></td>
         <td><%= link_to '',
