@@ -1,2 +1,0 @@
-<% attributes = ["id", "name", 'created_at', 'updated_at'] %>
-{'script':{<%= attributes.map { |attribute| "'#{attribute}'" + ":" + @script.send(attribute).to_s }.join(",") %>}}

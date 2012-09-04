@@ -5,53 +5,51 @@ module Client
 
     layout 'client'
 
-    respond_to :html
-    respond_to :json, :only => [:index, :create, :show, :update, :destroy]
+    respond_to :html, :json
 
     def index
       respond_to do |format|
-        format.html {@scripts = @user.scripts.manual.active.paginate(:page => params[:page])}
-        format.json {@scripts = account.scripts.where(:active => true)}
+        format.html {@scripts = account.scripts.manual.active.paginate(:page => params[:page])}
+        format.json {respond_with account.scripts.manual.active}
       end
     end
 
     def new
-      @script = Script.new(robo: false)
+      new_script
       @script.script_texts.new(script_order: 1)
       @question = @script.questions.new(script_order: 2)
       @question.possible_responses.new(possible_response_order: 1)
+      respond_with @script
     end
 
     def create
-      @script = account.scripts.new
-      @error_action = 'new'
+      new_script
       save_script
     end
 
     def show
       load_script
+      respond_to do |format|
+        format.html {redirect_to edit_client_script_path(@script)}
+        format.json {respond_with @script}
+      end
+    end
+
+    def edit
+      load_script
+      respond_with @script
     end
 
     def update
-      load_script
-      @error_action = 'show'
+      @script = account.scripts.find(params[:id])
       save_script
     end
 
     def destroy
-      load_script
+      @script = account.scripts.find(params[:id])
       @script.active = false
-      respond_to do |format|
-        format.html do
-          if @script.save
-            flash_message(:notice, "Script deleted")
-          else
-            flash_message(:error, @script.errors.full_messages.join)
-          end
-          redirect_to :action => "index"
-        end
-        format.json {respond_with @script.save}
-      end
+      @script.save ? flash_message(:notice, "Script deleted") : flash_message(:error, @script.errors.full_messages.join)
+      respond_with @script, location: client_scripts_path
     end
 
     def questions_answered
@@ -71,6 +69,10 @@ module Client
     end
 
     private
+
+    def new_script
+      @script = account.scripts.new(robo: false)
+    end
 
     def load_script
       @script = account.scripts.find(params[:id])
@@ -92,17 +94,8 @@ module Client
 
     def save_script
       params[:script][:voter_fields] =  params[:voter_field] ? params[:voter_field].to_json : nil
-      respond_to do |format|
-        format.html do
-          if @script.update_attributes!(params[:script])
-            flash_message(:notice, "Script saved")
-            redirect_to :action=>"index"
-          else
-            render :action => @error_action
-          end
-        end
-        format.json {respond_with @script.update_attributes(params[:script])}
-      end
+      flash_message(:notice, "Script saved") if @script.update_attributes(params[:script])
+      respond_with @script, location: client_scripts_path
     end
   end
 end
