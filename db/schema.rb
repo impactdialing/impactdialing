@@ -143,8 +143,8 @@ ActiveRecord::Schema.define(:version => 20120831195033) do
   create_table "caller_groups", :force => true do |t|
     t.string   "name",        :null => false
     t.integer  "campaign_id", :null => false
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",  :null => false
+    t.datetime "updated_at",  :null => false
     t.integer  "account_id",  :null => false
   end
 
@@ -440,8 +440,8 @@ ActiveRecord::Schema.define(:version => 20120831195033) do
 
   create_table "temp_voter_lists", :force => true do |t|
     t.string   "name"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
   end
 
   create_table "transfer_attempts", :force => true do |t|

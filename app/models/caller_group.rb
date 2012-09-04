@@ -2,6 +2,7 @@ class CallerGroup < ActiveRecord::Base
   attr_accessible :name, :campaign_id
 
   validates :name, presence: true
+  validates :campaign_id, presence: true
   has_many :callers
   belongs_to :campaign
   belongs_to :account
