@@ -1,6 +1,6 @@
 <fieldset>
   <legend>Lists</legend>
-  <% if @campaign.voter_lists.blank? %>
+  <% if @campaign.voter_lists.length == 1 %>
       <p>You haven't uploaded any lists yet.</p>
   <% else %>
       <table>
@@ -23,5 +23,5 @@
           <% end %>
         <% end %>
       </table>
-  <% end %>  
+  <% end %>
 </fieldset>
