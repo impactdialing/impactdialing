@@ -1,7 +1,7 @@
 class Script < ActiveRecord::Base
 
   include Deletable
-  validates_presence_of :name, :message => "can't be blank"
+  validates_presence_of :name
   validate :no_campaign_using_on_deletion
   belongs_to :account
   has_many :script_texts, :inverse_of => :script

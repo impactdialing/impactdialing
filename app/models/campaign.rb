@@ -40,7 +40,7 @@ class Campaign < ActiveRecord::Base
   validates :name, :presence => true
   validates :caller_id, :presence => true
   validates :caller_id, :numericality => {:on => :update}, :length => {:on => :update, :minimum => 10, :maximum => 10}, :unless => Proc.new{|campaign| campaign.caller_id && campaign.caller_id.start_with?('+')}
-  validates :script_id, :presence => true, :numericality => true
+  validates :script, :presence => true
   validates :type, :presence => true, :inclusion => {:in => ['Preview', 'Progressive', 'Predictive', 'Robo']}
   validates :acceptable_abandon_rate,
             :numericality => {:greater_than_or_equal_to => 0.01, :less_than_or_equal_to => 0.10},
