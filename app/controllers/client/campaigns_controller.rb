@@ -1,8 +1,7 @@
 module Client
   class CampaignsController < ::CampaignsController
     layout 'client'
-    respond_to :html
-    respond_to :json, :only => [:index, :create, :show, :update, :destroy]
+    respond_to :html, :json
 
     def index
       respond_to do |format|
@@ -16,19 +15,24 @@ module Client
       end_time: Time.parse("9pm"), account_id: account.id)
       load_scripts
       new_list
+      respond_with @campaign
     end
 
     def create
       @campaign = account.campaigns.new
+      load_scripts
+      new_list
       save_campaign
     end
 
     def show
       @campaign = account.campaigns.find_by_id(params[:id])
-      load_scripts
-      new_list
+      respond_to do |format|
+        format.html {redirect_to edit_client_campaign_path(@campaign)}
+        format.json {respond_with @campaign}
+      end
     end
-    
+
     def edit
       @campaign = account.campaigns.find_by_id(params[:id])
       load_scripts
@@ -37,6 +41,8 @@ module Client
 
     def update
       @campaign = account.campaigns.find_by_id(params[:id])
+      load_scripts
+      new_list
       save_campaign
     end
 
@@ -65,9 +71,8 @@ module Client
     def save_campaign
       if @campaign.update_attributes(params[:campaign])
         flash_message(:notice, "Campaign saved")
-      end 
+      end
       respond_with(@campaign, location: client_campaigns_url)
     end
-    
   end
 end
