@@ -129,6 +129,28 @@ describe Client::CampaignsController do
     end
     
     describe "create" do
+      it "should create a new campaign" do
+        script = Factory(:script, :account => account)
+        callers = 3.times.map{Factory(:caller, :account => account)}
+        lambda {
+          post :create , :campaign => {name: "abc", caller_id:"1234567890", script_id: script.id, 
+            type: "Preview", time_zone: "Pacific Time (US & Canada)", start_time:  Time.new(2011, 1, 1, 9, 0, 0), end_time: Time.new(2011, 1, 1, 21, 0, 0)}, :api_key=> "abc123", :format => "json"
+        }.should change {account.reload.campaigns.size} .by(1)
+        response.body.should eq('')
+        
+      end
+      
+      it "should throw validation error" do
+        script = Factory(:script, :account => account)
+        callers = 3.times.map{Factory(:caller, :account => account)}
+        lambda {
+          post :create , :campaign => {name: "abc", caller_id:"123456", script_id: script.id, 
+            type: "Preview", time_zone: "Pacific Time (US & Canada)", start_time:  Time.new(2011, 1, 1, 9, 0, 0), end_time: Time.new(2011, 1, 1, 21, 0, 0)}, :api_key=> "abc123", :format => "json"
+        }.should change {account.reload.campaigns.size} .by(0)
+        response.body.should eq("{\"errors\":{\"caller_id\":[],\"base\":[\"ID must be a 10-digit North American phone number or begin with \\\"+\\\" and the country code.\"]}}")
+        
+      end
+      
     end
     
     
