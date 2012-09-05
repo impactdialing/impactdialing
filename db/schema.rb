@@ -13,7 +13,6 @@
 
 ActiveRecord::Schema.define(:version => 20120904170536) do
 
-
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
     t.datetime "created_at"
@@ -144,8 +143,8 @@ ActiveRecord::Schema.define(:version => 20120904170536) do
   create_table "caller_groups", :force => true do |t|
     t.string   "name",        :null => false
     t.integer  "campaign_id", :null => false
-    t.datetime "created_at",  :null => false
-    t.datetime "updated_at",  :null => false
+    t.datetime "created_at"
+    t.datetime "updated_at"
     t.integer  "account_id",  :null => false
   end
 
@@ -441,8 +440,8 @@ ActiveRecord::Schema.define(:version => 20120904170536) do
 
   create_table "temp_voter_lists", :force => true do |t|
     t.string   "name"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "transfer_attempts", :force => true do |t|

@@ -35,17 +35,22 @@ class VoterListsController < ClientController
 
   def create
     upload = params[:upload].try(:[], "datafile")
-    @campaign = Campaign.find(params[:campaign_id])
+    @campaign = account.campaigns.find(params[:campaign_id])
     s3path = VoterList.upload_file_to_s3(upload.read, csv_file_name(params[:name]))    
-    voter_list = VoterList.new(name: params[:name], separator: params[:separator], headers: params[:headers], csv_to_system_map: params[:csv_to_system_map], campaign_id: params[:campaign_id], s3path: s3path)
-    flash_message(:notice,I18n.t(:voter_list_upload_scheduled)) if voter_list.save
+    voter_list = VoterList.new(name: params[:name], separator: params[:separator], headers: params[:headers], csv_to_system_map: params[:csv_to_system_map], 
+    campaign_id: params[:campaign_id], s3path: s3path, account_id: account.id)
+    if voter_list.save
+      flash_message(:notice,I18n.t(:voter_list_upload_scheduled)) 
+      Resque.enqueue(VoterListUploadJob, voter_list.id, "impactdialing", current_user.email,"")      
+    end
     respond_with(voter_list, location:  edit_client_campaign_path(@campaign.id))  
-    # Resque.enqueue(VoterListUploadJob, params["separator"], params["json_csv_column_headers"], params["csv_to_system_map"], session[:voters_list_upload]["filename"], params[:voter_list_name], params[:campaign_id], account.id,current_user.domain, current_user.email,"")      
+    
   end
   
   def column_mapping
     @campaign = Campaign.find(params[:campaign_id])
     @csv_column_headers = params[:headers]
+    @first_data_row = params[:first_data_row]
     render layout: false
   end
   

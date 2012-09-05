@@ -2,6 +2,11 @@
     <%= javascript_include_tag "campaign/campaign", "campaign/voter_lists","jquery.csv-0.61.min" %>
     <script type ="text/javascript">
       $(document).ready(function() {
+        if (window.File && window.FileReader && window.FileList) {
+          // Great success! All the File APIs are supported.
+        } else {
+          alert('The File APIs are not fully supported in this browser.');
+        }
         voter_list = new VoterLists();
       });
     </script>
