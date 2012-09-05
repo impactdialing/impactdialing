@@ -30,8 +30,10 @@ VoterLists.prototype.validate_csv_file = function(evt){
 	reader.onload = function(theFile) {
 	  var file_contents = theFile.target.result;
 	  var separator = extension == "csv" ? "," : "\t";
-	  var csv_column_headers = $.csv2Array(file_contents, {separator: separator})[0];
-	  $.get("/client/campaigns/"+$('#campaign_id').val()+"/voter_lists/column_mapping", {headers: csv_column_headers},function(data) {
+	  var csv_array = $.csv2Array(file_contents, {separator: separator})
+	  var csv_column_headers = csv_array[0];
+	  var csv_column_data = csv_array[1];
+	  $.get("/client/campaigns/"+$('#campaign_id').val()+"/voter_lists/column_mapping", {headers: csv_column_headers, first_data_row: csv_column_data},function(data) {
 	    $('#column_headers').html(data);
 	    $("#separator").val(separator)
 	    $("#headers").val(csv_column_headers)

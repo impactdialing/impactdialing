@@ -99,6 +99,10 @@ Factory.define :voter_list do |v|
   v.campaign_id { Factory(:campaign).id }
   v.name { Factory.next(:name) }
   v.account { Factory(:account) }
+  v.headers "Phone,Name,Email,Address,City,ZipCode,State,Country"
+  v.separator ","
+  v.s3path "abc"
+  v.csv_to_system_map Hash["Phone" => "Phone"] 
 end
 
 Factory.define :voter do |v|
