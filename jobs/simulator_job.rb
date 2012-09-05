@@ -131,7 +131,7 @@ class SimulatorJob
    
    
    
-   def simulator_campaign_base_values(campaign_id, start_time)
+   def self.simulator_campaign_base_values(campaign_id, start_time)
      puts campaign_id
      caller_statuses = CallerSession.where(:campaign_id => campaign_id,
                :on_call => true).size.times.map{ CallerStatus.new('available') }            
