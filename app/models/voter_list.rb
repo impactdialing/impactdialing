@@ -6,11 +6,12 @@ class VoterList < ActiveRecord::Base
   belongs_to :campaign
   belongs_to :account
   has_many :voters, :conditions => {:active => true}
-  attr_accessible :name, :separator, :headers, :s3path, :csv_to_system_map, :campaign_id, :account_id
+  attr_accessible :name, :separator, :headers, :s3path, :csv_to_system_map, :campaign_id, :account_id, :uploaded_file_name
 
-  validates_presence_of :name, :separator, :headers, :s3path, :csv_to_system_map
+  validates_presence_of :name, :separator, :headers, :s3path, :csv_to_system_map, :uploaded_file_name
   validates_length_of :name, :minimum => 3
-  # validates_uniqueness_of :name, :case_sensitive => false, :scope => :account_id, :message => "for this list is already taken."
+  validates_uniqueness_of :name, :case_sensitive => false, :scope => :account_id, :message => "for this list is already taken."
+  validate :validates_file_type
 
   scope :active, where(:active => true)
   scope :by_ids, lambda { |ids| {:conditions => {:id => ids}} }
@@ -20,6 +21,12 @@ class VoterList < ActiveRecord::Base
                         "state"=>"State/Province", "zip_code"=>"Zip/Postal Code", "country"=>"Country"}
                       
   
+  def validates_file_type
+    if ['.csv','.txt'].include? File.extname(uploaded_file_name).downcase
+    else
+      errors.add(:base, "Wrong file format. Please upload a comma-separated value (CSV) or tab-delimited text (TXT) file. If your list is in Excel format (XLS or XLSX), use \"Save As\" to change it to one of these formats.")
+    end    
+  end
   
   def self.disable_all
     self.all.each do |voter_list|

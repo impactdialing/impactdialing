@@ -102,6 +102,7 @@ Factory.define :voter_list do |v|
   v.headers "Phone,Name,Email,Address,City,ZipCode,State,Country"
   v.separator ","
   v.s3path "abc"
+  v.uploaded_file_name "abc.csv"
   v.csv_to_system_map Hash["Phone" => "Phone"] 
 end
 

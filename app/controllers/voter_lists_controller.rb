@@ -23,7 +23,7 @@ class VoterListsController < ClientController
   def enable
     campaign = account.campaigns.find_by_id(params[:campaign_id])
     voter_list_ids = params[:voter_list_ids] || []
-    voter_list_ids.each { |id| VoterList.enable_voter_list(id)}
+    voter_list_ids.each { |id| VoterList.enable_voter_list(id) }
   end
   
   def disable
@@ -38,12 +38,16 @@ class VoterListsController < ClientController
     @campaign = account.campaigns.find(params[:campaign_id])
     s3path = VoterList.upload_file_to_s3(upload.read, csv_file_name(params[:name]))    
     voter_list = VoterList.new(name: params[:name], separator: params[:separator], headers: params[:headers].to_json, csv_to_system_map: params[:csv_to_system_map].to_json, 
-    campaign_id: params[:campaign_id], s3path: s3path, account_id: account.id)
-    if voter_list.save
-      flash_message(:notice,I18n.t(:voter_list_upload_scheduled)) 
-      Resque.enqueue(VoterListUploadJob, voter_list.id, "impactdialing", current_user.email,"")      
+    campaign_id: params[:campaign_id], s3path: s3path, account_id: account.id, uploaded_file_name: upload.original_filename)
+    respond_with(voter_list, location:  edit_client_campaign_path(@campaign.id)) do |format|
+      if voter_list.save
+        flash_message(:notice, I18n.t(:voter_list_upload_scheduled)) 
+        Resque.enqueue(VoterListUploadJob, voter_list.id, "impactdialing", current_user.email,"")      
+      else
+        flash_message(:error, voter_list.errors.full_messages.join)
+        format.html { redirect_to edit_client_campaign_path(@campaign.id)}        
+      end
     end
-    respond_with(voter_list, location:  edit_client_campaign_path(@campaign.id))  
     
   end
   

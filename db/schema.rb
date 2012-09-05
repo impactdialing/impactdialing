@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120904170536) do
+ActiveRecord::Schema.define(:version => 20120905100026) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -500,15 +500,16 @@ ActiveRecord::Schema.define(:version => 20120904170536) do
   create_table "voter_lists", :force => true do |t|
     t.string   "name"
     t.string   "account_id"
-    t.boolean  "active",            :default => true
+    t.boolean  "active",             :default => true
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "campaign_id"
-    t.boolean  "enabled",           :default => true
+    t.boolean  "enabled",            :default => true
     t.string   "separator"
     t.text     "headers"
     t.text     "csv_to_system_map"
     t.text     "s3path"
+    t.string   "uploaded_file_name"
   end
 
   add_index "voter_lists", ["account_id", "name"], :name => "index_voter_lists_on_user_id_and_name", :unique => true
