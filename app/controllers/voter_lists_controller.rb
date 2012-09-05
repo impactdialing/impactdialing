@@ -37,7 +37,7 @@ class VoterListsController < ClientController
     upload = params[:upload].try(:[], "datafile")
     @campaign = account.campaigns.find(params[:campaign_id])
     s3path = VoterList.upload_file_to_s3(upload.read, csv_file_name(params[:name]))    
-    voter_list = VoterList.new(name: params[:name], separator: params[:separator], headers: params[:headers].to_json, csv_to_system_map: params[:csv_to_system_map].to_json, 
+    voter_list = VoterList.new(name: params[:name], separator: params[:separator], headers: params[:headers].to_json, csv_to_system_map: params[:csv_to_system_map], 
     campaign_id: params[:campaign_id], s3path: s3path, account_id: account.id)
     if voter_list.save
       flash_message(:notice,I18n.t(:voter_list_upload_scheduled)) 
