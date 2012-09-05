@@ -39,7 +39,7 @@ class Campaign < ActiveRecord::Base
 
   validates :name, :presence => true
   validates :caller_id, :presence => true
-  validates :caller_id, :numericality => {:on => :update}, :length => {:on => :update, :minimum => 10, :maximum => 10}, :unless => Proc.new{|campaign| campaign.caller_id && campaign.caller_id.start_with?('+')}
+  validates :caller_id, :numericality => {}, :length => {:minimum => 10, :maximum => 10}, :unless => Proc.new{|campaign| campaign.caller_id && campaign.caller_id.start_with?('+')}
   validates :script, :presence => true
   validates :type, :presence => true, :inclusion => {:in => ['Preview', 'Progressive', 'Predictive', 'Robo']}
   validates :acceptable_abandon_rate,
@@ -80,7 +80,7 @@ class Campaign < ActiveRecord::Base
   def set_caller_id_error_msg
       if errors[:caller_id].any?
         errors[:caller_id].clear
-        errors.add(:caller_id, 'ID must be a 10-digit North American phone number or begin with "+" and the country code.')
+        errors.add(:base, 'ID must be a 10-digit North American phone number or begin with "+" and the country code.')
       end
     end
 
