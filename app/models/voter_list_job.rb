@@ -1,5 +1,5 @@
 class VoterListJob
-  def initialize(voter_list_id, separator, csv_to_system_map, filename, voter_list_name, campaign_id, account_id, domain, email,callback_url,strategy="webui")
+  def initialize(voter_list_id, domain, email, callback_url, strategy="webui")
     @voter_list = VoterList.find(voter_list_id)
     @separator = @voter_list.separator
     @csv_to_system_map = CsvMapping.new(HashWithIndifferentAccess.new(@voter_list.csv_to_system_map))
