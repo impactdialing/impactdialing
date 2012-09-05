@@ -7,19 +7,19 @@ module Client
     end
 
     def create
-      respond_with(Question.create(params[:question]))
+      respond_with(account.questions.create(params[:question]))
     end
 
     def show
-      respond_with(Question.find(params[:id]))
+      respond_with(account.questions.find(params[:id]))
     end
 
     def update
-      respond_with(Question.find(params[:id]).update_attributes(params[:question]))
+      respond_with(account.questions.find(params[:id]).update_attributes(params[:question]))
     end
 
     def destroy
-      respond_with(Question.find(params[:id].destroy))
+      respond_with(account.questions.find(params[:id]).destroy)
     end
     
   end
