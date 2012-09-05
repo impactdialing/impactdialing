@@ -1,56 +1,126 @@
 require "spec_helper"
 
 describe Client::CampaignsController do
-  let(:account) { Factory(:account, :activated => true) }
+  let(:account) { Factory(:account, :activated => true, api_key: "abc123") }
   let(:user) { Factory(:user, :account => account) }
-
-  before(:each) do
-    login_as user
-  end
-
-  it "lists active manual campaigns" do
-    robo_campaign = Factory(:robo, :account => account, :active => true)
-    manual_campaign = Factory(:preview, :account => account, :active => true)
-    inactive_campaign = Factory(:progressive, :account => account, :active => false)
-    get :index
-    assigns(:campaigns).should == [manual_campaign]
-  end
-
-  describe 'show' do
-    let(:campaign) {Factory(:preview, :account => account)}
-
-
-    after(:each) do
-      response.should be_ok
+  
+  describe "html format" do
+    before(:each) do
+      login_as user
     end
+    
+    it "lists active manual campaigns" do
+      robo_campaign = Factory(:robo, :account => account, :active => true)
+      manual_campaign = Factory(:preview, :account => account, :active => true)
+      inactive_campaign = Factory(:progressive, :account => account, :active => false)
+      get :index
+      assigns(:campaigns).should == [manual_campaign]
+    end
+
+    describe 'show' do
+      let(:campaign) {Factory(:preview, :account => account)}
+
+      after(:each) do
+        response.should be_ok
+      end
+    end
+
+    it "deletes campaigns" do
+      request.env['HTTP_REFERER'] = 'http://referer'
+      campaign = Factory(:preview, :account => account, :active => true)
+      delete :destroy, :id => campaign.id
+      campaign.reload.should_not be_active
+      response.should redirect_to 'http://referer'
+    end
+
+    it "restore campaigns" do
+      request.env['HTTP_REFERER'] = 'http://referer'
+      campaign = Factory(:preview, :account => account, :active => true, :robo => false)
+      put :restore, :campaign_id => campaign.id
+      campaign.reload.should be_active
+      response.should redirect_to 'http://referer'
+    end
+
+    it "creates a new campaign" do
+      script = Factory(:script, :account => account)
+      callers = 3.times.map{Factory(:caller, :account => account)}
+      lambda {
+        post :create , :campaign => {name: "abc", caller_id:"1234567890", script_id: script.id, 
+          type: "Preview", time_zone: "Pacific Time (US & Canada)", start_time:  Time.new(2011, 1, 1, 9, 0, 0), end_time: Time.new(2011, 1, 1, 21, 0, 0)}
+      }.should change {account.reload.campaigns.size} .by(1)
+      campaign = account.campaigns.last
+      campaign.type.should == 'Preview'
+      campaign.script.should == script
+      campaign.account.callers.should == callers
+    end
+    
+    
   end
 
-  it "deletes campaigns" do
-    request.env['HTTP_REFERER'] = 'http://referer'
-    campaign = Factory(:preview, :account => account, :active => true)
-    delete :destroy, :id => campaign.id
-    campaign.reload.should_not be_active
-    response.should redirect_to 'http://referer'
-  end
 
-  it "restore campaigns" do
-    request.env['HTTP_REFERER'] = 'http://referer'
-    campaign = Factory(:preview, :account => account, :active => true, :robo => false)
-    put :restore, :campaign_id => campaign.id
-    campaign.reload.should be_active
-    response.should redirect_to 'http://referer'
-  end
+  
+  describe "api" do
+    
+    before(:each) do
+      @user = Factory(:user, account_id: account.id)
+    end
+    
+    describe "index" do
+      
+      it "should list active campaigns for an account" do
 
-  it "creates a new campaign" do
-    script = Factory(:script, :account => account)
-    callers = 3.times.map{Factory(:caller, :account => account)}
-    lambda {
-      post :create , :campaign => {name: "abc", caller_id:"1234567890", script_id: script.id, 
-        type: "Preview", time_zone: "Pacific Time (US & Canada)", start_time:  Time.new(2011, 1, 1, 9, 0, 0), end_time: Time.new(2011, 1, 1, 21, 0, 0)}
-    }.should change {account.reload.campaigns.size} .by(1)
-    campaign = account.campaigns.last
-    campaign.type.should == 'Preview'
-    campaign.script.should == script
-    campaign.account.callers.should == callers
+        robo_campaign = Factory(:robo, :account => account, :active => true)
+        preview_campaign = Factory(:preview, :account => account, :active => true)
+        predictive_campaign = Factory(:predictive, :account => account, :active => true)
+        inactive_campaign = Factory(:progressive, :account => account, :active => false)
+        get :index, :api_key=> 'abc123', :format => "json"
+        JSON.parse(response.body).length.should eq(2)        
+      end
+      
+      it "should not list active campaigns for an account with wrong api key" do
+        robo_campaign = Factory(:robo, :account => account, :active => true)
+        preview_campaign = Factory(:preview, :account => account, :active => true)
+        predictive_campaign = Factory(:predictive, :account => account, :active => true)
+        inactive_campaign = Factory(:progressive, :account => account, :active => false)
+        get :index, :api_key=> 'abc12', :format => "json"
+        JSON.parse(response.body).should eq({"status"=>"error", "code"=>"401", "message"=>"Unauthorized"})        
+      end
+      
+    end
+    
+    describe "show" do      
+      it "should give campaign details" do
+        campaign = Factory(:predictive, :account => account, :active => true)
+        get :show, :id=> campaign.id, :api_key=> 'abc123', :format => "json"
+        response.body.should == campaign.to_json
+      end
+    end
+    
+    describe "edit" do
+      it "should give campaign details" do
+        predictive_campaign = Factory(:predictive, :account => account, :active => true, start_time: Time.now, end_time: Time.now)
+        get :edit, :id=> predictive_campaign.id, :api_key=> 'abc123', :format => "json"
+        response.body.should == predictive_campaign.to_json
+      end
+    end
+
+    describe "destroy" do
+      it "should delete campaign" do
+        predictive_campaign = Factory(:predictive, :account => account, :active => true, start_time: Time.now, end_time: Time.now)
+        get :destroy, :id=> predictive_campaign.id, :api_key=> 'abc123', :format => "json"
+        response.body.should == {}
+      end
+      
+      it "should not delete a campaign from another account" do
+        another_account = Factory(:account, :activated => true, api_key: "123abc")
+        user = Factory(:user, account_id: another_account.id)
+        predictive_campaign = Factory(:predictive, :account => account, :active => true, start_time: Time.now, end_time: Time.now)
+        get :destroy, :id=> predictive_campaign.id, :api_key=> '123abc', :format => "json"
+        response.body.should == {}
+      end
+      
+    end
+    
+    
   end
 end
