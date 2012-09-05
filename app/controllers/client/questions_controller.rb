@@ -1,7 +1,7 @@
 module Client
   class QuestionsController < ClientController
     respond_to :json
-
+    
     def index
       respond_with(account.questions)
     end
@@ -21,5 +21,6 @@ module Client
     def destroy
       respond_with(Question.find(params[:id].destroy))
     end
+    
   end
 end

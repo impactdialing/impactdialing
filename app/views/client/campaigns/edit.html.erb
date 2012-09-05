@@ -1,5 +1,16 @@
 <% content_for :javascripts do %>
-    <%= javascript_include_tag "campaign/campaign" %>
+    <%= javascript_include_tag "campaign/campaign", "campaign/voter_lists","jquery.csv-0.61.min" %>
+    <script type ="text/javascript">
+      $(document).ready(function() {
+        voter_list = new VoterLists();
+      });
+    </script>
+    
 <% end %>
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "column_mapping" %>
+<% end %>
+
 <h1>Edit campaign</h1>
 <%= render 'form' %>
+
