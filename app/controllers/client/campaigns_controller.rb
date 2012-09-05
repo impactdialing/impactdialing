@@ -5,14 +5,16 @@ module Client
 
     def index
       respond_to do |format|
-        format.html {@campaigns = account.campaigns.active.manual.paginate :page => params[:page], :order => 'id desc'}
-        format.json {@campaigns = account.campaigns.where(:active => true)}
+        format.html {@campaigns = account.campaigns.active.manual.paginate :page => params[:page]}
+        format.json {respond_with account.campaigns.active.manual}
       end
     end
 
     def new
-      @campaign = account.campaigns.new(type: Campaign::Type::PROGRESSIVE, time_zone: "Pacific Time (US & Canada)", start_time: Time.parse("9am"),
-      end_time: Time.parse("9pm"), account_id: account.id)
+      @campaign = account.campaigns.new(type: Campaign::Type::PROGRESSIVE,
+                                        time_zone: "Pacific Time (US & Canada)",
+                                        start_time: Time.parse("9am"),
+                                        end_time: Time.parse("9pm"))
       load_scripts
       new_list
       respond_with @campaign
@@ -20,13 +22,11 @@ module Client
 
     def create
       @campaign = account.campaigns.new
-      load_scripts
-      new_list
       save_campaign
     end
 
     def show
-      @campaign = account.campaigns.find_by_id(params[:id])
+      load_campaign
       respond_to do |format|
         format.html {redirect_to edit_client_campaign_path(@campaign)}
         format.json {respond_with @campaign}
@@ -34,23 +34,22 @@ module Client
     end
 
     def edit
-      @campaign = account.campaigns.find_by_id(params[:id])
+      load_campaign
       load_scripts
       new_list
+      respond_with @campaign
     end
 
     def update
-      @campaign = account.campaigns.find_by_id(params[:id])
-      load_scripts
-      new_list
+      load_campaign
       save_campaign
     end
 
     def destroy
-      @campaign = account.campaigns.find_by_id(params[:id])
+      load_campaign
       @campaign.active = false
       @campaign.save ? flash_message(:notice, "Campaign deleted") : flash_message(:error, @campaign.errors.full_messages.join)
-      respond_with(@campaign, location:  client_campaigns_url)
+      respond_with(@campaign, location: client_campaigns_url)
     end
 
     def deleted
@@ -59,6 +58,10 @@ module Client
     end
 
     private
+
+    def load_campaign
+      @campaign = account.campaigns.find_by_id(params[:id])
+    end
 
     def load_scripts
       @scripts = account.scripts.manual.active
@@ -69,8 +72,10 @@ module Client
     end
 
     def save_campaign
+      load_scripts
+      new_list
       flash_message(:notice, "Campaign saved") if @campaign.update_attributes(params[:campaign])
-      respond_with(@campaign, location: client_campaigns_url)
+      respond_with @campaign, location: client_campaigns_path
     end
   end
 end

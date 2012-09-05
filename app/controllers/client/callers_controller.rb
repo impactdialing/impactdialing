@@ -6,48 +6,50 @@ module Client
     before_filter :full_access, :except => [:reassign_to_campaign]
     before_filter :load_campaigns, :except => [:index, :destroy, :reassign_to_campaign]
 
-    respond_to :html
-    respond_to :json, :only => [:index, :create, :show, :update, :destroy]
+    respond_to :html, :json
 
     def index
       respond_to do |format|
-        format.html { @callers = Caller.where(:active => true, :account_id => account.id).order(:name).paginate(:page => params[:page]) }
-        format.json { @callers = account.callers.where(:active => true) }
+        format.html { @callers = account.callers.active.paginate(:page => params[:page]) }
+        format.json { respond_with account.callers.active }
       end
     end
 
     def new
       @caller = account.callers.new(:is_phones_only => params[:is_phones_only])
       load_caller_groups
+      respond_with @caller
     end
 
     def show
-      @caller = Caller.find_by_id(params[:id])
+      load_caller
+      respond_to do |format|
+        format.html {redirect_to edit_client_caller_path(@caller)}
+        format.json {respond_with @caller}
+      end
+    end
+
+    def edit
+      load_caller
       load_caller_groups
+      respond_with @caller
     end
 
     def update
-      @error_action = 'show'
-      @caller = Caller.find_by_id(params[:id])
+      load_caller
       save_caller
     end
 
     def create
       @caller = account.callers.new
-      @error_action = 'new'
       save_caller
     end
 
     def destroy
-      @caller = Caller.find_by_id(params[:id])
+      load_caller
       @caller.update_attribute(:active, false)
-      respond_to do |format|
-        format.html do
-          flash_message(:notice, "Caller deleted")
-          redirect_to :action => "index"
-        end
-        format.json { head :no_content }
-      end
+      flash_message(:notice, "Caller deleted")
+      respond_with @caller, location: client_callers_path
     end
 
     def reassign_to_campaign
@@ -81,6 +83,10 @@ module Client
 
     private
 
+    def load_caller
+      @caller = account.callers.find_by_id(params[:id])
+    end
+
     def load_campaigns
       @campaigns = account.campaigns.manual.active
     end
@@ -90,19 +96,10 @@ module Client
     end
 
     def save_caller
-      respond_to do |format|
-        format.html do
-          if @caller.update_attributes(params[:caller])
-            flash_message(:notice, "Caller saved")
-            redirect_to :action => "index"
-          else
-            load_campaigns
-            load_caller_groups
-            render :action => @error_action
-          end
-        end
-        format.json {respond_with @caller.update_attributes(params[:caller])}
-      end
+      load_campaigns
+      load_caller_groups
+      flash_message(:notice, "Caller saved") if @caller.update_attributes(params[:caller])
+      respond_with @caller, location: client_callers_path
     end
   end
 end
