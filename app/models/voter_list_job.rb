@@ -1,7 +1,6 @@
 class VoterListJob
-  def initialize(separator, column_headers, csv_to_system_map, filename, voter_list_name, campaign_id, account_id, domain, email,callback_url,strategy="webui")
+  def initialize(separator, csv_to_system_map, filename, voter_list_name, campaign_id, account_id, domain, email,callback_url,strategy="webui")
     @separator = separator
-    @csv_column_headers = JSON.parse(column_headers)
     @csv_to_system_map = CsvMapping.new(csv_to_system_map)
     @csv_filename = filename
     @voter_list_name = voter_list_name

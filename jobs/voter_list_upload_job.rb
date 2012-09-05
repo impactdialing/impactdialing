@@ -5,7 +5,7 @@ class VoterListUploadJob
 
    def self.perform(voter_list_id, email, domain, callback_url, strategy="webui")
      voter_list = VoterList.find(voter_list_id)
-     job = VoterListJob.new(voter_list.separator, voter_list.headers, voter_list.csv_to_system_map, voter_list.s3path, voter_list.name, voter_list.campaign_id, voter_list.account_id, domain, email, callback_url, strategy="webui")
+     job = VoterListJob.new(voter_list.separator, voter_list.csv_to_system_map, voter_list.s3path, voter_list.name, voter_list.campaign_id, voter_list.account_id, domain, email, callback_url, strategy="webui")
      job.perform
    end
    
