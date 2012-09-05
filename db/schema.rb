@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120904170536) do
+ActiveRecord::Schema.define(:version => 20120905004608) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -412,20 +412,6 @@ ActiveRecord::Schema.define(:version => 20120904170536) do
     t.text     "voter_fields",  :limit => 2147483647
     t.boolean  "robo",                                :default => false
     t.boolean  "for_voicemail"
-  end
-
-  create_table "seos", :force => true do |t|
-    t.string   "action"
-    t.string   "controller"
-    t.string   "crmkey"
-    t.string   "title"
-    t.string   "keywords"
-    t.string   "description"
-    t.text     "content",     :limit => 2147483647
-    t.boolean  "active"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-    t.string   "version"
   end
 
   create_table "simulated_values", :force => true do |t|
