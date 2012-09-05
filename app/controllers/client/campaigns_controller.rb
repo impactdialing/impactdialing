@@ -69,9 +69,7 @@ module Client
     end
 
     def save_campaign
-      if @campaign.update_attributes(params[:campaign])
-        flash_message(:notice, "Campaign saved")
-      end
+      flash_message(:notice, "Campaign saved") if @campaign.update_attributes(params[:campaign])
       respond_with(@campaign, location: client_campaigns_url)
     end
   end

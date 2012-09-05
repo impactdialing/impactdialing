@@ -3,13 +3,12 @@ require Rails.root.join("jobs/voter_list_upload_job")
 
 class VoterListsController < ClientController
   layout 'v2'
-  before_filter  :setup_based_on_type
+  # before_filter  :setup_based_on_type
   before_filter :check_file_uploaded, :only => [:import]
   skip_before_filter :check_paid
   
   respond_to :html
   respond_to :json, :only => [:index, :create, :show, :update, :destroy]
-  
   
   def index
     campaign = account.campaigns.find_by_id(params[:campaign_id])
@@ -36,63 +35,26 @@ class VoterListsController < ClientController
 
   def create
     upload = params[:upload].try(:[], "datafile")
-    @temp_voter_list = TempVoterList.new(name: upload.try(:original_filename))    
-    csv = upload.read
-    @temp_voter_list.read_column_headers(csv)
-    @temp_voter_list.upload_file_to_s3!(csv)
-    
-    header = File.open(csv, &:readline)
-    temp_voter_list.save
-    
-    # if params[:upload].blank?
-    #   flash_message(:error, "Please click \"Choose file\" and select your list before clicking Upload.")
-    #   redirect_to @campaign_path
-    #   return
-    # end
-    
-    # upload = params[:upload]["datafile"]
-    # unless VoterList.valid_file?(upload.original_filename)
-    #   flash_message(:error, "Wrong file format. Please upload a comma-separated value (CSV) or tab-delimited text (TXT) file. If your list is in Excel format (XLS or XLSX), use \"Save As\" to change it to one of these formats.")
-    #   redirect_to @campaign_path
-    #   return
-    # end
-
-    # @separator = VoterList.separator_from_file_extension(upload.original_filename)
-    # begin
-    #   @csv_column_headers = CSV.new(csv, :col_sep => @separator).shift.compact
-    # rescue Exception => err
-    #   flash_message(:error, I18n.t(:invalid_file_uploaded))      
-    #   redirect_to @campaign_path
-    #   return
-    # end    
-    render "column_mapping", :layout => @layout
+    @campaign = Campaign.find(params[:campaign_id])
+    s3path = VoterList.upload_file_to_s3(upload.read, csv_file_name(params[:name]))    
+    voter_list = VoterList.new(name: params[:name], separator: params[:separator], headers: params[:headers], csv_to_system_map: params[:csv_to_system_map], campaign_id: params[:campaign_id], s3path: s3path)
+    flash_message(:notice,I18n.t(:voter_list_upload_scheduled)) if voter_list.save
+    respond_with(voter_list, location:  edit_client_campaign_path(@campaign.id))  
+    # Resque.enqueue(VoterListUploadJob, params["separator"], params["json_csv_column_headers"], params["csv_to_system_map"], session[:voters_list_upload]["filename"], params[:voter_list_name], params[:campaign_id], account.id,current_user.domain, current_user.email,"")      
   end
-
-  def import
-    Resque.enqueue(VoterListUploadJob, params["separator"], params["json_csv_column_headers"], params["csv_to_system_map"], session[:voters_list_upload]["filename"], params[:voter_list_name], params[:campaign_id], account.id,current_user.domain, current_user.email,"")
-    session[:voters_list_upload] = nil    ,
-    flash_message(:notice,I18n.t(:voter_list_upload_scheduled))
-    redirect_to @campaign_path  
+  
+  def column_mapping
+    @campaign = Campaign.find(params[:campaign_id])
+    @csv_column_headers = params[:headers]
+    render layout: false
   end
   
   private
   
-
-  def check_file_uploaded
-    if session.try(:[], :voters_list_upload).try(:[], "filename").nil?
-      flash_message(:error, "Please upload the file again.")
-      redirect_to @campaign_path
-      return false
-    else
-      return true
-    end
+  def csv_file_name(name)
+    "#{name}_#{Time.now.to_i}_#{rand(999)}"
   end
-
-  def save_csv_filename_to_session(csv_filename)
-    session[:voters_list_upload] = {
-        "filename" => csv_filename,
-        "upload_time" => Time.now}
-  end
+  
 
   def setup_based_on_type
     if @campaign.robo?

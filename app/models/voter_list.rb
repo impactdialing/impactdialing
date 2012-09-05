@@ -7,9 +7,10 @@ class VoterList < ActiveRecord::Base
   belongs_to :account
   has_many :voters, :conditions => {:active => true}
 
-  validates_presence_of :name
+  validates_presence_of :name, :separator, :headers, :s3path, :csv_to_system_map
   validates_length_of :name, :minimum => 3
-  validates_uniqueness_of :name, :case_sensitive => false, :scope => :account_id, :message => "for this list is already taken."
+
+  # validates_uniqueness_of :name, :case_sensitive => false, :scope => :account_id, :message => "for this list is already taken."
 
   scope :active, where(:active => true)
   scope :by_ids, lambda { |ids| {:conditions => {:id => ids}} }
@@ -17,7 +18,9 @@ class VoterList < ActiveRecord::Base
   VOTER_DATA_COLUMNS = {"Phone"=> "Phone", "CustomID" => "ID", "LastName"=>"LastName", "FirstName"=>"FirstName",
                         "MiddleName"=>"MiddleName", "Suffix"=>"Suffix", "Email"=>"Email", "address"=>"Address", "city"=>"City",
                         "state"=>"State/Province", "zip_code"=>"Zip/Postal Code", "country"=>"Country"}
-
+                      
+  
+  
   def self.disable_all
     self.all.each do |voter_list|
       voter_list.update_attribute(:enabled, false)
