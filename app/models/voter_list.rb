@@ -6,7 +6,7 @@ class VoterList < ActiveRecord::Base
   belongs_to :campaign
   belongs_to :account
   has_many :voters, :conditions => {:active => true}
-  attr_accessible :name, :separator, :headers, :s3path, :csv_to_system_map
+  attr_accessible :name, :separator, :headers, :s3path, :csv_to_system_map. :campaign_id, :account_id
 
   validates_presence_of :name, :separator, :headers, :s3path, :csv_to_system_map
   validates_length_of :name, :minimum => 3
