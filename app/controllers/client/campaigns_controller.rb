@@ -73,7 +73,7 @@ module Client
 
     def save_campaign
       load_scripts
-      new_list
+      # new_list
       flash_message(:notice, "Campaign saved") if @campaign.update_attributes(params[:campaign])
       respond_with @campaign, location: client_campaigns_path
     end
