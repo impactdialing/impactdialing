@@ -30,7 +30,7 @@ describe Client::CampaignsController do
       campaign = Factory(:preview, :account => account, :active => true)
       delete :destroy, :id => campaign.id
       campaign.reload.should_not be_active
-      response.should redirect_to 'http://referer'
+      response.should redirect_to 'http://test.host/client/campaigns'
     end
 
     it "restore campaigns" do
@@ -38,7 +38,7 @@ describe Client::CampaignsController do
       campaign = Factory(:preview, :account => account, :active => true, :robo => false)
       put :restore, :campaign_id => campaign.id
       campaign.reload.should be_active
-      response.should redirect_to 'http://referer'
+      response.should redirect_to 'http://test.host/client/campaigns'
     end
 
     it "creates a new campaign" do
@@ -107,18 +107,28 @@ describe Client::CampaignsController do
     describe "destroy" do
       it "should delete campaign" do
         predictive_campaign = Factory(:predictive, :account => account, :active => true, start_time: Time.now, end_time: Time.now)
-        get :destroy, :id=> predictive_campaign.id, :api_key=> 'abc123', :format => "json"
-        response.body.should == {}
+        delete :destroy, :id=> predictive_campaign.id, :api_key=> 'abc123', :format => "json"
+        response.body.should == "{\"message\":\"Campaign deleted\"}"
       end
       
       it "should not delete a campaign from another account" do
         another_account = Factory(:account, :activated => true, api_key: "123abc")
-        user = Factory(:user, account_id: another_account.id)
+        another_user = Factory(:user, account_id: another_account.id)
+
         predictive_campaign = Factory(:predictive, :account => account, :active => true, start_time: Time.now, end_time: Time.now)
-        get :destroy, :id=> predictive_campaign.id, :api_key=> '123abc', :format => "json"
-        response.body.should == {}
+        delete :destroy, :id=> predictive_campaign.id, :api_key=> '123abc', :format => "json"
+        response.body.should == "{\"message\":\"Cannot access campaign.\"}"
       end
       
+      it "should not delete and return validation error" do
+        caller = Factory(:caller)
+        predictive_campaign = Factory(:predictive, :account => account, :active => true, start_time: Time.now, end_time: Time.now, callers: [caller])
+        delete :destroy, :id=> predictive_campaign.id, :api_key=> 'abc123', :format => "json"
+        response.body.should == "{\"errors\":{\"caller_id\":[],\"base\":[\"There are currently callers assigned to this campaign. Please assign them to another campaign before deleting this one.\"]}}"
+      end
+    end
+    
+    describe "create" do
     end
     
     
