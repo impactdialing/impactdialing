@@ -62,4 +62,5 @@ group :test do
   gem 'simplecov'
   gem 'spork-rails'
   gem "database_cleaner"
+  gem "json_spec"
 end

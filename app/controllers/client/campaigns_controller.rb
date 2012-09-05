@@ -4,10 +4,8 @@ module Client
     respond_to :html, :json
 
     def index
-      respond_to do |format|
-        format.html {@campaigns = account.campaigns.active.manual.paginate :page => params[:page]}
-        format.json {respond_with account.campaigns.active.manual}
-      end
+      @campaigns = account.campaigns.active.manual.paginate :page => params[:page]
+      respond_with @campaigns
     end
 
     def new
@@ -27,9 +25,9 @@ module Client
 
     def show
       load_campaign
-      respond_to do |format|
+      puts @campaign.inspect
+      respond_with @campaign do |format|
         format.html {redirect_to edit_client_campaign_path(@campaign)}
-        format.json {respond_with @campaign}
       end
     end
 
@@ -47,6 +45,7 @@ module Client
 
     def destroy
       load_campaign
+      puts @campaign.inspect
       @campaign.active = false
       @campaign.save ? flash_message(:notice, "Campaign deleted") : flash_message(:error, @campaign.errors.full_messages.join)
       respond_with(@campaign, location: client_campaigns_url)
@@ -60,7 +59,7 @@ module Client
     private
 
     def load_campaign
-      @campaign = account.campaigns.find_by_id(params[:id])
+      @campaign = account.campaigns.find(params[:id])
     end
 
     def load_scripts
