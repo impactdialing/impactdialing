@@ -1,7 +1,7 @@
 PROTOCOL = Rails.env == 'development' || Rails.env == 'heroku_staging' ? 'http://' : 'https://'
 
 ImpactDialing::Application.routes.draw do
-  root :to => "home#index"
+  root :to => "client#index"
 
   resources :calls, :protocol => PROTOCOL do
     member do
@@ -51,15 +51,9 @@ ImpactDialing::Application.routes.draw do
 
   end
 
-
-
-
-  ['monitor', 'how_were_different', 'pricing', 'contact', 'policies'].each do |path|
-    match "/#{path}", :to => "home##{path}", :as => path
-  end
+  match '/policies', :to => 'home#policies'
   match '/client/policies', :to => 'client#policies', :as => :client_policies
   match '/broadcast/policies', :to => 'broadcast#policies', :as => :broadcast_policies
-  match '/homecss/css/style.css', :to => 'home#homecss'
 
   namespace 'api' do
     resources :leads
