@@ -95,7 +95,20 @@ module Client
     def save_script
       params[:script][:voter_fields] =  params[:voter_field] ? params[:voter_field].to_json : nil
       flash_message(:notice, "Script saved") if @script.update_attributes(params[:script])
-      respond_with @script, location: client_scripts_path
+      if params[:save_as]
+        @new_script = @script.clone
+        new_script.script_texts << @script.script_texts.collect {|script_text| script_text.clone}
+        new_script.notes << @script.notes.collect {|note| note.clone}
+        new_script.questions << @script.questions.collect do |question|
+          new_question = question.clone
+          new_question.possible_responses << question.possible_responses.collect {|possible_response| possible_response.clone}
+        end
+        @new_script.name = ''
+        @script = @new_script
+        render 'new'
+      else
+        respond_with @script, location: client_scripts_path
+      end
     end
   end
 end
