@@ -3,46 +3,59 @@ require Rails.root.join("jobs/voter_list_upload_job")
 
 class VoterListsController < ClientController
   layout 'v2'
-  # before_filter  :setup_based_on_type
-  before_filter :check_file_uploaded, :only => [:import]
-  skip_before_filter :check_paid
   
+  before_filter :load_and_verify_campaign
+  before_filter :load_voter_list, :only=> [:show, :enable, :disable, :update]
   respond_to :html
   respond_to :json, :only => [:index, :create, :show, :update, :destroy]
   
   def index
-    campaign = account.campaigns.find_by_id(params[:campaign_id])
-    respond_with campaign.voter_lists    
+    respond_with(@campaign.voter_lists, :only => [:id, :name, :enabled])    
   end
   
   def show
-    campaign = account.campaigns.find_by_id(params[:campaign_id])
-    respond_with campaign.voter_lists.find_by_id(params[:id])
+    respond_with(@voter_list, :only => [:id, :name, :enabled])
   end
   
   def enable
-    campaign = account.campaigns.find_by_id(params[:campaign_id])
-    voter_list_ids = params[:voter_list_ids] || []
-    voter_list_ids.each { |id| VoterList.enable_voter_list(id) }
+    @voter_list.enabled = true
+    @voter_list.save
+    respond_with @voter_list,  location: campaign_voter_lists_path(@campaign) do |format|         
+      format.json { render :json => {message: "Voter List enabled" }, :status => :ok } if @voter_list.errors.empty?
+    end                
   end
   
   def disable
-    campaign = account.campaigns.find_by_id(params[:campaign_id])
-    voter_list_ids = params[:voter_list_ids] || []
-    voter_list_ids.each { |id| VoterList.disable_voter_list(id)}
+    @voter_list.enabled = false
+    @voter_list.save
+    respond_with @voter_list,  location: campaign_voter_lists_path(@campaign) do |format|         
+      format.json { render :json => {message: "Voter List disabled" }, :status => :ok } if @voter_list.errors.empty?
+    end                
+  end
+  
+  def update
+    @voter_list.update_attributes(params[:voter_list])
+    respond_with @voter_list,  location: campaign_voter_lists_path(@campaign) do |format|         
+      format.json { render :json => {message: "Voter List updated" }, :status => :ok } if @voter_list.errors.empty?
+    end                
+  end
+  
+  def destroy
+    render :json=> {"message"=>"This opeartion is not permitted"}, :status => :method_not_allowed
   end
   
 
   def create
     upload = params[:upload].try(:[], "datafile")
-    @campaign = account.campaigns.find(params[:campaign_id])
-    s3path = VoterList.upload_file_to_s3(upload.read, csv_file_name(params[:name]))    
-    voter_list = VoterList.new(name: params[:name], separator: params[:separator], headers: params[:headers].to_json, csv_to_system_map: params[:csv_to_system_map].to_json, 
-    campaign_id: params[:campaign_id], s3path: s3path, account_id: account.id, uploaded_file_name: upload.original_filename)
-    respond_with(voter_list, location:  edit_client_campaign_path(@campaign.id)) do |format|
+    s3path = VoterList.upload_file_to_s3(upload.try('read'), VoterList.csv_file_name(params[:voter_list][:name]))    
+    params[:voter_list][:uploaded_file_name] = upload.try('original_filename')
+    voter_list = VoterList.new(params[:voter_list])
+            
+    respond_with(voter_list, location:  edit_client_campaign_path(@campaign.id)) do |format|      
       if voter_list.save
         flash_message(:notice, I18n.t(:voter_list_upload_scheduled)) 
         Resque.enqueue(VoterListUploadJob, voter_list.id, "impactdialing", current_user.email,"")      
+        format.json { render :json => voter_list.to_json(:only => ["id", "name", "enabled"])}
       else
         flash_message(:error, voter_list.errors.full_messages.join)
         format.html { redirect_to edit_client_campaign_path(@campaign.id)}        
@@ -52,7 +65,6 @@ class VoterListsController < ClientController
   end
   
   def column_mapping
-    @campaign = Campaign.find(params[:campaign_id])
     @csv_column_headers = params[:headers]
     @first_data_row = params[:first_data_row]
     render layout: false
@@ -60,8 +72,29 @@ class VoterListsController < ClientController
   
   private
   
-  def csv_file_name(name)
-    "#{name}_#{Time.now.to_i}_#{rand(999)}"
+  
+  def load_voter_list
+    begin
+      @voter_list = @campaign.voter_lists.find(params[:id])
+    rescue ActiveRecord::RecordNotFound => e
+      render :json=> {"message"=>"Resource not found"}, :status => :not_found
+      return
+    end
+  end
+  
+  
+  def load_and_verify_campaign
+    begin
+      @campaign = Campaign.find(params[:campaign_id])
+    rescue ActiveRecord::RecordNotFound => e
+      render :json=> {"message"=>"Resource not found"}, :status => :not_found
+      return
+    end
+    if @campaign.account != account
+      render :json => {message: 'Cannot access campaign.'}, :status => :unauthorized
+      return
+    end
+    
   end
   
 

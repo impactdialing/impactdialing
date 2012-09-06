@@ -11,10 +11,10 @@ describe Client::ScriptTextsController do
   describe "index" do
     it "should return texts for a script" do
       active_script = Factory(:script, :account => account, :active => true)
-      Factory(:script_text, content: "abc", script_order: 1, script: active_script)
-      Factory(:script_text, content: "def", script_order: 2, script: active_script)
+      script_text1 = Factory(:script_text, content: "abc", script_order: 1, script: active_script)
+      script_text2 = Factory(:script_text, content: "def", script_order: 2, script: active_script)
       get :index, script_id: active_script.id, :api_key=> 'abc123', :format => "json"
-      response.body.should eq("[{\"script_text\":{\"content\":\"abc\",\"id\":1,\"script_id\":2,\"script_order\":1}},{\"script_text\":{\"content\":\"def\",\"id\":2,\"script_id\":2,\"script_order\":2}}]")
+      response.body.should eq("[#{script_text1.to_json},#{script_text2.to_json}]")
     end
   end
   
