@@ -1,6 +1,7 @@
 require "spec_helper"
 
 describe Client::CampaignsController do
+  
   let(:account) { Factory(:account, :activated => true, api_key: "abc123") }
   let(:user) { Factory(:user, :account => account) }
   
