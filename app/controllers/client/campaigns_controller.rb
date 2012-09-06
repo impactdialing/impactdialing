@@ -20,10 +20,6 @@ module Client
       respond_with @campaign
     end
 
-    def create
-      @campaign = account.campaigns.new
-      save_campaign
-    end
 
     def show
       respond_with @campaign do |format|
@@ -36,9 +32,19 @@ module Client
       new_list
       respond_with @campaign
     end
+    
+    def create
+      @campaign = account.campaigns.new
+      save_campaign
+      respond_with @campaign, location: client_campaigns_path
+    end
+    
 
     def update
       save_campaign
+      respond_with @campaign,  location: client_campaigns_url do |format|         
+        format.json { render :json => {message: "Campaign updated" }, :status => :ok } if @campaign.errors.empty?
+      end            
     end
 
     def destroy
@@ -52,12 +58,20 @@ module Client
 
     def deleted
       @campaigns = Campaign.deleted.manual.for_account(@user.account).paginate(:page => params[:page], :order => 'id desc')
-      render 'campaigns/deleted'
+      respond_with @campaigns do |format|
+        format.html{render 'campaigns/deleted'}
+        format.json {render :json => @campaigns.to_json}
+      end
+      
     end
     
     def restore
       @campaign.active = true
       save_campaign
+      respond_with @campaign,  location: client_campaigns_url do |format|         
+        format.json { render :json => {message: "Campaign restored" }, :status => :ok } if @campaign.errors.empty?
+      end
+      
     end
     
 
@@ -87,8 +101,7 @@ module Client
 
     def save_campaign
       load_scripts
-      flash_message(:notice, "Campaign saved") if @campaign.update_attributes(params[:campaign])
-      respond_with @campaign, location: client_campaigns_path
+      flash_message(:notice, "Campaign saved") if @campaign.update_attributes(params[:campaign])      
     end
   end
 end
