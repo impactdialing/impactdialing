@@ -48,6 +48,7 @@ class VoterListsController < ClientController
   def create
     upload = params[:upload].try(:[], "datafile")
     s3path = VoterList.upload_file_to_s3(upload.try('read'), VoterList.csv_file_name(params[:voter_list][:name]))    
+    params[:voter_list][:s3path] = s3path
     params[:voter_list][:uploaded_file_name] = upload.try('original_filename')
     voter_list = VoterList.new(params[:voter_list])
             
