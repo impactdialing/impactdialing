@@ -162,6 +162,17 @@ describe Client::CampaignsController do
         response.body.should  eq("{\"message\":\"Campaign updated\"}")        
       end
       
+      it "should update voter lists for existing campaign" do
+        voter_list = Factory(:voter_list, enabled: true)
+        campaign = Factory(:predictive, name: "abc", account: account, voter_lists: [voter_list])
+        lambda {
+          put :update , id: campaign.id, :campaign => {name: "def", :voter_lists_attributes=> {"0"=>{"id"=>"#{voter_list.id}", "enabled"=> "0"}}}, :api_key=> "abc123", :format => "json"
+        }.should change {account.reload.campaigns.size} .by(0)
+        response.body.should  eq("{\"message\":\"Campaign updated\"}")        
+        voter_list.reload.enabled.should be_false
+      end
+      
+      
       it "should throw validation error" do
         campaign = Factory(:predictive, name: "abc", account: account)
         lambda {

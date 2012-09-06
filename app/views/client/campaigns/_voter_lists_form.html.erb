@@ -9,13 +9,17 @@
           <th>Phone #s</th>
           <th>Remaining</th>
         </tr>
+        <% i = 0 %>
         <% @campaign.voter_lists.each do |list| %>
           <% unless list.new_record? %>
             <tr>
               <td valign="top">
+
                 <%= f.fields_for :voter_lists, list do |list_fields| %>
-                  <%= list_fields.check_box :enabled %> <%= list.name %></td>
+                  <%= list_fields.hidden_field :id, {name: "campaign[voter_lists_attributes][#{i}][id]"} %>
+                  <%= list_fields.check_box :enabled, {name: "campaign[voter_lists_attributes][#{i}][enabled]"} %> <%= list.name %></td>
                 <% end %>
+              <% i= i+1 %>                
               </td>
               <td valign="top"><%= list.voters.size %></td>
               <td valign="top"><%= Voter.remaining_voters_count_for('voter_list_id', list.id) %></td>
