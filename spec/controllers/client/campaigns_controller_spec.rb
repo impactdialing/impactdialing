@@ -137,8 +137,7 @@ describe Client::CampaignsController do
           post :create , :campaign => {name: "abc", caller_id:"1234567890", script_id: script.id, 
             type: "Preview", time_zone: "Pacific Time (US & Canada)", start_time:  Time.new(2011, 1, 1, 9, 0, 0), end_time: Time.new(2011, 1, 1, 21, 0, 0)}, :api_key=> "abc123", :format => "json"
         }.should change {account.reload.campaigns.size} .by(1)
-        JSON.parse(response.body)['campaign']['name'].should  eq('abc')
-        
+        JSON.parse(response.body)['campaign']['name'].should  eq('abc')        
       end
       
       it "should throw validation error" do

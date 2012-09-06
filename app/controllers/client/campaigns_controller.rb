@@ -49,8 +49,7 @@ module Client
 
     def destroy
       @campaign.active = false
-      @campaign.save ?  flash_message(:notice, "Campaign deleted") : flash_message(:error, @campaign.errors.full_messages.join)
-            
+      @campaign.save ?  flash_message(:notice, "Campaign deleted") : flash_message(:error, @campaign.errors.full_messages.join)            
       respond_with @campaign,  location: client_campaigns_url do |format|         
         format.json { render :json => {message: "Campaign deleted" }, :status => :ok } if @campaign.errors.empty?
       end
@@ -61,8 +60,7 @@ module Client
       respond_with @campaigns do |format|
         format.html{render 'campaigns/deleted'}
         format.json {render :json => @campaigns.to_json}
-      end
-      
+      end      
     end
     
     def restore
