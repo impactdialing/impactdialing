@@ -12,10 +12,10 @@ describe Client::PossibleResponsesController do
     it "should return possible responses for a question" do
       active_script = Factory(:script, :account => account, :active => true)
       question = Factory(:question, :script => active_script)
-      Factory(:possible_response, question_id: question.id)
-      Factory(:possible_response, question_id: question.id)      
+      possible_response1 = Factory(:possible_response, question_id: question.id)
+      possible_response2 = Factory(:possible_response, question_id: question.id)      
       get :index, script_id: active_script.id, question_id: question.id, :api_key=> 'abc123', :format => "json"
-      response.body.should eq("[{\"possible_response\":{\"id\":2,\"keypad\":null,\"possible_response_order\":1,\"question_id\":2,\"retry\":false,\"value\":\"no_response\"}},{\"possible_response\":{\"id\":3,\"keypad\":null,\"possible_response_order\":1,\"question_id\":2,\"retry\":false,\"value\":\"no_response\"}}]")
+      response.body.should eq("[#{possible_response1.to_json},#{possible_response2.to_json}]")
     end
   end
   

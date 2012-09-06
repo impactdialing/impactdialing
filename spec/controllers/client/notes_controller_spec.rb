@@ -11,10 +11,10 @@ describe Client::NotesController do
   describe "index" do
     it "should return notes for a script" do
       active_script = Factory(:script, :account => account, :active => true)
-      Factory(:note, note: "abc", script_order: 1, script: active_script)
-      Factory(:note, note: "def", script_order: 2, script: active_script)
+      note1 = Factory(:note, note: "abc", script_order: 1, script: active_script)
+      note2 = Factory(:note, note: "def", script_order: 2, script: active_script)
       get :index, script_id: active_script.id, :api_key=> 'abc123', :format => "json"
-      response.body.should eq("[{\"note\":{\"id\":1,\"note\":\"abc\",\"script_id\":2,\"script_order\":1}},{\"note\":{\"id\":2,\"note\":\"def\",\"script_id\":2,\"script_order\":2}}]")
+      response.body.should eq("[#{note1.to_json},#{note2.to_json}]")
     end
   end
   

@@ -12,21 +12,31 @@ class VoterList < ActiveRecord::Base
   validates_length_of :name, :minimum => 3
   validates_uniqueness_of :name, :case_sensitive => false, :scope => :account_id, :message => "for this list is already taken."
   validate :validates_file_type, :on => :create
-
   scope :active, where(:active => true)
   scope :by_ids, lambda { |ids| {:conditions => {:id => ids}} }
+  after_save :enable_disable_voters
 
   VOTER_DATA_COLUMNS = {"Phone"=> "Phone", "CustomID" => "ID", "LastName"=>"LastName", "FirstName"=>"FirstName",
                         "MiddleName"=>"MiddleName", "Suffix"=>"Suffix", "Email"=>"Email", "address"=>"Address", "city"=>"City",
                         "state"=>"State/Province", "zip_code"=>"Zip/Postal Code", "country"=>"Country"}
                       
+  def enable_disable_voters
+    voters.update_all(enabled: enabled)      
+  end
+  
   
   def validates_file_type
+    if uploaded_file_name.nil?
+      errors.add(:base, "Please upload a file.")
+      return
+    end
+    
     if ['.csv','.txt'].include? File.extname(uploaded_file_name).downcase
     else
       errors.add(:base, "Wrong file format. Please upload a comma-separated value (CSV) or tab-delimited text (TXT) file. If your list is in Excel format (XLS or XLSX), use \"Save As\" to change it to one of these formats.")
     end    
   end
+  
   
   def self.disable_all
     self.all.each do |voter_list|
@@ -66,20 +76,6 @@ class VoterList < ActiveRecord::Base
     voters.to_be_dialed.size
   end
 
-  def self.enable_voter_list(id)
-    voter_list = VoterList.find(id)
-    voter_list.enabled = true
-    voter_list.save
-    voter_list.voters.update_all(enabled: true)
-  end
-
-  def self.disable_voter_list(id)
-    voter_list = VoterList.find(id)
-    voter_list.enabled = false
-    voter_list.save
-    voter_list.voters.update_all(enabled: false)
-  end
-
 
   def self.read_from_s3(file_name)
     @config = YAML::load(File.open("#{Rails.root}/config/amazon_s3.yml"))
@@ -109,6 +105,11 @@ class VoterList < ActiveRecord::Base
     AWS::S3::S3Object.store(s3path, file, @config['bucket'],:content_type =>"application/text", :access => :private)
     s3path
   end
+  
+  def self.csv_file_name(list_name)
+    "#{list_name}_#{Time.now.to_i}_#{rand(999)}"
+  end
+  
 
   def self.valid_file?(filename)
     return false if filename.nil?

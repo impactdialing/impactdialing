@@ -54,7 +54,5 @@ module Client
         return
       end
     end
-    
-    
   end
 end

@@ -16,7 +16,6 @@ describe Client::CallersController do
     response.code.should == '200'
   end
 
-  it_should_behave_like 'all controllers of deletable entities'
   
   
   it "doesn't list deleted campaigns, in the dropdown list" do

@@ -11,10 +11,10 @@ describe Client::QuestionsController do
   describe "index" do
     it "should return questions for a script" do
       active_script = Factory(:script, :account => account, :active => true)
-      Factory(:question, text: "abc", script_order: 1, script: active_script)
-      Factory(:question, text: "def", script_order: 2, script: active_script)
+      question1 = Factory(:question, text: "abc", script_order: 1, script: active_script)
+      question2 = Factory(:question, text: "def", script_order: 2, script: active_script)
       get :index, script_id: active_script.id, :api_key=> 'abc123', :format => "json"
-      response.body.should eq("[{\"question\":{\"id\":2,\"question_order\":null,\"script_id\":2,\"script_order\":1,\"text\":\"abc\"}},{\"question\":{\"id\":3,\"question_order\":null,\"script_id\":2,\"script_order\":2,\"text\":\"def\"}}]")
+      response.body.should eq("[#{question1.to_json},#{question2.to_json}]")
     end
   end
   

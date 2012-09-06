@@ -138,11 +138,6 @@ ImpactDialing::Application.routes.draw do
       end
     end
 
-
-    
-
-    
-
     resources :caller_groups
 
     [:campaigns, :scripts, :callers].each do |type_plural|

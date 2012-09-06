@@ -109,14 +109,6 @@ class Campaign < ActiveRecord::Base
     self.answering_machine_detect = self.use_recordings = self.robo? && !self.voicemail_script.nil?
   end
 
-  def disable_voter_list
-    voter_lists.each do |voter_list|
-      voter_list.enabled = false
-      voter_list.save
-      voter_list.voters.update_all(enabled: false)
-    end
-  end
-
 
   def time_period_exceeded?
     return true if start_time.nil? || end_time.nil?
