@@ -102,8 +102,8 @@ class SimulatorJob
             best_wrapup_time = expected_wrapup_time if outer_loop == 2
           end
         end   
-
-        answer_ratio =  observed_dials.size  / observed_dials.count(&:answered?)
+        answered_observed_dials = observed_dials.count(&:answered?)
+        answer_ratio =  answered_observed_dials == 0 ? 1 : (observed_dials.size  / answered_observed_dials)
        if outer_loop == 0
          dials_needed += (answer_ratio - 1)/ increment
        end
