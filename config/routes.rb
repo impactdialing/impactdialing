@@ -131,12 +131,12 @@ ImpactDialing::Application.routes.draw do
         get :questions_answered
         get :possible_responses_answered
       end
-
+      resources :script_texts, :only => [:index, :create, :show, :update, :destroy]
     end
 
     resources :questions, :only => [:index, :create, :show, :update, :destroy]
     resources :possible_responses, :only => [:index, :create, :show, :update, :destroy]
-    resources :script_texts, :only => [:index, :create, :show, :update, :destroy]
+
     resources :notes, :only => [:index, :create, :show, :update, :destroy]
 
     resources :caller_groups
