@@ -133,9 +133,10 @@ ImpactDialing::Application.routes.draw do
       end
       resources :script_texts, :only => [:index, :create, :show, :update, :destroy]
       resources :notes, :only => [:index, :create, :show, :update, :destroy]
+      resources :questions, :only => [:index, :create, :show, :update, :destroy]
     end
 
-    resources :questions, :only => [:index, :create, :show, :update, :destroy]
+
     resources :possible_responses, :only => [:index, :create, :show, :update, :destroy]
 
     

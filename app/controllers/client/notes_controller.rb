@@ -1,6 +1,6 @@
 module Client
   class NotesController < ClientController
-    before_filter :load_and_verify_note
+    before_filter :load_and_verify_script
     before_filter :load_note, only: [:show, :destroy, :update]
     respond_to :json
 
@@ -42,7 +42,7 @@ module Client
   end
   
   
-  def load_and_verify_note
+  def load_and_verify_script
     begin
       @script = Script.find(params[:script_id])
     rescue ActiveRecord::RecordNotFound => e
