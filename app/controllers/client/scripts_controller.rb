@@ -34,6 +34,7 @@ module Client
     def create
       new_script
       save_script
+      load_voter_fields
       respond_with @script, location: client_scripts_path
     end
 
