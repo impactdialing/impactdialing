@@ -34,7 +34,7 @@ module Client
     def create
       new_script
       save_script
-      respond_with @script
+      respond_with @script, location: client_scripts_path
     end
 
 
