@@ -1,6 +1,4 @@
-<% content_for :javascripts do%>
-  <%= javascript_include_tag 'blocked_numbers' %>
-<% end %>
+<%= csrf_meta_tag %>
 
 <h1>Do Not Call list</h1>
 
@@ -28,11 +26,11 @@
       <tr>
         <td><%= blocked_number.number %></td>
         <td><%= blocked_number.campaign ? blocked_number.campaign.name : 'System' %></td>
-        <td>
-          <%= form_tag blocked_number_path(blocked_number), :method => :delete, :id => "delete_form_#{blocked_number.id}" do %>
-            <%= link_to "delete", "javascript:void(0)", :class => 'ico del', :onclick => "delete_blocked_number('#delete_form_#{blocked_number.id}')" %>
-          <% end %>
-        </td>
+        <td><%= link_to '',
+                blocked_number_path(blocked_number),
+                :confirm => 'Are you sure you want to remove this number from the Do Not Call list?',
+                :method => :delete,
+                :class => "ico del" %></td>
       </tr>
     <% end %>
   </table>
