@@ -3,12 +3,11 @@
 <% if !logged_in_as_client? || @user.administrator? %>
   <a href="#administrators">Add administrators</a><br>
   <a href="/client/billing">Billing</a><br>
-  <a href="/client/blocked_numbers">Do Not Call list</a>
 <%end%>
 </p>
 <%= render :partial => 'join_form' %>
 <% unless @user.new_record? %>
-	<%= render :template => 'client/accounts/show' %>
+  <%= render :template => 'client/accounts/show' %>
   <%= render :partial => 'client/accounts/caller_password' %>
   <%= render :partial => 'client/accounts/api_key' %>
 <% end %>
