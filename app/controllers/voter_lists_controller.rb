@@ -50,6 +50,7 @@ class VoterListsController < ClientController
     s3path = VoterList.upload_file_to_s3(upload.try('read'), VoterList.csv_file_name(params[:voter_list][:name]))    
     params[:voter_list][:s3path] = s3path
     params[:voter_list][:uploaded_file_name] = upload.try('original_filename')
+    params[:voter_list][:csv_to_system_map] = params[:voter_list][:csv_to_system_map].to_json
     voter_list = VoterList.new(params[:voter_list])
             
     respond_with(voter_list, location:  edit_client_campaign_path(@campaign.id)) do |format|      
