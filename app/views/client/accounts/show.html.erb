@@ -4,6 +4,7 @@
   <%= javascript_include_tag 'accounts' %>
 <% end %>
 
+<div id='administrators'>
 <% if @user.administrator? %>
   <h1>Users</h1>
   <table>
@@ -48,4 +49,4 @@
     <% end %>
   </fieldset>
 <% end %>
-
+</div>
