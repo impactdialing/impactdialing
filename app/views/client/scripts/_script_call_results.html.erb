@@ -1,30 +1,30 @@
 <fieldset id="call_results">
-  
-  <div id="script_elements"> 
-    <% @script.script_texts.each_with_index do |text, index| %>
-      <%= f.fields_for :script_texts, text do |builder| %>  
-        <%= render "script_section", {f: builder}  %>   
-      <% end %>
-    <%end%>
-    
-    <% @script.questions.each_with_index do |question, index| %>
-      <%= f.fields_for :questions, question do |builder| %>  
-        <%= render "question_fields", {f: builder, question: question}  %>   
-      <% end %>
-    <%end%>
-    
-    <%= f.fields_for :notes do |builder| %>
-      <%= render "note_fields", f: builder %>   
-    <% end %>
-    
-    
-  </div>
-  
 
-  
+  <div id="script_elements">
+    <% @script.script_texts.each_with_index do |text, index| %>
+      <%= f.fields_for :script_texts, text do |builder| %>
+        <%= render "script_section", {f: builder}  %>
+      <% end %>
+    <%end%>
+
+    <% @script.questions.each_with_index do |question, index| %>
+      <%= f.fields_for :questions, question do |builder| %>
+        <%= render "question_fields", {f: builder, question: question}  %>
+      <% end %>
+    <%end%>
+
+    <%= f.fields_for :notes do |builder| %>
+      <%= render "note_fields", f: builder %>
+    <% end %>
+
+
+  </div>
+
+
+
   <div id="script_transfers">
     <fieldset class="transfers_fields">
-      <legend>Transfer</legend>            
+      <legend>Transfer</legend>
       <table>
         <tr>
           <th width = 25%>Label</th>
@@ -33,23 +33,23 @@
           <th width = 25%>Delete</th>
         </tr>
       </table>
-    
+
       <%= f.fields_for :transfers do |builder| %>
-          <%= render "transfer_fields", f: builder %>   
+          <%= render "transfer_fields", f: builder %>
       <% end %>
-   </fieldset>        
+   </fieldset>
   </div>
 
+  <p class='actions'>
+    <%= link_to_add_association 'Add a script text', f, :script_texts, {:class => "action secondary add_script_text", "data-association-insertion-node"=> "#script_elements", "data-association-insertion-method"=>"append",  partial: 'script_section' }%>
 
-  <%= link_to_add_association 'Add a script text', f, :script_texts, {:class => "action secondary add_script_text", "data-association-insertion-node"=> "#script_elements", "data-association-insertion-method"=>"append",  partial: 'script_section' }%>
-          
-  
-  <%= link_to_add_association 'Add a question', f, :questions, {:class => "action secondary add_question", "data-association-insertion-node"=> "#script_elements", "data-association-insertion-method"=>"append",  partial: 'question_fields' }%>
-  
-  <%= link_to_add_association 'Add a text field', f, :notes , {:class => "action secondary", "data-association-insertion-node"=> "#script_elements", "data-association-insertion-method"=>"append", partial: 'note_fields' }%>
-  
-  <%= link_to_add_association 'Add a transfer', f, :transfers , {:class => "action secondary", "data-association-insertion-node"=> ".transfers_fields", "data-association-insertion-method"=>"append", partial: 'transfer_fields' }%>
-  
-    
-</fieldset>  
-  
+
+    <%= link_to_add_association 'Add a question', f, :questions, {:class => "action secondary add_question", "data-association-insertion-node"=> "#script_elements", "data-association-insertion-method"=>"append",  partial: 'question_fields' }%>
+
+    <%= link_to_add_association 'Add a note', f, :notes , {:class => "action secondary", "data-association-insertion-node"=> "#script_elements", "data-association-insertion-method"=>"append", partial: 'note_fields' }%>
+
+    <%= link_to_add_association 'Add a transfer', f, :transfers , {:class => "action secondary", "data-association-insertion-node"=> ".transfers_fields", "data-association-insertion-method"=>"append", partial: 'transfer_fields' }%>
+  </p>
+
+</fieldset>
+

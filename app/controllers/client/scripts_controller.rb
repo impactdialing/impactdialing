@@ -1,21 +1,30 @@
 module Client
-  class ScriptsController < ::ScriptsController
-    skip_before_filter :apply_changes, :questions_answered
-    before_filter :load_voter_fields, :only => [:new, :show]
+  class ScriptsController < ClientController
+    before_filter :load_and_verify_script, :except => [:index, :new, :create, :deleted]
+    before_filter :load_voter_fields, :only => [ :show, :edit]
 
     layout 'client'
 
     respond_to :html, :json
 
     def index
-      respond_to do |format|
-        format.html {@scripts = account.scripts.manual.active.paginate(:page => params[:page])}
-        format.json {respond_with account.scripts.manual.active}
-      end
+      @scripts = account.scripts.manual.active.paginate(:page => params[:page])
+      respond_with @scripts      
     end
-
+    
+    def show
+      respond_with @script do |format|
+        format.html {redirect_to edit_client_script_path(@script)}
+      end      
+    end
+    
+    def edit
+      respond_with @script
+    end
+    
     def new
       new_script
+      load_voter_fields
       @script.script_texts.new(script_order: 1)
       @question = @script.questions.new(script_order: 2)
       @question.possible_responses.new(possible_response_order: 1)
@@ -25,35 +34,33 @@ module Client
     def create
       new_script
       save_script
+      load_voter_fields
+      respond_with @script, location: client_scripts_path
     end
 
-    def show
-      load_script
-      respond_to do |format|
-        format.html {redirect_to edit_client_script_path(@script)}
-        format.json {respond_with @script}
-      end
-    end
 
     def edit
-      load_script
       respond_with @script
     end
 
     def update
-      @script = account.scripts.find(params[:id])
       save_script
+      respond_with @script,  location: client_scripts_path do |format|         
+        format.json { render :json => {message: "Script updated" }, :status => :ok } if @script.errors.empty?
+      end            
+      
     end
 
     def destroy
-      @script = account.scripts.find(params[:id])
       @script.active = false
-      @script.save ? flash_message(:notice, "Script deleted") : flash_message(:error, @script.errors.full_messages.join)
-      respond_with @script, location: client_scripts_path
+      @script.save ?  flash_message(:notice, "Script deleted") : flash_message(:error, @script.errors.full_messages.join)            
+      respond_with @script,  location: client_scripts_path do |format|         
+        format.json { render :json => {message: "Script deleted" }, :status => :ok } if @script.errors.empty?
+      end      
     end
 
-    def questions_answered
-      render :json => { :data => Question.question_count_script(params[:id]) }
+    def questions_answered      
+      render :json => { :data => Question.question_count_script(@script.id) }
     end
 
     def possible_responses_answered
@@ -61,21 +68,42 @@ module Client
     end
 
     def deleted
-      render 'scripts/deleted'
+      @scripts = Script.deleted.for_account(account).paginate(:page => params[:page], :order => 'id desc')
+      respond_with @scripts do |format|
+        format.html{render 'scripts/deleted'}
+        format.json {render :json => @scripts.to_json}
+      end      
     end
+    
+    def restore
+      @script.active = true
+      save_script
+      respond_with @script,  location: client_scripts_path do |format|         
+        format.json { render :json => {message: "Script restored" }, :status => :ok } if @script.errors.empty?
+      end      
+    end
+    
 
-    def load_deleted
-      self.instance_variable_set("@#{type_name.pluralize}", Script.deleted.for_account(@user.account).paginate(:page => params[:page], :order => 'id desc'))
-    end
+
 
     private
+    
+    def load_and_verify_script
+      begin
+        @script = Script.find(params[:id] || params[:script_id])
+      rescue ActiveRecord::RecordNotFound => e
+        render :json=> {"message"=>"Resource not found"}, :status => :not_found
+        return
+      end
+      if @script.account != account
+        render :json => {message: 'Cannot access script.'}, :status => :unauthorized
+        return
+      end
+    end
+    
 
     def new_script
       @script = account.scripts.new(robo: false)
-    end
-
-    def load_script
-      @script = account.scripts.find(params[:id])
     end
 
     def load_voter_fields
@@ -93,9 +121,10 @@ module Client
     end
 
     def save_script
-      params[:script][:voter_fields] =  params[:voter_field] ? params[:voter_field].to_json : nil
+      unless params[:script].nil?
+        params[:script][:voter_fields] =  params[:voter_field] ? params[:voter_field].to_json : nil
+      end
       flash_message(:notice, "Script saved") if @script.update_attributes(params[:script])
-      respond_with @script, location: client_scripts_path
     end
   end
 end

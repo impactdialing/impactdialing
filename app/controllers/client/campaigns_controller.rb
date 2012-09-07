@@ -1,13 +1,13 @@
 module Client
-  class CampaignsController < ::CampaignsController
+  class CampaignsController < ClientController
     layout 'client'
+    before_filter :load_and_verify_campaign, :except => [:index, :new, :create, :deleted]
     respond_to :html, :json
+    
 
     def index
-      respond_to do |format|
-        format.html {@campaigns = account.campaigns.active.manual.paginate :page => params[:page]}
-        format.json {respond_with account.campaigns.active.manual}
-      end
+      @campaigns = account.campaigns.active.manual.paginate :page => params[:page]
+      respond_with @campaigns
     end
 
     def new
@@ -16,52 +16,78 @@ module Client
                                         start_time: Time.parse("9am"),
                                         end_time: Time.parse("9pm"))
       load_scripts
-      new_list
+      # new_list
       respond_with @campaign
     end
 
-    def create
-      @campaign = account.campaigns.new
-      save_campaign
-    end
 
     def show
-      load_campaign
-      respond_to do |format|
+      respond_with @campaign do |format|
         format.html {redirect_to edit_client_campaign_path(@campaign)}
-        format.json {respond_with @campaign}
       end
     end
 
     def edit
-      load_campaign
       load_scripts
       new_list
       respond_with @campaign
     end
+    
+    def create
+      @campaign = account.campaigns.new
+      save_campaign
+      respond_with @campaign, location: client_campaigns_path
+    end
+    
 
     def update
-      load_campaign
       save_campaign
+      respond_with @campaign,  location: client_campaigns_url do |format|         
+        format.json { render :json => {message: "Campaign updated" }, :status => :ok } if @campaign.errors.empty?
+      end            
     end
 
     def destroy
-      load_campaign
       @campaign.active = false
-      @campaign.save ? flash_message(:notice, "Campaign deleted") : flash_message(:error, @campaign.errors.full_messages.join)
-      respond_with(@campaign, location: client_campaigns_url)
+      @campaign.save ?  flash_message(:notice, "Campaign deleted") : flash_message(:error, @campaign.errors.full_messages.join)            
+      respond_with @campaign,  location: client_campaigns_url do |format|         
+        format.json { render :json => {message: "Campaign deleted" }, :status => :ok } if @campaign.errors.empty?
+      end
     end
 
     def deleted
-      self.instance_variable_set("@#{type_name.pluralize}", Campaign.deleted.manual.for_account(@user.account).paginate(:page => params[:page], :order => 'id desc'))
-      render 'campaigns/deleted'
+      @campaigns = Campaign.deleted.manual.for_account(@user.account).paginate(:page => params[:page], :order => 'id desc')
+      respond_with @campaigns do |format|
+        format.html{render 'campaigns/deleted'}
+        format.json {render :json => @campaigns.to_json}
+      end      
     end
+    
+    def restore
+      @campaign.active = true
+      save_campaign
+      respond_with @campaign,  location: client_campaigns_url do |format|         
+        format.json { render :json => {message: "Campaign restored" }, :status => :ok } if @campaign.errors.empty?
+      end
+      
+    end
+    
 
     private
-
-    def load_campaign
-      @campaign = account.campaigns.find_by_id(params[:id])
+    
+    def load_and_verify_campaign
+      begin
+        @campaign = Campaign.find(params[:id] || params[:campaign_id])
+      rescue ActiveRecord::RecordNotFound => e
+        render :json=> {"message"=>"Resource not found"}, :status => :not_found
+        return
+      end
+      if @campaign.account != account
+        render :json => {message: 'Cannot access campaign.'}, :status => :unauthorized
+        return
+      end
     end
+    
 
     def load_scripts
       @scripts = account.scripts.manual.active
@@ -73,9 +99,7 @@ module Client
 
     def save_campaign
       load_scripts
-      new_list
-      flash_message(:notice, "Campaign saved") if @campaign.update_attributes(params[:campaign])
-      respond_with @campaign, location: client_campaigns_path
+      flash_message(:notice, "Campaign saved") if @campaign.update_attributes(params[:campaign])      
     end
   end
 end

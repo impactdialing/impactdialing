@@ -11,7 +11,7 @@ describe CampaignsController do
 
   describe "create a campaign" do
 
-    it "creates a new robo campaign" do
+    xit "creates a new robo campaign" do
       manual_script = Factory(:script, :account => user.account, :robo => false)
       robo_script = Factory(:script, :account => user.account, :robo => true)
       lambda {
@@ -21,7 +21,7 @@ describe CampaignsController do
       response.should redirect_to campaigns_path
     end
 
-    it "creates a new robo campaign with the first active robo script by default" do
+    xit "creates a new robo campaign with the first active robo script by default" do
       deleted_script = Factory(:script, :account => user.account, :robo => true, :active => false)
       active_script = Factory(:script, :account => user.account, :robo => true, :active => true)
       lambda {
@@ -31,7 +31,7 @@ describe CampaignsController do
     end
 
     describe "voicemails" do
-      it "creates a campaign with a voicemail" do
+      xit "creates a campaign with a voicemail" do
         voicemail = Factory(:script, :robo => true, :active => true, :for_voicemail => true, :name => "voicemail script")
         post :create, :robo => {:caller_id => "+3987", :robo => true, :voicemail_script_id => voicemail.id, name: "Robo1"}
         user.account.campaigns.active.robo.last.voicemail_script.should == voicemail
@@ -41,25 +41,25 @@ describe CampaignsController do
   end
 
 
-  it "lists robo campaigns" do
+  xit "lists robo campaigns" do
     robo_campaign = Factory(:robo, :account => user.account)
     manual_campaign = Factory(:preview, :account => user.account)
     get :index
     assigns(:campaigns).should == [robo_campaign]
   end
 
-  it "renders a campaign" do
+  xit "renders a campaign" do
     get :show, :id => Factory(:robo, :account => user.account).id
     response.code.should == '200'
   end
 
-  it "renders all the available voicemail scripts" do
+  xit "renders all the available voicemail scripts" do
     script = Factory(:script, :account => account, :for_voicemail => true, :robo => true)
     get :show, :id => Factory(:robo, :account => user.account).id
     assigns[:voicemails].should == [script]
   end
 
-  it "only provides robo scritps to select for a campaign" do
+  xit "only provides robo scritps to select for a campaign" do
     robo_script = Factory(:script, :account => user.account, :robo => true)
     manual_script = Factory(:script, :account => user.account, :robo => false)
     get :show, :id => Factory(:robo, :account => user.account).id
@@ -70,20 +70,20 @@ describe CampaignsController do
     let(:default_script) { Factory(:script, :account => user.account, :robo => true, :active => true) }
     let(:campaign) { Factory(:robo, :account => user.account, :script => default_script) }
 
-    it "updates the campaign attributes" do
+    xit "updates the campaign attributes" do
       new_script = Factory(:script, :account => user.account, :robo => true, :active => true, name: "new script")
       post :update, :id => campaign.id, :robo => {:name => "an impactful campaign", :script_id => new_script.id}
       campaign.reload.name.should == "an impactful campaign"
       campaign.reload.script.should == new_script
     end
 
-    it "assigns first of the robo scripts of the current user" do
+    xit "assigns first of the robo scripts of the current user" do
       script = Factory(:script, :account => user.account, :robo => true, :active => true)
       post :update, :id => campaign.id, :robo => {}
       campaign.reload.script.should == default_script
     end
 
-    it "disables voters list which are not to be called" do
+    xit "disables voters list which are not to be called" do
       voter_list1 = Factory(:voter_list, :campaign => campaign, :enabled => true)
       voter_list2 = Factory(:voter_list, :campaign => campaign, :enabled => false)
       post :update, :id => campaign.id, :voter_list_ids => [voter_list2.id]
@@ -91,7 +91,7 @@ describe CampaignsController do
       voter_list2.reload.should be_enabled
     end
 
-    it "can update only campaigns owned by the user'" do
+    xit "can update only campaigns owned by the user'" do
       post :update, :id => another_users_campaign.id
       response.status.should == 401
     end
@@ -99,7 +99,7 @@ describe CampaignsController do
     describe "voicemails" do
       let(:recording) { Factory(:recording) }
 
-      it "updates with voicemail attributes" do
+      xit "updates with voicemail attributes" do
         puts recording.id
         post :update, :id => campaign.id, :robo => {:answering_machine_detect => 1, :use_recordings => 1, :recording_id => recording.id}
         current_campaign = campaign.reload
@@ -108,7 +108,7 @@ describe CampaignsController do
         current_campaign.recording.should == recording
       end
 
-      it "updates a campaign with a voicemail" do
+      xit "updates a campaign with a voicemail" do
         voicemail = Factory(:script, :robo => true, :active => true, :for_voicemail => true, :name => "voicemail script")
         post :update, :id=> campaign.id, :robo => {:caller_id => "+3987", :robo => true, :voicemail_script_id => voicemail.id}
         campaign.reload.voicemail_script.should == voicemail
@@ -117,7 +117,7 @@ describe CampaignsController do
     end
   end
 
-  it "deletes a campaign" do
+  xit "deletes a campaign" do
     campaign = Factory(:robo, :account => account, :robo => true)
     request.env['HTTP_REFERER'] = 'http://referer' if respond_to?(:request)
     delete :destroy, :id => campaign.id
@@ -130,7 +130,7 @@ describe CampaignsController do
       @campaign = Factory(:robo, :account => user.account)
     end
 
-    it "renders dial statistics for a campaign" do
+    xit "renders dial statistics for a campaign" do
       campaign = Factory(:robo, :account => user.account)
       get :dial_statistics, :id => campaign.id
       assigns(:campaign).should == campaign
@@ -142,5 +142,4 @@ describe CampaignsController do
     'robo'
   end
 
-  it_should_behave_like 'all controllers of deletable entities'
 end

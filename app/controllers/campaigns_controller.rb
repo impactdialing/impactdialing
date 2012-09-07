@@ -2,13 +2,13 @@ class CampaignsController < ClientController
   layout 'v2'
   include DeletableController
   before_filter :full_access
-  before_filter :verify_campaign_ownership, :only => [:update, :show, :start, :stop, :dial_statistics, :destroy]
+  before_filter :verify_campaign_ownership, :only => [:update, :show, :edit, :start, :stop, :dial_statistics, :destroy]
   before_filter :setup_campaigns_paths, :only => [:index]
 
   def verify_campaign_ownership
     @campaign = Campaign.find(params[:id])
     if @campaign.account != account
-      render :text => 'nothing', :status => :unauthorized
+      render :json => {message: 'Cannot access campaign.'}, :status => :unauthorized
     end
   end
 
