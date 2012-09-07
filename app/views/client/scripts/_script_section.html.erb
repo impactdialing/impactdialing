@@ -8,7 +8,8 @@
     <%= f.text_area :content %>
     <%= f.hidden_field :script_order  , {"class" => "script_element"}%>
   </p>
-
-  <%= link_to_remove_association "Delete this script text", f , {:class => "action secondary delete_script_text"}%>
+  <p class = 'actions'>
+    <%= link_to_remove_association "Delete this script text", f , {:class => "action secondary delete_script_text"}%>
+  </p>
 
 </fieldset>
