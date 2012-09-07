@@ -9,7 +9,6 @@ ImpactDialing::Application.routes.draw do
       post :hangup
       post :submit_result
       post :submit_result_and_stop
-
     end
   end
 
@@ -75,6 +74,7 @@ ImpactDialing::Application.routes.draw do
 
   #broadcast
   scope 'broadcast', :protocol => PROTOCOL do
+    
     resources :campaigns do
       member do
         post :verify_callerid
@@ -86,12 +86,8 @@ ImpactDialing::Application.routes.draw do
         get :control
         get :running_status
       end
-      resources :voter_lists, :except => [:new, :show] do
-        collection do
-          post :import
-        end
-      end
     end
+    
     resources :reports, :protocol => PROTOCOL do
       collection do
         get :usage
@@ -120,13 +116,12 @@ ImpactDialing::Application.routes.draw do
         get :questions_answered
         get :possible_responses_answered
       end
-
+      resources :script_texts, :only => [:index, :create, :show, :update, :destroy]
+      resources :notes, :only => [:index, :create, :show, :update, :destroy]
+      resources :questions, :only => [:index, :create, :show, :update, :destroy] do
+        resources :possible_responses, :only => [:index, :create, :show, :update, :destroy]
+      end
     end
-
-    resources :questions, :only => [:index, :create, :show, :update, :destroy]
-    resources :possible_responses, :only => [:index, :create, :show, :update, :destroy]
-    resources :script_texts, :only => [:index, :create, :show, :update, :destroy]
-    resources :notes, :only => [:index, :create, :show, :update, :destroy]
 
     resources :caller_groups
 
@@ -176,11 +171,9 @@ ImpactDialing::Application.routes.draw do
 
   scope 'client' do
     match '/', :to => 'client#index', :as => 'client_root'
+    
     resources :campaigns, :only => [] do
-      member { post :verify_callerid }
-      resources :voter_lists, :except => [:new, :show, :index] do
-        collection { post :import }
-      end
+      member { post :verify_callerid }      
     end
     resources :blocked_numbers, :only => [:index, :create, :destroy]
     resources :monitors do
@@ -200,10 +193,16 @@ ImpactDialing::Application.routes.draw do
     match '/', :to => 'caller#index', :as => 'caller_root'
     match 'logout', :to => 'caller#logout', :as => 'caller_logout'
   end
-
-  resources :campaigns, :path_prefix => 'client', :only => [] do
-    member { post :verify_callerid }
-    resources :voter_lists, :collection => {:import => :post}, :except => [:new, :show], :name_prefix => 'client'
+  
+  scope 'client' do
+    resources :campaigns do
+      resources :voter_lists do        
+        collection do
+          post :import
+          get :column_mapping
+        end        
+      end 
+    end    
   end
 
 

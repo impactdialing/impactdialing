@@ -1,6 +1,6 @@
 class TempVoterList < ActiveRecord::Base  
   
-  validates_presence_of :name, message: "Please click \"Choose file\" and select your list before clicking Upload."
+  validates_presence_of :name, message: "Please pick a file name."
   validate :file_format
   
   def file_format

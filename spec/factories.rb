@@ -99,6 +99,11 @@ Factory.define :voter_list do |v|
   v.campaign_id { Factory(:campaign).id }
   v.name { Factory.next(:name) }
   v.account { Factory(:account) }
+  v.headers "Phone,Name,Email,Address,City,ZipCode,State,Country"
+  v.separator ","
+  v.s3path "abc"
+  v.uploaded_file_name "abc.csv"
+  v.csv_to_system_map Hash["Phone" => "Phone"] 
 end
 
 Factory.define :voter do |v|
@@ -164,6 +169,10 @@ end
 Factory.define :blocked_number do |b|
   b.account_id { Factory(:account).id }
   b.number '1234567890'
+end
+
+Factory.define :script_text do |st|
+  st.content "abc"
 end
 
 Factory.define :question do |q|

@@ -1,7 +1,7 @@
 class Question < ActiveRecord::Base
   include Rails.application.routes.url_helpers
 
-  attr_accessible :text, :script_id, :script_order, :possible_responses_attributes
+  attr_accessible :text, :script_id, :script_order, :possible_responses_attributes, :question_order
 
   validates :text, presence: true
   validates :script, presence: true
