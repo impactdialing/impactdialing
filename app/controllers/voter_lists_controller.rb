@@ -51,7 +51,7 @@ class VoterListsController < ClientController
     params[:voter_list][:s3path] = s3path
     params[:voter_list][:uploaded_file_name] = upload.try('original_filename')
     params[:voter_list][:csv_to_system_map] = params[:voter_list][:csv_to_system_map].to_json
-    voter_list = VoterList.new(params[:voter_list].merge!(params[:campaign_id]))
+    voter_list = @campaign.voter_lists.new(params[:voter_list]))
             
     respond_with(voter_list, location:  edit_client_campaign_path(@campaign.id)) do |format|      
       if voter_list.save
