@@ -10,55 +10,6 @@
 
 <% end %>
 <%= render :partial => 'voter_lists_upload_form'%>
+<%= render :partial => 'javascript'%>
 
 
-<script>
-    function dialingModeOnChange() {
-        var dialMode = $('#campaign_type').val();
-        if (dialMode == "Predictive") {
-            $('#abandon_rate_edit').show();
-            $('#campaign_abandon_rate').val(0.03);
-        } else {
-            $('#abandon_rate_edit').hide();
-        }
-    }
-
-    $(function () {
-        if ($("#campaign_type").val() == "Predictive") {
-            $("#abandon_rate_edit").show();
-
-        }
-
-        $('#campaign_answering_machine_detect').click(function () {
-            if ($('#campaign_answering_machine_detect').attr('checked') == false) {
-
-                if ($("#campaign_use_recordings").attr('checked') == true) {
-                    $("#recordingsdiv").toggle($("#campaign_use_recordings").checked);
-                    $("#campaign_use_recordings").attr('checked', false);
-                }
-            }
-        });
-
-    });
-
-    <% if !@campaign.account.recordings.blank? %>
-    function updatePreview() {
-        recording_id = $("#campaign_recording_id").val();
-    <%@account.recordings.each do |recording| %>
-        if (recording_id ==<%= recording.id %>) {
-            path = '<%= recording.file.url %>';
-            name = '<%= escape_javascript recording.name %>';
-        }
-    <% end %>
-
-        var o = 'Preview: ' + name + '<br/>';
-
-        if (path.indexOf('mp3') > -1)
-            o = o + '<object type="application/x-shockwave-flash" width="200" height="14" data="/xspf_player_slim.swf?player_title=' + name + '&song_title=' + name + '&song_url=' + escape(path) + '"><param name="movie" value="/xspf_player_slim.swf?player_title=' + name + '&song_title=' + name + '&song_url=' + escape(path) + '" /></object>';
-        else
-            o = o + '<EMBED SRC="' + path + '" WIDTH="240" HEIGHT = "25" AUTOPLAY="false" CONTROLLER="true" LOOP="false" PLUGINSPAGE="http://www.apple.com/quicktime/">';
-        $('sndPreview').innerHTML = o;
-    }
-    <% end %>
-    updatePreview();
-</script>

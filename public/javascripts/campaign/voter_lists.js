@@ -46,15 +46,5 @@ VoterLists.prototype.validate_csv_file = function(evt){
   }
 }
 
-VoterLists.prototype.column_mappings = function(campaign_id, csv_column_headers, separator){
-$.get("/client/campaigns/"+campaign_id+"/voter_lists/column_mapping", {headers: csv_column_headers},function(data) {
-  $('#column_headers').html(data);
-  $("#separator").val(separator)
-  $("#headers").val(csv_column_headers)
-  $("#voter_upload").show();
-});
-
-}
-
 
 
