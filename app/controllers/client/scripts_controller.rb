@@ -1,7 +1,7 @@
 module Client
   class ScriptsController < ClientController
     before_filter :load_and_verify_script, :except => [:index, :new, :create, :deleted]
-    before_filter :load_voter_fields, :only => [:new, :show, :edit]
+    before_filter :load_voter_fields, :only => [ :show, :edit]
 
     layout 'client'
 
@@ -24,6 +24,7 @@ module Client
     
     def new
       new_script
+      load_voter_fields
       @script.script_texts.new(script_order: 1)
       @question = @script.questions.new(script_order: 2)
       @question.possible_responses.new(possible_response_order: 1)
@@ -33,7 +34,7 @@ module Client
     def create
       new_script
       save_script
-      respond_with @script, location: client_scripts_path
+      respond_with @script
     end
 
 

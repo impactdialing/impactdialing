@@ -16,7 +16,7 @@ module Client
                                         start_time: Time.parse("9am"),
                                         end_time: Time.parse("9pm"))
       load_scripts
-      new_list
+      # new_list
       respond_with @campaign
     end
 
