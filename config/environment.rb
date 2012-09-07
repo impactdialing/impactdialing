@@ -9,5 +9,4 @@ if Rails.env == 'heroku'
 else
   DIALER_LOGGER = Logger.new(Rails.root.join("log", "predictive_dialer_#{Rails.env}.log"))
 end
-HOLD_VERSION = File::mtime(Rails.root.join("public", "wav","hold.mp3"))
 require "csv"
