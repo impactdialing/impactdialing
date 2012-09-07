@@ -67,8 +67,13 @@ class VoterListsController < ClientController
   end
   
   def column_mapping
-    @csv_column_headers = params[:headers]
-    @first_data_row = params[:first_data_row]
+    if params[:extension] == 'txt'
+      @csv_column_headers = params[:headers].join("\t").split("\t")
+      @first_data_row = params[:first_data_row].join("\t").split("\t")
+    else
+      @csv_column_headers = params[:headers]  
+      @first_data_row = params[:first_data_row]
+    end
     render layout: false
   end
   
