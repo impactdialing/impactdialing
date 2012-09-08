@@ -127,14 +127,6 @@ class ClientController < ApplicationController
     end
   end
 
-
-  def check_warning
-    text = warning_text
-    if !text.blank?
-      flash_now(:warning, text)
-    end
-  end
-
   def check_paid
     text = unpaid_text
     if !text.blank?
@@ -176,8 +168,6 @@ class ClientController < ApplicationController
     redirect_to_login
   end
 
-
-
   def recording_add
     if request.post?
       @recording = @account.recordings.new(params[:recording])
@@ -200,9 +190,6 @@ class ClientController < ApplicationController
       @recording = @account.recordings.new
     end
   end
-
-
-
 
   def recharge
      @account=@user.account
@@ -298,27 +285,5 @@ class ClientController < ApplicationController
 
   def policies
     render 'home/policies'
-  end
-
-  private
-  def stream_csv
-    filename = params[:action] + ".csv"
-
-    #this is required if you want this to work with IE
-    if request.env['HTTP_USER_AGENT'] =~ /msie/i
-      headers['Pragma'] = 'public'
-      headers["Content-type"] = "text/plain"
-      headers['Cache-Control'] = 'no-cache, must-revalidate, post-check=0, pre-check=0'
-      headers['Content-Disposition'] = "attachment; filename=\"#{filename}\""
-      headers['Expires'] = "0"
-    else
-      headers["Content-Type"] ||= 'text/csv'
-      headers["Content-Disposition"] = "attachment; filename=\"#{filename}\""
-    end
-
-    render :text => Proc.new { |response, output|
-      csv = CSV.new(output, :row_sep => "\r\n")
-      yield csv
-    }
   end
 end
