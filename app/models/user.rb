@@ -1,13 +1,14 @@
 class User < ActiveRecord::Base
-  validates_uniqueness_of :email, :message => " is already in use"
-  validates_format_of :email,
-      :with => /^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i
-  validates_presence_of :email, :on => :create, :message => "can't be blank"
+  validates_uniqueness_of :email
+  validates_presence_of :email
+  validates_format_of :email, :with => /^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i
+  validates_presence_of :new_password
+  validates_length_of :new_password, :within => 5..50
+  validate :reverse_captcha
 
   belongs_to :account
 
   has_many :campaigns, :conditions => {:active => true}, :through => :account
-  has_many :all_campaigns, :class_name => 'Campaign', :through => :account
   has_many :recordings, :through => :account
   has_many :custom_voter_fields, :through => :account
   has_one :billing_account, :through => :account
@@ -17,9 +18,6 @@ class User < ActiveRecord::Base
   has_many :downloaded_reports
 
   attr_accessor :new_password, :captcha
-  validate :reverse_captcha
-  validates_presence_of :new_password, :message => "can't be blank"
-  validates_length_of :new_password, :within => 5..50, :message => "must be 5 characters or greater"
 
   before_save :hash_new_password, :if => :password_changed?
 
@@ -43,7 +41,6 @@ class User < ActiveRecord::Base
     self.hashed_password = Digest::SHA2.hexdigest(self.salt + @new_password)
   end
 
-
   def self.authenticate(email, password)
     if user = find_by_email(email)
       user if user.authenticate_with?(password)
@@ -61,10 +58,6 @@ class User < ActiveRecord::Base
 
   def clear_reset_code
     update_attributes(:password_reset_code => nil)
-  end
-
-  def admin
-    ["beans@beanserver.net", "michael@impactdialing.com","wolthuis@twilio.com","aa@beanserver.net"].index(self.email)
   end
 
   def admin?
@@ -93,7 +86,4 @@ class User < ActiveRecord::Base
     return if domain!="impactdialing.com" && domain!="localhost"
     Resque.enqueue(WelcomeEmailJob, self.id)
   end
-
-
-
 end
