@@ -1,6 +1,5 @@
 module Client
   class CampaignsController < ClientController
-    layout 'client'
     before_filter :load_and_verify_campaign, :except => [:index, :new, :create, :deleted]
     respond_to :html, :json
 

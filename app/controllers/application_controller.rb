@@ -6,7 +6,6 @@ class ApplicationController < ActionController::Base
   include WhiteLabeling
   helper :all # include all helpers, all the time
   protect_from_forgery # See ActionController::RequestForgeryProtection for details
-  before_filter :set_controller_name#, :preload_models
   # Scrub sensitive parameters from your log
   helper_method :phone_format, :phone_number_valid
   rescue_from Timeout::Error, :with => :return_service_unavialble
@@ -14,14 +13,14 @@ class ApplicationController < ActionController::Base
   def testing?
     Rails.env == 'test'
   end
-  
+
   def return_service_unavialble
     respond_to do |type|
       type.all  { render :nothing => true, :status => 503 }
     end
     true
   end
-  
+
 
   def ssl?
     request.env['HTTPS'] == 'on' || request.env['HTTP_X_FORWARDED_PROTO'] == 'https'
@@ -48,25 +47,13 @@ class ApplicationController < ActionController::Base
 
   def unpaid_text
     if current_user && !current_user.account.card_verified?
-      I18n.t(:unpaid_text, :billing_link => billing_link(self.active_layout.instance_variable_get(:@template_path))).html_safe
+      I18n.t(:unpaid_text, :billing_link => billing_link).html_safe
     else
       ""
     end
   end
 
-  def unactivated_text
-    if current_user && !current_user.account.activated?
-      I18n.t(:unactivated_text).html_safe
-    else
-      ""
-    end
-  end
-
-  def active_layout
-    send(:_layout)
-  end
-
-  def billing_link(layout)
+  def billing_link
     '<a href="' + white_labeled_billing_link(request.domain) + '">Click here to verify a credit card.</a>'
   end
 
@@ -74,11 +61,6 @@ class ApplicationController < ActionController::Base
     CallAttempt
     CallerSession
     Caller
-  end
-
-  def set_controller_name
-    @controllerName = self.class.controller_path
-    @actionName = action_name
   end
 
   def phone_format(str)
@@ -193,7 +175,7 @@ class ApplicationController < ActionController::Base
       flash.now[where] = [error_message]
     end
   end
-  
+
   def full_access
     if @user.supervisor?
       flash_message(:error, I18n.t(:admin_access))
@@ -201,10 +183,10 @@ class ApplicationController < ActionController::Base
       return
     end
   end
-  
+
   def sanitize_dials(dial_count)
     dial_count.nil? ? 0 : dial_count
   end
-  
+
 
 end
