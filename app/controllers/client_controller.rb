@@ -114,7 +114,6 @@ class ClientController < ApplicationController
 
       if @user.valid?
         @user.send_welcome_email
-        @user.create_default_campaign
         @user.create_promo_balance
         @user.create_recurly_account_code
         if session[:user].blank?
