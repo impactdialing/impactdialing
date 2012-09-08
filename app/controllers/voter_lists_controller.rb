@@ -2,8 +2,6 @@ require 'tempfile'
 require Rails.root.join("jobs/voter_list_upload_job")
 
 class VoterListsController < ClientController
-  layout 'v2'
-
   before_filter :load_and_verify_campaign
   before_filter :load_voter_list, :only=> [:show, :enable, :disable, :update]
   respond_to :html
@@ -106,7 +104,6 @@ class VoterListsController < ClientController
 
 
   def setup_based_on_type
-    @layout = 'client'
     @campaign_path = client_campaign_path(@campaign)
   end
 end

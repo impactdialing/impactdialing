@@ -2,7 +2,6 @@ module Callers
   class PhonesOnlyController < ApplicationController
     before_filter :check_login, :only=> [:report, :usage, :call_details]
     include TimeZoneHelper
-    layout "phones_only_caller"
 
     def check_login
        redirect_to :action =>"index" and return if session[:phones_only_caller].blank?

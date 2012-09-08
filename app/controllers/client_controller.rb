@@ -6,7 +6,6 @@ class ClientController < ApplicationController
   before_filter :check_login, :except => [:login, :user_add, :forgot]
   before_filter :check_paid
 
-  layout "client"
   in_place_edit_for :campaign, :name
 
 
@@ -49,7 +48,6 @@ class ClientController < ApplicationController
   end
 
   def forgot
-    @breadcrumb = "Password Recovery"
     if request.post?
       user = User.find_by_email(params[:email])
       if user.blank?
@@ -85,9 +83,6 @@ class ClientController < ApplicationController
 
 
   def user_add
-    @breadcrumb = "My Account"
-    @title = "My Account"
-
     if session[:user].blank?
       @user = User.new(:account => Account.new(:domain => request.domain), role: User::Role::ADMINISTRATOR)
     else
@@ -147,14 +142,9 @@ class ClientController < ApplicationController
     if !text.blank?
       flash_now(:warning, text)
     end
-    text = unactivated_text
-    if !text.blank?
-      flash_now(:warning, text)
-    end
   end
 
   def index
-    @breadcrumb = nil
   end
 
   def login
@@ -163,8 +153,6 @@ class ClientController < ApplicationController
       return
     end
 
-    @breadcrumb="Login"
-    @title="Join Impact Dialing"
     @user = User.new {params[:user]}
     if !params[:user].blank?
       user_add
