@@ -128,9 +128,8 @@ class ClientController < ApplicationController
   end
 
   def check_paid
-    text = unpaid_text
-    if !text.blank?
-      flash_now(:warning, text)
+    if current_user && !current_user.account.card_verified?
+      flash_now(:warning, I18n.t(:unpaid_text, :billing_link => '<a href="' + white_labeled_billing_link(request.domain) + '">Click here to verify a credit card.</a>').html_safe)
     end
   end
 
