@@ -22,12 +22,12 @@ class User < ActiveRecord::Base
   validates_length_of :new_password, :within => 5..50, :message => "must be 5 characters or greater"
 
   before_save :hash_new_password, :if => :password_changed?
-  
+
   module Role
     ADMINISTRATOR = "admin"
     SUPERVISOR = "supervisor"
   end
-  
+
   def reverse_captcha
     if captcha.present?
       errors.add(:base, 'Spambots aren\'t welcome here')
@@ -42,7 +42,7 @@ class User < ActiveRecord::Base
     self.salt = SecureRandom.base64(8)
     self.hashed_password = Digest::SHA2.hexdigest(self.salt + @new_password)
   end
-  
+
 
   def self.authenticate(email, password)
     if user = find_by_email(email)
@@ -70,15 +70,15 @@ class User < ActiveRecord::Base
   def admin?
     admin
   end
-  
+
   def administrator?
     role == "admin"
   end
-  
+
   def supervisor?
     role == "supervisor"
   end
-  
+
 
   def show_voter_buttons
     ["beans@beanserver.net", "wolthuis@twilio.com"].index(self.email)
@@ -91,20 +91,7 @@ class User < ActiveRecord::Base
   def domain
     account.domain
   end
-  
-  def create_default_campaign
-    @script = Script.default_script(self.account)
-    @script.save
-    @campaign = Progressive.new(name: "Demo campaign", caller_id: "4153475723", start_time: "01:00:00", end_time: "00:00:00", account_id: self.account.id, script_id: @script.id)
-    @campaign.save
-    @caller = Caller.new(name:"", email: self.email, password:"demo123", account_id: self.account.id, active: true, campaign_id: @campaign.id)
-    @caller.save
-    @voter_list = VoterList.new(name: "Demo list", account_id: self.account.id, campaign_id: @campaign.id)
-    @voter_list.save
-    @voter = Voter.new(Phone: "4152372444", LastName: "Lead", FirstName: "Demo", campaign_id: @campaign.id, account_id: self.account.id, voter_list_id: @voter_list.id)
-    @voter.save  
-  end
-  
+
   def create_promo_balance
     p = Payment.new(:amount_paid=>9, :amount_remaining=>9, :account_id=>self.account.id, :notes=>"Trial credit")
     p.save
