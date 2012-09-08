@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe Script do
-  
+
   it "restoring makes it active" do
     script = Factory(:script, :active => false)
     script.restore
@@ -21,27 +21,6 @@ describe Script do
     active = Factory(:script, :active => true)
     Script.active.should == [active]
   end
-
-  it "lists robo scripts" do
-    robo_script = Factory(:script, :robo => true)
-    manual_script = Factory(:script, :robo => false)
-    Script.robo.should == [robo_script]
-  end
-
-  it "lists interactive scripts" do
-    script = Factory(:script, :robo => true, :for_voicemail => false)
-    another_script = Factory(:script, :robo => true)
-    script_for_voicemail = Factory(:script, :robo => true, :for_voicemail => true)
-    Script.interactive.should == [script, another_script]
-  end
-
-  it "lists message scripts" do
-    script = Factory(:script, :robo => true, :for_voicemail => false)
-    another_script = Factory(:script, :robo => true)
-    script_for_voicemail = Factory(:script, :robo => true, :for_voicemail => true)
-    Script.message.should == [script_for_voicemail]
-  end
-
   describe "default script" do
     before(:each) do
       account = Factory(:account)

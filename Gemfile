@@ -19,7 +19,6 @@ gem 'dynamic_form', '~> 1.1.4'
 gem 'in_place_editing', '~> 1.1.1'
 gem "nested_form", '~>0.1.1'
 gem 'jquery-rails', '>= 1.0.12'
-gem 'delayed_job'
 gem 'heroku','~>2.17.0'
 gem "activerecord-import", ">= 0.2.0"
 gem "airbrake",'~>3.0.9'

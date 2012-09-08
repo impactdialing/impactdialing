@@ -129,7 +129,7 @@ describe Voter do
   end
 
   describe "Dialing" do
-    let(:campaign) { Factory(:robo) }
+    let(:campaign) { Factory(:preview) }
     let(:voter) { Factory(:voter, :campaign => campaign) }
 
     it "is dialed" do
@@ -271,7 +271,7 @@ describe Voter do
     end
 
     it "dials the voter without IFMachine if AMD detection turned off" do
-      campaign1 = Factory(:campaign, :robo => false, :type => 'Predictive', answering_machine_detect: false)
+      campaign1 = Factory(:campaign, :type => 'Predictive', answering_machine_detect: false)
       Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {"FallbackUrl"=>"blah", 'StatusCallback'=> anything, 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
       voter.campaign = campaign1
       campaign1.stub(:time_period_exceed?).and_return(false)
@@ -417,7 +417,7 @@ describe Voter do
   end
 
   describe 'answers' do
-    let(:script) { Factory(:script, :robo => false) }
+    let(:script) { Factory(:script) }
     let(:campaign) { Factory(:predictive, :script => script) }
     let(:voter) { Factory(:voter, :campaign => campaign, :caller_session => Factory(:caller_session, :caller => Factory(:caller))) }
     let(:question) { Factory(:question, :script => script) }
@@ -496,7 +496,7 @@ describe Voter do
 
   describe "notes" do
 
-    let(:script) { Factory(:script, :robo => false) }
+    let(:script) { Factory(:script) }
     let(:note1) { Factory(:note, note: "Question1", script: script) }
     let(:note2) { Factory(:note, note: "Question2", script: script) }
     let(:call_attempt) { Factory(:call_attempt, :caller => Factory(:caller)) }

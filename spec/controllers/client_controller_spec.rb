@@ -28,14 +28,5 @@ describe ClientController do
         response.should redirect_to "/client/user_add"
       end
     end
-
-    describe "reports" do
-      it "shows only manual campaigns" do
-        campaign = Factory(:preview, :account => user.account)
-        Factory(:robo, :account => user.account)
-        get :reports
-        assigns(:campaigns).should == [campaign]
-      end
-    end
   end
 end

@@ -25,7 +25,7 @@ describe Campaign do
     it {should validate_presence_of :name}
     it {should validate_presence_of :script}
     it {should validate_presence_of :type}
-    it {should ensure_inclusion_of(:type).in_array(['Preview', 'Progressive', 'Predictive', 'Robo'])}
+    it {should ensure_inclusion_of(:type).in_array(['Preview', 'Progressive', 'Predictive'])}
     it {should validate_presence_of :recycle_rate}
     it {should validate_numericality_of :recycle_rate}
     it {should validate_presence_of :time_zone}
@@ -226,21 +226,6 @@ describe Campaign do
 
        Campaign.active.should == [campaign1, campaign2]
      end
-
-
-   describe 'lists campaigns' do
-     before(:each) do
-       @robo_campaign = Factory(:robo)
-       @manual_campaign = Factory(:preview)
-     end
-
-     it "which are robo" do
-       Campaign.robo.should == [@robo_campaign]
-     end
-     it "which are manual" do
-       Campaign.manual.should == [@manual_campaign]
-     end
-   end
   end
 
   describe "cost_per_minute" do
