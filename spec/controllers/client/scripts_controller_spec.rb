@@ -103,7 +103,7 @@ describe Client::ScriptsController do
          lambda {
             post :create , :script => {}, :api_key=> "abc123", :format => "json"
           }.should change {account.reload.scripts.size} .by(0)
-          puts response.body.should eq("{\"errors\":{\"name\":[\"can't be blank\"]}}")
+          response.body.should eq("{\"errors\":{\"name\":[\"can't be blank\"]}}")
       end
 
     end
