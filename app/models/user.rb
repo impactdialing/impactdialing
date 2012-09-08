@@ -79,22 +79,8 @@ class User < ActiveRecord::Base
     role == "supervisor"
   end
 
-
-  def show_voter_buttons
-    ["beans@beanserver.net", "wolthuis@twilio.com"].index(self.email)
-  end
-
-  def show_voter_buttons?
-    show_voter_buttons
-  end
-
   def domain
     account.domain
-  end
-
-  def create_promo_balance
-    p = Payment.new(:amount_paid=>9, :amount_remaining=>9, :account_id=>self.account.id, :notes=>"Trial credit")
-    p.save
   end
 
   def create_recurly_account_code
