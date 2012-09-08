@@ -11,11 +11,11 @@ module CallPayment
       payment = Payment.where("amount_remaining > 0 and account_id = ?", account).last
       if payment.nil?      
         payment = account.check_autorecharge(account.current_balance)
-      end
-      
+      end      
       unless payment.nil?              
         payment.debit_call_charge(amount_to_debit, account)
         self.update_attributes(payment_id: payment.try(:id))
+        self.update_attribute(:debited, true)
         account.check_autorecharge(account.current_balance)
       end
     end
