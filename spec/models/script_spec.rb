@@ -21,37 +21,6 @@ describe Script do
     active = Factory(:script, :active => true)
     Script.active.should == [active]
   end
-  describe "default script" do
-    before(:each) do
-      account = Factory(:account)
-      @script = Script.default_script(account)
-    end
-
-
-    it "should have name Demo Script" do
-      @script.name.should == "Demo script"
-    end
-
-    it "should have FirstName, lastName and Phone as voter fields" do
-      @script.voter_fields.should eq('["FirstName","LastName","Phone"]')
-    end
-
-    it "should have a default note" do
-      @script.notes.length.should eq(1)
-      @script.notes.first.note.should eq("What's your favorite feature?")
-    end
-
-    it "should add a default question" do
-      @script.questions.length.should eq(1)
-      @script.questions.first.text.should eq('How do you like the predictive dialer so far?')
-    end
-
-    it "should add a default question with 4 possible responses" do
-      @script.questions.length.should eq(1)
-      @script.questions.first.possible_responses.length.should eq(4)
-    end
-
-  end
 
   describe "questions and responses" do
     it "gets all questions and responses" do
