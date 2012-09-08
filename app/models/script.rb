@@ -5,7 +5,6 @@ class Script < ActiveRecord::Base
   validate :no_campaign_using_on_deletion
   belongs_to :account
   has_many :script_texts, :inverse_of => :script
-  has_many :robo_recordings
   has_many :questions, :inverse_of => :script
   has_many :notes, :inverse_of => :script
   has_many :transfers
@@ -15,17 +14,8 @@ class Script < ActiveRecord::Base
   accepts_nested_attributes_for :questions, :allow_destroy => true
   accepts_nested_attributes_for :notes, :allow_destroy => true
   accepts_nested_attributes_for :transfers, :allow_destroy => true
-  accepts_nested_attributes_for :robo_recordings, :allow_destroy => true
 
-
-  default_scope :order => :name
-
-  scope :robo, :conditions => {:robo => true }
-  scope :manual, :conditions => {:robo => false }
   scope :active, {:conditions => {:active => 1}}
-  scope :interactive, robo.where("for_voicemail is NULL or for_voicemail = #{false}")
-  scope :message, robo.where(:for_voicemail => true)
-
 
   cattr_reader :per_page
   @@per_page = 25

@@ -7,7 +7,7 @@
 
 
 <head>
-<%= render :partial => "shared/errorception" %>  
+<%= render :partial => "shared/errorception" %>
 <%= render :partial => "shared/kissmetrics" %>
 <meta charset="utf-8">
 
@@ -68,7 +68,7 @@
 <body class="admin clearfix">
 
 <header role="banner" class="clearfix">
-	<a href="<% if client_controller?(@controllerName) %>/client<% else %>/caller<% end %>">	<img src="/img/impactdialing-h1.png" style="margin-bottom:8px;"></a>
+  <a href="<% if client_controller?(@controllerName) %>/client<% else %>/caller<% end %>">  <img src="/img/impactdialing-h1.png" style="margin-bottom:8px;"></a>
 
 <% if logged_in_as_client? %>
   <ul class="clearfix">
@@ -97,7 +97,6 @@
     <% end %>
     <li><a href="/client/monitors" <% if @actionName.index("monitor") %>class="active"<% end %>><span>Monitor</span></a></li>
     <li><a href="/client/reports" <% if @actionName.index("report") %>class="active"<% end %>><span>Reports</span></a></li>
-    <li><a href="/broadcast"><span>Go to Voice Broadcasting</span></a></li>
   </ul>
   </nav>
 <% end %>
@@ -105,8 +104,8 @@
 <%# render :partial => "shared/client_flash_messages", :locals => {:display => [:notice, :error, :warning]} %>
 
 <div class="content clearfix">
-	<%= yield %>
- 	<%= yield :sidebar %>
+  <%= yield %>
+   <%= yield :sidebar %>
 </div>
 
 

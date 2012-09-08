@@ -99,7 +99,6 @@
     <li><a href="/client/callers" <% if @actionName.index("caller") %>class="active"<% end %>><span>Callers</span></a></li>
     <li><a href="/client/monitors" <% if @actionName.index("monitor") %>class="active"<% end %>><span>Monitor</span></a></li>
     <li><a href="/client/reports" <% if @actionName.index("report") %>class="active"<% end %>><span>Reports</span></a></li>
-    <li><a href="/broadcast"><span>Go to Voice Broadcasting</span></a></li>
   </ul>
   </nav>
 <% end %>
@@ -107,8 +106,8 @@
 <%= render :partial => "shared/client_flash_messages", :locals => {:display => [:notice, :error, :warning]} %>
 
 <div class="content clearfix">
-	<%= yield %>
- 	<%= yield :sidebar %>
+  <%= yield %>
+   <%= yield :sidebar %>
 </div>
 
 
@@ -143,7 +142,7 @@
 
 <%= javascript_include_tag "https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js" %>
 <%= javascript_include_tag 'nested_form' %>
-<script src="/javascripts/recurly.min.js"></script> 
+<script src="/javascripts/recurly.min.js"></script>
 <link rel="stylesheet" href="/stylesheets/recurly.css" type="text/css" media="all" />
 
 <script src="js/mylibs/jquery.fitvids.js"></script>

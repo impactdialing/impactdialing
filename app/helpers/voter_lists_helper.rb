@@ -14,8 +14,4 @@ module VoterListsHelper
     basic_header.concat(VoterList::VOTER_DATA_COLUMNS.values.zip(VoterList::VOTER_DATA_COLUMNS.keys))
     basic_header.concat(account.custom_voter_fields.map(&:name).map{|field| ["#{field} (Custom)", field]})
   end
-
-  def import_voter_lists_path(campaign)
-    campaign.robo? ? import_campaign_voter_lists_path(campaign) : import_campaign_client_voter_lists_path(campaign)
-  end
 end

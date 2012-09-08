@@ -26,8 +26,7 @@ class Campaign < ActiveRecord::Base
 
   delegate :questions_and_responses, :to => :script
 
-  scope :robo, lambda { where(:type => 'Robo') }
-  scope :manual, :conditions => [ 'campaigns.type != "robo"' ]
+  scope :manual
   scope :for_account, lambda { |account| {:conditions => ["account_id = ?", account.id]} }
   scope :for_script, lambda { |script| {:conditions => ["script_id = ?", script.id]} }
   scope :with_running_caller_sessions, {
@@ -41,7 +40,7 @@ class Campaign < ActiveRecord::Base
   validates :caller_id, :presence => true
   validates :caller_id, :numericality => {}, :length => {:minimum => 10, :maximum => 10}, :unless => Proc.new{|campaign| campaign.caller_id && campaign.caller_id.start_with?('+')}
   validates :script, :presence => true
-  validates :type, :presence => true, :inclusion => {:in => ['Preview', 'Progressive', 'Predictive', 'Robo']}
+  validates :type, :presence => true, :inclusion => {:in => ['Preview', 'Progressive', 'Predictive']}
   validates :acceptable_abandon_rate,
             :numericality => {:greater_than_or_equal_to => 0.01, :less_than_or_equal_to => 0.10},
             :allow_blank => true
@@ -62,7 +61,6 @@ class Campaign < ActiveRecord::Base
     PREVIEW = "Preview"
     PREDICTIVE = "Predictive"
     PROGRESSIVE = "Progressive"
-    ROBO = "Robo"
   end
 
   def new_campaign

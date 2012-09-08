@@ -75,19 +75,6 @@ Factory.define :progressive do |c|
   c.script_id {Factory(:script).id}
 end
 
-Factory.define :robo do |c|
-  c.name 'a campaign'
-  c.caller_id '1234567890'
-  c.account { Factory(:account) }
-  c.recycle_rate 1
-  c.start_time (Time.now - 6.hours)
-  c.end_time (Time.now - 7.hours)
-  c.time_zone "Pacific Time (US & Canada)"
-  c.script_id {Factory(:script).id}
-end
-
-
-
 Factory.define :caller do |s|
   s.email { Factory.next(:email) }
   s.name 'a caller'
@@ -103,7 +90,7 @@ Factory.define :voter_list do |v|
   v.separator ","
   v.s3path "abc"
   v.uploaded_file_name "abc.csv"
-  v.csv_to_system_map Hash["Phone" => "Phone"] 
+  v.csv_to_system_map Hash["Phone" => "Phone"]
 end
 
 Factory.define :voter do |v|
@@ -140,15 +127,6 @@ end
 Factory.define :call_attempt do |ca|
   ca.campaign { Factory(:campaign) }
   ca.caller { Factory(:caller) }
-end
-
-Factory.define :robo_recording do |rr|
-  rr.name { Factory.next(:name) }
-end
-
-Factory.define :recording_response do |rr|
-  rr.response 'response'
-  rr.keypad '1'
 end
 
 Factory.define :call_response do |cr|
