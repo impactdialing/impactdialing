@@ -1,13 +1,13 @@
 <% form||=nil %>
-<p><%= form.check_box :answering_machine_detect, {name: 'campaign[answering_machine_detect]'} %>&nbsp;Automatically detect voicemails</p>
+<p><%= form.check_box :answering_machine_detect, {name: 'campaign[answering_machine_detect]', id: "campaign_answering_machine_detect"} %>&nbsp;Automatically detect voicemails</p>
 <% if !@campaign.account.recordings.blank? %>
-    <p><%= form.check_box :use_recordings, {:onclick=>"doRecord()", name: 'campaign[use_recordings]'} %>&nbsp;Leave voicemail message</p>
+    <p><%= form.check_box :use_recordings, {name: 'campaign[use_recordings]', id: 'campaign_use_recordings'} %>&nbsp;Leave voicemail message</p>
 
     <div id="recordingsdiv"
          <% if  !@campaign.use_recordings? %> style="display:none;"
          <% end %>>
       <label for=""><p>Voicemail</label><br>
-      <%= form.collection_select(:recording_id, @account.recordings.active, :id, :name, {:prompt => false}, {:class=>"field", :onchange=>"updatePreview();",name: 'campaign[recording_id]'}) %></p>
+      <%= form.collection_select(:recording_id, @account.recordings.active, :id, :name, {:prompt => false}, {:class=>"field", :onchange=>"updatePreview();",name: 'campaign[recording_id]', id: "campaign_recording_id"}) %></p>
       <div id="sndPreview"></div>
     </div>
 <% end %>

@@ -3,8 +3,9 @@ class VoterListUploadJob
   extend ::HerokuResqueAutoScale
   @queue = :voter_list_upload_worker_job
 
-   def self.perform(separator, column_headers, csv_to_system_map, filename, voter_list_name, campaign_id, account_id, domain, email, callback_url, strategy="webui")
-     job = VoterListJob.new(separator, column_headers, csv_to_system_map, filename, voter_list_name, campaign_id, account_id, domain, email, callback_url, strategy="webui")
+   def self.perform(voter_list_id, email, domain, callback_url, strategy="webui")
+     voter_list = VoterList.find(voter_list_id)
+     job = VoterListJob.new( voter_list.id , domain, email, callback_url, strategy="webui")
      job.perform
    end
    

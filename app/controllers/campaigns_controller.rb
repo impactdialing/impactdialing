@@ -2,13 +2,13 @@ class CampaignsController < ClientController
   layout 'v2'
   include DeletableController
   before_filter :full_access
-  before_filter :verify_campaign_ownership, :only => [:update, :show, :start, :stop, :dial_statistics, :destroy]
+  before_filter :verify_campaign_ownership, :only => [:update, :show, :edit, :start, :stop, :dial_statistics, :destroy]
   before_filter :setup_campaigns_paths, :only => [:index]
 
   def verify_campaign_ownership
     @campaign = Campaign.find(params[:id])
     if @campaign.account != account
-      render :text => 'nothing', :status => :unauthorized
+      render :json => {message: 'Cannot access campaign.'}, :status => :unauthorized
     end
   end
 
@@ -26,7 +26,8 @@ class CampaignsController < ClientController
   end
 
   def create
-    campaign = Robo.create(params[:robo].merge!(account_id: account.id))
+    campaign = Robo.create!(params[:robo].merge!(account_id: account.id))
+    campaign.voicemail_script_id = params[:robo][:voicemail_script_id]
     campaign.account = @user.account
     campaign.script||= @user.account.scripts.robo.active.first
     campaign.save
@@ -35,6 +36,7 @@ class CampaignsController < ClientController
 
   def update
     @campaign.attributes = params[:robo]
+    @campaign.voicemail_script_id = params[:robo].try(:[], :voicemail_script_id)
     @campaign.script ||= account.scripts.robo.active.first
     @campaign.voter_lists.disable_all
     @campaign.voter_lists.by_ids(params[:voter_list_ids]).enable_all
@@ -56,11 +58,6 @@ class CampaignsController < ClientController
   end
 
   def destroy
-    unless @campaign.callers.empty? 
-      flash_message(:notice, "There are currently callers assigned to this campaign. Please assign them to another campaign before deleting this one.")
-      redirect_to :back
-      return
-    end    
     @campaign.update_attribute(:active, false)
     flash_message(:notice, "Campaign deleted")
     redirect_to :back

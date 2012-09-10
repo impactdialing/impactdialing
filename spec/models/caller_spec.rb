@@ -3,6 +3,23 @@ require "spec_helper"
 describe Caller do
   include Rails.application.routes.url_helpers
 
+  it {should belong_to :caller_group}
+
+  it 'assigns itself to the campaign of its caller group' do
+    campaign = Factory(:preview)
+    caller_group = Factory(:caller_group, campaign_id: campaign.id)
+    caller = Factory(:caller, caller_group_id: caller_group.id)
+    caller.campaign.should eq campaign
+  end
+
+  it 'saves successfully if it does not have a caller group' do
+    caller_group = Factory(:caller_group)
+    caller = Factory(:caller, caller_group_id: caller_group.id)
+    campaign = Factory(:preview)
+    caller.update_attributes(caller_group_id: nil, campaign: campaign)
+    caller.save.should be_true
+  end
+
   let(:user) { Factory(:user) }
   it "restoring makes it active" do
     caller_object = Factory(:caller, :active => false)
@@ -116,12 +133,12 @@ describe Caller do
     end
 
     describe "campaign" do
-      
+
 
       it "gets stats for answered calls" do
-        @voter =  Factory(:voter) 
+        @voter =  Factory(:voter)
         @script = Factory(:script)
-        @question = Factory(:question, :text => "what?", script: @script)         
+        @question = Factory(:question, :text => "what?", script: @script)
         response_1 = Factory(:possible_response, :value => "foo", question: @question)
         response_2 = Factory(:possible_response, :value => "bar", question: @question)
         campaign = Factory(:campaign, script: @script)
