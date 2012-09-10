@@ -4,11 +4,17 @@ var Campaign = function(){
   $("#campaign_type").change(function() {
 	self.dialing_mode_changed();
   });
-
+   this.detect_answering_machine();
+   this.detect_leave_voice_mail();
 
   $('#campaign_answering_machine_detect').click(function () {
 	self.detect_answering_machine();
   });
+
+  $('#campaign_use_recordings').click(function () {
+	self.detect_leave_voice_mail();
+  });
+
 
   $("#campaign_recording_id").live("change", function(){
      updatePreview();	
@@ -30,12 +36,22 @@ Campaign.prototype.doRecord = function(){
 }
 
 Campaign.prototype.detect_answering_machine = function(){
-  if ($('#campaign_answering_machine_detect').attr('checked') == false) {
-    if ($("#campaign_use_recordings").attr('checked') == true) {
-      $("#recordingsdiv").toggle($("#campaign_use_recordings").checked);
-      $("#campaign_use_recordings").attr('checked', false);
+  if ($('#campaign_answering_machine_detect').is(":checked")) {
+  	 $("#campaign_use_recordings").parent().show();
+   }
+  else {
+  	 $("#campaign_use_recordings").parent().hide();
+     $("#recordingsdiv").hide();
+  }
+}
+
+Campaign.prototype.detect_leave_voice_mail = function(){
+	if ($("#campaign_use_recordings").is(":checked")) {
+	  $("#recordingsdiv").show();
     }
-  }	
+    else{
+	  $("#recordingsdiv").hide();
+    }    
 }
 
 Campaign.prototype.display_abandonment_rate = function(){
