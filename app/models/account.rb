@@ -45,12 +45,12 @@ class Account < ActiveRecord::Base
   end
 
   def self.authenticate_caller?(pin, password)
-    account = caller.account
+    caller = Caller.find_by_pin(pin)
+    return nil if caller.nil?
     if password.nil? || account.caller_password.nil? || account.caller_hashed_password_salt.nil?
       return false
     end
-    caller = Caller.find_by_pin(pin)
-    return nil if caller.nil?
+    
     account = caller.account
     if account.caller_password == Digest::SHA2.hexdigest(account.caller_hashed_password_salt + password)
       caller
