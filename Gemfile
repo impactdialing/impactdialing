@@ -18,7 +18,7 @@ gem "twilio-ruby", '~> 3.5.1'
 gem 'dynamic_form', '~> 1.1.4'
 gem 'in_place_editing', '~> 1.1.1'
 gem "nested_form", '~>0.1.1'
-gem 'jquery-rails', '>= 1.0.12'
+gem 'jquery-rails', '~>2.1.1'
 gem 'heroku','~>2.17.0'
 gem "activerecord-import", ">= 0.2.0"
 gem "airbrake",'~>3.0.9'

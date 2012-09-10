@@ -300,7 +300,7 @@ DEPENDENCIES
   heroku_san
   hiredis (~> 0.4.5)
   in_place_editing (~> 1.1.1)
-  jquery-rails (>= 1.0.12)
+  jquery-rails (~> 2.1.1)
   json (~> 1.6.1)
   json_spec
   mysql2 (~> 0.3.0)

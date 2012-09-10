@@ -1,12 +1,2 @@
-<table>
-  <tr>
-    <td>From:</td>
-    <td> <%= unobtrusive_date_text_picker_tag :from_date, time_for_date_picker_callers(@campaign, @caller, @from_date) %> </td>
-  </tr>
-  <tr>
-    <td>To:</td>
-    <td>
-      <%= unobtrusive_date_text_picker_tag :to_date, time_for_date_picker_callers(@campaign, @caller, @to_date) %>
-    </td>
-  </tr>
-</table>
+<%= render 'shared/date_picker' %>
+<div class="buttons"><button type="submit">Update date range</button></div>
