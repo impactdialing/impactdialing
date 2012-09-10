@@ -89,7 +89,7 @@ class User < ActiveRecord::Base
   end
 
   def domain
-    account.domain
+    account.domain_name
   end
   
   def create_default_campaign
