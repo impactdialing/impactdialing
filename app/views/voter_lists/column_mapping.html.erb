@@ -1,14 +1,16 @@
-<p>
-  We found the following headers in the file you uploaded. Please map them to the fields below.
-</p>
-
-<dl class='table-display'>
+<p>Please map your headers to the appropriate fields below.</p>
+<table>
+  <tr>
+    <th>Header</th>
+    <th>Field</th>
+    <th>Example data</th>
+  </tr>
   <% @csv_column_headers.each_with_index do |csv_header, index| %>
-    <% selected =  matching_system_header_for(csv_header)%>
-    <dt><%= csv_header %></dt>
-    <dd><%= select_tag "csv_to_system_map[#{csv_header}]", options_for_select(system_column_headers(csv_header, @campaign.account), selected) %>
-      &nbsp &nbsp <%= @first_data_row[index]%>
-    </dd>
+    <% selected = matching_system_header_for(csv_header) %>
+    <tr>
+      <td><%= csv_header %></td>
+      <td><%= select_tag "voter_list[csv_to_system_map[#{csv_header}]]", options_for_select(system_column_headers(csv_header, @campaign.account), selected) %></td>
+      <td><%= @first_data_row[index] %></td>
+    </tr>
   <% end %>
-</dl>
-
+</table>

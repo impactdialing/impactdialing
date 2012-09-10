@@ -345,28 +345,28 @@ describe PhonesOnlyCallerSession do
 
       it "should set caller state to conference_started_phones_only" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_to_dial", digit: "*", voter_in_progress: @voter)
-        caller_session.should_receive(:dial)
+        caller_session.should_receive(:dial_em)
         caller_session.start_conf!
         caller_session.state.should eq('conference_started_phones_only')
       end
 
       it "should set on_call to true" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_to_dial", digit: "*", voter_in_progress: @voter)
-        caller_session.should_receive(:dial)
+        caller_session.should_receive(:dial_em)
         caller_session.start_conf!
         caller_session.on_call.should be_true
       end
 
       it "should set available_for_call to true" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_to_dial", digit: "*", voter_in_progress: @voter)
-        caller_session.should_receive(:dial)
+        caller_session.should_receive(:dial_em)
         caller_session.start_conf!
         caller_session.available_for_call.should be_true
       end
 
       it "should set attempt_in_progress to nil" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_to_dial", digit: "*", voter_in_progress: @voter)
-        caller_session.should_receive(:dial)
+        caller_session.should_receive(:dial_em)
         caller_session.start_conf!
         caller_session.attempt_in_progress.should be_nil
       end
@@ -375,7 +375,7 @@ describe PhonesOnlyCallerSession do
       it "render correct twiml" do
         question = Factory(:question, script: @script)
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*", voter_in_progress: @voter)
-        caller_session.should_receive(:dial)
+        caller_session.should_receive(:dial_em)
         @voter.should_receive(:question_not_answered).and_return(question)
         caller_session.start_conf!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"https://#{Settings.host}:#{Settings.port}/caller/#{@caller.id}/flow?event=gather_response&amp;question=#{question.id}&amp;session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"></Conference></Dial></Response>")
@@ -417,28 +417,28 @@ describe PhonesOnlyCallerSession do
 
       it "should set caller state to conference_started_phones_only" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*", voter_in_progress: @voter)
-        caller_session.should_receive(:dial)
+        caller_session.should_receive(:dial_em)
         caller_session.start_conf!
         caller_session.state.should eq('conference_started_phones_only')
       end
 
       it "should set on_call to true" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*", voter_in_progress: @voter)
-        caller_session.should_receive(:dial)
+        caller_session.should_receive(:dial_em)
         caller_session.start_conf!
         caller_session.on_call.should be_true
       end
 
       it "should set available_for_call to true" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*", voter_in_progress: @voter)
-        caller_session.should_receive(:dial)
+        caller_session.should_receive(:dial_em)
         caller_session.start_conf!
         caller_session.available_for_call.should be_true
       end
 
       it "should set attempt_in_progress to nil" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*", voter_in_progress: @voter)
-        caller_session.should_receive(:dial)
+        caller_session.should_receive(:dial_em)
         caller_session.start_conf!
         caller_session.attempt_in_progress.should be_nil
       end
@@ -446,7 +446,7 @@ describe PhonesOnlyCallerSession do
       it "render correct twiml" do
         question = Factory(:question, script: @script)
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*", voter_in_progress: @voter)
-        caller_session.should_receive(:dial)
+        caller_session.should_receive(:dial_em)
         @voter.should_receive(:question_not_answered).and_return(question)
         caller_session.start_conf!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"https://#{Settings.host}:#{Settings.port}/caller/#{@caller.id}/flow?event=gather_response&amp;question=#{question.id}&amp;session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"></Conference></Dial></Response>")

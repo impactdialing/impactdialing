@@ -57,14 +57,17 @@ class AdminController < ApplicationController
         end
         transfers = TransferAttempt.where("campaign_id in (?) and created_at > '#{@from_date.strftime("%Y-%m-%d")}' and created_at  < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'", campaigns).sum("ceil(tDuration/60)").to_i
 
-        result={}
-        result["account"]=Account.find(account_id).first
-        result["calls"]=calls
-        result["broadcast"]=broadcast
-        result["sessions"]=sessions
-        result["transfers"]=transfers
-        @output<< result
 
+        account = Account.find_by_id(account_id)
+        unless account.nil?
+          result={}
+          result["account"]= account
+          result["calls"]= calls
+          result["broadcast"]= broadcast
+          result["sessions"]= sessions
+          result["transfers"]= transfers
+          @output<< result
+        end
       end
     end
 

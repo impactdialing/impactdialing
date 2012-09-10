@@ -11,31 +11,31 @@
         <td><%= @billiable_total[caller.id] %></td>
       </tr>
     <%end%>
-    
+
     <tr>
       <td>Abandoned Calls</td>
       <td><%= sanitize_dials(@status_usage[CallAttempt::Status::ABANDONED]).to_i %></td>
     </tr>
-    
+
     <tr>
       <td>Voice Mail</td>
       <td><%= sanitize_dials(@status_usage[CallAttempt::Status::VOICEMAIL]).to_i + sanitize_dials(@status_usage[CallAttempt::Status::HANGUP]).to_i %></td>
     </tr>
-    
-    
+
+
     <tr>
       <td>Total</td>
       <td><%= @final_total %></td>
     </tr>
   </table>
-	
+
 </div>
 
 <h3>Date range:</h3>
-<% form_tag(account_callers_usage_client_reports_path(:id => @account.id), :method => :get) do %>
+<%= form_tag(account_callers_usage_client_reports_path(:id => @account.id), :method => :get) do %>
   <input type="hidden" name="id" value="<%= params[:id] %>" />
   <%= render :partial => 'shared/date_picker' %>
   <div class="buttons">
     <button type="submit">Update</button>
-  </div>  
+  </div>
 <% end %>

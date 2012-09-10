@@ -171,6 +171,10 @@ Factory.define :blocked_number do |b|
   b.number '1234567890'
 end
 
+Factory.define :script_text do |st|
+  st.content "abc"
+end
+
 Factory.define :question do |q|
   q.text "question text"
   q.script_order '1'

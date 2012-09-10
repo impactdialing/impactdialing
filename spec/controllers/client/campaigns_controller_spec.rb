@@ -1,6 +1,7 @@
 require "spec_helper"
 
 describe Client::CampaignsController do
+  
   let(:account) { Factory(:account, :activated => true, api_key: "abc123") }
   let(:user) { Factory(:user, :account => account) }
   
@@ -90,17 +91,17 @@ describe Client::CampaignsController do
     
     describe "show" do      
       it "should give campaign details" do
-        campaign = Factory(:predictive, :account => account, :active => true)
+        campaign = Factory(:predictive, :account => account, :active => true, name: "Campaign 1")
         get :show, :id=> campaign.id, :api_key=> 'abc123', :format => "json"
-        response.body.should == campaign.to_json
+        JSON.parse(response.body)['predictive']['name'].should eq("Campaign 1")
       end
     end
     
     describe "edit" do
       it "should give campaign details" do
-        predictive_campaign = Factory(:predictive, :account => account, :active => true, start_time: Time.now, end_time: Time.now)
+        predictive_campaign = Factory(:predictive, :account => account, :active => true, start_time: Time.now, end_time: Time.now, name: "Campaign 2")
         get :edit, :id=> predictive_campaign.id, :api_key=> 'abc123', :format => "json"
-        response.body.should == predictive_campaign.to_json
+        JSON.parse(response.body)['predictive']['name'].should eq("Campaign 2")
       end
     end
 
@@ -136,8 +137,7 @@ describe Client::CampaignsController do
           post :create , :campaign => {name: "abc", caller_id:"1234567890", script_id: script.id, 
             type: "Preview", time_zone: "Pacific Time (US & Canada)", start_time:  Time.new(2011, 1, 1, 9, 0, 0), end_time: Time.new(2011, 1, 1, 21, 0, 0)}, :api_key=> "abc123", :format => "json"
         }.should change {account.reload.campaigns.size} .by(1)
-        response.body.should eq('')
-        
+        JSON.parse(response.body)['campaign']['name'].should  eq('abc')        
       end
       
       it "should throw validation error" do
@@ -153,6 +153,54 @@ describe Client::CampaignsController do
       
     end
     
+    describe "update" do
+      it "should update an existing campaign" do
+        campaign = Factory(:predictive, name: "abc", account: account)
+        lambda {
+          put :update , id: campaign.id, :campaign => {name: "def"}, :api_key=> "abc123", :format => "json"
+        }.should change {account.reload.campaigns.size} .by(0)
+        response.body.should  eq("{\"message\":\"Campaign updated\"}")        
+      end
+      
+      it "should update voter lists for existing campaign" do
+        voter_list = Factory(:voter_list, enabled: true)
+        campaign = Factory(:predictive, name: "abc", account: account, voter_lists: [voter_list])
+        lambda {
+          put :update , id: campaign.id, :campaign => {name: "def", :voter_lists_attributes=> {"0"=>{"id"=>"#{voter_list.id}", "enabled"=> "0"}}}, :api_key=> "abc123", :format => "json"
+        }.should change {account.reload.campaigns.size} .by(0)
+        response.body.should  eq("{\"message\":\"Campaign updated\"}")        
+        voter_list.reload.enabled.should be_false
+      end
+      
+      
+      it "should throw validation error" do
+        campaign = Factory(:predictive, name: "abc", account: account)
+        lambda {
+          put :update , id: campaign.id, :campaign => {caller_id: "123"}, :api_key=> "abc123", :format => "json"
+        }.should change {account.reload.campaigns.size} .by(0)
+        response.body.should  eq("{\"errors\":{\"caller_id\":[],\"base\":[\"ID must be a 10-digit North American phone number or begin with \\\"+\\\" and the country code.\"]}}")        
+      end
+
+      
+    end
     
+    describe "deleted" do
+      
+      it "should show deleted campaigns" do
+        manual_campaign = Factory(:preview, :account => account, :active => true)
+        inactive_campaign = Factory(:progressive, :account => account, :active => false)
+        get :deleted, :api_key=> 'abc123', :format => "json"
+        JSON.parse(response.body).length.should eq(1)        
+      end
+    end
+    
+    describe "restore" do
+      
+      it "should restore inactive campaign" do
+        inactive_campaign = Factory(:progressive, :account => account, :active => false)
+        put :restore, campaign_id: inactive_campaign.id, :api_key=> 'abc123', :format => "json"
+        response.body.should eq("{\"message\":\"Campaign restored\"}")
+      end
+    end
   end
 end
