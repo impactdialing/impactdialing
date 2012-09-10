@@ -9,7 +9,7 @@
   <br/>
   <a href="/admin/users">Back to user admin</a>
 <% else %>
-  <% form_tag do |f| %>
+  <%= form_tag do |f| %>
     Amount to charge: $<input type="text" name="tocharge">
     <br/> <%= @emails %>
     <%=  submit_tag "Make charge", :disable_with => "Please wait..." %>
