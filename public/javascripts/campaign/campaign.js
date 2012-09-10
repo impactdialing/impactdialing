@@ -10,7 +10,7 @@ var Campaign = function(){
 	self.detect_answering_machine();
   });
 
-  $("#preview_recording_id").live("change", function(){
+  $("#campaign_recording_id").live("change", function(){
      updatePreview();	
   });
 
