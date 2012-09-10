@@ -34,7 +34,7 @@
 <fieldset>
 	<div id="fields">
 	<legend>Fields to include</legend>
-  <% form_tag(download_reports_path(:id => @campaign.id, :protocol => PROTOCOL), :method => "POST") do %>
+  <%= form_tag(download_reports_path(:id => @campaign.id, :protocol => PROTOCOL), :method => "POST") do %>
   <select class="field" id="lead_dial" name="lead_dial">
   	<option value="lead">One row for each lead</option>
   	<option value="dial">One row for each dial</option>

@@ -9,19 +9,19 @@ module Client
 
     def index
       @scripts = account.scripts.manual.active.paginate(:page => params[:page])
-      respond_with @scripts      
+      respond_with @scripts
     end
-    
+
     def show
       respond_with @script do |format|
         format.html {redirect_to edit_client_script_path(@script)}
-      end      
+      end
     end
-    
+
     def edit
       respond_with @script
     end
-    
+
     def new
       new_script
       load_voter_fields
@@ -44,22 +44,27 @@ module Client
     end
 
     def update
-      save_script
-      respond_with @script,  location: client_scripts_path do |format|         
-        format.json { render :json => {message: "Script updated" }, :status => :ok } if @script.errors.empty?
-      end            
-      
+      if params[:save_as]
+        @script = @script.dup include: [:transfers, :notes, :script_texts, questions: :possible_responses], except: :name
+        load_voter_fields
+        render 'new'
+      else
+        save_script
+        respond_with @script,  location: client_scripts_path do |format|
+          format.json { render :json => {message: "Script updated" }, :status => :ok } if @script.errors.empty?
+        end
+      end
     end
 
     def destroy
       @script.active = false
-      @script.save ?  flash_message(:notice, "Script deleted") : flash_message(:error, @script.errors.full_messages.join)            
-      respond_with @script,  location: client_scripts_path do |format|         
+      @script.save ?  flash_message(:notice, "Script deleted") : flash_message(:error, @script.errors.full_messages.join)
+      respond_with @script,  location: client_scripts_path do |format|
         format.json { render :json => {message: "Script deleted" }, :status => :ok } if @script.errors.empty?
-      end      
+      end
     end
 
-    def questions_answered      
+    def questions_answered
       render :json => { :data => Question.question_count_script(@script.id) }
     end
 
@@ -72,22 +77,19 @@ module Client
       respond_with @scripts do |format|
         format.html{render 'scripts/deleted'}
         format.json {render :json => @scripts.to_json}
-      end      
+      end
     end
-    
+
     def restore
       @script.active = true
       save_script
-      respond_with @script,  location: client_scripts_path do |format|         
+      respond_with @script,  location: client_scripts_path do |format|
         format.json { render :json => {message: "Script restored" }, :status => :ok } if @script.errors.empty?
-      end      
+      end
     end
-    
-
-
 
     private
-    
+
     def load_and_verify_script
       begin
         @script = Script.find(params[:id] || params[:script_id])
@@ -100,7 +102,7 @@ module Client
         return
       end
     end
-    
+
 
     def new_script
       @script = account.scripts.new(robo: false)
