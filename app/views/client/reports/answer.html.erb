@@ -1,20 +1,20 @@
 <h1><%= "#{@campaign.name} Answered Calls Report" %></h1>
 <% i = 1 %>
 <% @results.each_pair do |question, stats| %>
-    <h3><%= @campaign.robo == true ? "Recording" : "Question" %> <%= i %>: <%= question %></h3>
-     <table>
-       <tr>
-         <th>Answer</th>
-         <th>Number</th>
-         <th>Percentage</th>
-       </tr>
+	  <h3><%= @campaign.robo == true ? "Recording" : "Question" %> <%= i %>: <%= question %></h3>
+	   <table>
+	     <tr>
+	       <th>Answer</th>
+	       <th>Number</th>
+	       <th>Percentage</th>
+	     </tr>
        <% stats.each do |answers| %>
         <tr>
           <td><%= answers[:answer]%></td>
           <td><%= answers[:number]%></td>
           <td><%= answers[:percentage]%> %</td>
-        </tr>
-        <% end %>
+  	    </tr>
+	      <% end %>
      </table>
      <% i = i + 1%>
 <% end %>
@@ -33,7 +33,7 @@
       <td><%= value[:number]%></td>
       <td><%= value[:percentage]%> %</td>
     </tr>
-
+  
     <%end%>
   </table>
 <%end%>
@@ -45,5 +45,5 @@
   <div class="buttons">
     <button type="submit">Update</button>
   </div>
-
+  
 <%end %>
