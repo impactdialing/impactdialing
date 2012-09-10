@@ -1,21 +1,21 @@
 <h1>Log in</h1>
-				<%= form_tag("/caller/login", :id=>"loginForm") do |f| %>
+        <%= form_tag("/caller/login", :id=>"loginForm") do |f| %>
 <fieldset>
-		<p><label for="">Email</label><br>
-	<input type="text" name="email" class="field" value="<%= params[:email] %>" />
+    <p><label for="">Email</label><br>
+  <input type="text" name="email" class="field" value="<%= params[:email] %>" />
 
 
-		<p><label for="">Password</label><br>
-	<input type="password" class="field" name="password"/>
+    <p><label for="">Password</label><br>
+  <input type="password" class="field" name="password"/>
 
 
-	<div class="buttons">
-	<button type="submit">Log in</button>
-	</div>
+  <div class="buttons">
+  <button type="submit">Log in</button>
+  </div>
 </fieldset>
-			<% end %>
+      <% end %>
 <p>
   If you are an administrator, <a href="/client">log in here</a>.
   </br>
-  If you are a phones only caller, <a href="/callers/phones_only">log in here</a>.
+  To view phones-only reports, <a href="/callers/phones_only">log in here</a>.
 </p>

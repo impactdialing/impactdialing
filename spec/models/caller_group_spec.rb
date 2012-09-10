@@ -15,8 +15,10 @@ describe CallerGroup do
     caller = Factory(:caller, campaign_id: original_campaign.id)
     caller_group = Factory(:caller_group, campaign_id: original_campaign.id, callers: [caller])
     new_campaign = Factory(:predictive, name: "new")
+    Resque.should_receive(:enqueue).with(CallerGroupJob, caller_group.id)
     caller_group.update_attributes(campaign_id: new_campaign.id)
     caller_group.campaign.should eq(new_campaign)
-    caller.campaign.should eq new_campaign
+    
+    # caller.campaign.should eq new_campaign
   end
 end

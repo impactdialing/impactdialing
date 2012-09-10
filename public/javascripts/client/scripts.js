@@ -145,8 +145,8 @@ if(($('#script_questions').children('.nested-fields').length - $('fieldset.quest
 
 function possible_response_answered(question_ids){
   $.ajax({
-    url : "/client/scripts/possible_responses_answered",
-    data : {question_ids : question_ids },
+    url : "/client/scripts//possible_responses_answered",
+    data : {question_ids : question_ids, id: $("#script_id").val() },
     type : "GET",
   async : false,
     success : function(response) {
@@ -163,6 +163,7 @@ function possible_response_answered(question_ids){
 
 
 function questions_answered(){
+	var script_id = $('#script_id').val();
   $.ajax({
     url : "/client/scripts/questions_answered",
     data : {id : $("#script_id").val() },

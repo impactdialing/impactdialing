@@ -3,7 +3,7 @@ require Rails.root.join("lib/twilio_lib")
 class Campaign < ActiveRecord::Base
   include Deletable
 
-  attr_accessible :type, :name, :caller_id, :script_id, :acceptable_abandon_rate, :time_zone, :start_time, :end_time, :recycle_rate, :answering_machine_detect, :voter_lists_attributes
+  attr_accessible :type, :name, :caller_id, :script_id, :acceptable_abandon_rate, :time_zone, :start_time, :end_time, :recycle_rate, :answering_machine_detect, :voter_lists_attributes, :use_recordings, :recording_id
 
   has_many :caller_sessions
   has_many :voter_lists, :conditions => {:active => true}
@@ -87,7 +87,7 @@ class Campaign < ActiveRecord::Base
   end
 
   def script_changed_called
-    if script_id_changed? && call_attempts.count > 0
+    if !new_record? && script_id_changed? && call_attempts.count > 0
       errors.add(:base, I18n.t(:script_cannot_be_modified))
     end
   end
