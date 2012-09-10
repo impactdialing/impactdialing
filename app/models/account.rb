@@ -40,7 +40,7 @@ class Account < ActiveRecord::Base
   end
 
   def hash_caller_password(password)
-    self.caller_hashed_password_salt = ActiveSupport::SecureRandom.base64(8)
+    self.caller_hashed_password_salt = SecureRandom.base64(8)
     self.caller_password = Digest::SHA2.hexdigest(caller_hashed_password_salt + password)
   end
 
