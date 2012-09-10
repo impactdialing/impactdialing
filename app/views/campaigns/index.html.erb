@@ -30,7 +30,7 @@
 <% end %>
 
 <p class="actions">
-  <% form_tag @campaigns_path, :id => 'campaign_create_form' do %>
+  <%= form_tag @campaigns_path, :id => 'campaign_create_form' do %>
     <%= link_to "Add new campaign",new_campaign_path , :class => "action primary"%>
   <% end %>
 </p>
