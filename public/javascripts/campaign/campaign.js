@@ -14,7 +14,7 @@ var Campaign = function(){
      updatePreview();	
   });
 
-  $("#preview_use_recordings").live("click", function(){
+  $('#campaign_user_recordings').live("click", function(){
 	self.doRecord();
   });
   
