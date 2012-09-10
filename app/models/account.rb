@@ -20,7 +20,7 @@ class Account < ActiveRecord::Base
   has_many :possible_responses, :through => :scripts, :source => :questions
   has_many :caller_groups
 
-  attr_accessible :api_key
+  attr_accessible :api_key, :domain_name
 
   module Subscription_Type
     MANUAL = "Manual"
@@ -40,7 +40,7 @@ class Account < ActiveRecord::Base
   end
 
   def hash_caller_password(password)
-    self.caller_hashed_password_salt = ActiveSupport::SecureRandom.base64(8)
+    self.caller_hashed_password_salt = SecureRandom.base64(8)
     self.caller_password = Digest::SHA2.hexdigest(caller_hashed_password_salt + password)
   end
 
