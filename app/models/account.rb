@@ -45,6 +45,7 @@ class Account < ActiveRecord::Base
   end
 
   def self.authenticate_caller?(pin, password)
+    account = caller.account
     if password.nil? || account.caller_password.nil? || account.caller_hashed_password_salt.nil?
       return false
     end
