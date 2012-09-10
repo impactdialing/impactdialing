@@ -109,8 +109,8 @@ class Voter < ActiveRecord::Base
         twilio_callback_url(callback_params),
         'FallbackUrl' => TWILIO_ERROR,
         'StatusCallback' => twilio_call_ended_url(callback_params),
-        'Timeout' => self.campaign.leave_voicemail? ? '30' : '15',
-        'IfMachine' => self.campaign.leave_voicemail? ? 'Continue' : 'Hangup'
+        'Timeout' => '15',
+        'IfMachine' => self.campaign.answering_machine_detect ? 'Continue' : 'Hangup'
     )
 
     if response["TwilioResponse"]["RestException"]
@@ -275,7 +275,7 @@ class Voter < ActiveRecord::Base
   def new_call_attempt(mode = 'robo')
     call_attempt = self.call_attempts.create(campaign:  self.campaign, dialer_mode:  mode, status:  CallAttempt::Status::RINGING, call_start:  Time.now)
     update_attributes(:last_call_attempt => call_attempt, :last_call_attempt_time => Time.now, :status => CallAttempt::Status::RINGING)    
-    Call.create(call_attempt: call_attempt, all_states: "")
+    Call.create(call_attempt: call_attempt, all_states: "", state: 'initial')
     call_attempt
   end
   

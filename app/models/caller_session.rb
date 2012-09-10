@@ -152,7 +152,6 @@ class CallerSession < ActiveRecord::Base
   
   def wrapup_attempt_in_progress
     attempt_in_progress.try(:update_attributes, {:wrapup_time => Time.now})
-    # attempt_in_progress.try(:capture_answer_as_no_response)          
   end
   
   def end_session
@@ -218,19 +217,7 @@ class CallerSession < ActiveRecord::Base
     Pusher[session_key].trigger(event, data.merge!(:dialer => self.campaign.type))
   end
   
-  
-  def dial(voter)
-  return if voter.nil?
-  attempt = create_call_attempt(voter)
-  publish_calling_voter
-  response = make_call(attempt,voter)    
-  if response["TwilioResponse"]["RestException"]
-    handle_failed_call(attempt, voter)
-    return
-  end    
-  attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])  
-  end
-  
+    
   def dial_em(voter)
     return if voter.nil?
     call_attempt = create_call_attempt(voter)    
@@ -253,7 +240,7 @@ class CallerSession < ActiveRecord::Base
     attempt = voter.call_attempts.create(:campaign => campaign, :dialer_mode => campaign.type, :status => CallAttempt::Status::RINGING, :caller_session => self, :caller => caller, call_start:  Time.now)
     update_attribute('attempt_in_progress', attempt)
     voter.update_attributes(:last_call_attempt => attempt, :last_call_attempt_time => Time.now, :caller_session => self, status: CallAttempt::Status::RINGING)
-    Call.create(call_attempt: attempt, all_states: "")
+    Call.create(call_attempt: attempt, all_states: "", state: 'initial')
     attempt    
   end
   
