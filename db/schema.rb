@@ -11,13 +11,13 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120905100026) do
+ActiveRecord::Schema.define(:version => 20120910061952) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "domain"
+    t.string   "domain_name"
     t.boolean  "activated",                   :default => false
     t.boolean  "record_calls",                :default => false
     t.string   "recurly_account_code"

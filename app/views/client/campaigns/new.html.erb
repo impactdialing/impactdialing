@@ -7,6 +7,7 @@
 
 <h1>New campaign</h1>
 <%= render "shared/error_messages", :target => @campaign %>
+
 <%= form_for @campaign, url: "#{client_campaigns_path}/#{@campaign.id}" do |f| %>
   <fieldset>
     <%= render :partial => 'settings_form', :locals => {:f => f} %>
@@ -17,6 +18,7 @@
   </fieldset>
 
 <% end %>
+
 <%= render :partial => 'javascript'%>
 
 
