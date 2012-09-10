@@ -143,7 +143,7 @@ describe Client::CampaignsController do
           post :create , :campaign => {name: "abc", caller_id:"123456", script_id: script.id,
             type: "Preview", time_zone: "Pacific Time (US & Canada)", start_time:  Time.new(2011, 1, 1, 9, 0, 0), end_time: Time.new(2011, 1, 1, 21, 0, 0)}, :api_key=> "abc123", :format => "json"
         }.should change {account.reload.campaigns.size} .by(0)
-        response.body.should eq("{\"errors\":{\"caller_id\":[],\"base\":[\"ID must be a 10-digit North American phone number or begin with \\\"+\\\" and the country code.\"]}}")
+        response.body.should eq("{\"errors\":{\"caller_id\":[],\"base\":[\"Caller ID must be a 10-digit North American phone number or begin with \\\"+\\\" and the country code\"]}}")
 
       end
 
@@ -174,7 +174,7 @@ describe Client::CampaignsController do
         lambda {
           put :update , id: campaign.id, :campaign => {caller_id: "123"}, :api_key=> "abc123", :format => "json"
         }.should change {account.reload.campaigns.size} .by(0)
-        response.body.should  eq("{\"errors\":{\"caller_id\":[],\"base\":[\"ID must be a 10-digit North American phone number or begin with \\\"+\\\" and the country code.\"]}}")
+        response.body.should  eq("{\"errors\":{\"caller_id\":[],\"base\":[\"Caller ID must be a 10-digit North American phone number or begin with \\\"+\\\" and the country code\"]}}")
       end
 
 

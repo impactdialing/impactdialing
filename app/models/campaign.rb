@@ -14,10 +14,8 @@ class Campaign < ActiveRecord::Base
   has_one :simulated_values
   has_many :answers
   has_many :note_responses
-  has_many :call_responses
   has_many :caller_groups
   belongs_to :script
-  belongs_to :voicemail_script, :class_name => 'Script'
   belongs_to :account
   belongs_to :recording
   has_many :downloaded_reports
@@ -78,7 +76,7 @@ class Campaign < ActiveRecord::Base
   def set_caller_id_error_msg
       if errors[:caller_id].any?
         errors[:caller_id].clear
-        errors.add(:base, 'ID must be a 10-digit North American phone number or begin with "+" and the country code.')
+        errors.add(:base, 'Caller ID must be a 10-digit North American phone number or begin with "+" and the country code')
       end
     end
 
