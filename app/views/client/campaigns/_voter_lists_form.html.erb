@@ -1,7 +1,9 @@
 <fieldset>
   <legend>Lists</legend>
-  <% if @campaign.voter_lists.empty? %>
-      <p>You haven't uploaded any lists yet.</p>
+  <% if @campaign.new_record? %>
+    <p>After saving this campaign, you can open it again to add lists.</p>
+  <% elsif @campaign.voter_lists.empty? %>
+    <p>You haven't uploaded any lists yet.</p>
   <% else %>
       <table>
         <tr>
@@ -19,7 +21,7 @@
                   <%= list_fields.hidden_field :id, {name: "campaign[voter_lists_attributes][#{i}][id]"} %>
                   <%= list_fields.check_box :enabled, {name: "campaign[voter_lists_attributes][#{i}][enabled]"} %> <%= list.name %></td>
                 <% end %>
-              <% i= i+1 %>                
+              <% i= i+1 %>
               </td>
               <td valign="top"><%= list.voters.size %></td>
               <td valign="top"><%= Voter.remaining_voters_count_for('voter_list_id', list.id) %></td>
