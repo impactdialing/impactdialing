@@ -9,6 +9,7 @@ var Campaign = function(){
 
   $('#campaign_answering_machine_detect').click(function () {
 	self.detect_answering_machine();
+	self.detect_leave_voice_mail();
   });
 
   $('#campaign_use_recordings').click(function () {
@@ -36,22 +37,13 @@ Campaign.prototype.doRecord = function(){
 }
 
 Campaign.prototype.detect_answering_machine = function(){
-  if ($('#campaign_answering_machine_detect').is(":checked")) {
-  	 $("#campaign_use_recordings").parent().show();
-   }
-  else {
-  	 $("#campaign_use_recordings").parent().hide();
-     $("#recordingsdiv").hide();
-  }
+	$("#campaign_use_recordings").parent().toggle($('#campaign_answering_machine_detect').is(":checked"))
+	$("#recordingsdiv").toggle($("#campaign_use_recordings").is(":checked"))
+	$("#recordingsdiv").toggle($('#campaign_answering_machine_detect').is(":checked"))
 }
 
 Campaign.prototype.detect_leave_voice_mail = function(){
-	if ($("#campaign_use_recordings").is(":checked")) {
-	  $("#recordingsdiv").show();
-    }
-    else{
-	  $("#recordingsdiv").hide();
-    }    
+	$("#recordingsdiv").toggle($("#campaign_use_recordings").is(":checked"));
 }
 
 Campaign.prototype.display_abandonment_rate = function(){
