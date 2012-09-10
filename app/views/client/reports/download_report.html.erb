@@ -1,69 +1,67 @@
 
 <script>
-	$(function () {
-		$('#download_all_voters_submit').click(function(){
-			$('#download_all_voters').attr('checked','checked');
-		});
-		$('#range_voters_submit').click(function(){
-			$('#download_all_voters').removeAttr('checked');
-		});
-		
-		$('#selectAll').click(function () {
-		 $('#fields').find(':checkbox').attr('checked', this.checked);
-		});
+  $(function () {
+    $('#download_all_voters_submit').click(function(){
+      $('#download_all_voters').attr('checked','checked');
+    });
+    $('#range_voters_submit').click(function(){
+      $('#download_all_voters').removeAttr('checked');
+    });
 
-		$('#fields input[name^= "voter_fields[]"]').change(function(){
-			set_select_all_checkbox();
-		});
-		$('#fields input[name^= "custom_voter_fields[]"]').change(function(){
-			set_select_all_checkbox();
-		});
-		function set_select_all_checkbox(){
-			var voter_fields_count = $('#fields input[name^= "voter_fields[]"]:checked').length
-			var voter_custom_fields_count = $('#fields input[name^= "custom_voter_fields[]"]:checked').length
-		  if ((voter_fields_count + voter_custom_fields_count) == <%= (@voter_fields.length + @custom_voter_fields.try(:length)) %> ){
-		    $('#selectAll').attr('checked', true)
-		  }
-		  if ((voter_fields_count + voter_custom_fields_count) < <%= (@voter_fields.length + @custom_voter_fields.try(:length)) %> ){
-		    $('#selectAll').attr('checked', false)
-		  }
-		}	
-	});
+    $('#selectAll').click(function () {
+     $('#fields').find(':checkbox').attr('checked', this.checked);
+    });
+
+    $('#fields input[name^= "voter_fields[]"]').change(function(){
+      set_select_all_checkbox();
+    });
+    $('#fields input[name^= "custom_voter_fields[]"]').change(function(){
+      set_select_all_checkbox();
+    });
+    function set_select_all_checkbox(){
+      var voter_fields_count = $('#fields input[name^= "voter_fields[]"]:checked').length
+      var voter_custom_fields_count = $('#fields input[name^= "custom_voter_fields[]"]:checked').length
+      if ((voter_fields_count + voter_custom_fields_count) == <%= (@voter_fields.length + @custom_voter_fields.try(:length)) %> ){
+        $('#selectAll').attr('checked', true)
+      }
+      if ((voter_fields_count + voter_custom_fields_count) < <%= (@voter_fields.length + @custom_voter_fields.try(:length)) %> ){
+        $('#selectAll').attr('checked', false)
+      }
+    }
+  });
 
 </script>
 
-<h1>Download Report</h1>
-<fieldset>
-	<div id="fields">
-	<legend>Fields to include</legend>
+<div role='main'>
+  <h1>Download <%= @campaign.name %></h1>
+  <%= form_tag(download_client_campaign_reports_path(@campaign), :method => "POST") do %>
+    <fieldset>
+      <div id="fields">
+      <legend>Fields to include</legend>
+      <select class="field" id="lead_dial" name="lead_dial">
+        <option value="lead">One row for each lead</option>
+        <option value="dial">One row for each dial</option>
+      </select>
+        <ul>
+          <li><input type="checkbox" value="0" id="selectAll">&nbsp;Select all</li>
+        <% @voter_fields.try(:each_pair) do |key, value| %>
+          <li>
+            <input  type="checkbox" name="voter_fields[]" value="<%= key %>">&nbsp;<%= value %>
+          </li>
+        <% end %>
+        <% @custom_voter_fields.try(:each) do |field| %>
+          <li>
+            <input  type="checkbox" name="custom_voter_fields[]" value="<%= field %>">&nbsp;<%= field %>
+          </li>
+        <% end %>
+        </ul>
+      </div>
+    </fieldset>
 
-  <% form_tag(download_client_campaign_reports_path(@campaign), :method => "POST") do %>
-  <select class="field" id="lead_dial" name="lead_dial">
-  	<option value="lead">One row for each lead</option>
-  	<option value="dial">One row for each dial</option>
-  </select>
-		<ul>
-			<li><input type="checkbox" value="0" id="selectAll">&nbsp;Select all</li>
-		<% @voter_fields.try(:each_pair) do |key, value| %>
-	    <li>
-				<input  type="checkbox" name="voter_fields[]" value="<%= key %>">&nbsp;<%= value %>
-	    </li>
-	  <% end %>
-		<% @custom_voter_fields.try(:each) do |field| %>
-	    <li>
-				<input  type="checkbox" name="custom_voter_fields[]" value="<%= field %>">&nbsp;<%= field %>
-	    </li>
-	  <% end %>
-		</ul>	
-	</div>		
-</fieldset>
+    <input type="checkbox" style="display:none" id="download_all_voters" name="download_all_voters"></input>
+    <div class="buttons"><button type="submit" id="download_all_voters_submit">Download entire campaign</button></div>
 
-
-<input type="checkbox" style="display:none" id="download_all_voters" name="download_all_voters"></input>
-<div class="buttons"><button type="submit" id="download_all_voters_submit">Download entire campaign</button></div>
-
-		<h3>Date range:</h3>
-		<%= render :partial => 'shared/date_picker' %>
-		<div class="buttons"><button id="range_voters_submit" type="submit">Download just this date range</button></div>
+    <%= render 'shared/date_picker' %>
+    <div class="buttons"><button id="range_voters_submit" type="submit">Download just this date range</button></div>
   <% end %>
 </div>
