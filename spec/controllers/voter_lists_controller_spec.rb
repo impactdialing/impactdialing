@@ -103,7 +103,7 @@ describe VoterListsController do
         campaign = Factory(:campaign, :account => account, :active => true)
         post :create, campaign_id: campaign.id, voter_list: {name: "abc", separator: ",", headers: "[]", csv_to_system_map: "{\"Phone\": \"Phone\"}", 
         s3path: "abc"}, upload: nil, :api_key=> 'abc123', :format => "json"
-        response.body.should eq("{\"errors\":{\"base\":[\"Please upload a file.\"]}}")
+        response.body.should eq("{\"errors\":{\"uploaded_file_name\":[\"can't be blank\"],\"base\":[\"Please upload a file.\"]}}")
       end
       
     end
