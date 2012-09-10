@@ -1,0 +1,31 @@
+<%= csrf_meta_tag %>
+
+<h1>Caller Groups</h1>
+<% if @caller_groups.empty? %>
+  <p>No caller groups entered.</p>
+<% else %>
+  <table>
+    <tr>
+      <th>Name</th>
+      <th>Campaign</th>
+      <th>Date added</th>
+      <th width="55" class="ac"></th>
+    </tr>
+    <% @caller_groups.each do |caller_group| %>
+      <tr>
+        <td><strong><%= link_to caller_group.name, edit_client_caller_group_path(caller_group) %></strong></td>
+        <td><%= caller_group.campaign.name %></td>
+        <td><%= caller_group.created_at.strftime("%m/%d/%Y") %></td>
+        <td><%= link_to '',
+                client_caller_group_path(caller_group),
+                :confirm => 'Are you sure you want to delete this caller group?',
+                :method => :delete,
+                :class => "ico del" %></td>
+      </tr>
+    <% end %>
+  </table>
+  <p><%= page_entries_info @caller_groups %> <%= will_paginate @caller_groups %></p>
+<% end %>
+
+<p class="actions"><%= link_to 'Add new caller group', new_client_caller_group_path, :class => 'action primary' %></p>
+<p class="actions"><%= link_to 'Return to Callers', client_callers_path, :class => 'action secondary' %></p>

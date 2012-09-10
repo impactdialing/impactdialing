@@ -1,7 +1,7 @@
 <fieldset class="nested-fields script_element orderable_element">
   <div class="ui-icon ui-icon-arrowthick-2-n-s" style="top: -42px;left: -14px;position: relative;"></div>
-  <legend class="text_field_label">Text field</legend>
+  <legend class="text_field_label">Note</legend>
   <%= f.text_field :note %>
   <%= f.hidden_field :script_order  , {"class" => "script_element"} %>
-  <%= link_to_remove_association "Delete this text field", f , {:class => "action secondary note_delete"}%>
+  <p class='actions'><%= link_to_remove_association "Delete this note", f , {:class => "action secondary note_delete"}%></p>
 </fieldset>
