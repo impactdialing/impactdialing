@@ -23,3 +23,21 @@
   </div>
   <% end %>
 </fieldset>
+
+<% content_for :javascripts do %>
+    <%= "campaign/voter_lists","jquery.csv-0.61.min" %>
+    <script type ="text/javascript">
+      $(document).ready(function() {
+        if (window.File && window.FileReader && window.FileList) {
+          // Great success! All the File APIs are supported.
+        } else {
+          alert('The File APIs are not fully supported in this browser.');
+        }
+        voter_list = new VoterLists();
+      });
+    </script>
+
+<% end %>
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "column_mapping" %>
+<% end %>
