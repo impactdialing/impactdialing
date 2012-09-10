@@ -1,5 +1,4 @@
 require Rails.root.join("jobs/heroku_resque_auto_scale")
-
 class VoterListUploadJob 
   extend ::HerokuResqueAutoScale
   @queue = :voter_list_upload_worker_job
