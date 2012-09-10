@@ -1,6 +1,5 @@
 rails_root = ENV['RAILS_ROOT'] || File.dirname(__FILE__) + '/../..'
 rails_env = ENV['RAILS_ENV'] || 'development'
-ENV['BUNDLE_GEMFILE'] = "#{rails_root}/Gemfile"
 require 'resque_scheduler'
 
 redis_config = YAML.load_file(rails_root + '/config/redis.yml')
