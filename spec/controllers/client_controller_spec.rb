@@ -11,7 +11,7 @@ describe ClientController do
       lambda {
         post :user_add, :user => { :email => 'email@example.com', :new_password => 'something' }, :tos => true
       }.should change(User, :count).by(1)
-      User.last.account.domain.should == 'domain.com'
+      User.last.account.domain_name.should == 'domain.com'
     end
   end
 
@@ -29,13 +29,5 @@ describe ClientController do
       end
     end
 
-    describe "reports" do
-      it "shows only manual campaigns" do
-        campaign = Factory(:preview, :account => user.account)
-        Factory(:robo, :account => user.account)
-        get :reports
-        assigns(:campaigns).should == [campaign]
-      end
-    end
   end
 end

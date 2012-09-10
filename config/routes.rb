@@ -131,13 +131,12 @@ ImpactDialing::Application.routes.draw do
         get :questions_answered
         get :possible_responses_answered
       end
-
+      resources :script_texts, :only => [:index, :create, :show, :update, :destroy]
+      resources :notes, :only => [:index, :create, :show, :update, :destroy]
+      resources :questions, :only => [:index, :create, :show, :update, :destroy] do
+        resources :possible_responses, :only => [:index, :create, :show, :update, :destroy]
+      end
     end
-
-    resources :questions, :only => [:index, :create, :show, :update, :destroy]
-    resources :possible_responses, :only => [:index, :create, :show, :update, :destroy]
-    resources :script_texts, :only => [:index, :create, :show, :update, :destroy]
-    resources :notes, :only => [:index, :create, :show, :update, :destroy]
 
     resources :caller_groups
 
@@ -255,7 +254,6 @@ ImpactDialing::Application.routes.draw do
   match '/client/login', :to => 'client#login', :as => :login
   match '/caller/login', :to => 'caller#login', :as => :caller_login
 
-  match '/client/reports', :to => 'client#reports', :as => 'report', :protocol => PROTOCOL
   match '/twilio_callback', :to => 'twilio#callback', :as => :twilio_callback, :protocol => PROTOCOL
   match '/twilio_callback', :to => 'twilio#callback', :as => :twilio_callback, :protocol => PROTOCOL
   match '/twilio_create_call', :to => 'twilio#create_call', :as => :twilio_create_call, :protocol => PROTOCOL

@@ -51,7 +51,7 @@ describe User do
   end
 
   it "delegates the domain to the account" do
-    account = Factory(:account, :domain => 'foo.com')
+    account = Factory(:account, :domain_name => 'foo.com')
     user.update_attribute(:account, account)
     user.domain.should == 'foo.com'
   end

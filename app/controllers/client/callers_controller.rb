@@ -4,15 +4,14 @@ module Client
     include TimeZoneHelper
     skip_before_filter :check_login, :only => [:reassign_to_campaign]
     before_filter :full_access, :except => [:reassign_to_campaign]
-    before_filter :load_campaigns, :except => [:index, :destroy, :reassign_to_campaign]
+    before_filter :load_and_verify_caller, :except => [:index, :new, :create, :reassign_to_campaign, :usage, :call_details, :type_name]
+    before_filter :load_campaigns, :except => [:index, :destroy, :reassign_to_campaign, :usage, :call_details, :type_name]
 
     respond_to :html, :json
 
     def index
-      respond_to do |format|
-        format.html { @callers = account.callers.active.paginate(:page => params[:page]) }
-        format.json { respond_with account.callers.active }
-      end
+      @callers = account.callers.active.paginate(:page => params[:page])
+      respond_with @callers
     end
 
     def new
@@ -22,34 +21,35 @@ module Client
     end
 
     def show
-      load_caller
-      respond_to do |format|
+      respond_with @caller do |format|
         format.html {redirect_to edit_client_caller_path(@caller)}
-        format.json {respond_with @caller}
       end
     end
 
     def edit
-      load_caller
       load_caller_groups
       respond_with @caller
     end
 
     def update
-      load_caller
       save_caller
+      respond_with @caller, location: client_callers_path do |format|
+        format.json {render :json => {message: 'Caller updated'}, status: :ok} if @caller.errors.empty?
+      end
     end
 
     def create
       @caller = account.callers.new
       save_caller
+      respond_with @caller, location: client_callers_path
     end
 
     def destroy
-      load_caller
-      @caller.update_attribute(:active, false)
-      flash_message(:notice, "Caller deleted")
-      respond_with @caller, location: client_callers_path
+      @caller.active = false
+      @caller.save ? flash_message(:notice, "Caller deleted") : flash_message(:error, @caller.errors.full_messages.join)
+      respond_with @caller, location: client_callers_path do |format|
+        format.json {render :json => {message: 'Caller deleted'}, :status => :ok} if @caller.errors.empty?
+      end
     end
 
     def reassign_to_campaign
@@ -83,8 +83,17 @@ module Client
 
     private
 
-    def load_caller
-      @caller = account.callers.find_by_id(params[:id])
+    def load_and_verify_caller
+      begin
+        @caller = Caller.find(params[:id])
+      rescue ActiveRecord::RecordNotFound => e
+        render :json=> {"message"=>"Resource not found"}, :status => :not_found
+        return
+      end
+      if @caller.account != account
+        render :json => {message: 'Cannot access caller'}, :status => :unauthorized
+        return
+      end
     end
 
     def load_campaigns
@@ -99,7 +108,6 @@ module Client
       load_campaigns
       load_caller_groups
       flash_message(:notice, "Caller saved") if @caller.update_attributes(params[:caller])
-      respond_with @caller, location: client_callers_path
     end
   end
 end
