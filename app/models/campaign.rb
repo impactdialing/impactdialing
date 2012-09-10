@@ -91,7 +91,7 @@ class Campaign < ActiveRecord::Base
   end
 
   def script_changed_called
-    if script_id_changed? && call_attempts.count > 0
+    if !new_record? && script_id_changed? && call_attempts.count > 0
       errors.add(:base, I18n.t(:script_cannot_be_modified))
     end
   end
