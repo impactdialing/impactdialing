@@ -20,7 +20,7 @@ class Account < ActiveRecord::Base
   has_many :possible_responses, :through => :scripts, :source => :questions
   has_many :caller_groups
 
-  attr_accessible :api_key
+  attr_accessible :api_key, :domain_name
 
   module Subscription_Type
     MANUAL = "Manual"

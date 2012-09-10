@@ -254,7 +254,6 @@ ImpactDialing::Application.routes.draw do
   match '/client/login', :to => 'client#login', :as => :login
   match '/caller/login', :to => 'caller#login', :as => :caller_login
 
-  match '/client/reports', :to => 'client#reports', :as => 'report', :protocol => PROTOCOL
   match '/twilio_callback', :to => 'twilio#callback', :as => :twilio_callback, :protocol => PROTOCOL
   match '/twilio_callback', :to => 'twilio#callback', :as => :twilio_callback, :protocol => PROTOCOL
   match '/twilio_create_call', :to => 'twilio#create_call', :as => :twilio_create_call, :protocol => PROTOCOL
