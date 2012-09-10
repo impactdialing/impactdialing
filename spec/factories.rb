@@ -129,9 +129,6 @@ Factory.define :call_attempt do |ca|
   ca.caller { Factory(:caller) }
 end
 
-Factory.define :call_response do |cr|
-end
-
 Factory.define :recording do |r|
   r.name 'name'
   r.file_file_name 'foo.mp3'

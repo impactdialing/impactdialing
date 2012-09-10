@@ -39,9 +39,9 @@ describe Campaign do
       campaign = Campaign.new(:account => Factory(:account))
       campaign.save(:validate => false)
       campaign.update_attributes(:caller_id => '23456yuiid').should be_false
-      campaign.errors[:base].should == ['ID must be a 10-digit North American phone number or begin with "+" and the country code.']
+      campaign.errors[:base].should == ['Caller ID must be a 10-digit North American phone number or begin with "+" and the country code']
       campaign.update_attributes(:called_id => '').should be_false
-      campaign.errors[:base].should == ['ID must be a 10-digit North American phone number or begin with "+" and the country code.']
+      campaign.errors[:base].should == ['Caller ID must be a 10-digit North American phone number or begin with "+" and the country code']
     end
 
     it "skips validations for an international phone number" do

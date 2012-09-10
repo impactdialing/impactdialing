@@ -1,43 +1,40 @@
-<fieldset>
-  <legend>Add a list</legend>
-  <%= form_tag("/client/campaigns/#{@campaign.id}/voter_lists",  :method => :post, :multipart => true) do %>
-  <p>Please upload a comma-separated value (CSV) or tab-delimited text (TXT) file. If your list is in Excel format (XLS or XLSX), use "Save As" to change it to one of these formats.</p>
-    <div class="form">
-      <%= hidden_field_tag 'voter_list[headers]' %>
-      <%= hidden_field_tag 'voter_list[separator]' %>
-      <p>
-        <%= file_field_tag 'upload[datafile]' %>
-      </p>
-      <p style="display: none;" id='list_name'>
-        <label>List name</label>
-          <%= text_field_tag "name", nil, :id => "voter_list_name", name: "voter_list[name]", :size => '10'  %>
-      </p>
-      <div id="column_headers">
+<%= form_tag("/client/campaigns/#{@campaign.id}/voter_lists",  :method => :post, :multipart => true) do %>
+  <fieldset>
+    <legend>Add a list</legend>
+    <p>Please upload a comma-separated value (CSV) or tab-delimited text (TXT) file. If your list is in Excel format (XLS or XLSX), use "Save As" to change it to one of these formats.</p>
+      <div class="form">
+        <%= hidden_field_tag 'voter_list[headers]' %>
+        <%= hidden_field_tag 'voter_list[separator]' %>
+        <p>
+          <%= file_field_tag 'upload[datafile]' %>
+        </p>
+        <p style="display: none;" id='list_name'>
+          <label>List name</label>
+            <%= text_field_tag "name", nil, :id => "voter_list_name", name: "voter_list[name]", :size => '10'  %>
+        </p>
+        <div id="column_headers">
+        </div>
       </div>
-
-
-
+    <div id= "voter_upload" class="buttons" style="display:none">
+      <button id="file_upload_submit" >Save &#38; upload</button>
     </div>
-  <div id= "voter_upload" class="buttons" style="display:none">
-    <button id="file_upload_submit" >Save &#38; upload</button>
-  </div>
-  <% end %>
-</fieldset>
+  </fieldset>
+<% end %>
 
 <% content_for :javascripts do %>
-    <%= "campaign/voter_lists","jquery.csv-0.61.min" %>
-    <script type ="text/javascript">
-      $(document).ready(function() {
-        if (window.File && window.FileReader && window.FileList) {
-          // Great success! All the File APIs are supported.
-        } else {
-          alert('The File APIs are not fully supported in this browser.');
-        }
-        voter_list = new VoterLists();
-      });
-    </script>
-
+  <%= javascript_include_tag "campaign/voter_lists", "jquery.csv-0.61.min" %>
+  <script type ="text/javascript">
+    $(document).ready(function() {
+      if (window.File && window.FileReader && window.FileList) {
+        // Great success! All the File APIs are supported.
+      } else {
+        alert('The File APIs are not fully supported in this browser.');
+      }
+      voter_list = new VoterLists();
+    });
+  </script>
 <% end %>
+
 <% content_for :stylesheets do %>
   <%= stylesheet_link_tag "column_mapping" %>
 <% end %>
