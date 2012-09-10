@@ -84,7 +84,7 @@ class ClientController < ApplicationController
 
   def user_add
     if session[:user].blank?
-      @user = User.new(:account => Account.new(:domain => request.domain), role: User::Role::ADMINISTRATOR)
+      @user = User.new(:account => Account.new(:domain_name => request.domain), role: User::Role::ADMINISTRATOR)
     else
       @user = User.find(session[:user])
       @account = @user.account

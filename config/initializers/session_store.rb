@@ -1,6 +1,6 @@
 # Be sure to restart your server when you modify this file.
 
-ImpactDialing::Application.config.session_store :cookie_store, :key => '_impactdialing_session'
+ImpactDialing::Application.config.session_store :cookie_store, :key => '_impactdialing_session_cookie'
 
 
 # Use the database for sessions instead of the cookie-based default,
