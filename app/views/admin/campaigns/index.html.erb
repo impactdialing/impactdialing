@@ -19,7 +19,7 @@
       <tr class="<%= cycle("odd","even") %>">
         <td><h3><a href="<%= client_campaign_path(c) %>"><%= c.name %></a></h3></td>
         <td><%= c.account.users.map(&:email).join(', ') %></td>
-        <td><%= c.group_id %></td>
+        <td><%= c.id %></td>
         <td><%= c.created_at.strftime("%m/%d/%Y") %></td>
         <td><%= c.active? ? '' : c.updated_at.strftime("%m/%d/%Y") %></td>
         <td>

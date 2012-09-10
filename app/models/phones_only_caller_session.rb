@@ -89,7 +89,7 @@ class PhonesOnlyCallerSession < CallerSession
       
       
       state :conference_started_phones_only do
-        before(:always) {start_conference; dial(voter_in_progress)}
+        before(:always) {start_conference; dial_em(voter_in_progress)}
         event :gather_response, :to => :read_next_question, :if => :call_answered?
         event :gather_response, :to => :wrapup_call
         

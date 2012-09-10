@@ -10,7 +10,7 @@ ImpactDialing::Application.configure do
   PUSHER_APP_ID="11524"
   PUSHER_KEY="c60c0d7be971c97db062"
   PUSHER_SECRET="417aa7002a16b9b6053a"
-  
+
   MONITOR_TWILIO_APP_SID="AP57b0a3ca229f42049580004fb65b084e"
 
   # Settings specified here will take precedence over those in config/environment.rb
@@ -27,11 +27,4 @@ ImpactDialing::Application.configure do
   config.log_level = :error
 
   config.active_support.deprecation = :log
-
-  config.after_initialize do
-    ActiveMerchant::Billing::LinkpointGateway.pem_file  = File.read(Rails.root.join('1383715.pem'))
-    ::BILLING_GW = gateway = ActiveMerchant::Billing::LinkpointGateway.new(
-      :login => "1383715"
-    )
-  end
 end

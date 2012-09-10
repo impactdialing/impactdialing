@@ -1,14 +1,15 @@
 <fieldset class="nested-fields script_section orderable_element">
   <div class="ui-icon ui-icon-arrowthick-2-n-s" style="top: -42px;left: -14px;position: relative;"></div>
   <legend class="script_label">Script Text 1</legend>
-    <%= f.hidden_field :id, {"class"=> "identity"} %>  
+    <%= f.hidden_field :id, {"class"=> "identity"} %>
 
   <p>
     <label>Script Text:</label>
-    <%= f.text_area :section %>
+    <%= f.text_area :content %>
     <%= f.hidden_field :script_order  , {"class" => "script_element"}%>
   </p>
-  
-  <%= link_to_remove_association "Delete this script text", f , {:class => "action secondary delete_script_text"}%>
-  
+  <p class = 'actions'>
+    <%= link_to_remove_association "Delete this script text", f , {:class => "action secondary delete_script_text"}%>
+  </p>
+
 </fieldset>

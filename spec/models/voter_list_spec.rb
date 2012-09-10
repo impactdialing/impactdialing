@@ -346,9 +346,26 @@ describe VoterList do
        Factory(:custom_voter_field, name: "Region", account_id: account.id)
        Factory(:custom_voter_field, name: "Club", account_id: account.id)
        VoterList.create_csv_to_system_map(['Phone','FirstName','Region','Club','Mobile'], account).should eq ({"Phone"=>"Phone", "FirstName"=>"FirstName", "Region"=>"Region", "Club"=>"Club", "Mobile"=>"Mobile"})
-     end
-     
-     
-     
+     end     
+  end
+  
+  describe "voter enable callback after save" do
+    
+    it "should enable all voters when list enabled" do
+      voter_list = Factory(:voter_list, enabled: false)
+      voter = Factory(:voter, voter_list: voter_list, enabled: false)
+      voter_list.enabled = true
+      voter_list.save
+      voter.reload.enabled.should be_true
+    end
+    
+    it "should disable all voters when list disabled" do
+      voter_list = Factory(:voter_list, enabled: true)
+      voter = Factory(:voter, voter_list: voter_list, enabled: true)
+      voter_list.enabled = false
+      voter_list.save
+      voter.reload.enabled.should be_false
+    end
+    
   end
 end
