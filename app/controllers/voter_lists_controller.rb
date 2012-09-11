@@ -67,13 +67,12 @@ class VoterListsController < ClientController
   end
   
   def column_mapping
-    if params[:extension] == 'txt'
-      @csv_column_headers = params[:headers].join("\t").split("\t")
-      @first_data_row = params[:first_data_row].join("\t").split("\t")
-    else
-      @csv_column_headers = params[:headers]  
-      @first_data_row = params[:first_data_row]
-    end
+    upload = params[:upload].try(:[], "datafile")
+    csv = upload.read
+    separator = VoterList.separator_from_file_extension(upload.original_filename)
+    csv_file = CSV.new(csv, :col_sep => separator)
+    @csv_column_headers = csv_file.shift.compact
+    @first_data_row = csv_file.shift.compact
     render layout: false
   end
   
