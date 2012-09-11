@@ -7,6 +7,9 @@
 
   <div class= "buttons">
     <button type="submit" id="script_submit">Save</button>
+    <% if !@script.new_record? %>
+      <button type="submit" id="script_save_as" name="save_as">Save as</button>
+    <% end %>
   </div>
 
 <% end %>

@@ -1,9 +1,8 @@
 <fieldset>
   <legend>Add a list</legend>
-  <%= form_tag("/client/campaigns/#{@campaign.id}/voter_lists",  :method => :post, :multipart => true) do %>
+  <%= form_tag("",  :method => :post, :multipart => true, id: "voter_list_upload") do %>
   <p>Please upload a comma-separated value (CSV) or tab-delimited text (TXT) file. If your list is in Excel format (XLS or XLSX), use "Save As" to change it to one of these formats.</p>
     <div class="form">
-      <%= hidden_field_tag 'voter_list[headers]' %>
       <%= hidden_field_tag 'voter_list[separator]' %>
       <p>
         <%= file_field_tag 'upload[datafile]' %>
@@ -14,8 +13,6 @@
       </p>
       <div id="column_headers">
       </div>
-
-
 
     </div>
   <div id= "voter_upload" class="buttons" style="display:none">
