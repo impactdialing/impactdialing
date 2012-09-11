@@ -39,7 +39,7 @@ en:
   failure_change_role: "Sorry, you can't change your own role."
   success_change_role: "Updated user role successfully."
   white_labeling:
-      
+
     impactdialing:
       title: "Impact Dialing"
       full_title: "Impact Dialing, LLC"
@@ -94,6 +94,12 @@ en:
       phone: "(415) 347-5723"
       email: "afpdialer@impactdialing.com"
       billing_link: "/client/billing"
+    pdidialer:
+      title: "Political Data"
+      full_title: "Political Data, Inc."
+      phone: "(508) 930-0090"
+      email: "supportpd@politicaldata.com"
+      billing_link: ""
     campaignnowdialer:
       title: "Campaign Now"
       full_title: "Campaign Now, LLC"
