@@ -51,12 +51,13 @@ class VoterListsController < ClientController
     params[:voter_list][:s3path] = s3path
     params[:voter_list][:uploaded_file_name] = upload.try('original_filename')
     params[:voter_list][:csv_to_system_map] = params[:voter_list][:csv_to_system_map].to_json
-    voter_list = @campaign.voter_lists.new(params[:voter_list])
+    
+    voter_list = @campaign.voter_lists.new(params[:voter_list].merge!({account_id: account.id}))
             
     respond_with(voter_list, location:  edit_client_campaign_path(@campaign.id)) do |format|      
       if voter_list.save
         flash_message(:notice, I18n.t(:voter_list_upload_scheduled)) 
-        Resque.enqueue(VoterListUploadJob, voter_list.id, current_user.domain, current_user.email,"")      
+        Resque.enqueue(VoterListUploadJob, voter_list.id, current_user.email, current_user.domain ,"")      
         format.json { render :json => voter_list.to_json(:only => ["id", "name", "enabled"])}
       else
         flash_message(:error, voter_list.errors.full_messages.join)
@@ -67,13 +68,12 @@ class VoterListsController < ClientController
   end
   
   def column_mapping
-    if params[:extension] == 'txt'
-      @csv_column_headers = params[:headers].join("\t").split("\t")
-      @first_data_row = params[:first_data_row].join("\t").split("\t")
-    else
-      @csv_column_headers = params[:headers]  
-      @first_data_row = params[:first_data_row]
-    end
+    upload = params[:upload].try(:[], "datafile")
+    csv = upload.read
+    separator = VoterList.separator_from_file_extension(upload.original_filename)
+    csv_file = CSV.new(csv, :col_sep => separator)
+    @csv_column_headers = csv_file.shift.compact
+    @first_data_row = csv_file.shift.compact
     render layout: false
   end
   

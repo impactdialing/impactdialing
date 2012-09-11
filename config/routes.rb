@@ -214,7 +214,7 @@ ImpactDialing::Application.routes.draw do
       resources :voter_lists do        
         collection do
           post :import
-          get :column_mapping
+          post :column_mapping
         end        
       end 
     end    
