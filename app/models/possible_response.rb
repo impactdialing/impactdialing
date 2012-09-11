@@ -1,5 +1,5 @@
 class PossibleResponse < ActiveRecord::Base
-  attr_accessible :question_id, :keypad, :value, :retry, :possible_response_order
+  attr_accessible :question_id, :keypad, :value, :retry, :possible_response_order, :external_id_field
 
   belongs_to :question, inverse_of: :possible_responses
   has_many :answers

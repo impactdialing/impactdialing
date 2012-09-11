@@ -1,7 +1,9 @@
 <fieldset class="nested-fields question orderable_element">
   <div class="ui-icon ui-icon-arrowthick-2-n-s" style="top: -42px;left: -14px;position: relative;"></div>
   <legend class="question_label">Question 1</legend>
-    <%= f.hidden_field :id, {"class"=> "identity"} %>
+  <%= f.hidden_field :id, {"class"=> "identity"} %>
+
+  <%= render 'pdi_flag_id', f: f %>
 
   <p>
     <label>Question:</label>
