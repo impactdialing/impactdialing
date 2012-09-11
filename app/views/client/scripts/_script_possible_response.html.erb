@@ -1,9 +1,12 @@
 <table>
   <tr>
+    <% if request.domain == 'pdidialer.com' %>
+      <th width = 10%>Response ID</th>
+    <% end %>
     <th width = 30%>Response</th>
     <th width = 30%>Phones-only keypad</th>
-    <th width = 15%>Retry</th>
-    <th width = 15%>Delete</th>
+    <th width = 10%>Retry</th>
+    <th width = 10%>Delete</th>
   </tr>
 </table>
 
