@@ -55,7 +55,7 @@ module Client
     def account_campaigns_usage
       @account = Account.find(params[:id])
       @campaigns = @account.campaigns
-      set_dates
+      @from_date, @to_date = set_date_range_account(@account, params[:from_date], params[:to_date])
       account_usage = AccountUsage.new(@account, @from_date, @to_date)
       @billiable_total = account_usage.billable_usage
     end
@@ -63,7 +63,7 @@ module Client
     def account_callers_usage
       @account = Account.find(params[:id])
       @callers = @account.callers
-      set_dates
+      @from_date, @to_date = set_date_range_account(@account, params[:from_date], params[:to_date])
       account_usage = AccountUsage.new(@account, @from_date, @to_date)
       @billiable_total = account_usage.callers_billable_usage
       @status_usage = account_usage.callers_status_times
