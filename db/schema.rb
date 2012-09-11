@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120910103704) do
+ActiveRecord::Schema.define(:version => 20120911065243) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -332,12 +332,15 @@ ActiveRecord::Schema.define(:version => 20120910103704) do
     t.string  "value"
     t.boolean "retry",                   :default => false
     t.integer "possible_response_order"
+    t.string  "external_id_field"
   end
 
   create_table "questions", :force => true do |t|
-    t.integer "script_id",    :null => false
-    t.text    "text",         :null => false
+    t.integer "script_id",         :null => false
+    t.text    "text",              :null => false
+    t.integer "question_order"
     t.integer "script_order"
+    t.string  "external_id_field"
   end
 
   create_table "recordings", :force => true do |t|

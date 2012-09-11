@@ -42,11 +42,16 @@ module Client
     end
 
     def update
-      save_script
-      respond_with @script,  location: client_scripts_path do |format|
-        format.json { render :json => {message: "Script updated" }, :status => :ok } if @script.errors.empty?
+      if params[:save_as]
+        @script = @script.dup include: [:transfers, :notes, :script_texts, questions: :possible_responses], except: :name
+        load_voter_fields
+        render 'new'
+      else
+        save_script
+        respond_with @script,  location: client_scripts_path do |format|
+          format.json { render :json => {message: "Script updated" }, :status => :ok } if @script.errors.empty?
+        end
       end
-
     end
 
     def destroy
@@ -80,9 +85,6 @@ module Client
         format.json { render :json => {message: "Script restored" }, :status => :ok } if @script.errors.empty?
       end
     end
-
-
-
 
     private
 

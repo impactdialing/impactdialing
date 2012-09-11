@@ -1,11 +1,10 @@
 module Client
   class CallersController < ClientController
-    include DeletableController
     include TimeZoneHelper
     skip_before_filter :check_login, :only => [:reassign_to_campaign]
     before_filter :full_access, :except => [:reassign_to_campaign]
-    before_filter :load_and_verify_caller, :except => [:index, :new, :create, :reassign_to_campaign, :usage, :call_details, :type_name]
-    before_filter :load_campaigns, :except => [:index, :destroy, :reassign_to_campaign, :usage, :call_details, :type_name]
+    before_filter :load_and_verify_caller, :except => [:index, :new, :create, :reassign_to_campaign, :usage, :call_details, :type_name, :deleted]
+    before_filter :load_campaigns, :except => [:index, :destroy, :reassign_to_campaign, :usage, :call_details, :type_name, :deleted]
 
     respond_to :html, :json
 
@@ -75,6 +74,14 @@ module Client
       @from_date, @to_date = set_date_range_callers(@campaign, @caller, params[:from_date], params[:to_date])
       @answered_call_stats = @caller.answered_call_stats(@from_date, @to_date, @campaign)
       @questions_and_responses = @campaign.try(:questions_and_responses) || {}
+    end
+    
+    def deleted
+      @callers = Caller.deleted.for_account(account).paginate(:page => params[:page], :order => 'id desc')
+      respond_with @callers do |format|
+        format.html{render 'client/callers/deleted'}
+        format.json {render :json => @callers.to_json}
+      end      
     end
 
     def type_name
