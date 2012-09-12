@@ -10,7 +10,7 @@
   <p><%= f.label :level %><br>
   <%= f.select :campaign_id, [["System", nil]] + @campaigns.map{|c| [c.name, c.id]} %></p>
   <div class="buttons">
-    <%= button_tag "Add" %>
+    <button type="submit">Add</button>
   </div>
 <% end %>
 </fieldset>

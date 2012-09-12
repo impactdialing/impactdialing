@@ -1,5 +1,5 @@
 module TimeZoneHelper
-  
+
   def set_date_range(campaign, from_date, to_date)
     time_zone = campaign.try(:as_time_zone) || pacific_time_zone
     converted_from_date = ( format_time(from_date, time_zone) || campaign.first_call_attempt_time || Time.now ).in_time_zone(time_zone).beginning_of_day.utc      
@@ -21,7 +21,7 @@ module TimeZoneHelper
     converted_to_date = (format_time(to_date, time_zone) || last_caller_session_time(campaign, caller) || Time.now).in_time_zone(time_zone).in_time_zone(time_zone).end_of_day.utc
     [converted_from_date, converted_to_date]
   end
-  
+
   def set_date_range_account(account, from_date, to_date)
     time_zone = pacific_time_zone
     converted_from_date = (format_time(from_date, time_zone) || account.try(:created_at) || Time.now).in_time_zone(time_zone).beginning_of_day.utc
@@ -35,7 +35,7 @@ module TimeZoneHelper
     time_zone = campaign.try(:as_time_zone) || pacific_time_zone
     date.in_time_zone(time_zone)    
   end
-  
+
   def time_for_date_picker_callers(campaign, caller, date)
    time_zone = campaign.try(:as_time_zone) || caller.try(:as_time_zone) || utc_time_zone
    date.in_time_zone(time_zone)    
@@ -74,7 +74,4 @@ module TimeZoneHelper
     def pacific_time_zone
       ActiveSupport::TimeZone.new("Pacific Time (US & Canada)")
     end
-  
-  
-    
 end

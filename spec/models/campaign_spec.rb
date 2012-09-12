@@ -25,7 +25,7 @@ describe Campaign do
     it {should validate_presence_of :name}
     it {should validate_presence_of :script}
     it {should validate_presence_of :type}
-    it {should ensure_inclusion_of(:type).in_array(['Preview', 'Progressive', 'Predictive', 'Robo'])}
+    it {should ensure_inclusion_of(:type).in_array(['Preview', 'Progressive', 'Predictive'])}
     it {should validate_presence_of :recycle_rate}
     it {should validate_numericality_of :recycle_rate}
     it {should validate_presence_of :time_zone}
@@ -39,9 +39,9 @@ describe Campaign do
       campaign = Campaign.new(:account => Factory(:account))
       campaign.save(:validate => false)
       campaign.update_attributes(:caller_id => '23456yuiid').should be_false
-      campaign.errors[:base].should == ['ID must be a 10-digit North American phone number or begin with "+" and the country code.']
+      campaign.errors[:base].should == ['Caller ID must be a 10-digit North American phone number or begin with "+" and the country code']
       campaign.update_attributes(:called_id => '').should be_false
-      campaign.errors[:base].should == ['ID must be a 10-digit North American phone number or begin with "+" and the country code.']
+      campaign.errors[:base].should == ['Caller ID must be a 10-digit North American phone number or begin with "+" and the country code']
     end
 
     it "skips validations for an international phone number" do
@@ -225,21 +225,6 @@ describe Campaign do
 
        Campaign.active.should == [campaign1, campaign2]
      end
-
-
-   describe 'lists campaigns' do
-     before(:each) do
-       @robo_campaign = Factory(:robo)
-       @manual_campaign = Factory(:preview)
-     end
-
-     it "which are robo" do
-       Campaign.robo.should == [@robo_campaign]
-     end
-     it "which are manual" do
-       Campaign.manual.should == [@manual_campaign]
-     end
-   end
   end
 
   describe "cost_per_minute" do

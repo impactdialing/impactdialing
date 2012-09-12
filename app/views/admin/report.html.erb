@@ -5,16 +5,14 @@ Report Date Range:
   <table>
     <tr>
       <td>From:</td>
-      <td> <%= unobtrusive_date_text_picker_tag :from_date,@from_date %> </td>
+      <td><input class="format-m-d-y divider-slash" id="from_date" name="from_date" type="text" value="<%= @from_date.strftime("%m/%d/%Y") %>"></td>
     </tr>
     <tr>
       <td>
         To:</td>
-      <td>  <%= unobtrusive_date_text_picker_tag :to_date,@to_date %>
-        <!--<input type="submit" class="button" value="update" size="4">-->
-      </td>
+      <td><input class="format-m-d-y divider-slash" id="from_date" name="to_date" type="text" value="<%= @to_date.strftime("%m/%d/%Y") %>"></td>
     </tr>
-  </table>	<button type="submit">Show results</button>
+  </table>  <button type="submit">Show results</button>
 <% end %>
 
 <br/>
@@ -24,7 +22,6 @@ Report Date Range:
     <th>Account Email</th>
     <th>Callers</th>
     <th>Calls</th>
-    <th>Broadcast Calls</th>
     <th>Transfers</th>
     <th>Total</th>
   </tr>
@@ -34,15 +31,13 @@ Report Date Range:
     <% calls=r["calls"] %>
     <% sessions=r["sessions"] %>
     <% transfers=r["transfers"] %>
-    <% broadcast=r["broadcast"] %>
     <tr class="<%= cycle("odd","even") %>">
       <td><%= account.id %></td>
       <td><%= account.users.first.email %></td>
       <td><%= sessions %></td>
       <td><%= calls %></td>
-      <td><%= broadcast %></td>
       <td><%= transfers %></td>
-	  <td><%= sessions + calls + transfers %></td>
+    <td><%= sessions + calls + transfers %></td>
     </tr>
   <% end %>
 </table>

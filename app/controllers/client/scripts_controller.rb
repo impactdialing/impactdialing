@@ -3,12 +3,10 @@ module Client
     before_filter :load_and_verify_script, :except => [:index, :new, :create, :deleted]
     before_filter :load_voter_fields, :only => [ :show, :edit]
 
-    layout 'client'
-
     respond_to :html, :json
 
     def index
-      @scripts = account.scripts.manual.active.paginate(:page => params[:page])
+      @scripts = account.scripts.active.paginate(:page => params[:page])
       respond_with @scripts
     end
 
@@ -105,7 +103,7 @@ module Client
 
 
     def new_script
-      @script = account.scripts.new(robo: false)
+      @script = account.scripts.new
     end
 
     def load_voter_fields
