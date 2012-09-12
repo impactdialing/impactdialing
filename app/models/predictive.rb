@@ -1,4 +1,5 @@
 class Predictive < Campaign
+  
     
   def dial
     num_to_call = number_of_voters_to_dial

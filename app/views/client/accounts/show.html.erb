@@ -1,10 +1,11 @@
+<%= csrf_meta_tag %>
 <% content_for :javascripts do %>
   <%= javascript_include_tag "https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js" %>
-  <%= javascript_include_tag 'accounts' %>  
+  <%= javascript_include_tag 'accounts' %>
 <% end %>
 
+<div id='administrators'>
 <% if @user.administrator? %>
-  <div id="administrators">
   <h1>Users</h1>
   <table>
     <tr>
@@ -13,39 +14,39 @@
       <th width="55" class="ac"></th>
     </tr>
     <% @account.users.each do |user| %>
-      <tr class="<%= cycle("odd","even") %>">
+      <tr>
         <td><%= user.email %></td>
-        
         <td>
           <%= form_tag client_change_role_path(user), :method => :post do %>
-            <%= select("user_#{user.id}", "role", { "Administrator" => "admin", "Supervisor" => "supervisor"},{selected: user.role},   {name: "user[role]", class: "user_role"}) %>
+            <%= select("user_#{user.id}",
+                       "role",
+                       {"Administrator" => "admin", "Supervisor" => "supervisor"},
+                       {selected: user.role},
+                       {name: "user[role]", class: "user_role"}) %>
             <%= hidden_field(:user, :id, {value: user.id}) %>
             <button type="submit" style="display:none">Change</button>
           <% end %>
         </td>
-        <td width="55">
-          <%= form_tag client_user_path(user), :method => :delete, :id => "delete_user_#{user.id}" do %>
-            <%= link_to 'Delete user', 'javascript:void(0)', :'data-form' => "delete_user_#{user.id}", :'data-message' => 'Are you sure you want to delete this user?', :class => 'ico del action-delete' %>
-          <% end %>
-        </td>
+        <td><%= link_to '',
+                client_user_path(user),
+                :confirm => 'Are you sure you want to delete this user?',
+                :method => :delete,
+                :class => "ico del" %></td>
       </tr>
     <% end %>
   </table>
 
   <fieldset>
     <legend>Invite a new user</legend>
-
-    <% form_tag client_user_invite_path do %>
-      <p><label for="">Email</label><br>
-       <%= text_field_tag :email %></p>
-       <p><%= select( "user", "role", { "Administrator" => "admin", "Supervisor" => "supervisor"}) %></p>
-
+    <%= form_tag client_user_invite_path do %>
+      <p><label for="">Email</label>
+      <br>
+      <%= text_field_tag :email %></p>
+      <p><%= select( "user", "role", { "Administrator" => "admin", "Supervisor" => "supervisor"}) %></p>
       <div class="buttons">
           <button type="submit">Send invitation</button>
         </div>
     <% end %>
-
   </fieldset>
-  </div>
-<% end %>  
-
+<% end %>
+</div>

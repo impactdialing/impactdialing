@@ -2,17 +2,16 @@ PROTOCOL = Rails.env == 'development' || Rails.env == 'heroku_staging' ? 'http:/
 
 ImpactDialing::Application.routes.draw do
   root :to => "home#index"
-  
+
   resources :calls, :protocol => PROTOCOL do
     member do
       post :flow
       post :hangup
       post :submit_result
       post :submit_result_and_stop
-      
     end
   end
-  
+
   namespace "callers" do
     resources :campaigns do
       member do
@@ -50,9 +49,9 @@ ImpactDialing::Application.routes.draw do
     end
 
   end
-  
-  
-  
+
+
+
 
   ['monitor', 'how_were_different', 'pricing', 'contact', 'policies'].each do |path|
     match "/#{path}", :to => "home##{path}", :as => path
@@ -90,6 +89,7 @@ ImpactDialing::Application.routes.draw do
 
   #broadcast
   scope 'broadcast', :protocol => PROTOCOL do
+    
     resources :campaigns do
       member do
         post :verify_callerid
@@ -101,12 +101,8 @@ ImpactDialing::Application.routes.draw do
         get :control
         get :running_status
       end
-      resources :voter_lists, :except => [:new, :show] do
-        collection do
-          post :import
-        end
-      end
     end
+    
     resources :reports, :protocol => PROTOCOL do
       collection do
         get :usage
@@ -136,16 +132,22 @@ ImpactDialing::Application.routes.draw do
         get :questions_answered
         get :possible_responses_answered
       end
-      
+      resources :script_texts, :only => [:index, :create, :show, :update, :destroy]
+      resources :notes, :only => [:index, :create, :show, :update, :destroy]
+      resources :questions, :only => [:index, :create, :show, :update, :destroy] do
+        resources :possible_responses, :only => [:index, :create, :show, :update, :destroy]
+      end
     end
-    
+
+    resources :caller_groups
+
     [:campaigns, :scripts, :callers].each do |type_plural|
       get "/deleted_#{type_plural}", :to => "#{type_plural}#deleted", :as => "deleted_#{type_plural}"
-      resources type_plural, :only => [:new, :index, :show, :destroy, :create, :update] do
+      resources type_plural, :only => [:new, :index, :show, :destroy, :create, :update, :edit] do
         put 'restore', :to => "#{type_plural}#restore"
       end
     end
-    
+
     resources :callers do
       member do
         get :usage
@@ -153,9 +155,9 @@ ImpactDialing::Application.routes.draw do
       end
       member { get :reassign_to_campaign }
     end
-    
-    
-    
+
+
+
     resources :campaigns, :only => [] do
       resources :reports do
         collection do
@@ -179,16 +181,15 @@ ImpactDialing::Application.routes.draw do
     resources :users, :only => [:create, :destroy]
     post 'user_invite', :to => 'users#invite', :as => 'user_invite'
     post 'caller_password', :to => 'users#caller_password', :as => 'caller_password'
+    post 'generate_api_key', :to => 'users#generate_api_key', :as => 'generate_api_key'
     post 'change_role', :to => 'users#change_role', :as => 'change_role'
   end
 
   scope 'client' do
     match '/', :to => 'client#index', :as => 'client_root'
+    
     resources :campaigns, :only => [] do
-      member { post :verify_callerid }
-      resources :voter_lists, :except => [:new, :show, :index], :name_prefix => 'client' do
-        collection { post :import }
-      end
+      member { post :verify_callerid }      
     end
     resources :blocked_numbers, :only => [:index, :create, :destroy]
     resources :monitors , :only=>[:index, :show] , :name_prefix => 'client' do
@@ -209,12 +210,18 @@ ImpactDialing::Application.routes.draw do
     match '/', :to => 'caller#index', :as => 'caller_root'
     match 'logout', :to => 'caller#logout', :as => 'caller_logout'
   end
-
-  resources :campaigns, :path_prefix => 'client', :only => [] do
-    member { post :verify_callerid }
-    resources :voter_lists, :collection => {:import => :post}, :except => [:new, :show], :name_prefix => 'client'
-  end
   
+  scope 'client' do
+    resources :campaigns do
+      resources :voter_lists do        
+        collection do
+          post :import
+          post :column_mapping
+        end        
+      end 
+    end    
+  end
+
 
   resources :call_attempts, :protocol => PROTOCOL, :only => [:create, :update] do
     member do
@@ -225,20 +232,20 @@ ImpactDialing::Application.routes.draw do
       post :hangup
     end
   end
-  
+
   resources :transfer, :protocol => PROTOCOL do
     member do
       post :connect
       post :end
-      post :disconnect      
+      post :disconnect
     end
-    collection do 
+    collection do
       post :callee
-      post :caller            
+      post :caller
       post :dial
     end
   end
-  
+
 
   resources :users do
     put '/update_password', :to => 'client/users#update_password', :as => 'update_password'
@@ -249,11 +256,10 @@ ImpactDialing::Application.routes.draw do
   match '/client/login', :to => 'client#login', :as => :login
   match '/caller/login', :to => 'caller#login', :as => :caller_login
 
-  match '/client/reports', :to => 'client#reports', :as => 'report', :protocol => PROTOCOL
   match '/twilio_callback', :to => 'twilio#callback', :as => :twilio_callback, :protocol => PROTOCOL
   match '/twilio_callback', :to => 'twilio#callback', :as => :twilio_callback, :protocol => PROTOCOL
   match '/twilio_create_call', :to => 'twilio#create_call', :as => :twilio_create_call, :protocol => PROTOCOL
-  
+
   match '/twilio_report_error', :to => 'twilio#report_error', :as => :twilio_report_error, :protocol => PROTOCOL
   match '/twilio_call_ended', :to => 'twilio#call_ended', :as => :twilio_call_ended, :protocol => PROTOCOL
   match '/recurly/notification', :to => 'recurly#notification', :as => :recurly_notification

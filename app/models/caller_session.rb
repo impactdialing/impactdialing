@@ -18,6 +18,11 @@ class CallerSession < ActiveRecord::Base
   scope :for_caller, lambda{|caller| where("caller_id = #{caller.id}") unless caller.nil?}  
   scope :debit_not_processed, lambda { where(:debited => "0", :caller_type => CallerType::PHONE).where('endtime is not null') }
   scope :campaigns_on_call, select("campaign_id").on_call.group("campaign_id")
+  scope :first_caller_time, lambda { |caller| {:select => "created_at", :conditions => ["caller_id = ?", caller.id], :order => "created_at ASC", :limit => 1}  unless caller.nil?}
+  scope :last_caller_time, lambda { |caller| {:select => "created_at", :conditions => ["caller_id = ?", caller.id], :order => "created_at DESC", :limit => 1}  unless caller.nil?}
+  scope :first_campaign_time, lambda { |campaign| {:select => "created_at", :conditions => ["campaign_id = ?", campaign.id], :order => "created_at ASC", :limit => 1}  unless campaign.nil?}
+  scope :last_campaign_time, lambda { |campaign| {:select => "created_at", :conditions => ["campaign_id = ?", campaign.id], :order => "created_at DESC", :limit => 1}  unless campaign.nil?}
+
   
   has_one :voter_in_progress, :class_name => 'Voter'
   has_one :attempt_in_progress, :class_name => 'CallAttempt'
@@ -150,7 +155,6 @@ class CallerSession < ActiveRecord::Base
   
   def wrapup_attempt_in_progress
     attempt_in_progress.try(:update_attributes, {:wrapup_time => Time.now})
-    # attempt_in_progress.try(:capture_answer_as_no_response)          
   end
   
   def end_session
@@ -215,7 +219,6 @@ class CallerSession < ActiveRecord::Base
     Pusher[session_key].trigger(event, data.merge!(:dialer => self.campaign.type))
   end
   
-  
   def dial_em(voter)
     return if voter.nil?
     call_attempt = create_call_attempt(voter)    
@@ -238,8 +241,9 @@ class CallerSession < ActiveRecord::Base
     attempt = voter.call_attempts.create(:campaign => campaign, :dialer_mode => campaign.type, :status => CallAttempt::Status::RINGING, :caller_session => self, :caller => caller, call_start:  Time.now)
     update_attribute('attempt_in_progress', attempt)
     voter.update_attributes(:last_call_attempt => attempt, :last_call_attempt_time => Time.now, :caller_session => self, status: CallAttempt::Status::RINGING)
-    Call.create(call_attempt: attempt, all_states: "")
+    Call.create(call_attempt: attempt, all_states: "", state: 'initial')
     MonitorEvent.call_ringing(campaign)
+
     attempt    
   end
   

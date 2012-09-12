@@ -4,12 +4,14 @@ require 'new_relic/agent/method_tracer'
 class ApplicationController < ActionController::Base
   include NewRelic::Agent::MethodTracer
   include WhiteLabeling
+  include ApplicationHelper
   helper :all # include all helpers, all the time
   protect_from_forgery # See ActionController::RequestForgeryProtection for details
-  before_filter :set_controller_name#, :preload_models
+  before_filter :set_controller_name
   # Scrub sensitive parameters from your log
   helper_method :phone_format, :phone_number_valid
   rescue_from Timeout::Error, :with => :return_service_unavialble
+  rescue_from InvalidDateException, :with=> :return_invalid_date
 
   def testing?
     Rails.env == 'test'
@@ -20,6 +22,11 @@ class ApplicationController < ActionController::Base
       type.all  { render :nothing => true, :status => 503 }
     end
     true
+  end
+  
+  def return_invalid_date
+    flash_message(:error, I18n.t(:invalid_date_format))
+    redirect_to :back    
   end
   
 
@@ -68,12 +75,6 @@ class ApplicationController < ActionController::Base
 
   def billing_link(layout)
     '<a href="' + white_labeled_billing_link(request.domain) + '">Click here to verify a credit card.</a>'
-  end
-
-  def preload_models
-    CallAttempt
-    CallerSession
-    Caller
   end
 
   def set_controller_name
@@ -173,27 +174,6 @@ class ApplicationController < ActionController::Base
     logger.info "SENT RT #{key} #{post_data} #{channel}"
   end
 
-
-  def flash_message(where, error_message)
-    if flash[where] and flash[where].class == Array
-      flash[where] = flash[where].concat [error_message]  # should not use <<. rails flash does not 'keep' them.
-    elsif flash[where] and flash[where].class == String
-      flash[where] = [flash[where], error_message]
-    else
-      flash[where] = [error_message]
-    end
-  end
-
-  def flash_now(where, error_message)
-    if flash.now[where] and flash.now[where].class == Array
-      flash.now[where] = flash.now[where].concat [error_message]  # should not use <<. rails flash does not 'keep' them.
-    elsif flash.now[where] and flash.now[where].class == String
-      flash.now[where] = [flash.now[where], error_message]
-    else
-      flash.now[where] = [error_message]
-    end
-  end
-  
   def full_access
     if @user.supervisor?
       flash_message(:error, I18n.t(:admin_access))

@@ -15,19 +15,19 @@
       <td>Total</td>
       <td><%= @billiable_total.values.inject(0){|sum,x| sum+x} %></td>
     </tr>
-    
-    
-    
+
+
+
   </table>
-	
+
 </div>
 
 <h3>Date range:</h3>
-<% form_tag(account_campaigns_usage_client_reports_path(:id => @account.id), :method => :get) do %>
+<%= form_tag(account_campaigns_usage_client_reports_path(:id => @account.id), :method => :get) do %>
   <input type="hidden" name="id" value="<%= params[:id] %>" />
   <%= render :partial => 'shared/date_picker' %>
   <div class="buttons">
     <button type="submit">Update</button>
   </div>
-  
+
 <% end %>

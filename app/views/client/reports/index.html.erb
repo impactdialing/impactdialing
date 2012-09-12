@@ -1,4 +1,8 @@
 <h1>Reports</h1>
-<%= render :partial => 'campaign_reports' %>
-<br/>
-<%= render :partial => 'caller_reports' %>
+<% if @account.campaigns.length==0 %>
+    <p>You haven't created any campaigns yet.</p>
+<% else %>
+  <%= render :partial => 'campaign_reports' %>
+  <br/>
+  <%= render :partial => 'caller_reports' %>
+<% end %>

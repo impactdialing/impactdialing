@@ -38,7 +38,8 @@ Factory.define :campaign do |c|
   c.start_time (Time.now - 6.hours)
   c.end_time (Time.now - 7.hours)
   c.time_zone "Pacific Time (US & Canada)"
-  c.script_id {Factory(:script)}
+  c.script_id {Factory(:script).id}
+  c.type 'Preview'
 end
 
 Factory.define :predictive do |c|
@@ -49,7 +50,7 @@ Factory.define :predictive do |c|
   c.start_time (Time.now - 6.hours)
   c.end_time (Time.now - 7.hours)
   c.time_zone "Pacific Time (US & Canada)"
-  c.script_id {Factory(:script)}
+  c.script_id {Factory(:script).id}
 end
 
 Factory.define :preview do |c|
@@ -60,7 +61,7 @@ Factory.define :preview do |c|
   c.start_time (Time.now - 6.hours)
   c.end_time (Time.now - 7.hours)
   c.time_zone "Pacific Time (US & Canada)"
-  c.script_id {Factory(:script)}
+  c.script_id {Factory(:script).id}
 end
 
 Factory.define :progressive do |c|
@@ -71,7 +72,7 @@ Factory.define :progressive do |c|
   c.start_time (Time.now - 6.hours)
   c.end_time (Time.now - 7.hours)
   c.time_zone "Pacific Time (US & Canada)"
-  c.script_id {Factory(:script)}
+  c.script_id {Factory(:script).id}
 end
 
 Factory.define :robo do |c|
@@ -82,7 +83,7 @@ Factory.define :robo do |c|
   c.start_time (Time.now - 6.hours)
   c.end_time (Time.now - 7.hours)
   c.time_zone "Pacific Time (US & Canada)"
-  c.script_id {Factory(:script)}
+  c.script_id {Factory(:script).id}
 end
 
 
@@ -98,6 +99,11 @@ Factory.define :voter_list do |v|
   v.campaign_id { Factory(:campaign).id }
   v.name { Factory.next(:name) }
   v.account { Factory(:account) }
+  v.headers "Phone,Name,Email,Address,City,ZipCode,State,Country"
+  v.separator ","
+  v.s3path "abc"
+  v.uploaded_file_name "abc.csv"
+  v.csv_to_system_map Hash["Phone" => "Phone"] 
 end
 
 Factory.define :voter do |v|
@@ -114,12 +120,15 @@ end
 Factory.define :caller_session do |s|
   s.campaign { Factory(:campaign, :account => Factory(:account)) }
   s.caller_id { Factory(:caller).id }
+  s.state 'initial'
 end
 
 Factory.define :webui_caller_session do |wcs|
+    wcs.state 'initial'
 end
 
 Factory.define :phones_only_caller_session do |wcs|
+  wcs.state 'initial'
 end
 
 
@@ -162,22 +171,36 @@ Factory.define :blocked_number do |b|
   b.number '1234567890'
 end
 
+Factory.define :script_text do |st|
+  st.content "abc"
+end
+
 Factory.define :question do |q|
   q.text "question text"
+  q.script_order '1'
+  q.script {Factory(:script)}
 end
 
 Factory.define :possible_response do |pr|
   pr.value "no_response"
+  pr.possible_response_order '1'
+  pr.question {Factory(:question)}
 end
 
 Factory.define :answer do |a|
   a.caller { Factory(:caller) }
+  pr = Factory(:possible_response)
+  a.possible_response pr
+  a.question pr.question
 end
 
 Factory.define :caller_campaign do |cc|
 end
 
 Factory.define :note do |n|
+  n.note 'here is a note'
+  n.script {Factory :script}
+  n.script_order '1'
 end
 
 Factory.define :note_response do |n|
@@ -196,10 +219,15 @@ Factory.define :transfer_attempt do |t|
 end
 
 Factory.define :call do |c|
+  c.state 'initial'
 end
 
 Factory.define :payment do |c|
 end
 
-
+Factory.define :caller_group do |cg|
+  cg.name 'Caller group'
+  cg.campaign {Factory(:campaign)}
+  cg.account {Factory(:account)}
+end
 
