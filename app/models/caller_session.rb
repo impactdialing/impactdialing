@@ -18,6 +18,7 @@ class CallerSession < ActiveRecord::Base
   scope :for_caller, lambda{|caller| where("caller_id = #{caller.id}") unless caller.nil?}  
   scope :debit_not_processed, lambda { where(:debited => "0", :caller_type => CallerType::PHONE).where('endtime is not null') }
   scope :campaigns_on_call, select("campaign_id").on_call.group("campaign_id")
+  scope :first_caller_time, lambda { |caller| {:conditions => ["caller_id = ?", caller.id]}  unless caller.nil?}
   
   has_one :voter_in_progress, :class_name => 'Voter'
   has_one :attempt_in_progress, :class_name => 'CallAttempt'
