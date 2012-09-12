@@ -73,7 +73,9 @@
 
 <body class="admin clearfix">
 <header role="banner" class="clearfix">
-<h1 class="<%= domain %>"><a href="<% if logged_in_as_client? %>/client<% else %>/caller<% end %>"><%= title %></a></h1>
+<% if !logged_in_as_caller? %>
+  <h1 class="<%= domain %>"><a href="<% if logged_in_as_client? %>/client<% else %>/caller<% end %>"><%= title %></a></h1>
+<% end %>
 
 <% if logged_in_as_client? %>
   <ul class="clearfix">
