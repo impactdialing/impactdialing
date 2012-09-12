@@ -6,9 +6,6 @@ class ClientController < ApplicationController
   before_filter :check_login, :except => [:login, :user_add, :forgot]
   before_filter :check_paid
 
-  in_place_edit_for :campaign, :name
-
-
   def authenticate_api
     unless params[:api_key].blank?
       @account = Account.find_by_api_key(params[:api_key])

@@ -1,6 +1,5 @@
 source :rubygems
 
-
 gem 'rails', '~> 3.2.8'
 gem 'thin', '~>1.3.1'
 gem 'will_paginate', '~> 3.0'
@@ -17,10 +16,8 @@ gem 'twilio', '~> 3.1.0'
 gem 'settingslogic', '~> 2.0.6'
 gem "twilio-ruby", '~> 3.5.1'
 gem 'dynamic_form', '~> 1.1.4'
-gem 'in_place_editing', '~> 1.1.1'
 gem "nested_form", '~>0.1.1'
 gem 'jquery-rails', '~>2.1.1'
-gem 'heroku','~>2.17.0'
 gem "activerecord-import", ">= 0.2.0"
 gem "airbrake",'~>3.0.9'
 gem 'recurly', '~> 2.1.3'
@@ -55,6 +52,7 @@ group :development do
   gem 'heroku_san'
   gem 'showoff-io'
   gem 'foreman'
+  gem 'heroku'
 end
 
 group :test do
