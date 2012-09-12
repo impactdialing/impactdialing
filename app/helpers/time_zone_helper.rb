@@ -7,6 +7,14 @@ module TimeZoneHelper
     [converted_from_date, converted_to_date]
   end
   
+  def set_date_range_with_time(campaign, from_date, to_date)
+    time_zone = campaign.as_time_zone || pacific_time_zone
+    converted_from_date = ( format_date_time(from_date, time_zone) || campaign.first_call_attempt_time || Time.now).in_time_zone(time_zone).beginning_of_day.utc      
+    converted_to_date = ( format_date_time(to_date, time_zone) || campaign.last_call_attempt_time  || Time.now).in_time_zone(time_zone).end_of_day.utc
+    [converted_from_date, converted_to_date]
+  end
+  
+  
   def set_date_range_account(account, from_date, to_date)
     time_zone = pacific_time_zone
     converted_from_date = (format_time(from_date, time_zone) || account.try(:created_at) || Time.now).in_time_zone(time_zone).beginning_of_day.utc
@@ -50,6 +58,15 @@ module TimeZoneHelper
         raise InvalidDateException
       end
     end
+    
+    def format_date_time(date, time_zone)
+      begin
+        Time.strptime("#{date} #{time_zone.formatted_offset}", "%m/%d/%Y %H:%M  %:z") if date
+      rescue Exception => e
+        raise InvalidDateException
+      end
+    end
+    
   
   
     def pacific_time_zone
