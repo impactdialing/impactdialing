@@ -101,11 +101,6 @@ class Campaign < ActiveRecord::Base
     self.caller_id = Voter.sanitize_phone(self.caller_id)
   end
 
-  def set_answering_machine_detect
-    self.answering_machine_detect = self.use_recordings = self.robo? && !self.voicemail_script.nil?
-  end
-
-
   def time_period_exceeded?
     return true if start_time.nil? || end_time.nil?
     if start_time.hour < end_time.hour
