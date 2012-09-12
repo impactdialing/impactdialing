@@ -1,5 +1,5 @@
 class Account < ActiveRecord::Base
-  
+
   has_many :users
   has_many :campaigns, :conditions => {:active => true}
   has_many :all_campaigns, :class_name => 'Campaign'
@@ -14,47 +14,56 @@ class Account < ActiveRecord::Base
   has_many :blocked_numbers
   has_many :moderators
   has_many :payments
-  
+  has_many :questions, :through => :scripts
+  has_many :script_texts, :through => :scripts
+  has_many :notes, :through => :scripts
+  has_many :possible_responses, :through => :scripts, :source => :questions
+  has_many :caller_groups
+
+  attr_accessible :api_key, :domain_name
+
   module Subscription_Type
     MANUAL = "Manual"
     PER_MINUTE = "Per Minute"
-    PER_CALLER = "Per Caller"    
+    PER_CALLER = "Per Caller"
   end
-  
+
   def current_balance
     self.payments.where("amount_remaining>0").inject(0) do |sum, payment|
       sum + payment.amount_remaining
     end
   end
-  
+
   def update_caller_password(password)
     hash_caller_password(password)
     self.save
   end
-  
+
   def hash_caller_password(password)
-    self.caller_hashed_password_salt = ActiveSupport::SecureRandom.base64(8)
-    self.caller_password = Digest::SHA2.hexdigest(caller_hashed_password_salt + password)    
+    self.caller_hashed_password_salt = SecureRandom.base64(8)
+    self.caller_password = Digest::SHA2.hexdigest(caller_hashed_password_salt + password)
   end
-  
+
   def self.authenticate_caller?(pin, password)
-    return false unless password
-    caller = Caller.find_by_pin(pin)
+    caller = Caller.find_by_pin(pin)    
     return nil if caller.nil?
     account = caller.account
+    if password.nil? || account.caller_password.nil? || account.caller_hashed_password_salt.nil?
+      return nil
+    end
     if account.caller_password == Digest::SHA2.hexdigest(account.caller_hashed_password_salt + password)
       caller
     else
       nil
     end
   end
-  
-  
-  
+
+
+
   def trial?
     self.payments.count==1 && self.payments.first.notes=="Trial credit" && recurly_subscription_uuid.nil?
   end
-  
+
   def callers_in_progress
     CallerSession.where("campaign_id in (?) and on_call=1", self.campaigns.map {|c| c.id})
   end
@@ -65,10 +74,10 @@ class Account < ActiveRecord::Base
     subscription.cancel
     sync_subscription
   end
-  
+
   def sync_subscription
     #pull latest subscription data from recurly
-    
+
     recurly_account = Recurly::Account.find(self.recurly_account_code)
     has_active_subscriptions=false
     recurly_account.subscriptions.find_each do |subscription|
@@ -91,7 +100,7 @@ class Account < ActiveRecord::Base
       self.save
     end
   end
-  
+
   def subscription_allows_caller?
     if self.trial? || per_minute_subscription? || manual_subscription?
       return true
@@ -101,15 +110,15 @@ class Account < ActiveRecord::Base
       return false
     end
   end
-  
+
   def per_minute_subscription?
     subscription_name == Subscription_Type::PER_MINUTE
   end
-  
+
   def manual_subscription?
     subscription_name == Subscription_Type::MANUAL
   end
-  
+
   def per_caller_subscription?
     subscription_name == Subscription_Type::PER_CALLER
   end
@@ -117,7 +126,7 @@ class Account < ActiveRecord::Base
   def funds_available?
     (per_caller_subscription? || manual_subscription?) ? true : current_balance>0
   end
-      
+
   def create_recurly_account_code
     return self.recurly_account_code if !self.recurly_account_code.nil?
     begin
@@ -136,30 +145,43 @@ class Account < ActiveRecord::Base
       nil
     end
   end
-  
+
   def set_recurly_subscription(new_subscription_name)
     self.create_recurly_account_code
     self.sync_subscription
     self.cancel_subscription if self.subscription_name!=new_subscription_name
     self.create_recurly_subscription(new_subscription_name)
   end
-  
+
   def create_recurly_subscription(plan_code)
 
      subscription = Recurly::Subscription.create(
-      :plan_code => plan_code, 
+      :plan_code => plan_code,
       :account   => {
          :account_code => self.recurly_account_code
-      	}
+        }
     )
-    
+
     self.sync_subscription
   end
-  
+
+
+  def enable_api!
+    self.generate_api_key!
+  end
+
+  def disable_api!
+    self.update_attribute(:api_key, "")
+  end
+
+  def api_is_enabled?
+    !api_key.empty?
+  end
+
   def is_manual?
     subscription_name=="Manual"
   end
-  
+
   def active_subscription
     # default to per minute if not defined
     if subscription_name!="Per Minute" && subscription_active
@@ -178,7 +200,7 @@ class Account < ActiveRecord::Base
     Rails.logger.debug("Called from #{caller[1]}")
     activated?
   end
-  
+
   def toggle_call_recording!
     self.record_calls = !self.record_calls
     self.save
@@ -187,7 +209,7 @@ class Account < ActiveRecord::Base
   def custom_fields
     custom_voter_fields
   end
-  
+
   def create_chargify_customer_id
     return self.chargify_customer_id if !self.chargify_customer_id.nil?
     user = User.find_by_account_id(self.id)
@@ -201,31 +223,26 @@ class Account < ActiveRecord::Base
     self.save
     self.chargify_customer_id
   end
-  
+
 
   def check_autorecharge(amount_remaining)
     if autorecharge_enabled? && autorecharge_trigger >= amount_remaining
       begin
-        if status != 'autorecharge_pending'
-          update_attribute(:status, 'autorecharge_pending')
-          new_payment = Payment.charge_recurly_account(self, self.autorecharge_amount, "Auto-recharge")
-          if new_payment.nil?
-             flash_now(:error, "There was a problem charging your credit card.  Please try updating your billing information or contact support for help.")
-          end
-          update_attribute(:status, '')
-          return new_payment
-       end
+        new_payment = Payment.charge_recurly_account(self, self.autorecharge_amount, "Auto-recharge")
+        if new_payment.nil?
+          flash_now(:error, "There was a problem charging your credit card.  Please try updating your billing information or contact support for help.")
+        end
+        return new_payment
       rescue ActiveRecord::StaleObjectError
         # pretty much do nothing
       end
-      
     end
   end
-  
+
   def variable_abandonment?
     abandonment == 'variable'
   end
-  
+
   def abandonment_value
     if variable_abandonment?
       "Variable"
@@ -233,5 +250,13 @@ class Account < ActiveRecord::Base
       "Fixed"
     end
   end
-  
+
+  def secure_digest(*args)
+    Digest::SHA1.hexdigest(args.flatten.join('--'))
+  end
+
+  def generate_api_key!
+    self.update_attribute(:api_key, secure_digest(Time.now, (1..10).map{ rand.to_s }))
+  end
+
 end

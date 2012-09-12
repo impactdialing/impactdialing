@@ -94,9 +94,8 @@ class CallAttempt < ActiveRecord::Base
       unless voter.caller_session.nil?
         voter.caller_id = voter.caller_session.caller_id
         voter.status = CallAttempt::Status::INPROGRESS
-        voter.save
-        voter.caller_session.reload      
-        voter.caller_session.update_attributes(:on_call => true, :available_for_call => false)  
+        voter.save      
+        voter.caller_session.update_attributes(on_call: true, available_for_call: false)  
       end
     rescue ActiveRecord::StaleObjectError
       abandon_call
@@ -187,15 +186,7 @@ class CallAttempt < ActiveRecord::Base
   def wrapup_now
     update_attribute(:wrapup_time, Time.now)
   end
-  
-  def capture_answer_as_no_response
-    return if (connecttime == nil)
-    voter.campaign.script.questions.not_answered_by(voter).try(:each) do |question|
-      possible_response = question.possible_responses.find_by_value("[No response]") || question.possible_responses.create(:value => "[No response]")
-      possible_response.answers.create(:question => question, :voter => voter, :campaign => campaign, :caller => caller)
-    end
-  end
-  
+    
   def capture_answer_as_no_response_for_robo
     campaign.script.robo_recordings.not_responded_by(voter).try(:each) do |robo_recording|
       recording_response = robo_recording.recording_responses.find_by_response("[No response]") || robo_recording.recording_responses.create(:response => "[No response]", :keypad =>10)

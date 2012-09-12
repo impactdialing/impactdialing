@@ -84,6 +84,8 @@ class CallerController < ApplicationController
       @caller = Caller.find_by_email_and_password(params[:email], params[:password])
       if @caller.blank?
         flash_now(:error, "Wrong email or password.")
+      elsif !@caller.active?
+        flash_now(:error, "Your account has been deleted.")
       else
         session[:caller]= @caller.id
         redirect_to callers_campaign_path(@caller.campaign)

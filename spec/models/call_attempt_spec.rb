@@ -1,7 +1,7 @@
 require "spec_helper"
-include Rails.application.routes.url_helpers
 
 describe CallAttempt do
+  include Rails.application.routes.url_helpers
 
   it "lists all attempts for a campaign" do
     campaign = Factory(:campaign)
@@ -107,7 +107,7 @@ describe CallAttempt do
       CallAttempt.with_status(['foo']).should == [@wanted_attempt]
     end
   end
-  
+
   describe "call attempts between" do
     it "should return cal attempts between 2 dates" do
       Factory(:call_attempt, created_at: Time.now - 10.days)
@@ -130,49 +130,14 @@ describe CallAttempt do
       call_attempt.duration_wrapped_up.should eq(total_time)
     end
   end
-  
-  describe "capture voter response, when call disconnected unexpectedly" do
-    it "capture response as 'No response' for the questions, which are not answered" do
-      script = Factory(:script)
-      campaign = Factory(:campaign, :script => script)
-      voter = Factory(:voter, :campaign => campaign)
-      question = Factory(:question, :script => script)
-      unanswered_question = Factory(:question, :script => script)
-      possible_response = Factory(:possible_response, :question => question, :value => "ok")
-      answer = Factory(:answer, :question => question, :campaign => campaign, :possible_response => possible_response, :voter => voter)
-      call_attempt = Factory(:call_attempt, :connecttime => Time.now, :status => CallAttempt::Status::SUCCESS, :voter => voter, :campaign => campaign)
-      call_attempt.capture_answer_as_no_response 
-      question.possible_responses.count.should == 1
-      question.answers.count.should == 1
-      unanswered_question.possible_responses.count.should == 1
-      unanswered_question.answers.count.should == 1
-    end
-    
-    it "capture response as 'No response' for the robo_recordings, for which voter not responded" do
-      script = Factory(:script)
-      campaign = Factory(:campaign, :script => script)
-      voter = Factory(:voter, :campaign => campaign)
-      call_attempt = Factory(:call_attempt, :status => CallAttempt::Status::SUCCESS, :campaign => campaign, :voter => voter)
-      voter.update_attribute(:last_call_attempt, call_attempt)
-      robo_recording = Factory(:robo_recording, :script => script)
-      not_respond_robo_recording = Factory(:robo_recording, :script => script)
-      recording_response = Factory(:recording_response, :robo_recording => robo_recording, :response => "ok")
-      call_response = Factory(:call_response, :robo_recording => robo_recording, :campaign => campaign, :recording_response => recording_response, :call_attempt => call_attempt)
-      
-      call_attempt.capture_answer_as_no_response_for_robo 
-      robo_recording.recording_responses.count.should == 1
-      robo_recording.call_responses.count.should == 1
-      not_respond_robo_recording.recording_responses.count.should == 1
-      not_respond_robo_recording.call_responses.count.should == 1
-    end
-  end
-  
+
+
   describe "wrapup call_attempts" do
     it "should wrapup all call_attempts that are not" do
       caller = Factory(:caller)
       another_caller = Factory(:caller)
       Factory(:call_attempt, caller_id: caller.id)
-      Factory(:call_attempt, caller_id: another_caller)
+      Factory(:call_attempt, caller_id: another_caller.id)
       Factory(:call_attempt, caller_id: caller.id)
       Factory(:call_attempt, wrapup_time: Time.now-2.hours,caller_id: caller.id)
       CallAttempt.not_wrapped_up.find_all_by_caller_id(caller.id).length.should eq(2)
@@ -180,19 +145,19 @@ describe CallAttempt do
       CallAttempt.not_wrapped_up.find_all_by_caller_id(caller.id).length.should eq(0)
     end
   end
-  
+
   describe "payments" do
-    
+
     describe "debit for calls" do
       it "should not debit if call not ended" do
         call_attempt = Factory(:call_attempt, call_end: (Time.now - 3.minutes))
-        Payment.should_not_receive(:debit_call_charge)      
+        Payment.should_not_receive(:debit_call_charge)
         call_attempt.debit
       end
 
       it "should not debit if call not connected" do
         call_attempt = Factory(:call_attempt, connecttime: (Time.now - 3.minutes))
-        Payment.should_not_receive(:debit_call_charge)      
+        Payment.should_not_receive(:debit_call_charge)
         call_attempt.debit
       end
 
@@ -200,7 +165,7 @@ describe CallAttempt do
         account = Factory(:account, subscription_name: Account::Subscription_Type::MANUAL)
         campaign = Factory(:campaign, account: account)
         call_attempt = Factory(:call_attempt, connecttime: (Time.now - 3.minutes), call_end: (Time.now - 2.minutes), campaign: campaign)
-        Payment.should_not_receive(:debit_call_charge)      
+        Payment.should_not_receive(:debit_call_charge)
         call_attempt.debit
       end
 
@@ -210,47 +175,47 @@ describe CallAttempt do
         payment = Factory(:payment, account: account, amount_remaining: 10.0)
         call_attempt = Factory(:call_attempt, connecttime: (Time.now - 3.minutes), call_end: (Time.now - 2.minutes), campaign: campaign)
         Payment.should_receive(:where).and_return([payment])
-        payment.should_receive(:debit_call_charge)      
+        payment.should_receive(:debit_call_charge)
         call_attempt.debit
         call_attempt.payment_id.should_not be_nil
       end
 
     end
-    
+
     describe "call_time" do
       it "should give correct call time" do
         call_attempt = Factory(:call_attempt, connecttime: (Time.now - 3.minutes), call_end: (Time.now - 2.minutes))
         call_attempt.call_time.should eq(2)
       end
     end
-    
+
     describe "amount_to_debit" do
-      
+
       it "should retrun amount to debit" do
         call_attempt = Factory(:call_attempt, connecttime: (Time.now - 3.minutes), call_end: (Time.now - 2.minutes))
         call_attempt.amount_to_debit.should eq(0.18)
       end
-      
+
     end
-    
+
     describe "determine_call_cost" do
-      
+
       it "should return .02 for per caller" do
         account = Factory(:account, subscription_name: Account::Subscription_Type::PER_CALLER)
-        campaign = Factory(:campaign, account: account)      
+        campaign = Factory(:campaign, account: account)
         call_attempt = Factory(:call_attempt, connecttime: (Time.now - 3.minutes), call_end: (Time.now - 2.minutes), campaign: campaign)
         call_attempt.determine_call_cost.should eq(0.02)
       end
-      
+
       it "should return .09 for per minute" do
         account = Factory(:account, subscription_name: Account::Subscription_Type::PER_MINUTE)
-        campaign = Factory(:campaign, account: account)      
+        campaign = Factory(:campaign, account: account)
         call_attempt = Factory(:call_attempt, connecttime: (Time.now - 3.minutes), call_end: (Time.now - 2.minutes), campaign: campaign)
         call_attempt.determine_call_cost.should eq(0.09)
       end
-      
-    end  
-      
+
+    end
+
   end
-  
+
 end
