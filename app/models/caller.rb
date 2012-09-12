@@ -19,6 +19,7 @@ class Caller < ActiveRecord::Base
   delegate :subscription_allows_caller?, :to => :account
   delegate :activated?, :to => :account
   delegate :funds_available?, :to => :account
+  delegate :as_time_zone, :to=> :campaign
 
   cattr_reader :per_page
   @@per_page = 25
