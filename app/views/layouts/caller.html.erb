@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+  <%= render 'layouts/head' %>
+
+  <body class="admin clearfix">
+    <header role="banner" class="clearfix">
+      <% if !logged_in_as_caller? %>
+        <%= render 'layouts/caller_logo' %>
+      <% end %>
+    </header>
+
+    <%= render :partial => "layouts/flash_messages", :locals => {:display => [:notice, :error, :warning]} %>
+
+    <div class="content clearfix">
+      <%= yield %>
+    </div>
+
+    <footer role="contentinfo" class="clearfix">
+      <% if logged_in_as_caller? %>
+        <p style="float:right"><a href="/caller/logout">Log out</a></p>
+      <% end %>
+
+      <% if logged_in_as_phones_only_caller? %>
+        <p style="float:right"><a href="/callers/phones_only/logout">Log out</a></p>
+      <% end %>
+
+      <%= render 'layouts/legal' %>
+    </footer>
+  </body>
+</html>
