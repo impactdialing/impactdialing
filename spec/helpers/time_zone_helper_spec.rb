@@ -7,6 +7,7 @@ describe TimeZoneHelper do
         campaign = Factory(:campaign)        
         expect { helper.set_date_range(campaign, "", "") }.to raise_error(InvalidDateException)
      end     
+     
      it "should format fromdate and to date if present" do
        campaign = Factory(:campaign, time_zone: "Eastern Time (US & Canada)")
        helper.set_date_range(campaign, "08/08/2012", "08/09/2012").to_s.should eq([Time.parse("2012-08-08 04:00:00 UTC"), Time.parse("2012-08-10 03:59:59 UTC")].to_s)
@@ -62,5 +63,5 @@ describe TimeZoneHelper do
      
   end
   
-  
+
 end

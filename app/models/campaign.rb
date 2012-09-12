@@ -132,13 +132,12 @@ class Campaign < ActiveRecord::Base
   end
   
   def first_call_attempt_time
-    call_attempts.first.try(:created_at)
+    call_attempts.first.try(:created_at) 
   end
   
   def last_call_attempt_time
     call_attempts.last.try(:created_at)
-  end
-  
+  end  
 
 
   def voters_called
