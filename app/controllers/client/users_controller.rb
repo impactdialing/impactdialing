@@ -43,7 +43,7 @@ module Client
       end
       redirect_to :back
     end
-    
+
     def change_role
       user_to_change = User.find(params[:user][:id])
       if @user == user_to_change
@@ -57,13 +57,9 @@ module Client
 
     def destroy
       user_to_be_deleted = account.users.find_by_id(params[:id])
-      if current_user == user_to_be_deleted
-        flash_message(:error, "You can't delete yourself")
-      else
-        flash_message(:notice, "#{user_to_be_deleted.email} was deleted")
-        user_to_be_deleted.destroy
-      end
-      redirect_to :back
+      flash_message(:notice, "#{user_to_be_deleted.email} was deleted")
+      user_to_be_deleted.destroy
+      redirect_to root_path
     end
   end
 end
