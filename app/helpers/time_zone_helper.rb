@@ -1,9 +1,9 @@
 module TimeZoneHelper
   
   def set_date_range(campaign, from_date, to_date)
-    time_zone = campaign.as_time_zone || utc_time_zone
-    converted_from_date = ( format_time(from_date, time_zone) || campaign.first_call_attempt_time ).in_time_zone(time_zone).beginning_of_day.utc      
-    converted_to_date = ( format_time(to_date, time_zone) || campaign.last_call_attempt_time ).in_time_zone(time_zone).end_of_day.utc
+    time_zone = campaign.as_time_zone || pacific_time_zone
+    converted_from_date = ( format_time(from_date, time_zone) || campaign.first_call_attempt_time || Time.now ).in_time_zone(time_zone).beginning_of_day.utc      
+    converted_to_date = ( format_time(to_date, time_zone) || campaign.last_call_attempt_time  || Time.now ).in_time_zone(time_zone).end_of_day.utc
     [converted_from_date, converted_to_date]
   end
   
@@ -23,9 +23,9 @@ module TimeZoneHelper
   end
   
   def set_date_range_account(account, from_date, to_date)
-    time_zone = utc_time_zone
-    converted_from_date = (format_time(from_date) || account.try(:created_at) || Time.now).in_time_zone(time_zone).beginning_of_day
-    converted_to_date = (format_time(to_date) || Time.now).in_time_zone(time_zone).end_of_day
+    time_zone = pacific_time_zone
+    converted_from_date = (format_time(from_date, time_zone) || account.try(:created_at) || Time.now).in_time_zone(time_zone).beginning_of_day.utc
+    converted_to_date = (format_time(to_date, time_zone) || Time.now).in_time_zone(time_zone).end_of_day.utc
     [converted_from_date, converted_to_date]
   end
   

@@ -136,7 +136,7 @@ class Campaign < ActiveRecord::Base
   end
   
   def last_call_attempt_time
-    call_attempts.first.try(:created_at)
+    call_attempts.last.try(:created_at)
   end  
 
 
