@@ -44,8 +44,6 @@ module Client
     end
     
         
-    
-    
     def usage
       @campaign = current_user.campaigns.find(params[:id])
       @from_date, @to_date = set_date_range(@campaign, params[:from_date], params[:to_date])
