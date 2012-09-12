@@ -1,6 +1,6 @@
 module Client
   class UsersController < ClientController
-    INVALID_RESET_TOKEN = 'Your password reset link is invalid'
+    INVALID_RESET_TOKEN = 'Your link has expired or is invalid'
     skip_before_filter :check_login, :only => [:reset_password, :update_password]
     skip_before_filter :check_paid, :only => [:reset_password, :update_password]
 
@@ -8,7 +8,7 @@ module Client
       @user = User.find_by_password_reset_code(params[:reset_code])
       unless @user
         flash_message(:error, INVALID_RESET_TOKEN)
-        redirect_to root_path
+        redirect_to login_path
       end
     end
 
