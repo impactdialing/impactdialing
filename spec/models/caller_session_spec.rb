@@ -294,6 +294,38 @@ describe CallerSession do
     end
 
   end
+  
+  describe "caller time" do
+    it "should return the first caller session for that caller" do
+      caller = Factory(:caller)
+      caller_session1 = Factory(:caller_session, caller: caller, created_at: 2.hours.ago)
+      caller_session2 = Factory(:caller_session, caller: caller, created_at: 4.hours.ago)
+      CallerSession.first_caller_time(caller).first.created_at.to_s.should eq(caller_session2.created_at.to_s)
+    end
+    
+    it "should return the last caller session for that caller" do
+      caller = Factory(:caller)
+      caller_session1 = Factory(:caller_session, caller: caller, created_at: 2.hours.ago)
+      caller_session2 = Factory(:caller_session, caller: caller, created_at: 4.hours.ago)
+      CallerSession.last_caller_time(caller).first.created_at.to_s.should eq(caller_session1.created_at.to_s)
+    end
+    
+    it "should return the first caller session for that campaign" do
+      campaign = Factory(:campaign)
+      caller_session1 = Factory(:caller_session, campaign: campaign, created_at: 2.hours.ago)
+      caller_session2 = Factory(:caller_session, campaign: campaign, created_at: 4.hours.ago)
+      CallerSession.first_campaign_time(campaign).first.created_at.to_s.should eq(caller_session2.created_at.to_s)
+    end
+    
+    it "should return the last caller session for that campaign" do
+      campaign = Factory(:campaign)
+      caller_session1 = Factory(:caller_session, campaign: campaign, created_at: 2.hours.ago)
+      caller_session2 = Factory(:caller_session, campaign: campaign, created_at: 4.hours.ago)
+      CallerSession.last_campaign_time(campaign).first.created_at.to_s.should eq(caller_session1.created_at.to_s)
+    end
+    
+    
+  end
 
 
 end
