@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120911065243) do
+ActiveRecord::Schema.define(:version => 20120912051539) do
 
 
   create_table "accounts", :force => true do |t|
@@ -129,17 +129,6 @@ ActiveRecord::Schema.define(:version => 20120911065243) do
   add_index "call_attempts", ["debited", "call_end"], :name => "index_call_attempts_on_debited_and_call_end"
   add_index "call_attempts", ["voter_id"], :name => "index_call_attempts_on_voter_id"
   add_index "call_attempts", ["voter_response_processed", "status"], :name => "index_call_attempts_on_voter_response_processed_and_status"
-
-  create_table "call_responses", :force => true do |t|
-    t.integer  "call_attempt_id"
-    t.string   "response"
-    t.integer  "recording_response_id"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-    t.integer  "robo_recording_id"
-    t.integer  "times_attempted",       :default => 0
-    t.integer  "campaign_id"
-  end
 
   create_table "caller_groups", :force => true do |t|
     t.string   "name",        :null => false
@@ -267,14 +256,12 @@ ActiveRecord::Schema.define(:version => 20120911065243) do
     t.integer  "recording_id"
     t.boolean  "use_recordings",           :default => false
     t.boolean  "calls_in_progress",        :default => false
-    t.boolean  "robo",                     :default => false
     t.integer  "recycle_rate",             :default => 1
     t.boolean  "answering_machine_detect"
     t.time     "start_time"
     t.time     "end_time"
     t.string   "time_zone"
     t.float    "acceptable_abandon_rate"
-    t.integer  "voicemail_script_id"
   end
 
   create_table "custom_voter_field_values", :force => true do |t|
@@ -289,21 +276,6 @@ ActiveRecord::Schema.define(:version => 20120911065243) do
     t.string  "name",       :null => false
     t.integer "account_id"
   end
-
-  create_table "delayed_jobs", :force => true do |t|
-    t.integer  "priority",   :default => 0
-    t.integer  "attempts",   :default => 0
-    t.text     "handler"
-    t.text     "last_error"
-    t.datetime "run_at"
-    t.datetime "locked_at"
-    t.datetime "failed_at"
-    t.string   "locked_by"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-  end
-
-  add_index "delayed_jobs", ["priority", "run_at"], :name => "delayed_jobs_priority"
 
   create_table "downloaded_reports", :force => true do |t|
     t.integer  "user_id"
@@ -367,15 +339,8 @@ ActiveRecord::Schema.define(:version => 20120911065243) do
   create_table "questions", :force => true do |t|
     t.integer "script_id",         :null => false
     t.text    "text",              :null => false
-    t.integer "question_order"
     t.integer "script_order"
     t.string  "external_id_field"
-  end
-
-  create_table "recording_responses", :force => true do |t|
-    t.integer "robo_recording_id"
-    t.string  "response"
-    t.integer "keypad"
   end
 
   create_table "recordings", :force => true do |t|
@@ -390,15 +355,6 @@ ActiveRecord::Schema.define(:version => 20120911065243) do
     t.datetime "file_updated_at"
   end
 
-  create_table "robo_recordings", :force => true do |t|
-    t.integer  "script_id"
-    t.string   "name"
-    t.string   "file_file_name"
-    t.string   "file_content_type"
-    t.integer  "file_file_size"
-    t.datetime "file_updated_at"
-  end
-
   create_table "script_texts", :force => true do |t|
     t.integer "script_id"
     t.text    "content"
@@ -407,28 +363,11 @@ ActiveRecord::Schema.define(:version => 20120911065243) do
 
   create_table "scripts", :force => true do |t|
     t.string   "name"
-    t.text     "script"
-    t.boolean  "active",                              :default => true
+    t.boolean  "active",                             :default => true
     t.integer  "account_id"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.text     "voter_fields",  :limit => 2147483647
-    t.boolean  "robo",                                :default => false
-    t.boolean  "for_voicemail"
-  end
-
-  create_table "seos", :force => true do |t|
-    t.string   "action"
-    t.string   "controller"
-    t.string   "crmkey"
-    t.string   "title"
-    t.string   "keywords"
-    t.string   "description"
-    t.text     "content",     :limit => 2147483647
-    t.boolean  "active"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-    t.string   "version"
+    t.text     "voter_fields", :limit => 2147483647
   end
 
   create_table "simulated_values", :force => true do |t|

@@ -1,135 +1,61 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-<%= render :partial => "shared/errorception" %>  
-<%= render :partial => "shared/kissmetrics" %>
-<title>Impact Dialing</title>
-<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<link rel="stylesheet" href="/css/style.css" type="text/css" media="all" />
-<%= javascript_include_tag :defaults %>
-<%= unobtrusive_datepicker_includes.html_safe %>
-<%= stylesheet_link_tag "application" %>
-<%= yield :head %>
-</head>
-<body>
-<!-- Header -->
-<div id="header">
-  <div class="shell">
-    <!-- Logo + Top Nav -->
-    <div id="top">
-		<img src="/images/logo.png" style="position:relative; left:-67px;">
-      <h1><a href="/"><img src="/images/logo_text.png" style="position:absolute;"></a></h1>
-      <div id="top-navigation">
-	<% if !session[:user].blank? && @user!=nil %>
-	Welcome <strong><%= @user.fname %></strong>
-	<!-- <span>|</span> <a href="#">Help</a> <span>|</span> <a href="#"> Settings</a> --> <span>|</span> <a href="/client/user_add">My Account</a>  <span>|</span> <a href="/client/logout">Log out</a>
-	<% end %>
-	</div>
+<!DOCTYPE html>
+  <%= render 'layouts/head' %>
 
-    </div>
-    <!-- End Logo + Top Nav -->
-    <!-- Main Nav -->
-    <div id="navigation">
-      <ul>
-        <li><a href="/" <% if @actionName=="index" %>class="active"<% end %>><span>Home</span></a></li>
-        <li><a href="/how_were_different" <% if @actionName.index("how_were_different") %>class="active"<% end %>><span>How We're Different</span></a></li>
-        <li><a href="/pricing" <% if @actionName.index("pricing") %>class="active"<% end %>><span>Pricing</span></a></li>
-        <li><a href="/contact" <% if @actionName.index("contact") %>class="active"<% end %>><span>Contact</span></a></li>
-        <li><a href="/client" <% if @actionName.index("client") %>class="active"<% end %>><span>Try it Out</span></a></li>
+  <body class="admin clearfix">
+    <header role="banner" class="clearfix">
+      <%= render 'layouts/client_logo' %>
+
+      <% if logged_in_as_client? %>
+        <ul class="clearfix">
+          <li><a href="/client/logout">Log out</a></li>
+        </ul>
+      <% end %>
+    </header>
+
+    <% if logged_in_as_client? %>
+      <nav role="navigation" class="clearfix">
+      <ul class="clearfix">
+        <% if @user.administrator? %>
+          <li><a href="/client/scripts">Scripts</a></li>
+          <li><a href="/client/campaigns">Campaigns</a></li>
+          <li><a href="/client/callers">Callers</a></li>
+        <% end %>
+        <li><a href="/client/monitors"><span>Monitor</a></li>
+        <li><a href="/client/reports"><span>Reports</a></li>
+        <li><a href="/client/user_add">Account</a></li>
       </ul>
+      </nav>
+    <% end %>
+
+    <%= render :partial => "layouts/flash_messages", :locals => {:display => [:notice, :error, :warning]} %>
+
+    <div class="content clearfix">
+      <%= yield %>
     </div>
-    <!-- End Main Nav -->
-  </div>
-</div>
-<!-- End Header -->
-<!-- Container -->
-<div id="container">
-  <div class="shell">
 
-    <%= render :partial => "shared/flash_messages", :locals => {:display => [:error, :notice]} %>
+    <footer role="contentinfo" class="clearfix">
 
-    <br />
-    <!-- Main -->
-    <div id="main" <% if @actionName=="campaign_view" %>style="background-color:white; -moz-border-radius: 20px;  	    -webkit-border-radius: 20px;  padding:14px;	border:1px solid #b0722f;<% end %>   ">
-      <div class="cl">&nbsp;</div>
-      <!-- Content -->
-      <div id="content">
+    <% if logged_in_as_client? %>
+      <ul>
+        <% if @user.administrator? %>
+          <li><a href="/client/scripts">Scripts</a></li>
+          <li><a href="/client/campaigns">Campaigns</a></li>
+          <li><a href="/client/callers">Callers</a></li>
+        <% end %>
+        <li><a href="/client/monitors"><span>Monitor</a></li>
+        <li><a href="/client/reports"><span>Reports</a></li>
+      </ul>
 
-		<table>
-			<tr>
-				<td valign="top">
-					<div class="box" style="width:600px;">
-
-
-		<%= yield %>
-
-			</td>
-			<td width="40">&nbsp;</td>
-			<td valign="top">
-					<%= render :partial => 'shared/boxtop', :locals=>{:title=>"Login"} %>
-					<%= form_tag("/client/login", :id=>"loginForm") do |f| %>
-
-				  <div class="table not">
-				    <table  border="0" cellspacing="0" cellpadding="0">
-				      <tr>
-				        <td><h3>Email:</h3></td>
-				        <td><input type="text" name="email" class="field" value="<%= params[:email] %>" />
-				        </td>
-				      </tr>
-				      <tr >
-				        <td><h3>Password:</h3></td>
-				        <td><input type="password" class="field" name="password"/>
-				        </td>
-				      </tr>
-				      <tr>
-				        <td>
-							<input type="submit" value="Login" class="button">
-							<!--<a href="javascript:$('loginForm').submit();" class="button"><span>Login</span></a>-->
-
-						</td>
-				        <td><a href="/client/forgot">Forgot Password?</a></td>
-				      </tr>
-					</table>
-					<% end %>
-				</div>
-				<br/>
-				<%= render :partial => 'shared/boxtop', :locals=>{:title=>"Join"} %>
-				<div style="background-color:#fff">
-					<div class="box-content">
-						<a href="/client/join">Click here to join Impact Dialing</a>
-					</div>
-				</div>
-			</td>
-		</tr>
-	</table>
-
+      <div>
+        <p class="vcard">
+          Need help? <span class="tel"><%= phone %></span>
+          <a href="mailto:<%= email %>"><%= email %></a>
+        </p>
       </div>
-      <!-- End Content -->
-      <!-- Sidebar -->
-      <div id="sidebar" <% if @actionName=="campaign_view" %>style="width:190px; margin-top:2px; margin-right:6px;"<% end %>>
-	 <%= yield :sidebar %>
-      </div>
-      <!-- End Sidebar -->
-      <div class="cl">&nbsp;</div>
-<% if @actionName=="campaign_view" %>
-	<div class="buttons2" align="center">
-		<input type="button" class="button" value="Save Campaign" onclick="$('callerForm').submit();">
-    </div><br/>
-<% end %>
-    <!-- Main -->
-  </div>
-    <%= render :partial => "shared/flash_messages", :locals => {:display => [:warning]} %>
-</div>
+    <% end %>
 
-<!-- End Container -->
-<!-- Footer -->
-<div id="footer">
-  <div class="shell"> <span class="left">&copy; 2010 Impact Dialing
-	<span style="margin-left:20px;"><a href="http://www.impactdialing.com">Contact Us</a></span>
-	</span>
-	</div>
-</div>
-<%= @floatSidebar %>
-<!-- End Footer -->
-</body>
+    <%= render 'layouts/legal' %>
+
+    </footer>
+  </body>
 </html>

@@ -61,7 +61,7 @@ module Client
 
     def usage
       @caller = Caller.find(params[:id])
-      @campaigns = account.campaigns.manual.for_caller(@caller)
+      @campaigns = account.campaigns.for_caller(@caller)
       @campaign = @campaigns.find_by_id(params[:campaign_id])
       @from_date, @to_date = set_date_range_callers(@campaign, @caller, params[:from_date], params[:to_date])
       @caller_usage = CallerUsage.new(@caller, @campaign, @from_date, @to_date)
@@ -69,7 +69,7 @@ module Client
 
     def call_details
       @caller = Caller.find(params[:id])
-      @campaigns = account.campaigns.manual.for_caller(@caller)
+      @campaigns = account.campaigns.for_caller(@caller)
       @campaign = @campaigns.find_by_id(params[:campaign_id]) || @caller.caller_sessions.last.try(:campaign) || @caller.campaign
       @from_date, @to_date = set_date_range_callers(@campaign, @caller, params[:from_date], params[:to_date])
       @answered_call_stats = @caller.answered_call_stats(@from_date, @to_date, @campaign)
@@ -104,7 +104,7 @@ module Client
     end
 
     def load_campaigns
-      @campaigns = account.campaigns.manual.active
+      @campaigns = account.campaigns.active
     end
 
     def load_caller_groups

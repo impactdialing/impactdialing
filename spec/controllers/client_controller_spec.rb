@@ -28,6 +28,5 @@ describe ClientController do
         response.should redirect_to "/client/user_add"
       end
     end
-
   end
 end

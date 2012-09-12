@@ -1,25 +1,2 @@
-<% content_for :stylesheets do %>
-  <%= stylesheet_link_tag "column_mapping" %>
-<% end %>
-<% content_for :javascripts do %>
-    <%= javascript_include_tag "campaign/campaign", "campaign/voter_lists","jquery.csv-0.61.min" %>
-<% end %>
-
 <h1>New campaign</h1>
-<%= render "shared/error_messages", :target => @campaign %>
-
-<%= form_for @campaign, url: "#{client_campaigns_path}/#{@campaign.id}" do |f| %>
-  <fieldset>
-    <%= render :partial => 'settings_form', :locals => {:f => f} %>
-    <%= render :partial => 'voter_lists_form', :locals => {:f => f} %>
-    <div class="buttons">
-      <button type="submit">Save</button>
-    </div>
-  </fieldset>
-
-<% end %>
-
-<%= render :partial => 'javascript'%>
-
-
-
+<%= render 'form' %>

@@ -1,5 +1,6 @@
+<h1>Download reports for <%= @campaign.name %></h1>
 <% if @downloaded_reports.nil? || @downloaded_reports.size==0 %>
-    <p>You don't have any available download reports.</p>
+    <p>You don't have any available download reports for <%= @campaign.name %>.</p>
 <% else %>
     <table>
       <tr>
