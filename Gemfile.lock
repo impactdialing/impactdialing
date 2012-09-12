@@ -310,7 +310,7 @@ DEPENDENCIES
   guard-rails
   guard-rspec
   guard-spork
-  heroku
+  heroku (~> 2.17.0)
   heroku_san
   hiredis (~> 0.4.5)
   jquery-rails (~> 2.1.1)

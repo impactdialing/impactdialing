@@ -38,6 +38,7 @@ gem "redis-objects", "~>0.5.3",:require => 'redis/objects'
 gem "formtastic", "~>2.2.1"
 gem "cocoon", "~>1.0.22"
 gem 'deep_cloneable', '~> 1.4.0'
+gem 'heroku', '~> 2.17.0'
 
 
 group :development, :test do
@@ -56,7 +57,6 @@ group :development do
   gem 'heroku_san'
   gem 'showoff-io'
   gem 'foreman'
-  gem 'heroku'
 end
 
 group :test do
