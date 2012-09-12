@@ -1,0 +1,2 @@
+class InvalidDateException < Exception  
+end
