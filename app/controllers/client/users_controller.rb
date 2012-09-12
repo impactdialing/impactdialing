@@ -19,7 +19,7 @@ module Client
         @user.clear_reset_code
         if @user.save
           session[:user]=@user.id
-          flash_message(:notice, 'Your password has been successfully reset')
+          flash_message(:notice, 'Your password has been successfully set')
         else
           flash_message(:notice, 'Your password needs to be 5 characters or greater.')
         end
