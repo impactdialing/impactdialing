@@ -9,8 +9,8 @@ module TimeZoneHelper
   
   def set_date_range_with_time(campaign, from_date, to_date)
     time_zone = campaign.try(:as_time_zone) || pacific_time_zone
-    converted_from_date = ( format_date_time(from_date, time_zone) || campaign.first_call_attempt_time || Time.now).in_time_zone(time_zone).beginning_of_day.utc      
-    converted_to_date = ( format_date_time(to_date, time_zone) || campaign.last_call_attempt_time  || Time.now).in_time_zone(time_zone).end_of_day.utc
+    converted_from_date = format_date_time(from_date, time_zone).in_time_zone(time_zone).utc      
+    converted_to_date = format_date_time(to_date, time_zone).in_time_zone(time_zone).utc
     [converted_from_date, converted_to_date]
   end
   

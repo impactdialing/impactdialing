@@ -10,10 +10,10 @@ module Api
           return false          
         end
         begin
-          @from_date = Date.strptime(from_date, '%m/%d/%Y')
-          @to_date = Date.strptime(to_date, '%m/%d/%Y')
+          @from_date = Date.strptime(from_date, '%m/%d/%Y %H:%M')
+          @to_date = Date.strptime(to_date, '%m/%d/%Y %H:%M')
         rescue ArgumentError => err
-          render_json_response({status: 'error', code: '400', message: err.to_s + " Use mm/dd/yyyy format"})
+          render_json_response({status: 'error', code: '400', message: err.to_s + " Use mm/dd/yyyy HH:MM format"})
           return false
         end      
       end
