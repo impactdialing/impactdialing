@@ -132,83 +132,6 @@ describe Voter do
     let(:campaign) { Factory(:robo) }
     let(:voter) { Factory(:voter, :campaign => campaign) }
 
-    it "is dialed" do
-      call_attempt = Factory(:call_attempt)
-      voter.should_receive(:new_call_attempt).and_return(call_attempt)
-      callback_url = twilio_callback_url(:call_attempt_id => call_attempt, :host => Settings.host, :port => Settings.port)
-      fallback_url = 'blah'
-      callended_url = twilio_call_ended_url(:call_attempt_id => call_attempt, :host => Settings.host, :port => Settings.port)
-      Twilio::Call.should_receive(:make).with(
-          voter.campaign.caller_id,
-          voter.Phone,
-          callback_url,
-          'FallbackUrl' => fallback_url,
-          'StatusCallback' => callended_url,
-          'Timeout' => '15',
-          'IfMachine' => anything
-      ).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
-      voter.dial
-    end
-
-    it "hangs up after detecting answering machine" do
-      call_attempt = Factory(:call_attempt)
-      voter.should_receive(:new_call_attempt).and_return(call_attempt)
-      callback_url = twilio_callback_url(:call_attempt_id => call_attempt, :host => Settings.host, :port => Settings.port)
-      fallback_url = 'blah'
-      callended_url = twilio_call_ended_url(:call_attempt_id => call_attempt, :host => Settings.host, :port => Settings.port)
-      Twilio::Call.should_receive(:make).with(
-          voter.campaign.caller_id,
-          voter.Phone,
-          callback_url,
-          'FallbackUrl' => fallback_url,
-          'StatusCallback' => callended_url,
-          'Timeout' => '15',
-          'IfMachine' => 'Hangup'
-      ).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
-      voter.dial
-    end
-
-    it "continues after detecting answering machine" do
-      campaign.update_attributes!(answering_machine_detect: true)
-      call_attempt = Factory(:call_attempt)
-      voter.should_receive(:new_call_attempt).and_return(call_attempt)
-      callback_url = twilio_callback_url(:call_attempt_id => call_attempt, :host => Settings.host, :port => Settings.port)
-      fallback_url = 'blah'
-      callended_url = twilio_call_ended_url(:call_attempt_id => call_attempt, :host => Settings.host, :port => Settings.port)
-      Twilio::Call.should_receive(:make).with(
-          voter.campaign.caller_id,
-          voter.Phone,
-          callback_url,
-          'FallbackUrl' => fallback_url,
-          'StatusCallback' => callended_url,
-          'Timeout' => '15',
-          'IfMachine' => 'Continue'
-      ).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
-      voter.dial
-    end
-
-    it "records a call attempt for a dialed voter" do
-      Twilio::Call.stub!(:make).and_return({"TwilioResponse" => {"Call" => {"Sid" => "abcd"}}})
-      lambda {
-        voter.dial
-      }.should change {
-        voter.call_attempts.count
-      }.by(1)
-
-      call_attempt = voter.call_attempts.first
-      call_attempt.campaign.should == campaign
-      call_attempt.dialer_mode.should == "robo"
-      call_attempt.status.should == CallAttempt::Status::RINGING
-      voter.last_call_attempt.should == call_attempt
-    end
-
-    it "updates the sid for a dialed voter" do
-      sid = "xyzzyspoonshift1"
-      Twilio::Call.stub!(:make).and_return({"TwilioResponse" => {"Call" => {"Sid" => sid}}})
-      voter.dial
-      voter.call_attempts.last.sid.should == sid
-    end
-
     it "records users to call back" do
       voter1 = Factory(:voter)
       Voter.to_callback.should == []
@@ -222,64 +145,6 @@ describe Voter do
     let(:campaign) { Factory(:predictive, answering_machine_detect: true) }
     let(:voter) { Factory(:voter, :campaign => campaign) }
     let(:client) { mock(:client).tap { |client| Twilio::REST::Client.stub(:new).and_return(client) } }
-
-    context 'making calls' do
-      before(:each) do
-        Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {"FallbackUrl"=>"blah", 'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
-      end
-
-      it "is dialed" do
-        caller_session = Factory(:caller_session, :available_for_call => true, :on_call => true, campaign: campaign)
-        campaign.stub(:time_period_exceed?).and_return(false)
-        voter.dial
-        call_attempt = CallAttempt.first
-        call_attempt.sid.should == "sid"
-        call_attempt.status.should == CallAttempt::Status::RINGING
-      end
-
-      it "updates voter attributes" do
-        time_now = Time.now
-        Time.stub!(:now).and_return(time_now)
-        caller_session = Factory(:caller_session, :available_for_call => true, :on_call => true, campaign: campaign)
-        campaign.stub(:time_period_exceed?).and_return(false)
-        voter.dial
-        call_attempt = voter.call_attempts.last
-        voter.last_call_attempt.should == call_attempt
-        DateTime.parse(voter.last_call_attempt_time.to_s).should == DateTime.parse(time_now.utc.to_s)
-      end
-
-      it "updates the call_attempts campaign" do
-        caller_session = Factory(:caller_session, :available_for_call => true, :on_call => true, campaign: campaign)
-        campaign.stub(:time_period_exceed?).and_return(false)
-        voter.dial
-        call_attempt = voter.call_attempts.last
-        call_attempt.campaign.should == voter.campaign
-      end
-    end
-
-    it "dials the voter and hangs up on answering machine when not using recordings" do
-      Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {"FallbackUrl"=>"blah", 'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
-      campaign.stub(:time_period_exceed?).and_return(false)
-      voter.dial
-    end
-
-    it "dials the voter and continues on answering machine when using recordings" do
-      twilio_lib = mock
-      TwilioLib.should_receive(:new).and_return(twilio_lib)
-      call_back = mock
-      twilio_lib.should_receive(:make_call).and_return(call_back)
-      voter.campaign = campaign
-      voter.dial
-    end
-
-    it "dials the voter without IFMachine if AMD detection turned off" do
-      campaign1 = Factory(:campaign, :robo => false, :type => 'Predictive', answering_machine_detect: false)
-      Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {"FallbackUrl"=>"blah", 'StatusCallback'=> anything, 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
-      voter.campaign = campaign1
-      campaign1.stub(:time_period_exceed?).and_return(false)
-      voter.dial
-    end
-
 
     it "checks, whether voter is called or not" do
       voter1 = Factory(:voter, :status => "not called")
@@ -353,12 +218,6 @@ describe Voter do
       Voter.to_be_dialed.should be_empty
     end
 
-    it "excludes voters with a successful call_attempt" do
-      voter = Factory(:voter, :call_back => false, :status => Voter::SUCCESS, :campaign => Factory(:campaign))
-      Twilio::Call.stub(:make).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
-      Factory(:call_attempt, :voter => voter, :status => CallAttempt::Status::SUCCESS)
-      voter.dial.should == false
-    end
 
 
     it "is ordered by the last_call_attempt_time" do
