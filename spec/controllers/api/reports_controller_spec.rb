@@ -84,7 +84,7 @@ describe Api::ReportsController do
 
   it "should return 200 if report scheduled for download" do
     Resque.should_receive(:enqueue)
-    post :create, api_key: '1mp@ctd1@l1ng',campaign_id: @campaign.id, account_id: @campaign.account.id.to_s, email: @current_user.email, from_date: "10/31/2011", to_date: "11/30/2011"
+    post :create, api_key: '1mp@ctd1@l1ng',campaign_id: @campaign.id, account_id: @campaign.account.id.to_s, email: @current_user.email, from_date: "10/31/2011 11:00", to_date: "11/30/2011 12:00"
     result = JSON.parse(response.body)
     response.code.should eq('200')
     JSON.parse(response.body).should eq({"status"=>"ok", "message"=>"Response will be sent to the callback url once the report is ready for download."})
