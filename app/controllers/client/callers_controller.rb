@@ -87,8 +87,16 @@ module Client
     def restore
       @caller.active = true
       save_caller
-      respond_with @caller,  location: client_scripts_path do |format|
+      respond_with @caller,  location: client_callers_path do |format|
         format.json { render :json => {message: "Caller restored" }, :status => :ok } if @caller.errors.empty?
+        format.html do
+          if @caller.errors.any?
+            @caller.active = true
+            render 'edit'
+          else
+            redirect_to client_callers_path
+          end
+        end
       end
     end
 
