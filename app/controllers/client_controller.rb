@@ -104,7 +104,6 @@ class ClientController < ApplicationController
       end
 
       if @user.valid?
-        @user.send_welcome_email
         @user.create_recurly_account_code
         if session[:user].blank?
           message = "Your account has been created."

@@ -79,11 +79,4 @@ class User < ActiveRecord::Base
   def create_recurly_account_code
     self.account.create_recurly_account_code
   end
-
-  def send_welcome_email
-    mailer = UserMailer.new
-    return if Rails.env !="heroku"
-    return if domain!="impactdialing.com" && domain!="localhost"
-    Resque.enqueue(WelcomeEmailJob, self.id)
-  end
 end
