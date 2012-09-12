@@ -1,16 +1,3 @@
-$(function() {
-
-  //doesn't allow duplicate keypads
-  $('.keypad').live('focusout', function(){
-    if($(this).val()){
-      if($(this).closest('fieldset').find('.keypad:visible[value='+$(this).val()+']').length > 1){
-        alert("Two responses in the one question have the same keypad value. Please fix this before saving.")
-        $(this).val('');
-      }
-    }
-  });
-
-
 //nestead-form
 $('form a.add_nested_fields').live('click', function() {
   // Setup
