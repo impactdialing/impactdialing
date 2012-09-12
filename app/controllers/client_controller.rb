@@ -232,13 +232,11 @@ class ClientController < ApplicationController
    def billing_form
      @account_code=@user.account.recurly_account_code
      @billing_info = Recurly::Account.find(@account_code).billing_info
-     render :layout=>"billing"
    end
 
    def update_billing
      @account_code=@user.account.recurly_account_code
      @billing_info = Recurly::Account.find(@account_code).billing_info
-     render :layout=>"billing"
    end
 
    def add_to_balance
