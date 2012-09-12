@@ -7,6 +7,7 @@ class PossibleResponse < ActiveRecord::Base
   # validates :question, presence: true
   validates :value, presence: true
   validates :possible_response_order, presence: true, numericality: true
+  validates :keypad, uniqueness: {scope: :question_id, message: 'Keypad values must be unique in each question'}
 
   default_scope :order=>"possible_response_order"
 
@@ -42,5 +43,4 @@ class PossibleResponse < ActiveRecord::Base
     end
     texts
   end
-
 end
