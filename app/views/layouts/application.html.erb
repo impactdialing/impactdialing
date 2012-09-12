@@ -29,8 +29,6 @@
 <!-- For Retina displays -->
 <link rel="stylesheet" media="only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (-o-min-device-pixel-ratio: 3/2), only screen and (min-device-pixel-ratio: 1.5)" href="/css/2x.css?v=1">
 
-<%= stylesheet_link_tag "application", "caller", "jquery-ui-1.8.14.custom" %>
-<%= yield :stylesheets %>
 
 <%= render :partial => "layouts/errorception" %>
 <%= render :partial => "layouts/kissmetrics" %>
@@ -40,6 +38,8 @@
 <%= javascript_include_tag 'nested_form' %>
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
+<%= yield :stylesheets %>
+<%= stylesheet_link_tag "application", "caller", "jquery-ui-1.8.14.custom" %>
 <%= yield :jquery_extension_javascripts %>
 <%= yield :javascripts %>
 
