@@ -149,5 +149,21 @@ describe Client::CallersController do
         JSON.parse(response.body).should eq({'message' => 'Cannot access caller'})
       end
     end
+
+    describe 'deleted' do
+      it 'should show deleted callers' do
+        caller = Factory(:caller, account: account, active: false)
+        get :deleted, api_key: account.api_key, format: 'json'
+        JSON.parse(response.body).length.should eq 1
+      end
+    end
+
+    describe 'restore' do
+      it 'should change a caller from inactive to active' do
+        caller = Factory(:caller, account: account, active: false)
+        put :restore, id: caller.id, api_key: account.api_key, format: 'json'
+        response.body.should eq("{\"message\":\"Caller restored\"}")
+      end
+    end
   end
 end
