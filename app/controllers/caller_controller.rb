@@ -3,6 +3,7 @@ class CallerController < ApplicationController
   include NewRelic::Agent::MethodTracer
   before_filter :check_login, :except=>[:login, :feedback, :end_session, :start_calling, :phones_only, :new_campaign_response_panel, :check_reassign, :call_voter, :flow]
   before_filter :find_caller_session , :only => [:flow, :stop_calling, :end_session]
+  layout 'caller'
 
   def start_calling
     caller = Caller.find(params[:caller_id])
