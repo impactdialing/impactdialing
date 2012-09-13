@@ -139,9 +139,9 @@ class Caller < ActiveRecord::Base
   
   def create_caller_session(session_key, sid, caller_type)    
     if is_phones_only?
-      caller_session = PhonesOnlyCallerSession.create(session_key: session_key, campaign: campaign , sid: sid, starttime: Time.now, caller_type: caller_type)
+      caller_session = PhonesOnlyCallerSession.create(session_key: session_key, campaign: campaign , sid: sid, starttime: Time.now, caller_type: caller_type, , state: 'initial', caller: self)
     else
-      caller_session =  WebuiCallerSession.create(on_call: false, available_for_call: false, session_key: session_key, campaign: campaign , sid: sid, starttime: Time.now, caller_type: caller_type, state: 'initial')
+      caller_session =  WebuiCallerSession.create(on_call: false, available_for_call: false, session_key: session_key, campaign: campaign , sid: sid, starttime: Time.now, caller_type: caller_type, state: 'initial', caller: self)
     end
     RedisCallerSession.load_caller_session_info(caller_session.id, caller_session)        
     caller_sessions << caller_session
