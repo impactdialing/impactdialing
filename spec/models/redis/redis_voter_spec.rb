@@ -17,6 +17,133 @@ describe RedisVoter do
      "status"=>"not called", "updated_at"=>"#{Time.now.utc}", "voter_list_id"=>"#{voter_list.id}", "zip_code"=>""})
   end
   
+  describe "assigned_to_caller?" do
+    
+    it "should check id caller is assigned to voter" do
+      RedisVoter.assign_to_caller(1, 1)
+      RedisVoter.assigned_to_caller?(1).should eq(true)
+    end
+    
+  end
+
+  describe "assign_to_caller" do
+    
+    it "should assign caller session to voter" do
+      RedisVoter.assign_to_caller(1, 1)
+      RedisVoter.assigned_to_caller?(1).should eq(true)
+    end
+    
+  end
+  
+  describe "connect_lead_to_caller" do
+    
+    it "should set caller id when caller session already assigned to voter" do
+      campaign = Factory(:campaign)
+      voter = Factory(:voter, campaign: campaign)
+      caller_session = Factory(:caller_session, caller_id: 1, campaign: campaign)
+      call_attempt = Factory(:call_attempt, campaign: campaign, voter: voter)
+      RedisCallerSession.load_caller_session_info(caller_session.id, caller_session)
+      RedisVoter.assign_to_caller(voter.id, caller_session.id)
+      RedisAvailableCaller.should_not_receive(:longest_waiting_caller)
+      RedisVoter.connect_lead_to_caller(voter.id, voter.campaign.id, call_attempt.id)
+      RedisVoter.read(1)["caller_id"].should eq("1")
+    end
+    
+    it "should set status as inprogress when caller session already assigned to voter" do
+      campaign = Factory(:campaign)
+      voter = Factory(:voter, campaign: campaign)
+      caller_session = Factory(:caller_session, caller_id: 1, campaign: campaign)
+      call_attempt = Factory(:call_attempt, campaign: campaign, voter: voter)
+      RedisCallerSession.load_caller_session_info(caller_session.id, caller_session)
+      RedisVoter.assign_to_caller(voter.id, caller_session.id)
+      RedisAvailableCaller.should_not_receive(:longest_waiting_caller)
+      RedisVoter.connect_lead_to_caller(voter.id, voter.campaign.id, call_attempt.id)
+      RedisVoter.read(1)["status"].should eq(CallAttempt::Status::INPROGRESS)
+    end
+    
+    it "should set caller as longest available if not already assigned" do
+      campaign = Factory(:campaign)
+      voter = Factory(:voter, campaign: campaign)
+      caller_session = Factory(:caller_session, caller_id: 2, campaign: campaign, available_for_call: true, on_call: true)
+      call_attempt = Factory(:call_attempt, campaign: campaign, voter: voter)
+      RedisAvailableCaller.add_caller(campaign.id, caller_session.id)
+      RedisCallerSession.load_caller_session_info(caller_session.id, caller_session)
+      RedisVoter.connect_lead_to_caller(voter.id, campaign.id, call_attempt.id)
+      RedisVoter.read(1)["caller_id"].should eq("2")
+    end
+    
+    it "should set status as inprogress as longest available if not already assigned" do
+      campaign = Factory(:campaign)
+      voter = Factory(:voter, campaign: campaign)
+      caller_session = Factory(:caller_session, caller_id: 2, campaign: campaign, available_for_call: true, on_call: true)
+      call_attempt = Factory(:call_attempt, campaign: campaign, voter: voter)
+      RedisAvailableCaller.add_caller(campaign.id, caller_session.id)
+      RedisCallerSession.load_caller_session_info(caller_session.id, caller_session)
+      RedisVoter.connect_lead_to_caller(voter.id, campaign.id, call_attempt.id)
+      RedisVoter.read(1)["status"].should eq(CallAttempt::Status::INPROGRESS)
+    end
+    
+    it "should remove caller from available list" do
+      campaign = Factory(:campaign)
+      voter = Factory(:voter, campaign: campaign)
+      caller_session = Factory(:caller_session, caller_id: 2, campaign: campaign, available_for_call: true, on_call: true)
+      call_attempt = Factory(:call_attempt, campaign: campaign, voter: voter)
+      RedisAvailableCaller.add_caller(campaign.id, caller_session.id)
+      RedisCallerSession.load_caller_session_info(caller_session.id, caller_session)
+      RedisVoter.connect_lead_to_caller(voter.id, campaign.id, call_attempt.id)
+      RedisAvailableCaller.caller?(campaign.id, caller_session.id).should be_false
+    end
+
+    it "should set attempt in progress" do
+      campaign = Factory(:campaign)
+      voter = Factory(:voter, campaign: campaign)
+      caller_session = Factory(:caller_session, caller_id: 2, campaign: campaign, available_for_call: true, on_call: true)
+      call_attempt = Factory(:call_attempt, campaign: campaign, voter: voter)
+      RedisAvailableCaller.add_caller(campaign.id, caller_session.id)
+      RedisCallerSession.load_caller_session_info(caller_session.id, caller_session)
+      RedisVoter.connect_lead_to_caller(voter.id, campaign.id, call_attempt.id)
+      RedisCallerSession.read(caller_session.id)['attempt_in_progress'].should eq(call_attempt.id.to_s)
+    end
+    
+    
+  end
+  
+  describe "could_not_connect_to_available_caller?" do
+    
+    it "should return true if caller not assigned to voter" do
+      voter_list = Factory(:voter_list)
+      voter = Factory(:voter, voter_list: voter_list, FirstName: "abc", caller_session: nil)
+      RedisVoter.load_voter_info(voter.id, voter)
+      RedisVoter.voter(voter.id).delete('caller_session_id')      
+      RedisVoter.could_not_connect_to_available_caller?(voter.id).should be_true
+    end
+    
+    it "should return true if caller is assigned to voter but caller is disonnected" do
+      caller = Factory(:caller)
+      caller_session = Factory(:caller_session, caller_id: caller.id, available_for_call: false, on_call: false)
+      RedisCallerSession.load_caller_session_info(caller_session.id, caller_session)
+      voter_list = Factory(:voter_list)
+      voter = Factory(:voter, voter_list: voter_list, FirstName: "abc", caller_session: caller_session)
+      RedisVoter.load_voter_info(voter.id, voter)      
+      RedisVoter.assign_to_caller(voter.id, caller_session.id)
+      RedisVoter.could_not_connect_to_available_caller?(voter.id).should be_true
+    end
+    
+    it "should return false if caller is assigned to voter but caller is connected" do
+      caller = Factory(:caller)
+      caller_session = Factory(:caller_session, caller_id: caller.id, available_for_call: true, on_call: true)
+      RedisCallerSession.load_caller_session_info(caller_session.id, caller_session)
+      voter_list = Factory(:voter_list)
+      voter = Factory(:voter, voter_list: voter_list, FirstName: "abc")
+      RedisVoter.load_voter_info(voter.id, voter)      
+      RedisVoter.assign_to_caller(voter.id, caller_session.id)
+      RedisVoter.could_not_connect_to_available_caller?(voter.id).should be_false
+    end
+    
+    
+  end
+  
+  
   describe "abandon_call" do
     
     it "should change status" do
@@ -111,56 +238,6 @@ describe RedisVoter do
     
   end
 
-  describe "assigned_to_caller?" do
-    
-    it "should check id caller is assigned to voter" do
-      RedisVoter.assign_to_caller(1, 1)
-      RedisVoter.assigned_to_caller?(1).should eq(true)
-    end
-    
-  end
-
-  describe "assign_to_caller" do
-    
-    it "should assign caller session to voter" do
-      RedisVoter.assign_to_caller(1, 1)
-      RedisVoter.assigned_to_caller?(1).should eq(true)
-    end
-  end
   
-  describe "connect_lead_to_caller" do
-    
-    it "should set caller id when caller session already assigned to voter" do
-      caller_session = Factory(:caller_session, caller_id: 1)
-      RedisCallerSession.load_caller_session_info(caller_session.id, caller_session)
-      RedisVoter.assign_to_caller(1, caller_session.id)
-      RedisVoter.should_receive(:assigned_to_caller?).and_return(true)
-      RedisVoter.connect_lead_to_caller(1, 1, 1)
-      RedisVoter.read(1)["caller_id"].should eq("1")
-    end
-    
-    it "should set status as inprogress when caller session already assigned to voter" do
-      caller_session = Factory(:caller_session, caller_id: 1)
-      RedisCallerSession.load_caller_session_info(caller_session.id, caller_session)
-      RedisVoter.assign_to_caller(1, caller_session.id)
-      RedisVoter.should_receive(:assigned_to_caller?).and_return(true)
-      RedisVoter.connect_lead_to_caller(1, 1, 1)
-      RedisVoter.read(1)["status"].should eq(CallAttempt::Status::INPROGRESS)
-    end
-    
-    it "should set caller as longest available if not already assigned" do
-      caller_session = Factory(:caller_session, caller_id: 2)
-      RedisCallerSession.load_caller_session_info(caller_session.id, caller_session)
-      RedisVoter.should_receive(:assigned_to_caller?).and_return(false)
-      RedisAvailableCaller.should_receive(:longest_waiting_caller).and_return(caller_session.id)
-      RedisVoter.should_receive(:assign_to_caller).with(1, caller_session.id) 
-      RedisAvailableCaller.should_receive(:remove_caller).with(1, caller_session.id)      
-      RedisVoter.connect_lead_to_caller(1, 1, 1)
-      RedisVoter.read(1)["caller_id"].should eq("2")
-      RedisVoter.read(1)["status"].should eq(CallAttempt::Status::INPROGRESS)
-    end
-    
-    
-    
-  end
+
 end

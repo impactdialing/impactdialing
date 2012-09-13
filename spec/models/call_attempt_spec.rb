@@ -58,6 +58,7 @@ describe CallAttempt do
     RedisCampaign.should_receive(:call_status_use_recordings).and_return("status")
     RedisCallAttempt.should_receive(:answered_by_machine)
     RedisVoter.should_receive(:answered_by_machine)
+    MonitorEvent.should_receive(:incoming_call_request)
     call_attempt.process_answered_by_machine        
   end
   
@@ -75,6 +76,7 @@ describe CallAttempt do
     call_attempt = Factory(:call_attempt, :voter => voter)
     RedisCallAttempt.should_receive(:end_answered_call)
     RedisVoter.should_receive(:end_answered_call)
+    RedisCampaignCall.should_receive(:move_inprogress_to_wrapup)
     call_attempt.end_answered_call    
   end
   
@@ -83,21 +85,43 @@ describe CallAttempt do
     call_attempt = Factory(:call_attempt, :voter => voter)
     RedisCallAttempt.should_receive(:abandon_call)
     RedisVoter.should_receive(:abandon_call)
+    RedisCampaignCall.should_receive(:move_ringing_to_abandoned)
+    MonitorEvent.should_receive(:incoming_call_request)    
     call_attempt.abandon_call            
   end
   
   it "should connect call" do
     voter = Factory(:voter)
     call_attempt = Factory(:call_attempt, :voter => voter)
-    redis_call_attempt = {voter_id: voter.id}
+    caller_session = Factory(:caller_session)
     RedisVoter.load_voter_info(voter.id, voter)
-    RedisCallAttempt.should_receive(:read).and_return({voter_id: voter.id})
-    RedisVoter.should_receive(:read).and_return({caller_id: "1", caller_session_id: "1"})
+    RedisCallAttempt.load_call_attempt_info(call_attempt.id, call_attempt)    
     RedisCallAttempt.should_receive(:connect_call)
-    call_attempt.connect_call                
+    RedisCampaignCall.should_receive(:move_ringing_to_inprogress)
+    MonitorEvent.should_receive(:incoming_call_request)    
+    call_attempt.connect_call
   end
   
-
+  it "should end_unanswered_call" do
+    voter = Factory(:voter)  
+    call_attempt = Factory(:call_attempt, :voter => voter)
+    call = Factory(:call, call_attempt: call_attempt, call_status: "busy")    
+    RedisCallAttempt.should_receive(:end_unanswered_call)
+    RedisVoter.should_receive(:end_unanswered_call)
+    RedisCampaignCall.should_receive(:move_ringing_to_completed)    
+    call_attempt.end_unanswered_call
+  end
+  
+  it "should end_answered_by_machine" do
+    voter = Factory(:voter)  
+    call_attempt = Factory(:call_attempt, :voter => voter)
+    call = Factory(:call, call_attempt: call_attempt, call_status: "busy")    
+    RedisCallAttempt.should_receive(:end_answered_by_machine)
+    RedisVoter.should_receive(:end_answered_by_machine)
+    MonitorEvent.should_receive(:incoming_call_request)
+    call_attempt.end_answered_by_machine
+  end
+  
   it "lists attempts between two dates" do
     too_old = Factory(:call_attempt).tap { |ca| ca.update_attribute(:created_at, 10.minutes.ago) }
     too_new = Factory(:call_attempt).tap { |ca| ca.update_attribute(:created_at, 10.minutes.from_now) }
