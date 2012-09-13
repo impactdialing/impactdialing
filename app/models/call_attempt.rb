@@ -213,7 +213,9 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def redirect_caller(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
+    puts "redirect caller"
     session_id = redis_caller_session
+    puts session_id
     unless session_id.nil?
       session = CallerSession.find(session_id)
       EM.synchrony {
