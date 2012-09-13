@@ -50,6 +50,11 @@ class RedisCallAttempt
     call_attempt(call_attempt_id).bulk_set({status: CallAttempt::Status::SCHEDULED, scheduled_date: scheduled_date})            
   end
   
+  def self.caller_session_id(call_attempt_id)
+    read(call_attempt_id)['caller_session_id']
+  end
+  
+  
 
   def self.end_unanswered_call(call_attempt_id, status)
     call_attempt(call_attempt_id).bulk_set({status: status, call_end: Time.now, wrapup_time: Time.now})  

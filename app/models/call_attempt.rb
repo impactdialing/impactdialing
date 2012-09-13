@@ -189,7 +189,7 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def redis_caller_session
-    RedisVoter.caller_session_id(voter.id)
+    RedisCallAttempt.caller_session_id(self.id)
   end 
   
   module Status
