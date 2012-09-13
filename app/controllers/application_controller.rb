@@ -4,16 +4,14 @@ require 'new_relic/agent/method_tracer'
 class ApplicationController < ActionController::Base
   include NewRelic::Agent::MethodTracer
   include WhiteLabeling
+  include ApplicationHelper
   helper :all # include all helpers, all the time
   protect_from_forgery # See ActionController::RequestForgeryProtection for details
-  # Scrub sensitive parameters from your log
-  rescue_from Timeout::Error, :with => :return_service_unavialble
+  rescue_from InvalidDateException, :with=> :return_invalid_date
 
-  def return_service_unavialble
-    respond_to do |type|
-      type.all  { render :nothing => true, :status => 503 }
-    end
-    true
+  def return_invalid_date
+    flash_message(:error, I18n.t(:invalid_date_format))
+    redirect_to :back
   end
 
   private

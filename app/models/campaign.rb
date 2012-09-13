@@ -117,6 +117,18 @@ class Campaign < ActiveRecord::Base
   def callers_log_in?
     caller_sessions.on_call.length > 0
   end
+  
+  def as_time_zone
+    time_zone.nil? ? nil : ActiveSupport::TimeZone.new(time_zone)
+  end
+  
+  def first_call_attempt_time
+    call_attempts.first.try(:created_at) 
+  end
+  
+  def last_call_attempt_time
+    call_attempts.last.try(:created_at)
+  end  
 
 
   def voters_called

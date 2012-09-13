@@ -45,15 +45,12 @@ class Account < ActiveRecord::Base
   end
 
   def self.authenticate_caller?(pin, password)
-    caller = Caller.find_by_pin(pin)
-    
+    caller = Caller.find_by_pin(pin)    
     return nil if caller.nil?
     account = caller.account
     if password.nil? || account.caller_password.nil? || account.caller_hashed_password_salt.nil?
-      return false
+      return nil
     end
-    
-    
     if account.caller_password == Digest::SHA2.hexdigest(account.caller_hashed_password_salt + password)
       caller
     else
@@ -231,19 +228,14 @@ class Account < ActiveRecord::Base
   def check_autorecharge(amount_remaining)
     if autorecharge_enabled? && autorecharge_trigger >= amount_remaining
       begin
-        if status != 'autorecharge_pending'
-          update_attribute(:status, 'autorecharge_pending')
-          new_payment = Payment.charge_recurly_account(self, self.autorecharge_amount, "Auto-recharge")
-          if new_payment.nil?
-             flash_now(:error, "There was a problem charging your credit card.  Please try updating your billing information or contact support for help.")
-          end
-          update_attribute(:status, '')
-          return new_payment
-       end
+        new_payment = Payment.charge_recurly_account(self, self.autorecharge_amount, "Auto-recharge")
+        if new_payment.nil?
+          flash_now(:error, "There was a problem charging your credit card.  Please try updating your billing information or contact support for help.")
+        end
+        return new_payment
       rescue ActiveRecord::StaleObjectError
         # pretty much do nothing
       end
-
     end
   end
 
