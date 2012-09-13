@@ -70,6 +70,7 @@ class CallAttempt < ActiveRecord::Base
     redis_call_attempt = RedisCallAttempt.read(self.id)
     redis_voter = RedisVoter.read(redis_call_attempt['voter_id'])
     RedisCallAttempt.connect_call(self.id, redis_voter["caller_id"], redis_voter["caller_session_id"])
+    
     RedisCampaignCall.move_ringing_to_inprogress(campaign.id, self.id)
     MonitorEvent.incoming_call_request(campaign)
   end
@@ -212,10 +213,12 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def redirect_caller(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
-    unless caller_session.nil?
+    session_id = redis_caller_session
+    unless session_id.nil?
+      session = CallerSession.find(session_id)
       EM.synchrony {
         t = TwilioLib.new(account, auth)
-        deferrable = t.redirect_call(caller_session.sid, flow_caller_url(caller_session.caller, :host => Settings.host, :port => Settings.port, session_id: caller_session.id, event: "start_conf"))
+        deferrable = t.redirect_call(session.sid, flow_caller_url(session.caller, :host => Settings.host, :port => Settings.port, session_id: session.id, event: "start_conf"))
         deferrable.callback {}
         deferrable.errback { |error| }
       }
