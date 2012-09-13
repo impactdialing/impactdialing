@@ -1,8 +1,8 @@
 default: &default_settings
-  host: twilio.impactdialing.com
-  public_host: www.impactdialing.com
+  host: beta-twilio.impactdialing.com
+  public_host: www.beta.impactdialing.com
   port: 80
-  phone: 4155787571
+  phone: 8886215779
 
 development:
   phone: 8582254595
@@ -11,9 +11,9 @@ development:
 test:
   <<: *default_settings
 
-heroku:
+heroku_preproduction:
   <<: *default_settings
-  host: twilio.impactdialing.com
+  host: beta-twilio.impactdialing.com
   port: 80
 
 production:

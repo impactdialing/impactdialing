@@ -13,8 +13,14 @@ module PreviewPowerCampaign
       sample_voters = all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.limit(7)
       voter = sample_voters.sample
     end
+    RedisVoter.load_voter_info(voter.id, voter) unless voter.nil?
     voter
   end  
+  
+  def redirect_campaign_reassigned(caller_session)
+    Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
+    Twilio::Call.redirect(caller_session.sid, phones_only_caller_index_url(:host => Settings.host, :port => Settings.port, session_id: caller_session.id, :campaign_reassigned => true))    
+  end
   
   def update_voter_status_to_ready(voter)
     voter.update_attributes(status: CallAttempt::Status::READY) unless voter.nil?        

@@ -1,4 +1,5 @@
 require Rails.root.join("lib/twilio_lib")
+require Rails.root.join("lib/redis_connection")
 
 class CallAttempt < ActiveRecord::Base
 
@@ -66,34 +67,30 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def connect_call
-    session = voter.caller_session
-    update_attributes(status: CallAttempt::Status::INPROGRESS, connecttime: Time.now, caller: session.caller, caller_session: session)
+    redis_call_attempt = RedisCallAttempt.read(self.id)
+    redis_voter = RedisVoter.read(redis_call_attempt['voter_id'])
+    RedisCallAttempt.connect_call(self.id, redis_voter["caller_id"], redis_voter["caller_session_id"])
+    RedisCampaignCall.move_ringing_to_inprogress(campaign.id, self.id)
     MonitorEvent.incoming_call_request(campaign)
   end
 
   def abandon_call
-    update_attributes(status: CallAttempt::Status::ABANDONED, connecttime: Time.now, wrapup_time: Time.now, call_end: Time.now)
-    voter.update_attributes(:status => CallAttempt::Status::ABANDONED, call_back: false, caller_session: nil, caller_id: nil)
+    $redis_call_flow_connection.pipelined do
+      RedisCallAttempt.abandon_call(self.id)
+      RedisVoter.abandon_call(voter.id)
+    end
+    RedisCampaignCall.move_ringing_to_abandoned(campaign.id, self.id)
     MonitorEvent.incoming_call_request(campaign)
   end
-
+      
+    
   def connect_lead_to_caller
-    begin
-      voter.caller_session ||= campaign.oldest_available_caller_session
-      unless voter.caller_session.nil?
-        voter.caller_id = voter.caller_session.caller_id
-        voter.status = CallAttempt::Status::INPROGRESS
-        voter.save
-        voter.caller_session.update_attributes(on_call: true, available_for_call: false)
-      end
-    rescue ActiveRecord::StaleObjectError
-      abandon_call
-    end
+    RedisVoter.connect_lead_to_caller(voter.id, campaign.id, self.id)
   end
 
   def caller_not_available?
     connect_lead_to_caller
-    voter.caller_session.nil? || voter.caller_session.disconnected?
+    RedisVoter.could_not_connect_to_available_caller?(voter.id) 
   end
 
   def caller_available?
@@ -102,42 +99,45 @@ class CallAttempt < ActiveRecord::Base
 
 
   def end_answered_call
-    begin
-      update_attributes(call_end: Time.now)
-      voter.update_attributes(last_call_attempt_time:  Time.now, caller_session: nil)
-    rescue ActiveRecord::StaleObjectError
-      voter_to_update = Voter.find(voter.id)
-      voter_to_update.update_attributes(last_call_attempt_time:  Time.now, caller_session: nil)
+    $redis_call_flow_connection.pipelined do
+      RedisCallAttempt.end_answered_call(self.id)
+      RedisVoter.end_answered_call(voter.id)
     end
+    RedisCampaignCall.move_inprogress_to_wrapup(campaign.id, self.id)      
   end
 
   def process_answered_by_machine
-    update_attributes(connecttime: Time.now, call_end:  Time.now, status:  campaign.use_recordings? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP, wrapup_time: Time.now)
-    voter.update_attributes(status: campaign.use_recordings? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP, caller_session: nil)    
+    status = RedisCampaign.call_status_use_recordings(campaign.id)
+    $redis_call_flow_connection.pipelined do
+      RedisCallAttempt.answered_by_machine(self.id, status)
+      RedisVoter.answered_by_machine(voter.id, status)
+    end
     MonitorEvent.incoming_call_request(campaign)
   end
 
   def end_answered_by_machine
-    update_attributes(wrapup_time: Time.now, call_end: Time.now)    
-    voter.update_attributes(last_call_attempt_time:  Time.now, call_back: false)  
+    $redis_call_flow_connection.pipelined do
+      RedisCallAttempt.end_answered_by_machine(self.id)
+      RedisVoter.end_answered_by_machine(voter.id)
+    end
     MonitorEvent.incoming_call_request(campaign)              
   end
 
 
   def end_unanswered_call
-    update_attributes(status:  CallAttempt::Status::MAP[call.call_status], wrapup_time: Time.now, call_end: Time.now)
-    begin
-      voter.update_attributes(status:  CallAttempt::Status::MAP[call.call_status], last_call_attempt_time:  Time.now, call_back: false)
-    rescue ActiveRecord::StaleObjectError
-      voter_to_update = Voter.find(voter.id)
-      voter_to_update.update_attributes(status:  CallAttempt::Status::MAP[call.call_status], last_call_attempt_time:  Time.now, call_back: false)
+    status = CallAttempt::Status::MAP[call.call_status]
+    $redis_call_flow_connection.pipelined do
+      RedisCallAttempt.end_unanswered_call(self.id, status)
+      RedisVoter.end_unanswered_call(voter.id, status)
     end
+    RedisCampaignCall.move_ringing_to_completed(campaign.id, self.id)
   end
 
   def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
+    call_sid = RedisCallAttempt.read(self.id)["sid"]
     EM.synchrony {
-      t = TwilioLib.new(account, auth)
-      deferrable = t.end_call("#{self.sid}")
+      t = TwilioLib.new(account, auth)    
+      deferrable = t.end_call(call_sid)              
       deferrable.callback {}
       deferrable.errback { |error| }
     }
@@ -148,23 +148,23 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def disconnect_call
-    update_attributes(status: CallAttempt::Status::SUCCESS, recording_duration: call.recording_duration, recording_url: call.recording_url)
-    begin
-      voter.update_attribute(:status, CallAttempt::Status::SUCCESS)
-    rescue ActiveRecord::StaleObjectError
-      voter_to_update = Voter.find(voter.id)
-      voter_to_update.update_attribute(:status, CallAttempt::Status::SUCCESS)
-    end
+    $redis_call_flow_connection.pipelined do
+      RedisCallAttempt.disconnect_call(self.id, call.recording_duration, call.recording_url)
+      RedisVoter.set_status(voter.id, CallAttempt::Status::SUCCESS)
+      RedisVoter.read(voter.id)["caller_session_id"]
+    end    
   end
 
   def schedule_for_later(date)
     scheduled_date = DateTime.strptime(date, "%m/%d/%Y %H:%M").to_time
-    update_attributes(:scheduled_date => scheduled_date, :status => Status::SCHEDULED)
-    voter.update_attributes(:scheduled_date => scheduled_date, :status => Status::SCHEDULED, :call_back => true)
+    $redis_call_flow_connection.pipelined do    
+      RedisCallAttempt.schedule_for_later(self.id, scheduled_date)
+      RedisVoter.schedule_for_later(voter.id, scheduled_date)
+    end
   end
 
   def wrapup_now
-    update_attribute(:wrapup_time, Time.now)
+    RedisCallAttempt.wrapup(self.id)    
   end
 
   def self.time_on_call(caller, campaign, from, to)
@@ -187,6 +187,10 @@ class CallAttempt < ActiveRecord::Base
   ((call_end - connecttime)/60).ceil
   end
 
+  def redis_caller_session
+    RedisVoter.caller_session_id(voter.id)
+  end 
+  
   module Status
     VOICEMAIL = 'Message delivered'
     SUCCESS = 'Call completed with success.'
@@ -217,4 +221,11 @@ class CallAttempt < ActiveRecord::Base
       }
     end
   end
+  
+  def end_caller_session
+    session = CallerSession.find(redis_caller_session)
+    session.run('end_conf')
+  end
+
 end
+
