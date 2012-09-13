@@ -72,7 +72,6 @@ module Client
     end
 
     def usage
-      @campaign = current_user.campaigns.find(params[:id])
       @from_date, @to_date = set_date_range(@campaign, params[:from_date], params[:to_date])
       @campaign_usage = CampaignUsage.new(@campaign, @from_date, @to_date)
     end
@@ -90,7 +89,7 @@ module Client
     private
 
     def load_campaign
-      @campaign = Campaign.find(params[:campaign_id])
+      @campaign = current_user.campaigns.find(params[:campaign_id])
     end
 
     def set_dates
