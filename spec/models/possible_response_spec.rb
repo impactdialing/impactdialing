@@ -6,7 +6,6 @@ describe PossibleResponse do
     it {should validate_presence_of :value}
     it {should validate_presence_of :possible_response_order}
     it {should validate_numericality_of :possible_response_order}
-    it {should validate_uniqueness_of(:keypad).scoped_to(:question_id)}
   end
 
   it "returns the calculated percentage value for possible response" do
