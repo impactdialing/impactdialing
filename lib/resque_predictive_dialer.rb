@@ -11,14 +11,13 @@ require "em-synchrony/em-http"
 
 loop do
   begin
-    logged_in_campaigns = CallerSession.campaigns_on_call
-    logged_in_campaigns.each do |c|
-      campaign = Campaign.find(c.campaign_id)
-      if campaign.type != Campaign::Type::PREVIEW && campaign.type != Campaign::Type::PROGRESSIVE && !Resque.redis.exists("dial:#{campaign.id}")
+    predictive_campaigns = RedisCampaign.running_campaigns
+    predictive_campaigns.each do |campaign_id|
+      campaign = Campaign.find(campaign_id)
+      if !Resque.redis.exists("dial:#{campaign.id}")
         campaign.dial_resque
       end
     end
-    sleep 3
   rescue Exception => e
     if e.class==SystemExit
       puts "============ EXITING  ============"

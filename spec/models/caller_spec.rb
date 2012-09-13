@@ -150,4 +150,33 @@ describe Caller do
       end
     end
   end
+  
+  describe "reassign caller campaign" do
+    it "should do nothing if campaign not changed" do
+      campaign = Factory(:campaign)
+      caller = Factory(:caller, campaign: campaign)
+      caller.should_not_receive(:is_phones_only?)
+      caller.save
+    end
+    
+    it "should do nothing if campaign changed but caller not logged in" do
+      campaign = Factory(:campaign)
+      caller_session = Factory(:caller_session, on_call: false)
+      caller = Factory(:caller, campaign: campaign)
+      caller.should_not_receive(:is_phones_only?)      
+      caller.save
+    end
+    
+    it "should redirect if live phones only caller" do
+      campaign = Factory(:campaign)
+      other_campaign = Factory(:campaign)
+      caller = Factory(:caller, campaign: campaign, is_phones_only: true)
+      caller_session = Factory(:caller_session, on_call: true, campaign: other_campaign, caller_id: caller.id)
+      caller.caller_sessions << caller_session      
+      other_campaign.should_receive(:redirect_campaign_reassigned)
+      caller.update_attributes(campaign_id: other_campaign.id)
+    end
+    
+    
+  end
 end

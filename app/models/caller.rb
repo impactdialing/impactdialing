@@ -11,6 +11,7 @@ class Caller < ActiveRecord::Base
   has_many :answers
   before_create :create_uniq_pin
   before_validation :assign_to_caller_group_campaign
+  before_save :reassign_caller_campaign
   validates_uniqueness_of :email, :allow_nil => true
   validates :campaign_id, presence: true
 
@@ -27,7 +28,18 @@ class Caller < ActiveRecord::Base
   def identity_name
     is_phones_only?  ? name : email
   end
-
+  
+  def reassign_caller_campaign
+    if campaign_id_changed? && is_on_call?
+      if is_phones_only?
+        caller_session.campaign.redirect_campaign_reassigned(caller_session) 
+      else
+        caller_session.reassign_caller_session_to_campaign        
+      end
+    end  
+  end
+  
+  
   def create_uniq_pin
     uniq_pin=0
     while uniq_pin==0 do
@@ -123,14 +135,15 @@ class Caller < ActiveRecord::Base
   #        end
   #      end
   # end
-
-
-  def create_caller_session(session_key, sid, caller_type)
+  
+  
+  def create_caller_session(session_key, sid, caller_type)    
     if is_phones_only?
-      caller_session = PhonesOnlyCallerSession.create(on_call: false, available_for_call: false, session_key: session_key, campaign: campaign , sid: sid, starttime: Time.now, caller_type: caller_type, state: 'initial')
+      caller_session = PhonesOnlyCallerSession.create(session_key: session_key, campaign: campaign , sid: sid, starttime: Time.now, caller_type: caller_type)
     else
       caller_session =  WebuiCallerSession.create(on_call: false, available_for_call: false, session_key: session_key, campaign: campaign , sid: sid, starttime: Time.now, caller_type: caller_type, state: 'initial')
     end
+    RedisCallerSession.load_caller_session_info(caller_session.id, caller_session)        
     caller_sessions << caller_session
     caller_session
   end

@@ -5,6 +5,7 @@ class Recording < ActiveRecord::Base
   validates_presence_of :name
   validate :validate_file_name
   belongs_to :account
+  has_many :campaigns
 
   scope :active, where(:active => true)
 

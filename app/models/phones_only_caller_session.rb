@@ -77,9 +77,9 @@ class PhonesOnlyCallerSession < CallerSession
         event :start_conf, :to => :conference_started_phones_only
         before(:always) {select_voter(voter_in_progress)}
         response do |xml_builder, the_call|
-          if voter_in_progress.present?
-            xml_builder.Say "#{voter_in_progress.FirstName}  #{voter_in_progress.LastName}." 
-            xml_builder.Redirect(flow_caller_url(caller, :session_id => id, :voter_id => voter_in_progress.id, event: "start_conf", :host => Settings.host, :port => Settings.port), :method => "POST")
+          if RedisCallerSession.voter_in_progress?(self.id)
+            xml_builder.Say "#{current_voter_in_progress['FirstName']}  #{current_voter_in_progress['LastName']}." 
+            xml_builder.Redirect(flow_caller_url(caller, :session_id => id, :voter_id => current_voter_in_progress["id"], event: "start_conf", :host => Settings.host, :port => Settings.port), :method => "POST")
           else
             xml_builder.Say I18n.t(:campaign_has_no_more_voters)
             xml_builder.Hangup
@@ -200,7 +200,15 @@ class PhonesOnlyCallerSession < CallerSession
   
   def select_voter(old_voter)
     voter = campaign.next_voter_in_dial_queue(old_voter.try(:id))
-    update_attributes(voter_in_progress: voter)
+    unless voter.nil?
+      RedisCallerSession.set_voter_in_progress(self.id, voter.id)
+    end
+    voter    
+  end
+  
+  def current_voter_in_progress
+    voter_id = RedisCallerSession.voter_in_progress(self.id)
+    RedisVoter.read(voter_id)    
   end
   
   def star_selected?
@@ -225,13 +233,6 @@ class PhonesOnlyCallerSession < CallerSession
     campaign.type == Campaign::Type::PREDICTIVE
   end
     
-  def start_conference    
-    begin
-      update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
-    rescue ActiveRecord::StaleObjectError
-      # end conf
-    end
-  end
   
   def preview_campaign?
     campaign.type != Campaign::Type::Preview

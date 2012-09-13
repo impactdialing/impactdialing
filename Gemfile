@@ -33,12 +33,12 @@ gem 'resque-lock', "~> 1.0.0"
 gem "resque-loner", "~>1.2.1"
 gem "hiredis", "~>0.4.5"
 gem "em-hiredis", "~>0.1.1"
-gem "redis", "~>2.2.2"
-gem "redis-objects", "~>0.5.3",:require => 'redis/objects'
 gem "formtastic", "~>2.2.1"
 gem "cocoon", "~>1.0.22"
 gem 'deep_cloneable', '~> 1.4.0'
 gem 'heroku', '~> 2.17.0'
+gem "redis-objects", "~>0.5.3",:require => 'redis/objects'
+gem "redis", "~>2.2.2"
 
 
 group :development, :test do

@@ -158,7 +158,7 @@ class CallerSession < ActiveRecord::Base
   end
   
   def end_session
-    update_attributes(on_call: false, available_for_call:  false, endtime:  Time.now)
+    RedisCallerSession.end_session(self.id)
   end
   
   def account_not_activated?
@@ -204,7 +204,7 @@ class CallerSession < ActiveRecord::Base
   def reassign_caller_session_to_campaign
     old_campaign = self.campaign
     update_attribute(:campaign, caller.campaign)    
-    publish_moderator_caller_reassigned_to_campaign(old_campaign)
+    # publish_moderator_caller_reassigned_to_campaign(old_campaign)
   end
      
   def caller_reassigned_to_another_campaign?
@@ -212,7 +212,7 @@ class CallerSession < ActiveRecord::Base
   end
 
   def disconnected?
-    !available_for_call && !on_call
+    RedisCallerSession.disconnected?(self.id)
   end
   
   def publish(event, data)
@@ -238,7 +238,9 @@ class CallerSession < ActiveRecord::Base
   end
   
   def create_call_attempt(voter)
-    attempt = voter.call_attempts.create(:campaign => campaign, :dialer_mode => campaign.type, :status => CallAttempt::Status::RINGING, :caller_session => self, :caller => caller, call_start:  Time.now)
+    attempt = voter.call_attempts.create()    
+    RedisCallAttempt.new(attempt.id, voter.id, campaign.id, CallAttempt::Status::RINGING, caller.id)
+    # attempt = voter.call_attempts.create(:campaign => campaign, :dialer_mode => campaign.type, :status => CallAttempt::Status::RINGING, :caller_session => self, :caller => caller, call_start:  Time.now)
     update_attribute('attempt_in_progress', attempt)
     voter.update_attributes(:last_call_attempt => attempt, :last_call_attempt_time => Time.now, :caller_session => self, status: CallAttempt::Status::RINGING)
     Call.create(call_attempt: attempt, all_states: "", state: 'initial')
@@ -280,6 +282,14 @@ class CallerSession < ActiveRecord::Base
    def call_time
    ((endtime - starttime)/60).ceil
    end
+   
+   def start_conference    
+     $redis_call_flow_connection.multi do
+       RedisAvailableCaller.add_caller(campaign.id, self.id)
+       RedisCallerSession.start_conference(self.id)
+     end
+   end
+   
    
    
   private

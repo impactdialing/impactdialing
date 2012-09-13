@@ -96,6 +96,7 @@ class Voter < ActiveRecord::Base
   def self.remaining_voters_count_for(column_name, column_value)
     count(:conditions => "#{column_name} = #{column_value} AND active = 1 AND (status not in ('Call in progress','Ringing','Call ready to dial','Call completed with success.') or call_back=1)")
   end
+
   
   def dial_predictive_em(iter)
     call_attempt = new_call_attempt(self.campaign.type)

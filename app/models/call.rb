@@ -22,6 +22,8 @@ class Call < ActiveRecord::Base
   delegate :campaign, :to=> :call_attempt
   delegate :voter, :to=> :call_attempt
   delegate :caller_session, :to=> :call_attempt
+  delegate :redis_caller_session, :to=> :call_attempt
+  delegate :end_caller_session, :to=> :call_attempt
   
   
   call_flow :state, :initial => :initial do    
@@ -40,9 +42,9 @@ class Call < ActiveRecord::Base
         event :disconnect, :to => :disconnected
         
         response do |xml_builder, the_call|
-          unless voter.caller_session.nil? 
+          unless redis_caller_session.nil? 
             xml_builder.Dial :hangupOnStar => 'false', :action => flow_call_url(the_call, :host => Settings.host, event: "disconnect"), :record=> campaign.account.record_calls do |d|
-              d.Conference caller_session.session_key, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
+              d.Conference RedisCallerSession.caller_session(redis_caller_session)['session_key'], :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
             end
           else
             xml_builder.Hangup
@@ -69,6 +71,7 @@ class Call < ActiveRecord::Base
       
       state :abandoned do
         before(:always) { abandon_call; call_attempt.redirect_caller }        
+        
         response do |xml_builder, the_call|
           xml_builder.Hangup
         end
@@ -117,7 +120,7 @@ class Call < ActiveRecord::Base
       end
       
       state :wrapup_and_stop do
-        before(:always) { wrapup_now; caller_session.run('end_conf') }        
+        before(:always) { wrapup_now; end_caller_session }        
         after(:success){ persist_all_states;; call_attempt.publish_moderator_response_submited}
       end
             
@@ -145,11 +148,11 @@ class Call < ActiveRecord::Base
   end
 
   def answered_by_human_and_caller_not_available?
-    (answered_by.nil? || answered_by == "human") && caller_not_available?
+    (answered_by.nil? || answered_by == "human") && call_status == 'in-progress' && caller_not_available?
   end
   
   def answered_by_human_and_caller_available?
-    (answered_by.nil? || answered_by == "human") && caller_available?
+    (answered_by.nil? || answered_by == "human") && call_status == 'in-progress' && caller_available?
   end
   
   def call_did_not_connect?
@@ -159,11 +162,6 @@ class Call < ActiveRecord::Base
   def call_connected?
     !call_did_not_connect?
   end
-  
-  
-  
-  
-  
   
   
 end  

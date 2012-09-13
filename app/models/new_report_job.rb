@@ -29,7 +29,7 @@ class NewReportJob
    end
 
    def notify_success
-     response_strategy = @strategy == 'webui' ?  ReportWebUIStrategy.new("success", @user, @campaign, nil) : ReportApiStrategy.new("success", @campaign.id, @campaign.account.id, @callback_url)
+     response_strategy = @strategy == 'webui' ?  ReportWebUIStrategy.new("success", @user, @campaign, nil) : ReportApiStrategy.new("success", @campaign.account.id, @campaign.id, @callback_url)
      response_strategy.response({campaign_name: @campaign_name})
    end
 
