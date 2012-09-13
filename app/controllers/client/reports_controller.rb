@@ -71,6 +71,22 @@ module Client
       sanitize_dials(@status_usage[CallAttempt::Status::VOICEMAIL]).to_i + sanitize_dials(@status_usage[CallAttempt::Status::HANGUP]).to_i
     end
 
+    def usage
+      @campaign = current_user.campaigns.find(params[:id])
+      @from_date, @to_date = set_date_range(@campaign, params[:from_date], params[:to_date])
+      @campaign_usage = CampaignUsage.new(@campaign, @from_date, @to_date)
+    end
+
+    def downloaded_reports
+      @downloaded_reports = DownloadedReport.active_reports(@campaign.id)
+    end
+
+    def download_report
+      @from_date, @to_date = set_date_range(@campaign, params[:from_date], params[:to_date])
+      @voter_fields = VoterList::VOTER_DATA_COLUMNS
+      @custom_voter_fields = @user.account.custom_voter_fields.collect{ |field| field.name}
+    end
+
     private
 
     def load_campaign
