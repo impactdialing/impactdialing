@@ -61,7 +61,7 @@ class Twillio
     end
     MonitorEvent.call_ringing(campaign)
     Call.create(call_attempt: attempt, all_states: "")
-    RedisCampaignCall.add_to_ringing(attempt.id)
+    RedisCampaignCall.add_to_ringing(campaign.id, attempt.id)
     attempt    
   end
   
