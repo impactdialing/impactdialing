@@ -91,7 +91,7 @@ describe Client::ReportsController do
   describe "download report" do
 
     it "pulls up report downloads page" do
-      campaign = Factory(:preview, script: Factory(:script))
+      campaign = Factory(:preview, script: Factory(:script), account: account)
       Resque.should_receive(:enqueue)
       get :download, :campaign_id => campaign.id, format: 'csv'
       response.should redirect_to 'http://test.host/client/reports'
@@ -99,7 +99,7 @@ describe Client::ReportsController do
 
     it "sets the default date range according to the campaign's time zone" do
       time_zone = ActiveSupport::TimeZone.new("Pacific Time (US & Canada)")
-      campaign = Factory(:preview, script: Factory(:script), :time_zone => time_zone.name)
+      campaign = Factory(:preview, script: Factory(:script), :time_zone => time_zone.name, account: account)
       Time.stub(:now => Time.utc(2012, 2, 13, 0, 0, 0))
       get :download_report, :campaign_id => campaign.id
       response.should be_ok
