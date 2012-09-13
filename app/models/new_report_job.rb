@@ -40,7 +40,7 @@ class NewReportJob
    end
 
    def on_failure_report(exception)
-     response_strategy = strategy == 'webui' ?  ReportWebUIStrategy.new("failure", @user, @campaign, exception) : ReportApiStrategy.new("failure", @campaign.account.id, @campaign.id, @callback_url)
+     response_strategy = @strategy == 'webui' ?  ReportWebUIStrategy.new("failure", @user, @campaign, exception) : ReportApiStrategy.new("failure", @campaign.account.id, @campaign.id, @callback_url)
      response_strategy.response({})
    end
 
