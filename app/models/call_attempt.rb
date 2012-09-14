@@ -192,6 +192,11 @@ class CallAttempt < ActiveRecord::Base
     RedisCallAttempt.caller_session_id(self.id)
   end 
   
+  def caller_session_key
+    RedisCallerSession.caller_session(redis_caller_session)['session_key']
+  end
+  
+  
   module Status
     VOICEMAIL = 'Message delivered'
     SUCCESS = 'Call completed with success.'
