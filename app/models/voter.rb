@@ -136,13 +136,17 @@ class Voter < ActiveRecord::Base
       Rails.logger.info "#{call_attempt.id} - after call"    
       response = JSON.parse(http.response)  
       if response["RestException"]
+        puts response["RestException"]
         handle_failed_call(call_attempt, self)
       else
         call_attempt.update_attributes(:sid => response["sid"])
       end
       iter.return(http)      
        }
-    http.errback { iter.return(http) }    
+    http.errback { 
+      puts JSON.parse(http.response) 
+      iter.return(http)
+       }    
   end
   
   def handle_failed_call(attempt, voter)
