@@ -13,6 +13,6 @@ class CalculateDialsJob
      return if num_to_call <= 0    
      campaign.set_calls_in_progress
      voters_to_dial = campaign.choose_voters_to_dial(num_to_call)
-     voters_to_dial.each_slice(10).to_a.each do {|voters| Resque.enqueue(DialerJob, campaign.id, voters_to_dial) }     
+     voters_to_dial.each_slice(10).to_a.each {|voters| Resque.enqueue(DialerJob, campaign.id, voters_to_dial) }     
    end
 end
