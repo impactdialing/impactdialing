@@ -18,12 +18,28 @@ class Predictive < Campaign
   end
   
   def dial_resque
+    campaign.set_campaign_dial_count(1)
     Resque.enqueue(CalculateDialsJob, self.id)
   end  
   
-  def set_calls_in_progress
-    Resque.redis.set("dial:#{self.id}", true)
-    Resque.redis.expire("dial:#{self.id}", 20)        
+  
+  def set_campaign_dial_count(count)
+    Resque.redis.set("dial_count:#{self.id}", count)
+    Resque.redis.expire("dial_count:#{self.id}", 20)
+  end
+  
+  def increment_campaign_dial_count(counter)
+    Resque.redis.set("dial_count:#{self.id}", count)
+    Resque.redis.incrby("dial_count:#{self.id}", counter)
+  end
+  
+  
+  def decrement_campaign_dial_count(decrement_counter)
+    Resque.redis.decrby("dial_count:#{self.id}", decrement_counter)
+  end
+  
+  def ready_to_dial?
+    !Resque.redis.exists("dial_count:#{self.id}") || Resque.redis.get("dial_count:#{self.id}") == "0"        
   end
   
   def number_of_voters_to_dial
