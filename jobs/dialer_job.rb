@@ -10,7 +10,7 @@ class DialerJob
      campaign = Campaign.find(campaign_id)
      num_to_call = campaign.number_of_voters_to_dial
      Rails.logger.info "Campaign: #{campaign.id} - num_to_call #{num_to_call}"    
-     return if  num_to_call <= 0    
+     return if num_to_call <= 0    
      campaign.set_calls_in_progress     
      begin
        EM.synchrony do
