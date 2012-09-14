@@ -18,7 +18,7 @@ class Predictive < Campaign
   end
   
   def dial_resque
-    campaign.set_campaign_dial_count(1)
+    set_campaign_dial_count(1)
     Resque.enqueue(CalculateDialsJob, self.id)
   end  
   

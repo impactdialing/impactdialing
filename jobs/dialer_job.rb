@@ -18,7 +18,7 @@ class DialerJob
          end
          EventMachine.stop
        end
-       campaign.decrement_campaign_dial_count(voters_to_dial)
+       campaign.decrement_campaign_dial_count(voters_to_dial.size)
       rescue Exception => e
         EventMachine.stop
         puts e        
