@@ -38,7 +38,7 @@ class Predictive < Campaign
   end
   
   def ready_to_dial?
-    !Resque.redis.exists("dial_count:#{self.id}") || Resque.redis.get("dial_count:#{self.id}") == "0"        
+    !Resque.redis.exists("dial_count:#{self.id}") || Resque.redis.get("dial_count:#{self.id}").to_i <= 0        
   end
   
   def number_of_voters_to_dial
