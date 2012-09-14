@@ -2,7 +2,7 @@ class Call < ActiveRecord::Base
   include Rails.application.routes.url_helpers
   include CallCenter
 
-  
+  attr_accessible :id
   has_one :call_attempt
   serialize :conference_history, Array
   delegate :connect_call, :to => :call_attempt
