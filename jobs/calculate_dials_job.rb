@@ -16,6 +16,6 @@ class CalculateDialsJob
      end
      voters_to_dial = campaign.choose_voters_to_dial(num_to_call).collect {|voter| voter.id}          
      campaign.increment_campaign_dial_count(voters_to_dial.size - 1)
-     voters_to_dial.each_slice(10).to_a.each {|voters| Resque.enqueue(DialerJob, campaign.id, voters_to_dial) }     
+     voters_to_dial.each_slice(10).to_a.each {|voters| Resque.enqueue(DialerJob, campaign.id, voters) }     
    end
 end
