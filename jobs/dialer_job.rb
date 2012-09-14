@@ -6,8 +6,12 @@ class DialerJob
   @queue = :dialer_worker
 
 
-   def self.perform(campaign_id, nums_to_call)
+   def self.perform(campaign_id)
      campaign = Campaign.find(campaign_id)
+     num_to_call = campaign.number_of_voters_to_dial
+     Rails.logger.info "Campaign: #{campaign.id} - num_to_call #{num_to_call}"    
+     return if  num_to_call <= 0    
+     campaign.set_calls_in_progress     
      begin
        EM.synchrony do
          concurrency = 8
