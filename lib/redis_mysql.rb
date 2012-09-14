@@ -43,8 +43,7 @@ module RedisMysql
     def self.update_caller_session(caller_session_id)
       caller_session = CallerSession.find(caller_session_id)
       redis_caller_session = RedisCallerSession.find(caller_session_id)
-      caller_session.update_attributes(redis_caller_session)
-      
+      caller_session.update_attributes(redis_caller_session)  
     end
     
     

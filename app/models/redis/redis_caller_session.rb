@@ -8,10 +8,7 @@ class RedisCallerSession
   def self.read(caller_session_id)
     caller_session(caller_session_id).all    
   end
-  
-  def is_on_call?
-  end
-  
+    
   def self.caller_session(caller_session_id)
     Redis::HashKey.new("caller_session:#{caller_session_id}", $redis_call_flow_connection)    
   end

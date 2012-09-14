@@ -24,6 +24,8 @@ class Call < ActiveRecord::Base
   delegate :caller_session, :to=> :call_attempt
   delegate :redis_caller_session, :to=> :call_attempt
   delegate :end_caller_session, :to=> :call_attempt
+  delegate :caller_session_key, :to=> :call_attempt
+  
   
   
   call_flow :state, :initial => :initial do    
@@ -44,7 +46,7 @@ class Call < ActiveRecord::Base
         response do |xml_builder, the_call|
           unless redis_caller_session.nil? 
             xml_builder.Dial :hangupOnStar => 'false', :action => flow_call_url(the_call, :host => Settings.host, event: "disconnect"), :record=> campaign.account.record_calls do |d|
-              d.Conference RedisCallerSession.caller_session(redis_caller_session)['session_key'], :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
+              d.Conference caller_session_key, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
             end
           else
             xml_builder.Hangup

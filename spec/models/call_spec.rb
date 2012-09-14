@@ -31,6 +31,9 @@ describe Call do
       it "should start a conference in connected state" do
         call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, call_status: 'in-progress')
         @call_attempt.should_receive(:connect_call)
+        @call_attempt.should_receive(:caller_session_key)
+        @call_attempt.should_receive(:redis_caller_session).and_return("1")
+
         @call_attempt.should_receive(:publish_voter_connected)
         call.incoming_call!
         call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"false\" action=\"https://#{Settings.host}/calls/#{call.id}/flow?event=disconnect\" record=\"false\"><Conference waitUrl=\"hold_music\" waitMethod=\"GET\" beep=\"false\" endConferenceOnExit=\"true\" maxParticipants=\"2\"/></Dial></Response>")
