@@ -7,7 +7,7 @@ class DialerJob
 
 
    def self.perform(campaign_id, voter_ids)
-     voters_to_dial = Voter.where("id in (?)" voter_ids)
+     voters_to_dial = Voter.where("id in (?)" ,voter_ids)
      begin
        EM.synchrony do
          concurrency = 10
