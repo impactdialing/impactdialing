@@ -17,16 +17,27 @@ class Predictive < Campaign
   end
   
   def dial_resque
-    num_to_call = number_of_voters_to_dial
-    Rails.logger.info "Campaign: #{self.id} - num_to_call #{num_to_call}"    
-    return if  num_to_call <= 0    
-    set_calls_in_progress
-    Resque.enqueue(DialerJob, self.id, num_to_call)
+    set_campaign_dial_count(1)
+    Resque.enqueue(CalculateDialsJob, self.id)
   end  
   
-  def set_calls_in_progress
-    Resque.redis.set("dial:#{self.id}", true)
-    Resque.redis.expire("dial:#{self.id}", 20)        
+  
+  def set_campaign_dial_count(count)
+    Resque.redis.set("dial_count:#{self.id}", count)
+    Resque.redis.expire("dial_count:#{self.id}", 20)
+  end
+  
+  def increment_campaign_dial_count(counter)
+    Resque.redis.incrby("dial_count:#{self.id}", counter)
+  end
+  
+  
+  def decrement_campaign_dial_count(decrement_counter)
+    Resque.redis.decrby("dial_count:#{self.id}", decrement_counter)
+  end
+  
+  def ready_to_dial?
+    !Resque.redis.exists("dial_count:#{self.id}") || Resque.redis.get("dial_count:#{self.id}") == "0"        
   end
   
   def number_of_voters_to_dial

@@ -6,18 +6,19 @@ class DialerJob
   @queue = :dialer_worker
 
 
-   def self.perform(campaign_id, nums_to_call)
-     campaign = Campaign.find(campaign_id)
+   def self.perform(campaign_id, voter_ids)
+     campaign = Campaign.find(campaign_id)     
+     voters_to_dial = Voter.where("id in (?)" ,voter_ids)
+     
      begin
        EM.synchrony do
-         concurrency = 8
-         voters_to_dial = campaign.choose_voters_to_dial(nums_to_call)
+         concurrency = 10
          EM::Synchrony::Iterator.new(voters_to_dial, concurrency).map do |voter, iter|
            Twillio.dial_predictive_em(iter, voter)
          end
-         Resque.redis.del("dial:#{campaign.id}")
          EventMachine.stop
        end
+       campaign.decrement_campaign_dial_count(voters_to_dial.size)
       rescue Exception => e
         EventMachine.stop
         puts e        
