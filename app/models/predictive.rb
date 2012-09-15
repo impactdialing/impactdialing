@@ -42,10 +42,12 @@ class Predictive < Campaign
   
   def dialing_count
     begin
-      Resque.redis.get("dial_count:#{self.id}").to_i
+      count = Resque.redis.get("dial_count:#{self.id}").to_i
     rescue Exception => e
-      0
+      count = 0
     end
+    count <=0 ? 0 : count
+    
   end
   
   # def ready_to_dial?
