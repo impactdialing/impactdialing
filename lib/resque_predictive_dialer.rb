@@ -18,7 +18,6 @@ loop do
         campaign.dial_resque
       end
     end
-    sleep 3
   rescue Exception => e
     if e.class==SystemExit
       puts "============ EXITING  ============"
