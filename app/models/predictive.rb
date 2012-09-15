@@ -64,7 +64,6 @@ class Predictive < Campaign
       num_to_call = number_of_simulated_voters_to_dial
     end
     num_to_call
-    15
   end
   
   def choose_voters_to_dial(num_voters)
