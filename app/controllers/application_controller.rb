@@ -4,7 +4,7 @@ require 'new_relic/agent/method_tracer'
 class ApplicationController < ActionController::Base
   include NewRelic::Agent::MethodTracer
   include WhiteLabeling
-  # include ApplicationHelper
+  include ApplicationHelper
   helper :all # include all helpers, all the time
   protect_from_forgery # See ActionController::RequestForgeryProtection for details
   before_filter :set_controller_name
