@@ -1,6 +1,9 @@
 require 'em-http-request'
 require "em-synchrony"
 require "em-synchrony/em-http"
+require 'resque/plugins/lock'
+require 'resque-loner'
+
 
 class CalculateDialsJob 
   extend Resque::Plugins::Lock
@@ -21,6 +24,5 @@ class CalculateDialsJob
      else
        voters_to_dial.each_slice(10).to_a.each {|voters| Resque.enqueue(DialerJob, campaign.id, voters) }     
      end                    
-     Resque.redis.del("dial_calculate:#{self.id}")
    end
 end
