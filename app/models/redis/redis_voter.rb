@@ -85,11 +85,11 @@ class RedisVoter
   
   
   def self.setup_call(voter_id, call_attempt_id, caller_session_id)
-    voter(voter_id).bulk_set({status: CallAttempt::Status::RINGING, last_call_attempt: call_attempt_id, last_call_attempt_time: Time.now, caller_session_id: caller_session_id })
+    voter(voter_id).bulk_set({status: CallAttempt::Status::RINGING, last_call_attempt_id: call_attempt_id, last_call_attempt_time: Time.now, caller_session_id: caller_session_id })
   end
   
   def self.setup_call_predictive(voter_id, call_attempt_id, caller_session_id)
-    voter(voter_id).bulk_set({status: CallAttempt::Status::RINGING, last_call_attempt: call_attempt_id, last_call_attempt_time: Time.now})
+    voter(voter_id).bulk_set({status: CallAttempt::Status::RINGING, last_call_attempt_id: call_attempt_id, last_call_attempt_time: Time.now})
   end
   
   

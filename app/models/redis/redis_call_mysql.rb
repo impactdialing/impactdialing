@@ -17,6 +17,7 @@ class RedisCallMysql
   def self.update_voter(voter_id)
     voter = Voter.find(voter_id)
     redis_voter = RedisVoter.read(voter_id)
+    puts redis_voter
     voter.update_attributes(redis_voter)
     RedisVoter.delete(voter_id)
   end
