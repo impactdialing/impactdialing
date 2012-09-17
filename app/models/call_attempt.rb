@@ -163,6 +163,7 @@ class CallAttempt < ActiveRecord::Base
 
   def wrapup_now
     RedisCallAttempt.wrapup(self.id)    
+    RedisCallNotification.wrapup(self.id)
   end
 
   def self.time_on_call(caller, campaign, from, to)

@@ -21,7 +21,6 @@ module RedisMysql
         update_call_attempt(call_data.delete('call_attempt_id'))
         update_voter(call_data.delete('voter_id'))
         update_caller_session(call_data.delete('caller_session_id'))
-
         EM.next_tick(&method(:next))   
       end      
     end

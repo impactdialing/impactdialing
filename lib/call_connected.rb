@@ -27,44 +27,23 @@ module Call
     def self.call_connected(call_attempt_id)
       call_attempt = CallAttempt.find(call_attempt_id)
       campaign = call_attempt.campaign
-      RedisCampaignCall.move_ringing_to_inprogress(campaign.id, call_attempt.id)
-      MonitorEvent.incoming_call_request(campaign)      
+      # RedisCampaignCall.move_ringing_to_inprogress(campaign.id, call_attempt.id)
+      # MonitorEvent.incoming_call_request(campaign)      
     end
     
     def self.end_answered_call(call_attempt_id)
       call_attempt = CallAttempt.find(call_attempt_id)
       campaign = call_attempt.campaign            
-      RedisCampaignCall.move_inprogress_to_wrapup(campaign.id, call_attempt.id)      
-    end
+      # RedisCampaignCall.move_inprogress_to_wrapup(campaign.id, call_attempt.id)      
+    end    
     
-    
-    def self.call_abandoned(call_attempt_id)
-      call_attempt = CallAttempt.find(call_attempt_id)
-      campaign = call_attempt.campaign      
-      RedisCampaignCall.move_ringing_to_abandoned(campaign.id, call_attempt.id)
-      MonitorEvent.incoming_call_request(campaign)
-      RedisCall.call_completed(call_attempt.id, call_attempt.voter.id, nil)      
-    end
-    
-    
-    def self.answered_by_machine(call_attempt_id)
+    def self.wrapup(call_attempt_id)
       call_attempt = CallAttempt.find(call_attempt_id)
       campaign = call_attempt.campaign                  
-      MonitorEvent.incoming_call_request(campaign)
-    end
-    
-    def self.end_answered_by_machine(call_attempt_id)
-      call_attempt = CallAttempt.find(call_attempt_id)
-      campaign = call_attempt.campaign                        
-      MonitorEvent.incoming_call_request(campaign)              
-    end
-    
-    def self.end_unanswered_call(call_attempt_id)
-      call_attempt = CallAttempt.find(call_attempt_id)
-      campaign = call_attempt.campaign                              
-      RedisCampaignCall.move_ringing_to_completed(campaign.id, call_attempt.id)
-      RedisCall.call_completed(call_attempt.id, call_attempt.voter.id, nil)
-    end
+      RedisCall.call_completed(call_attempt.id)      
+      # MonitorEvent.voter_response_submitted(campaign)
+      # RedisCampaignCall.move_inprogress_to_wrapup(campaign.id, call_attempt.id)      
+    end    
     
     
   end
