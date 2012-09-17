@@ -40,7 +40,7 @@ module Call
     def self.wrapup(call_attempt_id)
       call_attempt = CallAttempt.find(call_attempt_id)
       campaign = call_attempt.campaign                  
-      RedisCall.call_completed(call_attempt.id)      
+      RedisCallMysql.call_completed(call_attempt.id)      
       # MonitorEvent.voter_response_submitted(campaign)
       # RedisCampaignCall.move_inprogress_to_wrapup(campaign.id, call_attempt.id)      
     end    

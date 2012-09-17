@@ -29,7 +29,7 @@ module Call
       campaign = call_attempt.campaign      
       # RedisCampaignCall.move_ringing_to_abandoned(campaign.id, call_attempt.id)
       # MonitorEvent.incoming_call_request(campaign)
-      RedisCall.call_completed(call_attempt.id)
+      RedisCallMysql.call_completed(call_attempt.id)
     end
     
     
@@ -42,7 +42,7 @@ module Call
     def self.end_answered_by_machine(call_attempt_id)
       call_attempt = CallAttempt.find(call_attempt_id)
       campaign = call_attempt.campaign                        
-      RedisCall.call_completed(call_attempt.id)
+      RedisCallMysql.call_completed(call_attempt.id)
       # MonitorEvent.incoming_call_request(campaign)              
     end
     
@@ -50,7 +50,7 @@ module Call
       call_attempt = CallAttempt.find(call_attempt_id)
       campaign = call_attempt.campaign                              
       # RedisCampaignCall.move_ringing_to_completed(campaign.id, call_attempt.id)
-      RedisCall.call_completed(call_attempt.id)
+      RedisCallMysql.call_completed(call_attempt.id)
     end
     
     
