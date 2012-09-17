@@ -25,4 +25,17 @@ class RedisConnection
     EM::Hiredis.connect(redis_config[rails_env]['monitor_redis'])
   end
   
+  def self.common_connection
+    redis_config = YAML.load_file(Rails.root.to_s + "/config/redis.yml")    
+    rails_env = ENV['RAILS_ENV']
+    if rails_env == "test"
+      uri = URI.parse(redis_config[rails_env]['common'])
+      Redis.new(:host => uri.host, :port => uri.port)            
+    else
+      $redis_common_connection ||= EM::Hiredis.connect(redis_config[rails_env]['common']) 
+    end
+    
+  end
+    
+  
 end
