@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120911065243) do
+ActiveRecord::Schema.define(:version => 20120917062743) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -560,6 +560,7 @@ ActiveRecord::Schema.define(:version => 20120911065243) do
   add_index "voters", ["attempt_id"], :name => "index_voters_on_attempt_id"
   add_index "voters", ["caller_session_id"], :name => "index_voters_on_caller_session_id"
   add_index "voters", ["campaign_id", "active", "status", "call_back"], :name => "index_voters_on_campaign_id_and_active_and_status_and_call_back"
+  add_index "voters", ["campaign_id", "enabled", "priority", "status"], :name => "index_priority_voters"
   add_index "voters", ["campaign_id", "status", "id"], :name => "index_voters_on_campaign_id_and_status_and_id"
   add_index "voters", ["campaign_id", "status", "last_call_attempt_time"], :name => "voters_campaign_status_time"
   add_index "voters", ["campaign_id", "status"], :name => "index_voters_on_campaign_id_and_status"
