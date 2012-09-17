@@ -57,5 +57,5 @@ module Call
 end
 
 EM.run do
-  Call::NotConnected.next
+  Call::NotConnectedConnected.next
 end
