@@ -388,6 +388,7 @@ GEM
       actionpack (>= 3.0)
       activesupport (>= 3.0)
       sprockets (>= 2.8, < 4.0)
+    state_machine (1.2.0)
     stripe (1.8.4)
       multi_json (>= 1.0.4, < 2)
       rest-client (~> 1.4)
@@ -509,6 +510,7 @@ DEPENDENCIES
   slim
   spring
   spring-commands-rspec
+  state_machine
   stripe (~> 1.8.4)
   timecop
   twilio-ruby (~> 4.4.0)
@@ -519,5 +521,8 @@ DEPENDENCIES
   will_paginate
   wolverine
 
+RUBY VERSION
+   ruby 2.2.4p230
+
 BUNDLED WITH
-   1.11.2
+   1.12.2

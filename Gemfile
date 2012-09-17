@@ -10,6 +10,7 @@ gem 'compass-rails'
 gem 'introjs-rails'
 gem 'puma'
 gem 'rack-timeout'
+gem 'state_machine'
 
 # heroku
 gem 'rails_12factor', group: :production
@@ -20,7 +21,7 @@ gem 'sinatra'
 gem 'slim'
 
 
-gem 'uuid', '~> 2.3.7' 
+gem 'uuid', '~> 2.3.7'
 
 # 911
 gem 'pagerduty'
