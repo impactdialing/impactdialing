@@ -19,6 +19,11 @@ class RedisAvailableCaller
     available_callers_set(campaign_id).length
   end
   
+  def self.zero?(campaign_id)
+    available_callers_set(campaign_id).length == 0
+  end
+  
+  
   def self.caller?(campaign_id, caller_session_id)
     available_callers_set(campaign_id).member?(caller_session_id)
   end
