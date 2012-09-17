@@ -41,8 +41,8 @@ module Connected
       call_attempt = CallAttempt.find(call_attempt_id)
       campaign = call_attempt.campaign                  
       RedisCallMysql.call_completed(call_attempt.id)      
+      RedisCampaignCall.move_wrapup_to_completed(campaign.id, call_attempt.id)      
       # MonitorEvent.voter_response_submitted(campaign)
-      # RedisCampaignCall.move_inprogress_to_wrapup(campaign.id, call_attempt.id)      
     end    
     
     
