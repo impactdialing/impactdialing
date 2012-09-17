@@ -27,14 +27,14 @@ module Connected
     def self.call_connected(call_attempt_id)
       call_attempt = CallAttempt.find(call_attempt_id)
       campaign = call_attempt.campaign
-      # RedisCampaignCall.move_ringing_to_inprogress(campaign.id, call_attempt.id)
+      RedisCampaignCall.move_ringing_to_inprogress(campaign.id, call_attempt.id)
       # MonitorEvent.incoming_call_request(campaign)      
     end
     
     def self.end_answered_call(call_attempt_id)
       call_attempt = CallAttempt.find(call_attempt_id)
       campaign = call_attempt.campaign            
-      # RedisCampaignCall.move_inprogress_to_wrapup(campaign.id, call_attempt.id)      
+      RedisCampaignCall.move_inprogress_to_wrapup(campaign.id, call_attempt.id)      
     end    
     
     def self.wrapup(call_attempt_id)

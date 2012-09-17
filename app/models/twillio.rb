@@ -46,7 +46,7 @@ class Twillio
     end
     Call.create(call_attempt: attempt, all_states: "", state: "initial")
     RedisCampaignCall.add_to_ringing(attempt.id)
-    MonitorEvent.call_ringing(campaign)
+    # MonitorEvent.call_ringing(campaign)
     attempt
   end
   
@@ -59,7 +59,7 @@ class Twillio
       RedisVoter.setup_call(voter.id, attempt.id, caller_session.id)
       RedisCallerSession.set_attempt_in_progress(caller_session.id, attempt.id)
     end
-    MonitorEvent.call_ringing(campaign)
+    # MonitorEvent.call_ringing(campaign)
     Call.create(call_attempt: attempt, all_states: "", state: "initial")
     RedisCampaignCall.add_to_ringing(campaign.id, attempt.id)
     attempt    
