@@ -15,7 +15,7 @@ module LeadEvents
       caller_session = RedisCallerSession.read(caller_session_id)      
       unless caller_session_id.nil?
         EM.run {
-          if caller_session['type'] == 'WebuiCallerSession'
+          if !caller.is_phones_only? && !caller_session.nil?
             event_hash = campaign.voter_connected_event(self.call)        
             caller_deferrable = Pusher[caller_session["session_key"]].trigger_async(event_hash[:event], event_hash[:data].merge!(:dialer => campaign.type))
             caller_deferrable.callback {}

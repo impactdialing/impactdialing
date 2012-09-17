@@ -199,6 +199,8 @@ GEM
     resque-lock (1.0.0)
     resque-loner (1.2.1)
       resque (~> 1.0)
+    resque-multi-job-forks (0.1.1)
+      resque (>= 1.6.0)
     resque-scheduler (1.9.9)
       redis (>= 2.0.1)
       resque (>= 1.8.0)
@@ -330,6 +332,7 @@ DEPENDENCIES
   resque (~> 1.19.0)
   resque-lock (~> 1.0.0)
   resque-loner (~> 1.2.1)
+  resque-multi-job-forks
   resque-scheduler (~> 1.9.9)
   rspec
   rspec-rails (~> 2.6.1)

@@ -20,6 +20,18 @@ class Predictive < Campaign
     Resque.enqueue(CalculateDialsJob, self.id)
   end  
   
+<<<<<<< HEAD
+=======
+  def set_calculate_dialing
+    Resque.redis.set("dial_calculate:#{self.id}", true)
+    Resque.redis.expire("dial_calculate:#{self.id}", 20)
+  end
+  
+  def calculate_dialing?
+    Resque.redis.exists("dial_calculate:#{self.id}")
+  end
+  
+>>>>>>> master
     
   def increment_campaign_dial_count(counter)
     Resque.redis.incrby("dial_count:#{self.id}", counter)
@@ -32,10 +44,11 @@ class Predictive < Campaign
   
   def dialing_count
     begin
-      Resque.redis.get("dial_count:#{self.id}").to_i
+      count = Resque.redis.get("dial_count:#{self.id}").to_i
     rescue Exception => e
-      0
+      count = 0
     end
+    count <=0 ? 0 : count
   end
   
   # def ready_to_dial?
