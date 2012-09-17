@@ -61,6 +61,7 @@ module Common
       call_attempt = CallAttempt.find(call_attempt_id)
       campaign = call_attempt.campaign                              
       RedisCampaignCall.move_ringing_to_completed(campaign.id, call_attempt.id)
+      RedisCall.call_completed(call_attempt.id, call_attempt.voter.id, nil)
     end
     
     
@@ -68,5 +69,5 @@ module Common
 end
 
 EM.run do
-  MonitorTab::Pusher.next
+  Common::Redis.next
 end

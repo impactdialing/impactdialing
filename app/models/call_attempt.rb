@@ -70,9 +70,7 @@ class CallAttempt < ActiveRecord::Base
     redis_call_attempt = RedisCallAttempt.read(self.id)
     redis_voter = RedisVoter.read(redis_call_attempt['voter_id'])
     RedisCallAttempt.connect_call(self.id, redis_voter["caller_id"], redis_voter["caller_session_id"])
-    RedisConnection.common_connection.rpush('notification', {call_attempt: self.id, event: "call_connected"}.to_json)
-    # RedisCampaignCall.move_ringing_to_inprogress(campaign.id, self.id)
-    # MonitorEvent.incoming_call_request(campaign)
+    RedisConnection.common_connection.rpush('connected_call_notification', {call_attempt: self.id, event: "call_connected"}.to_json)
   end
 
   def abandon_call
@@ -80,10 +78,7 @@ class CallAttempt < ActiveRecord::Base
       RedisCallAttempt.abandon_call(self.id)
       RedisVoter.abandon_call(voter.id)
     end
-    RedisConnection.common_connection.rpush('notification', {call_attempt: self.id, event: "call_abandoned"}.to_json)
-    # RedisCampaignCall.move_ringing_to_abandoned(campaign.id, self.id)
-    # MonitorEvent.incoming_call_request(campaign)
-    # RedisCall.call_completed(self.id, voter.id, )
+    RedisConnection.common_connection.rpush('notconnected_call_notification', {call_attempt: self.id, event: "call_abandoned"}.to_json)
   end
       
     
@@ -106,8 +101,7 @@ class CallAttempt < ActiveRecord::Base
       RedisCallAttempt.end_answered_call(self.id)
       RedisVoter.end_answered_call(voter.id)
     end
-    RedisConnection.common_connection.rpush('notification', {call_attempt: self.id, event: "end_answered_call"}.to_json)
-    # RedisCampaignCall.move_inprogress_to_wrapup(campaign.id, self.id)      
+    RedisConnection.common_connection.rpush('connected_call_notification', {call_attempt: self.id, event: "end_answered_call"}.to_json)
   end
 
   def process_answered_by_machine
@@ -116,8 +110,7 @@ class CallAttempt < ActiveRecord::Base
       RedisCallAttempt.answered_by_machine(self.id, status)
       RedisVoter.answered_by_machine(voter.id, status)
     end
-    RedisConnection.common_connection.rpush('notification', {call_attempt: self.id, event: "answered_by_machine"}.to_json)
-    
+    RedisConnection.common_connection.rpush('notconnected_call_notification', {call_attempt: self.id, event: "answered_by_machine"}.to_json)    
   end
 
   def end_answered_by_machine
@@ -125,7 +118,7 @@ class CallAttempt < ActiveRecord::Base
       RedisCallAttempt.end_answered_by_machine(self.id)
       RedisVoter.end_answered_by_machine(voter.id)
     end
-    RedisConnection.common_connection.rpush('notification', {call_attempt: self.id, event: "end_answered_by_machine"}.to_json)    
+    RedisConnection.common_connection.rpush('notconnected_call_notification', {call_attempt: self.id, event: "end_answered_by_machine"}.to_json)    
   end
 
 
@@ -135,7 +128,7 @@ class CallAttempt < ActiveRecord::Base
       RedisCallAttempt.end_unanswered_call(self.id, status)
       RedisVoter.end_unanswered_call(voter.id, status)
     end
-    RedisConnection.common_connection.rpush('notification', {call_attempt: self.id, event: "end_unanswered_call"}.to_json)
+    RedisConnection.common_connection.rpush('notconnected_call_notification', {call_attempt: self.id, event: "end_unanswered_call"}.to_json)
   end
 
   def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
