@@ -23,14 +23,14 @@ describe RedisCallMysql do
       caller_session = Factory(:caller_session)
       voter = Factory(:voter)
       call_attempt = Factory(:call_attempt, voter: voter, caller_session: caller_session)
+      RedisCallAttempt.load_call_attempt_info(call_attempt.id, call_attempt)
       RedisVoter.load_voter_info(voter.id, voter)
       RedisVoter.assign_to_caller(voter.id, caller_session.id) 
       RedisVoter.end_answered_call(voter.id)
-      
-      call_attempt.reload
-      call_attempt.connecttime.should_not be_nil
-      call_attempt.call_end.should_not be_nil
-      call_attempt.status.should eq('Call completed with success.')      
+      RedisVoter.set_status(voter.id, CallAttempt::Status::SUCCESS)      
+      RedisCallMysql.call_completed(call_attempt.id)
+      voter.reload
+      voter.status.should eq('Call completed with success.')      
     end    
     
   end
