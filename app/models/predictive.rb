@@ -28,7 +28,6 @@ class Predictive < Campaign
   def calculate_dialing?
     Resque.redis.exists("dial_calculate:#{self.id}")
   end
-  
     
   def increment_campaign_dial_count(counter)
     Resque.redis.incrby("dial_count:#{self.id}", counter)
