@@ -2,6 +2,7 @@ require 'new_relic/agent/method_tracer'
 class CallerController < ApplicationController
   include NewRelic::Agent::MethodTracer
   layout "caller"
+  skip_before_filter :verify_authenticity_token
   before_filter :check_login, :except=>[:login, :feedback, :end_session, :start_calling, :phones_only, :new_campaign_response_panel, :check_reassign, :call_voter, :flow]
   before_filter :find_caller_session , :only => [:flow, :stop_calling, :end_session]
   
