@@ -57,7 +57,8 @@ class WebuiCallerSession < CallerSession
     begin
       update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
     rescue ActiveRecord::StaleObjectError
-      # end conf
+      same_caller_session = CallerSession.find(self.id)
+      same_caller_session.update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
     end
   end
   
