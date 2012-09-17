@@ -167,7 +167,7 @@ describe Caller do
       caller.save
     end
     
-    it "should redirect if live phones only caller" do
+    xit "should redirect if live phones only caller" do
       campaign = Factory(:campaign)
       other_campaign = Factory(:campaign)
       caller = Factory(:caller, campaign: campaign, is_phones_only: true)
