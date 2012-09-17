@@ -53,7 +53,7 @@ class WebuiCallerSession < CallerSession
     attempt_in_progress_id = RedisCallerSession.read(self.id)['attempt_in_progress']
     RedisCallAttempt.call_not_wrapped_up?(attempt_in_progress_id)
   end
-    
+  
   def publish_async(event, data)    
     EM.synchrony {
       deferrable = Pusher[session_key].trigger_async(event, data.merge!(:dialer => campaign.type))
