@@ -6,7 +6,6 @@ require 'resque-loner'
 
 
 class CalculateDialsJob 
-  extend Resque::Plugins::Lock
   include Resque::Plugins::UniqueJob
   
   @queue = :calculate_dials_worker
@@ -25,6 +24,7 @@ class CalculateDialsJob
        else
          voters_to_dial.each_slice(10).to_a.each {|voters| Resque.enqueue(DialerJob, campaign.id, voters) }     
        end
+       Resque.redis.del("dial_calculate:#{self.id}")
      rescue Exception => e
        
      end                    
