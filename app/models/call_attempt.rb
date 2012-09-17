@@ -70,7 +70,7 @@ class CallAttempt < ActiveRecord::Base
     redis_call_attempt = RedisCallAttempt.read(self.id)
     redis_voter = RedisVoter.read(redis_call_attempt['voter_id'])
     RedisCallAttempt.connect_call(self.id, redis_voter["caller_id"], redis_voter["caller_session_id"])
-    RedisConnection.common_connection.rpush('connected_call_notification', {call_attempt: self.id, event: "call_connected"}.to_json)
+    RedisCallNotification.connected(self.id)
   end
 
   def abandon_call
@@ -78,7 +78,7 @@ class CallAttempt < ActiveRecord::Base
       RedisCallAttempt.abandon_call(self.id)
       RedisVoter.abandon_call(voter.id)
     end
-    RedisConnection.common_connection.rpush('notconnected_call_notification', {call_attempt: self.id, event: "call_abandoned"}.to_json)
+    RedisCallNotification.abandoned(self.id)
   end
       
     
@@ -101,7 +101,7 @@ class CallAttempt < ActiveRecord::Base
       RedisCallAttempt.end_answered_call(self.id)
       RedisVoter.end_answered_call(voter.id)
     end
-    RedisConnection.common_connection.rpush('connected_call_notification', {call_attempt: self.id, event: "end_answered_call"}.to_json)
+    RedisCallNotification.end_answered_call(self.id)
   end
 
   def process_answered_by_machine
@@ -110,7 +110,7 @@ class CallAttempt < ActiveRecord::Base
       RedisCallAttempt.answered_by_machine(self.id, status)
       RedisVoter.answered_by_machine(voter.id, status)
     end
-    RedisConnection.common_connection.rpush('notconnected_call_notification', {call_attempt: self.id, event: "answered_by_machine"}.to_json)    
+    RedisCallNotification.answered_by_machine(self.id)    
   end
 
   def end_answered_by_machine
@@ -118,7 +118,7 @@ class CallAttempt < ActiveRecord::Base
       RedisCallAttempt.end_answered_by_machine(self.id)
       RedisVoter.end_answered_by_machine(voter.id)
     end
-    RedisConnection.common_connection.rpush('notconnected_call_notification', {call_attempt: self.id, event: "end_answered_by_machine"}.to_json)    
+    RedisCallNotification.end_answered_by_machine(self.id)
   end
 
 
@@ -128,7 +128,7 @@ class CallAttempt < ActiveRecord::Base
       RedisCallAttempt.end_unanswered_call(self.id, status)
       RedisVoter.end_unanswered_call(voter.id, status)
     end
-    RedisConnection.common_connection.rpush('notconnected_call_notification', {call_attempt: self.id, event: "end_unanswered_call"}.to_json)
+    RedisCallNotification.end_unanswered_call(self.id)    
   end
 
   def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
