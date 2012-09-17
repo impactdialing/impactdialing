@@ -139,6 +139,11 @@ class CallerSession < ActiveRecord::Base
     end      
   end
   
+  def end_session
+    RedisCallerSession.end_session(self.id)
+  end
+  
+  
   def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)    
     voters = Voter.find_all_by_caller_id_and_status(caller.id, CallAttempt::Status::READY)
     voters.each {|voter| voter.update_attributes(status: 'not called')}    
@@ -157,9 +162,6 @@ class CallerSession < ActiveRecord::Base
     attempt_in_progress.try(:update_attributes, {:wrapup_time => Time.now})
   end
   
-  def end_session
-    RedisCallerSession.end_session(self.id)
-  end
   
   def account_not_activated?
     !activated?
