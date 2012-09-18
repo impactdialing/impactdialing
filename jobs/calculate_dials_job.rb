@@ -12,11 +12,9 @@ class CalculateDialsJob
 
 
    def self.perform(campaign_id)
-     begin
-       puts Time.now
+     begin       
        campaign = Campaign.find(campaign_id)
        num_to_call = campaign.number_of_voters_to_dial - campaign.dialing_count
-       puts Time.now
        Rails.logger.info "Campaign: #{campaign.id} - num_to_call #{num_to_call}"    
        if num_to_call <= 0    
          Resque.redis.del("dial_calculate:#{campaign.id}")
