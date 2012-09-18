@@ -14,7 +14,7 @@ loop do
     logged_in_campaigns = RedisCampaign.running_campaigns
     logged_in_campaigns.each do |campaign_id|
       campaign = Campaign.find(campaign_id)
-      campaign.dial_resque
+      campaign.dial_resque if !campaign.calculate_dialing?
     end
   rescue Exception => e
     if e.class==SystemExit
