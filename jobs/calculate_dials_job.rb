@@ -16,7 +16,10 @@ class CalculateDialsJob
        campaign = Campaign.find(campaign_id)
        num_to_call = campaign.number_of_voters_to_dial - campaign.dialing_count
        Rails.logger.info "Campaign: #{campaign.id} - num_to_call #{num_to_call}"    
-       return if num_to_call <= 0    
+       if num_to_call <= 0    
+         Resque.redis.del("dial_calculate:#{campaign.id}")
+         return
+       end
        voters_to_dial = campaign.choose_voters_to_dial(num_to_call).collect {|voter| voter.id}
        campaign.increment_campaign_dial_count(voters_to_dial.size)
        if voters_to_dial.size <=10
