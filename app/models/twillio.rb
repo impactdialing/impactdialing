@@ -47,7 +47,7 @@ class Twillio
       RedisVoter.setup_call_predictive(voter.id, attempt.id)
     end
     Call.create(call_attempt: attempt, all_states: "", state: "initial")
-    RedisCampaignCall.add_to_ringing(attempt.id)
+    RedisCampaignCall.add_to_ringing(voter.campaign.id, attempt.id)
     # MonitorEvent.call_ringing(campaign)
     attempt
   end
