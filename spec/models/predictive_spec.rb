@@ -126,10 +126,10 @@ describe Predictive do
       campaign.best_dials_simulated.should eq(2)
     end
     
-   it "should return best dials  as 4 if  best_dials simulated_values is greater than 4" do
-      simulated_values = SimulatedValues.create(best_dials: 6.0, best_conversation: 0, longest_conversation: 0)
+   it "should return best dials  as 5 if  best_dials simulated_values is greater than 5" do
+      simulated_values = SimulatedValues.create(best_dials: 10.0, best_conversation: 0, longest_conversation: 0)
       campaign = Factory(:predictive, :simulated_values => simulated_values)
-      campaign.best_dials_simulated.should eq(3)
+      campaign.best_dials_simulated.should eq(5)
     end
 
 

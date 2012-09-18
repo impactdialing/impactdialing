@@ -403,26 +403,8 @@ describe Call do
          @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session)
        end
 
-       it "should update voter status as success" do
-         call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected')
-         @call_attempt.should_receive(:publish_voter_disconnected)
-         call.disconnect!
-         call.call_attempt.voter.status.should eq(CallAttempt::Status::SUCCESS)
-       end
 
-       it "should update voter status as success" do
-         call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected')
-         @call_attempt.should_receive(:publish_voter_disconnected)
-         call.disconnect!
-         call.call_attempt.voter.status.should eq(CallAttempt::Status::SUCCESS)
-       end
 
-       it "should update call attempt status as success" do
-         call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected')
-         @call_attempt.should_receive(:publish_voter_disconnected)
-         call.disconnect!
-         call.call_attempt.status.should eq(CallAttempt::Status::SUCCESS)
-       end
 
        it "should update call attempt recording_duration" do
          call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected', recording_duration: 4)
@@ -470,19 +452,6 @@ describe Call do
        @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session)
       end
 
-      it "should update voter status as success" do
-       call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'hungup')
-       @call_attempt.should_receive(:publish_voter_disconnected)
-       call.disconnect!
-       call.call_attempt.voter.status.should eq(CallAttempt::Status::SUCCESS)
-      end
-
-      it "should update voter status as success" do
-       call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'hungup')
-       @call_attempt.should_receive(:publish_voter_disconnected)
-       call.disconnect!
-       call.call_attempt.voter.status.should eq(CallAttempt::Status::SUCCESS)
-      end
 
       it "should update call attempt status as success" do
        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'hungup')
@@ -532,6 +501,13 @@ describe Call do
        @voter = Factory(:voter, campaign: @campaign)
        @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign)
       end
+      
+      it "should update voter status as success" do
+        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected', call_status: "success")
+        call.call_ended!
+        call.call_attempt.voter.status.should eq(CallAttempt::Status::SUCCESS)
+      end
+      
 
       it "should update call end time" do
         call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected', call_status: 'success')
