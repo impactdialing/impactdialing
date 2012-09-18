@@ -10,8 +10,7 @@ class Dial
     campaign.decrement_campaign_dial_count(voters_to_dial.size)
     begin
       EM.synchrony do
-        concurrency = 10
-        
+        concurrency = 10        
         EM::Synchrony::Iterator.new(voters_to_dial, concurrency).map do |voter, iter|
           voter.dial_predictive_em(iter)
         end        
@@ -19,8 +18,7 @@ class Dial
       end
       
      rescue Exception => e
-       EventMachine.stop
-       puts e        
+       puts e
      end
     
   end
