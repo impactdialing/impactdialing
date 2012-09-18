@@ -1,3 +1,10 @@
+GIT
+  remote: git://github.com/collectiveidea/resque-jobs-per-fork.git
+  revision: f0d1473763eb7d1ebb616ce1c7bd290b31ca2a8a
+  specs:
+    resque-jobs-per-fork (1.15.1)
+      resque (~> 1.15)
+
 GEM
   remote: http://rubygems.org/
   specs:
@@ -193,8 +200,6 @@ GEM
     resque-lock (1.0.0)
     resque-loner (1.2.1)
       resque (~> 1.0)
-    resque-multi-job-forks (0.1.1)
-      resque (>= 1.6.0)
     resque-scheduler (1.9.9)
       redis (>= 2.0.1)
       resque (>= 1.8.0)
@@ -322,9 +327,9 @@ DEPENDENCIES
   recurly (~> 2.1.3)
   redis (~> 2.2.2)
   resque (~> 1.19.0)
+  resque-jobs-per-fork!
   resque-lock (~> 1.0.0)
   resque-loner (~> 1.2.1)
-  resque-multi-job-forks
   resque-scheduler (~> 1.9.9)
   rspec
   rspec-rails (~> 2.6.1)
