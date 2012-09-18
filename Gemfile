@@ -39,7 +39,7 @@ gem "hiredis", "~>0.4.5"
 gem "formtastic", "~>2.2.1"
 gem "cocoon", "~>1.0.22"
 gem 'deep_cloneable', '~> 1.4.0'
-gem "resque-multi-job-forks"
+
 
 group :development, :test do
   gem 'rspec'
