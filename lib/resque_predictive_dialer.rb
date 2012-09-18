@@ -15,7 +15,6 @@ loop do
     logged_in_campaigns.each do |c|
       campaign = Campaign.find(c.campaign_id)
       if campaign.type == Campaign::Type::PREDICTIVE  && !campaign.calculate_dialing?
-        puts Time.now
         campaign.dial_resque
       end
     end
