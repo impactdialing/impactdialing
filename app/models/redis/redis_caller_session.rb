@@ -14,7 +14,7 @@ class RedisCallerSession
   end
   
   def self.start_conference(caller_session_id)
-    caller_session(caller_session_id).bulk_set({on_call: true, available_for_call: true})
+    # caller_session(caller_session_id).bulk_set({on_call: true, available_for_call: true})
     caller_session(caller_session_id).delete('attempt_in_progress')
   end
   
