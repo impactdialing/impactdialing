@@ -18,7 +18,9 @@ class Predictive < Campaign
   end
   
   def dial_resque
+    puts Time.now
     set_calculate_dialing
+    puts Time.now
     Resque.enqueue(CalculateDialsJob, self.id)
   end  
   
