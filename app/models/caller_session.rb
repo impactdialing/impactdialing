@@ -141,6 +141,7 @@ class CallerSession < ActiveRecord::Base
   
   def end_session
     RedisCallerSession.end_session(self.id)
+    RedisCaller.disconnect_caller(campaign.id, self.id )
   end
   
   
@@ -214,7 +215,7 @@ class CallerSession < ActiveRecord::Base
   end
 
   def disconnected?
-    RedisCallerSession.disconnected?(self.id)
+    RedisCaller.disconnected?(campaign.id, self.id)
   end
   
   def publish(event, data)
@@ -286,10 +287,7 @@ class CallerSession < ActiveRecord::Base
    end
    
    def start_conference    
-     $redis_call_flow_connection.multi do
-       RedisAvailableCaller.add_caller(campaign.id, self.id)
-       RedisCallerSession.start_conference(self.id)
-     end
+     RedisCallerSession.start_conference(self.id)
    end
    
    

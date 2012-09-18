@@ -24,17 +24,18 @@ class RedisVoter
   def self.connect_lead_to_caller(voter_id, campaign_id, call_attempt_id)
     if RedisVoter.assigned_to_caller?(voter_id)
       caller_session_id = RedisVoter.read(voter_id)['caller_session_id']   
+      RedisCaller.move_waiting_to_connect_to_on_call(campaign_id, caller_session_id)
     else 
-      caller_session_id = RedisAvailableCaller.longest_waiting_caller(campaign_id)
+      caller_session_id = RedisCaller.longest_waiting_caller(campaign_id)
       RedisVoter.assign_to_caller(voter_id, caller_session_id) 
-      RedisAvailableCaller.remove_caller(campaign_id, caller_session_id)
+      RedisCaller.move_on_hold_to_on_call(campaign_id, caller_session_id)
       RedisCallerSession.set_attempt_in_progress(caller_session_id, call_attempt_id)      
     end
     voter(voter_id).bulk_set({caller_id: RedisCallerSession.read(caller_session_id)["caller_id"], status: CallAttempt::Status::INPROGRESS})
   end
   
-  def self.could_not_connect_to_available_caller?(voter_id)
-    !assigned_to_caller?(voter_id) || RedisCallerSession.disconnected?(caller_session_id(voter_id))
+  def self.could_not_connect_to_available_caller?(voter_id, campaign_id)
+    !assigned_to_caller?(voter_id) || RedisCaller.disconnected?(campaign_id, caller_session_id(voter_id))
   end
   
   

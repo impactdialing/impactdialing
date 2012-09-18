@@ -21,6 +21,7 @@ class CallAttempt < ActiveRecord::Base
     ((wrapup_time || Time.now) - self.connecttime).to_i
   end
 
+
   def ringing_duration
     return 15 unless connecttime
     (connecttime - created_at).to_i

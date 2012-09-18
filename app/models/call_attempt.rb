@@ -88,7 +88,7 @@ class CallAttempt < ActiveRecord::Base
 
   def caller_not_available?
     connect_lead_to_caller
-    RedisVoter.could_not_connect_to_available_caller?(voter.id) 
+    RedisVoter.could_not_connect_to_available_caller?(voter.id, campaign.id) 
   end
 
   def caller_available?
@@ -149,7 +149,8 @@ class CallAttempt < ActiveRecord::Base
     $redis_call_flow_connection.pipelined do
       RedisCallAttempt.disconnect_call(self.id, call.recording_duration, call.recording_url)
       RedisVoter.set_status(voter.id, CallAttempt::Status::SUCCESS)
-      RedisVoter.read(voter.id)["caller_session_id"]
+      caller_session_id = RedisVoter.read(voter.id)["caller_session_id"]
+      RedisCaller.move_on_call_to_on_wrapup(campaign.id, caller_session_id)
     end    
   end
 
@@ -215,12 +216,15 @@ class CallAttempt < ActiveRecord::Base
     ANSWERED =  [INPROGRESS, SUCCESS]
   end
 
-  def redirect_caller(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
-    puts "redirect caller"
+  def redirect_caller(call_connected=false, account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
     session_id = redis_caller_session
-    puts session_id
-    unless session_id.nil?
+    unless session_id.nil?      
       session = CallerSession.find(session_id)
+      if call_connected
+        RedisCaller.move_on_wrapup_to_on_hold(session.campaign.id, session_id)
+      else
+        RedisCaller.move_waiting_to_connect_to_on_hold(session.campaign.id, session_id)
+      end
       EM.synchrony {
         t = TwilioLib.new(account, auth)
         deferrable = t.redirect_call(session.sid, flow_caller_url(session.caller, :host => Settings.host, :port => Settings.port, session_id: session.id, event: "start_conf"))

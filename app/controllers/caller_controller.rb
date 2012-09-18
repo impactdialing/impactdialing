@@ -12,6 +12,7 @@ class CallerController < ApplicationController
     identity = CallerIdentity.find_by_session_key(params[:session_key])
     session = caller.create_caller_session(identity.session_key, params[:CallSid], CallerSession::CallerType::TWILIO_CLIENT)
     RedisCampaign.add_running_predictive_campaign(caller.campaign_id, caller.campaign.type)
+    RedisCaller.add_caller(caller.campaign.id, session.id)
     render xml: session.run(:start_conf)
   end
 

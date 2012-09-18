@@ -4,13 +4,15 @@ class Twillio
     voter = Voter.find(voter_info["id"])
     campaign = caller_session.campaign
     call_attempt = setup_call(voter, caller_session, campaign)    
-    twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)        
+    twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)  
+    RedisCaller.move_on_hold_waiting_to_connect(campaign.id, caller_session.id)      
     EM.run do
       http = twilio_lib.make_call_em(campaign, voter, call_attempt)
       http.callback { 
         response = JSON.parse(http.response)  
         if response["status"] == 400
           handle_failed_call(call_attempt, caller_session)
+          RedisCaller.move_waiting_to_connect_on_hold(campaign.id, caller_session.id)
         else
           RedisCallAttempt.update_call_sid(call_attempt.id, response["sid"])
         end
@@ -69,7 +71,6 @@ class Twillio
     $redis_call_flow_connection.pipelined do
       RedisCallAttempt.failed_call(attempt.id)
       RedisVoter.failed_call(voter.id)
-      RedisAvailableCaller.add_caller(campaign_id, caller_session.id) unless caller_session.nil?
     end
     # update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
     caller_session.redirect_caller
