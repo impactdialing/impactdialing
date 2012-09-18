@@ -17,10 +17,20 @@ class Predictive < Campaign
   end
   
   def dial_resque
+    set_calculate_dialing
     Resque.enqueue(CalculateDialsJob, self.id)
   end  
   
-      
+  def set_calculate_dialing
+    Resque.redis.set("dial_calculate:#{self.id}", true)
+    Resque.redis.expire("dial_calculate:#{self.id}", 8)
+  end
+  
+  def calculate_dialing?
+    Resque.redis.exists("dial_calculate:#{self.id}")
+  end
+  
+    
   def increment_campaign_dial_count(counter)
     Resque.redis.incrby("dial_count:#{self.id}", counter)
   end
@@ -38,11 +48,7 @@ class Predictive < Campaign
     end
     count <=0 ? 0 : count
   end
-  
-  # def ready_to_dial?
-  #   !Resque.redis.exists("dial_count:#{self.id}") || Resque.redis.get("dial_count:#{self.id}") == "0"        
-  # end
-  
+    
   def number_of_voters_to_dial
     num_to_call = 0
     dials_made = call_attempts.size
@@ -85,7 +91,7 @@ class Predictive < Campaign
   
   
   def best_dials_simulated
-    simulated_values.nil? ? 1 : simulated_values.best_dials.nil? ? 1 : simulated_values.best_dials.ceil > 3 ? 3 : simulated_values.best_dials.ceil
+    simulated_values.nil? ? 1 : simulated_values.best_dials.nil? ? 1 : simulated_values.best_dials.ceil > 5 ? 5 : simulated_values.best_dials.ceil
   end
 
   def best_conversation_simulated

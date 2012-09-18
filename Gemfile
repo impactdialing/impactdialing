@@ -1,5 +1,7 @@
 source :rubygems
 
+ruby '1.9.3'
+
 gem 'rails', '~> 3.2.8'
 gem 'thin', '~>1.3.1'
 gem 'will_paginate', '~> 3.0'
@@ -39,7 +41,6 @@ gem 'deep_cloneable', '~> 1.4.0'
 gem 'heroku', '~> 2.17.0'
 gem "redis-objects", "~>0.5.3",:require => 'redis/objects'
 gem "redis", "~>2.2.2"
-gem "resque-multi-job-forks"
 
 
 group :development, :test do
