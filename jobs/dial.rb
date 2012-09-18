@@ -12,7 +12,7 @@ class Dial
       EM.synchrony do
         concurrency = 10        
         EM::Synchrony::Iterator.new(voters_to_dial, concurrency).map do |voter, iter|
-          Twillio.dial_predictive_em(voter, iter)
+          Twillio.dial_predictive_em(iter, voter)
         end        
         EventMachine.stop
       end
