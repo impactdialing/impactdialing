@@ -83,7 +83,7 @@ class Predictive < Campaign
     dials_made = call_attempts.between(10.minutes.ago, Time.now)
     calls_wrapping_up = RedisCampaignCall.wrapup(self.id).length
     active_call_attempts = RedisCampaignCall.inprogress(self.id).length
-    available_callers = RedisCaller.on_hold(campaign.id, self.id) + RedisCampaignCall.above_average_inprogress_calls_count(self.id, best_conversation_simulated) + RedisCampaignCall.above_average_wrapup_calls_count(self.id, best_wrapup_simulated)
+    available_callers = RedisCaller.on_hold(self.id, self.id) + RedisCampaignCall.above_average_inprogress_calls_count(self.id, best_conversation_simulated) + RedisCampaignCall.above_average_wrapup_calls_count(self.id, best_wrapup_simulated)
     ringing_lines = RedisCampaignCall.ringing(self.id).length
     dials_to_make = (best_dials_simulated * available_callers) - ringing_lines
     dials_to_make.to_i
