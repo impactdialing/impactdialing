@@ -83,6 +83,10 @@ class RedisCaller
     logged_in(campaign_id).length
   end
   
+  def self.on_hold_count(campaign_id)
+    on_hold(campaign_id).length
+  end
+  
   def self.zero?(campaign_id)
     count(campaign_id) == 0
   end
