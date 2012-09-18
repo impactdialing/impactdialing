@@ -3,6 +3,7 @@ PROTOCOL = Rails.env == 'development' || Rails.env == 'heroku_staging' ? 'http:/
 ImpactDialing::Application.routes.draw do
   root :to => "client#index"
 
+
   resources :calls, :protocol => PROTOCOL do
     member do
       post :flow
@@ -11,24 +12,7 @@ ImpactDialing::Application.routes.draw do
       post :submit_result_and_stop
     end
   end
-
-  namespace "callers" do
-    resources :campaigns do
-      member do
-        post :callin
-        match :caller_ready
-      end
-    end
-    resources :phones_only do
-      collection do
-        get :report
-        get :usage
-        get :call_details
-        get :logout
-      end
-    end
-  end
-
+  
   resources :caller, :protocol => PROTOCOL, :only => [:index] do
     collection do
       get :login
@@ -49,6 +33,25 @@ ImpactDialing::Application.routes.draw do
     end
 
   end
+  
+
+  namespace "callers" do
+    resources :campaigns do
+      member do
+        post :callin
+        match :caller_ready
+      end
+    end
+    resources :phones_only do
+      collection do
+        get :report
+        get :usage
+        get :call_details
+        get :logout
+      end
+    end
+  end
+
 
   match '/policies', :to => 'home#policies'
   match '/client/policies', :to => 'client#policies', :as => :client_policies
