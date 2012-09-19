@@ -169,7 +169,7 @@ class CallAttempt < ActiveRecord::Base
 
   def wrapup_now
     RedisCallAttempt.wrapup(self.id) 
-    RedisCampaignCall.move_wrapup_to_completed(campaign.id, call_attempt.id)         
+    RedisCampaignCall.move_wrapup_to_completed(campaign.id, self.id)         
     # RedisCallNotification.wrapup(self.id)
   end
 
