@@ -178,7 +178,7 @@ class PhonesOnlyCallerSession < CallerSession
   end
   
   def publish_moderator_gathering_response
-    attempt_in_progress.publish_moderator_response_submited
+    # attempt_in_progress.publish_moderator_response_submited
   end
   
   def unanswered_question
