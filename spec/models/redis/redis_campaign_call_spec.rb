@@ -47,5 +47,11 @@ describe RedisCampaignCall do
     RedisCampaignCall.completed("1").length.should eq(1)
   end
   
+  it "should give above average inprogress calls" do
+    RedisCampaignCall.add_to_ringing("1", "1")
+    RedisCampaignCall.move_ringing_to_inprogress("1", "1")
+    
+  end
+  
   
 end
