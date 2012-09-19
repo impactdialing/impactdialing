@@ -2,20 +2,7 @@ require "spec_helper"
 
 describe RedisCallAttempt do
   
-  
-  
-  it "should create a new call attempt" do 
-    call_attempt = Factory(:call_attempt, caller_id: 1, campaign_id: 1)   
-    RedisCallAttempt.load_call_attempt_info(call_attempt.id, call_attempt)
-    RedisCallAttempt.read(call_attempt.id).should eq({"call_end"=>"", "call_id"=>"", "call_start"=>"", "caller_id"=>"1", 
-    "caller_session_id"=>"", "campaign_id"=>"1", "connecttime"=>"", "created_at"=>"#{Time.now.utc}", "debited"=>"false", 
-    "dialer_mode"=>"", "id"=>"#{call_attempt.id}", "payment_id"=>"", "recording_duration"=>"", "recording_url"=>"", 
-    "result"=>"", "result_digit"=>"", "scheduled_date"=>"", "sid"=>"", "status"=>"", "tAccountSid"=>"", "tCallSegmentSid"=>"", 
-    "tCalled"=>"", "tCaller"=>"", "tDuration"=>"", "tEndTime"=>"", "tFlags"=>"", "tPhoneNumberSid"=>"", "tPrice"=>"", 
-    "tStartTime"=>"", "tStatus"=>"", "updated_at"=>"#{Time.now.utc}", "voter_id"=>"", "voter_response_processed"=>"false",
-     "wrapup_time"=>""})
-  end
-  
+    
   describe "connect call" do
     
     it "should set connect time" do

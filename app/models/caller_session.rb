@@ -289,6 +289,7 @@ class CallerSession < ActiveRecord::Base
    
    def start_conference    
      RedisCallerSession.start_conference(self.id)
+     RedisCaller.move_to_on_hold(campaign.id, self.id)
    end
    
    

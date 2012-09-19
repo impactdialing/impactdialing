@@ -2,13 +2,6 @@ require "spec_helper"
 
 describe RedisCampaign do
   
-  it "should load campaign info into a spec" do
-    account = Factory(:account)
-    script = Factory(:script)
-    campaign = Factory(:predictive, name: "test123", account: account, script: script)
-    RedisCampaign.load_campaign(campaign.id, campaign)
-    RedisCampaign.read_campaign(campaign.id).should eq({"id"=>"#{campaign.id}", "campaign_id"=>"", "name"=>"#{campaign.name}", "account_id"=>"1", "script_id"=>"#{script.id}", "active"=>"true", "created_at"=>"#{campaign.created_at}", "updated_at"=>"#{campaign.updated_at}", "caller_id"=>"1234567890", "type"=>"Predictive", "recording_id"=>"", "use_recordings"=>"false", "calls_in_progress"=>"false", "recycle_rate"=>"1", "answering_machine_detect"=>"", "start_time"=>"#{campaign.start_time}", "end_time"=>"#{campaign.end_time}", "time_zone"=>"Pacific Time (US & Canada)", "acceptable_abandon_rate"=>""})
-  end
   
   it "should add to running campaigns" do
     account = Factory(:account)
