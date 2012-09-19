@@ -142,6 +142,10 @@ class CallerSession < ActiveRecord::Base
   def end_session
     RedisCallerSession.end_session(self.id)
     RedisCaller.disconnect_caller(campaign.id, self.id )
+    if campaign.type == Campaign::Type::PREDICTIVE && RedisCaller.zero?(campaign.id)
+      RedisCampaign.remove_running_predictive_campaign(campaign.id)
+    end
+    
   end
   
   
