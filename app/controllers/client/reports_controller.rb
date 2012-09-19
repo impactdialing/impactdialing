@@ -74,7 +74,7 @@ module Client
     private
 
     def load_campaign
-      @campaign = Campaign.find(params[:campaign_id])
+      @campaign = current_user.campaigns.find(params[:campaign_id])
     end
 
     def set_dates
