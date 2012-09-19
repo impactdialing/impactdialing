@@ -42,6 +42,7 @@ class Twillio
   
   def self.setup_call_predictive(voter)
     attempt = voter.call_attempts.create(campaign:  voter.campaign, dialer_mode:  voter.campaign.type, status:  CallAttempt::Status::RINGING, call_start:  Time.now)
+    voter.update_attributes(:last_call_attempt_id => attempt.id, :last_call_attempt_time => Time.now, status: CallAttempt::Status::RINGING)
     $redis_call_flow_connection.pipelined do
       RedisCallAttempt.load_call_attempt_info(attempt.id, attempt)
       RedisVoter.setup_call_predictive(voter.id, attempt.id)
@@ -56,6 +57,7 @@ class Twillio
   
   def self.setup_call(voter, caller_session, campaign)
     attempt = voter.call_attempts.create(:campaign => campaign, :dialer_mode => campaign.type, :status => CallAttempt::Status::RINGING, :caller_session => caller_session, :caller => caller_session.caller, call_start:  Time.now)    
+    voter.update_attributes(:last_call_attempt_id => attempt.id, :last_call_attempt_time => Time.now, :caller_session_id => caller_session.id, status: CallAttempt::Status::RINGING)
     $redis_call_flow_connection.pipelined do
       RedisCallAttempt.load_call_attempt_info(attempt.id, attempt)
       RedisVoter.setup_call(voter.id, attempt.id, caller_session.id)
