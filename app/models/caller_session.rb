@@ -246,13 +246,16 @@ class CallerSession < ActiveRecord::Base
   end
   
   def create_call_attempt(voter)
-    attempt = voter.call_attempts.create()    
-    RedisCallAttempt.new(attempt.id, voter.id, campaign.id, CallAttempt::Status::RINGING, caller.id)
-    # attempt = voter.call_attempts.create(:campaign => campaign, :dialer_mode => campaign.type, :status => CallAttempt::Status::RINGING, :caller_session => self, :caller => caller, call_start:  Time.now)
-    update_attribute('attempt_in_progress', attempt)
+    attempt = voter.call_attempts.create(:campaign => campaign, :dialer_mode => campaign.type, :status => CallAttempt::Status::RINGING, :caller_session => self, :caller => caller, call_start:  Time.now)
     voter.update_attributes(:last_call_attempt => attempt, :last_call_attempt_time => Time.now, :caller_session => self, status: CallAttempt::Status::RINGING)
-    Call.create(call_attempt: attempt, all_states: "", state: 'initial')
-    MonitorEvent.call_ringing(campaign)
+    Call.create(call_attempt: attempt, all_states: "", state: 'initial')    
+    $redis_call_flow_connection.pipelined do
+      RedisCallAttempt.load_call_attempt_info(attempt.id, attempt)
+      RedisVoter.setup_call(voter.id, attempt.id, self.id)
+      RedisCallerSession.set_attempt_in_progress(self.id, attempt.id)
+    end
+    RedisCampaignCall.add_to_ringing(campaign.id, attempt.id)
+    # MonitorEvent.call_ringing(campaign)
 
     attempt    
   end
