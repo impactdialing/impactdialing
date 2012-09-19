@@ -72,7 +72,7 @@ class RedisCallAttempt
     call_attempt(call_attempt_id).bulk_set({status: CallAttempt::Status::FAILED, wrapup_time: Time.now})
   end
   
-  def self.call_answered?
+  def self.call_answered?(call_attempt_id)
     call_attempt = read(call_attempt_id)
     !call_attempt['connecttime'].blank?
   end
