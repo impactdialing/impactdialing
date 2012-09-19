@@ -29,7 +29,8 @@ class RedisVoter
       caller_session_id = RedisCaller.longest_waiting_caller(campaign_id)
       RedisVoter.assign_to_caller(voter_id, caller_session_id) 
       RedisCaller.move_on_hold_to_on_call(campaign_id, caller_session_id)
-      RedisCallerSession.set_attempt_in_progress(caller_session_id, call_attempt_id)      
+      RedisCallerSession.set_attempt_in_progress(caller_session_id, call_attempt_id)
+      RedisCallerSession.set_voter_in_progress(caller_session_id.id, voter_id)      
     end
     voter(voter_id).bulk_set({caller_id: RedisCallerSession.read(caller_session_id)["caller_id"], status: CallAttempt::Status::INPROGRESS})
   end
