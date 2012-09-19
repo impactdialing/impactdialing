@@ -230,6 +230,7 @@ class CallerSession < ActiveRecord::Base
       http = twilio_lib.make_call_em(campaign, voter, call_attempt)
       http.callback { 
         response = JSON.parse(http.response)  
+        puts response 
         if response["status"] == 400
           handle_failed_call(call_attempt, self)
         else
