@@ -67,10 +67,12 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def connect_call
+    puts "Connect Call Start - #{Time.now}"
     redis_call_attempt = RedisCallAttempt.read(self.id)
     redis_voter = RedisVoter.read(redis_call_attempt['voter_id'])
     RedisCallAttempt.connect_call(self.id, redis_voter["caller_id"], redis_voter["caller_session_id"])
     RedisCampaignCall.move_ringing_to_inprogress(campaign.id, self.id)
+    puts "Connect Call END - #{Time.now}"
     # RedisCallNotification.connected(self.id)
   end
 
@@ -89,8 +91,10 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def caller_not_available?
+    puts "Connect Lead Start - #{Time.now}"
     connect_lead_to_caller
     RedisVoter.could_not_connect_to_available_caller?(voter.id, campaign.id) 
+    puts "Connect Lead End - #{Time.now}"
   end
 
   def caller_available?
@@ -99,11 +103,13 @@ class CallAttempt < ActiveRecord::Base
 
 
   def end_answered_call
+puts "Connect Lead Start - #{Time.now}"
     $redis_call_flow_connection.pipelined do
       RedisCallAttempt.end_answered_call(self.id)
       RedisVoter.end_answered_call(voter.id)
     end
     RedisCampaignCall.move_inprogress_to_wrapup(campaign.id, self.id)      
+    puts "Connect Lead end - #{Time.now}"
     # RedisCallNotification.end_answered_call(self.id)
   end
 
