@@ -206,7 +206,7 @@ class PhonesOnlyCallerSession < CallerSession
   
   
   def select_voter(old_voter)
-    voter = campaign.next_voter_in_dial_queue(old_voter.try(:id))
+    voter = campaign.next_voter_in_dial_queue(old_voter.try(:[], 'id'))
     unless voter.nil?
       RedisCallerSession.set_voter_in_progress(self.id, voter.id)
     end
