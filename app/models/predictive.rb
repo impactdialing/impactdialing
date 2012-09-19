@@ -80,7 +80,6 @@ class Predictive < Campaign
   end
   
   def number_of_simulated_voters_to_dial
-    dials_made = call_attempts.between(10.minutes.ago, Time.now)
     calls_wrapping_up = RedisCampaignCall.wrapup(self.id).length
     active_call_attempts = RedisCampaignCall.inprogress(self.id).length
     available_callers = RedisCaller.on_hold_count(self.id) + RedisCampaignCall.above_average_inprogress_calls_count(self.id, 10) + RedisCampaignCall.above_average_wrapup_calls_count(self.id, 10)
