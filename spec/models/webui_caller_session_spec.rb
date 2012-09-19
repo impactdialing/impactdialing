@@ -96,6 +96,8 @@ describe WebuiCallerSession do
       it "caller moves to disconnected state" do
         caller_session = Factory(:webui_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "connected")
         RedisCallerSession.load_caller_session_info(caller_session.id, caller_session)
+        RedisCaller.add_caller(@campaign.id, caller_session.id)
+        RedisCaller.disconnect_caller(@campaign.id, caller_session.id)
         caller_session.pause_conf!
         caller_session.state.should eq("disconnected")
       end
@@ -103,6 +105,8 @@ describe WebuiCallerSession do
       it "render hangup twiml for disconnected state" do
         caller_session = Factory(:webui_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "connected")
         RedisCallerSession.load_caller_session_info(caller_session.id, caller_session)        
+        RedisCaller.add_caller(@campaign.id, caller_session.id)
+        RedisCaller.disconnect_caller(@campaign.id, caller_session.id)        
         caller_session.pause_conf!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
       end

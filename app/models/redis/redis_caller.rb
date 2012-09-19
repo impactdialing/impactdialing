@@ -44,6 +44,13 @@ class RedisCaller
     logged_in(campaign_id).delete(caller_session_id)
   end
   
+  def self.move_to_on_hold(campaign_id, caller_session_id)
+    zmove(waiting_to_connect(campaign_id), on_hold(campaign_id), Time.now.to_i, caller_session_id)
+    zmove(on_call(campaign_id), on_hold(campaign_id), Time.now.to_i, caller_session_id)
+    zmove(on_wrapup(campaign_id), on_hold(campaign_id), Time.now.to_i, caller_session_id)    
+  end
+  
+  
   def self.move_on_hold_waiting_to_connect(campaign_id, caller_session_id)
     zmove(on_hold(campaign_id), waiting_to_connect(campaign_id), Time.now.to_i, caller_session_id)
   end
@@ -60,6 +67,8 @@ class RedisCaller
   def self.move_on_hold_to_on_call(campaign_id, caller_session_id)
     zmove(on_hold(campaign_id), on_call(campaign_id), Time.now.to_i, caller_session_id)
   end
+  
+  
   
   def self.move_on_call_to_on_wrapup(campaign_id, caller_session_id)
     zmove(on_call(campaign_id), on_wrapup(campaign_id), Time.now.to_i, caller_session_id)

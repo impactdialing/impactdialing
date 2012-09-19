@@ -4,18 +4,6 @@ describe RedisVoter do
   
 
   
-  it "should redis voter" do
-    voter_list = Factory(:voter_list)
-    voter = Factory(:voter, voter_list: voter_list, FirstName: "abc")
-    RedisVoter.load_voter_info(voter.id, voter)
-    RedisVoter.read(voter.id).should eq({"CustomID"=>"", "Email"=>"", "FirstName"=>"abc", "LastName"=>"",
-    "MiddleName"=>"", "Phone"=>"10000000001", "Suffix"=>"", "account_id"=>"", "active"=>"true", "address"=>"", 
-    "attempt_id"=>"", "call_back"=>"false", "caller_id"=>"", "caller_session_id"=>"", "campaign_id"=>"", "city"=>"", 
-    "country"=>"", "created_at"=>"#{Time.now.utc}", "enabled"=>"true", "family_id_answered"=>"", "id"=>"#{voter.id}", 
-    "last_call_attempt_id"=>"", "last_call_attempt_time"=>"", "lock_version"=>"0", "num_family"=>"1", "priority"=>"", "result"=>"",
-    "result_date"=>"", "result_digit"=>"", "result_json"=>"", "scheduled_date"=>"", "skipped_time"=>"", "state"=>"",
-     "status"=>"not called", "updated_at"=>"#{Time.now.utc}", "voter_list_id"=>"#{voter_list.id}", "zip_code"=>""})
-  end
   
   describe "assigned_to_caller?" do
     

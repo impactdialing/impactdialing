@@ -216,15 +216,10 @@ class CallAttempt < ActiveRecord::Base
     ANSWERED =  [INPROGRESS, SUCCESS]
   end
 
-  def redirect_caller(call_connected=false, account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
+  def redirect_caller(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
     session_id = redis_caller_session
     unless session_id.nil?      
       session = CallerSession.find(session_id)
-      if call_connected
-        RedisCaller.move_on_wrapup_to_on_hold(session.campaign.id, session_id)
-      else
-        RedisCaller.move_waiting_to_connect_to_on_hold(session.campaign.id, session_id)
-      end
       EM.synchrony {
         t = TwilioLib.new(account, auth)
         deferrable = t.redirect_call(session.sid, flow_caller_url(session.caller, :host => Settings.host, :port => Settings.port, session_id: session.id, event: "start_conf"))
