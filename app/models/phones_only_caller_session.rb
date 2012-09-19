@@ -202,7 +202,7 @@ class PhonesOnlyCallerSession < CallerSession
   
   def call_answered?
     redis_attempt_in_progress = RedisCallerSession.attempt_in_progress(self.id)    
-    RedisCallAttempt.call_answered(redis_attempt_in_progress)  && more_questions_to_be_answered?
+    RedisCallAttempt.call_answered?(redis_attempt_in_progress)  && more_questions_to_be_answered?
   end
   
   
