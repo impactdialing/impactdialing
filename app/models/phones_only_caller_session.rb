@@ -201,7 +201,8 @@ class PhonesOnlyCallerSession < CallerSession
   end
   
   def call_answered?
-    attempt_in_progress.try(:connecttime) != nil && more_questions_to_be_answered?
+    redis_attempt_in_progress = RedisCallerSession.attempt_in_progress(self.id)    
+    RedisCallAttempt.call_answered(redis_attempt_in_progress)  && more_questions_to_be_answered?
   end
   
   
