@@ -12,10 +12,10 @@ class ApplicationController < ActionController::Base
   
   def return_invalid_date
     flash_message(:error, I18n.t(:invalid_date_format))
-    redirect_to :back    
+    redirect_to :back
   end
-  
-    private
+
+  private
 
   def generate_session_key
     secure_digest(Time.now, (1..10).map{ rand.to_s })
@@ -24,6 +24,7 @@ class ApplicationController < ActionController::Base
   def secure_digest(*args)
     Digest::SHA1.hexdigest(args.flatten.join('--'))
   end
+
   def full_access
     if @user.supervisor?
       flash_message(:error, I18n.t(:admin_access))

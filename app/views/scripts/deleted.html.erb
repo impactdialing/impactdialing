@@ -1,0 +1,22 @@
+<%= csrf_meta_tag %>
+
+<h1>Deleted scripts</h1>
+<% if @scripts.empty? %>
+  <p>No scripts deleted.</p>
+<% else %>
+  <table>
+    <tr>
+      <th>Name</th>
+      <th>Date deleted</th>
+      <th width="55" class="ac"></th>
+    </tr>
+    <% @scripts.each do |c| %>
+      <tr>
+        <td><strong><%= link_to c.name, edit_client_script_path(c) %></strong></td>
+        <td><%= c.updated_at.strftime("%m/%d/%Y") %></td>
+        <td><%= link_to 'Restore', client_script_restore_path(c), :method => :put %></td>
+      </tr>
+    <% end %>
+  </table>
+  <p><%= page_entries_info @scripts %> <%= will_paginate @scripts %></p>
+<% end %>

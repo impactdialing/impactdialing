@@ -202,6 +202,7 @@ Factory.define :possible_response do |pr|
   pr.value "no_response"
   pr.possible_response_order '1'
   pr.question {Factory(:question)}
+  pr.keypad ""
 end
 
 Factory.define :answer do |a|

@@ -75,13 +75,29 @@ module Client
       @answered_call_stats = @caller.answered_call_stats(@from_date, @to_date, @campaign)
       @questions_and_responses = @campaign.try(:questions_and_responses) || {}
     end
-    
+
     def deleted
       @callers = Caller.deleted.for_account(account).paginate(:page => params[:page], :order => 'id desc')
       respond_with @callers do |format|
         format.html{render 'client/callers/deleted'}
         format.json {render :json => @callers.to_json}
-      end      
+      end
+    end
+
+    def restore
+      @caller.active = true
+      save_caller
+      respond_with @caller,  location: client_callers_path do |format|
+        format.json { render :json => {message: "Caller restored" }, :status => :ok } if @caller.errors.empty?
+        format.html do
+          if @caller.errors.any?
+            @caller.active = true
+            render 'edit'
+          else
+            redirect_to client_callers_path
+          end
+        end
+      end
     end
 
     def type_name
@@ -92,7 +108,7 @@ module Client
 
     def load_and_verify_caller
       begin
-        @caller = Caller.find(params[:id])
+        @caller = Caller.find(params[:id] || params[:caller_id])
       rescue ActiveRecord::RecordNotFound => e
         render :json=> {"message"=>"Resource not found"}, :status => :not_found
         return
