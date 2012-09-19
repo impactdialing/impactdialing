@@ -11,7 +11,7 @@ class CallinController < ApplicationController
     session_key = identity.nil? ? generate_session_key : identity.session_key
     if caller
       session = caller.create_caller_session(session_key, params[:CallSid], CallerSession::CallerType::PHONE)
-      # MonitorEvent.create_caller_notification(session.campaign.id, session.id, "caller_connected", "add_caller")    
+      MonitorEvent.create_caller_notification(session.campaign.id, session.id, "caller_connected", "add_caller")    
       RedisCampaign.add_running_predictive_campaign(caller.campaign_id, caller.campaign.type)
       RedisCaller.add_caller(caller.campaign.id, session.id)
       render xml:  caller.is_phones_only? ? session.run('callin_choice') : session.run('start_conf')
