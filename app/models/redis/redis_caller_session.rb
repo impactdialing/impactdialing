@@ -22,6 +22,11 @@ class RedisCallerSession
     caller_session(caller_session_id).store("attempt_in_progress", attempt_id)
   end
   
+  def self.attempt_in_progress(caller_session_id)
+    caller_session(caller_session_id).fetch("attempt_in_progress")
+  end
+  
+  
   def self.set_voter_in_progress(caller_session_id, voter_id)
     caller_session(caller_session_id).store("voter_in_progress", voter_id)
   end
