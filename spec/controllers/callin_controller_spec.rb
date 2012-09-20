@@ -26,7 +26,7 @@ describe CallinController do
       CallerIdentity.should_receive(:find_by_pin).and_return(caller_identity)
       caller_identity.should_receive(:caller).and_return(caller)
       caller.should_receive(:create_caller_session).and_return(caller_session)
-      MonitorEvent.should_receive(:create_caller_notification).with(caller_session.campaign.id, caller_session.id, "caller_connected", "add_caller")
+      RedisCallNotification.should_receive(:caller_connected)
       caller_session.should_receive(:run).and_return("")
       post :identify, Digits: pin
     end

@@ -11,8 +11,6 @@ class MonitorsController < ClientController
     @campaigns = account.campaigns.with_running_caller_sessions
     @all_campaigns = account.campaigns.active    
     @campaign = Campaign.find(params[:id])
-    num_logged_in, num_on_call, num_wrapup, num_on_hold, num_live_lines, num_ringing_lines, num_available, num_remaining = MonitorCampaign.campaign_overview_info(@campaign)
-    MonitorCampaign.new(@campaign.id, num_logged_in, num_on_call, num_wrapup, num_on_hold, num_live_lines, num_ringing_lines, num_available, num_remaining)    
     @monitor_session = MonitorSession.add_session(@campaign.id)
     twilio_capability = Twilio::Util::Capability.new(TWILIO_ACCOUNT, TWILIO_AUTH)
     twilio_capability.allow_client_outgoing(MONITOR_TWILIO_APP_SID)

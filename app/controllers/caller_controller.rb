@@ -13,6 +13,7 @@ class CallerController < ApplicationController
     session = caller.create_caller_session(identity.session_key, params[:CallSid], CallerSession::CallerType::TWILIO_CLIENT)
     RedisCampaign.add_running_predictive_campaign(caller.campaign_id, caller.campaign.type)
     RedisCaller.add_caller(caller.campaign.id, session.id)
+    RedisCallNotification.caller_connected(session.id)
     render xml: session.run(:start_conf)
   end
 
@@ -32,7 +33,6 @@ class CallerController < ApplicationController
     voter = RedisVoter.read(params[:voter_id])
     caller_session.publish_calling_voter
     Twillio.dial(voter, caller_session)
-    # caller_session.dial_em(Voter.find(params[:voter_id])) unless params[:voter_id].blank?
     render :nothing => true
   end
 
@@ -43,8 +43,7 @@ class CallerController < ApplicationController
 
   def end_session
     unless @caller_session.nil?
-      MonitorEvent.caller_disconnected(@caller_session.campaign)
-      MonitorEvent.create_caller_notification(@caller_session.campaign.id, @caller_session.id, "caller_disconnected", "remove_caller")
+      RedisCallNotification.caller_disconnected(@caller_session.id)      
       render xml: @caller_session.run('end_conf') 
     else
       render xml: Twilio::Verb.hangup

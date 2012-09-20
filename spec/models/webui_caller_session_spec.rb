@@ -21,7 +21,6 @@ describe WebuiCallerSession do
         caller_session.should_receive(:time_period_exceeded?).and_return(false)
         caller_session.should_receive(:is_on_call?).and_return(false)
         caller_session.should_receive(:publish_caller_conference_started)
-        caller_session.should_receive(:publish_start_calling)
         caller_session.start_conf!
         caller_session.state.should eq("connected")
       end

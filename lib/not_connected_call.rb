@@ -27,30 +27,27 @@ module NotConnected
     def self.call_abandoned(call_attempt_id)
       call_attempt = CallAttempt.find(call_attempt_id)
       campaign = call_attempt.campaign      
-      RedisCampaignCall.move_ringing_to_abandoned(campaign.id, call_attempt.id)
-      # MonitorEvent.incoming_call_request(campaign)
       RedisCallMysql.call_completed(call_attempt.id)
+      MonitorEvent.incoming_call_request(campaign)
     end
     
     
     def self.answered_by_machine(call_attempt_id)
       call_attempt = CallAttempt.find(call_attempt_id)
       campaign = call_attempt.campaign
-      RedisCampaignCall.move_ringing_to_completed(campaign.id, call_attempt.id)                  
-      # MonitorEvent.incoming_call_request(campaign)
+      MonitorEvent.incoming_call_request(campaign)
     end
     
     def self.end_answered_by_machine(call_attempt_id)
       call_attempt = CallAttempt.find(call_attempt_id)
       campaign = call_attempt.campaign                        
       RedisCallMysql.call_completed(call_attempt.id)
-      # MonitorEvent.incoming_call_request(campaign)              
+      MonitorEvent.incoming_call_request(campaign)              
     end
     
     def self.end_unanswered_call(call_attempt_id)
       call_attempt = CallAttempt.find(call_attempt_id)
       campaign = call_attempt.campaign                              
-      RedisCampaignCall.move_ringing_to_completed(campaign.id, call_attempt.id)
       RedisCallMysql.call_completed(call_attempt.id)
     end
     

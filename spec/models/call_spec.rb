@@ -343,7 +343,6 @@ describe Call do
         call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'call_answered_by_lead', all_states: "")
         @call_attempt.should_receive(:wrapup_now)
         @call_attempt.should_receive(:redirect_caller)
-        @call_attempt.should_receive(:publish_moderator_response_submited)
         call.submit_result!
         call.state.should eq('wrapup_and_continue')
       end
@@ -362,7 +361,6 @@ describe Call do
         call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'call_answered_by_lead', all_states: "")
         @call_attempt.should_receive(:wrapup_now)
         @call_attempt.should_receive(:end_caller_session)
-        @call_attempt.should_receive(:publish_moderator_response_submited)        
         call.submit_result_and_stop!
         call.state.should eq('wrapup_and_stop')
       end

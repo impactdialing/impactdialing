@@ -5,9 +5,6 @@ module LeadEvents
   
   module InstanceMethods
     
-    def publish_incoming_call
-      MonitorEvent.incoming_call_request(campaign)
-    end
     
     def publish_voter_connected
       redis_call_attempt = RedisCallAttempt.read(self.id)
@@ -21,10 +18,8 @@ module LeadEvents
             caller_deferrable.callback {}
             caller_deferrable.errback { |error| }
           end
-        }      
-      MonitorEvent.create_caller_notification(campaign.id, caller_session_id, redis_call_attempt["status"])  
-      end
-      MonitorEvent.voter_connected(campaign)      
+        }             
+      end      
     end    
     
     def publish_voter_disconnected
@@ -39,16 +34,8 @@ module LeadEvents
             caller_deferrable.errback { |error| puts error.inspect}
           end
         }   
-      MonitorEvent.create_caller_notification(campaign.id, caller_session_id, redis_call_attempt["status"])  
       end
-      MonitorEvent.voter_disconnected(campaign)
-    end
-    
-    def publish_moderator_response_submited
-      MonitorEvent.voter_response_submitted(campaign)
-      redis_call_attempt = RedisCallAttempt.read(self.id)
-      caller_session_id = redis_call_attempt['caller_session_id']      
-      MonitorEvent.create_caller_notification(campaign.id, caller_session_id, "On hold")  
+
     end
     
   end
