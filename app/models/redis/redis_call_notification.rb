@@ -67,6 +67,7 @@ class RedisCallNotification
     campaign = caller_session.campaign
     MonitorEvent.caller_disconnected(campaign)
     MonitorEvent.create_caller_notification(campaign.id, caller_session.id, "caller_disconnected", "remove_caller")
+    RedisConnection.common_connection.rpush('connected_call_notification', {identity: identity, event: "update_caller_session"}.to_json)    
   end
   
   

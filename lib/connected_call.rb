@@ -34,6 +34,11 @@ module Connected
       RedisCallMysql.update_voter(voter_id)
     end
     
+    def self.update_caller_session(caller_session_id)
+      RedisCallMysql.update_caller_session(caller_session_id)
+    end
+    
+    
     
         
     
