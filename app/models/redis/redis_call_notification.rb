@@ -29,20 +29,30 @@ class RedisCallNotification
   
   
   def self.abandoned(identity)
-    RedisConnection.common_connection.rpush('notconnected_call_notification', {identity: identity, event: "call_abandoned"}.to_json)
+    call_attempt = CallAttempt.find(call_attempt_id)
+    campaign = call_attempt.campaign          
+    MonitorEvent.incoming_call_request(campaign)
+    RedisConnection.common_connection.rpush('connected_call_notification', {identity: identity, event: "wrapup"}.to_json)
   end
   
   
   def self.answered_by_machine(identity)
-    RedisConnection.common_connection.rpush('notconnected_call_notification', {identity: identity, event: "answered_by_machine"}.to_json)    
+    call_attempt = CallAttempt.find(call_attempt_id)
+    campaign = call_attempt.campaign
+    MonitorEvent.incoming_call_request(campaign)
   end
   
   def self.end_answered_by_machine(identity)
-    RedisConnection.common_connection.rpush('notconnected_call_notification', {identity: identity, event: "end_answered_by_machine"}.to_json)    
+    call_attempt = CallAttempt.find(call_attempt_id)
+    campaign = call_attempt.campaign                            
+    MonitorEvent.incoming_call_request(campaign)              
+    RedisConnection.common_connection.rpush('connected_call_notification', {identity: identity, event: "wrapup"}.to_json)
   end
   
   def self.end_unanswered_call(identity)
-    RedisConnection.common_connection.rpush('notconnected_call_notification', {identity: self.id, event: "end_unanswered_call"}.to_json)
+    call_attempt = CallAttempt.find(call_attempt_id)
+    campaign = call_attempt.campaign                              
+    RedisConnection.common_connection.rpush('connected_call_notification', {identity: identity, event: "wrapup"}.to_json)
   end
   
   def self.caller_connected(identity)
