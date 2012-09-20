@@ -114,7 +114,7 @@ class CallAttempt < ActiveRecord::Base
       RedisVoter.answered_by_machine(voter.id, status)
     end
     RedisCampaignCall.move_ringing_to_completed(campaign.id, self.id)                  
-    # RedisCallNotification.answered_by_machine(self.id)    
+    RedisCallNotification.answered_by_machine(self.id)    
   end
 
   def end_answered_by_machine
@@ -133,7 +133,7 @@ class CallAttempt < ActiveRecord::Base
       RedisVoter.end_unanswered_call(voter.id, status)
     end
     RedisCampaignCall.move_ringing_to_completed(campaign.id, self.id)
-    # RedisCallNotification.end_unanswered_call(self.id)    
+    RedisCallNotification.end_unanswered_call(self.id)    
   end
 
   def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
@@ -170,7 +170,7 @@ class CallAttempt < ActiveRecord::Base
   def wrapup_now
     RedisCallAttempt.wrapup(self.id) 
     RedisCampaignCall.move_wrapup_to_completed(campaign.id, self.id)         
-    # RedisCallNotification.wrapup(self.id)
+    RedisCallNotification.wrapup(self.id)
   end
 
   def self.time_on_call(caller, campaign, from, to)
