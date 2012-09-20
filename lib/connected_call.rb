@@ -27,7 +27,7 @@ module Connected
     
     
     def self.wrapup(call_attempt_id)
-      RedisCallMysql.call_completed(call_attempt.id)            
+      RedisCallMysql.call_completed(call_attempt_id)            
     end    
     
     def update_voter(voter_id)
