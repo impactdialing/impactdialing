@@ -50,4 +50,8 @@ class RedisCallerSession
     caller_session['on_call'] == "false" && caller_session["available_for_call"] == "false"
   end    
   
+  def self.delete(caller_session_id)
+    caller_session(caller_session_id).clear 
+  end
+  
 end
