@@ -42,6 +42,7 @@ class RedisCallerSession
   def self.end_session(caller_session_id)
     caller_session(caller_session_id).bulk_set({on_call: false, available_for_call: false, endtime: Time.now})
     caller_session(caller_session_id).delete('voter_in_progress')
+    caller_session(caller_session_id).delete('attempt_in_progress')
   end
   
   def self.disconnected?(caller_session_id)
