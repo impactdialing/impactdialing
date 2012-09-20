@@ -224,7 +224,7 @@ class CallAttempt < ActiveRecord::Base
 
   def redirect_caller(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
     session_id = redis_caller_session
-    unless session_id.nil?      
+    unless session_id.blank?      
       session = CallerSession.find(session_id)
       EM.synchrony {
         t = TwilioLib.new(account, auth)
