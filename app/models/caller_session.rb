@@ -164,7 +164,12 @@ class CallerSession < ActiveRecord::Base
   
   
   def wrapup_attempt_in_progress
-    attempt_in_progress.try(:update_attributes, {:wrapup_time => Time.now})
+    redis_attempt_in_progress = RedisCallerSession.attempt_in_progress(self.id)    
+    unless redis_attempt_in_progress.blank?
+      RedisCampaignCall.move_to_completed(campaign.id, redis_attempt_in_progress)
+      RedisCallAttempt.wrapup(redis_attempt_in_progress)
+    end
+    
   end
   
   
