@@ -1,49 +1,46 @@
-<h1><%= "#{@campaign.name} Answered Calls Report" %></h1>
-<% i = 1 %>
-<% @results.each_pair do |question, stats| %>
-	  <h3><%= @campaign.robo == true ? "Recording" : "Question" %> <%= i %>: <%= question %></h3>
-	   <table>
-	     <tr>
-	       <th>Answer</th>
-	       <th>Number</th>
-	       <th>Percentage</th>
-	     </tr>
-       <% stats.each do |answers| %>
+<div role="main">
+  <h1><%= @campaign.name %> Answered Calls Report</h1>
+  <% if @results.empty? %>
+    <p>This campaign has not had any calls answered yet.</p>
+  <% else %>
+    <% i = 1 %>
+    <% @results.each_pair do |question, stats| %>
+      <h3>Question <%= i %>: <%= question %></h3>
+       <table>
+         <tr>
+           <th>Answer</th>
+           <th>Number</th>
+           <th>Percentage</th>
+         </tr>
+         <% stats.each do |answers| %>
+          <tr>
+            <td><%= answers[:answer]%></td>
+            <td><%= answers[:number]%></td>
+            <td><%= answers[:percentage]%> %</td>
+          </tr>
+          <% end %>
+       </table>
+       <% i = i + 1%>
+    <% end %>
+
+    <% unless @transfers.blank? %>
+      <table>
+        <h3>Transfers</h3>
         <tr>
-          <td><%= answers[:answer]%></td>
-          <td><%= answers[:number]%></td>
-          <td><%= answers[:percentage]%> %</td>
-  	    </tr>
-	      <% end %>
-     </table>
-     <% i = i + 1%>
-<% end %>
+          <th>Transfer</th>
+          <th>Number</th>
+          <th>Percentage</th>
+        </tr>
+        <% @transfers.each_pair do |key, value| %>
+          <tr>
+            <td><%= value[:label] %></td>
+            <td><%= value[:number] %></td>
+            <td><%= value[:percentage] %> %</td>
+          </tr>
+        <% end %>
+      </table>
+    <% end %>
 
-<%unless @transfers.blank?%>
-  <table>
-    <h3>Transfers</h3>
-    <tr>
-      <th>Transfer</th>
-      <th>Number</th>
-      <th>Percentage</th>
-    </tr>
-    <%@transfers.each_pair do |key, value|%>
-    <tr>
-      <td><%= value[:label]%></td>
-      <td><%= value[:number]%></td>
-      <td><%= value[:percentage]%> %</td>
-    </tr>
-  
-    <%end%>
-  </table>
-<%end%>
-
-<h3>Date range:</h3>
-<% form_tag( @campaign.robo == true ? answers_reports_path : answer_client_reports_path, :method => :get) do %>
-  <input type="hidden" name="campaign_id" value="<%= params[:campaign_id] %>" />
-  <%= render :partial => 'shared/date_picker' %>
-  <div class="buttons">
-    <button type="submit">Update</button>
-  </div>
-  
-<%end %>
+    <%= render partial: 'shared/date_picker_campaigns', locals: {target: answer_client_reports_path} %>
+  <% end %>
+</div>

@@ -1,0 +1,15 @@
+<% content_for :javascripts do %>
+    <%= javascript_include_tag "campaign/campaign", "campaign/voter_lists", "jquery.form.js" %>
+    <script type ="text/javascript">
+      $(document).ready(function() {
+        campaign = new Campaign();
+        voter_list = new VoterLists();
+      });
+    </script>
+
+<% end %>
+<%= csrf_meta_tag %>
+
+<h1>Edit campaign</h1>
+<%= render 'form' %>
+<%= render 'voter_lists_upload_form' %>

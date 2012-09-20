@@ -19,3 +19,4 @@ spec/fixtures/test_tmp/
 /typescript
 .bundle
 /config/application .yml
+dump.rdb

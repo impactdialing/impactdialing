@@ -1,5 +1,4 @@
 class NewReportJob
-  
   def initialize(campaign_id, user_id, voter_fields, custom_fields, all_voters, lead_dial, from, to, callback_url, strategy="webui")
      @campaign = Campaign.find(campaign_id)
      @user = User.find(user_id)
@@ -13,39 +12,44 @@ class NewReportJob
      @strategy = strategy
      @selected_voter_fields = ["Phone"] if @selected_voter_fields.blank?
    end
-   
+
    def report_strategy(csv)
-     if @campaign.type == "Robo"
-       BroadcastCampaignReportStrategy.new(@campaign, csv, @download_all_voters, @lead_dial, @selected_voter_fields, @selected_custom_voter_fields, @from_date, @to_date)
-     else
-       CallerCampaignReportStrategy.new(@campaign, csv, @download_all_voters, @lead_dial, @selected_voter_fields, @selected_custom_voter_fields, @from_date, @to_date)
-     end
+     CallerCampaignReportStrategy.new(@campaign, csv, @download_all_voters, @lead_dial, @selected_voter_fields, @selected_custom_voter_fields, @from_date, @to_date)
    end
-   
-   
-   def perform
-    @report = CSV.generate do |csv|
-     @campaign_strategy = report_strategy(csv)
-     @campaign_strategy.construct_csv      
+
+  def perform
+    begin
+      @report = CSV.generate do |csv|
+        @campaign_strategy = report_strategy(csv)
+        @campaign_strategy.construct_csv
+      end
+      save_report
+      notify_success
+    rescue Exception => e
+      on_failure_report(e)
     end
-    save_report
-    notify_success 
-   end
-   
+  end
+
    def notify_success
-     response_strategy = @strategy == 'webui' ?  ReportWebUIStrategy.new("success", @user, @campaign, nil) : ReportApiStrategy.new("success", @campaign.id, @campaign.account.id, @callback_url)
+     response_strategy = @strategy == 'webui' ?  ReportWebUIStrategy.new("success", @user, @campaign, nil) : ReportApiStrategy.new("success", @campaign.account.id, @campaign.id, @callback_url)
      response_strategy.response({campaign_name: @campaign_name})
    end
    
+   def on_failure_report(exception)
+      response_strategy = @strategy == 'webui' ?  ReportWebUIStrategy.new("failure", @user, @campaign, exception) : ReportApiStrategy.new("failure", @campaign.account.id, @campaign.id, @callback_url)
+      response_strategy.response({})
+   end
    
+
+
    def file_name
     FileUtils.mkdir_p(Rails.root.join("tmp"))
     uuid = UUID.new.generate
     @campaign_name = "#{uuid}_report_#{@campaign.name}"
     @campaign_name = @campaign_name.tr("/\000", "").tr("'","_").tr("-","_").tr(" ", "")
-    "#{Rails.root}/tmp/#{@campaign_name}.csv"     
+    "#{Rails.root}/tmp/#{@campaign_name}.csv"
    end
-   
+
    def save_report
      AWS::S3::Base.establish_connection!(
          :access_key_id => 'AKIAINGDKRFQU6S63LUQ',
@@ -56,7 +60,7 @@ class NewReportJob
      expires_in_24_hours = (Time.now + 24.hours).to_i
      AWS::S3::S3Object.store("#{@campaign_name}.csv", File.open(csv_file_name), "download_reports", :content_type => "application/binary", :access=>:private, :expires => expires_in_24_hours)
    end
-   
+
    def write_csv_to_file(csv_file_name)
      report_csv = @report.split("\n")
      file = File.open(csv_file_name, "w")
@@ -65,16 +69,12 @@ class NewReportJob
          file.write(r)
          file.write("\n")
        rescue Exception => e
-         puts "row from report"
          puts r
          puts e
          next
-       end      
+       end
      end
-     file.close         
+     file.close
    end
-   
-   
-   
-   
+
 end

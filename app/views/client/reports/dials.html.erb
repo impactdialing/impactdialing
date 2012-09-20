@@ -1,20 +1,11 @@
 <div role="main">
-	<h1><%= @campaign.name %> Dials</h1>
+  <h1><%= @campaign.name %> Dials</h1>
 
   <% if @show_summary %>
     <%= render partial: 'summary_dial', locals: { dials_report: @dials_report} %>
   <% end %>
-  <%= render partial: 'leads_dial', locals: { dials_report: @dials_report} %>		      
-  <%= render partial: 'attempts_dial', locals: { dials_report: @dials_report} %>		
-  
-  <h3>Date range:</h3>
-  <% form_tag(dials_client_reports_path, :method => :get) do %>
-    <%= render :partial => 'shared/date_picker' %>
-    <input name="campaign_id" type="hidden" value="<%= params[:campaign_id]%>"></input>
-    <div class="buttons"><button type="submit">Update date range</button></div>
-  <% end %>
-  
-  
-    
+  <%= render partial: 'leads_dial', locals: { dials_report: @dials_report} %>
+  <%= render partial: 'attempts_dial', locals: { dials_report: @dials_report} %>
 
+  <%= render partial: 'shared/date_picker_campaigns', locals: {target: dials_client_reports_path} %>
 </div>

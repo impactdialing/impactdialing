@@ -1,119 +1,104 @@
 module Client
-  class CampaignsController < ::CampaignsController
-    layout 'client'
+  class CampaignsController < ClientController
+    before_filter :load_and_verify_campaign, :except => [:index, :new, :create, :deleted]
+    respond_to :html, :json
 
-    def new
-      @campaign = Progressive.new(:account_id => account.id)
-      @campaign.save(:validate => false)
-      @callers = account.callers.active
-      @lists = @campaign.voter_lists
-      @scripts = account.scripts.manual.active
-      @voter_list = @campaign.voter_lists.new
-    end
-
-    def show
-      check_warning
-      @breadcrumb=[{"Campaigns" => client_campaigns_path}, @campaign.name]
-
-      @callers = account.callers.active
-      @lists = @campaign.voter_lists
-      @scripts = account.scripts.manual.active
-      @voter_list = @campaign.voter_lists.new
-      if (@campaign.robo)
-        redirect_to broadcast_campaign_path(@campaign)
-      end
-    end
 
     def index
-      @breadcrumb="Campaigns"
-      @campaigns = account.campaigns.active.manual.paginate :page => params[:page], :order => 'id desc'
+      @campaigns = account.campaigns.active.paginate :page => params[:page]
+      respond_with @campaigns
     end
 
-    def destroy
-      unless @campaign.callers.empty? 
-        flash_message(:notice, "There are currently callers assigned to this campaign. Please assign them to another campaign before deleting this one.")
-        redirect_to :back
-        return
-      end
-      if !@campaign.blank?
-        @campaign.update_attribute(:active, false)
-      end
-      flash_message(:notice, "Campaign deleted")
-      redirect_to :back
+    def new
+      @campaign = account.campaigns.new(type: Campaign::Type::PROGRESSIVE,
+                                        time_zone: "Pacific Time (US & Canada)",
+                                        start_time: Time.parse("9am"),
+                                        end_time: Time.parse("9pm"))
+      load_scripts
+      # new_list
+      respond_with @campaign
     end
 
-    def deleted
-      render 'campaigns/deleted'
+
+    def show
+      respond_with @campaign do |format|
+        format.html {redirect_to edit_client_campaign_path(@campaign)}
+      end
     end
 
-    def setup_campaigns_paths
-      @deleted_campaigns_path = client_deleted_campaigns_path
-      @campaigns_path = client_campaigns_path
-    end
-
-    def update
-      @campaign = Campaign.find_by_id(params[:id])
-      @campaign.account = account
-      
-      @campaign.update_attributes(params[:campaign])
-      @campaign.type = params[:campaign][:type]
-      begin
-        @campaign.save!      
-      rescue ActiveRecord::RecordInvalid => invalid
-        flash_message(:error, invalid.record.errors[:base].join("\n"))
-        redirect_to :back
-        return
-      end
-      @scripts = @campaign.account.scripts
-      @lists = @campaign.voter_lists
-      @voter_list = @campaign.voter_lists.new
-      if @campaign.valid?
-        @campaign.script ||= @campaign.account.scripts.first
-        @campaign.disable_voter_list
-        params[:voter_list_ids].each { |id| VoterList.enable_voter_list(id) } unless params[:voter_list_ids].blank?
-        flash_message(:notice, "Campaign saved")
-        redirect_to client_campaigns_path
-      else
-        @callers = account.callers.active
-        respond_to do |format|
-          format.js 
-          format.html{render :action =>"show"}
-        end
-      end
+    def edit
+      load_scripts
+      new_list
+      respond_with @campaign
     end
 
     def create
-      @campaign = new_type_campaign(params)
-      @campaign.account = account
-      @campaign.script ||= @campaign.account.scripts.first
-      if @campaign.save
-        if params[:listsSent]
-          @campaign.disable_voter_list
-          params[:voter_list_ids].each { |id| enable_voter_list(id) } unless params[:voter_list_ids].blank?
-        end
-        flash_message(:notice, "Campaign saved")
-        redirect_to client_campaigns_path
-      else
-        render :action=>"new"
-      end
+      @campaign = account.campaigns.new
+      save_campaign
+      respond_with @campaign, location: client_campaigns_path
     end
-    
-    def load_deleted
-      self.instance_variable_set("@#{type_name.pluralize}", Campaign.deleted.manual.for_account(@user.account).paginate(:page => params[:page], :order => 'id desc'))
-    end
-    
-    private
-    
-    def new_type_campaign (params)
-      if params[:campaign][:type] == "Preview"
-        Preview.new(params[:campaign])
-      elsif params[:campaign][:type] == "Progressive"
-        Progressive.new(params[:campaign])
-      elsif params[:campaign][:type] == "Predictive"
-        Predictive.new(params[:campaign])
-      end
-    end
-    
 
+
+    def update
+      save_campaign
+      respond_with @campaign,  location: client_campaigns_url do |format|
+        format.json { render :json => {message: "Campaign updated" }, :status => :ok } if @campaign.errors.empty?
+      end
+    end
+
+    def destroy
+      @campaign.active = false
+      @campaign.save ?  flash_message(:notice, "Campaign deleted") : flash_message(:error, @campaign.errors.full_messages.join)
+      respond_with @campaign,  location: client_campaigns_url do |format|
+        format.json { render :json => {message: "Campaign deleted" }, :status => :ok } if @campaign.errors.empty?
+      end
+    end
+
+    def deleted
+      @campaigns = Campaign.deleted.for_account(@user.account).paginate(:page => params[:page], :order => 'id desc')
+      respond_with @campaigns do |format|
+        format.html{render 'campaigns/deleted'}
+        format.json {render :json => @campaigns.to_json}
+      end
+    end
+
+    def restore
+      @campaign.active = true
+      save_campaign
+      respond_with @campaign,  location: client_campaigns_url do |format|
+        format.json { render :json => {message: "Campaign restored" }, :status => :ok } if @campaign.errors.empty?
+      end
+
+    end
+
+
+    private
+
+    def load_and_verify_campaign
+      begin
+        @campaign = Campaign.find(params[:id] || params[:campaign_id])
+      rescue ActiveRecord::RecordNotFound => e
+        render :json=> {"message"=>"Resource not found"}, :status => :not_found
+        return
+      end
+      if @campaign.account != account
+        render :json => {message: 'Cannot access campaign.'}, :status => :unauthorized
+        return
+      end
+    end
+
+
+    def load_scripts
+      @scripts = account.scripts.active
+    end
+
+    def new_list
+      @voter_list = @campaign.voter_lists.new
+    end
+
+    def save_campaign
+      load_scripts
+      flash_message(:notice, "Campaign saved") if @campaign.update_attributes(params[:campaign])
+    end
   end
 end

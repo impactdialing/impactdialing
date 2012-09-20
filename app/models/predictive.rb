@@ -1,4 +1,5 @@
 class Predictive < Campaign
+  
     
   def dial
     num_to_call = number_of_voters_to_dial
@@ -8,7 +9,7 @@ class Predictive < Campaign
       concurrency = 8
       voters_to_dial = choose_voters_to_dial(num_to_call)
       EM::Synchrony::Iterator.new(voters_to_dial, concurrency).map do |voter, iter|
-        voter.dial_em(iter)
+        Twillio.dial_predictive_em(iter, voter)
         Moderator.update_dials_in_progress_sync(self)
       end      
       EventMachine.stop
@@ -16,24 +17,44 @@ class Predictive < Campaign
   end
   
   def dial_resque
-    num_to_call = number_of_voters_to_dial
-    Rails.logger.info "Campaign: #{self.id} - num_to_call #{num_to_call}"    
-    return if  num_to_call <= 0    
-    set_calls_in_progress
-    Resque.enqueue(DialerJob, self.id, num_to_call)
+    set_calculate_dialing
+    Resque.enqueue(CalculateDialsJob, self.id)
   end  
   
-  def set_calls_in_progress
-    Resque.redis.set("dial:#{self.id}", true)
-    Resque.redis.expire("dial:#{self.id}", 20)        
+  def set_calculate_dialing
+    Resque.redis.set("dial_calculate:#{self.id}", true)
+    Resque.redis.expire("dial_calculate:#{self.id}", 8)
   end
   
+  def calculate_dialing?
+    Resque.redis.exists("dial_calculate:#{self.id}")
+  end
+  
+    
+  def increment_campaign_dial_count(counter)
+    Resque.redis.incrby("dial_count:#{self.id}", counter)
+  end
+  
+  
+  def decrement_campaign_dial_count(decrement_counter)
+    Resque.redis.decrby("dial_count:#{self.id}", decrement_counter)
+  end
+  
+  def dialing_count
+    begin
+      count = Resque.redis.get("dial_count:#{self.id}").to_i
+    rescue Exception => e
+      count = 0
+    end
+    count <=0 ? 0 : count
+  end
+    
   def number_of_voters_to_dial
     num_to_call = 0
     dials_made = call_attempts.size
     # if dials_made == 0 || !abandon_rate_acceptable?
     if dials_made == 0
-      num_to_call = callers_available_for_call.size - call_attempts.between(20.seconds.ago, Time.now).with_status(CallAttempt::Status::RINGING).size
+      num_to_call = callers_available_for_call - RedisCampaignCall.ringing(self.id).length
     else
       num_to_call = number_of_simulated_voters_to_dial
     end
@@ -59,11 +80,10 @@ class Predictive < Campaign
   end
   
   def number_of_simulated_voters_to_dial
-    dials_made = call_attempts.between(10.minutes.ago, Time.now)
-    calls_wrapping_up = dials_made.with_status(CallAttempt::Status::SUCCESS).not_wrapped_up
-    active_call_attempts = dials_made.with_status(CallAttempt::Status::INPROGRESS)
-    available_callers = callers_available_for_call.size + active_call_attempts.select { |call_attempt| ((call_attempt.duration_wrapped_up > best_conversation_simulated) && (call_attempt.duration_wrapped_up < best_conversation_simulated + 15))}.size + calls_wrapping_up.select{|wrapping_up_call| (wrapping_up_call.time_to_wrapup > best_wrapup_simulated) && ((wrapping_up_call.time_to_wrapup > best_wrapup_simulated + 15))}.size
-    ringing_lines = dials_made.with_status(CallAttempt::Status::RINGING).between(20.seconds.ago, Time.now).size
+    calls_wrapping_up = RedisCampaignCall.wrapup(self.id).length
+    active_call_attempts = RedisCampaignCall.inprogress(self.id).length
+    available_callers = RedisCaller.on_hold_count(self.id) + RedisCampaignCall.above_average_inprogress_calls_count(self.id, best_conversation_simulated) + RedisCampaignCall.above_average_wrapup_calls_count(self.id, best_wrapup_simulated)
+    ringing_lines = RedisCampaignCall.ringing(self.id).length
     dials_to_make = (best_dials_simulated * available_callers) - ringing_lines
     dials_to_make.to_i
   end
@@ -74,15 +94,15 @@ class Predictive < Campaign
   end
 
   def best_conversation_simulated
-    simulated_values.nil? ? 0 : simulated_values.best_conversation.nil? ? 0 : simulated_values.best_conversation
+    simulated_values.nil? ? 1000 : (simulated_values.best_conversation.nil? || simulated_values.best_conversation == 0) ? 1000 : simulated_values.best_conversation
   end
 
   def longest_conversation_simulated
-    simulated_values.nil? ? 0 : simulated_values.longest_conversation.nil? ? 0 : simulated_values.longest_conversation
+    simulated_values.nil? ? 1000 : simulated_values.longest_conversation.nil? ? 0 : simulated_values.longest_conversation
   end
 
   def best_wrapup_simulated
-    simulated_values.nil? ? 0 : simulated_values.best_wrapup_time.nil? ? 0 : simulated_values.best_wrapup_time
+    simulated_values.nil? ? 1000 : (simulated_values.best_wrapup_time.nil? || simulated_values.best_wrapup_time == 0) ? 1000 : simulated_values.best_wrapup_time
   end
   
   def caller_conference_started_event(current_voter_id)

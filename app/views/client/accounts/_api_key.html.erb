@@ -1,0 +1,30 @@
+<div id='api_key'>
+<fieldset>
+   <legend>Api Key</legend>
+   <%= form_tag client_generate_api_key_path do %>
+
+   <% if @account.api_is_enabled? %>
+     <p>
+       Your API Key:
+       <strong><%= @account.api_key %></strong>
+     </p>
+
+      <div class="buttons">
+        <button type="submit">Regenerate key</button>
+     </div>
+
+   <% else %>
+     <p>
+       You'll need a unique key to make calls to the API.  Remember to keep this key a secret as it can be used to access your account.
+     </p>
+
+     <p>
+       <div class="buttons">
+         <button type="submit">Generate key</button>
+      </div>
+     </p>
+
+   <% end %>
+  <%end%>
+ </fieldset>
+</div>

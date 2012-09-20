@@ -7,11 +7,11 @@ describe ClientController do
 
   describe "when not logged in" do
     it "creates a new user with the appropriate domain" do
-      request.stub!(:domain).and_return('domain.com')
+      request.should_receive(:domain).and_return('domain.com')
       lambda {
         post :user_add, :user => { :email => 'email@example.com', :new_password => 'something' }, :tos => true
       }.should change(User, :count).by(1)
-      User.last.account.domain.should == 'domain.com'
+      User.last.account.domain_name.should == 'domain.com'
     end
   end
 
@@ -28,33 +28,5 @@ describe ClientController do
         response.should redirect_to "/client/user_add"
       end
     end
-
-    describe "reports" do
-      it "shows only manual campaigns" do
-        campaign = Factory(:preview, :account => user.account)
-        Factory(:robo, :account => user.account)
-        get :reports
-        assigns(:campaigns).should == [campaign]
-      end
-    end
-
-
-
-    it "deleting a script redirects to the referer" do
-      entity = Factory(:script, :account => user.account, :active => true)
-      post "script_delete", :id => entity.id
-      entity.reload.active.should be_false
-      response.should redirect_to :back
-    end
-    
-    it "should not delete a script assigned to a active campaign" do
-      script = Factory(:script, account: user.account, robo: true, active: true)
-      campaign =  Factory(:predictive, active: true, script_id: script.id, account: user.account)
-      post "script_delete", :id => script.id
-      script.reload.active.should be_true
-      response.should redirect_to :back
-    end
-    
-
   end
 end

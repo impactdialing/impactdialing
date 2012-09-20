@@ -1,0 +1,98 @@
+<%= render "shared/error_messages", :target => @campaign %>
+<%= form_for @campaign, url: "#{client_campaigns_path}/#{@campaign.id}" do |f| %>
+  <fieldset>
+    <fieldset>
+      <legend>Settings</legend>
+      <%= f.hidden_field :id, {name: "campaign[id]", id: "campaign_id"} %>
+      <p>
+        <label for="">Name</label><br>
+        <%= f.text_field :name, {:class=>"field size3", name: "campaign[name]"} %>
+      </p>
+      <p>
+        <label for="">Caller ID</label><br>
+        <%= f.text_field :caller_id, {:class=>"field size3", name: "campaign[caller_id]"} %>
+      </p>
+      <p>
+        <label for="">Script</label><br>
+        <%= f.collection_select(:script_id, @scripts, :id, :name,{}, {:class=>"field", name: "campaign[script_id]"}) %>
+      </p>
+      <p>
+        <label for="">Dialing mode</label>
+        <select class="field" id="campaign_type" name="campaign[type]">
+          <%= options_for_select [["Predictive", "Predictive"],
+                                  ["Power", "Progressive"],
+                                  ["Preview", "Preview"]],
+                                 @campaign.type %>
+        </select>
+      </p>
+      <div id="abandon_rate_edit" style="display: none">
+        <p><label>Abandonment rate</label>
+          <select class="field" id="campaign_abandon_rate" name="campaign[acceptable_abandon_rate]">
+            <% if @campaign.account.variable_abandonment? %>
+              <%= options_for_select [["1%", 0.01], ["2%", 0.02], ["3%", 0.03],["4%", 0.04], ["5%", 0.05], ["6%", 0.06],["7%", 0.07], ["8%", 0.08], ["9%", 0.09],["10%", 0.1]], @campaign.acceptable_abandon_rate %>
+            <%else%>
+              <%= options_for_select [["1%", 0.01], ["2%", 0.02], ["3%", 0.03]], @campaign.acceptable_abandon_rate %>
+            <%end%>
+          </select>
+        </p>
+      </div>
+
+      <p>
+        <label for="">Time zone</label>
+        <%= time_zone_select("campaign", 'time_zone', ActiveSupport::TimeZone.us_zones, :default => @campaign.time_zone) %>
+      </p>
+
+      <p>
+        <label for="">Dialing hours</label>
+        <select class="field" id="campaign_start_time" name="campaign[start_time]">
+          <%= options_for_select hours, @campaign.start_time.try(:hour) %>
+        </select>
+        to
+        <select class="field" id="campaign_end_time" name="campaign[end_time]">
+          <%= options_for_select hours, @campaign.end_time.try(:hour) %>
+        </select>
+      </p>
+
+      <%= render :partial => 'shared/recycle_rate', :locals => {:recycle_hour => @campaign.recycle_rate} %>
+      <%= render :partial => 'voicemail', :locals => {:form => f} %>
+    </fieldset>
+
+    <fieldset>
+      <legend>Lists</legend>
+      <% if @campaign.voter_lists.length == 1 %>
+          <p>You haven't uploaded any lists yet.</p>
+      <% else %>
+          <table>
+            <tr>
+              <th>Name</th>
+              <th>Phone #s</th>
+              <th>Remaining</th>
+            </tr>
+            <% i = 0 %>
+            <% @campaign.voter_lists.each do |list| %>
+              <% unless list.new_record? %>
+                <tr>
+                  <td valign="top">
+
+                    <%= f.fields_for :voter_lists, list do |list_fields| %>
+                      <%= list_fields.hidden_field :id, {name: "campaign[voter_lists_attributes][#{i}][id]"} %>
+                      <%= list_fields.check_box :enabled, {name: "campaign[voter_lists_attributes][#{i}][enabled]"} %> <%= list.name %></td>
+                    <% end %>
+                  <% i= i+1 %>
+                  </td>
+                  <td valign="top"><%= list.voters.size %></td>
+                  <td valign="top"><%= Voter.remaining_voters_count_for('voter_list_id', list.id) %></td>
+                </tr>
+              <% end %>
+            <% end %>
+          </table>
+      <% end %>
+    </fieldset>
+
+    <div class="buttons">
+      <button type="submit">Save</button>
+    </div>
+  </fieldset>
+<% end %>
+
+

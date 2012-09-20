@@ -1,51 +1,31 @@
-<%= javascript_include_tag "application" %>
-<%= csrf_meta_tag%>
+<%= csrf_meta_tag %>
 
 <h1>Scripts</h1>
-<% if @scripts.length==0 %>
-    <div class="form">
-      <label>No scripts entered.</label>
-    </div>
+<% if @scripts.empty? %>
+  <p>No scripts entered.</p>
 <% else %>
-    <div class="table">
-      <table>
-        <tr>
-          <th>Name</th>
-          <th>Date added</th>
-          <th width="55"></th>
-        </tr>
-        <% @scripts.each do |s| %>
-            <tr class="<%= cycle("odd", "even") %>">
-              <td><strong><%= link_to s.name, client_script_path(s) %></strong></td>
-              <td><%= s.created_at.strftime("%m/%d/%Y") %></td>
-              <td>
-                <div style="display:none"><%= button_to "delete", client_script_path(s), :method => :delete, :id => "delete-button-#{s.id}" %></div>
-                <a href="javascript:" class="ico del" script_id="<%= s.id%>"></a>
-              </td>  
-            </tr>
-        <% end %>
-
-      </table>
-    </div>
-
-    <p><%= page_entries_info @scripts %> <%= will_paginate @scripts %></p>
-
+  <table>
+    <tr>
+      <th>Name</th>
+      <th>Date added</th>
+      <th width="55"></th>
+    </tr>
+    <% @scripts.each do |s| %>
+      <tr>
+        <td><strong><%= link_to s.name, edit_client_script_path(s) %></strong></td>
+        <td><%= s.created_at.strftime("%m/%d/%Y") %></td>
+        <td><%= link_to '',
+                client_script_path(s),
+                :confirm => 'Are you sure you want to delete this script?',
+                :method => :delete,
+                :class => "ico del" %></td>
+      </tr>
+    <% end %>
+  </table>
+  <p><%= page_entries_info @scripts %> <%= will_paginate @scripts %></p>
 <% end %>
 
 <p><strong>Phones-only users: </strong>The "Phones-only keypad" values refer to the buttons that your callers press on their phones to enter results after each call. Callers can press * to hang up the current call, then enter their results on their keypad and press * again to submit each result.</p>
+
 <p class="actions"><%= link_to 'Add new script', new_client_script_path, :class => 'action primary' %></p>
 <p class="actions"><%= link_to 'View deleted scripts', client_deleted_scripts_path, :class => 'action secondary' %></p>
-
-<script type="text/javascript">
-	var number_of_scripts = <%= @scripts.try(:length) %>
-	$(function(){ 
-		$('.ico.del').click(function(){
-			if(number_of_scripts == 1){
-				alert("You must have at least one script.");
-			}
-			else if(confirm('Are you sure you want to delete this script?')){
-				$('#delete-button-'+$(this).attr('script_id')).trigger('click');
-			}
-		})
-	});
-</script>

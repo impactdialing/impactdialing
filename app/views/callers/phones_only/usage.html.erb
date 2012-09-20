@@ -1,7 +1,7 @@
 <div class="content clearfix">
   <div role="main">
 	  <%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@caller.name} Usage"} %>
-    <% form_tag(usage_callers_phones_only_index_path(:id => params[:id]), :method => :get) do %>
+    <%= form_tag(usage_callers_phones_only_index_path(:id => params[:id]), :method => :get) do %>
 
       <%= select_tag 'campaign_id', options_from_collection_for_select(@campaigns, 'id', 'name', @campaign.try(:id)), {:include_blank   => 'Total'} %>
       <%= render :partial => 'shared/switch_campaign'%>

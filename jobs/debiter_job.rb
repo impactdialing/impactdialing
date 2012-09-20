@@ -11,9 +11,7 @@ class DebiterJob
      call_attempts.each do |call_attempt|
        begin
          call_attempt.debit
-         call_attempt.update_attribute(:debited, true)
        rescue Exception => e
-         call_attempt.update_attribute(:debited, true)
        end
      end
      
@@ -21,9 +19,7 @@ class DebiterJob
     caller_sessions.each do |caller_session|
       begin
         caller_session.debit
-        caller_session.update_attribute(:debited, true)
        rescue Exception=>e
-         caller_session.update_attribute(:debited, true)
        end
     end
    end

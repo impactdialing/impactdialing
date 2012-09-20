@@ -1,0 +1,9 @@
+<%= f.hidden_field :is_phones_only, :value => true %>
+<p>
+  <label>Name</label>
+  <%= f.text_field :name, {:class=>"field"} %>
+</p>
+<p>
+  <label>PIN</label>
+  <%= @caller.pin || "to be generated" %>
+</p>

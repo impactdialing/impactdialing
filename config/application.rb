@@ -18,8 +18,6 @@ module ImpactDialing
     config.filter_parameters << :password << :card_number << :card_verification << :cc << :code
     #config.time_zone = 'UTC'
 
-
-    require 'active_merchant'
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.

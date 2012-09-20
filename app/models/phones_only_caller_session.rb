@@ -58,12 +58,12 @@ class PhonesOnlyCallerSession < CallerSession
         event :start_conf, :to => :skip_voter, :if => :pound_selected?  
         event :start_conf, :to => :ready_to_call
                   
-        before(:always) {select_voter(voter_in_progress)}
+        before(:always) {select_voter(current_voter_in_progress)}
         
         response do |xml_builder, the_call|
-          if the_call.voter_in_progress.present?
-            xml_builder.Gather(:numDigits => 1, :timeout => 10, :action => flow_caller_url(self.caller, :session => self, event: "start_conf", :host => Settings.host, :port => Settings.port, :voter => the_call.voter_in_progress), :method => "POST", :finishOnKey => "5") do
-              xml_builder.Say I18n.t(:read_voter_name, :first_name => the_call.voter_in_progress.FirstName, :last_name => the_call.voter_in_progress.LastName) 
+          unless the_call.current_voter_in_progress.nil?
+            xml_builder.Gather(:numDigits => 1, :timeout => 10, :action => flow_caller_url(self.caller, :session => self, event: "start_conf", :host => Settings.host, :port => Settings.port, :voter => the_call.current_voter_in_progress['id']), :method => "POST", :finishOnKey => "5") do
+              xml_builder.Say I18n.t(:read_voter_name, :first_name => the_call.current_voter_in_progress['FirstName'], :last_name => the_call.current_voter_in_progress['LastName']) 
             end
           else
             xml_builder.Say I18n.t(:campaign_has_no_more_voters)         
@@ -75,11 +75,11 @@ class PhonesOnlyCallerSession < CallerSession
       
       state :choosing_voter_and_dial do
         event :start_conf, :to => :conference_started_phones_only
-        before(:always) {select_voter(voter_in_progress)}
+        before(:always) {select_voter(current_voter_in_progress)}
         response do |xml_builder, the_call|
-          if voter_in_progress.present?
-            xml_builder.Say "#{voter_in_progress.FirstName}  #{voter_in_progress.LastName}." 
-            xml_builder.Redirect(flow_caller_url(caller, :session_id => id, :voter_id => voter_in_progress.id, event: "start_conf", :host => Settings.host, :port => Settings.port), :method => "POST")
+          if RedisCallerSession.voter_in_progress?(self.id)
+            xml_builder.Say "#{current_voter_in_progress['FirstName']}  #{current_voter_in_progress['LastName']}." 
+            xml_builder.Redirect(flow_caller_url(caller, :session_id => id, :voter_id => current_voter_in_progress["id"], event: "start_conf", :host => Settings.host, :port => Settings.port), :method => "POST")
           else
             xml_builder.Say I18n.t(:campaign_has_no_more_voters)
             xml_builder.Hangup
@@ -89,12 +89,12 @@ class PhonesOnlyCallerSession < CallerSession
       
       
       state :conference_started_phones_only do
-        before(:always) {start_conference; dial(voter_in_progress)}
+        before(:always) {start_conference; dial_em(current_voter)}
         event :gather_response, :to => :read_next_question, :if => :call_answered?
         event :gather_response, :to => :wrapup_call
         
         response do |xml_builder, the_call|
-          xml_builder.Dial(:hangupOnStar => true, :action => flow_caller_url(caller, event: "gather_response", host:  Settings.host, port: Settings.port, session_id:  id, question: voter_in_progress.question_not_answered)) do
+          xml_builder.Dial(:hangupOnStar => true, :action => flow_caller_url(caller, event: "gather_response", host:  Settings.host, port: Settings.port, session_id:  id, question: current_voter.question_not_answered)) do
             xml_builder.Conference(session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET')
           end          
         end
@@ -174,19 +174,28 @@ class PhonesOnlyCallerSession < CallerSession
   end
   
   def wrapup_call_attempt
-    attempt_in_progress.try(:update_attributes, {wrapup_time:  Time.now, voter_response_processed: true})
+     redis_attempt_in_progress = RedisCallerSession.attempt_in_progress(self.id)    
+     RedisCallAttempt.set_voter_response_processed(redis_attempt_in_progress)
+     CallAttempt.find(redis_attempt_in_progress).wrapup_now
   end
   
   def publish_moderator_gathering_response
-    attempt_in_progress.publish_moderator_response_submited
+    # attempt_in_progress.publish_moderator_response_submited
   end
   
   def unanswered_question
     current_voter.question_not_answered
   end
   
+  def current_voter_in_progress
+    voter_id = RedisCallerSession.voter_in_progress(self.id)
+    return RedisVoter.read(voter_id) unless voter_id.nil? 
+  end
+  
+  
   def current_voter
-    attempt_in_progress.voter
+    voter_id = RedisCallerSession.voter_in_progress(self.id)
+    Voter.find(voter_id)
   end
   
   def more_questions_to_be_answered?
@@ -194,14 +203,19 @@ class PhonesOnlyCallerSession < CallerSession
   end
   
   def call_answered?
-    attempt_in_progress.try(:connecttime) != nil && more_questions_to_be_answered?
+    redis_attempt_in_progress = RedisCallerSession.attempt_in_progress(self.id)    
+    RedisCallAttempt.call_answered?(redis_attempt_in_progress)  && more_questions_to_be_answered?
   end
   
   
   def select_voter(old_voter)
-    voter = campaign.next_voter_in_dial_queue(old_voter.try(:id))
-    update_attributes(voter_in_progress: voter)
+    voter = campaign.next_voter_in_dial_queue(old_voter.try(:[], 'id'))
+    unless voter.nil?
+      RedisCallerSession.set_voter_in_progress(self.id, voter.id)
+    end
+    voter    
   end
+  
   
   def star_selected?
     digit == "*"    
@@ -225,13 +239,6 @@ class PhonesOnlyCallerSession < CallerSession
     campaign.type == Campaign::Type::PREDICTIVE
   end
     
-  def start_conference    
-    begin
-      update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
-    rescue ActiveRecord::StaleObjectError
-      # end conf
-    end
-  end
   
   def preview_campaign?
     campaign.type != Campaign::Type::Preview

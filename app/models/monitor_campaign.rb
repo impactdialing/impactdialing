@@ -60,10 +60,10 @@ class MonitorCampaign
   def self.campaign_overview_info(campaign)
     num_logged_in = campaign.caller_sessions.on_call.size
     num_on_call = campaign.caller_sessions.not_available.size
-    num_wrapup = campaign.call_attempts.not_wrapped_up.between(3.minutes.ago, Time.now).size
+    num_wrapup = RedisCampaignCall.wrapup(campaign.id).length
     num_on_hold = campaign.caller_sessions.available.size
-    num_live_lines = campaign.call_attempts.between(5.minutes.ago, Time.now).with_status(CallAttempt::Status::INPROGRESS).size
-    num_ringing_lines = campaign.call_attempts.between(20.seconds.ago, Time.now).with_status(CallAttempt::Status::RINGING).size
+    num_live_lines = RedisCampaignCall.inprogress(campaign.id).length
+    num_ringing_lines = RedisCampaignCall.ringing(campaign.id).length
     num_remaining = campaign.all_voters.by_status('not called').count
     num_available = num_voter_available(campaign) + num_remaining
     [num_logged_in, num_on_call, num_wrapup, num_on_hold, num_live_lines, num_ringing_lines, num_available, num_remaining]

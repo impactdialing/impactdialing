@@ -10,10 +10,10 @@ module Api
           return false          
         end
         begin
-          @from_date = Date.strptime(from_date, '%m/%d/%Y')
-          @to_date = Date.strptime(to_date, '%m/%d/%Y')
+          @from_date = Date.strptime(from_date, '%m/%d/%Y %H:%M')
+          @to_date = Date.strptime(to_date, '%m/%d/%Y %H:%M')
         rescue ArgumentError => err
-          render_json_response({status: 'error', code: '400', message: err.to_s + " Use mm/dd/yyyy format"})
+          render_json_response({status: 'error', code: '400', message: err.to_s + " Use mm/dd/yyyy HH:MM format"})
           return false
         end      
       end
@@ -29,7 +29,7 @@ module Api
       return unless validate_params
       @campaign = Campaign.find(params[:campaign_id])
       user = User.find_by_email(params[:email])
-      @from_date, @to_date = set_date_range(@campaign, params[:from_date], params[:to_date])
+      @from_date, @to_date = set_date_range_with_time(@campaign, params[:from_date], params[:to_date]) unless to_boolean(params[:download_all_voters])
       Resque.enqueue(ReportDownloadJob, @campaign.id, user.id, params[:voter_fields], params[:custom_voter_fields], to_boolean(params[:download_all_voters]),params[:lead_dial], @from_date, @to_date, params[:callback_url], "api")
       render_json_response({status: 'ok', code: '200' , message: "Response will be sent to the callback url once the report is ready for download."})
     end        

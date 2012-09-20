@@ -4,17 +4,20 @@
     <label>Question:</label>
  <input id="script_questions_attributes_1339334137460_text" name="script[questions_attributes][1339334137460][text]" size="30" type="text">
   </p>
-  
+
   <table>
     <tr>
+      <% if request.domain == 'pdidialer.com' %>
+        <th width = 10%>Response ID</th>
+      <% end %>
       <th width = 30%>Response</th>
       <th width = 30%>Phones-only keypad</th>
-      <th width = 15%>Retry</th>
-      <th width = 15%>Delete</th>
+      <th width = 10%>Retry</th>
+      <th width = 10%>Delete</th>
     </tr>
   </table>
-  
-  
+
+
     <table class="nested-fields possible_response">
       <tbody><tr>
         <td width="30%">
@@ -32,8 +35,9 @@
       </tr>
     </tbody>
   </table>
-  
-  <%= link_to_add_association "New Response", f, :possible_responses , {:class => "action secondary", "data-association-insertion-node"=> "this", "data-association-insertion-method"=>"before", partial: 'possible_response_fields' } %>
+  <p class='actions'>
+    <%= link_to_add_association "New Response", f, :possible_responses , {:class => "action secondary", "data-association-insertion-node"=> "this", "data-association-insertion-method"=>"before", partial: 'possible_response_fields' } %>
+  </p>
 <input id="script_questions_attributes_1339334137460__destroy" name="script[questions_attributes][1339334137460][_destroy]" type="hidden" value="false">
 <a href="#" class="action secondary remove_fields dynamic" data-removal-validation="question_delete">Delete this question</a>
 

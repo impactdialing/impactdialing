@@ -1,5 +1,0 @@
-<% form||=nil %>
-<% if @voicemails %>
-      <%=form.collection_select(:voicemail_script_id, @voicemails, :id, :name, {:prompt => false, :include_blank => "Don't leave messages"}, {:class=>"field"}) %>
-<% end %>
-

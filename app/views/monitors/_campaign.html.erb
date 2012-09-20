@@ -28,14 +28,14 @@
     </tr>
     
     <tr id="campaign_info" class="campaign <%= cycle("odd", "even") %>">
-      <td id="callers_logged_in"><%= MonitorCampaign.callers_logged_in(@campaign.id) %></td>
-      <td id="on_call"><%= MonitorCampaign.on_call(@campaign.id) %></td>       
-      <td id="wrap_up"><%= MonitorCampaign.wrapup(@campaign.id) %></td>       
-      <td id="on_hold"><%= MonitorCampaign.on_hold(@campaign.id) %></td>                 
-      <td id="live_lines"><%= MonitorCampaign.live_lines(@campaign.id) %></td>       
-      <td id="ringing_lines"><%= MonitorCampaign.ringing_lines(@campaign.id) %></td>              
-      <td id="numbers_available"><%= MonitorCampaign.available(@campaign.id) %></td>
-      <td id="numbers_remaining"><%= MonitorCampaign.remaining(@campaign.id) %></td>
+      <td id="callers_logged_in"><%= @result['callers_logged_in'] %></td>
+      <td id="on_call"><%= @result['on_call'] %></td>       
+      <td id="wrap_up"><%= @result['wrap_up'] %></td>       
+      <td id="on_hold"><%= @result['on_hold'] %></td>                 
+      <td id="live_lines"><%= @result['live_lines'] %></td>       
+      <td id="ringing_lines"><%= @result['ringing_lines'] %></td>              
+      <td id="numbers_available"><%= @result['available'] %></td>
+      <td id="numbers_remaining"><%= @result['remaining'] %></td>
     </tr>
   </table>
 </div>

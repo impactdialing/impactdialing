@@ -1,0 +1,20 @@
+<fieldset>
+  <legend>Add a list</legend>
+  <%= form_tag("",  :method => :post, :multipart => true, id: "voter_list_upload") do %>
+  <p>Please upload a comma-separated value (CSV) or tab-delimited text (TXT) file. If your list is in Excel format (XLS or XLSX), use "Save As" to change it to one of these formats.</p>
+    <div class="form">
+      <%= hidden_field_tag 'voter_list[separator]' %>
+      <p>
+        <%= file_field_tag 'upload[datafile]' %>
+      </p>
+      <p style="display: none;" id='list_name'>
+        <label>List name</label>
+          <%= text_field_tag "name", nil, :id => "voter_list_name", name: "voter_list[name]", :size => '10'  %>
+      </p>
+      <div id="column_headers">
+    </div>
+  <div id= "voter_upload" class="buttons" style="display:none">
+    <button id="file_upload_submit" >Save &#38; upload</button>
+  </div>
+  <% end %>
+</fieldset>

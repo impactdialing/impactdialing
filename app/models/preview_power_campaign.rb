@@ -13,6 +13,7 @@ module PreviewPowerCampaign
       sample_voters = all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.limit(7)
       voter = sample_voters.sample
     end
+    RedisVoter.load_voter_info(voter.id, voter) unless voter.nil?
     voter
   end  
   

@@ -14,7 +14,10 @@ describe Answer do
 
   let(:answer_1) { Factory(:answer, :voter => voter_1, campaign: campaign, :possible_response => Factory(:possible_response), :question => Factory(:question, :script => Factory(:script)), :created_at => @now - 2.days, :caller => caller_1) }
   let(:answer_2) { Factory(:answer, :voter => voter_2, campaign: campaign, :possible_response => Factory(:possible_response), :question => Factory(:question, :script => Factory(:script)), :created_at => @now - 1.days, :caller => caller_2)}
-  let(:answer_3) { Factory(:answer, :voter => voter_3, campaign: campaign, :possible_response => Factory(:possible_response), :question => Factory(:question, :script => Factory(:script)), :created_at => @now, :caller => caller_1) }
+  let(:answer_3) { Factory(:answer, :voter => voter_3,
+                                    :campaign => campaign,
+                                    :created_at => @now,
+                                    :caller => caller_1) }
   let(:answer_4) { Factory(:answer, :voter => voter_4, campaign: campaign, :possible_response => Factory(:possible_response), :question => Factory(:question, :script => Factory(:script)), :created_at => @now+1.day, :caller => caller_2) }
 
   before(:each) do
@@ -31,7 +34,7 @@ describe Answer do
     other_answer = Factory(:answer, :voter => voter_4, :campaign => Factory(:campaign), :possible_response => Factory(:possible_response), :question => Factory(:question, :script => Factory(:script)), :created_at => @now+1.day, :caller => caller_2)
     Answer.with_campaign_id(campaign.id).should == [answer_1, answer_2, answer_3, answer_4]
   end
-  
+
   it "should return question ids for a campaign" do
     campaign = Factory(:campaign)
     script = Factory(:script)

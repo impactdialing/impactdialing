@@ -1,12 +1,12 @@
-<table>
-  <tr>
-    <td>From:</td>
-    <td> <%= unobtrusive_date_text_picker_tag :from_date, time_for_date_picker(@campaign, @from_date) %> </td>
-  </tr>
-  <tr>
-    <td>To:</td>
-    <td>
-      <%= unobtrusive_date_text_picker_tag :to_date, time_for_date_picker(@campaign, @to_date) %>
-    </td>
-  </tr>
-</table>
+<fieldset>
+  <legend>Date range:</legend>
+  <input name="campaign_id" type="hidden" value="<%= params[:campaign_id]%>"></input>
+  <p>
+    <label>From:</label>
+    <input class="format-m-d-y divider-slash" id="from_date" name="from_date" type="text" value="<%= @from_date.strftime("%m/%d/%Y") %>">
+  </p>
+  <p>
+    <label>To:</label>
+    <input class="format-m-d-y divider-slash" id="from_date" name="to_date" type="text" value="<%= @to_date.strftime("%m/%d/%Y") %>">
+  </p>
+</fieldset>

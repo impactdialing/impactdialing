@@ -1,10 +1,7 @@
 <table border="1">
   <tr>
     <td>id</td>
-    <td>names</td>
     <td>email</td>
-    <td>phone</td>
-    <td>created_at</td>
     <td>card_verified</td>
     <td>activated</td>
     <td>domain</td>
@@ -15,19 +12,15 @@
   <% @accounts.each do |account| %>
     <tr>
       <td><%= account.id %></td>
-      <td><%= account.users.map{|u| "#{u.fname} #{u.lname}"}.join(', ') %></td>
-      <td><%= account.users.map(&:email).join(', ') %></td>
-      <td><%= account.users.map(&:phone).join(', ') %></td>
-      <td><%= account.created_at %></td>
+      <td><% account.users.each do |user| %>
+            <%= link_to user.email, "/admin/login/#{user.id}" %>,
+          <% end %></td>
       <td><%= account.card_verified %> </td>
       <td><%= account.activated %> </td>
-      <td><%= account.domain %> </td>
+      <td><%= account.domain_name %> </td>
       <td><a href="/admin/toggle_activated/<%= account.id %>">toggle activated</a></td>
       <td><a href="/admin/toggle_card_verified/<%= account.id %>">toggle card verified</a></td>
-      <td><a href="/admin/charge/<%= account.id %>">charge</a></td>
-      <td><a href="/admin/login/<%= account.users.first.id %>">login</a></td>
       <td><a href="/admin/abandonment/<%= account.id %>">Toggle Abandonment(<%= account.abandonment_value%>)</a></td>
-			<td><a href="/admin/destroy/<%= account.id %>" onclick="javascript:if(!confirm('Are you sure you want to delete this account?')) return false;">delete</a></td>
     </tr>
   <% end %>
 </table>

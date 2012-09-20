@@ -1,12 +1,12 @@
 class VoterListJob
-  def initialize(separator, column_headers, csv_to_system_map, filename, voter_list_name, campaign_id, account_id, domain, email,callback_url,strategy="webui")
-    @separator = separator
-    @csv_column_headers = JSON.parse(column_headers)
-    @csv_to_system_map = CsvMapping.new(csv_to_system_map)
-    @csv_filename = filename
-    @voter_list_name = voter_list_name
-    @voter_list_campaign_id = campaign_id
-    @voter_list_account_id = account_id
+  def initialize(voter_list_id, domain, email, callback_url, strategy="webui")
+    @voter_list = VoterList.find(voter_list_id)
+    @separator = @voter_list.separator
+    @csv_to_system_map = CsvMapping.new(JSON.load(@voter_list.csv_to_system_map))
+    @csv_filename = @voter_list.s3path
+    @voter_list_name = @voter_list.name
+    @voter_list_campaign_id = @voter_list.campaign_id
+    @voter_list_account_id = @voter_list.account_id
     @domain = domain
     @email = email
     @strategy = strategy
@@ -23,15 +23,6 @@ class VoterListJob
       response_strategy.response(response, {domain: @domain, email: @email, voter_list_name: @voter_list_name})
       return response
     end
-
-    @voter_list = VoterList.new(name: @voter_list_name, campaign_id: @voter_list_campaign_id, account_id: @voter_list_account_id)
-
-    unless @voter_list.valid?
-      response['errors'] << @voter_list.errors.full_messages.join("; ")
-      response_strategy.response(response, {domain: @domain, email: @email, voter_list_name: @voter_list_name})
-      return response
-    end
-    @voter_list.save!
 
     begin
       result = @voter_list.import_leads(@csv_to_system_map,

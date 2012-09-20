@@ -1,24 +1,20 @@
-<% if @account.campaigns.length==0 %>
-    <p>You haven't created any campaigns yet.</p>
-<% else %>
-    <table>
+<table>
+  <tr>
+    <th>Campaign</th>
+    <th></th>
+    <th></th>
+    <th></th>
+    <th></th>
+    <th>Downloaded reports</th>
+  </tr>
+  <% @campaigns.each do |c| %>
       <tr>
-        <th>Campaign</th>
-        <th></th>
-        <th></th>
-        <th></th>
-        <th></th>
-        <th>Downloaded reports</th>
+        <td><%= c.name %></td>
+        <td><%= link_to "Dials", dials_client_reports_path(:campaign_id => c.id) %></td>
+        <td><%= link_to "Answered", answer_client_reports_path(:campaign_id => c.id) %></td>
+        <td><%= link_to "Usage", usage_client_reports_path(:campaign_id => c.id) %></td>
+        <td><%= link_to "Download", download_report_client_campaign_reports_path(c) %><br/></td>
+        <td><%= link_to "[#{@download_report_count[c.id.to_s] || 0 }]", downloaded_reports_client_campaign_reports_path(c) %></td>
       </tr>
-      <% @campaigns.each do |c| %>
-          <tr>
-            <td><%= c.name %></td>
-            <td><a href="<%= dials_client_reports_path(:campaign_id => c.id) %>">Dials</a></td>
-            <td><a method="post" href="/client/reports/answer?campaign_id=<%= c.id %>">Answered</a><br/></td>
-            <td><a href="<%= usage_client_reports_path(:id => c.id) %>">Usage</a><br/></td>
-            <td><%= link_to "Download", download_report_client_campaign_reports_path(c) %><br/></td>
-            <td><%= link_to "[#{@download_report_count[c.id.to_s] || 0 }]", downloaded_reports_client_campaign_reports_path(c) %><br/></td>
-          </tr>
-      <% end %>
-    </table>
-<% end %>
+  <% end %>
+</table>

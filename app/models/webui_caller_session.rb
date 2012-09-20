@@ -49,22 +49,10 @@ class WebuiCallerSession < CallerSession
       
   end
   
-  def call_not_wrapped_up?
-    attempt_in_progress.try(:connecttime) != nil &&  attempt_in_progress.try(:not_wrapped_up?)
+  def call_not_wrapped_up?    
+    attempt_in_progress_id = RedisCallerSession.read(self.id)['attempt_in_progress']
+    RedisCallAttempt.call_not_wrapped_up?(attempt_in_progress_id)
   end
-  
-  def start_conference    
-    reassign_caller_session_to_campaign if caller_reassigned_to_another_campaign?
-    begin
-      update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
-    rescue ActiveRecord::StaleObjectError
-      # end conf
-    end
-  end
-  
-  
-  
-  
   
   def publish_async(event, data)    
     EM.synchrony {

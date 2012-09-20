@@ -6,21 +6,7 @@ class DialerJob
   @queue = :dialer_worker
 
 
-   def self.perform(campaign_id, nums_to_call)
-     campaign = Campaign.find(campaign_id)
-     begin
-       EM.synchrony do
-         concurrency = 8
-         voters_to_dial = campaign.choose_voters_to_dial(nums_to_call)
-         EM::Synchrony::Iterator.new(voters_to_dial, concurrency).map do |voter, iter|
-           voter.dial_predictive_em(iter)
-         end
-         Resque.redis.del("dial:#{campaign.id}")
-         EventMachine.stop
-       end
-      rescue Exception => e
-        EventMachine.stop
-        puts e        
-      end
+   def self.perform(campaign_id, voter_ids)
+     Dial.perform(campaign_id, voter_ids)
    end
 end

@@ -110,7 +110,7 @@ class Voter < ActiveRecord::Base
         'FallbackUrl' => TWILIO_ERROR,
         'StatusCallback' => twilio_call_ended_url(callback_params),
         'Timeout' => '15',
-        'IfMachine' => self.campaign.answering_machine_detect? ? 'Continue' : 'Hangup'
+        'IfMachine' => self.campaign.answering_machine_detect ? 'Continue' : 'Hangup'
     )
 
     if response["TwilioResponse"]["RestException"]
@@ -124,6 +124,8 @@ class Voter < ActiveRecord::Base
     true
   end
   
+  def make_call(call_attempt)
+  end
   
   def dial_predictive_em(iter)
     call_attempt = new_call_attempt(self.campaign.type)
@@ -133,15 +135,18 @@ class Voter < ActiveRecord::Base
     http.callback { 
       Rails.logger.info "#{call_attempt.id} - after call"    
       response = JSON.parse(http.response)  
-      if response["status"] == 400
+      if response["RestException"]
+        puts response["RestException"]
         handle_failed_call(call_attempt, self)
       else
-        MonitorEvent.call_ringing(campaign)
         call_attempt.update_attributes(:sid => response["sid"])
       end
       iter.return(http)      
        }
-    http.errback { iter.return(http) }    
+    http.errback { 
+      puts JSON.parse(http.response) 
+      iter.return(http)
+       }    
   end
   
   def handle_failed_call(attempt, voter)
@@ -149,6 +154,24 @@ class Voter < ActiveRecord::Base
     voter.update_attributes(status: CallAttempt::Status::FAILED)
   end
   
+  
+
+  def dial_predictive
+    call_attempt = new_call_attempt(self.campaign.type)
+    Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
+    params = {'FallbackUrl' => TWILIO_ERROR, 'StatusCallback' => flow_call_url(call_attempt.call, host:  Settings.host, port:  Settings.port, event: 'call_ended'), 'Timeout' => campaign.use_recordings ? "20" : "15"}
+    params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect
+    response = Twilio::Call.make(campaign.caller_id, self.Phone, flow_call_url(call_attempt.call, host:  Settings.host, port:  Settings.port, event:  'incoming_call'), params)
+    puts "Entered callback."
+    if response["TwilioResponse"]["RestException"]
+      call_attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
+      update_attributes(status: CallAttempt::Status::FAILED)
+      Rails.logger.info "[dialer] Exception when attempted to call #{self.Phone} for campaign id:#{self.campaign_id}  Response: #{response["TwilioResponse"]["RestException"].inspect}"
+      return
+    end
+    call_attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])
+  end
+
   def get_attribute(attribute)
     return self[attribute] if self.has_attribute? attribute
     return unless CustomVoterField.find_by_name(attribute)
@@ -256,8 +279,10 @@ class Voter < ActiveRecord::Base
   def new_call_attempt(mode = 'robo')
     call_attempt = self.call_attempts.create(campaign:  self.campaign, dialer_mode:  mode, status:  CallAttempt::Status::RINGING, call_start:  Time.now)
     update_attributes(:last_call_attempt => call_attempt, :last_call_attempt_time => Time.now, :status => CallAttempt::Status::RINGING)    
-    Call.create(call_attempt: call_attempt, all_states: "")    
+    Call.create(call_attempt: call_attempt, all_states: "", state: 'initial')
     call_attempt
   end
   
+  
+
 end

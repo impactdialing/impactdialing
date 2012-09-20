@@ -1,38 +1,38 @@
-<% content_for :javascripts do%>
-	<%= javascript_include_tag 'blocked_numbers' %>
-<% end %>
+<%= csrf_meta_tag %>
 
 <h1>Do Not Call list</h1>
 
 <fieldset>
   <legend>Add number</legend>
 <%= form_for BlockedNumber.new do |f| %>
-	<p><%= f.label :number %><br>
-	<%= f.text_field :number %></p>
-	<p><%= f.label :level %><br>
-	<%= f.select :campaign_id, [["System", nil]] + @campaigns.map{|c| [c.name, c.id]} %></p>
-	<div class="buttons">
-		<%= button_tag "Add" %>
-	</div>
+  <p><%= f.label :number %><br>
+  <%= f.text_field :number %></p>
+  <p><%= f.label :level %><br>
+  <%= f.select :campaign_id, [["System", nil]] + @campaigns.map{|c| [c.name, c.id]} %></p>
+  <div class="buttons">
+    <button type="submit">Add</button>
+  </div>
 <% end %>
 </fieldset>
 
-<table>
-	<tr>
-		<th>Phone</th>
-		<th>DNC level</th>
-		<th width="55" class="ac"></th>
-	</tr>
-	<% @blocked_numbers.each do |blocked_number| %>
-		<tr>
-			<td><%= blocked_number.number %></td>
-			<td><%= blocked_number.campaign ? blocked_number.campaign.name : 'System' %></td>
-			<td>
-				<%= form_tag blocked_number_path(blocked_number), :method => :delete, :id => "delete_form_#{blocked_number.id}" do %>
-					<%= link_to "delete", "javascript:void(0)", :class => 'ico del', :onclick => "delete_blocked_number('#delete_form_#{blocked_number.id}')" %>
-				<% end %>
-			</td>
-		</tr>
-	<% end %>
-</table>
-<p><%= page_entries_info @blocked_numbers %> <%= will_paginate @blocked_numbers %></p>
+<% if @blocked_numbers.any? %>
+  <table>
+    <tr>
+      <th>Phone</th>
+      <th>DNC level</th>
+      <th width="55" class="ac"></th>
+    </tr>
+    <% @blocked_numbers.each do |blocked_number| %>
+      <tr>
+        <td><%= blocked_number.number %></td>
+        <td><%= blocked_number.campaign ? blocked_number.campaign.name : 'System' %></td>
+        <td><%= link_to '',
+                blocked_number_path(blocked_number),
+                :confirm => 'Are you sure you want to remove this number from the Do Not Call list?',
+                :method => :delete,
+                :class => "ico del" %></td>
+      </tr>
+    <% end %>
+  </table>
+  <p><%= page_entries_info @blocked_numbers %> <%= will_paginate @blocked_numbers %></p>
+<% end %>

@@ -1,7 +1,7 @@
 require "spec_helper"
-include Rails.application.routes.url_helpers
 
 describe CallAttempt do
+  include Rails.application.routes.url_helpers
 
   it "lists all attempts for a campaign" do
     campaign = Factory(:campaign)
@@ -35,56 +35,96 @@ describe CallAttempt do
     call_attempt.duration_rounded_up.should == 0
   end
 
+  it "should disconnect call" do
+     voter = Factory(:voter)
+     call_attempt = Factory(:call_attempt, :voter => voter)
+     call = Factory(:call, call_attempt: call_attempt)     
+     RedisCallAttempt.should_receive(:disconnect_call)
+     RedisVoter.should_receive(:set_status)
+     call_attempt.disconnect_call
+   end
 
+  it "should wrapup call" do
+    voter = Factory(:voter)
+    call_attempt = Factory(:call_attempt, :voter => voter)
+    RedisCallAttempt.should_receive(:wrapup)
+    call_attempt.wrapup_now    
+  end
+  
+  it "should process answered by machine" do
+    campaign = Factory(:campaign)    
+    voter = Factory(:voter)
+    call_attempt = Factory(:call_attempt, :voter => voter, campaign: campaign)
+    RedisCampaign.should_receive(:call_status_use_recordings).and_return("status")
+    RedisCallAttempt.should_receive(:answered_by_machine)
+    RedisVoter.should_receive(:answered_by_machine)
+    RedisCampaignCall.should_receive(:move_ringing_to_completed)
+    # RedisCallNotification.should_receive(:answered_by_machine)
+    call_attempt.process_answered_by_machine        
+  end
+  
   it "can be scheduled for later" do
     voter = Factory(:voter)
     call_attempt = Factory(:call_attempt, :voter => voter)
     scheduled_date = "10/10/2020 20:20"
+    RedisCallAttempt.should_receive(:schedule_for_later)
+    RedisVoter.should_receive(:schedule_for_later)
     call_attempt.schedule_for_later(scheduled_date)
-    call_attempt.reload.status.should == CallAttempt::Status::SCHEDULED
-    call_attempt.scheduled_date.to_s.should eq("2020-10-10 20:20:00 UTC")
-    call_attempt.voter.status.should == CallAttempt::Status::SCHEDULED
-    call_attempt.voter.scheduled_date.to_s.should eq("2020-10-10 20:20:00 UTC")
-    call_attempt.voter.call_back.should be_true
   end
 
-  describe 'next recording' do
-    let(:script) { Factory(:script) }
-    let(:campaign) { Factory(:campaign, :script => script) }
-    let(:call_attempt) { Factory(:call_attempt, :campaign => campaign) }
-
-    before(:each) do
-      @recording1 = Factory(:robo_recording, :script => script)
-      @recording2 = Factory(:robo_recording, :script => script)
-    end
-
-    it "plays the next recording given the current one" do
-      call_attempt.next_recording(@recording1).should == @recording2.twilio_xml(call_attempt)
-    end
-
-    it "plays the first recording next given no current recording" do
-      call_attempt.next_recording.should == @recording1.twilio_xml(call_attempt)
-    end
-
-    it "hangs up given no next recording" do
-      call_attempt.next_recording(@recording2).should == Twilio::Verb.new(&:hangup).response
-    end
-
-    it "hangs up when a recording has been responded to incorrectly 3 times" do
-      Factory(:call_response, :robo_recording => @recording2, :call_attempt => call_attempt, :times_attempted => 3)
-      call_attempt.next_recording(@recording2).should == Twilio::Verb.new(&:hangup).response
-    end
-
-    it "replays current recording has been responded to incorrectly < 3 times" do
-      recording_response = Factory(:recording_response, :robo_recording => @recording2, :response => 'xyz', :keypad => 1)
-      Factory(:call_response, :robo_recording => @recording2, :call_attempt => call_attempt, :times_attempted => 2)
-      call_attempt.next_recording(@recording2).should == Twilio::Verb.new(&:hangup).response
-    end
+  it "should end answered call" do
+    voter = Factory(:voter)
+    call_attempt = Factory(:call_attempt, :voter => voter)
+    RedisCallAttempt.should_receive(:end_answered_call)
+    RedisVoter.should_receive(:end_answered_call)
+    RedisCampaignCall.should_receive(:move_inprogress_to_wrapup)      
+    # RedisCallNotification.should_receive(:end_answered_call)
+    call_attempt.end_answered_call    
   end
-
-
-
-
+  
+  it "should abandon call" do
+    voter = Factory(:voter)  
+    call_attempt = Factory(:call_attempt, :voter => voter)
+    RedisCallAttempt.should_receive(:abandon_call)
+    RedisVoter.should_receive(:abandon_call)
+    RedisCampaignCall.should_receive(:move_ringing_to_abandoned)
+    # RedisCallNotification.should_receive(:abandoned)
+    call_attempt.abandon_call            
+  end
+  
+  it "should connect call" do
+    voter = Factory(:voter)
+    call_attempt = Factory(:call_attempt, :voter => voter)
+    caller_session = Factory(:caller_session)
+    RedisVoter.load_voter_info(voter.id, voter)
+    RedisCallAttempt.load_call_attempt_info(call_attempt.id, call_attempt)    
+    RedisCallAttempt.should_receive(:connect_call)
+    RedisCampaignCall.should_receive(:move_ringing_to_inprogress)
+    # RedisCallNotification.should_receive(:connected)
+    call_attempt.connect_call
+  end
+  
+  it "should end_unanswered_call" do
+    voter = Factory(:voter)  
+    call_attempt = Factory(:call_attempt, :voter => voter)
+    call = Factory(:call, call_attempt: call_attempt, call_status: "busy")    
+    RedisCallAttempt.should_receive(:end_unanswered_call)
+    RedisVoter.should_receive(:end_unanswered_call)
+    RedisCampaignCall.should_receive(:move_ringing_to_completed)
+    # RedisCallNotification.should_receive(:end_unanswered_call)
+    call_attempt.end_unanswered_call
+  end
+  
+  it "should end_answered_by_machine" do
+    voter = Factory(:voter)  
+    call_attempt = Factory(:call_attempt, :voter => voter)
+    call = Factory(:call, call_attempt: call_attempt, call_status: "busy")    
+    RedisCallAttempt.should_receive(:end_answered_by_machine)
+    RedisVoter.should_receive(:end_answered_by_machine)
+    RedisCallNotification.should_receive(:end_answered_by_machine)
+    call_attempt.end_answered_by_machine
+  end
+  
   it "lists attempts between two dates" do
     too_old = Factory(:call_attempt).tap { |ca| ca.update_attribute(:created_at, 10.minutes.ago) }
     too_new = Factory(:call_attempt).tap { |ca| ca.update_attribute(:created_at, 10.minutes.from_now) }
@@ -107,7 +147,7 @@ describe CallAttempt do
       CallAttempt.with_status(['foo']).should == [@wanted_attempt]
     end
   end
-  
+
   describe "call attempts between" do
     it "should return cal attempts between 2 dates" do
       Factory(:call_attempt, created_at: Time.now - 10.days)
@@ -130,49 +170,14 @@ describe CallAttempt do
       call_attempt.duration_wrapped_up.should eq(total_time)
     end
   end
-  
-  describe "capture voter response, when call disconnected unexpectedly" do
-    it "capture response as 'No response' for the questions, which are not answered" do
-      script = Factory(:script)
-      campaign = Factory(:campaign, :script => script)
-      voter = Factory(:voter, :campaign => campaign)
-      question = Factory(:question, :script => script)
-      unanswered_question = Factory(:question, :script => script)
-      possible_response = Factory(:possible_response, :question => question, :value => "ok")
-      answer = Factory(:answer, :question => question, :campaign => campaign, :possible_response => possible_response, :voter => voter)
-      call_attempt = Factory(:call_attempt, :connecttime => Time.now, :status => CallAttempt::Status::SUCCESS, :voter => voter, :campaign => campaign)
-      call_attempt.capture_answer_as_no_response 
-      question.possible_responses.count.should == 1
-      question.answers.count.should == 1
-      unanswered_question.possible_responses.count.should == 1
-      unanswered_question.answers.count.should == 1
-    end
-    
-    it "capture response as 'No response' for the robo_recordings, for which voter not responded" do
-      script = Factory(:script)
-      campaign = Factory(:campaign, :script => script)
-      voter = Factory(:voter, :campaign => campaign)
-      call_attempt = Factory(:call_attempt, :status => CallAttempt::Status::SUCCESS, :campaign => campaign, :voter => voter)
-      voter.update_attribute(:last_call_attempt, call_attempt)
-      robo_recording = Factory(:robo_recording, :script => script)
-      not_respond_robo_recording = Factory(:robo_recording, :script => script)
-      recording_response = Factory(:recording_response, :robo_recording => robo_recording, :response => "ok")
-      call_response = Factory(:call_response, :robo_recording => robo_recording, :campaign => campaign, :recording_response => recording_response, :call_attempt => call_attempt)
-      
-      call_attempt.capture_answer_as_no_response_for_robo 
-      robo_recording.recording_responses.count.should == 1
-      robo_recording.call_responses.count.should == 1
-      not_respond_robo_recording.recording_responses.count.should == 1
-      not_respond_robo_recording.call_responses.count.should == 1
-    end
-  end
-  
+
+
   describe "wrapup call_attempts" do
     it "should wrapup all call_attempts that are not" do
       caller = Factory(:caller)
       another_caller = Factory(:caller)
       Factory(:call_attempt, caller_id: caller.id)
-      Factory(:call_attempt, caller_id: another_caller)
+      Factory(:call_attempt, caller_id: another_caller.id)
       Factory(:call_attempt, caller_id: caller.id)
       Factory(:call_attempt, wrapup_time: Time.now-2.hours,caller_id: caller.id)
       CallAttempt.not_wrapped_up.find_all_by_caller_id(caller.id).length.should eq(2)
@@ -180,19 +185,19 @@ describe CallAttempt do
       CallAttempt.not_wrapped_up.find_all_by_caller_id(caller.id).length.should eq(0)
     end
   end
-  
+
   describe "payments" do
-    
+
     describe "debit for calls" do
       it "should not debit if call not ended" do
         call_attempt = Factory(:call_attempt, call_end: (Time.now - 3.minutes))
-        Payment.should_not_receive(:debit_call_charge)      
+        Payment.should_not_receive(:debit_call_charge)
         call_attempt.debit
       end
 
       it "should not debit if call not connected" do
         call_attempt = Factory(:call_attempt, connecttime: (Time.now - 3.minutes))
-        Payment.should_not_receive(:debit_call_charge)      
+        Payment.should_not_receive(:debit_call_charge)
         call_attempt.debit
       end
 
@@ -200,7 +205,7 @@ describe CallAttempt do
         account = Factory(:account, subscription_name: Account::Subscription_Type::MANUAL)
         campaign = Factory(:campaign, account: account)
         call_attempt = Factory(:call_attempt, connecttime: (Time.now - 3.minutes), call_end: (Time.now - 2.minutes), campaign: campaign)
-        Payment.should_not_receive(:debit_call_charge)      
+        Payment.should_not_receive(:debit_call_charge)
         call_attempt.debit
       end
 
@@ -210,47 +215,46 @@ describe CallAttempt do
         payment = Factory(:payment, account: account, amount_remaining: 10.0)
         call_attempt = Factory(:call_attempt, connecttime: (Time.now - 3.minutes), call_end: (Time.now - 2.minutes), campaign: campaign)
         Payment.should_receive(:where).and_return([payment])
-        payment.should_receive(:debit_call_charge)      
+        payment.should_receive(:debit_call_charge)
         call_attempt.debit
         call_attempt.payment_id.should_not be_nil
       end
 
     end
-    
+
     describe "call_time" do
       it "should give correct call time" do
         call_attempt = Factory(:call_attempt, connecttime: (Time.now - 3.minutes), call_end: (Time.now - 2.minutes))
         call_attempt.call_time.should eq(2)
       end
     end
-    
+
     describe "amount_to_debit" do
-      
+
       it "should retrun amount to debit" do
         call_attempt = Factory(:call_attempt, connecttime: (Time.now - 3.minutes), call_end: (Time.now - 2.minutes))
         call_attempt.amount_to_debit.should eq(0.18)
       end
-      
+
     end
-    
+
     describe "determine_call_cost" do
-      
+
       it "should return .02 for per caller" do
         account = Factory(:account, subscription_name: Account::Subscription_Type::PER_CALLER)
-        campaign = Factory(:campaign, account: account)      
+        campaign = Factory(:campaign, account: account)
         call_attempt = Factory(:call_attempt, connecttime: (Time.now - 3.minutes), call_end: (Time.now - 2.minutes), campaign: campaign)
         call_attempt.determine_call_cost.should eq(0.02)
       end
-      
+
       it "should return .09 for per minute" do
         account = Factory(:account, subscription_name: Account::Subscription_Type::PER_MINUTE)
-        campaign = Factory(:campaign, account: account)      
+        campaign = Factory(:campaign, account: account)
         call_attempt = Factory(:call_attempt, connecttime: (Time.now - 3.minutes), call_end: (Time.now - 2.minutes), campaign: campaign)
         call_attempt.determine_call_cost.should eq(0.09)
       end
-      
-    end  
-      
+
+    end
+
   end
-  
 end

@@ -1,19 +1,22 @@
 <table>
   <tr>
+    <% if request.domain == 'pdidialer.com' %>
+      <th width = 10%>Response ID</th>
+    <% end %>
     <th width = 30%>Response</th>
     <th width = 30%>Phones-only keypad</th>
-    <th width = 15%>Retry</th>
-    <th width = 15%>Delete</th>
+    <th width = 10%>Retry</th>
+    <th width = 10%>Delete</th>
   </tr>
 </table>
 
   <div class="possible_response_sortable">
     <%= f.semantic_fields_for :possible_responses do |form, possible_response| %>
-      <%= render "possible_response_fields", f: form %>  
+      <%= render "possible_response_fields", f: form %>
     <%end%>
   </div>
-  
-  <%= link_to_add_association "New Response", f, :possible_responses , {:class => "action secondary add_response", "data-association-insertion-node"=> "sibling", "data-association-insertion-node-sibling-class"=>"possible_response_sortable","data-association-insertion-method"=>"append", partial: 'possible_response_fields' } %>
-  
-  <%= link_to_remove_association "Delete this question", f , {:class => "action secondary delete_question", "data-removal-validation"=>"question_delete" }%>
+  <p class='actions'>
+    <%= link_to_add_association "New Response", f, :possible_responses , {:class => "action secondary add_response", "data-association-insertion-node"=> "sibling", "data-association-insertion-node-sibling-class"=>"possible_response_sortable","data-association-insertion-method"=>"append", partial: 'possible_response_fields' } %>
 
+    <%= link_to_remove_association "Delete this question", f , {:class => "action secondary delete_question", "data-removal-validation"=>"question_delete" }%>
+  </p>

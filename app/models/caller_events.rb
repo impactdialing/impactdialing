@@ -8,8 +8,6 @@ module CallerEvents
     def publish_start_calling
       if state == "initial"
         publish_sync('start_calling', {caller_session_id: id})
-        MonitorEvent.caller_connected(campaign)
-        MonitorEvent.create_caller_notification(campaign.id, id, "caller_connected", "add_caller")
       end
     end    
     

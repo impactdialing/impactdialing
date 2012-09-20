@@ -23,10 +23,9 @@ Spork.prefork do
   #Dir[Rails.root.join("simulator/new_simulator.rb")].each {|f| require f}
 
   RSpec.configure do |config|
-    
     config.before(:each) do
-       RedisConnection.monitor_connection.flushAll
-     end
+      $redis_call_flow_connection.flushALL
+    end
     # == Mock Framework
     #
     # If you prefer to use mocha, flexmock or RR, uncomment the appropriate line:
@@ -35,7 +34,19 @@ Spork.prefork do
     # config.mock_with :flexmock
     # config.mock_with :rr
     config.mock_with :rspec
-
+    
+    config.before(:suite) do
+       DatabaseCleaner.strategy = :truncation
+    end
+    config.before(:each) do
+      DatabaseCleaner.start
+    end
+    
+    
+    config.after(:each) do
+        DatabaseCleaner.clean
+    end
+      
     # If you're not using ActiveRecord, or you'd prefer not to run each of your
     # examples within a transaction, remove the following line or assign false
     # instead of true.
