@@ -18,7 +18,6 @@ gem 'twilio', '~> 3.1.0'
 gem 'settingslogic', '~> 2.0.6'
 gem "twilio-ruby", '~> 3.5.1'
 gem 'dynamic_form', '~> 1.1.4'
-gem "nested_form", '~>0.1.1'
 gem 'jquery-rails', '~>2.1.1'
 gem "activerecord-import", ">= 0.2.0"
 gem "airbrake",'~>3.0.9'
