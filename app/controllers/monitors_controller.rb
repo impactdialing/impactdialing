@@ -12,6 +12,10 @@ class MonitorsController < ClientController
     @all_campaigns = account.campaigns.active    
     @campaign = Campaign.find(params[:id])
     @monitor_session = MonitorSession.add_session(@campaign.id)
+    num_remaining = @campaign.all_voters.by_status('not called').count
+    num_available = @campaign.leads_available_now + num_remaining      
+    @result = RedisCaller.stats(@campaign.id).merge(RedisCampaignCall.stats(@campaign.id)).merge({available: num_available, remaining: num_remaining})      
+    
     twilio_capability = Twilio::Util::Capability.new(TWILIO_ACCOUNT, TWILIO_AUTH)
     twilio_capability.allow_client_outgoing(MONITOR_TWILIO_APP_SID)
     @token = twilio_capability.generate    
