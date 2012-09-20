@@ -29,6 +29,8 @@ class RedisVoter
       else        
         $redis_call_flow_connection.multi do
           caller_session_id = RedisCaller.longest_waiting_caller(campaign_id)          
+          puts "ddddddddddddddd"
+          puts caller_session_id
           RedisCaller.on_hold(campaign_id).delete(caller_session_id)
           RedisCaller.on_call(campaign_id).add(caller_session_id, Time.now.to_i)
         end
