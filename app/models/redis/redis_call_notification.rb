@@ -1,15 +1,18 @@
 class RedisCallNotification
   
   def self.connected(identity)
+    
     RedisConnection.common_connection.rpush('connected_call_notification', {identity: identity, event: "call_connected"}.to_json)
   end
   
   def self.end_answered_call(identity)
+    puts "end_answered_call"
     RedisConnection.common_connection.rpush('connected_call_notification', {identity: identity, event: "end_answered_call"}.to_json)
   end
   
   
   def self.wrapup(identity)
+    puts "end_answered_call"
     RedisConnection.common_connection.rpush('connected_call_notification', {identity: identity, event: "wrapup"}.to_json)
   end
   
