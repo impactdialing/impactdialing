@@ -18,7 +18,12 @@ class RedisCallMysql
     voter = Voter.find(voter_id)
     redis_voter = RedisVoter.read(voter_id)
     puts redis_voter
-    voter.update_attributes(redis_voter)
+    begin
+      voter.update_attributes(redis_voter)
+    rescue Exception => e
+      voter.reload
+      voter.update_attributes(redis_voter)
+    end
     RedisVoter.delete(voter_id)
   end
   
