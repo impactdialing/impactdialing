@@ -24,11 +24,11 @@ class VoterListBatchUpload
 
         if csv_custom_id_column_location.present?
           lead = Voter.find_by_CustomID_and_campaign_id(voter_info[csv_custom_id_column_location], @list.campaign_id)
-          lead.update_attributes(voter_list: @list) if lead.present?
+          lead.update_attributes(voter_list: @list, enabled: true) if lead.present?
         end
 
         if lead.nil?
-          lead = Voter.new(:Phone => phone_number, :voter_list => @list, :account_id => @list.account_id, :campaign_id => @list.campaign_id)
+          lead = Voter.new(:Phone => phone_number, :voter_list => @list, :account_id => @list.account_id, :campaign_id => @list.campaign_id, enabled: true)
         end
 
         if lead.valid?

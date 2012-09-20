@@ -5,7 +5,7 @@ class SimulatorJob
 
 
    def self.perform(campaign_id)
-     
+    begin 
      target_abandonment = Campaign.find(campaign_id).acceptable_abandon_rate
      start_time = 60 * 10
      simulator_length = 60 * 60
@@ -125,7 +125,8 @@ class SimulatorJob
     end
     puts "Simulated_#{campaign_id} , Lines To Dial: #{best_dials}, Expected Call Time: #{best_conversation}, Expected Wrapup Time: #{best_wrapup_time} "
     SimulatedValues.find_or_create_by_campaign_id(campaign_id).update_attributes(best_dials: best_dials, best_conversation: best_conversation, longest_conversation: longest_conversation, best_wrapup_time: best_wrapup_time)
-     
+   rescue Exception => e
+   end  
      
    end
    
