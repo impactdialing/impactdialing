@@ -91,6 +91,10 @@ class Predictive < Campaign
     dials_to_make.to_i
   end
   
+  def self.do_not_call_in_production?(campaign_id)
+    !Resque.redis.exists("dial_calculate:#{campaign_id}")
+  end
+  
   
   def best_dials_simulated
     simulated_values.nil? ? 1 : simulated_values.best_dials.nil? ? 1 : simulated_values.best_dials.ceil > 3 ? 3 : simulated_values.best_dials.ceil
