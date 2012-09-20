@@ -56,7 +56,7 @@ class RedisCampaignCall
   end
   
   def self.stats(campaign_id)
-    {ringing_lines: ringing_lines(campaign_id).length, wrapup: wrapup(campaign_id).length, live_lines: inprogress(campaign_id).length}
+    {ringing_lines: ringing(campaign_id).length, wrapup: wrapup(campaign_id).length, live_lines: inprogress(campaign_id).length}
   end
   
   
