@@ -145,7 +145,7 @@ class CallerSession < ActiveRecord::Base
     if campaign.type == Campaign::Type::PREDICTIVE && RedisCaller.zero?(campaign.id)
       RedisCampaign.remove_running_predictive_campaign(campaign.id)
     end
-    
+    RedisCallNotification.caller_disconnected(self.id)      
   end
   
   
@@ -260,8 +260,6 @@ class CallerSession < ActiveRecord::Base
       RedisCallerSession.set_attempt_in_progress(self.id, attempt.id)
     end
     RedisCampaignCall.add_to_ringing(campaign.id, attempt.id)
-    # MonitorEvent.call_ringing(campaign)
-
     attempt    
   end
   
@@ -303,8 +301,6 @@ class CallerSession < ActiveRecord::Base
      RedisCallerSession.start_conference(self.id)
      RedisCaller.move_to_on_hold(campaign.id, self.id)
    end
-   
-   
    
   private
     

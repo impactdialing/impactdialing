@@ -42,8 +42,7 @@ class CallerController < ApplicationController
   end
 
   def end_session
-    unless @caller_session.nil?
-      RedisCallNotification.caller_disconnected(@caller_session.id)      
+    unless @caller_session.nil?      
       render xml: @caller_session.run('end_conf') 
     else
       render xml: Twilio::Verb.hangup
