@@ -28,7 +28,6 @@ module MonitorTab
     end
     
     def self.update_campaign_info(channel, campaign_id, caller_session_id, event)
-      monitor_campaign_hash.incrby("remaining", num_remaining)        
       campaign = Campaign.find(campaign_id)
       num_remaining = campaign.all_voters.by_status('not called').count
       num_available = campaign.leads_available_now + num_remaining      
