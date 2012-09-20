@@ -29,10 +29,7 @@ class RedisVoter
       else        
         $redis_call_flow_connection.multi do
           caller_session_id = RedisCaller.longest_waiting_caller(campaign_id)          
-          puts "ddddddddddddddd"
-          puts caller_session_id
-          RedisCaller.on_hold(campaign_id).delete(caller_session_id)
-          RedisCaller.on_call(campaign_id).add(caller_session_id, Time.now.to_i)
+          lock_caller(caller_session_id, campaign_id)
         end
         unless caller_session_id.blank?
           RedisVoter.assign_to_caller(voter_id, caller_session_id)           
@@ -47,6 +44,12 @@ class RedisVoter
     !assigned_to_caller?(voter_id) || RedisCaller.disconnected?(campaign_id, caller_session_id(voter_id))
   end
   
+  def self.lock_caller(caller_session_id, campaign_id)
+    unless caller_session_id.blank?
+      RedisCaller.on_hold(campaign_id).delete(caller_session_id)
+      RedisCaller.on_call(campaign_id).add(caller_session_id, Time.now.to_i)    
+    end
+  end
   
   def self.abandon_call(voter_id)
     voter_hash = voter(voter_id)
