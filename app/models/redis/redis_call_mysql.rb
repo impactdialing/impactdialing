@@ -21,6 +21,7 @@ class RedisCallMysql
     begin
       voter.update_attributes(redis_voter)
     rescue Exception => e
+      RedisCallNotification.update_voter(voter.id)
     end
     RedisVoter.delete(voter_id)
   end
