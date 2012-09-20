@@ -92,7 +92,7 @@ class Predictive < Campaign
   end
   
   def self.do_not_call_in_production?(campaign_id)
-    !Resque.redis.exists("dial_calculate:#{campaign_id}")
+    !Resque.redis.exists("do_not_call:#{campaign_id}")
   end
   
   
