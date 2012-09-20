@@ -4,6 +4,7 @@ var Campaign = function(){
   $("#campaign_type").change(function() {
 	self.dialing_mode_changed();
   });
+   this.dialing_mode_changed();
    this.detect_answering_machine();
    this.detect_leave_voice_mail();
 
