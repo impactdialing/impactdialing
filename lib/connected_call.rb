@@ -29,10 +29,13 @@ module Connected
     def self.wrapup(call_attempt_id)
       RedisCallMysql.call_completed(call_attempt.id)            
     end    
-        
-    def self.caller_disconnected(caller_session_id)
+    
+    def update_voter(voter_id)
+      RedisCallMysql.update_voter(voter_id)
     end
     
+    
+        
     
   end
 end

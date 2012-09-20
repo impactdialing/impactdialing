@@ -21,7 +21,7 @@ class RedisCallMysql
     begin
       voter.update_attributes(redis_voter)
     rescue Exception => e
-      RedisCallNotification.update_voter(voter.id)
+      RedisConnection.common_connection.rpush('connected_call_notification', {identity: voter.id, event: "update_voter"}.to_json)
     end
     RedisVoter.delete(voter_id)
   end
