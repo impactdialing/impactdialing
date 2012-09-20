@@ -40,7 +40,7 @@ class RedisCallerSession
   
     
   def self.end_session(caller_session_id)
-    caller_session(caller_session_id).bulk_set({on_call: false, available_for_call: false, end_time: Time.now})
+    caller_session(caller_session_id).bulk_set({on_call: false, available_for_call: false, endtime: Time.now})
     caller_session(caller_session_id).delete('voter_in_progress')
   end
   
