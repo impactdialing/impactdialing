@@ -54,6 +54,10 @@ class RedisCallAttempt
     read(call_attempt_id)['caller_session_id']
   end
   
+  def self.set_voter_response_processed(call_attempt_id)
+    call_attempt(call_attempt_id).store("voter_response_processed", true)    
+  end
+  
   
 
   def self.end_unanswered_call(call_attempt_id, status)
