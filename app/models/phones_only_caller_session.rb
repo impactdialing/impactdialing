@@ -176,7 +176,7 @@ class PhonesOnlyCallerSession < CallerSession
   def wrapup_call_attempt
      redis_attempt_in_progress = RedisCallerSession.attempt_in_progress(self.id)    
      RedisCallAttempt.set_voter_response_processed(redis_attempt_in_progress)
-     CallAttempt.find(redis_attempt_in_progress).wrapup
+     CallAttempt.find(redis_attempt_in_progress).wrapup_now
   end
   
   def publish_moderator_gathering_response
