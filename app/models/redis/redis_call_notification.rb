@@ -35,7 +35,7 @@ class RedisCallNotification
     RedisConnection.common_connection.rpush('connected_call_notification', {identity: identity, event: "caller_connected"}.to_json)
   end
   
-  def self.caller_disconnected(caller_session_id)
+  def self.caller_disconnected(identity)
     RedisConnection.common_connection.rpush('connected_call_notification', {identity: identity, event: "caller_disconnected"}.to_json)
   end
   
