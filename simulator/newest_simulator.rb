@@ -8,7 +8,7 @@ RAILS_ROOT = File.expand_path('../..', __FILE__)
 require File.join(RAILS_ROOT, 'config/environment')
 SIMULATOR_ROOT = ENV['SIMULATOR_ROOT'] || File.expand_path('..', __FILE__)
 FileUtils.mkdir_p(File.join(SIMULATOR_ROOT, 'log'), :verbose => true)
-ActiveRecord::Base.logger = Logger.new(File.open(File.join(SIMULATOR_ROOT, 'log', "simulator_#{RAILS_ENV}.log"), 'a'))
+ActiveRecord::Base.logger = Logger.new(File.open(File.join(SIMULATOR_ROOT, 'log', "simulator_#{ENV['RAILS_ENV']}.log"), 'a'))
 
 
 
@@ -20,6 +20,7 @@ class CallAttempt < ActiveRecord::Base
     return nil unless connecttime
     ((wrapup_time || Time.now) - self.connecttime).to_i
   end
+
 
   def ringing_duration
     return 15 unless connecttime
@@ -221,7 +222,8 @@ loop do
     logged_in_campaigns.each do |c|     
       puts "Simulating #{c.campaign_id}"
       campaign = Campaign.find(c.campaign_id)      
-      simulate(c.campaign_id) if campaign.type == Campaign::Type::PREDICTIVE && Resque.redis.exists("hardcoded:#{campaign.id}")
+      Resque.enqueue(SimulatorJob, campaign.id) if campaign.type == Campaign::Type::PREDICTIVE
+      # simulate(c.campaign_id) if campaign.type == Campaign::Type::PREDICTIVE
     end
     sleep 30
   rescue Exception => e

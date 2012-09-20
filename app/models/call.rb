@@ -2,7 +2,10 @@ class Call < ActiveRecord::Base
   include Rails.application.routes.url_helpers
   include CallCenter
 
-  
+  attr_accessible :id, :account_sid, :to_zip, :from_state, :called, :from_country, :caller_country, :called_zip, :direction, :from_city,
+   :called_country, :caller_state, :call_sid, :called_state, :from, :caller_zip, :from_zip, :call_status, :to_city, :to_state, :to, :to_country, 
+   :caller_city, :api_version, :caller, :called_city, :all_states, :state, :call_attempt, :questions, :notes, :answered_by
+   
   has_one :call_attempt
   serialize :conference_history, Array
   delegate :connect_call, :to => :call_attempt
@@ -22,6 +25,10 @@ class Call < ActiveRecord::Base
   delegate :campaign, :to=> :call_attempt
   delegate :voter, :to=> :call_attempt
   delegate :caller_session, :to=> :call_attempt
+  delegate :redis_caller_session, :to=> :call_attempt
+  delegate :end_caller_session, :to=> :call_attempt
+  delegate :caller_session_key, :to=> :call_attempt
+  
   
   
   call_flow :state, :initial => :initial do    
@@ -40,9 +47,9 @@ class Call < ActiveRecord::Base
         event :disconnect, :to => :disconnected
         
         response do |xml_builder, the_call|
-          unless caller_session.nil?
+          unless redis_caller_session.nil? 
             xml_builder.Dial :hangupOnStar => 'false', :action => flow_call_url(the_call, :host => Settings.host, event: "disconnect"), :record=> campaign.account.record_calls do |d|
-              d.Conference caller_session.session_key, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
+              d.Conference caller_session_key, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
             end
           else
             xml_builder.Hangup
@@ -68,7 +75,7 @@ class Call < ActiveRecord::Base
       end
       
       state :abandoned do
-        before(:always) { abandon_call; call_attempt.redirect_caller }        
+        before(:always) { abandon_call; call_attempt.redirect_caller }                
         response do |xml_builder, the_call|
           xml_builder.Hangup
         end
@@ -112,13 +119,13 @@ class Call < ActiveRecord::Base
       
       
       state :wrapup_and_continue do 
-        before(:always) { wrapup_now; call_attempt.redirect_caller; call_attempt.publish_moderator_response_submited }
+        before(:always) { wrapup_now; call_attempt.redirect_caller }
         after(:success){ persist_all_states}
       end
       
       state :wrapup_and_stop do
-        before(:always) { wrapup_now; caller_session.run('end_conf') }        
-        after(:success){ persist_all_states;; call_attempt.publish_moderator_response_submited}
+        before(:always) { wrapup_now; end_caller_session }        
+        after(:success){ persist_all_states;}
       end
             
   end 
@@ -145,11 +152,11 @@ class Call < ActiveRecord::Base
   end
 
   def answered_by_human_and_caller_not_available?
-    (answered_by.nil? || answered_by == "human") && caller_not_available?
+    (answered_by.nil? || answered_by == "human") && call_status == 'in-progress' && caller_not_available?
   end
   
   def answered_by_human_and_caller_available?
-    (answered_by.nil? || answered_by == "human") && caller_available?
+    (answered_by.nil? || answered_by == "human") && call_status == 'in-progress' && caller_available?
   end
   
   def call_did_not_connect?
@@ -159,11 +166,6 @@ class Call < ActiveRecord::Base
   def call_connected?
     !call_did_not_connect?
   end
-  
-  
-  
-  
-  
   
   
 end  

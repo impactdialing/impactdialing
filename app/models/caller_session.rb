@@ -18,6 +18,11 @@ class CallerSession < ActiveRecord::Base
   scope :for_caller, lambda{|caller| where("caller_id = #{caller.id}") unless caller.nil?}  
   scope :debit_not_processed, lambda { where(:debited => "0", :caller_type => CallerType::PHONE).where('endtime is not null') }
   scope :campaigns_on_call, select("campaign_id").on_call.group("campaign_id")
+  scope :first_caller_time, lambda { |caller| {:select => "created_at", :conditions => ["caller_id = ?", caller.id], :order => "created_at ASC", :limit => 1}  unless caller.nil?}
+  scope :last_caller_time, lambda { |caller| {:select => "created_at", :conditions => ["caller_id = ?", caller.id], :order => "created_at DESC", :limit => 1}  unless caller.nil?}
+  scope :first_campaign_time, lambda { |campaign| {:select => "created_at", :conditions => ["campaign_id = ?", campaign.id], :order => "created_at ASC", :limit => 1}  unless campaign.nil?}
+  scope :last_campaign_time, lambda { |campaign| {:select => "created_at", :conditions => ["campaign_id = ?", campaign.id], :order => "created_at DESC", :limit => 1}  unless campaign.nil?}
+
   
   has_one :voter_in_progress, :class_name => 'Voter'
   has_one :attempt_in_progress, :class_name => 'CallAttempt'
@@ -134,6 +139,16 @@ class CallerSession < ActiveRecord::Base
     end      
   end
   
+  def end_session
+    RedisCallerSession.end_session(self.id)
+    RedisCaller.disconnect_caller(campaign.id, self.id )
+    if campaign.type == Campaign::Type::PREDICTIVE && RedisCaller.zero?(campaign.id)
+      RedisCampaign.remove_running_predictive_campaign(campaign.id)
+    end
+    RedisCallNotification.caller_disconnected(self.id)      
+  end
+  
+  
   def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)    
     voters = Voter.find_all_by_caller_id_and_status(caller.id, CallAttempt::Status::READY)
     voters.each {|voter| voter.update_attributes(status: 'not called')}    
@@ -149,13 +164,14 @@ class CallerSession < ActiveRecord::Base
   
   
   def wrapup_attempt_in_progress
-    attempt_in_progress.try(:update_attributes, {:wrapup_time => Time.now})
-    # attempt_in_progress.try(:capture_answer_as_no_response)          
+    redis_attempt_in_progress = RedisCallerSession.attempt_in_progress(self.id)    
+    unless redis_attempt_in_progress.blank?
+      RedisCampaignCall.move_to_completed(campaign.id, redis_attempt_in_progress)
+      RedisCallAttempt.wrapup(redis_attempt_in_progress)
+    end
+    
   end
   
-  def end_session
-    update_attributes(on_call: false, available_for_call:  false, endtime:  Time.now)
-  end
   
   def account_not_activated?
     !activated?
@@ -208,13 +224,12 @@ class CallerSession < ActiveRecord::Base
   end
 
   def disconnected?
-    !available_for_call && !on_call
+    RedisCaller.disconnected?(campaign.id, self.id)
   end
   
   def publish(event, data)
     Pusher[session_key].trigger(event, data.merge!(:dialer => self.campaign.type))
   end
-  
   
   def dial_em(voter)
     return if voter.nil?
@@ -224,6 +239,7 @@ class CallerSession < ActiveRecord::Base
       http = twilio_lib.make_call_em(campaign, voter, call_attempt)
       http.callback { 
         response = JSON.parse(http.response)  
+        puts response 
         if response["status"] == 400
           handle_failed_call(call_attempt, self)
         else
@@ -235,11 +251,15 @@ class CallerSession < ActiveRecord::Base
   end
   
   def create_call_attempt(voter)
-    attempt = voter.call_attempts.create(:campaign => campaign, :dialer_mode => campaign.type, :status => CallAttempt::Status::RINGING, :caller_session => self, :caller => caller, call_start:  Time.now)
-    update_attribute('attempt_in_progress', attempt)
-    voter.update_attributes(:last_call_attempt => attempt, :last_call_attempt_time => Time.now, :caller_session => self, status: CallAttempt::Status::RINGING)
-    Call.create(call_attempt: attempt, all_states: "")
-    MonitorEvent.call_ringing(campaign)
+    attempt = voter.call_attempts.create(:campaign => campaign, :dialer_mode => campaign.type, :status => CallAttempt::Status::RINGING, :caller_session_id => self.id, :caller_id => caller.id, call_start:  Time.now)
+    voter.update_attributes(:last_call_attempt_id => attempt.id, :last_call_attempt_time => Time.now, :caller_session_id => self.id, status: CallAttempt::Status::RINGING)
+    Call.create(call_attempt: attempt, all_states: "", state: 'initial')    
+    $redis_call_flow_connection.pipelined do
+      RedisCallAttempt.load_call_attempt_info(attempt.id, attempt)
+      RedisVoter.setup_call(voter.id, attempt.id, self.id)
+      RedisCallerSession.set_attempt_in_progress(self.id, attempt.id)
+    end
+    RedisCampaignCall.add_to_ringing(campaign.id, attempt.id)
     attempt    
   end
   
@@ -277,6 +297,10 @@ class CallerSession < ActiveRecord::Base
    ((endtime - starttime)/60).ceil
    end
    
+   def start_conference    
+     RedisCallerSession.start_conference(self.id)
+     RedisCaller.move_to_on_hold(campaign.id, self.id)
+   end
    
   private
     

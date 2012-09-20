@@ -1,15 +1,16 @@
 <fieldset class="nested-fields question orderable_element">
   <div class="ui-icon ui-icon-arrowthick-2-n-s" style="top: -42px;left: -14px;position: relative;"></div>
   <legend class="question_label">Question 1</legend>
-    <%= f.hidden_field :id, {"class"=> "identity"} %>  
+  <%= f.hidden_field :id, {"class"=> "identity"} %>
+
+  <%= render 'pdi_flag_id', f: f %>
 
   <p>
     <label>Question:</label>
     <%= f.text_field :text %>
-    <%= f.hidden_field :question_order , {"class"=> "question_order"} %>
     <%= f.hidden_field :script_order , {"class" => "script_element"} %>
   </p>
-  
-  <%= render "script_possible_response", {f: f} %>  
-  
+
+  <%= render "script_possible_response", {f: f} %>
+
 </fieldset>

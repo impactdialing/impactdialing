@@ -25,17 +25,9 @@ ImpactDialing::Application.configure do
   config.action_controller.perform_caching = true
 
   # See everything in the log (default is :info)
-  config.log_level = :error
+  config.log_level = :info
 
   config.active_support.deprecation = :log
-
-  config.after_initialize do
-    #  ActiveMerchant::Billing::Base.mode = :test
-    ActiveMerchant::Billing::LinkpointGateway.pem_file  = File.read(Rails.root.join('1383715.pem'))
-    ::BILLING_GW = gateway = ActiveMerchant::Billing::LinkpointGateway.new(
-      :login => "1383715"
-    )
-  end
 
   # Use a different logger for distributed setups
   # config.logger = SyslogLogger.new
@@ -51,30 +43,4 @@ ImpactDialing::Application.configure do
 
   # Enable threaded mode
   # config.threadsafe!
-
-
-  # memcache_options = {
-  #   :c_threshold => 10000,
-  #   :compression => true,
-  #   :debug => false,
-  #   :namespace => 'some_ns',
-  #   :readonly => false,
-  #   :urlencode => false
-  # }
-  #
-  # CACHE = MemCache.new memcache_options
-  # #CACHE.servers = '127.0.0.1:11211'
-  # CACHE.servers = 'domU-12-31-39-10-89-26.compute-1.internal:11211'
-  #
-  # begin
-  #    PhusionPassenger.on_event(:starting_worker_process) do |forked|
-  #      if forked
-  #        # We're in smart spawning mode, so...
-  #        # Close duplicated memcached connections - they will open themselves
-  #        CACHE.reset
-  #      end
-  #    end
-  # # In case you're not running under Passenger (i.e. devmode with mongrel)
-  # rescue NameError => error
-  # end
 end

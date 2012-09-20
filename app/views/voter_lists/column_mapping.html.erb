@@ -1,34 +1,16 @@
-<% content_for :stylesheets do %>
-  <%= stylesheet_link_tag "column_mapping" %>
-<% end %>
-
-<h1>Add list</h1>
-<%= form_tag(import_voter_lists_path(@campaign), :method => :post, :html => {:multipart => true}) do %>
-  <%= hidden_field_tag "separator", @separator %>
-  <%= hidden_field_tag "json_csv_column_headers", @csv_column_headers.to_json%>
-  <p>
-    <label>List name</label>
-    <%= text_field_tag "voter_list_name", nil, :required => true, :id => "voter_list_name"
-  %>
-</p>
-
-<p>
-  We found the following headers in the file you uploaded. Please map them to the fields below.
-</p>
-
-<dl class='table-display'>
-  <% @csv_column_headers.each do |csv_header| %>
-    <% selected =  matching_system_header_for(csv_header)%>
-    <dt><%= csv_header %></dt>
-    <dd><%= select_tag "csv_to_system_map[#{csv_header}]", options_for_select(system_column_headers(csv_header, @campaign.account), selected) %></dd>
+<p>Please map your headers to the appropriate fields below.</p>
+<table>
+  <tr>
+    <th>Header</th>
+    <th>Field</th>
+    <th>Example data</th>
+  </tr>
+  <% @csv_column_headers.each_with_index do |csv_header, index| %>
+    <% selected = matching_system_header_for(csv_header) %>
+    <tr>
+      <td><%= csv_header %></td>
+      <td><%= select_tag "voter_list[csv_to_system_map[#{csv_header}]]", options_for_select(system_column_headers(csv_header, @campaign.account), selected) %></td>
+      <td><%= @first_data_row[index] %></td>
+    </tr>
   <% end %>
-</dl>
-<div style='clear:both;'></div>
-<button type="submit">Finish</button>
-<% end %>
-
-<script type="text/javascript">
-  Event.observe(window, 'load', function() {
-    $("voter_list_name").focus();
-  });
-</script>
+</table>

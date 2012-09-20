@@ -42,7 +42,7 @@
 	      insertionNode = $this	
 	   }
 	   else if (insertionNode == "sibling") {
-		 insertionNode = $($(this).siblings("."+siblingClass)[0])
+		 insertionNode = $($(this).parent().siblings("."+siblingClass)[0])
 	    }
 	   else {
 	     insertionNode = $(insertionNode)	
@@ -52,12 +52,10 @@
       }
 
     var contentNode = $(new_content);
-
     // allow any of the jquery dom manipulation methods (after, before, append, prepend, etc)
     // to be called on the node.  allows the insertion node to be the parent of the inserted
     // code and doesn't force it to be a sibling like after/before does. default: 'before'
     insertionNode[insertionMethod](contentNode);
-
     $this.parent().trigger('insertion-callback');
     
 

@@ -28,11 +28,14 @@ module MonitorTab
     end
     
     def self.update_campaign_info(channel, campaign_id, caller_session_id, event)
-      redis.hgetall("monitor_campaign:#{campaign_id}").callback { |campaign_info|
-        campaign_deferrable = ::Pusher[channel].trigger_async('update_campaign_info', Hash[*campaign_info.flatten].merge!(event: event))
-        campaign_deferrable.callback {}
-        campaign_deferrable.errback { |error| puts error }                    
-       }      
+      campaign = Campaign.find(campaign_id)
+      num_remaining = campaign.all_voters.by_status('not called').count
+      num_available = campaign.leads_available_now + num_remaining      
+      info = RedisCaller.stats(campaign_id).merge(RedisCampaignCall.stats(campaign_id)).merge({available: num_available, remaining: num_remaining})      
+      puts info.merge(event: event)
+      campaign_deferrable = ::Pusher[channel].trigger_async('update_campaign_info', info.merge!(event: event))
+      campaign_deferrable.callback {}
+      campaign_deferrable.errback { |error| puts error }                    
     end
     
     def self.update_caller_info(channel, campaign_id, caller_session_id, event)

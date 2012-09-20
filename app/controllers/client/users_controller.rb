@@ -1,6 +1,6 @@
 module Client
   class UsersController < ClientController
-    INVALID_RESET_TOKEN = 'Your password reset link is invalid'
+    INVALID_RESET_TOKEN = 'Your link has expired or is invalid'
     skip_before_filter :check_login, :only => [:reset_password, :update_password]
     skip_before_filter :check_paid, :only => [:reset_password, :update_password]
 
@@ -8,7 +8,7 @@ module Client
       @user = User.find_by_password_reset_code(params[:reset_code])
       unless @user
         flash_message(:error, INVALID_RESET_TOKEN)
-        redirect_to root_path
+        redirect_to login_path
       end
     end
 
@@ -19,7 +19,7 @@ module Client
         @user.clear_reset_code
         if @user.save
           session[:user]=@user.id
-          flash_message(:notice, 'Your password has been successfully reset')
+          flash_message(:notice, 'Your password has been successfully set')
         else
           flash_message(:notice, 'Your password needs to be 5 characters or greater.')
         end
@@ -43,7 +43,7 @@ module Client
       end
       redirect_to :back
     end
-    
+
     def change_role
       user_to_change = User.find(params[:user][:id])
       if @user == user_to_change
@@ -57,13 +57,9 @@ module Client
 
     def destroy
       user_to_be_deleted = account.users.find_by_id(params[:id])
-      if current_user == user_to_be_deleted
-        flash_message(:error, "You can't delete yourself")
-      else
-        flash_message(:notice, "#{user_to_be_deleted.email} was deleted")
-        user_to_be_deleted.destroy
-      end
-      redirect_to :back
+      flash_message(:notice, "#{user_to_be_deleted.email} was deleted")
+      user_to_be_deleted.destroy
+      redirect_to root_path
     end
   end
 end

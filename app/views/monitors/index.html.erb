@@ -21,10 +21,7 @@
 <% end %>
 <br>
 
-
 <br>
 
-<h2>System-wide settings</h2>
 <p>Call recording is currently <%= @account.record_calls? ? "on" : "off" %>. Links to recordings will appear in each campaign's Download report.</p>
-<p class="actions"><%= link_to "Turn call recording #{@account.record_calls? ? "off" : "on" }", {:action=>"toggle_call_recording"}, {:class => 'action secondary'}, %></p>
-<p class="actions"><%= link_to "Manage Do Not Call list", blocked_numbers_path, :class => 'action secondary' %></p>
+<p class="actions"><%= link_to "Turn call recording #{@account.record_calls? ? "off" : "on" }", {:action=>"toggle_call_recording"}, {:class => 'action secondary'} %></p>

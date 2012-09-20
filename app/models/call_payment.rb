@@ -7,12 +7,20 @@ module CallPayment
     
     def debit
       account = campaign.account
-      return  if call_not_connected? || !payment_id.nil? || account.manual_subscription?
+      if call_not_connected? || !payment_id.nil? || account.manual_subscription?
+        self.update_attribute(:debited, true)
+        return
+      end
       payment = Payment.where("amount_remaining > 0 and account_id = ?", account).last
-      return if payment.nil?      
-      payment.debit_call_charge(amount_to_debit, account)
-      self.update_attributes(payment_id: payment.try(:id))
-      account.check_autorecharge(account.current_balance)
+      if payment.nil?      
+        payment = account.check_autorecharge(account.current_balance)
+      end      
+      unless payment.nil?              
+        payment.debit_call_charge(amount_to_debit, account)
+        self.update_attributes(payment_id: payment.try(:id))
+        self.update_attribute(:debited, true)
+        account.check_autorecharge(account.current_balance)
+      end
     end
     
     def amount_to_debit

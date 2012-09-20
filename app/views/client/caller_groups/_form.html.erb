@@ -1,0 +1,17 @@
+<%= render "shared/error_messages", :target => @caller_group %>
+<%= form_for @caller_group, url: "#{client_caller_groups_path}/#{@caller_group.id}" do |f| %>
+  <fieldset>
+    <legend>Settings</legend>
+    <p>
+      <%= f.label :name %>
+      <%= f.text_field :name %>
+    </p>
+    <p>
+      <%= f.label :campaign %>
+      <%= f.select :campaign_id, options_from_collection_for_select(@campaigns, :id, :name, @caller_group.campaign_id) %>
+    </p>
+  </fieldset>
+   <div class="buttons">
+     <button type="submit">Save</button>
+   </div>
+<% end %>

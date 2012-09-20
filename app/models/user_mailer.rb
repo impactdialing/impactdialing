@@ -10,7 +10,7 @@ class UserMailer
     email = super(domain)
     @uakari.list_verified_email_addresses["email_addresses"].include?(email) ? email : super("non_existant_domain")
   end
-  
+
   def send_michael_welcome_email(user)
     begin
       emailText="<pre>#{user.attributes.to_yaml}</pre>"
@@ -31,8 +31,8 @@ class UserMailer
         logger.error(e.inspect)
     end
   end
-  
-  
+
+
   def welcome_email(user)
     begin
       emailText="<p>Hi #{user.fname}! I think you're going love Impact Dialing, so I want to make you an offer: for the next two weeks, you can make up to 100 minutes of phone calls on us.</p>
@@ -42,7 +42,7 @@ class UserMailer
       --<br/>
       Michael Kaiser-Nyman<br/>
       Founder & CEO, Impact Dialing<br/>
-      (415) 347-5723      <br/> 
+      (415) 347-5723      <br/>
       <p>P.S. Don't wait until it's too late - start your 2-week free trial now at <a href=""https://admin.impactdialing.com/"">admin.impactdialing.com</a>.</p>"
       subject="Test drive Impact Dialing until " + (Date.today + 14).strftime("%B %e")
 
@@ -62,7 +62,7 @@ class UserMailer
       rescue Exception => e
         logger.error(e.inspect)
     end
-    
+
   end
 
   def deliver_invitation(new_user, current_user)
@@ -80,7 +80,7 @@ class UserMailer
       }
     })
   end
-  
+
   def reset_password(user)
       emailText="Click here to reset your password<br/> #{ reset_password_url(protocol: PROTOCOL, :host => "admin.#{user.domain}", :reset_code => user.password_reset_code) }"
       response = @uakari.send_email({
@@ -116,13 +116,6 @@ class UserMailer
     })
   end
 
-  def notify_broadcast_start(campaign,user)
-    to_email = "michael@impactdialing.com"
-    subject = I18n.t(:broadcast_campaign_started)
-    content = "<br/>#{I18n.t(:broadcast_campaign_started)} : #{campaign.name} by #{user.email}"
-    @uakari.send_email({ :message => { :subject => subject, :text => content, :html => content, :from_name => white_labeled_title(campaign.account.domain), :from_email => white_labeled_email(user.domain), :to_email => [to_email]} })
-  end
-
   def deliver_download(user, download_link)
     subject = I18n.t(:report_ready_for_download)
 
@@ -142,7 +135,7 @@ class UserMailer
   def deliver_download_failure(user, campaign, account_id, exception)
     subject = I18n.t(:report_error_occured_subject)
     content = "<br/>#{I18n.t(:report_error_occured)}"
-    exception_content = "Campaign: #{campaign.name}  Account Id: #{account.id}. Error details : <br/><br/> #{exception.backtrace.each{|line| "<br/>#{line}"}}"
+    exception_content = "Campaign: #{campaign.name}  Account Id: #{account_id}. Error details : <br/><br/> #{exception.backtrace.each{|line| "<br/>#{line}"}}"
     @uakari.send_email({ :message => { :subject => subject, :text => content, :html => content, :from_name => white_labeled_title(user.domain), :from_email => white_labeled_email(user.domain), :to_email => [user.email]} })
     @uakari.send_email({ :message => { :subject => subject, :text => exception_content, :html => exception_content, :from_name => white_labeled_title(user.domain), :from_email => 'email@impactdialing.com', :to_email => ['nikhil@activesphere.com','michael@impactdialing.com']} })
   end

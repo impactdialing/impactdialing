@@ -11,14 +11,13 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120822072207) do
-
+ActiveRecord::Schema.define(:version => 20120917073629) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-    t.string   "domain"
+    t.datetime "created_at",                                     :null => false
+    t.datetime "updated_at",                                     :null => false
+    t.string   "domain_name"
     t.boolean  "activated",                   :default => false
     t.boolean  "record_calls",                :default => false
     t.string   "recurly_account_code"
@@ -34,6 +33,7 @@ ActiveRecord::Schema.define(:version => 20120822072207) do
     t.string   "abandonment"
     t.text     "caller_password"
     t.text     "caller_hashed_password_salt"
+    t.string   "api_key",                     :default => ""
   end
 
   create_table "answers", :force => true do |t|
@@ -46,9 +46,12 @@ ActiveRecord::Schema.define(:version => 20120822072207) do
     t.integer  "call_attempt_id"
   end
 
+  add_index "answers", ["possible_response_id", "caller_id", "created_at"], :name => "index_answers_count_possible_response"
   add_index "answers", ["possible_response_id", "campaign_id", "caller_id", "created_at"], :name => "index_answers_count_possible_response_campaign"
   add_index "answers", ["possible_response_id", "campaign_id", "caller_id", "created_at"], :name => "index_answers_count_question_id"
   add_index "answers", ["question_id", "campaign_id", "created_at"], :name => "index_answers_count_question"
+  add_index "answers", ["question_id", "campaign_id"], :name => "index_answers_distinct_question"
+  add_index "answers", ["question_id", "campaign_id"], :name => "index_distinct_question"
   add_index "answers", ["voter_id", "question_id"], :name => "index_answers_on_voter_id_and_question_id"
 
   create_table "billing_accounts", :force => true do |t|
@@ -77,8 +80,8 @@ ActiveRecord::Schema.define(:version => 20120822072207) do
   create_table "blocked_numbers", :force => true do |t|
     t.string   "number"
     t.integer  "account_id"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",  :null => false
+    t.datetime "updated_at",  :null => false
     t.integer  "campaign_id"
   end
 
@@ -92,8 +95,8 @@ ActiveRecord::Schema.define(:version => 20120822072207) do
     t.integer  "caller_id"
     t.datetime "connecttime"
     t.integer  "caller_session_id"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",                                  :null => false
+    t.datetime "updated_at",                                  :null => false
     t.string   "result"
     t.string   "result_digit"
     t.string   "tCallSegmentSid"
@@ -123,21 +126,19 @@ ActiveRecord::Schema.define(:version => 20120822072207) do
   add_index "call_attempts", ["caller_id", "wrapup_time"], :name => "index_call_attempts_on_caller_id_and_wrapup_time"
   add_index "call_attempts", ["caller_session_id"], :name => "index_call_attempts_on_caller_session_id"
   add_index "call_attempts", ["campaign_id", "call_end"], :name => "index_call_attempts_on_campaign_id_and_call_end"
+  add_index "call_attempts", ["campaign_id", "created_at", "status"], :name => "index_call_attempts_on_campaign_id_created_at_status"
   add_index "call_attempts", ["campaign_id", "wrapup_time"], :name => "index_call_attempts_on_campaign_id_and_wrapup_time"
   add_index "call_attempts", ["campaign_id"], :name => "index_call_attempts_on_campaign_id"
   add_index "call_attempts", ["debited", "call_end"], :name => "index_call_attempts_on_debited_and_call_end"
   add_index "call_attempts", ["voter_id"], :name => "index_call_attempts_on_voter_id"
   add_index "call_attempts", ["voter_response_processed", "status"], :name => "index_call_attempts_on_voter_response_processed_and_status"
 
-  create_table "call_responses", :force => true do |t|
-    t.integer  "call_attempt_id"
-    t.string   "response"
-    t.integer  "recording_response_id"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-    t.integer  "robo_recording_id"
-    t.integer  "times_attempted",       :default => 0
-    t.integer  "campaign_id"
+  create_table "caller_groups", :force => true do |t|
+    t.string   "name",        :null => false
+    t.integer  "campaign_id", :null => false
+    t.datetime "created_at",  :null => false
+    t.datetime "updated_at",  :null => false
+    t.integer  "account_id",  :null => false
   end
 
   create_table "caller_identities", :force => true do |t|
@@ -145,8 +146,8 @@ ActiveRecord::Schema.define(:version => 20120822072207) do
     t.integer  "caller_session_id"
     t.integer  "caller_id"
     t.string   "pin"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",        :null => false
+    t.datetime "updated_at",        :null => false
   end
 
   create_table "caller_sessions", :force => true do |t|
@@ -157,8 +158,8 @@ ActiveRecord::Schema.define(:version => 20120822072207) do
     t.string   "sid"
     t.boolean  "available_for_call",   :default => false
     t.integer  "voter_in_progress_id"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",                              :null => false
+    t.datetime "updated_at",                              :null => false
     t.boolean  "on_call",              :default => false
     t.string   "caller_number"
     t.string   "tCallSegmentSid"
@@ -185,6 +186,7 @@ ActiveRecord::Schema.define(:version => 20120822072207) do
   end
 
   add_index "caller_sessions", ["caller_id"], :name => "index_caller_sessions_on_caller_id"
+  add_index "caller_sessions", ["campaign_id", "on_call"], :name => "index_callers_on_call_group_by_campaign"
   add_index "caller_sessions", ["campaign_id"], :name => "index_caller_sessions_on_campaign_id"
   add_index "caller_sessions", ["sid"], :name => "index_caller_sessions_on_sid"
 
@@ -193,12 +195,13 @@ ActiveRecord::Schema.define(:version => 20120822072207) do
     t.string   "email"
     t.string   "pin"
     t.integer  "account_id"
-    t.boolean  "active",         :default => true
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.boolean  "active",          :default => true
+    t.datetime "created_at",                         :null => false
+    t.datetime "updated_at",                         :null => false
     t.string   "password"
-    t.boolean  "is_phones_only", :default => false
+    t.boolean  "is_phones_only",  :default => false
     t.integer  "campaign_id"
+    t.integer  "caller_group_id"
   end
 
   create_table "calls", :force => true do |t|
@@ -237,8 +240,8 @@ ActiveRecord::Schema.define(:version => 20120822072207) do
     t.string   "recording_url"
     t.datetime "waiting_at"
     t.datetime "ended_at"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",         :null => false
+    t.datetime "updated_at",         :null => false
     t.text     "questions"
     t.text     "notes"
     t.text     "all_states"
@@ -246,31 +249,23 @@ ActiveRecord::Schema.define(:version => 20120822072207) do
 
   create_table "campaigns", :force => true do |t|
     t.string   "campaign_id"
-    t.string   "group_id"
     t.string   "name"
     t.integer  "account_id"
     t.integer  "script_id"
     t.boolean  "active",                   :default => true
-    t.datetime "created_at"
-    t.datetime "updated_at"
-    t.float    "ratio_override",           :default => 0.0
+    t.datetime "created_at",                                  :null => false
+    t.datetime "updated_at",                                  :null => false
     t.string   "caller_id"
-    t.boolean  "use_answering",            :default => true
-    t.string   "type",                     :default => "preview"
+    t.string   "type"
     t.integer  "recording_id"
     t.boolean  "use_recordings",           :default => false
-    t.string   "callin_number",            :default => "4157020991"
-    t.integer  "answer_detection_timeout", :default => 20
     t.boolean  "calls_in_progress",        :default => false
-    t.boolean  "robo",                     :default => false
     t.integer  "recycle_rate",             :default => 1
-    t.boolean  "amd_turn_off"
     t.boolean  "answering_machine_detect"
     t.time     "start_time"
     t.time     "end_time"
     t.string   "time_zone"
     t.float    "acceptable_abandon_rate"
-    t.integer  "voicemail_script_id"
   end
 
   create_table "custom_voter_field_values", :force => true do |t|
@@ -286,26 +281,11 @@ ActiveRecord::Schema.define(:version => 20120822072207) do
     t.integer "account_id"
   end
 
-  create_table "delayed_jobs", :force => true do |t|
-    t.integer  "priority",   :default => 0
-    t.integer  "attempts",   :default => 0
-    t.text     "handler"
-    t.text     "last_error"
-    t.datetime "run_at"
-    t.datetime "locked_at"
-    t.datetime "failed_at"
-    t.string   "locked_by"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-  end
-
-  add_index "delayed_jobs", ["priority", "run_at"], :name => "delayed_jobs_priority"
-
   create_table "downloaded_reports", :force => true do |t|
     t.integer  "user_id"
     t.string   "link"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",  :null => false
+    t.datetime "updated_at",  :null => false
     t.string   "campaign_id"
   end
 
@@ -316,8 +296,8 @@ ActiveRecord::Schema.define(:version => 20120822072207) do
   create_table "moderators", :force => true do |t|
     t.integer  "caller_session_id"
     t.string   "call_sid"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",        :null => false
+    t.datetime "updated_at",        :null => false
     t.string   "session"
     t.string   "active"
     t.integer  "account_id"
@@ -347,8 +327,8 @@ ActiveRecord::Schema.define(:version => 20120822072207) do
     t.integer  "recurly_transaction_uuid"
     t.integer  "account_id"
     t.string   "notes"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",               :null => false
+    t.datetime "updated_at",               :null => false
   end
 
   create_table "possible_responses", :force => true do |t|
@@ -357,82 +337,57 @@ ActiveRecord::Schema.define(:version => 20120822072207) do
     t.string  "value"
     t.boolean "retry",                   :default => false
     t.integer "possible_response_order"
+    t.string  "external_id_field"
   end
 
   create_table "questions", :force => true do |t|
-    t.integer "script_id",      :null => false
-    t.text    "text",           :null => false
-    t.integer "question_order"
+    t.integer "script_id",         :null => false
+    t.text    "text",              :null => false
     t.integer "script_order"
-  end
-
-  create_table "recording_responses", :force => true do |t|
-    t.integer "robo_recording_id"
-    t.string  "response"
-    t.integer "keypad"
+    t.string  "external_id_field"
   end
 
   create_table "recordings", :force => true do |t|
     t.integer  "account_id"
     t.integer  "active",            :default => 1
     t.string   "name"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",                       :null => false
+    t.datetime "updated_at",                       :null => false
     t.string   "file_file_name"
     t.string   "file_content_type"
     t.string   "file_file_size"
     t.datetime "file_updated_at"
   end
 
-  create_table "robo_recordings", :force => true do |t|
-    t.integer  "script_id"
-    t.string   "name"
-    t.string   "file_file_name"
-    t.string   "file_content_type"
-    t.integer  "file_file_size"
-    t.datetime "file_updated_at"
-  end
-
   create_table "script_texts", :force => true do |t|
     t.integer "script_id"
-    t.text    "section"
+    t.text    "content"
     t.integer "script_order"
   end
 
   create_table "scripts", :force => true do |t|
     t.string   "name"
-    t.text     "script"
-    t.boolean  "active",                              :default => true
+    t.boolean  "active",                             :default => true
     t.integer  "account_id"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-    t.text     "voter_fields",  :limit => 2147483647
-    t.boolean  "robo",                                :default => false
-    t.boolean  "for_voicemail"
-  end
-
-  create_table "seos", :force => true do |t|
-    t.string   "action"
-    t.string   "controller"
-    t.string   "crmkey"
-    t.string   "title"
-    t.string   "keywords"
-    t.string   "description"
-    t.text     "content",     :limit => 2147483647
-    t.boolean  "active"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-    t.string   "version"
+    t.datetime "created_at",                                           :null => false
+    t.datetime "updated_at",                                           :null => false
+    t.text     "voter_fields", :limit => 2147483647
   end
 
   create_table "simulated_values", :force => true do |t|
     t.integer  "campaign_id"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",           :null => false
+    t.datetime "updated_at",           :null => false
     t.float    "best_dials"
     t.float    "best_conversation"
     t.float    "longest_conversation"
     t.float    "best_wrapup_time"
+  end
+
+  create_table "temp_voter_lists", :force => true do |t|
+    t.string   "name"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
   end
 
   create_table "transfer_attempts", :force => true do |t|
@@ -447,8 +402,8 @@ ActiveRecord::Schema.define(:version => 20120822072207) do
     t.datetime "connecttime"
     t.string   "sid"
     t.string   "session_key"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",        :null => false
+    t.datetime "updated_at",        :null => false
     t.string   "transfer_type"
     t.float    "tPrice"
     t.string   "tStatus"
@@ -468,8 +423,8 @@ ActiveRecord::Schema.define(:version => 20120822072207) do
     t.string   "phone_number"
     t.string   "transfer_type"
     t.integer  "script_id"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",    :null => false
+    t.datetime "updated_at",    :null => false
   end
 
   create_table "users", :force => true do |t|
@@ -478,8 +433,8 @@ ActiveRecord::Schema.define(:version => 20120822072207) do
     t.string   "orgname"
     t.string   "email"
     t.boolean  "active",              :default => true
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",                            :null => false
+    t.datetime "updated_at",                            :null => false
     t.string   "hashed_password"
     t.string   "salt"
     t.string   "password_reset_code"
@@ -491,11 +446,16 @@ ActiveRecord::Schema.define(:version => 20120822072207) do
   create_table "voter_lists", :force => true do |t|
     t.string   "name"
     t.string   "account_id"
-    t.boolean  "active",      :default => true
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.boolean  "active",             :default => true
+    t.datetime "created_at",                           :null => false
+    t.datetime "updated_at",                           :null => false
     t.integer  "campaign_id"
-    t.boolean  "enabled",     :default => true
+    t.boolean  "enabled",            :default => true
+    t.string   "separator"
+    t.text     "headers"
+    t.text     "csv_to_system_map"
+    t.text     "s3path"
+    t.string   "uploaded_file_name"
   end
 
   add_index "voter_lists", ["account_id", "name"], :name => "index_voter_lists_on_user_id_and_name", :unique => true
@@ -513,8 +473,8 @@ ActiveRecord::Schema.define(:version => 20120822072207) do
     t.integer  "campaign_id"
     t.integer  "account_id"
     t.boolean  "active",                 :default => true
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",                                       :null => false
+    t.datetime "updated_at",                                       :null => false
     t.string   "status",                 :default => "not called"
     t.integer  "voter_list_id"
     t.boolean  "call_back",              :default => false
@@ -544,11 +504,10 @@ ActiveRecord::Schema.define(:version => 20120822072207) do
   add_index "voters", ["attempt_id"], :name => "index_voters_on_attempt_id"
   add_index "voters", ["caller_session_id"], :name => "index_voters_on_caller_session_id"
   add_index "voters", ["campaign_id", "active", "status", "call_back"], :name => "index_voters_on_campaign_id_and_active_and_status_and_call_back"
+  add_index "voters", ["campaign_id", "enabled", "priority", "status"], :name => "index_priority_voters"
   add_index "voters", ["campaign_id", "status", "id"], :name => "index_voters_on_campaign_id_and_status_and_id"
   add_index "voters", ["campaign_id", "status", "last_call_attempt_time"], :name => "voters_campaign_status_time"
-  add_index "voters", ["campaign_id", "status"], :name => "index_voters_on_campaign_id_and_status"
   add_index "voters", ["campaign_id"], :name => "index_voters_on_campaign_id"
-  add_index "voters", ["enabled", "campaign_id", "last_call_attempt_time", "status"], :name => "voters_enabled_campaign_time_status"
   add_index "voters", ["status"], :name => "index_voters_on_status"
   add_index "voters", ["voter_list_id"], :name => "index_voters_on_voter_list_id"
 

@@ -6,8 +6,6 @@ describe User do
     user
   end
 
-  it { should validate_uniqueness_of(:email).with_message(/is already in use/) }
-  
   it "should not allow spambots" do
     u = User.new(:captcha =>"something")
     u.save
@@ -51,7 +49,7 @@ describe User do
   end
 
   it "delegates the domain to the account" do
-    account = Factory(:account, :domain => 'foo.com')
+    account = Factory(:account, :domain_name => 'foo.com')
     user.update_attribute(:account, account)
     user.domain.should == 'foo.com'
   end

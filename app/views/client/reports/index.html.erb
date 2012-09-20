@@ -1,4 +1,14 @@
 <h1>Reports</h1>
-<%= render :partial => 'campaign_reports' %>
-<br/>
-<%= render :partial => 'caller_reports' %>
+<% if @account.campaigns.empty? %>
+   <p>You haven't created any campaigns yet.</p>
+<% else %>
+  <%= render :partial => 'campaign_reports' %>
+  <p><a href="<%= account_campaigns_usage_client_reports_path(:id => @account.id) %>">View usage by campaign</a></p>
+<% end %>
+
+<% if @account.callers.empty? %>
+  <p>You haven't created any callers yet.</p>
+<% else %>
+  <%= render :partial => 'caller_reports' %>
+  <p><a href="<%= account_callers_usage_client_reports_path(:id => @account.id) %>">View usage by caller</a></p>
+<% end %>

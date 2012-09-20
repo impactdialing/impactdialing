@@ -1,0 +1,41 @@
+<%= render "shared/error_messages", :target => @caller %>
+<%= form_for @caller, url: "#{client_callers_path}/#{@caller.id}" do |f| -%>
+  <fieldset>
+  <legend>Settings</legend>
+  <% if @caller.is_phones_only? %>
+    <%= render :partial => 'phones_only_caller', :locals => {:f => f} %>
+  <% else %>
+    <%= render :partial => 'web_ui_caller', :locals => {:f => f} %>
+  <% end %>
+  <p>
+    <%= f.label :caller_group %>
+    <%= f.select :caller_group_id,
+                 options_from_collection_for_select(@caller_groups, :id, :name, @caller.caller_group_id),
+                 {:include_blank => '(None)'},
+                 {:onchange => 'hideCampaignsIfCallerGroup()'} %>
+  </p>
+  <p id='campaigns'>
+    <label>Campaign</label>
+    <%= f.select("campaign_id", @campaigns.try(:collect){|c| [ c.name, c.id ]}) %>
+  </p>
+  <%= f.hidden_field :active %>
+  </fieldset>
+  <div class="buttons">
+    <button type="submit">Save</button>
+  </div>
+<% end %>
+
+<script>
+  function hideCampaignsIfCallerGroup() {
+    if ($('#caller_caller_group_id').val() != '') {
+      $('#campaigns').hide();
+    }
+    else {
+      $('#campaigns').show();
+    }
+  };
+
+  $(document).ready(function() {
+    hideCampaignsIfCallerGroup();
+  });
+</script>
