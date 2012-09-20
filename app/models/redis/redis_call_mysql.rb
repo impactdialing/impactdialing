@@ -19,7 +19,7 @@ class RedisCallMysql
     puts redis_voter
     begin
       voter.update_attributes(redis_voter)
-    rescue Exception => e
+    rescue ActiveRecord::StaleObjectError => e
       RedisConnection.common_connection.rpush('connected_call_notification', {identity: voter.id, event: "update_voter"}.to_json)
     end
     RedisVoter.delete(voter_id)
@@ -28,7 +28,12 @@ class RedisCallMysql
   def self.update_caller_session(caller_session_id)
     caller_session = CallerSession.find(caller_session_id)
     redis_caller_session = RedisCallerSession.read(caller_session_id)
-    caller_session.update_attributes(redis_caller_session)  
+    begin      
+      caller_session.update_attributes(redis_caller_session)
+    rescue ActiveRecord::StaleObjectError => e
+      RedisConnection.common_connection.rpush('connected_call_notification', {identity: caller_session.id, event: "update_caller_session"}.to_json)
+    end
+    RedisCallerSession.delete(caller_session.id)  
   end
   
   
