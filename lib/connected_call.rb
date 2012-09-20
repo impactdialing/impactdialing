@@ -30,7 +30,7 @@ module Connected
       RedisCallMysql.call_completed(call_attempt_id)            
     end    
     
-    def update_voter(voter_id)
+    def self.update_voter(voter_id)
       RedisCallMysql.update_voter(voter_id)
     end
     
