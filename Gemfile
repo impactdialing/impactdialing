@@ -1,5 +1,6 @@
 source :rubygems
 
+ruby '1.9.3'
 
 gem 'rails', '~> 3.2.8'
 gem 'thin', '~>1.3.1'
@@ -39,7 +40,7 @@ gem "hiredis", "~>0.4.5"
 gem "formtastic", "~>2.2.1"
 gem "cocoon", "~>1.0.22"
 gem 'deep_cloneable', '~> 1.4.0'
-gem "resque-multi-job-forks"
+
 
 group :development, :test do
   gem 'rspec'

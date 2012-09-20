@@ -116,7 +116,7 @@ class CallAttempt < ActiveRecord::Base
   def end_answered_call
     begin
       update_attributes(call_end: Time.now)
-      voter.update_attributes(last_call_attempt_time:  Time.now, caller_session: nil)
+      voter.update_attributes(last_call_attempt_time:  Time.now, caller_session: nil, status: CallAttempt::Status::SUCCESS)
     rescue ActiveRecord::StaleObjectError
       voter_to_update = Voter.find(voter.id)
       voter_to_update.update_attributes(last_call_attempt_time:  Time.now, caller_session: nil)
@@ -167,12 +167,6 @@ class CallAttempt < ActiveRecord::Base
     
   def disconnect_call
     update_attributes(status: CallAttempt::Status::SUCCESS, recording_duration: call.recording_duration, recording_url: call.recording_url)
-    begin
-      voter.update_attribute(:status, CallAttempt::Status::SUCCESS)
-    rescue ActiveRecord::StaleObjectError
-      voter_to_update = Voter.find(voter.id)
-      voter_to_update.update_attribute(:status, CallAttempt::Status::SUCCESS)
-    end
   end
   
   
