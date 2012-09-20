@@ -119,13 +119,13 @@ class Call < ActiveRecord::Base
       
       
       state :wrapup_and_continue do 
-        before(:always) { wrapup_now; call_attempt.redirect_caller; call_attempt.publish_moderator_response_submited }
+        before(:always) { wrapup_now; call_attempt.redirect_caller }
         after(:success){ persist_all_states}
       end
       
       state :wrapup_and_stop do
         before(:always) { wrapup_now; end_caller_session }        
-        after(:success){ persist_all_states;; call_attempt.publish_moderator_response_submited}
+        after(:success){ persist_all_states;}
       end
             
   end 

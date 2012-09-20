@@ -225,8 +225,13 @@ class Campaign < ActiveRecord::Base
   end
   
   def leads_available_now
-    all_voters.enabled.avialable_to_be_retried(recycle_rate).count + all_voters.scheduled.count + all_voters.by_status(CallAttempt::Status::ABANDONED).count
+    sanitize_dials(all_voters.enabled.avialable_to_be_retried(recycle_rate).count + all_voters.scheduled.count + all_voters.by_status(CallAttempt::Status::ABANDONED).count)
   end
+  
+  def self.sanitize_dials(dial_count)
+    dial_count.nil? ? 0 : dial_count
+  end
+    
 
 
 end

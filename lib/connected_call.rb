@@ -17,33 +17,52 @@ module Connected
     def self.next
       redis.blpop('connected_call_notification', 0).callback do |list, data|
         notification = JSON.parse(data)        
-        call_attempt_id = notification.delete('call_attempt_id')
+        identity = notification.delete('identity')
         event = notification.delete('event')
-        self.send(event, call_attempt_id)
+        self.send(event, identity)
         EM.next_tick(&method(:next))   
       end      
     end
     
     def self.call_connected(call_attempt_id)
       call_attempt = CallAttempt.find(call_attempt_id)
+      redis_call_attempt = RedisCallAttempt.read(call_attempt_id)
       campaign = call_attempt.campaign
-      RedisCampaignCall.move_ringing_to_inprogress(campaign.id, call_attempt.id)
-      # MonitorEvent.incoming_call_request(campaign)      
+      MonitorEvent.incoming_call_request(campaign)      
+      MonitorEvent.voter_connected(campaign) 
+      MonitorEvent.create_caller_notification(campaign.id, redis_call_attempt['caller_session_id'], redis_call_attempt["status"])      
     end
     
     def self.end_answered_call(call_attempt_id)
       call_attempt = CallAttempt.find(call_attempt_id)
+      redis_call_attempt = RedisCallAttempt.read(call_attempt_id)
       campaign = call_attempt.campaign            
-      RedisCampaignCall.move_inprogress_to_wrapup(campaign.id, call_attempt.id)      
+      MonitorEvent.voter_disconnected(campaign)
+      MonitorEvent.create_caller_notification(campaign.id, redis_call_attempt['caller_session_id'], redis_call_attempt["status"])  
     end    
     
     def self.wrapup(call_attempt_id)
       call_attempt = CallAttempt.find(call_attempt_id)
       campaign = call_attempt.campaign                  
-      RedisCallMysql.call_completed(call_attempt.id)      
-      RedisCampaignCall.move_wrapup_to_completed(campaign.id, call_attempt.id)      
-      # MonitorEvent.voter_response_submitted(campaign)
+      redis_call_attempt = RedisCallAttempt.read(call_attempt_id)
+      MonitorEvent.voter_response_submitted(campaign)
+      MonitorEvent.create_caller_notification(campaign.id, redis_call_attempt['caller_session_id'], "On hold")
+      RedisCallMysql.call_completed(call_attempt.id)            
     end    
+    
+    def self.caller_connected(caller_session_id)
+      caller_session = CallerSession.find(caller_session_id)
+      campaign = caller_session.campaign
+      MonitorEvent.caller_connected(campaign)
+      MonitorEvent.create_caller_notification(campaign.id, caller_session.id, "caller_connected", "add_caller")    
+    end
+    
+    def self.caller_disconnected(caller_session_id)
+      caller_session = CallerSession.find(caller_session_id)
+      campaign = caller_session.campaign
+      MonitorEvent.caller_disconnected(campaign)
+      MonitorEvent.create_caller_notification(campaign.id, caller_session.id, "caller_disconnected", "remove_caller")
+    end
     
     
   end

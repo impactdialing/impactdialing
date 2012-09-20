@@ -55,6 +55,10 @@ class RedisCampaignCall
     wrapup(campaign_id).rangebyscore((Time.now.to_i-average_wrapup_length-15), (Time.now.to_i-average_wrapup_length)).length
   end
   
+  def self.stats(campaign_id)
+    {ringing_lines: ringing_lines(campaign_id).length, wrapup: wrapup(campaign_id).length, live_lines: inprogress(campaign_id).length}
+  end
+  
   
   def self.zmove(set1, set2, score, element)
     $redis_dialer_connection.multi do

@@ -110,8 +110,10 @@ describe CallerSession do
   describe "disconnected" do
     it "should say session is disconnected when caller is not available and not on call" do
       call_attempt = Factory(:call_attempt)
-      caller_session = Factory(:caller_session, on_call: false, available_for_call: false, attempt_in_progress: call_attempt)
-      RedisCallerSession.load_caller_session_info(caller_session.id, caller_session)      
+      campaign = Factory(:campaign)
+      caller_session = Factory(:caller_session, on_call: false, available_for_call: false, attempt_in_progress: call_attempt, campaign: campaign)
+      RedisCaller.add_caller(campaign.id, caller_session.id)
+      RedisCaller.disconnect_caller(campaign.id, caller_session.id)
       caller_session.disconnected?.should be_true
     end
 

@@ -114,6 +114,10 @@ class RedisCaller
     callers.empty? ? nil : callers.first
   end
   
+  def stats(campaign_id)
+    {callers_logged_in: logged_in(campaign_id).length, on_call: on_call(campaign_id).length, on_hold: on_hold(campaign_id).length, }
+  end
+  
   def self.zmove(set1, set2, score, element)
     $redis_dialer_connection.multi do
       set1.delete(element)
