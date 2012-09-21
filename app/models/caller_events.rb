@@ -19,11 +19,6 @@ module CallerEvents
           caller_deferrable.callback {EM.stop}
           caller_deferrable.errback { |error| EM.stop}
         end
-        Resque.enqueue(ModeratorCallerJob, self.id, "publish_caller_conference_started_moderator_voter_event")
-        Resque.enqueue(ModeratorCallerJob, self.id, "publish_caller_conference_started_moderator_dials")
-        diff = (Time.now - now)* 1000
-        puts "Caller conf started - #{diff}"    
-        
       }   
       
     end
@@ -51,15 +46,11 @@ module CallerEvents
     
     def publish_calling_voter
       EM.run {
-              now = Time.now
         unless caller.is_phones_only? 
           caller_deferrable = Pusher[session_key].trigger_async('calling_voter', {})
           caller_deferrable.callback {EM.stop}
           caller_deferrable.errback { |error|EM.stop }
         end
-        Resque.enqueue(ModeratorCallerJob, self.id, "publish_calling_voter_moderator")
-        diff = (Time.now - now) * 1000
-        puts "Calling voter - #{diff}"    
         
       }
       

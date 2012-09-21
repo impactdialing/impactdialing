@@ -8,15 +8,12 @@ module LeadEvents
     def publish_voter_connected            
       unless caller_session.nil?
         EM.run {
-          now = Time.now
           if !caller.is_phones_only? && !caller_session.nil?
             event_hash = campaign.voter_connected_event(self.call)        
             caller_deferrable = Pusher[caller_session.session_key].trigger_async(event_hash[:event], event_hash[:data].merge!(:dialer => campaign.type))
             caller_deferrable.callback {EM.stop}
             caller_deferrable.errback { |error| EM.stop }
           end
-          diff = (Time.now - now)* 1000
-          puts "Voter Connected - #{diff}"          
           }
       end
       Resque.enqueue(ModeratorCallJob, self.id, "publish_voter_connected_moderator")
