@@ -28,7 +28,7 @@ class CallerController < ApplicationController
   def call_voter
     caller = Caller.find(params[:id])
     caller_session = caller.caller_sessions.find(params[:session_id]) 
-    Resque.enqueue(CallerPusherJob, caller_sessions.id, "publish_calling_voter")   
+    Resque.enqueue(CallerPusherJob, caller_session.id, "publish_calling_voter")   
     caller_session.dial_em(Voter.find(params[:voter_id])) unless params[:voter_id].blank?
     render :nothing => true
   end
