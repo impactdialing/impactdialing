@@ -21,6 +21,22 @@ heroku_preproduction:
   public_host: www.beta.impactdialing.com
   phone: 8886215779
   port: 80
+
+heroku_caller:
+  <<: *default_settings
+  host: twiliopandahiphoperaser.impactdialing.com
+  port: 80
+
+heroku_phonesonly:
+  <<: *default_settings
+  host: twiliopandahiphoperaser.impactdialing.com
+  port: 80
+
+
+heroku_caller:
+  <<: *default_settings
+  host: admin.impactdialing.com
+  port: 80
   
 
 staging:
