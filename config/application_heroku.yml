@@ -24,3 +24,11 @@ staging:
 preproduction:
   <<: *default_settings
   host: preprod.impactdialing.com
+
+caller:
+  <<: *default_settings
+  host: caller.impactdialing.com
+
+phonesonly:
+  <<: *default_settings
+  host: phonesonlycolorfulpower.impactdialing.com
