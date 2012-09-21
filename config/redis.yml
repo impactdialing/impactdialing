@@ -8,4 +8,4 @@ heroku_staging:
   redis://10.254.238.226:6379    
   
 heroku:
-  redis://redistogo:acc06af2ea8dfd06606c3e641fe0febd@koi.redistogo.com:9090
+  redis://10.140.76.223:6379
