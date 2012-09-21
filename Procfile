@@ -14,4 +14,5 @@ debit_worker_job: rake environment resque:work QUEUE=debit_worker_job
 redirect_caller_job: rake environment resque:work QUEUE=redirect_caller_job
 call_pusher_job: rake environment resque:work QUEUE=call_pusher_job
 caller_pusher_job: rake environment resque:work QUEUE=caller_pusher_job
+power_preview_dial_job: rake environment resque:work QUEUE=power_preview_dial_job
 
