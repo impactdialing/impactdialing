@@ -1,7 +1,7 @@
 require 'em-http-request'
 
 class PreviewPowerDialJob
-  Resque::Plugins::Timeout.timeout = 2
+  Resque::Plugins::Timeout.timeout = 10
   @queue = :preview_power_dial_job
   
   def self.perform(caller_session_id, voter_id)    
