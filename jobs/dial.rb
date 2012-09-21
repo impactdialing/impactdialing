@@ -7,7 +7,6 @@ class Dial
   def self.perform(campaign_id, voter_ids)
     campaign = Campaign.find(campaign_id)     
     voters_to_dial = Voter.where("id in (?)" ,voter_ids)
-    campaign.decrement_campaign_dial_count(voters_to_dial.size)
     begin
       EM.synchrony do
         concurrency = 10        

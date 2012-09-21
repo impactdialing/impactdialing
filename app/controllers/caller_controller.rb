@@ -29,10 +29,17 @@ class CallerController < ApplicationController
 
   def call_voter
     caller = Caller.find(params[:id])
+<<<<<<< HEAD
     caller_session = caller.caller_sessions.find(params[:session_id])    
     voter = RedisVoter.read(params[:voter_id])
     caller_session.publish_calling_voter
     Twillio.dial(voter, caller_session)
+=======
+    caller_session = caller.caller_sessions.find(params[:session_id]) 
+    Resque.enqueue(CallerPusherJob, caller_session.id, "publish_calling_voter")   
+    Resque.enqueue(PreviewPowerDialJob, caller_session.id, params[:voter_id]) unless params[:voter_id].blank?
+
+>>>>>>> em
     render :nothing => true
   end
 

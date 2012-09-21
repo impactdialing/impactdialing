@@ -45,6 +45,7 @@ heroku_staging:
     monitor_mode: true
     app_name: 'Background Jobs'
     transaction_tracer:
+<<<<<<< HEAD
         enabled: false        
         
 heroku_preproduction:
@@ -69,4 +70,6 @@ heroku_preproduction:
     monitor_mode: true
     app_name: 'Background Jobs'
     transaction_tracer:
+=======
+>>>>>>> em
         enabled: false        
