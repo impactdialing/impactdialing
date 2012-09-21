@@ -21,7 +21,7 @@ module LeadEvents
             moderator_deferrable.callback {}
             moderator_deferrable.errback { |error| }          
           end              
-          diff = (Time.now - now)/1000
+          diff = (Time.now - now)* 1000
           puts "Voter Connected - #{diff}"
           
            }
@@ -43,7 +43,7 @@ module LeadEvents
             moderator_deferrable.callback {}
             moderator_deferrable.errback { |error|  puts error.inspect}          
           end              
-          diff = (Time.now - now)/1000
+          diff = (Time.now - now)* 1000
           puts "Voter DisConnected - #{diff}"
           
         }   
@@ -61,7 +61,7 @@ module LeadEvents
             moderator_deferrable.callback {}
             moderator_deferrable.errback { |error| }          
           end              
-          diff = (Time.now - now)/1000
+          diff = (Time.now - now)* 1000
           puts "Voter Response Submitted - #{diff}"    
           
         }   
