@@ -236,8 +236,9 @@ class CallerSession < ActiveRecord::Base
         else
           call_attempt.update_attributes(:sid => response["sid"])
         end
+        EM.stop
          }
-      http.errback {}            
+      http.errback {EM.stop}            
     end
   end
   
