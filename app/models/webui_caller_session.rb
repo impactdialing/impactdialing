@@ -9,7 +9,7 @@ class WebuiCallerSession < CallerSession
             
       state :connected do                
         before(:always) { publish_start_calling; start_conference }
-        after(:success) { publish_caller_conference_started }
+        after(:success) { Resque.enqueue(CallerPusherJob, self.id, "publish_caller_conference_started") }
         event :pause_conf, :to => :disconnected, :if => :disconnected?
         event :pause_conf, :to => :paused, :if => :call_not_wrapped_up?
         event :start_conf, :to => :connected
@@ -70,8 +70,10 @@ class WebuiCallerSession < CallerSession
     EM.run {
       deferrable = Pusher[session_key].trigger_async(event, data.merge!(:dialer => campaign.type))
       deferrable.callback { 
+        EM.stop
         }
       deferrable.errback { |error|
+        EM.stop
       }
     }
        
