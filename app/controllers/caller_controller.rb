@@ -29,7 +29,7 @@ class CallerController < ApplicationController
     caller = Caller.find(params[:id])
     caller_session = caller.caller_sessions.find(params[:session_id]) 
     Resque.enqueue(CallerPusherJob, caller_session.id, "publish_calling_voter")   
-    Resque.enqueue(PowerPreviewDialJob, caller_session.id, params[:voter_id])) unless params[:voter_id].blank?
+    Resque.enqueue(PowerPreviewDialJob, caller_session.id, params[:voter_id]) unless params[:voter_id].blank?
 
     render :nothing => true
   end
