@@ -10,8 +10,9 @@ module CallerEvents
     end    
     
     def publish_caller_conference_started
-      now = Time.now
+
       EM.run {
+              now = Time.now
         unless caller.is_phones_only? 
           event_hash = campaign.caller_conference_started_event(voter_in_progress.try(:id))     
           caller_deferrable = Pusher[session_key].trigger_async(event_hash[:event], event_hash[:data].merge!(:dialer => campaign.type))
@@ -26,15 +27,17 @@ module CallerEvents
           moderator_voter_deferrable.errback { |error| }          
           moderator_dials_deferrable.errback { |error| }          
         end              
+        diff = (Time.now - now)/1000
+        puts "Caller conf started - #{diff}"    
+        
       }   
-      diff = (Time.now - now)/1000
-      puts "Caller conf started - #{diff}"    
       
     end
     
     def publish_calling_voter
-      now = Time.now
+
       EM.run {
+              now = Time.now
         unless caller.is_phones_only? 
           caller_deferrable = Pusher[session_key].trigger_async('calling_voter', {})
           caller_deferrable.callback {}
@@ -45,9 +48,10 @@ module CallerEvents
           moderator_dials_deferrable.callback {}
           moderator_dials_deferrable.errback { |error| }          
         end              
+        diff = (Time.now - now)/1000
+        puts "Calling voter - #{diff}"    
+        
       }
-      diff = (Time.now - now)/1000
-      puts "Calling voter - #{diff}"    
       
     end
     
