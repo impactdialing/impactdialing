@@ -27,7 +27,7 @@ module CallerEvents
           moderator_voter_deferrable.errback { |error| }          
           moderator_dials_deferrable.errback { |error| }          
         end              
-        diff = (Time.now - now)/1000
+        diff = (Time.now - now)* 1000
         puts "Caller conf started - #{diff}"    
         
       }   
@@ -48,7 +48,7 @@ module CallerEvents
           moderator_dials_deferrable.callback {}
           moderator_dials_deferrable.errback { |error| }          
         end              
-        diff = (Time.now - now)/1000
+        diff = (Time.now - now) * 1000
         puts "Calling voter - #{diff}"    
         
       }
