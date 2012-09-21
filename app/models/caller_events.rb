@@ -19,14 +19,14 @@ module CallerEvents
           caller_deferrable.callback {}
           caller_deferrable.errback { |error| }
         end
-        Moderator.active_moderators(campaign).each do |moderator|
-          moderator_voter_deferrable = Pusher[moderator.session].trigger_async('voter_event', {caller_session_id:  id, campaign_id:  campaign.id, caller_id:  caller.id, call_status: attempt_in_progress.try(:status)})      
-          moderator_dials_deferrable = Pusher[moderator.session].trigger_async('update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
-          moderator_voter_deferrable.callback {}
-          moderator_dials_deferrable.callback {}
-          moderator_voter_deferrable.errback { |error| }          
-          moderator_dials_deferrable.errback { |error| }          
-        end              
+        # Moderator.active_moderators(campaign).each do |moderator|
+        #   moderator_voter_deferrable = Pusher[moderator.session].trigger_async('voter_event', {caller_session_id:  id, campaign_id:  campaign.id, caller_id:  caller.id, call_status: attempt_in_progress.try(:status)})      
+        #   moderator_dials_deferrable = Pusher[moderator.session].trigger_async('update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
+        #   moderator_voter_deferrable.callback {}
+        #   moderator_dials_deferrable.callback {}
+        #   moderator_voter_deferrable.errback { |error| }          
+        #   moderator_dials_deferrable.errback { |error| }          
+        # end              
         diff = (Time.now - now)* 1000
         puts "Caller conf started - #{diff}"    
         
@@ -43,11 +43,11 @@ module CallerEvents
           caller_deferrable.callback {}
           caller_deferrable.errback { |error| }
         end
-        Moderator.active_moderators(campaign).each do |moderator|
-          moderator_dials_deferrable = Pusher[moderator.session].trigger_async('update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
-          moderator_dials_deferrable.callback {}
-          moderator_dials_deferrable.errback { |error| }          
-        end              
+        # Moderator.active_moderators(campaign).each do |moderator|
+        #   moderator_dials_deferrable = Pusher[moderator.session].trigger_async('update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
+        #   moderator_dials_deferrable.callback {}
+        #   moderator_dials_deferrable.errback { |error| }          
+        # end              
         diff = (Time.now - now) * 1000
         puts "Calling voter - #{diff}"    
         

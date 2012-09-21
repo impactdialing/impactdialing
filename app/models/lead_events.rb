@@ -16,11 +16,11 @@ module LeadEvents
             caller_deferrable.callback {}
             caller_deferrable.errback { |error| }
           end
-          Moderator.active_moderators(campaign).each do |moderator|
-            moderator_deferrable = Pusher[moderator.session].trigger_async('voter_event', {caller_session_id:  caller_session.id, campaign_id:  campaign.id, caller_id:  caller_session.caller.id, call_status: caller_session.attempt_in_progress.try(:status)})      
-            moderator_deferrable.callback {}
-            moderator_deferrable.errback { |error| }          
-          end              
+          # Moderator.active_moderators(campaign).each do |moderator|
+          #   moderator_deferrable = Pusher[moderator.session].trigger_async('voter_event', {caller_session_id:  caller_session.id, campaign_id:  campaign.id, caller_id:  caller_session.caller.id, call_status: caller_session.attempt_in_progress.try(:status)})      
+          #   moderator_deferrable.callback {}
+          #   moderator_deferrable.errback { |error| }          
+          # end              
           diff = (Time.now - now)* 1000
           puts "Voter Connected - #{diff}"
           
@@ -38,11 +38,11 @@ module LeadEvents
             caller_deferrable.callback {}
             caller_deferrable.errback { |error| puts error.inspect}
           end
-          Moderator.active_moderators(campaign).each do |moderator|
-            moderator_deferrable = Pusher[moderator.session].trigger_async('voter_event', {caller_session_id:  caller_session.id, campaign_id:  campaign.id, caller_id:  caller_session.caller.id, call_status: caller_session.attempt_in_progress.try(:status)})      
-            moderator_deferrable.callback {}
-            moderator_deferrable.errback { |error|  puts error.inspect}          
-          end              
+          # Moderator.active_moderators(campaign).each do |moderator|
+          #   moderator_deferrable = Pusher[moderator.session].trigger_async('voter_event', {caller_session_id:  caller_session.id, campaign_id:  campaign.id, caller_id:  caller_session.caller.id, call_status: caller_session.attempt_in_progress.try(:status)})      
+          #   moderator_deferrable.callback {}
+          #   moderator_deferrable.errback { |error|  puts error.inspect}          
+          # end              
           diff = (Time.now - now)* 1000
           puts "Voter DisConnected - #{diff}"
           
@@ -56,11 +56,11 @@ module LeadEvents
       unless caller_session.nil?
         EM.run {
                 now = Time.now
-          Moderator.active_moderators(campaign).each do |moderator|
-            moderator_deferrable = Pusher[moderator.session].trigger_async('voter_event', {caller_session_id:  caller_session.id, campaign_id:  campaign.id, caller_id:  caller_session.caller.id, call_status: caller_session.attempt_in_progress.try(:status)})      
-            moderator_deferrable.callback {}
-            moderator_deferrable.errback { |error| }          
-          end              
+          # Moderator.active_moderators(campaign).each do |moderator|
+          #   moderator_deferrable = Pusher[moderator.session].trigger_async('voter_event', {caller_session_id:  caller_session.id, campaign_id:  campaign.id, caller_id:  caller_session.caller.id, call_status: caller_session.attempt_in_progress.try(:status)})      
+          #   moderator_deferrable.callback {}
+          #   moderator_deferrable.errback { |error| }          
+          # end              
           diff = (Time.now - now)* 1000
           puts "Voter Response Submitted - #{diff}"    
           
