@@ -13,3 +13,9 @@ heroku_preproduction:
   
 heroku:
   redis://10.140.76.223:6379
+
+heroku_caller:
+  redis://10.140.76.223:6379
+
+heroku_phonesonly:
+  redis://10.140.76.223:6379
