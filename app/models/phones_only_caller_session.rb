@@ -8,7 +8,7 @@ class PhonesOnlyCallerSession < CallerSession
       
       
       state :read_choice do     
-        after(:always)  {publish_moderator_conference_started}    
+        after(:always)  {Resque.enqueue(ModeratorCallerJob, self.id, "publish_moderator_conference_started")}    
         event :read_instruction_options, :to => :instructions_options, :if => :pound_selected?
         event :read_instruction_options, :to => :ready_to_call, :if => :star_selected?
         event :read_instruction_options, :to => :read_choice
@@ -22,7 +22,7 @@ class PhonesOnlyCallerSession < CallerSession
       end
       
       state :ready_to_call do  
-        after(:always)  {publish_moderator_conference_started}    
+        after(:always)  {Resque.enqueue(ModeratorCallerJob, self.id, "publish_moderator_conference_started")}    
         event :start_conf, :to => :account_has_no_funds, :if => :funds_not_available?
         event :start_conf, :to => :time_period_exceeded, :if => :time_period_exceeded?
         event :start_conf, :to => :reassigned_campaign, :if => :caller_reassigned_to_another_campaign?
@@ -89,7 +89,7 @@ class PhonesOnlyCallerSession < CallerSession
       
       
       state :conference_started_phones_only do
-        before(:always) {start_conference; dial_em(voter_in_progress)}
+        before(:always) {start_conference; Resque.enqueue(PreviewPowerDialJob, self.id, voter_in_progress.id) }
         event :gather_response, :to => :read_next_question, :if => :call_answered?
         event :gather_response, :to => :wrapup_call
         
@@ -126,7 +126,7 @@ class PhonesOnlyCallerSession < CallerSession
       end
       
       state :read_next_question do
-        after(:always) {publish_moderator_gathering_response}
+        after(:always) {Resque.enqueue(ModeratorCallerJob, self.id, "publish_moderator_gathering_response")}
         event :submit_response, :to => :disconnected, :if => :disconnected?
         event :submit_response, :to => :wrapup_call, :if => :skip_all_questions?
         event :submit_response, :to => :voter_response
@@ -178,7 +178,7 @@ class PhonesOnlyCallerSession < CallerSession
   end
   
   def publish_moderator_gathering_response
-    attempt_in_progress.publish_moderator_response_submited
+    Resque.enqueue(ModeratorCallJob, attempt_in_progress.id, "publish_moderator_response_submited")    
   end
   
   def unanswered_question
