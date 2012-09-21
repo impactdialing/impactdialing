@@ -7,7 +7,7 @@ module Client
 
 
     def load_campaign
-      @campaign = Campaign.find(params[:campaign_id])
+      @campaign = account.campaigns.find(params[:campaign_id])
     end
 
     def index
@@ -16,14 +16,14 @@ module Client
       @callers = account.callers.active
     end
 
-    
+
     def dials
       @from_date, @to_date = set_date_range(@campaign, params[:from_date], params[:to_date])
       @show_summary = true if params[:from_date].blank? || params[:to_date].blank?
       @dials_report = DialReport.new
       @dials_report.compute_campaign_report(@campaign, @from_date, @to_date)
     end
-    
+
     def account_campaigns_usage
       @account = Account.find(params[:id])
       @campaigns = @account.campaigns
@@ -31,7 +31,7 @@ module Client
       account_usage = AccountUsage.new(@account, @from_date, @to_date)
       @billiable_total = account_usage.billable_usage
     end
-    
+
     def account_callers_usage
       @account = Account.find(params[:id])
       @callers = @account.callers
@@ -42,24 +42,24 @@ module Client
       @final_total = @billiable_total.values.inject(0){|sum,x| sum+x} + sanitize_dials(@status_usage[CallAttempt::Status::ABANDONED]).to_i +
       sanitize_dials(@status_usage[CallAttempt::Status::VOICEMAIL]).to_i + sanitize_dials(@status_usage[CallAttempt::Status::HANGUP]).to_i
     end
-    
-        
+
+
     def usage
       @campaign = current_user.campaigns.find(params[:id])
       @from_date, @to_date = set_date_range(@campaign, params[:from_date], params[:to_date])
       @campaign_usage = CampaignUsage.new(@campaign, @from_date, @to_date)
     end
-    
-    
-    
+
+
+
     def downloaded_reports
       @downloaded_reports = DownloadedReport.active_reports(@campaign.id)
     end
-    
+
     def download_report
       @from_date, @to_date = set_date_range(@campaign, params[:from_date], params[:to_date])
       @voter_fields = VoterList::VOTER_DATA_COLUMNS
-      @custom_voter_fields = @user.account.custom_voter_fields.collect{ |field| field.name}      
+      @custom_voter_fields = @user.account.custom_voter_fields.collect{ |field| field.name}
     end
 
     def download
@@ -76,14 +76,14 @@ module Client
     end
 
     private
-    
-  
-    
+
+
+
     def sanitize(count)
       count.nil? ? 0 : count
     end
-    
-    
+
+
     def not_dialed_voters(range_parameters, total_dials)
       if range_parameters
         @total_voters_count - total_dials
