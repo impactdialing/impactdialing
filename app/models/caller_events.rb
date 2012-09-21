@@ -16,8 +16,8 @@ module CallerEvents
         unless caller.is_phones_only? 
           event_hash = campaign.caller_conference_started_event(voter_in_progress.try(:id))     
           caller_deferrable = Pusher[session_key].trigger_async(event_hash[:event], event_hash[:data].merge!(:dialer => campaign.type))
-          caller_deferrable.callback {}
-          caller_deferrable.errback { |error| }
+          caller_deferrable.callback {EM.stop}
+          caller_deferrable.errback { |error| EM.stop}
         end
         # Moderator.active_moderators(campaign).each do |moderator|
         #   moderator_voter_deferrable = Pusher[moderator.session].trigger_async('voter_event', {caller_session_id:  id, campaign_id:  campaign.id, caller_id:  caller.id, call_status: attempt_in_progress.try(:status)})      
@@ -40,8 +40,8 @@ module CallerEvents
               now = Time.now
         unless caller.is_phones_only? 
           caller_deferrable = Pusher[session_key].trigger_async('calling_voter', {})
-          caller_deferrable.callback {}
-          caller_deferrable.errback { |error| }
+          caller_deferrable.callback {EM.stop}
+          caller_deferrable.errback { |error|EM.stop }
         end
         # Moderator.active_moderators(campaign).each do |moderator|
         #   moderator_dials_deferrable = Pusher[moderator.session].trigger_async('update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
