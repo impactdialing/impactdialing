@@ -42,13 +42,7 @@ class Predictive < Campaign
   end
   
   def dialing_count
-    begin
-      count = Resque.redis.get("dial_count:#{self.id}").to_i
-    rescue Exception => e
-      count = 0
-    end
-    count <=0 ? 0 : count
-    
+    call_attempts.with_status(CallAttempt::Status::DIALING).between(3.seconds.ago, Time.now).size
   end
     
   def number_of_voters_to_dial
@@ -65,12 +59,12 @@ class Predictive < Campaign
   
   def choose_voters_to_dial(num_voters)
     return [] if num_voters < 1
-    priority_voters = all_voters.priority_voters.limit(num_voters)
-    scheduled_voters = all_voters.scheduled.limit(num_voters)
-    num_voters_to_call = (num_voters - (priority_voters.size + scheduled_voters.size))
-    limit_voters = num_voters_to_call <= 0 ? 0 : num_voters_to_call
-    voters =  priority_voters + scheduled_voters + all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.without(account.blocked_numbers.for_campaign(self).map(&:number)).limit(limit_voters)
-    voters[0..num_voters-1]    
+    # scheduled_voters = all_voters.scheduled.limit(num_voters)
+    # num_voters_to_call = (num_voters - (priority_voters.size + scheduled_voters.size))
+    limit_voters = num_voters <= 0 ? 0 : num_voters
+    voters =  all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.without(account.blocked_numbers.for_campaign(self).map(&:number)).limit(limit_voters)
+    voters.update_all(status: CallAttempt::Status::DIALING)
+    voters
   end
   
   

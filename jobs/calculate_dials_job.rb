@@ -21,7 +21,6 @@ class CalculateDialsJob
          return
        end
        voters_to_dial = campaign.choose_voters_to_dial(num_to_call).collect {|voter| voter.id}
-       campaign.increment_campaign_dial_count(voters_to_dial.size)
        if voters_to_dial.size <=10
          Dial.perform(campaign_id, voters_to_dial)
        else
