@@ -116,7 +116,7 @@ class Call < ActiveRecord::Base
       
       
       state :wrapup_and_continue do 
-        before(:always) { wrapup_now; Resque.enqueue(RedirectCallerJob, call_attempt.id)}
+        before(:always) { wrapup_now; Resque.enqueue(RedirectCallerJob, call_attempt.id);Resque.enqueue(ModeratorCallJob, call_attempt.id, "publish_moderator_response_submited") }
         after(:success){ persist_all_states}
       end
       
