@@ -42,7 +42,7 @@ class Predictive < Campaign
   end
   
   def dialing_count
-    call_attempts.with_status(CallAttempt::Status::DIALING).between(3.seconds.ago, Time.now).size
+    call_attempts.with_status(CallAttempt::Status::DIALING).between(10.seconds.ago, Time.now).size
   end
     
   def number_of_voters_to_dial
