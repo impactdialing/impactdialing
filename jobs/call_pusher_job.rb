@@ -1,6 +1,7 @@
 require 'em-http-request'
 
 class CallPusherJob 
+  Resque::Plugins::Timeout.timeout = 2
   @queue = :call_pusher_job
   
    def self.perform(call_attempt_id, event)    
