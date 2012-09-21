@@ -1,7 +1,7 @@
 default: &default_settings
   host: 3ngz.localtunnel.com
   port: 3000
-  phone: 2525732146
+  phone: 4155787571
 
 development:
   phone: 2525732146
