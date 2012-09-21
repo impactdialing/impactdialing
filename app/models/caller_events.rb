@@ -10,36 +10,69 @@ module CallerEvents
     end    
     
     def publish_caller_conference_started
+
       EM.run {
+        now = Time.now
         unless caller.is_phones_only? 
           event_hash = campaign.caller_conference_started_event(voter_in_progress.try(:id))     
           caller_deferrable = Pusher[session_key].trigger_async(event_hash[:event], event_hash[:data].merge!(:dialer => campaign.type))
-          caller_deferrable.callback {}
-          caller_deferrable.errback { |error| }
+          caller_deferrable.callback {EM.stop}
+          caller_deferrable.errback { |error| EM.stop}
         end
+        Resque.enqueue(ModeratorCallerJob, self.id, "publish_caller_conference_started_moderator_voter_event")
+        Resque.enqueue(ModeratorCallerJob, self.id, "publish_caller_conference_started_moderator_dials")
+        diff = (Time.now - now)* 1000
+        puts "Caller conf started - #{diff}"    
+        
+      }   
+      
+    end
+    
+    def publish_caller_conference_started_moderator_voter_event
+      EM.run{
         Moderator.active_moderators(campaign).each do |moderator|
           moderator_voter_deferrable = Pusher[moderator.session].trigger_async('voter_event', {caller_session_id:  id, campaign_id:  campaign.id, caller_id:  caller.id, call_status: attempt_in_progress.try(:status)})      
-          moderator_dials_deferrable = Pusher[moderator.session].trigger_async('update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
-          moderator_voter_deferrable.callback {}
-          moderator_dials_deferrable.callback {}
-          moderator_voter_deferrable.errback { |error| }          
-          moderator_dials_deferrable.errback { |error| }          
-        end              
-      }   
+          moderator_voter_deferrable.callback {EM.stop}
+          moderator_voter_deferrable.errback { |error|EM.stop }          
+        end                      
+      }
     end
+    
+    def publish_caller_conference_started_moderator_dials
+      EM.run{
+        Moderator.active_moderators(campaign).each do |moderator|
+          moderator_dials_deferrable = Pusher[moderator.session].trigger_async('update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
+          moderator_voter_deferrable.callback {EM.stop}
+          moderator_voter_deferrable.errback { |error| EM.stop }          
+        end                      
+      }
+    end
+    
     
     def publish_calling_voter
       EM.run {
+              now = Time.now
         unless caller.is_phones_only? 
           caller_deferrable = Pusher[session_key].trigger_async('calling_voter', {})
-          caller_deferrable.callback {}
-          caller_deferrable.errback { |error| }
+          caller_deferrable.callback {EM.stop}
+          caller_deferrable.errback { |error|EM.stop }
         end
+        Resque.enqueue(ModeratorCallerJob, self.id, "publish_calling_voter_moderator")
+        diff = (Time.now - now) * 1000
+        puts "Calling voter - #{diff}"    
+        
+      }
+      
+    end
+    
+    def publish_calling_voter_moderator
+      EM.run {
         Moderator.active_moderators(campaign).each do |moderator|
           moderator_dials_deferrable = Pusher[moderator.session].trigger_async('update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
-          moderator_dials_deferrable.callback {}
-          moderator_dials_deferrable.errback { |error| }          
+          moderator_dials_deferrable.callback {EM.stop}
+          moderator_dials_deferrable.errback { |error| EM.stop }          
         end              
+        
       }
     end
     
@@ -64,8 +97,8 @@ module CallerEvents
       EM.run {
         Moderator.active_moderators(campaign).each do |moderator|
           moderator_deferrable = Pusher[moderator.session].trigger_async('voter_event', {caller_session_id:  id, campaign_id:  campaign.id, caller_id:  caller.id, call_status: attempt_in_progress.try(:status)})      
-          moderator_deferrable.callback {}
-          moderator_deferrable.errback { |error| }          
+          moderator_deferrable.callback {EM.stop}
+          moderator_deferrable.errback { |error| EM.stop}          
         end              
       }   
       

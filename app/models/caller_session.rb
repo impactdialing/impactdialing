@@ -120,7 +120,7 @@ class CallerSession < ActiveRecord::Base
       
       state :conference_ended do
         before(:always) { end_caller_session}
-        after(:always) { publish_caller_disconnected; publish_moderator_caller_disconnected} 
+        after(:always) {Resque.enqueue(CallerPusherJob, self.id, "publish_caller_disconnected") ; Resque.enqueue(ModeratorCallerJob, self.id, "publish_moderator_caller_disconnected")} 
         response do |xml_builder, the_call|
           xml_builder.Hangup
         end        
@@ -236,8 +236,9 @@ class CallerSession < ActiveRecord::Base
         else
           call_attempt.update_attributes(:sid => response["sid"])
         end
+        EM.stop
          }
-      http.errback {}            
+      http.errback {EM.stop}            
     end
   end
   

@@ -3,7 +3,6 @@
 .idea/*
 ._*
 config/database.yml
-config/application.yml
 simulator/database.yml
 coverage/
 tmp
@@ -18,4 +17,3 @@ bin/
 spec/fixtures/test_tmp/
 /typescript
 .bundle
-/config/application .yml
