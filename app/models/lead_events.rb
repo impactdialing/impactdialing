@@ -6,6 +6,7 @@ module LeadEvents
   module InstanceMethods
     
     def publish_voter_connected      
+      now = Time.now
       unless caller_session.nil?
         EM.run {
           if !caller.is_phones_only? && !caller_session.nil?
@@ -21,9 +22,12 @@ module LeadEvents
           end              
            }
       end
+      diff = (Time.now - now)/1000
+      puts "Voter Connected - #{diff}"
     end    
     
     def publish_voter_disconnected
+      now = Time.now
       unless caller_session.nil?
         EM.run {
           unless caller_session.caller.is_phones_only?      
@@ -38,9 +42,13 @@ module LeadEvents
           end              
         }   
       end
+      diff = (Time.now - now)/1000
+      puts "Voter DisConnected - #{diff}"
+      
     end
     
     def publish_moderator_response_submited
+      now = Time.now
       unless caller_session.nil?
         EM.run {
           Moderator.active_moderators(campaign).each do |moderator|
@@ -51,7 +59,8 @@ module LeadEvents
         }   
       end      
     end
-    
+    diff = (Time.now - now)/1000
+    puts "Voter Response Submitted - #{diff}"    
   end
   
   def self.included(receiver)
