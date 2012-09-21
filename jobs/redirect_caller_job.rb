@@ -1,3 +1,6 @@
+require 'em-http-request'
+require "em-synchrony"
+require "em-synchrony/em-http"
 
 class RedirectCallerJob 
   @queue = :redirect_caller_job
