@@ -1,6 +1,7 @@
 require 'em-http-request'
 
 class ModeratorCallerJob 
+  Resque::Plugins::Timeout.timeout = 2  
   @queue = :moderator_caller_job
   
    def self.perform(caller_session_id, event)    
