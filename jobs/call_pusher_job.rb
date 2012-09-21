@@ -1,6 +1,6 @@
 require 'em-http-request'
 
-class PusherJob 
+class CallPusherJob 
   @queue = :call_pusher_job
   
    def self.perform(call_attempt_id, event)    
