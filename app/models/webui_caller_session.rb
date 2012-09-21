@@ -70,8 +70,10 @@ class WebuiCallerSession < CallerSession
     EM.run {
       deferrable = Pusher[session_key].trigger_async(event, data.merge!(:dialer => campaign.type))
       deferrable.callback { 
+        EM.stop
         }
       deferrable.errback { |error|
+        EM.stop
       }
     }
        
