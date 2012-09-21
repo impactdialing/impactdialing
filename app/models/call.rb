@@ -39,7 +39,7 @@ class Call < ActiveRecord::Base
       
       state :connected do
         before(:always) {  connect_call }
-        after(:always) { call_attempt.publish_voter_connected }
+        after(:always) { Resque.enqueue(PusherJob, call_attempt.id, "publish_voter_connected")}
         event :hangup, :to => :hungup
         event :disconnect, :to => :disconnected
         
@@ -62,7 +62,7 @@ class Call < ActiveRecord::Base
       
       state :disconnected do        
         before(:always) { disconnect_call }
-        after(:success) { call_attempt.publish_voter_disconnected }                
+        after(:success) { Resque.enqueue(PusherJob, call_attempt.id, "publish_voter_disconnected") }                
         event :call_ended, :to => :call_answered_by_lead, :if => :call_connected?
         event :call_ended, :to => :call_not_answered_by_lead, :if => :call_did_not_connect?        
         response do |xml_builder, the_call|
@@ -116,7 +116,7 @@ class Call < ActiveRecord::Base
       
       
       state :wrapup_and_continue do 
-        before(:always) { wrapup_now; Resque.enqueue(RedirectCallerJob, call_attempt.id); call_attempt.publish_moderator_response_submited}
+        before(:always) { wrapup_now; Resque.enqueue(RedirectCallerJob, call_attempt.id)}
         after(:success){ persist_all_states}
       end
       
