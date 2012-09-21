@@ -11,4 +11,5 @@ dialer_worker: rake environment resque:work QUEUE=dialer_worker
 calculate_dials_worker: rake environment resque:work QUEUE=calculate_dials_worker 
 simulator_worker: rake environment resque:work QUEUE=simulator 
 debit_worker_job: rake environment resque:work QUEUE=debit_worker_job
+redirect_caller_job: rake environment resque:work QUEUE=redirect_caller_job
 
