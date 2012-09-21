@@ -147,3 +147,12 @@ en:
       phone: "(202) 263-4628"
       email: "help@bulldogfinancegroup.com"
       billing_link: ""
+<<<<<<< HEAD
+=======
+    windingcreekdialer:
+      title: "Winding Creek Group"
+      full_title: "Winding Creek Group"
+      phone: "(636) 778-1155"
+      email: "shelley@windingcreekgroup.com"
+      billing_link: ""
+>>>>>>> em

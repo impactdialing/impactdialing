@@ -40,6 +40,8 @@ gem 'deep_cloneable', '~> 1.4.0'
 gem 'heroku', '~> 2.17.0'
 gem "redis-objects", "~>0.5.3",:require => 'redis/objects'
 gem "redis", "~>2.2.2"
+gem 'resque-timeout'
+
 
 
 group :development, :test do

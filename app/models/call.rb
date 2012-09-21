@@ -42,7 +42,12 @@ class Call < ActiveRecord::Base
       end 
       
       state :connected do
+<<<<<<< HEAD
         after(:always) { connect_call; call_attempt.publish_voter_connected}
+=======
+        before(:always) {  connect_call }
+        after(:always) { Resque.enqueue(CallPusherJob, call_attempt.id, "publish_voter_connected")}
+>>>>>>> em
         event :hangup, :to => :hungup
         event :disconnect, :to => :disconnected
         
@@ -65,7 +70,11 @@ class Call < ActiveRecord::Base
       
       state :disconnected do        
         before(:always) { disconnect_call }
+<<<<<<< HEAD
         after(:success) { call_attempt.publish_voter_disconnected}                
+=======
+        after(:success) { Resque.enqueue(CallPusherJob, call_attempt.id, "publish_voter_disconnected") }                
+>>>>>>> em
         event :call_ended, :to => :call_answered_by_lead, :if => :call_connected?
         event :call_ended, :to => :call_not_answered_by_lead, :if => :call_did_not_connect?        
         response do |xml_builder, the_call|
@@ -75,7 +84,11 @@ class Call < ActiveRecord::Base
       end
       
       state :abandoned do
+<<<<<<< HEAD
         before(:always) { abandon_call; call_attempt.redirect_caller }                
+=======
+        before(:always) { abandon_call; Resque.enqueue(RedirectCallerJob, call_attempt.id) }        
+>>>>>>> em
         response do |xml_builder, the_call|
           xml_builder.Hangup
         end
@@ -84,7 +97,7 @@ class Call < ActiveRecord::Base
       
       state :call_answered_by_machine do
         event :call_ended, :to => :call_end_machine
-        before(:always) { process_answered_by_machine; call_attempt.redirect_caller }        
+        before(:always) { process_answered_by_machine; Resque.enqueue(RedirectCallerJob, call_attempt.id) }        
         
         response do |xml_builder, the_call|
           xml_builder.Play campaign.recording.file.url if campaign.use_recordings?
@@ -111,7 +124,7 @@ class Call < ActiveRecord::Base
       
       
       state :call_not_answered_by_lead do
-        before(:always) { end_unanswered_call; call_attempt.redirect_caller }                
+        before(:always) { end_unanswered_call; Resque.enqueue(RedirectCallerJob, call_attempt.id) }                
         response do |xml_builder, the_call|
           xml_builder.Hangup
         end
@@ -119,7 +132,11 @@ class Call < ActiveRecord::Base
       
       
       state :wrapup_and_continue do 
+<<<<<<< HEAD
         before(:always) { wrapup_now; call_attempt.redirect_caller }
+=======
+        before(:always) { wrapup_now; Resque.enqueue(RedirectCallerJob, call_attempt.id);Resque.enqueue(ModeratorCallJob, call_attempt.id, "publish_moderator_response_submited") }
+>>>>>>> em
         after(:success){ persist_all_states}
       end
       

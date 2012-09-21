@@ -215,6 +215,7 @@ class CallAttempt < ActiveRecord::Base
     CANCELLED = "Call cancelled"
     SCHEDULED = 'Scheduled for later'
     RINGING = "Ringing"
+    DIALING = "Dialing"
 
     MAP = {'in-progress' => INPROGRESS, 'completed' => SUCCESS, 'busy' => BUSY, 'failed' => FAILED, 'no-answer' => NOANSWER, 'canceled' => CANCELLED}
     ALL = MAP.values
@@ -223,6 +224,7 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def redirect_caller(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
+<<<<<<< HEAD
     session_id = redis_caller_session
     unless session_id.blank?      
       session = CallerSession.find(session_id)
@@ -233,6 +235,17 @@ class CallAttempt < ActiveRecord::Base
         deferrable.errback { |error| }
       }
     end
+=======
+    unless caller_session.nil?
+      EM.run {
+        t = TwilioLib.new(account, auth)    
+        deferrable = t.redirect_call(caller_session.sid, flow_caller_url(caller_session.caller, :host => Settings.host, :port => Settings.port, session_id: caller_session.id, event: "start_conf"))              
+        deferrable.callback {EM.stop}
+        deferrable.errback { |error|EM.stop }          
+      }  
+      EventMachine.stop       
+    end  
+>>>>>>> em
   end
   
   def end_caller_session

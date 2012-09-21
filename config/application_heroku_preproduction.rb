@@ -1,30 +1,25 @@
 default: &default_settings
-  host: 3ngz.localtunnel.com
-  port: 3000
-  phone: 2525732146
+  host: beta-twilio.impactdialing.com
+  public_host: www.beta.impactdialing.com
+  port: 80
+  phone: 8886215779
 
 development:
-  phone: 2525732146
+  phone: 8582254595
   <<: *default_settings
 
 test:
   <<: *default_settings
 
-production:
-  <<: *default_settings
-  host: admin.impactdialing.com
-  port: 80
-<<<<<<< HEAD
-=======
-  
 heroku_preproduction:
   <<: *default_settings
   host: beta-twilio.impactdialing.com
-  public_host: www.beta.impactdialing.com
-  phone: 8886215779
   port: 80
-  
->>>>>>> em
+
+production:
+  <<: *default_settings
+  host: impactdialing.herokuapp.com
+  port: 80
 
 staging:
   <<: *default_settings
@@ -35,9 +30,5 @@ staging:
 preproduction:
   <<: *default_settings
   phone: 8133640628
-  host: preprod.impactdialing.com
+  host: twilio.impactdialing.com
   port: 80
-<<<<<<< HEAD
-
-=======
->>>>>>> em
