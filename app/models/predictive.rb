@@ -41,6 +41,10 @@ class Predictive < Campaign
     Resque.redis.decrby("dial_count:#{self.id}", decrement_counter)
   end
   
+  def self.dial_campaign?(campaign_id)
+    Resque.redis.exists("dial_campaign:#{campaign_id}")    
+  end
+  
   def dialing_count
     call_attempts.with_status(CallAttempt::Status::DIALING).between(10.seconds.ago, Time.now).size
   end

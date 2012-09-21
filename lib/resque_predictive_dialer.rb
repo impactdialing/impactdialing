@@ -14,7 +14,7 @@ loop do
     logged_in_campaigns = CallerSession.campaigns_on_call
     logged_in_campaigns.each do |c|
       campaign = Campaign.find(c.campaign_id)
-      if campaign.type == Campaign::Type::PREDICTIVE  && !campaign.calculate_dialing? && Predictive.do_not_call_in_production?(campaign.id)
+      if campaign.type == Campaign::Type::PREDICTIVE  && !campaign.calculate_dialing? && Predictive.dial_campaign?(campaign.id)
         campaign.dial_resque
       end
     end
