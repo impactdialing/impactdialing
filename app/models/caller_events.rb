@@ -88,13 +88,15 @@ module CallerEvents
     end
     
     def publish_moderator_conference_started
-      EM.run {
-        Moderator.active_moderators(campaign).each do |moderator|
-          moderator_deferrable = Pusher[moderator.session].trigger_async('voter_event', {caller_session_id:  id, campaign_id:  campaign.id, caller_id:  caller.id, call_status: attempt_in_progress.try(:status)})      
-          moderator_deferrable.callback {EM.stop}
-          moderator_deferrable.errback { |error| EM.stop}          
-        end              
-      }   
+      unless Moderator.active_moderators(campaign).size == 0
+        EM.run {
+          Moderator.active_moderators(campaign).each do |moderator|
+            moderator_deferrable = Pusher[moderator.session].trigger_async('voter_event', {caller_session_id:  id, campaign_id:  campaign.id, caller_id:  caller.id, call_status: attempt_in_progress.try(:status)})      
+            moderator_deferrable.callback {EM.stop}
+            moderator_deferrable.errback { |error| EM.stop}          
+          end              
+        }   
+      end
       
     end
     
