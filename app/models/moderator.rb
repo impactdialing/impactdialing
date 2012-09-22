@@ -55,10 +55,8 @@ class Moderator < ActiveRecord::Base
       EM.run {
         deferrable = Pusher[moderator.session].trigger_async(event, data)
         deferrable.callback { 
-          EM.stop
           }
         deferrable.errback { |error|
-          EM.stop
         }
       }
     end 
