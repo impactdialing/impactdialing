@@ -224,7 +224,7 @@ loop do
       Resque.enqueue(SimulatorJob, campaign.id) if campaign.type == Campaign::Type::PREDICTIVE
       # simulate(c.campaign_id) if campaign.type == Campaign::Type::PREDICTIVE
     end
-    sleep 30
+    sleep 60
   rescue Exception => e
     if e.class == SystemExit || e.class == Interrupt
       ActiveRecord::Base.logger.info "============ EXITING  ============"
