@@ -46,7 +46,8 @@ class CallerSession < ActiveRecord::Base
   
   def run(event)
     begin
-      send(event)
+      caller_flow = self.method(event.to_s) 
+      caller_flow.call      
     rescue ActiveRecord::StaleObjectError => exception
       reloaded_caller_session = CallerSession.find(self.id)
       reloaded_caller_session.send(event)
@@ -56,7 +57,9 @@ class CallerSession < ActiveRecord::Base
   
   def process(event)
     begin
-      self.method(event.to_s)
+      caller_flow = self.method(event.to_s) 
+      caller_flow.call      
+
     rescue ActiveRecord::StaleObjectError => exception
       reloaded_caller_session = CallerSession.find(self.id)
       reloaded_caller_session.send(event)
