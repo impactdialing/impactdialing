@@ -35,15 +35,12 @@ class CallsController < ApplicationController
   private
     
   def parse_params
-    now = Time.now
     pms = underscore_params
     @parsed_params = Call.column_names.inject({}) do |result, key|
       value = pms[key]
       result[key] = value unless value.blank?
       result
     end
-    diff = (Time.now - now) *1000
-    puts "Time to parse: #{diff}"
   end
 
   def underscore_params
