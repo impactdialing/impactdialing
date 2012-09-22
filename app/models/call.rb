@@ -132,13 +132,13 @@ class Call < ActiveRecord::Base
   end
   
   def run(event)
-    self.method(event.to_s) 
+    send(event) 
     render
   end
   
   def process(event)
     begin
-      self.method(event.to_s) 
+      send(event) 
     rescue ActiveRecord::StaleObjectError => exception      
       Resque.enqueue(PhantomCallerJob, caller_session.id)  unless caller_session.nil?
     end          
