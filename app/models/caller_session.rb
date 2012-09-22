@@ -64,6 +64,7 @@ class CallerSession < ActiveRecord::Base
   end
   
   
+  
   call_flow :state, :initial => :initial do    
       
       state :initial do
