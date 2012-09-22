@@ -1,5 +1,5 @@
 default: &default_settings
-  host: twiliopandahiphoperaser.impactdialing.com
+  host: phonesonlycolorfulpower.impactdialing.com
   public_host: www.impactdialing.com
   port: 80
   phone: 4155787571
