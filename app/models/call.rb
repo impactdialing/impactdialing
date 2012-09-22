@@ -132,7 +132,7 @@ class Call < ActiveRecord::Base
   end
   
   def run(event)
-    send(event)
+    self.method(event.to_s) 
     render
   end
   
