@@ -3,6 +3,7 @@ require "ostruct"
 require 'yaml'
 require 'logger'
 require 'fileutils'
+require 'ar-octopus'
 
 RAILS_ROOT = File.expand_path('../..', __FILE__)
 require File.join(RAILS_ROOT, 'config/environment')
@@ -217,7 +218,7 @@ end
 
 loop do
   begin
-    logged_in_campaigns = CallerSession.campaigns_on_call.using(:read_slave1)
+    logged_in_campaigns = CallerSession.using(:read_slave1).campaigns_on_call
     logged_in_campaigns.each do |c|     
       puts "Simulating #{c.campaign_id}"
       campaign = Campaign.find(c.campaign_id).using(:read_slave1)      

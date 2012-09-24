@@ -1,4 +1,5 @@
 require 'resque/plugins/lock'
+require 'ar-octopus'
 class SimulatorJob 
   extend Resque::Plugins::Lock
   @queue = :simulator
@@ -133,17 +134,17 @@ class SimulatorJob
    
    
    def self.simulator_campaign_base_values(campaign_id, start_time)
-     puts campaign_id
+     Octopus.using(:read_slave1) do
      caller_statuses = CallerSession.where(:campaign_id => campaign_id,
                :on_call => true).size.times.map{ CallerStatus.new('available') }            
-     campaign = Campaign.find(campaign_id).using(:read_slave1)
+     campaign = Campaign.find(campaign_id)
 
-     number_of_call_attempts = campaign.call_attempts.between((Time.now - start_time.seconds), Time.now).using(:read_slave1).size
+     number_of_call_attempts = campaign.call_attempts.between((Time.now - start_time.seconds), Time.now).size
 
      if number_of_call_attempts < 1000
-         call_attempts_from_start_time = campaign.call_attempts.between((Time.now - start_time.seconds), Time.now).using(:read_slave1)
+         call_attempts_from_start_time = campaign.call_attempts.between((Time.now - start_time.seconds), Time.now)
      else
-       call_attempts_from_start_time = campaign.call_attempts.last(1000).using(:read_slave1)
+       call_attempts_from_start_time = campaign.call_attempts.last(1000)
      end
 
 
