@@ -39,7 +39,6 @@ gem "hiredis", "~>0.4.5"
 gem "formtastic", "~>2.2.1"
 gem "cocoon", "~>1.0.22"
 gem 'deep_cloneable', '~> 1.4.0'
-gem 'resque-timeout'
 gem 'ar-octopus', :git => "git://github.com/tchandy/octopus.git" ,:require => 'octopus'
 
 
