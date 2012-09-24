@@ -1,5 +1,3 @@
-require 'em-http-request'
-
 class CallPusherJob 
   @queue = :call_pusher_job
   

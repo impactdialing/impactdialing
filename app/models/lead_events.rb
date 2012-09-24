@@ -8,32 +8,19 @@ module LeadEvents
     def publish_voter_connected            
       unless caller_session.nil?
         if !caller_session.caller.is_phones_only? 
-        EM.run {          
-            event_hash = campaign.voter_connected_event(self.call)        
-            caller_deferrable = Pusher[caller_session.session_key].trigger_async(event_hash[:event], event_hash[:data].merge!(:dialer => campaign.type))
-            caller_deferrable.callback {EM.stop}
-            caller_deferrable.errback { |error| EM.stop }
-          
-          }
+          event_hash = campaign.voter_connected_event(self.call)        
+          Pusher[caller_session.session_key].trigger!(event_hash[:event], event_hash[:data].merge!(:dialer => campaign.type))
         end
       end
     end    
     
     
     def publish_voter_disconnected
-
       unless caller_session.nil?
         unless caller_session.caller.is_phones_only?      
-        EM.run {
-          
-            caller_deferrable = Pusher[caller_session.session_key].trigger_async("voter_disconnected", {})
-            caller_deferrable.callback {EM.stop}
-            caller_deferrable.errback { |error| EM.stop}
-          
-        }   
-      end  
-      end
-      
+          caller_deferrable = Pusher[caller_session.session_key].trigger!("voter_disconnected", {})
+        end  
+      end      
     end
     
     def publish_voter_connected_moderator
