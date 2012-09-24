@@ -21,25 +21,29 @@ class TwilioLib
   end
   
   def end_call_sync(call_id)
-    http = Net::HTTP.new(@server, @port)
-    http.use_ssl=true
-    req = Net::HTTP::Post.new("#{@root}Calls/#{call_id}?Status=completed")
-    req.basic_auth @http_user, @http_password
-    params = {'Status'=>"completed"}
-    req.set_form_data(params)
+    http = create_http_request("#{@root}Calls/#{call_id}", {'Status'=>"completed"})
     response = http.start{http.request(req)}
   end
   
-  def make_call_em(campaign, voter, attempt)    
+  def make_call(campaign, voter, attempt)    
     params = {'From'=> campaign.caller_id, "To"=> voter.Phone, 'FallbackUrl' => TWILIO_ERROR, "Url"=>flow_call_url(attempt.call, host: Settings.host, port: Settings.port, event: "incoming_call"),
       'StatusCallback' => flow_call_url(attempt.call, host: Settings.host, port:  Settings.port, event: "call_ended"),
       'Timeout' => "15"}
     params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect        
-    EventMachine::HttpRequest.new("https://#{@server}#{@root}Calls.json").post :head => {'authorization' => [@http_user, @http_password]},:body => params    
+    http = create_http_request("https://#{@server}#{@root}Calls.json", params)
+  end
+  
+  def create_http_request(url, params)
+    http = Net::HTTP.new(@server, @port)
+    http.use_ssl=true
+    req = Net::HTTP::Post.new(url)
+    req.basic_auth @http_user, @http_password
+    req.set_form_data(params)
+    http    
   end
   
   
-  def make_call(campaign, voter, attempt)    
+  def make_call_em(campaign, voter, attempt)    
     params = {'From'=> campaign.caller_id, "To"=> voter.Phone, 'FallbackUrl' => TWILIO_ERROR, "Url"=>flow_call_url(attempt.call, host: Settings.host, port: Settings.port, event: "incoming_call"),
       'StatusCallback' => flow_call_url(attempt.call, host: Settings.host, port:  Settings.port, event: "call_ended"),
       'Timeout' => "15"}
