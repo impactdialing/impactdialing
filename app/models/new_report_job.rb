@@ -23,9 +23,11 @@ class NewReportJob
 
   def perform
     begin
-      @report = CSV.generate do |csv|
-        @campaign_strategy = report_strategy(csv)
-        @campaign_strategy.construct_csv
+      Octopus.using(:read_slave1) do
+        @report = CSV.generate do |csv|
+          @campaign_strategy = report_strategy(csv)
+          @campaign_strategy.construct_csv
+        end
       end
       save_report
       notify_success
