@@ -33,6 +33,7 @@ gem 'resque-lock', "~> 1.0.0"
 gem "resque-loner", "~>1.2.1"
 gem "redis", "~>2.2.2"
 gem "hiredis", "~>0.4.5"
+gem "heroku"
 gem "formtastic", "~>2.2.1"
 gem "cocoon", "~>1.0.22"
 gem 'deep_cloneable', '~> 1.4.0'
