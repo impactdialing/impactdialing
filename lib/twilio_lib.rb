@@ -49,7 +49,7 @@ class TwilioLib
   
   def redirect_caller(call_sid, caller, session_id)
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    Twilio::Call.redirect(sid, flow_caller_url(caller, :host => Settings.host, :port => Settings.port, session_id: session_id, event: "start_conf"))    
+    Twilio::Call.redirect(call_sid, flow_caller_url(caller, :host => Settings.host, :port => Settings.port, session_id: session_id, event: "start_conf"))    
   end
   
   def redirect_call(call_sid, redirect_url)
