@@ -17,3 +17,8 @@ bin/
 spec/fixtures/test_tmp/
 /typescript
 .bundle
+<<<<<<< HEAD
+=======
+/config/application .yml
+dump.rdb
+>>>>>>> kill-robo

@@ -1,15 +1,14 @@
 class MonitorsController < ClientController
   skip_before_filter :check_login, :only => [:start,:stop,:switch_mode, :deactivate_session]
-  layout 'client'
-  
+
   def index
     @campaigns = account.campaigns.with_running_caller_sessions
-    @all_campaigns = account.campaigns.manual.active
+    @all_campaigns = account.campaigns.active
     twilio_capability = Twilio::Util::Capability.new(TWILIO_ACCOUNT, TWILIO_AUTH)
     twilio_capability.allow_client_outgoing(MONITOR_TWILIO_APP_SID)
     @token = twilio_capability.generate
   end
-  
+
 
   def start
     caller_session = CallerSession.find(params[:session_id])
@@ -22,7 +21,7 @@ class MonitorsController < ClientController
     mute_type = params[:type]=="breakin" ? false : true
     render xml:  caller_session.join_conference(mute_type, params[:CallSid], params[:monitor_session])
   end
-  
+
   def kick_off
     caller_session = CallerSession.find(params[:session_id])
     caller_session.end_running_call
@@ -40,7 +39,7 @@ class MonitorsController < ClientController
         render text: "Status: Monitoring in "+ type + " mode on "+ caller_session.caller.identity_name + "."
       else
         render text: "Status: Caller is not connected to a lead."
-      end 
+      end
     end
   end
 
@@ -49,20 +48,20 @@ class MonitorsController < ClientController
     caller_session.moderator.stop_monitoring(caller_session)
     render text: "Switching to different caller"
   end
-  
+
   def deactivate_session
-    moderator = Moderator.find_by_session(params[:monitor_session]) 
+    moderator = Moderator.find_by_session(params[:monitor_session])
     puts moderator.inspect
     moderator.update_attributes(:active => false) unless moderator.nil?
     render nothing: true
   end
-  
-  
+
+
   def monitor_session
     @moderator = Moderator.create!(:session => generate_session_key, :account => @user.account, :active => true)
     render json: @moderator.session.to_json
   end
-  
+
   def toggle_call_recording
     account.toggle_call_recording!
     flash_message(:notice, "Call recording turned #{account.record_calls? ? "on" : "off"}.")

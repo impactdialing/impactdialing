@@ -1,7 +1,7 @@
 class Question < ActiveRecord::Base
   include Rails.application.routes.url_helpers
 
-  attr_accessible :text, :script_id, :script_order, :possible_responses_attributes, :question_order, :external_id_field
+  attr_accessible :text, :script_id, :script_order, :possible_responses_attributes, :external_id_field
 
   validates :text, presence: true
   validates :script, presence: true
@@ -13,8 +13,7 @@ class Question < ActiveRecord::Base
   accepts_nested_attributes_for :possible_responses, :allow_destroy => true
   scope :answered_by, lambda { |voter| joins(:answers).where("answers.voter_id = ?", voter.id) }
   scope :not_answered_by, lambda { |voter| order("id ASC").where("questions.id not in (?)", Question.answered_by(voter).collect(&:id) + [-1]) }
-  default_scope :order=>"question_order"
-
+  default_scope :order => "script_order"
 
   def stats(from_date, to_date)
     question.possible_responses.collect { |possible_response| possible_response.stats(from_date, to_date) }

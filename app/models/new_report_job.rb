@@ -14,11 +14,7 @@ class NewReportJob
    end
 
    def report_strategy(csv)
-     if @campaign.type == "Robo"
-       BroadcastCampaignReportStrategy.new(@campaign, csv, @download_all_voters, @lead_dial, @selected_voter_fields, @selected_custom_voter_fields, @from_date, @to_date)
-     else
-       CallerCampaignReportStrategy.new(@campaign, csv, @download_all_voters, @lead_dial, @selected_voter_fields, @selected_custom_voter_fields, @from_date, @to_date)
-     end
+     CallerCampaignReportStrategy.new(@campaign, csv, @download_all_voters, @lead_dial, @selected_voter_fields, @selected_custom_voter_fields, @from_date, @to_date)
    end
 
   def perform
@@ -36,10 +32,10 @@ class NewReportJob
     end
   end
 
-   def notify_success
-     response_strategy = @strategy == 'webui' ?  ReportWebUIStrategy.new("success", @user, @campaign, nil) : ReportApiStrategy.new("success", @campaign.account.id, @campaign.id, @callback_url)
-     response_strategy.response({campaign_name: @campaign_name})
-   end
+  def notify_success
+    response_strategy = @strategy == 'webui' ?  ReportWebUIStrategy.new("success", @user, @campaign, nil) : ReportApiStrategy.new("success", @campaign.account.id, @campaign.id, @callback_url)
+    response_strategy.response({campaign_name: @campaign_name})
+  end
 
    def on_failure_report(exception)
      response_strategy = @strategy == 'webui' ?  ReportWebUIStrategy.new("failure", @user, @campaign, exception) : ReportApiStrategy.new("failure", @campaign.account.id, @campaign.id, @callback_url)

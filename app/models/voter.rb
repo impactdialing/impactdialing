@@ -1,6 +1,6 @@
 require 'fiber'
 class Voter < ActiveRecord::Base
-  
+
   module Status
     NOTCALLED = "not called"
     RETRY = "retry"
@@ -49,7 +49,7 @@ class Voter < ActiveRecord::Base
   scope :last_call_attempt_within, lambda { |from, to| where(:last_call_attempt_time => (from..to)) }
   scope :call_attempts_within, lambda {|from, to| where('call_attempts.created_at' => (from..to)).includes('call_attempts')}
   scope :priority_voters, enabled.where(:priority => "1", :status => Voter::Status::NOTCALLED)
-  
+
 
   before_validation :sanitize_phone
 
@@ -82,7 +82,7 @@ class Voter < ActiveRecord::Base
     selection.each do |field|
       custom_voter_field = account.custom_voter_fields.find_by_name(field)
       unless custom_voter_field.nil?
-        selected_fields << CustomVoterFieldValue.voter_fields(self, custom_voter_field).first.try(:value)  
+        selected_fields << CustomVoterFieldValue.voter_fields(self, custom_voter_field).first.try(:value)
       end
     end
     selected_fields
@@ -139,20 +139,20 @@ class Voter < ActiveRecord::Base
       else
         call_attempt.update_attributes(:sid => response["sid"])
       end
-      iter.return(http)      
+      iter.return(http)
        }
     http.errback { 
       puts JSON.parse(http.response) 
       iter.return(http)
        }    
   end
-  
+
   def handle_failed_call(attempt, voter)
     attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
     voter.update_attributes(status: CallAttempt::Status::FAILED)
   end
-  
-  
+
+
 
   def dial_predictive
     call_attempt = new_call_attempt(self.campaign.type)
@@ -160,7 +160,6 @@ class Voter < ActiveRecord::Base
     params = {'FallbackUrl' => TWILIO_ERROR, 'StatusCallback' => flow_call_url(call_attempt.call, host:  Settings.host, port:  Settings.port, event: 'call_ended'), 'Timeout' => campaign.use_recordings ? "20" : "15"}
     params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect
     response = Twilio::Call.make(campaign.caller_id, self.Phone, flow_call_url(call_attempt.call, host:  Settings.host, port:  Settings.port, event:  'incoming_call'), params)
-    puts "Entered callback."
     if response["TwilioResponse"]["RestException"]
       call_attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
       update_attributes(status: CallAttempt::Status::FAILED)
@@ -211,7 +210,7 @@ class Voter < ActiveRecord::Base
   end
 
   def unanswered_questions
-    campaign.script.questions.not_answered_by(self)    
+    campaign.script.questions.not_answered_by(self)
   end
 
   def question_not_answered
@@ -240,7 +239,7 @@ class Voter < ActiveRecord::Base
   def answer_recorded_by=(caller_session)
     @caller_session = caller_session
   end
-  
+
   def persist_answers(questions, call_attempt)
      return if questions.nil?
      question_answers = JSON.parse(questions)
@@ -257,7 +256,7 @@ class Voter < ActiveRecord::Base
      end
      update_attributes(:status => Voter::Status::RETRY) if retry_response
    end
-  
+
   def persist_notes(notes_json, call_attempt)
     return if notes_json.nil?
     notes = JSON.parse(notes_json)
@@ -269,18 +268,18 @@ class Voter < ActiveRecord::Base
     rescue Exception => e
       Rails.logger.info "Persisting_Notes_Exception #{e.to_s}"
       Rails.logger.info "Voter #{self.inspect}"
-    end    
+    end
   end
 
   private
 
-  def new_call_attempt(mode = 'robo')
+  def new_call_attempt(mode)
     call_attempt = self.call_attempts.create(campaign:  self.campaign, dialer_mode:  mode, status:  CallAttempt::Status::RINGING, call_start:  Time.now)
-    update_attributes(:last_call_attempt => call_attempt, :last_call_attempt_time => Time.now, :status => CallAttempt::Status::RINGING)    
+    update_attributes(:last_call_attempt => call_attempt, :last_call_attempt_time => Time.now, :status => CallAttempt::Status::RINGING)
     Call.create(call_attempt: call_attempt, all_states: "", state: 'initial')
     call_attempt
   end
-  
-  
+
+
 
 end
