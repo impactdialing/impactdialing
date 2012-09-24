@@ -14,6 +14,16 @@ class CallsController < ApplicationController
     end
   end
   
+  def call_ended
+    if ["no-answer", "busy", "failed"].include?(@parse_params['call_status'])
+      RedisCall.store_call_details(@parse_params)
+    end
+    if @parse_params['campaign_type'] != Campaign::Type::PREDICTIVE
+      call_attempt.redirect_caller
+    end
+    Twilio::TwiML::Response.new { |r| r.Hangup }.text
+  end
+  
   def submit_result
     @call.process("submit_result")
     render nothing: true

@@ -33,8 +33,6 @@ class Call < ActiveRecord::Base
         event :incoming_call, :to => :connected , :if => (:answered_by_human_and_caller_available?)
         event :incoming_call, :to => :abandoned , :if => (:answered_by_human_and_caller_not_available?)
         event :incoming_call, :to => :call_answered_by_machine , :if => (:answered_by_machine?)
-        event :call_ended, :to => :call_not_answered_by_lead, :if => :call_did_not_connect?
-        event :call_ended, :to => :abandoned
       end 
       
       state :connected do
@@ -80,7 +78,6 @@ class Call < ActiveRecord::Base
       end
       
       state :call_answered_by_machine do
-        event :call_ended, :to => :call_end_machine
         before(:always) { process_answered_by_machine; call_attempt.redirect_caller }        
         
         response do |xml_builder, the_call|
@@ -98,22 +95,7 @@ class Call < ActiveRecord::Base
           xml_builder.Hangup
         end        
       end
-      
-      state :call_end_machine do
-        before(:always) { end_answered_by_machine }                
-        response do |xml_builder, the_call|
-          xml_builder.Hangup
-        end
-      end
-      
-      
-      state :call_not_answered_by_lead do
-        before(:always) { end_unanswered_call; call_attempt.redirect_caller }                
-        response do |xml_builder, the_call|
-          xml_builder.Hangup
-        end
-      end
-      
+                  
       
       state :wrapup_and_continue do 
         before(:always) { wrapup_now; call_attempt.redirect_caller; Resque.enqueue(ModeratorCallJob, call_attempt.id, "publish_moderator_response_submited") }
