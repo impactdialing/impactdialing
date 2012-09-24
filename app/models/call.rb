@@ -63,8 +63,8 @@ class Call < ActiveRecord::Base
       state :disconnected do        
         before(:always) { disconnect_call }
         after(:success) { Resque.enqueue(CallPusherJob, call_attempt.id, "publish_voter_disconnected");Resque.enqueue(ModeratorCallJob, call_attempt.id, "publish_voter_disconected_moderator") }                
-        event :call_ended, :to => :call_answered_by_lead, :if => :call_connected?
-        event :call_ended, :to => :call_not_answered_by_lead, :if => :call_did_not_connect?        
+        event :submit_result, :to => :wrapup_and_continue
+        event :submit_result_and_stop, :to => :wrapup_and_stop        
         response do |xml_builder, the_call|
           xml_builder.Hangup
         end
