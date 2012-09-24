@@ -226,18 +226,12 @@ class CallerSession < ActiveRecord::Base
     return if voter.nil?
     call_attempt = create_call_attempt(voter)    
     twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)        
-    EM.run do
-      http = twilio_lib.make_call_em(campaign, voter, call_attempt)
-      http.callback { 
-        response = JSON.parse(http.response)  
-        if response["RestException"]
-          handle_failed_call(call_attempt, self)
-        else
-          call_attempt.update_attributes(:sid => response["sid"])
-        end
-        EM.stop
-         }
-      http.errback {EM.stop}            
+    http = twilio_lib.make_call(campaign, voter, call_attempt)
+    response = JSON.parse(http.response)  
+    if response["RestException"]
+      handle_failed_call(call_attempt, self)
+    else
+      call_attempt.update_attributes(:sid => response["sid"])
     end
   end
   
