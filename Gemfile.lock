@@ -32,9 +32,6 @@ GEM
       i18n (~> 0.6)
       multi_json (~> 1.0)
     addressable (2.3.2)
-    airbrake (3.0.9)
-      activesupport
-      builder
     arel (3.0.2)
     aws-s3 (0.6.3)
       builder
@@ -284,7 +281,6 @@ PLATFORMS
 
 DEPENDENCIES
   activerecord-import (>= 0.2.0)
-  airbrake (~> 3.0.9)
   aws-s3 (~> 0.6.2)
   call_center (~> 0.0.9)
   cocoon (~> 1.0.22)

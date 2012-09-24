@@ -24,7 +24,6 @@ gem 'jquery-rails', '>= 1.0.12'
 gem 'delayed_job'
 gem 'heroku','~>2.17.0'
 gem "activerecord-import", ">= 0.2.0"
-gem "airbrake",'~>3.0.9'
 gem 'recurly', '~> 2.1.3'
 gem "uuid", "~> 2.3.5"
 gem "call_center", "~> 0.0.9"
