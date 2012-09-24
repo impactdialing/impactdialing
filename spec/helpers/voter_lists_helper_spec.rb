@@ -1,7 +1,6 @@
 require "spec_helper"
 
 describe VoterListsHelper do
-
   describe 'system column headers' do
     before(:each) do
       @original_columns = VoterList::VOTER_DATA_COLUMNS

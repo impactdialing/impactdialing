@@ -1,12 +1,11 @@
 module Client
   class CampaignsController < ClientController
-    layout 'client'
     before_filter :load_and_verify_campaign, :except => [:index, :new, :create, :deleted]
     respond_to :html, :json
-    
+
 
     def index
-      @campaigns = account.campaigns.active.manual.paginate :page => params[:page]
+      @campaigns = account.campaigns.active.paginate :page => params[:page]
       respond_with @campaigns
     end
 
@@ -32,49 +31,49 @@ module Client
       new_list
       respond_with @campaign
     end
-    
+
     def create
       @campaign = account.campaigns.new
       save_campaign
       respond_with @campaign, location: client_campaigns_path
     end
-    
+
 
     def update
       save_campaign
-      respond_with @campaign,  location: client_campaigns_url do |format|         
+      respond_with @campaign,  location: client_campaigns_url do |format|
         format.json { render :json => {message: "Campaign updated" }, :status => :ok } if @campaign.errors.empty?
-      end            
+      end
     end
 
     def destroy
       @campaign.active = false
-      @campaign.save ?  flash_message(:notice, "Campaign deleted") : flash_message(:error, @campaign.errors.full_messages.join)            
-      respond_with @campaign,  location: client_campaigns_url do |format|         
+      @campaign.save ?  flash_message(:notice, "Campaign deleted") : flash_message(:error, @campaign.errors.full_messages.join)
+      respond_with @campaign,  location: client_campaigns_url do |format|
         format.json { render :json => {message: "Campaign deleted" }, :status => :ok } if @campaign.errors.empty?
       end
     end
 
     def deleted
-      @campaigns = Campaign.deleted.manual.for_account(@user.account).paginate(:page => params[:page], :order => 'id desc')
+      @campaigns = Campaign.deleted.for_account(@user.account).paginate(:page => params[:page], :order => 'id desc')
       respond_with @campaigns do |format|
         format.html{render 'campaigns/deleted'}
         format.json {render :json => @campaigns.to_json}
-      end      
+      end
     end
-    
+
     def restore
       @campaign.active = true
       save_campaign
-      respond_with @campaign,  location: client_campaigns_url do |format|         
+      respond_with @campaign,  location: client_campaigns_url do |format|
         format.json { render :json => {message: "Campaign restored" }, :status => :ok } if @campaign.errors.empty?
       end
-      
+
     end
-    
+
 
     private
-    
+
     def load_and_verify_campaign
       begin
         @campaign = Campaign.find(params[:id] || params[:campaign_id])
@@ -87,10 +86,10 @@ module Client
         return
       end
     end
-    
+
 
     def load_scripts
-      @scripts = account.scripts.manual.active
+      @scripts = account.scripts.active
     end
 
     def new_list
@@ -99,7 +98,7 @@ module Client
 
     def save_campaign
       load_scripts
-      flash_message(:notice, "Campaign saved") if @campaign.update_attributes(params[:campaign])      
+      flash_message(:notice, "Campaign saved") if @campaign.update_attributes(params[:campaign])
     end
   end
 end

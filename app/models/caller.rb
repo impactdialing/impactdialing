@@ -13,6 +13,7 @@ class Caller < ActiveRecord::Base
   before_validation :assign_to_caller_group_campaign
   validates_uniqueness_of :email, :allow_nil => true
   validates :campaign_id, presence: true
+  validate :restored_caller_has_campaign
 
   scope :active, where(:active => true)
 
@@ -144,6 +145,12 @@ class Caller < ActiveRecord::Base
   def assign_to_caller_group_campaign
     if caller_group_id_changed? && !caller_group_id.nil?
       self.campaign_id = CallerGroup.find(caller_group_id).campaign_id
+    end
+  end
+
+  def restored_caller_has_campaign
+    if active_change == [false, true] && !campaign.active
+      errors.add(:base, 'The campaign this caller was assigned to has been deleted. Please assign the caller to a new campaign.')
     end
   end
 end

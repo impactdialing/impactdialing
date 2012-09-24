@@ -78,6 +78,7 @@ class Call < ActiveRecord::Base
       end
       
       state :call_answered_by_machine do
+        event :call_ended, :to => :call_end_machine
         before(:always) { process_answered_by_machine; call_attempt.redirect_caller }        
         
         response do |xml_builder, the_call|
@@ -86,47 +87,24 @@ class Call < ActiveRecord::Base
         end
       end
       
-      state :call_answered_by_lead do
-        before(:always) { end_answered_call }        
-        event :submit_result, :to => :wrapup_and_continue
-        event :submit_result_and_stop, :to => :wrapup_and_stop
-        
-        response do |xml_builder, the_call|
-          xml_builder.Hangup
-        end        
-      end
       
       state :call_end_machine do
         before(:always) { end_answered_by_machine }                
         response do |xml_builder, the_call|
           xml_builder.Hangup
         end
-      end
-      
-      
-      state :call_not_answered_by_lead do
-        before(:always) { end_unanswered_call; call_attempt.redirect_caller }                
-        response do |xml_builder, the_call|
-          xml_builder.Hangup
-        end
-      end
-      
+      end            
       
       state :wrapup_and_continue do 
         before(:always) { wrapup_now; call_attempt.redirect_caller; Resque.enqueue(ModeratorCallJob, call_attempt.id, "publish_moderator_response_submited") }
-        after(:success){ persist_all_states}
       end
       
       state :wrapup_and_stop do
         before(:always) { wrapup_now; caller_session.run('end_conf') }        
-        after(:success){ persist_all_states}
       end
             
   end 
   
-  def persist_all_states
-    update_attribute(:all_states, (all_states + "|" + state))
-  end
   
   def run(event)
     call_flow = self.method(event.to_s) 

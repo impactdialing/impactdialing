@@ -1,7 +1,6 @@
 require Rails.root.join("lib/twilio_lib")
 
 class AdminController < ApplicationController
-  layout "basic"
   USER_NAME, PASSWORD = "impact", "Mb<3Ad4F@2tCallz"
   before_filter :authenticate
 
@@ -50,16 +49,10 @@ class AdminController < ApplicationController
     @accounts.each do |account_id|
 
       campaigns=Campaign.where("account_id=?",account_id).map{|c| c.id}
-      robo_campaigns=Campaign.where("account_id=? and robo=1",account_id).map{|c| c.id}
       if campaigns.length > 0
 
         sessions = CallerSession.where("campaign_id in (?) and tCaller is NOT NULL and created_at > '#{@from_date.strftime("%Y-%m-%d")}' and created_at  < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'", campaigns).sum("ceil(tDuration/60)").to_i
         calls = CallAttempt.where("campaign_id in (?) and created_at > '#{@from_date.strftime("%Y-%m-%d")}' and created_at  < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'", campaigns).sum("ceil(tDuration/60)").to_i
-        if robo_campaigns.length > 0
-          broadcast = CallAttempt.where("campaign_id in (?) and created_at > '#{@from_date.strftime("%Y-%m-%d")}' and created_at  < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'", robo_campaigns).sum("ceil(tDuration/60)").to_i
-        else
-          broadcast=0
-        end
         transfers = TransferAttempt.where("campaign_id in (?) and created_at > '#{@from_date.strftime("%Y-%m-%d")}' and created_at  < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'", campaigns).sum("ceil(tDuration/60)").to_i
 
 
@@ -68,15 +61,12 @@ class AdminController < ApplicationController
           result={}
           result["account"]= account
           result["calls"]= calls
-          result["broadcast"]= broadcast
           result["sessions"]= sessions
           result["transfers"]= transfers
           @output<< result
         end
       end
     end
-
-    render :layout=>"client"
   end
 
   def set_report_date_range

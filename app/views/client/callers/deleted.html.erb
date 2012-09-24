@@ -1,28 +1,22 @@
-<h1>Deleted callers</h1>
-<% if @callers.length==0 %>
-    <p>No callers have been deleted.</p>
-<% else %>
-    <table>
-      <tr>
-        <th>Name</th>
-        <th>Date created</th>
-        <th>Date deleted</th>
-        <th width="55" class="ac"></th>
-      </tr>
-      <% @callers.each do |c| %>
-        <tr class="<%= cycle("odd","even") %>">
-          <td><strong><%= link_to "#{c.email || c.name}", client_caller_path(c.id)%></strong></td>
-          <td><%= c.created_at.strftime("%m/%d/%Y") %></td>
-          <td><%= c.updated_at.strftime("%m/%d/%Y") %></td>
-          <td>
-            <%= form_tag(client_caller_restore_path(c), :id => "restore-caller#{c.id}-form", :method => :put) do |f| %>
-              <%= link_to 'Restore', 'javascript:void(0)', :onclick => "$('#restore-caller#{c.id}-form').submit()" %>
-            <% end %>
-          </td>
-        </tr>
-      <% end %>
-    </table>
-  <% end %>
-<p><%= page_entries_info @callers %> <%= will_paginate @callers %></p>
-<p class="actions"><%= link_to 'Return to active callers', '/client/callers', :class => 'action primary' %></p>
+<%= csrf_meta_tag %>
 
+<h1>Deleted callers</h1>
+<% if @callers.empty? %>
+  <p>No callers deleted.</p>
+<% else %>
+  <table>
+    <tr>
+      <th>Name</th>
+      <th>Date deleted</th>
+      <th width="55" class="ac"></th>
+    </tr>
+    <% @callers.each do |c| %>
+      <tr>
+        <td><strong><%= link_to c.known_as, edit_client_caller_path(c) %></strong></td>
+        <td><%= c.updated_at.strftime("%m/%d/%Y") %></td>
+        <td><%= link_to 'Restore', client_caller_restore_path(c), :method => :put %></td>
+      </tr>
+    <% end %>
+  </table>
+  <p><%= page_entries_info @callers %> <%= will_paginate @callers %></p>
+<% end %>

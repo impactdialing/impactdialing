@@ -34,9 +34,9 @@ describe Client::ReportsController do
         Factory(:call_attempt, connecttime: Time.now, call_end: Time.now + (10.seconds), :tDuration => 1.minutes, :status => CallAttempt::Status::ABANDONED, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
         Factory(:transfer_attempt, connecttime: Time.now, call_end: Time.now + (10.minutes + 2.seconds), :status => CallAttempt::Status::SUCCESS, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
         Factory(:transfer_attempt, connecttime: Time.now, call_end: Time.now + (1.minutes + 20.seconds), :status => CallAttempt::Status::SUCCESS, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
-        get :usage, :id => campaign.id
+        get :usage, :campaign_id => campaign.id
       end
-      
+
       it "billable minutes" do
         CallAttempt.lead_time(nil, @campaign, from_time, time_now).should == 113
       end
@@ -65,7 +65,7 @@ describe Client::ReportsController do
         Factory(:call_attempt, connecttime: Time.now, call_end: Time.now + (1.minutes), :tDuration => 1.minutes, :status => CallAttempt::Status::VOICEMAIL, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
         Factory(:call_attempt, connecttime: Time.now, call_end: Time.now + (101.minutes + 57.seconds), wrapup_time: Time.now + (102.minutes + 57.seconds), :tDuration => 101.minutes + 57.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
         Factory(:call_attempt, connecttime: Time.now, call_end: Time.now + (1.minutes), :tDuration => 1.minutes, :status => CallAttempt::Status::ABANDONED, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
-        get :usage, :id => @campaign.id
+        get :usage, :campaign_id => @campaign.id
       end
 
       it "logged in caller session" do
@@ -91,7 +91,7 @@ describe Client::ReportsController do
   describe "download report" do
 
     it "pulls up report downloads page" do
-      campaign = Factory(:preview, script: Factory(:script))
+      campaign = Factory(:preview, script: Factory(:script), account: account)
       Resque.should_receive(:enqueue)
       get :download, :campaign_id => campaign.id, format: 'csv'
       response.should redirect_to 'http://test.host/client/reports'
@@ -99,7 +99,7 @@ describe Client::ReportsController do
 
     it "sets the default date range according to the campaign's time zone" do
       time_zone = ActiveSupport::TimeZone.new("Pacific Time (US & Canada)")
-      campaign = Factory(:preview, script: Factory(:script), :time_zone => time_zone.name)
+      campaign = Factory(:preview, script: Factory(:script), :time_zone => time_zone.name, account: account)
       Time.stub(:now => Time.utc(2012, 2, 13, 0, 0, 0))
       get :download_report, :campaign_id => campaign.id
       response.should be_ok
