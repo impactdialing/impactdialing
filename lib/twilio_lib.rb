@@ -21,8 +21,7 @@ class TwilioLib
   end
   
   def end_call_sync(call_id)
-    http = create_http_request("#{@root}Calls/#{call_id}", {'Status'=>"completed"})
-    response = http.start{http.request(req)}
+    create_http_request("#{@root}Calls/#{call_id}", {'Status'=>"completed"})    
   end
   
   def make_call(campaign, voter, attempt)    
@@ -30,7 +29,7 @@ class TwilioLib
       'StatusCallback' => flow_call_url(attempt.call, host: Settings.host, port:  Settings.port, event: "call_ended"),
       'Timeout' => "15"}
     params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect        
-    http = create_http_request("https://#{@server}#{@root}Calls.json", params)
+    create_http_request("https://#{@server}#{@root}Calls.json", params)
   end
   
   def create_http_request(url, params)
@@ -39,7 +38,7 @@ class TwilioLib
     req = Net::HTTP::Post.new(url)
     req.basic_auth @http_user, @http_password
     req.set_form_data(params)
-    http    
+    http.start{http.request(req)}    
   end
   
   
