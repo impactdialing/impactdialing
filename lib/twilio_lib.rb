@@ -29,7 +29,8 @@ class TwilioLib
       'StatusCallback' => flow_call_url(attempt.call, host: Settings.host, port:  Settings.port, event: "call_ended"),
       'Timeout' => "15"}
     params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect        
-    create_http_request("https://#{@server}#{@root}Calls.json", params)
+    response = create_http_request("https://#{@server}#{@root}Calls.json", params)
+    response.body
   end
   
   def create_http_request(url, params)
