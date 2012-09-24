@@ -226,8 +226,8 @@ class CallerSession < ActiveRecord::Base
     return if voter.nil?
     call_attempt = create_call_attempt(voter)    
     twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)        
-    http = twilio_lib.make_call(campaign, voter, call_attempt)
-    response = JSON.parse(http.response)  
+    http_response = twilio_lib.make_call(campaign, voter, call_attempt)
+    response = JSON.parse(http_response)  
     if response["RestException"]
       handle_failed_call(call_attempt, self)
     else
