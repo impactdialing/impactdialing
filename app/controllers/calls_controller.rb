@@ -3,7 +3,7 @@ class CallsController < ApplicationController
   before_filter :parse_params
   before_filter :find_and_update_call, :only => [:flow, :destroy]
   before_filter :find_and_update_answers_and_notes_and_scheduled_date, :only => [:submit_result, :submit_result_and_stop]
-  before_filter :find_call, :only => [:hangup]
+  before_filter :find_call, :only => [:hangup, :call_ended]
 
   
   def flow    
@@ -19,7 +19,7 @@ class CallsController < ApplicationController
       RedisCall.store_call_details(parsed_params)
     end
     if @parsed_params['campaign_type'] != Campaign::Type::PREDICTIVE
-      call_attempt.redirect_caller
+      @call.call_attempt.redirect_caller
     end
     Twilio::TwiML::Response.new { |r| r.Hangup }.text
   end
