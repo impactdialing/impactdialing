@@ -4,7 +4,7 @@ class Call < ActiveRecord::Base
 
   attr_accessible :id, :account_sid, :to_zip, :from_state, :called, :from_country, :caller_country, :called_zip, :direction, :from_city,
    :called_country, :caller_state, :call_sid, :called_state, :from, :caller_zip, :from_zip, :call_status, :to_city, :to_state, :to, :to_country, 
-   :caller_city, :api_version, :caller, :called_city, :all_states, :state, :call_attempt, :questions, :notes
+   :caller_city, :api_version, :caller, :called_city, :all_states, :state, :call_attempt, :questions, :notes, :answered_by
    
   has_one :call_attempt
   serialize :conference_history, Array
