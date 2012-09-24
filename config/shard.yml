@@ -1,0 +1,13 @@
+octopus:
+  replicated: true
+  heroku_staging:
+    read_slave1:
+      adapter: mysql2
+      host: herokustaging-read.cjo94dhm4pos.us-east-1.rds.amazonaws.com
+      database: impactdialing_heroku_staging
+      username: root
+      password: mypassword912481
+      
+      
+      
+      
