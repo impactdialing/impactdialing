@@ -222,7 +222,7 @@ class CallerSession < ActiveRecord::Base
   end
   
     
-  def dial_em(voter)
+  def dial(voter)
     return if voter.nil?
     call_attempt = create_call_attempt(voter)    
     twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)        
