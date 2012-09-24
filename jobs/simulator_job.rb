@@ -137,6 +137,7 @@ class SimulatorJob
      Octopus.using(:read_slave1) do
      caller_statuses = CallerSession.where(:campaign_id => campaign_id,
                :on_call => true).size.times.map{ CallerStatus.new('available') }            
+               
      campaign = Campaign.find(campaign_id)
 
      number_of_call_attempts = campaign.call_attempts.between((Time.now - start_time.seconds), Time.now).size
