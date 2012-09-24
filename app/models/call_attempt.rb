@@ -160,8 +160,9 @@ class CallAttempt < ActiveRecord::Base
     wrapup_time.nil?
   end
     
-  def disconnect_call
-    update_attributes(status: CallAttempt::Status::SUCCESS, recording_duration: call.recording_duration, recording_url: call.recording_url)
+  def disconnect_call    
+    update_attributes(status: CallAttempt::Status::SUCCESS, recording_duration: call.recording_duration, recording_url: call.recording_url, call_end: Time.now)
+    voter.update_attributes(last_call_attempt_time:  Time.now, caller_session: nil, status: CallAttempt::Status::SUCCESS)
   end
   
   
