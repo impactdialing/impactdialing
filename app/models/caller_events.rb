@@ -11,12 +11,8 @@ module CallerEvents
     
     def publish_caller_conference_started
       unless caller.is_phones_only? 
-      EM.run {
-          event_hash = campaign.caller_conference_started_event(voter_in_progress.try(:id))     
-          caller_deferrable = Pusher[session_key].trigger_async(event_hash[:event], event_hash[:data].merge!(:dialer => campaign.type))
-          caller_deferrable.callback {EM.stop}
-          caller_deferrable.errback { |error| EM.stop}
-      }   
+        event_hash = campaign.caller_conference_started_event(voter_in_progress.try(:id))     
+        Pusher[session_key].trigger!(event_hash[:event], event_hash[:data].merge!(:dialer => campaign.type))
      end      
     end
     
@@ -46,15 +42,7 @@ module CallerEvents
     
     
     def publish_calling_voter
-      EM.run {
-        unless caller.is_phones_only? 
-          caller_deferrable = Pusher[session_key].trigger_async('calling_voter', {})
-          caller_deferrable.callback {EM.stop}
-          caller_deferrable.errback { |error|EM.stop }
-        end
-        
-      }
-      
+      Pusher[session_key].trigger!('calling_voter', {}) unless caller.is_phones_only? 
     end
     
     def publish_calling_voter_moderator
@@ -71,7 +59,7 @@ module CallerEvents
     end
     
     def publish_caller_disconnected      
-      publish_async("caller_disconnected",{}) unless caller.is_phones_only?
+      Pusher[session_key].trigger!("caller_disconnected", {}) unless caller.is_phones_only?
     end   
     
     
