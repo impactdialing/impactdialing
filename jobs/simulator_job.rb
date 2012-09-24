@@ -6,7 +6,7 @@ class SimulatorJob
 
    def self.perform(campaign_id)
     begin 
-     target_abandonment = Campaign.find(campaign_id).acceptable_abandon_rate
+     target_abandonment = Campaign.find(campaign_id).using(:read_slave1).acceptable_abandon_rate
      start_time = 60 * 10
      simulator_length = 60 * 60
      abandon_count = 0
@@ -136,14 +136,14 @@ class SimulatorJob
      puts campaign_id
      caller_statuses = CallerSession.where(:campaign_id => campaign_id,
                :on_call => true).size.times.map{ CallerStatus.new('available') }            
-     campaign = Campaign.find(campaign_id)
+     campaign = Campaign.find(campaign_id).using(:read_slave1)
 
-     number_of_call_attempts = campaign.call_attempts.between((Time.now - start_time.seconds), Time.now).size
+     number_of_call_attempts = campaign.call_attempts.between((Time.now - start_time.seconds), Time.now).using(:read_slave1).size
 
      if number_of_call_attempts < 1000
-         call_attempts_from_start_time = campaign.call_attempts.between((Time.now - start_time.seconds), Time.now)
+         call_attempts_from_start_time = campaign.call_attempts.between((Time.now - start_time.seconds), Time.now).using(:read_slave1)
      else
-       call_attempts_from_start_time = campaign.call_attempts.last(1000)
+       call_attempts_from_start_time = campaign.call_attempts.last(1000).using(:read_slave1)
      end
 
 

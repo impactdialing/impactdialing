@@ -217,10 +217,10 @@ end
 
 loop do
   begin
-    logged_in_campaigns = CallerSession.campaigns_on_call
+    logged_in_campaigns = CallerSession.campaigns_on_call.using(:read_slave1)
     logged_in_campaigns.each do |c|     
       puts "Simulating #{c.campaign_id}"
-      campaign = Campaign.find(c.campaign_id)      
+      campaign = Campaign.find(c.campaign_id).using(:read_slave1)      
       Resque.enqueue(SimulatorJob, campaign.id) if campaign.type == Campaign::Type::PREDICTIVE
       # simulate(c.campaign_id) if campaign.type == Campaign::Type::PREDICTIVE
     end
