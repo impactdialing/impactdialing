@@ -1,3 +1,10 @@
+GIT
+  remote: git://github.com/tchandy/octopus.git
+  revision: 9f8862e614e139b34ab47b431157568e971400ca
+  specs:
+    ar-octopus (0.4.0)
+      activerecord (>= 2.3.0)
+
 GEM
   remote: http://rubygems.org/
   specs:
@@ -281,6 +288,7 @@ PLATFORMS
 
 DEPENDENCIES
   activerecord-import (>= 0.2.0)
+  ar-octopus!
   aws-s3 (~> 0.6.2)
   call_center (~> 0.0.9)
   cocoon (~> 1.0.22)
