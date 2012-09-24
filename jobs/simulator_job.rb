@@ -147,7 +147,7 @@ class SimulatorJob
        call_attempts_from_start_time = campaign.call_attempts.last(1000)
      end
 
-
+     puts "Simulating #{call_attempts_from_start_time.size} call attempts"
      observed_conversations = call_attempts_from_start_time.where(:status => "Call completed with success.").map{|attempt| OpenStruct.new(:length => attempt.duration_wrapped_up, time_to_wrapup: attempt.time_to_wrapup, :counter => 0)}
      observed_dials = call_attempts_from_start_time.map{|attempt| OpenStruct.new(:length => attempt.ringing_duration, :counter => 0, :answered? => attempt.status == 'Call completed with success.') }
      ActiveRecord::Base.logger.info observed_conversations
