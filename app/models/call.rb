@@ -39,7 +39,7 @@ class Call < ActiveRecord::Base
       
       state :connected do
         before(:always) {  connect_call }
-        after(:always) { Resque.enqueue(CallPusherJob, call_attempt.id, "publish_voter_connected")}
+        after(:always) { Resque.enqueue(CallPusherJob, call_attempt.id, "publish_voter_connected");Resque.enqueue(ModeratorCallJob, call_attempt.id, "publish_voter_connected_moderator")}
         event :hangup, :to => :hungup
         event :disconnect, :to => :disconnected
         
@@ -62,7 +62,7 @@ class Call < ActiveRecord::Base
       
       state :disconnected do        
         before(:always) { disconnect_call }
-        after(:success) { Resque.enqueue(CallPusherJob, call_attempt.id, "publish_voter_disconnected") }                
+        after(:success) { Resque.enqueue(CallPusherJob, call_attempt.id, "publish_voter_disconnected");Resque.enqueue(ModeratorCallJob, call_attempt.id, "publish_voter_disconected_moderator") }                
         event :call_ended, :to => :call_answered_by_lead, :if => :call_connected?
         event :call_ended, :to => :call_not_answered_by_lead, :if => :call_did_not_connect?        
         response do |xml_builder, the_call|
@@ -132,13 +132,15 @@ class Call < ActiveRecord::Base
   end
   
   def run(event)
-    send(event)
+    call_flow = self.method(event.to_s) 
+    call_flow.call
     render
   end
   
   def process(event)
     begin
-      send(event)
+      call_flow = self.method(event.to_s) 
+      call_flow.call
     rescue ActiveRecord::StaleObjectError => exception      
       Resque.enqueue(PhantomCallerJob, caller_session.id)  unless caller_session.nil?
     end          

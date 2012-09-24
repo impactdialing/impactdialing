@@ -1,7 +1,6 @@
 require 'em-http-request'
 
 class ModeratorCallJob 
-  Resque::Plugins::Timeout.timeout = 10
   
   @queue = :moderator_call_job
   

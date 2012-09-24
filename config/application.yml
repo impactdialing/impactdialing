@@ -1,7 +1,7 @@
 default: &default_settings
   host: 3ngz.localtunnel.com
   port: 3000
-  phone: 2525732146
+  phone: 4155787571
 
 development:
   phone: 2525732146
@@ -21,7 +21,17 @@ heroku_preproduction:
   public_host: www.beta.impactdialing.com
   phone: 8886215779
   port: 80
-  
+
+heroku_caller:
+  <<: *default_settings
+  host: twiliopandahiphoperaser.impactdialing.com
+  port: 80
+
+heroku_phonesonly:
+  <<: *default_settings
+  host: phonesonlycolorfulpower.impactdialing.com
+  port: 80
+
 
 staging:
   <<: *default_settings
