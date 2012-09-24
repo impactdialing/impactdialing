@@ -99,20 +99,14 @@ class Call < ActiveRecord::Base
       
       state :wrapup_and_continue do 
         before(:always) { wrapup_now; call_attempt.redirect_caller; Resque.enqueue(ModeratorCallJob, call_attempt.id, "publish_moderator_response_submited") }
-        after(:success){ persist_all_states}
       end
       
       state :wrapup_and_stop do
         before(:always) { wrapup_now; call_attempt.caller_session.run('end_conf') }        
-        after(:success){ persist_all_states}
       end
             
   end 
-  
-  def persist_all_states
-    update_attribute(:all_states, (all_states + "|" + state))
-  end
-  
+    
   def run(event)
     call_flow = self.method(event.to_s) 
     call_flow.call
