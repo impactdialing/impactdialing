@@ -103,7 +103,7 @@ class Call < ActiveRecord::Base
       end
       
       state :wrapup_and_stop do
-        before(:always) { wrapup_now; caller_session.run('end_conf') }        
+        before(:always) { wrapup_now; call_attempt.caller_session.run('end_conf') }        
         after(:success){ persist_all_states}
       end
             
