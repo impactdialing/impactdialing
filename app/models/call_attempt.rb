@@ -238,7 +238,6 @@ class CallAttempt < ActiveRecord::Base
         deferrable.callback {EM.stop}
         deferrable.errback { |error|EM.stop }          
       }  
-      EventMachine.stop       
     end  
   end
   
