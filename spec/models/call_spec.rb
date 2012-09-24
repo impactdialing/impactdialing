@@ -552,28 +552,28 @@ describe Call do
 
       it "should update call_attempt status" do
         call = Factory(:call, call_attempt: @call_attempt, state: 'disconnected', call_status: 'busy')
-        Resque.should_receive(:enqueue).with(RedirectCallerJob, @call_attempt.id)
+        @call_attempt.should_receive(:redirect_caller)
         call.call_ended!
         call.call_attempt.status.should eq('No answer busy signal')
       end
 
       it "should update voters status" do
         call = Factory(:call, call_attempt: @call_attempt, state: 'disconnected', call_status: 'busy')
-        Resque.should_receive(:enqueue).with(RedirectCallerJob, @call_attempt.id)
+        @call_attempt.should_receive(:redirect_caller)
         call.call_ended!
         call.voter.status.should eq('No answer busy signal')
       end
 
       it "should update voters last_call_attempt_time" do
         call = Factory(:call, call_attempt: @call_attempt, state: 'disconnected', call_status: 'busy')
-        Resque.should_receive(:enqueue).with(RedirectCallerJob, @call_attempt.id)
+        @call_attempt.should_receive(:redirect_caller)
         call.call_ended!
         call.voter.last_call_attempt_time.should_not be_nil
       end
 
       it "should update voters callback as false" do
         call = Factory(:call, call_attempt: @call_attempt, state: 'disconnected', call_status: 'busy')
-        Resque.should_receive(:enqueue).with(RedirectCallerJob, @call_attempt.id)
+        @call_attempt.should_receive(:redirect_caller)
         call.call_ended!
         call.voter.call_back.should be_false
       end

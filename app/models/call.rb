@@ -72,7 +72,7 @@ class Call < ActiveRecord::Base
       end
       
       state :abandoned do
-        before(:always) { abandon_call; Resque.enqueue(RedirectCallerJob, call_attempt.id) }        
+        before(:always) { abandon_call; call_attempt.redirect_caller }        
         response do |xml_builder, the_call|
           xml_builder.Hangup
         end
@@ -81,7 +81,7 @@ class Call < ActiveRecord::Base
       
       state :call_answered_by_machine do
         event :call_ended, :to => :call_end_machine
-        before(:always) { process_answered_by_machine; Resque.enqueue(RedirectCallerJob, call_attempt.id) }        
+        before(:always) { process_answered_by_machine; call_attempt.redirect_caller }        
         
         response do |xml_builder, the_call|
           xml_builder.Play campaign.recording.file.url if campaign.use_recordings?
@@ -108,7 +108,7 @@ class Call < ActiveRecord::Base
       
       
       state :call_not_answered_by_lead do
-        before(:always) { end_unanswered_call; Resque.enqueue(RedirectCallerJob, call_attempt.id) }                
+        before(:always) { end_unanswered_call; call_attempt.redirect_caller }                
         response do |xml_builder, the_call|
           xml_builder.Hangup
         end
@@ -116,7 +116,7 @@ class Call < ActiveRecord::Base
       
       
       state :wrapup_and_continue do 
-        before(:always) { wrapup_now; Resque.enqueue(RedirectCallerJob, call_attempt.id);Resque.enqueue(ModeratorCallJob, call_attempt.id, "publish_moderator_response_submited") }
+        before(:always) { wrapup_now; call_attempt.redirect_caller; Resque.enqueue(ModeratorCallJob, call_attempt.id, "publish_moderator_response_submited") }
         after(:success){ persist_all_states}
       end
       
