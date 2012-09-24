@@ -21,7 +21,7 @@ class CallsController < ApplicationController
     if @parsed_params['campaign_type'] != Campaign::Type::PREDICTIVE
       @call.call_attempt.redirect_caller
     end
-    Twilio::TwiML::Response.new { |r| r.Hangup }.text
+    render xml:  Twilio::TwiML::Response.new { |r| r.Hangup }.text
   end
   
   def submit_result
