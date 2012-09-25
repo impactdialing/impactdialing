@@ -1,5 +1,5 @@
 class CallPusherJob 
-  @queue = :call_pusher_job
+  @queue = :call_flow
   
    def self.perform(call_attempt_id, event)    
      call_attempt = CallAttempt.find(call_attempt_id)

@@ -1,5 +1,5 @@
 class CallEndJob 
-  @queue = :call_end_job
+  @queue = :call_flow
   
    def self.perform(params)    
      call_id = params['id']
