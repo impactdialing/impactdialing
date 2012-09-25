@@ -120,13 +120,13 @@ class CallAttempt < ActiveRecord::Base
   end
 
 
-  def end_unanswered_call
-    update_attributes(status:  CallAttempt::Status::MAP[call.call_status], wrapup_time: Time.now, call_end: Time.now)
+  def end_unanswered_call(call_status)
+    update_attributes(status:  CallAttempt::Status::MAP[call_status], wrapup_time: Time.now, call_end: Time.now)
     begin
-      voter.update_attributes(status:  CallAttempt::Status::MAP[call.call_status], last_call_attempt_time:  Time.now, call_back: false)
+      voter.update_attributes(status:  CallAttempt::Status::MAP[call_status], last_call_attempt_time:  Time.now, call_back: false)
     rescue ActiveRecord::StaleObjectError
       voter_to_update = Voter.find(voter.id)
-      voter_to_update.update_attributes(status:  CallAttempt::Status::MAP[call.call_status], last_call_attempt_time:  Time.now, call_back: false)
+      voter_to_update.update_attributes(status:  CallAttempt::Status::MAP[call_status], last_call_attempt_time:  Time.now, call_back: false)
     end
   end
 
