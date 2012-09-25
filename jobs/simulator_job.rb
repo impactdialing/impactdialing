@@ -4,7 +4,6 @@ class SimulatorJob
   extend Resque::Plugins::Lock
   @queue = :simulator
 
-
    def self.perform(campaign_id)
     begin 
      target_abandonment = Campaign.find(campaign_id).using(:read_slave1).acceptable_abandon_rate
