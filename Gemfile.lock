@@ -198,8 +198,6 @@ GEM
       redis (>= 2.0.1)
       resque (>= 1.8.0)
       rufus-scheduler
-    resque-timeout (1.0.0)
-      resque (~> 1.0)
     rest-client (1.6.7)
       mime-types (>= 1.16)
     rspec (2.6.0)
@@ -324,7 +322,6 @@ DEPENDENCIES
   resque-lock (~> 1.0.0)
   resque-loner (~> 1.2.1)
   resque-scheduler (~> 1.9.9)
-  resque-timeout
   rspec
   rspec-rails (~> 2.6.1)
   ruby-graphviz (= 0.9.0)
