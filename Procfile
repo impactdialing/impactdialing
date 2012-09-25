@@ -13,11 +13,7 @@ simulator_worker: rake environment resque:work QUEUE=simulator
 debit_worker_job: rake environment resque:work QUEUE=debit_worker_job
 
 call_flow: rake environment resque:work QUEUE=call_flow
-call_flow: rake environment resque:work QUEUE=call_flow
-call_flow: rake environment resque:work QUEUE=call_flow
-call_flow: rake environment resque:work QUEUE=call_flow
-call_flow: rake environment resque:work QUEUE=call_flow
-call_flow: rake environment resque:work QUEUE=call_flow
+call_end: rake environment resque:work QUEUE=call_end
 
 moderator_flow: rake environment resque:work QUEUE=moderator_caller_job
 moderator_flow: rake environment resque:work QUEUE=moderator_call_job
