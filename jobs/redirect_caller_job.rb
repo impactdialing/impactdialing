@@ -1,5 +1,5 @@
 class RedirectCallerJob 
-  @queue = :redirect_caller_job
+  @queue = :call_flow
   
    def self.perform(caller_session_id)    
      caller_session = CallerSession.find(caller_session_id)

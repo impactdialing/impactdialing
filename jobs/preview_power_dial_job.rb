@@ -1,5 +1,5 @@
 class PreviewPowerDialJob
-  @queue = :preview_power_dial_job
+  @queue = :call_flow
   
   def self.perform(caller_session_id, voter_id)    
     caller_session = CallerSession.find(caller_session_id)

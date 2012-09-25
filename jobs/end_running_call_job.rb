@@ -1,5 +1,5 @@
 class EndRunningCallJob 
-  @queue = :end_running_call
+  @queue = :call_flow
   
    def self.perform(call_sid)
      t = TwilioLib.new    
