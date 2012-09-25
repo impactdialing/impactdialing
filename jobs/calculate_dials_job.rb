@@ -32,8 +32,4 @@ class CalculateDialsJob
      end
    end
 
-  class << self
-    include ::NewRelic::Agent::Instrumentation::ControllerInstrumentation
-    add_transaction_tracer :perform, :category => :task
-  end
 end
