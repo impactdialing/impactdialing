@@ -3,10 +3,6 @@
   <th>Minutes</th>
 </tr>
 <tr>
-  <td>Connected</td>
-  <td><%= usage.time_logged_in %></td>
-</tr>
-<tr>
   <td>On call</td>
   <td><%= usage.time_on_call %></td>
 </tr>
@@ -18,6 +14,10 @@
 <tr>
   <td>On hold</td>
   <td><%= usage.time_onhold  %></td>
+</tr>
+<tr>
+  <td>Connected (total)</td>
+  <td><%= usage.time_logged_in %></td>
 </tr>
 <tr>
   <td colspan="2">&nbsp;</td>
