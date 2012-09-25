@@ -146,7 +146,7 @@ GEM
     mysql2 (0.3.11)
     nested_form (0.1.1)
     net-ssh (2.5.2)
-    newrelic_rpm (3.0.1)
+    newrelic_rpm (3.4.2.1)
     nokogiri (1.4.7)
     paperclip (2.3.16)
       activerecord (>= 2.3.0)
@@ -315,7 +315,7 @@ DEPENDENCIES
   json_spec
   mysql2 (~> 0.3.0)
   nested_form (~> 0.1.1)
-  newrelic_rpm (~> 3.0.1)
+  newrelic_rpm
   nokogiri (~> 1.4.4)
   paperclip (= 2.3.16)
   pusher (~> 0.9.2)
