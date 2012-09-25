@@ -1,6 +1,7 @@
 require 'em-http-request'
 
 class PreviewPowerDialJob
+  include Resque::Plugins::UniqueJob
   @queue = :preview_power_dial_job
   
   def self.perform(caller_session_id, voter_id)    
