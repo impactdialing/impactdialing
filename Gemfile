@@ -22,7 +22,7 @@ gem 'in_place_editing', '~> 1.1.1'
 gem "nested_form", '~>0.1.1'
 gem 'jquery-rails', '>= 1.0.12'
 gem 'delayed_job'
-gem 'heroku','~>2.17.0'
+gem 'heroku','~>2.17'
 gem "activerecord-import", ">= 0.2.0"
 gem 'recurly', '~> 2.1.3'
 gem "uuid", "~> 2.3.5"
