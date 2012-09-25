@@ -10,8 +10,7 @@ module PreviewPowerCampaign
     begin
       update_voter_status_to_ready(voter)
     rescue ActiveRecord::StaleObjectError
-      sample_voters = all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.limit(7)
-      voter = sample_voters.sample
+      retry
     end
     voter
   end  
