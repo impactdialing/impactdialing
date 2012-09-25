@@ -10,6 +10,7 @@ module PreviewPowerCampaign
     begin
       update_voter_status_to_ready(voter)
     rescue ActiveRecord::StaleObjectError
+      puts "Entered recursion xxxxxxxxxxxxxxxxxxxxxxxx"
       voter = next_voter_in_dial_queue(current_voter_id)
     end
     voter
