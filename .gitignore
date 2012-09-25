@@ -17,3 +17,4 @@ bin/
 spec/fixtures/test_tmp/
 /typescript
 .bundle
+*.swp
