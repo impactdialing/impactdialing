@@ -47,6 +47,7 @@ group :development, :test do
   gem 'rspec-rails', '~> 2.6.1'
   gem 'debugger'
   gem 'hirb'
+  gem 'rspec-instafail'
 end
 
 group :development do
