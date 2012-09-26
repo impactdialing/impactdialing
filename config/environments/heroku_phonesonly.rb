@@ -3,7 +3,7 @@ ImpactDialing::Application.configure do
   TWILIO_AUTH="897298ab9f34357f651895a7011e1631"
   TWILIO_APP_SID="AP7138881a436e5c88ad304d086d43bf88"
   APP_NUMBER="4157020991"
-  HOST = APP_HOST = "phonesonlycolorfulpower.impactdialing.com"
+  HOST = APP_HOST = "twiliopandahiphoperaser.impactdialing.com"
   PORT = 80
   TEST_CALLER_NUMBER="8583679749"
   TEST_VOTER_NUMBER="4154486970"
