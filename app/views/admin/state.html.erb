@@ -6,23 +6,20 @@
   </tr>
   <tr>
     <td>Logged in campaigns:</td>
-    <td><%= @logged_in_campaigns.length %></td>
+    <td><%= @logged_in_campaigns.size %></td>
   </tr>
   <tr>
     <td>Logged in callers:</td>
-    <td><%= @logged_in_callers.length %></td>
+    <td><%= @logged_in_callers_count %><td>
   </tr>
 
     <% @logged_in_campaigns.each do |k| %>
       <tr>
         <td valign="top"><%= k.name %> <a target="_blank" href="/admin/login/<%= k.account.users.first.id %>" style="font-size:9px;">login</a></td>
         <td>
-          <%
-            callers = CallerSession.find_all_by_campaign_id_and_on_call(k,1)
-          %>
           <br/>Callers:
           <ul>
-            <% callers.each do |ca| %>
+            <% k.caller_sessions.on_call.each do |ca| %>
               <li>id <%= ca.id %> <%= ca.caller.name %> <%= ca.caller.email %> started <%= ca.starttime %> from <%= ca.caller_number %> <% if !ca.available_for_call %>Not <% end %>Available <%= link_to 'end call', admin_status_path(:end => ca.id) %>
             <% end %>
           </li>
