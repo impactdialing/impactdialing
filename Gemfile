@@ -19,7 +19,6 @@ gem 'settingslogic', '~> 2.0.6'
 gem "twilio-ruby", '~> 3.5.1'
 gem 'dynamic_form', '~> 1.1.4'
 gem "nested_form", '~>0.1.1'
-gem 'jquery-rails', '~>2.1.1'
 gem 'jquery-rails', '>= 1.0.12'
 gem 'delayed_job'
 gem 'heroku','~>2.17'
@@ -36,7 +35,6 @@ gem 'resque-lock', "~> 1.0.0"
 gem "resque-loner", "~>1.2.1"
 gem "redis", "~>2.2.2"
 gem "hiredis", "~>0.4.5"
-gem "heroku"
 gem "formtastic", "~>2.2.1"
 gem "cocoon", "~>1.0.22"
 gem 'deep_cloneable', '~> 1.4.0'
@@ -61,7 +59,6 @@ group :development do
   gem 'heroku_san'
   gem 'showoff-io'
   gem 'foreman'
-  gem 'heroku'
 end
 
 group :test do
