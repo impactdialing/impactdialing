@@ -113,6 +113,7 @@ GEM
       rake
     highline (1.6.14)
     hike (1.2.1)
+    hirb (0.7.0)
     hiredis (0.4.5)
     hsume2-state_machine (1.0.5)
     http_parser.rb (0.5.3)
@@ -309,6 +310,7 @@ DEPENDENCIES
   guard-spork
   heroku (~> 2.17)
   heroku_san
+  hirb
   hiredis (~> 0.4.5)
   in_place_editing (~> 1.1.1)
   jquery-rails (>= 1.0.12)
