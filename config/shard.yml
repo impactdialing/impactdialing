@@ -2,10 +2,10 @@ octopus:
   replicated: true
   fully_replicated: false
   environments:
-     - heroku_staging
-     - heroku
-     -heroku_caller
-     -heroku_phonesonly
+    - heroku_staging
+    - heroku
+    - heroku_caller
+    - heroku_phonesonly
      
   heroku_staging:
     read_slave1:
