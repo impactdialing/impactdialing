@@ -501,7 +501,7 @@ describe PhonesOnlyCallerSession do
 
       it "should move to voter_response state" do
         call_attempt = Factory(:call_attempt, voter: @voter)
-        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "conference_started_phones_only", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt)
+        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "conference_started_phones_only_predictive", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt)
         caller_session.should_receive(:call_answered?).and_return(true)
         Resque.should_receive(:enqueue).with(ModeratorCallerJob, caller_session.id, "publish_moderator_gathering_response")
         caller_session.gather_response!
@@ -520,6 +520,23 @@ describe PhonesOnlyCallerSession do
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather timeout=\"60\" finishOnKey=\"*\" action=\"https://#{Settings.host}:#{Settings.port}/caller/#{@caller.id}/flow?event=submit_response&amp;question_id=#{@question.id}&amp;session_id=#{caller_session.id}\" method=\"POST\"><Say>How do you like Impactdialing</Say><Say>press 1 for Great</Say><Say>press 2 for Super</Say><Say>Then press star to submit your result.</Say></Gather></Response>")
       end
     end
+    
+    describe "run out of phone numbers" do
+      it "should move to campaign_out_of_phone_numbers state" do
+        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "conference_started_phones_only_predictive", voter_in_progress: nil)
+        caller_session.run_ot_of_phone_numbers!
+        caller_session.state.should eq("campaign_out_of_phone_numbers")
+      end
+      
+      it "should render hangup twiml" do
+        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "conference_started_phones_only_predictive", voter_in_progress: nil)
+        caller_session.run_ot_of_phone_numbers!
+        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>This campaign has run out of phone numbers.</Say><Hangup/></Response>")
+      end
+      
+      
+    end
+    
   end
 
 

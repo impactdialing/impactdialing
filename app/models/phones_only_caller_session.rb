@@ -25,7 +25,7 @@ class PhonesOnlyCallerSession < CallerSession
         after(:always)  {Resque.enqueue(ModeratorCallerJob, self.id, "publish_moderator_conference_started")}    
         event :start_conf, :to => :account_has_no_funds, :if => :funds_not_available?
         event :start_conf, :to => :time_period_exceeded, :if => :time_period_exceeded?
-        event :start_conf, :to => :reassigned_campaign, :if => :caller_reassigned_to_another_campaign?
+        event :start_conf, :to => :reassigned_campaign, :if => :caller_reassigned_to_another_campaign?        
         event :start_conf, :to => :choosing_voter_to_dial, :if => :preview?
         event :start_conf, :to => :choosing_voter_and_dial, :if => :power?
         event :start_conf, :to => :conference_started_phones_only_predictive, :if => :predictive?
@@ -103,6 +103,7 @@ class PhonesOnlyCallerSession < CallerSession
       
       state :conference_started_phones_only_predictive do
         before(:always) {start_conference}
+        event :run_ot_of_phone_numbers, :to=> :campaign_out_of_phone_numbers        
         event :gather_response, :to => :read_next_question, :if => :call_answered?
         event :gather_response, :to => :wrapup_call
 
