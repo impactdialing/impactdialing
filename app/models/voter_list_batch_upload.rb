@@ -14,11 +14,13 @@ class VoterListBatchUpload
     csv_to_system_map.remap_system_column! "ID", :to => "CustomID"
     csv_phone_column_location = csv_headers.index(csv_to_system_map.csv_index_for "Phone")    
     csv_custom_id_column_location = csv_headers.index(csv_to_system_map.csv_index_for "CustomID")
+    campaign = @list.campaign
 
     create_custom_attributes(csv_headers, csv_to_system_map)
-    leads = []
-    custom_fields = []
-      voters_list.each do |voter_info|
+    voters_list.each_slice(1000).each do |voter_info_list|
+      custom_fields = []
+      leads = []
+      voter_info_list.each do |voter_info|
         phone_number = Voter.sanitize_phone(voter_info[csv_phone_column_location])
         lead = nil
 
@@ -32,37 +34,35 @@ class VoterListBatchUpload
         end
 
         if lead.valid?
-          lead.save
-          leads << lead
+          leads << [lead, voter_info]
           result[:successCount] +=1
-          csv_headers.each_with_index do |csv_column_title, column_location|
-            system_column = csv_to_system_map.system_column_for csv_column_title
-            if !system_column.blank? && system_column != "Phone"
-              apply_attribute(lead, system_column, voter_info[column_location], custom_fields)
-            end
-          end
         else
           result[:failedCount] +=1
           next
         end
-        if leads.size >= 1000
-          Voter.import leads
-          CustomVoterFieldValue.import custom_fields
-          leads = []
-          custom_fields = []
+      end
+      Voter.transaction do
+        leads.each { |l, info| l.save }
+      end
+      leads.each do |lead, voter_info|
+        csv_headers.each_with_index do |csv_column_title, column_location|
+          system_column = csv_to_system_map.system_column_for csv_column_title
+          if !system_column.blank? && system_column != "Phone"
+            apply_attribute(lead, system_column, voter_info[column_location], custom_fields, campaign)
+          end
         end
       end
-      Voter.import leads
       CustomVoterFieldValue.import custom_fields
+    end
    result
  end
 
 
-  def apply_attribute(voter, attribute, value, custom_fields)
+  def apply_attribute(voter, attribute, value, custom_fields, campaign)
     if voter.has_attribute? attribute
       voter.update_attributes(attribute => value)
     else
-      custom_attribute = voter.campaign.account.custom_voter_fields.find_by_name(attribute)
+      custom_attribute = campaign.account.custom_voter_fields.find_by_name(attribute)
       custom_field_value = CustomVoterFieldValue.voter_fields(voter, custom_attribute).try(:first)
       if custom_field_value.present?
         custom_field_value.update_attributes(value: value)
