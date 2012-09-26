@@ -20,12 +20,10 @@ class NewReportJob
 
   def perform
     begin
-      Octopus.using(:read_slave1) do
         @report = CSV.generate do |csv|
           @campaign_strategy = report_strategy(csv)
           @campaign_strategy.construct_csv
         end
-      end
       save_report
       notify_success
     rescue Exception => e
