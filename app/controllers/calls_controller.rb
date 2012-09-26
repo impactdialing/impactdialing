@@ -15,7 +15,7 @@ class CallsController < ApplicationController
   end
   
   def call_ended
-    if ["no-answer", "busy", "failed"].include?(@parsed_params['call_status'])
+    if ["no-answer", "busy", "failed"].include?(@parsed_params['call_status']) || @parsed_params['answered_by'] == "machine"
       RedisCall.store_call_details(@parsed_params)
     end    
     if @parsed_params['campaign_type'] != Campaign::Type::PREDICTIVE && @parsed_params['call_status'] != 'completed'
