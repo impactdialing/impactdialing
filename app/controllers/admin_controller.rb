@@ -12,9 +12,22 @@ class AdminController < ApplicationController
     else
       @calling_status = "Available".html_safe
     end
-    @logged_in_campaigns = Campaign.where("id in (select distinct campaign_id from caller_sessions where on_call=1)").includes(:account => :users).includes(:caller_sessions)
+    @logged_in_campaigns = Campaign.where("id in (select distinct campaign_id from caller_sessions where on_call=1)")
     @logged_in_callers_count = CallerSession.on_call.count
     @errors=""
+  end
+
+  def caller_sessions
+    campaign = Campaign.find(params[:id])
+    render json: {
+      html: render_to_string(
+        partial: "caller_sessions",
+        locals: {
+          caller_sessions: campaign.caller_sessions.on_call.includes(:caller),
+          campaign: campaign
+        }
+      )
+    }
   end
 
   def flush_redis
