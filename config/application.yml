@@ -29,7 +29,7 @@ heroku_caller:
 
 heroku_phonesonly:
   <<: *default_settings
-  host: phonesonlycolorfulpower.impactdialing.com
+  host: twiliopandahiphoperaser.impactdialing.com
   port: 80
 
 
