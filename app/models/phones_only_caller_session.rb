@@ -160,6 +160,7 @@ class PhonesOnlyCallerSession < CallerSession
       
       state :wrapup_call do
         before(:always) {wrapup_call_attempt}
+        event :run_ot_of_phone_numbers, :to=> :campaign_out_of_phone_numbers        
         event :next_call, :to => :ready_to_call
         response do |xml_builder, the_call|
           xml_builder.Redirect(flow_caller_url(self.caller, event: 'next_call', :host => Settings.host, :port => Settings.port, :session => id))          
