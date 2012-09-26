@@ -139,16 +139,16 @@ class SimulatorJob
                
        campaign = Campaign.find(campaign_id).using(:read_slave1)
 
-       number_of_call_attempts = campaign.call_attempts.using(:read_slave1).between((Time.now - start_time.seconds), Time.now).size
+       number_of_call_attempts = campaign.using(:read_slave1).call_attempts.between((Time.now - start_time.seconds), Time.now).size
 
        if number_of_call_attempts < 1000
-           call_attempts_from_start_time = campaign.call_attempts.using(:read_slave1).between((Time.now - start_time.seconds), Time.now)
+           call_attempts_from_start_time = campaign.using(:read_slave1).call_attempts.between((Time.now - start_time.seconds), Time.now)
        else
-         call_attempts_from_start_time = campaign.call_attempts.using(:read_slave1).last(1000)
+         call_attempts_from_start_time = campaign.using(:read_slave1).call_attempts.last(1000)
        end
 
        puts "Simulating #{call_attempts_from_start_time.size} call attempts"
-       observed_conversations = call_attempts_from_start_time.using(:read_slave1).where(:status => "Call completed with success.").map{|attempt| OpenStruct.new(:length => attempt.duration_wrapped_up, time_to_wrapup: attempt.time_to_wrapup, :counter => 0)}
+       observed_conversations = call_attempts_from_start_time.where(:status => "Call completed with success.").map{|attempt| OpenStruct.new(:length => attempt.duration_wrapped_up, time_to_wrapup: attempt.time_to_wrapup, :counter => 0)}
        observed_dials = call_attempts_from_start_time.map{|attempt| OpenStruct.new(:length => attempt.ringing_duration, :counter => 0, :answered? => attempt.status == 'Call completed with success.') }
        ActiveRecord::Base.logger.info observed_conversations
 
