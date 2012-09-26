@@ -452,8 +452,8 @@ describe Call do
 
       it "should wrapup call_attempt" do
         call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected', all_states: "")
+        Resque.should_receive(:enqueue).with(RedirectCallerJob, @caller_session.id)
         Resque.should_receive(:enqueue).with(ModeratorCallJob, @call_attempt.id, "publish_moderator_response_submited")
-        Resque.should_receive(:enqueue).with(RedirectCallerJob, @call_attempt.id)
         call.submit_result!
         call.call_attempt.wrapup_time.should_not be_nil
       end

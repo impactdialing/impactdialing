@@ -11,11 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-<<<<<<< HEAD
-ActiveRecord::Schema.define(:version => 20120924132052) do
-=======
 ActiveRecord::Schema.define(:version => 20120925153123) do
->>>>>>> master
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -292,10 +288,6 @@ ActiveRecord::Schema.define(:version => 20120925153123) do
     t.datetime "created_at",  :null => false
     t.datetime "updated_at",  :null => false
     t.string   "campaign_id"
-  end
-
-  create_table "moderator_campaigns", :force => true do |t|
-    t.string "name"
   end
 
   create_table "moderators", :force => true do |t|
