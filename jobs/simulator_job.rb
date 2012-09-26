@@ -139,12 +139,12 @@ class SimulatorJob
                
        campaign = Campaign.find(campaign_id).using(:read_slave1)
 
-       number_of_call_attempts = campaign.call_attempts.using(:read_slave1).between((Time.now - start_time.seconds), Time.now).size
+       number_of_call_attempts = campaign.using(:read_slave1).call_attempts.between((Time.now - start_time.seconds), Time.now).size
 
        if number_of_call_attempts < 1000
-           call_attempts_from_start_time = campaign.call_attempts.using(:read_slave1).between((Time.now - start_time.seconds), Time.now)
+           call_attempts_from_start_time = campaign.using(:read_slave1).call_attempts.between((Time.now - start_time.seconds), Time.now)
        else
-         call_attempts_from_start_time = campaign.call_attempts.using(:read_slave1).last(1000)
+         call_attempts_from_start_time = campaign.using(:read_slave1).call_attempts.last(1000)
        end
 
        puts "Simulating #{call_attempts_from_start_time.size} call attempts"
