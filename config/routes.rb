@@ -12,7 +12,7 @@ ImpactDialing::Application.routes.draw do
       post :submit_result_and_stop
     end
   end
-  
+
   resources :caller, :protocol => PROTOCOL, :only => [:index] do
     collection do
       get :login
@@ -33,7 +33,7 @@ ImpactDialing::Application.routes.draw do
     end
 
   end
-  
+
 
   namespace "callers" do
     resources :campaigns do
@@ -92,7 +92,7 @@ ImpactDialing::Application.routes.draw do
 
   #broadcast
   scope 'broadcast', :protocol => PROTOCOL do
-    
+
     resources :campaigns do
       member do
         post :verify_callerid
@@ -105,7 +105,7 @@ ImpactDialing::Application.routes.draw do
         get :running_status
       end
     end
-    
+
     resources :reports, :protocol => PROTOCOL do
       collection do
         get :usage
@@ -189,9 +189,9 @@ ImpactDialing::Application.routes.draw do
 
   scope 'client' do
     match '/', :to => 'client#index', :as => 'client_root'
-    
+
     resources :campaigns, :only => [] do
-      member { post :verify_callerid }      
+      member { post :verify_callerid }
     end
     resources :blocked_numbers, :only => [:index, :create, :destroy]
     resources :monitors do
@@ -211,16 +211,16 @@ ImpactDialing::Application.routes.draw do
     match '/', :to => 'caller#index', :as => 'caller_root'
     match 'logout', :to => 'caller#logout', :as => 'caller_logout'
   end
-  
+
   scope 'client' do
     resources :campaigns do
-      resources :voter_lists do        
+      resources :voter_lists do
         collection do
           post :import
           post :column_mapping
-        end        
-      end 
-    end    
+        end
+      end
+    end
   end
 
 
@@ -267,6 +267,7 @@ ImpactDialing::Application.routes.draw do
 
   get 'admin/status', :to => 'admin#state'
   get 'admin/abandonment', :to => 'admin#abandonment'
+  get 'admin/caller_sessions/:id', :to => 'admin#caller_sessions', :as => :admin_caller_sessions
 
   resource :call_attempts, :only => :create
 
