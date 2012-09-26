@@ -267,7 +267,7 @@ describe Predictive do
      unavailable_caller_sessions.each { |caller_session| caller_session.update_attribute(:available_for_call, false) }
      5.times { Factory(:call_attempt, :campaign => campaign, :call_start => 5.seconds.ago, :status => CallAttempt::Status::INPROGRESS) }
      2.times { Factory(:call_attempt, :campaign => campaign, :call_start => 20.seconds.ago, :status => CallAttempt::Status::INPROGRESS) }
-     campaign.number_of_simulated_voters_to_dial.should eq(16)
+     campaign.number_of_simulated_voters_to_dial.should eq(18)
    end
 
    it "should determine calls to make give the simulated best_dials when call_attempts prior int the last 10 mins are present" do
