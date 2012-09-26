@@ -24,7 +24,7 @@ describe Client::NotesController do
       note = Factory(:note, note: "abc", script_order: 1, script: active_script)
       Factory(:note, note: "def", script_order: 2, script: active_script)
       get :show, script_id: active_script.id, id: note.id,  :api_key=> 'abc123', :format => "json"
-      response.body.should eq("{\"note\":{\"id\":1,\"note\":\"abc\",\"script_id\":1,\"script_order\":1}}")
+      response.body.should eq("{\"note\":{\"id\":#{note.id},\"note\":\"abc\",\"script_id\":#{active_script.id},\"script_order\":1}}")
     end
     
     it "should 404 if script not found" do
@@ -58,7 +58,7 @@ describe Client::NotesController do
     it "should create note" do
       active_script = Factory(:script, :account => account, :active => true)
       post :create, script_id: active_script.id, note: {note: "Hi", script_order: 1},  :api_key=> 'abc123', :format => "json"
-      response.body.should eq("{\"note\":{\"id\":1,\"note\":\"Hi\",\"script_id\":1,\"script_order\":1}}")
+      response.body.should match(/{\"note\":{\"id\":(.*),\"note\":\"Hi\",\"script_id\":#{active_script.id},\"script_order\":1}}/)
     end
     
     it "should throw validation error" do

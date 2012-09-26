@@ -37,6 +37,7 @@ en:
   admin_access: "Only an administrator can access this page."
   failure_change_role: "Sorry, you can't change your own role."
   success_change_role: "Updated user role successfully."
+  campaign_out_of_phone_numbers: "This campaign has run out of phone numbers."
   white_labeling:
 
     impactdialing:

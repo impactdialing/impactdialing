@@ -173,16 +173,16 @@ describe Campaign do
     end
 
     it "should allow callers to dial, if time not expired" do
-      t1 = Time.parse("01/2/2011 10:00")
-      t2 = Time.parse("01/2/2011 09:00")
+      t1 = Time.parse("01/2/2011 10:00 -08:00")
+      t2 = Time.parse("01/2/2011 09:00 -08:00")
       Time.stub!(:now).and_return(t1, t1, t2, t2)
       @campaign.time_period_exceeded?.should == false
     end
 
     it "should not allow callers to dial, if time  expired" do
-      t1 = Time.parse("01/2/2011 22:20")
-      t2 = Time.parse("01/2/2011 11:00")
-      t3 = Time.parse("01/2/2011 15:00")
+      t1 = Time.parse("01/2/2011 22:20 -08:00")
+      t2 = Time.parse("01/2/2011 11:00 -08:00")
+      t3 = Time.parse("01/2/2011 15:00 -08:00")
       Time.stub!(:now).and_return(t1, t1, t2, t2, t3, t3)
       @campaign.time_period_exceeded?.should == true
     end
