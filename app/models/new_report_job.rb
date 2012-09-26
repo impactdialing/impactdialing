@@ -1,3 +1,4 @@
+require 'octopus'
 class NewReportJob
   def initialize(campaign_id, user_id, voter_fields, custom_fields, all_voters, lead_dial, from, to, callback_url, strategy="webui")
      @campaign = Campaign.find(campaign_id)
