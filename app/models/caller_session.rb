@@ -131,6 +131,13 @@ class CallerSession < ActiveRecord::Base
                 
       end
       
+      state :campaign_out_of_phone_numbers do
+        response do |xml_builder, the_call|          
+          xml_builder.Say I18n.t(:campaign_out_of_phone_numbers)
+          xml_builder.Hangup
+        end                
+      end
+      
       
   end
   
@@ -189,6 +196,11 @@ class CallerSession < ActiveRecord::Base
   def redirect_caller
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
     Twilio::Call.redirect(sid, flow_caller_url(caller, :host => Settings.host, :port => Settings.port, session_id: id, event: "start_conf"))
+  end
+  
+  def redirect_caller_out_of_numbers
+    Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
+    Twilio::Call.redirect(sid, flow_caller_url(caller, :host => Settings.host, :port => Settings.port, session_id: id, event: "run_ot_of_phone_numbers"))
   end
   
 

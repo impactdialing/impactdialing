@@ -220,8 +220,9 @@ describe CallerSession do
         caller_session.start_conf!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>You can only call this campaign between 9 AM and 9 PM. Please try back during those hours.</Say><Hangup/></Response>")
       end
-
-    end
+    end  
+      
+   
 
     describe "Caller already on call" do
 

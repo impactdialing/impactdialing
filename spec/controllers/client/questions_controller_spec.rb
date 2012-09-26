@@ -23,7 +23,7 @@ describe Client::QuestionsController do
       active_script = Factory(:script, :account => account, :active => true)
       question = Factory(:question, text: "abc", script_order: 1, script: active_script)
       get :show, script_id: active_script.id, id: question.id,  :api_key=> 'abc123', :format => "json"
-      response.body.should eq("{\"question\":{\"external_id_field\":null,\"id\":1,\"script_id\":1,\"script_order\":1,\"text\":\"abc\"}}")
+      response.body.should eq("{\"question\":{\"external_id_field\":null,\"id\":#{question.id},\"question_order\":null,\"script_id\":#{active_script.id},\"script_order\":1,\"text\":\"abc\"}}")
     end
 
     it "should 404 if script not found" do
@@ -56,7 +56,7 @@ describe Client::QuestionsController do
     it "should create question" do
       active_script = Factory(:script, :account => account, :active => true)
       post :create, script_id: active_script.id, question: {text: "Hi", script_order: 1},  :api_key=> 'abc123', :format => "json"
-      response.body.should eq("{\"question\":{\"external_id_field\":null,\"id\":1,\"script_id\":1,\"script_order\":1,\"text\":\"Hi\"}}")
+      response.body.should match(/{\"question\":{\"external_id_field\":null,\"id\":(.*),\"question_order\":null,\"script_id\":#{active_script.id},\"script_order\":1,\"text\":\"Hi\"}}/)
     end
 
     it "should throw validation error" do
