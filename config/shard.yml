@@ -2,13 +2,13 @@ octopus:
   replicated: true
   fully_replicated: false
   verify_connection: true
-  environments:
+  octopus_enviroments:
     - heroku_staging
     - heroku
     - heroku_caller
     - heroku_phonesonly
      
-  heroku_staging:
+  heroku_staging:  
     read_slave1:
       adapter: mysql2
       host: herokustaging-read.cjo94dhm4pos.us-east-1.rds.amazonaws.com
