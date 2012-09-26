@@ -98,7 +98,7 @@ class AdminController < ApplicationController
   end
 
   def users
-    @accounts = Account.all
+    @accounts = Account.include(:users).all
   end
 
   def toggle_activated
