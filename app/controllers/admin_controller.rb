@@ -11,8 +11,8 @@ class AdminController < ApplicationController
     else
       @calling_status = "Available".html_safe
     end
-    @logged_in_campaigns = Campaign.all(:conditions=>"id in (select distinct campaign_id from caller_sessions where on_call=1)")
-    @logged_in_callers = CallerSession.find_all_by_on_call(1)
+    @logged_in_campaigns = Campaign.where("id in (select distinct campaign_id from caller_sessions where on_call=1)").includes(:account => :users).includes(:caller_sessions)
+    @logged_in_callers_count = CallerSession.on_call.count
     @errors=""
   end
 
@@ -88,7 +88,7 @@ class AdminController < ApplicationController
   end
 
   def users
-    @accounts = Account.include(:users).all
+    @accounts = Account.includes(:users).all
   end
 
   def toggle_activated
