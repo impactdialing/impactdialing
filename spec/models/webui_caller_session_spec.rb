@@ -172,6 +172,22 @@ describe WebuiCallerSession do
         caller_session.state.should eq("stopped")
       end
     end
+    
+    describe "run out of phone numbers" do
+      it "should move to campaign_out_of_phone_numbers state" do
+        caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "connected", voter_in_progress: nil)
+        caller_session.run_ot_of_phone_numbers!
+        caller_session.state.should eq("campaign_out_of_phone_numbers")
+      end
+      
+      it "should render hangup twiml" do
+        caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "connected", voter_in_progress: nil)
+        caller_session.run_ot_of_phone_numbers!
+        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>This campaign has run out of phone numbers.</Say><Hangup/></Response>")
+      end
+      
+      
+    end
 
   end
 

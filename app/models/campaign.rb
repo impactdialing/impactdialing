@@ -206,6 +206,15 @@ class Campaign < ActiveRecord::Base
   def abandoned_calls_time(from_date, to_date)
     call_attempts.between(from_date, to_date).with_status([CallAttempt::Status::ABANDONED]).sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)').to_i
   end
+  
+  def leads_available_now
+    sanitize_dials(all_voters.enabled.avialable_to_be_retried(recycle_rate).count  + all_voters.by_status(CallAttempt::Status::ABANDONED).count)
+  end
+  
+  def sanitize_dials(dial_count)
+    dial_count.nil? ? 0 : dial_count
+  end
+  
 
   def cost_per_minute
     0.09

@@ -76,7 +76,6 @@ class CallerSession < ActiveRecord::Base
         event :start_conf, :to => :subscription_limit, :if => :subscription_limit_exceeded?
         event :start_conf, :to => :time_period_exceeded, :if => :time_period_exceeded?
         event :start_conf, :to => :caller_on_call,  :if => :is_on_call?
-        event :start_conf, :to => :run_out_of_numbers,  :if => :no_more_numbers_to_dial?
       end 
       
       
@@ -132,19 +131,14 @@ class CallerSession < ActiveRecord::Base
                 
       end
       
-      state :run_out_of_numbers do
+      state :campaign_out_of_phone_numbers do
         response do |xml_builder, the_call|          
           xml_builder.Say I18n.t(:campaign_out_of_phone_numbers)
           xml_builder.Hangup
-        end        
-        
+        end                
       end
       
       
-  end
-  
-  def no_more_numbers_to_dial?
-    
   end
   
   def end_caller_session
@@ -207,6 +201,11 @@ class CallerSession < ActiveRecord::Base
   def redirect_caller
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
     Twilio::Call.redirect(sid, flow_caller_url(caller, :host => Settings.host, :port => Settings.port, session_id: id, event: "start_conf"))
+  end
+  
+  def redirect_caller_out_of_numbers
+    Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
+    Twilio::Call.redirect(sid, flow_caller_url(caller, :host => Settings.host, :port => Settings.port, session_id: id, event: "run_ot_of_phone_numbers"))
   end
   
 
