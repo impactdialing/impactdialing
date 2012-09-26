@@ -106,6 +106,16 @@ describe Predictive do
       campaign.choose_voters_to_dial(20).should include(voter)
      end
      
+     it "should redirect caller to campaign has no voters if numbers run out" do
+       account = Factory(:account, :activated => true)
+       campaign = Factory(:predictive, :account => account, recycle_rate: 3)
+       caller_session = Factory(:webui_caller_session, caller: Factory(:caller), on_call: true, available_for_call: true, campaign: campaign, state: "connected", voter_in_progress: nil)
+       voter = Factory(:voter, :campaign => campaign, :status => CallAttempt::Status::BUSY, last_call_attempt_time: Time.now - 2.hours)
+       Factory(:call_attempt, :voter => voter, :status => CallAttempt::Status::BUSY)
+       Resque.should_receive(:enqueue)
+       campaign.choose_voters_to_dial(20).should eq([])       
+     end
+     
   end
   
   describe "best dials simulated" do

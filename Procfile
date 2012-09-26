@@ -17,4 +17,4 @@ caller_pusher_job: rake environment resque:work QUEUE=caller_pusher_job
 preview_power_dial_job: rake environment resque:work QUEUE=preview_power_dial_job
 moderator_caller_job: rake environment resque:work QUEUE=moderator_caller_job
 moderator_call_job: rake environment resque:work QUEUE=moderator_call_job
-
+campaign_out_of_numbers: rake environment resque:work QUEUE=campaign_out_of_numbers
