@@ -46,6 +46,7 @@ group :development, :test do
   gem 'rspec'
   gem 'rspec-rails', '~> 2.6.1'
   gem 'debugger'
+  gem 'hirb'
 end
 
 group :development do
