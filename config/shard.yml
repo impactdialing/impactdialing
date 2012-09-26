@@ -1,5 +1,6 @@
 octopus:
   replicated: true
+  fully_replicated: false
   heroku_staging:
     read_slave1:
       adapter: mysql2
