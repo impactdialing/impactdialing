@@ -19,7 +19,7 @@ describe Script do
   it "lists active scripts" do
     inactive = Factory(:script, :active => false)
     active = Factory(:script, :active => true)
-    Script.active.should == [active]
+    Script.active.should include(active)
   end
 
   it "lists robo scripts" do
