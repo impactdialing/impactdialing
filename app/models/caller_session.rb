@@ -76,6 +76,7 @@ class CallerSession < ActiveRecord::Base
         event :start_conf, :to => :subscription_limit, :if => :subscription_limit_exceeded?
         event :start_conf, :to => :time_period_exceeded, :if => :time_period_exceeded?
         event :start_conf, :to => :caller_on_call,  :if => :is_on_call?
+        event :start_conf, :to => :run_out_of_numbers,  :if => :no_more_numbers_to_dial?
       end 
       
       
@@ -131,7 +132,19 @@ class CallerSession < ActiveRecord::Base
                 
       end
       
+      state :run_out_of_numbers do
+        response do |xml_builder, the_call|          
+          xml_builder.Say I18n.t(:campaign_out_of_phone_numbers)
+          xml_builder.Hangup
+        end        
+        
+      end
       
+      
+  end
+  
+  def no_more_numbers_to_dial?
+    
   end
   
   def end_caller_session
