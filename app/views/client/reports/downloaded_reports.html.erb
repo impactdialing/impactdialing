@@ -1,17 +1,19 @@
 <h1>Download reports for <%= @campaign.name %></h1>
-<% if @downloaded_reports.nil? || @downloaded_reports.size==0 %>
-    <p>You don't have any available download reports for <%= @campaign.name %>.</p>
-<% else %>
-    <table>
-      <tr>
-        <th>Link</th>
-        <th>Created at</th>
-      </tr>
-      <% @downloaded_reports.each do |report| %>
-          <tr>
-            <td><a href="<%= report.link %>">Download</a></td>
-            <td><%= distance_of_time_in_words_to_now(report.created_at)%> ago.</td>
-          </tr>
-      <% end %>
-    </table>
-<% end %>
+<div role='main'>
+  <% if @downloaded_reports.nil? || @downloaded_reports.size==0 %>
+      <p>You don't have any available download reports for <%= @campaign.name %>.</p>
+  <% else %>
+      <table>
+        <tr>
+          <th>Link</th>
+          <th>Created at</th>
+        </tr>
+        <% @downloaded_reports.each do |report| %>
+            <tr>
+              <td><a href="<%= report.link %>">Download</a></td>
+              <td><%= distance_of_time_in_words_to_now(report.created_at)%> ago.</td>
+            </tr>
+        <% end %>
+      </table>
+  <% end %>
+</div>

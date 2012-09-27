@@ -7,7 +7,9 @@ describe CallerSession do
     call1 = Factory(:caller_session, :on_call=> true)
     call2 = Factory(:caller_session, :on_call=> false)
     call3 = Factory(:caller_session, :on_call=> true)
-    CallerSession.on_call.all.should =~ [call1, call3]
+    CallerSession.on_call.all.should  include(call1)
+    CallerSession.on_call.all.should  include(call3)
+    
   end
 
 
@@ -16,7 +18,7 @@ describe CallerSession do
     Factory(:caller_session, :available_for_call=> false, :on_call=>false)
     Factory(:caller_session, :available_for_call=> true, :on_call=>false)
     Factory(:caller_session, :available_for_call=> false, :on_call=>false)
-    CallerSession.available.should == [call1]
+    CallerSession.available.should include(call1) 
   end
 
   it "has one attempt in progress" do
@@ -95,7 +97,8 @@ describe CallerSession do
     too_new = Factory(:caller_session).tap { |ca| ca.update_attribute(:created_at, 10.minutes.from_now) }
     just_right = Factory(:caller_session).tap { |ca| ca.update_attribute(:created_at, 8.minutes.ago) }
     another_just_right = Factory(:caller_session).tap { |ca| ca.update_attribute(:created_at, 8.minutes.from_now) }
-    CallerSession.between(9.minutes.ago, 9.minutes.from_now).should eq([just_right, another_just_right])
+    CallerSession.between(9.minutes.ago, 9.minutes.from_now).should include(just_right)
+    CallerSession.between(9.minutes.ago, 9.minutes.from_now).should include(another_just_right)
   end
 
   it "sums time caller is logged in" do

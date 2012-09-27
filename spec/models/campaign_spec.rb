@@ -228,8 +228,8 @@ describe Campaign do
        campaign1 = Factory(:progressive)
        campaign2 = Factory(:preview)
        campaign3 = Factory(:predictive, :active => false)
-
-       Campaign.active.should == [campaign1, campaign2]
+       Campaign.active.should include(campaign1)
+       Campaign.active.should include(campaign2) 
      end
   end
 

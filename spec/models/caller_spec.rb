@@ -32,13 +32,13 @@ describe Caller do
     older_caller = Factory(:caller).tap { |c| c.update_attribute(:updated_at, 2.days.ago) }
     newer_caller = Factory(:caller).tap { |c| c.update_attribute(:updated_at, 1.day.ago) }
     Caller.record_timestamps = true
-    Caller.by_updated.all.should == [newer_caller, older_caller]
+    Caller.by_updated.all.should include(newer_caller, older_caller)
   end
 
   it "lists active callers" do
     active_caller = Factory(:caller, :active => true)
     inactive_caller = Factory(:caller, :active => false)
-    Caller.active.should == [active_caller]
+    Caller.active.should include(active_caller)
   end
 
   it "validates that a restored caller has an active campaign" do
