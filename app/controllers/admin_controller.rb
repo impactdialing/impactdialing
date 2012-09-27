@@ -6,11 +6,6 @@ class AdminController < ApplicationController
 
 
   def state
-    if Time.now.hour > 0 && Time.now.hour < 6
-      @calling_status = "<font color=red>Unavailable, off hours</font>".html_safe
-    else
-      @calling_status = "Available".html_safe
-    end
     @logged_in_campaigns = Campaign.where("id in (select distinct campaign_id from caller_sessions where on_call=1)")
     @logged_in_callers_count = CallerSession.on_call.count
     @errors=""
