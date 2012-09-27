@@ -22,8 +22,8 @@ describe Call do
       
         it "should move to the connected state" do
           call = Factory(:call, call_attempt: @call_attempt, call_status: 'in-progress')
-          @call_attempt.should_receive(:connect_call)
-          @call_attempt.should_receive(:publish_voter_connected)
+          Resque.should_receive(:enqueue).with(CallPusherJob, @call_attempt.id, "publish_voter_connected")
+          Resque.should_receive(:enqueue).with(ModeratorCallJob, @call_attempt.id, "publish_voter_connected_moderator")
           call.incoming_call!
           call.state.should eq('connected')
         end
@@ -33,14 +33,14 @@ describe Call do
           @call_attempt.should_receive(:connect_call)
           @call_attempt.should_receive(:caller_session_key)
           @call_attempt.should_receive(:redis_caller_session).and_return("1")
-
-          @call_attempt.should_receive(:publish_voter_connected)
+          Resque.should_receive(:enqueue).with(CallPusherJob, @call_attempt.id, "publish_voter_connected")
+          Resque.should_receive(:enqueue).with(ModeratorCallJob, @call_attempt.id, "publish_voter_connected_moderator")
           call.incoming_call!
           call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"false\" action=\"https://#{Settings.host}/calls/#{call.id}/flow?event=disconnect\" record=\"false\"><Conference waitUrl=\"hold_music\" waitMethod=\"GET\" beep=\"false\" endConferenceOnExit=\"true\" maxParticipants=\"2\"/></Dial></Response>")
         end
+   end
 
 
-      end
 
     describe "incoming call answered by human that need to be abandoned" do
         before(:each) do
@@ -135,29 +135,7 @@ describe Call do
        call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
       end
     end
-  
-    describe "end call that dint connect" do
 
-        before(:each) do
-         @script = Factory(:script)
-         @campaign =  Factory(:campaign, script: @script)
-         @caller = Factory(:caller)
-         @caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
-         @voter = Factory(:voter, campaign: @campaign)
-         @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session)
-        end
-
-        it "should update call attempt status" do            
-          call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, call_status: 'busy', state: "initial")
-          @call_attempt.should_receive(:end_unanswered_call)
-          @call_attempt.should_receive(:redirect_caller)
-          call.call_ended!
-          call.state.should eq('call_not_answered_by_lead')
-        end
-
-      end
-  
-  
   end
   
   describe "connected" do
@@ -185,19 +163,36 @@ describe Call do
        end
      end
 
-   describe "disconnect"  do
-     before(:each) do
-       @script = Factory(:script)
-       @campaign =  Factory(:campaign, script: @script)
-       @caller_session = Factory(:caller_session)
-       @voter = Factory(:voter, campaign: @campaign, caller_session: @caller_session)
-       @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session)
-     end
-     
+     describe "disconnect"  do
+       before(:each) do
+         @script = Factory(:script)
+         @campaign =  Factory(:campaign, script: @script)
+         @caller_session = Factory(:caller_session)
+         @voter = Factory(:voter, campaign: @campaign, caller_session: @caller_session)
+         @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session)
+       end
+
+
+       it "should update call attempt recording_duration" do
+         call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected', recording_duration: 4)
+         Resque.should_receive(:enqueue).with(CallPusherJob, @call_attempt.id, "publish_voter_disconnected")
+         Resque.should_receive(:enqueue).with(ModeratorCallJob, @call_attempt.id, "publish_voter_disconected_moderator")         
+         call.disconnect!
+         call.call_attempt.recording_duration.should eq(4)
+       end
+
+       it "should update call attempt recording_url" do
+         call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected', recording_duration: 4, recording_url: "url")
+         Resque.should_receive(:enqueue).with(CallPusherJob, @call_attempt.id, "publish_voter_disconnected")
+         Resque.should_receive(:enqueue).with(ModeratorCallJob, @call_attempt.id, "publish_voter_disconected_moderator")                  
+         call.disconnect!
+         call.call_attempt.recording_url.should eq("url")
+       end
 
        it "should move to disconnected state" do
          call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected')
-         @call_attempt.should_receive(:publish_voter_disconnected)
+         Resque.should_receive(:enqueue).with(CallPusherJob, @call_attempt.id, "publish_voter_disconnected")
+         Resque.should_receive(:enqueue).with(ModeratorCallJob, @call_attempt.id, "publish_voter_disconected_moderator")                  
          call.disconnect!
          call.state.should eq('disconnected')
 
@@ -206,8 +201,8 @@ describe Call do
 
        it "should hangup twiml" do
          call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected')
-         @call_attempt.should_receive(:disconnect_call)
-         @call_attempt.should_receive(:publish_voter_disconnected)
+         Resque.should_receive(:enqueue).with(CallPusherJob, @call_attempt.id, "publish_voter_disconnected")
+         Resque.should_receive(:enqueue).with(ModeratorCallJob, @call_attempt.id, "publish_voter_disconected_moderator")                  
          call.disconnect!
          call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
        end
@@ -227,77 +222,49 @@ describe Call do
       end
 
 
+      it "should update call attempt status as success" do
+       call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'hungup')
+       Resque.should_receive(:enqueue).with(CallPusherJob, @call_attempt.id, "publish_voter_disconnected")
+       Resque.should_receive(:enqueue).with(ModeratorCallJob, @call_attempt.id, "publish_voter_disconected_moderator")         
+       call.disconnect!
+       call.call_attempt.status.should eq(CallAttempt::Status::SUCCESS)
+      end
+
+      it "should update call attempt recording_duration" do
+       call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'hungup', recording_duration: 4)
+       Resque.should_receive(:enqueue).with(CallPusherJob, @call_attempt.id, "publish_voter_disconnected")
+       Resque.should_receive(:enqueue).with(ModeratorCallJob, @call_attempt.id, "publish_voter_disconected_moderator")                
+       call.disconnect!
+       call.call_attempt.recording_duration.should eq(4)
+      end
+
+      it "should update call attempt recording_url" do
+       call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'hungup', recording_duration: 4, recording_url: "url")
+       Resque.should_receive(:enqueue).with(CallPusherJob, @call_attempt.id, "publish_voter_disconnected")
+       Resque.should_receive(:enqueue).with(ModeratorCallJob, @call_attempt.id, "publish_voter_disconected_moderator")         
+       call.disconnect!
+       call.call_attempt.recording_url.should eq("url")
+      end
+
       it "should change status to disconnected" do
        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'hungup')
-       @call_attempt.should_receive(:disconnect_call)
-       @call_attempt.should_receive(:publish_voter_disconnected)
+       Resque.should_receive(:enqueue).with(CallPusherJob, @call_attempt.id, "publish_voter_disconnected")
+       Resque.should_receive(:enqueue).with(ModeratorCallJob, @call_attempt.id, "publish_voter_disconected_moderator")                
        call.disconnect!
        call.state.should eq("disconnected")
       end
   
       it "should hangup twiml" do
        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'hungup')
-       @call_attempt.should_receive(:disconnect_call)       
-       @call_attempt.should_receive(:publish_voter_disconnected)
+       Resque.should_receive(:enqueue).with(CallPusherJob, @call_attempt.id, "publish_voter_disconnected")
+       Resque.should_receive(:enqueue).with(ModeratorCallJob, @call_attempt.id, "publish_voter_disconected_moderator")                
        call.disconnect!
        call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
       end  
     end
   
   end
-  
-  describe "disconnected" do
-  
-    describe "call_answered_by_lead" do
-      before(:each) do
-       @script = Factory(:script)
-       @campaign =  Factory(:campaign, script: @script)
-       @voter = Factory(:voter, campaign: @campaign)
-       @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign)
-      end
-      
-      it "should update call end time" do
-        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected', call_status: 'success')
-        call.call_ended!
-        call.state.should eq("call_answered_by_lead")
-      end
-  
-      it "should return hangup twmil" do
-        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected', call_status: 'success')
-        call.call_ended!
-        call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
-      end
-  
-    end
-  
-    describe "call not answered by lead" do
-      before(:each) do
-       @script = Factory(:script)
-       @campaign =  Factory(:campaign, script: @script)
-       @voter = Factory(:voter, campaign: @campaign)
-       @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign)
-      end
-  
-  
-      it "should update call status" do
-        call = Factory(:call, call_attempt: @call_attempt, state: 'disconnected', call_status: 'busy')
-        @call_attempt.should_receive(:end_unanswered_call)
-        @call_attempt.should_receive(:redirect_caller)
-        call.call_ended!
-        call.state.should eq("call_not_answered_by_lead")
-      end
-  
-      it "should render hangup twiml" do
-        call = Factory(:call, call_attempt: @call_attempt, state: 'disconnected', call_status: 'busy')
-        @call_attempt.should_receive(:end_unanswered_call)
-        @call_attempt.should_receive(:redirect_caller)
-        call.call_ended!
-        call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
-      end
-    
-    end
-  end
-  
+
   describe "call_answered_by_machine" do
   
     describe "call_ended for answered by machine" do
@@ -325,7 +292,6 @@ describe Call do
         call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
       end
     end
-  
   end
 
   describe "call_answered_by_lead" do
@@ -338,11 +304,18 @@ describe Call do
         @caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
         @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session)
       end
-  
       it "should update call state" do
         call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'call_answered_by_lead', all_states: "")
         @call_attempt.should_receive(:wrapup_now)
         @call_attempt.should_receive(:redirect_caller)
+        call.submit_result!
+        call.state.should eq("")
+      end
+
+      it "should wrapup call_attempt" do
+        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected', all_states: "")
+        Resque.should_receive(:enqueue).with(RedirectCallerJob, @caller_session.id)
+        Resque.should_receive(:enqueue).with(ModeratorCallJob, @call_attempt.id, "publish_moderator_response_submited")
         call.submit_result!
         call.state.should eq('wrapup_and_continue')
       end
@@ -356,11 +329,17 @@ describe Call do
         @caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
         @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session)
       end
-      
       it "should update call state" do
         call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'call_answered_by_lead', all_states: "")
         @call_attempt.should_receive(:wrapup_now)
         @call_attempt.should_receive(:end_caller_session)
+        call.submit_result!
+        call.state.should eq('wrapup_and_continue')
+        
+      end
+      
+      it "should wrapup call_attempt" do
+        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected', all_states: "")
         call.submit_result_and_stop!
         call.state.should eq('wrapup_and_stop')
       end

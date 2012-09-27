@@ -20,7 +20,8 @@ describe WebuiCallerSession do
         caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
         caller_session.should_receive(:time_period_exceeded?).and_return(false)
         caller_session.should_receive(:is_on_call?).and_return(false)
-        caller_session.should_receive(:publish_caller_conference_started)
+        caller_session.should_receive(:caller_reassigned_to_another_campaign?).and_return(false)
+        Resque.should_receive(:enqueue).with(CallerPusherJob, caller_session.id, "publish_caller_conference_started")
         caller_session.start_conf!
         caller_session.state.should eq("connected")
       end
@@ -32,7 +33,8 @@ describe WebuiCallerSession do
         caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
         caller_session.should_receive(:time_period_exceeded?).and_return(false)
         caller_session.should_receive(:is_on_call?).and_return(false)
-        caller_session.should_receive(:publish_caller_conference_started)
+        caller_session.should_receive(:caller_reassigned_to_another_campaign?).and_return(false)
+        Resque.should_receive(:enqueue).with(CallerPusherJob, caller_session.id, "publish_caller_conference_started")
         caller_session.start_conf!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"https://#{Settings.host}:#{Settings.port}/caller/#{@caller.id}/flow?event=pause_conf&amp;session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"/></Dial></Response>")
       end
@@ -57,7 +59,7 @@ describe WebuiCallerSession do
         caller_session.should_receive(:time_period_exceeded?).and_return(false)
         caller_session.should_receive(:is_on_call?).and_return(false)
         caller_session.should_receive(:caller_reassigned_to_another_campaign?).and_return(true)
-        caller_session.should_receive(:publish_caller_conference_started)
+        Resque.should_receive(:enqueue).with(CallerPusherJob, caller_session.id, "publish_caller_conference_started")
         caller_session.start_conf!
         caller_session.campaign.should eq(@caller.campaign)
         caller_session.state.should eq("connected")
@@ -71,7 +73,7 @@ describe WebuiCallerSession do
         caller_session.should_receive(:time_period_exceeded?).and_return(false)
         caller_session.should_receive(:is_on_call?).and_return(false)
         caller_session.should_receive(:caller_reassigned_to_another_campaign?).and_return(true)
-        caller_session.should_receive(:publish_caller_conference_started)
+        Resque.should_receive(:enqueue).with(CallerPusherJob, caller_session.id, "publish_caller_conference_started")
         caller_session.start_conf!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"https://#{Settings.host}:#{Settings.port}/caller/#{@caller.id}/flow?event=pause_conf&amp;session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"/></Dial></Response>")
       end
@@ -156,14 +158,14 @@ describe WebuiCallerSession do
       it "should move back to connected " do
         @call_attempt.update_attributes(wrapup_time: Time.now)
         caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "connected", attempt_in_progress: @call_attempt)
-        caller_session.should_receive(:publish_caller_conference_started)
+        Resque.should_receive(:enqueue).with(CallerPusherJob, caller_session.id, "publish_caller_conference_started")        
         caller_session.start_conf!
         caller_session.state.should eq("connected")
       end
 
       it "should render correct twiml if caller is ready" do
         caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "connected", attempt_in_progress: @call_attempt)
-        caller_session.should_receive(:publish_caller_conference_started)
+        Resque.should_receive(:enqueue).with(CallerPusherJob, caller_session.id, "publish_caller_conference_started")        
         caller_session.start_conf!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"https://#{Settings.host}:#{Settings.port}/caller/#{@caller.id}/flow?event=pause_conf&amp;session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"/></Dial></Response>")
       end
@@ -183,6 +185,22 @@ describe WebuiCallerSession do
         caller_session.stop_calling!
         caller_session.state.should eq("stopped")
       end
+    end
+    
+    describe "run out of phone numbers" do
+      it "should move to campaign_out_of_phone_numbers state" do
+        caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "connected", voter_in_progress: nil)
+        caller_session.run_ot_of_phone_numbers!
+        caller_session.state.should eq("campaign_out_of_phone_numbers")
+      end
+      
+      it "should render hangup twiml" do
+        caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "connected", voter_in_progress: nil)
+        caller_session.run_ot_of_phone_numbers!
+        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>This campaign has run out of phone numbers.</Say><Hangup/></Response>")
+      end
+      
+      
     end
 
   end
@@ -227,7 +245,7 @@ describe WebuiCallerSession do
         caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "paused")
         caller_session.should_receive(:funds_not_available?).and_return(false)
         caller_session.should_receive(:time_period_exceeded?).and_return(false)
-        caller_session.should_receive(:publish_caller_conference_started)
+        Resque.should_receive(:enqueue).with(CallerPusherJob, caller_session.id, "publish_caller_conference_started")        
         caller_session.start_conf!
         caller_session.state.should eq("connected")
       end
@@ -236,7 +254,7 @@ describe WebuiCallerSession do
         caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "paused")
         caller_session.should_receive(:funds_not_available?).and_return(false)
         caller_session.should_receive(:time_period_exceeded?).and_return(false)
-        caller_session.should_receive(:publish_caller_conference_started)
+        Resque.should_receive(:enqueue).with(CallerPusherJob, caller_session.id, "publish_caller_conference_started")        
         caller_session.start_conf!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"https://#{Settings.host}:#{Settings.port}/caller/#{@caller.id}/flow?event=pause_conf&amp;session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"/></Dial></Response>")
       end

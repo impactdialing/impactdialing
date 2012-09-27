@@ -6,7 +6,7 @@ gem 'rails', '~> 3.2.8'
 gem 'thin', '~>1.3.1'
 gem 'will_paginate', '~> 3.0'
 gem 'mysql2', '~> 0.3.0'
-gem 'newrelic_rpm','~>3.0.1'
+gem 'newrelic_rpm'
 gem 'json', '~> 1.6.1'
 gem 'nokogiri', '~> 1.4.4'
 gem 'uakari', '~> 0.2.0'
@@ -18,9 +18,11 @@ gem 'twilio', '~> 3.1.0'
 gem 'settingslogic', '~> 2.0.6'
 gem "twilio-ruby", '~> 3.5.1'
 gem 'dynamic_form', '~> 1.1.4'
-gem 'jquery-rails', '~>2.1.1'
+gem "nested_form", '~>0.1.1'
+gem 'jquery-rails', '>= 1.0.12'
+gem 'delayed_job'
+gem 'heroku','~>2.17'
 gem "activerecord-import", ">= 0.2.0"
-gem "airbrake",'~>3.0.9'
 gem 'recurly', '~> 2.1.3'
 gem "uuid", "~> 2.3.5"
 gem "call_center", "~> 0.0.9"
@@ -37,15 +39,17 @@ gem "em-hiredis", "~>0.1.1"
 gem "formtastic", "~>2.2.1"
 gem "cocoon", "~>1.0.22"
 gem 'deep_cloneable', '~> 1.4.0'
-gem 'heroku', '~> 2.17.0'
 gem "redis-objects", "~>0.5.3",:require => 'redis/objects'
 gem "redis", "~>2.2.2"
+gem 'ar-octopus', :git => "git://github.com/tchandy/octopus.git"
 
 
 group :development, :test do
   gem 'rspec'
   gem 'rspec-rails', '~> 2.6.1'
   gem 'debugger'
+  gem 'hirb'
+  gem 'rspec-instafail'
 end
 
 group :development do

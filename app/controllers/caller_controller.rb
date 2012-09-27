@@ -29,10 +29,9 @@ class CallerController < ApplicationController
 
   def call_voter
     caller = Caller.find(params[:id])
-    caller_session = caller.caller_sessions.find(params[:session_id])    
-    voter = RedisVoter.read(params[:voter_id])
-    caller_session.publish_calling_voter
-    Twillio.dial(voter, caller_session)
+    caller_session = caller.caller_sessions.find(params[:session_id]) 
+    Resque.enqueue(CallerPusherJob, caller_session.id, "publish_calling_voter")   
+    Resque.enqueue(PreviewPowerDialJob, caller_session.id, params[:voter_id]) unless params[:voter_id].blank?
     render :nothing => true
   end
 
@@ -53,7 +52,7 @@ class CallerController < ApplicationController
     caller_session = @caller.caller_sessions.find(params[:session_id])
     voter = Voter.find(params[:voter_id])
     voter.skip
-    caller_session.redirect_caller
+    Resque.enqueue(RedirectCallerJob, caller_session.id)
     render :nothing => true
   end
 

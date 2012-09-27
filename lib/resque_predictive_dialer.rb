@@ -16,6 +16,7 @@ loop do
       campaign = Campaign.find(campaign_id)
       campaign.dial_resque if !campaign.calculate_dialing?
     end
+    sleep 3
   rescue Exception => e
     if e.class==SystemExit
       puts "============ EXITING  ============"

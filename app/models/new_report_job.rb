@@ -1,3 +1,4 @@
+require 'octopus'
 class NewReportJob
   def initialize(campaign_id, user_id, voter_fields, custom_fields, all_voters, lead_dial, from, to, callback_url, strategy="webui")
      @campaign = Campaign.find(campaign_id)
@@ -19,10 +20,10 @@ class NewReportJob
 
   def perform
     begin
-      @report = CSV.generate do |csv|
-        @campaign_strategy = report_strategy(csv)
-        @campaign_strategy.construct_csv
-      end
+        @report = CSV.generate do |csv|
+          @campaign_strategy = report_strategy(csv)
+          @campaign_strategy.construct_csv
+        end
       save_report
       notify_success
     rescue Exception => e
@@ -30,16 +31,15 @@ class NewReportJob
     end
   end
 
-   def notify_success
-     response_strategy = @strategy == 'webui' ?  ReportWebUIStrategy.new("success", @user, @campaign, nil) : ReportApiStrategy.new("success", @campaign.account.id, @campaign.id, @callback_url)
-     response_strategy.response({campaign_name: @campaign_name})
-   end
-   
+  def notify_success
+    response_strategy = @strategy == 'webui' ?  ReportWebUIStrategy.new("success", @user, @campaign, nil) : ReportApiStrategy.new("success", @campaign.account.id, @campaign.id, @callback_url)
+    response_strategy.response({campaign_name: @campaign_name})
+  end
+
    def on_failure_report(exception)
       response_strategy = @strategy == 'webui' ?  ReportWebUIStrategy.new("failure", @user, @campaign, exception) : ReportApiStrategy.new("failure", @campaign.account.id, @campaign.id, @callback_url)
       response_strategy.response({})
    end
-   
 
 
    def file_name

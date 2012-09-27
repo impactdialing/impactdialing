@@ -40,13 +40,12 @@ class Predictive < Campaign
     Resque.redis.decrby("dial_count:#{self.id}", decrement_counter)
   end
   
+  def self.dial_campaign?(campaign_id)
+    Resque.redis.exists("dial_campaign:#{campaign_id}")    
+  end
+  
   def dialing_count
-    begin
-      count = Resque.redis.get("dial_count:#{self.id}").to_i
-    rescue Exception => e
-      count = 0
-    end
-    count <=0 ? 0 : count
+    call_attempts.with_status(CallAttempt::Status::DIALING).between(10.seconds.ago, Time.now).size
   end
     
   def number_of_voters_to_dial
@@ -63,12 +62,22 @@ class Predictive < Campaign
   
   def choose_voters_to_dial(num_voters)
     return [] if num_voters < 1
-    priority_voters = all_voters.priority_voters.limit(num_voters)
-    scheduled_voters = all_voters.scheduled.limit(num_voters)
-    num_voters_to_call = (num_voters - (priority_voters.size + scheduled_voters.size))
-    limit_voters = num_voters_to_call <= 0 ? 0 : num_voters_to_call
-    voters =  priority_voters + scheduled_voters + all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.without(account.blocked_numbers.for_campaign(self).map(&:number)).limit(limit_voters)
-    voters[0..num_voters-1]    
+    # scheduled_voters = all_voters.scheduled.limit(num_voters)
+    # num_voters_to_call = (num_voters - (priority_voters.size + scheduled_voters.size))
+    limit_voters = num_voters <= 0 ? 0 : num_voters
+    voters =  all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.without(account.blocked_numbers.for_campaign(self).map(&:number)).limit(limit_voters)
+    Voter.transaction do
+      voters.each do |voter| 
+        voter.status = CallAttempt::Status::DIALING
+        voter.save 
+      end
+    end
+    if voters.blank?
+      caller_sessions.available.each do |caller_session|
+        Resque.enqueue(CampaignOutOfNumbersJob, caller_session.id)
+      end
+    end 
+    voters
   end
   
   
@@ -86,6 +95,10 @@ class Predictive < Campaign
     ringing_lines = RedisCampaignCall.ringing(self.id).length
     dials_to_make = (best_dials_simulated * available_callers) - ringing_lines
     dials_to_make.to_i
+  end
+  
+  def self.do_not_call_in_production?(campaign_id)
+    !Resque.redis.exists("do_not_call:#{campaign_id}")
   end
   
   

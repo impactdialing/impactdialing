@@ -152,7 +152,7 @@ describe Client::ScriptsController do
         question = Factory(:question, :script => active_script)
         answer1 = Factory(:answer, :voter => Factory(:voter), campaign: Factory(:campaign), :possible_response => Factory(:possible_response), :question => question)
         get :questions_answered, id: active_script.id, :api_key=> 'abc123', :format => "json"
-        response.body.should eq("{\"data\":{\"1\":1}}")
+        response.body.should eq("{\"data\":{\"#{question.id}\":#{1}}}")
       end
     end
 
