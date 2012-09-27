@@ -127,9 +127,8 @@ class Campaign < ActiveRecord::Base
   end
   
   def last_call_attempt_time
-    call_attempts.last.try(:created_at)
+    call_attempts.from("call_attempts use index (index_call_attempts_on_campaign_id)").last.try(:created_at)
   end  
-
 
   def voters_called
     Voter.find_all_by_campaign_id(self.id, :select=>"id", :conditions=>"status <> 'not called'")
