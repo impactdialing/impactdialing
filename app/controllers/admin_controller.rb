@@ -4,7 +4,6 @@ class AdminController < ApplicationController
   USER_NAME, PASSWORD = "impact", "Mb<3Ad4F@2tCallz"
   before_filter :authenticate
 
-
   def state
     @logged_in_campaigns = Campaign.where("id in (select distinct campaign_id from caller_sessions where on_call=1)")
     @logged_in_callers_count = CallerSession.on_call.count
@@ -94,15 +93,11 @@ class AdminController < ApplicationController
     @accounts = Account.includes(:users).all
   end
 
-  def toggle_activated
+  def set_account_to_manual
     account = Account.find(params[:id])
-    account.update_attribute(:activated, !account.activated)
-    redirect_to :back
-  end
-
-  def toggle_card_verified
-    account = Account.find(params[:id])
-    account.update_attribute(:card_verified, !account.card_verified)
+    account.update_attribute(:activated, true)
+    account.update_attribute(:card_verified, true)
+    account.update_attribute(:subscription_name, "Manual")
     redirect_to :back
   end
 
@@ -111,10 +106,9 @@ class AdminController < ApplicationController
     redirect_to :controller=>"client", :action=>"index"
   end
 
-  def destroy
-    @account = Account.find(params[:id])
-    @account.users.try(:each){|user| user.destroy }
-    @account.destroy
+  def destroy_user
+    @user = User.find(params[:id])
+    @user.destroy
     redirect_to :back
   end
 
