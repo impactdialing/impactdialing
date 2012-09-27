@@ -1,7 +1,5 @@
 require 'fiber'
-require 'octopus'
 class Voter < ActiveRecord::Base
-  replicated_model
 
   module Status
     NOTCALLED = "not called"

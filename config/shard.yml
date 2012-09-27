@@ -1,8 +1,5 @@
 octopus:
-  replicated: true
-  fully_replicated: false
-  verify_connection: true
-  octopus_enviroments:
+  enviroments:
     - heroku_staging
     - heroku
     - heroku_caller

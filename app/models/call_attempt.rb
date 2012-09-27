@@ -1,8 +1,6 @@
-require 'octopus'
 require Rails.root.join("lib/twilio_lib")
 
 class CallAttempt < ActiveRecord::Base
-  replicated_model
   include Rails.application.routes.url_helpers
   include LeadEvents
   include CallPayment
