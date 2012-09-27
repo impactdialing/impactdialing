@@ -23,20 +23,20 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
   
  
   def download_all_voters_lead
-    @campaign.all_voters.order('last_call_attempt_time').find_in_batches(:batch_size => 100) do |voters|
+    @campaign.using(:read_slave1).all_voters.order('last_call_attempt_time').find_in_batches(:batch_size => 100) do |voters|
       voters.each {|voter| @csv << csv_for(voter)}
     end    
   end
   
   def download_all_voters_dial
-    @campaign.call_attempts.order('created_at').find_in_batches(:batch_size => 100) do |attempts| 
+    @campaign.using(:read_slave1).call_attempts.order('created_at').find_in_batches(:batch_size => 100) do |attempts| 
       attempts.each { |attempt| @csv << csv_for_call_attempt(attempt) } 
     end
   end
   
   def download_for_date_range_lead
     puts @from_date, @to_date
-    @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).order('created_at').find_in_batches(:batch_size => 100) do |voters|
+    @campaign.using(:read_slave1).all_voters.last_call_attempt_within(@from_date, @to_date).order('created_at').find_in_batches(:batch_size => 100) do |voters|
       voters.each do |voter|
          @csv << csv_for(voter)
       end
@@ -45,7 +45,7 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
   
   def download_for_date_range_dial
     puts @from_date, @to_date
-    @campaign.call_attempts.between(@from_date, @to_date).order('created_at').find_in_batches(:batch_size => 100) do |attempts|
+    @campaign.using(:read_slave1).call_attempts.between(@from_date, @to_date).order('created_at').find_in_batches(:batch_size => 100) do |attempts|
       attempts.each { |attempt| @csv << csv_for_call_attempt(attempt) } 
     end 
   end
