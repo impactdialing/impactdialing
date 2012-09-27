@@ -21,10 +21,10 @@ describe Call do
         end
       
         it "should move to the connected state" do
-          call = Factory(:call, call_attempt: @call_attempt, call_status: 'in-progress')
+          call = Factory(:call, call_attempt: @call_attempt, call_status: 'in-progress', state: 'initial')
+          @call_attempt.should_receive(:connect_call)
           Resque.should_receive(:enqueue).with(CallPusherJob, @call_attempt.id, "publish_voter_connected")
           Resque.should_receive(:enqueue).with(ModeratorCallJob, @call_attempt.id, "publish_voter_connected_moderator")
-          call.incoming_call!
           call.state.should eq('connected')
         end
       
