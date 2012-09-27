@@ -28,14 +28,6 @@ describe Client::CallersController do
       assigns(:campaigns)[0].should be_active
     end
 
-    it "doesn't list robo campaigns, in the dropdown list " do
-      c1 = Factory(:preview, :active => true, :account => @user.account)
-      c2 = Factory(:robo, :active => true,  :account => @user.account)
-      get :new
-      assigns(:campaigns).should have(1).thing
-      assigns(:campaigns)[0].should be_active
-    end
-
     it "should create a phones only caller" do
       name = "preethi_is_not_evil"
       post :create, :caller => {:name => name, :is_phones_only => true, :campaign_id => "1234"}
@@ -56,7 +48,7 @@ describe Client::CallersController do
     describe "call details report" do
 
       let(:script) { Factory(:script) }
-      let(:campaign) { Factory(:progressive, :script => script, :account => @user.account, robo:false) }
+      let(:campaign) { Factory(:progressive, :script => script, :account => @user.account) }
       let(:caller) { Factory(:caller, campaign_id: campaign.id) }
 
       before(:each) { Factory(:caller_session, :campaign => campaign, :caller => caller) }
@@ -73,14 +65,6 @@ describe Client::CallersController do
 
       it "shows only the campaigns in which the caller was involved" do
         another_campaign = Factory(:campaign, :script => script, :active => true, :account => @user.account)
-        get :call_details, :id => caller.id, :campaign_id => campaign.id
-        response.should be_ok
-        assigns(:campaigns).should == [campaign]
-      end
-
-      it "shows only manual campaigns" do
-        robo_campaign = Factory(:robo, :script => script, :account => @user.account)
-        Factory(:caller_session, :caller => caller, :campaign => robo_campaign)
         get :call_details, :id => caller.id, :campaign_id => campaign.id
         response.should be_ok
         assigns(:campaigns).should == [campaign]
@@ -163,6 +147,22 @@ describe Client::CallersController do
         caller = Factory(:caller)
         delete :destroy, id: caller.id, api_key: account.api_key, format: 'json'
         JSON.parse(response.body).should eq({'message' => 'Cannot access caller'})
+      end
+    end
+
+    describe 'deleted' do
+      it 'should show deleted callers' do
+        caller = Factory(:caller, account: account, active: false)
+        get :deleted, api_key: account.api_key, format: 'json'
+        JSON.parse(response.body).length.should eq 1
+      end
+    end
+
+    describe 'restore' do
+      it 'should change a caller from inactive to active' do
+        caller = Factory(:caller, account: account, active: false)
+        put :restore, id: caller.id, api_key: account.api_key, format: 'json'
+        response.body.should eq("{\"message\":\"Caller restored\"}")
       end
     end
   end

@@ -29,8 +29,6 @@ module TimeZoneHelper
     [converted_from_date, converted_to_date]
   end
 
-
-
   def time_for_date_picker(campaign, date)
     time_zone = campaign.try(:as_time_zone) || pacific_time_zone
     date.in_time_zone(time_zone)
@@ -52,7 +50,6 @@ module TimeZoneHelper
       campaign.nil? ? CallerSession.last_caller_time(caller).first.try(:created_at) : CallerSession.last_campaign_time(campaign).first.try(:created_at)
     end
 
-
     def format_time(date, time_zone)
       begin
         Time.strptime("#{date} #{time_zone.formatted_offset}", "%m/%d/%Y %:z") if date
@@ -68,8 +65,6 @@ module TimeZoneHelper
         raise InvalidDateException
       end
     end
-
-
 
     def pacific_time_zone
       ActiveSupport::TimeZone.new("Pacific Time (US & Canada)")

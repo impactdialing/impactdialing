@@ -6,10 +6,6 @@ class ClientController < ApplicationController
   before_filter :check_login, :except => [:login, :user_add, :forgot]
   before_filter :check_paid
 
-  layout "client"
-  in_place_edit_for :campaign, :name
-
-
   def authenticate_api
     unless params[:api_key].blank?
       @account = Account.find_by_api_key(params[:api_key])
@@ -49,7 +45,6 @@ class ClientController < ApplicationController
   end
 
   def forgot
-    @breadcrumb = "Password Recovery"
     if request.post?
       user = User.find_by_email(params[:email])
       if user.blank?
@@ -85,9 +80,6 @@ class ClientController < ApplicationController
 
 
   def user_add
-    @breadcrumb = "My Account"
-    @title = "My Account"
-
     if session[:user].blank?
       @user = User.new(:account => Account.new(:domain_name => request.domain), role: User::Role::ADMINISTRATOR)
     else
@@ -108,14 +100,10 @@ class ClientController < ApplicationController
         flash_now(:error, "Current password incorrect")
         return
       else
-        puts @user.inspect
         @user.save
       end
 
       if @user.valid?
-        @user.send_welcome_email
-        @user.create_default_campaign
-        @user.create_promo_balance
         @user.create_recurly_account_code
         if session[:user].blank?
           message = "Your account has been created."
@@ -134,27 +122,13 @@ class ClientController < ApplicationController
     end
   end
 
-
-  def check_warning
-    text = warning_text
-    if !text.blank?
-      flash_now(:warning, text)
-    end
-  end
-
   def check_paid
-    text = unpaid_text
-    if !text.blank?
-      flash_now(:warning, text)
-    end
-    text = unactivated_text
-    if !text.blank?
-      flash_now(:warning, text)
+    if current_user && !current_user.account.card_verified?
+      flash_now(:warning, I18n.t(:unpaid_text, :billing_link => '<a href="' + white_labeled_billing_link(request.domain) + '">Click here to verify a credit card.</a>').html_safe)
     end
   end
 
   def index
-    @breadcrumb = nil
   end
 
   def login
@@ -163,8 +137,6 @@ class ClientController < ApplicationController
       return
     end
 
-    @breadcrumb="Login"
-    @title="Join Impact Dialing"
     @user = User.new {params[:user]}
     if !params[:user].blank?
       user_add
@@ -190,8 +162,6 @@ class ClientController < ApplicationController
     redirect_to_login
   end
 
-
-
   def recording_add
     if request.post?
       @recording = @account.recordings.new(params[:recording])
@@ -214,9 +184,6 @@ class ClientController < ApplicationController
       @recording = @account.recordings.new
     end
   end
-
-
-
 
   def recharge
      @account=@user.account
@@ -261,13 +228,11 @@ class ClientController < ApplicationController
    def billing_form
      @account_code=@user.account.recurly_account_code
      @billing_info = Recurly::Account.find(@account_code).billing_info
-     render :layout=>"billing"
    end
 
    def update_billing
      @account_code=@user.account.recurly_account_code
      @billing_info = Recurly::Account.find(@account_code).billing_info
-     render :layout=>"billing"
    end
 
    def add_to_balance
@@ -312,27 +277,5 @@ class ClientController < ApplicationController
 
   def policies
     render 'home/policies'
-  end
-
-  private
-  def stream_csv
-    filename = params[:action] + ".csv"
-
-    #this is required if you want this to work with IE
-    if request.env['HTTP_USER_AGENT'] =~ /msie/i
-      headers['Pragma'] = 'public'
-      headers["Content-type"] = "text/plain"
-      headers['Cache-Control'] = 'no-cache, must-revalidate, post-check=0, pre-check=0'
-      headers['Content-Disposition'] = "attachment; filename=\"#{filename}\""
-      headers['Expires'] = "0"
-    else
-      headers["Content-Type"] ||= 'text/csv'
-      headers["Content-Disposition"] = "attachment; filename=\"#{filename}\""
-    end
-
-    render :text => Proc.new { |response, output|
-      csv = CSV.new(output, :row_sep => "\r\n")
-      yield csv
-    }
   end
 end

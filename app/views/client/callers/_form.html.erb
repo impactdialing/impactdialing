@@ -18,6 +18,7 @@
     <label>Campaign</label>
     <%= f.select("campaign_id", @campaigns.try(:collect){|c| [ c.name, c.id ]}) %>
   </p>
+  <%= f.hidden_field :active %>
   </fieldset>
   <div class="buttons">
     <button type="submit">Save</button>
