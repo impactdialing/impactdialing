@@ -28,7 +28,7 @@
       <table>
           <% @logged_in_campaigns.each do |k| %>
             <tr>
-              <td valign="top"><a target="_blank" href="/admin/login/<%= User.where(account_id: k.account_id).first %>" style="font-size:13px;">login</a> <%= k.name %></td>
+              <td valign="top"><a target="_blank" href="/admin/login/<%= User.where(account_id: k.account_id).first.id %>" style="font-size:13px;">login</a> <%= k.name %></td>
               <td>
                 <%= link_to "Callers Number: #{k.caller_sessions.on_call.count}", admin_caller_sessions_path(k), class: "js-show-caller" %>
               </td>
