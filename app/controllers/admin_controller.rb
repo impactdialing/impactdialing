@@ -4,13 +4,7 @@ class AdminController < ApplicationController
   USER_NAME, PASSWORD = "impact", "Mb<3Ad4F@2tCallz"
   before_filter :authenticate
 
-
   def state
-    if Time.now.hour > 0 && Time.now.hour < 6
-      @calling_status = "<font color=red>Unavailable, off hours</font>".html_safe
-    else
-      @calling_status = "Available".html_safe
-    end
     @logged_in_campaigns = Campaign.where("id in (select distinct campaign_id from caller_sessions where on_call=1)")
     @logged_in_callers_count = CallerSession.on_call.count
     @errors=""
@@ -27,11 +21,6 @@ class AdminController < ApplicationController
         }
       )
     }
-  end
-
-  def flush_redis
-    Resque.redis.flushALL
-    render :text => 'Redis flushed successfully'
   end
 
   def abandonment
@@ -104,15 +93,11 @@ class AdminController < ApplicationController
     @accounts = Account.includes(:users).all
   end
 
-  def toggle_activated
+  def set_account_to_manual
     account = Account.find(params[:id])
-    account.update_attribute(:activated, !account.activated)
-    redirect_to :back
-  end
-
-  def toggle_card_verified
-    account = Account.find(params[:id])
-    account.update_attribute(:card_verified, !account.card_verified)
+    account.update_attribute(:activated, true)
+    account.update_attribute(:card_verified, true)
+    account.update_attribute(:subscription_name, "Manual")
     redirect_to :back
   end
 
@@ -121,10 +106,9 @@ class AdminController < ApplicationController
     redirect_to :controller=>"client", :action=>"index"
   end
 
-  def destroy
-    @account = Account.find(params[:id])
-    @account.users.try(:each){|user| user.destroy }
-    @account.destroy
+  def destroy_user
+    @user = User.find(params[:id])
+    @user.destroy
     redirect_to :back
   end
 
