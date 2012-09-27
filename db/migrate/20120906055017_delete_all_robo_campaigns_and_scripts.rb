@@ -7,3 +7,6 @@ class DeleteAllRoboCampaignsAndScripts < ActiveRecord::Migration
   def down
   end
 end
+
+class Robo < Campaign
+end
