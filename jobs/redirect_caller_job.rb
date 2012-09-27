@@ -1,11 +1,8 @@
-require 'em-http-request'
-
 class RedirectCallerJob 
-  @queue = :redirect_caller_job
+  @queue = :call_flow
   
-   def self.perform(call_attempt_id)    
-     call_attempt = CallAttempt.find(call_attempt_id)
-     call_attempt.redirect_caller
-     
+   def self.perform(caller_session_id)    
+     caller_session = CallerSession.find(caller_session_id)
+     caller_session.redirect_caller     
    end
 end

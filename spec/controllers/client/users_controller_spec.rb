@@ -21,8 +21,8 @@ describe Client::UsersController do
     User.authenticate(user.email, 'new_password').should == user
     user.reload.password_reset_code.should be_nil
   end
-  
-  
+
+
   it "logins the user" do
     user = Factory(:user)
     user.create_reset_code!
@@ -53,24 +53,12 @@ describe Client::UsersController do
   end
 
   describe 'destroy' do
-    it "deletes a different user" do
+    it "deletes a  user" do
       account = Factory(:account)
       user = Factory(:user, :email => 'foo@bar.com', :account => account)
       current_user = Factory(:user, :account => account).tap{|u| login_as u}
       post :destroy, :id => user.id
       User.find_by_id(user.id).should_not be
-      response.should redirect_to(:back)
-      flash[:notice].should == ['foo@bar.com was deleted']
-    end
-
-    it "doesn't delete the logged in user" do
-      account = Factory(:account)
-      user = Factory(:user, :email => 'foo@bar.com', :account => account)
-      login_as user
-      post :destroy, :id => user.id
-      User.find_by_id(user.id).should be
-      response.should redirect_to(:back)
-      flash[:error].should == ["You can't delete yourself"]
     end
   end
 end

@@ -85,20 +85,6 @@ Factory.define :progressive do |c|
   c.updated_at Time.now
 end
 
-Factory.define :robo do |c|
-  c.name 'a campaign'
-  c.caller_id '1234567890'
-  c.account { Factory(:account) }
-  c.recycle_rate 1
-  c.start_time (Time.now - 6.hours)
-  c.end_time (Time.now - 7.hours)
-  c.time_zone "Pacific Time (US & Canada)"
-  c.script_id {Factory(:script).id}
-  c.created_at Time.now
-  c.updated_at Time.now
-end
-
-
 
 Factory.define :caller do |s|
   s.email { Factory.next(:email) }
@@ -168,18 +154,6 @@ Factory.define :call_attempt do |ca|
   ca.updated_at Time.now
 end
 
-Factory.define :robo_recording do |rr|
-  rr.name { Factory.next(:name) }
-end
-
-Factory.define :recording_response do |rr|
-  rr.response 'response'
-  rr.keypad '1'
-end
-
-Factory.define :call_response do |cr|
-end
-
 Factory.define :recording do |r|
   r.name 'name'
   r.file_file_name 'foo.mp3'
@@ -212,6 +186,7 @@ Factory.define :possible_response do |pr|
   pr.value "no_response"
   pr.possible_response_order '1'
   pr.question {Factory(:question)}
+  pr.keypad ""
 end
 
 Factory.define :answer do |a|

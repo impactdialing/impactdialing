@@ -1,33 +1,22 @@
+<%= csrf_meta_tag %>
+
 <h1>Deleted campaigns</h1>
-<% if @campaigns.length==0 %>
-  <div class="form">
-    <label>No campaigns entered.</label>
-  </div>
+<% if @campaigns.empty? %>
+  <p>No campaigns deleted.</p>
 <% else %>
-  <table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <table>
     <tr>
       <th>Name</th>
-      <th>Date added</th>
       <th>Date deleted</th>
       <th width="55" class="ac"></th>
     </tr>
     <% @campaigns.each do |c| %>
-      <tr class="<%= cycle("odd","even") %>">
-        <td><strong><a href="<%= client_campaign_path(c) %>"><%= c.name %></a></strong></td>
-        <td><%= c.created_at.strftime("%m/%d/%Y") %></td>
+      <tr>
+        <td><strong><%= link_to c.name, edit_client_campaign_path(c) %></strong></td>
         <td><%= c.updated_at.strftime("%m/%d/%Y") %></td>
-        <td>
-          <%= form_tag(client_campaign_restore_path(c), :id => "restore-campaign#{c.id}-form", :method => :put) do %>
-            <%= link_to 'Restore', 'javascript:void(0)', :onclick => "$('#restore-campaign#{c.id}-form').submit()" %>
-          <% end %>
-        </td>
+        <td><%= link_to 'Restore', client_campaign_restore_path(c), :method => :put %></td>
       </tr>
     <% end %>
-
   </table>
-
   <p><%= page_entries_info @campaigns %> <%= will_paginate @campaigns %></p>
-
 <% end %>
-<p class="actions"><%= link_to 'Return to active campaigns', 'campaigns', :class => 'action primary' %></p>
-

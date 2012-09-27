@@ -14,10 +14,8 @@ class Campaign < ActiveRecord::Base
   has_one :simulated_values
   has_many :answers
   has_many :note_responses
-  has_many :call_responses
   has_many :caller_groups
   belongs_to :script
-  belongs_to :voicemail_script, :class_name => 'Script'
   belongs_to :account
   belongs_to :recording
   has_many :downloaded_reports
@@ -26,8 +24,7 @@ class Campaign < ActiveRecord::Base
 
   delegate :questions_and_responses, :to => :script
 
-  scope :robo, lambda { where(:type => 'Robo') }
-  scope :manual, :conditions => [ 'campaigns.type != "robo"' ]
+  scope :manual
   scope :for_account, lambda { |account| {:conditions => ["account_id = ?", account.id]} }
   scope :for_script, lambda { |script| {:conditions => ["script_id = ?", script.id]} }
   scope :with_running_caller_sessions, {
@@ -41,7 +38,7 @@ class Campaign < ActiveRecord::Base
   validates :caller_id, :presence => true
   validates :caller_id, :numericality => {}, :length => {:minimum => 10, :maximum => 10}, :unless => Proc.new{|campaign| campaign.caller_id && campaign.caller_id.start_with?('+')}
   validates :script, :presence => true
-  validates :type, :presence => true, :inclusion => {:in => ['Preview', 'Progressive', 'Predictive', 'Robo']}
+  validates :type, :presence => true, :inclusion => {:in => ['Preview', 'Progressive', 'Predictive']}
   validates :acceptable_abandon_rate,
             :numericality => {:greater_than_or_equal_to => 0.01, :less_than_or_equal_to => 0.10},
             :allow_blank => true
@@ -62,7 +59,6 @@ class Campaign < ActiveRecord::Base
     PREVIEW = "Preview"
     PREDICTIVE = "Predictive"
     PROGRESSIVE = "Progressive"
-    ROBO = "Robo"
   end
 
   def new_campaign
@@ -70,7 +66,7 @@ class Campaign < ActiveRecord::Base
   end
 
   def no_caller_assigned_on_deletion
-    if active_change == [true, false] && !callers.empty?
+    if active_change == [true, false] && callers.active.any?
       errors.add(:base, 'There are currently callers assigned to this campaign. Please assign them to another campaign before deleting this one.')
     end
   end
@@ -80,7 +76,7 @@ class Campaign < ActiveRecord::Base
   def set_caller_id_error_msg
       if errors[:caller_id].any?
         errors[:caller_id].clear
-        errors.add(:base, 'ID must be a 10-digit North American phone number or begin with "+" and the country code.')
+        errors.add(:base, 'Caller ID must be a 10-digit North American phone number or begin with "+" and the country code')
       end
     end
 
@@ -104,11 +100,6 @@ class Campaign < ActiveRecord::Base
   def sanitize_caller_id
     self.caller_id = Voter.sanitize_phone(self.caller_id)
   end
-
-  def set_answering_machine_detect
-    self.answering_machine_detect = self.use_recordings = self.robo? && !self.voicemail_script.nil?
-  end
-
 
   def time_period_exceeded?
     return true if start_time.nil? || end_time.nil?

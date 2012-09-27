@@ -41,6 +41,14 @@ describe Caller do
     Caller.active.should == [active_caller]
   end
 
+  it "validates that a restored caller has an active campaign" do
+    campaign = Factory(:campaign, active: false)
+    caller = Factory(:caller, campaign: campaign, active: false)
+    caller.active = true
+    caller.save.should be_false
+    caller.errors[:base].should == ['The campaign this caller was assigned to has been deleted. Please assign the caller to a new campaign.']
+  end
+
   it "calls in to the campaign" do
     Twilio::REST::Client
     sid = "gogaruko"

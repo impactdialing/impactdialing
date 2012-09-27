@@ -4,7 +4,7 @@ class Call < ActiveRecord::Base
 
   attr_accessible :id, :account_sid, :to_zip, :from_state, :called, :from_country, :caller_country, :called_zip, :direction, :from_city,
    :called_country, :caller_state, :call_sid, :called_state, :from, :caller_zip, :from_zip, :call_status, :to_city, :to_state, :to, :to_country, 
-   :caller_city, :api_version, :caller, :called_city, :all_states, :state, :call_attempt, :questions, :notes
+   :caller_city, :api_version, :caller, :called_city, :all_states, :state, :call_attempt, :questions, :notes, :answered_by
    
   has_one :call_attempt
   serialize :conference_history, Array
@@ -33,8 +33,6 @@ class Call < ActiveRecord::Base
         event :incoming_call, :to => :connected , :if => (:answered_by_human_and_caller_available?)
         event :incoming_call, :to => :abandoned , :if => (:answered_by_human_and_caller_not_available?)
         event :incoming_call, :to => :call_answered_by_machine , :if => (:answered_by_machine?)
-        event :call_ended, :to => :call_not_answered_by_lead, :if => :call_did_not_connect?
-        event :call_ended, :to => :abandoned
       end 
       
       state :connected do
@@ -63,8 +61,8 @@ class Call < ActiveRecord::Base
       state :disconnected do        
         before(:always) { disconnect_call }
         after(:success) { Resque.enqueue(CallPusherJob, call_attempt.id, "publish_voter_disconnected");Resque.enqueue(ModeratorCallJob, call_attempt.id, "publish_voter_disconected_moderator") }                
-        event :call_ended, :to => :call_answered_by_lead, :if => :call_connected?
-        event :call_ended, :to => :call_not_answered_by_lead, :if => :call_did_not_connect?        
+        event :submit_result, :to => :wrapup_and_continue
+        event :submit_result_and_stop, :to => :wrapup_and_stop        
         response do |xml_builder, the_call|
           xml_builder.Hangup
         end
@@ -72,7 +70,7 @@ class Call < ActiveRecord::Base
       end
       
       state :abandoned do
-        before(:always) { abandon_call; Resque.enqueue(RedirectCallerJob, call_attempt.id) }        
+        before(:always) { abandon_call; call_attempt.redirect_caller }        
         response do |xml_builder, the_call|
           xml_builder.Hangup
         end
@@ -81,7 +79,7 @@ class Call < ActiveRecord::Base
       
       state :call_answered_by_machine do
         event :call_ended, :to => :call_end_machine
-        before(:always) { process_answered_by_machine; Resque.enqueue(RedirectCallerJob, call_attempt.id) }        
+        before(:always) { process_answered_by_machine; call_attempt.redirect_caller }        
         
         response do |xml_builder, the_call|
           xml_builder.Play campaign.recording.file.url if campaign.use_recordings?
@@ -89,47 +87,24 @@ class Call < ActiveRecord::Base
         end
       end
       
-      state :call_answered_by_lead do
-        before(:always) { end_answered_call }        
-        event :submit_result, :to => :wrapup_and_continue
-        event :submit_result_and_stop, :to => :wrapup_and_stop
-        
-        response do |xml_builder, the_call|
-          xml_builder.Hangup
-        end        
-      end
       
       state :call_end_machine do
         before(:always) { end_answered_by_machine }                
         response do |xml_builder, the_call|
           xml_builder.Hangup
         end
-      end
-      
-      
-      state :call_not_answered_by_lead do
-        before(:always) { end_unanswered_call; Resque.enqueue(RedirectCallerJob, call_attempt.id) }                
-        response do |xml_builder, the_call|
-          xml_builder.Hangup
-        end
-      end
-      
+      end            
       
       state :wrapup_and_continue do 
-        before(:always) { wrapup_now; Resque.enqueue(RedirectCallerJob, call_attempt.id);Resque.enqueue(ModeratorCallJob, call_attempt.id, "publish_moderator_response_submited") }
-        after(:success){ persist_all_states}
+        before(:always) { wrapup_now; call_attempt.redirect_caller; Resque.enqueue(ModeratorCallJob, call_attempt.id, "publish_moderator_response_submited") }
       end
       
       state :wrapup_and_stop do
         before(:always) { wrapup_now; caller_session.run('end_conf') }        
-        after(:success){ persist_all_states}
       end
             
   end 
   
-  def persist_all_states
-    update_attribute(:all_states, (all_states + "|" + state))
-  end
   
   def run(event)
     call_flow = self.method(event.to_s) 
