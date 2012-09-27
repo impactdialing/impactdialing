@@ -134,6 +134,7 @@ class SimulatorJob
    
    
    def self.simulator_campaign_base_values(campaign_id, start_time)
+      Octopus.using(:read_slave1) do
        caller_statuses = CallerSession.where(:campaign_id => campaign_id,
                  :on_call => true).size.times.map{ CallerStatus.new('available') }            
                
@@ -166,6 +167,7 @@ class SimulatorJob
        best_conversation = longest_conversation
        best_wrapup_time = longest_wrapup_time
        expected_wrapup_time = longest_wrapup_time
+      end 
       [expected_conversation, longest_conversation, best_conversation, mean_conversation, expected_wrapup_time, longest_wrapup_time, best_wrapup_time, caller_statuses, observed_conversations, observed_dials]
    end   
    
