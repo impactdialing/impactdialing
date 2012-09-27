@@ -24,11 +24,6 @@ class AdminController < ApplicationController
     }
   end
 
-  def flush_redis
-    Resque.redis.flushALL
-    render :text => 'Redis flushed successfully'
-  end
-
   def abandonment
     account = Account.find(params[:id])
     if account.abandonment == "variable"
