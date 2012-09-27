@@ -3,7 +3,12 @@ module Client
   class ReportsController < ClientController
     include ApplicationHelper::TimeUtils
     include TimeZoneHelper
-    before_filter :load_campaign, :except => [:index, :account_campaigns_usage, :account_callers_usage]
+    before_filter :load_campaign, :except => [:index, :usage, :account_campaigns_usage, :account_callers_usage]
+
+
+    def load_campaign
+      @campaign = account.campaigns.find(params[:campaign_id])
+    end
 
     def index
       @campaigns = params[:id].blank? ? account.campaigns : Campaign.find(params[:id])
@@ -51,6 +56,7 @@ module Client
       load_campaign
       @downloaded_reports = DownloadedReport.active_reports(@campaign.id)
     end
+
 
     def account_campaigns_usage
       @account = Account.find(params[:id])

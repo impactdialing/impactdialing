@@ -2,7 +2,6 @@ require Rails.root.join("lib/twilio_lib")
 require Rails.root.join("lib/redis_connection")
 
 class CallAttempt < ActiveRecord::Base
-
   include Rails.application.routes.url_helpers
   include LeadEvents
   include CallPayment
@@ -126,8 +125,8 @@ class CallAttempt < ActiveRecord::Base
   end
 
 
-  def end_unanswered_call
-    status = CallAttempt::Status::MAP[call.call_status]
+  def end_unanswered_call(call_status)
+    status = CallAttempt::Status::MAP[call_status]
     $redis_call_flow_connection.pipelined do
       RedisCallAttempt.end_unanswered_call(self.id, status)
       RedisVoter.end_unanswered_call(voter.id, status)
@@ -137,13 +136,7 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
-    call_sid = RedisCallAttempt.read(self.id)["sid"]
-    EM.synchrony {
-      t = TwilioLib.new(account, auth)    
-      deferrable = t.end_call(call_sid)              
-      deferrable.callback {}
-      deferrable.errback { |error| }
-    }
+    Resque.enqueue(EndRunningCallJob, self.sid)
   end
 
   def not_wrapped_up?
@@ -156,8 +149,8 @@ class CallAttempt < ActiveRecord::Base
       RedisVoter.set_status(voter.id, CallAttempt::Status::SUCCESS)
       caller_session_id = RedisVoter.read(voter.id)["caller_session_id"]
       RedisCaller.move_on_call_to_on_wrapup(campaign.id, caller_session_id)
-    end    
-  end
+    end  
+  end    
 
   def schedule_for_later(date)
     scheduled_date = DateTime.strptime(date, "%m/%d/%Y %H:%M").to_time
@@ -215,6 +208,7 @@ class CallAttempt < ActiveRecord::Base
     CANCELLED = "Call cancelled"
     SCHEDULED = 'Scheduled for later'
     RINGING = "Ringing"
+    DIALING = "Dialing"
 
     MAP = {'in-progress' => INPROGRESS, 'completed' => SUCCESS, 'busy' => BUSY, 'failed' => FAILED, 'no-answer' => NOANSWER, 'canceled' => CANCELLED}
     ALL = MAP.values
@@ -223,16 +217,9 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def redirect_caller(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
-    session_id = redis_caller_session
-    unless session_id.blank?      
-      session = CallerSession.find(session_id)
-      EM.synchrony {
-        t = TwilioLib.new(account, auth)
-        deferrable = t.redirect_call(session.sid, flow_caller_url(session.caller, :host => Settings.host, :port => Settings.port, session_id: session.id, event: "start_conf"))
-        deferrable.callback {}
-        deferrable.errback { |error| }
-      }
-    end
+    unless caller_session.nil?
+      Resque.enqueue(RedirectCallerJob, caller_session.id)
+    end    
   end
   
   def end_caller_session

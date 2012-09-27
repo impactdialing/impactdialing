@@ -124,14 +124,12 @@ class Voter < ActiveRecord::Base
     true
   end
   
-  def make_call(call_attempt)
-  end
   
   def dial_predictive_em(iter)
     call_attempt = new_call_attempt(self.campaign.type)
     twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)  
     Rails.logger.info "#{call_attempt.id} - before call"        
-    http = twilio_lib.make_call(campaign, self, call_attempt)
+    http = twilio_lib.make_call_em(campaign, self, call_attempt)
     http.callback { 
       Rails.logger.info "#{call_attempt.id} - after call"    
       response = JSON.parse(http.response)  

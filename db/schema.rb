@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120917073629) do
+ActiveRecord::Schema.define(:version => 20120925153123) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -46,6 +46,7 @@ ActiveRecord::Schema.define(:version => 20120917073629) do
     t.integer  "call_attempt_id"
   end
 
+  add_index "answers", ["campaign_id", "caller_id"], :name => "index_answers_campaign_id_caller_id"
   add_index "answers", ["possible_response_id", "caller_id", "created_at"], :name => "index_answers_count_possible_response"
   add_index "answers", ["possible_response_id", "campaign_id", "caller_id", "created_at"], :name => "index_answers_count_possible_response_campaign"
   add_index "answers", ["possible_response_id", "campaign_id", "caller_id", "created_at"], :name => "index_answers_count_question_id"

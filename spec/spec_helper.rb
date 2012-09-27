@@ -34,19 +34,22 @@ Spork.prefork do
     # config.mock_with :flexmock
     # config.mock_with :rr
     config.mock_with :rspec
-    
+
     config.before(:suite) do
-       DatabaseCleaner.strategy = :truncation
+       DatabaseCleaner.strategy = :transaction
+    end
+    config.after(:suite) do
+      DatabaseCleaner.clean_with(:truncation)
     end
     config.before(:each) do
       DatabaseCleaner.start
     end
-    
-    
+
+
     config.after(:each) do
         DatabaseCleaner.clean
     end
-      
+
     # If you're not using ActiveRecord, or you'd prefer not to run each of your
     # examples within a transaction, remove the following line or assign false
     # instead of true.
@@ -74,7 +77,7 @@ Spork.prefork do
   def fixture_file_upload(path, mime_type = nil, binary = false)
     Rack::Test::UploadedFile.new("#{fixture_path}#{path}", mime_type, binary)
   end
-  
+
 end
 
 Spork.each_run do

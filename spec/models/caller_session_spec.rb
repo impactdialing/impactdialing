@@ -229,8 +229,9 @@ describe CallerSession do
         caller_session.start_conf!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>You can only call this campaign between 9 AM and 9 PM. Please try back during those hours.</Say><Hangup/></Response>")
       end
-
-    end
+    end  
+      
+   
 
     describe "Caller already on call" do
 
@@ -275,7 +276,8 @@ describe CallerSession do
 
     it "should move caller to end conference from account not activated" do
       caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "account_not_activated")
-      caller_session.should_receive(:publish_caller_disconnected)
+      Resque.should_receive(:enqueue).with(CallerPusherJob, caller_session.id, "publish_caller_disconnected") 
+      Resque.should_receive(:enqueue).with(ModeratorCallerJob, caller_session.id, "publish_moderator_caller_disconnected")
       caller_session.end_conf!
       caller_session.state.should eq('conference_ended')
     end
@@ -283,7 +285,8 @@ describe CallerSession do
     it "should make caller unavailable" do
       caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "account_not_activated")
       RedisCallerSession.load_caller_session_info(caller_session.id, caller_session)      
-      caller_session.should_receive(:publish_caller_disconnected)
+      Resque.should_receive(:enqueue).with(CallerPusherJob, caller_session.id, "publish_caller_disconnected") 
+      Resque.should_receive(:enqueue).with(ModeratorCallerJob, caller_session.id, "publish_moderator_caller_disconnected")
       caller_session.end_conf!
       RedisCallerSession.read(caller_session.id)['on_call'].should eq("false")
       RedisCallerSession.read(caller_session.id)['available_for_call'].should eq("false")
@@ -292,14 +295,16 @@ describe CallerSession do
     it "should set caller session endtime" do
       caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "account_not_activated")
       RedisCallerSession.load_caller_session_info(caller_session.id, caller_session)            
-      caller_session.should_receive(:publish_caller_disconnected)
+      Resque.should_receive(:enqueue).with(CallerPusherJob, caller_session.id, "publish_caller_disconnected") 
+      Resque.should_receive(:enqueue).with(ModeratorCallerJob, caller_session.id, "publish_moderator_caller_disconnected")
       caller_session.end_conf!
       RedisCallerSession.read(caller_session.id)['endtime'].should_not be_nil
     end
 
     it "should render hangup twiml" do
       caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "account_not_activated")
-      caller_session.should_receive(:publish_caller_disconnected)
+      Resque.should_receive(:enqueue).with(CallerPusherJob, caller_session.id, "publish_caller_disconnected") 
+      Resque.should_receive(:enqueue).with(ModeratorCallerJob, caller_session.id, "publish_moderator_caller_disconnected")
       caller_session.end_conf!
       caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
     end

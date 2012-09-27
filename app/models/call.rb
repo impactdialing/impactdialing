@@ -37,12 +37,11 @@ class Call < ActiveRecord::Base
         event :incoming_call, :to => :connected , :if => (:answered_by_human_and_caller_available?)
         event :incoming_call, :to => :abandoned , :if => (:answered_by_human_and_caller_not_available?)
         event :incoming_call, :to => :call_answered_by_machine , :if => (:answered_by_machine?)
-        event :call_ended, :to => :call_not_answered_by_lead, :if => :call_did_not_connect?
-        event :call_ended, :to => :abandoned
       end 
       
       state :connected do
-        after(:always) { connect_call; call_attempt.publish_voter_connected}
+        before(:always) {  connect_call }
+        after(:always) { Resque.enqueue(CallPusherJob, call_attempt.id, "publish_voter_connected");Resque.enqueue(ModeratorCallJob, call_attempt.id, "publish_voter_connected_moderator")}
         event :hangup, :to => :hungup
         event :disconnect, :to => :disconnected
         
@@ -65,9 +64,9 @@ class Call < ActiveRecord::Base
       
       state :disconnected do        
         before(:always) { disconnect_call }
-        after(:success) { call_attempt.publish_voter_disconnected}                
-        event :call_ended, :to => :call_answered_by_lead, :if => :call_connected?
-        event :call_ended, :to => :call_not_answered_by_lead, :if => :call_did_not_connect?        
+        after(:success) { Resque.enqueue(CallPusherJob, call_attempt.id, "publish_voter_disconnected");Resque.enqueue(ModeratorCallJob, call_attempt.id, "publish_voter_disconected_moderator") }                
+        event :submit_result, :to => :wrapup_and_continue
+        event :submit_result_and_stop, :to => :wrapup_and_stop        
         response do |xml_builder, the_call|
           xml_builder.Hangup
         end
@@ -92,56 +91,35 @@ class Call < ActiveRecord::Base
         end
       end
       
-      state :call_answered_by_lead do
-        before(:always) { end_answered_call }        
-        event :submit_result, :to => :wrapup_and_continue
-        event :submit_result_and_stop, :to => :wrapup_and_stop
-        
-        response do |xml_builder, the_call|
-          xml_builder.Hangup
-        end        
-      end
       
       state :call_end_machine do
         before(:always) { end_answered_by_machine }                
         response do |xml_builder, the_call|
           xml_builder.Hangup
         end
-      end
-      
-      
-      state :call_not_answered_by_lead do
-        before(:always) { end_unanswered_call; call_attempt.redirect_caller }                
-        response do |xml_builder, the_call|
-          xml_builder.Hangup
-        end
-      end
-      
+      end            
       
       state :wrapup_and_continue do 
-        before(:always) { wrapup_now; call_attempt.redirect_caller }
-        after(:success){ persist_all_states}
+        before(:always) { wrapup_now; call_attempt.redirect_caller; Resque.enqueue(ModeratorCallJob, call_attempt.id, "publish_moderator_response_submited") }
       end
-      
+            
       state :wrapup_and_stop do
-        before(:always) { wrapup_now; end_caller_session }        
-        after(:success){ persist_all_states;}
+        before(:always) { wrapup_now; caller_session.run('end_conf') }        
       end
             
   end 
   
-  def persist_all_states
-    update_attribute(:all_states, (all_states + "|" + state))
-  end
   
   def run(event)
-    send(event)
+    call_flow = self.method(event.to_s) 
+    call_flow.call
     render
   end
   
   def process(event)
     begin
-      send(event)
+      call_flow = self.method(event.to_s) 
+      call_flow.call
     rescue ActiveRecord::StaleObjectError => exception      
       Resque.enqueue(PhantomCallerJob, caller_session.id)  unless caller_session.nil?
     end          

@@ -25,6 +25,12 @@ heroku_preproduction:
   resque_sidekiq: redis://10.248.206.35:6379
   monitor_redis: redis://10.248.206.35:6379    
   common: redis://10.248.206.35:6379     
-        
+  
 heroku:
-  redis://redistogo:acc06af2ea8dfd06606c3e641fe0febd@koi.redistogo.com:9090
+  redis://10.140.76.223:6379
+
+heroku_caller:
+  redis://10.140.76.223:6379
+
+heroku_phonesonly:
+  redis://10.140.76.223:6379

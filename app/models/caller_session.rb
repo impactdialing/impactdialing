@@ -46,7 +46,8 @@ class CallerSession < ActiveRecord::Base
   
   def run(event)
     begin
-      send(event)
+      caller_flow = self.method(event.to_s) 
+      caller_flow.call      
     rescue ActiveRecord::StaleObjectError => exception
       reloaded_caller_session = CallerSession.find(self.id)
       reloaded_caller_session.send(event)
@@ -56,12 +57,15 @@ class CallerSession < ActiveRecord::Base
   
   def process(event)
     begin
-      send(event)
+      caller_flow = self.method(event.to_s) 
+      caller_flow.call      
+
     rescue ActiveRecord::StaleObjectError => exception
       reloaded_caller_session = CallerSession.find(self.id)
       reloaded_caller_session.send(event)
     end
   end
+  
   
   
   call_flow :state, :initial => :initial do    
@@ -120,11 +124,18 @@ class CallerSession < ActiveRecord::Base
       
       state :conference_ended do
         before(:always) { end_caller_session}
-        after(:always) { publish_caller_disconnected} 
+        after(:always) {Resque.enqueue(CallerPusherJob, self.id, "publish_caller_disconnected") ; Resque.enqueue(ModeratorCallerJob, self.id, "publish_moderator_caller_disconnected")} 
         response do |xml_builder, the_call|
           xml_builder.Hangup
         end        
                 
+      end
+      
+      state :campaign_out_of_phone_numbers do
+        response do |xml_builder, the_call|          
+          xml_builder.Say I18n.t(:campaign_out_of_phone_numbers)
+          xml_builder.Hangup
+        end                
       end
       
       
@@ -152,12 +163,7 @@ class CallerSession < ActiveRecord::Base
   def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)    
     voters = Voter.find_all_by_caller_id_and_status(caller.id, CallAttempt::Status::READY)
     voters.each {|voter| voter.update_attributes(status: 'not called')}    
-    EM.synchrony {
-      t = TwilioLib.new(account, auth)    
-      deferrable = t.end_call("#{self.sid}")              
-      deferrable.callback {}
-      deferrable.errback { |error| }          
-    }             
+    Resque.enqueue(EndRunningCallJob, self.sid)
     end_caller_session
     CallAttempt.wrapup_calls(caller_id)
   end  
@@ -202,6 +208,11 @@ class CallerSession < ActiveRecord::Base
     Twilio::Call.redirect(sid, flow_caller_url(caller, :host => Settings.host, :port => Settings.port, session_id: id, event: "start_conf"))
   end
   
+  def redirect_caller_out_of_numbers
+    Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
+    Twilio::Call.redirect(sid, flow_caller_url(caller, :host => Settings.host, :port => Settings.port, session_id: id, event: "run_ot_of_phone_numbers"))
+  end
+  
 
   def join_conference(mute_type, call_sid, monitor_session)
     response = Twilio::Verb.new do |v|
@@ -231,22 +242,17 @@ class CallerSession < ActiveRecord::Base
     Pusher[session_key].trigger(event, data.merge!(:dialer => self.campaign.type))
   end
   
-  def dial_em(voter)
+    
+  def dial(voter)
     return if voter.nil?
     call_attempt = create_call_attempt(voter)    
     twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)        
-    EM.synchrony do
-      http = twilio_lib.make_call_em(campaign, voter, call_attempt)
-      http.callback { 
-        response = JSON.parse(http.response)  
-        puts response 
-        if response["status"] == 400
-          handle_failed_call(call_attempt, self)
-        else
-          call_attempt.update_attributes(:sid => response["sid"])
-        end
-         }
-      http.errback {}            
+    http_response = twilio_lib.make_call(campaign, voter, call_attempt)
+    response = JSON.parse(http_response)  
+    if response["RestException"]
+      handle_failed_call(call_attempt, self)
+    else
+      call_attempt.update_attributes(:sid => response["sid"])
     end
   end
   
