@@ -1,4 +1,4 @@
-require 'ar-octopus'
+require 'octopus'
 require 'resque-loner'
 
 class SimulatorJob 
