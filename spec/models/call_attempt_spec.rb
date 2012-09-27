@@ -112,7 +112,7 @@ describe CallAttempt do
     RedisVoter.should_receive(:end_unanswered_call)
     RedisCampaignCall.should_receive(:move_ringing_to_completed)
     # RedisCallNotification.should_receive(:end_unanswered_call)
-    call_attempt.end_unanswered_call
+    call_attempt.end_unanswered_call(call.call_status)
   end
   
   it "should end_answered_by_machine" do
