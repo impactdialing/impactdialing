@@ -48,43 +48,6 @@ describe CallAttempt do
     call_attempt.voter.call_back.should be_true
   end
 
-  describe 'next recording' do
-    let(:script) { Factory(:script) }
-    let(:campaign) { Factory(:campaign, :script => script) }
-    let(:call_attempt) { Factory(:call_attempt, :campaign => campaign) }
-
-    before(:each) do
-      @recording1 = Factory(:robo_recording, :script => script)
-      @recording2 = Factory(:robo_recording, :script => script)
-    end
-
-    it "plays the next recording given the current one" do
-      call_attempt.next_recording(@recording1).should == @recording2.twilio_xml(call_attempt)
-    end
-
-    it "plays the first recording next given no current recording" do
-      call_attempt.next_recording.should == @recording1.twilio_xml(call_attempt)
-    end
-
-    it "hangs up given no next recording" do
-      call_attempt.next_recording(@recording2).should == Twilio::Verb.new(&:hangup).response
-    end
-
-    it "hangs up when a recording has been responded to incorrectly 3 times" do
-      Factory(:call_response, :robo_recording => @recording2, :call_attempt => call_attempt, :times_attempted => 3)
-      call_attempt.next_recording(@recording2).should == Twilio::Verb.new(&:hangup).response
-    end
-
-    it "replays current recording has been responded to incorrectly < 3 times" do
-      recording_response = Factory(:recording_response, :robo_recording => @recording2, :response => 'xyz', :keypad => 1)
-      Factory(:call_response, :robo_recording => @recording2, :call_attempt => call_attempt, :times_attempted => 2)
-      call_attempt.next_recording(@recording2).should == Twilio::Verb.new(&:hangup).response
-    end
-  end
-
-
-
-
   it "lists attempts between two dates" do
     too_old = Factory(:call_attempt).tap { |ca| ca.update_attribute(:created_at, 10.minutes.ago) }
     too_new = Factory(:call_attempt).tap { |ca| ca.update_attribute(:created_at, 10.minutes.from_now) }

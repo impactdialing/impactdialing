@@ -1,39 +1,32 @@
 <h1>Billing</h1>
 
 <% if @trial %>
-	<p>Your account is currently in trial.</p>
-	<% if @balance==0 %>Your trial credit has expired.<% end %>
-	<p class="actions"><a href="/client/billing_form" class="action secondary confirm">Upgrade to a full account</a></p>
+  <p>Your account is currently in trial.</p>
+  <% if @balance==0 %>Your trial credit has expired.<% end %>
+  <p class="actions"><a href="/client/billing_form" class="action secondary confirm">Upgrade to a full account</a></p>
 <% else %>
-	<p>Your current subscription is: <% if @user.account.is_manual? %>Manual<%else %> <%= @user.account.active_subscription %> <% if @user.account.active_subscription=="Per caller" %>(<%= @user.account.subscription_count %> callers)<% end %><% end %></p>
-	<%# if @user.account.active_subscription!="Manual" %>
-		<p>Your current balance is <%= number_to_currency @balance %>.</p>
-		<% if @has_billing_info %>
-			<p class="actions"><a href="/client/add_to_balance" class="action secondary">Add to your balance</a></p>
-			<p class="actions"><a href="/client/recharge" class="action secondary"><% if @user.account.autorecharge_enabled? %>Configure<% else %>Enable<% end %> auto-recharge</a></p>
-		<% end %>
-	<%# end %>
-	<p class="actions"><a href="/client/update_billing" class="action secondary">Update billing information</a></p>
-	<% if @user.account.active_subscription=="Per Caller" %>
-		<p class="actions"><a href="/client/update_billing_quantity" class="action secondary">Change # of callers</a></p>
-		<p class="actions"><a href="/client/cancel_subscription" class="action secondary">Cancel subscription</a></p>
-	<% end %>
+  <p>Your current subscription is: <% if @user.account.is_manual? %>Manual<%else %> <%= @user.account.active_subscription %> <% if @user.account.active_subscription=="Per caller" %>(<%= @user.account.subscription_count %> callers)<% end %><% end %></p>
+  <%# if @user.account.active_subscription!="Manual" %>
+    <p>Your current balance is <%= number_to_currency @balance %>.</p>
+    <% if @has_billing_info %>
+      <p class="actions"><a href="/client/add_to_balance" class="action secondary">Add to your balance</a></p>
+      <p class="actions"><a href="/client/recharge" class="action secondary"><% if @user.account.autorecharge_enabled? %>Configure<% else %>Enable<% end %> auto-recharge</a></p>
+    <% end %>
+  <%# end %>
+  <p class="actions"><a href="/client/update_billing" class="action secondary">Update billing information</a></p>
+  <% if @user.account.active_subscription=="Per Caller" %>
+    <p class="actions"><a href="/client/update_billing_quantity" class="action secondary">Change # of callers</a></p>
+    <p class="actions"><a href="/client/cancel_subscription" class="action secondary">Cancel subscription</a></p>
+  <% end %>
 <% end %>
-
-<p>
-  <a href="<%= account_campaigns_usage_client_reports_path(:id => @account.id) %>">View usage by campaign</a>
-  <br>
-  <a href="<%= account_callers_usage_client_reports_path(:id => @account.id) %>">View usage by caller</a>
-</p>
-
 
 <% content_for :jquery_extension_javascripts do %>
-	<script type='text/javascript' src='/javascripts/jquery.simplemodal.js'></script>
-	<script type='text/javascript' src='/javascripts/confirm.js'></script>
-	<script>
-	var confirmUrl='<%= raw @recurly_per_minute_subscription_url %>';
-	</script>
+  <script type='text/javascript' src='/javascripts/jquery.simplemodal.js'></script>
+  <script type='text/javascript' src='/javascripts/confirm.js'></script>
+  <script>
+  var confirmUrl='<%= raw @recurly_per_minute_subscription_url %>';
+  </script>
 <% end %>
 <% content_for :stylesheets do %>
-	<link type='text/css' href='/stylesheets/confirm.css' rel='stylesheet' media='screen' />
+  <link type='text/css' href='/stylesheets/confirm.css' rel='stylesheet' media='screen' />
 <% end %>

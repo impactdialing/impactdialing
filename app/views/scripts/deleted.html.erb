@@ -1,38 +1,22 @@
+<%= csrf_meta_tag %>
+
 <h1>Deleted scripts</h1>
-<% if @scripts.length==0 %>
-  <div class="form">
-    <label>No scripts entered.</label>
-  </div>
+<% if @scripts.empty? %>
+  <p>No scripts deleted.</p>
 <% else %>
-  <div class="table">
-    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <table>
+    <tr>
+      <th>Name</th>
+      <th>Date deleted</th>
+      <th width="55" class="ac"></th>
+    </tr>
+    <% @scripts.each do |c| %>
       <tr>
-        <th>Name</th>
-        <th>Date added</th>
-        <th>Date deleted</th>
-        <th width="55" class="ac"></th>
+        <td><strong><%= link_to c.name, edit_client_script_path(c) %></strong></td>
+        <td><%= c.updated_at.strftime("%m/%d/%Y") %></td>
+        <td><%= link_to 'Restore', client_script_restore_path(c), :method => :put %></td>
       </tr>
-      <% @scripts.each do |s| %>
-        <tr class="<%= cycle("odd","even") %>">
-          <td><strong><a href="scripts/<%= s.id %>"><%= s.name %></a></strong></td>
-          <td><%= s.created_at.strftime("%m/%d/%Y") %></td>
-          <td><%= s.updated_at.strftime("%m/%d/%Y") %></td>
-          <td>
-            <%= form_tag(client_script_restore_path(s), :id => "restore-script#{s.id}-form", :method => :put) do |f| %>
-              <%= link_to 'Restore', 'javascript:void(0)', :onclick => "$('#restore-script#{s.id}-form').submit()" %>
-            <% end %>
-          </td>
-        </tr>
-      <% end %>
-
-    </table>
-  </div>
-
-
-  <!-- New HTML -->
+    <% end %>
+  </table>
   <p><%= page_entries_info @scripts %> <%= will_paginate @scripts %></p>
-  <!-- / New HTML -->
-
-  <!-- Table -->
 <% end %>
-<p class="actions"><%= link_to 'Return to active scripts', 'scripts', :class => 'action primary' %></p>

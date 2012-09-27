@@ -5,8 +5,8 @@ en:
   caller_id_blank: "When you make calls with this campaign, you need a phone number to use for the Caller ID. Enter the phone number you want to use for your Caller ID and click Verify. To prevent abuse, the system will call that number and ask you to enter a validation code that will appear on your screen. Until you do this, you can't make calls with this campaign."
   # inviting a new administrators
   admin_invite_subject: "Set your password for %{title}"
-  admin_invite_body_html: "Click here to set your password<br/> %{link}"
-  admin_invite_body_text: "Click here to set your password %{link}"
+  admin_invite_body_html: "Click here to set your password: %{link}. This link expires 24 hours after it was sent."
+  admin_invite_body_text: "Click here to set your password: %{link}. This link expires 24 hours after it was sent."
   unpaid_text: "Before you can make calls, you need to verify a credit card number that we can bill. Until then, you can try out as much as you like, except for actually calling. %{billing_link}"
   unactivated_text: "To prevent abuse, new users must call the support phone number at the bottom of your screen to activate your account."
   voter_list_upload_succeded_subject: "Your list %{list_name} upload succeeded."
@@ -30,7 +30,6 @@ en:
   report_ready_for_download: "Your report is ready for download."
   report_error_occured_subject: "Error generating report."
   report_error_occured: "There was a problem generating a report for your campaign. Support has been notified and is looking into the issue."
-  broadcast_campaign_started: "Broadcast Campaign Started"
   script_cannot_be_deleted: "This script cannot be deleted, as it is currently assigned to an active campaign."
   script_cannot_be_modified: "You cannot change the script as this campaign has already been called with the existing script."
   identical_caller_on_call: "Another user is logged in as this caller. Only one user may log in as the same caller at the same time."

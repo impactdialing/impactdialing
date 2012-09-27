@@ -18,7 +18,6 @@ var Scripts = function(){
   $(".possible_response_sortable").sortable({ cursor: 'crosshair' , containment: 'parent', axis: 'y' });
 
   $('#script_submit').click(function() {
-    self.set_question_order();
     self.set_possible_response_order();
     self.set_elements_order();
     return true;
@@ -71,15 +70,6 @@ Scripts.prototype.display_script_text_numbers = function(){
   if ($(this).parent('fieldset').attr('deleted') != "true") {
       $(this).text("Script Text "+script_text_count++);
     }
-  });
-
-}
-
-
-Scripts.prototype.set_question_order = function(){
-  var question_order = 1;
-  $.each($('.question_order'), function(){
-      $(this).val(question_order++);
   });
 
 }
@@ -163,7 +153,7 @@ function possible_response_answered(question_ids){
 
 
 function questions_answered(){
-	var script_id = $('#script_id').val();
+  var script_id = $('#script_id').val();
   $.ajax({
     url : "/client/scripts/questions_answered",
     data : {id : $("#script_id").val() },
