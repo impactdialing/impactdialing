@@ -32,8 +32,9 @@
 
 </script>
 
+<h1>Download <%= @campaign.name %></h1>
+
 <div role='main'>
-  <h1>Download <%= @campaign.name %></h1>
   <%= form_tag(download_client_campaign_reports_path(@campaign), :method => "POST") do %>
     <fieldset>
       <div id="fields">

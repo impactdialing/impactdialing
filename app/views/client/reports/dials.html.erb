@@ -1,6 +1,6 @@
-<div role="main">
-  <h1><%= @campaign.name %> Dials</h1>
+<h1><%= @campaign.name %> Dials</h1>
 
+<div role="main">
   <% if @show_summary %>
     <%= render partial: 'summary_dial', locals: { dials_report: @dials_report} %>
   <% end %>
