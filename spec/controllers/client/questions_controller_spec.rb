@@ -68,7 +68,7 @@ describe Client::QuestionsController do
   end
 
   describe "update" do
-    it "should update script text" do
+    it "should update a question" do
       active_script = Factory(:script, :account => account, :active => true)
       question = Factory(:question, text: "abc", script_order: 1, script: active_script)
       put :update, script_id: active_script.id, id: question.id, question: {text: "Hi"},  :api_key=> 'abc123', :format => "json"

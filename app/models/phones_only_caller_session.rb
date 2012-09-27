@@ -89,7 +89,7 @@ class PhonesOnlyCallerSession < CallerSession
       
       
       state :conference_started_phones_only do
-        before(:always) {start_conference; Resque.enqueue(PreviewPowerDialJob, self.id, voter_in_progress.id) }
+        before(:always) {start_conference; Resque.enqueue(PreviewPowerDialJob, self.id, current_voter.id) }
         event :gather_response, :to => :read_next_question, :if => :call_answered?
         event :gather_response, :to => :wrapup_call
         
