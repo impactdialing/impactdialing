@@ -1,4 +1,5 @@
 require 'octopus'
+
 class CallerCampaignReportStrategy < CampaignReportStrategy
   
   def csv_header
