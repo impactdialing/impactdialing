@@ -218,6 +218,7 @@ end
 
 loop do
   begin
+    Octopus.using(:read_slave1) do
       logged_in_campaigns = CallerSession.campaigns_on_call
       logged_in_campaigns.each do |c|     
         puts "Simulating #{c.campaign_id}"
@@ -225,6 +226,7 @@ loop do
         Resque.enqueue(SimulatorJob, campaign.id) if campaign.type == Campaign::Type::PREDICTIVE
         # simulate(c.campaign_id) if campaign.type == Campaign::Type::PREDICTIVE
       end
+    end
     sleep 30
   rescue Exception => e
     if e.class == SystemExit || e.class == Interrupt
