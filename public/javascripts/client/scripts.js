@@ -68,7 +68,7 @@ Scripts.prototype.display_script_text_numbers = function(){
   var script_text_count = 1;
   $.each($('.script_label'), function(){
   if ($(this).parent('fieldset').attr('deleted') != "true") {
-      $(this).text("Script Text "+script_text_count++);
+      $(this).text("Script text "+script_text_count++);
     }
   });
 
