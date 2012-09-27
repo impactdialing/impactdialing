@@ -6,8 +6,6 @@ describe User do
     user
   end
 
-  it { should validate_uniqueness_of(:email).with_message(/is already in use/) }
-  
   it "should not allow spambots" do
     u = User.new(:captcha =>"something")
     u.save

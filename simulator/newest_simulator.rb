@@ -3,7 +3,7 @@ require "ostruct"
 require 'yaml'
 require 'logger'
 require 'fileutils'
-require 'ar-octopus'
+require 'octopus'
 
 RAILS_ROOT = File.expand_path('../..', __FILE__)
 require File.join(RAILS_ROOT, 'config/environment')
@@ -218,12 +218,14 @@ end
 
 loop do
   begin
-    logged_in_campaigns = CallerSession.using(:read_slave1).campaigns_on_call
-    logged_in_campaigns.each do |c|     
-      puts "Simulating #{c.campaign_id}"
-      campaign = Campaign.find(c.campaign_id).using(:read_slave1)      
-      Resque.enqueue(SimulatorJob, campaign.id) if campaign.type == Campaign::Type::PREDICTIVE
-      # simulate(c.campaign_id) if campaign.type == Campaign::Type::PREDICTIVE
+    Octopus.using(:read_slave1) do
+      logged_in_campaigns = CallerSession.campaigns_on_call
+      logged_in_campaigns.each do |c|     
+        puts "Simulating #{c.campaign_id}"
+        campaign = Campaign.find(c.campaign_id)      
+        Resque.enqueue(SimulatorJob, campaign.id) if campaign.type == Campaign::Type::PREDICTIVE
+        # simulate(c.campaign_id) if campaign.type == Campaign::Type::PREDICTIVE
+      end
     end
     sleep 30
   rescue Exception => e

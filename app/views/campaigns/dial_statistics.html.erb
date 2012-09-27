@@ -1,6 +1,0 @@
-<h1>Dial Statistics</h1>
-<h2><%= @campaign.name %></h2>
-<% CallAttempt::Status::ALL.each do |status| %>
-    <%=status %> : # calls : <%= @campaign.call_attempts.for_status(status).size%>
-    <br/>
-<% end %>

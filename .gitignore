@@ -17,4 +17,12 @@ bin/
 spec/fixtures/test_tmp/
 /typescript
 .bundle
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+/config/application .yml
+dump.rdb
+>>>>>>> kill-robo
+=======
 *.swp
+>>>>>>> master

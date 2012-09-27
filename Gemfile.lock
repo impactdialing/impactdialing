@@ -121,7 +121,6 @@ GEM
       multi_json (~> 1.0)
       multi_xml
     i18n (0.6.1)
-    in_place_editing (1.1.2)
     journey (1.0.4)
     jquery-rails (2.1.1)
       railties (>= 3.1.0, < 5.0)
@@ -313,7 +312,6 @@ DEPENDENCIES
   heroku_san
   hirb
   hiredis (~> 0.4.5)
-  in_place_editing (~> 1.1.1)
   jquery-rails (>= 1.0.12)
   json (~> 1.6.1)
   json_spec

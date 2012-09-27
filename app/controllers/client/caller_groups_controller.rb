@@ -67,7 +67,7 @@ module Client
     end
 
     def load_campaigns
-      @campaigns = account.campaigns.manual.active
+      @campaigns = account.campaigns.active
     end
 
     def save_caller_group

@@ -11,10 +11,11 @@ dialer_worker: rake environment resque:work QUEUE=dialer_worker
 calculate_dials_worker: rake environment resque:work QUEUE=calculate_dials_worker 
 simulator_worker: rake environment resque:work QUEUE=simulator 
 debit_worker_job: rake environment resque:work QUEUE=debit_worker_job
-redirect_caller_job: rake environment resque:work QUEUE=redirect_caller_job
-call_pusher_job: rake environment resque:work QUEUE=call_pusher_job
-caller_pusher_job: rake environment resque:work QUEUE=caller_pusher_job
-preview_power_dial_job: rake environment resque:work QUEUE=preview_power_dial_job
-moderator_caller_job: rake environment resque:work QUEUE=moderator_caller_job
-moderator_call_job: rake environment resque:work QUEUE=moderator_call_job
+call_flow: rake environment resque:work QUEUE=call_flow
+call_end: rake environment resque:work QUEUE=call_end
+
+moderator_flow: rake environment resque:work QUEUE=moderator_caller_job
+moderator_flow: rake environment resque:work QUEUE=moderator_call_job
 campaign_out_of_numbers: rake environment resque:work QUEUE=campaign_out_of_numbers
+
+

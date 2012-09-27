@@ -17,7 +17,7 @@ describe Client::ScriptsController do
     end
 
     it "shows the list of voter fields which were selected" do
-      script = Factory(:script, :account => account, :robo => false, :active => true)
+      script = Factory(:script, :account => account, :active => true)
       selected_voter_fields = ["Phone", "CustomID", "LastName", "FirstName"]
       post :create, script: {name: "script1"}, voter_field: selected_voter_fields
       response.should redirect_to(client_scripts_url)
@@ -103,7 +103,7 @@ describe Client::ScriptsController do
          lambda {
             post :create , :script => {}, :api_key=> "abc123", :format => "json"
           }.should change {account.reload.scripts.size} .by(0)
-          puts response.body.should eq("{\"errors\":{\"name\":[\"can't be blank\"]}}")
+          response.body.should eq("{\"errors\":{\"name\":[\"can't be blank\"]}}")
       end
 
     end

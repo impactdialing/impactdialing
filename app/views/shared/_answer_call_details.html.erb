@@ -1,19 +1,19 @@
 <% i = 1 %>
 <% @answered_call_stats.each_pair do |question, stats| %>
-  <h3><%= @campaign.robo == true ? "Recording" : "Question" %> <%= i %>: <%= question %></h3>
+  <h3>Question <%= i %>: <%= question %></h3>
     <table>
-   	  <tr>
-   	    <th>Answer</th>
-   	    <th>Number</th>
-   	    <th>Percentage</th>
-   	  </tr>
+       <tr>
+         <th>Answer</th>
+         <th>Number</th>
+         <th>Percentage</th>
+       </tr>
       <% stats.each do |answers| %>
         <tr>
           <td><%= answers[:answer]%></td>
           <td><%= answers[:number]%></td>
           <td><%= answers[:percentage]%> %</td>
-     	  </tr>
-   	  <% end %>
+         </tr>
+       <% end %>
     </table>
     <% i = i + 1%>
 <% end %>
