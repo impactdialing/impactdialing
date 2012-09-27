@@ -6,6 +6,7 @@ var Campaign = function(){
   });
    this.detect_answering_machine();
    this.detect_leave_voice_mail();
+   this.dialing_mode_changed();
 
   $('#campaign_answering_machine_detect').click(function () {
 	self.detect_answering_machine();
