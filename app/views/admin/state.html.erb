@@ -1,3 +1,15 @@
+<%= javascript_include_tag 'jquery' %>
+<%= javascript_tag  do -%>
+  $(function() {
+    $('.js-show-caller').bind('click', function(event) {
+      event.preventDefault();
+      $.get($(this).attr('href'), function(data) {
+        $('.js-callers-block').html(data.html);
+      });
+      return false;
+    });
+  });
+<% end -%>
 <h1>System Status</h1>
 <table>
   <tr>
@@ -6,30 +18,30 @@
   </tr>
   <tr>
     <td>Logged in campaigns:</td>
-    <td><%= @logged_in_campaigns.length %></td>
+    <td><%= @logged_in_campaigns.count %></td>
   </tr>
   <tr>
     <td>Logged in callers:</td>
     <td><%= @logged_in_callers.length %></td>
   </tr>
+</table>
 
-    <% @logged_in_campaigns.each do |k| %>
-      <tr>
-        <td valign="top"><%= k.name %> <a target="_blank" href="/admin/login/<%= k.account.users.first.id %>" style="font-size:9px;">login</a></td>
-        <td>
-          <%
-            callers = CallerSession.find_all_by_campaign_id_and_on_call(k,1)
-          %>
-          <br/>Callers:
-          <ul>
-            <% callers.each do |ca| %>
-              <li>id <%= ca.id %> <%= ca.caller.name %> <%= ca.caller.email %> started <%= ca.starttime %> from <%= ca.caller_number %> <% if !ca.available_for_call %>Not <% end %>Available <%= link_to 'end call', admin_status_path(:end => ca.id) %>
-            <% end %>
-          </li>
-      </ul>
-      <hr/>
+<table>
+  <tr>
+    <td style="vertical-align:top">
+      <table>
+          <% @logged_in_campaigns.each do |k| %>
+            <tr>
+              <td valign="top"><a target="_blank" href="/admin/login/<%= User.where(account_id: k.account_id).first %>" style="font-size:13px;">login</a> <%= k.name %></td>
+              <td>
+                <%= link_to "Callers Number: #{k.caller_sessions.on_call.count}", admin_caller_sessions_path(k), class: "js-show-caller" %>
+              </td>
+        </tr>
+      <% end -%>
+      </table>
+    </td>
+    <td style="vertical-align:top">
+      <div class='js-callers-block'></div>
     </td>
   </tr>
-<% end -%>
-
 </table>

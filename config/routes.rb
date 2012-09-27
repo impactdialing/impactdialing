@@ -13,7 +13,7 @@ ImpactDialing::Application.routes.draw do
       post :submit_result_and_stop
     end
   end
-  
+
   resources :caller, :protocol => PROTOCOL, :only => [:index] do
     collection do
       get :login
@@ -34,7 +34,7 @@ ImpactDialing::Application.routes.draw do
     end
 
   end
-  
+
 
   namespace "callers" do
     resources :campaigns do
@@ -214,6 +214,7 @@ ImpactDialing::Application.routes.draw do
 
   get 'admin/status', :to => 'admin#state'
   get 'admin/abandonment', :to => 'admin#abandonment'
+  get 'admin/caller_sessions/:id', :to => 'admin#caller_sessions', :as => :admin_caller_sessions
 
   resource :call_attempts, :only => :create
 
