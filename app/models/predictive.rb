@@ -68,7 +68,10 @@ class Predictive < Campaign
     limit_voters = num_voters <= 0 ? 0 : num_voters
     voters =  all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.without(account.blocked_numbers.for_campaign(self).map(&:number)).limit(limit_voters)
     Voter.transaction do
-      voters.each { |voter| voter.save }
+      voters.each do |voter| 
+        voter.status = CallAttempt::Status::DIALING
+        voter.save 
+      end
     end
     if voters.blank?
       caller_sessions.available.each do |caller_session|
