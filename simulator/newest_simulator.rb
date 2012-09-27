@@ -3,7 +3,7 @@ require "ostruct"
 require 'yaml'
 require 'logger'
 require 'fileutils'
-require 'ar-octopus'
+require 'octopus'
 
 RAILS_ROOT = File.expand_path('../..', __FILE__)
 require File.join(RAILS_ROOT, 'config/environment')
