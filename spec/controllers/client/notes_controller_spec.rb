@@ -6,8 +6,8 @@ describe Client::NotesController do
     @user = Factory(:user, account_id: account.id)
   end
 
-  
-  
+
+
   describe "index" do
     it "should return notes for a script" do
       active_script = Factory(:script, :account => account, :active => true)
@@ -17,7 +17,7 @@ describe Client::NotesController do
       response.body.should eq("[#{note1.to_json},#{note2.to_json}]")
     end
   end
-  
+
   describe "show" do
     it "should return note " do
       active_script = Factory(:script, :account => account, :active => true)
@@ -26,14 +26,14 @@ describe Client::NotesController do
       get :show, script_id: active_script.id, id: note.id,  :api_key=> 'abc123', :format => "json"
       response.body.should eq("{\"note\":{\"id\":#{note.id},\"note\":\"abc\",\"script_id\":#{active_script.id},\"script_order\":1}}")
     end
-    
+
     it "should 404 if script not found" do
       active_script = Factory(:script, :account => account, :active => true)
       note = Factory(:note, note: "abc", script_order: 1, script: active_script)
       get :show, script_id: 100, id: note.id,  :api_key=> 'abc123', :format => "json"
       response.body.should eq("{\"message\":\"Resource not found\"}")
     end
-    
+
     it "should 404 if note not found in script" do
       active_script = Factory(:script, :account => account, :active => true)
       note = Factory(:note, note: "abc", script_order: 1, script: active_script)
@@ -41,10 +41,10 @@ describe Client::NotesController do
       get :show, script_id: active_script.id, id: 100,  :api_key=> 'abc123', :format => "json"
       response.body.should eq("{\"message\":\"Resource not found\"}")
     end
-    
-    
+
+
   end
-  
+
   describe "destroy" do
     it "should delete note" do
       active_script = Factory(:script, :account => account, :active => true)
@@ -53,41 +53,41 @@ describe Client::NotesController do
       response.body.should eq("{\"message\":\"Note Deleted\",\"status\":\"ok\"}")
     end
   end
-  
+
   describe "create" do
     it "should create note" do
       active_script = Factory(:script, :account => account, :active => true)
       post :create, script_id: active_script.id, note: {note: "Hi", script_order: 1},  :api_key=> 'abc123', :format => "json"
       response.body.should match(/{\"note\":{\"id\":(.*),\"note\":\"Hi\",\"script_id\":#{active_script.id},\"script_order\":1}}/)
     end
-    
+
     it "should throw validation error" do
       active_script = Factory(:script, :account => account, :active => true)
       post :create, script_id: active_script.id, note: {note: "Hi"},  :api_key=> 'abc123', :format => "json"
       response.body.should eq("{\"errors\":{\"script_order\":[\"can't be blank\",\"is not a number\"]}}")
     end
-    
+
   end
-  
+
   describe "update" do
-    it "should update script text" do
+    it "should update a note" do
       active_script = Factory(:script, :account => account, :active => true)
       note = Factory(:note, note: "abc", script_order: 1, script: active_script)
       put :update, script_id: active_script.id, id: note.id, note: {note: "Hi"},  :api_key=> 'abc123', :format => "json"
       response.body.should eq("{\"message\":\"Note updated\"}")
       note.reload.note.should eq("Hi")
     end
-    
+
     it "should throw validation error" do
       active_script = Factory(:script, :account => account, :active => true)
       note = Factory(:note, note: "abc", script_order: 1, script: active_script)
       put :update, script_id: active_script.id, id: note.id, note: {note: "Hi", script_order: nil},  :api_key=> 'abc123', :format => "json"
       response.body.should eq("{\"errors\":{\"script_order\":[\"can't be blank\",\"is not a number\"]}}")
     end
-    
+
   end
-  
-  
-  
-  
+
+
+
+
 end
