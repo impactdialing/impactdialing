@@ -15,7 +15,7 @@
 </fieldset>
       <% end %>
 <p>
-  If you are an administrator, <a href="/client">log in here</a>.
+  If you are an administrator, <a href=<%="#{request.protocol}admin.#{request.domain}/">log in here</a>.
   <br>
   To view phones-only reports, <a href=<%="#{request.protocol}admin.#{request.domain}/callers/phones_only"%>>log in here</a>.
 </p>
