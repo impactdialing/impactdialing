@@ -15,6 +15,7 @@ heroku_preproduction:
   <<: *default_settings
   host: beta-twilio.impactdialing.com
   port: 80
+  recording_env: heroku_preproduction
 
 production:
   <<: *default_settings

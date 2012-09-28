@@ -1,6 +1,7 @@
 default: &default_settings
   host: impactdialing-staging.herokuapp.com
   public_host: staging.impactdialing.com
+  recording_env: heroku_staging
   port: 80
   phone: 6502626881
 
