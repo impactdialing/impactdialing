@@ -308,7 +308,7 @@ describe Voter do
       voter.persist_answers("{\"#{response.question.id}\":\"#{response.id}\",\"#{retry_response.question.id}\":\"#{retry_response.id}\" }",call_attempt)
       voter.answers.size.should == 2
       voter.reload.status.should == Voter::Status::RETRY
-      Voter.to_be_dialed.should == [voter]
+      Voter.to_be_dialed.should include(voter)
       voter.persist_answers("{\"#{response.question.id}\":\"#{response.id}\",\"#{valid_response.question.id}\":\"#{valid_response.id}\" }",call_attempt)
       voter.reload.answers.size.should == 4
     end
@@ -377,7 +377,7 @@ describe Voter do
     it "should return voter if call attempt was before recycle rate hours" do
       campaign = Factory(:campaign)
       voter = Factory(:voter, :campaign => campaign, last_call_attempt_time: 150.minutes.ago)
-      Voter.last_call_attempt_before_recycle_rate(2).first.should eq(voter)
+      Voter.last_call_attempt_before_recycle_rate(2).should include(voter)
     end
 
     it "should return not voter if call attempt was within recycle rate hours" do
@@ -389,7 +389,7 @@ describe Voter do
     it "should return  voter if call not attempted " do
       campaign = Factory(:campaign)
       voter = Factory(:voter, :campaign => campaign, last_call_attempt_time: nil)
-      Voter.last_call_attempt_before_recycle_rate(2).length.should include(voter)
+      Voter.last_call_attempt_before_recycle_rate(2).should include(voter)
     end
 
 
