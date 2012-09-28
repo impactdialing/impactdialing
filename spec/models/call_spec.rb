@@ -25,27 +25,9 @@ describe Call do
         @call_attempt.should_receive(:connect_call)
         @call_attempt.should_receive(:caller_available?).and_return(true)
         Resque.should_receive(:enqueue).with(CallPusherJob, @call_attempt.id, "publish_voter_connected")
-        Resque.should_receive(:enqueue).with(ModeratorCallJob, @call_attempt.id, "publish_voter_connected_moderator")
+        Resque.should_receive(:enqueue).with(ModeratorCallJob, @call_attempt.id, "publish_voter_event_moderator")
         call.incoming_call!
         call.state.should eq('connected')
-      end
-
-
-      it "should update caller session to not available for call" do
-        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt)
-        Resque.should_receive(:enqueue).with(CallPusherJob, @call_attempt.id, "publish_voter_connected")   
-        Resque.should_receive(:enqueue).with(ModeratorCallJob, @call_attempt.id, "publish_voter_event_moderator")             
-        call.incoming_call!
-        call.call_attempt.voter.caller_session.available_for_call.should be_false
-      end
-
-      it "should move to connected state when voter is already assigned caller session" do
-        @voter.update_attribute(:caller_session, @caller_session)
-        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt)
-        Resque.should_receive(:enqueue).with(CallPusherJob, @call_attempt.id, "publish_voter_connected")   
-        Resque.should_receive(:enqueue).with(ModeratorCallJob, @call_attempt.id, "publish_voter_event_moderator")             
-        call.incoming_call!
-        call.call_attempt.voter.caller_session.available_for_call.should be_false
       end
 
 
