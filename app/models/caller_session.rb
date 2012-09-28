@@ -151,6 +151,7 @@ class CallerSession < ActiveRecord::Base
   end
   
   def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)    
+    end_caller_session
     Resque.enqueue(EndRunningCallJob, self.sid)
     Resque.enqueue(EndCallerSessionJob, self.id)
   end  
