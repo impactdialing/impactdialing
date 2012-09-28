@@ -386,10 +386,11 @@ describe PhonesOnlyCallerSession do
       it "render correct twiml" do
         question = Factory(:question, script: @script)
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*")
+        RedisCallerSession.load_caller_session_info(caller_session.id, caller_session)
         RedisVoter.load_voter_info(@voter.id, @voter)
         RedisCallerSession.set_voter_in_progress(caller_session.id, @voter.id)        
-        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*", voter_in_progress: @voter)
         Resque.should_receive(:enqueue).with(PreviewPowerDialJob, caller_session.id, @voter.id)
+        Voter.should_receive(:find).exactly(2).and_return(@voter)
         @voter.should_receive(:question_not_answered).and_return(question)
         caller_session.start_conf!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"https://#{Settings.host}:#{Settings.port}/caller/#{@caller.id}/flow?event=gather_response&amp;question=#{question.id}&amp;session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"/></Dial></Response>")
@@ -470,7 +471,9 @@ describe PhonesOnlyCallerSession do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*")
         RedisVoter.load_voter_info(@voter.id, @voter)
         RedisCallerSession.set_voter_in_progress(caller_session.id, @voter.id)        
+        puts RedisCallerSession.read(caller_session.id)
         Resque.should_receive(:enqueue).with(PreviewPowerDialJob, caller_session.id, @voter.id)
+        Voter.should_receive(:find).exactly(2).and_return(@voter)
         @voter.should_receive(:question_not_answered).and_return(question)
         caller_session.start_conf!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"https://#{Settings.host}:#{Settings.port}/caller/#{@caller.id}/flow?event=gather_response&amp;question=#{question.id}&amp;session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"/></Dial></Response>")

@@ -54,10 +54,8 @@ end
 
 group :development do
   gem 'guard'
-  gem 'guard-bundler'
   gem 'guard-rspec'
   gem 'guard-spork'
-  gem 'guard-rails'
   gem 'rb-fsevent'
   gem 'heroku_san'
   gem 'showoff-io'
