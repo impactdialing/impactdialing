@@ -191,7 +191,10 @@ describe Predictive do
     it "should dial one line per caller  if no calls have been made in the last ten minutes" do
       simulated_values = SimulatedValues.create(best_dials: 2.33345, best_conversation: 34.0076, longest_conversation: 42.0876, best_wrapup_time: 10.076)
       campaign = Factory(:predictive, simulated_values: simulated_values)
-      2.times { Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true) }
+      2.times do |index|
+        caller_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true) 
+        RedisCaller.add_caller(campaign.id, caller_session.id)
+      end
       num_to_call = campaign.number_of_voters_to_dial
       campaign.should_not_receive(:num_to_call_predictive_simulate)
       caller_sessions = CallerSession.find_all_by_campaign_id(campaign.id)
