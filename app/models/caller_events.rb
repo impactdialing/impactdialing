@@ -16,19 +16,15 @@ module CallerEvents
      end      
     end
     
-    def publish_caller_conference_started_moderator_voter_event
+    def publish_caller_conference_started_moderator
       Moderator.active_moderators(campaign).each do |moderator|
-        moderator_voter_deferrable = Pusher[moderator.session].trigger_async('voter_event', {caller_session_id:  id, campaign_id:  campaign.id, caller_id:  caller.id, call_status: attempt_in_progress.try(:status)})      
-        moderator_voter_deferrable.callback {EM.stop}
-        moderator_voter_deferrable.errback { |error|EM.stop }          
+        Pusher[moderator.session].trigger!('voter_event', {caller_session_id:  id, campaign_id:  campaign.id, caller_id:  caller.id, call_status: attempt_in_progress.try(:status)})      
       end                      
     end
     
     def publish_caller_conference_started_moderator_dials
       Moderator.active_moderators(campaign).each do |moderator|
-        moderator_dials_deferrable = Pusher[moderator.session].trigger_async('update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
-        moderator_voter_deferrable.callback {EM.stop}
-        moderator_voter_deferrable.errback { |error| EM.stop }          
+        Pusher[moderator.session].trigger!('update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
       end                      
     end
     
@@ -39,16 +35,13 @@ module CallerEvents
     
     def publish_calling_voter_moderator
       Moderator.active_moderators(campaign).each do |moderator|
-        moderator_dials_deferrable = Pusher[moderator.session].trigger_async('update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
-        moderator_dials_deferrable.callback {EM.stop}
-        moderator_dials_deferrable.errback { |error| EM.stop }          
+        Pusher[moderator.session].trigger!('update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
       end              
     end
     
     def publish_caller_disconnected      
       Pusher[session_key].trigger!("caller_disconnected", {}) unless caller.is_phones_only?
     end   
-    
     
     def publish_moderator_caller_reassigned_to_campaign(old_campaign)
       return if campaign.account.moderators.active.empty?
@@ -64,9 +57,7 @@ module CallerEvents
     
     def publish_moderator_conference_started
       Moderator.active_moderators(campaign).each do |moderator|
-        moderator_deferrable = Pusher[moderator.session].trigger_async('voter_event', {caller_session_id:  id, campaign_id:  campaign.id, caller_id:  caller.id, call_status: attempt_in_progress.try(:status)})      
-        moderator_deferrable.callback {EM.stop}
-        moderator_deferrable.errback { |error| EM.stop}          
+        Pusher[moderator.session].trigger!('voter_event', {caller_session_id:  id, campaign_id:  campaign.id, caller_id:  caller.id, call_status: attempt_in_progress.try(:status)})      
       end                    
     end
     
