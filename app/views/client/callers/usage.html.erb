@@ -1,20 +1,12 @@
+<h1><%= @caller.name %> Usage</h1>
 <div role="main">
-  <h1><%= @caller.name %> Usage</h1>
   <%= form_tag(usage_client_caller_path(:id => params[:id]), :method => :get) do %>
-
-    <%= select_tag 'campaign_id', options_from_collection_for_select(@campaigns, 'id', 'name', @campaign.try(:id)), {:include_blank   => 'Total'} %>
-    <%= render :partial => 'shared/switch_campaign'%>
-
-  <p>The utilization table shows how much time your callers actually spent on the phone. Each call is rounded to the nearest second.
-  </p>
-
-  <table>
+    <%= select_tag 'campaign_id',
+                   options_from_collection_for_select(@campaigns, 'id', 'name', @campaign.try(:id)),
+                   {:include_blank => 'Total'} %>
+    <%= render :partial => 'shared/switch_campaign' %>
     <%= render :partial => 'shared/utilization', :locals => {:report => @caller, :usage=> @caller_usage} %>
-  </table>
-
-  <%= render :partial => 'shared/callers_billable', :locals => {:usage=> @caller_usage} %>
-
-  <%= render 'shared/date_picker_callers' %>
-
+    <%= render :partial => 'shared/callers_billable', :locals => {:usage=> @caller_usage} %>
+    <%= render :partial => 'shared/date_picker_callers', :locals => {:caller=> @caller, :campaign=> @campaign} %>
   <% end %>
 </div>
