@@ -53,7 +53,7 @@ class Predictive < Campaign
     dials_made = call_attempts.size
     # if dials_made == 0 || !abandon_rate_acceptable?
     if dials_made == 0
-      num_to_call = callers_available_for_call - RedisCampaignCall.ringing(self.id).length
+      num_to_call = RedisCaller.on_hold_count(self.id) - RedisCampaignCall.ringing(self.id).length
     else
       num_to_call = number_of_simulated_voters_to_dial
     end
