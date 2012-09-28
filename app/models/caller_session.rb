@@ -151,13 +151,8 @@ class CallerSession < ActiveRecord::Base
   end
   
   def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)    
-    voters = Voter.find_all_by_caller_id_and_status(caller.id, CallAttempt::Status::READY)
-    voters.each {|voter| voter.update_attributes(status: 'not called')}    
     Resque.enqueue(EndRunningCallJob, self.sid)
-    end_caller_session
-    CallAttempt.wrapup_calls(caller_id)
-    Moderator.publish_event(campaign, "caller_disconnected",{:caller_session_id => id, :caller_id => caller.id, :campaign_id => campaign.id, :campaign_active => campaign.callers_log_in?,
-    :no_of_callers_logged_in => campaign.caller_sessions.on_call.length})
+    Resque.enqueue(EndCallerSessionJob, self.id)
   end  
   
   
