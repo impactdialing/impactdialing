@@ -7,9 +7,11 @@ default: &default_settings
 development:
   phone: 2525732146
   <<: *default_settings
+  recording_env: development
 
 test:
   <<: *default_settings
+  recording_env: test
 
 production:
   <<: *default_settings
@@ -27,11 +29,13 @@ heroku_caller:
   <<: *default_settings
   host: twiliopandahiphoperaser.impactdialing.com
   port: 80
+  recording_env: heroku 
 
 heroku_phonesonly:
   <<: *default_settings
   host: twiliopandahiphoperaser.impactdialing.com
   port: 80
+  recording_env: heroku
 
 
 staging:

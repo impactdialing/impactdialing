@@ -55,19 +55,6 @@ class WebuiCallerSession < CallerSession
     RedisCallAttempt.call_not_wrapped_up?(attempt_in_progress_id)
   end
   
-  def publish_async(event, data)    
-    EM.synchrony {
-      deferrable = Pusher[session_key].trigger_async(event, data.merge!(:dialer => campaign.type))
-      deferrable.callback { 
-        EM.stop
-        }
-      deferrable.errback { |error|
-        EM.stop
-      }
-    }
-       
-  end
-  
   def publish_sync(event, data)
     Pusher[session_key].trigger(event, data.merge!(:dialer => self.campaign.type))
   end

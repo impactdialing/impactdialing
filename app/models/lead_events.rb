@@ -29,26 +29,14 @@ module LeadEvents
       end      
     end
     
-    def publish_voter_connected_moderator
-      Moderator.active_moderators(campaign).each do |moderator|
-        Pusher[moderator.session].trigger!('voter_event', {caller_session_id:  caller_session.id, campaign_id:  campaign.id, caller_id:  caller_session.caller.id, call_status: caller_session.attempt_in_progress.try(:status)})      
-      end              
-    end
-    
-    
-    def publish_voter_disconected_moderator
-      Moderator.active_moderators(campaign).each do |moderator|
-        Pusher[moderator.session].trigger!('voter_event', {caller_session_id:  caller_session.id, campaign_id:  campaign.id, caller_id:  caller_session.caller.id, call_status: caller_session.attempt_in_progress.try(:status)})      
-      end              
-    end
-    
-    def publish_moderator_response_submited
+    def publish_voter_event_moderator
       unless caller_session.nil?
-          Moderator.active_moderators(campaign).each do |moderator|
-            Pusher[moderator.session].trigger!('voter_event', {caller_session_id:  caller_session.id, campaign_id:  campaign.id, caller_id:  caller_session.caller.id, call_status: caller_session.attempt_in_progress.try(:status)})      
-          end              
-      end      
+        Moderator.active_moderators(campaign).each do |moderator|
+          Pusher[moderator.session].trigger!('voter_event', {caller_session_id:  caller_session.id, campaign_id:  campaign.id, caller_id:  caller_session.caller.id, call_status: caller_session.attempt_in_progress.try(:status)})      
+        end              
+      end
     end
+    
   end
   
   def self.included(receiver)

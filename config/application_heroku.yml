@@ -1,6 +1,7 @@
 default: &default_settings
   host: twiliopandahiphoperaser.impactdialing.com
   public_host: www.impactdialing.com
+  recording_env: heroku
   port: 80
   phone: 4155787571
 
