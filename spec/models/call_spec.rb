@@ -23,19 +23,23 @@ describe Call do
         it "should move to the connected state" do
           call = Factory(:call, call_attempt: @call_attempt, call_status: 'in-progress', state: 'initial')
           @call_attempt.should_receive(:connect_call)
+          @call_attempt.should_receive(:caller_available?).and_return(true)
           Resque.should_receive(:enqueue).with(CallPusherJob, @call_attempt.id, "publish_voter_connected")
           Resque.should_receive(:enqueue).with(ModeratorCallJob, @call_attempt.id, "publish_voter_connected_moderator")
+          call.incoming_call!
           call.state.should eq('connected')
         end
       
         it "should start a conference in connected state" do
-          call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, call_status: 'in-progress')
+          call = Factory(:call, call_attempt: @call_attempt, call_status: 'in-progress', state: "initial")
           @call_attempt.should_receive(:connect_call)
-          @call_attempt.should_receive(:caller_session_key)
-          @call_attempt.should_receive(:redis_caller_session).and_return("1")
+          @call_attempt.should_receive(:caller_available?).and_return(true)
+          @call_attempt.should_receive(:redis_caller_session).and_return(@caller_session.id)
           Resque.should_receive(:enqueue).with(CallPusherJob, @call_attempt.id, "publish_voter_connected")
           Resque.should_receive(:enqueue).with(ModeratorCallJob, @call_attempt.id, "publish_voter_connected_moderator")
+
           call.incoming_call!
+          puts call.state
           call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"false\" action=\"https://#{Settings.host}/calls/#{call.id}/flow?event=disconnect\" record=\"false\"><Conference waitUrl=\"hold_music\" waitMethod=\"GET\" beep=\"false\" endConferenceOnExit=\"true\" maxParticipants=\"2\"/></Dial></Response>")
         end
    end
