@@ -1,6 +1,5 @@
 <%= render "shared/error_messages", :target => @script %>
 <%= semantic_form_for [:client, @script] do |form| %>
-   <%= form.hidden_field :id, {name: "script[id]", id: "script_id"} %>
   <%= render "script_name", f: form %>
   <%= render "script_voter_fields", f: form, voter_fields: @voter_fields, voter_field_values: @voter_field_values %>
   <%= render "script_call_results", f: form %>
