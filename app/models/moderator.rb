@@ -52,13 +52,7 @@ class Moderator < ActiveRecord::Base
 
   def self.publish_event(campaign, event, data)
     Moderator.active_moderators(campaign).each do |moderator|
-      EM.run {
-        deferrable = Pusher[moderator.session].trigger_async(event, data)
-        deferrable.callback {
-          }
-        deferrable.errback { |error|
-        }
-      }
+      Pusher[moderator.session].trigger!(event, data)
     end
   end
 
