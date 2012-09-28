@@ -144,7 +144,7 @@ class SimulatorJob
        if number_of_call_attempts < 1000
            call_attempts_from_start_time = campaign.call_attempts.between((Time.now - start_time.seconds), Time.now)
        else
-         call_attempts_from_start_time = campaign.call_attempts.last(1000)
+         call_attempts_from_start_time = campaign.call_attempts.limit(500)
        end
 
        puts "Simulating #{call_attempts_from_start_time.size} call attempts"
