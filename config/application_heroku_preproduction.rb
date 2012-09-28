@@ -18,7 +18,7 @@ heroku_preproduction:
 
 production:
   <<: *default_settings
-  host: impactdialing.herokuapp.com
+  host: impactkungfupushupsclient.impactdialing.com
   port: 80
 
 staging:
