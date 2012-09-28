@@ -1,25 +1,12 @@
-<div class="content clearfix">
-  <div role="main">
-	  <%= render :partial => 'shared/boxtop', :locals=>{:title=>"#{@caller.name} Usage"} %>
-    <%= form_tag(usage_callers_phones_only_index_path(:id => params[:id]), :method => :get) do %>
-
-      <%= select_tag 'campaign_id', options_from_collection_for_select(@campaigns, 'id', 'name', @campaign.try(:id)), {:include_blank   => 'Total'} %>
-      <%= render :partial => 'shared/switch_campaign'%>
-      
-	    <p>The utilization table shows how much time your callers actually spent on the phone. Each call is rounded to the nearest   second.
-	    </p>
-	  
-      <table>
-        <%= render :partial => 'shared/utilization', :locals => {:report => @caller, :usage=> @caller_usage} %>
-		  </table>
-		
+<h1><%= @caller.name %> Usage</h1>
+<div role="main">
+  <%= form_tag(usage_callers_phones_only_index_path(:id => params[:id]), :method => :get) do %>
+    <%= select_tag 'campaign_id',
+                   options_from_collection_for_select(@campaigns, 'id', 'name', @campaign.try(:id)),
+                   {:include_blank => 'Total'} %>
+    <%= render :partial => 'shared/switch_campaign' %>
+    <%= render :partial => 'shared/utilization', :locals => {:report => @caller, :usage=> @caller_usage} %>
     <%= render :partial => 'shared/callers_billable', :locals => {:usage=> @caller_usage} %>
-  </div>
+    <%= render :partial => 'shared/date_picker_callers', :locals => {:caller=> @caller, :campaign=> @campaign} %>
+  <% end %>
 </div>
-
-<h3>Date range:</h3>
-  <%= render :partial => 'shared/date_picker_callers' , :locals => {:caller=> @caller, :campaign=> @campaign} %>
-  <div class="buttons">
-    <button type="submit">Update</button>
-  </div>  
-<% end %>
