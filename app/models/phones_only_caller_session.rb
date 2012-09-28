@@ -180,7 +180,7 @@ class PhonesOnlyCallerSession < CallerSession
   end
   
   def publish_moderator_gathering_response
-    Resque.enqueue(ModeratorCallJob, attempt_in_progress.id, "publish_moderator_response_submited")    
+    Resque.enqueue(ModeratorCallJob, attempt_in_progress.id, "publish_voter_event_moderator")    
   end
   
   def unanswered_question

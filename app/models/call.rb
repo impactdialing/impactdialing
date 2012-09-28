@@ -37,7 +37,7 @@ class Call < ActiveRecord::Base
       
       state :connected do
         before(:always) {  connect_call }
-        after(:always) { Resque.enqueue(CallPusherJob, call_attempt.id, "publish_voter_connected");Resque.enqueue(ModeratorCallJob, call_attempt.id, "publish_voter_connected_moderator")}
+        after(:always) { Resque.enqueue(CallPusherJob, call_attempt.id, "publish_voter_connected");Resque.enqueue(ModeratorCallJob, call_attempt.id, "publish_voter_event_moderator")}
         event :hangup, :to => :hungup
         event :disconnect, :to => :disconnected
         
@@ -60,7 +60,7 @@ class Call < ActiveRecord::Base
       
       state :disconnected do        
         before(:always) { disconnect_call }
-        after(:success) { Resque.enqueue(CallPusherJob, call_attempt.id, "publish_voter_disconnected");Resque.enqueue(ModeratorCallJob, call_attempt.id, "publish_voter_disconected_moderator") }                
+        after(:success) { Resque.enqueue(CallPusherJob, call_attempt.id, "publish_voter_disconnected");Resque.enqueue(ModeratorCallJob, call_attempt.id, "publish_voter_event_moderator") }                
         event :submit_result, :to => :wrapup_and_continue
         event :submit_result_and_stop, :to => :wrapup_and_stop        
         response do |xml_builder, the_call|
@@ -96,7 +96,7 @@ class Call < ActiveRecord::Base
       end            
       
       state :wrapup_and_continue do 
-        before(:always) { wrapup_now; call_attempt.redirect_caller; Resque.enqueue(ModeratorCallJob, call_attempt.id, "publish_moderator_response_submited") }
+        before(:always) { wrapup_now; call_attempt.redirect_caller; Resque.enqueue(ModeratorCallJob, call_attempt.id, "publish_voter_event_moderator") }
       end
       
       state :wrapup_and_stop do

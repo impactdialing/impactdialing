@@ -9,7 +9,6 @@ class EndCallerSessionJob
      Voter.transaction do
        voters.each {|voter| voter.update_attributes(status: 'not called')}    
      end
-     caller_session.end_caller_session
      CallAttempt.wrapup_calls(caller.id)
 
      Moderator.publish_event(campaign, "caller_disconnected",{:caller_session_id => caller_session.id, :caller_id => caller.id, :campaign_id => campaign.id, :campaign_active => campaign.callers_log_in?,

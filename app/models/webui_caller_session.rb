@@ -65,7 +65,7 @@ class WebuiCallerSession < CallerSession
   
   
   def publish_sync(event, data)
-    Pusher[session_key].trigger!(event, data.merge!(:dialer => self.campaign.type))
+    Pusher[session_key].trigger(event, data.merge!(:dialer => self.campaign.type))
   end
   
   
