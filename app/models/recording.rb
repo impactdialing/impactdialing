@@ -11,7 +11,7 @@ class Recording < ActiveRecord::Base
   has_attached_file :file,
                     :storage => :s3,
                     :s3_credentials => Rails.root.join('config', 'amazon_s3.yml').to_s,
-                    :path => "/#{Rails.env}/uploads/:account_id/:id.:extension"
+                    :path => "/#{Settings.recording_env}/uploads/:account_id/:id.:extension"
 
   def validate_file_name
     if file_file_name.blank?
