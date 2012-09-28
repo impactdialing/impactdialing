@@ -215,7 +215,9 @@ describe Campaign do
        older_campaign = Factory(:progressive).tap { |c| c.update_attribute(:updated_at, 2.days.ago) }
        newer_campaign = Factory(:progressive).tap { |c| c.update_attribute(:updated_at, 1.day.ago) }
        Campaign.record_timestamps = true
-       Campaign.by_updated.all.should include ([newer_campaign, older_campaign])
+       Campaign.by_updated.all.should include (newer_campaign)
+       Campaign.by_updated.all.should include (older_campaign)
+       
      end
 
      it "lists deleted campaigns" do
