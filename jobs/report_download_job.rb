@@ -5,8 +5,10 @@ class ReportDownloadJob
 
 
    def self.perform(campaign_id, user_id, voter_fields, custom_fields, all_voters,lead_dial, from, to, callback_url, strategy="webui")
-     report_job = NewReportJob.new(campaign_id, user_id, voter_fields, custom_fields, all_voters,lead_dial, from, to, callback_url, strategy)
-     report_job.perform
+     Octopus.using(:read_slave1) do
+       report_job = NewReportJob.new(campaign_id, user_id, voter_fields, custom_fields, all_voters,lead_dial, from, to, callback_url, strategy)
+       report_job.perform
+     end
    end
 
    def self.after_perform_scale_down(*args)
