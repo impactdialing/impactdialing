@@ -3,6 +3,7 @@
   <fieldset>
     <fieldset>
       <legend>Settings</legend>
+      <%= f.hidden_field :id, {name: "campaign[id]", id: "campaign_id"} %>
       <p>
         <%= f.label :name %>
         <%= f.text_field :name, name: "campaign[name]" %>
