@@ -272,9 +272,9 @@ describe Call do
       it "should update call state" do
         call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected')
         @call_attempt.should_receive(:wrapup_now)
+        @call_attempt.should_receive(:end_caller_session)
         call.submit_result_and_stop!
-        call.state.should eq('wrapup_and_stop')
-        
+        call.state.should eq('wrapup_and_stop')        
       end
       
     end
