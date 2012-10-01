@@ -187,6 +187,7 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def redis_caller_session
+    puts "ddddd"
     RedisCallAttempt.caller_session_id(self.id)
   end 
   
