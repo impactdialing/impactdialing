@@ -1,6 +1,4 @@
-require 'new_relic/agent/method_tracer'
 class CallerController < ApplicationController
-  include NewRelic::Agent::MethodTracer
   layout "caller"
   skip_before_filter :verify_authenticity_token, :only =>[:check_reassign, :call_voter, :flow, :start_calling, :stop_calling, :end_session, :skip_voter]
   before_filter :check_login, :except=>[:login, :feedback, :end_session, :start_calling, :phones_only, :new_campaign_response_panel, :check_reassign, :call_voter, :flow]
@@ -11,7 +9,7 @@ class CallerController < ApplicationController
     caller = Caller.find(params[:caller_id])
     identity = CallerIdentity.find_by_session_key(params[:session_key])
     session = caller.create_caller_session(identity.session_key, params[:CallSid], CallerSession::CallerType::TWILIO_CLIENT)
-    Moderator.caller_connected_to_campaign(caller, caller.campaign, session)
+    Resque.enqueue(ModeratorCallerJob, session.id, "caller_connected_to_campaign") 
     render xml: session.run(:start_conf)
   end
 
