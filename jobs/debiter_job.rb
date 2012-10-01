@@ -7,7 +7,7 @@ class DebiterJob
   @queue = :debit_worker_job
 
    def self.perform     
-     call_attempts = CallAttempt.debit_not_processed.limit(5000)        
+     call_attempts = CallAttempt.debit_not_processed.limit(10000)        
      call_attempts.each do |call_attempt|
        begin
          call_attempt.debit
@@ -15,7 +15,7 @@ class DebiterJob
        end
      end
      
-    caller_sessions = CallerSession.debit_not_processed.limit(5000)     
+    caller_sessions = CallerSession.debit_not_processed.limit(10000)     
     caller_sessions.each do |caller_session|
       begin
         caller_session.debit
