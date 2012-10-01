@@ -1,10 +1,9 @@
 default: &default_settings
   host: 3ngz.localtunnel.com
   port: 3000
-  phone: 4155787571
+  phone: 8582254595
 
 development:
-  phone: 2525732146
   <<: *default_settings
   recording_env: development
 
