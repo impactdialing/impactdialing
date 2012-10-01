@@ -5,8 +5,6 @@ ImpactDialing::Application.configure do
   APP_NUMBER="6502626881"
   HOST = APP_HOST = "impactdialing-staging.herokuapp.com"
   PORT = 80
-  TEST_CALLER_NUMBER="8583679749"
-  TEST_VOTER_NUMBER="4154486970"
   PUSHER_APP_ID="6964"
   PUSHER_KEY="6f37f3288a3762e60f94"
   PUSHER_SECRET="b9a1cfc2c1ab4b64ad03"
