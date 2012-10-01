@@ -3,7 +3,6 @@ ImpactDialing::Application.configure do
   TWILIO_AUTH="897298ab9f34357f651895a7011e1631"
   TWILIO_APP_SID="AP9a7f90ed206c430587a5c534c02a558f"
   APP_NUMBER="6502626881"
-  HOST = APP_HOST = "impactdialing-staging.herokuapp.com"
   PORT = 80
   PUSHER_APP_ID="6964"
   PUSHER_KEY="6f37f3288a3762e60f94"
