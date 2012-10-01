@@ -1,5 +1,0 @@
-default: &default_settings
-  twilio_callback_host: impactdialing-staging.herokuapp.com
-  twilio_callback_port: 80
-  recording_env: heroku_staging
-  callin_phone: 6502626881
