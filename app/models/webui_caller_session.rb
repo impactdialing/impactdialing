@@ -17,7 +17,7 @@ class WebuiCallerSession < CallerSession
         event :stop_calling, :to=> :stopped
         
         response do |xml_builder, the_call|
-          xml_builder.Dial(:hangupOnStar => true, :action => flow_caller_url(caller, session_id:  id, event: "pause_conf", host: Settings.host, port:  Settings.port)) do
+          xml_builder.Dial(:hangupOnStar => true, :action => flow_caller_url(caller, session_id:  id, event: "pause_conf", host: Settings.twilio_callback_host, port:  Settings.twilio_callback_port)) do
             xml_builder.Conference(session_key, startConferenceOnEnter: false, endConferenceOnExit:  true, beep: true, waitUrl: HOLD_MUSIC_URL, waitMethod:  'GET')        
           end                              
         end

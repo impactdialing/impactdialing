@@ -13,7 +13,7 @@ module Callers
       twilio_capability = Twilio::Util::Capability.new(TWILIO_ACCOUNT, TWILIO_AUTH)
       twilio_capability.allow_client_outgoing(TWILIO_APP_SID)
       @token = twilio_capability.generate
-      @phone_number = Settings.phone
+      @phone_number = Settings.callin_phone
     end
 
     def callin
