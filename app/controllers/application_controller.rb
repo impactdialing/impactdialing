@@ -8,6 +8,11 @@ class ApplicationController < ActionController::Base
   helper :all # include all helpers, all the time
   protect_from_forgery # See ActionController::RequestForgeryProtection for details
   rescue_from InvalidDateException, :with=> :return_invalid_date
+  
+  def select_shard(&block)
+      Octopus.using(:read_slave1, &block)
+  end
+  
 
   def return_invalid_date
     flash_message(:error, I18n.t(:invalid_date_format))

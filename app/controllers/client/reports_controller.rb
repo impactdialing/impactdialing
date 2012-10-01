@@ -4,6 +4,7 @@ module Client
     include ApplicationHelper::TimeUtils
     include TimeZoneHelper
     before_filter :load_campaign, :except => [:index, :usage, :account_campaigns_usage, :account_callers_usage]
+    around_filter :select_shard
 
 
     def load_campaign

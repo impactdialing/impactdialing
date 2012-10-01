@@ -5,6 +5,7 @@ module Client
     before_filter :full_access, :except => [:reassign_to_campaign]
     before_filter :load_and_verify_caller, :except => [:index, :new, :create, :reassign_to_campaign, :usage, :call_details, :type_name, :deleted]
     before_filter :load_campaigns, :except => [:index, :destroy, :reassign_to_campaign, :usage, :call_details, :type_name, :deleted]
+    around_filter :select_shard, :only =>[:usage, :call_details]
 
     respond_to :html, :json
 
