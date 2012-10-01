@@ -5,8 +5,6 @@ ImpactDialing::Application.configure do
   APP_NUMBER="8886215779"
   HOST = APP_HOST = "beta.impactdialing.com"
   PORT = 80
-  TEST_CALLER_NUMBER="8583679749"
-  TEST_VOTER_NUMBER="4154486970"
   PUSHER_APP_ID="26332"
   PUSHER_KEY="24bce1c0c525a40f99dd"
   PUSHER_SECRET="54a5d3a1c3c75f417b94"
