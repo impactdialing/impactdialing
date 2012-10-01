@@ -101,11 +101,6 @@ GEM
       rubyzip
     heroku-api (0.3.4)
       excon (~> 0.16.1)
-    heroku_san (3.0.4)
-      activesupport
-      heroku (>= 2)
-      heroku-api (>= 0.1.2)
-      rake
     highline (1.6.14)
     hike (1.2.1)
     hirb (0.7.0)
@@ -302,7 +297,6 @@ DEPENDENCIES
   guard-rspec
   guard-spork
   heroku (~> 2.17)
-  heroku_san
   hirb
   hiredis (~> 0.4.5)
   jquery-rails (>= 1.0.12)
