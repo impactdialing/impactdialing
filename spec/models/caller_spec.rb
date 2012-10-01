@@ -49,15 +49,6 @@ describe Caller do
     caller.errors[:base].should == ['The campaign this caller was assigned to has been deleted. Please assign the caller to a new campaign.']
   end
 
-  it "calls in to the campaign" do
-    Twilio::REST::Client
-    sid = "gogaruko"
-    caller = Factory(:caller, :account => user.account)
-    campaign = Factory(:campaign, :account => user.account)
-    TwilioClient.stub_chain(:instance, :account, :calls, :create).and_return(mock(:response, :sid => sid))
-    caller.callin(campaign)
-  end
-
   it "asks for pin" do
     Caller.ask_for_pin.should ==
         Twilio::Verb.new do |v|

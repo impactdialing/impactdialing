@@ -6,8 +6,8 @@ simulator_loop: bundle exec ruby simulator/simulator_loop.rb
 dialer_worker: rake environment resque:work QUEUE=dialer
 simulator_worker: rake environment resque:work QUEUE=simulator
 
-voter_list_upload_worker_job: rake environment resque:work QUEUE=list_upload
-report_download_worker_job: rake environment resque:work QUEUE=report_download
+voter_list_upload_worker_job: rake environment resque:work QUEUE=voter_list_upload_worker_job
+report_download_worker_job: rake environment resque:work QUEUE=report_download_worker_job
 
 background_worker_job: rake environment resque:work QUEUE=background_worker_job
 
