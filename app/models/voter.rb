@@ -23,6 +23,7 @@ class Voter < ActiveRecord::Base
   validates_presence_of :Phone
   validates_length_of :Phone, :minimum => 10, :unless => Proc.new{|voter| voter.Phone && voter.Phone.start_with?("+")}
 
+  scope :by_campaign, ->(campaign) { where(campaign_id: campaign) }
   scope :existing_phone_in_campaign, lambda { |phone_number, campaign_id| where(:Phone => phone_number).where(:campaign_id => campaign_id) }
 
   scope :default_order, :order => 'LastName, FirstName, Phone'
