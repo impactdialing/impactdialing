@@ -28,6 +28,7 @@ class NewReportJob
       notify_success
     rescue Exception => e
       on_failure_report(e)
+      raise e
     end
   end
 
