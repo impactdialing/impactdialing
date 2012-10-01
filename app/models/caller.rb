@@ -68,10 +68,6 @@ class Caller < ActiveRecord::Base
     end
   end
 
-  def self.hold
-    Twilio::Verb.new { |v| v.play("#{APP_URL}/wav/hold.mp3"); v.redirect(hold_call_path(:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port), :method => "GET")}.response
-  end
-
   def callin(campaign)
     response = TwilioClient.instance.account.calls.create(
         :from =>APP_NUMBER,
