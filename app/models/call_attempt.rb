@@ -136,7 +136,8 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
-    Resque.enqueue(EndRunningCallJob, self.sid)
+    call_sid = RedisCallAttempt.read(self.id)['sid']
+    Resque.enqueue(EndRunningCallJob, call_sid)
   end
 
   def not_wrapped_up?
