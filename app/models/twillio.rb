@@ -7,7 +7,7 @@ class Twillio
     twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)  
     RedisCaller.move_on_hold_waiting_to_connect(campaign.id, caller_session.id)      
     EM.run do
-      http = twilio_lib.make_call_em(campaign, voter, call_attempt)
+      http = twilio_lib.make_call(campaign, voter, call_attempt)
       http.callback { 
         response = JSON.parse(http.response)  
         if response["status"] == 400
