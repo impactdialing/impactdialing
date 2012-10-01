@@ -39,24 +39,11 @@ class Moderator < ActiveRecord::Base
   end
 
 
-  def self.caller_connected_to_campaign(caller, campaign, caller_session)
-    return if campaign.account.moderators.active.empty?
-    caller.email = caller.identity_name
-    caller_info = caller.info
-    data = caller_info.merge(:campaign_name => campaign.name, :session_id => caller_session.id, :campaign_fields => {:id => campaign.id,
-      :callers_logged_in => campaign.caller_sessions.on_call.size+1,
-      :voters_count => campaign.voters_count("not called", false), :dials_in_progress => campaign.call_attempts.not_wrapped_up.size },
-      :campaign_ids => caller.account.campaigns.active.collect{|c| c.id}, :campaign_names => caller.account.campaigns.active.collect{|c| c.name},:current_campaign_id => campaign.id)
-      publish_event(campaign, 'caller_session_started', data)
-  end
-
   def self.publish_event(campaign, event, data)
     Moderator.active_moderators(campaign).each do |moderator|
       Pusher[moderator.session].trigger!(event, data)
     end
   end
-
-
 
   def get_conference_id(caller_session)
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
