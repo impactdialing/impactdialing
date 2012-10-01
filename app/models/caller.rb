@@ -68,14 +68,6 @@ class Caller < ActiveRecord::Base
     end
   end
 
-  def callin(campaign)
-    response = TwilioClient.instance.account.calls.create(
-        :from =>APP_NUMBER,
-        :to => Settings.callin_phone,
-        :url => receive_call_url(:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port)
-    )
-  end
-
   def phone
     #required for the form field.
   end
