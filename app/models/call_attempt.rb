@@ -188,7 +188,6 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def redis_caller_session
-    puts "ddddd"
     RedisCallAttempt.caller_session_id(self.id)
   end 
   
@@ -219,8 +218,8 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def redirect_caller(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
-    unless caller_session.nil?
-      Resque.enqueue(RedirectCallerJob, caller_session.id)
+    unless redis_caller_session.nil?
+      Resque.enqueue(RedirectCallerJob, redis_caller_session)
     end    
   end
   
