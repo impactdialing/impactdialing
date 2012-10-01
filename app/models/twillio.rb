@@ -21,7 +21,7 @@ class Twillio
     call_attempt = setup_call_predictive(voter)
     twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)  
     Rails.logger.info "#{call_attempt.id} - before call"        
-    http = twilio_lib.make_call(voter.campaign, voter, call_attempt)
+    http = twilio_lib.make_call_em(voter.campaign, voter, call_attempt)
     http.callback { 
       Rails.logger.info "#{call_attempt.id} - after call"    
       response = JSON.parse(http.response)  
