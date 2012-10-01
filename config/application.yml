@@ -1,6 +1,7 @@
 default: &default_settings
   twilio_callback_host: 3ngz.localtunnel.com
   twilio_callback_port: 3000
+  recording_env: heroku
   callin_phone: 8582254595
 
 development:
