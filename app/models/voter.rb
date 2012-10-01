@@ -102,7 +102,7 @@ class Voter < ActiveRecord::Base
     message = "#{self.Phone} for campaign id:#{self.campaign_id}"
     logger.info "[dialer] Dialling #{message} "
     call_attempt = new_call_attempt
-    callback_params = {:call_attempt_id => call_attempt.id, :host => Settings.host, :port => Settings.port}
+    callback_params = {:call_attempt_id => call_attempt.id, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port}
     response = Twilio::Call.make(
         self.campaign.caller_id,
         self.Phone,
@@ -157,9 +157,9 @@ class Voter < ActiveRecord::Base
   def dial_predictive
     call_attempt = new_call_attempt(self.campaign.type)
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    params = {'FallbackUrl' => TWILIO_ERROR, 'StatusCallback' => flow_call_url(call_attempt.call, host:  Settings.host, port:  Settings.port, event: 'call_ended'), 'Timeout' => campaign.use_recordings ? "20" : "15"}
+    params = {'FallbackUrl' => TWILIO_ERROR, 'StatusCallback' => flow_call_url(call_attempt.call, host:  Settings.twilio_callback_host, port:  Settings.twilio_callback_port, event: 'call_ended'), 'Timeout' => campaign.use_recordings ? "20" : "15"}
     params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect
-    response = Twilio::Call.make(campaign.caller_id, self.Phone, flow_call_url(call_attempt.call, host:  Settings.host, port:  Settings.port, event:  'incoming_call'), params)
+    response = Twilio::Call.make(campaign.caller_id, self.Phone, flow_call_url(call_attempt.call, host:  Settings.twilio_callback_host, port:  Settings.twilio_callback_port, event:  'incoming_call'), params)
     if response["TwilioResponse"]["RestException"]
       call_attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
       update_attributes(status: CallAttempt::Status::FAILED)

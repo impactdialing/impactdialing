@@ -1,5 +1,5 @@
 default: &default_settings
-  host: twiliopandahiphoperaser.impactdialing.com
-  port: 80
+  twilio_callback_host: twiliopandahiphoperaser.impactdialing.com
+  twilio_callback_port: 80
   recording_env: heroku
-  phone: 4155787571
+  callin_phone: 4155787571

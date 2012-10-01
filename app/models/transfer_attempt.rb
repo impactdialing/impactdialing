@@ -13,7 +13,7 @@ class TransferAttempt < ActiveRecord::Base
   
   def conference
     Twilio::TwiML::Response.new do |r|
-      r.Dial :hangupOnStar => 'false', :action => disconnect_transfer_path(self, :host => Settings.host), :record=>caller_session.campaign.account.record_calls do |d|
+      r.Dial :hangupOnStar => 'false', :action => disconnect_transfer_path(self, :host => Settings.twilio_callback_host), :record=>caller_session.campaign.account.record_calls do |d|
         d.Conference session_key, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET', :beep => false, :endConferenceOnExit => false
       end
     end.text
@@ -33,12 +33,12 @@ class TransferAttempt < ActiveRecord::Base
   
   def redirect_callee
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    Twilio::Call.redirect(call_attempt.sid, callee_transfer_index_url(:host => Settings.host, :port => Settings.port, session_key: session_key))        
+    Twilio::Call.redirect(call_attempt.sid, callee_transfer_index_url(:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, session_key: session_key))        
   end
   
   def redirect_caller
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    Twilio::Call.redirect(caller_session.sid, caller_transfer_index_url(:host => Settings.host, :port => Settings.port, session_key: session_key, caller_session: caller_session_id))        
+    Twilio::Call.redirect(caller_session.sid, caller_transfer_index_url(:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, session_key: session_key, caller_session: caller_session_id))        
   end
   
   def self.aggregate(attempts)

@@ -1,5 +1,5 @@
 default: &default_settings
-  host: beta-twilio.impactdialing.com
-  port: 80
+  twilio_callback_host: beta-twilio.impactdialing.com
+  twilio_callback_port: 80
   recording_env: heroku
-  phone: 8886215779
+  callin_phone: 8886215779

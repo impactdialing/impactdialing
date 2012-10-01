@@ -1,7 +1,7 @@
 default: &default_settings
-  host: 3ngz.localtunnel.com
-  port: 3000
-  phone: 8582254595
+  twilio_callback_host: 3ngz.localtunnel.com
+  twilio_callback_port: 3000
+  callin_phone: 8582254595
 
 development:
   <<: *default_settings
