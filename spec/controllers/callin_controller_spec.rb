@@ -29,11 +29,6 @@ describe CallinController do
       post :identify, Digits: pin
     end
 
-    it "asks the user to hold" do
-      get :hold
-      response.body.should == Caller.hold
-    end
-
     it "Prompts on incorrect pin" do
       pin = rand.to_s[2..6]
       CallerIdentity.stub(:find_by_pin).and_return(nil)
