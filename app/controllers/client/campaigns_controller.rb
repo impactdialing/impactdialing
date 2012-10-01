@@ -13,7 +13,8 @@ module Client
       @campaign = account.campaigns.new(type: Campaign::Type::PROGRESSIVE,
                                         time_zone: "Pacific Time (US & Canada)",
                                         start_time: Time.parse("9am"),
-                                        end_time: Time.parse("9pm"))
+                                        end_time: Time.parse("9pm"),
+                                        acceptable_abandon_rate: 0.03)
       load_scripts
       # new_list
       respond_with @campaign
