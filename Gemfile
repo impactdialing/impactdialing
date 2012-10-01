@@ -42,6 +42,7 @@ gem 'deep_cloneable', '~> 1.4.0'
 gem "redis-objects", "~>0.5.3",:require => 'redis/objects'
 gem "redis", "~>2.2.2"
 gem 'ar-octopus', :git => "git://github.com/tchandy/octopus.git"
+gem "newrelic-redis", "~>1.3.2"
 
 
 group :development, :test do
