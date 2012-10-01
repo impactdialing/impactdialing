@@ -23,7 +23,7 @@ module LeadEvents
       caller_session_id = redis_call_attempt['caller_session_id']
       caller_session = RedisCallerSession.read(caller_session_id)      
       unless caller_session.nil?
-        unless caller_session.caller.is_phones_only?      
+        if caller_session['type'] == 'WebuiCallerSession' 
           Pusher[caller_session['session_key']].trigger!("voter_disconnected", {})
         end  
       end      
