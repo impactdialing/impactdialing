@@ -57,6 +57,21 @@ module CallerEvents
         Pusher[moderator.session].trigger!('voter_event', {caller_session_id:  id, campaign_id:  campaign.id, caller_id:  caller.id, call_status: attempt_in_progress.try(:status)})      
       end                    
     end
+    
+    def caller_connected_to_campaign
+      return if campaign.account.moderators.active.empty?
+      caller.email = caller.identity_name
+      caller_info = caller.info
+      data = caller_info.merge(:campaign_name => campaign.name, :session_id => self.id, :campaign_fields => {:id => campaign.id,
+        :callers_logged_in => campaign.caller_sessions.on_call.size+1,
+        :voters_count => campaign.voters_count("not called", false), :dials_in_progress => campaign.call_attempts.not_wrapped_up.size },
+        :campaign_ids => caller.account.campaigns.active.collect{|c| c.id}, :campaign_names => caller.account.campaigns.active.collect{|c| c.name},:current_campaign_id => campaign.id)
+        
+        Moderator.active_moderators(campaign).each do |moderator|
+          Pusher[moderator.session].trigger!("caller_session_started", data)
+        end
+    end
+    
   end
   
   def self.included(receiver)
