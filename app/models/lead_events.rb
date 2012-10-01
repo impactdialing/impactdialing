@@ -12,7 +12,7 @@ module LeadEvents
       unless caller_session.nil?
         if caller_session['type'] == 'WebuiCallerSession' 
           event_hash = campaign.voter_connected_event(self.call)        
-          Pusher[caller_session.session_key].trigger!(event_hash[:event], event_hash[:data].merge!(:dialer => campaign.type))
+          Pusher[caller_session['session_key']].trigger!(event_hash[:event], event_hash[:data].merge!(:dialer => campaign.type))
         end
       end
     end    
@@ -24,7 +24,7 @@ module LeadEvents
       caller_session = RedisCallerSession.read(caller_session_id)      
       unless caller_session.nil?
         unless caller_session.caller.is_phones_only?      
-          Pusher[caller_session.session_key].trigger!("voter_disconnected", {})
+          Pusher[caller_session['session_key']].trigger!("voter_disconnected", {})
         end  
       end      
     end
