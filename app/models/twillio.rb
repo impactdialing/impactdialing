@@ -6,17 +6,15 @@ class Twillio
     call_attempt = setup_call(voter, caller_session, campaign)    
     twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)  
     RedisCaller.move_on_hold_waiting_to_connect(campaign.id, caller_session.id)      
-    EM.run do
-      http_response = twilio_lib.make_call(campaign, voter, call_attempt)
-      response = JSON.parse(http_response)  
-      if response["status"] == 400
-        handle_failed_call(call_attempt, caller_session)
-        RedisCaller.move_waiting_to_connect_on_hold(campaign.id, caller_session.id)
-      else
-        call_attempt.update_attributes(:sid => response["sid"])
-        RedisCallAttempt.update_call_sid(call_attempt.id, response["sid"])
-      end      
-    end    
+    http_response = twilio_lib.make_call(campaign, voter, call_attempt)
+    response = JSON.parse(http_response)  
+    if response["status"] == 400
+      handle_failed_call(call_attempt, caller_session)
+      RedisCaller.move_waiting_to_connect_on_hold(campaign.id, caller_session.id)
+    else
+     call_attempt.update_attributes(:sid => response["sid"])
+     RedisCallAttempt.update_call_sid(call_attempt.id, response["sid"])
+    end      
   end
   
   def self.dial_predictive_em(iter, voter)
