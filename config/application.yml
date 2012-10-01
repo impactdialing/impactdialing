@@ -12,6 +12,7 @@ heroku_caller:
 
 heroku_staging:
   <<: *default_settings
+  twilio_callback_host: impactdialing-staging.herokuapp.com
   recording_env: heroku_staging
   callin_phone: 6502626881
 
