@@ -7,17 +7,15 @@ class Twillio
     twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)  
     RedisCaller.move_on_hold_waiting_to_connect(campaign.id, caller_session.id)      
     EM.run do
-      http = twilio_lib.make_call(campaign, voter, call_attempt)
-      http.callback { 
-        response = JSON.parse(http.response)  
-        if response["status"] == 400
-          handle_failed_call(call_attempt, caller_session)
-          RedisCaller.move_waiting_to_connect_on_hold(campaign.id, caller_session.id)
-        else
-          RedisCallAttempt.update_call_sid(call_attempt.id, response["sid"])
-        end
-         }
-      http.errback {}            
+      http_response = twilio_lib.make_call(campaign, voter, call_attempt)
+      response = JSON.parse(http_response)  
+      if response["status"] == 400
+        handle_failed_call(call_attempt, caller_session)
+        RedisCaller.move_waiting_to_connect_on_hold(campaign.id, caller_session.id)
+      else
+        call_attempt.update_attributes(:sid => response["sid"])
+        RedisCallAttempt.update_call_sid(call_attempt.id, response["sid"])
+      end      
     end    
   end
   
