@@ -37,6 +37,7 @@ class Call < ActiveRecord::Base
       
       state :connected do
         before(:always) {  connect_call }
+         Sidekiq::Client.push('queue' => 'call_flow', 'class' => CallPusherJob, 'args' => [call_attempt.id, "publish_voter_connected"])
         after(:always) { Resque.enqueue(CallPusherJob, call_attempt.id, "publish_voter_connected");Resque.enqueue(ModeratorCallJob, call_attempt.id, "publish_voter_event_moderator")}
         event :hangup, :to => :hungup
         event :disconnect, :to => :disconnected
