@@ -50,7 +50,7 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
   def download_all_voters_dial
     Octopus.using(:read_slave1) do
       first_attempt = CallAttempt.for_campaign(@campaign).order('created_at').first
-      CallAttempt.for_campaign(@campaign).order('created_at').find_in_batches(:batch_size => 100, start: start_position(first_attempt)) do |attempts|
+      CallAttempt.from('call_attempts use index (index_call_attempts_on_campaign_id)').for_campaign(@campaign).order('created_at').includes(:answers, :note_responses).find_in_batches(:batch_size => 100, start: start_position(first_attempt)) do |attempts|
         attempts.each { |attempt| @csv << csv_for_call_attempt(attempt) } 
       end
     end
@@ -65,12 +65,10 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
     end
   end
   
-  
-  
   def download_for_date_range_dial
     Octopus.using(:read_slave1) do
       first_call_attempt = CallAttempt.for_campaign(@campaign).between(@from_date, @to_date).order('created_at').first
-      CallAttempt.for_campaign(@campaign).between(@from_date, @to_date).order('created_at').find_in_batches(:batch_size => 100, start: start_position(first_attempt)) do |attempts|
+      CallAttempt.from('call_attempts use index (index_call_attempts_on_campaign_id)').for_campaign(@campaign).between(@from_date, @to_date).order('created_at').includes(:answers, :note_responses).find_in_batches(:batch_size => 100, start: start_position(first_attempt)) do |attempts|
         attempts.each { |attempt| @csv << csv_for_call_attempt(attempt) } 
       end 
     end
