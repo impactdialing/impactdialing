@@ -96,7 +96,7 @@ class Voter < ActiveRecord::Base
     message = "#{self.Phone} for campaign id:#{self.campaign_id}"
     logger.info "[dialer] Dialling #{message} "
     call_attempt = new_call_attempt
-    callback_params = {:call_attempt_id => call_attempt.id, :host => Settings.host, :port => Settings.port}
+    callback_params = {:call_attempt_id => call_attempt.id, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port}
     response = Twilio::Call.make(
         self.campaign.caller_id,
         self.Phone,
@@ -109,7 +109,7 @@ class Voter < ActiveRecord::Base
 
     if response["TwilioResponse"]["RestException"]
       logger.info "[dialer] Exception when attempted to call #{message}  Response: #{response["TwilioResponse"]["RestException"].inspect}"
-      call_attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)      
+      call_attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
       update_attributes(status: CallAttempt::Status::FAILED)
       return false
     end
@@ -117,16 +117,16 @@ class Voter < ActiveRecord::Base
     call_attempt.update_attributes!(:sid => response["TwilioResponse"]["Call"]["Sid"])
     true
   end
-  
-  
+
+
   def dial_predictive_em(iter)
     call_attempt = new_call_attempt(self.campaign.type)
-    twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)  
-    Rails.logger.info "#{call_attempt.id} - before call"        
+    twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+    Rails.logger.info "#{call_attempt.id} - before call"
     http = twilio_lib.make_call_em(campaign, self, call_attempt)
-    http.callback { 
-      Rails.logger.info "#{call_attempt.id} - after call"    
-      response = JSON.parse(http.response)  
+    http.callback {
+      Rails.logger.info "#{call_attempt.id} - after call"
+      response = JSON.parse(http.response)
       if response["RestException"]
         puts response["RestException"]
         handle_failed_call(call_attempt, self)
@@ -135,10 +135,10 @@ class Voter < ActiveRecord::Base
       end
       iter.return(http)
        }
-    http.errback { 
-      puts JSON.parse(http.response) 
+    http.errback {
+      puts JSON.parse(http.response)
       iter.return(http)
-       }    
+       }
   end
 
   def handle_failed_call(attempt, voter)

@@ -17,9 +17,4 @@ class CallinController < ApplicationController
       render xml:  Caller.ask_for_pin(params[:attempt].to_i)
     end
   end
-  
-  def hold
-    render :xml => Caller.hold
-  end
-
 end
