@@ -1,7 +1,7 @@
 require Rails.root.join("jobs/heroku_resque_auto_scale")
 class ResetPasswordEmailJob
   extend ::HerokuResqueAutoScale
-  @queue = :background_worker_job
+  @queue = :background_worker
 
 
   def self.perform(user_id)
