@@ -4,7 +4,7 @@ dialer_loop: bundle exec ruby lib/dialer_loop.rb
 simulator_loop: bundle exec ruby simulator/simulator_loop.rb
 
 dialer_worker: rake environment resque:work QUEUE=dialer_worker
-simulator_worker: rake environment resque:work QUEUE=simulator_worker
+simulator: rake environment resque:work QUEUE=simulator
 
 list_upload: rake environment resque:work QUEUE=list_upload
 report_download: rake environment resque:work QUEUE=report_download
