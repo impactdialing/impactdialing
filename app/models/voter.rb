@@ -23,6 +23,7 @@ class Voter < ActiveRecord::Base
   validates_presence_of :Phone
   validates_length_of :Phone, :minimum => 10, :unless => Proc.new{|voter| voter.Phone && voter.Phone.start_with?("+")}
 
+  scope :by_campaign, ->(campaign) { where(campaign_id: campaign) }
   scope :existing_phone_in_campaign, lambda { |phone_number, campaign_id| where(:Phone => phone_number).where(:campaign_id => campaign_id) }
 
   scope :default_order, :order => 'LastName, FirstName, Phone'
@@ -67,27 +68,20 @@ class Voter < ActiveRecord::Base
     self.Phone = Voter.sanitize_phone(self.Phone) if self.Phone
   end
 
-  def custom_fields
-    account.custom_fields.map { |field| CustomVoterFieldValue.voter_fields(self, field).first.try(:value) }
-  end
-
   def selected_fields(selection = nil)
     return [self.Phone] unless selection
     selection.select { |field| Voter.upload_fields.include?(field) }.map { |field| self.send(field) }
   end
 
   def selected_custom_fields(selection)
-    selected_fields = []
-    return selected_fields unless selection
-    selection.each do |field|
-      custom_voter_field = account.custom_voter_fields.find_by_name(field)
-      unless custom_voter_field.nil?
-        selected_fields << CustomVoterFieldValue.voter_fields(self, custom_voter_field).first.try(:value)
-      end
-    end
-    selected_fields
+    return [] unless selection
+    query = account.custom_voter_fields.where(name: selection).
+      joins(:custom_voter_field_values).
+      where(custom_voter_field_values: {voter_id: self.id}).
+      group(:name).select([:name, :value]).to_sql
+    voter_fields = Hash[*connection.execute(query).to_a.flatten]
+    selection.map { |field| voter_fields[field] }
   end
-
 
   def self.upload_fields
     ["Phone", "CustomID", "LastName", "FirstName", "MiddleName", "Suffix", "Email", "address", "city", "state","zip_code", "country"]
@@ -115,7 +109,7 @@ class Voter < ActiveRecord::Base
 
     if response["TwilioResponse"]["RestException"]
       logger.info "[dialer] Exception when attempted to call #{message}  Response: #{response["TwilioResponse"]["RestException"].inspect}"
-      call_attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)      
+      call_attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
       update_attributes(status: CallAttempt::Status::FAILED)
       return false
     end
@@ -123,16 +117,16 @@ class Voter < ActiveRecord::Base
     call_attempt.update_attributes!(:sid => response["TwilioResponse"]["Call"]["Sid"])
     true
   end
-  
-  
+
+
   def dial_predictive_em(iter)
     call_attempt = new_call_attempt(self.campaign.type)
-    twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)  
-    Rails.logger.info "#{call_attempt.id} - before call"        
+    twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+    Rails.logger.info "#{call_attempt.id} - before call"
     http = twilio_lib.make_call_em(campaign, self, call_attempt)
-    http.callback { 
-      Rails.logger.info "#{call_attempt.id} - after call"    
-      response = JSON.parse(http.response)  
+    http.callback {
+      Rails.logger.info "#{call_attempt.id} - after call"
+      response = JSON.parse(http.response)
       if response["RestException"]
         puts response["RestException"]
         handle_failed_call(call_attempt, self)
@@ -141,10 +135,10 @@ class Voter < ActiveRecord::Base
       end
       iter.return(http)
        }
-    http.errback { 
-      puts JSON.parse(http.response) 
+    http.errback {
+      puts JSON.parse(http.response)
       iter.return(http)
-       }    
+       }
   end
 
   def handle_failed_call(attempt, voter)
@@ -152,35 +146,9 @@ class Voter < ActiveRecord::Base
     voter.update_attributes(status: CallAttempt::Status::FAILED)
   end
 
-
-
-  def dial_predictive
-    call_attempt = new_call_attempt(self.campaign.type)
-    Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    params = {'FallbackUrl' => TWILIO_ERROR, 'StatusCallback' => flow_call_url(call_attempt.call, host:  Settings.twilio_callback_host, port:  Settings.twilio_callback_port, event: 'call_ended'), 'Timeout' => campaign.use_recordings ? "20" : "15"}
-    params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect
-    response = Twilio::Call.make(campaign.caller_id, self.Phone, flow_call_url(call_attempt.call, host:  Settings.twilio_callback_host, port:  Settings.twilio_callback_port, event:  'incoming_call'), params)
-    if response["TwilioResponse"]["RestException"]
-      call_attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
-      update_attributes(status: CallAttempt::Status::FAILED)
-      Rails.logger.info "[dialer] Exception when attempted to call #{self.Phone} for campaign id:#{self.campaign_id}  Response: #{response["TwilioResponse"]["RestException"].inspect}"
-      return
-    end
-    call_attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])
-  end
-
-  def get_attribute(attribute)
-    return self[attribute] if self.has_attribute? attribute
-    return unless CustomVoterField.find_by_name(attribute)
-    fields = CustomVoterFieldValue.voter_fields(self, CustomVoterField.find_by_name(attribute))
-    return if fields.empty?
-    return fields.first.value
-  end
-
   def blocked?
     account.blocked_numbers.for_campaign(campaign).map(&:number).include?(self.Phone)
   end
-
 
   def selected_custom_voter_field_values
     select_custom_fields = campaign.script.try(:selected_custom_fields)
