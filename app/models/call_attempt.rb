@@ -61,8 +61,7 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def self.wrapup_calls(caller_id)
-    not_wrapped_up = CallAttempt.not_wrapped_up.find_all_by_caller_id(caller_id)
-    not_wrapped_up.each {|call_attempt| call_attempt.update_attributes(wrapup_time: Time.now)}
+    CallAttempt.not_wrapped_up.where(caller_id: caller_id).update_all(wrapup_time: Time.now)
   end
 
   def connect_call

@@ -51,7 +51,9 @@ describe VoterListJob do
 
         job.perform
         CustomVoterField.all.size.should == 1
-        custom_fields = Voter.all.collect { |voter| voter.get_attribute(custom_field) }
+        custom_fields = Voter.all.collect do |voter|
+          VoterMethods.get_attribute(voter, custom_field)
+        end
         custom_fields.length.should eq(2)
         custom_fields.should include("Foo")
         custom_fields.should include("Bar")

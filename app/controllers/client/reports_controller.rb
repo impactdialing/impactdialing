@@ -4,10 +4,13 @@ module Client
     include ApplicationHelper::TimeUtils
     include TimeZoneHelper
     before_filter :load_campaign, :except => [:index, :usage, :account_campaigns_usage, :account_callers_usage]
+    around_filter :select_shard
 
 
     def load_campaign
-      @campaign = account.campaigns.find(params[:campaign_id])
+      Octopus.using(:read_slave1) do
+        @campaign = Account.find(account).campaigns.find(params[:campaign_id])
+      end
     end
 
     def index
@@ -47,7 +50,13 @@ module Client
     def download
       load_campaign
       set_dates
-      Resque.enqueue(ReportDownloadJob, @campaign.id, @user.id, params[:voter_fields], params[:custom_voter_fields], params[:download_all_voters],params[:lead_dial], @from_date, @to_date, "", "webui")
+      Resque.enqueue(ReportDownloadJob, @campaign.id, @user.id,
+        params[:voter_fields],
+        params[:custom_voter_fields],
+        params[:download_all_voters],
+        params[:lead_dial],
+        @from_date, @to_date, "", "webui"
+      )
       flash_message(:notice, I18n.t(:client_report_processing))
       redirect_to client_reports_url
     end
