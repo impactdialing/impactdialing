@@ -1,4 +1,4 @@
-require 'resque/plugins/lock'
+require 'resque-loner'
 
 class CallerGroupJob
   include Resque::Plugins::UniqueJob
