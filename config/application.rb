@@ -13,6 +13,7 @@ module ImpactDialing
   #  config.time_zone = "Pacific Time (US & Canada)"
     config.active_record.default_timezone = :local
 
+    config.logger = Logger.new(STDOUT)
     config.filter_parameters << :password << :card_number << :card_verification << :cc << :code
     #config.time_zone = 'UTC'
 
