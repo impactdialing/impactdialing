@@ -8,7 +8,7 @@ require 'resque-loner'
 class CalculateDialsJob
   include Resque::Plugins::UniqueJob
 
-  @queue = :calculate_dials_worker
+  @queue = :dialer_worker
 
 
    def self.perform(campaign_id)

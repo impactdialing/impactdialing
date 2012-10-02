@@ -49,20 +49,11 @@ describe Caller do
     caller.errors[:base].should == ['The campaign this caller was assigned to has been deleted. Please assign the caller to a new campaign.']
   end
 
-  it "calls in to the campaign" do
-    Twilio::REST::Client
-    sid = "gogaruko"
-    caller = Factory(:caller, :account => user.account)
-    campaign = Factory(:campaign, :account => user.account)
-    TwilioClient.stub_chain(:instance, :account, :calls, :create).and_return(mock(:response, :sid => sid))
-    caller.callin(campaign)
-  end
-
   it "asks for pin" do
     Caller.ask_for_pin.should ==
         Twilio::Verb.new do |v|
           3.times do
-            v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.host, :port => Settings.port, :attempt => 1), :method => "POST") do
+            v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :attempt => 1), :method => "POST") do
               v.say "Please enter your pin."
             end
           end
@@ -72,15 +63,11 @@ describe Caller do
   it "asks for pin again" do
     Caller.ask_for_pin(1).should == Twilio::Verb.new do |v|
       3.times do
-        v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.host, :port => Settings.port, :attempt => 2), :method => "POST") do
+        v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :attempt => 2), :method => "POST") do
           v.say "Incorrect Pin. Please enter your pin."
         end
       end
     end.response
-  end
-
-  it "redirects to hold call" do
-    Caller.hold.should == Twilio::Verb.new { |v| v.play("#{APP_URL}/wav/hold.mp3"); v.redirect(hold_call_path(:host => Settings.host, :port => Settings.port), :method => "GET")}.response
   end
 
   it "is known as the name unless blank" do

@@ -42,7 +42,7 @@ describe CallerSession do
   describe "Calling in" do
     it "puts the caller on hold" do
       session = Factory(:caller_session)
-      session.hold.should == Twilio::Verb.new { |v| v.play "#{Settings.host}:#{Settings.port}/wav/hold.mp3"; v.redirect(:method => 'GET'); }.response
+      session.hold.should == Twilio::Verb.new { |v| v.play "#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/wav/hold.mp3"; v.redirect(:method => 'GET'); }.response
     end
   end
 
