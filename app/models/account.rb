@@ -61,7 +61,7 @@ class Account < ActiveRecord::Base
 
 
   def trial?
-    self.payments.count==1 && self.payments.first.notes=="Trial credit" && recurly_subscription_uuid.nil?
+    recurly_subscription_uuid.nil?
   end
 
   def callers_in_progress
