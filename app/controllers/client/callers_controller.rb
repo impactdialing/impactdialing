@@ -5,7 +5,6 @@ module Client
     before_filter :full_access, :except => [:reassign_to_campaign]
     before_filter :load_and_verify_caller, :except => [:index, :new, :create, :reassign_to_campaign, :usage, :call_details, :type_name, :deleted]
     before_filter :load_campaigns, :except => [:index, :destroy, :reassign_to_campaign, :usage, :call_details, :type_name, :deleted]
-    around_filter :select_shard, :only =>[:usage, :call_details]
 
     respond_to :html, :json
 
@@ -61,16 +60,18 @@ module Client
     end
 
     def usage
-      @caller = Caller.find(params[:id])
-      @campaigns = account.campaigns.for_caller(@caller)
-      @campaign = @campaigns.find_by_id(params[:campaign_id])
-      @from_date, @to_date = set_date_range_callers(@campaign, @caller, params[:from_date], params[:to_date])
-      @caller_usage = CallerUsage.new(@caller, @campaign, @from_date, @to_date)
+      Octopus.using(:read_slave1) do
+        @caller = Caller.find(params[:id])
+        @campaigns = Account.find(account).campaigns.for_caller(@caller)
+        @campaign = @campaigns.find_by_id(params[:campaign_id])
+        @from_date, @to_date = set_date_range_callers(@campaign, @caller, params[:from_date], params[:to_date])
+        @caller_usage = CallerUsage.new(@caller, @campaign, @from_date, @to_date)
+      end
     end
 
     def call_details
       @caller = Caller.find(params[:id])
-      @campaigns = account.campaigns.for_caller(@caller)
+      @campaigns = Account.find(account).campaigns.for_caller(@caller)
       @campaign = @campaigns.find_by_id(params[:campaign_id]) || @caller.caller_sessions.last.try(:campaign) || @caller.campaign
       @from_date, @to_date = set_date_range_callers(@campaign, @caller, params[:from_date], params[:to_date])
       @answered_call_stats = @caller.answered_call_stats(@from_date, @to_date, @campaign)
