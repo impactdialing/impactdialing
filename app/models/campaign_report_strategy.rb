@@ -47,16 +47,16 @@ class CampaignReportStrategy
   end
   
   def csv_for(voter)
-     voter_fields = voter.selected_fields(@selected_voter_fields.try(:compact))
-     custom_fields = voter.selected_custom_fields(@selected_custom_voter_fields)
-     [voter_fields, custom_fields, call_details(voter)].flatten
+    voter_fields = voter.selected_fields(@selected_voter_fields.try(:compact))
+    custom_fields = voter.selected_custom_fields(@selected_custom_voter_fields)
+    [*voter_fields, *custom_fields, [nil, "Not Dialed","","","","", [], []]]
   end
   
   def csv_for_call_attempt(call_attempt)
     voter = call_attempt.voter
     voter_fields = voter.selected_fields(@selected_voter_fields.try(:compact))
     custom_fields = voter.selected_custom_fields(@selected_custom_voter_fields)
-    [voter_fields, custom_fields].concat(call_attempt_details(call_attempt, voter)).flatten
+    [voter_fields, custom_fields].concat(call_attempt_details(call_attempt)).flatten
   end
   
   def call_attempt_info(call_attempt)
