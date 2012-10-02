@@ -39,7 +39,7 @@ describe TransferAttempt do
       transfer = Factory(:transfer, phone_number: "1234567890")
       transfer_attempt = Factory(:transfer_attempt, caller_session: caller_session, call_attempt: call_attempt)
       Twilio.should_receive(:connect)
-      Twilio::Call.should_receive(:redirect).with(call_attempt.sid, "https://#{Settings.host}:#{Settings.port}/transfer/callee")
+      Twilio::Call.should_receive(:redirect).with(call_attempt.sid, "https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/transfer/callee")
       transfer_attempt.redirect_callee
     end
   end
@@ -51,7 +51,7 @@ describe TransferAttempt do
         transfer = Factory(:transfer, phone_number: "1234567890")
         transfer_attempt = Factory(:transfer_attempt, caller_session: caller_session, call_attempt: call_attempt)
         Twilio.should_receive(:connect)
-        Twilio::Call.should_receive(:redirect).with(caller_session.sid, "https://#{Settings.host}:#{Settings.port}/transfer/caller?caller_session=#{caller_session.id}")
+        Twilio::Call.should_receive(:redirect).with(caller_session.sid, "https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/transfer/caller?caller_session=#{caller_session.id}")
         transfer_attempt.redirect_caller
       end
     end

@@ -4,7 +4,7 @@ require 'resque-loner'
 class DeactiveUnnecessaryMonitorTabsJob 
   extend Resque::Plugins::Lock
   include Resque::Plugins::UniqueJob
-  @queue = :background_worker_job
+  @queue = :background_worker
   
    def self.perform     
      monitor_tabs = Moderator.active.group('account_id').count
