@@ -8,7 +8,7 @@ require 'uri'
 class CorruptedDynoJob 
   extend Resque::Plugins::Lock
   include Resque::Plugins::UniqueJob
-  @queue = :background_worker_job
+  @queue = :background_worker
   
    def self.perform()
      url = URI.parse('http://herokuapp2088358.loggly.com/api/search?q=H12&from=NOW-10minutes')

@@ -25,8 +25,8 @@ class TwilioLib
   end
 
   def make_call(campaign, voter, attempt)
-    params = {'From'=> campaign.caller_id, "To"=> voter.Phone, 'FallbackUrl' => TWILIO_ERROR, "Url"=>flow_call_url(attempt.call, host: Settings.host, port: Settings.port, event: "incoming_call"),
-      'StatusCallback' => call_ended_call_url(attempt.call, host: 'impactkungfupushupsclient.impactdialing.com', port:  Settings.port, event: "call_ended", campaign_type: campaign.type),
+    params = {'From'=> campaign.caller_id, "To"=> voter.Phone, 'FallbackUrl' => TWILIO_ERROR, "Url"=>flow_call_url(attempt.call, host: Settings.twilio_callback_host, port: Settings.twilio_callback_port, event: "incoming_call"),
+      'StatusCallback' => call_ended_call_url(attempt.call, host: 'impactkungfupushupsclient.impactdialing.com', port:  Settings.twilio_callback_port, event: "call_ended", campaign_type: campaign.type),
       'Timeout' => "15"}
     params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect
     response = create_http_request("https://#{@server}#{@root}Calls.json", params)
@@ -44,8 +44,8 @@ class TwilioLib
 
 
   def make_call_em(campaign, voter, attempt)
-    params = {'From'=> campaign.caller_id, "To"=> voter.Phone, 'FallbackUrl' => TWILIO_ERROR, "Url"=>flow_call_url(attempt.call, host: Settings.host, port: Settings.port, event: "incoming_call"),
-      'StatusCallback' => call_ended_call_url(attempt.call, host: 'impactkungfupushupsclient.impactdialing.com', port:  Settings.port, event: "call_ended", campaign_type: campaign.type),
+    params = {'From'=> campaign.caller_id, "To"=> voter.Phone, 'FallbackUrl' => TWILIO_ERROR, "Url"=>flow_call_url(attempt.call, host: Settings.twilio_callback_host, port: Settings.twilio_callback_port, event: "incoming_call"),
+      'StatusCallback' => call_ended_call_url(attempt.call, host: 'impactkungfupushupsclient.impactdialing.com', port:  Settings.twilio_callback_port, event: "call_ended", campaign_type: campaign.type),
       'Timeout' => "15"}
     params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect
     EventMachine::HttpRequest.new("https://#{@server}#{@root}Calls.json").apost :head => {'authorization' => [@http_user, @http_password]},:body => params
@@ -53,7 +53,7 @@ class TwilioLib
 
   def redirect_caller(call_sid, caller, session_id)
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    Twilio::Call.redirect(call_sid, flow_caller_url(caller, :host => Settings.host, :port => Settings.port, session_id: session_id, event: "start_conf"))
+    Twilio::Call.redirect(call_sid, flow_caller_url(caller, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, session_id: session_id, event: "start_conf"))
   end
 
   def redirect_call(call_sid, redirect_url)
