@@ -1,4 +1,4 @@
-module CallerEvents
+module SidekiqEvents
   
   module ClassMethods
   end
@@ -6,8 +6,17 @@ module CallerEvents
   module InstanceMethods
     
     def enqueue_call_flow(job, args)
-      Sidekiq::Client.push('queue' => 'call_flow', 'class' => job, 'args' => args)
+      enqueue('call_flow', job, args)
     end
+    
+    def enqueue_moderator_flow(job, args)
+      enqueue('moderator_flow', job, args)
+    end
+    
+    def enqueue(queue, job, args)
+      Sidekiq::Client.push('queue' => queue, 'class' => job, 'args' => args)
+    end
+    
   end
   
   def self.included(receiver)
