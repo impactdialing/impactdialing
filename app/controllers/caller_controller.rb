@@ -105,7 +105,7 @@ class CallerController < ApplicationController
     if caller.campaign.id == params[:campaign_id].to_i
       render :json => {:reassign => "false"}
     else
-      render :json => {:reassign => "true", :campaign_id => caller.campaign.id, :script => caller.campaign.script.try(:script)}
+      render :json => {:reassign => "true", :campaign_id => caller.campaign.id, :script => caller.campaign.try(:script)}
     end
   end
 
