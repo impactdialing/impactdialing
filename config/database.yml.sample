@@ -17,7 +17,7 @@ test:
   host: localhost
   database: impactdialing_test
   username: root
-  password: password
+  password:
 
 production2:
     adapter: sqlite3

@@ -186,17 +186,17 @@ class CallerSession < ActiveRecord::Base
   end
     
   def hold
-    Twilio::Verb.new { |v| v.play "#{Settings.host}:#{Settings.port}/wav/hold.mp3"; v.redirect(:method => 'GET'); }.response
+    Twilio::Verb.new { |v| v.play "#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/wav/hold.mp3"; v.redirect(:method => 'GET'); }.response
   end
   
   def redirect_caller
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    Twilio::Call.redirect(sid, flow_caller_url(caller, :host => Settings.host, :port => Settings.port, session_id: id, event: "start_conf"))
+    Twilio::Call.redirect(sid, flow_caller_url(caller, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, session_id: id, event: "start_conf"))
   end
   
   def redirect_caller_out_of_numbers
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    Twilio::Call.redirect(sid, flow_caller_url(caller, :host => Settings.host, :port => Settings.port, session_id: id, event: "run_ot_of_phone_numbers"))
+    Twilio::Call.redirect(sid, flow_caller_url(caller, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, session_id: id, event: "run_ot_of_phone_numbers"))
   end
   
 
@@ -254,9 +254,9 @@ class CallerSession < ActiveRecord::Base
   
   def make_call(attempt, voter)
   Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-  params = {'FallbackUrl' => TWILIO_ERROR, 'StatusCallback' => flow_call_url(attempt.call, host: Settings.host, port:  Settings.port, event: "call_ended"),'Timeout' => campaign.use_recordings? ? "20" : "15"}
+  params = {'FallbackUrl' => TWILIO_ERROR, 'StatusCallback' => flow_call_url(attempt.call, host: Settings.twilio_callback_host, port:  Settings.twilio_callback_port, event: "call_ended"),'Timeout' => campaign.use_recordings? ? "20" : "15"}
   params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect        
-  Twilio::Call.make(self.campaign.caller_id, voter.Phone, flow_call_url(attempt.call, host: Settings.host, port: Settings.port, event: "incoming_call"),params)  
+  Twilio::Call.make(self.campaign.caller_id, voter.Phone, flow_call_url(attempt.call, host: Settings.twilio_callback_host, port: Settings.twilio_callback_port, event: "incoming_call"),params)  
   end
   
   def handle_failed_call(attempt, voter)
