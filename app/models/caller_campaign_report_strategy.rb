@@ -26,7 +26,8 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
  
   def download_all_voters_lead
     Octopus.using(:read_slave1) do
-      Voter.by_campaign(@campaign).order('last_call_attempt_time').find_in_batches(:batch_size => 100) do |voters|
+      first_voter = Voter.by_campaign(@campaign).order('last_call_attempt_time').first
+      Voter.by_campaign(@campaign).order('last_call_attempt_time').find_in_batches(:batch_size => 100, start:  start_position(first_voter)) do |voters|
         voters.each {|voter| @csv << csv_for(voter)}
       end    
     end
@@ -34,7 +35,8 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
   
   def download_all_voters_dial
     Octopus.using(:read_slave1) do
-      CallAttempt.for_campaign(@campaign).order('created_at').find_in_batches(:batch_size => 100) do |attempts|
+      first_attempt = CallAttempt.for_campaign(@campaign).order('created_at').first
+      CallAttempt.for_campaign(@campaign).order('created_at').find_in_batches(:batch_size => 100, start: start_position(first_attempt)) do |attempts|
         attempts.each { |attempt| @csv << csv_for_call_attempt(attempt) } 
       end
     end
@@ -42,7 +44,8 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
   
   def download_for_date_range_lead
     Octopus.using(:read_slave1) do
-      Voter.by_campaign(@campaign).last_call_attempt_within(@from_date, @to_date).order('created_at').find_in_batches(:batch_size => 100) do |voters|
+      first_voter = Voter.by_campaign(@campaign).last_call_attempt_within(@from_date, @to_date).order('created_at').first
+      Voter.by_campaign(@campaign).last_call_attempt_within(@from_date, @to_date).order('created_at').find_in_batches(:batch_size => 100, start: start_position(first_voter)) do |voters|
         voters.each do |voter|
            @csv << csv_for(voter)
         end
@@ -52,7 +55,8 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
   
   def download_for_date_range_dial
     Octopus.using(:read_slave1) do
-      CallAttempt.for_campaign(@campaign).between(@from_date, @to_date).order('created_at').find_in_batches(:batch_size => 100) do |attempts|
+      first_call_attempt = CallAttempt.for_campaign(@campaign).between(@from_date, @to_date).order('created_at').first
+      CallAttempt.for_campaign(@campaign).between(@from_date, @to_date).order('created_at').find_in_batches(:batch_size => 100, start: start_position(first_attempt)) do |attempts|
         attempts.each { |attempt| @csv << csv_for_call_attempt(attempt) } 
       end 
     end
@@ -66,6 +70,10 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
       note_responses = call_attempt.note_responses.for_notes(@note_ids).order('note_id')    
       [call_attempt_info(call_attempt), PossibleResponse.possible_response_text(@question_ids, answers), NoteResponse.response_texts(@note_ids, note_responses)].flatten    
     end
+  end
+  
+  def start_position(obj)
+    obj.nil? ? 0 : obj.id
   end
   
   def call_details(voter)
