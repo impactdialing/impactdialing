@@ -111,7 +111,7 @@ describe CallerCampaignReportStrategy do
       note_response2 = Factory(:note_response, campaign: @campaign, note: note2, voter: Factory(:voter), call_attempt: call_attempt, response: "Test1")
       strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_DIAL, 
       @selected_voter_fields, @selected_custom_voter_fields, nil, nil)
-      strategy.call_attempt_details(call_attempt, voter).should eq(["a caller", "Answered", Time.at(1338292076).in_time_zone(@campaign.time_zone), Time.at(1338292476).in_time_zone(@campaign.time_zone), Time.at(1338293196).in_time_zone(@campaign.time_zone), "xyz.mp3","Hey", "Wee", "Test2", "Test1"])
+      strategy.call_attempt_details(call_attempt).should eq(["a caller", "Answered", Time.at(1338292076).in_time_zone(@campaign.time_zone), Time.at(1338292476).in_time_zone(@campaign.time_zone), Time.at(1338293196).in_time_zone(@campaign.time_zone), "xyz.mp3","Hey", "Wee", "Test2", "Test1"])
     end
     
     it "should create the csv row convert ringing to not dialed" do
@@ -128,7 +128,7 @@ describe CallerCampaignReportStrategy do
       note_response2 = Factory(:note_response, campaign: @campaign, note: note2, voter: Factory(:voter), call_attempt: call_attempt, response: "Test1")
       strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_DIAL, 
       @selected_voter_fields, @selected_custom_voter_fields, nil, nil)
-      strategy.call_attempt_details(call_attempt, voter).should eq([nil, "Not Dialed", "", "", "", "", [], []])
+      strategy.call_attempt_details(call_attempt).should eq([nil, "Not Dialed", "", "", "", "", [], []])
     end
     
     it "should create the csv row convert ready to not dialed" do
@@ -145,7 +145,7 @@ describe CallerCampaignReportStrategy do
       note_response2 = Factory(:note_response, campaign: @campaign, note: note2, voter: Factory(:voter), call_attempt: call_attempt, response: "Test1")
       strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_DIAL, 
       @selected_voter_fields, @selected_custom_voter_fields, nil, nil)
-      strategy.call_attempt_details(call_attempt, voter).should eq([nil, "Not Dialed", "", "", "", "", [], []])
+      strategy.call_attempt_details(call_attempt).should eq([nil, "Not Dialed", "", "", "", "", [], []])
     end
     
     
@@ -261,7 +261,7 @@ describe CallerCampaignReportStrategy do
        note_response2 = Factory(:note_response, campaign: @campaign, note: note2, voter: Factory(:voter), call_attempt: call_attempt, response: "Test1")
        strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_DIAL, 
        @selected_voter_fields, @selected_custom_voter_fields, nil, nil)
-       strategy.csv_for(voter).should eq(["24566", "first", "39045098753", "value1", "value2", "a caller", "Answered", Time.at(1338292076).in_time_zone(@campaign.time_zone), Time.at(1338292476).in_time_zone(@campaign.time_zone), Time.at(1338293196).in_time_zone(@campaign.time_zone), "xyz.mp3","Hey", "Wee", "Tree", "Test2", "Test1"])
+       strategy.csv_for(voter).should eq(["24566", "first", "39045098753", "value1", "value2", [nil, "Not Dialed", "", "", "", "", [], []]])
      end
     
   end

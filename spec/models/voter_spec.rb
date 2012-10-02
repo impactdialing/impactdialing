@@ -1,6 +1,23 @@
 require "spec_helper"
 
 describe Voter do
+  class Voter
+    def dial_predictive
+      call_attempt = new_call_attempt(self.campaign.type)
+      Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
+      params = {'FallbackUrl' => TWILIO_ERROR, 'StatusCallback' => flow_call_url(call_attempt.call, host:  Settings.host, port:  Settings.port, event: 'call_ended'), 'Timeout' => campaign.use_recordings ? "20" : "15"}
+      params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect
+      response = Twilio::Call.make(campaign.caller_id, self.Phone, flow_call_url(call_attempt.call, host:  Settings.host, port:  Settings.port, event:  'incoming_call'), params)
+      if response["TwilioResponse"]["RestException"]
+        call_attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
+        update_attributes(status: CallAttempt::Status::FAILED)
+        Rails.logger.info "[dialer] Exception when attempted to call #{self.Phone} for campaign id:#{self.campaign_id}  Response: #{response["TwilioResponse"]["RestException"].inspect}"
+        return
+      end
+      call_attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])
+    end
+  end
+
   include Rails.application.routes.url_helpers
 
   it "can share the same number" do
@@ -92,14 +109,6 @@ describe Voter do
     let(:field2) { Factory(:custom_voter_field, :name => "field2", :account => account) }
     let(:field3) { Factory(:custom_voter_field, :name => "field3", :account => account) }
 
-
-    it "lists a voters custom fields" do
-      f = field1
-      value2 = Factory(:custom_voter_field_value, :voter => voter, :custom_voter_field => field2, :value => "value2")
-      f = field3
-      voter.custom_fields.should == [nil, value2.value, nil]
-    end
-
     it "lists voters custom fields with selected field names" do
       value1 = Factory(:custom_voter_field_value, :voter => voter, :custom_voter_field => field1, :value => "value1")
       value2 = Factory(:custom_voter_field_value, :voter => voter, :custom_voter_field => field2, :value => "value2")
@@ -187,7 +196,6 @@ describe Voter do
       campaign1.stub(:time_period_exceed?).and_return(false)
       voter.dial_predictive
     end
-
 
     it "checks, whether voter is called or not" do
       voter1 = Factory(:voter, :status => "not called")
