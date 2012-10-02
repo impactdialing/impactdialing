@@ -23,18 +23,34 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
     manipulated_fields 
   end
   
+  def process_voters(voters)
+    data = {}
+    call_attempt_ids = []
+    voters.each do |voter|
+      data[voter.id] = csv_for(voter)
+      call_attempt_ids << voter.call_attempts.last.try(:id)
+    end
+    CallAttempt.where(id: call_attempt_ids.compact).includes(:answers, :note_responses).each do |a|
+      data[a.voter_id][-1] = call_attempt_details(a)
+    end
+    data.values.each do |o|
+      @csv << o.flatten
+    end
+  end
  
   def download_all_voters_lead
     Octopus.using(:read_slave1) do
-      @campaign.all_voters.order('last_call_attempt_time').find_in_batches(:batch_size => 100) do |voters|
-        voters.each {|voter| @csv << csv_for(voter)}
+      first_voter = Voter.by_campaign(@campaign).order('last_call_attempt_time').first
+      Voter.by_campaign(@campaign).order('last_call_attempt_time').find_in_batches(:batch_size => 100, start:  start_position(first_voter)) do |voters|
+        process_voters(voters)
       end    
     end
   end
   
   def download_all_voters_dial
     Octopus.using(:read_slave1) do
-      @campaign.call_attempts.order('created_at').find_in_batches(:batch_size => 100) do |attempts| 
+      first_attempt = CallAttempt.for_campaign(@campaign).order('created_at').first
+      CallAttempt.for_campaign(@campaign).order('created_at').find_in_batches(:batch_size => 100, start: start_position(first_attempt)) do |attempts|
         attempts.each { |attempt| @csv << csv_for_call_attempt(attempt) } 
       end
     end
@@ -42,36 +58,40 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
   
   def download_for_date_range_lead
     Octopus.using(:read_slave1) do
-      @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).order('created_at').find_in_batches(:batch_size => 100) do |voters|
-        voters.each do |voter|
-           @csv << csv_for(voter)
-        end
+      first_voter = Voter.by_campaign(@campaign).last_call_attempt_within(@from_date, @to_date).order('created_at').first
+      Voter.by_campaign(@campaign).last_call_attempt_within(@from_date, @to_date).order('created_at').find_in_batches(:batch_size => 100, start: start_position(first_voter)) do |voters|
+        process_voters(voters)
       end
     end
   end
   
   def download_for_date_range_dial
     Octopus.using(:read_slave1) do
-      @campaign.call_attempts.between(@from_date, @to_date).order('created_at').find_in_batches(:batch_size => 100) do |attempts|
+      first_call_attempt = CallAttempt.for_campaign(@campaign).between(@from_date, @to_date).order('created_at').first
+      CallAttempt.for_campaign(@campaign).between(@from_date, @to_date).order('created_at').find_in_batches(:batch_size => 100, start: start_position(first_attempt)) do |attempts|
         attempts.each { |attempt| @csv << csv_for_call_attempt(attempt) } 
       end 
     end
   end
   
-  def call_attempt_details(call_attempt, voter)
+  def call_attempt_details(call_attempt)
     if [CallAttempt::Status::RINGING, CallAttempt::Status::READY ].include?(call_attempt.status)
       [nil, "Not Dialed","","","","", [], [] ]
     else
-      answers = call_attempt.answers.for_questions(@question_ids).order('question_id')
-      note_responses = call_attempt.note_responses.for_notes(@note_ids).order('note_id')    
+      answers = call_attempt.answers.sort_by(&:question_id).select { |a| @question_ids.include?(a.question_id) }
+      note_responses = call_attempt.note_responses.sort_by(&:note_id).select { |a| @note_ids.include?(a.note_id) }
       [call_attempt_info(call_attempt), PossibleResponse.possible_response_text(@question_ids, answers), NoteResponse.response_texts(@note_ids, note_responses)].flatten    
     end
+  end
+  
+  def start_position(obj)
+    obj.nil? ? 0 : obj.id
   end
   
   def call_details(voter)
     last_attempt = voter.call_attempts.last
     if last_attempt
-      call_attempt_details(last_attempt, voter)
+      call_attempt_details(last_attempt)
     else
       [nil, "Not Dialed","","","","", [], [] ]
     end

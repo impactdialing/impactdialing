@@ -17,7 +17,6 @@ debit_worker: rake environment resque:work QUEUE=debit_worker
 call_flow: rake environment resque:work QUEUE=call_flow
 call_end: rake environment resque:work QUEUE=call_end
 
-moderator_flow: rake environment resque:work QUEUE=moderator_caller
-moderator_flow: rake environment resque:work QUEUE=moderator_call
+moderator_flow: rake environment resque:work QUEUE=moderator_flow
 
 clock: rake environment resque:scheduler
