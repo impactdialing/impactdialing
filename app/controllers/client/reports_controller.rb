@@ -8,7 +8,9 @@ module Client
 
 
     def load_campaign
-      @campaign = account.campaigns.find(params[:campaign_id])
+      Octopus.using(:read_slave1) do
+        @campaign = Account.find(account).campaigns.find(params[:campaign_id])
+      end
     end
 
     def index
