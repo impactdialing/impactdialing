@@ -247,7 +247,9 @@ describe VoterList do
         voter_list.import_leads(mappings, csv_file, ",").should == {:successCount => 2, :failedCount => 0}
         CustomVoterField.find_by_name(custom_field).should_not be_nil
         CustomVoterField.all.size.should == 1
-        custom_fields = voter_list.voters.collect{|voter| voter.get_attribute(custom_field)}
+        custom_fields = voter_list.voters.collect do |voter|
+          VoterMethods.get_attribute(voter, custom_field)
+        end
         custom_fields.length.should eq(2)
         custom_fields.should include("Foo")
         custom_fields.should include("Bar")
