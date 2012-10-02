@@ -1,7 +1,7 @@
 require 'em-http-request'
 
 class ModeratorCallerJob 
-  @queue = :moderator_caller_job
+  @queue = :moderator_caller
   
    def self.perform(caller_session_id, event)    
      
