@@ -65,6 +65,8 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
     end
   end
   
+  
+  
   def download_for_date_range_dial
     Octopus.using(:read_slave1) do
       first_call_attempt = CallAttempt.for_campaign(@campaign).between(@from_date, @to_date).order('created_at').first
