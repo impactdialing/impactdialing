@@ -7,9 +7,6 @@ default: &default_settings
 heroku:
   <<: *default_settings
 
-heroku_caller:
-  <<: *default_settings
-
 heroku_staging:
   <<: *default_settings
   twilio_callback_host: impactdialing-staging.herokuapp.com
