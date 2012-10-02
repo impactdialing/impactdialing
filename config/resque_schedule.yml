@@ -1,14 +1,14 @@
 process_answered_attempts:
   cron: "*/5 * * * *"
   class: AnsweredJob
-  queue: answered_worker_job
+  queue: answered_worker
   args: 
   description: "This job processes answers and stores them in a relational schema"
 
 deactivate_monitor:
   cron: "*/5 * * * *"
   class: DeactiveUnnecessaryMonitorTabsJob
-  queue: background_worker_job
+  queue: background_worker
   args: 
   description: "This job processes deactivates unnecessary monitor tabs"
 
@@ -16,7 +16,7 @@ deactivate_monitor:
 debit_money:
   cron: "*/2 * * * *"
   class: DebiterJob
-  queue: debit_worker_job
+  queue: debit_worker
   args: 
   description: "This job debits money"
 

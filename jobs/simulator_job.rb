@@ -2,7 +2,7 @@ require 'octopus'
 require 'resque-loner'
 
 class SimulatorJob 
-  @queue = :simulator
+  @queue = :simulator_worker
   include Resque::Plugins::UniqueJob
 
    def self.perform(campaign_id)
