@@ -12,7 +12,7 @@ class Answer < ActiveRecord::Base
   scope :with_campaign_id, lambda { |campaign_id| where(:campaign_id => campaign_id) }
   
   def self.question_ids(cam_id)
-    Answer.all(:select=>"distinct question_id", :conditions=>"campaign_id = #{cam_id}", :order => "question_id").collect{|a| a.question_id}
+    Answer.where(campaign_id: cam_id).order(:question_id).uniq.pluck(:question_id)
   end
   
 end
