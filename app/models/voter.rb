@@ -23,6 +23,7 @@ class Voter < ActiveRecord::Base
   validates_presence_of :Phone
   validates_length_of :Phone, :minimum => 10, :unless => Proc.new{|voter| voter.Phone && voter.Phone.start_with?("+")}
 
+  scope :by_campaign, ->(campaign) { where(campaign_id: campaign) }
   scope :existing_phone_in_campaign, lambda { |phone_number, campaign_id| where(:Phone => phone_number).where(:campaign_id => campaign_id) }
 
   scope :default_order, :order => 'LastName, FirstName, Phone'
@@ -67,27 +68,20 @@ class Voter < ActiveRecord::Base
     self.Phone = Voter.sanitize_phone(self.Phone) if self.Phone
   end
 
-  def custom_fields
-    account.custom_fields.map { |field| CustomVoterFieldValue.voter_fields(self, field).first.try(:value) }
-  end
-
   def selected_fields(selection = nil)
     return [self.Phone] unless selection
     selection.select { |field| Voter.upload_fields.include?(field) }.map { |field| self.send(field) }
   end
 
   def selected_custom_fields(selection)
-    selected_fields = []
-    return selected_fields unless selection
-    selection.each do |field|
-      custom_voter_field = account.custom_voter_fields.find_by_name(field)
-      unless custom_voter_field.nil?
-        selected_fields << CustomVoterFieldValue.voter_fields(self, custom_voter_field).first.try(:value)  
-      end
-    end
-    selected_fields
+    return [] unless selection
+    query = account.custom_voter_fields.where(name: selection).
+      joins(:custom_voter_field_values).
+      where(custom_voter_field_values: {voter_id: self.id}).
+      group(:name).select([:name, :value]).to_sql
+    voter_fields = Hash[*connection.execute(query).to_a.flatten]
+    selection.map { |field| voter_fields[field] }
   end
-
 
   def self.upload_fields
     ["Phone", "CustomID", "LastName", "FirstName", "MiddleName", "Suffix", "Email", "address", "city", "state","zip_code", "country"]
@@ -151,8 +145,7 @@ class Voter < ActiveRecord::Base
     attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
     voter.update_attributes(status: CallAttempt::Status::FAILED)
   end
-  
-  
+    
 
   def get_attribute(attribute)
     return self[attribute] if self.has_attribute? attribute
@@ -161,11 +154,10 @@ class Voter < ActiveRecord::Base
     return if fields.empty?
     return fields.first.value
   end
-
+  
   def blocked?
     account.blocked_numbers.for_campaign(campaign).map(&:number).include?(self.Phone)
   end
-
 
   def selected_custom_voter_field_values
     select_custom_fields = campaign.script.try(:selected_custom_fields)
