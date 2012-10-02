@@ -6,6 +6,6 @@ ImpactDialing::Application.initialize!
 if Rails.env == 'heroku'
   DIALER_LOGGER = Rails.logger
 else
-  DIALER_LOGGER = Logger.new(Rails.root.join("log", "predictive_dialer_#{Rails.env}.log"))
+  DIALER_LOGGER = Logger.new(STDOUT)
 end
 require "csv"
