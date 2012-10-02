@@ -4,7 +4,7 @@ require 'resque-loner'
 class PhantomCallerJob 
   extend Resque::Plugins::Lock
   include Resque::Plugins::UniqueJob
-  @queue = :background_worker_job
+  @queue = :background_worker
   
    def self.perform(caller_session_id)
      caller_session = CallerSession.find(caller_session_id)
