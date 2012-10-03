@@ -68,8 +68,8 @@ class WebuiCallerSession < CallerSession
   end
 
   #NewRelic custom metrics
-  add_method_tracer :call_not_wrapped_up?, 'Custom/call_not_wrapped_up?'
-  add_method_tracer :start_conference,     'Custom/web_start_conference'
+  add_method_tracer :call_not_wrapped_up?, 'Custom/WebCallerSession/call_not_wrapped_up?'
+  add_method_tracer :start_conference,     'Custom/WebCallerSession/web_start_conference'
 
   
 end
