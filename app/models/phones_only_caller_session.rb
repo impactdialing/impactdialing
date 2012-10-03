@@ -236,10 +236,10 @@ class PhonesOnlyCallerSession < CallerSession
   end
 
   #NewRelic custom metrics
-  add_method_tracer :preview?,         'Custom/preview?'
-  add_method_tracer :power?,           'Custom/power?'
-  add_method_tracer :predictive?,      'Custom/predictive?'
-  add_method_tracer :start_conference, 'Custom/phone_start_conference'
-  add_method_tracer :call_answered?,   'Custom/call_answered?'
+  add_method_tracer :preview?,         'Custom/PhonesCallerSession/preview?'
+  add_method_tracer :power?,           'Custom/PhonesCallerSession/power?'
+  add_method_tracer :predictive?,      'Custom/PhonesCallerSession/predictive?'
+  add_method_tracer :start_conference, 'Custom/PhonesCallerSession/phone_start_conference'
+  add_method_tracer :call_answered?,   'Custom/PhonesCallerSession/call_answered?'
 
 end
