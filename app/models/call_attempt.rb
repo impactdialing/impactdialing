@@ -4,6 +4,7 @@ class CallAttempt < ActiveRecord::Base
   include Rails.application.routes.url_helpers
   include LeadEvents
   include CallPayment
+  include SidekiqEvents
   belongs_to :voter
   belongs_to :campaign
   belongs_to :caller
@@ -129,7 +130,7 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
-    Resque.enqueue(EndRunningCallJob, self.sid)
+    enqueue_call_flow(EndRunningCallJob, [{call_sid: self.sid}])
   end
 
   def not_wrapped_up?
@@ -194,7 +195,7 @@ class CallAttempt < ActiveRecord::Base
 
   def redirect_caller(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
     unless caller_session.nil?
-      Resque.enqueue(RedirectCallerJob, caller_session.id)
+      enqueue_call_flow(RedirectCallerJob, [caller_session_id: caller_session.id])
     end    
   end
 end

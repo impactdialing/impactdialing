@@ -39,6 +39,7 @@ gem "formtastic", "~>2.2.1"
 gem "cocoon", "~>1.0.22"
 gem 'deep_cloneable', '~> 1.4.0'
 gem 'ar-octopus', :git => "git://github.com/tchandy/octopus.git"
+gem "sidekiq", '~>1.2.1'
 
 
 group :development, :test do
