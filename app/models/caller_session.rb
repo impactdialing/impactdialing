@@ -2,7 +2,6 @@ require 'new_relic/agent/method_tracer'
 
 class CallerSession < ActiveRecord::Base
   include ::NewRelic::Agent::MethodTracer
-
   include Rails.application.routes.url_helpers
   include CallCenter
   include CallerEvents
@@ -299,13 +298,13 @@ class CallerSession < ActiveRecord::Base
    end
 
   #NewRelic custom metrics
-  add_method_tracer :account_not_activated?, 'Custom/account_not_activated?'
-  add_method_tracer :subscription_limit_exceeded?, 'Custom/subscription_limit_exceeded?'
-  add_method_tracer :funds_not_available?, 'Custom/funds_not_available?'
-  add_method_tracer :time_period_exceeded?, 'Custom/time_period_exceeded?'
-  add_method_tracer :is_on_call?, 'Custom/is_on_call?'
+  add_method_tracer :account_not_activated?,                 'Custom/account_not_activated?'
+  add_method_tracer :subscription_limit_exceeded?,           'Custom/subscription_limit_exceeded?'
+  add_method_tracer :funds_not_available?,                   'Custom/funds_not_available?'
+  add_method_tracer :time_period_exceeded?,                  'Custom/time_period_exceeded?'
+  add_method_tracer :is_on_call?,                            'Custom/is_on_call?'
   add_method_tracer :caller_reassigned_to_another_campaign?, 'Custom/caller_reassigned_to_another_campaign?'
-  add_method_tracer :disconnected?, 'Custom/disconnected?'
+  add_method_tracer :disconnected?,                          'Custom/disconnected?'
 
   private
     
