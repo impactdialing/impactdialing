@@ -3,6 +3,7 @@ class CallerSession < ActiveRecord::Base
   include CallCenter
   include CallerEvents
   include CallPayment
+  include SidekiqEvents
   
   belongs_to :caller
   belongs_to :campaign
@@ -124,7 +125,7 @@ class CallerSession < ActiveRecord::Base
       
       state :conference_ended do
         before(:always) { end_caller_session}
-        after(:always) {Resque.enqueue(CallerPusherJob, self.id, "publish_caller_disconnected") ; Resque.enqueue(ModeratorCallerJob, self.id, "publish_moderator_caller_disconnected")} 
+        after(:always) {  enqueue_call_flow(CallerPusherJob, [caller_session_id: self.id, event: "publish_caller_disconnected"]);enqueue_moderator_flow(ModeratorCallerJob, [caller_session_id: self.id, event: "publish_moderator_caller_disconnected"])} 
         response do |xml_builder, the_call|
           xml_builder.Hangup
         end        
@@ -152,8 +153,8 @@ class CallerSession < ActiveRecord::Base
   
   def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)    
     end_caller_session
-    Resque.enqueue(EndRunningCallJob, self.sid)
-    Resque.enqueue(EndCallerSessionJob, self.id)
+    enqueue_call_flow(EndRunningCallJob, [call_sid: self.sid])
+    enqueue_call_flow(EndCallerSessionJob, [caller_session_id: self.id])
   end  
   
   
