@@ -5,16 +5,16 @@ module SidekiqEvents
   
   module InstanceMethods
     
-    def enqueue_call_flow(job, args)
-      enqueue('call_flow', job, args)
+    def enqueue_call_flow(job, event_args)
+      enqueue('call_flow', job, event_args)
     end
     
-    def enqueue_moderator_flow(job, args)
-      enqueue('moderator_flow', job, args)
+    def enqueue_moderator_flow(job, event_args)
+      enqueue('moderator_flow', job, event_args)
     end
     
-    def enqueue(queue, job, args)
-      Sidekiq::Client.push('queue' => queue, 'class' => job, 'args' => args)
+    def enqueue(queue, job, event_args)
+      Sidekiq::Client.push('queue' => queue, 'class' => job, 'args' => event_args)
     end
     
   end

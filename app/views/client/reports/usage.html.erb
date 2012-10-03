@@ -1,7 +1,13 @@
-<h1><%= @campaign.name %> Usage</h1>
-
 <div role="main">
-  <%= render :partial => 'shared/utilization', :locals => {:report => @campaign, :usage=> @campaign_usage} %>
+  <h1><%= @campaign.name %> Usage</h1>
+  <p>The utilization table shows how much time your callers actually spent on the phone. Each call is rounded to the nearest second.</p>
+
+  <table>
+    <%= render :partial => 'shared/utilization', :locals => {:report => @campaign, :usage=> @campaign_usage} %>
+  </table>
+
   <%= render :partial => 'billable', :locals => {:usage=> @campaign_usage} %>
-  <%= render :partial => 'shared/date_picker_campaigns', :locals => {:target => usage_client_reports_path} %>
+
+  <%= render partial: 'shared/date_picker_campaigns', locals: {target: usage_client_reports_path} %>
+
 </div>
