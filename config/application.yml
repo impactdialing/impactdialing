@@ -2,7 +2,7 @@ default: &default_settings
   twilio_callback_host: impactcallergiraffeblue.impactdialing.com
   twilio_callback_port: 80
   recording_env: heroku
-  callin_phone: 8582254595
+  callin_phone: 4155787571
 
 heroku:
   <<: *default_settings
@@ -22,6 +22,7 @@ development:
   <<: *default_settings
   twilio_callback_host: impactdialing.showoff.io
   recording_env: development
+  callin_phone: 8582254595
 
 test:
   <<: *default_settings

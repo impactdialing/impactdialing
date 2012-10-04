@@ -19,3 +19,4 @@ spec/fixtures/test_tmp/
 .bundle
 dump.rdb
 *.swp
+.pivotalrc
