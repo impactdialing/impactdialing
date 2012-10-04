@@ -179,7 +179,7 @@ class PhonesOnlyCallerSession < CallerSession
   end
   
   def publish_moderator_gathering_response
-    enqueue_moderator_flow(ModeratorCallJob, [attempt_in_progress.id, "publish_voter_event_moderator" ])
+    enqueue_moderator_flow(ModeratorCallerJob, [self.id, "publish_voter_event_moderator" ])
   end
   
   def unanswered_question
