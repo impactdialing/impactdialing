@@ -1,5 +1,10 @@
-class CallEndJob 
-  @queue = :background_worker
+require 'resque/plugins/lock'
+require 'resque-loner'
+
+class AlertJob 
+  extend Resque::Plugins::Lock
+  include Resque::Plugins::UniqueJob  
+  @queue = :alert_worker
   
    def self.perform
      campaign_ids = CallerSession.campaigns_on_call.pluck(:id)     
