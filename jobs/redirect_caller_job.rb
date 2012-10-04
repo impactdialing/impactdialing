@@ -1,4 +1,5 @@
 class RedirectCallerJob 
+  include Sidekiq::Worker
   @queue = :call_flow
   
    def self.perform(caller_session_id)    
