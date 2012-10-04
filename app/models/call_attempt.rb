@@ -4,7 +4,6 @@ require Rails.root.join("lib/twilio_lib")
 class CallAttempt < ActiveRecord::Base
   include ::NewRelic::Agent::MethodTracer
   include Rails.application.routes.url_helpers
-  include LeadEvents
   include CallPayment
   include SidekiqEvents
   belongs_to :voter
@@ -84,6 +83,8 @@ class CallAttempt < ActiveRecord::Base
         voter.status = CallAttempt::Status::INPROGRESS
         voter.save
         voter.caller_session.update_attributes(on_call: true, available_for_call: false)
+        enqueue_call_flow(VoterConnectedPusherJob, [voter.caller_session.id, call.id])
+        enqueue_moderator_flow(ModeratorCallerJob,[voter.caller_session.id, "publish_voter_event_moderator"])
       end
     rescue ActiveRecord::StaleObjectError
       abandon_call
