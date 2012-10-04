@@ -23,7 +23,11 @@ class AlertJob
    end
    
    def self.alert_not_simulated_campaigns(predictive_campaign_ids)
-     simulator_not_run_campaigns = SimulatedValues.where("campaign_id in (?) and updated_at < ?", predictive_campaign_ids, 2.minutes.ago).pluck(:campaign_id)
+     simulator_not_run_campaigns = []
+     simulated_campaigns = SimulatedValues.where("campaign_id in (?)", predictive_campaign_ids).pluck(:campaign_id)
+     simulator_not_run_campaigns += predictive_campaign_ids - simulator_not_run_campaigns
+     simulator_not_run_campaigns += SimulatedValues.where("campaign_id in (?) and updated_at < ?", predictive_campaign_ids, 2.minutes.ago).pluck(:campaign_id)
+     simulator_not_run_campaigns = SimulatedValues.where("")
      unless simulator_not_run_campaigns.blank?
        email_all("Campaigns not Simulated in the last 2 minutes", simulator_not_run_campaigns.join(" , ").to_s)
      end
