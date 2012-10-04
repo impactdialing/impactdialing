@@ -1,10 +1,9 @@
-require 'resque-loner'
+
 
 class CampaignOutOfNumbersJob
   include Sidekiq::Worker
-  @queue = :call_flow
 
-   def self.perform(caller_session_id)
+   def perform(caller_session_id)
      caller_session = CallerSession.find(caller_session_id)
      caller_session.redirect_caller_out_of_numbers
    end
