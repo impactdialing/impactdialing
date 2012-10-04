@@ -29,7 +29,7 @@ gem "call_center", "~> 0.0.9"
 gem "em-http-request", "~> 1.0.1"
 gem "ruby-graphviz", "0.9.0"
 gem "em-synchrony", "~> 1.0.1"
-gem "resque", "~> 1.19.0"
+gem "resque", "~> 1.19"
 gem "resque-scheduler", "~> 1.9.9", :require => 'resque_scheduler'
 gem 'resque-lock', "~> 1.0.0"
 gem "resque-loner", "~>1.2.1"
