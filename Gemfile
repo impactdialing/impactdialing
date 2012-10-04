@@ -40,6 +40,8 @@ gem "cocoon", "~>1.0.22"
 gem 'deep_cloneable', '~> 1.4.0'
 gem 'ar-octopus', :git => "git://github.com/tchandy/octopus.git"
 gem "sidekiq", '~>1.2.1'
+gem "slim", "~>1.2.2"
+gem "sprockets", "~>2.1.3"
 
 
 group :development, :test do
