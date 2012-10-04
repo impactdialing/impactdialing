@@ -130,7 +130,7 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
-    enqueue_call_flow(EndRunningCallJob, [{call_sid: self.sid}])
+    enqueue_call_flow(EndRunningCallJob, [call_sid: self.sid])
   end
 
   def not_wrapped_up?

@@ -10,7 +10,7 @@ class CallerController < ApplicationController
     caller = Caller.find(params[:caller_id])
     identity = CallerIdentity.find_by_session_key(params[:session_key])
     session = caller.create_caller_session(identity.session_key, params[:CallSid], CallerSession::CallerType::TWILIO_CLIENT)
-    enqueue_moderator_flow(ModeratorCallerJob, [{caller_session_id: session.id, event: "caller_connected_to_campaign"}])
+    enqueue_moderator_flow(ModeratorCallerJob, [caller_session_id: session.id, event: "caller_connected_to_campaign"])
     render xml: session.run(:start_conf)
   end
 
@@ -27,8 +27,8 @@ class CallerController < ApplicationController
   def call_voter
     caller = Caller.find(params[:id])
     caller_session = caller.caller_sessions.find(params[:session_id]) 
-    enqueue_call_flow(CallerPusherJob, [{caller_session_id: caller_session.id, event: "publish_calling_voter"}])
-    enqueue_call_flow(PreviewPowerDialJob, [{caller_session_id: caller_session.id, voter_id: params[:voter_id]}]) unless params[:voter_id].blank?
+    enqueue_call_flow(CallerPusherJob, [caller_session_id: caller_session.id, event: "publish_calling_voter"])
+    enqueue_call_flow(PreviewPowerDialJob, [caller_session_id: caller_session.id, voter_id: params[:voter_id]]) unless params[:voter_id].blank?
     render :nothing => true
   end
 
@@ -49,7 +49,7 @@ class CallerController < ApplicationController
     caller_session = @caller.caller_sessions.find(params[:session_id])
     voter = Voter.find(params[:voter_id])
     voter.skip
-    enqueue_call_flow(RedirectCallerJob, [{caller_session_id: caller_session.id}])
+    enqueue_call_flow(RedirectCallerJob, [caller_session_id: caller_session.id])
     render :nothing => true
   end
 
