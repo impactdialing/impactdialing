@@ -15,7 +15,6 @@ module ImpactDialing
 
     config.logger = Logger.new(STDOUT)
     config.logger.level = Logger.const_get(ENV['LOG_LEVEL'] ? ENV['LOG_LEVEL'].upcase : 'INFO')
-
     config.filter_parameters << :password << :card_number << :card_verification << :cc << :code
     #config.time_zone = 'UTC'
 

@@ -1,6 +1,5 @@
-class WebuiCallerSession < CallerSession  
-  include Rails.application.routes.url_helpers
-  
+class WebuiCallerSession < CallerSession
+
   call_flow :state, :initial => :initial do    
     
       state :initial do
@@ -67,8 +66,10 @@ class WebuiCallerSession < CallerSession
   def publish_sync(event, data)
     Pusher[session_key].trigger(event, data.merge!(:dialer => self.campaign.type))
   end
-  
-  
-  
+
+  #NewRelic custom metrics
+  add_method_tracer :call_not_wrapped_up?, 'Custom/WebCallerSession/call_not_wrapped_up?'
+  add_method_tracer :start_conference,     'Custom/WebCallerSession/web_start_conference'
+
   
 end
