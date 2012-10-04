@@ -1,5 +1,3 @@
-
-
 class CampaignOutOfNumbersJob
   include Sidekiq::Worker
 
