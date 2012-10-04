@@ -142,7 +142,7 @@
     <div id="callin_data">
       <p>
         <b>If you don't have a mic, use a phone:</b><br>
-        Dial-in number: <%= Settings.callin_phone %><br>
+        Dial-in number: <%= number_to_phone(Settings.callin_phone, :area_code => true) %><br>
         PIN: <%= @caller_identity.pin %>
       </p>
     </div>

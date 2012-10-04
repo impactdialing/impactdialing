@@ -3,7 +3,7 @@ source :rubygems
 ruby '1.9.3'
 
 gem 'rails', '~> 3.2.8'
-gem 'thin', '~>1.3.1'
+gem 'unicorn'
 gem 'will_paginate', '~> 3.0'
 gem 'mysql2', '~> 0.3.0'
 gem 'newrelic_rpm'
