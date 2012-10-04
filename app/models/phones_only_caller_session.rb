@@ -1,5 +1,4 @@
 class PhonesOnlyCallerSession < CallerSession
-  include Rails.application.routes.url_helpers  
   call_flow :state, :initial => :initial do    
     
       state :initial do
@@ -227,7 +226,7 @@ class PhonesOnlyCallerSession < CallerSession
     campaign.type == Campaign::Type::PREDICTIVE
   end
     
-  def start_conference    
+  def start_conference
     begin
       update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
     rescue ActiveRecord::StaleObjectError
@@ -235,11 +234,12 @@ class PhonesOnlyCallerSession < CallerSession
       same_caller_session.update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
     end
   end
-  
-  def preview_campaign?
-    campaign.type != Campaign::Type::Preview
-  end
-  
-  
-    
+
+  #NewRelic custom metrics
+  add_method_tracer :preview?,         'Custom/PhonesCallerSession/preview?'
+  add_method_tracer :power?,           'Custom/PhonesCallerSession/power?'
+  add_method_tracer :predictive?,      'Custom/PhonesCallerSession/predictive?'
+  add_method_tracer :start_conference, 'Custom/PhonesCallerSession/phone_start_conference'
+  add_method_tracer :call_answered?,   'Custom/PhonesCallerSession/call_answered?'
+
 end
