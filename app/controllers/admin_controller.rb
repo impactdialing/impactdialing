@@ -39,38 +39,30 @@ class AdminController < ApplicationController
 
   def report
     set_report_date_range
-    sql="select distinct c.account_id from caller_sessions ca
-      join campaigns c on c.id=ca.campaign_id where
-      ca.created_at > '#{@from_date.strftime("%Y-%m-%d")}'
-      and ca.created_at  < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'
-    "
-    logger.info sql
-
     Octopus.using(:read_slave1) do
-
-      @accounts = ActiveRecord::Base.connection.execute(sql)
-
-      @output=[]
-      @accounts.each do |account_id|
-
-        campaigns=Campaign.where("account_id=?", account_id).map { |c| c.id }
-        if campaigns.length > 0
-
-          sessions = CallerSession.where("campaign_id in (?) and tCaller is NOT NULL and created_at > '#{@from_date.strftime("%Y-%m-%d")}' and created_at  < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'", campaigns).sum("ceil(tDuration/60)").to_i
+      @account_ids = Account.joins(:campaigns).
+        where(["campaigns.created_at > ? AND campaigns.created_at < ?", @from_date, @to_date + 1.day]).pluck("accounts.id")
+      @output = []
+      @account_ids.each do |account_id|
+        campaigns = Campaign.where(account_id: account_id).pluck(:id)
+        if campaigns.any?
+          sessions = CallerSession.where(campaign_id: campaigns).
+            where(["created_at > ? AND created_at < ?", @from_date, @to_date + 1.day]).
+            where("tCaller IS NOT NULL").sum("ceil(tDuration/60)").to_i
           calls = CallAttempt.from('call_attempts use index (index_call_attempts_on_campaign_id_created_at_status)').
-              where("campaign_id in (?) and created_at > '#{@from_date.strftime("%Y-%m-%d")}' and created_at  < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'", campaigns).sum("ceil(tDuration/60)").to_i
-          transfers = TransferAttempt.where("campaign_id in (?) and created_at > '#{@from_date.strftime("%Y-%m-%d")}' and created_at  < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'", campaigns).sum("ceil(tDuration/60)").to_i
-
-
-          account = Account.find_by_id(account_id)
-          unless account.nil?
-            result={}
-            result["account"]= account
-            result["calls"]= calls
-            result["sessions"]= sessions
-            result["transfers"]= transfers
-            @output<< result
-          end
+            where(campaign_id: campaigns).
+            where(["created_at > ? AND created_at < ?", @from_date, @to_date + 1.day]).
+            sum("ceil(tDuration/60)").to_i
+          transfers = TransferAttempt.where(campaign_id: campaigns).
+            where(["created_at > ? AND created_at < ?", @from_date, @to_date + 1.day]).
+            sum("ceil(tDuration/60)").to_i
+          @output << {
+            account_id: account_id,
+            user_email: User.where(account_id: account_id).select(:email).first.email,
+            calls: calls,
+            sessions: sessions,
+            transfers: transfers
+          }
         end
       end
     end
