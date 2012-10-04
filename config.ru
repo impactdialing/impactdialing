@@ -16,9 +16,9 @@ end
 
 run Rack::URLMap.new \
   "/"       => ImpactDialing::Application,
-  "/resque" => Resque::Server.new
+  "/resque" => Resque::Server.new,
+  "/sidekiq" => Sidekiq::Web
 
-run Sidekiq::Web  
   
   
 
