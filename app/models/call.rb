@@ -40,7 +40,7 @@ class Call < ActiveRecord::Base
       
       state :connected do
         before(:always) {  connect_call }
-        after(:always) { enqueue_call_flow(CallPusherJob, [call_attempt.id, "publish_voter_connected"]); enqueue_moderator_flow(ModeratorCallJob,[call_attempt.id, "publish_voter_event_moderator"])}
+        after(:success) { enqueue_call_flow(CallPusherJob, [call_attempt.id, "publish_voter_connected"]); enqueue_moderator_flow(ModeratorCallJob,[call_attempt.id, "publish_voter_event_moderator"])}
         event :hangup, :to => :hungup
         event :disconnect, :to => :disconnected
         
