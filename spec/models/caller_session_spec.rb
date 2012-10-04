@@ -267,16 +267,16 @@ describe CallerSession do
 
     it "should move caller to end conference from account not activated" do
       caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "account_not_activated")
-      caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [{caller_session_id: caller_session.id, event: "publish_caller_disconnected"}])
-      caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [{caller_session_id: caller_session.id, event: "publish_moderator_caller_disconnected"}])
+      caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id,  "publish_caller_disconnected"])
+      caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [caller_session.id, "publish_moderator_caller_disconnected"])
       caller_session.end_conf!
       caller_session.state.should eq('conference_ended')
     end
 
     it "should make caller unavailable" do
       caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "account_not_activated")
-      caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [{caller_session_id: caller_session.id, event: "publish_caller_disconnected"}])
-      caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [{caller_session_id: caller_session.id, event: "publish_moderator_caller_disconnected"}])
+      caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id,  "publish_caller_disconnected"])
+      caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [caller_session.id, "publish_moderator_caller_disconnected"])
       caller_session.end_conf!
       caller_session.on_call.should be_false
       caller_session.available_for_call.should be_false
@@ -284,16 +284,16 @@ describe CallerSession do
 
     it "should set caller session endtime" do
       caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "account_not_activated")
-      caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [{caller_session_id: caller_session.id, event: "publish_caller_disconnected"}])
-      caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [{caller_session_id: caller_session.id, event: "publish_moderator_caller_disconnected"}])
+      caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id,  "publish_caller_disconnected"])
+      caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [caller_session.id, "publish_moderator_caller_disconnected"])
       caller_session.end_conf!
       caller_session.endtime.should_not be_nil
     end
 
     it "should render hangup twiml" do
       caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "account_not_activated")
-      caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [{caller_session_id: caller_session.id, event: "publish_caller_disconnected"}])
-      caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [{caller_session_id: caller_session.id, event: "publish_moderator_caller_disconnected"}])
+      caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id,  "publish_caller_disconnected"])
+      caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [caller_session.id, "publish_moderator_caller_disconnected"])
       caller_session.end_conf!
       caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
     end

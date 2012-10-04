@@ -8,7 +8,7 @@ class PhonesOnlyCallerSession < CallerSession
       
       
       state :read_choice do     
-        after(:always)  {enqueue_moderator_flow(ModeratorCallerJob, [caller_session_id: self.id, event:"publish_moderator_conference_started" ])}    
+        after(:always)  {enqueue_moderator_flow(ModeratorCallerJob, [self.id, "publish_moderator_conference_started" ])}    
         event :read_instruction_options, :to => :instructions_options, :if => :pound_selected?
         event :read_instruction_options, :to => :ready_to_call, :if => :star_selected?
         event :read_instruction_options, :to => :read_choice
@@ -22,7 +22,7 @@ class PhonesOnlyCallerSession < CallerSession
       end
       
       state :ready_to_call do  
-        after(:always)  {enqueue_moderator_flow(ModeratorCallerJob, [caller_session_id: self.id, event:"publish_moderator_conference_started" ])}    
+        after(:always)  {enqueue_moderator_flow(ModeratorCallerJob, [self.id, "publish_moderator_conference_started" ])}    
         event :start_conf, :to => :account_has_no_funds, :if => :funds_not_available?
         event :start_conf, :to => :time_period_exceeded, :if => :time_period_exceeded?
         event :start_conf, :to => :reassigned_campaign, :if => :caller_reassigned_to_another_campaign?        
@@ -127,7 +127,7 @@ class PhonesOnlyCallerSession < CallerSession
       end
       
       state :read_next_question do
-        after(:always) {enqueue_moderator_flow(ModeratorCallerJob, [caller_session_id: self.id, event:"publish_moderator_gathering_response" ])}
+        after(:always) {enqueue_moderator_flow(ModeratorCallerJob, [self.id, "publish_moderator_gathering_response" ])}
         event :submit_response, :to => :disconnected, :if => :disconnected?
         event :submit_response, :to => :wrapup_call, :if => :skip_all_questions?
         event :submit_response, :to => :voter_response
@@ -180,7 +180,7 @@ class PhonesOnlyCallerSession < CallerSession
   end
   
   def publish_moderator_gathering_response
-    enqueue_moderator_flow(ModeratorCallJob, [call_attempt_id: attempt_in_progress.id, event:"publish_voter_event_moderator" ])
+    enqueue_moderator_flow(ModeratorCallJob, [attempt_in_progress.id, "publish_voter_event_moderator" ])
   end
   
   def unanswered_question
