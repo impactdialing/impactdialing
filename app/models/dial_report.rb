@@ -8,7 +8,8 @@ class DialReport
       from("voters use index (index_voters_on_campaign_id_and_status)").
       select('status').group("status").count
     @leads_grouped_by_status_filtered = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).group("status").count
-    @attempts_grouped_by_status_filtered = @campaign.call_attempts.between(@from_date, @to_date).group("status").count
+    @attempts_grouped_by_status_filtered = @campaign.call_attempts.from('call_attempts use index (index_call_attempts_on_campaign_id_created_at_status)').
+      between(@from_date, @to_date).group("status").count
     @scheduled_for_now = @campaign.all_voters.scheduled.count
     @abandoned_count = @campaign.all_voters.by_status(CallAttempt::Status::ABANDONED).count
     @voters_not_available_for_retry = @campaign.all_voters.enabled.not_avialable_to_be_retried(@campaign.recycle_rate).count

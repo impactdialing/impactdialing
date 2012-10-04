@@ -2,7 +2,7 @@ require 'octopus'
 require 'resque-loner'
 
 class SimulatorJob 
-  @queue = :simulator
+  @queue = :simulator_worker
   include Resque::Plugins::UniqueJob
 
    def self.perform(campaign_id)
@@ -163,7 +163,7 @@ class SimulatorJob
          best_wrapup_time = longest_wrapup_time
          expected_wrapup_time = longest_wrapup_time
          [expected_conversation, longest_conversation, best_conversation, mean_conversation, expected_wrapup_time, longest_wrapup_time, best_wrapup_time, caller_statuses, observed_conversations, observed_dials]
-      end      
+      end
    end   
    
    
