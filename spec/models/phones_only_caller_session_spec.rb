@@ -14,14 +14,14 @@ describe PhonesOnlyCallerSession do
 
       it "should set caller state to read choice" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
-        caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [{caller_session_id: caller_session.id, event: "publish_moderator_conference_started"}])
+        caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [caller_session.id,  "publish_moderator_conference_started"])
         caller_session.callin_choice!
         caller_session.state.should eq('read_choice')
       end
 
       it "should render correct twiml" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
-        caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [{caller_session_id: caller_session.id, event: "publish_moderator_conference_started"}])
+        caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [caller_session.id,  "publish_moderator_conference_started"])
         caller_session.callin_choice!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather numDigits=\"1\" timeout=\"10\" action=\"https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=read_instruction_options&amp;session=#{caller_session.id}\" method=\"POST\" finishOnKey=\"5\"><Say>Press star to begin dialing or pound for instructions.</Say></Gather></Response>")
       end
@@ -63,21 +63,21 @@ describe PhonesOnlyCallerSession do
 
       it "should go back to read_choice if wrong option selected" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, digit: "x", state: "read_choice")
-        caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [{caller_session_id: caller_session.id, event: "publish_moderator_conference_started"}])
+        caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [caller_session.id,  "publish_moderator_conference_started"])
         caller_session.read_instruction_options!
         caller_session.state.should eq('read_choice')
       end
 
       it "should render twiml if wrong option selected" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, digit: "x", state: "read_choice")
-        caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [{caller_session_id: caller_session.id, event: "publish_moderator_conference_started"}])
+        caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [caller_session.id,  "publish_moderator_conference_started"])
         caller_session.read_instruction_options!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather numDigits=\"1\" timeout=\"10\" action=\"https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=read_instruction_options&amp;session=#{caller_session.id}\" method=\"POST\" finishOnKey=\"5\"><Say>Press star to begin dialing or pound for instructions.</Say></Gather></Response>")
       end
 
       it "should set caller state to read choice" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "instructions_options")
-        caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [{caller_session_id: caller_session.id, event: "publish_moderator_conference_started"}])
+        caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [caller_session.id,  "publish_moderator_conference_started"])
         caller_session.callin_choice!
         caller_session.state.should eq('read_choice')
       end
@@ -93,14 +93,14 @@ describe PhonesOnlyCallerSession do
 
       it "should set caller state ready to dial" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "read_choice", digit: "*")
-        caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [{caller_session_id: caller_session.id, event: "publish_moderator_conference_started"}])
+        caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [caller_session.id,  "publish_moderator_conference_started"])
         caller_session.read_instruction_options!
         caller_session.state.should eq('ready_to_call')
       end
 
       it "should render correct twiml" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "read_choice", digit: "*")
-        caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [{caller_session_id: caller_session.id, event: "publish_moderator_conference_started"}])
+        caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [caller_session.id,  "publish_moderator_conference_started"])
         caller_session.read_instruction_options!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Redirect>https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=start_conf&amp;session=#{caller_session.id}</Redirect></Response>")
       end
@@ -345,28 +345,28 @@ describe PhonesOnlyCallerSession do
 
       it "should set caller state to conference_started_phones_only" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_to_dial", digit: "*", voter_in_progress: @voter)
-        caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [{caller_session_id: caller_session.id, voter_id: @voter.id}])
+        caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, @voter.id])
         caller_session.start_conf!
         caller_session.state.should eq('conference_started_phones_only')
       end
 
       it "should set on_call to true" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_to_dial", digit: "*", voter_in_progress: @voter)
-        caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [{caller_session_id: caller_session.id, voter_id: @voter.id}])
+        caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, @voter.id])
         caller_session.start_conf!
         caller_session.on_call.should be_true
       end
 
       it "should set available_for_call to true" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_to_dial", digit: "*", voter_in_progress: @voter)
-        caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [{caller_session_id: caller_session.id, voter_id: @voter.id}])
+        caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, @voter.id])
         caller_session.start_conf!
         caller_session.available_for_call.should be_true
       end
 
       it "should set attempt_in_progress to nil" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_to_dial", digit: "*", voter_in_progress: @voter)
-        caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [{caller_session_id: caller_session.id, voter_id: @voter.id}])
+        caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, @voter.id])
         caller_session.start_conf!
         caller_session.attempt_in_progress.should be_nil
       end
@@ -375,7 +375,7 @@ describe PhonesOnlyCallerSession do
       it "render correct twiml" do
         question = Factory(:question, script: @script)
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*", voter_in_progress: @voter)
-        caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [{caller_session_id: caller_session.id, voter_id: @voter.id}])
+        caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, @voter.id])
         @voter.should_receive(:question_not_answered).and_return(question)
         caller_session.start_conf!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=gather_response&amp;question=#{question.id}&amp;session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"></Conference></Dial></Response>")
@@ -391,14 +391,14 @@ describe PhonesOnlyCallerSession do
 
       it "should set caller state to ready_to_call" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_to_dial", digit: "+")
-        caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [{caller_session_id: caller_session.id, event: "publish_moderator_conference_started"}])
+        caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [caller_session.id, "publish_moderator_conference_started"])
         caller_session.start_conf!
         caller_session.state.should eq('ready_to_call')
       end
 
       it "should set caller state to ready_to_call if nothing selected" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_to_dial")
-        caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [{caller_session_id: caller_session.id, event: "publish_moderator_conference_started"}])
+        caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [caller_session.id, "publish_moderator_conference_started"])
         caller_session.start_conf!
         caller_session.state.should eq('ready_to_call')
       end
@@ -417,28 +417,28 @@ describe PhonesOnlyCallerSession do
 
       it "should set caller state to conference_started_phones_only" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*", voter_in_progress: @voter)
-        caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [{caller_session_id: caller_session.id, voter_id: @voter.id}])
+        caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, @voter.id])
         caller_session.start_conf!
         caller_session.state.should eq('conference_started_phones_only')
       end
 
       it "should set on_call to true" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*", voter_in_progress: @voter)
-        caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [{caller_session_id: caller_session.id, voter_id: @voter.id}])
+        caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, @voter.id])
         caller_session.start_conf!
         caller_session.on_call.should be_true
       end
 
       it "should set available_for_call to true" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*", voter_in_progress: @voter)
-        caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [{caller_session_id: caller_session.id, voter_id: @voter.id}])
+        caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, @voter.id])
         caller_session.start_conf!
         caller_session.available_for_call.should be_true
       end
 
       it "should set attempt_in_progress to nil" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*", voter_in_progress: @voter)
-        caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [{caller_session_id: caller_session.id, voter_id: @voter.id}])
+        caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, @voter.id])
         caller_session.start_conf!
         caller_session.attempt_in_progress.should be_nil
       end
@@ -446,7 +446,7 @@ describe PhonesOnlyCallerSession do
       it "render correct twiml" do
         question = Factory(:question, script: @script)
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*", voter_in_progress: @voter)
-        caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [{caller_session_id: caller_session.id, voter_id: @voter.id}])
+        caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, @voter.id])
         @voter.should_receive(:question_not_answered).and_return(question)
         caller_session.start_conf!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=gather_response&amp;question=#{question.id}&amp;session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"></Conference></Dial></Response>")
@@ -469,7 +469,7 @@ describe PhonesOnlyCallerSession do
         call_attempt = Factory(:call_attempt, voter: @voter)
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "conference_started_phones_only", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt)
         caller_session.should_receive(:call_answered?).and_return(true)
-        caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [{caller_session_id: caller_session.id, event: "publish_moderator_gathering_response"}])
+        caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [caller_session.id,  "publish_moderator_gathering_response"])
         caller_session.gather_response!
         caller_session.state.should eq('read_next_question')
       end
@@ -481,7 +481,7 @@ describe PhonesOnlyCallerSession do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "conference_started_phones_only", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt)
         caller_session.should_receive(:unanswered_question).exactly(3).and_return(@question)
         caller_session.should_receive(:call_answered?).and_return(true)
-        caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [{caller_session_id: caller_session.id, event: "publish_moderator_gathering_response"}])
+        caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [caller_session.id,  "publish_moderator_gathering_response"])
         caller_session.gather_response!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather timeout=\"60\" finishOnKey=\"*\" action=\"https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=submit_response&amp;question_id=#{@question.id}&amp;session_id=#{caller_session.id}\" method=\"POST\"><Say>How do you like Impactdialing</Say><Say>press 1 for Great</Say><Say>press 2 for Super</Say><Say>Then press star to submit your result.</Say></Gather></Response>")
       end
@@ -503,7 +503,7 @@ describe PhonesOnlyCallerSession do
         call_attempt = Factory(:call_attempt, voter: @voter)
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "conference_started_phones_only_predictive", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt)
         caller_session.should_receive(:call_answered?).and_return(true)
-        caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [{caller_session_id: caller_session.id, event: "publish_moderator_gathering_response"}])
+        caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [caller_session.id,  "publish_moderator_gathering_response"])
         caller_session.gather_response!
         caller_session.state.should eq('read_next_question')
       end
@@ -515,7 +515,7 @@ describe PhonesOnlyCallerSession do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "conference_started_phones_only", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt)
         caller_session.should_receive(:unanswered_question).exactly(3).and_return(@question)
         caller_session.should_receive(:call_answered?).and_return(true)
-        caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [{caller_session_id: caller_session.id, event: "publish_moderator_gathering_response"}])
+        caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [caller_session.id,  "publish_moderator_gathering_response"])
         caller_session.gather_response!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather timeout=\"60\" finishOnKey=\"*\" action=\"https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=submit_response&amp;question_id=#{@question.id}&amp;session_id=#{caller_session.id}\" method=\"POST\"><Say>How do you like Impactdialing</Say><Say>press 1 for Great</Say><Say>press 2 for Super</Say><Say>Then press star to submit your result.</Say></Gather></Response>")
       end
@@ -649,7 +649,7 @@ describe PhonesOnlyCallerSession do
         call_attempt = Factory(:call_attempt, voter: @voter)
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "voter_response", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt)
         caller_session.should_receive(:more_questions_to_be_answered?).and_return(true)
-        caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [{caller_session_id: caller_session.id, event: "publish_moderator_gathering_response"}])
+        caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [caller_session.id, "publish_moderator_gathering_response"])
         caller_session.next_question!
         caller_session.state.should eq('read_next_question')
       end

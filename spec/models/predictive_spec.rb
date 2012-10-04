@@ -112,7 +112,7 @@ describe Predictive do
        caller_session = Factory(:webui_caller_session, caller: Factory(:caller), on_call: true, available_for_call: true, campaign: campaign, state: "connected", voter_in_progress: nil)
        voter = Factory(:voter, :campaign => campaign, :status => CallAttempt::Status::BUSY, last_call_attempt_time: Time.now - 2.hours)
        Factory(:call_attempt, :voter => voter, :status => CallAttempt::Status::BUSY)
-       campaign.should_receive(:enqueue_call_flow).with(CampaignOutOfNumbersJob, [{caller_session_id: caller_session.id}])
+       campaign.should_receive(:enqueue_call_flow).with(CampaignOutOfNumbersJob, [caller_session.id])
        campaign.choose_voters_to_dial(20).should eq([])       
      end
      
