@@ -1,7 +1,7 @@
 require 'resque-loner'
 
 class CampaignOutOfNumbersJob
-  include Resque::Plugins::UniqueJob
+  include Sidekiq::Worker
   @queue = :call_flow
 
    def self.perform(caller_session_id)
