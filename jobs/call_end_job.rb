@@ -1,8 +1,7 @@
 class CallEndJob 
   include Sidekiq::Worker
-  @queue = :call_end
   
-   def self.perform(params)    
+   def perform(params)    
      call_id = params['id']
      unless call_id.blank?
        call = Call.find(call_id)
