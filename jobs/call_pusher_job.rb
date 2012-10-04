@@ -1,4 +1,5 @@
 class CallPusherJob 
+  include Sidekiq::Worker
   @queue = :call_flow
   
    def self.perform(call_attempt_id, event)    
