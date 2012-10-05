@@ -1,17 +1,17 @@
-require 'resque/plugins/lock'
 require 'resque-loner'
 
 class AlertJob 
-  extend Resque::Plugins::Lock
   include Resque::Plugins::UniqueJob  
   @queue = :alert_worker
   
    def self.perform
-     campaign_ids = CallerSession.campaigns_on_call.pluck(:id)     
-     predictive_campaign_ids = Campaign.where("type = 'Predictive' and id in (?)", campaign_ids).pluck(:id)
-     alert_on_hold_callers(predictive_campaign_ids)
-     alert_not_simulated_campaigns(predictive_campaign_ids)
-     alert_dials_not_being_made_for_campaign(predictive_campaign_ids)
+     Octopus.using(:read_slave1) do
+       campaign_ids = CallerSession.campaigns_on_call.pluck(:id)     
+       predictive_campaign_ids = Campaign.where("type = 'Predictive' and id in (?)", campaign_ids).pluck(:id)
+       alert_on_hold_callers(predictive_campaign_ids)
+       alert_not_simulated_campaigns(predictive_campaign_ids)
+       alert_dials_not_being_made_for_campaign(predictive_campaign_ids)
+    end
    end
    
    def self.alert_dials_not_being_made_for_campaign(predictive_campaign_ids)
