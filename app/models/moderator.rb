@@ -21,7 +21,7 @@ class Moderator < ActiveRecord::Base
   end
 
   def self.update_dials_in_progress(campaign)
-    publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
+    publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_for_campaign(campaign).count})
   end
 
   def self.active_moderators(campaign)
@@ -31,7 +31,7 @@ class Moderator < ActiveRecord::Base
   def self.update_dials_in_progress_sync(campaign)
     Moderator.active_moderators(campaign).each do|moderator|
       begin
-        Pusher[moderator.session].trigger!('update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_count_for('campaign_id', campaign.id)})
+        Pusher[moderator.session].trigger!('update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_for_campaign(campaign).count})
       rescue Exception => e
         Rails.logger.error "Pusher exception: #{e}"
       end
