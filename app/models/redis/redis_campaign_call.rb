@@ -61,6 +61,15 @@ class RedisCampaignCall
     wrapup(campaign_id).rangebyscore((Time.now.to_i-average_wrapup_length-15), (Time.now.to_i-average_wrapup_length)).length
   end
   
+  def self.ringing_last_20_seconds(campaign_id)
+    ringing(campaign_id).rangebyscore((Time.now - 20.seconds).to_i, Time.now.to_i).length
+  end
+  
+  def self.wrapup_last_30_seconds(campaign_id)
+    wrapup(campaign_id).rangebyscore((Time.now - 30.seconds).to_i, Time.now.to_i).length
+  end
+  
+  
   def self.stats(campaign_id)
     {ringing_lines: ringing(campaign_id).length, wrapup: wrapup(campaign_id).length, live_lines: inprogress(campaign_id).length}
   end

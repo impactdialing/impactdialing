@@ -13,7 +13,6 @@ class CallinController < ApplicationController
     if caller
       session = caller.create_caller_session(session_key, params[:CallSid], CallerSession::CallerType::PHONE)
       caller.started_calling(session)
-      # RedisCallNotification.caller_connected(session.id)      
       render xml:  caller.is_phones_only? ? session.run('callin_choice') : session.run('start_conf')
     else
       render xml:  Caller.ask_for_pin(params[:attempt].to_i)

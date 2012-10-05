@@ -2,21 +2,6 @@ class Predictive < Campaign
   include SidekiqEvents
   
     
-  def dial
-    num_to_call = number_of_voters_to_dial
-    Rails.logger.info "Campaign: #{self.id} - num_to_call #{num_to_call}"    
-    return if  num_to_call <= 0
-    EM.synchrony do
-      concurrency = 8
-      voters_to_dial = choose_voters_to_dial(num_to_call)
-      EM::Synchrony::Iterator.new(voters_to_dial, concurrency).map do |voter, iter|
-        Twillio.dial_predictive_em(iter, voter)
-        Moderator.update_dials_in_progress_sync(self)
-      end      
-      EventMachine.stop
-    end
-  end
-  
   def dial_resque
     set_calculate_dialing
     Resque.enqueue(CalculateDialsJob, self.id)
@@ -54,7 +39,7 @@ class Predictive < Campaign
     dials_made = call_attempts.size
     # if dials_made == 0 || !abandon_rate_acceptable?
     if dials_made == 0
-      num_to_call = RedisCaller.on_hold_count(self.id) - RedisCampaignCall.ringing(self.id).length
+      num_to_call = RedisCaller.on_hold_count(self.id) - RedisCampaignCall.ringing_last_20_seconds(self.id)
     else
       num_to_call = number_of_simulated_voters_to_dial
     end
@@ -67,18 +52,24 @@ class Predictive < Campaign
     # num_voters_to_call = (num_voters - (priority_voters.size + scheduled_voters.size))
     limit_voters = num_voters <= 0 ? 0 : num_voters
     voters =  all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.without(account.blocked_numbers.for_campaign(self).map(&:number)).limit(limit_voters)
+    set_voter_status_to_read_for_dial!(voters)
+    check_campaign_out_of_numbers(voters)
+    voters
+  end
+  
+  def set_voter_status_to_read_for_dial!(voters)
     Voter.transaction do
       voters.each do |voter| 
-        voter.status = CallAttempt::Status::DIALING
+        voter.status = CallAttempt::Status::READY
         voter.save 
       end
-    end
+    end    
+  end
+  
+  def check_campaign_out_of_numbers(voters)
     if voters.blank?
-      caller_sessions.available.each do |caller_session|
-        enqueue_call_flow(CampaignOutOfNumbersJob, [caller_session.id])
-      end
-    end 
-    voters
+      caller_sessions.available.each { |caller_session| enqueue_call_flow(CampaignOutOfNumbersJob, [caller_session.id]) }
+    end     
   end
   
   
@@ -90,11 +81,10 @@ class Predictive < Campaign
   end
   
   def number_of_simulated_voters_to_dial
-    calls_wrapping_up = RedisCampaignCall.wrapup(self.id).length
+    calls_wrapping_up = RedisCampaignCall.wrapup_last_30_seconds(self.id)
     active_call_attempts = RedisCampaignCall.inprogress(self.id).length
     available_callers = RedisCaller.on_hold_count(self.id) + RedisCampaignCall.above_average_inprogress_calls_count(self.id, best_conversation_simulated) + RedisCampaignCall.above_average_wrapup_calls_count(self.id, best_wrapup_simulated)
-    ringing_lines = RedisCampaignCall.ringing(self.id).length
-    dials_to_make = (best_dials_simulated * available_callers) - ringing_lines
+    dials_to_make = (best_dials_simulated * available_callers) - RedisCampaignCall.ringing_last_20_seconds(self.id)
     dials_to_make.to_i
   end
   

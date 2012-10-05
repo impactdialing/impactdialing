@@ -59,7 +59,6 @@ describe CallAttempt do
     RedisCallAttempt.should_receive(:answered_by_machine)
     RedisVoter.should_receive(:answered_by_machine)
     RedisCampaignCall.should_receive(:move_ringing_to_completed)
-    # RedisCallNotification.should_receive(:answered_by_machine)
     call_attempt.process_answered_by_machine        
   end
   
@@ -78,7 +77,6 @@ describe CallAttempt do
     RedisCallAttempt.should_receive(:end_answered_call)
     RedisVoter.should_receive(:end_answered_call)
     RedisCampaignCall.should_receive(:move_inprogress_to_wrapup)      
-    # RedisCallNotification.should_receive(:end_answered_call)
     call_attempt.end_answered_call    
   end
   
@@ -87,8 +85,7 @@ describe CallAttempt do
     call_attempt = Factory(:call_attempt, :voter => voter)
     RedisCallAttempt.should_receive(:abandon_call)
     RedisVoter.should_receive(:abandon_call)
-    RedisCampaignCall.should_receive(:move_ringing_to_abandoned)
-    # RedisCallNotification.should_receive(:abandoned)
+    RedisCampaignCall.should_receive(:move_ringing_to_abandoned)  
     call_attempt.abandon_call            
   end
   
@@ -100,7 +97,6 @@ describe CallAttempt do
     RedisCallAttempt.load_call_attempt_info(call_attempt.id, call_attempt)    
     RedisCallAttempt.should_receive(:connect_call)
     RedisCampaignCall.should_receive(:move_ringing_to_inprogress)
-    # RedisCallNotification.should_receive(:connected)
     call_attempt.connect_call
   end
   
@@ -111,7 +107,6 @@ describe CallAttempt do
     RedisCallAttempt.should_receive(:end_unanswered_call)
     RedisVoter.should_receive(:end_unanswered_call)
     RedisCampaignCall.should_receive(:move_ringing_to_completed)
-    # RedisCallNotification.should_receive(:end_unanswered_call)
     call_attempt.end_unanswered_call(call.call_status)
   end
   
@@ -121,7 +116,6 @@ describe CallAttempt do
     call = Factory(:call, call_attempt: call_attempt, call_status: "busy")    
     RedisCallAttempt.should_receive(:end_answered_by_machine)
     RedisVoter.should_receive(:end_answered_by_machine)
-    RedisCallNotification.should_receive(:end_answered_by_machine)
     call_attempt.end_answered_by_machine
   end
   
