@@ -13,6 +13,7 @@ module ImpactDialing
   #  config.time_zone = "Pacific Time (US & Canada)"
     config.active_record.default_timezone = :local
 
+    p Rails.env
     unless Rails.env.development? || Rails.env.test?
       config.logger = Logger.new(STDOUT)
       config.logger.level = Logger.const_get(ENV['LOG_LEVEL'] ?  ENV['LOG_LEVEL'].upcase : 'INFO')

@@ -13,7 +13,7 @@
                 <td><%= c.name %></td>
                 <td class="callers_logged_in"><%= c.caller_sessions.on_call.size %></td>
                 <td class="dials_in_progress"><%= c.call_attempts.not_wrapped_up.try(:size) %></td>
-                <td class="voters_count"><%= Voter.remaining_voters_count_for("campaign_id", c.id) %></td>
+                <td class="voters_count"><%= Voter.remaining_voters_for_campaign(c).count %></td>
               </tr>
           <% end %>
         <% end %>

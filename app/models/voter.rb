@@ -52,6 +52,10 @@ class Voter < ActiveRecord::Base
   scope :call_attempts_within, lambda {|from, to| where('call_attempts.created_at' => (from..to)).includes('call_attempts')}
   scope :priority_voters, enabled.where(:priority => "1", :status => Voter::Status::NOTCALLED)
 
+  scope :in_progress_or_call_back, where(active: true).where("status NOT IN ('Call in progress','Ringing','Call ready to dial','Call completed with success.') OR call_back=1")
+  scope :remaining_voters_for_campaign, ->(campaign) { from('voters use index (index_voters_on_campaign_id_and_active_and_status_and_call_back)').
+    in_progress_or_call_back.where(campaign_id: campaign) }
+  scope :remaining_voters_for_voter_list, ->(voter_list) { in_progress_or_call_back.where(voter_list_id: voter_list) }
 
   before_validation :sanitize_phone
 
@@ -90,10 +94,6 @@ class Voter < ActiveRecord::Base
 
   def self.upload_fields
     ["Phone", "CustomID", "LastName", "FirstName", "MiddleName", "Suffix", "Email", "address", "city", "state","zip_code", "country"]
-  end
-
-  def self.remaining_voters_count_for(column_name, column_value)
-    count(:conditions => "#{column_name} = #{column_value} AND active = 1 AND (status not in ('Call in progress','Ringing','Call ready to dial','Call completed with success.') or call_back=1)")
   end
 
   def dial
