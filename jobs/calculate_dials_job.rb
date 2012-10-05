@@ -1,7 +1,6 @@
 require 'em-http-request'
 require "em-synchrony"
 require "em-synchrony/em-http"
-require 'resque/plugins/lock'
 require 'resque-loner'
 
 

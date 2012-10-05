@@ -22,6 +22,19 @@ class AdminController < ApplicationController
         )
     }
   end
+  
+  
+  def campaign_stats
+    campaign = Campaign.find(params[:id])
+    @time_span = params[:time_span] || 5
+    @number_of_callers = campaign.caller_sessions.on_call.size
+    simulated_values = SimulatedValues.find_by_campaign_id(campaign.id)
+    @last_siumlated_time = simulated_values.try(:updated_at) || Time.at(0)
+    @best_dials = simulated_values.try(:best_dials)
+    @num_dials = campaign.call_attempts.between(@time_span.to_i.minutes.ago, Time.now).size
+    @num_answered_dials = campaign.call_attempts.between(@time_span.to_i.minutes.ago, Time.now).with_status(CallAttempt::Status::SUCCESS).size
+    @number_of_callers_on_hold = campaign.caller_sessions.available.where("updated_at < ?", 2.minutes.ago).size
+  end
 
   def abandonment
     account = Account.find(params[:id])

@@ -3,7 +3,7 @@ require 'resque-loner'
 
 class AnsweredJob 
   include Resque::Plugins::UniqueJob
-  @queue = :answered_worker
+  @queue = :answered_worker_job
   
    def self.perform     
      CallAttempt.results_not_processed.limit(1000).each do |call_attempt|
