@@ -14,14 +14,15 @@ class Voter < ActiveRecord::Base
   belongs_to :account
   has_many :families
   has_many :call_attempts
-  has_many :custom_voter_field_values
+  has_many :custom_voter_field_values, autosave: true
   belongs_to :last_call_attempt, :class_name => "CallAttempt"
   belongs_to :caller_session
   has_many :answers
   has_many :note_responses
 
   validates_presence_of :Phone
-  validates_length_of :Phone, :minimum => 10, :unless => Proc.new{|voter| voter.Phone && voter.Phone.start_with?("+")}
+
+  validate :phone_validatation
 
   scope :by_campaign, ->(campaign) { where(campaign_id: campaign) }
   scope :existing_phone_in_campaign, lambda { |phone_number, campaign_id| where(:Phone => phone_number).where(:campaign_id => campaign_id) }
@@ -66,6 +67,10 @@ class Voter < ActiveRecord::Base
 
   def sanitize_phone
     self.Phone = Voter.sanitize_phone(self.Phone) if self.Phone
+  end
+
+  def self.phone_correct?(voter)
+    voter.Phone && (voter.Phone.length >= 10 || voter.Phone.start_with?("+"))
   end
 
   def selected_fields(selection = nil)
@@ -248,6 +253,8 @@ class Voter < ActiveRecord::Base
     call_attempt
   end
 
-
+  def phone_validatation
+    errors.add(:Phone, 'should be at least 10 digits') unless Voter.phone_correct?(self)
+  end
 
 end
