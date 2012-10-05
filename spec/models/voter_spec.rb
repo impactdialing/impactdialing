@@ -44,7 +44,7 @@ describe Voter do
     failed_voter = Factory(:voter, :campaign => campaign, :status=> CallAttempt::Status::FAILED, :call_back => true)
     ready_voter = Factory(:voter, :campaign => campaign, :status=> CallAttempt::Status::READY)
     success_voter = Factory(:voter, :campaign => campaign, :status=> CallAttempt::Status::SUCCESS)
-    Voter.remaining_voters_count_for('campaign_id', campaign.id).should == 6
+    Voter.remaining_voters_for_campaign(campaign).should have(6).items
   end
 
   it "allows international phone numbers beginning with +" do

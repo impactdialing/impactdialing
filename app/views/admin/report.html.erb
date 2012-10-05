@@ -27,17 +27,13 @@ Report Date Range:
   </tr>
 
   <% @output.each do |r| %>
-    <% account=r["account"] %>
-    <% calls=r["calls"] %>
-    <% sessions=r["sessions"] %>
-    <% transfers=r["transfers"] %>
     <tr class="<%= cycle("odd","even") %>">
-      <td><%= account.id %></td>
-      <td><%= account.users.first.email %></td>
-      <td><%= sessions %></td>
-      <td><%= calls %></td>
-      <td><%= transfers %></td>
-    <td><%= sessions + calls + transfers %></td>
+      <td><%= r[:account_id] %></td>
+      <td><%= r[:user_email] %></td>
+      <td><%= r[:sessions] %></td>
+      <td><%= r[:calls] %></td>
+      <td><%= r[:transfers] %></td>
+      <td><%= r[:sessions] + r[:calls] + r[:transfers] %></td>
     </tr>
   <% end %>
 </table>
