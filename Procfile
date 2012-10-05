@@ -10,6 +10,8 @@ list_upload: rake environment resque:work TERM_CHILD=1 RESQUE_TERM_TIMEOUT=5 QUE
 report_download: rake environment resque:work TERM_CHILD=1 RESQUE_TERM_TIMEOUT=5 QUEUE=report_download
 
 background_worker: rake environment resque:work QUEUE=background_worker
+alert_worker: rake environment resque:work QUEUE=alert_worker
+
 
 answered_worker: rake environment TERM_CHILD=1 RESQUE_TERM_TIMEOUT=10 resque:work QUEUE=answered_worker
 debit_worker: rake environment resque:work QUEUE=debit_worker

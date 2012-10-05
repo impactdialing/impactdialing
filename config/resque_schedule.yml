@@ -20,3 +20,11 @@ debit_money:
   args: 
   description: "This job debits money"
 
+
+alert:
+  cron: "*/2 * * * *"
+  class: AlertJob
+  queue: alert_worker
+  args: 
+  description: "This job alerts all of us if something is fishy"
+
