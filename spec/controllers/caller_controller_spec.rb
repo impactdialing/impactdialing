@@ -23,7 +23,7 @@ describe CallerController do
   end  
   
   describe "start calling" do
-    xit "should start a new caller conference" do
+    it "should start a new caller conference" do
       caller = Factory(:caller, campaign: Factory(:predictive), account: Factory(:account))
       caller_identity = Factory(:caller_identity)
       caller_session = Factory(:webui_caller_session, session_key: caller_identity.session_key, caller_type: CallerSession::CallerType::TWILIO_CLIENT, caller: caller)
