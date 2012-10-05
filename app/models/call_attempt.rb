@@ -98,7 +98,6 @@ class CallAttempt < ActiveRecord::Base
     !caller_not_available?
   end
 
-
   def end_answered_call
     $redis_call_flow_connection.pipelined do
       RedisCallAttempt.end_answered_call(self.id)
