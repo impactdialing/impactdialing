@@ -4,12 +4,13 @@ class CallerController < ApplicationController
   before_filter :check_login, :except=>[:login, :feedback, :end_session, :start_calling, :phones_only, :new_campaign_response_panel, :check_reassign, :call_voter, :flow]
   before_filter :find_caller_session , :only => [:flow, :stop_calling, :end_session]
   layout 'caller'
+  include SidekiqEvents
 
   def start_calling
     caller = Caller.find(params[:caller_id])
     identity = CallerIdentity.find_by_session_key(params[:session_key])
     session = caller.create_caller_session(identity.session_key, params[:CallSid], CallerSession::CallerType::TWILIO_CLIENT)
-    Resque.enqueue(ModeratorCallerJob, session.id, "caller_connected_to_campaign") 
+    enqueue_moderator_flow(ModeratorCallerJob, [session.id, "caller_connected_to_campaign"])
     render xml: session.run(:start_conf)
   end
 
@@ -26,8 +27,8 @@ class CallerController < ApplicationController
   def call_voter
     caller = Caller.find(params[:id])
     caller_session = caller.caller_sessions.find(params[:session_id]) 
-    Resque.enqueue(CallerPusherJob, caller_session.id, "publish_calling_voter")   
-    Resque.enqueue(PreviewPowerDialJob, caller_session.id, params[:voter_id]) unless params[:voter_id].blank?
+    enqueue_call_flow(CallerPusherJob, [caller_session.id, "publish_calling_voter"])
+    enqueue_call_flow(PreviewPowerDialJob, [caller_session.id, params[:voter_id]]) unless params[:voter_id].blank?
     render :nothing => true
   end
 
@@ -48,7 +49,7 @@ class CallerController < ApplicationController
     caller_session = @caller.caller_sessions.find(params[:session_id])
     voter = Voter.find(params[:voter_id])
     voter.skip
-    Resque.enqueue(RedirectCallerJob, caller_session.id)
+    enqueue_call_flow(RedirectCallerJob, [caller_session.id])
     render :nothing => true
   end
 

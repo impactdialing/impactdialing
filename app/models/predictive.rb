@@ -1,5 +1,6 @@
 
 class Predictive < Campaign
+  include SidekiqEvents
   
     
   def dial
@@ -75,7 +76,7 @@ class Predictive < Campaign
     end
     if voters.blank?
       caller_sessions.available.each do |caller_session|
-        Resque.enqueue(CampaignOutOfNumbersJob, caller_session.id)
+        enqueue_call_flow(CampaignOutOfNumbersJob, [caller_session.id])
       end
     end 
     voters
