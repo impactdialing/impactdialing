@@ -1,6 +1,7 @@
 class Caller < ActiveRecord::Base
   include Rails.application.routes.url_helpers
   include Deletable
+  include SidekiqEvents
   validates_format_of :email, :allow_blank => true, :with => /^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i, :message => "Invalid email"
   belongs_to :campaign
   belongs_to :account
@@ -146,6 +147,11 @@ class Caller < ActiveRecord::Base
       RedisCampaign.add_running_predictive_campaign(campaign.id, campaign.type)
       RedisCaller.add_caller(campaign.id, session.id)
     end    
+  end
+  
+  def calling_voter_preview_power(session, voter_id)
+    enqueue_call_flow(CallerPusherJob, [session.id, "publish_calling_voter"])
+    enqueue_call_flow(PreviewPowerDialJob, [session.id, voter_id])
   end
 
   def create_caller_identity(session_key)
