@@ -1,0 +1,21 @@
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <td>Number of Callers</td>
+    <td>Last Simulated Time</td>
+    <td>Best Dials</td>
+    <td>Number of Dials(x minutes)</td>
+    <td>Number of answered calls(x minutes)</td>
+    <td>Callers on hold(> 2 minutes)</td>
+  </tr>
+  
+  <tr>
+    <td><%= @number_of_callers %></td>
+    <td><%= time_ago_in_words(@last_siumlated_time) %></td>
+    <td><%= @best_dials %></td>
+    <td><%= @num_dials %></td>
+    <td><%= @num_answered_dials %></td>
+    <td><%= @number_of_callers_on_hold %></td>
+  </tr>
+  
+
+</table>

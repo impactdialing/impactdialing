@@ -1,10 +1,7 @@
-require 'resque-loner'
+class CampaignOutOfNumbersJob
+  include Sidekiq::Worker
 
-class CampaignOutOfNumbersJob 
-  include Resque::Plugins::UniqueJob
-  @queue = :campaign_out_of_numbers
-  
-   def self.perform(caller_session_id)    
+   def perform(caller_session_id)
      caller_session = CallerSession.find(caller_session_id)
      caller_session.redirect_caller_out_of_numbers
    end

@@ -4,6 +4,7 @@ class CallerController < ApplicationController
   before_filter :check_login, :except=>[:login, :feedback, :end_session, :start_calling, :phones_only, :new_campaign_response_panel, :check_reassign, :call_voter, :flow]
   before_filter :find_caller_session , :only => [:flow, :stop_calling, :end_session]
   layout 'caller'
+  include SidekiqEvents
 
   def start_calling
     caller = Caller.find(params[:caller_id])
@@ -28,8 +29,8 @@ class CallerController < ApplicationController
   def call_voter
     caller = Caller.find(params[:id])
     caller_session = caller.caller_sessions.find(params[:session_id]) 
-    Resque.enqueue(CallerPusherJob, caller_session.id, "publish_calling_voter")   
-    Resque.enqueue(PreviewPowerDialJob, caller_session.id, params[:voter_id]) unless params[:voter_id].blank?
+    enqueue_call_flow(CallerPusherJob, [caller_session.id, "publish_calling_voter"])
+    enqueue_call_flow(PreviewPowerDialJob, [caller_session.id, params[:voter_id]]) unless params[:voter_id].blank?
     render :nothing => true
   end
 
@@ -50,7 +51,7 @@ class CallerController < ApplicationController
     caller_session = @caller.caller_sessions.find(params[:session_id])
     voter = Voter.find(params[:voter_id])
     voter.skip
-    Resque.enqueue(RedirectCallerJob, caller_session.id)
+    enqueue_call_flow(RedirectCallerJob, [caller_session.id])
     render :nothing => true
   end
 
@@ -96,7 +97,7 @@ class CallerController < ApplicationController
     conference_sid = caller_session.get_conference_id
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
     Twilio::Conference.kick_participant(conference_sid, caller_session.sid)
-    Twilio::Call.redirect(caller_session.sid, flow_caller_url(caller, session_id:  caller_session.id, event: "pause_conf", host: Settings.host, port:  Settings.port))
+    Twilio::Call.redirect(caller_session.sid, flow_caller_url(caller, session_id:  caller_session.id, event: "pause_conf", host: Settings.twilio_callback_host, port:  Settings.twilio_callback_port))
     caller_session.publish('caller_kicked_off', {})
     render nothing: true
   end
@@ -107,7 +108,7 @@ class CallerController < ApplicationController
     if caller.campaign.id == params[:campaign_id].to_i
       render :json => {:reassign => "false"}
     else
-      render :json => {:reassign => "true", :campaign_id => caller.campaign.id, :script => caller.campaign.script.try(:script)}
+      render :json => {:reassign => "true", :campaign_id => caller.campaign.id, :script => caller.campaign.try(:script)}
     end
   end
 

@@ -1,4 +1,5 @@
 class CallinController < ApplicationController
+  include SidekiqEvents
   skip_before_filter :verify_authenticity_token
 
   def create
@@ -19,9 +20,4 @@ class CallinController < ApplicationController
       render xml:  Caller.ask_for_pin(params[:attempt].to_i)
     end
   end
-  
-  def hold
-    render :xml => Caller.hold
-  end
-
 end

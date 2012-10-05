@@ -4,7 +4,7 @@ require 'resque-loner'
 class DebiterJob 
   extend Resque::Plugins::Lock
   include Resque::Plugins::UniqueJob
-  @queue = :debit_worker_job
+  @queue = :debit_worker
 
    def self.perform     
      call_attempts = CallAttempt.debit_not_processed.limit(10000)        

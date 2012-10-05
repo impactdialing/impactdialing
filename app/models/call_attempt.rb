@@ -1,10 +1,12 @@
+require 'new_relic/agent/method_tracer'
 require Rails.root.join("lib/twilio_lib")
 require Rails.root.join("lib/redis_connection")
 
 class CallAttempt < ActiveRecord::Base
+  include ::NewRelic::Agent::MethodTracer
   include Rails.application.routes.url_helpers
-  include LeadEvents
   include CallPayment
+  include SidekiqEvents
   belongs_to :voter
   belongs_to :campaign
   belongs_to :caller
@@ -84,6 +86,7 @@ class CallAttempt < ActiveRecord::Base
     
   def connect_lead_to_caller
     RedisVoter.connect_lead_to_caller(voter.id, campaign.id, self.id)
+    enqueue_call_flow(VoterConnectedPusherJob, [voter.caller_session.id, call.id])
   end
 
   def caller_not_available?
@@ -136,7 +139,7 @@ class CallAttempt < ActiveRecord::Base
 
   def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
     call_sid = RedisCallAttempt.read(self.id)['sid']
-    Resque.enqueue(EndRunningCallJob, call_sid)
+    enqueue_call_flow(EndRunningCallJob, [self.sid])
   end
 
   def not_wrapped_up?
@@ -218,7 +221,7 @@ class CallAttempt < ActiveRecord::Base
 
   def redirect_caller(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
     unless redis_caller_session.nil?
-      Resque.enqueue(RedirectCallerJob, redis_caller_session)
+      enqueue_call_flow(RedirectCallerJob, [caller_session.id])
     end    
   end
   
@@ -227,5 +230,17 @@ class CallAttempt < ActiveRecord::Base
     session.run('end_conf')
   end
 
+  #NewRelic custom metrics
+  add_method_tracer :connect_lead_to_caller,      'Custom/CallAttempt/connect_lead_to_caller'
+  add_method_tracer :connect_call,                'Custom/CallAttempt/connect_call'
+  add_method_tracer :abandon_call,                'Custom/CallAttempt/abandon_call'
+  add_method_tracer :caller_not_available?,       'Custom/CallAttempt/caller_not_available?'
+  add_method_tracer :end_answered_call,           'Custom/CallAttempt/end_answered_call'
+  add_method_tracer :process_answered_by_machine, 'Custom/CallAttempt/process_answered_by_machine'
+  add_method_tracer :end_answered_by_machine,     'Custom/CallAttempt/end_answered_by_machine'
+  add_method_tracer :end_unanswered_call,         'Custom/CallAttempt/end_unanswered_call'
+  add_method_tracer :disconnect_call,             'Custom/CallAttempt/disconnect_call'
+  add_method_tracer :schedule_for_later,          'Custom/CallAttempt/schedule_for_later'
+  add_method_tracer :wrapup_now,                  'Custom/CallAttempt/wrapup_now'
 end
 

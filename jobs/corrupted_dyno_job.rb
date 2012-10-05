@@ -8,7 +8,7 @@ require 'uri'
 class CorruptedDynoJob 
   extend Resque::Plugins::Lock
   include Resque::Plugins::UniqueJob
-  @queue = :background_worker_job
+  @queue = :background_worker
   
    def self.perform()
      dynos_hash = corrupted_dynos(h12_logs).inject(Hash.new(0)) {|h,i| h[i] += 1; h }     

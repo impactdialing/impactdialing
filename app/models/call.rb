@@ -2,6 +2,7 @@ class Call < ActiveRecord::Base
   include Rails.application.routes.url_helpers
   include CallCenter
 
+
   attr_accessible :id, :account_sid, :to_zip, :from_state, :called, :from_country, :caller_country, :called_zip, :direction, :from_city,
    :called_country, :caller_state, :call_sid, :called_state, :from, :caller_zip, :from_zip, :call_status, :to_city, :to_state, :to, :to_country, 
    :caller_city, :api_version, :caller, :called_city, :all_states, :state, :call_attempt, :questions, :notes, :answered_by
@@ -28,7 +29,8 @@ class Call < ActiveRecord::Base
   delegate :redis_caller_session, :to=> :call_attempt
   delegate :end_caller_session, :to=> :call_attempt
   delegate :caller_session_key, :to=> :call_attempt
-  
+  delegate :enqueue_call_flow, :to=> :call_attempt
+  delegate :enqueue_moderator_flow, :to=> :call_attempt
   
   
   call_flow :state, :initial => :initial do    
@@ -41,13 +43,12 @@ class Call < ActiveRecord::Base
       
       state :connected do
         before(:always) {  connect_call }
-        after(:always) { Resque.enqueue(CallPusherJob, call_attempt.id, "publish_voter_connected");Resque.enqueue(ModeratorCallJob, call_attempt.id, "publish_voter_event_moderator")}
         event :hangup, :to => :hungup
         event :disconnect, :to => :disconnected
         
         response do |xml_builder, the_call|
           unless redis_caller_session.nil? 
-            xml_builder.Dial :hangupOnStar => 'false', :action => flow_call_url(the_call, :host => Settings.host, event: "disconnect"), :record=> campaign.account.record_calls do |d|
+            xml_builder.Dial :hangupOnStar => 'false', :action => flow_call_url(the_call, :host => Settings.twilio_callback_host, event: "disconnect"), :record=> campaign.account.record_calls do |d|
               d.Conference caller_session_key, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
             end
           else
@@ -64,7 +65,7 @@ class Call < ActiveRecord::Base
       
       state :disconnected do        
         before(:always) { disconnect_call }
-        after(:success) { Resque.enqueue(CallPusherJob, call_attempt.id, "publish_voter_disconnected");Resque.enqueue(ModeratorCallJob, call_attempt.id, "publish_voter_event_moderator") }                
+        after(:success) { enqueue_call_flow(CallerPusherJob, [caller_session.id, "publish_voter_disconnected"]); enqueue_moderator_flow(ModeratorCallerJob,[caller_session.id,  "publish_voter_event_moderator"]) }                
         event :submit_result, :to => :wrapup_and_continue
         event :submit_result_and_stop, :to => :wrapup_and_stop        
         response do |xml_builder, the_call|
@@ -100,7 +101,7 @@ class Call < ActiveRecord::Base
       end            
       
       state :wrapup_and_continue do 
-        before(:always) { wrapup_now; call_attempt.redirect_caller; Resque.enqueue(ModeratorCallJob, call_attempt.id, "publish_voter_event_moderator") }
+        before(:always) { wrapup_now; call_attempt.redirect_caller; enqueue_moderator_flow(ModeratorCallerJob,[caller_session.id, "publish_voter_event_moderator"]) }
       end
             
       state :wrapup_and_stop do

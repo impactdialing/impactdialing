@@ -2,7 +2,6 @@
 
 <% if @trial %>
   <p>Your account is currently in trial.</p>
-  <% if @balance==0 %>Your trial credit has expired.<% end %>
   <p class="actions"><a href="/client/billing_form" class="action secondary confirm">Upgrade to a full account</a></p>
 <% else %>
   <p>Your current subscription is: <% if @user.account.is_manual? %>Manual<%else %> <%= @user.account.active_subscription %> <% if @user.account.active_subscription=="Per caller" %>(<%= @user.account.subscription_count %> callers)<% end %><% end %></p>
