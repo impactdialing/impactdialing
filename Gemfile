@@ -3,7 +3,7 @@ source :rubygems
 ruby '1.9.3'
 
 gem 'rails', '~> 3.2.8'
-gem 'thin', '~>1.3.1'
+gem 'unicorn'
 gem 'will_paginate', '~> 3.0'
 gem 'mysql2', '~> 0.3.0'
 gem 'newrelic_rpm'
@@ -30,7 +30,7 @@ gem "eventmachine", "1.0.0.rc.4"
 gem "em-http-request", "~> 1.0.1"
 gem "ruby-graphviz", "0.9.0"
 gem "em-synchrony", "~> 1.0.1"
-gem "resque", "~> 1.19.0"
+gem "resque", "~> 1.19"
 gem "resque-scheduler", "~> 1.9.9", :require => 'resque_scheduler'
 gem 'resque-lock', "~> 1.0.0"
 gem "resque-loner", "~>1.2.1"
@@ -43,6 +43,10 @@ gem "redis-objects", "~>0.5.3",:require => 'redis/objects'
 gem "redis", "~>2.2.2"
 gem 'ar-octopus', :git => "git://github.com/tchandy/octopus.git"
 gem "newrelic-redis", "~>1.3.2"
+gem "sidekiq", '~>1.2.1'
+gem "slim", "~>1.2.2"
+gem "sprockets", "~>2.1.3"
+gem "sinatra"
 
 
 group :development, :test do
@@ -58,7 +62,6 @@ group :development do
   gem 'guard-rspec'
   gem 'guard-spork'
   gem 'rb-fsevent'
-  gem 'heroku_san'
   gem 'showoff-io'
   gem 'foreman'
 end

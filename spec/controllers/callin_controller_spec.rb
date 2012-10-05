@@ -9,7 +9,7 @@ describe CallinController do
       post :create
       resp = Twilio::Verb.new do |v|
         3.times do
-          v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.host, :port => Settings.port,  :attempt => 1), :method => "POST") do
+          v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port,  :attempt => 1), :method => "POST") do
             v.say "Please enter your pin."
           end
         end
@@ -33,18 +33,13 @@ describe CallinController do
       post :identify, Digits: pin
     end
 
-    it "asks the user to hold" do
-      get :hold
-      response.body.should == Caller.hold
-    end
-
     it "Prompts on incorrect pin" do
       pin = rand.to_s[2..6]
       CallerIdentity.stub(:find_by_pin).and_return(nil)
       post :identify, :Digits => pin, :attempt => "1"
       response.body.should == Twilio::Verb.new do |v|
         3.times do
-          v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.host, :port => Settings.port, :attempt => 2), :method => "POST") do
+          v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :attempt => 2), :method => "POST") do
             v.say "Incorrect Pin. Please enter your pin."
           end
         end

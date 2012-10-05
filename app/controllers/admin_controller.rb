@@ -13,14 +13,29 @@ class AdminController < ApplicationController
   def caller_sessions
     campaign = Campaign.find(params[:id])
     render json: {
-      html: render_to_string(
-        partial: "caller_sessions",
-        locals: {
-          caller_sessions: campaign.caller_sessions.on_call.includes(:caller),
-          campaign: campaign
-        }
-      )
+        html: render_to_string(
+            partial: "caller_sessions",
+            locals: {
+                caller_sessions: campaign.caller_sessions.on_call.includes(:caller),
+                campaign: campaign
+            }
+        )
     }
+  end
+  
+  
+  def campaign_stats
+    Octopus.using(:read_slave1) do
+      campaign = Campaign.find(params[:id])
+      @time_span = params[:time_span] || 5
+      @number_of_callers = campaign.caller_sessions.on_call.size
+      simulated_values = SimulatedValues.find_by_campaign_id(campaign.id)
+      @last_siumlated_time = simulated_values.try(:updated_at) || Time.at(0)
+      @best_dials = simulated_values.try(:best_dials)
+      @num_dials = campaign.call_attempts.between(@time_span.to_i.minutes.ago, Time.now).size
+      @num_answered_dials = campaign.call_attempts.between(@time_span.to_i.minutes.ago, Time.now).with_status(CallAttempt::Status::SUCCESS).size
+      @number_of_callers_on_hold = campaign.caller_sessions.available.where("updated_at < ?", 2.minutes.ago).size
+    end
   end
 
   def abandonment
@@ -45,27 +60,32 @@ class AdminController < ApplicationController
       and ca.created_at  < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'
     "
     logger.info sql
-    @accounts = ActiveRecord::Base.connection.execute(sql)
 
-    @output=[]
-    @accounts.each do |account_id|
+    Octopus.using(:read_slave1) do
 
-      campaigns=Campaign.where("account_id=?",account_id).map{|c| c.id}
-      if campaigns.length > 0
+      @accounts = ActiveRecord::Base.connection.execute(sql)
 
-        sessions = CallerSession.where("campaign_id in (?) and tCaller is NOT NULL and created_at > '#{@from_date.strftime("%Y-%m-%d")}' and created_at  < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'", campaigns).sum("ceil(tDuration/60)").to_i
-        calls = CallAttempt.where("campaign_id in (?) and created_at > '#{@from_date.strftime("%Y-%m-%d")}' and created_at  < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'", campaigns).sum("ceil(tDuration/60)").to_i
-        transfers = TransferAttempt.where("campaign_id in (?) and created_at > '#{@from_date.strftime("%Y-%m-%d")}' and created_at  < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'", campaigns).sum("ceil(tDuration/60)").to_i
+      @output=[]
+      @accounts.each do |account_id|
+
+        campaigns=Campaign.where("account_id=?", account_id).map { |c| c.id }
+        if campaigns.length > 0
+
+          sessions = CallerSession.where("campaign_id in (?) and tCaller is NOT NULL and created_at > '#{@from_date.strftime("%Y-%m-%d")}' and created_at  < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'", campaigns).sum("ceil(tDuration/60)").to_i
+          calls = CallAttempt.from('call_attempts use index (index_call_attempts_on_campaign_id_created_at_status)').
+              where("campaign_id in (?) and created_at > '#{@from_date.strftime("%Y-%m-%d")}' and created_at  < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'", campaigns).sum("ceil(tDuration/60)").to_i
+          transfers = TransferAttempt.where("campaign_id in (?) and created_at > '#{@from_date.strftime("%Y-%m-%d")}' and created_at  < '#{(@to_date+1.day).strftime("%Y-%m-%d")}'", campaigns).sum("ceil(tDuration/60)").to_i
 
 
-        account = Account.find_by_id(account_id)
-        unless account.nil?
-          result={}
-          result["account"]= account
-          result["calls"]= calls
-          result["sessions"]= sessions
-          result["transfers"]= transfers
-          @output<< result
+          account = Account.find_by_id(account_id)
+          unless account.nil?
+            result={}
+            result["account"]= account
+            result["calls"]= calls
+            result["sessions"]= sessions
+            result["transfers"]= transfers
+            @output<< result
+          end
         end
       end
     end
@@ -103,7 +123,7 @@ class AdminController < ApplicationController
 
   def login
     session[:user]=params[:id]
-    redirect_to :controller=>"client", :action=>"index"
+    redirect_to :controller => "client", :action => "index"
   end
 
   def destroy_user

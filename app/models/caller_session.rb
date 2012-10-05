@@ -1,8 +1,12 @@
+require 'new_relic/agent/method_tracer'
+
 class CallerSession < ActiveRecord::Base
+  include ::NewRelic::Agent::MethodTracer
   include Rails.application.routes.url_helpers
   include CallCenter
   include CallerEvents
   include CallPayment
+  include SidekiqEvents
   
   belongs_to :caller
   belongs_to :campaign
@@ -124,7 +128,7 @@ class CallerSession < ActiveRecord::Base
       
       state :conference_ended do
         before(:always) { end_caller_session}
-        after(:always) {Resque.enqueue(CallerPusherJob, self.id, "publish_caller_disconnected") ; Resque.enqueue(ModeratorCallerJob, self.id, "publish_moderator_caller_disconnected")} 
+        after(:always) {  enqueue_call_flow(CallerPusherJob, [self.id, "publish_caller_disconnected"]);enqueue_moderator_flow(ModeratorCallerJob, [self.id,  "publish_moderator_caller_disconnected"])} 
         response do |xml_builder, the_call|
           xml_builder.Hangup
         end        
@@ -162,8 +166,8 @@ class CallerSession < ActiveRecord::Base
   
   def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)    
     end_caller_session
-    Resque.enqueue(EndRunningCallJob, self.sid)
-    Resque.enqueue(EndCallerSessionJob, self.id)
+    enqueue_call_flow(EndRunningCallJob, [self.sid])
+    enqueue_call_flow(EndCallerSessionJob, [self.id])
   end  
   
   
@@ -180,35 +184,36 @@ class CallerSession < ActiveRecord::Base
   def account_not_activated?
     !activated?
   end
-  
+
   def subscription_limit_exceeded?
     !subscription_allows_caller?
   end
-  
+
+
   def funds_not_available?
     !funds_available?
   end
-  
+
   def time_period_exceeded?
     campaign.time_period_exceeded?
   end
-  
+
   def is_on_call?
     caller.is_on_call?
   end
     
   def hold
-    Twilio::Verb.new { |v| v.play "#{Settings.host}:#{Settings.port}/wav/hold.mp3"; v.redirect(:method => 'GET'); }.response
+    Twilio::Verb.new { |v| v.play "#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/wav/hold.mp3"; v.redirect(:method => 'GET'); }.response
   end
   
   def redirect_caller
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    Twilio::Call.redirect(sid, flow_caller_url(caller, :host => Settings.host, :port => Settings.port, session_id: id, event: "start_conf"))
+    Twilio::Call.redirect(sid, flow_caller_url(caller, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, session_id: id, event: "start_conf"))
   end
   
   def redirect_caller_out_of_numbers
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    Twilio::Call.redirect(sid, flow_caller_url(caller, :host => Settings.host, :port => Settings.port, session_id: id, event: "run_ot_of_phone_numbers"))
+    Twilio::Call.redirect(sid, flow_caller_url(caller, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, session_id: id, event: "run_ot_of_phone_numbers"))
   end
   
 
@@ -306,6 +311,16 @@ class CallerSession < ActiveRecord::Base
      RedisCaller.move_to_on_hold(campaign.id, self.id)
    end
    
+
+  #NewRelic custom metrics
+  add_method_tracer :account_not_activated?,                 'Custom/CallerSession/account_not_activated?'
+  add_method_tracer :subscription_limit_exceeded?,           'Custom/CallerSession/subscription_limit_exceeded?'
+  add_method_tracer :funds_not_available?,                   'Custom/CallerSession/funds_not_available?'
+  add_method_tracer :time_period_exceeded?,                  'Custom/CallerSession/time_period_exceeded?'
+  add_method_tracer :is_on_call?,                            'Custom/CallerSession/is_on_call?'
+  add_method_tracer :caller_reassigned_to_another_campaign?, 'Custom/CallerSession/caller_reassigned_to_another_campaign?'
+  add_method_tracer :disconnected?,                          'Custom/CallerSession/disconnected?'
+
   private
     
   def wrapup

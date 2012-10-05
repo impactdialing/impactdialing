@@ -6,13 +6,6 @@ module Client
     before_filter :load_campaign, :except => [:index, :usage, :account_campaigns_usage, :account_callers_usage]
     around_filter :select_shard
 
-
-    def load_campaign
-      Octopus.using(:read_slave1) do
-        @campaign = Account.find(account).campaigns.find(params[:campaign_id])
-      end
-    end
-
     def index
       @campaigns = params[:id].blank? ? account.campaigns : Campaign.find(params[:id])
       @download_report_count = DownloadedReport.accounts_active_report_count(@campaigns.collect{|c| c.id})
@@ -89,7 +82,9 @@ module Client
     private
 
     def load_campaign
-      @campaign = current_user.campaigns.find(params[:campaign_id])
+      Octopus.using(:read_slave1) do
+        @campaign = Account.find(account).campaigns.find(params[:campaign_id])
+      end
     end
 
     def set_dates

@@ -13,13 +13,7 @@ module Callers
       twilio_capability = Twilio::Util::Capability.new(TWILIO_ACCOUNT, TWILIO_AUTH)
       twilio_capability.allow_client_outgoing(TWILIO_APP_SID)
       @token = twilio_capability.generate
-      @phone_number = Settings.phone
-    end
-
-    def callin
-      campaign = Campaign.find(params[:id])
-      @session = @caller.callin(campaign, params[:caller][:phone])
-      render :text => :nothing
+      @phone_number = Settings.callin_phone
     end
 
     def caller_ready

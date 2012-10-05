@@ -1,4 +1,3 @@
-require 'em-http-request'
 class WebuiCallerSession < CallerSession  
   include Rails.application.routes.url_helpers
   
@@ -10,7 +9,7 @@ class WebuiCallerSession < CallerSession
             
       state :connected do                
         before(:always) { publish_start_calling; start_conference }
-        after(:success) { Resque.enqueue(CallerPusherJob, self.id, "publish_caller_conference_started") }
+        after(:success) { enqueue_call_flow(CallerPusherJob, [self.id,  "publish_caller_conference_started"]) }
         event :pause_conf, :to => :disconnected, :if => :disconnected?
         event :pause_conf, :to => :paused, :if => :call_not_wrapped_up?
         event :start_conf, :to => :connected
@@ -18,7 +17,7 @@ class WebuiCallerSession < CallerSession
         event :stop_calling, :to=> :stopped
         
         response do |xml_builder, the_call|
-          xml_builder.Dial(:hangupOnStar => true, :action => flow_caller_url(caller, session_id:  id, event: "pause_conf", host: Settings.host, port:  Settings.port)) do
+          xml_builder.Dial(:hangupOnStar => true, :action => flow_caller_url(caller, session_id:  id, event: "pause_conf", host: Settings.twilio_callback_host, port:  Settings.twilio_callback_port)) do
             xml_builder.Conference(session_key, startConferenceOnEnter: false, endConferenceOnExit:  true, beep: true, waitUrl: HOLD_MUSIC_URL, waitMethod:  'GET')        
           end                              
         end
@@ -58,8 +57,10 @@ class WebuiCallerSession < CallerSession
   def publish_sync(event, data)
     Pusher[session_key].trigger(event, data.merge!(:dialer => self.campaign.type))
   end
-  
-  
-  
+
+  #NewRelic custom metrics
+  add_method_tracer :call_not_wrapped_up?, 'Custom/WebCallerSession/call_not_wrapped_up?'
+  add_method_tracer :start_conference,     'Custom/WebCallerSession/web_start_conference'
+
   
 end

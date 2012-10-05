@@ -20,7 +20,7 @@ class Account < ActiveRecord::Base
   has_many :possible_responses, :through => :scripts, :source => :questions
   has_many :caller_groups
 
-  attr_accessible :api_key, :domain_name
+  attr_accessible :api_key, :domain_name, :abandonment
 
   module Subscription_Type
     MANUAL = "Manual"
@@ -45,7 +45,7 @@ class Account < ActiveRecord::Base
   end
 
   def self.authenticate_caller?(pin, password)
-    caller = Caller.find_by_pin(pin)    
+    caller = Caller.find_by_pin(pin)
     return nil if caller.nil?
     account = caller.account
     if password.nil? || account.caller_password.nil? || account.caller_hashed_password_salt.nil?
@@ -61,7 +61,7 @@ class Account < ActiveRecord::Base
 
 
   def trial?
-    self.payments.count==1 && self.payments.first.notes=="Trial credit" && recurly_subscription_uuid.nil?
+    recurly_subscription_uuid.nil?
   end
 
   def callers_in_progress
