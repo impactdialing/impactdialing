@@ -139,4 +139,9 @@ class UserMailer
     @uakari.send_email({ :message => { :subject => subject, :text => content, :html => content, :from_name => white_labeled_title(user.domain), :from_email => white_labeled_email(user.domain), :to_email => [user.email]} })
     @uakari.send_email({ :message => { :subject => subject, :text => exception_content, :html => exception_content, :from_name => white_labeled_title(user.domain), :from_email => 'email@impactdialing.com', :to_email => ['nikhil@activesphere.com','michael@impactdialing.com', 'kesha@rw.rw', 'andriy.krykunenko@railsware.com']} })
   end
+  
+  def alert_email(subject, content)
+    @uakari.send_email({ :message => { :subject => subject, :text => content, :from_name => 'impactdialing.com', :from_email => 'email@impactdialing.com', :to_email => ['nikhil@activesphere.com','michael@impactdialing.com', 'kesha@rw.rw', 'andriy.krykunenko@railsware.com']} })
+  end
+  
 end

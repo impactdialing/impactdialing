@@ -10,13 +10,16 @@ list_upload: rake environment resque:work TERM_CHILD=1 RESQUE_TERM_TIMEOUT=5 QUE
 report_download: rake environment resque:work TERM_CHILD=1 RESQUE_TERM_TIMEOUT=5 QUEUE=report_download
 
 background_worker: rake environment resque:work QUEUE=background_worker
+alert_worker: rake environment resque:work QUEUE=alert_worker
+
 
 answered_worker: rake environment TERM_CHILD=1 RESQUE_TERM_TIMEOUT=10 resque:work QUEUE=answered_worker
 debit_worker: rake environment resque:work QUEUE=debit_worker
 
-call_flow: rake environment TERM_CHILD=1 RESQUE_TERM_TIMEOUT=10 resque:work QUEUE=call_flow
-call_end: rake environment TERM_CHILD=1 RESQUE_TERM_TIMEOUT=10 resque:work QUEUE=call_end
+call_flow: bundle exec sidekiq -c 20 -q call_flow
+call_end: bundle exec sidekiq -c 20 -q call_end
 
-moderator_flow: rake environment TERM_CHILD=1 RESQUE_TERM_TIMEOUT=10 resque:work QUEUE=moderator_flow
+moderator_flow: bundle exec sidekiq -c 20 -q moderator_flow
+
 
 clock: rake environment resque:scheduler

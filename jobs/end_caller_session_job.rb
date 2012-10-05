@@ -1,7 +1,7 @@
 class EndCallerSessionJob
-  @queue = :call_flow
+  include Sidekiq::Worker
   
-   def self.perform(caller_session_id)
+   def perform(caller_session_id)
      caller_session = CallerSession.find(caller_session_id)
      campaign = caller_session.campaign
      caller = caller_session.caller

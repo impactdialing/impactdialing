@@ -9,6 +9,27 @@ module CallerEvents
       publish_sync('start_calling', {caller_session_id: id}) if state == 'initial'                     
     end    
     
+    def publish_voter_connected(call_id)            
+      call = Call.find(call_id)
+      unless caller.is_phones_only? 
+        event_hash = campaign.voter_connected_event(call)        
+        Pusher[session_key].trigger!(event_hash[:event], event_hash[:data].merge!(:dialer => campaign.type))
+      end
+    end    
+    
+    
+    def publish_voter_disconnected
+      unless caller.is_phones_only?      
+        Pusher[session_key].trigger!("voter_disconnected", {})
+      end  
+    end
+    
+    def publish_voter_event_moderator
+      Moderator.active_moderators(campaign).each do |moderator|
+        Pusher[moderator.session].trigger!('voter_event', {caller_session_id:  self.id, campaign_id:  campaign.id, caller_id:  caller.id, call_status: attempt_in_progress.try(:status)})      
+      end              
+    end
+    
     def publish_caller_conference_started
       unless caller.is_phones_only? 
         event_hash = campaign.caller_conference_started_event(voter_in_progress.try(:id))     
