@@ -185,7 +185,7 @@
                   <td><%= c.name %></td>
                   <td class="callers_logged_in"><%= c.caller_sessions.on_call.length %></td>
                   <td class="dials_in_progress"><%= c.call_attempts.not_wrapped_up.try(:size) %></td>
-                  <td class="voters_count"><%= Voter.remaining_voters_count_for("campaign_id", c.id) %></td>
+                  <td class="voters_count"><%= Voter.remaining_voters_for_campaign(c).count %></td>
                 </tr>
             <% end %>
           <% end %>
@@ -207,38 +207,37 @@
             <th></th>
             <th></th>
           </tr>
-          <% @campaigns.each do |c| %>
-              <% c.caller_sessions.on_call.each do |caller_session| %>
-                  <tr id="<%= "caller_"+caller_session.id.to_s %>" class="caller <%= cycle("odd", "even") %> " older="true" session_id="<%= caller_session.id %>" caller_id="<%= caller_session.caller.id %>">
-                    <td class="caller_name"><%= caller_session.caller.identity_name %></td>
-                    <td>
-                      <select class='assign_campaign'>
-                        <%= options_for_select(@all_campaigns.collect {|c| [ c.name, c.id ] }, caller_session.campaign.id) %>
-                      </select>
-                    </td>
-                    <% status, d = caller_status_and_duration(caller_session) %>
-                    <td class="status"><%= status %></td>
-                    <td>
-                      <div class="timer">
-                        <div class="display">
-                          <span class="hr"><%= d[0]+d[1] %></span>:<span class="min"><%= d[3]+d[4] %></span>:<span class="sec"><%= d[6]+d[7] %></span>
-                        </div>
-                      <div>
-                    </td>
-                    <td>
-                      <a class ="action secondary monitor" href="#" action="eavesdrop" session_id="<%= caller_session.id %>">Eavesdrop</a>
-                    </td>
-                    <td>
-                      <a class ="action secondary monitor" href="#" action="breakin" session_id="<%= caller_session.id %>">Break in</a>
-                    </td>
-                    <td>
-                      <a class ="action secondary monitor" href="#" action="kickoff" session_id="<%= caller_session.id %>">Kick off</a>
-                    </td>
-
-                  </tr>
-              <% end %>
-          <% end %>
         </table>
+          <% @campaigns.each do |c| %>
+            <% c.caller_sessions_on_call.each do |caller_session| %>
+              <tr id="<%= "caller_"+caller_session.id.to_s %>" class="caller <%= cycle("odd", "even") %> " older="true" session_id="<%= caller_session.id %>" caller_id="<%= caller_session.caller.id %>">
+                <td class="caller_name"><%= caller_session.caller.identity_name %></td>
+                <td>
+                  <select class='assign_campaign'>
+                    <%= options_for_select(@all_campaigns, c.id) %>
+                  </select>
+                </td>
+                <% status, d = caller_status_and_duration(caller_session) %>
+                <td class="status"><%= status %></td>
+                <td>
+                  <div class="timer">
+                    <div class="display">
+                      <span class="hr"><%= d[0]+d[1] %></span>:<span class="min"><%= d[3]+d[4] %></span>:<span class="sec"><%= d[6]+d[7] %></span>
+                    </div>
+                  <div>
+                </td>
+                <td>
+                  <a class ="action secondary monitor" href="#" action="eavesdrop" session_id="<%= caller_session.id %>">Eavesdrop</a>
+                </td>
+                <td>
+                  <a class ="action secondary monitor" href="#" action="breakin" session_id="<%= caller_session.id %>">Break in</a>
+                </td>
+                <td>
+                  <a class ="action secondary monitor" href="#" action="kickoff" session_id="<%= caller_session.id %>">Kick off</a>
+                </td>
+              </tr>
+            <% end %>
+          <% end %>
         <a class ="action primary stop_monitor" href="#" onclick="javascript:disconnect_all();">Stop monitoring</a>
         <status style="float : right;"></status>
       </div>

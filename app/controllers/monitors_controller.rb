@@ -2,8 +2,9 @@ class MonitorsController < ClientController
   skip_before_filter :check_login, :only => [:start,:stop,:switch_mode, :deactivate_session]
 
   def index
-    @campaigns = account.campaigns.with_running_caller_sessions
-    @all_campaigns = account.campaigns.active
+    @campaigns = account.campaigns.with_running_caller_sessions.
+      includes(caller_sessions_on_call: [:caller, :attempt_in_progress]).where(caller_sessions: {on_call: true})
+    @all_campaigns = Campaign.connection.execute(account.campaigns.active.select([:name, :id]).to_sql).to_a
     twilio_capability = Twilio::Util::Capability.new(TWILIO_ACCOUNT, TWILIO_AUTH)
     twilio_capability.allow_client_outgoing(MONITOR_TWILIO_APP_SID)
     @token = twilio_capability.generate
