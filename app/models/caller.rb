@@ -140,6 +140,13 @@ class Caller < ActiveRecord::Base
     caller_sessions << caller_session
     caller_session
   end
+  
+  def started_calling(session)
+    $redis_call_flow_connection.pipelined do
+      RedisCampaign.add_running_predictive_campaign(campaign.id, campaign.type)
+      RedisCaller.add_caller(campaign.id, session.id)
+    end    
+  end
 
   def create_caller_identity(session_key)
     caller_identities.create(session_key: session_key, pin: CallerIdentity.create_uniq_pin)
