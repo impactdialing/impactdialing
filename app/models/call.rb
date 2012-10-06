@@ -30,7 +30,6 @@ class Call < ActiveRecord::Base
   delegate :end_caller_session, :to=> :call_attempt
   delegate :caller_session_key, :to=> :call_attempt
   delegate :enqueue_call_flow, :to=> :call_attempt
-  delegate :enqueue_moderator_flow, :to=> :call_attempt
   
   
   call_flow :state, :initial => :initial do    
