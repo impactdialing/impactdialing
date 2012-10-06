@@ -65,7 +65,7 @@ class Call < ActiveRecord::Base
       
       state :disconnected do        
         before(:always) { disconnect_call }
-        after(:success) { enqueue_call_flow(CallerPusherJob, [caller_session.id, "publish_voter_disconnected"]); enqueue_moderator_flow(ModeratorCallerJob,[caller_session.id,  "publish_voter_event_moderator"]) }                
+        after(:success) { enqueue_call_flow(CallerPusherJob, [caller_session.id, "publish_voter_disconnected"]) }                
         event :submit_result, :to => :wrapup_and_continue
         event :submit_result_and_stop, :to => :wrapup_and_stop        
         response do |xml_builder, the_call|
@@ -101,7 +101,7 @@ class Call < ActiveRecord::Base
       end            
       
       state :wrapup_and_continue do 
-        before(:always) { wrapup_now; call_attempt.redirect_caller; enqueue_moderator_flow(ModeratorCallerJob,[caller_session.id, "publish_voter_event_moderator"]) }
+        before(:always) { wrapup_now; call_attempt.redirect_caller }
       end
             
       state :wrapup_and_stop do

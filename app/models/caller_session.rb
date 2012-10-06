@@ -128,7 +128,7 @@ class CallerSession < ActiveRecord::Base
       
       state :conference_ended do
         before(:always) { end_caller_session}
-        after(:always) {  enqueue_call_flow(CallerPusherJob, [self.id, "publish_caller_disconnected"]);enqueue_moderator_flow(ModeratorCallerJob, [self.id,  "publish_moderator_caller_disconnected"])} 
+        after(:always) {  enqueue_call_flow(CallerPusherJob, [self.id, "publish_caller_disconnected"])} 
         response do |xml_builder, the_call|
           xml_builder.Hangup
         end        

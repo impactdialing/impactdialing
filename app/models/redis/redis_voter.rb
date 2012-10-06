@@ -22,7 +22,6 @@ class RedisVoter
   end
   
   def self.connect_lead_to_caller(voter_id, campaign_id, call_attempt_id)
-
       if RedisVoter.assigned_to_caller?(voter_id)
         caller_session_id = RedisVoter.read(voter_id)['caller_session_id']   
         RedisCaller.move_waiting_to_connect_to_on_call(campaign_id, caller_session_id)
