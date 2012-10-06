@@ -50,7 +50,7 @@ module Callers
       Octopus.using(:read_slave1) do
         campaigns = @account.campaigns.for_caller(@caller)
         @campaigns_data = Campaign.connection.execute(campaigns.select([:name, "campaigns.id"]).uniq.to_sql).to_a
-        @campaign = campaigns.find_by_id(id: params[:campaign_id])
+        @campaign = campaigns.find_by_id(params[:campaign_id])
         @from_date, @to_date = set_date_range_callers(@campaign, @caller, params[:from_date], params[:to_date])
         @caller_usage = CallerUsage.new(@caller, @campaign, @from_date, @to_date)
       end
