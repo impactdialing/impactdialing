@@ -14,13 +14,15 @@ class CallsController < ApplicationController
     end
   end
   
-  def call_ended
+  def call_ended    
     if ["no-answer", "busy", "failed"].include?(@parsed_params['call_status']) || @parsed_params['answered_by'] == "machine"
-      RedisCall.store_call_details(@parsed_params)
-    end    
+      RedisCall.store_not_answered_call_list(@parsed_params)
+    end
+        
     if @parsed_params['campaign_type'] != Campaign::Type::PREDICTIVE && @parsed_params['call_status'] != 'completed'
       @call.call_attempt.redirect_caller
     end      
+    
     render xml:  Twilio::TwiML::Response.new { |r| r.Hangup }.text
   end
   
@@ -65,8 +67,7 @@ class CallsController < ApplicationController
   end
   
   def find_and_update_answers_and_notes_and_scheduled_date
-    find_call
-    
+    find_call    
     unless @call.nil?      
       @parsed_params["questions"]  = params[:question].try(:to_json) 
       @parsed_params["notes"] = params[:notes].try(:to_json)

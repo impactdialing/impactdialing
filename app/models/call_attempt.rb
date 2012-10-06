@@ -65,6 +65,7 @@ class CallAttempt < ActiveRecord::Base
   def self.wrapup_calls(caller_id)
     CallAttempt.not_wrapped_up.where(caller_id: caller_id).update_all(wrapup_time: Time.now)
   end
+  
 
   def connect_call
     redis_call_attempt = RedisCallAttempt.read(self.id)
@@ -72,16 +73,17 @@ class CallAttempt < ActiveRecord::Base
     RedisCallAttempt.connect_call(self.id, redis_voter["caller_id"], redis_voter["caller_session_id"])
     RedisCampaignCall.move_ringing_to_inprogress(campaign.id, self.id)
   end
-
+  
   def abandon_call
-    $redis_call_flow_connection.pipelined do
-      RedisCallAttempt.abandon_call(self.id)
-      RedisVoter.abandon_call(voter.id)
-    end
+    RedisCall.store_abandoned_call_list(call.attributes)
+    # $redis_call_flow_connection.pipelined do
+    #   RedisCallAttempt.abandon_call(self.id)
+    #   RedisVoter.abandon_call(voter.id)
+    # end
     RedisCampaignCall.move_ringing_to_abandoned(campaign.id, self.id)
   end
-      
-    
+  
+  
   def connect_lead_to_caller
     RedisVoter.connect_lead_to_caller(voter.id, campaign.id, self.id)
     enqueue_call_flow(VoterConnectedPusherJob, [voter.caller_session.id, call.id])
@@ -105,12 +107,14 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def process_answered_by_machine
-    status = RedisCampaign.call_status_use_recordings(campaign.id)
-    $redis_call_flow_connection.pipelined do
-      RedisCallAttempt.answered_by_machine(self.id, status)
-      RedisVoter.answered_by_machine(voter.id, status)
-    end
-    RedisCampaignCall.move_ringing_to_completed(campaign.id, self.id)                     
+    RedisCall.store_answered_by_machine_call_list(call.attributes)
+    RedisCampaignCall.move_ringing_to_completed(campaign.id, self.id)
+    # status = RedisCampaign.call_status_use_recordings(campaign.id)
+    # $redis_call_flow_connection.pipelined do
+    #   RedisCallAttempt.answered_by_machine(self.id, status)
+    #   RedisVoter.answered_by_machine(voter.id, status)
+    # end
+                         
   end
 
   def end_answered_by_machine
@@ -140,12 +144,14 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def disconnect_call
-    $redis_call_flow_connection.pipelined do
-      RedisCallAttempt.disconnect_call(self.id, call.recording_duration, call.recording_url)
-      RedisVoter.set_status(voter.id, CallAttempt::Status::SUCCESS)
-      caller_session_id = RedisVoter.read(voter.id)["caller_session_id"]
-      RedisCaller.move_on_call_to_on_wrapup(campaign.id, caller_session_id)
-    end  
+    RedisCall.store_answered_call_list(call.attributes)
+    RedisCaller.move_on_call_to_on_wrapup(campaign.id, caller_session_id)
+    # $redis_call_flow_connection.pipelined do
+    #   RedisCallAttempt.disconnect_call(self.id, call.recording_duration, call.recording_url)
+    #   RedisVoter.set_status(voter.id, CallAttempt::Status::SUCCESS)
+    #   caller_session_id = RedisVoter.read(voter.id)["caller_session_id"]
+    #   RedisCaller.move_on_call_to_on_wrapup(campaign.id, caller_session_id)
+    # end  
   end    
 
   def schedule_for_later(date)
@@ -157,7 +163,8 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def wrapup_now
-    RedisCallAttempt.wrapup(self.id) 
+    # RedisCallAttempt.wrapup(self.id) 
+    RedisCall.store_wrapped_up_call_list(call.attributes)
     RedisCampaignCall.move_wrapup_to_completed(campaign.id, self.id)         
   end
 
