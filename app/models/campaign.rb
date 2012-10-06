@@ -33,7 +33,7 @@ class Campaign < ActiveRecord::Base
       :joins => "inner join caller_sessions on (caller_sessions.campaign_id = campaigns.id)",
       :conditions => {"caller_sessions.on_call" => true}
   }
-  scope :for_caller, lambda { |caller| {:include => [:caller_sessions], :conditions => {"caller_sessions.caller_id" => caller.id}}}
+  scope :for_caller, lambda { |caller| joins(:caller_sessions).where(caller_sessions: {caller_id: caller}) }
 
   validates :name, :presence => true
   validates :caller_id, :presence => true
