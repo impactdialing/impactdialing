@@ -184,7 +184,6 @@ describe Call do
       it "should change status to disconnected" do
        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'hungup')
        @call_attempt.should_receive(:enqueue_call_flow).with(CallerPusherJob, [@caller_session.id, "publish_voter_disconnected"])
-       @call_attempt.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [@caller_session.id, "publish_voter_event_moderator"])
        call.disconnect!
        call.state.should eq("disconnected")
       end
@@ -192,7 +191,6 @@ describe Call do
       it "should hangup twiml" do
        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'hungup')
        @call_attempt.should_receive(:enqueue_call_flow).with(CallerPusherJob, [@caller_session.id, "publish_voter_disconnected"])
-       @call_attempt.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [@caller_session.id, "publish_voter_event_moderator"])
        call.disconnect!
        call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
       end  
