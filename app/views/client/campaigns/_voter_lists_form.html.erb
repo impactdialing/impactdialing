@@ -24,7 +24,7 @@
               <% i= i+1 %>
               </td>
               <td valign="top"><%= list.voters.size %></td>
-              <td valign="top"><%= Voter.remaining_voters_count_for_voter_list(list) %></td>
+              <td valign="top"><%= Voter.remaining_voters_for_voter_list(list).count %></td>
             </tr>
           <% end %>
         <% end %>
