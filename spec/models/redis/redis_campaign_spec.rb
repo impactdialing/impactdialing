@@ -28,18 +28,5 @@ describe RedisCampaign do
     RedisCampaign.running_campaigns.should eq(["#{campaign1.id}", "#{campaign2.id}"])
   end
   
-  it "should return call status as voicemail if user recording turned on" do
-    account = Factory(:account)
-    campaign = Factory(:predictive, name: "test123", account: account, use_recordings: true)
-    RedisCampaign.load_campaign(campaign.id, campaign)
-    RedisCampaign.call_status_use_recordings(campaign.id).should eq(CallAttempt::Status::VOICEMAIL)
-  end
-  
-  it "should return call status as hangup if user recording turned off" do
-    account = Factory(:account)
-    campaign = Factory(:predictive, name: "test123", account: account, use_recordings: false)
-    RedisCampaign.load_campaign(campaign.id, campaign)
-    RedisCampaign.call_status_use_recordings(campaign.id).should eq(CallAttempt::Status::HANGUP)
-  end
   
 end

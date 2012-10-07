@@ -111,36 +111,12 @@ describe CallerSession do
   end
 
   describe "disconnected" do
-    it "should say session is disconnected when caller is not available and not on call" do
+    it "should say session is disconnected when conference ended" do
       call_attempt = Factory(:call_attempt)
       campaign = Factory(:campaign)
-      caller_session = Factory(:caller_session, on_call: false, available_for_call: false, attempt_in_progress: call_attempt, campaign: campaign)
-      RedisCaller.add_caller(campaign.id, caller_session.id)
-      RedisCaller.disconnect_caller(campaign.id, caller_session.id)
+      caller_session = Factory(:caller_session, on_call: false, available_for_call: false, attempt_in_progress: call_attempt, campaign: campaign,state: "conference_ended")
       caller_session.disconnected?.should be_true
     end
-
-    it "should say session is connected when caller is  available and not on call" do
-      call_attempt = Factory(:call_attempt)
-      caller_session = Factory(:caller_session, on_call: false, available_for_call: true, attempt_in_progress: call_attempt)
-      RedisCallerSession.load_caller_session_info(caller_session.id, caller_session)            
-      caller_session.disconnected?.should be_false
-    end
-
-    it "should say session is connected when caller is not available and  on call" do
-      call_attempt = Factory(:call_attempt)
-      caller_session = Factory(:caller_session, on_call: true, available_for_call: false, attempt_in_progress: call_attempt)
-      RedisCallerSession.load_caller_session_info(caller_session.id, caller_session)                  
-      caller_session.disconnected?.should be_false
-    end
-
-    it "should say session is connected when caller is  available and  on call" do
-      call_attempt = Factory(:call_attempt)
-      caller_session = Factory(:caller_session, on_call: true, available_for_call: true, attempt_in_progress: call_attempt)
-      RedisCallerSession.load_caller_session_info(caller_session.id, caller_session)                
-      caller_session.disconnected?.should be_false
-    end
-
 
   end
 
@@ -284,20 +260,13 @@ describe CallerSession do
       caller_session.state.should eq('conference_ended')
     end
 
-    it "should make caller unavailable" do
-      caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "account_not_activated")
-      RedisCallerSession.load_caller_session_info(caller_session.id, caller_session)      
-      caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id,  "publish_caller_disconnected"])
-      caller_session.end_conf!
-      RedisCallerSession.read(caller_session.id)['on_call'].should eq("false")
-      RedisCallerSession.read(caller_session.id)['available_for_call'].should eq("false")
-    end
 
     it "should set caller session endtime" do
       caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "account_not_activated")
       RedisCallerSession.load_caller_session_info(caller_session.id, caller_session)            
       caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id,  "publish_caller_disconnected"])
       caller_session.end_conf!
+      caller_session.endtime.should_not be_nil
       RedisCallerSession.read(caller_session.id)['endtime'].should_not be_nil
     end
 

@@ -197,6 +197,11 @@ class Voter < ActiveRecord::Base
   def skip
     update_attributes(skipped_time: Time.now, status: 'not called')
   end
+  
+  def abandoned
+    status = CallAttempt::Status::ABANDONED
+    call_back = false        
+  end
 
   def answer(question, response, recorded_by_caller = nil)
     possible_response = question.possible_responses.where(:keypad => response).first

@@ -155,6 +155,11 @@ class CallerSession < ActiveRecord::Base
   end
   
   def end_session
+    update_attributes(end_time: Time.now)
+    if Campaign.predictive_campaign?(campaign.type) == Campaign::Type::PREDICTIVE
+      RedisCampaign.remove_running_predictive_campaign(campaign.id)
+    end
+    
     RedisCallerSession.end_session(self.id)
     RedisCaller.disconnect_caller(campaign.id, self.id )
     if campaign.type == Campaign::Type::PREDICTIVE && RedisCaller.zero?(campaign.id)
@@ -171,10 +176,9 @@ class CallerSession < ActiveRecord::Base
   
   
   def wrapup_attempt_in_progress
-    redis_attempt_in_progress = RedisCallerSession.attempt_in_progress(self.id)    
-    unless redis_attempt_in_progress.blank?
+    unless attempt_in_progress.nil?
+      enqueue_call_flow(CampaignStatusJob, ["wrapped_up", campaign.id, attempt_in_progress.id, self.id])       
       RedisCampaignCall.move_to_completed(campaign.id, redis_attempt_in_progress)
-      RedisCallAttempt.wrapup(redis_attempt_in_progress)
     end
     
   end
@@ -229,56 +233,20 @@ class CallerSession < ActiveRecord::Base
   def reassign_caller_session_to_campaign
     old_campaign = self.campaign
     update_attribute(:campaign, caller.campaign)    
-    # publish_moderator_caller_reassigned_to_campaign(old_campaign)
   end
      
   def caller_reassigned_to_another_campaign?
     caller.campaign.id != self.campaign.id
   end
+  
 
   def disconnected?
-    RedisCaller.disconnected?(campaign.id, self.id)
+    state == "conference_ended"
   end
   
   def publish(event, data)
     Pusher[session_key].trigger(event, data.merge!(:dialer => self.campaign.type))
   end
-  
-    
-  def dial(voter)
-    return if voter.nil?
-    call_attempt = create_call_attempt(voter)    
-    twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)        
-    http_response = twilio_lib.make_call(campaign, voter, call_attempt)
-    response = JSON.parse(http_response)  
-    if response["RestException"]
-      handle_failed_call(call_attempt, self)
-    else
-      call_attempt.update_attributes(:sid => response["sid"])
-    end
-  end
-  
-  def create_call_attempt(voter)
-    attempt = voter.call_attempts.create(:campaign => campaign, :dialer_mode => campaign.type, :status => CallAttempt::Status::RINGING, :caller_session_id => self.id, :caller_id => caller.id, call_start:  Time.now)
-    voter.update_attributes(:last_call_attempt_id => attempt.id, :last_call_attempt_time => Time.now, :caller_session_id => self.id, status: CallAttempt::Status::RINGING)
-    Call.create(call_attempt: attempt, all_states: "", state: 'initial')    
-    $redis_call_flow_connection.pipelined do
-      RedisCallAttempt.load_call_attempt_info(attempt.id, attempt)
-      RedisVoter.setup_call(voter.id, attempt.id, self.id)
-      RedisCallerSession.set_attempt_in_progress(self.id, attempt.id)
-    end
-    RedisCampaignCall.add_to_ringing(campaign.id, attempt.id)
-    attempt    
-  end
-  
-  
-  def handle_failed_call(attempt, voter)
-    attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
-    voter.update_attributes(status: CallAttempt::Status::FAILED)
-    update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
-    redirect_caller
-  end
-  
   
   def get_conference_id
      Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
@@ -306,8 +274,8 @@ class CallerSession < ActiveRecord::Base
    end
    
    def start_conference    
-     RedisCallerSession.start_conference(self.id)
-     RedisCaller.move_to_on_hold(campaign.id, self.id)
+     RedisOnHoldCaller.add(campaign.id, self.id)
+     enqueue_call_flow(CampaignStatusJob, ["on_hold", campaign.id, nil, self.id])       
    end
    
 

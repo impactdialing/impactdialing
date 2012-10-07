@@ -20,7 +20,9 @@ describe WebuiCallerSession do
         caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
         caller_session.should_receive(:time_period_exceeded?).and_return(false)
         caller_session.should_receive(:is_on_call?).and_return(false)
+        RedisOnHoldCaller.should_receive(:add).with(@campaign.id, caller_session.id)
         caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id, "publish_caller_conference_started"])
+        caller_session.should_receive(:enqueue_call_flow).with(CampaignStatusJob, ["on_hold", @campaign.id, nil, caller_session.id])
         caller_session.start_conf!
         caller_session.state.should eq("connected")
       end
@@ -32,7 +34,9 @@ describe WebuiCallerSession do
         caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
         caller_session.should_receive(:time_period_exceeded?).and_return(false)
         caller_session.should_receive(:is_on_call?).and_return(false)
+        RedisOnHoldCaller.should_receive(:add).with(@campaign.id, caller_session.id)
         caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id, "publish_caller_conference_started"])
+        caller_session.should_receive(:enqueue_call_flow).with(CampaignStatusJob, ["on_hold", @campaign.id, nil, caller_session.id])
         caller_session.start_conf!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=pause_conf&amp;session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"/></Dial></Response>")
       end
@@ -93,19 +97,13 @@ describe WebuiCallerSession do
       end
 
       it "caller moves to disconnected state" do
-        caller_session = Factory(:webui_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "connected")
-        RedisCallerSession.load_caller_session_info(caller_session.id, caller_session)
-        RedisCaller.add_caller(@campaign.id, caller_session.id)
-        RedisCaller.disconnect_caller(@campaign.id, caller_session.id)
+        caller_session = Factory(:webui_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "conference_ended")
         caller_session.pause_conf!
         caller_session.state.should eq("disconnected")
       end
 
       it "render hangup twiml for disconnected state" do
-        caller_session = Factory(:webui_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "connected")
-        RedisCallerSession.load_caller_session_info(caller_session.id, caller_session)        
-        RedisCaller.add_caller(@campaign.id, caller_session.id)
-        RedisCaller.disconnect_caller(@campaign.id, caller_session.id)        
+        caller_session = Factory(:webui_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "conference_ended")
         caller_session.pause_conf!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
       end
@@ -124,9 +122,6 @@ describe WebuiCallerSession do
       it "should move to paused state if call not wrapped up" do
         caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "connected", attempt_in_progress: @call_attempt)
         call_attempt = Factory(:call_attempt, connecttime: Time.now)
-        RedisCallAttempt.load_call_attempt_info(call_attempt.id, call_attempt)
-        RedisCallerSession.load_caller_session_info(caller_session.id, caller_session)
-        RedisCallerSession.set_attempt_in_progress(caller_session.id, call_attempt.id)                
         caller_session.pause_conf!
         caller_session.state.should eq("paused")
       end
@@ -134,9 +129,6 @@ describe WebuiCallerSession do
       it "when paused should render right twiml" do
         caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "connected",  attempt_in_progress: @call_attempt)
         call_attempt = Factory(:call_attempt, connecttime: Time.now)
-        RedisCallAttempt.load_call_attempt_info(call_attempt.id, call_attempt)
-        RedisCallerSession.load_caller_session_info(caller_session.id, caller_session)
-        RedisCallerSession.set_attempt_in_progress(caller_session.id, call_attempt.id)        
         caller_session.pause_conf!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>Please enter your call results</Say><Pause length=\"600\"/></Response>")
       end

@@ -3,9 +3,9 @@ class PreviewPowerDialJob
   
   def perform(caller_session_id, voter_id)    
     caller_session = CallerSession.find(caller_session_id)
-    voter_info = RedisVoter.read(voter_id)
+    voter = Voter.find(voter_id)
     begin
-      Twillio.dial(voter_info, caller_session)
+      Twillio.dial(voter, caller_session)
     rescue ActiveRecord::StaleObjectError 
       caller_session.redirect_caller
     end

@@ -8,7 +8,7 @@ class WebuiCallerSession < CallerSession
       end 
             
       state :connected do                
-        before(:always) { publish_start_calling; start_conference }
+        before(:always) { start_conference; publish_start_calling }
         after(:success) { enqueue_call_flow(CallerPusherJob, [self.id,  "publish_caller_conference_started"]) }
         event :pause_conf, :to => :disconnected, :if => :disconnected?
         event :pause_conf, :to => :paused, :if => :call_not_wrapped_up?
@@ -49,9 +49,13 @@ class WebuiCallerSession < CallerSession
       
   end
   
-  def call_not_wrapped_up?    
-    attempt_in_progress_id = RedisCallerSession.read(self.id)['attempt_in_progress']
-    RedisCallAttempt.call_not_wrapped_up?(attempt_in_progress_id)
+  def available_for_call?
+    state == "connected"
+  end
+  
+  
+  def call_not_wrapped_up?  
+    attempt_in_progress.try(:connecttime) != nil &&  attempt_in_progress.try(:not_wrapped_up?)  
   end
   
   def publish_sync(event, data)

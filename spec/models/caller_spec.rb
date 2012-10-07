@@ -177,20 +177,26 @@ describe Caller do
   
   describe "started calling" do
     
-    it "should add to running predictive campaigns" do
+    it "should  push campaign and caller to redis " do
       campaign = Factory(:predictive)
       caller  = Factory(:caller, campaign: campaign)
       caller_session = Factory(:caller_session, caller: caller)
       RedisCampaign.should_receive(:add_running_predictive_campaign).with(campaign.id, campaign.type)
+      RedisCaller.should_receive(:add_caller).with(campaign.id, caller_session.id)
       caller.started_calling(caller_session)      
     end
-    
-    it "should add caller to list" do
+        
+  end
+  
+  describe "calling_voter_preview_power" do
+    it "should call pusher and enqueue dial " do
       campaign = Factory(:predictive)
       caller  = Factory(:caller, campaign: campaign)
       caller_session = Factory(:caller_session, caller: caller)
-      RedisCaller.should_receive(:add_caller).with(campaign.id, caller_session.id)
-      caller.started_calling(caller_session)      
+      voter = Factory(:voter)
+      caller.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id, "publish_calling_voter"])
+      caller.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, voter.id])
+      caller.calling_voter_preview_power(caller_session, voter.id)      
     end
     
   end
