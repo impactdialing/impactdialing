@@ -67,6 +67,15 @@ class Campaign < ActiveRecord::Base
     PREDICTIVE = "Predictive"
     PROGRESSIVE = "Progressive"
   end
+  
+  def self.preview_power_campaign?(campaign_type)
+    [Type::PREVIEW, Type::PROGRESSIVE].include?(campaign_type)
+  end
+  
+  def self.predictive_campaign?(campaign_type)
+    Type::PREDICTIVE == campaign_type
+  end
+  
 
   def new_campaign
     new_record?

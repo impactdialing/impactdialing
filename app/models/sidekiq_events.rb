@@ -9,6 +9,11 @@ module SidekiqEvents
       enqueue('call_flow', job, event_args)
     end
     
+    def enqueue_dialer_flow(job, event_args)
+      enqueue('dialer_flow', job, event_args)
+    end
+    
+    
     def enqueue_moderator_flow(job, event_args)
       enqueue('moderator_flow', job, event_args)
     end

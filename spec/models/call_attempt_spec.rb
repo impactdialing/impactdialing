@@ -34,90 +34,94 @@ describe CallAttempt do
     call_attempt = Factory(:call_attempt, call_start: nil, connecttime:  Time.now, call_end:  nil)
     call_attempt.duration_rounded_up.should == 0
   end
-
-  it "should disconnect call" do
-     voter = Factory(:voter)
-     call_attempt = Factory(:call_attempt, :voter => voter)
-     call = Factory(:call, call_attempt: call_attempt)     
-     RedisCallAttempt.should_receive(:disconnect_call)
-     RedisVoter.should_receive(:set_status)
-     call_attempt.disconnect_call
-   end
-
-  it "should wrapup call" do
-    voter = Factory(:voter)
+  
+  it "should abandon call" do
+    voter = Factory(:voter)  
     call_attempt = Factory(:call_attempt, :voter => voter)
-    RedisCallAttempt.should_receive(:wrapup)
-    call_attempt.wrapup_now    
+    now = Time.now
+    call_attempt.abandoned(now)
+    call_attempt.status.should eq(CallAttempt::Status::ABANDONED)
+    call_attempt.connecttime.should eq(now)
+    call_attempt.call_end.should eq(now)
+    call_attempt.wrapup_time.should eq(now)    
   end
   
   it "should process answered by machine" do
     campaign = Factory(:campaign)    
     voter = Factory(:voter)
     call_attempt = Factory(:call_attempt, :voter => voter, campaign: campaign)
-    RedisCampaign.should_receive(:call_status_use_recordings).and_return("status")
-    RedisCallAttempt.should_receive(:answered_by_machine)
-    RedisVoter.should_receive(:answered_by_machine)
-    RedisCampaignCall.should_receive(:move_ringing_to_completed)
-    call_attempt.process_answered_by_machine        
-  end
-  
-  it "can be scheduled for later" do
-    voter = Factory(:voter)
-    call_attempt = Factory(:call_attempt, :voter => voter)
-    scheduled_date = "10/10/2020 20:20"
-    RedisCallAttempt.should_receive(:schedule_for_later)
-    RedisVoter.should_receive(:schedule_for_later)
-    call_attempt.schedule_for_later(scheduled_date)
-  end
-
-  it "should end answered call" do
-    voter = Factory(:voter)
-    call_attempt = Factory(:call_attempt, :voter => voter)
-    RedisCallAttempt.should_receive(:end_answered_call)
-    RedisVoter.should_receive(:end_answered_call)
-    RedisCampaignCall.should_receive(:move_inprogress_to_wrapup)      
-    call_attempt.end_answered_call    
-  end
-  
-  it "should abandon call" do
-    voter = Factory(:voter)  
-    call_attempt = Factory(:call_attempt, :voter => voter)
-    RedisCallAttempt.should_receive(:abandon_call)
-    RedisVoter.should_receive(:abandon_call)
-    RedisCampaignCall.should_receive(:move_ringing_to_abandoned)  
-    call_attempt.abandon_call            
-  end
-  
-  it "should connect call" do
-    voter = Factory(:voter)
-    call_attempt = Factory(:call_attempt, :voter => voter)
-    caller_session = Factory(:caller_session)
-    RedisVoter.load_voter_info(voter.id, voter)
-    RedisCallAttempt.load_call_attempt_info(call_attempt.id, call_attempt)    
-    RedisCallAttempt.should_receive(:connect_call)
-    RedisCampaignCall.should_receive(:move_ringing_to_inprogress)
-    call_attempt.connect_call
-  end
-  
-  it "should end_unanswered_call" do
-    voter = Factory(:voter)  
-    call_attempt = Factory(:call_attempt, :voter => voter)
-    call = Factory(:call, call_attempt: call_attempt, call_status: "busy")    
-    RedisCallAttempt.should_receive(:end_unanswered_call)
-    RedisVoter.should_receive(:end_unanswered_call)
-    RedisCampaignCall.should_receive(:move_ringing_to_completed)
-    call_attempt.end_unanswered_call(call.call_status)
+    now = Time.now
+    call_attempt.process_answered_by_machine(now)        
+    call_attempt.status.should eq('Hangup or answering machine')
+    call_attempt.connecttime.should eq(now)
   end
   
   it "should end_answered_by_machine" do
     voter = Factory(:voter)  
     call_attempt = Factory(:call_attempt, :voter => voter)
-    call = Factory(:call, call_attempt: call_attempt, call_status: "busy")    
-    RedisCallAttempt.should_receive(:end_answered_by_machine)
-    RedisVoter.should_receive(:end_answered_by_machine)
-    call_attempt.end_answered_by_machine
+    now = Time.now
+    call_attempt.end_answered_by_machine(now)
+    call_attempt.call_end.should eq(now)
+    call_attempt.wrapup_time.should eq(now)
   end
+  
+  it "should end_unanswered_call" do
+    voter = Factory(:voter)  
+    call_attempt = Factory(:call_attempt, :voter => voter)
+    now = Time.now
+    call_attempt.end_unanswered_call("busy",now)
+    call_attempt.status.should eq("No answer busy signal")
+    call_attempt.call_end.should eq(now)
+  end
+  
+  it "should end answered call" do
+    voter = Factory(:voter)
+    call_attempt = Factory(:call_attempt, :voter => voter)
+    now = Time.now
+    call_attempt.end_answered_call(now)
+    call_attempt.call_end.should eq(now)
+  end
+  
+  it "should disconnect call" do
+     voter = Factory(:voter)
+     call_attempt = Factory(:call_attempt, :voter => voter)
+     now = Time.now
+     call_attempt.disconnect_call(now, 12, "url")
+     call_attempt.status.should eq(CallAttempt::Status::SUCCESS)
+     call_attempt.call_end.should eq(now)
+     call_attempt.recording_duration.should eq(12)
+     call_attempt.recording_url.should eq("url")     
+   end
+   
+   it "can be scheduled for later" do
+     voter = Factory(:voter)
+     call_attempt = Factory(:call_attempt, :voter => voter)
+     scheduled_date = "10/10/2020 20:20"
+     call_attempt.schedule_for_later(scheduled_date)
+     call_attempt.status.should eq(CallAttempt::Status::SCHEDULED)
+     call_attempt.scheduled_date.should eq(scheduled_date)
+   end
+   
+
+  it "should wrapup call" do
+    voter = Factory(:voter)
+    call_attempt = Factory(:call_attempt, :voter => voter)
+    now = Time.now
+    call_attempt.wrapup_now(now)
+    call_attempt.wrapup_time.should eq(now)
+  end
+  
+  it "should connect lead to caller" do
+    voter = Factory(:voter)
+    call_attempt = Factory(:call_attempt, :voter => voter)
+    caller_session = Factory(:caller_session)
+    RedisOnHoldCaller.should_receive(:longest_waiting_caller).and_return(caller_session.id)
+    call_attempt.connect_caller_to_lead
+    caller_session.attempt_in_progress.should eq(call_attempt)
+    caller_session.voter_in_progress.should eq(voter)
+  end
+      
+  
   
   it "lists attempts between two dates" do
     too_old = Factory(:call_attempt).tap { |ca| ca.update_attribute(:created_at, 10.minutes.ago) }

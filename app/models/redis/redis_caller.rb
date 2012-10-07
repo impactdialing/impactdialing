@@ -68,8 +68,6 @@ class RedisCaller
     zmove(on_hold(campaign_id), on_call(campaign_id), Time.now.to_i, caller_session_id)
   end
   
-  
-  
   def self.move_on_call_to_on_wrapup(campaign_id, caller_session_id)
     zmove(on_call(campaign_id), on_wrapup(campaign_id), Time.now.to_i, caller_session_id)
   end
@@ -108,12 +106,7 @@ class RedisCaller
     disconnected(campaign_id).member?(caller_session_id)
   end
   
-  
-  def self.longest_waiting_caller(campaign_id)
-    callers = on_hold(campaign_id).range(-1,-1)
-    callers.empty? ? nil : callers.first
-  end
-  
+    
   def self.stats(campaign_id)
     {callers_logged_in: logged_in(campaign_id).length, on_call: on_call(campaign_id).length, on_hold: on_hold(campaign_id).length, }
   end

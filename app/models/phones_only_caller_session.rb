@@ -55,12 +55,12 @@ class PhonesOnlyCallerSession < CallerSession
         event :start_conf, :to => :skip_voter, :if => :pound_selected?  
         event :start_conf, :to => :ready_to_call
                   
-        before(:always) {select_voter(current_voter_in_progress)}
+        before(:always) {select_voter(voter_in_progress)}
         
         response do |xml_builder, the_call|
           unless the_call.current_voter_in_progress.nil?
             xml_builder.Gather(:numDigits => 1, :timeout => 10, :action => flow_caller_url(self.caller, :session => self, event: "start_conf", :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :voter => the_call.current_voter_in_progress['id']), :method => "POST", :finishOnKey => "5") do
-              xml_builder.Say I18n.t(:read_voter_name, :first_name => the_call.current_voter_in_progress['FirstName'], :last_name => the_call.current_voter_in_progress['LastName']) 
+              xml_builder.Say I18n.t(:read_voter_name, :first_name => the_call.voter_in_progress.FirstName, :last_name => the_call.voter_in_progress.LastName) 
             end
           else
             xml_builder.Say I18n.t(:campaign_has_no_more_voters)         
@@ -75,8 +75,8 @@ class PhonesOnlyCallerSession < CallerSession
         before(:always) {select_voter(current_voter_in_progress)}
         response do |xml_builder, the_call|
           if RedisCallerSession.voter_in_progress?(self.id)
-            xml_builder.Say "#{current_voter_in_progress['FirstName']}  #{current_voter_in_progress['LastName']}." 
-            xml_builder.Redirect(flow_caller_url(caller, :session_id => id, :voter_id => current_voter_in_progress["id"], event: "start_conf", :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port), :method => "POST")
+            xml_builder.Say "#{the_call.voter_in_progress.FirstName}  #{the_call.voter_in_progress.LastName}." 
+            xml_builder.Redirect(flow_caller_url(caller, :session_id => id, :voter_id => voter_in_progress.id, event: "start_conf", :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port), :method => "POST")
           else
             xml_builder.Say I18n.t(:campaign_has_no_more_voters)
             xml_builder.Hangup
@@ -86,12 +86,12 @@ class PhonesOnlyCallerSession < CallerSession
       
       
       state :conference_started_phones_only do
-        before(:always) {start_conference; enqueue_call_flow(PreviewPowerDialJob, [self.id, current_voter.id])}
+        before(:always) {start_conference; enqueue_call_flow(PreviewPowerDialJob, [self.id, voter_in_progress.id])}
         event :gather_response, :to => :read_next_question, :if => :call_answered?
         event :gather_response, :to => :wrapup_call
         
         response do |xml_builder, the_call|
-          xml_builder.Dial(:hangupOnStar => true, :action => flow_caller_url(caller, event: "gather_response", host:  Settings.twilio_callback_host, port: Settings.twilio_callback_port, session_id:  id, question: current_voter.question_not_answered)) do
+          xml_builder.Dial(:hangupOnStar => true, :action => flow_caller_url(caller, event: "gather_response", host:  Settings.twilio_callback_host, port: Settings.twilio_callback_port, session_id:  id, question: voter_in_progress.question_not_answered)) do
             xml_builder.Conference(session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET')
           end          
         end
@@ -167,6 +167,11 @@ class PhonesOnlyCallerSession < CallerSession
       
   end
   
+  def available_for_call?
+    Campaign.preview_power_campaign?(campaign.type) ? state == "conference_started_phones_only" : state == "conference_started_phones_only_predictive"
+  end
+  
+  
   def skip_all_questions?
     digit == "999"
   end
@@ -181,19 +186,9 @@ class PhonesOnlyCallerSession < CallerSession
     current_voter.question_not_answered
   end
   
-  def current_voter_in_progress
-    voter_id = RedisCallerSession.voter_in_progress(self.id)
-    return RedisVoter.read(voter_id) unless voter_id.nil? 
-  end
-  
-  
-  def current_voter
-    voter_id = RedisCallerSession.voter_in_progress(self.id)
-    Voter.find(voter_id)
-  end
   
   def more_questions_to_be_answered?
-    !current_voter.question_not_answered.nil?
+    !voter_in_progress.question_not_answered.nil?
   end
   
   def call_answered?
