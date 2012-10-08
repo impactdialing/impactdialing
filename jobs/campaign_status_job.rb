@@ -3,8 +3,7 @@ class CampaignStatusJob
   include SidekiqEvents
   
    def perform(event, campaign_id, call_attempt_id, caller_session_id)
-     send(event, campaign_id, call_attempt_id, caller_session_id)
-               
+     send(event, campaign_id, call_attempt_id, caller_session_id)               
    end
    
    def dialing(campaign_id, call_attempt_id, caller_session_id)

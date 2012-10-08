@@ -194,6 +194,7 @@ describe Predictive do
       2.times do |index|
         caller_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true) 
         RedisCaller.add_caller(campaign.id, caller_session.id)
+        RedisCaller.move_to_on_hold(campaign.id, caller_session.id)
       end
       num_to_call = campaign.number_of_voters_to_dial
       campaign.should_not_receive(:num_to_call_predictive_simulate)
@@ -279,6 +280,7 @@ describe Predictive do
        3.times do |index|
          caller_session = Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true) 
          RedisCaller.add_caller(campaign.id, caller_session.id)
+         RedisCaller.move_to_on_hold(campaign.id, caller_session.id)
        end
        
        campaign.number_of_simulated_voters_to_dial.should eq(3)
@@ -289,6 +291,7 @@ describe Predictive do
      3.times do |index|
        caller_session = Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true) 
        RedisCaller.add_caller(campaign.id, caller_session.id)
+       RedisCaller.move_to_on_hold(campaign.id, caller_session.id)
      end
      campaign.number_of_simulated_voters_to_dial.should eq(3)
    end
