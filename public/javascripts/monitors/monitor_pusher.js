@@ -7,7 +7,7 @@ var channel = null;
 function update_status_and_duration(caller_selector, status){
 	if ($($(caller_selector).find('.status')).html() != status) {
   	  $($(caller_selector).find('.status')).html(status)
-	  $($(caller_selector).find('.timer')).stopwatch('reset');
+	    $($(caller_selector).find('.timer')).stopwatch('reset');
 	}
 }
 
@@ -74,7 +74,7 @@ function subscribe_and_bind_events_monitoring(session_id){
       var caller = ich.caller(data);
       
 			$('#caller_table').children().append(caller);
-			$(caller_selector).find(".campaigns").html(forming_select_tag(data));
+			//$(caller_selector).find(".campaigns").html(forming_select_tag(data));
 			$($(caller_selector).find('.timer')).stopwatch();
 			update_campaign_row(data);		
     }
