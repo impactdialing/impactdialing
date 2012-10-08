@@ -71,12 +71,14 @@ describe CallAttempt do
   it "should disconnect call" do
      voter = Factory(:voter)
      call_attempt = Factory(:call_attempt, :voter => voter)
+     caller = Factory(:caller)
      now = Time.now
-     call_attempt.disconnect_call(now, 12, "url")
+     call_attempt.disconnect_call(now, 12, "url", caller.id)
      call_attempt.status.should eq(CallAttempt::Status::SUCCESS)
      call_attempt.call_end.should eq(now)
      call_attempt.recording_duration.should eq(12)
      call_attempt.recording_url.should eq("url")     
+     call_attempt.caller_id.should eq(caller.id)
    end
    
    it "can be scheduled for later" do

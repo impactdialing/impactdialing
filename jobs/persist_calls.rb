@@ -65,8 +65,8 @@ class PersistCalls
       call = Call.find(disconnected_call['id'])
       call_attempt = call.call_attempt
       voter = call_attempt.voter
-      call_attempt.disconnect_call(disconnected_call['current_time'], disconnected_call['recording_duration'], disconnected_call['recording_url'] )
-      voter.disconnect_call
+      call_attempt.disconnect_call(disconnected_call['current_time'], disconnected_call['recording_duration'], disconnected_call['recording_url'], disconnected_call['caller_id'] )
+      voter.disconnect_call(disconnected_call['caller_id'])
       call_attempts << call_attempt
       voters << voter
     end    
