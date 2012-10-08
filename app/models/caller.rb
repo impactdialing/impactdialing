@@ -39,9 +39,6 @@ class Caller < ActiveRecord::Base
     self.pin = uniq_pin
   end
 
-
-
-
   def is_on_call?
     !caller_sessions.blank? && caller_sessions.on_call.size > 0
   end
@@ -100,23 +97,15 @@ class Caller < ActiveRecord::Base
     result
   end
 
-  # def reassign_to_another_campaign(caller_session)
-  #   return unless caller_session.attempt_in_progress.nil?
-  #   if self.is_phones_only?
-  #        if (caller_session.campaign.predictive_type != "preview" && caller_session.campaign.predictive_type != "progressive")
-  #          Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-  #          Twilio::Call.redirect(caller_session.sid, phones_only_caller_index_url(:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, session_id: caller_session.id, :campaign_reassigned => true))
-  #        end
-  #      else
-  #        caller_session.reassign_caller_session_to_campaign
-  #        if campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE
-  #          caller_session.publish('conference_started', {})
-  #        else
-  #          caller_session.publish('caller_connected_dialer', {})
-  #        end
-  #      end
-  # end
-
+  def reassign_to_another_campaign(caller_session)
+    return unless caller_session.attempt_in_progress.nil?
+    if self.is_phones_only?
+      caller_session.redirect_caller if caller_session.campaign.type == Campaign::Type::PREDICTIVE
+    else
+      caller_session.reassign_caller_session_to_campaign
+      caller_session.run(:start_conf)
+    end
+  end
 
   def create_caller_session(session_key, sid, caller_type)
     if is_phones_only?
