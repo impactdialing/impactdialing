@@ -19,7 +19,7 @@ class CallsController < ApplicationController
       call_attempt = @call.call_attempt
       call_attempt.connect_caller_to_lead
     end
-    @call.run(params[:event])
+    render xml: @call.run(params[:event])
   end
   
   
