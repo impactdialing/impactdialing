@@ -81,7 +81,7 @@ class CallerSession < ActiveRecord::Base
       end 
       
       
-      state all - [:initial] do
+      state all do
         event :end_conf, :to => :conference_ended
       end
       
@@ -167,7 +167,6 @@ class CallerSession < ActiveRecord::Base
   
   def wrapup_attempt_in_progress
     unless attempt_in_progress.nil?
-      RedisCall.push_to_wrapped_up_call_list(attempt_in_progress.attributes.merge(caller_type: caller_type))
       enqueue_dial_flow(CampaignStatusJob, ["wrapped_up", campaign.id, attempt_in_progress.id, self.id])           
     end  
   end
