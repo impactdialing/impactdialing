@@ -50,7 +50,7 @@ class CampaignStatusJob
    end
    
    def caller_disconnected(campaign_id, call_attempt_id, caller_session_id)
-     RedisCaller.disconnected(campaign_id, caller_session_id)
+     RedisCaller.disconnect_caller(campaign_id, caller_session_id)
      enqueue_monitor_caller_flow(MonitorCallerJob, [campaign_id, caller_session_id, "caller_disconnected", "delete"])
    end
    
