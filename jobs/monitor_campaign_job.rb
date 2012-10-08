@@ -21,7 +21,7 @@ class MonitorCampaignJob
   end
   
   def push_campaign_info(session, info)
-    ::Pusher[session].trigger('update_campaign_info', info.merge!(event: event))
+    ::Pusher[session].trigger('update_campaign_info', info)
   end
   
 end
