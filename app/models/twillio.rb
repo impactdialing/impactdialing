@@ -38,7 +38,7 @@ class Twillio
     attempt = voter.call_attempts.create(campaign:  campaign, dialer_mode:  campaign.type, status:  CallAttempt::Status::RINGING, call_start:  Time.now)
     voter.update_attributes(:last_call_attempt_id => attempt.id, :last_call_attempt_time => Time.now, status: CallAttempt::Status::RINGING)
     Call.create(call_attempt: attempt, all_states: "", state: "initial")
-    enqueue_dial_flow(CampaignStatusJob, ["dialing", campaign.id, call_attempt.id, nil])
+    enqueue_dial_flow(CampaignStatusJob, ["dialing", campaign.id, attempt.id, nil])
     attempt
   end
   
