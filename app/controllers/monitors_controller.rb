@@ -3,7 +3,7 @@ class MonitorsController < ClientController
 
   def index
     @campaigns = account.campaigns.with_running_caller_sessions.
-      includes(caller_sessions_on_call: [:caller, :attempt_in_progress]).where(caller_sessions: {on_call: true})
+      includes(caller_sessions_on_call: [:caller, :attempt_in_progress])
     @all_campaigns = Campaign.connection.execute(account.campaigns.active.select([:name, :id]).to_sql).to_a
     twilio_capability = Twilio::Util::Capability.new(TWILIO_ACCOUNT, TWILIO_AUTH)
     twilio_capability.allow_client_outgoing(MONITOR_TWILIO_APP_SID)
