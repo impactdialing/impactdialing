@@ -17,7 +17,7 @@ class CampaignStatusJob
    def connected(campaign_id, call_attempt_id, caller_session_id)
      RedisCampaignCall.move_ringing_to_inprogress(campaign_id, call_attempt_id);
      RedisCaller.move_on_hold_to_on_call(campaign_id, caller_session_id)
-     enqueue_monitor_caller_flow(MonitorCallerJob, [campaign_id, caller_session_id, "On Call", "update"])
+     enqueue_monitor_caller_flow(MonitorCallerJob, [campaign_id, caller_session_id, "On call", "update"])
    end
    
    def disconnected(campaign_id, call_attempt_id, caller_session_id)
