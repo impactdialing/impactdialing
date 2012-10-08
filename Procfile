@@ -21,6 +21,7 @@ dial_flow: bundle exec sidekiq -c 20 -q dial_flow
 persist_worker: rake environment resque:work QUEUE=persist_jobs
 
 monitor_caller_update: bundle exec sidekiq -c 20 -q monitor_caller_update
+monitor_campaign_update: bundle exec sidekiq -c 20 -q monitor_campaign_update
 
 
 clock: rake environment resque:scheduler

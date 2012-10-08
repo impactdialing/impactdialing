@@ -21,9 +21,7 @@ class MonitorCampaignJob
   end
   
   def push_campaign_info(session, info)
-    campaign_deferrable = ::Pusher[session].trigger_async('update_campaign_info', info.merge!(event: event))
-    campaign_deferrable.callback {}
-    campaign_deferrable.errback { |error| puts error }                        
+    ::Pusher[session].trigger('update_campaign_info', info.merge!(event: event))
   end
   
 end

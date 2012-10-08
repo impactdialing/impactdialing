@@ -160,7 +160,7 @@ class CallerSession < ActiveRecord::Base
   
   
   def end_session
-    update_attributes(endtime: Time.now)
+    self.update_attributes(endtime: Time.now)
     RedisPredictiveCampaign.remove(campaign.id, campaign.type) if RedisCaller.count(campaign.id) == 1
     enqueue_dial_flow(CampaignStatusJob, ["caller_disconnected", campaign.id, nil, self.id])       
   end
