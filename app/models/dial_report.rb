@@ -5,7 +5,7 @@ class DialReport
     @to_date = to_date
     @campaign = campaign
     @leads_grouped_by_status = @campaign.all_voters.
-      from("voters use index (index_voters_on_campaign_id_and_status)").
+      from("voters use index (voters_campaign_status_time)").
       select('status').group("status").count
     @leads_grouped_by_status_filtered = @campaign.all_voters.last_call_attempt_within(@from_date, @to_date).group("status").count
     @attempts_grouped_by_status_filtered = @campaign.call_attempts.from('call_attempts use index (index_call_attempts_on_campaign_id_created_at_status)').
