@@ -8,7 +8,6 @@ else
     
     config.server_middleware do |chain|
       chain.remove Sidekiq::Middleware::Server::RetryJobs
-      chain.remove Sidekiq::ExceptionHandler
     end
   end
 
