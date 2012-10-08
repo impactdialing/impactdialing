@@ -31,7 +31,7 @@ function update_caller_row(data){
   var caller_selector = 'tr#caller_'+data.caller_session_id;
   if($(caller_selector).find('.assign_campaign').val() != data.campaign_fields.id){
     $(caller_selector).find('.assign_campaign :selected').removeAttr('selected');
-    $(caller_selector).find('.assign_campaign option[value="'+data.campaign_fields.id+'"]').attr('selected','selected')
+    $(caller_selector).find('.assign_campaign option[value="' + data.campaign_fields.id + '"]').attr('selected','selected')
   }
 }
 
@@ -74,7 +74,7 @@ function subscribe_and_bind_events_monitoring(session_id){
       var caller = ich.caller(data);
       
 			$('#caller_table').children().append(caller);
-			//$(caller_selector).find(".campaigns").html(forming_select_tag(data));
+			$(caller_selector).find(".campaigns").html(forming_select_tag(data));
 			$($(caller_selector).find('.timer')).stopwatch();
 			update_campaign_row(data);		
     }

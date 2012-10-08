@@ -139,7 +139,7 @@
       <td>
         <div class="timer">
           <div class="display"><span class="hr">00</span>:<span class="min">00</span>:<span class="sec">00</span></div>
-        <div>
+        </div>
       </td>
       <td>
         <a class ="action secondary monitor" href="#" action="eavesdrop" session_id={{session_id}}>Eavesdrop</a>
@@ -212,19 +212,17 @@
                 <td class="caller_name"><%= caller_session.caller.identity_name %></td>
                 <% status, d = caller_status_and_duration(caller_session) %>
                 <td class="status"><%= status %></td>
-                <!--
                   <td>
                     <select class='assign_campaign'>
-                      <%# options_for_select(@all_campaigns, c.id) %>
+                      <%= options_for_select(@all_campaigns, c.id) %>
                     </select>
                   </td>
-                -->
                 <td>
                   <div class="timer">
                     <div class="display">
                       <span class="hr"><%= d[0]+d[1] %></span>:<span class="min"><%= d[3]+d[4] %></span>:<span class="sec"><%= d[6]+d[7] %></span>
                     </div>
-                  <div>
+                  </div>
                 </td>
                 <td>
                   <a class ="action secondary monitor" href="#" action="eavesdrop" session_id="<%= caller_session.id %>">Eavesdrop</a>
