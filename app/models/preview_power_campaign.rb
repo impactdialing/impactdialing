@@ -12,7 +12,6 @@ module PreviewPowerCampaign
     rescue ActiveRecord::StaleObjectError
       retry
     end
-    RedisVoter.load_voter_info(voter.id, voter) unless voter.nil?
     voter
   end  
   

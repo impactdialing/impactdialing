@@ -124,17 +124,6 @@ describe Campaign do
       user.account.campaigns.with_running_caller_sessions.should be_empty
     end
 
-    it "should return caller session, which is oldest and available to take call" do
-      campaign = Factory(:campaign, :type =>Campaign::Type::PREVIEW)
-      caller_session1 = Factory(:caller_session, :campaign => campaign, :on_call => true)
-      caller_session2 = Factory(:caller_session, :campaign => campaign, :on_call => true)
-      caller_session3 = Factory(:caller_session, :campaign => campaign, :on_call => true)
-      caller_session2.update_attributes(:available_for_call => true)
-      caller_session1.update_attributes(:available_for_call => true, :updated_at => Time.now + 1.second)
-      caller_session3.update_attributes(:updated_at => Time.now + 5.second)
-      campaign.oldest_available_caller_session.should == caller_session2
-
-    end
   end
 
   describe "answer report" do

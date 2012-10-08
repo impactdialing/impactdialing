@@ -46,21 +46,14 @@ describe CallAttempt do
     call_attempt.wrapup_time.should eq(now)    
   end
   
-  it "should process answered by machine" do
-    campaign = Factory(:campaign)    
-    voter = Factory(:voter)
-    call_attempt = Factory(:call_attempt, :voter => voter, campaign: campaign)
-    now = Time.now
-    call_attempt.process_answered_by_machine(now)        
-    call_attempt.status.should eq('Hangup or answering machine')
-    call_attempt.connecttime.should eq(now)
-  end
   
   it "should end_answered_by_machine" do
     voter = Factory(:voter)  
     call_attempt = Factory(:call_attempt, :voter => voter)
     now = Time.now
-    call_attempt.end_answered_by_machine(now)
+    nowminus2 = now - 2.minutes
+    call_attempt.end_answered_by_machine(nowminus2, now)
+    call_attempt.connecttime.should eq(nowminus2)
     call_attempt.call_end.should eq(now)
     call_attempt.wrapup_time.should eq(now)
   end
@@ -74,13 +67,6 @@ describe CallAttempt do
     call_attempt.call_end.should eq(now)
   end
   
-  it "should end answered call" do
-    voter = Factory(:voter)
-    call_attempt = Factory(:call_attempt, :voter => voter)
-    now = Time.now
-    call_attempt.end_answered_call(now)
-    call_attempt.call_end.should eq(now)
-  end
   
   it "should disconnect call" do
      voter = Factory(:voter)
@@ -103,13 +89,24 @@ describe CallAttempt do
    end
    
 
-  it "should wrapup call" do
+  it "should wrapup call webui" do
     voter = Factory(:voter)
     call_attempt = Factory(:call_attempt, :voter => voter)
     now = Time.now
-    call_attempt.wrapup_now(now)
+    call_attempt.wrapup_now(now, CallerSession::CallerType::TWILIO_CLIENT)
     call_attempt.wrapup_time.should eq(now)
+    call_attempt.voter_response_processed.should be_false
   end
+  
+  it "should wrapup call phones" do
+    voter = Factory(:voter)
+    call_attempt = Factory(:call_attempt, :voter => voter)
+    now = Time.now
+    call_attempt.wrapup_now(now, CallerSession::CallerType::PHONE)
+    call_attempt.wrapup_time.should eq(now)
+    call_attempt.voter_response_processed.should be_true
+  end
+  
   
   it "should connect lead to caller" do
     voter = Factory(:voter)

@@ -1,12 +1,12 @@
 class MonitorSession
   
   def self.monitor_session(campaign_id)
-    Redis::Set.new("monitor:#{campaign_id}", $redis_monitor_connection)    
+    Redis::SortedSet.new("monitor:#{campaign_id}", $redis_monitor_connection)    
   end
     
   def self.add_session(campaign_id)
     key = generate_session_key
-    monitor_session(campaign_id).add(key)
+    monitor_session(campaign_id).add(key, Time.now.to_i)
     key        
   end
   
@@ -17,6 +17,11 @@ class MonitorSession
   def self.sessions(campaign_id)
     monitor_session(campaign_id).members
   end
+  
+  def self.sessions_last_hour(campaign_id)
+    monitor_session(campaign_id).rangebyscore((Time.now - 60.minutes).to_i, Time.now.to_i)
+  end
+  
   
   def self.generate_session_key
     secure_digest(Time.now, (1..10).map{ rand.to_s })

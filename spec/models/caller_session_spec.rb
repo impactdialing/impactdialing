@@ -14,11 +14,13 @@ describe CallerSession do
 
 
   it "lists available caller sessions" do
-    call1 = Factory(:caller_session, :available_for_call=> true, :on_call=>true)
-    Factory(:caller_session, :available_for_call=> false, :on_call=>false)
-    Factory(:caller_session, :available_for_call=> true, :on_call=>false)
-    Factory(:caller_session, :available_for_call=> false, :on_call=>false)
-    CallerSession.available.should include(call1) 
+    caller_session1 = Factory(:caller_session, state: 'initial')
+    caller_session2 = Factory(:webui_caller_session, state: "connected")
+    caller_session3 = Factory(:webui_caller_session, state: "paused")
+    caller_session4 = Factory(:phones_only_caller_session, state: "conference_started_phones_only_predictive")
+    caller_session5 = Factory(:phones_only_caller_session, state: "conference_started_phones_only")
+    
+    CallerSession.available.should include(caller_session2, caller_session4, caller_session5) 
   end
 
   it "has one attempt in progress" do
@@ -251,11 +253,14 @@ describe CallerSession do
       @caller = Factory(:caller)
       @script = Factory(:script)
       @campaign =  Factory(:campaign, script: @script)
+      @call_attempt = Factory(:call_attempt)
     end
 
     it "should move caller to end conference from account not activated" do
       caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "account_not_activated")
-      caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id,  "publish_caller_disconnected"])
+      caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id,  "publish_caller_disconnected"])      
+      RedisPredictiveCampaign.should_receive(:remove).with(@campaign.id, @campaign.type)
+      caller_session.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["caller_disconnected", @campaign.id, nil, caller_session.id])       
       caller_session.end_conf!
       caller_session.state.should eq('conference_ended')
     end
@@ -263,20 +268,45 @@ describe CallerSession do
 
     it "should set caller session endtime" do
       caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "account_not_activated")
-      RedisCallerSession.load_caller_session_info(caller_session.id, caller_session)            
       caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id,  "publish_caller_disconnected"])
+      RedisPredictiveCampaign.should_receive(:remove).with(@campaign.id, @campaign.type)
+      caller_session.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["caller_disconnected", @campaign.id, nil, caller_session.id])       
       caller_session.end_conf!
       caller_session.endtime.should_not be_nil
-      RedisCallerSession.read(caller_session.id)['endtime'].should_not be_nil
     end
-
+    
     it "should render hangup twiml" do
       caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "account_not_activated")
       caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id,  "publish_caller_disconnected"])
+      RedisPredictiveCampaign.should_receive(:remove).with(@campaign.id, @campaign.type)
+      caller_session.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["caller_disconnected", @campaign.id, nil, caller_session.id])             
       caller_session.end_conf!
       caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
     end
+    
+    it "should end session with attempt in progress" do
+      call_attempt = Factory(:call_attempt)
+      caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "account_not_activated", attempt_in_progress: call_attempt)
+      caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id,  "publish_caller_disconnected"])
+      RedisPredictiveCampaign.should_receive(:remove).with(@campaign.id, @campaign.type)      
+      caller_session.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["caller_disconnected", @campaign.id, nil, caller_session.id])             
+      RedisCall.should_receive(:push_to_wrapped_up_call_list).with(call_attempt.attributes.merge(caller_type: caller_session.caller_type))
+      caller_session.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["wrapped_up", @campaign.id, call_attempt.id, caller_session.id])                   
+      caller_session.end_conf!
+      caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
+    end
+    
 
+  end
+  
+  describe "end_running_call" do
+    it "should end call" do
+      caller_session = Factory(:caller_session)
+      caller_session.should_receive(:enqueue_call_flow).with(EndRunningCallJob, [caller_session.sid])
+      caller_session.should_receive(:enqueue_call_flow).with(EndCallerSessionJob, [caller_session.id])
+      caller_session.end_running_call
+      caller_session.endtime.should_not be_nil      
+    end
   end
   
   describe "caller time" do

@@ -72,6 +72,38 @@ class Voter < ActiveRecord::Base
     return [self.Phone] unless selection
     selection.select { |field| Voter.upload_fields.include?(field) }.map { |field| self.send(field) }
   end
+  
+  def abandoned(time)
+    self.status = CallAttempt::Status::ABANDONED
+    self.call_back = false
+    self.caller_session = nil
+    self.caller_id = nil
+  end
+    
+  def end_answered_by_machine
+    self.caller_session = nil
+    self.status = campaign.use_recordings? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP    
+    self.call_back = false
+  end
+  
+  def end_unanswered_call(call_status, time)
+    self.status = CallAttempt::Status::MAP[call_status]
+    self.call_back = false
+  end
+  
+  
+  def disconnect_call(time)
+    self.status = CallAttempt::Status::SUCCESS
+    self.caller_session = nil
+  end    
+  
+  def schedule_for_later(date)
+    scheduled_date = DateTime.strptime(date, "%m/%d/%Y %H:%M").to_time
+    self.status = Status::SCHEDULED
+    self.scheduled_date = scheduled_date
+    self.call_back = true
+  end
+  
 
   def selected_custom_fields(selection)
     return [] unless selection
@@ -91,61 +123,6 @@ class Voter < ActiveRecord::Base
     count(:conditions => "#{column_name} = #{column_value} AND active = 1 AND (status not in ('Call in progress','Ringing','Call ready to dial','Call completed with success.') or call_back=1)")
   end
 
-  def dial
-    return false if status == Voter::SUCCESS
-    message = "#{self.Phone} for campaign id:#{self.campaign_id}"
-    logger.info "[dialer] Dialling #{message} "
-    call_attempt = new_call_attempt
-    callback_params = {:call_attempt_id => call_attempt.id, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port}
-    response = Twilio::Call.make(
-        self.campaign.caller_id,
-        self.Phone,
-        twilio_callback_url(callback_params),
-        'FallbackUrl' => TWILIO_ERROR,
-        'StatusCallback' => twilio_call_ended_url(callback_params),
-        'Timeout' => '15',
-        'IfMachine' => self.campaign.answering_machine_detect ? 'Continue' : 'Hangup'
-    )
-
-    if response["TwilioResponse"]["RestException"]
-      logger.info "[dialer] Exception when attempted to call #{message}  Response: #{response["TwilioResponse"]["RestException"].inspect}"
-      call_attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
-      update_attributes(status: CallAttempt::Status::FAILED)
-      return false
-    end
-    logger.info "[dialer] Dialed #{message}. Response: #{response["TwilioResponse"].inspect}"
-    call_attempt.update_attributes!(:sid => response["TwilioResponse"]["Call"]["Sid"])
-    true
-  end
-
-
-  def dial_predictive_em(iter)
-    call_attempt = new_call_attempt(self.campaign.type)
-    twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-    Rails.logger.info "#{call_attempt.id} - before call"
-    http = twilio_lib.make_call_em(campaign, self, call_attempt)
-    http.callback {
-      Rails.logger.info "#{call_attempt.id} - after call"
-      response = JSON.parse(http.response)
-      if response["RestException"]
-        puts response["RestException"]
-        handle_failed_call(call_attempt, self)
-      else
-        call_attempt.update_attributes(:sid => response["sid"])
-      end
-      iter.return(http)      
-       }
-    http.errback {
-      puts JSON.parse(http.response)
-      iter.return(http)
-       }
-  end
-  
-  def handle_failed_call(attempt, voter)
-    attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
-    voter.update_attributes(status: CallAttempt::Status::FAILED)
-  end
-    
 
   def get_attribute(attribute)
     return self[attribute] if self.has_attribute? attribute
@@ -214,10 +191,6 @@ class Voter < ActiveRecord::Base
     @caller_session
   end
 
-  def current_call_attempt
-    answer_recorded_by.attempt_in_progress
-  end
-
   def answer_recorded_by=(caller_session)
     @caller_session = caller_session
   end
@@ -253,15 +226,5 @@ class Voter < ActiveRecord::Base
     end    
   end
 
-  private
-
-  def new_call_attempt(mode = 'robo')
-    call_attempt = self.call_attempts.create(campaign:  self.campaign, dialer_mode:  mode, status:  CallAttempt::Status::RINGING, call_start:  Time.now)
-    update_attributes(:last_call_attempt => call_attempt, :last_call_attempt_time => Time.now, :status => CallAttempt::Status::RINGING)    
-    Call.create(call_attempt: call_attempt, all_states: "", state: 'initial')
-    call_attempt
-  end
-  
-  
 
 end

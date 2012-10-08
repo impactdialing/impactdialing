@@ -11,11 +11,9 @@ class CallerSession < ActiveRecord::Base
   belongs_to :caller
   belongs_to :campaign
 
-  scope :on_call, :conditions => {:on_call => true}
-  scope :available, :conditions => {:available_for_call => true, :on_call => true}
-  scope :not_available, :conditions => {:available_for_call => false, :on_call => true}
+  scope :on_call, where("state != 'conference_ended' || state != 'stopped' ")
+  scope :available, where("state = 'connected' || state = 'conference_started_phones_only_predictive' || state = 'conference_started_phones_only' ")
   
-  scope :not_on_call, :conditions => {:on_call => false}
   scope :connected_to_voter, where('voter_in_progress is not null')
   scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
   scope :on_campaign, lambda{|campaign| where("campaign_id = #{campaign.id}") unless campaign.nil?}  
@@ -154,33 +152,26 @@ class CallerSession < ActiveRecord::Base
     end      
   end
   
-  def end_session
-    update_attributes(end_time: Time.now)
-    if Campaign.predictive_campaign?(campaign.type) == Campaign::Type::PREDICTIVE
-      RedisCampaign.remove_running_predictive_campaign(campaign.id)
-    end
-    
-    RedisCallerSession.end_session(self.id)
-    RedisCaller.disconnect_caller(campaign.id, self.id )
-    if campaign.type == Campaign::Type::PREDICTIVE && RedisCaller.zero?(campaign.id)
-      RedisCampaign.remove_running_predictive_campaign(campaign.id)
-    end
-  end
-  
-  
-  def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)    
+  def end_running_call
     end_caller_session
     enqueue_call_flow(EndRunningCallJob, [self.sid])
     enqueue_call_flow(EndCallerSessionJob, [self.id])
   end  
   
   
+  def end_session
+    update_attributes(endtime: Time.now)
+    RedisPredictiveCampaign.remove(campaign.id, campaign.type)
+    enqueue_dial_flow(CampaignStatusJob, ["caller_disconnected", campaign.id, nil, self.id])       
+  end
+  
   def wrapup_attempt_in_progress
     unless attempt_in_progress.nil?
-      enqueue_call_flow(CampaignStatusJob, ["wrapped_up", campaign.id, attempt_in_progress.id, self.id])       
-      RedisCampaignCall.move_to_completed(campaign.id, redis_attempt_in_progress)
-    end
-    
+      puts "A"
+      RedisCall.push_to_wrapped_up_call_list(attempt_in_progress.attributes.merge(caller_type: caller_type))
+      puts "B"
+      enqueue_dial_flow(CampaignStatusJob, ["wrapped_up", campaign.id, attempt_in_progress.id, self.id])           
+    end  
   end
   
   
@@ -274,8 +265,8 @@ class CallerSession < ActiveRecord::Base
    end
    
    def start_conference    
-     RedisOnHoldCaller.add(campaign.id, self.id)
-     enqueue_call_flow(CampaignStatusJob, ["on_hold", campaign.id, nil, self.id])       
+     RedisOnHoldCaller.add(campaign.id, self.id) if Campaign.predictive_campaign?(campaign.type)
+     enqueue_dial_flow(CampaignStatusJob, ["on_hold", campaign.id, nil, self.id])       
    end
    
 

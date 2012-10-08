@@ -181,7 +181,7 @@ describe Caller do
       campaign = Factory(:predictive)
       caller  = Factory(:caller, campaign: campaign)
       caller_session = Factory(:caller_session, caller: caller)
-      RedisCampaign.should_receive(:add_running_predictive_campaign).with(campaign.id, campaign.type)
+      RedisPredictiveCampaign.should_receive(:add).with(campaign.id, campaign.type)
       RedisCaller.should_receive(:add_caller).with(campaign.id, caller_session.id)
       caller.started_calling(caller_session)      
     end

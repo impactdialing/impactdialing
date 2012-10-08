@@ -58,8 +58,8 @@ class PhonesOnlyCallerSession < CallerSession
         before(:always) {select_voter(voter_in_progress)}
         
         response do |xml_builder, the_call|
-          unless the_call.current_voter_in_progress.nil?
-            xml_builder.Gather(:numDigits => 1, :timeout => 10, :action => flow_caller_url(self.caller, :session => self, event: "start_conf", :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :voter => the_call.current_voter_in_progress['id']), :method => "POST", :finishOnKey => "5") do
+          unless the_call.voter_in_progress.nil?
+            xml_builder.Gather(:numDigits => 1, :timeout => 10, :action => flow_caller_url(self.caller, :session => self, event: "start_conf", :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :voter => the_call.voter_in_progress.id), :method => "POST", :finishOnKey => "5") do
               xml_builder.Say I18n.t(:read_voter_name, :first_name => the_call.voter_in_progress.FirstName, :last_name => the_call.voter_in_progress.LastName) 
             end
           else
@@ -72,9 +72,9 @@ class PhonesOnlyCallerSession < CallerSession
       
       state :choosing_voter_and_dial do
         event :start_conf, :to => :conference_started_phones_only
-        before(:always) {select_voter(current_voter_in_progress)}
+        before(:always) {select_voter(voter_in_progress)}
         response do |xml_builder, the_call|
-          if RedisCallerSession.voter_in_progress?(self.id)
+          unless voter_in_progress.nil?
             xml_builder.Say "#{the_call.voter_in_progress.FirstName}  #{the_call.voter_in_progress.LastName}." 
             xml_builder.Redirect(flow_caller_url(caller, :session_id => id, :voter_id => voter_in_progress.id, event: "start_conf", :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port), :method => "POST")
           else
@@ -145,7 +145,7 @@ class PhonesOnlyCallerSession < CallerSession
         event :next_question, :to => :wrapup_call
         before(:always) {
           question = Question.find_by_id(question_id);          
-          current_voter.answer(question, digit, self) if current_voter && question
+          voter_in_progress.answer(question, digit, self) if voter_in_progress && question
           }
           
         response do |xml_builder, the_call|
@@ -177,13 +177,11 @@ class PhonesOnlyCallerSession < CallerSession
   end
   
   def wrapup_call_attempt
-     redis_attempt_in_progress = RedisCallerSession.attempt_in_progress(self.id)    
-     RedisCallAttempt.set_voter_response_processed(redis_attempt_in_progress)
-     CallAttempt.find(redis_attempt_in_progress).wrapup_now
+    RedisCall.push_to_wrapped_up_call_list(attempt_in_progress.attributes.merge(caller_type: CallerSession::CallerType::PHONE));    
   end
     
   def unanswered_question
-    current_voter.question_not_answered
+    voter_in_progress.question_not_answered
   end
   
   
@@ -192,15 +190,14 @@ class PhonesOnlyCallerSession < CallerSession
   end
   
   def call_answered?
-    redis_attempt_in_progress = RedisCallerSession.attempt_in_progress(self.id)    
-    RedisCallAttempt.call_answered?(redis_attempt_in_progress)  && more_questions_to_be_answered?
+    attempt_in_progress.try(:connecttime) != nil && more_questions_to_be_answered?
   end
   
   
   def select_voter(old_voter)
     voter = campaign.next_voter_in_dial_queue(old_voter.try(:[], 'id'))
     unless voter.nil?
-      RedisCallerSession.set_voter_in_progress(self.id, voter.id)
+      self.update_attributes(voter_in_progress: voter)
     end
     voter    
   end

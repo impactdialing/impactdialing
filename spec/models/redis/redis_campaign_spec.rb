@@ -1,21 +1,21 @@
 require "spec_helper"
 
-describe RedisCampaign do
+describe RedisPredictiveCampaign do
   
   
   it "should add to running campaigns" do
     account = Factory(:account)
     campaign = Factory(:predictive, name: "test123", account: account)
-    RedisCampaign.add_running_predictive_campaign(campaign.id, campaign.type)
-    RedisCampaign.running_campaigns.should eq(["#{campaign.id}"])
+    RedisPredictiveCampaign.add(campaign.id, campaign.type)
+    RedisPredictiveCampaign.running_campaigns.should eq(["#{campaign.id}"])
   end
   
   it "should add the same running campaign once to the set" do
     account = Factory(:account)
     campaign = Factory(:predictive, name: "test123", account: account)
-    RedisCampaign.add_running_predictive_campaign(campaign.id, campaign.type)
-    RedisCampaign.add_running_predictive_campaign(campaign.id, campaign.type)
-    RedisCampaign.running_campaigns.should eq(["#{campaign.id}"])
+    RedisPredictiveCampaign.add(campaign.id, campaign.type)
+    RedisPredictiveCampaign.add(campaign.id, campaign.type)
+    RedisPredictiveCampaign.running_campaigns.should eq(["#{campaign.id}"])
   end
   
   
@@ -23,9 +23,9 @@ describe RedisCampaign do
     account = Factory(:account)
     campaign1 = Factory(:predictive, name: "test123", account: account)
     campaign2 = Factory(:predictive, name: "test456", account: account)
-    RedisCampaign.add_running_predictive_campaign(campaign1.id, campaign1.type)
-    RedisCampaign.add_running_predictive_campaign(campaign2.id, campaign2.type)    
-    RedisCampaign.running_campaigns.should eq(["#{campaign1.id}", "#{campaign2.id}"])
+    RedisPredictiveCampaign.add(campaign1.id, campaign1.type)
+    RedisPredictiveCampaign.add(campaign2.id, campaign2.type)    
+    RedisPredictiveCampaign.running_campaigns.should eq(["#{campaign1.id}", "#{campaign2.id}"])
   end
   
   

@@ -9,13 +9,12 @@ module SidekiqEvents
       enqueue('call_flow', job, event_args)
     end
     
-    def enqueue_dialer_flow(job, event_args)
-      enqueue('dialer_flow', job, event_args)
+    def enqueue_dial_flow(job, event_args)
+      enqueue('dial_flow', job, event_args)
     end
     
-    
-    def enqueue_moderator_flow(job, event_args)
-      enqueue('moderator_flow', job, event_args)
+    def enqueue_monitor_caller_flow(job, event_args)
+      enqueue('monitor_caller_update', job, event_args)
     end
     
     def enqueue_call_end_flow(job, event_args)

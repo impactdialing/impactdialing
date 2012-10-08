@@ -10,7 +10,6 @@ class WebuiCallerSession < CallerSession
       state :connected do                
         before(:always) { start_conference; publish_start_calling }
         after(:success) { enqueue_call_flow(CallerPusherJob, [self.id,  "publish_caller_conference_started"]) }
-        event :pause_conf, :to => :disconnected, :if => :disconnected?
         event :pause_conf, :to => :paused, :if => :call_not_wrapped_up?
         event :start_conf, :to => :connected
         event :run_ot_of_phone_numbers, :to=> :campaign_out_of_phone_numbers        

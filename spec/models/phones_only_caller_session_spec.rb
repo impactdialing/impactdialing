@@ -181,7 +181,7 @@ describe PhonesOnlyCallerSession do
         caller_session.should_receive(:funds_not_available?).and_return(false)
         caller_session.should_receive(:caller_reassigned_to_another_campaign?).and_return(false)
         caller_session.start_conf!
-        caller_session.current_voter_in_progress["id"].should eq(@voter.id.to_s)
+        caller_session.voter_in_progress.id.should eq(@voter.id)
       end
 
       it "should render twiml for preview when voters present" do
@@ -190,7 +190,6 @@ describe PhonesOnlyCallerSession do
         voter = Factory(:voter, FirstName:"first", LastName:"last")
         caller_session.should_receive(:funds_not_available?).and_return(false)
         caller_session.should_receive(:caller_reassigned_to_another_campaign?).and_return(false)
-        RedisVoter.load_voter_info(voter.id, voter)
         @campaign.should_receive(:next_voter_in_dial_queue).and_return(voter)
         caller_session.start_conf!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather numDigits=\"1\" timeout=\"10\" action=\"https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=start_conf&amp;session=#{caller_session.id}&amp;voter=#{voter.id}\" method=\"POST\" finishOnKey=\"5\"><Say>first  last. Press star to dial or pound to skip.</Say></Gather></Response>")
@@ -228,7 +227,7 @@ describe PhonesOnlyCallerSession do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call", attempt_in_progress: call_attempt)
         caller_session.should_receive(:funds_not_available?).and_return(false)
         caller_session.start_conf!
-        caller_session.current_voter_in_progress["id"].should eq(@voter.id.to_s)
+        caller_session.voter_in_progress.id.should eq(@voter.id)
       end
 
 
@@ -238,7 +237,6 @@ describe PhonesOnlyCallerSession do
         voter = Factory(:voter, FirstName:"first", LastName:"last")
         @campaign.should_receive(:next_voter_in_dial_queue).and_return(voter)
         caller_session.should_receive(:funds_not_available?).and_return(false)
-        RedisVoter.load_voter_info(voter.id, voter)
         caller_session.start_conf!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>first  last.</Say><Redirect method=\"POST\">https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=start_conf&amp;session_id=#{caller_session.id}&amp;voter_id=#{voter.id}</Redirect></Response>")
       end
@@ -340,17 +338,15 @@ describe PhonesOnlyCallerSession do
 
       it "should set caller state to conference_started_phones_only" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_to_dial", digit: "*", voter_in_progress: @voter)
-        RedisVoter.load_voter_info(@voter.id, @voter)
-        RedisCallerSession.set_voter_in_progress(caller_session.id, @voter.id)
+        caller_session.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["on_hold", @campaign.id, nil, caller_session.id])
         caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, @voter.id])
         caller_session.start_conf!
         caller_session.state.should eq('conference_started_phones_only')
       end
 
       it "should set attempt_in_progress to nil" do
-        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_to_dial", digit: "*")
-        RedisVoter.load_voter_info(@voter.id, @voter)
-        RedisCallerSession.set_voter_in_progress(caller_session.id, @voter.id)        
+        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_to_dial", digit: "*", voter_in_progress: @voter)
+        caller_session.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["on_hold", @campaign.id, nil, caller_session.id])
         caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, @voter.id])
         caller_session.start_conf!
         caller_session.attempt_in_progress.should be_nil
@@ -359,12 +355,9 @@ describe PhonesOnlyCallerSession do
 
       it "render correct twiml" do
         question = Factory(:question, script: @script)
-        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*")
-        RedisCallerSession.load_caller_session_info(caller_session.id, caller_session)
-        RedisVoter.load_voter_info(@voter.id, @voter)
-        RedisCallerSession.set_voter_in_progress(caller_session.id, @voter.id)        
+        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*", voter_in_progress: @voter)
+        caller_session.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["on_hold", @campaign.id, nil, caller_session.id])        
         caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, @voter.id])
-        Voter.should_receive(:find).exactly(2).and_return(@voter)
         @voter.should_receive(:question_not_answered).and_return(question)
         caller_session.start_conf!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=gather_response&amp;question=#{question.id}&amp;session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"/></Dial></Response>")
@@ -403,36 +396,16 @@ describe PhonesOnlyCallerSession do
       end
 
       it "should set caller state to conference_started_phones_only" do
-        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*")
-        RedisVoter.load_voter_info(@voter.id, @voter)
-        RedisCallerSession.set_voter_in_progress(caller_session.id, @voter.id)        
+        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*", voter_in_progress: @voter)
+        caller_session.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["on_hold", @campaign.id, nil, caller_session.id])
         caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, @voter.id])
         caller_session.start_conf!
         caller_session.state.should eq('conference_started_phones_only')
       end
 
-      it "should set on_call to true" do
-        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*")
-        RedisVoter.load_voter_info(@voter.id, @voter)
-        RedisCallerSession.set_voter_in_progress(caller_session.id, @voter.id)        
-        caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, @voter.id])
-        caller_session.start_conf!
-        caller_session.on_call.should be_true
-      end
-
-      it "should set available_for_call to true" do
-        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*")
-        RedisVoter.load_voter_info(@voter.id, @voter)
-        RedisCallerSession.set_voter_in_progress(caller_session.id, @voter.id)        
-        caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, @voter.id])
-        caller_session.start_conf!
-        caller_session.available_for_call.should be_true
-      end
-
       it "should set attempt_in_progress to nil" do
-        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*")
-        RedisVoter.load_voter_info(@voter.id, @voter)
-        RedisCallerSession.set_voter_in_progress(caller_session.id, @voter.id)        
+        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*", voter_in_progress: @voter)
+        caller_session.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["on_hold", @campaign.id, nil, caller_session.id])
         caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, @voter.id])
         caller_session.start_conf!
         caller_session.attempt_in_progress.should be_nil
@@ -440,12 +413,9 @@ describe PhonesOnlyCallerSession do
 
       it "render correct twiml" do
         question = Factory(:question, script: @script)
-        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*")
-        RedisVoter.load_voter_info(@voter.id, @voter)
-        RedisCallerSession.set_voter_in_progress(caller_session.id, @voter.id)        
-        puts RedisCallerSession.read(caller_session.id)
+        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*", voter_in_progress: @voter)
+        caller_session.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["on_hold", @campaign.id, nil, caller_session.id])
         caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, @voter.id])
-        Voter.should_receive(:find).exactly(2).and_return(@voter)
         @voter.should_receive(:question_not_answered).and_return(question)
         caller_session.start_conf!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=gather_response&amp;question=#{question.id}&amp;session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"/></Dial></Response>")
@@ -577,8 +547,7 @@ describe PhonesOnlyCallerSession do
 
       it "move to wrapup state if caller has skipped all questions" do
         call_attempt = Factory(:call_attempt, voter: @voter)
-        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: false, campaign: @campaign, state: "read_next_question", voter_in_progress: @voter, question_id: @question.id)
-        RedisCallerSession.set_attempt_in_progress(caller_session.id, call_attempt.id)
+        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: false, campaign: @campaign, state: "read_next_question", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt)
         caller_session.should_receive(:disconnected?).and_return(false)
         caller_session.should_receive(:skip_all_questions?).and_return(true)
         caller_session.submit_response!
@@ -587,8 +556,7 @@ describe PhonesOnlyCallerSession do
 
       it "render correct twiml" do
         call_attempt = Factory(:call_attempt, voter: @voter)
-        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: false, campaign: @campaign, state: "read_next_question", voter_in_progress: @voter, question_id: @question.id)
-        RedisCallerSession.set_attempt_in_progress(caller_session.id, call_attempt.id)
+        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: false, campaign: @campaign, state: "read_next_question", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt)
         caller_session.should_receive(:disconnected?).and_return(false)
         caller_session.should_receive(:skip_all_questions?).and_return(true)
         caller_session.submit_response!
@@ -609,8 +577,6 @@ describe PhonesOnlyCallerSession do
       it "move to voter_response state " do
         call_attempt = Factory(:call_attempt, voter: @voter)
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: false, campaign: @campaign, state: "read_next_question", question_id: @question.id, attempt_in_progress: call_attempt)
-        RedisVoter.load_voter_info(@voter.id, @voter)
-        RedisCallerSession.set_voter_in_progress(caller_session.id, @voter.id)        
         caller_session.should_receive(:disconnected?).and_return(false)
         caller_session.submit_response!
         caller_session.state.should eq('voter_response')
@@ -619,8 +585,6 @@ describe PhonesOnlyCallerSession do
       it "should persist the answer " do
         call_attempt = Factory(:call_attempt, voter: @voter)
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: false, campaign: @campaign, state: "read_next_question", question_id: @question.id, attempt_in_progress: call_attempt)
-        RedisVoter.load_voter_info(@voter.id, @voter)
-        RedisCallerSession.set_voter_in_progress(caller_session.id, @voter.id)        
         caller_session.should_receive(:disconnected?).and_return(false)
         Question.should_receive(:find_by_id).and_return(@question)
         caller_session.submit_response!
@@ -630,8 +594,6 @@ describe PhonesOnlyCallerSession do
         call_attempt = Factory(:call_attempt, voter: @voter)
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: false, campaign: @campaign, state: "read_next_question", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt)
         caller_session.should_receive(:disconnected?).and_return(false)
-        RedisVoter.load_voter_info(@voter.id, @voter)
-        RedisCallerSession.set_voter_in_progress(caller_session.id, @voter.id)        
         caller_session.submit_response!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Redirect>https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=next_question&amp;session=#{caller_session.id}</Redirect></Response>")
       end
@@ -662,8 +624,7 @@ describe PhonesOnlyCallerSession do
     describe "no_more_questions_to_be_answered" do
       it "should move to read_next_question state" do
         call_attempt = Factory(:call_attempt, voter: @voter)
-        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "voter_response", voter_in_progress: @voter, question_id: @question.id)
-        RedisCallerSession.set_attempt_in_progress(caller_session.id, call_attempt.id)
+        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "voter_response", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt)
         caller_session.should_receive(:more_questions_to_be_answered?).and_return(false)
         caller_session.next_question!
         caller_session.state.should eq('wrapup_call')

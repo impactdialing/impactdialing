@@ -5,6 +5,11 @@ if rails_env == 'development' || rails_env == "test"
 else  
   Sidekiq.configure_server do |config|
     config.redis = { :url => redis_config[rails_env]['resque_sidekiq'], :namespace => 'resque'}
+    
+    config.server_middleware do |chain|
+      chain.remove Sidekiq::Middleware::Server::RetryJobs
+      chain.remove Sidekiq::ExceptionHandler
+    end
   end
 
   Sidekiq.configure_client do |config|
