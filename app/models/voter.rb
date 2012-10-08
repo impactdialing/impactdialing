@@ -92,9 +92,10 @@ class Voter < ActiveRecord::Base
   end
   
   
-  def disconnect_call
+  def disconnect_call(caller_id)
     self.status = CallAttempt::Status::SUCCESS
     self.caller_session = nil
+    self.caller_id = caller_id
   end    
   
   def schedule_for_later(date)

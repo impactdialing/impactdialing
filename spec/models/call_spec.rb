@@ -142,14 +142,15 @@ describe Call do
        before(:each) do
          @script = Factory(:script)
          @campaign =  Factory(:campaign, script: @script)
-         @caller_session = Factory(:caller_session)
+         @caller = Factory(:caller)
+         @caller_session = Factory(:caller_session, caller: @caller)
          @voter = Factory(:voter, campaign: @campaign, caller_session: @caller_session)
          @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session)
        end
 
        it "should move to disconnected state" do
          call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected')
-         RedisCall.should_receive(:push_to_disconnected_call_list).with(call.attributes)
+         RedisCall.should_receive(:push_to_disconnected_call_list).with(call.attributes.merge("caller_id"=>@caller.id))
          @call_attempt.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["disconnected", @campaign.id, @call_attempt.id, @caller_session.id])
          @call_attempt.should_receive(:enqueue_call_flow).with(CallerPusherJob, [@caller_session.id, "publish_voter_disconnected"])
          call.disconnect!
@@ -159,7 +160,7 @@ describe Call do
 
        it "should hangup twiml" do
          call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected')
-         RedisCall.should_receive(:push_to_disconnected_call_list).with(call.attributes)
+         RedisCall.should_receive(:push_to_disconnected_call_list).with(call.attributes.merge("caller_id"=>@caller.id))
          @call_attempt.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["disconnected", @campaign.id, @call_attempt.id, @caller_session.id])
          @call_attempt.should_receive(:enqueue_call_flow).with(CallerPusherJob, [@caller_session.id, "publish_voter_disconnected"])
          call.disconnect!
@@ -181,7 +182,7 @@ describe Call do
 
       it "should change status to disconnected" do
        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'hungup')
-       RedisCall.should_receive(:push_to_disconnected_call_list).with(call.attributes)
+       RedisCall.should_receive(:push_to_disconnected_call_list).with(call.attributes.merge("caller_id"=>@caller.id))
        @call_attempt.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["disconnected", @campaign.id, @call_attempt.id, @caller_session.id])
        @call_attempt.should_receive(:enqueue_call_flow).with(CallerPusherJob, [@caller_session.id, "publish_voter_disconnected"])       
        call.disconnect!
@@ -190,7 +191,7 @@ describe Call do
   
       it "should hangup twiml" do
        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'hungup')
-       RedisCall.should_receive(:push_to_disconnected_call_list).with(call.attributes)
+       RedisCall.should_receive(:push_to_disconnected_call_list).with(call.attributes.merge("caller_id"=>@caller.id))
        @call_attempt.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["disconnected", @campaign.id, @call_attempt.id, @caller_session.id])
        @call_attempt.should_receive(:enqueue_call_flow).with(CallerPusherJob, [@caller_session.id, "publish_voter_disconnected"])       
        call.disconnect!

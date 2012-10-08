@@ -92,7 +92,7 @@ class Call < ActiveRecord::Base
         event :submit_result_and_stop, :to => :wrapup_and_stop        
         
         before(:always) { 
-          RedisCall.push_to_disconnected_call_list(self.attributes);
+          RedisCall.push_to_disconnected_call_list(self.attributes.merge("caller_id"=> caller_session.caller.id));
           enqueue_dial_flow(CampaignStatusJob, ["disconnected", campaign.id, call_attempt.id, caller_session.id])          
        }       
         after(:success) { enqueue_call_flow(CallerPusherJob, [caller_session.id, "publish_voter_disconnected"]) }                

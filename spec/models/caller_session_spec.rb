@@ -286,7 +286,6 @@ describe CallerSession do
       caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "account_not_activated", attempt_in_progress: call_attempt)
       caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id,  "publish_caller_disconnected"])
       caller_session.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["caller_disconnected", @campaign.id, nil, caller_session.id])             
-      RedisCall.should_receive(:push_to_wrapped_up_call_list).with(call_attempt.attributes.merge(caller_type: caller_session.caller_type))
       caller_session.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["wrapped_up", @campaign.id, call_attempt.id, caller_session.id])                   
       caller_session.end_conf!
       caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")

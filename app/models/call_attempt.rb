@@ -87,11 +87,12 @@ class CallAttempt < ActiveRecord::Base
   end
   
   
-  def disconnect_call(time, duration, url)
+  def disconnect_call(time, duration, url, caller_id)
     self.status = CallAttempt::Status::SUCCESS
     self.call_end =  time
     self.recording_duration = duration
     self.recording_url = url
+    self.caller_id = caller_id
   end    
   
   def schedule_for_later(date)

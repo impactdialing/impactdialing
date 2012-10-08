@@ -21,7 +21,7 @@ describe CampaignStatusJob do
    it "send events for connected" do
      RedisCampaignCall.should_receive(:move_ringing_to_inprogress).with(@campaign.id, @call_attempt.id)     
      RedisCaller.should_receive(:move_on_hold_to_on_call).with(@campaign.id, @caller_session.id)
-     @job.should_receive(:enqueue_monitor_caller_flow).with(MonitorCallerJob, [@campaign.id, @caller_session.id, "On Call", "update"])
+     @job.should_receive(:enqueue_monitor_caller_flow).with(MonitorCallerJob, [@campaign.id, @caller_session.id, "On call", "update"])
      @job.connected(@campaign.id, @call_attempt.id, @caller_session.id)
    end
    
