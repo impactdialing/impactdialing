@@ -73,7 +73,7 @@ class Voter < ActiveRecord::Base
     selection.select { |field| Voter.upload_fields.include?(field) }.map { |field| self.send(field) }
   end
   
-  def abandoned(time)
+  def abandoned
     self.status = CallAttempt::Status::ABANDONED
     self.call_back = false
     self.caller_session = nil
@@ -86,13 +86,13 @@ class Voter < ActiveRecord::Base
     self.call_back = false
   end
   
-  def end_unanswered_call(call_status, time)
+  def end_unanswered_call(call_status)
     self.status = CallAttempt::Status::MAP[call_status]
     self.call_back = false
   end
   
   
-  def disconnect_call(time)
+  def disconnect_call
     self.status = CallAttempt::Status::SUCCESS
     self.caller_session = nil
   end    
@@ -175,10 +175,6 @@ class Voter < ActiveRecord::Base
     update_attributes(skipped_time: Time.now, status: 'not called')
   end
   
-  def abandoned
-    status = CallAttempt::Status::ABANDONED
-    call_back = false        
-  end
 
   def answer(question, response, recorded_by_caller = nil)
     possible_response = question.possible_responses.where(:keypad => response).first
