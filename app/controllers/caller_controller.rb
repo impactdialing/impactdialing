@@ -2,7 +2,8 @@ class CallerController < ApplicationController
   layout "caller"
   skip_before_filter :verify_authenticity_token, :only =>[:check_reassign, :call_voter, :flow, :start_calling, :stop_calling, :end_session, :skip_voter]
   before_filter :check_login, :except=>[:login, :feedback, :end_session, :start_calling, :phones_only, :new_campaign_response_panel, :check_reassign, :call_voter, :flow]
-  before_filter :find_caller_session , :only => [:flow, :stop_calling, :end_session]
+  before_filter :find_caller_session , :only => [:flow, :stop_calling]
+  before_filter :find_session, :only => [:end_session]
   layout 'caller'
 
 
@@ -125,6 +126,10 @@ class CallerController < ApplicationController
   def feedback
     Postoffice.feedback(params[:issue]).deliver
     render :text=> "var x='ok';"
+  end
+  
+  def find_session
+    @caller_session = CallerSession.find_by_id(params[:session_id]) || CallerSession.find_by_sid(params[:CallSid])
   end
 
   def find_caller_session
