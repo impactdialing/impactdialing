@@ -1,6 +1,9 @@
 module SidekiqEvents
   
   module ClassMethods
+    def enqueue_dial_flow(job, event_args)
+      enqueue('dial_flow', job, event_args)
+    end    
   end
   
   module InstanceMethods
