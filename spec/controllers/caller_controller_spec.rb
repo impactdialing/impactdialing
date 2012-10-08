@@ -41,8 +41,8 @@ describe CallerController do
       campaign =  Factory(:predictive)
       caller = Factory(:caller, campaign: campaign, account: Factory(:account))
       caller_identity = Factory(:caller_identity)
+      voter = Factory(:voter, campaign: campaign)
       caller_session = Factory(:webui_caller_session, session_key: caller_identity.session_key, caller_type: CallerSession::CallerType::TWILIO_CLIENT, caller: caller)
-      voter = Factory(:voter,campaign: campaign)
       Caller.should_receive(:find).and_return(caller)
       caller.should_receive(:calling_voter_preview_power)
       post :call_voter, id: caller.id, voter_id: voter.id, session_id: caller_session.id

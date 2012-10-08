@@ -2,15 +2,6 @@ require 'spec_helper'
 
 describe Twillio do
   
-  it "should setup_call by creating call attempt " do
-    campaign = Factory(:campaign)
-    voter = Factory(:voter, campaign: campaign)
-    caller_session = Factory(:caller_session, campaign: campaign)    
-    Twillio.setup_call(voter, caller_session, campaign)
-    CallAttempt.first.voter_id.should eq(voter.id)
-  end
-  
-
   
   it "should setup_call by changing voter info " do
     campaign = Factory(:campaign)
