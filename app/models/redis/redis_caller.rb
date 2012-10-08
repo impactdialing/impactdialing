@@ -1,5 +1,3 @@
-require 'redis/hash_key'
-
 class RedisCaller  
   include Redis::Objects
   
