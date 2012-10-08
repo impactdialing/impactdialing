@@ -1,4 +1,5 @@
 class Twillio
+  include SidekiqEvents
   
   def self.dial(voter, caller_session)
     campaign = caller_session.campaign
