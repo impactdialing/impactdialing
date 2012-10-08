@@ -25,6 +25,11 @@ module SidekiqEvents
       enqueue('monitor_caller_update', job, event_args)
     end
     
+    def enqueue_monitor_campaign_flow(job, event_args)
+      enqueue('monitor_campaign_update', job, event_args)
+    end
+    
+    
     def enqueue_call_end_flow(job, event_args)
       enqueue('call_end', job, event_args)      
     end
