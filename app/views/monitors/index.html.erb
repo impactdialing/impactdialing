@@ -135,7 +135,6 @@
 <script id="caller" type="text/html">
   <tr id="caller_{{session_id}}" class="caller <%= cycle("odd", "even") %> " session_id={{session_id}} caller_id={{id}}>
       <td class="caller_name">{{email}}</td>
-      <td class="campaigns"></td>
       <td class="status">On hold</td>
       <td>
         <div class="timer">
@@ -183,7 +182,7 @@
             <% @campaigns.each do |c| %>
                 <tr id="<%= "campaign_"+c.id.to_s %>" class="campaign <%= cycle("odd", "even") %>">
                   <td><%= c.name %></td>
-                  <td class="callers_logged_in"><%= c.caller_sessions.on_call.length %></td>
+                  <td class="callers_logged_in"><%= c.caller_sessions_on_call.count %></td>
                   <td class="dials_in_progress"><%= c.call_attempts.not_wrapped_up.try(:size) %></td>
                   <td class="voters_count"><%= Voter.remaining_voters_for_campaign(c).count %></td>
                 </tr>
@@ -200,25 +199,26 @@
         <table id="caller_table" width="100%" border="0" cellspacing="0" cellpadding="0">
           <tr class="table_header">
             <th>Caller</th>
-            <th>Campaign</th>
+            <!-- <th>Campaign</th> -->
             <th>Status</th>
             <th>Time in status</th>
             <th></th>
             <th></th>
             <th></th>
           </tr>
-        </table>
           <% @campaigns.each do |c| %>
             <% c.caller_sessions_on_call.each do |caller_session| %>
               <tr id="<%= "caller_"+caller_session.id.to_s %>" class="caller <%= cycle("odd", "even") %> " older="true" session_id="<%= caller_session.id %>" caller_id="<%= caller_session.caller.id %>">
                 <td class="caller_name"><%= caller_session.caller.identity_name %></td>
-                <td>
-                  <select class='assign_campaign'>
-                    <%= options_for_select(@all_campaigns, c.id) %>
-                  </select>
-                </td>
                 <% status, d = caller_status_and_duration(caller_session) %>
                 <td class="status"><%= status %></td>
+                <!--
+                  <td>
+                    <select class='assign_campaign'>
+                      <%# options_for_select(@all_campaigns, c.id) %>
+                    </select>
+                  </td>
+                -->
                 <td>
                   <div class="timer">
                     <div class="display">
@@ -238,6 +238,7 @@
               </tr>
             <% end %>
           <% end %>
+        </table>
         <a class ="action primary stop_monitor" href="#" onclick="javascript:disconnect_all();">Stop monitoring</a>
         <status style="float : right;"></status>
       </div>
