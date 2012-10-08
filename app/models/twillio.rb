@@ -15,10 +15,11 @@ class Twillio
   end
   
   def self.dial_predictive_em(iter, voter)
-    call_attempt = setup_call_predictive(voter)
+    campaign = voter.campaign
+    call_attempt = setup_call_predictive(voter, campaign)
     twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)  
     Rails.logger.info "#{call_attempt.id} - before call"        
-    http = twilio_lib.make_call_em(voter.campaign, voter, call_attempt)
+    http = twilio_lib.make_call_em(campaign, voter, call_attempt)
     http.callback { 
       Rails.logger.info "#{call_attempt.id} - after call"    
       response = JSON.parse(http.response)  
@@ -33,8 +34,8 @@ class Twillio
     
   end
   
-  def self.setup_call_predictive(voter)
-    attempt = voter.call_attempts.create(campaign:  voter.campaign, dialer_mode:  voter.campaign.type, status:  CallAttempt::Status::RINGING, call_start:  Time.now)
+  def self.setup_call_predictive(voter, campaign)    
+    attempt = voter.call_attempts.create(campaign:  campaign, dialer_mode:  campaign.type, status:  CallAttempt::Status::RINGING, call_start:  Time.now)
     voter.update_attributes(:last_call_attempt_id => attempt.id, :last_call_attempt_time => Time.now, status: CallAttempt::Status::RINGING)
     Call.create(call_attempt: attempt, all_states: "", state: "initial")
     enqueue_dial_flow(CampaignStatusJob, ["dialing", campaign.id, call_attempt.id, nil])
