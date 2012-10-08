@@ -7,9 +7,6 @@ class WebuiCallerSession < CallerSession
         event :start_conf, :to => :connected
       end 
       
-      state all - [:initial] do
-        event :end_conf, :to => :conference_ended
-      end
       
             
       state :connected do                
