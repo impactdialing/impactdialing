@@ -128,7 +128,7 @@ class Campaign < ActiveRecord::Base
 
 
   def callers_log_in?
-    caller_sessions.on_call.length > 0
+    caller_sessions.on_call.size > 0
   end
   
   def as_time_zone

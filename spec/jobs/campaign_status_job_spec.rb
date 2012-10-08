@@ -60,7 +60,7 @@ describe CampaignStatusJob do
    end
 
    it "should send events for caller_disconnected" do
-     RedisCaller.should_receive(:disconnected).with(@campaign.id, @caller_session.id)
+     RedisCaller.should_receive(:disconnect_caller).with(@campaign.id, @caller_session.id)
      @job.should_receive(:enqueue_monitor_caller_flow).with(MonitorCallerJob, [@campaign.id, @caller_session.id, "caller_disconnected", "delete"])
      @job.caller_disconnected(@campaign.id, @call_attempt.id, @caller_session.id)     
    end
