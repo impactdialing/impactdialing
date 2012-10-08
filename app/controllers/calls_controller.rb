@@ -15,7 +15,7 @@ class CallsController < ApplicationController
   end
   
   def incoming
-    if Campaign.predictive_campaign?(@parsed_params['campaign_type']) && @call.answered_by_human? 
+    if Campaign.predictive_campaign?(params['campaign_type']) && @call.answered_by_human? 
       call_attempt = @call.call_attempt
       call_attempt.connect_caller_to_lead
     end
@@ -32,7 +32,7 @@ class CallsController < ApplicationController
       RedisCall.push_to_end_by_machine_call_list(@call.attributes)
     end
     
-    if Campaign.preview_power_campaign?(@parsed_params['campaign_type'])  && @parsed_params['call_status'] != 'completed'
+    if Campaign.preview_power_campaign?(params['campaign_type'])  && @parsed_params['call_status'] != 'completed'
       @call.call_attempt.redirect_caller
     end      
     
