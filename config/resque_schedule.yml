@@ -29,3 +29,10 @@ alert:
   description: "This job alerts all of us if something is fishy"
 
 
+persist_abandoned_calls:
+  cron: "* * * * *"
+  class: PersistCalls
+  queue: persist_jobs
+  args: 
+  description: "This job persists abandoned call attempts and voter data"
+  

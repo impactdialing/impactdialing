@@ -17,7 +17,7 @@ answered_worker: rake environment TERM_CHILD=1 RESQUE_TERM_TIMEOUT=10 resque:wor
 debit_worker: rake environment resque:work QUEUE=debit_worker
 
 call_flow: bundle exec sidekiq -c 20 -q call_flow
-call_end: bundle exec sidekiq -c 20 -q call_end
+persist_flow: bundle exec sidekiq -c 4 -q persist_flow
 
 moderator_flow: bundle exec sidekiq -c 20 -q moderator_flow
 
