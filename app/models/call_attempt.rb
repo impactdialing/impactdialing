@@ -173,7 +173,7 @@ class CallAttempt < ActiveRecord::Base
   end
   
   def end_caller_session
-    caller_session.run('end_conf')
+    caller_session.run('stop_calling')
   end
 
   #NewRelic custom metrics

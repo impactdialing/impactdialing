@@ -167,9 +167,7 @@ class CallerSession < ActiveRecord::Base
   
   def wrapup_attempt_in_progress
     unless attempt_in_progress.nil?
-      puts "A"
       RedisCall.push_to_wrapped_up_call_list(attempt_in_progress.attributes.merge(caller_type: caller_type))
-      puts "B"
       enqueue_dial_flow(CampaignStatusJob, ["wrapped_up", campaign.id, attempt_in_progress.id, self.id])           
     end  
   end
