@@ -3,7 +3,12 @@ module SidekiqEvents
   module ClassMethods
     def enqueue_dial_flow(job, event_args)
       enqueue('dial_flow', job, event_args)
-    end    
+    end   
+    
+    def enqueue(queue, job, event_args)
+      Sidekiq::Client.push('queue' => queue, 'class' => job, 'args' => event_args)
+    end
+     
   end
   
   module InstanceMethods
