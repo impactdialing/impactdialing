@@ -12,7 +12,7 @@ class PersistCalls
     machine_calls(call_attempts, voters)
     disconnected_calls(call_attempts, voters)
     Voter.import  voters, :on_duplicate_key_update=>[:status, :call_back, :caller_id, :scheduled_date]
-    CallAttempt.import  call_attempts, :on_duplicate_key_update=>[ :status, :call_end, :connecttime, :caller_id, :scheduled_date, :recording_url, :recording_duration, :wrapup_time, :voter_response_processed]    
+    CallAttempt.import  call_attempts, :on_duplicate_key_update=>[ :status, :call_end, :connecttime, :caller_id, :scheduled_date, :recording_url, :recording_duration, :voter_response_processed]    
     call_attempts = []    
     wrapped_up_calls(call_attempts, voters)
     CallAttempt.import  call_attempts, :on_duplicate_key_update=>[:wrapup_time, :voter_response_processed]
