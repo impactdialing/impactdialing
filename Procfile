@@ -1,4 +1,4 @@
-web: bundle exec unicorn -p $PORT -c ./config/unicorn.rb
+web: bundle exec rails server thin -p $PORT
 
 dialer_loop: bundle exec ruby lib/dialer_loop.rb
 simulator_loop: bundle exec ruby simulator/simulator_loop.rb
