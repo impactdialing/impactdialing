@@ -73,7 +73,7 @@ Monitors.prototype.update_caller_info = function(){
 	  var caller_selector = 'tr#caller_'+data.caller_session;
 	  status = data.event
 	  $(caller_selector).attr('on_call', status == 'On call')	
-	  self.update_status_and_duration(caller_selector, self.call_status[data.event]);
+	  self.update_status_and_duration(caller_selector, data.event);
 	}	
   });
 };

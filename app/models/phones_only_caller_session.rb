@@ -5,6 +5,11 @@ class PhonesOnlyCallerSession < CallerSession
         event :callin_choice, :to => :read_choice
       end 
       
+      state all - [:initial] do
+        event :end_conf, :to => :conference_ended
+      end
+      
+      
       
       state :read_choice do     
         event :read_instruction_options, :to => :instructions_options, :if => :pound_selected?
