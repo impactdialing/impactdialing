@@ -34,6 +34,7 @@ class Call < ActiveRecord::Base
         
         before(:always) {  
           connect_call;
+          enqueue_call_flow(VoterConnectedPusherJob, [caller_session.id, self.id])
           enqueue_dial_flow(CampaignStatusJob, ["connected", campaign.id, call_attempt.id, caller_session.id])          
         }
         
