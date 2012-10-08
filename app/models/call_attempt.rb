@@ -72,15 +72,12 @@ class CallAttempt < ActiveRecord::Base
     self.call_end = time
     self.wrapup_time = time
   end
-  
-  def process_answered_by_machine(time)
-    self.connecttime = time
+    
+  def end_answered_by_machine(connect_time, end_time)
+    self.connecttime = connect_time
+    self.wrapup_time = end_time
+    self.call_end = end_time
     self.status = campaign.use_recordings? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP
-  end
-  
-  def end_answered_by_machine(time)
-    self.wrapup_time = time
-    self.call_end = time
   end
   
   def end_unanswered_call(call_status, time)
@@ -89,9 +86,6 @@ class CallAttempt < ActiveRecord::Base
     self.call_end = time
   end
   
-  def end_answered_call(time)
-    self.call_end = time
-  end
   
   def disconnect_call(time, duration, url)
     self.status = CallAttempt::Status::SUCCESS
@@ -106,8 +100,11 @@ class CallAttempt < ActiveRecord::Base
     self.scheduled_date = scheduled_date
   end
   
-  def wrapup_now(time)
+  def wrapup_now(time, caller_type)
     self.wrapup_time = time
+    if caller_type == CallerSession::CallerType::PHONE
+      self.voter_response_processed = true
+    end
   end
   
   def connect_caller_to_lead
@@ -116,6 +113,10 @@ class CallAttempt < ActiveRecord::Base
       caller_session = CallerSession.find(caller_session_id)
       caller_session.update_attributes(attempt_in_progress: self, voter_in_progress: self.voter)        
     end
+  end
+  
+  def connect_call
+    update_attributes(connecttime: Time.now)
   end
   
   def not_wrapped_up?

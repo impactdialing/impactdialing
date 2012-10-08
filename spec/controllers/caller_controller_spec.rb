@@ -29,8 +29,8 @@ describe CallerController do
       caller_session = Factory(:webui_caller_session, session_key: caller_identity.session_key, caller_type: CallerSession::CallerType::TWILIO_CLIENT, caller: caller)
       Caller.should_receive(:find).and_return(caller)
       caller.should_receive(:create_caller_session).and_return(caller_session)
-      RedisCampaign.should_receive(:add_running_predictive_campaign).with(caller.campaign_id, caller.campaign.type)
-      RedisCaller.should_receive(:add_caller).with(caller.campaign.id, caller_session.id)
+      RedisPredictiveCampaign.should_receive(:add).with(caller.campaign_id, caller.campaign.type)
+      caller.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["caller_connected", caller.campaign.id, nil, caller_session.id])       
       post :start_calling, caller_id: caller.id, session_key: caller_identity.session_key, CallSid: "abc"      
       response.body.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>Your account has insufficent funds</Say><Hangup/></Response>")
     end

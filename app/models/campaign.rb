@@ -126,9 +126,6 @@ class Campaign < ActiveRecord::Base
     end
   end
 
-  def oldest_available_caller_session
-    caller_sessions.available.find(:first, :order => "updated_at ASC")
-  end
 
   def callers_log_in?
     caller_sessions.on_call.length > 0

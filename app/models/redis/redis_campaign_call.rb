@@ -42,12 +42,6 @@ class RedisCampaignCall
     zmove(ringing(campaign_id), completed(campaign_id), Time.now.to_i, call_attempt_id)
   end
   
-  def self.move_to_completed(campaign_id, call_attempt_id)
-    zmove(ringing(campaign_id), completed(campaign_id), Time.now.to_i, call_attempt_id)
-    zmove(inprogress(campaign_id), completed(campaign_id), Time.now.to_i, call_attempt_id)
-    zmove(wrapup(campaign_id), completed(campaign_id), Time.now.to_i, call_attempt_id)
-  end
-    
   
   def self.move_wrapup_to_completed(campaign_id, call_attempt_id)
     zmove(wrapup(campaign_id), completed(campaign_id), Time.now.to_i, call_attempt_id)

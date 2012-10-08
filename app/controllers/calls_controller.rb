@@ -1,9 +1,9 @@
 class CallsController < ApplicationController
   skip_before_filter :verify_authenticity_token
   before_filter :parse_params
-  before_filter :find_and_update_call, :only => [:flow, :destroy]
+  before_filter :find_and_update_call, :only => [:flow, :destroy, :call_ended, :incoming]
   before_filter :find_and_update_answers_and_notes_and_scheduled_date, :only => [:submit_result, :submit_result_and_stop]
-  before_filter :find_call, :only => [:hangup, :call_ended, :incoming_call_predictive]
+  before_filter :find_call, :only => [:hangup]
 
   
   def flow    
@@ -14,8 +14,8 @@ class CallsController < ApplicationController
     end
   end
   
-  def incoming_call
-    if !@call.nil? && Campaign.predictive_campaign?(@parsed_params['campaign_type']) && @call.answered_by_human? 
+  def incoming
+    if Campaign.predictive_campaign?(@parsed_params['campaign_type']) && @call.answered_by_human? 
       call_attempt = @call.call_attempt
       call_attempt.connect_caller_to_lead
     end
@@ -24,9 +24,14 @@ class CallsController < ApplicationController
   
   
   def call_ended    
-    if @call.call_did_not_connect? || @call.answered_by_machine?
+    if @call.call_did_not_connect?
       RedisCall.push_to_not_answered_call_list(@parsed_params)
     end            
+    
+    if @call.answered_by_machine?
+      RedisCall.push_to_end_by_machine_call_list(@call.attributes)
+    end
+    
     if Campaign.preview_power_campaign?(@parsed_params['campaign_type'])  && @parsed_params['call_status'] != 'completed'
       @call.call_attempt.redirect_caller
     end      
