@@ -175,7 +175,8 @@ describe Call do
       before(:each) do
        @script = Factory(:script)
        @campaign =  Factory(:campaign, script: @script)
-       @caller_session = Factory(:caller_session)
+       @caller = Factory(:caller)
+       @caller_session = Factory(:caller_session, caller: @caller)
        @voter = Factory(:voter, campaign: @campaign, caller_session: @caller_session)  
        @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session)
       end
