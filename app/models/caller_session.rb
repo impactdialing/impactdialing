@@ -11,8 +11,8 @@ class CallerSession < ActiveRecord::Base
   belongs_to :caller
   belongs_to :campaign
 
-  scope :on_call, where("state != 'conference_ended' || state != 'stopped' ")
-  scope :available, where("state = 'connected' || state = 'conference_started_phones_only_predictive' || state = 'conference_started_phones_only' ")
+  scope :on_call, where("state not in (?)", ["conference_ended", "stopped"])
+  scope :available, where("state in (?)",["connected", "conference_started_phones_only_predictive", "conference_started_phones_only"])
   
   scope :connected_to_voter, where('voter_in_progress is not null')
   scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
