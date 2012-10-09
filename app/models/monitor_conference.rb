@@ -1,7 +1,7 @@
 class MonitorConference
   
   def self.monitor_conference(monitor_session)
-    Redis::HashKey.new("monitor:#{monitor_session}", $redis_monitor_connection)
+    Redis::HashKey.new("monitor:#{monitor_session}", $redis_dialer_connection)
   end
   
   def self.join_conference(monitor_session, caller_session, call_sid)

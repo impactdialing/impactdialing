@@ -1,7 +1,7 @@
 class MonitorSession
   
   def self.monitor_session(campaign_id)
-    Redis::SortedSet.new("monitor:#{campaign_id}", $redis_monitor_connection)    
+    Redis::SortedSet.new("monitor:#{campaign_id}", $redis_dialer_connection)    
   end
     
   def self.add_session(campaign_id)

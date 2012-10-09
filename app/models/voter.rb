@@ -128,62 +128,6 @@ class Voter < ActiveRecord::Base
     ["Phone", "CustomID", "LastName", "FirstName", "MiddleName", "Suffix", "Email", "address", "city", "state","zip_code", "country"]
   end
 
-<<<<<<< HEAD
-  def self.remaining_voters_count_for(column_name, column_value)
-    count(:conditions => "#{column_name} = #{column_value} AND active = 1 AND (status not in ('Call in progress','Ringing','Call ready to dial','Call completed with success.') or call_back=1)")
-  end
-
-=======
-  def dial
-    return false if status == Voter::SUCCESS
-    message = "#{self.Phone} for campaign id:#{self.campaign_id}"
-    logger.info "[dialer] Dialling #{message} "
-    call_attempt = new_call_attempt
-    callback_params = {:call_attempt_id => call_attempt.id, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port}
-    response = Twilio::Call.make(
-        self.campaign.caller_id,
-        self.Phone,
-        twilio_callback_url(callback_params),
-        'FallbackUrl' => TWILIO_ERROR,
-        'StatusCallback' => twilio_call_ended_url(callback_params),
-        'Timeout' => '15',
-        'IfMachine' => self.campaign.answering_machine_detect ? 'Continue' : 'Hangup'
-    )
-
-    if response["TwilioResponse"]["RestException"]
-      logger.info "[dialer] Exception when attempted to call #{message}  Response: #{response["TwilioResponse"]["RestException"].inspect}"
-      call_attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
-      update_attributes(status: CallAttempt::Status::FAILED)
-      return false
-    end
-    logger.info "[dialer] Dialed #{message}. Response: #{response["TwilioResponse"].inspect}"
-    call_attempt.update_attributes!(:sid => response["TwilioResponse"]["Call"]["Sid"])
-    true
-  end
-
-
-  def dial_predictive_em(iter)
-    call_attempt = new_call_attempt(self.campaign.type)
-    twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-    Rails.logger.info "#{call_attempt.id} - before call"
-    http = twilio_lib.make_call_em(campaign, self, call_attempt)
-    http.callback {
-      Rails.logger.info "#{call_attempt.id} - after call"
-      response = JSON.parse(http.response)
-      if response["RestException"]
-        puts response["RestException"]
-        handle_failed_call(call_attempt, self)
-      else
-        call_attempt.update_attributes(:sid => response["sid"])
-      end
-      iter.return(http)
-       }
-    http.errback {
-      puts JSON.parse(http.response)
-      iter.return(http)
-       }
-  end
->>>>>>> master
 
   def get_attribute(attribute)
     return self[attribute] if self.has_attribute? attribute
@@ -283,11 +227,8 @@ class Voter < ActiveRecord::Base
     end    
   end
 
-<<<<<<< HEAD
-=======
   def phone_validatation
     errors.add(:Phone, 'should be at least 10 digits') unless Voter.phone_correct?(self)
   end
->>>>>>> master
 
 end
