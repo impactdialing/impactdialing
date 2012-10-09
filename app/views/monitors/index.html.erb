@@ -135,6 +135,7 @@
 <script id="caller" type="text/html">
   <tr id="caller_{{session_id}}" class="caller <%= cycle("odd", "even") %> " session_id={{session_id}} caller_id={{id}}>
       <td class="caller_name">{{email}}</td>
+      <td class="campaigns"></td>
       <td class="status">On hold</td>
       <td>
         <div class="timer">
@@ -199,7 +200,7 @@
         <table id="caller_table" width="100%" border="0" cellspacing="0" cellpadding="0">
           <tr class="table_header">
             <th>Caller</th>
-            <!-- <th>Campaign</th> -->
+            <th>Campaign</th>
             <th>Status</th>
             <th>Time in status</th>
             <th></th>
