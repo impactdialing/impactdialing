@@ -6,6 +6,7 @@ class Campaign < ActiveRecord::Base
   attr_accessible :type, :name, :caller_id, :script_id, :acceptable_abandon_rate, :time_zone, :start_time, :end_time, :recycle_rate, :answering_machine_detect, :voter_lists_attributes, :use_recordings, :recording_id
 
   has_many :caller_sessions
+  has_many :caller_sessions_on_call, conditions: {on_call: true}, class_name: 'CallerSession'
   has_many :voter_lists, :conditions => {:active => true}
   has_many :all_voters, :class_name => 'Voter'
   has_many :call_attempts
@@ -39,7 +40,8 @@ class Campaign < ActiveRecord::Base
       :conditions => {"caller_sessions.on_call" => false}
   }
   
-  scope :for_caller, lambda { |caller| {:include => [:caller_sessions], :conditions => {"caller_sessions.caller_id" => caller.id}}}
+  scope :for_caller, lambda { |caller| joins(:caller_sessions).where(caller_sessions: {caller_id: caller}) }
+
 
   validates :name, :presence => true
   validates :caller_id, :presence => true
