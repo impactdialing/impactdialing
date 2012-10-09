@@ -25,5 +25,3 @@ monitor_campaign_update: bundle exec sidekiq -c 20 -q monitor_campaign_update
 
 
 clock: rake environment resque:scheduler
-monitor_worker: bundle exec ruby lib/monitor_tab_pusher.rb
-connected_call_worker: bundle exec ruby lib/connected_call.rb

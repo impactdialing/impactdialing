@@ -15,6 +15,10 @@ class CampaignStatusJob
      RedisCampaignCall.move_ringing_to_completed(campaign_id, call_attempt_id)
    end
    
+   def did_not_connect(campaign_id, call_attempt_id, caller_session_id)
+     RedisCampaignCall.move_ringing_to_completed(campaign_id, call_attempt_id)
+   end
+   
    def connected(campaign_id, call_attempt_id, caller_session_id)
      RedisCampaignCall.move_ringing_to_inprogress(campaign_id, call_attempt_id);
      RedisCaller.move_on_hold_to_on_call(campaign_id, caller_session_id)
