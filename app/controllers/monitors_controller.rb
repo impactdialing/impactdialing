@@ -15,7 +15,6 @@ class MonitorsController < ClientController
     num_remaining = @campaign.all_voters.by_status('not called').count
     num_available = @campaign.leads_available_now + num_remaining      
     @result = RedisCaller.stats(@campaign.id).merge(RedisCampaignCall.stats(@campaign.id)).merge({available: num_available, remaining: num_remaining})      
-    
     twilio_capability = Twilio::Util::Capability.new(TWILIO_ACCOUNT, TWILIO_AUTH)
     twilio_capability.allow_client_outgoing(MONITOR_TWILIO_APP_SID)
     @token = twilio_capability.generate    
@@ -62,7 +61,6 @@ class MonitorsController < ClientController
 
   def deactivate_session
     moderator = Moderator.find_by_session(params[:monitor_session])
-    puts moderator.inspect
     moderator.update_attributes(:active => false) unless moderator.nil?
     render nothing: true
   end

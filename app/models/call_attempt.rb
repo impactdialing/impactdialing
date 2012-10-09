@@ -1,11 +1,12 @@
+require 'new_relic/agent/method_tracer'
 require Rails.root.join("lib/twilio_lib")
 require Rails.root.join("lib/redis_connection")
 
 class CallAttempt < ActiveRecord::Base
-
+  include ::NewRelic::Agent::MethodTracer
   include Rails.application.routes.url_helpers
-  include LeadEvents
   include CallPayment
+  include SidekiqEvents
   belongs_to :voter
   belongs_to :campaign
   belongs_to :caller
@@ -62,127 +63,88 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def self.wrapup_calls(caller_id)
-    not_wrapped_up = CallAttempt.not_wrapped_up.find_all_by_caller_id(caller_id)
-    not_wrapped_up.each {|call_attempt| call_attempt.update_attributes(wrapup_time: Time.now)}
+    CallAttempt.not_wrapped_up.where(caller_id: caller_id).update_all(wrapup_time: Time.now)
   end
-
-  def connect_call
-    redis_call_attempt = RedisCallAttempt.read(self.id)
-    redis_voter = RedisVoter.read(redis_call_attempt['voter_id'])
-    RedisCallAttempt.connect_call(self.id, redis_voter["caller_id"], redis_voter["caller_session_id"])
-    RedisCampaignCall.move_ringing_to_inprogress(campaign.id, self.id)
-    RedisCallNotification.connected(self.id)
+  
+  def abandoned(time)
+    self.status = CallAttempt::Status::ABANDONED
+    self.connecttime = time
+    self.call_end = time
+    self.wrapup_time = time
   end
-
-  def abandon_call
-    $redis_call_flow_connection.pipelined do
-      RedisCallAttempt.abandon_call(self.id)
-      RedisVoter.abandon_call(voter.id)
-    end
-    RedisCampaignCall.move_ringing_to_abandoned(campaign.id, self.id)
-    RedisCallNotification.abandoned(self.id)
-  end
-      
     
-  def connect_lead_to_caller
-    RedisVoter.connect_lead_to_caller(voter.id, campaign.id, self.id)
+  def end_answered_by_machine(connect_time, end_time)
+    self.connecttime = connect_time
+    self.wrapup_time = end_time
+    self.call_end = end_time
+    self.status = campaign.use_recordings? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP
   end
-
-  def caller_not_available?
-    connect_lead_to_caller
-    RedisVoter.could_not_connect_to_available_caller?(voter.id, campaign.id) 
+  
+  def end_unanswered_call(call_status, time)
+    self.status = CallAttempt::Status::MAP[call_status]
+    self.wrapup_time = time
+    self.call_end = time
   end
-
-  def caller_available?
-    !caller_not_available?
+  
+  
+  def disconnect_call(time, duration, url, caller_id)
+    self.status = CallAttempt::Status::SUCCESS
+    self.call_end =  time
+    self.recording_duration = duration
+    self.recording_url = url
+    self.caller_id = caller_id
+  end    
+  
+  def schedule_for_later(date)
+    scheduled_date = DateTime.strptime(date, "%m/%d/%Y %H:%M").to_time
+    self.status = Status::SCHEDULED
+    self.scheduled_date = scheduled_date
   end
-
-
-  def end_answered_call
-    $redis_call_flow_connection.pipelined do
-      RedisCallAttempt.end_answered_call(self.id)
-      RedisVoter.end_answered_call(voter.id)
+  
+  def wrapup_now(time, caller_type)
+    self.wrapup_time = time
+    if caller_type == CallerSession::CallerType::PHONE
+      self.voter_response_processed = true
     end
-    RedisCampaignCall.move_inprogress_to_wrapup(campaign.id, self.id)      
-    RedisCallNotification.end_answered_call(self.id)
   end
-
-  def process_answered_by_machine
-    status = RedisCampaign.call_status_use_recordings(campaign.id)
-    $redis_call_flow_connection.pipelined do
-      RedisCallAttempt.answered_by_machine(self.id, status)
-      RedisVoter.answered_by_machine(voter.id, status)
+  
+  def connect_caller_to_lead
+    caller_session_id = RedisOnHoldCaller.longest_waiting_caller(campaign.id)
+    unless caller_session_id.nil?
+      caller_session = CallerSession.find(caller_session_id)
+      caller_session.update_attributes(attempt_in_progress: self, voter_in_progress: self.voter)        
     end
-    RedisCampaignCall.move_ringing_to_completed(campaign.id, self.id)                  
-    RedisCallNotification.answered_by_machine(self.id)    
   end
-
-  def end_answered_by_machine
-    $redis_call_flow_connection.pipelined do
-      RedisCallAttempt.end_answered_by_machine(self.id)
-      RedisVoter.end_answered_by_machine(voter.id)
-    end
-    RedisCallNotification.end_answered_by_machine(self.id)
+  
+  def connect_call
+    update_attributes(connecttime: Time.now)
   end
-
-
-  def end_unanswered_call
-    status = CallAttempt::Status::MAP[call.call_status]
-    $redis_call_flow_connection.pipelined do
-      RedisCallAttempt.end_unanswered_call(self.id, status)
-      RedisVoter.end_unanswered_call(voter.id, status)
-    end
-    RedisCampaignCall.move_ringing_to_completed(campaign.id, self.id)
-    RedisCallNotification.end_unanswered_call(self.id)    
-  end
-
-  def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
-    call_sid = RedisCallAttempt.read(self.id)["sid"]
-    EM.synchrony {
-      t = TwilioLib.new(account, auth)    
-      deferrable = t.end_call(call_sid)              
-      deferrable.callback {}
-      deferrable.errback { |error| }
-    }
-  end
-
+  
   def not_wrapped_up?
     wrapup_time.nil?
   end
 
-  def disconnect_call
-    $redis_call_flow_connection.pipelined do
-      RedisCallAttempt.disconnect_call(self.id, call.recording_duration, call.recording_url)
-      RedisVoter.set_status(voter.id, CallAttempt::Status::SUCCESS)
-      caller_session_id = RedisVoter.read(voter.id)["caller_session_id"]
-      RedisCaller.move_on_call_to_on_wrapup(campaign.id, caller_session_id)
-    end    
-  end
 
-  def schedule_for_later(date)
-    scheduled_date = DateTime.strptime(date, "%m/%d/%Y %H:%M").to_time
-    $redis_call_flow_connection.pipelined do    
-      RedisCallAttempt.schedule_for_later(self.id, scheduled_date)
-      RedisVoter.schedule_for_later(voter.id, scheduled_date)
-    end
-  end
-
-  def wrapup_now
-    RedisCallAttempt.wrapup(self.id) 
-    RedisCampaignCall.move_wrapup_to_completed(campaign.id, self.id)         
-    RedisCallNotification.wrapup(self.id)
-  end
 
   def self.time_on_call(caller, campaign, from, to)
-    CallAttempt.for_campaign(campaign).for_caller(caller).between(from, to).without_status([CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED]).sum('TIMESTAMPDIFF(SECOND ,connecttime,call_end)').to_i
+    result = CallAttempt.for_campaign(campaign).for_caller(caller).between(from, to).
+      without_status([CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED])
+    result = result.from("call_attempts use index (index_call_attempts_on_campaign_id_created_at_status)") if campaign
+    result.sum('TIMESTAMPDIFF(SECOND ,connecttime,call_end)').to_i
   end
 
   def self.time_in_wrapup(caller, campaign, from, to)
-    CallAttempt.for_campaign(campaign).for_caller(caller).between(from, to).without_status([CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED]).sum('TIMESTAMPDIFF(SECOND ,call_end,wrapup_time)').to_i
+    result = CallAttempt.for_campaign(campaign).for_caller(caller).between(from, to).
+      without_status([CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED])
+    result = result.from("call_attempts use index (index_call_attempts_on_campaign_id_created_at_status)") if campaign
+    result.sum('TIMESTAMPDIFF(SECOND ,call_end,wrapup_time)').to_i
   end
 
   def self.lead_time(caller, campaign, from, to)
-    CallAttempt.for_campaign(campaign).for_caller(caller).between(from, to).without_status([CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED]).sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)').to_i
+    result = CallAttempt.for_campaign(campaign).for_caller(caller).between(from, to).
+      without_status([CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED])
+    result = result.from("call_attempts use index (index_call_attempts_on_campaign_id_created_at_status)") if campaign
+    result.sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)').to_i
   end
 
   def call_not_connected?
@@ -191,15 +153,7 @@ class CallAttempt < ActiveRecord::Base
 
   def call_time
   ((call_end - connecttime)/60).ceil
-  end
-
-  def redis_caller_session
-    RedisCallAttempt.caller_session_id(self.id)
-  end 
-  
-  def caller_session_key
-    RedisCallerSession.caller_session(redis_caller_session)['session_key']
-  end
+  end  
   
   
   module Status
@@ -215,7 +169,6 @@ class CallAttempt < ActiveRecord::Base
     CANCELLED = "Call cancelled"
     SCHEDULED = 'Scheduled for later'
     RINGING = "Ringing"
-    DIALING = "Dialing"
 
     MAP = {'in-progress' => INPROGRESS, 'completed' => SUCCESS, 'busy' => BUSY, 'failed' => FAILED, 'no-answer' => NOANSWER, 'canceled' => CANCELLED}
     ALL = MAP.values
@@ -223,35 +176,26 @@ class CallAttempt < ActiveRecord::Base
     ANSWERED =  [INPROGRESS, SUCCESS]
   end
 
-  def redirect_caller(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)
-<<<<<<< HEAD
-    session_id = redis_caller_session
-    unless session_id.blank?      
-      session = CallerSession.find(session_id)
-      EM.synchrony {
-        t = TwilioLib.new(account, auth)
-        deferrable = t.redirect_call(session.sid, flow_caller_url(session.caller, :host => Settings.host, :port => Settings.port, session_id: session.id, event: "start_conf"))
-        deferrable.callback {}
-        deferrable.errback { |error| }
-      }
-    end
-=======
+  def redirect_caller
     unless caller_session.nil?
-      EM.run {
-        t = TwilioLib.new(account, auth)    
-        deferrable = t.redirect_call(caller_session.sid, flow_caller_url(caller_session.caller, :host => Settings.host, :port => Settings.port, session_id: caller_session.id, event: "start_conf"))              
-        deferrable.callback {EM.stop}
-        deferrable.errback { |error|EM.stop }          
-      }  
-      EventMachine.stop       
-    end  
->>>>>>> em
+      enqueue_call_flow(RedirectCallerJob, [caller_session.id])
+    end    
   end
   
   def end_caller_session
-    session = CallerSession.find(redis_caller_session)
-    session.run('end_conf')
+    caller_session.run('stop_calling')
   end
 
+  #NewRelic custom metrics
+  add_method_tracer :connect_lead_to_caller,      'Custom/CallAttempt/connect_lead_to_caller'
+  add_method_tracer :connect_call,                'Custom/CallAttempt/connect_call'
+  add_method_tracer :abandon_call,                'Custom/CallAttempt/abandon_call'
+  add_method_tracer :caller_not_available?,       'Custom/CallAttempt/caller_not_available?'
+  add_method_tracer :end_answered_call,           'Custom/CallAttempt/end_answered_call'
+  add_method_tracer :process_answered_by_machine, 'Custom/CallAttempt/process_answered_by_machine'
+  add_method_tracer :end_answered_by_machine,     'Custom/CallAttempt/end_answered_by_machine'
+  add_method_tracer :end_unanswered_call,         'Custom/CallAttempt/end_unanswered_call'
+  add_method_tracer :disconnect_call,             'Custom/CallAttempt/disconnect_call'
+  add_method_tracer :schedule_for_later,          'Custom/CallAttempt/schedule_for_later'
+  add_method_tracer :wrapup_now,                  'Custom/CallAttempt/wrapup_now'
 end
-

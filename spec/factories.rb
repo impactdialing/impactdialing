@@ -85,22 +85,6 @@ Factory.define :progressive do |c|
   c.updated_at Time.now
 end
 
-Factory.define :robo do |c|
-  c.name 'a campaign'
-  c.caller_id '1234567890'
-  c.account { Factory(:account) }
-  c.recycle_rate 1
-  c.start_time (Time.now - 6.hours)
-  c.end_time (Time.now - 7.hours)
-  c.time_zone "Pacific Time (US & Canada)"
-  c.script_id {Factory(:script).id}
-  c.created_at Time.now
-  c.updated_at Time.now
-end
-
-
-
-
 Factory.define :caller do |s|
   s.email { Factory.next(:email) }
   s.name 'a caller'
@@ -118,10 +102,9 @@ Factory.define :voter_list do |v|
   v.separator ","
   v.s3path "abc"
   v.uploaded_file_name "abc.csv"
-  v.csv_to_system_map Hash["Phone" => "Phone"]
+  v.csv_to_system_map Hash["Phone" => "Phone"] 
   v.created_at Time.now
   v.updated_at Time.now
-
 end
 
 Factory.define :voter do |v|

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120917073629) do
+ActiveRecord::Schema.define(:version => 20121008083341) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -46,9 +46,9 @@ ActiveRecord::Schema.define(:version => 20120917073629) do
     t.integer  "call_attempt_id"
   end
 
+  add_index "answers", ["campaign_id", "caller_id"], :name => "index_answers_campaign_id_caller_id"
   add_index "answers", ["possible_response_id", "caller_id", "created_at"], :name => "index_answers_count_possible_response"
   add_index "answers", ["possible_response_id", "campaign_id", "caller_id", "created_at"], :name => "index_answers_count_possible_response_campaign"
-  add_index "answers", ["possible_response_id", "campaign_id", "caller_id", "created_at"], :name => "index_answers_count_question_id"
   add_index "answers", ["question_id", "campaign_id", "created_at"], :name => "index_answers_count_question"
   add_index "answers", ["question_id", "campaign_id"], :name => "index_answers_distinct_question"
   add_index "answers", ["question_id", "campaign_id"], :name => "index_distinct_question"
@@ -500,14 +500,12 @@ ActiveRecord::Schema.define(:version => 20120917073629) do
   end
 
   add_index "voters", ["Phone", "voter_list_id"], :name => "index_voters_on_Phone_and_voter_list_id"
-  add_index "voters", ["Phone"], :name => "index_voters_on_Phone"
   add_index "voters", ["attempt_id"], :name => "index_voters_on_attempt_id"
   add_index "voters", ["caller_session_id"], :name => "index_voters_on_caller_session_id"
   add_index "voters", ["campaign_id", "active", "status", "call_back"], :name => "index_voters_on_campaign_id_and_active_and_status_and_call_back"
   add_index "voters", ["campaign_id", "enabled", "priority", "status"], :name => "index_priority_voters"
   add_index "voters", ["campaign_id", "status", "id"], :name => "index_voters_on_campaign_id_and_status_and_id"
   add_index "voters", ["campaign_id", "status", "last_call_attempt_time"], :name => "voters_campaign_status_time"
-  add_index "voters", ["campaign_id"], :name => "index_voters_on_campaign_id"
   add_index "voters", ["status"], :name => "index_voters_on_status"
   add_index "voters", ["voter_list_id"], :name => "index_voters_on_voter_list_id"
 

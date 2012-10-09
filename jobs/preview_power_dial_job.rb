@@ -1,11 +1,13 @@
-require 'em-http-request'
-
 class PreviewPowerDialJob
-  Resque::Plugins::Timeout.timeout = 10
-  @queue = :preview_power_dial_job
+  include Sidekiq::Worker
   
-  def self.perform(caller_session_id, voter_id)    
+  def perform(caller_session_id, voter_id)    
     caller_session = CallerSession.find(caller_session_id)
-    caller_session.dial_em(Voter.find(voter_id)) 
+    voter = Voter.find(voter_id)
+    begin
+      Twillio.dial(voter, caller_session)
+    rescue ActiveRecord::StaleObjectError 
+      caller_session.redirect_caller
+    end
   end
 end

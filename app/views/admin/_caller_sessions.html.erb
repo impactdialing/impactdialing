@@ -1,0 +1,4 @@
+<h3><%= campaign.name %></h3>
+<% caller_sessions.each do |ca| %>
+  <li>id <%= ca.id %> <%= ca.caller.name %> <%= ca.caller.email %> started <%= ca.starttime %> from <%= ca.caller_number %> <% if !ca.available_for_call %>Not <% end %>Available <%= link_to 'end call', admin_status_path(:end => ca.id) %>
+<% end %>

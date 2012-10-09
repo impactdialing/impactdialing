@@ -1,30 +1,38 @@
 process_answered_attempts:
   cron: "*/3 * * * *"
   class: AnsweredJob
-  queue: answered_worker_job
+  queue: answered_worker
   args: 
   description: "This job processes answers and stores them in a relational schema"
 
 deactivate_monitor:
   cron: "*/5 * * * *"
   class: DeactiveUnnecessaryMonitorTabsJob
-  queue: background_worker_job
+  queue: background_worker
   args: 
   description: "This job processes deactivates unnecessary monitor tabs"
 
 
-debit_job:
+debit_money:
   cron: "*/2 * * * *"
   class: DebiterJob
-  queue: background_worker_job
-  args: 
-  description: "This job processes debits from user account"
-
-deactivate_monitor:
-  cron: "*/2 * * * *"
-  class: DebiterJob
-  queue: debit_worker_job
+  queue: debit_worker
   args: 
   description: "This job debits money"
 
 
+alert:
+  cron: "*/2 * * * *"
+  class: AlertJob
+  queue: alert_worker
+  args: 
+  description: "This job alerts all of us if something is fishy"
+
+
+persist_calls:
+  cron: "* * * * *"
+  class: PersistCalls
+  queue: persist_jobs
+  args: 
+  description: "This job persists  call attempts and voter data"
+  

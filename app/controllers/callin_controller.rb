@@ -1,4 +1,5 @@
 class CallinController < ApplicationController
+  include SidekiqEvents
   skip_before_filter :verify_authenticity_token
 
   def create
@@ -11,17 +12,10 @@ class CallinController < ApplicationController
     session_key = identity.nil? ? generate_session_key : identity.session_key
     if caller
       session = caller.create_caller_session(session_key, params[:CallSid], CallerSession::CallerType::PHONE)
-      RedisCampaign.add_running_predictive_campaign(caller.campaign_id, caller.campaign.type)
-      RedisCaller.add_caller(caller.campaign.id, session.id)
-      RedisCallNotification.caller_connected(session.id)
+      caller.started_calling(session)
       render xml:  caller.is_phones_only? ? session.run('callin_choice') : session.run('start_conf')
     else
       render xml:  Caller.ask_for_pin(params[:attempt].to_i)
     end
   end
-  
-  def hold
-    render :xml => Caller.hold
-  end
-
 end

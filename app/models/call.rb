@@ -2,32 +2,21 @@ class Call < ActiveRecord::Base
   include Rails.application.routes.url_helpers
   include CallCenter
 
+
   attr_accessible :id, :account_sid, :to_zip, :from_state, :called, :from_country, :caller_country, :called_zip, :direction, :from_city,
    :called_country, :caller_state, :call_sid, :called_state, :from, :caller_zip, :from_zip, :call_status, :to_city, :to_state, :to, :to_country, 
-   :caller_city, :api_version, :caller, :called_city, :all_states, :state, :call_attempt, :questions, :notes, :answered_by
+   :caller_city, :api_version, :caller, :called_city, :all_states, :state, :call_attempt, :questions, :notes, :answered_by, :campaign_type
    
   has_one :call_attempt
   serialize :conference_history, Array
-  delegate :connect_call, :to => :call_attempt
-  delegate :abandon_call, :to => :call_attempt
-  delegate :connect_lead_to_caller ,:to => :call_attempt
-  delegate :end_answered_call, :to => :call_attempt
-  delegate :end_unanswered_call, :to => :call_attempt
-  delegate :end_answered_by_machine, :to => :call_attempt
-  delegate :end_running_call, :to => :call_attempt
-  delegate :disconnect_call, :to => :call_attempt
-  delegate :wrapup_now, :to => :call_attempt
-  delegate :wrapup_now, :to => :call_attempt
-  
-  delegate :process_answered_by_machine, :to => :call_attempt
-  delegate :caller_not_available?, :to => :call_attempt
-  delegate :caller_available?, :to => :call_attempt
+  delegate :connect_call, :to => :call_attempt  
   delegate :campaign, :to=> :call_attempt
   delegate :voter, :to=> :call_attempt
   delegate :caller_session, :to=> :call_attempt
-  delegate :redis_caller_session, :to=> :call_attempt
   delegate :end_caller_session, :to=> :call_attempt
   delegate :caller_session_key, :to=> :call_attempt
+  delegate :enqueue_call_flow, :to=> :call_attempt
+  delegate :enqueue_dial_flow, :to=> :call_attempt
   
   
   
@@ -37,128 +26,111 @@ class Call < ActiveRecord::Base
         event :incoming_call, :to => :connected , :if => (:answered_by_human_and_caller_available?)
         event :incoming_call, :to => :abandoned , :if => (:answered_by_human_and_caller_not_available?)
         event :incoming_call, :to => :call_answered_by_machine , :if => (:answered_by_machine?)
-        event :call_ended, :to => :call_not_answered_by_lead, :if => :call_did_not_connect?
-        event :call_ended, :to => :abandoned
       end 
       
       state :connected do
-<<<<<<< HEAD
-        after(:always) { connect_call; call_attempt.publish_voter_connected}
-=======
-        before(:always) {  connect_call }
-        after(:always) { Resque.enqueue(CallPusherJob, call_attempt.id, "publish_voter_connected")}
->>>>>>> em
         event :hangup, :to => :hungup
         event :disconnect, :to => :disconnected
         
+        before(:always) {  
+          connect_call;
+          enqueue_call_flow(VoterConnectedPusherJob, [caller_session.id, self.id])
+          enqueue_dial_flow(CampaignStatusJob, ["connected", campaign.id, call_attempt.id, caller_session.id])          
+        }
+        
         response do |xml_builder, the_call|
-          unless redis_caller_session.nil? 
-            xml_builder.Dial :hangupOnStar => 'false', :action => flow_call_url(the_call, :host => Settings.host, event: "disconnect"), :record=> campaign.account.record_calls do |d|
-              d.Conference caller_session_key, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
+          unless caller_session.nil? 
+            xml_builder.Dial :hangupOnStar => 'false', :action => flow_call_url(the_call, :host => Settings.twilio_callback_host, event: "disconnect"), :record=> campaign.account.record_calls do |d|
+              d.Conference caller_session.session_key, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
             end
           else
             xml_builder.Hangup
           end
-        end
-        
-      end
-      
-      state :hungup do
-        before(:always) { end_running_call }
-        event :disconnect, :to => :disconnected
-      end
-      
-      state :disconnected do        
-        before(:always) { disconnect_call }
-<<<<<<< HEAD
-        after(:success) { call_attempt.publish_voter_disconnected}                
-=======
-        after(:success) { Resque.enqueue(CallPusherJob, call_attempt.id, "publish_voter_disconnected") }                
->>>>>>> em
-        event :call_ended, :to => :call_answered_by_lead, :if => :call_connected?
-        event :call_ended, :to => :call_not_answered_by_lead, :if => :call_did_not_connect?        
-        response do |xml_builder, the_call|
-          xml_builder.Hangup
-        end
-        
+        end        
       end
       
       state :abandoned do
-<<<<<<< HEAD
-        before(:always) { abandon_call; call_attempt.redirect_caller }                
-=======
-        before(:always) { abandon_call; Resque.enqueue(RedirectCallerJob, call_attempt.id) }        
->>>>>>> em
+        
+        before(:always) { 
+          RedisCall.push_to_abandoned_call_list(self.attributes); 
+          enqueue_dial_flow(CampaignStatusJob, ["abandoned", campaign.id, call_attempt.id, nil])          
+          call_attempt.redirect_caller
+         }                
+          
         response do |xml_builder, the_call|
           xml_builder.Hangup
         end
         
       end
       
-      state :call_answered_by_machine do
-        event :call_ended, :to => :call_end_machine
-        before(:always) { process_answered_by_machine; Resque.enqueue(RedirectCallerJob, call_attempt.id) }        
+      state :call_answered_by_machine do        
         
+        before(:always) { 
+          RedisCall.push_to_processing_by_machine_call_hash(self.attributes);
+          enqueue_dial_flow(CampaignStatusJob, ["answered_machine", campaign.id, call_attempt.id, nil])      
+          call_attempt.redirect_caller }        
+                  
         response do |xml_builder, the_call|
           xml_builder.Play campaign.recording.file.url if campaign.use_recordings?
           xml_builder.Hangup
         end
       end
       
-      state :call_answered_by_lead do
-        before(:always) { end_answered_call }        
-        event :submit_result, :to => :wrapup_and_continue
-        event :submit_result_and_stop, :to => :wrapup_and_stop
+      
+      
+      state :hungup do
+        event :disconnect, :to => :disconnected
         
-        response do |xml_builder, the_call|
-          xml_builder.Hangup
-        end        
+        before(:always) { 
+            enqueue_call_flow(EndRunningCallJob, [call_attempt.sid])
+          }         
+        
       end
       
-      state :call_end_machine do
-        before(:always) { end_answered_by_machine }                
+      state :disconnected do        
+        event :submit_result, :to => :wrapup_and_continue
+        event :submit_result_and_stop, :to => :wrapup_and_stop        
+        
+        before(:always) { 
+          RedisCall.push_to_disconnected_call_list(self.attributes.merge("caller_id"=> caller_session.caller.id));
+          enqueue_dial_flow(CampaignStatusJob, ["disconnected", campaign.id, call_attempt.id, caller_session.id])          
+       }       
+        after(:success) { enqueue_call_flow(CallerPusherJob, [caller_session.id, "publish_voter_disconnected"]) }                
         response do |xml_builder, the_call|
           xml_builder.Hangup
         end
-      end
-      
-      
-      state :call_not_answered_by_lead do
-        before(:always) { end_unanswered_call; Resque.enqueue(RedirectCallerJob, call_attempt.id) }                
-        response do |xml_builder, the_call|
-          xml_builder.Hangup
-        end
+        
       end
       
       
       state :wrapup_and_continue do 
-<<<<<<< HEAD
-        before(:always) { wrapup_now; call_attempt.redirect_caller }
-=======
-        before(:always) { wrapup_now; Resque.enqueue(RedirectCallerJob, call_attempt.id);Resque.enqueue(ModeratorCallJob, call_attempt.id, "publish_moderator_response_submited") }
->>>>>>> em
-        after(:success){ persist_all_states}
+        before(:always) { 
+        RedisCall.push_to_wrapped_up_call_list(call_attempt.attributes.merge(caller_type: CallerSession::CallerType::TWILIO_CLIENT));
+        enqueue_dial_flow(CampaignStatusJob, ["wrapped_up", campaign.id, call_attempt.id, caller_session.id])
+        call_attempt.redirect_caller
+         }
       end
-      
+            
       state :wrapup_and_stop do
-        before(:always) { wrapup_now; end_caller_session }        
-        after(:success){ persist_all_states;}
+        before(:always) { 
+        RedisCall.push_to_wrapped_up_call_list(call_attempt.attributes.merge(caller_type: CallerSession::CallerType::TWILIO_CLIENT));
+        enqueue_dial_flow(CampaignStatusJob, ["wrapped_up", campaign.id, call_attempt.id, caller_session.id])       
+        end_caller_session }        
       end
             
   end 
   
-  def persist_all_states
-    update_attribute(:all_states, (all_states + "|" + state))
-  end
   
   def run(event)
-    send(event)
+    call_flow = self.method(event.to_s) 
+    call_flow.call
     render
   end
   
   def process(event)
     begin
-      send(event)
+      call_flow = self.method(event.to_s) 
+      call_flow.call
     rescue ActiveRecord::StaleObjectError => exception      
       Resque.enqueue(PhantomCallerJob, caller_session.id)  unless caller_session.nil?
     end          
@@ -167,13 +139,18 @@ class Call < ActiveRecord::Base
   def answered_by_machine?
     answered_by == "machine"
   end
-
-  def answered_by_human_and_caller_not_available?
-    (answered_by.nil? || answered_by == "human") && call_status == 'in-progress' && caller_not_available?
+  
+  def answered_by_human?
+    (answered_by.nil? || answered_by == "human")
   end
   
-  def answered_by_human_and_caller_available?
-    (answered_by.nil? || answered_by == "human") && call_status == 'in-progress' && caller_available?
+  def answered_by_human_and_caller_available?    
+     answered_by_human?  && call_status == 'in-progress' && !caller_session.nil? && caller_session.available_for_call?
+  end
+
+  
+  def answered_by_human_and_caller_not_available?
+    answered_by_human?  && call_status == 'in-progress' && (caller_session.nil? || !caller_session.available_for_call?)
   end
   
   def call_did_not_connect?
@@ -185,4 +162,5 @@ class Call < ActiveRecord::Base
   end
   
   
-end  
+  
+end

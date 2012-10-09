@@ -5,19 +5,19 @@
       <legend>Settings</legend>
       <%= f.hidden_field :id, {name: "campaign[id]", id: "campaign_id"} %>
       <p>
-        <label for="">Name</label><br>
-        <%= f.text_field :name, {:class=>"field size3", name: "campaign[name]"} %>
+        <%= f.label :name %>
+        <%= f.text_field :name, name: "campaign[name]" %>
       </p>
       <p>
-        <label for="">Caller ID</label><br>
-        <%= f.text_field :caller_id, {:class=>"field size3", name: "campaign[caller_id]"} %>
+        <label>Caller ID</label>
+        <%= f.text_field :caller_id, name: "campaign[caller_id]" %>
       </p>
       <p>
-        <label for="">Script</label><br>
-        <%= f.collection_select(:script_id, @scripts, :id, :name,{}, {:class=>"field", name: "campaign[script_id]"}) %>
+        <%= f.label :script %>
+        <%= f.collection_select(:script_id, @scripts, :id, :name, {}, name: "campaign[script_id]") %>
       </p>
       <p>
-        <label for="">Dialing mode</label>
+        <%= f.label :dialing_mode %>
         <select class="field" id="campaign_type" name="campaign[type]">
           <%= options_for_select [["Predictive", "Predictive"],
                                   ["Power", "Progressive"],
@@ -26,19 +26,22 @@
         </select>
       </p>
       <div id="abandon_rate_edit" style="display: none">
-        <p><label>Abandonment rate</label>
-          <select class="field" id="campaign_abandon_rate" name="campaign[acceptable_abandon_rate]">
+        <p>
+          <%= f.label :abandonment_rate %>
+          <select class="field" id="campaign_acceptable_abandon_rate" name="campaign[acceptable_abandon_rate]">
             <% if @campaign.account.variable_abandonment? %>
-              <%= options_for_select [["1%", 0.01], ["2%", 0.02], ["3%", 0.03],["4%", 0.04], ["5%", 0.05], ["6%", 0.06],["7%", 0.07], ["8%", 0.08], ["9%", 0.09],["10%", 0.1]], @campaign.acceptable_abandon_rate %>
-            <%else%>
+              <%= options_for_select [["1%", 0.01], ["2%", 0.02], ["3%", 0.03], ["4%", 0.04], ["5%", 0.05],
+                                      ["6%", 0.06], ["7%", 0.07], ["8%", 0.08], ["9%", 0.09],["10%", 0.1]],
+                                     @campaign.acceptable_abandon_rate %>
+            <% else %>
               <%= options_for_select [["1%", 0.01], ["2%", 0.02], ["3%", 0.03]], @campaign.acceptable_abandon_rate %>
-            <%end%>
+            <% end %>
           </select>
         </p>
       </div>
 
       <p>
-        <label for="">Time zone</label>
+        <label>Time zone</label>
         <%= time_zone_select("campaign", 'time_zone', ActiveSupport::TimeZone.us_zones, :default => @campaign.time_zone) %>
       </p>
 
@@ -59,7 +62,9 @@
 
     <fieldset>
       <legend>Lists</legend>
-      <% if @campaign.voter_lists.length == 1 %>
+      <% if @campaign.new_record? %>
+        <p>After saving this campaign, you can edit it again to add lists.</p>
+      <% elsif @campaign.voter_lists.length == 1 %>
           <p>You haven't uploaded any lists yet.</p>
       <% else %>
           <table>
@@ -81,7 +86,7 @@
                   <% i= i+1 %>
                   </td>
                   <td valign="top"><%= list.voters.size %></td>
-                  <td valign="top"><%= Voter.remaining_voters_count_for('voter_list_id', list.id) %></td>
+                  <td valign="top"><%= Voter.remaining_voters_for_voter_list(list).count %></td>
                 </tr>
               <% end %>
             <% end %>
@@ -94,5 +99,3 @@
     </div>
   </fieldset>
 <% end %>
-
-

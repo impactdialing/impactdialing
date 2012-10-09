@@ -32,13 +32,13 @@ describe Caller do
     older_caller = Factory(:caller).tap { |c| c.update_attribute(:updated_at, 2.days.ago) }
     newer_caller = Factory(:caller).tap { |c| c.update_attribute(:updated_at, 1.day.ago) }
     Caller.record_timestamps = true
-    Caller.by_updated.all.should == [newer_caller, older_caller]
+    Caller.by_updated.all.should include(newer_caller, older_caller)
   end
 
   it "lists active callers" do
     active_caller = Factory(:caller, :active => true)
     inactive_caller = Factory(:caller, :active => false)
-    Caller.active.should == [active_caller]
+    Caller.active.should include(active_caller)
   end
 
   it "validates that a restored caller has an active campaign" do
@@ -49,20 +49,11 @@ describe Caller do
     caller.errors[:base].should == ['The campaign this caller was assigned to has been deleted. Please assign the caller to a new campaign.']
   end
 
-  it "calls in to the campaign" do
-    Twilio::REST::Client
-    sid = "gogaruko"
-    caller = Factory(:caller, :account => user.account)
-    campaign = Factory(:campaign, :account => user.account)
-    TwilioClient.stub_chain(:instance, :account, :calls, :create).and_return(mock(:response, :sid => sid))
-    caller.callin(campaign)
-  end
-
   it "asks for pin" do
     Caller.ask_for_pin.should ==
         Twilio::Verb.new do |v|
           3.times do
-            v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.host, :port => Settings.port, :attempt => 1), :method => "POST") do
+            v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :attempt => 1), :method => "POST") do
               v.say "Please enter your pin."
             end
           end
@@ -72,15 +63,11 @@ describe Caller do
   it "asks for pin again" do
     Caller.ask_for_pin(1).should == Twilio::Verb.new do |v|
       3.times do
-        v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.host, :port => Settings.port, :attempt => 2), :method => "POST") do
+        v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :attempt => 2), :method => "POST") do
           v.say "Incorrect Pin. Please enter your pin."
         end
       end
     end.response
-  end
-
-  it "redirects to hold call" do
-    Caller.hold.should == Twilio::Verb.new { |v| v.play("#{APP_URL}/wav/hold.mp3"); v.redirect(hold_call_path(:host => Settings.host, :port => Settings.port), :method => "GET")}.response
   end
 
   it "is known as the name unless blank" do
@@ -185,6 +172,32 @@ describe Caller do
       caller.update_attributes(campaign_id: other_campaign.id)
     end
     
+    
+  end
+  
+  describe "started calling" do
+    
+    it "should  push campaign and caller to redis " do
+      campaign = Factory(:predictive)
+      caller  = Factory(:caller, campaign: campaign)
+      caller_session = Factory(:caller_session, caller: caller)
+      RedisPredictiveCampaign.should_receive(:add).with(campaign.id, campaign.type)
+      caller.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["caller_connected", campaign.id, nil, caller_session.id])       
+      caller.started_calling(caller_session)      
+    end
+        
+  end
+  
+  describe "calling_voter_preview_power" do
+    it "should call pusher and enqueue dial " do
+      campaign = Factory(:predictive)
+      caller  = Factory(:caller, campaign: campaign)
+      caller_session = Factory(:caller_session, caller: caller)
+      voter = Factory(:voter)
+      caller.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id, "publish_calling_voter"])
+      caller.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, voter.id])
+      caller.calling_voter_preview_power(caller_session, voter.id)      
+    end
     
   end
 end

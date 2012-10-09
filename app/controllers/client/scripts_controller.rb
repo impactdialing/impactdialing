@@ -48,6 +48,7 @@ module Client
         render 'new'
       else
         save_script
+        load_voter_fields
         respond_with @script,  location: client_scripts_path do |format|
           format.json { render :json => {message: "Script updated" }, :status => :ok } if @script.errors.empty?
         end

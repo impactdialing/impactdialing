@@ -9,7 +9,7 @@ describe CallinController do
       post :create
       resp = Twilio::Verb.new do |v|
         3.times do
-          v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.host, :port => Settings.port,  :attempt => 1), :method => "POST") do
+          v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port,  :attempt => 1), :method => "POST") do
             v.say "Please enter your pin."
           end
         end
@@ -26,14 +26,10 @@ describe CallinController do
       CallerIdentity.should_receive(:find_by_pin).and_return(caller_identity)
       caller_identity.should_receive(:caller).and_return(caller)
       caller.should_receive(:create_caller_session).and_return(caller_session)
-      RedisCallNotification.should_receive(:caller_connected)
+      RedisPredictiveCampaign.should_receive(:add).with(caller.campaign_id, caller.campaign.type)      
+      caller.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["caller_connected", caller.campaign.id, nil, caller_session.id])       
       caller_session.should_receive(:run).and_return("")
       post :identify, Digits: pin
-    end
-
-    it "asks the user to hold" do
-      get :hold
-      response.body.should == Caller.hold
     end
 
     it "Prompts on incorrect pin" do
@@ -42,7 +38,7 @@ describe CallinController do
       post :identify, :Digits => pin, :attempt => "1"
       response.body.should == Twilio::Verb.new do |v|
         3.times do
-          v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.host, :port => Settings.port, :attempt => 2), :method => "POST") do
+          v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :attempt => 2), :method => "POST") do
             v.say "Incorrect Pin. Please enter your pin."
           end
         end

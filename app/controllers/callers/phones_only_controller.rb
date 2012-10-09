@@ -6,8 +6,10 @@ module Callers
     def check_login
        redirect_to :action =>"index" and return if session[:phones_only_caller].blank?
        begin
-         @caller = Caller.find(session[:phones_only_caller])
-         @account = @caller.account
+         Octopus.using(:read_slave1) do
+           @caller = Caller.find(session[:phones_only_caller])
+           @account = @caller.account
+         end
        rescue
          logout
        end
@@ -45,20 +47,25 @@ module Callers
     end
 
     def usage
-      @campaigns = @account.campaigns.for_caller(@caller)
-      @campaign = @campaigns.find_by_id(params[:campaign_id])
-      @from_date, @to_date = set_date_range_callers(@campaign, @caller, params[:from_date], params[:to_date])
-      @caller_usage = CallerUsage.new(@caller, @campaign, @from_date, @to_date)
+      Octopus.using(:read_slave1) do
+        campaigns = @account.campaigns.for_caller(@caller)
+        @campaigns_data = Campaign.connection.execute(campaigns.select([:name, "campaigns.id"]).uniq.to_sql).to_a
+        @campaign = campaigns.find_by_id(params[:campaign_id])
+        @from_date, @to_date = set_date_range_callers(@campaign, @caller, params[:from_date], params[:to_date])
+        @caller_usage = CallerUsage.new(@caller, @campaign, @from_date, @to_date)
+      end
     end
 
     def call_details
-      @campaigns = @account.campaigns.for_caller(@caller)
-      @campaign = @campaigns.find_by_id(params[:campaign_id]) || @caller.caller_sessions.last.try(:campaign) || @caller.campaign
-      @from_date, @to_date = set_date_range_callers(@campaign, @caller, params[:from_date], params[:to_date])
-      @answered_call_stats = @caller.answered_call_stats(@from_date, @to_date, @campaign)
-      @questions_and_responses = @campaign.try(:questions_and_responses) || {}
+      Octopus.using(:read_slave1) do
+        campaigns = @account.campaigns.for_caller(@caller)
+        @campaigns_data = Campaign.connection.execute(campaigns.select([:name, "campaigns.id"]).uniq.to_sql).to_a
+        @campaign = campaigns.find_by_id(params[:campaign_id]) || @caller.caller_sessions.last.try(:campaign) || @caller.campaign
+        @from_date, @to_date = set_date_range_callers(@campaign, @caller, params[:from_date], params[:to_date])
+        @answered_call_stats = @caller.answered_call_stats(@from_date, @to_date, @campaign)
+        @questions_and_responses = @campaign.try(:questions_and_responses) || {}
+      end
     end
-
 
   end
 end

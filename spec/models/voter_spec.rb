@@ -1,12 +1,30 @@
 require "spec_helper"
 require 'fiber'
 describe Voter do
+  class Voter
+    def dial_predictive
+      call_attempt = new_call_attempt(self.campaign.type)
+      Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
+      params = {'FallbackUrl' => TWILIO_ERROR, 'StatusCallback' => flow_call_url(call_attempt.call, host:  Settings.twilio_callback_host, port:  Settings.twilio_callback_port, event: 'call_ended'), 'Timeout' => campaign.use_recordings ? "20" : "15"}
+      params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect
+      response = Twilio::Call.make(campaign.caller_id, self.Phone, flow_call_url(call_attempt.call, host:  Settings.twilio_callback_host, port:  Settings.twilio_callback_port, event:  'incoming_call'), params)
+      if response["TwilioResponse"]["RestException"]
+        call_attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
+        update_attributes(status: CallAttempt::Status::FAILED)
+        Rails.logger.info "[dialer] Exception when attempted to call #{self.Phone} for campaign id:#{self.campaign_id}  Response: #{response["TwilioResponse"]["RestException"].inspect}"
+        return
+      end
+      call_attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])
+    end
+  end
+
   include Rails.application.routes.url_helpers
 
   it "can share the same number" do
-    Factory(:voter, :Phone => '92345623434')
-    Factory(:voter, :Phone => '92345623434')
-    Voter.all.size.should == 2
+    voter1 = Factory(:voter, :Phone => '92345623434')
+    voter2 = Factory(:voter, :Phone => '92345623434')
+    Voter.all.should include(voter1)
+    Voter.all.should include(voter2)
   end
 
   it "should list existing entries in a campaign having the given phone number" do
@@ -27,7 +45,7 @@ describe Voter do
     failed_voter = Factory(:voter, :campaign => campaign, :status=> CallAttempt::Status::FAILED, :call_back => true)
     ready_voter = Factory(:voter, :campaign => campaign, :status=> CallAttempt::Status::READY)
     success_voter = Factory(:voter, :campaign => campaign, :status=> CallAttempt::Status::SUCCESS)
-    Voter.remaining_voters_count_for('campaign_id', campaign.id).should == 6
+    Voter.remaining_voters_for_campaign(campaign).should have(6).items
   end
 
   it "allows international phone numbers beginning with +" do
@@ -44,19 +62,20 @@ describe Voter do
     voter1 = Factory(:voter, :campaign => Factory(:campaign), :status=> Voter::Status::NOTCALLED)
     voter2 = Factory(:voter, :campaign => Factory(:campaign), :status=> Voter::Status::NOTCALLED)
     Factory(:voter, :campaign => Factory(:campaign), :status=> "Random")
-    Voter.by_status(Voter::Status::NOTCALLED).should == [voter1, voter2]
+    Voter.by_status(Voter::Status::NOTCALLED).should include(voter1)
+    Voter.by_status(Voter::Status::NOTCALLED).should include(voter2)
   end
 
   it "returns only active voters" do
     active_voter = Factory(:voter, :active => true)
     inactive_voter = Factory(:voter, :active => false)
-    Voter.active.should == [active_voter]
+    Voter.active.should include(active_voter)
   end
 
   it "returns voters from an enabled list" do
     voter_from_enabled_list = Factory(:voter, :voter_list => Factory(:voter_list, :enabled => true), enabled: true)
     voter_from_disabled_list = Factory(:voter, :voter_list => Factory(:voter_list, :enabled => false), enabled: false)
-    Voter.enabled.should == [voter_from_enabled_list]
+    Voter.enabled.should include(voter_from_enabled_list)
   end
 
   it "returns voters that have responded" do
@@ -91,14 +110,6 @@ describe Voter do
     let(:field1) { Factory(:custom_voter_field, :name => "field1", :account => account) }
     let(:field2) { Factory(:custom_voter_field, :name => "field2", :account => account) }
     let(:field3) { Factory(:custom_voter_field, :name => "field3", :account => account) }
-
-
-    it "lists a voters custom fields" do
-      f = field1
-      value2 = Factory(:custom_voter_field_value, :voter => voter, :custom_voter_field => field2, :value => "value2")
-      f = field3
-      voter.custom_fields.should == [nil, value2.value, nil]
-    end
 
     it "lists voters custom fields with selected field names" do
       value1 = Factory(:custom_voter_field_value, :voter => voter, :custom_voter_field => field1, :value => "value1")
@@ -145,62 +156,6 @@ describe Voter do
     let(:campaign) { Factory(:predictive, answering_machine_detect: true) }
     let(:voter) { Factory(:voter, :campaign => campaign) }
     let(:client) { mock(:client).tap { |client| Twilio::REST::Client.stub(:new).and_return(client) } }
-
-    context 'making calls' do
-      before(:each) do
-        Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {"FallbackUrl"=>"blah", 'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
-      end
-
-      it "is dialed" do
-        caller_session = Factory(:caller_session, :available_for_call => true, :on_call => true, campaign: campaign)
-        campaign.stub(:time_period_exceed?).and_return(false)
-        voter.dial_predictive
-        call_attempt = CallAttempt.first
-        call_attempt.sid.should == "sid"
-        call_attempt.status.should == CallAttempt::Status::RINGING
-      end
-
-      it "updates voter attributes" do
-        time_now = Time.now
-        Time.stub!(:now).and_return(time_now)
-        caller_session = Factory(:caller_session, :available_for_call => true, :on_call => true, campaign: campaign)
-        campaign.stub(:time_period_exceed?).and_return(false)
-        voter.dial_predictive
-        call_attempt = voter.call_attempts.last
-        voter.last_call_attempt.should == call_attempt
-        DateTime.parse(voter.last_call_attempt_time.to_s).should == DateTime.parse(time_now.utc.to_s)
-      end
-
-      it "updates the call_attempts campaign" do
-        caller_session = Factory(:caller_session, :available_for_call => true, :on_call => true, campaign: campaign)
-        campaign.stub(:time_period_exceed?).and_return(false)
-        voter.dial_predictive
-        call_attempt = voter.call_attempts.last
-        call_attempt.campaign.should == voter.campaign
-      end
-    end
-
-    it "dials the voter and hangs up on answering machine when not using recordings" do
-      Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {"FallbackUrl"=>"blah", 'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
-      campaign.stub(:time_period_exceed?).and_return(false)
-      voter.dial_predictive
-    end
-
-    it "dials the voter and continues on answering machine when using recordings" do
-      Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {"FallbackUrl"=>"blah", 'StatusCallback'=> anything, 'IfMachine' => 'Continue', 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
-      voter.campaign = campaign
-      campaign.stub(:time_period_exceed?).and_return(false)
-      voter.dial_predictive
-    end
-
-    it "dials the voter without IFMachine if AMD detection turned off" do
-      campaign1 = Factory(:campaign, :type => 'Predictive', answering_machine_detect: false)
-      Twilio::Call.should_receive(:make).with(anything, voter.Phone, anything, {"FallbackUrl"=>"blah", 'StatusCallback'=> anything, 'Timeout' => anything}).and_return({"TwilioResponse" => {"Call" => {"Sid" => "sid"}}})
-      voter.campaign = campaign1
-      campaign1.stub(:time_period_exceed?).and_return(false)
-      voter.dial_predictive
-    end
-
 
     it "checks, whether voter is called or not" do
       voter1 = Factory(:voter, :status => "not called")
@@ -253,37 +208,39 @@ describe Voter do
   describe "to be dialed" do
     it "includes voters never called" do
       voter = Factory(:voter, :status => Voter::Status::NOTCALLED)
-      Voter.to_be_dialed.should == [voter]
+      Voter.to_be_dialed.should include(voter) 
     end
 
     it "includes voters with a busy signal" do
       voter = Factory(:voter, :status => CallAttempt::Status::BUSY)
       Factory(:call_attempt, :voter => voter, :status => CallAttempt::Status::BUSY)
-      Voter.to_be_dialed.should == [voter]
+      Voter.to_be_dialed.should include(voter)
     end
 
     (CallAttempt::Status::ALL - [CallAttempt::Status::INPROGRESS, CallAttempt::Status::RINGING, CallAttempt::Status::READY, CallAttempt::Status::SUCCESS, CallAttempt::Status::FAILED]).each do |status|
       it "includes voters with a status of #{status} " do
         voter = Factory(:voter, :status => status)
-        Voter.to_be_dialed.should == [voter]
+        Voter.to_be_dialed.should include(voter)
       end
     end
 
     it "excludes voters with a status of a successful call" do
       voter = Factory(:voter, :status => CallAttempt::Status::SUCCESS)
-      Voter.to_be_dialed.should be_empty
+      Voter.to_be_dialed.should_not include(voter)
     end
 
     it "is ordered by the last_call_attempt_time" do
       v1 = Factory(:voter, :status => CallAttempt::Status::BUSY, :last_call_attempt_time => 2.hours.ago)
       v2 = Factory(:voter, :status => CallAttempt::Status::BUSY, :last_call_attempt_time => 1.hour.ago)
-      Voter.to_be_dialed.should == [v1, v2]
+      Voter.to_be_dialed.should include(v1)
+      Voter.to_be_dialed.should include(v2)
     end
 
     it "prioritizes uncalled voters over called voters" do
       called_voter = Factory(:voter, :status => CallAttempt::Status::BUSY, :last_call_attempt_time => 2.hours.ago)
       uncalled_voter = Factory(:voter, :status => Voter::Status::NOTCALLED)
-      Voter.to_be_dialed.should == [uncalled_voter, called_voter]
+      Voter.to_be_dialed.should include(uncalled_voter)
+      Voter.to_be_dialed.should include(called_voter) 
     end
   end
 
@@ -305,7 +262,7 @@ describe Voter do
   it "excludes specific numbers" do
     unblocked_voter = Factory(:voter, :Phone => "1234567890")
     blocked_voter = Factory(:voter, :Phone => "0123456789")
-    Voter.without(['0123456789']).should == [unblocked_voter]
+    Voter.without(['0123456789']).should include(unblocked_voter)
   end
 
   describe 'blocked?' do
@@ -349,7 +306,7 @@ describe Voter do
       voter.persist_answers("{\"#{question.id}\":\"#{response.id}\",\"#{another_response.question.id}\":\"#{another_response.id}\" }",call_attempt)
       voter.answers.size.should == 2
       voter.reload.status.should == Voter::Status::RETRY
-      Voter.to_be_dialed.should == [voter]
+      Voter.to_be_dialed.should include(voter)
     end
 
     it "does not override old responses with newer ones" do
@@ -359,7 +316,7 @@ describe Voter do
       voter.persist_answers("{\"#{response.question.id}\":\"#{response.id}\",\"#{retry_response.question.id}\":\"#{retry_response.id}\" }",call_attempt)
       voter.answers.size.should == 2
       voter.reload.status.should == Voter::Status::RETRY
-      Voter.to_be_dialed.should == [voter]
+      Voter.to_be_dialed.should include(voter)
       voter.persist_answers("{\"#{response.question.id}\":\"#{response.id}\",\"#{valid_response.question.id}\":\"#{valid_response.id}\" }",call_attempt)
       voter.reload.answers.size.should == 4
     end
@@ -428,19 +385,19 @@ describe Voter do
     it "should return voter if call attempt was before recycle rate hours" do
       campaign = Factory(:campaign)
       voter = Factory(:voter, :campaign => campaign, last_call_attempt_time: 150.minutes.ago)
-      Voter.last_call_attempt_before_recycle_rate(2).first.should eq(voter)
+      Voter.last_call_attempt_before_recycle_rate(2).should include(voter)
     end
 
     it "should return not voter if call attempt was within recycle rate hours" do
       campaign = Factory(:campaign)
       voter = Factory(:voter, :campaign => campaign, last_call_attempt_time: 110.minutes.ago)
-      Voter.last_call_attempt_before_recycle_rate(2).length.should eq(0)
+      Voter.last_call_attempt_before_recycle_rate(2).should_not include(voter)
     end
 
     it "should return  voter if call not attempted " do
       campaign = Factory(:campaign)
       voter = Factory(:voter, :campaign => campaign, last_call_attempt_time: nil)
-      Voter.last_call_attempt_before_recycle_rate(2).length.should eq(1)
+      Voter.last_call_attempt_before_recycle_rate(2).should include(voter)
     end
 
 
@@ -472,13 +429,13 @@ describe Voter do
     it "should  consider voters who last call attempt is not within recycle rate for hangup status" do
       campaign = Factory(:campaign, recycle_rate: 1)
       voter = Factory(:voter, :campaign => campaign, last_call_attempt_time: Time.now - 2.hours, status: CallAttempt::Status::HANGUP)
-      Voter.avialable_to_be_retried(campaign.recycle_rate).size.should eq(1)
+      Voter.avialable_to_be_retried(campaign.recycle_rate).should include(voter)
     end
 
     it "should not  consider voters who last call attempt is not within recycle rate for success status" do
       campaign = Factory(:campaign, recycle_rate: 1)
       voter = Factory(:voter, :campaign => campaign, last_call_attempt_time: Time.now - 2.hours, status: CallAttempt::Status::SUCCESS)
-      Voter.avialable_to_be_retried(campaign.recycle_rate).should eq([])
+      Voter.avialable_to_be_retried(campaign.recycle_rate).should_not include(voter)
     end
 
   end
