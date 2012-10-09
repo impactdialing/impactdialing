@@ -20,9 +20,9 @@ class PersistCalls
   end
   
   def self.abandoned_calls(call_attempts, voters)
-    abandoned_calls = multipop(RedisCall.abandoned_call_list, 100)
-    abandoned_calls.each do |abandoned_call|
-      call = Call.find(abandoned_call['id'])
+    abandoned_calls = multipop(RedisCall.abandoned_call_list, 100).sort_by{|a| a['id']}
+    calls = Call.where(id: abandoned_calls.map{|c| c['id']}).includes(call_attempt: :voter).order(:id)
+    calls.zip(abandoned_calls).each do |call, abandoned_call|
       call_attempt = call.call_attempt
       voter = call_attempt.voter
       call_attempt.abandoned(abandoned_call['current_time'])
