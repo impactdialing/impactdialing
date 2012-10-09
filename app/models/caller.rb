@@ -150,9 +150,7 @@ class Caller < ActiveRecord::Base
   end
   
   def started_calling(session)
-    $redis_call_flow_connection.pipelined do
-      RedisPredictiveCampaign.add(campaign.id, campaign.type)
-    end    
+    RedisPredictiveCampaign.add(campaign.id, campaign.type)
     enqueue_dial_flow(CampaignStatusJob, ["caller_connected", campaign.id, nil, session.id])       
   end
   
