@@ -9,6 +9,7 @@ class RedisCall
   
   # done
   def self.push_to_abandoned_call_list(call_params)    
+    p call_params
     abandoned_call_list << call_params.merge("current_time"=> Time.now.to_s)
   end
   

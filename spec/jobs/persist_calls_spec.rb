@@ -1,17 +1,51 @@
 require "spec_helper"
 require 'timecop'
+require Rails.root.join('app/models/redis/redis_call.rb')
 
 describe PersistCalls do
+
+  let!(:campaign) { Factory(:campaign) }
+  let!(:voter) { Factory(:voter, campaign: campaign) }
+  let!(:call_attempt) { Factory(:call_attempt, voter: voter, campaign: campaign) }
+  let!(:call) { Factory(:call, call_attempt: call_attempt) }
+  let!(:time) { Time.now.utc.to_s }
+
+  describe ".abandoned_calls" do
+    before(:each) do
+      @voters = [] 
+      @attempts = []
+      RedisCall.push_to_abandoned_call_list(call.attributes)
+      RedisCall.abandoned_call_list.first['current_time'] = time
+      PersistCalls.abandoned_calls(@attempts, @voters)
+    end
+
+    it "should return abandoned voters and call attempts" do
+      @attempts.should have(1).item
+      @voters.should have(1).item
+      attempt = @attempts.first
+      attempt.status.should == CallAttempt::Status::ABANDONED
+      attempt.wrapup_time.should == time
+      attempt.connecttime.should == time
+      attempt.call_end.should == time
+      attempt.wrapup_time.should == time
+    end
+
+    context "persisting" do
+      before(:each) { PersistCalls.perform }
+      it "should save call attempt with proper parameters" do
+        p call_attempt.id
+        call_attempt.reload.status.should == CallAttempt::Status::ABANDONED
+        call_attempt.wrapup_time.should == time
+        call_attempt.connecttime.should == time
+        call_attempt.call_end.should == time
+        call_attempt.wrapup_time.should == time
+      end
+    end
+  end
 
   it '"should persist data for call_attempts and voters" ' do
     time = Time.now.utc
     Timecop.freeze(time) do
-      campaign = Factory(:campaign)
-
-      voter1 = Factory(:voter, campaign: campaign)
-      call_attempt1 = Factory(:call_attempt, voter: voter1, campaign: campaign)
-      call1 = Factory(:call, call_attempt: call_attempt1)
-
       voter2 = Factory(:voter, campaign: campaign)
       call_attempt2 = Factory(:call_attempt, voter: voter2, campaign: campaign)
       call2 = Factory(:call, call_attempt: call_attempt2)
