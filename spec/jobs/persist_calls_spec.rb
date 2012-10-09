@@ -26,5 +26,8 @@ describe PersistCalls do
     RedisCall.push_to_end_by_machine_call_list(call4.attributes)
     
     PersistCalls.perform
+
+    voter1.reload.status.should == CallAttempt::Status::ABANDONED
+    call_attempt1.reload.status.should == CallAttempt::Status::ABANDONED
   end
 end
