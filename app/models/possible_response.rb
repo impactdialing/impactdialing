@@ -32,15 +32,11 @@ class PossibleResponse < ActiveRecord::Base
   end
 
   def self.possible_response_text(question_ids, answers)
-    texts = []
-    answer_texts = PossibleResponse.select("question_id, value").where("id in (?)", answers.collect{|a| a.try(:possible_response).try(:id) } ).order('question_id')
-    question_ids.each_with_index do |question_id, index|
-      unless answer_texts.collect{|x| x.question_id}.include?(question_id)
-        texts << ""
-      else
-        texts << answer_texts.detect{|at| at.question_id == question_id}.value
-      end
+    answers ||= []
+    answer_ids = answers.collect { |a| a['possible_response_id'] }
+    answer_texts = Hash[*connection.execute(PossibleResponse.select("question_id, value").where(id: answer_ids).order('question_id').to_sql).to_a.flatten]
+    question_ids.map do |question_id|
+      answer_texts.has_key?(question_id) ? answer_texts[question_id] : ""
     end
-    texts
   end
 end

@@ -1,6 +1,5 @@
 module BatchQuery
   
-
   module ClassMethods
     def find_all_in_batches(opts={}, &block)
       page_size = opts.delete(:page_size) || 100
