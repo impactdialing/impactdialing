@@ -12,49 +12,15 @@ class Moderator < ActiveRecord::Base
       Twilio::Conference.mute_participant(conference_sid, call_sid)
     end
   end
-  
-  def self.campaigns_information(campaigns)
-    campaigns.collect { |campaign| campaign_information(campaign) }
-  end
-  
-  def self.campaign_information(campaign)
-    callers, on_hold, on_call = campaign.callers_status
-    wrap_up, ringing_lines, live_lines = campaign.call_status
-    numbers_remaining = Voter.remaining_voters_count_for("campaign_id", campaign.id)
-    numbers_available = campaign.leads_available_now          
-    {id: campaign.id, name: campaign.name, logged_in: callers, on_call: on_call, wrap_up: wrap_up , on_hold: on_hold ,  
-    live_lines: live_lines, ringing_lines: ringing_lines,  numbers_remaining: numbers_remaining , numbers_available: numbers_available}    
-  end
-  
+    
   def stop_monitoring(caller_session)
     conference_sid = get_conference_id(caller_session)
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
     Twilio::Conference.kick_participant(conference_sid, call_sid)
   end
   
-  def self.update_dials_in_progress(campaign)
-    publish_event(campaign, 'update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_for_campaign(campaign).count})
-  end
-
   def self.active_moderators(campaign)
     campaign.account.moderators.last_hour.active.select('session')
-  end
-
-  def self.update_dials_in_progress_sync(campaign)
-    Moderator.active_moderators(campaign).each do|moderator|
-      begin
-        Pusher[moderator.session].trigger!('update_dials_in_progress', {:campaign_id => campaign.id, :dials_in_progress => campaign.call_attempts.not_wrapped_up.size, :voters_remaining => Voter.remaining_voters_for_campaign(campaign).count})
-      rescue Exception => e
-        Rails.logger.error "Pusher exception: #{e}"
-      end
-    end
-  end
-
-
-  def self.publish_event(campaign, event, data)
-    Moderator.active_moderators(campaign).each do |moderator|
-      Pusher[moderator.session].trigger!(event, data)
-    end
   end
 
   def get_conference_id(caller_session)

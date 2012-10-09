@@ -15,17 +15,4 @@ describe Moderator do
   end
   
  
-  xit "should send the event(voter connected) to monitors" do
-    account = Factory(:account)
-    moderator1 = Factory(:moderator, :account => account, :session => "s123", :active => true)
-    moderator2 = Factory(:moderator, :account => account, :session => "s1234", :active => true)
-    moderator3 = Factory(:moderator, :account => account, :session => "s12345", :active => false)
-    caller = Factory(:caller, :account => account)
-    channel = mock
-    Pusher.should_receive(:[]).with(moderator1.session).and_return(channel)
-    Pusher.should_receive(:[]).with(moderator2.session).and_return(channel)
-    channel.should_receive(:trigger).with("voter_connected", {}).twice
-    Moderator.publish_event(caller, "voter_connected", {})
-  end
-  
 end
