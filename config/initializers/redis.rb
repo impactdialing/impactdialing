@@ -19,6 +19,11 @@ $redis_call_flow_connection = Redis.new(:host => call_flow_uri.host, :port => ca
 dialer_uri = URI.parse(redis_config[rails_env]['dialer'])
 $redis_dialer_connection = Redis.new(:host => dialer_uri.host, :port => dialer_uri.port)
 
+on_hold_uri = URI.parse(redis_config[rails_env]['on_hold_callers'])
+$redis_on_hold_connection = Redis.new(:host => on_hold_uri.host, :port => on_hold_uri.port)
+
+
+
 
 
 
