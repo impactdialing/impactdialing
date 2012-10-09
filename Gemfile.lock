@@ -246,8 +246,6 @@ GEM
       multi_json (~> 1)
       redis
       redis-namespace
-    sidekiq-middleware (0.0.2)
-      sidekiq
     signature (0.1.4)
     simplecov (0.6.4)
       multi_json (~> 1.0)
@@ -354,7 +352,6 @@ DEPENDENCIES
   shoulda
   showoff-io
   sidekiq (~> 1.2.1)
-  sidekiq-middleware
   simplecov
   sinatra
   slim (~> 1.2.2)
