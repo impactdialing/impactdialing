@@ -22,7 +22,7 @@ ImpactDialing::Application.configure do
   config.action_controller.perform_caching = true
 
   # See everything in the log (default is :info)
-  config.log_level = :info
+  config.log_level = :debug
 
   config.active_support.deprecation = :log
 

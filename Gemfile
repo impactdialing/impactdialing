@@ -47,7 +47,6 @@ gem "sidekiq", '~>1.2.1'
 gem "slim", "~>1.2.2"
 gem "sprockets", "~>2.1.3"
 gem "sinatra"
-gem "sidekiq-middleware"
 
 
 group :development, :test do

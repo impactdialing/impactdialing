@@ -1,6 +1,6 @@
 class MonitorCampaignJob
   include Sidekiq::Worker
-  sidekiq_options({ unique: :all, forever: true})
+
   
   def perform(campaign_id)
     sessions = MonitorSession.sessions_last_hour(campaign_id)
