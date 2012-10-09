@@ -5,7 +5,7 @@ class AdminController < ApplicationController
   before_filter :authenticate
 
   def state
-    @logged_in_campaigns = Campaign.where("id in (select distinct campaign_id from caller_sessions where on_call=1)")
+    @logged_in_campaigns = Campaign.where("id in (select distinct campaign_id from caller_sessions where state not in (?) )", ["conference_ended", "stopped"])
     @logged_in_callers_count = CallerSession.on_call.count
     @errors=""
   end
