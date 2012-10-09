@@ -145,12 +145,12 @@ class Call < ActiveRecord::Base
   end
   
   def answered_by_human_and_caller_available?    
-     answered_by_human?  && call_status == 'in-progress' && !caller_session.nil? && caller_session.available_for_call?
+     answered_by_human?  && call_status == 'in-progress' && !caller_session.nil? && caller_session.assigned_to_lead?
   end
 
   
   def answered_by_human_and_caller_not_available?
-    answered_by_human?  && call_status == 'in-progress' && (caller_session.nil? || !caller_session.available_for_call?)
+    answered_by_human?  && call_status == 'in-progress' && (caller_session.nil? || !caller_session.assigned_to_lead?)
   end
   
   def call_did_not_connect?

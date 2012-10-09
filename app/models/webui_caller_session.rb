@@ -50,9 +50,6 @@ class WebuiCallerSession < CallerSession
       
   end
   
-  def available_for_call?
-    state == "connected"
-  end
   
   
   def call_not_wrapped_up?  
