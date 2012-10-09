@@ -68,7 +68,6 @@ class CallAttempt < ActiveRecord::Base
     self.status = CallAttempt::Status::ABANDONED
     self.connecttime = time
     self.call_end = time
-    self.wrapup_time = time
   end
     
   def end_answered_by_machine(connect_time, end_time)
@@ -83,7 +82,6 @@ class CallAttempt < ActiveRecord::Base
     self.wrapup_time = time
     self.call_end = time
   end
-  
   
   def disconnect_call(time, duration, url, caller_id)
     self.status = CallAttempt::Status::SUCCESS
