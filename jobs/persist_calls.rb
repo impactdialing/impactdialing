@@ -16,7 +16,7 @@ class PersistCalls
     call_attempts = []    
     wrapped_up_calls(call_attempts, voters)
     CallAttempt.import  call_attempts, :on_duplicate_key_update=>[:wrapup_time, :voter_response_processed]
-    
+
   end
   
   def self.abandoned_calls(call_attempts, voters)
