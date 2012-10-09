@@ -73,4 +73,5 @@ group :test do
   gem 'spork-rails'
   gem "database_cleaner"
   gem "json_spec"
+  gem 'timecop'
 end
