@@ -47,6 +47,7 @@ class Twillio
   def self.setup_call(voter, caller_session, campaign)
     attempt = voter.call_attempts.create(:campaign => campaign, :dialer_mode => campaign.type, :status => CallAttempt::Status::RINGING, :caller_session => caller_session, :caller => caller_session.caller, call_start:  Time.now)    
     voter.update_attributes(:last_call_attempt_id => attempt.id, :last_call_attempt_time => Time.now, :caller_session_id => caller_session.id, status: CallAttempt::Status::RINGING)
+    caller_session.update_attributes(on_call: true, available_for_call: false)
     Call.create(call_attempt: attempt, all_states: "", state: "initial")
     enqueue_dial_flow(CampaignStatusJob, ["dialing", campaign.id, attempt.id, caller_session.id])
     attempt    
@@ -57,7 +58,7 @@ class Twillio
     attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
     voter.update_attributes(status: CallAttempt::Status::FAILED)
     unless caller_session.nil?
-      caller_session.update_attributes(attempt_in_progress: nil, voter_in_progress: nil)
+      caller_session.update_attributes(attempt_in_progress: nil, voter_in_progress: nil, on_call: true, available_for_call: true)
       caller_session.redirect_caller 
     end
   end

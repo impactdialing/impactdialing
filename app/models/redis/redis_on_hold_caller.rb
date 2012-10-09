@@ -6,6 +6,10 @@ class RedisOnHoldCaller
   end
   
   def self.add(campaign_id, caller_session_id)
+    list(campaign_id) << caller_session_id
+  end
+  
+  def self.add_to_end(campaign_id, caller_session_id)
     list(campaign_id).push(caller_session_id)
   end
   
