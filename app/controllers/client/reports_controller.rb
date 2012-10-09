@@ -3,7 +3,8 @@ module Client
   class ReportsController < ClientController
     include ApplicationHelper::TimeUtils
     include TimeZoneHelper
-    before_filter :load_campaign, :except => [:index, :account_campaigns_usage, :account_callers_usage]
+    before_filter :load_campaign, :except => [:index, :usage, :account_campaigns_usage, :account_callers_usage]
+    around_filter :select_shard
 
     def index
       @campaigns = params[:id].blank? ? account.campaigns : Campaign.find(params[:id])
@@ -42,7 +43,13 @@ module Client
     def download
       load_campaign
       set_dates
-      Resque.enqueue(ReportDownloadJob, @campaign.id, @user.id, params[:voter_fields], params[:custom_voter_fields], params[:download_all_voters],params[:lead_dial], @from_date, @to_date, "", "webui")
+      Resque.enqueue(ReportDownloadJob, @campaign.id, @user.id,
+        params[:voter_fields],
+        params[:custom_voter_fields],
+        params[:download_all_voters],
+        params[:lead_dial],
+        @from_date, @to_date, "", "webui"
+      )
       flash_message(:notice, I18n.t(:client_report_processing))
       redirect_to client_reports_url
     end
@@ -51,6 +58,7 @@ module Client
       load_campaign
       @downloaded_reports = DownloadedReport.active_reports(@campaign.id)
     end
+
 
     def account_campaigns_usage
       @account = Account.find(params[:id])
@@ -74,7 +82,9 @@ module Client
     private
 
     def load_campaign
-      @campaign = current_user.campaigns.find(params[:campaign_id])
+      Octopus.using(:read_slave1) do
+        @campaign = Account.find(account).campaigns.find(params[:campaign_id])
+      end
     end
 
     def set_dates

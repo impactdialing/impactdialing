@@ -1,23 +1,29 @@
-web:  bundle exec rails server thin -p $PORT 
-resque_dialer: bundle exec ruby lib/resque_predictive_dialer.rb
-new_simulator: bundle exec ruby simulator/newest_simulator.rb
-email_worker_job: rake environment resque:work QUEUE=email_worker_job
-voter_list_upload_worker_job: rake environment resque:work QUEUE=voter_list_upload_worker_job
-report_download_worker_job: rake environment resque:work QUEUE=report_download_worker_job
+web: bundle exec unicorn -p $PORT -c ./config/unicorn.rb
 
+dialer_loop: bundle exec ruby lib/dialer_loop.rb
+simulator_loop: bundle exec ruby simulator/simulator_loop.rb
+
+dialer_worker: rake environment TERM_CHILD=1 RESQUE_TERM_TIMEOUT=10 resque:work QUEUE=dialer_worker
+simulator_worker: rake environment TERM_CHILD=1 RESQUE_TERM_TIMEOUT=10 resque:work QUEUE=simulator_worker
+
+list_upload: rake environment resque:work TERM_CHILD=1 RESQUE_TERM_TIMEOUT=5 QUEUE=list_upload
+report_download: rake environment resque:work TERM_CHILD=1 RESQUE_TERM_TIMEOUT=5 QUEUE=report_download
+
+background_worker: rake environment resque:work QUEUE=background_worker
+alert_worker: rake environment resque:work QUEUE=alert_worker
+
+
+answered_worker: rake environment TERM_CHILD=1 RESQUE_TERM_TIMEOUT=10 resque:work QUEUE=answered_worker
+debit_worker: rake environment resque:work QUEUE=debit_worker
+
+call_flow: bundle exec sidekiq -c 20 -q call_flow
+dial_flow: bundle exec sidekiq -c 20 -q dial_flow
+persist_worker: rake environment resque:work QUEUE=persist_jobs
+
+monitor_caller_update: bundle exec sidekiq -c 20 -q monitor_caller_update
+monitor_campaign_update: bundle exec sidekiq -c 20 -q monitor_campaign_update
+
+
+clock: rake environment resque:scheduler
 monitor_worker: bundle exec ruby lib/monitor_tab_pusher.rb
 connected_call_worker: bundle exec ruby lib/connected_call.rb
-background_worker_job: rake environment resque:work QUEUE=background_worker_job
-answered_worker_job: rake environment resque:work QUEUE=answered_worker_job
-clock:   rake environment resque:scheduler
-dialer_worker: rake environment resque:work QUEUE=dialer_worker 
-calculate_dials_worker: rake environment resque:work QUEUE=calculate_dials_worker 
-simulator_worker: rake environment resque:work QUEUE=simulator 
-debit_worker_job: rake environment resque:work QUEUE=debit_worker_job
-redirect_caller_job: rake environment resque:work QUEUE=redirect_caller_job
-call_pusher_job: rake environment resque:work QUEUE=call_pusher_job
-caller_pusher_job: rake environment resque:work QUEUE=caller_pusher_job
-preview_power_dial_job: rake environment resque:work QUEUE=preview_power_dial_job
-moderator_caller_job: rake environment resque:work QUEUE=moderator_caller_job
-moderator_call_job: rake environment resque:work QUEUE=moderator_call_job
-

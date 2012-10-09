@@ -6,6 +6,7 @@ class Campaign < ActiveRecord::Base
   attr_accessible :type, :name, :caller_id, :script_id, :acceptable_abandon_rate, :time_zone, :start_time, :end_time, :recycle_rate, :answering_machine_detect, :voter_lists_attributes, :use_recordings, :recording_id
 
   has_many :caller_sessions
+  has_many :caller_sessions_on_call, conditions: {on_call: true}, class_name: 'CallerSession'
   has_many :voter_lists, :conditions => {:active => true}
   has_many :all_voters, :class_name => 'Voter'
   has_many :call_attempts
@@ -39,7 +40,8 @@ class Campaign < ActiveRecord::Base
       :conditions => {"caller_sessions.on_call" => false}
   }
   
-  scope :for_caller, lambda { |caller| {:include => [:caller_sessions], :conditions => {"caller_sessions.caller_id" => caller.id}}}
+  scope :for_caller, lambda { |caller| joins(:caller_sessions).where(caller_sessions: {caller_id: caller}) }
+
 
   validates :name, :presence => true
   validates :caller_id, :presence => true
@@ -67,6 +69,15 @@ class Campaign < ActiveRecord::Base
     PREDICTIVE = "Predictive"
     PROGRESSIVE = "Progressive"
   end
+  
+  def self.preview_power_campaign?(campaign_type)
+    [Type::PREVIEW, Type::PROGRESSIVE].include?(campaign_type)
+  end
+  
+  def self.predictive_campaign?(campaign_type)
+    Type::PREDICTIVE == campaign_type
+  end
+  
 
   def new_campaign
     new_record?
@@ -117,12 +128,9 @@ class Campaign < ActiveRecord::Base
     end
   end
 
-  def oldest_available_caller_session
-    caller_sessions.available.find(:first, :order => "updated_at ASC")
-  end
 
   def callers_log_in?
-    caller_sessions.on_call.length > 0
+    caller_sessions.on_call.size > 0
   end
   
   def as_time_zone
@@ -134,9 +142,8 @@ class Campaign < ActiveRecord::Base
   end
   
   def last_call_attempt_time
-    call_attempts.last.try(:created_at)
+    call_attempts.from("call_attempts use index (index_call_attempts_on_campaign_id)").last.try(:created_at)
   end  
-
 
   def voters_called
     Voter.find_all_by_campaign_id(self.id, :select=>"id", :conditions=>"status <> 'not called'")
@@ -144,10 +151,10 @@ class Campaign < ActiveRecord::Base
 
 
   def voters_count(status=nil, include_call_retries=true)
-    active_lists = VoterList.find_all_by_campaign_id_and_active_and_enabled(self.id, 1, 1)
-    return [] if active_lists.length==0
-    active_list_ids = active_lists.collect { |x| x.id }
-    Voter.count(1, :select=>"id", :conditions=>"active = 1 and voter_list_id in (#{active_list_ids.join(",")})  and (status='#{status}' OR (call_back=1 and last_call_attempt_time < (Now() - INTERVAL 180 MINUTE)) )")
+    active_lists_ids = VoterList.where(campaign_id: self.id, active: true, enabled: true).pluck(:id)
+    return [] if active_lists_ids.empty?
+    Voter.where(active: true, voter_list_id: active_lists_ids).
+      where(["status = ? OR (call_back = 1 AND last_call_attempt_time < (Now() - INTERVAL 180 MINUTE))", status]).count
   end
 
 
@@ -176,7 +183,7 @@ class Campaign < ActiveRecord::Base
     result = Hash.new
     question_ids = Answer.all(:select=>"distinct question_id", :conditions=>"campaign_id = #{self.id}")
     answer_count = Answer.select("possible_response_id").where("campaign_id = ?", self.id).within(from_date, to_date).group("possible_response_id").count
-    total_answers = Answer.from("answers use index (index_answers_count_question)").where("campaign_id = ?",self.id).within(from_date, to_date).group("question_id").count
+    total_answers = Answer.where("campaign_id = ?",self.id).within(from_date, to_date).group("question_id").count
     questions = Question.where("id in (?)",question_ids.collect{|q| q.question_id})
     questions.each do |question|
       result[question.text] = question.possible_responses.collect { |possible_response| possible_response.stats(answer_count, total_answers) }
@@ -205,6 +212,15 @@ class Campaign < ActiveRecord::Base
   def abandoned_calls_time(from_date, to_date)
     call_attempts.between(from_date, to_date).with_status([CallAttempt::Status::ABANDONED]).sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)').to_i
   end
+  
+  def leads_available_now
+    sanitize_dials(all_voters.enabled.avialable_to_be_retried(recycle_rate).count  + all_voters.by_status(CallAttempt::Status::ABANDONED).count)
+  end
+  
+  def sanitize_dials(dial_count)
+    dial_count.nil? ? 0 : dial_count
+  end
+  
 
   def cost_per_minute
     0.09

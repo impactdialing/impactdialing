@@ -2,7 +2,7 @@
   <legend>Lists</legend>
   <% if @campaign.new_record? %>
     <p>After saving this campaign, you can open it again to add lists.</p>
-  <% elsif @campaign.voter_lists.empty? %>
+  <% elsif @campaign.voter_lists.length == 1 %>
     <p>You haven't uploaded any lists yet.</p>
   <% else %>
       <table>
@@ -24,7 +24,7 @@
               <% i= i+1 %>
               </td>
               <td valign="top"><%= list.voters.size %></td>
-              <td valign="top"><%= Voter.remaining_voters_count_for('voter_list_id', list.id) %></td>
+              <td valign="top"><%= Voter.remaining_voters_for_voter_list(list).count %></td>
             </tr>
           <% end %>
         <% end %>

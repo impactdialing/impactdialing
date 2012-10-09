@@ -1,6 +1,7 @@
 class Caller < ActiveRecord::Base
   include Rails.application.routes.url_helpers
   include Deletable
+  include SidekiqEvents
   validates_format_of :email, :allow_blank => true, :with => /^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i, :message => "Invalid email"
   belongs_to :campaign
   belongs_to :account
@@ -51,11 +52,8 @@ class Caller < ActiveRecord::Base
     self.pin = uniq_pin
   end
 
-
-
-
   def is_on_call?
-    !caller_sessions.blank? && caller_sessions.on_call.size > 0
+    !caller_sessions.blank? && caller_sessions.on_call.size > 1
   end
 
   class << self
@@ -70,7 +68,7 @@ class Caller < ActiveRecord::Base
             else
               Twilio::Verb.new do |v|
                 3.times do
-                  v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.host, :port => Settings.port, :attempt => attempt + 1), :method => "POST") do
+                  v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :attempt => attempt + 1), :method => "POST") do
                     v.say attempt == 0 ? "Please enter your pin." : "Incorrect Pin. Please enter your pin."
                   end
                 end
@@ -78,18 +76,6 @@ class Caller < ActiveRecord::Base
             end
       xml.response
     end
-  end
-
-  def self.hold
-    Twilio::Verb.new { |v| v.play("#{APP_URL}/wav/hold.mp3"); v.redirect(hold_call_path(:host => Settings.host, :port => Settings.port), :method => "GET")}.response
-  end
-
-  def callin(campaign)
-    response = TwilioClient.instance.account.calls.create(
-        :from =>APP_NUMBER,
-        :to => Settings.phone,
-        :url => receive_call_url(:host => Settings.host, :port => Settings.port)
-    )
   end
 
   def phone
@@ -109,10 +95,14 @@ class Caller < ActiveRecord::Base
 
   def answered_call_stats(from, to, campaign)
     result = Hash.new
-    question_ids = Answer.all(:select=>"distinct question_id", :conditions=>"campaign_id = #{campaign.id}")
-    answer_count = Answer.select("possible_response_id").where("campaign_id = ? and caller_id = ?", campaign.id, self.id).within(from, to).group("possible_response_id").count
-    total_answers = Answer.select("question_id").from("answers use index (index_answers_count_question_id)").where("campaign_id = ? and caller_id = ?",campaign.id, self.id).within(from, to).group("question_id").count
-    questions = Question.where("id in (?)",question_ids.collect{|q| q.question_id})
+    question_ids = Answer.where(campaign_id: campaign.id).uniq.pluck(:question_id)
+    answer_count = Answer.select(:possible_response_id).
+      where(:campaign_id => campaign.id, :caller_id => self.id).
+      within(from, to).group("possible_response_id").count
+    total_answers = Answer.select(:question_id).
+      where(:campaign_id => campaign.id, :caller_id => self.id).
+      within(from, to).group("question_id").count
+    questions = Question.where(id: question_ids)
     questions.each do |question|
       result[question.text] = question.possible_responses.collect { |possible_response| possible_response.stats(answer_count, total_answers) }
       result[question.text] << {answer: "[No response]", number: 0, percentage:  0} unless question.possible_responses.find_by_value("[No response]").present?
@@ -125,7 +115,7 @@ class Caller < ActiveRecord::Base
   #   if self.is_phones_only?
   #        if (caller_session.campaign.predictive_type != "preview" && caller_session.campaign.predictive_type != "progressive")
   #          Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-  #          Twilio::Call.redirect(caller_session.sid, phones_only_caller_index_url(:host => Settings.host, :port => Settings.port, session_id: caller_session.id, :campaign_reassigned => true))
+  #          Twilio::Call.redirect(caller_session.sid, phones_only_caller_index_url(:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, session_id: caller_session.id, :campaign_reassigned => true))
   #        end
   #      else
   #        caller_session.reassign_caller_session_to_campaign
@@ -137,6 +127,17 @@ class Caller < ActiveRecord::Base
   #      end
   # end
   
+  def reassign_to_another_campaign(caller_session)
+    return unless caller_session.attempt_in_progress.nil?
+    if self.is_phones_only?
+      caller_session.redirect_caller if caller_session.campaign.type == Campaign::Type::PREDICTIVE
+    else
+      caller_session.reassign_caller_session_to_campaign
+      caller_session.run(:start_conf)
+    end
+  end
+  
+  
   
   def create_caller_session(session_key, sid, caller_type)    
     if is_phones_only?
@@ -144,9 +145,18 @@ class Caller < ActiveRecord::Base
     else
       caller_session =  WebuiCallerSession.create(on_call: false, available_for_call: false, session_key: session_key, campaign: campaign , sid: sid, starttime: Time.now, caller_type: caller_type, state: 'initial', caller: self)
     end
-    RedisCallerSession.load_caller_session_info(caller_session.id, caller_session)        
     caller_sessions << caller_session
     caller_session
+  end
+  
+  def started_calling(session)
+    RedisPredictiveCampaign.add(campaign.id, campaign.type)
+    enqueue_dial_flow(CampaignStatusJob, ["caller_connected", campaign.id, nil, session.id])       
+  end
+  
+  def calling_voter_preview_power(session, voter_id)
+    enqueue_call_flow(CallerPusherJob, [session.id, "publish_calling_voter"])
+    enqueue_call_flow(PreviewPowerDialJob, [session.id, voter_id])
   end
 
   def create_caller_identity(session_key)

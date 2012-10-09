@@ -1,18 +1,21 @@
 PROTOCOL = Rails.env == 'development' || Rails.env == 'heroku_staging' ? 'http://' : 'https://'
 
 ImpactDialing::Application.routes.draw do
+  root :to => "caller#index", :constraints => {:subdomain => "caller"}
   root :to => "client#index"
 
 
   resources :calls, :protocol => PROTOCOL do
     member do
       post :flow
+      post :call_ended
+      post :incoming
       post :hangup
       post :submit_result
       post :submit_result_and_stop
     end
   end
-  
+
   resources :caller, :protocol => PROTOCOL, :only => [:index] do
     collection do
       get :login
@@ -33,7 +36,7 @@ ImpactDialing::Application.routes.draw do
     end
 
   end
-  
+
 
   namespace "callers" do
     resources :campaigns do
@@ -214,6 +217,7 @@ ImpactDialing::Application.routes.draw do
 
   get 'admin/status', :to => 'admin#state'
   get 'admin/abandonment', :to => 'admin#abandonment'
+  get 'admin/caller_sessions/:id', :to => 'admin#caller_sessions', :as => :admin_caller_sessions
 
   resource :call_attempts, :only => :create
 

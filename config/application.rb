@@ -6,8 +6,6 @@ require "rails/all"
 # you've limited to :test, :development, or :production.
 Bundler.require(:default, Rails.env) if defined?(Bundler)
 
-NUM_RESULT_FIELDS=16
-DEBUG_TWIML=true
 MAILCHIMP_API_KEY="011c309139adae5ea68dac0b8020fcb5-us2"
 
 module ImpactDialing
@@ -15,6 +13,11 @@ module ImpactDialing
   #  config.time_zone = "Pacific Time (US & Canada)"
     config.active_record.default_timezone = :local
 
+    p Rails.env
+    unless Rails.env.development? || Rails.env.test?
+      config.logger = Logger.new(STDOUT)
+      config.logger.level = Logger.const_get(ENV['LOG_LEVEL'] ?  ENV['LOG_LEVEL'].upcase : 'INFO')
+    end
     config.filter_parameters << :password << :card_number << :card_verification << :cc << :code
     #config.time_zone = 'UTC'
 

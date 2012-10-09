@@ -1,19 +1,17 @@
-require 'new_relic/agent/method_tracer'
 class CallerController < ApplicationController
-  include NewRelic::Agent::MethodTracer
   layout "caller"
   skip_before_filter :verify_authenticity_token, :only =>[:check_reassign, :call_voter, :flow, :start_calling, :stop_calling, :end_session, :skip_voter]
   before_filter :check_login, :except=>[:login, :feedback, :end_session, :start_calling, :phones_only, :new_campaign_response_panel, :check_reassign, :call_voter, :flow]
-  before_filter :find_caller_session , :only => [:flow, :stop_calling, :end_session]
+  before_filter :find_caller_session , :only => [:flow, :stop_calling]
+  before_filter :find_session, :only => [:end_session]
   layout 'caller'
+
 
   def start_calling
     caller = Caller.find(params[:caller_id])
     identity = CallerIdentity.find_by_session_key(params[:session_key])
     session = caller.create_caller_session(identity.session_key, params[:CallSid], CallerSession::CallerType::TWILIO_CLIENT)
-    RedisCampaign.add_running_predictive_campaign(caller.campaign_id, caller.campaign.type)
-    RedisCaller.add_caller(caller.campaign.id, session.id)
-    RedisCallNotification.caller_connected(session.id)
+    caller.started_calling(session)    
     render xml: session.run(:start_conf)
   end
 
@@ -29,17 +27,8 @@ class CallerController < ApplicationController
 
   def call_voter
     caller = Caller.find(params[:id])
-<<<<<<< HEAD
-    caller_session = caller.caller_sessions.find(params[:session_id])    
-    voter = RedisVoter.read(params[:voter_id])
-    caller_session.publish_calling_voter
-    Twillio.dial(voter, caller_session)
-=======
     caller_session = caller.caller_sessions.find(params[:session_id]) 
-    Resque.enqueue(CallerPusherJob, caller_session.id, "publish_calling_voter")   
-    Resque.enqueue(PreviewPowerDialJob, caller_session.id, params[:voter_id]) unless params[:voter_id].blank?
-
->>>>>>> em
+    caller.calling_voter_preview_power(caller_session, params[:voter_id])
     render :nothing => true
   end
 
@@ -60,7 +49,7 @@ class CallerController < ApplicationController
     caller_session = @caller.caller_sessions.find(params[:session_id])
     voter = Voter.find(params[:voter_id])
     voter.skip
-    caller_session.redirect_caller
+    enqueue_call_flow(RedirectCallerJob, [caller_session.id])
     render :nothing => true
   end
 
@@ -106,7 +95,7 @@ class CallerController < ApplicationController
     conference_sid = caller_session.get_conference_id
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
     Twilio::Conference.kick_participant(conference_sid, caller_session.sid)
-    Twilio::Call.redirect(caller_session.sid, flow_caller_url(caller, session_id:  caller_session.id, event: "pause_conf", host: Settings.host, port:  Settings.port))
+    Twilio::Call.redirect(caller_session.sid, flow_caller_url(caller, session_id:  caller_session.id, event: "pause_conf", host: Settings.twilio_callback_host, port:  Settings.twilio_callback_port))
     caller_session.publish('caller_kicked_off', {})
     render nothing: true
   end
@@ -117,7 +106,7 @@ class CallerController < ApplicationController
     if caller.campaign.id == params[:campaign_id].to_i
       render :json => {:reassign => "false"}
     else
-      render :json => {:reassign => "true", :campaign_id => caller.campaign.id, :script => caller.campaign.script.try(:script)}
+      render :json => {:reassign => "true", :campaign_id => caller.campaign.id, :script => caller.campaign.try(:script)}
     end
   end
 
@@ -137,6 +126,10 @@ class CallerController < ApplicationController
   def feedback
     Postoffice.feedback(params[:issue]).deliver
     render :text=> "var x='ok';"
+  end
+  
+  def find_session
+    @caller_session = CallerSession.find_by_sid(params[:CallSid])
   end
 
   def find_caller_session

@@ -7,7 +7,7 @@ var channel = null;
 function update_status_and_duration(caller_selector, status){
 	if ($($(caller_selector).find('.status')).html() != status) {
   	  $($(caller_selector).find('.status')).html(status)
-	  $($(caller_selector).find('.timer')).stopwatch('reset');
+	    $($(caller_selector).find('.timer')).stopwatch('reset');
 	}
 }
 
@@ -31,7 +31,7 @@ function update_caller_row(data){
   var caller_selector = 'tr#caller_'+data.caller_session_id;
   if($(caller_selector).find('.assign_campaign').val() != data.campaign_fields.id){
     $(caller_selector).find('.assign_campaign :selected').removeAttr('selected');
-    $(caller_selector).find('.assign_campaign option[value="'+data.campaign_fields.id+'"]').attr('selected','selected')
+    $(caller_selector).find('.assign_campaign option[value="' + data.campaign_fields.id + '"]').attr('selected','selected')
   }
 }
 

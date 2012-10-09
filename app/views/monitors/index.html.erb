@@ -14,7 +14,7 @@
       </tr>
       <% @active_campaigns.each do |c| %>
           <tr>
-            <td><%= link_to c.name, client_monitor_path(c) %></td>
+            <td><%= link_to c.name, monitor_path(c) %></td>
           </tr>
       <% end %>
     </table>

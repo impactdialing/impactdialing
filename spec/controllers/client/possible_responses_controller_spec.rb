@@ -25,7 +25,7 @@ describe Client::PossibleResponsesController do
       question = Factory(:question, :script => active_script)
       possible_response = Factory(:possible_response, question_id: question.id)
       get :show, script_id: active_script.id, question_id: question.id, id: possible_response.id, :api_key=> 'abc123', :format => "json"
-      response.body.should eq("{\"possible_response\":{\"external_id_field\":null,\"id\":1,\"keypad\":null,\"possible_response_order\":1,\"question_id\":1,\"retry\":false,\"value\":\"no_response\"}}")
+      response.body.should eq("{\"possible_response\":{\"external_id_field\":null,\"id\":#{possible_response.id},\"keypad\":null,\"possible_response_order\":1,\"question_id\":#{question.id},\"retry\":false,\"value\":\"no_response\"}}")
     end
 
     it "should 404 if script not found" do
@@ -69,7 +69,7 @@ describe Client::PossibleResponsesController do
       active_script = Factory(:script, :account => account, :active => true)
       question = Factory(:question, text: "abc", script_order: 1, script: active_script)
       post :create, script_id: active_script.id, question_id: question.id, possible_response: {value: "Hi", possible_response_order: 1},  :api_key=> 'abc123', :format => "json"
-      response.body.should eq("{\"possible_response\":{\"external_id_field\":null,\"id\":1,\"keypad\":null,\"possible_response_order\":1,\"question_id\":1,\"retry\":false,\"value\":\"Hi\"}}")
+      response.body.should match(/{\"possible_response\":{\"external_id_field\":null,\"id\":(.*),\"keypad\":null,\"possible_response_order\":1,\"question_id\":#{question.id},\"retry\":false,\"value\":\"Hi\"}}/)
     end
 
     it "should throw validation error" do

@@ -1,17 +1,19 @@
+require 'new_relic/agent/method_tracer'
+
 class CallerSession < ActiveRecord::Base
+  include ::NewRelic::Agent::MethodTracer
   include Rails.application.routes.url_helpers
   include CallCenter
   include CallerEvents
   include CallPayment
+  include SidekiqEvents
   
   belongs_to :caller
   belongs_to :campaign
 
-  scope :on_call, :conditions => {:on_call => true}
-  scope :available, :conditions => {:available_for_call => true, :on_call => true}
-  scope :not_available, :conditions => {:available_for_call => false, :on_call => true}
+  scope :on_call, where("state not in (?)", ["conference_ended", "stopped"])
+  scope :available, where("state in (?)",["connected", "conference_started_phones_only_predictive", "conference_started_phones_only"])
   
-  scope :not_on_call, :conditions => {:on_call => false}
   scope :connected_to_voter, where('voter_in_progress is not null')
   scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
   scope :on_campaign, lambda{|campaign| where("campaign_id = #{campaign.id}") unless campaign.nil?}  
@@ -46,7 +48,8 @@ class CallerSession < ActiveRecord::Base
   
   def run(event)
     begin
-      send(event)
+      caller_flow = self.method(event.to_s) 
+      caller_flow.call      
     rescue ActiveRecord::StaleObjectError => exception
       reloaded_caller_session = CallerSession.find(self.id)
       reloaded_caller_session.send(event)
@@ -56,12 +59,15 @@ class CallerSession < ActiveRecord::Base
   
   def process(event)
     begin
-      send(event)
+      caller_flow = self.method(event.to_s) 
+      caller_flow.call      
+
     rescue ActiveRecord::StaleObjectError => exception
       reloaded_caller_session = CallerSession.find(self.id)
       reloaded_caller_session.send(event)
     end
   end
+  
   
   
   call_flow :state, :initial => :initial do    
@@ -75,7 +81,7 @@ class CallerSession < ActiveRecord::Base
       end 
       
       
-      state all - [:initial] do
+      state all do
         event :end_conf, :to => :conference_ended
       end
       
@@ -120,15 +126,18 @@ class CallerSession < ActiveRecord::Base
       
       state :conference_ended do
         before(:always) { end_caller_session}
-<<<<<<< HEAD
-        after(:always) { publish_caller_disconnected} 
-=======
-        after(:always) {Resque.enqueue(CallerPusherJob, self.id, "publish_caller_disconnected") ; Resque.enqueue(ModeratorCallerJob, self.id, "publish_moderator_caller_disconnected")} 
->>>>>>> em
+        after(:always) {  enqueue_call_flow(CallerPusherJob, [self.id, "publish_caller_disconnected"])} 
         response do |xml_builder, the_call|
           xml_builder.Hangup
         end        
                 
+      end
+      
+      state :campaign_out_of_phone_numbers do
+        response do |xml_builder, the_call|          
+          xml_builder.Say I18n.t(:campaign_out_of_phone_numbers)
+          xml_builder.Hangup
+        end                
       end
       
       
@@ -143,67 +152,59 @@ class CallerSession < ActiveRecord::Base
     end      
   end
   
-  def end_session
-    RedisCallerSession.end_session(self.id)
-    RedisCaller.disconnect_caller(campaign.id, self.id )
-    if campaign.type == Campaign::Type::PREDICTIVE && RedisCaller.zero?(campaign.id)
-      RedisCampaign.remove_running_predictive_campaign(campaign.id)
-    end
-    RedisCallNotification.caller_disconnected(self.id)      
-  end
-  
-  
-  def end_running_call(account=TWILIO_ACCOUNT, auth=TWILIO_AUTH)    
-    voters = Voter.find_all_by_caller_id_and_status(caller.id, CallAttempt::Status::READY)
-    voters.each {|voter| voter.update_attributes(status: 'not called')}    
-    EM.synchrony {
-      t = TwilioLib.new(account, auth)    
-      deferrable = t.end_call("#{self.sid}")              
-      deferrable.callback {}
-      deferrable.errback { |error| }          
-    }             
+  def end_running_call
     end_caller_session
-    CallAttempt.wrapup_calls(caller_id)
+    enqueue_call_flow(EndRunningCallJob, [self.sid])
+    enqueue_call_flow(EndCallerSessionJob, [self.id])
   end  
   
   
+  def end_session
+    self.update_attributes(endtime: Time.now)
+    RedisPredictiveCampaign.remove(campaign.id, campaign.type) if RedisCaller.count(campaign.id) == 1
+    enqueue_dial_flow(CampaignStatusJob, ["caller_disconnected", campaign.id, nil, self.id])       
+  end
+  
   def wrapup_attempt_in_progress
-    redis_attempt_in_progress = RedisCallerSession.attempt_in_progress(self.id)    
-    unless redis_attempt_in_progress.blank?
-      RedisCampaignCall.move_to_completed(campaign.id, redis_attempt_in_progress)
-      RedisCallAttempt.wrapup(redis_attempt_in_progress)
-    end
-    
+    unless attempt_in_progress.nil?
+      enqueue_dial_flow(CampaignStatusJob, ["wrapped_up", campaign.id, attempt_in_progress.id, self.id])           
+    end  
   end
   
   
   def account_not_activated?
     !activated?
   end
-  
+
   def subscription_limit_exceeded?
     !subscription_allows_caller?
   end
-  
+
+
   def funds_not_available?
     !funds_available?
   end
-  
+
   def time_period_exceeded?
     campaign.time_period_exceeded?
   end
-  
+
   def is_on_call?
     caller.is_on_call?
   end
     
   def hold
-    Twilio::Verb.new { |v| v.play "#{Settings.host}:#{Settings.port}/wav/hold.mp3"; v.redirect(:method => 'GET'); }.response
+    Twilio::Verb.new { |v| v.play "#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/wav/hold.mp3"; v.redirect(:method => 'GET'); }.response
   end
   
   def redirect_caller
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    Twilio::Call.redirect(sid, flow_caller_url(caller, :host => Settings.host, :port => Settings.port, session_id: id, event: "start_conf"))
+    Twilio::Call.redirect(sid, flow_caller_url(caller, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, session_id: id, event: "start_conf"))
+  end
+  
+  def redirect_caller_out_of_numbers
+    Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
+    Twilio::Call.redirect(sid, flow_caller_url(caller, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, session_id: id, event: "run_ot_of_phone_numbers"))
   end
   
 
@@ -220,62 +221,20 @@ class CallerSession < ActiveRecord::Base
   def reassign_caller_session_to_campaign
     old_campaign = self.campaign
     update_attribute(:campaign, caller.campaign)    
-    # publish_moderator_caller_reassigned_to_campaign(old_campaign)
   end
      
   def caller_reassigned_to_another_campaign?
     caller.campaign.id != self.campaign.id
   end
+  
 
   def disconnected?
-    RedisCaller.disconnected?(campaign.id, self.id)
+    state == "conference_ended"
   end
   
   def publish(event, data)
     Pusher[session_key].trigger(event, data.merge!(:dialer => self.campaign.type))
   end
-  
-  def dial_em(voter)
-    return if voter.nil?
-    call_attempt = create_call_attempt(voter)    
-    twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)        
-    EM.synchrony do
-      http = twilio_lib.make_call_em(campaign, voter, call_attempt)
-      http.callback { 
-        response = JSON.parse(http.response)  
-        puts response 
-        if response["status"] == 400
-          handle_failed_call(call_attempt, self)
-        else
-          call_attempt.update_attributes(:sid => response["sid"])
-        end
-        EM.stop
-         }
-      http.errback {EM.stop}            
-    end
-  end
-  
-  def create_call_attempt(voter)
-    attempt = voter.call_attempts.create(:campaign => campaign, :dialer_mode => campaign.type, :status => CallAttempt::Status::RINGING, :caller_session_id => self.id, :caller_id => caller.id, call_start:  Time.now)
-    voter.update_attributes(:last_call_attempt_id => attempt.id, :last_call_attempt_time => Time.now, :caller_session_id => self.id, status: CallAttempt::Status::RINGING)
-    Call.create(call_attempt: attempt, all_states: "", state: 'initial')    
-    $redis_call_flow_connection.pipelined do
-      RedisCallAttempt.load_call_attempt_info(attempt.id, attempt)
-      RedisVoter.setup_call(voter.id, attempt.id, self.id)
-      RedisCallerSession.set_attempt_in_progress(self.id, attempt.id)
-    end
-    RedisCampaignCall.add_to_ringing(campaign.id, attempt.id)
-    attempt    
-  end
-  
-  
-  def handle_failed_call(attempt, voter)
-    attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
-    voter.update_attributes(status: CallAttempt::Status::FAILED)
-    update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
-    redirect_caller
-  end
-  
   
   def get_conference_id
      Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
@@ -303,10 +262,20 @@ class CallerSession < ActiveRecord::Base
    end
    
    def start_conference    
-     RedisCallerSession.start_conference(self.id)
-     RedisCaller.move_to_on_hold(campaign.id, self.id)
+     RedisOnHoldCaller.add(campaign.id, self.id) if Campaign.predictive_campaign?(campaign.type)
+     enqueue_dial_flow(CampaignStatusJob, ["on_hold", campaign.id, nil, self.id])       
    end
    
+
+  #NewRelic custom metrics
+  add_method_tracer :account_not_activated?,                 'Custom/CallerSession/account_not_activated?'
+  add_method_tracer :subscription_limit_exceeded?,           'Custom/CallerSession/subscription_limit_exceeded?'
+  add_method_tracer :funds_not_available?,                   'Custom/CallerSession/funds_not_available?'
+  add_method_tracer :time_period_exceeded?,                  'Custom/CallerSession/time_period_exceeded?'
+  add_method_tracer :is_on_call?,                            'Custom/CallerSession/is_on_call?'
+  add_method_tracer :caller_reassigned_to_another_campaign?, 'Custom/CallerSession/caller_reassigned_to_another_campaign?'
+  add_method_tracer :disconnected?,                          'Custom/CallerSession/disconnected?'
+
   private
     
   def wrapup
