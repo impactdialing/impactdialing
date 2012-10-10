@@ -27,8 +27,7 @@ class Moderator < ActiveRecord::Base
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
     conferences = Twilio::Conference.list({"FriendlyName" => caller_session.session_key})
     confs = conferences.parsed_response['TwilioResponse']['Conferences']['Conference']
-    conference_sid = ""
-    conference_sid = confs.class == Array ? confs.last['Sid'] : confs['Sid']
+    confs.class == Array ? confs.last['Sid'] : confs['Sid']
   end
 
 end
