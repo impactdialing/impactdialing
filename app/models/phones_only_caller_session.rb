@@ -227,13 +227,5 @@ class PhonesOnlyCallerSession < CallerSession
   def preview_campaign?
     campaign.type != Campaign::Type::Preview
   end
-  
-
-  #NewRelic custom metrics
-  add_method_tracer :preview?,         'Custom/PhonesCallerSession/preview?'
-  add_method_tracer :power?,           'Custom/PhonesCallerSession/power?'
-  add_method_tracer :predictive?,      'Custom/PhonesCallerSession/predictive?'
-  add_method_tracer :start_conference, 'Custom/PhonesCallerSession/phone_start_conference'
-  add_method_tracer :call_answered?,   'Custom/PhonesCallerSession/call_answered?'
 
 end
