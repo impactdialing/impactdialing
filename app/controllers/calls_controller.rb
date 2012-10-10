@@ -31,7 +31,7 @@ class CallsController < ApplicationController
     end            
     
     if @call.answered_by_machine?
-      RedisCall.push_to_end_by_machine_call_list(@call.attributes)
+      RedisCall.push_to_end_by_machine_call_list(@call.id)
     end
     
     if Campaign.preview_power_campaign?(params['campaign_type'])  && @parsed_params['call_status'] != 'completed'
