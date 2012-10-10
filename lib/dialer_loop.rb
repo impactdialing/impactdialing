@@ -14,7 +14,7 @@ loop do
     logged_in_campaigns = RedisPredictiveCampaign.running_campaigns
     logged_in_campaigns.each do |campaign_id|
       campaign = Campaign.find(campaign_id)
-      campaign.dial_resque if !campaign.calculate_dialing? && Predictive.dial_campaign?(campaign.id)
+      campaign.dial_resque if !campaign.calculate_dialing?
     end
     sleep 3
   rescue Exception => e
