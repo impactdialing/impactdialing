@@ -4,31 +4,31 @@ class RedisCall
   
   # done
   def self.push_to_not_answered_call_list(call_params)    
-    not_answered_call_list << call_params.merge("current_time"=> Time.now.to_s)
+    not_answered_call_list << call_params.merge("current_time"=> "")
   end
   
   # done
   def self.push_to_abandoned_call_list(call_params)    
-    abandoned_call_list << call_params.merge("current_time"=> Time.now.to_s)
+    abandoned_call_list << call_params.merge("current_time"=> "")
   end
   
   # done
   def self.push_to_processing_by_machine_call_hash(call_params)    
-    processing_by_machine_call_hash.store(call_params['id'], Time.now.to_s) 
+    processing_by_machine_call_hash.store(call_params['id'], "") 
   end
   
   # done
   def self.push_to_end_by_machine_call_list(call_params)    
-    end_answered_by_machine_call_list << call_params.merge("current_time"=> Time.now.to_s)
+    end_answered_by_machine_call_list << call_params.merge("current_time"=> "")
   end
   
     
   def self.push_to_disconnected_call_list(call_params)    
-    disconnected_call_list << call_params.merge("current_time"=> Time.now.to_s)
+    disconnected_call_list << call_params.merge("current_time"=> "")
   end
   
   def self.push_to_wrapped_up_call_list(call_attempt_params)    
-    wrapped_up_call_list << call_attempt_params.merge("current_time"=> Time.now.to_s)
+    wrapped_up_call_list << call_attempt_params.merge("current_time"=> "")
   end
   
   def self.not_answered_call_list
