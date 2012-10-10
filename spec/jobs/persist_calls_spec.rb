@@ -11,7 +11,7 @@ describe PersistCalls do
 
   context ".abandoned_calls" do
     before(:each) do
-      RedisCall.abandoned_call_list << call.attributes.merge('current_time' => time)
+      $redis_call_flow_connection.lpush "abandoned_call_list", {id: call.id, current_time: time}.to_json
       PersistCalls.perform
     end
 
@@ -35,10 +35,7 @@ describe PersistCalls do
 
   context ".unanswered_calls" do
     before(:each) do
-      RedisCall.not_answered_call_list << call.attributes.merge(
-        'current_time' => time,
-        'call_status' => 'busy'
-      )
+      $redis_call_end_connection.lpush "not_answered_call_list" , {id: call.id, call_status: "busy", current_time: time}.to_json
       PersistCalls.perform
     end
 

@@ -174,7 +174,7 @@ class PhonesOnlyCallerSession < CallerSession
   
   def wrapup_call_attempt
     unless attempt_in_progress.nil?
-      RedisCall.push_to_wrapped_up_call_list(attempt_in_progress.attributes.merge(caller_type: CallerSession::CallerType::PHONE));  
+      RedisCall.push_to_wrapped_up_call_list(attempt_in_progress.id, CallerSession::CallerType::PHONE);  
       # enqueue_dial_flow(CampaignStatusJob, ["wrapped_up", campaign.id, attempt_in_progress.id, self.id])  
     end
   end
