@@ -27,11 +27,13 @@ class CallAttempt < ActiveRecord::Base
   scope :debit_not_processed, where(debited: "0").where('call_end is not null')
 
 
-
-  def report_recording_url
-    "#{self.recording_url.gsub("api.twilio.com", "recordings.impactdialing.com")}.mp3" if recording_url
+  def self.report_recording_url(url)
+    "#{url.gsub("api.twilio.com", "recordings.impactdialing.com")}.mp3" if url
   end
 
+  def report_recording_url
+    CallAttempt.report_recording_url(self.recording_url)
+  end
 
   def duration
     return nil unless connecttime
