@@ -16,7 +16,7 @@ class PersistCalls
       on_duplicate_key_update: [
         :status, :call_end, :connecttime, :caller_id,
         :scheduled_date, :recording_url, :recording_duration,
-        :voter_response_processed
+        :voter_response_processed, :wrapup_time
     ]
     call_attempts = []    
     wrapped_up_calls(call_attempts, voters)
