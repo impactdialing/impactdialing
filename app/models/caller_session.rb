@@ -158,7 +158,7 @@ class CallerSession < ActiveRecord::Base
   def end_session
     self.update_attributes(endtime: Time.now, on_call: false, available_for_call: false)
     RedisPredictiveCampaign.remove(campaign.id, campaign.type) if campaign.caller_sessions.on_call.size <= 1
-    enqueue_dial_flow(CampaignStatusJob, ["caller_disconnected", campaign.id, nil, self.id])       
+    # enqueue_dial_flow(CampaignStatusJob, ["caller_disconnected", campaign.id, nil, self.id])       
   end
   
   def wrapup_attempt_in_progress
@@ -262,7 +262,7 @@ class CallerSession < ActiveRecord::Base
        self.update_attributes(on_call: true, available_for_call: true)
      end
      RedisOnHoldCaller.add(campaign.id, self.id) if Campaign.predictive_campaign?(campaign.type)
-     enqueue_dial_flow(CampaignStatusJob, ["on_hold", campaign.id, nil, self.id])       
+     # enqueue_dial_flow(CampaignStatusJob, ["on_hold", campaign.id, nil, self.id])       
    end
 
   def assigned_to_lead?
