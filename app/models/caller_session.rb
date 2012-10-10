@@ -258,7 +258,9 @@ class CallerSession < ActiveRecord::Base
    end
    
    def start_conference
-     self.update_attributes(on_call: true, available_for_call: true)
+     if Campaign.predictive_campaign?(campaign.type)
+       self.update_attributes(on_call: true, available_for_call: true)
+     end
      RedisOnHoldCaller.add(campaign.id, self.id) if Campaign.predictive_campaign?(campaign.type)
      enqueue_dial_flow(CampaignStatusJob, ["on_hold", campaign.id, nil, self.id])       
    end
