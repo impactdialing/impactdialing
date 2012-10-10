@@ -87,7 +87,7 @@ describe VoterListJob do
         mailer.should_receive(:voter_list_upload)
         s3.should_receive(:value).and_return(File.open("#{fixture_path}/files/invalid_voters_list.csv").read)
         job.perform
-        VoterList.all.should be_empty
+        VoterList.all.should_not include(voter_list)
       end
     end
 

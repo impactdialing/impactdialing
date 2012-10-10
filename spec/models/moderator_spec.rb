@@ -14,36 +14,5 @@ describe Moderator do
     moderator.switch_monitor_mode(caller_session, "breakin")
   end
   
-  xit " sends pusher event (caller_session_started) to the all the moderators of a particular account " do
-    account = Factory(:account)
-    moderator1 = Factory(:moderator, :account => account, :session => "s123", :active => true)
-    moderator2 = Factory(:moderator, :account => account, :session => "s1234", :active => true)
-    moderator3 = Factory(:moderator, :account => account, :session => "s12345", :active => false)
-   
-    campaign = Factory(:campaign)
-    caller_session = Factory(:caller_session)
-    caller = Factory(:caller, :account => account)
-    channel = mock
-    data= {"account_id"=>account.id, "active"=>true, "email"=>"user2@example.com", "id"=>caller.id, "multi_user"=>true, "name"=>"a caller", "password"=>nil, "pin"=>"39046", :campaign_name=>campaign.name, :session_id=>caller_session.id, :campaign_fields=>{:id=>campaign.id, :callers_logged_in=>1, :voters_count=>0, :path=>"/client/campaigns/#{campaign.id}"}}
-    channel.should_receive(:trigger_async).with("caller_session_started",data).twice
-    Pusher.should_receive(:[]).with(moderator2.session).and_return(channel)
-    Pusher.should_receive(:[]).with(moderator1.session).and_return(channel)
-    Pusher.should_not_receive(:[]).with(moderator3.session)
-
-    Moderator.caller_connected_to_campaign(caller, campaign, caller_session)
-  end
-  
-  xit "should send the event(voter connected) to monitors" do
-    account = Factory(:account)
-    moderator1 = Factory(:moderator, :account => account, :session => "s123", :active => true)
-    moderator2 = Factory(:moderator, :account => account, :session => "s1234", :active => true)
-    moderator3 = Factory(:moderator, :account => account, :session => "s12345", :active => false)
-    caller = Factory(:caller, :account => account)
-    channel = mock
-    Pusher.should_receive(:[]).with(moderator1.session).and_return(channel)
-    Pusher.should_receive(:[]).with(moderator2.session).and_return(channel)
-    channel.should_receive(:trigger).with("voter_connected", {}).twice
-    Moderator.publish_event(caller, "voter_connected", {})
-  end
-  
+ 
 end

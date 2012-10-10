@@ -17,7 +17,7 @@ heroku:
     transaction_threshold: apdex_f
   capture_params: true
   log_level: info
-
+  
 heroku_staging:
   error_collector:
     capture_source: true

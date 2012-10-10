@@ -124,17 +124,6 @@ describe Campaign do
       user.account.campaigns.with_running_caller_sessions.should be_empty
     end
 
-    it "should return caller session, which is oldest and available to take call" do
-      campaign = Factory(:campaign, :type =>Campaign::Type::PREVIEW)
-      caller_session1 = Factory(:caller_session, :campaign => campaign, :on_call => true)
-      caller_session2 = Factory(:caller_session, :campaign => campaign, :on_call => true)
-      caller_session3 = Factory(:caller_session, :campaign => campaign, :on_call => true)
-      caller_session2.update_attributes(:available_for_call => true)
-      caller_session1.update_attributes(:available_for_call => true, :updated_at => Time.now + 1.second)
-      caller_session3.update_attributes(:updated_at => Time.now + 5.second)
-      campaign.oldest_available_caller_session.should == caller_session2
-
-    end
   end
 
   describe "answer report" do
@@ -206,7 +195,6 @@ describe Campaign do
      it "returns campaigns having a session with the given caller" do
        caller = Factory(:caller)
        campaign = Factory(:preview)
-       Factory(:preview)
        Factory(:caller_session, :campaign => campaign, :caller => caller)
        Campaign.for_caller(caller).should == [campaign]
      end
@@ -216,7 +204,9 @@ describe Campaign do
        older_campaign = Factory(:progressive).tap { |c| c.update_attribute(:updated_at, 2.days.ago) }
        newer_campaign = Factory(:progressive).tap { |c| c.update_attribute(:updated_at, 1.day.ago) }
        Campaign.record_timestamps = true
-       Campaign.by_updated.all.should == [newer_campaign, older_campaign]
+       Campaign.by_updated.all.should include (newer_campaign)
+       Campaign.by_updated.all.should include (older_campaign)
+       
      end
 
      it "lists deleted campaigns" do
@@ -229,8 +219,8 @@ describe Campaign do
        campaign1 = Factory(:progressive)
        campaign2 = Factory(:preview)
        campaign3 = Factory(:predictive, :active => false)
-
-       Campaign.active.should == [campaign1, campaign2]
+       Campaign.active.should include(campaign1)
+       Campaign.active.should include(campaign2) 
      end
   end
 
@@ -242,8 +232,57 @@ describe Campaign do
     end
 
   end
-
-
+  
+  describe "callers_status" do
+    
+    before (:each) do
+      @campaign = Factory(:preview)
+      @caller_session1 = Factory(:webui_caller_session, campaign_id: @campaign.id, on_call:true, available_for_call: true)
+      @caller_session2 = Factory(:caller_session, on_call:true, available_for_call: false, campaign_id: @campaign.id)            
+    end
+    
+    it "should return callers logged in" do
+      @campaign.callers_status[0].should eq(2)
+    end
+    
+    it "should return callers on hold" do
+      @campaign.callers_status[1].should eq(1)
+    end
+    
+    it "should return callers on call" do
+      @campaign.callers_status[2].should eq(1)
+    end
+    
+    
+  end
+  
+  describe "call_status" do
+    
+    it "should return attempts in wrapup" do
+      campaign = Factory(:preview)
+      caller_attempt1 = Factory(:call_attempt, wrapup_time: nil, created_at: 3.minutes.ago, status:  CallAttempt::Status::SUCCESS, campaign_id: campaign.id)
+      caller_attempt2 = Factory(:call_attempt, wrapup_time: nil, created_at: 7.minutes.ago, status:  CallAttempt::Status::SUCCESS, campaign_id: campaign.id)      
+      campaign.call_status[0].should eq(1)
+    end
+    
+    it "should return live calls" do
+      campaign = Factory(:preview)
+      caller_attempt1 = Factory(:call_attempt, wrapup_time: nil, created_at: 3.minutes.ago, status:  CallAttempt::Status::INPROGRESS, campaign_id: campaign.id)
+      caller_attempt2 = Factory(:call_attempt, wrapup_time: nil, created_at: 7.minutes.ago, status:  CallAttempt::Status::INPROGRESS, campaign_id: campaign.id)      
+      campaign.call_status[2].should eq(1)
+    end
+    
+    it "should return ringing_lines" do
+      campaign = Factory(:preview)
+      caller_attempt1 = Factory(:call_attempt, wrapup_time: nil, created_at: 12.seconds.ago, status:  CallAttempt::Status::RINGING, campaign_id: campaign.id)
+      caller_attempt2 = Factory(:call_attempt, wrapup_time: nil, created_at: 7.minutes.ago, status:  CallAttempt::Status::RINGING, campaign_id: campaign.id)      
+      campaign.call_status[1].should eq(1)
+    end
+    
+    
+    
+  end
+     
 end
 
 

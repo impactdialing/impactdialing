@@ -29,14 +29,14 @@ describe VoterList do
       Factory(:voter_list, :campaign => campaign, :enabled => true)
       Factory(:voter_list, :campaign => Factory(:campaign), :enabled => true)
       campaign.voter_lists.disable_all
-      VoterList.all.map(&:enabled).should == [false, false, true]
+      campaign.voter_lists.all.map(&:enabled).should_not include(true)
     end
     it "can enable all voter lists in the given scope" do
       Factory(:voter_list, :campaign => campaign, :enabled => false)
       Factory(:voter_list, :campaign => campaign, :enabled => false)
       Factory(:voter_list, :campaign => Factory(:campaign), :enabled => false)
       campaign.voter_lists.enable_all
-      VoterList.all.map(&:enabled).should == [true, true, false]
+      campaign.voter_lists.all.map(&:enabled).should_not include(false)
     end
   end
 

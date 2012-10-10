@@ -85,7 +85,6 @@ Factory.define :progressive do |c|
   c.updated_at Time.now
 end
 
-
 Factory.define :caller do |s|
   s.email { Factory.next(:email) }
   s.name 'a caller'

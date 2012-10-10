@@ -33,7 +33,15 @@ class Campaign < ActiveRecord::Base
       :joins => "inner join caller_sessions on (caller_sessions.campaign_id = campaigns.id)",
       :conditions => {"caller_sessions.on_call" => true}
   }
+  
+  scope :with_non_running_caller_sessions, {
+      :select => "distinct campaigns.*",
+      :joins => "inner join caller_sessions on (caller_sessions.campaign_id = campaigns.id)",
+      :conditions => {"caller_sessions.on_call" => false}
+  }
+  
   scope :for_caller, lambda { |caller| joins(:caller_sessions).where(caller_sessions: {caller_id: caller}) }
+
 
   validates :name, :presence => true
   validates :caller_id, :presence => true
@@ -61,6 +69,15 @@ class Campaign < ActiveRecord::Base
     PREDICTIVE = "Predictive"
     PROGRESSIVE = "Progressive"
   end
+  
+  def self.preview_power_campaign?(campaign_type)
+    [Type::PREVIEW, Type::PROGRESSIVE].include?(campaign_type)
+  end
+  
+  def self.predictive_campaign?(campaign_type)
+    Type::PREDICTIVE == campaign_type
+  end
+  
 
   def new_campaign
     new_record?
@@ -111,12 +128,9 @@ class Campaign < ActiveRecord::Base
     end
   end
 
-  def oldest_available_caller_session
-    caller_sessions.available.find(:first, :order => "updated_at ASC")
-  end
 
   def callers_log_in?
-    caller_sessions.on_call.length > 0
+    caller_sessions.on_call.size > 0
   end
   
   def as_time_zone
@@ -155,7 +169,8 @@ class Campaign < ActiveRecord::Base
 
 
   def callers_available_for_call
-    CallerSession.find_all_by_campaign_id_and_on_call_and_available_for_call(self.id, 1, 1)
+    RedisAvailableCaller.count(self.id)
+    # CallerSession.find_all_by_campaign_id_and_on_call_and_available_for_call(self.id, 1, 1)
   end
 
 
@@ -210,4 +225,29 @@ class Campaign < ActiveRecord::Base
   def cost_per_minute
     0.09
   end
+  
+  def callers_status
+    campaign_callers = caller_sessions.on_call    
+    on_hold = campaign_callers.select {|caller| (caller.on_call? && caller.available_for_call? )}
+    on_call = campaign_callers.select {|caller| (caller.on_call? && !caller.available_for_call?)}
+    [campaign_callers.size, on_hold.size, on_call.size]
+  end
+  
+  def call_status
+    wrap_up = call_attempts.between(5.minutes.ago, Time.now).with_status(CallAttempt::Status::SUCCESS).not_wrapped_up.size
+    ringing_lines = call_attempts.between(20.seconds.ago, Time.now).with_status(CallAttempt::Status::RINGING).size
+    live_lines = call_attempts.between(5.minutes.ago, Time.now).with_status(CallAttempt::Status::INPROGRESS).size
+    [wrap_up, ringing_lines, live_lines]    
+  end
+  
+  def leads_available_now
+    sanitize_dials(all_voters.enabled.avialable_to_be_retried(recycle_rate).count + all_voters.scheduled.count + all_voters.by_status(CallAttempt::Status::ABANDONED).count)
+  end
+  
+  def sanitize_dials(dial_count)
+    dial_count.nil? ? 0 : dial_count
+  end
+    
+
+
 end

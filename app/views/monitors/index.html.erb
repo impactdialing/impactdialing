@@ -1,248 +1,28 @@
 <% content_for :javascripts do %>
 <script type="text/javascript" src="https://static.twilio.com/libs/twiliojs/1.0/twilio.js"></script>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js"></script>
-<script src="https://d3dy5gmtp8yhk7.cloudfront.net/1.11/pusher.min.js" type="text/javascript" ></script>
-<%= javascript_include_tag %>
-<%= javascript_include_tag 'monitors/jquery.stopwatch', 'monitors/monitor_pusher', 'monitors/assign_caller_to_campaign','ICanHaz.min.js' %>
-
-
-  <script type="text/javascript">
-      var pusher = new Pusher('<%= Pusher.key %>');
-  </script>
-
-<script type="text/javascript">
-
-  Twilio.Device.setup("<%= @token %>", {'debug':true});
-
-  Twilio.Device.connect(function (conn) {
-  });
-  Twilio.Device.ready(function (device) {})
-  Twilio.Device.error(function (error) {
-    alert(error.message);
-  });
-
-
-  function de_activate_monitor(){
-    $.ajax({
-        url : "/client/monitors/deactivate_session",
-        data : {monitor_session : $('monitor_session').text()},
-        type : "GET",
-        async : false,
-        success : function(response) {}
-      });
-  }
-
-  $(window).bind("beforeunload", function(){
-      de_activate_monitor();
-    })
-
-  function monitor(session_id, action){
-    params = {'session_id': session_id, 'type': action, 'monitor_session' : $('monitor_session').text()};
-    $('.stop_monitor').show();
-    Twilio.Device.connect(params)
-  }
-  function disconnect_all(){
-    $('status').text("Status: Disconnected.")
-    $('.stop_monitor').hide();
-    $.each($('tr.caller'), function(){
-      $(this).removeAttr("on_call");
-    $(this).removeAttr("mode");
-    });
-    Twilio.Device.disconnectAll();
-    return false;
-  }
-
-  function switch_mode(session, mode){
-    $.ajax({
-        url : "/client/monitors/switch_mode",
-        data : {session_id : session,type : mode,monitor_session : $('monitor_session').text()},
-        type : "GET",
-        success : function(response) {
-          $('status').text(response)
-          }
-    })
-  }
-
-  function kick_off(session){
-    $.ajax({
-        url : "/client/monitors/kick_off",
-        data : {session_id : session},
-        type : "GET"
-    })
-  }
-
-
-  function switch_caller(current_session_id, next_session_id, action, status){
-    $.ajax({
-        url : "/client/monitors/stop",
-        data : {session_id : current_session_id},
-        type : "GET",
-        success : function(response) {
-          request_to_switch(next_session_id, action, status);
-        }
-    });
-  }
-
-  function request_to_switch(next_session_id, action, status){
-    $.ajax({
-        url : "/client/monitors/start",
-        data : {'session_id' : next_session_id, 'type': action, 'monitor_session' : $('monitor_session').text()},
-        type : "GET",
-        success : function(response) {}
-    });
-  }
-
-  $(function() {
-    $('.stop').live('click', function(){
-      stop($(this).attr("session_id"))
-    });
-
-    $('.monitor').live('click', function(){
-      var session_id = $(this).attr("session_id");
-      var action = $(this).attr("action");
-      if (action == 'kickoff'){
-        kick_off(session_id);
-        return;
-      }
-
-      if($(this).parent().parent().attr("on_call") == "true"){
-        switch_mode(session_id, action);
-        $(this).parent().parent().attr("mode", action)
-      }
-      else{
-        var no_monitoring = true;
-        $.each($(this).parent().parent().siblings(), function(){
-          if($(this).attr("on_call") == "true"){
-            switch_caller($(this).children().children().attr("session_id"), session_id, action, status);
-            no_monitoring = false;
-            $(this).removeAttr("on_call");
-            $(this).removeAttr("mode");
-          }
-        });
-        $(this).parent().parent().attr("on_call","true");
-        $(this).parent().parent().attr("mode", $(this).attr("action"))
-        if(no_monitoring){
-          monitor(session_id, action);
-        }
-      }
-      return false;
-    })
-
-  });
-
-</script>
-
-<script id="caller" type="text/html">
-  <tr id="caller_{{session_id}}" class="caller <%= cycle("odd", "even") %> " session_id={{session_id}} caller_id={{id}}>
-      <td class="caller_name">{{email}}</td>
-      <td class="campaigns"></td>
-      <td class="status">On hold</td>
-      <td>
-        <div class="timer">
-          <div class="display"><span class="hr">00</span>:<span class="min">00</span>:<span class="sec">00</span></div>
-        </div>
-      </td>
-      <td>
-        <a class ="action secondary monitor" href="#" action="eavesdrop" session_id={{session_id}}>Eavesdrop</a>
-      </td>
-      <td>
-        <a class ="action secondary monitor" href="#" action="breakin" session_id={{session_id}}>Break in</a>
-      </td>
-      <td>
-        <a class ="action secondary monitor" href="#" action="kickoff" session_id={{session_id}}>Kick off</a>
-      </td>
-
-  </tr>
-</script>
-<script id="campaign" type="text/html">
-  {{#campaign_fields}}
-    <tr id="campaign_{{id}}" class="campaign <%= cycle("odd", "even") %>" campaign_id={{id}}>
-       <td>{{campaign_name}}</td>
-       <td class="callers_logged_in">{{callers_logged_in}}</td>
-       <td class="dials_in_progress">{{dials_in_progress}}</td>
-       <td class="voters_count">{{voters_remaining}}</td>
-    </tr>
-  {{/campaign_fields}}
-
-</script>
-
 <% end %>
+
 <h1>Monitor</h1>
-<monitor_session style="display:none"></monitor_session>
 
-  <h2>Campaigns</h2>
-      <div class="table">
-        <table id="campaign_table" width="100%" border="0" cellspacing="0" cellpadding="0">
-          <tr class="table_header">
-            <th>Name</th>
-            <th>Callers logged in</th>
-            <th>Dials in progress</th>
-            <th>Numbers remaining</th>
+<% if @campaigns.empty? %>
+    <p>You haven't created any campaigns yet.</p>
+<% else %>
+    <table>
+      <tr>
+        <th>Name</th>
+      </tr>
+      <% @active_campaigns.each do |c| %>
+          <tr>
+            <td><%= link_to c.name, monitor_path(c) %></td>
           </tr>
-          <% if @campaigns.present? %>
-            <% @campaigns.each do |c| %>
-                <tr id="<%= "campaign_"+c.id.to_s %>" class="campaign <%= cycle("odd", "even") %>">
-                  <td><%= c.name %></td>
-                  <td class="callers_logged_in"><%= c.caller_sessions_on_call.count %></td>
-                  <td class="dials_in_progress"><%= c.call_attempts.not_wrapped_up.try(:size) %></td>
-                  <td class="voters_count"><%= Voter.remaining_voters_for_campaign(c).count %></td>
-                </tr>
-            <% end %>
-          <% end %>
-        </table>
-      </div>
-
+      <% end %>
+    </table>
+<% end %>
 <br>
 
-    <h2>Callers</h2>
-    <div class="box">
-      <div class="table">
-        <table id="caller_table" width="100%" border="0" cellspacing="0" cellpadding="0">
-          <tr class="table_header">
-            <th>Caller</th>
-            <th>Campaign</th>
-            <th>Status</th>
-            <th>Time in status</th>
-            <th></th>
-            <th></th>
-            <th></th>
-          </tr>
-          <% @campaigns.each do |c| %>
-            <% c.caller_sessions_on_call.each do |caller_session| %>
-              <tr id="<%= "caller_"+caller_session.id.to_s %>" class="caller <%= cycle("odd", "even") %> " older="true" session_id="<%= caller_session.id %>" caller_id="<%= caller_session.caller.id %>">
-                <td class="caller_name"><%= caller_session.caller.identity_name %></td>
-                <td>
-                  <select class='assign_campaign'>
-                    <%= options_for_select(@all_campaigns, c.id) %>
-                  </select>
-                </td>
-                <% status, d = caller_status_and_duration(caller_session) %>
-                <td class="status"><%= status %></td>
-                <td>
-                  <div class="timer">
-                    <div class="display">
-                      <span class="hr"><%= d[0]+d[1] %></span>:<span class="min"><%= d[3]+d[4] %></span>:<span class="sec"><%= d[6]+d[7] %></span>
-                    </div>
-                  </div>
-                </td>
-                <td>
-                  <a class ="action secondary monitor" href="#" action="eavesdrop" session_id="<%= caller_session.id %>">Eavesdrop</a>
-                </td>
-                <td>
-                  <a class ="action secondary monitor" href="#" action="breakin" session_id="<%= caller_session.id %>">Break in</a>
-                </td>
-                <td>
-                  <a class ="action secondary monitor" href="#" action="kickoff" session_id="<%= caller_session.id %>">Kick off</a>
-                </td>
-              </tr>
-            <% end %>
-          <% end %>
-        </table>
-        <a class ="action primary stop_monitor" href="#" onclick="javascript:disconnect_all();">Stop monitoring</a>
-        <status style="float : right;"></status>
-      </div>
-    </div>
 <br>
 
 <p>Call recording is currently <%= @account.record_calls? ? "on" : "off" %>. Links to recordings will appear in each campaign's Download report.</p>
 <p class="actions"><%= link_to "Turn call recording #{@account.record_calls? ? "off" : "on" }", {:action=>"toggle_call_recording"}, {:class => 'action secondary'} %></p>
+

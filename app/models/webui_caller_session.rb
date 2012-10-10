@@ -1,15 +1,17 @@
-class WebuiCallerSession < CallerSession
-
+class WebuiCallerSession < CallerSession  
+  include Rails.application.routes.url_helpers
+  
   call_flow :state, :initial => :initial do    
     
       state :initial do
         event :start_conf, :to => :connected
       end 
+      
+      
             
       state :connected do                
-        before(:always) { publish_start_calling; start_conference }
+        before(:always) { start_conference; publish_start_calling }
         after(:success) { enqueue_call_flow(CallerPusherJob, [self.id,  "publish_caller_conference_started"]) }
-        event :pause_conf, :to => :disconnected, :if => :disconnected?
         event :pause_conf, :to => :paused, :if => :call_not_wrapped_up?
         event :start_conf, :to => :connected
         event :run_ot_of_phone_numbers, :to=> :campaign_out_of_phone_numbers        
@@ -48,28 +50,14 @@ class WebuiCallerSession < CallerSession
       
   end
   
-  def call_not_wrapped_up?
-    attempt_in_progress.try(:connecttime) != nil &&  attempt_in_progress.try(:not_wrapped_up?)
-  end
   
-  def start_conference    
-    reassign_caller_session_to_campaign if caller_reassigned_to_another_campaign?
-    begin
-      update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
-    rescue ActiveRecord::StaleObjectError
-      same_caller_session = CallerSession.find(self.id)
-      same_caller_session.update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
-    end
-  end
   
+  def call_not_wrapped_up?  
+    attempt_in_progress.try(:connecttime) != nil &&  attempt_in_progress.try(:not_wrapped_up?)  
+  end
   
   def publish_sync(event, data)
     Pusher[session_key].trigger(event, data.merge!(:dialer => self.campaign.type))
   end
 
-  #NewRelic custom metrics
-  add_method_tracer :call_not_wrapped_up?, 'Custom/WebCallerSession/call_not_wrapped_up?'
-  add_method_tracer :start_conference,     'Custom/WebCallerSession/web_start_conference'
-
-  
 end

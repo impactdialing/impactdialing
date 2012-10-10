@@ -1,5 +1,5 @@
 process_answered_attempts:
-  cron: "*/5 * * * *"
+  cron: "*/3 * * * *"
   class: AnsweredJob
   queue: answered_worker
   args: 
@@ -28,3 +28,11 @@ alert:
   args: 
   description: "This job alerts all of us if something is fishy"
 
+
+persist_calls:
+  cron: "* * * * *"
+  class: PersistCalls
+  queue: persist_jobs
+  args: 
+  description: "This job persists  call attempts and voter data"
+  

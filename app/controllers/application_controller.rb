@@ -7,13 +7,13 @@ class ApplicationController < ActionController::Base
   include ApplicationHelper
   helper :all # include all helpers, all the time
   protect_from_forgery # See ActionController::RequestForgeryProtection for details
+  # Scrub sensitive parameters from your log
   rescue_from InvalidDateException, :with=> :return_invalid_date
   
   def select_shard(&block)
       Octopus.using(:read_slave1, &block)
   end
   
-
   def return_invalid_date
     flash_message(:error, I18n.t(:invalid_date_format))
     redirect_to :back
@@ -27,26 +27,6 @@ class ApplicationController < ActionController::Base
 
   def secure_digest(*args)
     Digest::SHA1.hexdigest(args.flatten.join('--'))
-  end
-
-  def flash_message(where, error_message)
-    if flash[where] and flash[where].class == Array
-      flash[where] = flash[where].concat [error_message]  # should not use <<. rails flash does not 'keep' them.
-    elsif flash[where] and flash[where].class == String
-      flash[where] = [flash[where], error_message]
-    else
-      flash[where] = [error_message]
-    end
-  end
-
-  def flash_now(where, error_message)
-    if flash.now[where] and flash.now[where].class == Array
-      flash.now[where] = flash.now[where].concat [error_message]  # should not use <<. rails flash does not 'keep' them.
-    elsif flash.now[where] and flash.now[where].class == String
-      flash.now[where] = [flash.now[where], error_message]
-    else
-      flash.now[where] = [error_message]
-    end
   end
 
   def full_access

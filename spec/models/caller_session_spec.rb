@@ -3,20 +3,16 @@ require "spec_helper"
 describe CallerSession do
   include Rails.application.routes.url_helpers
 
-  it "lists active callers" do
-    call1 = Factory(:caller_session, :on_call=> true)
-    call2 = Factory(:caller_session, :on_call=> false)
-    call3 = Factory(:caller_session, :on_call=> true)
-    CallerSession.on_call.all.should =~ [call1, call3]
-  end
 
 
   it "lists available caller sessions" do
-    call1 = Factory(:caller_session, :available_for_call=> true, :on_call=>true)
-    Factory(:caller_session, :available_for_call=> false, :on_call=>false)
-    Factory(:caller_session, :available_for_call=> true, :on_call=>false)
-    Factory(:caller_session, :available_for_call=> false, :on_call=>false)
-    CallerSession.available.should == [call1]
+    caller_session1 = Factory(:caller_session, on_call: true, available_for_call: false)
+    caller_session2 = Factory(:webui_caller_session, on_call: true, available_for_call: true)
+    caller_session3 = Factory(:webui_caller_session, on_call: true, available_for_call: false)
+    caller_session4 = Factory(:phones_only_caller_session, on_call: true, available_for_call: true)
+    caller_session5 = Factory(:phones_only_caller_session, on_call: true, available_for_call: true)
+    
+    CallerSession.available.should include(caller_session2, caller_session4, caller_session5) 
   end
 
   it "has one attempt in progress" do
@@ -45,7 +41,6 @@ describe CallerSession do
       session.hold.should == Twilio::Verb.new { |v| v.play "#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/wav/hold.mp3"; v.redirect(:method => 'GET'); }.response
     end
   end
-
 
   describe "reassigned caller to another campaign" do
 
@@ -96,7 +91,8 @@ describe CallerSession do
     too_new = Factory(:caller_session).tap { |ca| ca.update_attribute(:created_at, 10.minutes.from_now) }
     just_right = Factory(:caller_session).tap { |ca| ca.update_attribute(:created_at, 8.minutes.ago) }
     another_just_right = Factory(:caller_session).tap { |ca| ca.update_attribute(:created_at, 8.minutes.from_now) }
-    CallerSession.between(9.minutes.ago, 9.minutes.from_now).should eq([just_right, another_just_right])
+    CallerSession.between(9.minutes.ago, 9.minutes.from_now).should include(just_right)
+    CallerSession.between(9.minutes.ago, 9.minutes.from_now).should include(another_just_right)
   end
 
   it "sums time caller is logged in" do
@@ -109,26 +105,12 @@ describe CallerSession do
   end
 
   describe "disconnected" do
-    it "should say session is disconnected when caller is not available and not on call" do
-      session = Factory(:caller_session, session_key: "gjgdfdkg232hl", available_for_call: false, on_call: false)
-      session.disconnected?.should be_true
+    it "should say session is disconnected when conference ended" do
+      call_attempt = Factory(:call_attempt)
+      campaign = Factory(:campaign)
+      caller_session = Factory(:caller_session, on_call: false, available_for_call: false, attempt_in_progress: call_attempt, campaign: campaign,state: "conference_ended")
+      caller_session.disconnected?.should be_true
     end
-
-    it "should say session is connected when caller is  available and not on call" do
-      session = Factory(:caller_session, session_key: "gjgdfdkg232hl", available_for_call: true, on_call: false)
-      session.disconnected?.should be_false
-    end
-
-    it "should say session is connected when caller is not available and  on call" do
-      session = Factory(:caller_session, session_key: "gjgdfdkg232hl", available_for_call: false, on_call: true)
-      session.disconnected?.should be_false
-    end
-
-    it "should say session is connected when caller is  available and  on call" do
-      session = Factory(:caller_session, session_key: "gjgdfdkg232hl", available_for_call: true, on_call: true)
-      session.disconnected?.should be_false
-    end
-
 
   end
 
@@ -263,41 +245,55 @@ describe CallerSession do
       @caller = Factory(:caller)
       @script = Factory(:script)
       @campaign =  Factory(:campaign, script: @script)
+      @call_attempt = Factory(:call_attempt)
     end
 
     it "should move caller to end conference from account not activated" do
       caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "account_not_activated")
-      caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id,  "publish_caller_disconnected"])
-      caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [caller_session.id, "publish_moderator_caller_disconnected"])
+      caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id,  "publish_caller_disconnected"])      
+      caller_session.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["caller_disconnected", @campaign.id, nil, caller_session.id])       
       caller_session.end_conf!
       caller_session.state.should eq('conference_ended')
     end
 
-    it "should make caller unavailable" do
-      caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "account_not_activated")
-      caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id,  "publish_caller_disconnected"])
-      caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [caller_session.id, "publish_moderator_caller_disconnected"])
-      caller_session.end_conf!
-      caller_session.on_call.should be_false
-      caller_session.available_for_call.should be_false
-    end
 
     it "should set caller session endtime" do
       caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "account_not_activated")
       caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id,  "publish_caller_disconnected"])
-      caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [caller_session.id, "publish_moderator_caller_disconnected"])
+      caller_session.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["caller_disconnected", @campaign.id, nil, caller_session.id])       
       caller_session.end_conf!
       caller_session.endtime.should_not be_nil
     end
-
+    
     it "should render hangup twiml" do
       caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "account_not_activated")
       caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id,  "publish_caller_disconnected"])
-      caller_session.should_receive(:enqueue_moderator_flow).with(ModeratorCallerJob, [caller_session.id, "publish_moderator_caller_disconnected"])
+      caller_session.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["caller_disconnected", @campaign.id, nil, caller_session.id])             
       caller_session.end_conf!
       caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
     end
+    
+    it "should end session with attempt in progress" do
+      call_attempt = Factory(:call_attempt)
+      caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "account_not_activated", attempt_in_progress: call_attempt)
+      caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id,  "publish_caller_disconnected"])
+      caller_session.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["caller_disconnected", @campaign.id, nil, caller_session.id])             
+      caller_session.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["wrapped_up", @campaign.id, call_attempt.id, caller_session.id])                   
+      caller_session.end_conf!
+      caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
+    end
+    
 
+  end
+  
+  describe "end_running_call" do
+    it "should end call" do
+      caller_session = Factory(:caller_session)
+      caller_session.should_receive(:enqueue_call_flow).with(EndRunningCallJob, [caller_session.sid])
+      caller_session.should_receive(:enqueue_call_flow).with(EndCallerSessionJob, [caller_session.id])
+      caller_session.end_running_call
+      caller_session.endtime.should_not be_nil      
+    end
   end
   
   describe "caller time" do

@@ -4,10 +4,9 @@ class PhonesOnlyCallerSession < CallerSession
       state :initial do
         event :callin_choice, :to => :read_choice
       end 
-      
+            
       
       state :read_choice do     
-        after(:always)  {enqueue_moderator_flow(ModeratorCallerJob, [self.id, "publish_moderator_conference_started" ])}    
         event :read_instruction_options, :to => :instructions_options, :if => :pound_selected?
         event :read_instruction_options, :to => :ready_to_call, :if => :star_selected?
         event :read_instruction_options, :to => :read_choice
@@ -21,7 +20,6 @@ class PhonesOnlyCallerSession < CallerSession
       end
       
       state :ready_to_call do  
-        after(:always)  {enqueue_moderator_flow(ModeratorCallerJob, [self.id, "publish_moderator_conference_started" ])}    
         event :start_conf, :to => :account_has_no_funds, :if => :funds_not_available?
         event :start_conf, :to => :time_period_exceeded, :if => :time_period_exceeded?
         event :start_conf, :to => :reassigned_campaign, :if => :caller_reassigned_to_another_campaign?        
@@ -60,8 +58,8 @@ class PhonesOnlyCallerSession < CallerSession
         before(:always) {select_voter(voter_in_progress)}
         
         response do |xml_builder, the_call|
-          if the_call.voter_in_progress.present?
-            xml_builder.Gather(:numDigits => 1, :timeout => 10, :action => flow_caller_url(self.caller, :session => self, event: "start_conf", :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :voter => the_call.voter_in_progress), :method => "POST", :finishOnKey => "5") do
+          unless the_call.voter_in_progress.nil?
+            xml_builder.Gather(:numDigits => 1, :timeout => 10, :action => flow_caller_url(self.caller, :session => self, event: "start_conf", :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :voter => the_call.voter_in_progress.id), :method => "POST", :finishOnKey => "5") do
               xml_builder.Say I18n.t(:read_voter_name, :first_name => the_call.voter_in_progress.FirstName, :last_name => the_call.voter_in_progress.LastName) 
             end
           else
@@ -76,8 +74,8 @@ class PhonesOnlyCallerSession < CallerSession
         event :start_conf, :to => :conference_started_phones_only
         before(:always) {select_voter(voter_in_progress)}
         response do |xml_builder, the_call|
-          if voter_in_progress.present?
-            xml_builder.Say "#{voter_in_progress.FirstName}  #{voter_in_progress.LastName}." 
+          unless voter_in_progress.nil?
+            xml_builder.Say "#{the_call.voter_in_progress.FirstName}  #{the_call.voter_in_progress.LastName}." 
             xml_builder.Redirect(flow_caller_url(caller, :session_id => id, :voter_id => voter_in_progress.id, event: "start_conf", :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port), :method => "POST")
           else
             xml_builder.Say I18n.t(:campaign_has_no_more_voters)
@@ -126,7 +124,6 @@ class PhonesOnlyCallerSession < CallerSession
       end
       
       state :read_next_question do
-        after(:always) {enqueue_moderator_flow(ModeratorCallerJob, [self.id, "publish_moderator_gathering_response" ])}
         event :submit_response, :to => :disconnected, :if => :disconnected?
         event :submit_response, :to => :wrapup_call, :if => :skip_all_questions?
         event :submit_response, :to => :voter_response
@@ -148,7 +145,7 @@ class PhonesOnlyCallerSession < CallerSession
         event :next_question, :to => :wrapup_call
         before(:always) {
           question = Question.find_by_id(question_id);          
-          current_voter.answer(question, digit, self) if current_voter && question
+          voter_in_progress.answer(question, digit, self) if voter_in_progress && question
           }
           
         response do |xml_builder, the_call|
@@ -169,29 +166,26 @@ class PhonesOnlyCallerSession < CallerSession
       
       
   end
+    
   
   def skip_all_questions?
     digit == "999"
   end
   
   def wrapup_call_attempt
-    attempt_in_progress.try(:update_attributes, {wrapup_time:  Time.now, voter_response_processed: true})
+    unless attempt_in_progress.nil?
+      RedisCall.push_to_wrapped_up_call_list(attempt_in_progress.attributes.merge(caller_type: CallerSession::CallerType::PHONE));  
+      enqueue_dial_flow(CampaignStatusJob, ["wrapped_up", campaign.id, attempt_in_progress.id, self.id])  
+    end
   end
-  
-  def publish_moderator_gathering_response
-    enqueue_moderator_flow(ModeratorCallerJob, [self.id, "publish_voter_event_moderator" ])
-  end
-  
+    
   def unanswered_question
-    current_voter.question_not_answered
+    voter_in_progress.question_not_answered
   end
   
-  def current_voter
-    attempt_in_progress.voter
-  end
   
   def more_questions_to_be_answered?
-    !current_voter.question_not_answered.nil?
+    !voter_in_progress.question_not_answered.nil?
   end
   
   def call_answered?
@@ -200,9 +194,13 @@ class PhonesOnlyCallerSession < CallerSession
   
   
   def select_voter(old_voter)
-    voter = campaign.next_voter_in_dial_queue(old_voter.try(:id))
-    update_attributes(voter_in_progress: voter)
+    voter = campaign.next_voter_in_dial_queue(old_voter.try(:[], 'id'))
+    unless voter.nil?
+      self.update_attributes(voter_in_progress: voter)
+    end
+    voter    
   end
+  
   
   def star_selected?
     digit == "*"    
@@ -225,21 +223,9 @@ class PhonesOnlyCallerSession < CallerSession
   def predictive?
     campaign.type == Campaign::Type::PREDICTIVE
   end
-    
-  def start_conference
-    begin
-      update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
-    rescue ActiveRecord::StaleObjectError
-      same_caller_session = CallerSession.find(self.id)
-      same_caller_session.update_attributes(:on_call => true, :available_for_call => true, :attempt_in_progress => nil)
-    end
+  
+  def preview_campaign?
+    campaign.type != Campaign::Type::Preview
   end
-
-  #NewRelic custom metrics
-  add_method_tracer :preview?,         'Custom/PhonesCallerSession/preview?'
-  add_method_tracer :power?,           'Custom/PhonesCallerSession/power?'
-  add_method_tracer :predictive?,      'Custom/PhonesCallerSession/predictive?'
-  add_method_tracer :start_conference, 'Custom/PhonesCallerSession/phone_start_conference'
-  add_method_tracer :call_answered?,   'Custom/PhonesCallerSession/call_answered?'
 
 end
