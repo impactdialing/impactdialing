@@ -1,7 +1,4 @@
-require 'new_relic/agent/method_tracer'
-
 class CallerSession < ActiveRecord::Base
-  include ::NewRelic::Agent::MethodTracer
   include Rails.application.routes.url_helpers
   include CallCenter
   include CallerEvents
@@ -265,24 +262,14 @@ class CallerSession < ActiveRecord::Base
      RedisOnHoldCaller.add(campaign.id, self.id) if Campaign.predictive_campaign?(campaign.type)
      enqueue_dial_flow(CampaignStatusJob, ["on_hold", campaign.id, nil, self.id])       
    end
-   
-   def assigned_to_lead?
-     self.on_call && !self.available_for_call
-   end
-   
-   def on_call_states
-     ['']
-   end
-   
 
-  #NewRelic custom metrics
-  add_method_tracer :account_not_activated?,                 'Custom/CallerSession/account_not_activated?'
-  add_method_tracer :subscription_limit_exceeded?,           'Custom/CallerSession/subscription_limit_exceeded?'
-  add_method_tracer :funds_not_available?,                   'Custom/CallerSession/funds_not_available?'
-  add_method_tracer :time_period_exceeded?,                  'Custom/CallerSession/time_period_exceeded?'
-  add_method_tracer :is_on_call?,                            'Custom/CallerSession/is_on_call?'
-  add_method_tracer :caller_reassigned_to_another_campaign?, 'Custom/CallerSession/caller_reassigned_to_another_campaign?'
-  add_method_tracer :disconnected?,                          'Custom/CallerSession/disconnected?'
+  def assigned_to_lead?
+    self.on_call && !self.available_for_call
+  end
+
+  def on_call_states
+    ['']
+  end
 
   private
     

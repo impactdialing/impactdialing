@@ -1,9 +1,7 @@
-require 'new_relic/agent/method_tracer'
 require Rails.root.join("lib/twilio_lib")
 require Rails.root.join("lib/redis_connection")
 
 class CallAttempt < ActiveRecord::Base
-  include ::NewRelic::Agent::MethodTracer
   include Rails.application.routes.url_helpers
   include CallPayment
   include SidekiqEvents
@@ -70,7 +68,6 @@ class CallAttempt < ActiveRecord::Base
     self.status = CallAttempt::Status::ABANDONED
     self.connecttime = time
     self.call_end = time
-    self.wrapup_time = time
   end
     
   def end_answered_by_machine(connect_time, end_time)
@@ -85,7 +82,6 @@ class CallAttempt < ActiveRecord::Base
     self.wrapup_time = time
     self.call_end = time
   end
-  
   
   def disconnect_call(time, duration, url, caller_id)
     self.status = CallAttempt::Status::SUCCESS
@@ -186,16 +182,4 @@ class CallAttempt < ActiveRecord::Base
     caller_session.run('stop_calling')
   end
 
-  #NewRelic custom metrics
-  add_method_tracer :connect_lead_to_caller,      'Custom/CallAttempt/connect_lead_to_caller'
-  add_method_tracer :connect_call,                'Custom/CallAttempt/connect_call'
-  add_method_tracer :abandon_call,                'Custom/CallAttempt/abandon_call'
-  add_method_tracer :caller_not_available?,       'Custom/CallAttempt/caller_not_available?'
-  add_method_tracer :end_answered_call,           'Custom/CallAttempt/end_answered_call'
-  add_method_tracer :process_answered_by_machine, 'Custom/CallAttempt/process_answered_by_machine'
-  add_method_tracer :end_answered_by_machine,     'Custom/CallAttempt/end_answered_by_machine'
-  add_method_tracer :end_unanswered_call,         'Custom/CallAttempt/end_unanswered_call'
-  add_method_tracer :disconnect_call,             'Custom/CallAttempt/disconnect_call'
-  add_method_tracer :schedule_for_later,          'Custom/CallAttempt/schedule_for_later'
-  add_method_tracer :wrapup_now,                  'Custom/CallAttempt/wrapup_now'
 end
