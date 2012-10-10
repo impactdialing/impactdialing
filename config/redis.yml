@@ -3,31 +3,51 @@ development:
   call_flow: redis://localhost:6379
   dialer: redis://localhost:6379
   on_hold_callers: redis://localhost:6379
+  call_end: redis://localhost:6379
     
 test:
   resque_sidekiq: localhost:6379
   call_flow: localhost:6379
   dialer: localhost:6379  
   on_hold_callers: redis://localhost:6379
+  call_end: redis://localhost:6379
     
 heroku_staging:
   call_flow: redis://10.254.238.226:6379
   dialer: redis://10.254.238.226:6379
   resque_sidekiq: redis://10.254.238.226:6379
   on_hold_callers: redis://10.254.238.226:6379
+  call_end: redis://10.254.238.226:6379
   
 heroku_preproduction:
   resque_sidekiq: redis://10.208.71.208:6379    
   call_flow: redis://10.50.209.9:6379    
   dialer: redis://10.248.206.35:6379
   on_hold_callers: redis://10.214.34.3:6379
+  call_end: redis://10.50.209.9:6379
   
   
 heroku:
-  redis://10.140.76.223:6379
+  resque_sidekiq: redis://10.140.76.223:6379    
+  call_flow: redis://10.143.167.52:6379    
+  dialer: redis://10.70.11.202:6379
+  on_hold_callers: redis://10.140.76.223:6379
+  call_end: redis://10.4.149.38:6379
+      
+  
 
 heroku_caller:
-  redis://10.140.76.223:6379
+  resque_sidekiq: redis://10.140.76.223:6379    
+  call_flow: redis://10.143.167.52:6379    
+  dialer: redis://10.70.11.202:6379
+  on_hold_callers: redis://10.140.76.223:6379
+  call_end: redis://10.4.149.38:6379
+  
 
 heroku_phonesonly:
-  redis://10.140.76.223:6379
+  resque_sidekiq: redis://10.140.76.223:6379    
+  call_flow: redis://10.143.167.52:6379    
+  dialer: redis://10.70.11.202:6379
+  on_hold_callers: redis://10.140.76.223:6379
+  call_end: redis://10.4.149.38:6379
+  
