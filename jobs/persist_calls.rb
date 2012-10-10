@@ -9,7 +9,7 @@ class PersistCalls
     call_attempts = []
     abandoned_calls(call_attempts, voters)
     unanswered_calls(call_attempts, voters)
-    machine_calls(call_attempts, voters)
+    # machine_calls(call_attempts, voters)
     disconnected_calls(call_attempts, voters)
     Voter.import  voters, :on_duplicate_key_update=>[:status, :call_back, :caller_id, :scheduled_date]
     CallAttempt.import call_attempts,
