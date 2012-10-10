@@ -52,7 +52,7 @@ class Call < ActiveRecord::Base
       state :abandoned do
         
         before(:always) { 
-          RedisCall.push_to_abandoned_call_list(self.attributes); 
+          RedisCall.push_to_abandoned_call_list(self.id); 
           # enqueue_dial_flow(CampaignStatusJob, ["abandoned", campaign.id, call_attempt.id, nil])          
           call_attempt.redirect_caller
          }                
@@ -66,7 +66,7 @@ class Call < ActiveRecord::Base
       state :call_answered_by_machine do        
         
         before(:always) { 
-          RedisCall.push_to_processing_by_machine_call_hash(self.attributes);
+          RedisCall.push_to_processing_by_machine_call_hash(self.id);
           # enqueue_dial_flow(CampaignStatusJob, ["answered_machine", campaign.id, call_attempt.id, nil])      
           call_attempt.redirect_caller }        
                   
@@ -93,7 +93,7 @@ class Call < ActiveRecord::Base
         
         before(:always) { 
           unless caller_session.nil?
-            RedisCall.push_to_disconnected_call_list(self.attributes.merge("caller_id"=> caller_session.caller.id));
+            RedisCall.push_to_disconnected_call_list(self.id, self.recording_duration, self.recording_duration, caller_session.caller.id);
             # enqueue_dial_flow(CampaignStatusJob, ["disconnected", campaign.id, call_attempt.id, caller_session.id])          
           end
        }       
@@ -111,7 +111,7 @@ class Call < ActiveRecord::Base
       
       state :wrapup_and_continue do 
         before(:always) { 
-        RedisCall.push_to_wrapped_up_call_list(call_attempt.attributes.merge(caller_type: CallerSession::CallerType::TWILIO_CLIENT));
+        RedisCall.push_to_wrapped_up_call_list(call_attempt.id, CallerSession::CallerType::TWILIO_CLIENT);
         # enqueue_dial_flow(CampaignStatusJob, ["wrapped_up", campaign.id, call_attempt.id, caller_session.id])
         call_attempt.redirect_caller
          }
@@ -119,7 +119,7 @@ class Call < ActiveRecord::Base
             
       state :wrapup_and_stop do
         before(:always) { 
-        RedisCall.push_to_wrapped_up_call_list(call_attempt.attributes.merge(caller_type: CallerSession::CallerType::TWILIO_CLIENT));
+        RedisCall.push_to_wrapped_up_call_list(call_attempt.id, CallerSession::CallerType::TWILIO_CLIENT);
         # enqueue_dial_flow(CampaignStatusJob, ["wrapped_up", campaign.id, call_attempt.id, caller_session.id])       
         end_caller_session }        
       end

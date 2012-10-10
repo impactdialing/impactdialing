@@ -90,8 +90,11 @@ class PersistCalls
   
   def self.multipop(list, num)
     result = []
-    num.times { |x| result << list.shift}
-    result.compact
+    num.times do |x|
+      element = list.shift
+      result << JSON.parse(element) unless element.nil?
+    end
+    result
   end
   
 end
