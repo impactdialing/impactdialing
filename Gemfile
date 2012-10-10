@@ -30,7 +30,7 @@ gem "eventmachine", "1.0.0.rc.4"
 gem "em-http-request", "~> 1.0.1"
 gem "ruby-graphviz", "0.9.0"
 gem "em-synchrony", "~> 1.0.1"
-gem "resque", "~> 1.19"
+gem "resque", "~> 1.23.0"
 gem "resque-scheduler", "~> 1.9.9", :require => 'resque_scheduler'
 gem 'resque-lock', "~> 1.0.0"
 gem "resque-loner", "~>1.2.1"
@@ -40,10 +40,10 @@ gem "formtastic", "~>2.2.1"
 gem "cocoon", "~>1.0.22"
 gem 'deep_cloneable', '~> 1.4.0'
 gem "redis-objects", "~>0.5.3",:require => 'redis/objects'
-gem "redis", "~>2.2.2"
+gem "redis", "~>3.0.2"
 gem 'ar-octopus', :git => "git://github.com/tchandy/octopus.git"
 gem "newrelic-redis", "~>1.3.2"
-gem "sidekiq", '~>1.2.1'
+gem "sidekiq", '~>2.3.3'
 gem "slim", "~>1.2.2"
 gem "sprockets", "~>2.1.3"
 gem "sinatra"
