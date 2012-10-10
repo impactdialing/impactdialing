@@ -27,7 +27,7 @@ describe CallinController do
       caller_identity.should_receive(:caller).and_return(caller)
       caller.should_receive(:create_caller_session).and_return(caller_session)
       RedisPredictiveCampaign.should_receive(:add).with(caller.campaign_id, caller.campaign.type)      
-      caller.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["caller_connected", caller.campaign.id, nil, caller_session.id])       
+      # caller.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["caller_connected", caller.campaign.id, nil, caller_session.id])       
       caller_session.should_receive(:run).and_return("")
       post :identify, Digits: pin
     end

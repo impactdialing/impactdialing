@@ -31,8 +31,8 @@ heroku:
   resque_sidekiq: redis://10.140.76.223:6379    
   call_flow: redis://10.143.167.52:6379    
   dialer: redis://10.70.11.202:6379
-  on_hold_callers: redis://10.140.76.223:6379
-  call_end: redis://10.4.149.38:6379
+  on_hold_callers: redis://10.4.149.38:6379
+  call_end: redis://10.4.133.109:6379
       
   
 
@@ -40,14 +40,14 @@ heroku_caller:
   resque_sidekiq: redis://10.140.76.223:6379    
   call_flow: redis://10.143.167.52:6379    
   dialer: redis://10.70.11.202:6379
-  on_hold_callers: redis://10.140.76.223:6379
-  call_end: redis://10.4.149.38:6379
+  on_hold_callers: redis://10.4.149.38:6379
+  call_end: redis://10.4.133.109:6379
   
 
 heroku_phonesonly:
   resque_sidekiq: redis://10.140.76.223:6379    
   call_flow: redis://10.143.167.52:6379    
   dialer: redis://10.70.11.202:6379
-  on_hold_callers: redis://10.140.76.223:6379
-  call_end: redis://10.4.149.38:6379
+  on_hold_callers: redis://10.4.149.38:6379
+  call_end: redis://10.4.133.109:6379
   

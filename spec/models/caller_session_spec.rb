@@ -251,7 +251,7 @@ describe CallerSession do
     it "should move caller to end conference from account not activated" do
       caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "account_not_activated")
       caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id,  "publish_caller_disconnected"])      
-      caller_session.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["caller_disconnected", @campaign.id, nil, caller_session.id])       
+      # caller_session.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["caller_disconnected", @campaign.id, nil, caller_session.id])       
       caller_session.end_conf!
       caller_session.state.should eq('conference_ended')
     end
@@ -260,7 +260,7 @@ describe CallerSession do
     it "should set caller session endtime" do
       caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "account_not_activated")
       caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id,  "publish_caller_disconnected"])
-      caller_session.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["caller_disconnected", @campaign.id, nil, caller_session.id])       
+      # caller_session.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["caller_disconnected", @campaign.id, nil, caller_session.id])       
       caller_session.end_conf!
       caller_session.endtime.should_not be_nil
     end
@@ -268,7 +268,7 @@ describe CallerSession do
     it "should render hangup twiml" do
       caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "account_not_activated")
       caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id,  "publish_caller_disconnected"])
-      caller_session.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["caller_disconnected", @campaign.id, nil, caller_session.id])             
+      # caller_session.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["caller_disconnected", @campaign.id, nil, caller_session.id])             
       caller_session.end_conf!
       caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
     end
@@ -277,8 +277,8 @@ describe CallerSession do
       call_attempt = Factory(:call_attempt)
       caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "account_not_activated", attempt_in_progress: call_attempt)
       caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id,  "publish_caller_disconnected"])
-      caller_session.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["caller_disconnected", @campaign.id, nil, caller_session.id])             
-      caller_session.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["wrapped_up", @campaign.id, call_attempt.id, caller_session.id])                   
+      # caller_session.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["caller_disconnected", @campaign.id, nil, caller_session.id])             
+      # caller_session.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["wrapped_up", @campaign.id, call_attempt.id, caller_session.id])                   
       caller_session.end_conf!
       caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
     end

@@ -18,7 +18,7 @@ module SidekiqEvents
     end
     
     def enqueue_dial_flow(job, event_args)
-      enqueue('dial_flow', job, event_args)
+      # enqueue('dial_flow', job, event_args)
     end
     
     def enqueue_monitor_caller_flow(job, event_args)

@@ -182,7 +182,7 @@ describe Caller do
       caller  = Factory(:caller, campaign: campaign)
       caller_session = Factory(:caller_session, caller: caller)
       RedisPredictiveCampaign.should_receive(:add).with(campaign.id, campaign.type)
-      caller.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["caller_connected", campaign.id, nil, caller_session.id])       
+      # caller.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["caller_connected", campaign.id, nil, caller_session.id])       
       caller.started_calling(caller_session)      
     end
         
