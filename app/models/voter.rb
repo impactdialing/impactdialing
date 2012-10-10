@@ -77,24 +77,6 @@ class Voter < ActiveRecord::Base
     voter.Phone && (voter.Phone.length >= 10 || voter.Phone.start_with?("+"))
   end
 
-  def selected_fields(selection = nil)
-    return [self.Phone] unless selection
-    selection.select { |field| Voter.upload_fields.include?(field) }.map { |field| self.send(field) }
-  end
-
-  def selected_custom_fields(selection)
-    return [] unless selection
-    query = account.custom_voter_fields.where(name: selection).
-      joins(:custom_voter_field_values).
-      where(custom_voter_field_values: {voter_id: self.id}).
-      group(:name).select([:name, :value]).to_sql
-    voter_fields = Hash[*connection.execute(query).to_a.flatten]
-    selection.map { |field| voter_fields[field] }
-  end
-
-  def self.upload_fields
-    ["Phone", "CustomID", "LastName", "FirstName", "MiddleName", "Suffix", "Email", "address", "city", "state","zip_code", "country"]
-  end
 
   def dial
     return false if status == Voter::SUCCESS
