@@ -43,7 +43,6 @@ describe CallAttempt do
     call_attempt.status.should eq(CallAttempt::Status::ABANDONED)
     call_attempt.connecttime.should eq(now)
     call_attempt.call_end.should eq(now)
-    call_attempt.wrapup_time.should eq(now)    
   end
   
   
