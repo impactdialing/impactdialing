@@ -35,7 +35,6 @@ class RedisCall
     Redis::List.new("not_answered_call_list", $redis_call_flow_connection,:marshal => true)        
   end
   
-  
   def self.abandoned_call_list
     Redis::List.new("abandoned_call_list", $redis_call_flow_connection,:marshal => true)        
   end
