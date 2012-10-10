@@ -12,14 +12,12 @@ class NoteResponse < ActiveRecord::Base
   end
   
   def self.response_texts(note_ids, note_responses)
-    texts = []
-    note_ids.each_with_index do |note_id, index|
-      unless note_responses.collect{|x| x.note_id}.include?(note_id)
-        texts << ""
-      else
-        texts << note_responses.detect{|at| at.note_id == note_id}.response
-      end
+    note_responses ||= []
+    responses = note_responses.each_with_object({}) do |response, memo|
+      memo[response['note_id']] = response['response']
     end
-    texts
+    note_ids.map do |note_id|
+      responses.has_key?(note_id) ? responses[note_id] : ""
+    end
   end
 end

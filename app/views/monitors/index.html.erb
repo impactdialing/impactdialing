@@ -25,3 +25,4 @@
 
 <p>Call recording is currently <%= @account.record_calls? ? "on" : "off" %>. Links to recordings will appear in each campaign's Download report.</p>
 <p class="actions"><%= link_to "Turn call recording #{@account.record_calls? ? "off" : "on" }", {:action=>"toggle_call_recording"}, {:class => 'action secondary'} %></p>
+
