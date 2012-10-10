@@ -8,6 +8,6 @@ else
   end
 
   Sidekiq.configure_client do |config|
-    config.redis = { :url => redis_config[rails_env]['resque_sidekiq'], :namespace => 'resque', :size => (Sidekiq.options[:concurrency] + 2)}
+    config.redis = { :url => redis_config[rails_env]['sidekiq'], :namespace => 'resque', :size => (Sidekiq.options[:concurrency] + 2)}
   end    
 end
