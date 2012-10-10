@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120925153123) do
+ActiveRecord::Schema.define(:version => 20121009084123) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -42,13 +42,12 @@ ActiveRecord::Schema.define(:version => 20120925153123) do
     t.integer  "possible_response_id", :null => false
     t.datetime "created_at"
     t.integer  "campaign_id"
-    t.integer  "caller_id"
+    t.integer  "caller_id",            :null => false
     t.integer  "call_attempt_id"
   end
 
   add_index "answers", ["campaign_id", "caller_id"], :name => "index_answers_campaign_id_caller_id"
   add_index "answers", ["possible_response_id", "campaign_id", "caller_id", "created_at"], :name => "index_answers_count_possible_response_campaign"
-  add_index "answers", ["possible_response_id", "campaign_id", "caller_id", "created_at"], :name => "index_answers_count_question_id"
   add_index "answers", ["question_id", "campaign_id", "created_at"], :name => "index_answers_count_question"
   add_index "answers", ["voter_id", "question_id"], :name => "index_answers_on_voter_id_and_question_id"
 
@@ -134,8 +133,8 @@ ActiveRecord::Schema.define(:version => 20120925153123) do
   create_table "caller_groups", :force => true do |t|
     t.string   "name",        :null => false
     t.integer  "campaign_id", :null => false
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",  :null => false
+    t.datetime "updated_at",  :null => false
     t.integer  "account_id",  :null => false
   end
 
@@ -187,6 +186,7 @@ ActiveRecord::Schema.define(:version => 20120925153123) do
   add_index "caller_sessions", ["campaign_id", "on_call"], :name => "index_callers_on_call_group_by_campaign"
   add_index "caller_sessions", ["campaign_id"], :name => "index_caller_sessions_on_campaign_id"
   add_index "caller_sessions", ["sid"], :name => "index_caller_sessions_on_sid"
+  add_index "caller_sessions", ["state"], :name => "index_state_caller_sessions"
 
   create_table "callers", :force => true do |t|
     t.string   "name"
@@ -303,7 +303,6 @@ ActiveRecord::Schema.define(:version => 20120925153123) do
 
   add_index "moderators", ["active", "account_id", "created_at"], :name => "index_moderators_on_active_and_account_id_and_created_at"
   add_index "moderators", ["session", "active", "account_id", "created_at"], :name => "active_moderators"
-  add_index "moderators", ["session", "active"], :name => "index_moderators_on_session_and_active"
 
   create_table "note_responses", :force => true do |t|
     t.integer "voter_id",        :null => false
@@ -343,6 +342,7 @@ ActiveRecord::Schema.define(:version => 20120925153123) do
     t.text    "text",              :null => false
     t.integer "script_order"
     t.string  "external_id_field"
+    t.integer "question_order"
   end
 
   create_table "recordings", :force => true do |t|
@@ -370,6 +370,7 @@ ActiveRecord::Schema.define(:version => 20120925153123) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.text     "voter_fields", :limit => 2147483647
+    t.boolean  "robo"
   end
 
   create_table "simulated_values", :force => true do |t|
@@ -384,8 +385,8 @@ ActiveRecord::Schema.define(:version => 20120925153123) do
 
   create_table "temp_voter_lists", :force => true do |t|
     t.string   "name"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
   end
 
   create_table "transfer_attempts", :force => true do |t|
@@ -498,15 +499,13 @@ ActiveRecord::Schema.define(:version => 20120925153123) do
   end
 
   add_index "voters", ["Phone", "voter_list_id"], :name => "index_voters_on_Phone_and_voter_list_id"
-  add_index "voters", ["Phone"], :name => "index_voters_on_Phone"
   add_index "voters", ["attempt_id"], :name => "index_voters_on_attempt_id"
   add_index "voters", ["caller_session_id"], :name => "index_voters_on_caller_session_id"
   add_index "voters", ["campaign_id", "active", "status", "call_back"], :name => "index_voters_on_campaign_id_and_active_and_status_and_call_back"
   add_index "voters", ["campaign_id", "enabled", "priority", "status"], :name => "index_priority_voters"
-  add_index "voters", ["campaign_id", "status", "id"], :name => "index_voters_on_campaign_id_and_status_and_id"
+  add_index "voters", ["campaign_id", "status", "last_call_attempt_time"], :name => "voters_campaign_status_id"
   add_index "voters", ["campaign_id", "status", "last_call_attempt_time"], :name => "voters_campaign_status_time"
   add_index "voters", ["campaign_id", "status"], :name => "index_voters_on_campaign_id_and_status"
-  add_index "voters", ["campaign_id"], :name => "index_voters_on_campaign_id"
   add_index "voters", ["enabled", "campaign_id", "last_call_attempt_time", "status"], :name => "voters_enabled_campaign_time_status"
   add_index "voters", ["status"], :name => "index_voters_on_status"
   add_index "voters", ["voter_list_id"], :name => "index_voters_on_voter_list_id"

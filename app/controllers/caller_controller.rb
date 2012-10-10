@@ -2,15 +2,16 @@ class CallerController < ApplicationController
   layout "caller"
   skip_before_filter :verify_authenticity_token, :only =>[:check_reassign, :call_voter, :flow, :start_calling, :stop_calling, :end_session, :skip_voter]
   before_filter :check_login, :except=>[:login, :feedback, :end_session, :start_calling, :phones_only, :new_campaign_response_panel, :check_reassign, :call_voter, :flow]
-  before_filter :find_caller_session , :only => [:flow, :stop_calling, :end_session]
+  before_filter :find_caller_session , :only => [:flow, :stop_calling]
+  before_filter :find_session, :only => [:end_session]
   layout 'caller'
-  include SidekiqEvents
+
 
   def start_calling
     caller = Caller.find(params[:caller_id])
     identity = CallerIdentity.find_by_session_key(params[:session_key])
     session = caller.create_caller_session(identity.session_key, params[:CallSid], CallerSession::CallerType::TWILIO_CLIENT)
-    enqueue_moderator_flow(ModeratorCallerJob, [session.id, "caller_connected_to_campaign"])
+    caller.started_calling(session)    
     render xml: session.run(:start_conf)
   end
 
@@ -27,8 +28,7 @@ class CallerController < ApplicationController
   def call_voter
     caller = Caller.find(params[:id])
     caller_session = caller.caller_sessions.find(params[:session_id]) 
-    enqueue_call_flow(CallerPusherJob, [caller_session.id, "publish_calling_voter"])
-    enqueue_call_flow(PreviewPowerDialJob, [caller_session.id, params[:voter_id]]) unless params[:voter_id].blank?
+    caller.calling_voter_preview_power(caller_session, params[:voter_id])
     render :nothing => true
   end
 
@@ -38,8 +38,8 @@ class CallerController < ApplicationController
   end
 
   def end_session
-    unless @caller_session.nil?
-      render xml: @caller_session.run('end_conf')
+    unless @caller_session.nil?      
+      render xml: @caller_session.run('end_conf') 
     else
       render xml: Twilio::Verb.hangup
     end
@@ -126,6 +126,10 @@ class CallerController < ApplicationController
   def feedback
     Postoffice.feedback(params[:issue]).deliver
     render :text=> "var x='ok';"
+  end
+  
+  def find_session
+    @caller_session = CallerSession.find_by_sid(params[:CallSid])
   end
 
   def find_caller_session

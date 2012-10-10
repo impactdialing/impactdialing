@@ -9,6 +9,7 @@ ImpactDialing::Application.routes.draw do
     member do
       post :flow
       post :call_ended
+      post :incoming
       post :hangup
       post :submit_result
       post :submit_result_and_stop
@@ -142,9 +143,10 @@ ImpactDialing::Application.routes.draw do
       member { post :verify_callerid }
     end
     resources :blocked_numbers, :only => [:index, :create, :destroy]
-    resources :monitors do
+    resources :monitors , :only=>[:index, :show] , :name_prefix => 'client' do
       collection do
         get :start
+        get :new_index
         get :stop
         get :deactivate_session
         get :switch_mode

@@ -19,12 +19,15 @@ describe CallinController do
 
     it "verifies the logged in caller by session pin" do
       pin = rand.to_s[2..6]
+      campaign = Factory(:campaign)
       caller = Factory(:caller, :account => account, :campaign => campaign)
       caller_identity = Factory(:caller_identity, :caller => caller, :session_key => 'key' , pin: pin)
-      caller_session = Factory(:webui_caller_session, caller: caller)      
+      caller_session = Factory(:webui_caller_session, caller: caller, campaign: campaign)      
       CallerIdentity.should_receive(:find_by_pin).and_return(caller_identity)
       caller_identity.should_receive(:caller).and_return(caller)
       caller.should_receive(:create_caller_session).and_return(caller_session)
+      RedisPredictiveCampaign.should_receive(:add).with(caller.campaign_id, caller.campaign.type)      
+      caller.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["caller_connected", caller.campaign.id, nil, caller_session.id])       
       caller_session.should_receive(:run).and_return("")
       post :identify, Digits: pin
     end

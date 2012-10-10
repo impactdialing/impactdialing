@@ -1,7 +1,7 @@
 desc "Update twilio call data" 
 
 task :update_twilio_stats => :environment do
-  CallAttempt.where("tPrice is NULL and (tStatus is NULL or tStatus = 'completed') and sid is not null").find_in_batches(:batch_size => 100) do |attempts|
+  CallAttempt.where("tPrice is NULL and (tStatus is NULL or tStatus = 'completed') and sid is not null").find_in_batches(:batch_size => 1000) do |attempts|
     attempts.each { |attempt| TwilioLib.new.update_twilio_stats_by_model attempt }
   end
   

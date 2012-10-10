@@ -22,8 +22,10 @@ Spork.prefork do
   Dir[Rails.root.join("spec/shared/**/*.rb")].each {|f| require f}
   #Dir[Rails.root.join("simulator/new_simulator.rb")].each {|f| require f}
 
-
   RSpec.configure do |config|
+    config.before(:each) do
+      $redis_call_flow_connection.flushALL
+    end
     # == Mock Framework
     #
     # If you prefer to use mocha, flexmock or RR, uncomment the appropriate line:
@@ -36,9 +38,11 @@ Spork.prefork do
     config.before(:suite) do
        DatabaseCleaner.strategy = :transaction
     end
+    
     config.after(:suite) do
       DatabaseCleaner.clean_with(:truncation)
     end
+    
     config.before(:each) do
       DatabaseCleaner.start
     end

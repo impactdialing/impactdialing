@@ -34,20 +34,93 @@ describe CallAttempt do
     call_attempt = Factory(:call_attempt, call_start: nil, connecttime:  Time.now, call_end:  nil)
     call_attempt.duration_rounded_up.should == 0
   end
+  
+  it "should abandon call" do
+    voter = Factory(:voter)  
+    call_attempt = Factory(:call_attempt, :voter => voter)
+    now = Time.now
+    call_attempt.abandoned(now)
+    call_attempt.status.should eq(CallAttempt::Status::ABANDONED)
+    call_attempt.connecttime.should eq(now)
+    call_attempt.call_end.should eq(now)
+  end
+  
+  
+  it "should end_answered_by_machine" do
+    voter = Factory(:voter)  
+    call_attempt = Factory(:call_attempt, :voter => voter)
+    now = Time.now
+    nowminus2 = now - 2.minutes
+    call_attempt.end_answered_by_machine(nowminus2, now)
+    call_attempt.connecttime.should eq(nowminus2)
+    call_attempt.call_end.should eq(now)
+    call_attempt.wrapup_time.should eq(now)
+  end
+  
+  it "should end_unanswered_call" do
+    voter = Factory(:voter)  
+    call_attempt = Factory(:call_attempt, :voter => voter)
+    now = Time.now
+    call_attempt.end_unanswered_call("busy",now)
+    call_attempt.status.should eq("No answer busy signal")
+    call_attempt.call_end.should eq(now)
+  end
+  
+  
+  it "should disconnect call" do
+     voter = Factory(:voter)
+     call_attempt = Factory(:call_attempt, :voter => voter)
+     caller = Factory(:caller)
+     now = Time.now
+     call_attempt.disconnect_call(now, 12, "url", caller.id)
+     call_attempt.status.should eq(CallAttempt::Status::SUCCESS)
+     call_attempt.call_end.should eq(now)
+     call_attempt.recording_duration.should eq(12)
+     call_attempt.recording_url.should eq("url")     
+     call_attempt.caller_id.should eq(caller.id)
+   end
+   
+   it "can be scheduled for later" do
+     voter = Factory(:voter)
+     call_attempt = Factory(:call_attempt, :voter => voter)
+     scheduled_date = "10/10/2020 20:20"
+     call_attempt.schedule_for_later(scheduled_date)
+     call_attempt.status.should eq(CallAttempt::Status::SCHEDULED)
+     call_attempt.scheduled_date.should eq(scheduled_date)
+   end
+   
 
-
-  it "can be scheduled for later" do
+  it "should wrapup call webui" do
     voter = Factory(:voter)
     call_attempt = Factory(:call_attempt, :voter => voter)
-    scheduled_date = "10/10/2020 20:20"
-    call_attempt.schedule_for_later(scheduled_date)
-    call_attempt.reload.status.should == CallAttempt::Status::SCHEDULED
-    call_attempt.scheduled_date.to_s.should eq("2020-10-10 20:20:00 UTC")
-    call_attempt.voter.status.should == CallAttempt::Status::SCHEDULED
-    call_attempt.voter.scheduled_date.to_s.should eq("2020-10-10 20:20:00 UTC")
-    call_attempt.voter.call_back.should be_true
+    now = Time.now
+    call_attempt.wrapup_now(now, CallerSession::CallerType::TWILIO_CLIENT)
+    call_attempt.wrapup_time.should eq(now)
+    call_attempt.voter_response_processed.should be_false
   end
-
+  
+  it "should wrapup call phones" do
+    voter = Factory(:voter)
+    call_attempt = Factory(:call_attempt, :voter => voter)
+    now = Time.now
+    call_attempt.wrapup_now(now, CallerSession::CallerType::PHONE)
+    call_attempt.wrapup_time.should eq(now)
+    call_attempt.voter_response_processed.should be_true
+  end
+  
+  
+  it "should connect lead to caller" do
+    voter = Factory(:voter)
+    call_attempt = Factory(:call_attempt, :voter => voter)
+    caller_session = Factory(:caller_session)
+    RedisOnHoldCaller.should_receive(:longest_waiting_caller).and_return(caller_session.id)
+    call_attempt.connect_caller_to_lead
+    caller_session.attempt_in_progress.should eq(call_attempt)
+    caller_session.voter_in_progress.should eq(voter)
+  end
+      
+  
+  
   it "lists attempts between two dates" do
     too_old = Factory(:call_attempt).tap { |ca| ca.update_attribute(:created_at, 10.minutes.ago) }
     too_new = Factory(:call_attempt).tap { |ca| ca.update_attribute(:created_at, 10.minutes.from_now) }
@@ -180,5 +253,4 @@ describe CallAttempt do
     end
 
   end
-
 end

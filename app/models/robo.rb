@@ -1,0 +1,2 @@
+class Robo < Campaign
+end

@@ -118,8 +118,8 @@ function subscribe_and_bind_events_monitoring(session_id){
 
   channel.bind('update_dials_in_progress', function(data){
 		if (!$.isEmptyObject(data)){
-			var campaign_selector = 'tr#campaign_'+data.campaign_id;
-			$(campaign_selector).children('.dials_in_progress').text(data.dials_in_progress);
+			var campaign_selector = 'tr#campaign_'+data.campaign_id;			
+			$(campaign_selector).children('.dials_in_progress').text(data.dials_in_progress);			
 			if(data.voters_remaining){
 				$(campaign_selector).children('.voters_count').text(data.voters_remaining);
 			}

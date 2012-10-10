@@ -1,23 +1,7 @@
-
 class Predictive < Campaign
   include SidekiqEvents
   
     
-  def dial
-    num_to_call = number_of_voters_to_dial
-    Rails.logger.info "Campaign: #{self.id} - num_to_call #{num_to_call}"    
-    return if  num_to_call <= 0
-    EM.synchrony do
-      concurrency = 8
-      voters_to_dial = choose_voters_to_dial(num_to_call)
-      EM::Synchrony::Iterator.new(voters_to_dial, concurrency).map do |voter, iter|
-        voter.dial_predictive_em(iter)
-        Moderator.update_dials_in_progress_sync(self)
-      end      
-      EventMachine.stop
-    end
-  end
-  
   def dial_resque
     set_calculate_dialing
     Resque.enqueue(CalculateDialsJob, self.id)
@@ -47,15 +31,15 @@ class Predictive < Campaign
   end
   
   def dialing_count
-    call_attempts.with_status(CallAttempt::Status::DIALING).between(10.seconds.ago, Time.now).size
+    call_attempts.with_status(CallAttempt::Status::READY).between(10.seconds.ago, Time.now).size
   end
     
   def number_of_voters_to_dial
     num_to_call = 0
-    dials_made = call_attempts.size
+    dials_made = call_attempts.between(10.minutes.ago, Time.now).size
     # if dials_made == 0 || !abandon_rate_acceptable?
     if dials_made == 0
-      num_to_call = callers_available_for_call.size - call_attempts.between(20.seconds.ago, Time.now).with_status(CallAttempt::Status::RINGING).size
+      num_to_call = caller_sessions.available.size - RedisCampaignCall.ringing_last_20_seconds(self.id)
     else
       num_to_call = number_of_simulated_voters_to_dial
     end
@@ -68,18 +52,24 @@ class Predictive < Campaign
     # num_voters_to_call = (num_voters - (priority_voters.size + scheduled_voters.size))
     limit_voters = num_voters <= 0 ? 0 : num_voters
     voters =  all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.without(account.blocked_numbers.for_campaign(self).map(&:number)).limit(limit_voters)
+    set_voter_status_to_read_for_dial!(voters)
+    check_campaign_out_of_numbers(voters)
+    voters
+  end
+  
+  def set_voter_status_to_read_for_dial!(voters)
     Voter.transaction do
       voters.each do |voter| 
-        voter.status = CallAttempt::Status::DIALING
+        voter.status = CallAttempt::Status::READY
         voter.save 
       end
-    end
+    end    
+  end
+  
+  def check_campaign_out_of_numbers(voters)
     if voters.blank?
-      caller_sessions.available.each do |caller_session|
-        enqueue_call_flow(CampaignOutOfNumbersJob, [caller_session.id])
-      end
-    end 
-    voters
+      caller_sessions.available.each { |caller_session| enqueue_call_flow(CampaignOutOfNumbersJob, [caller_session.id]) }
+    end     
   end
   
   
@@ -91,12 +81,8 @@ class Predictive < Campaign
   end
   
   def number_of_simulated_voters_to_dial
-    dials_made = call_attempts.between(10.minutes.ago, Time.now)
-    calls_wrapping_up = dials_made.with_status(CallAttempt::Status::SUCCESS).not_wrapped_up
-    active_call_attempts = dials_made.with_status(CallAttempt::Status::INPROGRESS)
-    available_callers = callers_available_for_call.size + active_call_attempts.select { |call_attempt| ((call_attempt.duration_wrapped_up > best_conversation_simulated) && (call_attempt.duration_wrapped_up < best_conversation_simulated + 15))}.size + calls_wrapping_up.select{|wrapping_up_call| (wrapping_up_call.time_to_wrapup > best_wrapup_simulated) && ((wrapping_up_call.time_to_wrapup > best_wrapup_simulated + 15))}.size
-    ringing_lines = dials_made.with_status(CallAttempt::Status::RINGING).between(20.seconds.ago, Time.now).size
-    dials_to_make = (best_dials_simulated * available_callers) - ringing_lines
+    available_callers = caller_sessions.available.size + RedisCampaignCall.above_average_inprogress_calls_count(self.id, best_conversation_simulated) + RedisCampaignCall.above_average_wrapup_calls_count(self.id, best_wrapup_simulated)
+    dials_to_make = (best_dials_simulated * available_callers) - RedisCampaignCall.ringing_last_20_seconds(self.id)
     dials_to_make.to_i
   end
   
@@ -110,15 +96,15 @@ class Predictive < Campaign
   end
 
   def best_conversation_simulated
-    simulated_values.nil? ? 0 : simulated_values.best_conversation.nil? ? 0 : simulated_values.best_conversation
+    simulated_values.nil? ? 1000 : (simulated_values.best_conversation.nil? || simulated_values.best_conversation == 0) ? 1000 : simulated_values.best_conversation
   end
 
   def longest_conversation_simulated
-    simulated_values.nil? ? 0 : simulated_values.longest_conversation.nil? ? 0 : simulated_values.longest_conversation
+    simulated_values.nil? ? 1000 : simulated_values.longest_conversation.nil? ? 0 : simulated_values.longest_conversation
   end
 
   def best_wrapup_simulated
-    simulated_values.nil? ? 0 : simulated_values.best_wrapup_time.nil? ? 0 : simulated_values.best_wrapup_time
+    simulated_values.nil? ? 1000 : (simulated_values.best_wrapup_time.nil? || simulated_values.best_wrapup_time == 0) ? 1000 : simulated_values.best_wrapup_time
   end
   
   def caller_conference_started_event(current_voter_id)

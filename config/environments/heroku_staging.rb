@@ -19,10 +19,10 @@ ImpactDialing::Application.configure do
 
   # Full error reports are disabled and caching is turned on
   config.consider_all_requests_local = false
-  config.action_controller.perform_caching             = true
+  config.action_controller.perform_caching = true
 
   # See everything in the log (default is :info)
-  config.log_level = :debug
+  # config.log_level = :debug
 
   config.active_support.deprecation = :log
 

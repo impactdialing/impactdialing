@@ -41,7 +41,7 @@ describe 'new simulator' do
   #       100.times do |index|
   #         created_at = Time.now + index - Random.rand(9).minutes
   #         status = call_status.sample
-  #         if status = CallAttempt::Status::SUCCESS
+  #         if status == CallAttempt::Status::SUCCESS
   #           duration = [30,20,40,90,22,35].sample
   #         else
   #           duration = [1,2,3,4,5].sample

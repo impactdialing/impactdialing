@@ -6,5 +6,4 @@ class AddIndexesForCallDetails < ActiveRecord::Migration
 
   def self.down
   end
-  
 end

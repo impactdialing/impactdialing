@@ -149,12 +149,12 @@ describe Predictive do
 
     it "should return 0 as best conversation if simulated_values is nil" do
       campaign = Factory(:predictive)
-      campaign.best_conversation_simulated.should eq(0)
+      campaign.best_conversation_simulated.should eq(1000)
     end
 
     it "should return 0 as best conversation if best_conversation simulated_values is nil" do
       campaign = Factory(:predictive)
-      campaign.best_conversation_simulated.should eq(0)
+      campaign.best_conversation_simulated.should eq(1000)
     end
 
     it "should return best conversation if  best_conversation simulated_values is has a value" do
@@ -170,12 +170,12 @@ describe Predictive do
 
     it "should return 0 as longest conversation if simulated_values is nil" do
       campaign = Factory(:predictive)
-      campaign.longest_conversation_simulated.should eq(0)
+      campaign.longest_conversation_simulated.should eq(1000)
     end
 
     it "should return 0 as longest conversation if longest_conversation simulated_values is nil" do
       campaign = Factory(:predictive)
-      campaign.longest_conversation_simulated.should eq(0)
+      campaign.longest_conversation_simulated.should eq(1000)
     end
 
     it "should return longest conversation if  longest_conversation simulated_values is has a value" do
@@ -191,7 +191,11 @@ describe Predictive do
     it "should dial one line per caller  if no calls have been made in the last ten minutes" do
       simulated_values = SimulatedValues.create(best_dials: 2.33345, best_conversation: 34.0076, longest_conversation: 42.0876, best_wrapup_time: 10.076)
       campaign = Factory(:predictive, simulated_values: simulated_values)
-      2.times { Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true) }
+      2.times do |index|
+        caller_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true) 
+        RedisCaller.add_caller(campaign.id, caller_session.id)
+        RedisCaller.move_to_on_hold(campaign.id, caller_session.id)
+      end
       num_to_call = campaign.number_of_voters_to_dial
       campaign.should_not_receive(:num_to_call_predictive_simulate)
       caller_sessions = CallerSession.find_all_by_campaign_id(campaign.id)
@@ -252,7 +256,7 @@ describe Predictive do
   describe "number_of_simulated_voters_to_dial" do
 
 
-   it "should determine calls to make give the simulated best_dials when call_attempts prior int the last 10 mins are present" do
+   xit "should determine calls to make give the simulated best_dials when call_attempts prior int the last 10 mins are present" do
      simulated_values = SimulatedValues.create(best_dials: 2.33345, best_conversation: 34.0076, longest_conversation: 42.0876, best_wrapup_time: 10.076)
      campaign = Factory(:predictive, :simulated_values => simulated_values)
 
@@ -273,13 +277,22 @@ describe Predictive do
    it "should determine calls to make give the simulated best_dials when call_attempts prior int the last 10 mins are present" do
        simulated_values = SimulatedValues.create(best_dials: 1, best_conversation: 0, longest_conversation: 0)
        campaign = Factory(:predictive, :simulated_values => simulated_values)
-       3.times { Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true) }
+       3.times do |index|
+         caller_session = Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true) 
+         RedisCaller.add_caller(campaign.id, caller_session.id)
+         RedisCaller.move_to_on_hold(campaign.id, caller_session.id)
+       end
+       
        campaign.number_of_simulated_voters_to_dial.should eq(3)
    end
 
    it "should determine calls to make when no simulated values" do
      campaign = Factory(:predictive)
-     3.times { Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true) }
+     3.times do |index|
+       caller_session = Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true) 
+       RedisCaller.add_caller(campaign.id, caller_session.id)
+       RedisCaller.move_to_on_hold(campaign.id, caller_session.id)
+     end
      campaign.number_of_simulated_voters_to_dial.should eq(3)
    end
 

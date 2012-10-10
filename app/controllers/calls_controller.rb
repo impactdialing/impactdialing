@@ -1,9 +1,9 @@
 class CallsController < ApplicationController
   skip_before_filter :verify_authenticity_token
   before_filter :parse_params
-  before_filter :find_and_update_call, :only => [:flow, :destroy]
+  before_filter :find_and_update_call, :only => [:flow, :destroy, :call_ended, :incoming]
   before_filter :find_and_update_answers_and_notes_and_scheduled_date, :only => [:submit_result, :submit_result_and_stop]
-  before_filter :find_call, :only => [:hangup, :call_ended]
+  before_filter :find_call, :only => [:hangup]
 
   
   def flow    
@@ -14,13 +14,30 @@ class CallsController < ApplicationController
     end
   end
   
-  def call_ended
-    if ["no-answer", "busy", "failed"].include?(@parsed_params['call_status']) || @parsed_params['answered_by'] == "machine"
-      RedisCall.store_call_details(@parsed_params)
-    end    
-    if @parsed_params['campaign_type'] != Campaign::Type::PREDICTIVE && @parsed_params['call_status'] != 'completed'
+  def incoming
+    if Campaign.predictive_campaign?(params['campaign_type']) && @call.answered_by_human? 
+      call_attempt = @call.call_attempt
+      call_attempt.connect_caller_to_lead
+    end
+    render xml: @call.run(params[:event])
+  end
+  
+  
+  def call_ended    
+    if @call.call_did_not_connect?
+      call_attempt = @call.call_attempt
+      RedisCall.push_to_not_answered_call_list(@parsed_params)
+      @call.enqueue_dial_flow(CampaignStatusJob, ["did_not_connect", call_attempt.campaign.id, call_attempt.id, nil])          
+    end            
+    
+    if @call.answered_by_machine?
+      RedisCall.push_to_end_by_machine_call_list(@call.attributes)
+    end
+    
+    if Campaign.preview_power_campaign?(params['campaign_type'])  && @parsed_params['call_status'] != 'completed'
       @call.call_attempt.redirect_caller
     end      
+    
     render xml:  Twilio::TwiML::Response.new { |r| r.Hangup }.text
   end
   
@@ -65,8 +82,7 @@ class CallsController < ApplicationController
   end
   
   def find_and_update_answers_and_notes_and_scheduled_date
-    find_call
-    
+    find_call    
     unless @call.nil?      
       @parsed_params["questions"]  = params[:question].try(:to_json) 
       @parsed_params["notes"] = params[:notes].try(:to_json)

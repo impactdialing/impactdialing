@@ -39,7 +39,6 @@ module TimeZoneHelper
    date.in_time_zone(time_zone)
   end
 
-
   private
 
     def first_caller_session_time(campaign, caller)
