@@ -166,11 +166,7 @@ class PhonesOnlyCallerSession < CallerSession
       
       
   end
-  
-  def available_for_call?
-    Campaign.preview_power_campaign?(campaign.type) ? state == "conference_started_phones_only" : state == "conference_started_phones_only_predictive"
-  end
-  
+    
   
   def skip_all_questions?
     digit == "999"

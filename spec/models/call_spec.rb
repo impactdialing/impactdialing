@@ -17,7 +17,7 @@ describe Call do
         @campaign =  Factory(:predictive, script: @script)
         @voter  = Factory(:voter, campaign: @campaign, caller_session: @caller_session)
         @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign)        
-        @caller_session = Factory(:webui_caller_session, caller: @caller, campaign: @campaign, voter_in_progress: @voter, attempt_in_progress: @call_attempt, state: "connected")
+        @caller_session = Factory(:webui_caller_session, caller: @caller, campaign: @campaign, voter_in_progress: @voter, attempt_in_progress: @call_attempt, on_call: true, available_for_call: false, state: "connected")
       end
 
       it "should move to the connected state" do
@@ -263,8 +263,7 @@ describe Call do
       @campaign =  Factory(:campaign, script: @script)
       @voter = Factory(:voter, campaign: @campaign)
       @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session)
-      @caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, attempt_in_progress: @call_attempt, state: "connected")
-      
+      @caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: false, campaign: @campaign, attempt_in_progress: @call_attempt, state: "connected")      
     end
     
     it "should return answered_by_human_and_caller_available?" do
@@ -289,7 +288,7 @@ describe Call do
     end
     
     it "should return false if caller session is not available" do
-      @caller_session.update_attributes(state: "conference_ended")
+      @caller_session.update_attributes(on_call: false)
       call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "in-progress")
       call.answered_by_human_and_caller_available?.should be_false
     end
@@ -301,7 +300,7 @@ describe Call do
     end
     
     it "should return true if caller session is not available" do
-      @caller_session.update_attributes(state: "conference_ended")
+      @caller_session.update_attributes(on_call: true, available_for_call: true)
       call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "in-progress")
       call.answered_by_human_and_caller_not_available?.should be_true
     end
