@@ -8,9 +8,8 @@ class CallerSession < ActiveRecord::Base
   belongs_to :caller
   belongs_to :campaign
 
-  scope :on_call, where("state not in (?)", ["conference_ended", "stopped"])
-  scope :available, where("state in (?)",["connected", "conference_started_phones_only_predictive", "conference_started_phones_only"])
-  
+  scope :on_call, :conditions => {:on_call => true}
+  scope :available, :conditions => {:available_for_call => true, :on_call => true}  
   scope :connected_to_voter, where('voter_in_progress is not null')
   scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
   scope :on_campaign, lambda{|campaign| where("campaign_id = #{campaign.id}") unless campaign.nil?}  
@@ -157,7 +156,7 @@ class CallerSession < ActiveRecord::Base
   
   
   def end_session
-    self.update_attributes(endtime: Time.now)
+    self.update_attributes(endtime: Time.now, on_call: false, available_for_call: false)
     RedisPredictiveCampaign.remove(campaign.id, campaign.type) if campaign.caller_sessions.on_call.size <= 1
     enqueue_dial_flow(CampaignStatusJob, ["caller_disconnected", campaign.id, nil, self.id])       
   end
@@ -258,10 +257,19 @@ class CallerSession < ActiveRecord::Base
    ((endtime - starttime)/60).ceil
    end
    
-   def start_conference    
+   def start_conference
+     self.update_attributes(on_call: true, available_for_call: true)
      RedisOnHoldCaller.add(campaign.id, self.id) if Campaign.predictive_campaign?(campaign.type)
      enqueue_dial_flow(CampaignStatusJob, ["on_hold", campaign.id, nil, self.id])       
    end
+
+  def assigned_to_lead?
+    self.on_call && !self.available_for_call
+  end
+
+  def on_call_states
+    ['']
+  end
 
   private
     

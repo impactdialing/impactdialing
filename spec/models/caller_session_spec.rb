@@ -3,22 +3,14 @@ require "spec_helper"
 describe CallerSession do
   include Rails.application.routes.url_helpers
 
-  it "lists active callers" do
-    call1 = Factory(:caller_session, :on_call=> true)
-    call2 = Factory(:caller_session, :on_call=> false)
-    call3 = Factory(:caller_session, :on_call=> true)
-    CallerSession.on_call.all.should  include(call1)
-    CallerSession.on_call.all.should  include(call3)
-    
-  end
 
 
   it "lists available caller sessions" do
-    caller_session1 = Factory(:caller_session, state: 'initial')
-    caller_session2 = Factory(:webui_caller_session, state: "connected")
-    caller_session3 = Factory(:webui_caller_session, state: "paused")
-    caller_session4 = Factory(:phones_only_caller_session, state: "conference_started_phones_only_predictive")
-    caller_session5 = Factory(:phones_only_caller_session, state: "conference_started_phones_only")
+    caller_session1 = Factory(:caller_session, on_call: true, available_for_call: false)
+    caller_session2 = Factory(:webui_caller_session, on_call: true, available_for_call: true)
+    caller_session3 = Factory(:webui_caller_session, on_call: true, available_for_call: false)
+    caller_session4 = Factory(:phones_only_caller_session, on_call: true, available_for_call: true)
+    caller_session5 = Factory(:phones_only_caller_session, on_call: true, available_for_call: true)
     
     CallerSession.available.should include(caller_session2, caller_session4, caller_session5) 
   end
