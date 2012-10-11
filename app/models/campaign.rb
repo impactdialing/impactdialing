@@ -254,7 +254,6 @@ class Campaign < ActiveRecord::Base
     wrapup = current_caller_sessions.select{|c| c.call_status == "Wrap up" }.size
     on_hold = current_caller_sessions.select{|c| c.call_status == "On hold" }.size
     on_call = current_caller_sessions.select{|c| c.call_status == "On call" }.size
-
     ringing_lines = call_attempts.with_status(CallAttempt::Status::RINGING).between(15.seconds.ago, Time.now).size
     num_remaining = all_voters.by_status('not called').count
     num_available = leads_available_now + num_remaining
