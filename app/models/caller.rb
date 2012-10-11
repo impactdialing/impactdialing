@@ -151,7 +151,6 @@ class Caller < ActiveRecord::Base
   
   def started_calling(session)
     RedisPredictiveCampaign.add(campaign.id, campaign.type)
-    # enqueue_dial_flow(CampaignStatusJob, ["caller_connected", campaign.id, nil, session.id])       
   end
   
   def calling_voter_preview_power(session, voter_id)

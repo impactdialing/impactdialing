@@ -59,5 +59,21 @@ class WebuiCallerSession < CallerSession
   def publish_sync(event, data)
     Pusher[session_key].trigger(event, data.merge!(:dialer => self.campaign.type))
   end
+  
+  def call_status
+    status = "On hold"
+    if state == 'connected'
+      if Campaign.predictive_campaign?(campaign.type) && !self.available_for_call
+        status = "On call"
+      elsif Campaign.preview_power_campaign?(campaign.type) && !attempt_in_progress.try(:connecttime).nil?
+        status = "On call"
+      end
+    elsif state == 'paused'
+       status = "Wrap up"
+    else
+      status = "On hold"
+    end
+    status
+  end
 
 end

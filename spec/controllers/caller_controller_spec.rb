@@ -30,7 +30,6 @@ describe CallerController do
       Caller.should_receive(:find).and_return(caller)
       caller.should_receive(:create_caller_session).and_return(caller_session)
       RedisPredictiveCampaign.should_receive(:add).with(caller.campaign_id, caller.campaign.type)
-      # caller.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["caller_connected", caller.campaign.id, nil, caller_session.id])       
       post :start_calling, caller_id: caller.id, session_key: caller_identity.session_key, CallSid: "abc"      
       response.body.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>Your account has insufficent funds</Say><Hangup/></Response>")
     end

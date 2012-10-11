@@ -10,6 +10,7 @@ class CallerSession < ActiveRecord::Base
 
   scope :on_call, :conditions => {:on_call => true}
   scope :available, :conditions => {:available_for_call => true, :on_call => true}  
+  scope :not_available, :conditions => {:available_for_call => false, :on_call => true}  
   scope :connected_to_voter, where('voter_in_progress is not null')
   scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
   scope :on_campaign, lambda{|campaign| where("campaign_id = #{campaign.id}") unless campaign.nil?}  
@@ -141,8 +142,7 @@ class CallerSession < ActiveRecord::Base
   
   def end_caller_session
     begin
-      end_session
-      wrapup_attempt_in_progress      
+      end_session     
     rescue ActiveRecord::StaleObjectError => exception
       Resque.enqueue(PhantomCallerJob, self.id)
     end      
@@ -158,13 +158,6 @@ class CallerSession < ActiveRecord::Base
   def end_session
     self.update_attributes(endtime: Time.now, on_call: false, available_for_call: false)
     RedisPredictiveCampaign.remove(campaign.id, campaign.type) if campaign.caller_sessions.on_call.size <= 1
-    # enqueue_dial_flow(CampaignStatusJob, ["caller_disconnected", campaign.id, nil, self.id])       
-  end
-  
-  def wrapup_attempt_in_progress
-    unless attempt_in_progress.nil?
-      enqueue_dial_flow(CampaignStatusJob, ["wrapped_up", campaign.id, attempt_in_progress.id, self.id])           
-    end  
   end
   
   
@@ -210,7 +203,6 @@ class CallerSession < ActiveRecord::Base
         v.conference(self.session_key, :startConferenceOnEnter => false, :endConferenceOnExit => false, :beep => false, :waitUrl => HOLD_MUSIC_URL, :waitMethod =>"GET", :muted => mute_type)
       end
     end.response
-    MonitorConference.join_conference(monitor_session, self.id, call_sid)
     response
   end
   
@@ -260,9 +252,8 @@ class CallerSession < ActiveRecord::Base
    def start_conference
      if Campaign.predictive_campaign?(campaign.type)
        self.update_attributes(on_call: true, available_for_call: true)
+       RedisOnHoldCaller.add(campaign.id, self.id)
      end
-     RedisOnHoldCaller.add(campaign.id, self.id) if Campaign.predictive_campaign?(campaign.type)
-     # enqueue_dial_flow(CampaignStatusJob, ["on_hold", campaign.id, nil, self.id])       
    end
 
   def assigned_to_lead?

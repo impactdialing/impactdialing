@@ -1,27 +1,43 @@
-Pusher.log = function(message) {
-    if (window.console && window.console.log) window.console.log(message);
+
+var Monitors = function(){
+	this.monitoring = false;
+	this.campaign_id = $("#campaign_id").val();
+	var self = this;
+	
+	(function live_poll_campaign_info(){
+	    $.ajax({ url: "/monitors/campaign_info?id="+self.campaign_id, success: function(data){
+		self.update_campaign_info(data)
+		setTimeout(live_poll_campaign_info, 5000)
+	    }, dataType: "json"});
+	})();
+	
+	(function live_poll_caller_info(){
+	    $.ajax({ url: "/monitors/callers_info?id="+self.campaign_id, success: function(data){
+		$("#caller_table").empty();
+		$("#caller_table").html(data);
+		setTimeout(live_poll_caller_info, 5000)
+	    }});
+	})();
+	
 };
 
-var Monitors = function(channel){
-	this.monitoring = false;
-	this.channel = channel;	
-	this.update_campaign_info();
-	this.add_caller_connected();
-	this.update_caller_info();
-	this.remove_caller();
-	this.bind_caller_actions();
-	this.call_status = {"Call in progress": "On call", "Call completed with success.": "Wrap up", "On hold": "On hold", "Ringing":"On hold" }
+
+Monitors.prototype.update_campaign_info = function(data){
+   $("#campaign_info").children('#callers_logged_in').text(data.callers_logged_in);			
+   $("#campaign_info").children('#on_call').text(data.on_call);			
+   $("#campaign_info").children('#wrap_up').text(data.wrap_up);
+   $("#campaign_info").children('#on_hold').text(data.on_hold);
+   $("#campaign_info").children('#ringing_lines').text(data.ringing_lines);						
+   $("#campaign_info").children('#numbers_available').text(data.available);						
+   $("#campaign_info").children('#numbers_remaining').text(data.remaining);						
 };
+
 
 
 Monitors.prototype.bind_caller_actions = function(){
   var self = this;	
   $( function() {
-	
-	$.each($('.timer'), function(){
-	      $(this).stopwatch('start');
-	  });
-	
+		
 	$('.break_in').live('click', function(){
 		self.start_monitoring_call(this, 'breakin')
     });
@@ -78,45 +94,9 @@ Monitors.prototype.update_caller_info = function(){
   });
 };
 
-Monitors.prototype.update_status_and_duration = function(caller_selector, status){
-  if ($($(caller_selector).find('.status')).html() != status) {
-    $($(caller_selector).find('.status')).html(status)
-	$($(caller_selector).find('.timer')).stopwatch('reset');
-  }	
-};
 
-Monitors.prototype.update_campaign_info = function(){
-  this.channel.bind('update_campaign_info', function(data){
-	Pusher.log(data);
-    $("#campaign_info").children('#callers_logged_in').text(data.callers_logged_in);			
-    $("#campaign_info").children('#on_call').text(data.on_call);			
-    $("#campaign_info").children('#wrap_up').text(data.wrapup);
-    $("#campaign_info").children('#on_hold').text(data.on_hold);
-    $("#campaign_info").children('#live_lines').text(data.live_lines);						
-    $("#campaign_info").children('#ringing_lines').text(data.ringing_lines);						
-    $("#campaign_info").children('#numbers_available').text(data.available);						
-    $("#campaign_info").children('#numbers_remaining').text(data.remaining);						
-   });	
-};
 
-Monitors.prototype.add_caller_connected = function(){
-  this.channel.bind('caller_connected', function(data){
-	Pusher.log(data);
-    if (!$.isEmptyObject(data)) {
-	  var caller_selector = 'tr#caller_'+data.caller_session;
-      var caller = ich.caller(data);
-	  $('#caller_table').children().append(caller);
-	  $($(caller_selector).find('.timer')).stopwatch('start');
-    }
-  });  
-}
 
-Monitors.prototype.remove_caller = function(){
-  this.channel.bind('caller_disconnected', function(data) {
-    var caller_selector = 'tr#caller_'+data.caller_session;
-    $(caller_selector).remove();
-  });  
-};
 
 Monitors.prototype.start_monitoring_call = function(element, action) {
   if($(element).parent().parent().attr("on_call") == "true"){
@@ -189,15 +169,6 @@ Monitors.prototype.kick_off = function(session){
 	
 };
 
-// Monitors.prototype.switch_caller = function(current_session_id, next_session_id, action, status){
-// 	$.ajax({
-//     url : "/client/monitors/stop",
-//     data : {session_id : current_session_id},
-//     type : "GET",
-//     success : function(response) {
-//       request_to_switch(next_session_id, action, status);
-//     }	
-// };
 
 Monitors.prototype.request_to_switch = function(next_session_id, action, status) {
   $.ajax({

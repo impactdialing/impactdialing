@@ -1,41 +1,24 @@
-<script id="campaign" type="text/html">
-  {{update_campaign_info}}
-    <tr id="campaign_info" class="campaign <%= cycle("odd", "even") %>" >
-       <td id="callers_logged_in">{{callers_logged_in}}</td>
-       <td id="on_call">{{on_call}}</td>
-       <td id="on_hold">{{on_hold}}</td>
-       <td id="wrap_up">{{wrap_up}}</td>
-       <td id="live_lines">{{live_lines}}</td>
-       <td id="ringing_lines">{{ringing_lines}}</td>
-       <td id="numbers_available">{{numbers_available}}</td>
-       <td id="numbers_remaining">{{numbers_remaining}}</td>
-    </tr>
-  {{/update_campaign_info}}
-</script>
-
 <h2><%= @campaign.name %></h2>
 <div class="table">
   <table id="campaign_table">
     <tr class="">
       <th>Callers logged in</th>
-      <th>On call</th>
-      <th>Wrap up</th>
-      <th>On hold</th>
-      <th>Live lines</th>
-      <th>Ringing lines</th>
-      <th>Numbers available</th>
+      <th>On Call</th>
+      <th>Wrap up</th>      
+      <th>On hold</th>            
+      <th>Ringing lines</th>      
+      <th>Numbers Available</th>
       <th>Numbers remaining</th>
     </tr>
 
     <tr id="campaign_info" class="campaign <%= cycle("odd", "even") %>">
-      <td id="callers_logged_in"><%= @result['callers_logged_in'] %></td>
-      <td id="on_call"><%= @result['on_call'] %></td>
-      <td id="wrap_up"><%= @result['wrap_up'] %></td>
-      <td id="on_hold"><%= @result['on_hold'] %></td>
-      <td id="live_lines"><%= @result['live_lines'] %></td>
-      <td id="ringing_lines"><%= @result['ringing_lines'] %></td>
-      <td id="numbers_available"><%= @result['available'] %></td>
-      <td id="numbers_remaining"><%= @result['remaining'] %></td>
+      <td id="callers_logged_in"><%= @campaign_result['callers_logged_in'] %></td>
+      <td id="on_call"><%= @campaign_result['on_call'] %></td>       
+      <td id="wrap_up"><%= @campaign_result['wrap_up'] %></td>       
+      <td id="on_hold"><%= @campaign_result['on_hold'] %></td>                 
+      <td id="ringing_lines"><%= @campaign_result['ringing_lines'] %></td>              
+      <td id="numbers_available"><%= @campaign_result['available'] %></td>
+      <td id="numbers_remaining"><%= @campaign_result['remaining'] %></td>
     </tr>
   </table>
 </div>
