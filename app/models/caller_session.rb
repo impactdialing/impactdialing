@@ -10,6 +10,7 @@ class CallerSession < ActiveRecord::Base
 
   scope :on_call, :conditions => {:on_call => true}
   scope :available, :conditions => {:available_for_call => true, :on_call => true}  
+  scope :not_available, :conditions => {:available_for_call => false, :on_call => true}  
   scope :connected_to_voter, where('voter_in_progress is not null')
   scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
   scope :on_campaign, lambda{|campaign| where("campaign_id = #{campaign.id}") unless campaign.nil?}  
@@ -202,7 +203,6 @@ class CallerSession < ActiveRecord::Base
         v.conference(self.session_key, :startConferenceOnEnter => false, :endConferenceOnExit => false, :beep => false, :waitUrl => HOLD_MUSIC_URL, :waitMethod =>"GET", :muted => mute_type)
       end
     end.response
-    MonitorConference.join_conference(monitor_session, self.id, call_sid)
     response
   end
   

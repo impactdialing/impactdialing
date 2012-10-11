@@ -282,6 +282,27 @@ describe Campaign do
     
     
   end
+  
+  describe "current status" do
+    it "should return campaign details" do
+      campaign = Factory(:campaign)
+      Factory(:phones_only_caller_session, on_call: false, available_for_call: false, campaign: campaign)
+      
+      Factory(:webui_caller_session, on_call: true, available_for_call: false, attempt_in_progress: Factory(:call_attempt, connecttime: Time.now), campaign: campaign, state: "paused")
+      Factory(:phones_only_caller_session, on_call: true, available_for_call: false, attempt_in_progress: Factory(:call_attempt, connecttime: Time.now), campaign: campaign, state: "voter_response")
+      Factory(:phones_only_caller_session, on_call: true, available_for_call: false, attempt_in_progress: Factory(:call_attempt, connecttime: Time.now), campaign: campaign, state: "wrapup_call")
+      
+      Factory(:webui_caller_session, on_call: true, available_for_call: true, attempt_in_progress: Factory(:call_attempt, campaign: campaign, status: CallAttempt::Status::RINGING, created_at: Time.now), campaign: campaign)      
+      Factory(:phones_only_caller_session, on_call: true, available_for_call: true, campaign: campaign)
+      Factory(:webui_caller_session, on_call: true, available_for_call: true, attempt_in_progress: Factory(:call_attempt, campaign: campaign, status: CallAttempt::Status::RINGING, created_at: Time.now), campaign: campaign)
+      Factory(:webui_caller_session, on_call: true, available_for_call: true, attempt_in_progress: Factory(:call_attempt), campaign: campaign, attempt_in_progress: Factory(:call_attempt, connecttime: Time.now))
+      Factory(:phones_only_caller_session, on_call: true, available_for_call: true, campaign: campaign, attempt_in_progress: Factory(:call_attempt, connecttime: Time.now))
+      
+      Factory(:webui_caller_session, on_call: true, available_for_call: true, attempt_in_progress: Factory(:call_attempt, connecttime: Time.now), campaign: campaign)
+      campaign.current_status.should eq ({callers_logged_in: 9, on_call: 3, wrap_up: 3, on_hold: 3, ringing_lines: 2, available: 0, remaining: 0})
+      
+    end
+  end
      
 end
 

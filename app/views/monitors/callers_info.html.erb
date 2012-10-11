@@ -1,0 +1,3 @@
+<% @callers_result.each do |caller_result| %>
+  <%= render :partial => 'caller' , locals: { caller_result: caller_result} %>      
+<% end %>

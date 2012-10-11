@@ -247,6 +247,31 @@ class Campaign < ActiveRecord::Base
   def sanitize_dials(dial_count)
     dial_count.nil? ? 0 : dial_count
   end
+  
+  def current_status
+    current_caller_sessions = caller_sessions.on_call.includes(:attempt_in_progress)
+    callers_logged_in = current_caller_sessions.size
+    wrapup_states = ["paused", "read_next_question", "voter_response", "wrapup_call"]
+    wrapup = current_caller_sessions.select{|x| wrapup_states.include?(x.state) }.size
+    on_hold = current_caller_sessions.select{|c| c.attempt_in_progress.nil? || c.attempt_in_progress.connecttime.nil? }.size
+    on_call = callers_logged_in - wrapup - on_hold
+
+    ringing_lines = call_attempts.with_status(CallAttempt::Status::RINGING).between(15.seconds.ago, Time.now).size
+    num_remaining = all_voters.by_status('not called').count
+    num_available = leads_available_now + num_remaining
+    {callers_logged_in: callers_logged_in, on_call: on_call, wrap_up: wrapup, on_hold: on_hold, ringing_lines: ringing_lines, available: num_available, remaining: num_remaining  }
+
+  end
+  
+  def current_callers_status
+    callers = []
+    current_caller_sessions = caller_sessions.on_call.includes(:caller)
+    current_caller_sessions.each do |cs|
+      callers << {id: cs.id, caller_id: cs.caller.id, name: cs.caller.identity_name, status: cs.call_status}
+    end
+    callers
+    
+  end
     
 
 
