@@ -254,7 +254,6 @@ class ClientController < ApplicationController
 
    def billing
      @balance=@user.account.current_balance
-     @trial=@user.account.trial?
      @has_billing_info = !Recurly::Account.find(@user.account.recurly_account_code).billing_info.nil?
    end
 

@@ -39,7 +39,7 @@ class Predictive < Campaign
     dials_made = call_attempts.between(10.minutes.ago, Time.now).size
     # if dials_made == 0 || !abandon_rate_acceptable?
     if dials_made == 0
-      num_to_call = caller_sessions.available.size - RedisCampaignCall.ringing_last_20_seconds(self.id)
+      num_to_call = caller_sessions.available.size - call_attempts.with_status(CallAttempt::Status::RINGING).between(15.seconds.ago, Time.now).size
     else
       num_to_call = number_of_simulated_voters_to_dial
     end
@@ -81,8 +81,8 @@ class Predictive < Campaign
   end
   
   def number_of_simulated_voters_to_dial
-    available_callers = caller_sessions.available.size + RedisCampaignCall.above_average_inprogress_calls_count(self.id, best_conversation_simulated) + RedisCampaignCall.above_average_wrapup_calls_count(self.id, best_wrapup_simulated)
-    dials_to_make = (best_dials_simulated * available_callers) - RedisCampaignCall.ringing_last_20_seconds(self.id)
+    available_callers = caller_sessions.available.size
+    dials_to_make = (best_dials_simulated * available_callers) - call_attempts.with_status(CallAttempt::Status::RINGING).between(15.seconds.ago, Time.now).size
     dials_to_make.to_i
   end
   
