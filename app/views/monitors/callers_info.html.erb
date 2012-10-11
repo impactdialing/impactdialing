@@ -1,0 +1,10 @@
+<tr class="table_header">
+  <th>Caller</th>
+	<th>Status</th>
+  <th></th>
+  <th></th>
+  <th></th>
+</tr>
+<% @callers_result.each do |caller_result| %>
+  <%= render :partial => 'caller' , locals: { caller_result: caller_result} %>      
+<% end %>

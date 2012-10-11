@@ -15,6 +15,9 @@ redis_config = YAML.load_file(RAILS_ROOT + "/config/redis.yml")
 call_flow_uri = URI.parse(redis_config[rails_env]['call_flow'])
 $redis_call_flow_connection = Redis.new(:host => call_flow_uri.host, :port => call_flow_uri.port)      
 
+call_end_uri = URI.parse(redis_config[rails_env]['call_end'])
+$redis_call_end_connection = Redis.new(:host => call_end_uri.host, :port => call_end_uri.port)      
+
 
 dialer_uri = URI.parse(redis_config[rails_env]['dialer'])
 $redis_dialer_connection = Redis.new(:host => dialer_uri.host, :port => dialer_uri.port)

@@ -338,7 +338,6 @@ describe PhonesOnlyCallerSession do
 
       it "should set caller state to conference_started_phones_only" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_to_dial", digit: "*", voter_in_progress: @voter)
-        caller_session.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["on_hold", @campaign.id, nil, caller_session.id])
         caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, @voter.id])
         caller_session.start_conf!
         caller_session.state.should eq('conference_started_phones_only')
@@ -346,7 +345,6 @@ describe PhonesOnlyCallerSession do
 
       it "should set attempt_in_progress to nil" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_to_dial", digit: "*", voter_in_progress: @voter)
-        caller_session.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["on_hold", @campaign.id, nil, caller_session.id])
         caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, @voter.id])
         caller_session.start_conf!
         caller_session.attempt_in_progress.should be_nil
@@ -356,7 +354,6 @@ describe PhonesOnlyCallerSession do
       it "render correct twiml" do
         question = Factory(:question, script: @script)
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*", voter_in_progress: @voter)
-        caller_session.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["on_hold", @campaign.id, nil, caller_session.id])        
         caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, @voter.id])
         @voter.should_receive(:question_not_answered).and_return(question)
         caller_session.start_conf!
@@ -397,7 +394,6 @@ describe PhonesOnlyCallerSession do
 
       it "should set caller state to conference_started_phones_only" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*", voter_in_progress: @voter)
-        caller_session.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["on_hold", @campaign.id, nil, caller_session.id])
         caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, @voter.id])
         caller_session.start_conf!
         caller_session.state.should eq('conference_started_phones_only')
@@ -405,7 +401,6 @@ describe PhonesOnlyCallerSession do
 
       it "should set attempt_in_progress to nil" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*", voter_in_progress: @voter)
-        caller_session.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["on_hold", @campaign.id, nil, caller_session.id])
         caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, @voter.id])
         caller_session.start_conf!
         caller_session.attempt_in_progress.should be_nil
@@ -414,7 +409,6 @@ describe PhonesOnlyCallerSession do
       it "render correct twiml" do
         question = Factory(:question, script: @script)
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*", voter_in_progress: @voter)
-        caller_session.should_receive(:enqueue_dial_flow).with(CampaignStatusJob, ["on_hold", @campaign.id, nil, caller_session.id])
         caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, @voter.id])
         @voter.should_receive(:question_not_answered).and_return(question)
         caller_session.start_conf!

@@ -26,12 +26,11 @@ class CallsController < ApplicationController
   def call_ended    
     if @call.call_did_not_connect?
       call_attempt = @call.call_attempt
-      RedisCall.push_to_not_answered_call_list(@parsed_params)
-      @call.enqueue_dial_flow(CampaignStatusJob, ["did_not_connect", call_attempt.campaign.id, call_attempt.id, nil])          
+      RedisCall.push_to_not_answered_call_list(@call.id, @call.call_status)
     end            
     
     if @call.answered_by_machine?
-      RedisCall.push_to_end_by_machine_call_list(@call.attributes)
+      RedisCall.push_to_end_by_machine_call_list(@call.id)
     end
     
     if Campaign.preview_power_campaign?(params['campaign_type'])  && @parsed_params['call_status'] != 'completed'

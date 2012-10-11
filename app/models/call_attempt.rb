@@ -115,7 +115,7 @@ class CallAttempt < ActiveRecord::Base
   end
   
   def connect_call
-    update_attributes(connecttime: Time.now)
+    self.update_attributes(connecttime: Time.now)
   end
   
   def not_wrapped_up?
