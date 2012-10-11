@@ -251,10 +251,9 @@ class Campaign < ActiveRecord::Base
   def current_status
     current_caller_sessions = caller_sessions.on_call.includes(:attempt_in_progress)
     callers_logged_in = current_caller_sessions.size
-    wrapup_states = ["paused", "read_next_question", "voter_response", "wrapup_call"]
-    wrapup = current_caller_sessions.select{|x| wrapup_states.include?(x.state) }.size
-    on_hold = current_caller_sessions.select{|c| c.attempt_in_progress.nil? || c.attempt_in_progress.connecttime.nil? }.size
-    on_call = callers_logged_in - wrapup - on_hold
+    wrapup = current_caller_sessions.select{|c| c.call_status == "Wrap up" }.size
+    on_hold = current_caller_sessions.select{|c| c.call_status == "On hold" }.size
+    on_call = current_caller_sessions.select{|c| c.call_status == "On call" }.size
 
     ringing_lines = call_attempts.with_status(CallAttempt::Status::RINGING).between(15.seconds.ago, Time.now).size
     num_remaining = all_voters.by_status('not called').count
