@@ -226,5 +226,15 @@ class PhonesOnlyCallerSession < CallerSession
   def preview_campaign?
     campaign.type != Campaign::Type::Preview
   end
+  
+  def call_status
+    if state == 'conference_started_phones_only_predictive' || state == 'conference_started_phones_only' && !attempt_in_progress.try(:connecttime).nil?
+      "On call"
+    elsif state == 'read_next_question' || state == 'voter_response' || state == 'wrapup_call'
+       "Wrap up"
+    else
+      "On hold"
+    end
+  end  
 
 end
