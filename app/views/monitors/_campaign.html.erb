@@ -1,6 +1,6 @@
 <h2><%= @campaign.name %></h2>
 <div class="table">
-  <table id="campaign_table" width="100%" border="0" cellspacing="0" cellpadding="0">
+  <table id="campaign_table">
     <tr class="">
       <th>Callers logged in</th>
       <th>On Call</th>
@@ -10,7 +10,7 @@
       <th>Numbers Available</th>
       <th>Numbers remaining</th>
     </tr>
-    
+
     <tr id="campaign_info" class="campaign <%= cycle("odd", "even") %>">
       <td id="callers_logged_in"><%= @campaign_result['callers_logged_in'] %></td>
       <td id="on_call"><%= @campaign_result['on_call'] %></td>       
