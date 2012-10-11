@@ -252,8 +252,8 @@ class CallerSession < ActiveRecord::Base
    def start_conference
      if Campaign.predictive_campaign?(campaign.type)
        self.update_attributes(on_call: true, available_for_call: true)
+       RedisOnHoldCaller.add(campaign.id, self.id)
      end
-     RedisOnHoldCaller.add(campaign.id, self.id) if Campaign.predictive_campaign?(campaign.type)
    end
 
   def assigned_to_lead?
