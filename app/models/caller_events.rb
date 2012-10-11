@@ -13,10 +13,8 @@ module CallerEvents
     
     def publish_voter_connected(call_id)            
       call = Call.find(call_id)
-      unless caller.is_phones_only? 
-        event_hash = campaign.voter_connected_event(call)        
-        Pusher[session_key].trigger!(event_hash[:event], event_hash[:data].merge!(:dialer => campaign.type))
-      end
+      event_hash = campaign.voter_connected_event(call)
+      Pusher[session_key].trigger!(event_hash[:event], event_hash[:data].merge!(:dialer => campaign.type))
     end    
     
     

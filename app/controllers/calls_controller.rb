@@ -27,7 +27,6 @@ class CallsController < ApplicationController
     if @call.call_did_not_connect?
       call_attempt = @call.call_attempt
       RedisCall.push_to_not_answered_call_list(@call.id, @call.call_status)
-      # @call.enqueue_dial_flow(CampaignStatusJob, ["did_not_connect", call_attempt.campaign.id, call_attempt.id, nil])          
     end            
     
     if @call.answered_by_machine?

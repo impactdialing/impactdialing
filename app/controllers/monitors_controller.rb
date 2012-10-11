@@ -2,22 +2,38 @@ class MonitorsController < ClientController
   skip_before_filter :check_login, :only => [:start, :stop, :switch_mode, :deactivate_session]
 
   def index
-    @campaigns = account.campaigns.manual.active
-    @active_campaigns = account.campaigns.manual.active.with_running_caller_sessions
+    Octopus.using(:read_slave1) do
+      @campaigns = Account.find(account).campaigns.manual.active
+      @active_campaigns = account.campaigns.manual.active.with_running_caller_sessions
+    end
   end
 
   def show
-    @campaigns = account.campaigns.with_running_caller_sessions
-    @all_campaigns = account.campaigns.active
-    @campaign = Campaign.find(params[:id])
-    @monitor_session = MonitorSession.add_session(@campaign.id)
-    num_remaining = @campaign.all_voters.by_status('not called').count
-    num_available = @campaign.leads_available_now + num_remaining
-    @result = RedisCaller.stats(@campaign.id).merge(RedisCampaignCall.stats(@campaign.id)).merge({available: num_available, remaining: num_remaining})
-    twilio_capability = Twilio::Util::Capability.new(TWILIO_ACCOUNT, TWILIO_AUTH)
-    twilio_capability.allow_client_outgoing(MONITOR_TWILIO_APP_SID)
-    @token = twilio_capability.generate
+    Octopus.using(:read_slave1) do
+      @campaigns = Account.find(account).campaigns.with_running_caller_sessions
+      @all_campaigns = Account.find(account).campaigns.active
+      @campaign = Campaign.find(params[:id])    
+      @campaign_result = @campaign.current_status
+      @callers_result = @campaign.current_callers_status
+      puts @callers_result
+      twilio_capability = Twilio::Util::Capability.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+      twilio_capability.allow_client_outgoing(MONITOR_TWILIO_APP_SID)
+      @token = twilio_capability.generate
+    end            
   end
+  
+  
+  def campaign_info
+    @campaign = Campaign.find(params[:id])      
+    render json: @campaign.current_status
+  end
+  
+  def callers_info
+    @campaign = Campaign.find(params[:id])      
+    @callers_result = @campaign.current_callers_status    
+    render layout: false
+  end
+
 
   def start
     caller_session = CallerSession.find(params[:session_id])

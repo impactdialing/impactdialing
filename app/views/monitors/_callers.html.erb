@@ -1,38 +1,16 @@
-<script id="caller" type="text/html">
-  <tr id="caller_{{caller_session}}" class="caller <%= cycle("odd", "even") %> " session_id={{caller_session}} caller_id={{id}}>
-      <td class="caller_name">{{email}}</td>
-      <td class="status">On hold</td>
-      <td>
-        <div class="timer">
-          <div class="display"><span class="hr">00</span>:<span class="min">00</span>:<span class="sec">00</span></div>
-        <div>
-      </td>
-      <td>
-        <a class ="action secondary eaves_drop" href="#" action="eavesdrop" session_id={{caller_session}}>Eavesdrop</a>
-      </td>
-      <td>
-        <a class ="action secondary break_in" href="#" action="breakin" session_id={{caller_session}}>Break in</a>
-      </td>
-      <td>
-        <a class ="action secondary kick_off" href="#" action="kickoff" session_id={{caller_session}}>Kick off</a>
-      </td>
-  </tr>
-</script>
-
 <h2>Callers</h2>
 <div class="box">
   <div class="table">
     <table>
       <tr class="table_header">
         <th>Caller</th>
-        <th>Status</th>
-        <th>Time in status</th>
+				<th>Status</th>
         <th></th>
         <th></th>
         <th></th>
       </tr>
-      <% @campaign.caller_sessions.on_call.each do |caller_session| %>
-        <%= render :partial => 'caller' , locals: { caller_session: caller_session} %>
+      <% @callers_result.each do |caller_result| %>
+        <%= render :partial => 'caller' , locals: { caller_result: caller_result} %>      
       <% end %>
     </table>
     <a class ="action primary stop_monitor" href="#" style="display:none">Stop monitoring</a>

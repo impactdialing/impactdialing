@@ -175,7 +175,6 @@ class PhonesOnlyCallerSession < CallerSession
   def wrapup_call_attempt
     unless attempt_in_progress.nil?
       RedisCall.push_to_wrapped_up_call_list(attempt_in_progress.id, CallerSession::CallerType::PHONE);  
-      # enqueue_dial_flow(CampaignStatusJob, ["wrapped_up", campaign.id, attempt_in_progress.id, self.id])  
     end
   end
     
@@ -227,5 +226,21 @@ class PhonesOnlyCallerSession < CallerSession
   def preview_campaign?
     campaign.type != Campaign::Type::Preview
   end
+  
+  def call_status
+    status = "On hold"
+    if state == 'conference_started_phones_only_predictive' || state == 'conference_started_phones_only'
+      if Campaign.predictive_campaign?(campaign.type) && !self.available_for_call
+        status = "On call"
+      elsif Campaign.preview_power_campaign?(campaign.type) && !attempt_in_progress.try(:connecttime).nil?
+        status = "On call"
+      end
+    elsif state == 'read_next_question' || state == 'voter_response' || state == 'wrapup_call'
+       status = "Wrap up"
+    else
+      status = "On hold"
+    end
+    status
+  end  
 
 end
