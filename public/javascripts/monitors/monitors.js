@@ -13,8 +13,8 @@ var Monitors = function(){
 	
 	(function live_poll_caller_info(){
 	    $.ajax({ url: "/monitors/callers_info?id="+self.campaign_id, success: function(data){
-		$("#caller_info").empty();
-		$("#caller_info").html(data);
+		$("#caller_table").empty();
+		$("#caller_table").html(data);
 		setTimeout(live_poll_caller_info, 5000)
 	    }});
 	})();

@@ -1,18 +1,18 @@
-<tr id="<%= "caller_"+ caller_result['id'].to_s %>" class="caller <%= cycle("odd", "even") %> " older="true" session_id="<%= caller_result['id'] %>" caller_id="<%= caller_result['caller_id'] %> ">  
-  <td class="caller_name"> <%= caller_result["name"] %> </td>
+<tr id="<%= "caller_"+ caller_result[:id].to_s %>" class="caller <%= cycle("odd", "even") %> " older="true" session_id="<%= caller_result[:id] %>" caller_id="<%= caller_result[:id] %> ">  
+  <td class="caller_name"> <%= caller_result[:name] %> </td>
   
-	<td class="status"><%= caller_result["status"] %></td>
+	<td class="status"><%= caller_result[:status] %></td>
 		
   <td>
-    <a class ="action secondary eaves_drop" href="#" action="eavesdrop" session_id="<%= caller_result['id'] %>">Eavesdrop</a>
+    <a class ="action secondary eaves_drop" href="#" action="eavesdrop" session_id="<%= caller_result[:id] %>">Eavesdrop</a>
   </td>
   
   <td>
-    <a class ="action secondary break_in" href="#" action="breakin" session_id="<%= caller_result['id'] %>">Break in</a>
+    <a class ="action secondary break_in" href="#" action="breakin" session_id="<%= caller_result[:id] %>">Break in</a>
   </td>
   
   <td>
-    <a class ="action secondary kick_off" href="#"  session_id="<%= caller_result['id'] %>">Kick off</a>
+    <a class ="action secondary kick_off" href="#"  session_id="<%= caller_result[:id] %>">Kick off</a>
   </td>
       
 </tr>
