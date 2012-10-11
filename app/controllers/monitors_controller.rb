@@ -18,6 +18,11 @@ class MonitorsController < ClientController
     twilio_capability.allow_client_outgoing(MONITOR_TWILIO_APP_SID)
     @token = twilio_capability.generate
   end
+  
+  def campaign_info
+    num_remaining = @campaign.all_voters.by_status('not called').count
+    num_available = @campaign.leads_available_now + num_remaining
+  end
 
   def start
     caller_session = CallerSession.find(params[:session_id])

@@ -65,8 +65,7 @@ class PersistCalls
         call_attempts << call_attempt
         voters << voter
       rescue Exception
-      end
-      
+      end      
     end    
   end
   
