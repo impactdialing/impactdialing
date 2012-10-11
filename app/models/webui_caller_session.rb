@@ -65,7 +65,7 @@ class WebuiCallerSession < CallerSession
     if state == 'connected'
       if Campaign.predictive_campaign?(campaign.type) && !self.available_for_call
         status = "On call"
-      elsif !attempt_in_progress.try(:connecttime).nil?
+      elsif Campaign.preview_power_campaign?(campaign.type) && !attempt_in_progress.try(:connecttime).nil?
         status = "On call"
       end
     elsif state == 'paused'
