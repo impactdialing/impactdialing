@@ -34,7 +34,9 @@ class Call < ActiveRecord::Base
         
         before(:always) {  
           connect_call;
-          enqueue_call_flow(VoterConnectedPusherJob, [caller_session.id, self.id])
+          if !Caller.where(caller_session_id: call_attempt.caller_session_id).select(:is_phones_only).is_phones_only?
+            enqueue_call_flow(VoterConnectedPusherJob, [caller_session.id, self.id])
+          end
           # enqueue_dial_flow(CampaignStatusJob, ["connected", campaign.id, call_attempt.id, caller_session.id])          
         }
         
