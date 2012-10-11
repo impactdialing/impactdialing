@@ -61,17 +61,19 @@ class WebuiCallerSession < CallerSession
   end
   
   def call_status
+    status = "On hold"
     if state == 'connected'
       if Campaign.predictive_campaign?(campaign.type) && !self.available_for_call
-        "On call"
+        status = "On call"
       elsif !attempt_in_progress.try(:connecttime).nil?
-        "On call"
+        status = "On call"
       end
     elsif state == 'paused'
-       "Wrap up"
+       status = "Wrap up"
     else
-      "On hold"
+      status = "On hold"
     end
+    status
   end
 
 end

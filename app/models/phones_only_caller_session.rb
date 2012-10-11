@@ -228,17 +228,19 @@ class PhonesOnlyCallerSession < CallerSession
   end
   
   def call_status
+    status = "On hold"
     if state == 'conference_started_phones_only_predictive' || state == 'conference_started_phones_only'
       if Campaign.predictive_campaign?(campaign.type) && !self.available_for_call
-        "On call"
+        status = "On call"
       elsif !attempt_in_progress.try(:connecttime).nil?
-        "On call"
+        status = "On call"
       end
     elsif state == 'read_next_question' || state == 'voter_response' || state == 'wrapup_call'
-       "Wrap up"
+       status = "Wrap up"
     else
-      "On hold"
+      status = "On hold"
     end
+    status
   end  
 
 end
