@@ -19,7 +19,7 @@ class CalculateDialsJob
          Resque.redis.del("dial_calculate:#{campaign.id}")
          return
        end
-       voters_to_dial = campaign.choose_voters_to_dial(num_to_call).collect {|voter| voter.id}
+       voters_to_dial = campaign.choose_voters_to_dial(num_to_call)
        if voters_to_dial.size <=10
          Dial.perform(campaign_id, voters_to_dial)
        else
