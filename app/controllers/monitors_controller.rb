@@ -15,6 +15,7 @@ class MonitorsController < ClientController
       @campaign = Campaign.find(params[:id])    
       @campaign_result = @campaign.current_status
       @callers_result = @campaign.current_callers_status
+      puts @callers_result
       twilio_capability = Twilio::Util::Capability.new(TWILIO_ACCOUNT, TWILIO_AUTH)
       twilio_capability.allow_client_outgoing(MONITOR_TWILIO_APP_SID)
       @token = twilio_capability.generate
