@@ -58,12 +58,6 @@ class Account < ActiveRecord::Base
     end
   end
 
-
-
-  def trial?
-    recurly_subscription_uuid.nil?
-  end
-
   def callers_in_progress
     CallerSession.where("campaign_id in (?) and on_call=1", self.campaigns.map {|c| c.id})
   end
@@ -102,7 +96,7 @@ class Account < ActiveRecord::Base
   end
 
   def subscription_allows_caller?
-    if self.trial? || per_minute_subscription? || manual_subscription?
+    if per_minute_subscription? || manual_subscription?
       return true
     elsif per_caller_subscription? && self.callers_in_progress.length <= self.subscription_count
       return true
@@ -180,15 +174,6 @@ class Account < ActiveRecord::Base
 
   def is_manual?
     subscription_name=="Manual"
-  end
-
-  def active_subscription
-    # default to per minute if not defined
-    if subscription_name!="Per Minute" && subscription_active
-      return subscription_name
-    else
-      return "Per Minute"
-    end
   end
 
   def new_billing_account
