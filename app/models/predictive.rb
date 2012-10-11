@@ -51,7 +51,9 @@ class Predictive < Campaign
     # scheduled_voters = all_voters.scheduled.limit(num_voters)
     # num_voters_to_call = (num_voters - (priority_voters.size + scheduled_voters.size))
     limit_voters = num_voters <= 0 ? 0 : num_voters
-    voters =  all_voters.last_call_attempt_before_recycle_rate(recycle_rate).to_be_dialed.without(account.blocked_numbers.for_campaign(self).map(&:number)).limit(limit_voters).pluck(:id)
+    blocked = account.blocked_numbers.for_campaign(self).pluck(:number)
+    voters =  all_voters.last_call_attempt_before_recycle_rate(recycle_rate).
+      to_be_dialed.without(blocked).limit(limit_voters).pluck(:id)
     set_voter_status_to_read_for_dial!(voters)
     check_campaign_out_of_numbers(voters)
     voters
@@ -63,7 +65,7 @@ class Predictive < Campaign
   
   def check_campaign_out_of_numbers(voters)
     if voters.blank?
-      caller_sessions.available.each { |caller_session| enqueue_call_flow(CampaignOutOfNumbersJob, [caller_session.id]) }
+      caller_sessions.available.pluck(:id).each { |id| enqueue_call_flow(CampaignOutOfNumbersJob, [id]) }
     end     
   end
   
