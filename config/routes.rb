@@ -58,6 +58,7 @@ ImpactDialing::Application.routes.draw do
 
   match '/policies', :to => 'home#policies'
   match '/client/policies', :to => 'client#policies', :as => :client_policies
+  match '/client/billing_success', to: 'client#billing_success', as: :client_billing_success
 
   namespace 'api' do
     resources :leads
