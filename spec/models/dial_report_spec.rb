@@ -109,7 +109,7 @@ describe DialReport do
         to_date = Time.now.in_time_zone(ActiveSupport::TimeZone.new("UTC")).end_of_day.to_s
         dial_report = DialReport.new
         dial_report.compute_campaign_report(@campaign, from_date, to_date)
-        dial_report.leads_not_available_for_retry.should eq(2)
+        dial_report.leads_not_available_for_retry.should eq(1)
       end
 
     end
