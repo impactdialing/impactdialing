@@ -20,6 +20,7 @@ class PersistCalls
     ]
     call_attempts = []    
     wrapped_up_calls(call_attempts, voters)
+    puts call_attempts
     CallAttempt.import call_attempts, :on_duplicate_key_update=>[:wrapup_time, :voter_response_processed]
 
   end
@@ -87,13 +88,13 @@ class PersistCalls
     end    
   end
   
-  def self.wrapped_up_calls(call_attempts, voters)    
+  def self.wrapped_up_calls(result, voters)    
     wrapped_up_calls = multipop(RedisCall.wrapped_up_call_list ,100).sort_by { |a| a['id'] }
     call_attempts = CallAttempt.where(id: wrapped_up_calls.map  { |c| c['id'] }).order(:id)
     call_attempts.zip(wrapped_up_calls).each do |call_attempt, wrapped_up_call|
       begin
         call_attempt.wrapup_now(wrapped_up_call['current_time'], wrapped_up_call['caller_type'])
-        call_attempts << call_attempt
+        result << call_attempt
       rescue
       end
     end    
@@ -103,6 +104,7 @@ class PersistCalls
     result = []
     num.times do |x|
       element = list.shift
+      
       result << JSON.parse(element) unless element.nil?
     end
     result

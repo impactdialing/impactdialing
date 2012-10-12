@@ -1,5 +1,4 @@
 octopus:
-  verify_connection: true
   environments:
     - heroku_staging
     - heroku
