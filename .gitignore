@@ -19,6 +19,5 @@ spec/fixtures/test_tmp/
 .bundle
 /config/application .yml
 dump.rdb
-dump.rdb
 *.swp
 .pivotalrc

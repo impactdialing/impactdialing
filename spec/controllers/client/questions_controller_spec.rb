@@ -23,7 +23,7 @@ describe Client::QuestionsController do
       active_script = Factory(:script, :account => account, :active => true)
       question = Factory(:question, text: "abc", script_order: 1, script: active_script)
       get :show, script_id: active_script.id, id: question.id,  :api_key=> 'abc123', :format => "json"
-      response.body.should eq("{\"question\":{\"external_id_field\":null,\"id\":#{question.id},\"question_order\":null,\"script_id\":#{active_script.id},\"script_order\":1,\"text\":\"abc\"}}")
+      response.body.should eq("{\"question\":{\"external_id_field\":null,\"id\":#{question.id},\"script_id\":#{active_script.id},\"script_order\":1,\"text\":\"abc\"}}")
     end
 
     it "should 404 if script not found" do
