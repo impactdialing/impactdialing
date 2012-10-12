@@ -4,7 +4,7 @@
     <p><%= "This caller has not called this campaign." %></p>
   <% else %>
     <%= form_tag(call_details_client_caller_path(:id => params[:id]), :method => :get) do %>
-      <%= select_tag 'campaign_id', options_from_collection_for_select(@campaigns, 'id', 'name', @campaign.id) %>
+      <%= select_tag 'campaign_id', options_for_select(@campaigns_data, selected: @campaign.id) %>
       <%= render 'shared/switch_campaign'%>
       <%= render 'shared/answer_call_details'%>
       <%= render 'shared/transfer_call_details'%>
