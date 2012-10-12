@@ -130,10 +130,10 @@ class PhonesOnlyCallerSession < CallerSession
         
         response do |xml_builder, the_call|
           question = RedisQuestion.get_question_to_read(campaign.script.id, question_number)
-          xml_builder.Gather(timeout: 60, finishOnKey: "*", action: flow_caller_url(caller, session_id: id, question_id: question['id'], event: "submit_response", host: Settings.twilio_callback_host, port: Settings.twilio_callback_port), question_number: question_number+1, method:  "POST") do
-            xml_builder.Say question['text']
+          xml_builder.Gather(timeout: 60, finishOnKey: "*", action: flow_caller_url(caller, session_id: id, question_id: question['id'], question_number: question_number, event: "submit_response", host: Settings.twilio_callback_host, port: Settings.twilio_callback_port), method:  "POST") do
+            xml_builder.Say question['question_text']
             RedisPossibleResponse.possible_responses(question['id']).each do |response|
-              xml_builder.Say "press #{response['keypad']} for #{response['value']}" unless (response.value == "[No response]")
+              xml_builder.Say "press #{response['keypad']} for #{response['value']}" unless (response['value'] == "[No response]")
             end
             xml_builder.Say I18n.t(:submit_results)
           end
@@ -145,8 +145,7 @@ class PhonesOnlyCallerSession < CallerSession
         event :next_question, :to => :read_next_question, :if => :more_questions_to_be_answered? 
         event :next_question, :to => :wrapup_call
         before(:always) {
-          question = Question.find_by_id(question_id);          
-          voter_in_progress.answer(question, digit, self) if voter_in_progress && question
+          RedisPhonesOnlyAnswer.push_to_list(voter_in_progress.id, self.id, digit, question_id) if voter_in_progress
           }
           
         response do |xml_builder, the_call|
@@ -179,13 +178,10 @@ class PhonesOnlyCallerSession < CallerSession
     end
   end
     
-  def unanswered_question
-    voter_in_progress.question_not_answered
-  end
   
   
   def more_questions_to_be_answered?
-    RedisQuestion.more_questions_to_be_answered(campaign.script.id, question_number)
+    RedisQuestion.more_questions_to_be_answered?(campaign.script.id, question_number)
   end
   
   def call_answered?
