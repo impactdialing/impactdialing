@@ -2,6 +2,7 @@
 var Monitors = function(){
 	this.monitoring = false;
 	this.campaign_id = $("#campaign_id").val();
+	this.bind_caller_actions();
 	var self = this;
 	
 	(function live_poll_campaign_info(){

@@ -140,6 +140,7 @@ class CallerSession < ActiveRecord::Base
       
   end
   
+  
   def end_caller_session
     begin
       end_session     
