@@ -4,7 +4,7 @@ class PersistPhonesOnlyAnswers
     include Resque::Plugins::UniqueJob
     @queue = :persist_jobs
     
-    def perform
+    def self.perform
       answers = []
       answers_list = multipop(RedisPhonesOnlyAnswer.phones_only_answers_list, 100).sort_by{|a| a['voter_id']}
       answers_list.each do |answer_list|
