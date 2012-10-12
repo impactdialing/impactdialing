@@ -345,8 +345,8 @@ describe Voter do
 
       it "captures a voter response" do
         Factory(:possible_response, :question => question, :keypad => 1, :value => "response1")
-        voter.answer(question, "1", session).should == voter.answers.first
-        voter.answers.size.should == 1
+        answer = voter.answer(question, "1", session)
+        answer.question_id.should eq(question.id)
       end
 
       it "rejects an incorrect a voter response" do
@@ -358,9 +358,9 @@ describe Voter do
       it "recaptures a voter response" do
         voter.answer(question, "1", session)
         Factory(:possible_response, :question => question, :keypad => 1, :value => "response1")
-        Factory(:possible_response, :question => question, :keypad => 2, :value => "response2")
-        voter.answer(question, "2", session).should == voter.answers.first
-        voter.answers.size.should == 1
+        Factory(:possible_response, :question => question, :keypad => 2, :value => "response2")                
+        answer = voter.answer(question, "2", session)
+        answer.question_id.should eq(question.id)
       end
 
     end
