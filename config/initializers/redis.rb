@@ -26,6 +26,14 @@ on_hold_uri = URI.parse(redis_config[rails_env]['on_hold_callers'])
 $redis_on_hold_connection = Redis.new(:host => on_hold_uri.host, :port => on_hold_uri.port)
 
 
+question_pr_uri = URI.parse(redis_config[rails_env]['question_pr'])
+$redis_question_pr_uri_connection = Redis.new(:host => question_pr_uri.host, :port => question_pr_uri.port)
+
+
+phones_only_uri = URI.parse(redis_config[rails_env]['phones_only_ans'])
+$redis_phones_ans_uri_connection = Redis.new(:host => phones_only_uri.host, :port => phones_only_uri.port)
+
+
 
 
 
