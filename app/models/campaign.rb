@@ -56,7 +56,7 @@ class Campaign < ActiveRecord::Base
   validates :start_time, :presence => true
   validates :end_time, :presence => true
   validate :set_caller_id_error_msg
-  validate :campaign_type_changed
+  validate :campaign_type_changed, on: :update
   validate :script_changed_called
   validate :no_caller_assigned_on_deletion
   cattr_reader :per_page
