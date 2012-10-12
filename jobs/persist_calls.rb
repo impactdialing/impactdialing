@@ -102,6 +102,7 @@ class PersistCalls
     result = []
     num.times do |x|
       element = list.shift
+      
       result << JSON.parse(element) unless element.nil?
     end
     result
