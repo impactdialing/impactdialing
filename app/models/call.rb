@@ -31,9 +31,7 @@ class Call < ActiveRecord::Base
         
         before(:always) {  
           connect_call;
-          if !call_attempt.caller_session.caller.is_phones_only?
-            enqueue_call_flow(VoterConnectedPusherJob, [caller_session.id, self.id])
-          end
+          enqueue_call_flow(VoterConnectedPusherJob, [caller_session.id, self.id])
         }
         
         response do |xml_builder, the_call|
