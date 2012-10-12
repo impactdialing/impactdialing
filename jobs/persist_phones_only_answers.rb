@@ -1,6 +1,6 @@
 require 'resque-loner'
 
-class PersistCalls
+class PersistPhonesOnlyAnswers
     include Resque::Plugins::UniqueJob
     @queue = :persist_jobs
     

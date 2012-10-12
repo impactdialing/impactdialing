@@ -138,7 +138,7 @@ class CallerController < ApplicationController
       @caller_session.try(:update_attributes, {digit: params[:Digits], question_id: params[:question_id], question_number: params[:question_number]})
     rescue ActiveRecord::StaleObjectError
       @caller_session = CallerSession.find_by_id(params[:session_id]) || CallerSession.find_by_sid(params[:CallSid])
-      @caller_session.try(:update_attributes, {digit: params[:Digits], question_id: params[:question_id]})
+      @caller_session.try(:update_attributes, {digit: params[:Digits], question_id: params[:question_id], question_number: params[:question_number]})
     end
     @caller_session
   end
