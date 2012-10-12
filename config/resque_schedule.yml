@@ -35,4 +35,11 @@ persist_calls:
   queue: persist_jobs
   args: 
   description: "This job persists  call attempts and voter data"
+
+persist_phones_only_answers:
+  cron: "* * * * *"
+  class: PersistPhonesOnlyAnswers
+  queue: persist_jobs
+  args: 
+  description: "This job persists  phones only answers data"
   
