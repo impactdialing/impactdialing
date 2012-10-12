@@ -13,7 +13,7 @@ class PersistPhonesOnlyAnswers
         question = Question.find(answer_list['question_id'])
         answers << voter.answer(question, answer_list['digit'], caller_session)        
       end
-      Answers.import answers
+      Answer.import answers
       
     end
     
