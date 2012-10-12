@@ -8,6 +8,7 @@ class PersistPhonesOnlyAnswers
       answers = []
       answers_list = multipop(RedisPhonesOnlyAnswer.phones_only_answers_list, 100).sort_by{|a| a['voter_id']}
       answers_list.each do |answer_list|
+        voter = Voter.find(answer_list['voter_id'])
         caller_session = CallerSession.find(answer_list['caller_session_id'])
         question = Question.find(answer_list['question_id'])
         answers << voter.answer(question, answer_list['digit'], caller_session)        
