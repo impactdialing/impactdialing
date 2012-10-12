@@ -48,6 +48,9 @@ heroku:
   dialer: redis://10.70.11.202:6379
   on_hold_callers: redis://10.4.149.38:6379
   call_end: redis://10.4.133.109:6379
+  question_pr: redis://10.70.81.254:6379
+  phones_only_ans: redis://10.4.77.203:6379
+  
       
   
 
