@@ -25,7 +25,7 @@ class TwilioLib
   end
 
   def make_call(campaign, voter, attempt)
-    params = {'From'=> campaign.caller_id, "To"=> voter.Phone, 'FallbackUrl' => TWILIO_ERROR, "Url"=>incoming_call_url(attempt.call, host: "impactdialingincomingcalls.herokuapp.com", port: Settings.twilio_callback_port, event: "incoming_call", campaign_type: campaign.type),
+    params = {'From'=> campaign.caller_id, "To"=> voter.Phone, 'FallbackUrl' => TWILIO_ERROR, "Url"=>incoming_call_url(attempt.call, host: Settings.incoming_callback_host, port: Settings.twilio_callback_port, event: "incoming_call", campaign_type: campaign.type),
       'StatusCallback' => call_ended_call_url(attempt.call, host: Settings.call_end_callback_host, port:  Settings.twilio_callback_port, event: "call_ended", campaign_type: campaign.type),
       'Timeout' => "15"}
     params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect
@@ -44,7 +44,7 @@ class TwilioLib
 
 
   def make_call_em(campaign, voter, attempt)
-    params = {'From'=> campaign.caller_id, "To"=> voter.Phone, 'FallbackUrl' => TWILIO_ERROR, "Url"=>incoming_call_url(attempt.call, host: "impactdialingincomingcalls.herokuapp.com", port: Settings.twilio_callback_port, event: "incoming_call", campaign_type: campaign.type),
+    params = {'From'=> campaign.caller_id, "To"=> voter.Phone, 'FallbackUrl' => TWILIO_ERROR, "Url"=>incoming_call_url(attempt.call, host: Settings.incoming_callback_host, port: Settings.twilio_callback_port, event: "incoming_call", campaign_type: campaign.type),
       'StatusCallback' => call_ended_call_url(attempt.call, host: Settings.call_end_callback_host, port:  Settings.twilio_callback_port, event: "call_ended", campaign_type: campaign.type),
       'Timeout' => "15"}
     params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect
