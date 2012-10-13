@@ -67,7 +67,7 @@ describe Client::CallersController do
         another_campaign = Factory(:campaign, :script => script, :active => true, :account => @user.account)
         get :call_details, :id => caller.id, :campaign_id => campaign.id
         response.should be_ok
-        assigns(:campaigns).should == [campaign]
+        assigns(:campaigns_data).should == [[campaign.name, campaign.id]]
       end
 
       it "defaults to the first campaign if campaign_id is not given" do
