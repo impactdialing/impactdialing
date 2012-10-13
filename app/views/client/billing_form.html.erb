@@ -38,7 +38,7 @@ function createForm(plan){
     , email: '<%= @user.email %>'
   },
   planCode: plan,
-  successURL: 'http://<%= Settings.twilio_callback_host %><%= Settings.twilio_callback_port=="80" ? "" : ":#{Settings.twilio_callback_port}/client/billing_success" %>',
+  successURL: '<%= client_billing_success_url %>',
   signature: sig,
   afterInject: function(){
     if (plan=='per-minute'){

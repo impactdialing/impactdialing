@@ -2,7 +2,7 @@ module Client
   class CallersController < ClientController
     include TimeZoneHelper
     skip_before_filter :check_login, :only => [:reassign_to_campaign]
-    before_filter :full_access, :except => [:reassign_to_campaign]
+    before_filter :full_access, :except => [:reassign_to_campaign, :usage, :call_details]
     before_filter :load_and_verify_caller, :except => [:index, :new, :create, :reassign_to_campaign, :usage, :call_details, :type_name, :deleted]
     before_filter :load_campaigns, :except => [:index, :destroy, :reassign_to_campaign, :usage, :call_details, :type_name, :deleted]
 
@@ -62,8 +62,9 @@ module Client
     def usage
       Octopus.using(:read_slave1) do
         @caller = Caller.find(params[:id])
-        @campaigns = Account.find(account).campaigns.for_caller(@caller)
-        @campaign = @campaigns.find_by_id(params[:campaign_id])
+        campaigns = account.campaigns.for_caller(@caller)
+        @campaigns_data = Account.connection.execute(campaigns.select([:name, 'campaigns.id']).uniq.to_sql).to_a
+        @campaign = campaigns.find_by_id(params[:campaign_id])
         @from_date, @to_date = set_date_range_callers(@campaign, @caller, params[:from_date], params[:to_date])
         @caller_usage = CallerUsage.new(@caller, @campaign, @from_date, @to_date)
       end
@@ -71,8 +72,9 @@ module Client
 
     def call_details
       @caller = Caller.find(params[:id])
-      @campaigns = Account.find(account).campaigns.for_caller(@caller)
-      @campaign = @campaigns.find_by_id(params[:campaign_id]) || @caller.caller_sessions.last.try(:campaign) || @caller.campaign
+      campaigns = account.campaigns.for_caller(@caller)
+      @campaigns_data = Account.connection.execute(campaigns.select([:name, 'campaigns.id']).uniq.to_sql).to_a
+      @campaign = campaigns.find_by_id(params[:campaign_id]) || @caller.caller_sessions.last.try(:campaign) || @caller.campaign
       @from_date, @to_date = set_date_range_callers(@campaign, @caller, params[:from_date], params[:to_date])
       @answered_call_stats = @caller.answered_call_stats(@from_date, @to_date, @campaign)
       @questions_and_responses = @campaign.try(:questions_and_responses) || {}
