@@ -104,7 +104,10 @@ class PersistCalls
     result = []
     num.times do |x|
       element = connection.rpop list_name
-      result << JSON.parse(element) unless element.nil?
+      begin
+        result << JSON.parse(element) unless element.nil?
+      rescue Exception
+      end
     end
     result
   end
