@@ -26,7 +26,7 @@ class PersistCalls
   end
   
   def self.abandoned_calls(call_attempts, voters)
-    abandoned_calls = multipop($redis_call_flow_connection, "abandoned_call_list", 100).sort_by{|a| a['id']}
+    abandoned_calls = multipop($redis_call_flow_connection, "abandoned_call_list", 1000).sort_by{|a| a['id']}
     calls = Call.where(id: abandoned_calls.map { |c| c['id'] }).
       includes(call_attempt: :voter).order(:id)
     calls.zip(abandoned_calls).each do |call, abandoned_call|
@@ -40,7 +40,7 @@ class PersistCalls
   end
   
   def self.unanswered_calls(call_attempts, voters)
-    unanswered_calls = multipop($redis_call_end_connection, "not_answered_call_list", 300).sort_by { |a| a['id'] }
+    unanswered_calls = multipop($redis_call_end_connection, "not_answered_call_list", 3000).sort_by { |a| a['id'] }
     calls = Call.where(id: unanswered_calls.map { |c| c['id'] }).
       includes(call_attempt: :voter).order(:id)
     calls.zip(unanswered_calls).each do |call, unanswered_call|
@@ -54,7 +54,7 @@ class PersistCalls
   end
   
   def self.machine_calls(call_attempts, voters)
-    unanswered_calls = multipop($redis_call_flow_connection, "end_answered_by_machine_call_list", 100).sort_by { |a| a['id'] }
+    unanswered_calls = multipop($redis_call_flow_connection, "end_answered_by_machine_call_list", 1000).sort_by { |a| a['id'] }
     calls = Call.where(id: unanswered_calls.map { |c| c['id'] }).
       includes(call_attempt: :voter).order(:id)
     calls.zip(unanswered_calls).each do |call, unanswered_call|
@@ -72,7 +72,7 @@ class PersistCalls
   end
   
   def self.disconnected_calls(call_attempts, voters)
-    disconnected_calls = multipop($redis_call_flow_connection, "disconnected_call_list" ,100).sort_by { |a| a['id'] }
+    disconnected_calls = multipop($redis_call_flow_connection, "disconnected_call_list" ,1000).sort_by { |a| a['id'] }
     calls = Call.where(id: disconnected_calls.map { |c| c['id'] }).
       includes(call_attempt: :voter).order(:id)
     calls.zip(disconnected_calls).each do |call, disconnected_call|
@@ -89,7 +89,7 @@ class PersistCalls
   end
   
   def self.wrapped_up_calls(result, voters)    
-    wrapped_up_calls = multipop($redis_call_flow_connection, "wrapped_up_call_list" ,100).sort_by { |a| a['id'] }
+    wrapped_up_calls = multipop($redis_call_flow_connection, "wrapped_up_call_list" ,1000).sort_by { |a| a['id'] }
     call_attempts = CallAttempt.where(id: wrapped_up_calls.map  { |c| c['id'] }).order(:id)
     call_attempts.zip(wrapped_up_calls).each do |call_attempt, wrapped_up_call|
       begin
