@@ -38,9 +38,9 @@ class AlertJob
      unless caller_sessions_on_hold_high.blank?
        message = caller_sessions_on_hold_high.map do |caller_session_id|
          caller_session = CallerSession.find(caller_session_id)
-         caller = caller_session.caller.identity_name
+         caller = caller_session.caller
          campaign = caller.campaign.name
-         "#{caller_session_id} (#{caller} on campaign #{campaign})"
+         "#{caller_session_id} (#{caller.identity_name} on campaign #{campaign})"
        end
        email_all("Callers on hold for long", message.join(" , ").to_s)
      end
