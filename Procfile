@@ -19,7 +19,8 @@ debit_worker: rake environment resque:work QUEUE=debit_worker
 call_flow: bundle exec sidekiq -c 8 -q call_flow
 persist_worker: rake environment resque:work QUEUE=persist_jobs
 
-twilio_stats: rake environment resque:work QUEUE=twilio_stats
+twilio_stats_session: rake environment resque:work QUEUE=twilio_stats_session
+twilio_stats_attempt: rake environment resque:work QUEUE=twilio_stats_attempt
 
 
 
