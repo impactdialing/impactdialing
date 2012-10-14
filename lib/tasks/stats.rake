@@ -2,7 +2,7 @@ desc "Update twilio call data"
 
 task :update_twilio_stats => :environment do
   
-  CallAttempt.where("tPrice is NULL and (tStatus is NULL or tStatus = 'completed') and sid is not null").find_in_batches(:batch_size => 1000) do |attempts|
+  CallAttempt.where("tPrice is NULL and (tStatus is NULL or tStatus = 'completed') and sid is not null").find_in_batches(:batch_size => 2000) do |attempts|
     call_attempts = []
     twillio_lib = TwilioLib.new
     attempts.each do |attempt| 
@@ -16,7 +16,7 @@ task :update_twilio_stats => :environment do
     transfer_attempts.each { |transfer_attempt| TwilioLib.new.update_twilio_stats_by_model transfer_attempt }
   end
   
-  CallerSession.where("tPrice is NULL and (tStatus is NULL or tStatus = 'completed')").find_in_batches(:batch_size => 100) do |sessions|
+  CallerSession.where("tPrice is NULL and (tStatus is NULL or tStatus = 'completed')").find_in_batches(:batch_size => 1000) do |sessions|
     caller_sessions = []
     twillio_lib = TwilioLib.new
     sessions.each do |session| 
