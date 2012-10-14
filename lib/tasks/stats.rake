@@ -1,8 +1,14 @@
 desc "Update twilio call data" 
 
 task :update_twilio_stats => :environment do
+  
   CallAttempt.where("tPrice is NULL and (tStatus is NULL or tStatus = 'completed') and sid is not null").find_in_batches(:batch_size => 1000) do |attempts|
-    attempts.each { |attempt| TwilioLib.new.update_twilio_stats_by_model attempt }
+    call_attempts = []
+    attempts.each do |attempt| 
+      call_attempts << TwilioLib.new.update_twilio_stats_by_model attempt 
+    end
+    CallAttempt.import call_attempts, :on_duplicate_key_update=>[:tCallSegmentSid, :tAccountSid,
+                                      :tCalled, :tCaller, :tPhoneNumberSid, :tStatus, :tStartTime, :tEndTime, :tDuration, :tPrice, :tFlags]
   end
   
   TransferAttempt.where("tPrice is NULL and (tStatus is NULL or tStatus = 'completed')").find_in_batches(:batch_size => 100) do |transfer_attempts|
@@ -10,7 +16,12 @@ task :update_twilio_stats => :environment do
   end
   
   CallerSession.where("tPrice is NULL and (tStatus is NULL or tStatus = 'completed')").find_in_batches(:batch_size => 100) do |sessions|
-    sessions.each { |session| TwilioLib.new.update_twilio_stats_by_model session }
+    caller_sessions = []
+    sessions.each do |session| 
+      caller_sessions << TwilioLib.new.update_twilio_stats_by_model session 
+    end
+    CallerSession.import caller_sessions, :on_duplicate_key_update=>[:tCallSegmentSid, :tAccountSid,
+                                      :tCalled, :tCaller, :tPhoneNumberSid, :tStatus, :tStartTime, :tEndTime, :tDuration, :tPrice, :tFlags]
   end
 end
 
