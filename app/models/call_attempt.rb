@@ -121,7 +121,7 @@ class CallAttempt < ActiveRecord::Base
   
   def connect_call
     self.update_attributes(connecttime: Time.now)
-    RedisStartTime.set_state_changed_time(caller_session.id)
+    RedisStatus.set_state_changed_time(campaign.id, "On call", caller_session.id)
   end
   
   def not_wrapped_up?
