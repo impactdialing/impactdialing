@@ -299,7 +299,7 @@ describe Campaign do
       Factory(:phones_only_caller_session, on_call: true, available_for_call: false, campaign: campaign, attempt_in_progress: Factory(:call_attempt, connecttime: Time.now), state: "conference_started_phones_only_predictive")
       
       Factory(:webui_caller_session, on_call: true, available_for_call: true, attempt_in_progress: Factory(:call_attempt, connecttime: Time.now), campaign: campaign)
-      campaign.current_status.should eq ({callers_logged_in: 9, on_call: 2, wrap_up: 3, on_hold: 4, ringing_lines: 2, available: 0, remaining: 0})
+      campaign.current_status.should eq ({callers_logged_in: 9, on_call: 2, wrap_up: 3, on_hold: 4, ringing_lines: 2, available: 0})
       
     end
   end

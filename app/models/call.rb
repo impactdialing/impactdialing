@@ -88,6 +88,7 @@ class Call < ActiveRecord::Base
         before(:always) { 
           unless caller_session.nil?
             RedisCall.push_to_disconnected_call_list(self.id, self.recording_duration, self.recording_duration, caller_session.caller.id);
+            RedisStartTime.set_state_changed_time(caller_session.id)
           end
        }       
         after(:success) { 
@@ -106,6 +107,7 @@ class Call < ActiveRecord::Base
         before(:always) { 
         RedisCall.push_to_wrapped_up_call_list(call_attempt.id, CallerSession::CallerType::TWILIO_CLIENT);
         call_attempt.redirect_caller
+        RedisStartTime.set_state_changed_time(caller_session.id)
          }
       end
             

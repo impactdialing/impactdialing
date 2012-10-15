@@ -8,7 +8,6 @@
       <th>On hold</th>            
       <th>Ringing lines</th>      
       <th>Numbers Available</th>
-      <th>Numbers remaining</th>
     </tr>
 
     <tr id="campaign_info" class="campaign <%= cycle("odd", "even") %>">
@@ -18,7 +17,6 @@
       <td id="on_hold"><%= @campaign_result['on_hold'] %></td>                 
       <td id="ringing_lines"><%= @campaign_result['ringing_lines'] %></td>              
       <td id="numbers_available"><%= @campaign_result['available'] %></td>
-      <td id="numbers_remaining"><%= @campaign_result['remaining'] %></td>
     </tr>
   </table>
 </div>
