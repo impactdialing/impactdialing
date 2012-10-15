@@ -109,6 +109,13 @@ class TwilioLib
     Rails.logger.info response.body
     response.body
   end
+  
+  def update_twilio_stats_by_model_em model_instance
+    return if model_instance.sid.blank?
+    t = TwilioLib.new(TWILIO_ACCOUNT,TWILIO_AUTH)
+    EventMachine::HttpRequest.new("https://#{@server}#{@root}Calls/#{model_instance.sid}").aget :head => {'authorization' => [@http_user, @http_password]},:body => params
+  end
+  
 
   def update_twilio_stats_by_model model_instance
     return if model_instance.sid.blank?
