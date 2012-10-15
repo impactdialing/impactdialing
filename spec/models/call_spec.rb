@@ -175,6 +175,7 @@ describe Call do
       it "should change status to disconnected" do
        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'hungup')
        RedisCall.should_receive(:push_to_disconnected_call_list).with(call.id, call.recording_duration, call.recording_url, @caller.id)
+       RedisStartTime.should_receive(:set_state_changed_time).with(@caller_session.id)
        @call_attempt.should_receive(:enqueue_call_flow).with(CallerPusherJob, [@caller_session.id, "publish_voter_disconnected"])       
        call.disconnect!
        call.state.should eq("disconnected")
@@ -183,6 +184,7 @@ describe Call do
       it "should hangup twiml" do
        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'hungup')
        RedisCall.should_receive(:push_to_disconnected_call_list).with(call.id, call.recording_duration, call.recording_url, @caller.id)
+       RedisStartTime.should_receive(:set_state_changed_time).with(@caller_session.id)
        @call_attempt.should_receive(:enqueue_call_flow).with(CallerPusherJob, [@caller_session.id, "publish_voter_disconnected"])       
        call.disconnect!
        call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
@@ -206,6 +208,7 @@ describe Call do
         call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected', all_states: "")
         RedisCall.should_receive(:push_to_wrapped_up_call_list).with(@call_attempt.id, CallerSession::CallerType::TWILIO_CLIENT);
         @call_attempt.should_receive(:redirect_caller)
+        RedisStartTime.should_receive(:set_state_changed_time).with(@caller_session.id)
         call.submit_result!
         call.state.should eq("wrapup_and_continue")
       end
