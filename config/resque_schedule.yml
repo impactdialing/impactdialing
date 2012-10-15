@@ -50,7 +50,7 @@ update_twilio_stats_attempt:
   args: 
   description: "This job update twilio stats call attempts"
 
-update_twilio_stats_attempt:
+update_twilio_stats_session:
   cron: "*/1 * * * *"
   class: UpdateTwilioStatsCallerSession
   queue: twilio_stats_session
