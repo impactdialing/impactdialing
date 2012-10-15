@@ -6,6 +6,8 @@ class RedisStartTime
   
   def self.time_in_state(caller_session_id)
     time = $redis_dialer_connection.get "caller_session:#{caller_session_id}:start_time"
+    puts "start_time"
+    puts time
     time_spent = Time.now - Time.parse(time || Time.now.to_s)    
     seconds_fraction_to_time(time_spent)
   end
