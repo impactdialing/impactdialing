@@ -177,7 +177,7 @@ class PhonesOnlyCallerSession < CallerSession
   end
   
   def wrapup_call_attempt
-    RedisStartTime.set_state_changed_time(self.id)
+    RedisStatus.set_state_changed_time(campaign.id, "On hold", self.id)
     unless attempt_in_progress.nil?
       RedisCall.push_to_wrapped_up_call_list(attempt_in_progress.id, CallerSession::CallerType::PHONE);  
     end

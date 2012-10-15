@@ -159,6 +159,7 @@ class CallerSession < ActiveRecord::Base
   def end_session
     self.update_attributes(endtime: Time.now, on_call: false, available_for_call: false)
     RedisPredictiveCampaign.remove(campaign.id, campaign.type) if campaign.caller_sessions.on_call.size <= 1
+    RedisStatus.delete_state(campaign.id, self.id)
   end
   
   

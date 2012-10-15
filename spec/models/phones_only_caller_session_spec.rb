@@ -616,7 +616,7 @@ describe PhonesOnlyCallerSession do
         call_attempt = Factory(:call_attempt, voter: @voter)
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "voter_response", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt)
         caller_session.should_receive(:more_questions_to_be_answered?).and_return(false)
-        RedisStartTime.should_receive(:set_state_changed_time).with(caller_session.id)
+        RedisStatus.should_receive(:set_state_changed_time).with(@campaign.id, "On hold",caller_session.id)
         caller_session.next_question!
         caller_session.state.should eq('wrapup_call')
       end
