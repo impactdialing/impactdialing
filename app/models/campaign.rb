@@ -264,10 +264,9 @@ class Campaign < ActiveRecord::Base
     callers = []
     current_caller_sessions = caller_sessions.on_call.includes(:caller)
     current_caller_sessions.each do |cs|
-      callers << {id: cs.id, caller_id: cs.caller.id, name: cs.caller.identity_name, status: cs.call_status, time_in_status: Time.now - cs.updated_at}
+      callers << {id: cs.id, caller_id: cs.caller.id, name: cs.caller.identity_name, status: cs.call_status, time_in_status: RedisStartTime.time_in_state(cs.id)}
     end
-    callers
-    
+    callers    
   end
     
 

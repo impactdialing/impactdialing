@@ -78,7 +78,7 @@ class CallerSession < ActiveRecord::Base
       end 
       
       
-      state all do
+      state all - [:initial] do
         event :end_conf, :to => :conference_ended
       end
       
