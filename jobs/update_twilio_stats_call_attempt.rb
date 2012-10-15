@@ -6,7 +6,7 @@ class UpdateTwilioStatsCallAttempt
   def self.perform
     call_attempts = []
     twillio_lib = TwilioLib.new    
-    CallAttempt.where("status in (?) and tPrice is NULL and (tStatus is NULL or tStatus = 'completed') and sid is not null", ['Message delivered']).limit(2000).each do |attempt|
+    CallAttempt.where("status in (?) and tPrice is NULL and (tStatus is NULL or tStatus = 'completed') and sid is not null", ['Hangup or answering machine']).limit(2000).each do |attempt|
 
       call_attempts << twillio_lib.update_twilio_stats_by_model(attempt)
     end
