@@ -181,13 +181,14 @@ class Campaign < ActiveRecord::Base
 
   def answers_result(from_date, to_date)
     result = Hash.new
-    question_ids = Answer.all(:select=>"distinct question_id", :conditions=>"campaign_id = #{self.id}")
-    answer_count = Answer.select("possible_response_id").where("campaign_id = ?", self.id).within(from_date, to_date).group("possible_response_id").count
+    question_ids = Answer.where(campaign_id: self.id).uniq.pluck(:question_id)
+    answer_count = Answer.select("possible_response_id").from('answers use index (index_answers_on_campaign_created_at_possible_response)').
+      where("campaign_id = ?", self.id).within(from_date, to_date).group("possible_response_id").count
     total_answers = Answer.where("campaign_id = ?",self.id).within(from_date, to_date).group("question_id").count
-    questions = Question.where("id in (?)",question_ids.collect{|q| q.question_id})
+    questions = Question.where(id: question_ids).includes(:possible_responses)
     questions.each do |question|
       result[question.text] = question.possible_responses.collect { |possible_response| possible_response.stats(answer_count, total_answers) }
-      result[question.text] << {answer: "[No response]", number: 0, percentage:  0} unless question.possible_responses.find_by_value("[No response]").present?
+      result[question.text] << {answer: "[No response]", number: 0, percentage:  0} unless question.possible_responses.select { |x| x.value == "[No response]"}.any?
     end
     result
   end
