@@ -19,8 +19,8 @@ call_end_uri = URI.parse(redis_config[rails_env]['call_end'])
 $redis_call_end_connection = Redis.new(:host => call_end_uri.host, :port => call_end_uri.port)      
 
 
-dialer_uri = URI.parse(redis_config[rails_env]['dialer'])
-$redis_dialer_connection = Redis.new(:host => dialer_uri.host, :port => dialer_uri.port)
+monitor_uri = URI.parse(redis_config[rails_env]['monitor'])
+$redis_dialer_connection = Redis.new(:host => monitor_uri.host, :port => monitor_uri.port)
 
 on_hold_uri = URI.parse(redis_config[rails_env]['on_hold_callers'])
 $redis_on_hold_connection = Redis.new(:host => on_hold_uri.host, :port => on_hold_uri.port)
