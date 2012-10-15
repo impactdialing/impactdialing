@@ -100,8 +100,10 @@ class PersistCalls
   end
   
   def self.multipop(connection, list_name, num)
+    num_of_elements = connection.llen list_name
+    num_to_pop = num_of_elements < num ? num_of_elements : num
     result = []
-    num.times do |x|
+    num_to_pop.times do |x|
       element = connection.rpop list_name
       begin
         result << JSON.parse(element) unless element.nil?
