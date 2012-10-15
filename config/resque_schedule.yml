@@ -45,7 +45,7 @@ persist_phones_only_answers:
 
 update_twilio_stats_attempt:
   cron: "*/1 * * * *"
-  class: UpdateTwilioStatsCallAttempt
+  class: UpdateStatsEm
   queue: twilio_stats_attempt
   args: 
   description: "This job update twilio stats call attempts"
