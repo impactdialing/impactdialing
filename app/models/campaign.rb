@@ -257,15 +257,14 @@ class Campaign < ActiveRecord::Base
     ringing_lines = call_attempts.with_status(CallAttempt::Status::RINGING).between(15.seconds.ago, Time.now).size
     num_remaining = all_voters.by_status('not called').count
     num_available = leads_available_now + num_remaining
-    {callers_logged_in: callers_logged_in, on_call: on_call, wrap_up: wrapup, on_hold: on_hold, ringing_lines: ringing_lines, available: num_available, remaining: num_remaining  }
-
+    {callers_logged_in: callers_logged_in, on_call: on_call, wrap_up: wrapup, on_hold: on_hold, ringing_lines: ringing_lines, available: num_available  }
   end
   
   def current_callers_status
     callers = []
     current_caller_sessions = caller_sessions.on_call.includes(:caller)
     current_caller_sessions.each do |cs|
-      callers << {id: cs.id, caller_id: cs.caller.id, name: cs.caller.identity_name, status: cs.call_status}
+      callers << {id: cs.id, caller_id: cs.caller.id, name: cs.caller.identity_name, status: cs.call_status, time_in_status: Time.now - cs.updated_at}
     end
     callers
     

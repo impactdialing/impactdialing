@@ -144,10 +144,11 @@ class PhonesOnlyCallerSession < CallerSession
       state :voter_response do
         event :next_question, :to => :read_next_question, :if => :more_questions_to_be_answered? 
         event :next_question, :to => :wrapup_call
+        
         before(:always) {
           RedisPhonesOnlyAnswer.push_to_list(voter_in_progress.id, self.id, digit, question_id) if voter_in_progress
           }
-          
+                    
         response do |xml_builder, the_call|
           xml_builder.Redirect(flow_caller_url(self.caller, event: 'next_question', :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :session => id, question_number: question_number+1))          
         end        
@@ -173,6 +174,7 @@ class PhonesOnlyCallerSession < CallerSession
   end
   
   def wrapup_call_attempt
+    RedisStartTime.set_state_changed_time(self.id)
     unless attempt_in_progress.nil?
       RedisCall.push_to_wrapped_up_call_list(attempt_in_progress.id, CallerSession::CallerType::PHONE);  
     end
