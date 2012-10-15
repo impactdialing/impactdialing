@@ -12,7 +12,7 @@ class MonitorsController < ClientController
     Octopus.using(:read_slave1) do
       @campaigns = Account.find(account).campaigns.with_running_caller_sessions
       @all_campaigns = Account.find(account).campaigns.active
-      @campaign = Campaign.find(params[:id])    
+      @campaign = Account.find(account).campaigns.find(params[:id])    
       @campaign_result = @campaign.current_status
       @callers_result = @campaign.current_callers_status
       puts @callers_result
@@ -24,13 +24,17 @@ class MonitorsController < ClientController
   
   
   def campaign_info
-    @campaign = Campaign.find(params[:id])      
+    Octopus.using(:read_slave1) do
+      @campaign = Account.find(account).campaigns.find(params[:id])
+    end      
     render json: @campaign.current_status
   end
   
   def callers_info
-    @campaign = Campaign.find(params[:id])      
-    @callers_result = @campaign.current_callers_status    
+    Octopus.using(:read_slave1) do
+      @campaign = Account.find(account).campaigns.find(params[:id])      
+      @callers_result = @campaign.current_callers_status    
+    end
     render layout: false
   end
 
