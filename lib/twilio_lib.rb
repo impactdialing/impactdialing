@@ -114,7 +114,7 @@ class TwilioLib
     return if model_instance.sid.blank?
     t = TwilioLib.new(TWILIO_ACCOUNT,TWILIO_AUTH)
     response = t.call("GET", "Calls/" + model_instance.sid, {})
-    call = twilio_xml_parse(response, model_instance)
+    twilio_xml_parse(response, model_instance)
   end
 
   def twilio_xml_parse(response,model_instance)
@@ -134,7 +134,7 @@ class TwilioLib
     model_instance.tDuration = call_response['Duration']
     model_instance.tPrice = call_response['Price']
     model_instance.tFlags = call_response['Direction']
-    model_instance.save
+    model_instance
   end
 
   def twilio_status_lookup(code)

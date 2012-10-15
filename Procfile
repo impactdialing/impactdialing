@@ -17,11 +17,11 @@ answered_worker: rake environment TERM_CHILD=1 RESQUE_TERM_TIMEOUT=10 resque:wor
 debit_worker: rake environment resque:work QUEUE=debit_worker
 
 call_flow: bundle exec sidekiq -c 8 -q call_flow
-dial_flow: bundle exec sidekiq -c 20 -q dial_flow
 persist_worker: rake environment resque:work QUEUE=persist_jobs
 
-monitor_caller_update: bundle exec sidekiq -c 20 -q monitor_caller_update
-monitor_campaign_update: bundle exec sidekiq -c 20 -q monitor_campaign_update
+twilio_stats_session: rake environment resque:work QUEUE=twilio_stats_session
+twilio_stats_attempt: rake environment resque:work QUEUE=twilio_stats_attempt
+
 
 
 clock: rake environment resque:scheduler
