@@ -88,7 +88,7 @@ class Call < ActiveRecord::Base
         before(:always) { 
           unless caller_session.nil?
             RedisCall.push_to_disconnected_call_list(self.id, self.recording_duration, self.recording_duration, caller_session.caller.id);
-            RedisStatus.set_state_changed_time(campaign.id, "Wrap up", caller_session.id)
+            # RedisStatus.set_state_changed_time(campaign.id, "Wrap up", caller_session.id)
           end
        }       
         after(:success) { 
