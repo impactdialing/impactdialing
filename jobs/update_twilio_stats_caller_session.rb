@@ -17,7 +17,7 @@ class UpdateTwilioStatsCallerSession
     caller_sessions = []
     twillio_lib = TwilioLib.new
 
-    PhonesOnlyCallerSession.where("tPrice is NULL and (tStatus is NULL or tStatus = 'completed')").limit(5300).each do |session|
+    PhonesOnlyCallerSession.where("tPrice is NULL and (tStatus is NULL or tStatus = 'completed')").limit(1000).each do |session|
         caller_sessions << twillio_lib.update_twilio_stats_by_model(session)
     end
     PhonesOnlyCallerSession.import caller_sessions, :on_duplicate_key_update=>[:tCallSegmentSid, :tAccountSid,
