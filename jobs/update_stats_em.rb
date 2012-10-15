@@ -11,9 +11,9 @@ class UpdateStatsEm
   def self.perform
     results = []
     twillio_lib = TwilioLib.new    
-    call_attempts = CallAttempt.where("status in (?) and tPrice is NULL and (tStatus is NULL or tStatus = 'completed') and sid is not null", ['Call abandoned', 'Call completed with success.', 'Message delivered', 'Hangup or answering machine']).limit(10)
+    call_attempts = CallAttempt.where("status in (?) and tPrice is NULL and (tStatus is NULL or tStatus = 'completed') and sid is not null", ['Message delivered', 'Call completed with success.', 'Call abandoned', 'Hangup or answering machine']).limit(1000)
       EM.synchrony do
-        concurrency = 100        
+        concurrency = 1000        
         EM::Synchrony::Iterator.new(call_attempts, concurrency).map do |attempt, iter|
           http = twillio_lib.update_twilio_stats_by_model_em(attempt)
           http.callback { 
@@ -23,9 +23,10 @@ class UpdateStatsEm
              }
           http.errback { iter.return(http) }
         end        
+        CallAttempt.import results, :on_duplicate_key_update=>[:tCallSegmentSid, :tAccountSid,
+                                          :tCalled, :tCaller, :tPhoneNumberSid, :tStatus, :tStartTime, :tEndTime, :tDuration, :tPrice, :tFlags]
+        EventMachine.stop
       end
-      CallAttempt.import results, :on_duplicate_key_update=>[:tCallSegmentSid, :tAccountSid,
-                                        :tCalled, :tCaller, :tPhoneNumberSid, :tStatus, :tStartTime, :tEndTime, :tDuration, :tPrice, :tFlags]
   end
   
 end
