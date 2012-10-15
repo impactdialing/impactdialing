@@ -9,9 +9,9 @@ development:
   phones_only_ans: redis://localhost:6379
     
 test:
-  resque_sidekiq: localhost:6379
-  call_flow: localhost:6379
-  monitor: localhost:6379  
+  resque_sidekiq: redis://localhost:6379
+  call_flow: redis://localhost:6379
+  monitor: redis://localhost:6379  
   on_hold_callers: redis://localhost:6379
   call_end: redis://localhost:6379
   sidekiq: redis://localhost:6379
