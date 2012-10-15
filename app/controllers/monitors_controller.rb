@@ -1,5 +1,5 @@
 class MonitorsController < ClientController
-  skip_before_filter :check_login, :only => [:start, :stop, :switch_mode, :deactivate_session]
+  skip_before_filter :check_login, :only => [:start, :stop, :switch_mode, :deactivate_session, :index, :show, :campaign_info, :callers_info]
 
   def index
     Octopus.using(:read_slave1) do
