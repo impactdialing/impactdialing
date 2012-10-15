@@ -252,7 +252,7 @@ class Campaign < ActiveRecord::Base
     current_caller_sessions = caller_sessions.on_call.includes(:attempt_in_progress)
     callers_logged_in = current_caller_sessions.size
     if callers_logged_in.zero?
-      status_count [0,0,0]
+      status_count  = [0,0,0]
     else
       status_count = RedisStatus.count_by_status(self.id, current_caller_sessions.collect{|x| x.id})
     end
