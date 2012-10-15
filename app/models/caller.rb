@@ -151,6 +151,7 @@ class Caller < ActiveRecord::Base
   
   def started_calling(session)
     RedisPredictiveCampaign.add(campaign.id, campaign.type)
+    RedisStartTime.set_state_changed_time(session.id)
   end
   
   def calling_voter_preview_power(session, voter_id)

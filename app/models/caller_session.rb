@@ -255,7 +255,7 @@ class CallerSession < ActiveRecord::Base
        self.update_attributes(on_call: true, available_for_call: true)
        RedisOnHoldCaller.remove_caller_session(campaign.id, self.id)
        RedisOnHoldCaller.add(campaign.id, self.id)
-     end
+     end     
    end
 
   def assigned_to_lead?
