@@ -2,7 +2,6 @@ class Moderator < ActiveRecord::Base
   belongs_to :caller_session
   belongs_to :account
   scope :active, :conditions => {:active => true}
-  scope :last_hour, :conditions => ["created_at > ?",1.hours.ago]
 
   def switch_monitor_mode(caller_session, type)
     conference_sid = get_conference_id(caller_session)

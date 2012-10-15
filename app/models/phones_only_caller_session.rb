@@ -177,7 +177,7 @@ class PhonesOnlyCallerSession < CallerSession
   end
   
   def wrapup_call_attempt
-    RedisStartTime.set_state_changed_time(self.id)
+    RedisStatus.set_state_changed_time(campaign.id, "On hold", self.id)
     unless attempt_in_progress.nil?
       RedisCall.push_to_wrapped_up_call_list(attempt_in_progress.id, CallerSession::CallerType::PHONE);  
     end
@@ -229,20 +229,4 @@ class PhonesOnlyCallerSession < CallerSession
     campaign.type != Campaign::Type::Preview
   end
   
-  def call_status
-    status = "On hold"
-    if state == 'conference_started_phones_only_predictive' || state == 'conference_started_phones_only'
-      if Campaign.predictive_campaign?(campaign.type) && !self.available_for_call
-        status = "On call"
-      elsif Campaign.preview_power_campaign?(campaign.type) && !attempt_in_progress.try(:connecttime).nil?
-        status = "On call"
-      end
-    elsif state == 'read_next_question' || state == 'voter_response' || state == 'wrapup_call'
-       status = "Wrap up"
-    else
-      status = "On hold"
-    end
-    status
-  end  
-
 end
