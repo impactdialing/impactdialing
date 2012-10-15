@@ -182,6 +182,7 @@ describe Caller do
       caller  = Factory(:caller, campaign: campaign)
       caller_session = Factory(:caller_session, caller: caller)
       RedisPredictiveCampaign.should_receive(:add).with(campaign.id, campaign.type)
+      RedisStartTime.should_receive(:set_state_changed_time).with(caller_session.id)
       caller.started_calling(caller_session)      
     end
         
