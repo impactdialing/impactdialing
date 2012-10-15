@@ -6,9 +6,11 @@ class RedisStatus
   
   def self.state_time(campaign_id, caller_session_id)
     time_status = $redis_dialer_connection.hget "campaign:#{campaign_id}:status", caller_session_id
-    element = JSON.parse(time_status)
-    time_spent = Time.now - Time.parse(element['time'] || Time.now.to_s)    
-    [element['status'], seconds_fraction_to_time(time_spent)]
+    unless time_status.nil?
+      element = JSON.parse(time_status)
+      time_spent = Time.now - Time.parse(element['time'] || Time.now.to_s)    
+      [element['status'], seconds_fraction_to_time(time_spent)]
+    end
   end
   
   def self.delete_state(campaign_id, caller_session_id)
@@ -25,15 +27,16 @@ class RedisStatus
     "#{hours}:#{mins}:#{seconds}"
   end
   
-  def self.count_by_status(campaign_id, caller_session_ids)
-    elements = $redis_dialer_connection.hmget "campaign:#{campaign_id}:status" , caller_session_ids
+  def self.count_by_status(campaign_id, *caller_session_ids)
+    elements = $redis_dialer_connection.hmget "campaign:#{campaign_id}:status" , *caller_session_ids.flatten
     on_hold = 0
     on_call = 0
     wrap_up = 0
-    JSON.parse(elements).each do |element|
-     on_hold = on_hold + 1 if element['status'] == 'On hold'
-     on_call = on_call + 1 if element['status'] == 'On call'
-     wrap_up = wrap_up + 1 if element['status'] == 'Wrap up'
+    elements.compact.each do |element|
+     ele = JSON.parse(element)
+     on_hold = on_hold + 1 if ele['status'] == 'On hold'
+     on_call = on_call + 1 if ele['status'] == 'On call'
+     wrap_up = wrap_up + 1 if ele['status'] == 'Wrap up'
    end
   [on_hold, on_call, wrap_up]
  end

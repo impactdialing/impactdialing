@@ -251,7 +251,7 @@ class Campaign < ActiveRecord::Base
   def current_status
     current_caller_sessions = caller_sessions.on_call.includes(:attempt_in_progress)
     callers_logged_in = current_caller_sessions.size
-    status_count = RedisStatus.count_by_status(self.id, callers_logged_in.collect{|x| x.id})
+    status_count = RedisStatus.count_by_status(self.id, current_caller_sessions.collect{|x| x.id})
     ringing_lines = call_attempts.with_status(CallAttempt::Status::RINGING).between(15.seconds.ago, Time.now).size
     num_remaining = all_voters.by_status('not called').count
     num_available = leads_available_now + num_remaining
