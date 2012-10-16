@@ -24,7 +24,7 @@ class RedisStatus
     hours = (mins / 60).to_i
     mins = (mins % 60).to_i
     hours = (hours % 24).to_i
-    "#{hours}:#{mins}:#{seconds}"
+    "#{hours.to_s.rjust(2, '0')}:#{mins.to_s.rjust(2, '0')}:#{seconds.to_s.rjust(2, '0')}"
   end
   
   def self.count_by_status(campaign_id, *caller_session_ids)
