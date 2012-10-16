@@ -124,7 +124,7 @@ class TwilioLib
     twilio_xml_parse(response, model_instance)
   end
 
-  def twilio_xml_parse(response,model_instance)
+  def twilio_xml_parse(response, model_instance)
     call_response = Hash.from_xml(response)['TwilioResponse']['Call']
     model_instance.tCallSegmentSid = call_response['Sid']
     model_instance.tAccountSid = call_response['AccountSid']
