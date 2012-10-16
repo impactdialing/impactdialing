@@ -1,5 +1,6 @@
 class EndRunningCallJob 
   include Sidekiq::Worker
+  sidekiq_options :retry => false
   
    def perform(call_sid)
      t = TwilioLib.new    

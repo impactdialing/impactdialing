@@ -1,5 +1,6 @@
 class PreviewPowerDialJob
   include Sidekiq::Worker
+  sidekiq_options :retry => false
   
   def perform(caller_session_id, voter_id)    
     caller_session = CallerSession.find(caller_session_id)
