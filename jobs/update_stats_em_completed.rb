@@ -11,9 +11,9 @@ class UpdateStatsEmCompleted
   def self.perform
     results = []
     twillio_lib = TwilioLib.new    
-    call_attempts = CallAttempt.where("status in (?) and tPrice is NULL and (tStatus is NULL or tStatus = 'completed') and sid is not null", ['Call completed with success.']).limit(500)
+    call_attempts = CallAttempt.where("status in (?) and tPrice is NULL and (tStatus is NULL or tStatus = 'completed') and sid is not null", ['Call completed with success.']).limit(5000)
       EM.synchrony do
-        concurrency = 500
+        concurrency = 5000
         EM::Synchrony::Iterator.new(call_attempts, concurrency).map do |attempt, iter|
           http = twillio_lib.update_twilio_stats_by_model_em(attempt)
           http.callback { 
