@@ -44,14 +44,14 @@ persist_phones_only_answers:
   description: "This job persists  phones only answers data"
 
 update_twilio_stats_attempt:
-  cron: "*/1 * * * *"
+  cron: "* * * * *"
   class: UpdateStatsEm
   queue: twilio_stats_attempt
   args: 
   description: "This job update twilio stats call attempts"
 
 update_twilio_stats_session:
-  cron: "*/1 * * * *"
+  cron: "* * * * *"
   class: UpdateTwilioStatsCallerSession
   queue: twilio_stats_session
   args: 
