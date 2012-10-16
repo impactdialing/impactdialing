@@ -4,7 +4,7 @@ require "em-synchrony"
 require "em-synchrony/em-http"
 
 
-class UpdateStatsEm
+class UpdateStatsEmMachine
   include Resque::Plugins::UniqueJob
   @queue = :twilio_stats_attempt
   
