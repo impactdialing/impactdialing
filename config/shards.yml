@@ -5,6 +5,16 @@ octopus:
     - heroku_caller
     - heroku_phonesonly
 
+  test:
+    read_slave1:
+      adapter: mysql2
+      host: localhost
+      database: impactdialing_test
+      username: root
+      password: "123456"
+      timeout: 5000
+      reconnect: true
+
   development:
     read_slave1:
       adapter: mysql2
