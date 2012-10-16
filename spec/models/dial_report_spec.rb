@@ -96,7 +96,7 @@ describe DialReport do
 
     describe "leads_not_available_for_retry" do
 
-      it "should consider scheduled for later and not available for rety now" do
+      it "should consider scheduled for later and not available for retry now" do
         @campaign = Factory(:predictive, recycle_rate: 3)
         voter1 = Factory(:voter, campaign: @campaign, status: CallAttempt::Status::SUCCESS, last_call_attempt_time: Time.now - 2.hours)
         voter2 = Factory(:voter, campaign: @campaign, status: CallAttempt::Status::SUCCESS)

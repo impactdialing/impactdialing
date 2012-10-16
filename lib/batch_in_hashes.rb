@@ -3,10 +3,10 @@ module BatchInHashes
 
   included do
     def find_in_hashes(options = {})
-      options.assert_valid_keys(:start, :batch_size)
+      options.assert_valid_keys(:start, :batch_size, :shard)
 
       relation = self
-      conn = relation.klass.connection
+      conn = OctopusConnection.connection(options[:shard] || :master)
 
       unless arel.orders.blank? && arel.taken.blank?
         ActiveRecord::Base.logger.warn("Scoped order and limit are ignored, it's forced to be batch order and batch size")
