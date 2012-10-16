@@ -126,21 +126,24 @@ class TwilioLib
 
   def twilio_xml_parse(response, model_instance)
     call_response = Hash.from_xml(response)['TwilioResponse']['Call']
-    model_instance.tCallSegmentSid = call_response['Sid']
-    model_instance.tAccountSid = call_response['AccountSid']
-    model_instance.tCalled = call_response['To']
-    model_instance.tCaller = call_response['From']
-    model_instance.tPhoneNumberSid = call_response['PhoneNumberSid']
-    model_instance.tStatus = call_response['Status']
-    unless call_response['StartTime'].nil?
-      model_instance.tStartTime = Time.parse(call_response['StartTime'])
+    begin
+      model_instance.tCallSegmentSid = call_response['Sid']
+      model_instance.tAccountSid = call_response['AccountSid']
+      model_instance.tCalled = call_response['To']
+      model_instance.tCaller = call_response['From']
+      model_instance.tPhoneNumberSid = call_response['PhoneNumberSid']
+      model_instance.tStatus = call_response['Status']
+      unless call_response['StartTime'].nil?
+        model_instance.tStartTime = Time.parse(call_response['StartTime'])
+      end
+      unless call_response['EndTime'].nil?
+       model_instance.tEndTime = Time.parse(call_response['EndTime'])
+      end
+      model_instance.tDuration = call_response['Duration']
+      model_instance.tPrice = call_response['Price']
+      model_instance.tFlags = call_response['Direction']
+    rescue Exception
     end
-    unless call_response['EndTime'].nil?
-     model_instance.tEndTime = Time.parse(call_response['EndTime'])
-    end
-    model_instance.tDuration = call_response['Duration']
-    model_instance.tPrice = call_response['Price']
-    model_instance.tFlags = call_response['Direction']
     model_instance
   end
 
