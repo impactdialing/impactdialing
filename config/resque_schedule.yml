@@ -43,12 +43,27 @@ persist_phones_only_answers:
   args: 
   description: "This job persists  phones only answers data"
 
-update_twilio_stats_attempt:
+update_twilio_stats_attempt_completed:
   cron: "* * * * *"
-  class: UpdateStatsEm
+  class: UpdateStatsEmCompleted
   queue: twilio_stats_attempt
   args: 
   description: "This job update twilio stats call attempts"
+  
+update_twilio_stats_attempt_abandoned:
+  cron: "* * * * *"
+  class: UpdateStatsEmAbandoned
+  queue: twilio_stats_attempt
+  args: 
+  description: "This job update twilio stats call attempts"
+
+update_twilio_stats_attempt_machine:
+  cron: "* * * * *"
+  class: UpdateStatsEmMachine
+  queue: twilio_stats_attempt
+  args: 
+  description: "This job update twilio stats call attempts"
+  
 
 update_twilio_stats_session:
   cron: "* * * * *"
