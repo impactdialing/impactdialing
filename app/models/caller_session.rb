@@ -236,11 +236,11 @@ class CallerSession < ActiveRecord::Base
    
    
    def self.time_logged_in(caller, campaign, from, to)
-     CallerSession.for_caller(caller).on_campaign(campaign).between(from, to).sum('TIMESTAMPDIFF(SECOND ,starttime,endtime)').to_i
+     CallerSession.for_caller(caller).on_campaign(campaign).between(from, to).sum('TIMESTAMPDIFF(SECOND ,tStartTime,tEndTime)').to_i
    end
    
    def self.caller_time(caller, campaign, from, to)
-     CallerSession.for_caller(caller).on_campaign(campaign).between(from, to).where("caller_type = 'Phone' ").sum('ceil(TIMESTAMPDIFF(SECOND ,starttime,endtime)/60)').to_i
+     CallerSession.for_caller(caller).on_campaign(campaign).between(from, to).where("caller_type = 'Phone' ").sum('ceil(TIMESTAMPDIFF(SECOND ,tEndTime,tEndTime)/60)').to_i
    end   
    
    def call_not_connected?
