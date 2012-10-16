@@ -98,8 +98,8 @@ describe CallerSession do
   it "sums time caller is logged in" do
     too_old = Factory(:caller_session).tap { |ca| ca.update_attribute(:created_at, 10.minutes.ago) }
     too_new = Factory(:caller_session).tap { |ca| ca.update_attribute(:created_at, 10.minutes.from_now) }
-    just_right = Factory(:caller_session).tap { |ca| ca.update_attributes(created_at: 8.minutes.ago, starttime: 8.minutes.ago, endtime: 7.minutes.ago ) }
-    another_just_right = Factory(:caller_session).tap { |ca| ca.update_attributes(created_at: 8.minutes.from_now, starttime: 8.minutes.ago, endtime: 7.minutes.ago) }
+    just_right = Factory(:caller_session).tap { |ca| ca.update_attributes(created_at: 8.minutes.ago, tStartTime: 8.minutes.ago, tEndTime: 7.minutes.ago ) }
+    another_just_right = Factory(:caller_session).tap { |ca| ca.update_attributes(created_at: 8.minutes.from_now, tStartTime: 8.minutes.ago, tEndTime: 7.minutes.ago) }
     CallerSession.time_logged_in(nil,nil,9.minutes.ago, 9.minutes.from_now).should eq(120)
 
   end
