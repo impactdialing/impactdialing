@@ -1,5 +1,6 @@
 class VoterConnectedPusherJob 
   include Sidekiq::Worker
+  sidekiq_options :retry => false
   
   def perform(caller_session_id, call_id)    
     caller_session = CallerSession.find(caller_session_id)
