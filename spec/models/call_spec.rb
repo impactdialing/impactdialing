@@ -205,7 +205,7 @@ describe Call do
         @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session)
       end
       it "should update call state" do
-        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected', all_states: "")
+        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected')
         RedisCall.should_receive(:push_to_wrapped_up_call_list).with(@call_attempt.id, CallerSession::CallerType::TWILIO_CLIENT);
         @call_attempt.should_receive(:redirect_caller)
         RedisStatus.should_receive(:set_state_changed_time).with(@campaign.id, "On hold", @caller_session.id)

@@ -3,12 +3,9 @@ class Call < ActiveRecord::Base
   include CallCenter
 
 
-  attr_accessible :id, :account_sid, :to_zip, :from_state, :called, :from_country, :caller_country, :called_zip, :direction, :from_city,
-   :called_country, :caller_state, :call_sid, :called_state, :from, :caller_zip, :from_zip, :call_status, :to_city, :to_state, :to, :to_country, 
-   :caller_city, :api_version, :caller, :called_city, :all_states, :state, :call_attempt, :questions, :notes, :answered_by, :campaign_type
+  attr_accessible :id, :call_sid, :call_status, :caller, :state, :call_attempt, :questions, :notes, :answered_by, :campaign_type, :recording_url, :recording_duration 
    
   has_one :call_attempt
-  serialize :conference_history, Array
   delegate :connect_call, :to => :call_attempt  
   delegate :campaign, :to=> :call_attempt
   delegate :voter, :to=> :call_attempt
