@@ -220,6 +220,7 @@ ActiveRecord::Schema.define(:version => 20121017091544) do
     t.text     "questions"
     t.text     "notes"
     t.text     "all_states"
+    t.string   "campaign_type"
   end
 
   create_table "campaigns", :force => true do |t|
