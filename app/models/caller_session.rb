@@ -4,6 +4,7 @@ class CallerSession < ActiveRecord::Base
   include CallerEvents
   include CallPayment
   include SidekiqEvents
+  include CallerTwiml
   
   belongs_to :caller
   belongs_to :campaign
@@ -47,11 +48,12 @@ class CallerSession < ActiveRecord::Base
     begin
       caller_flow = self.method(event.to_s) 
       caller_flow.call      
+      twiml = self.method(state.to_s+"_twiml") 
+      twiml.call      
     rescue ActiveRecord::StaleObjectError => exception
       reloaded_caller_session = CallerSession.find(self.id)
       reloaded_caller_session.send(event)
     end
-    render
   end
   
   def process(event)
@@ -83,59 +85,22 @@ class CallerSession < ActiveRecord::Base
       end
       
       
-      state :subscription_limit do
-        response do |xml_builder, the_call|
-          xml_builder.Say("The maximum number of callers for this account has been reached. Wait for another caller to finish, or ask your administrator to upgrade your account.")
-          xml_builder.Hangup          
-        end
-        
-      end
+      state :subscription_limit do end
 
-      state :account_has_no_funds do
-        response do |xml_builder, the_call|
-          xml_builder.Say("There are no funds available in the account.  Please visit the billing area of the website to add funds to your account.")
-          xml_builder.Hangup          
-        end
-        
-      end
+      state :account_has_no_funds do end
       
-      state :account_not_activated do
-        response do |xml_builder, the_call|          
-          xml_builder.Say "Your account has insufficent funds"
-          xml_builder.Hangup
-        end        
-      end
+      state :account_not_activated do end
       
-      state :caller_on_call do
-        response do |xml_builder, the_call|
-          xml_builder.Say I18n.t(:identical_caller_on_call)
-          xml_builder.Hangup
-        end
-        
-      end
+      state :caller_on_call do end
       
-      state :time_period_exceeded do                      
-        response do |xml_builder, the_call|          
-          xml_builder.Say I18n.t(:campaign_time_period_exceed, :start_time => campaign.start_time.hour <= 12 ? "#{campaign.start_time.hour} AM" : "#{campaign.start_time.hour-12} PM", :end_time => campaign.end_time.hour <= 12 ? "#{campaign.end_time.hour} AM" : "#{campaign.end_time.hour-12} PM")
-          xml_builder.Hangup
-        end        
-      end
+      state :time_period_exceeded do end
       
       state :conference_ended do
         before(:always) { end_caller_session}
         after(:always) {  enqueue_call_flow(CallerPusherJob, [self.id, "publish_caller_disconnected"])} 
-        response do |xml_builder, the_call|
-          xml_builder.Hangup
-        end        
-                
       end
       
-      state :campaign_out_of_phone_numbers do
-        response do |xml_builder, the_call|          
-          xml_builder.Say I18n.t(:campaign_out_of_phone_numbers)
-          xml_builder.Hangup
-        end                
-      end
+      state :campaign_out_of_phone_numbers do end
       
       
   end

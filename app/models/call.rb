@@ -1,6 +1,7 @@
 class Call < ActiveRecord::Base
   include Rails.application.routes.url_helpers
   include CallCenter
+  include CallTwiml
 
 
   attr_accessible :id, :call_sid, :call_status, :caller, :state, :call_attempt, :questions, :notes, :answered_by, :campaign_type, :recording_url, :recording_duration 
@@ -31,40 +32,19 @@ class Call < ActiveRecord::Base
           enqueue_call_flow(VoterConnectedPusherJob, [caller_session.id, self.id])
         }
         
-        response do |xml_builder, the_call|
-          unless caller_session.nil? 
-            xml_builder.Dial :hangupOnStar => 'false', :action => flow_call_url(the_call, :host => Settings.twilio_callback_host, event: "disconnect"), :record=> campaign.account.record_calls do |d|
-              d.Conference caller_session.session_key, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
-            end
-          else
-            xml_builder.Hangup
-          end
-        end        
       end
       
-      state :abandoned do
-        
+      state :abandoned do        
         before(:always) { 
           RedisCall.push_to_abandoned_call_list(self.id); 
           call_attempt.redirect_caller
          }                
-          
-        response do |xml_builder, the_call|
-          xml_builder.Hangup
-        end
-        
       end
       
-      state :call_answered_by_machine do        
-        
+      state :call_answered_by_machine do                
         before(:always) { 
           RedisCall.push_to_processing_by_machine_call_hash(self.id);
-          call_attempt.redirect_caller }        
-                  
-        response do |xml_builder, the_call|
-          xml_builder.Play campaign.recording.file.url if campaign.use_recordings?
-          xml_builder.Hangup
-        end
+          call_attempt.redirect_caller }                          
       end
       
       
@@ -94,9 +74,6 @@ class Call < ActiveRecord::Base
             RedisStatus.set_state_changed_time(campaign.id, "Wrap up", caller_session.id)
           end
         }                
-        response do |xml_builder, the_call|
-          xml_builder.Hangup
-        end
         
       end
       
@@ -121,8 +98,10 @@ class Call < ActiveRecord::Base
   def run(event)
     call_flow = self.method(event.to_s) 
     call_flow.call
-    render
+    twiml = self.method(state.to_s+"_twiml") 
+    twiml.call
   end
+  
   
   def process(event)
     begin
