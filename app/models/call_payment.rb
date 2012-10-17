@@ -9,7 +9,6 @@ module CallPayment
       account = campaign.account
       if call_not_connected? || !payment_id.nil? || account.manual_subscription?
         self.debited = true 
-        # update_attribute(:debited, true)
         return self
       end
       payment = Payment.where("amount_remaining > 0 and account_id = ?", account).last
@@ -21,9 +20,6 @@ module CallPayment
         account.check_autorecharge(account.current_balance)
         self.payment_id = payment.try(:id)
         self.debited = true
-        # self.update_attributes(payment_id: payment.try(:id))
-        # self.update_attribute(:debited, true)
-                
       end
       return self
     end
