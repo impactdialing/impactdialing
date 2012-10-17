@@ -18,11 +18,12 @@ module CallPayment
       end      
       unless payment.nil?              
         payment.debit_call_charge(amount_to_debit, account)
+        account.check_autorecharge(account.current_balance)
         self.payment_id = payment.try(:id)
         self.debited = true
         # self.update_attributes(payment_id: payment.try(:id))
         # self.update_attribute(:debited, true)
-        account.check_autorecharge(account.current_balance)        
+                
       end
       return self
     end

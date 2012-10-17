@@ -11,10 +11,9 @@ class DebiterJob
      call_attempts = CallAttempt.debit_not_processed.limit(1000)        
      call_attempts.each do |call_attempt|
        begin
-         call_results << call_attempt.debit
-         
+         call_results << call_attempt.debit         
        rescue Exception => e
-         puts "eeee"
+         puts e
        end
      end
      CallAttempt.import call_results, :on_duplicate_key_update=>[:debited, :payment_id]
@@ -25,6 +24,7 @@ class DebiterJob
       begin
         session_results << caller_session.debit
        rescue Exception=>e
+         puts e
        end
     end
     CallerSession.import session_results, :on_duplicate_key_update=>[:debited, :payment_id]
