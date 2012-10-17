@@ -18,15 +18,15 @@ class DebiterJob
      end
      CallAttempt.import call_results, :on_duplicate_key_update=>[:debited, :payment_id]
      
-     session_results = []
-    caller_sessions = CallerSession.debit_not_processed.limit(1000)     
-    caller_sessions.each do |caller_session|
-      begin
-        session_results << caller_session.debit
-       rescue Exception=>e
-         puts e
-       end
-    end
-    CallerSession.import session_results, :on_duplicate_key_update=>[:debited, :payment_id]
+    #  session_results = []
+    # caller_sessions = CallerSession.debit_not_processed.limit(1000)     
+    # caller_sessions.each do |caller_session|
+    #   begin
+    #     session_results << caller_session.debit
+    #    rescue Exception=>e
+    #      puts e
+    #    end
+    # end
+    # CallerSession.import session_results, :on_duplicate_key_update=>[:debited, :payment_id]
    end
 end
