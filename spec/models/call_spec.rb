@@ -30,7 +30,7 @@ describe Call do
       it "should start a conference in connected state" do
         call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, call_status: 'in-progress')
         call.incoming_call!
-        call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"false\" action=\"https://#{Settings.twilio_callback_host}/calls/#{call.id}/flow?event=disconnect\" record=\"false\"><Conference waitUrl=\"hold_music\" waitMethod=\"GET\" beep=\"false\" endConferenceOnExit=\"true\" maxParticipants=\"2\"/></Dial></Response>")
+        call.send('connected_twiml').should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"false\" action=\"https://#{Settings.twilio_callback_host}/calls/#{call.id}/flow?event=disconnect\" record=\"false\"><Conference waitUrl=\"hold_music\" waitMethod=\"GET\" beep=\"false\" endConferenceOnExit=\"true\" maxParticipants=\"2\"/></Dial></Response>")
       end
     end
 
@@ -58,7 +58,7 @@ describe Call do
           RedisCall.should_receive(:push_to_abandoned_call_list).with(call.id); 
           @call_attempt.should_receive(:redirect_caller)
           call.incoming_call!
-          call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
+          call.send('abandoned_twiml').should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
         end
   
       end
@@ -89,7 +89,7 @@ describe Call do
           RedisCall.should_receive(:push_to_processing_by_machine_call_hash).with(call.id);
           @call_attempt.should_receive(:redirect_caller)      
           call.incoming_call!
-          call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Play>http://s3.amazonaws.com/impactdialing_production/test/uploads/unknown/#{recording.id}.mp3</Play><Hangup/></Response>")
+          call.send('call_answered_by_machine_twiml').should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Play>http://s3.amazonaws.com/impactdialing_production/test/uploads/unknown/#{recording.id}.mp3</Play><Hangup/></Response>")
         end
 
         it "should render  and hangup if user recording is not present" do
@@ -97,7 +97,7 @@ describe Call do
           RedisCall.should_receive(:push_to_processing_by_machine_call_hash).with(call.id);
           @call_attempt.should_receive(:redirect_caller)      
           call.incoming_call!
-          call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
+          call.send('call_answered_by_machine_twiml').should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
         end
 
       end
@@ -155,7 +155,7 @@ describe Call do
          RedisCall.should_receive(:push_to_disconnected_call_list).with(call.id, call.recording_duration, call.recording_url, @caller.id)
          @call_attempt.should_receive(:enqueue_call_flow).with(CallerPusherJob, [@caller_session.id, "publish_voter_disconnected"])
          call.disconnect!
-         call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
+         call.send('disconnected_twiml').should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
        end
    end
   end
@@ -187,7 +187,7 @@ describe Call do
        RedisStatus.should_receive(:set_state_changed_time).with(@campaign.id, "Wrap up", @caller_session.id)
        @call_attempt.should_receive(:enqueue_call_flow).with(CallerPusherJob, [@caller_session.id, "publish_voter_disconnected"])       
        call.disconnect!
-       call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
+       call.send('disconnected_twiml').should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
       end  
     end
   
