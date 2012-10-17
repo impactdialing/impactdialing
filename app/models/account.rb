@@ -118,7 +118,7 @@ class Account < ActiveRecord::Base
   end
 
   def funds_available?
-    (per_caller_subscription? || manual_subscription?) ? true : current_balance>0
+    manual_subscription? ? true : current_balance>0
   end
 
   def create_recurly_account_code

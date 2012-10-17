@@ -5,13 +5,6 @@ process_answered_attempts:
   args: 
   description: "This job processes answers and stores them in a relational schema"
 
-deactivate_monitor:
-  cron: "*/5 * * * *"
-  class: DeactiveUnnecessaryMonitorTabsJob
-  queue: background_worker
-  args: 
-  description: "This job processes deactivates unnecessary monitor tabs"
-
 
 debit_money:
   cron: "*/2 * * * *"
@@ -39,7 +32,7 @@ persist_calls:
 persist_phones_only_answers:
   cron: "* * * * *"
   class: PersistPhonesOnlyAnswers
-  queue: persist_jobs
+  queue: persist_jobs_phones_only
   args: 
   description: "This job persists  phones only answers data"
 

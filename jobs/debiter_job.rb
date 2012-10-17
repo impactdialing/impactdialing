@@ -18,15 +18,28 @@ class DebiterJob
      end
      CallAttempt.import call_results, :on_duplicate_key_update=>[:debited, :payment_id]
      
-    #  session_results = []
-    # caller_sessions = CallerSession.debit_not_processed.limit(1000)     
-    # caller_sessions.each do |caller_session|
-    #   begin
-    #     session_results << caller_session.debit
-    #    rescue Exception=>e
-    #      puts e
-    #    end
-    # end
-    # CallerSession.import session_results, :on_duplicate_key_update=>[:debited, :payment_id]
+     webui_session_results = []
+     web_caller_sessions = WebuiCallerSession.debit_not_processed.limit(100)     
+     web_caller_sessions.each do |caller_session|
+       begin
+        webui_session_results << caller_session.debit
+       rescue Exception=>e
+         puts e
+       end
+     end
+     WebuiCallerSession.import webui_session_results, :on_duplicate_key_update=>[:debited, :payment_id]
+     
+     phones_session_results = []
+     phones_caller_sessions = PhonesOnlyCallerSession.debit_not_processed.limit(100)     
+     phones_caller_sessions.each do |caller_session|
+       begin
+        phones_session_results << caller_session.debit
+       rescue Exception=>e
+         puts e
+       end
+     end
+     PhonesOnlyCallerSession.import phones_session_results, :on_duplicate_key_update=>[:debited, :payment_id]
+     
+     
    end
 end

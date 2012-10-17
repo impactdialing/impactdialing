@@ -2,7 +2,7 @@ require 'resque-loner'
 
 class PersistPhonesOnlyAnswers
     include Resque::Plugins::UniqueJob
-    @queue = :persist_jobs
+    @queue = :persist_jobs_phones_only
     
     def self.perform
       lists = []
