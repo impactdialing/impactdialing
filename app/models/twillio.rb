@@ -37,7 +37,7 @@ class Twillio
   def self.setup_call_predictive(voter, campaign)    
     attempt = voter.call_attempts.create(campaign:  campaign, dialer_mode:  campaign.type, status:  CallAttempt::Status::RINGING, call_start:  Time.now)
     voter.update_attributes(:last_call_attempt_id => attempt.id, :last_call_attempt_time => Time.now, status: CallAttempt::Status::RINGING)
-    Call.create(call_attempt: attempt, all_states: "", state: "initial")
+    Call.create(call_attempt: attempt, state: "initial")
     attempt
   end
   
@@ -47,7 +47,7 @@ class Twillio
     attempt = voter.call_attempts.create(:campaign => campaign, :dialer_mode => campaign.type, :status => CallAttempt::Status::RINGING, :caller_session => caller_session, :caller => caller_session.caller, call_start:  Time.now)    
     voter.update_attributes(:last_call_attempt_id => attempt.id, :last_call_attempt_time => Time.now, :caller_session_id => caller_session.id, status: CallAttempt::Status::RINGING)
     caller_session.update_attributes(on_call: true, available_for_call: false, attempt_in_progress: attempt, voter_in_progress: voter)
-    Call.create(call_attempt: attempt, all_states: "", state: "initial")
+    Call.create(call_attempt: attempt, state: "initial")
     attempt    
   end
   
