@@ -140,7 +140,7 @@ describe CallerSession do
         caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
         caller_session.should_receive(:account_not_activated?).and_return(true)
         caller_session.start_conf!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>Your account has insufficent funds</Say><Hangup/></Response>")
+        caller_session.send("account_not_activated_twiml").should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>Your account has insufficent funds</Say><Hangup/></Response>")
       end
 
     end
@@ -169,7 +169,7 @@ describe CallerSession do
         caller_session.should_receive(:subscription_limit_exceeded?).and_return(true)
         caller_session.should_receive(:funds_not_available?).and_return(false)
         caller_session.start_conf!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>The maximum number of callers for this account has been reached. Wait for another caller to finish, or ask your administrator to upgrade your account.</Say><Hangup/></Response>")
+        caller_session.send("subscription_limit_twiml").should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>The maximum number of callers for this account has been reached. Wait for another caller to finish, or ask your administrator to upgrade your account.</Say><Hangup/></Response>")
       end
 
     end
@@ -200,7 +200,7 @@ describe CallerSession do
         caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
         caller_session.should_receive(:time_period_exceeded?).and_return(true)
         caller_session.start_conf!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>You can only call this campaign between 9 AM and 9 PM. Please try back during those hours.</Say><Hangup/></Response>")
+        caller_session.send("time_period_exceeded_twiml").should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>You can only call this campaign between 9 AM and 9 PM. Please try back during those hours.</Say><Hangup/></Response>")
       end
     end  
       
@@ -234,7 +234,7 @@ describe CallerSession do
         caller_session.should_receive(:time_period_exceeded?).and_return(false)
         caller_session.should_receive(:is_on_call?).and_return(true)
         caller_session.start_conf!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>Another user is logged in as this caller. Only one user may log in as the same caller at the same time.</Say><Hangup/></Response>")
+        caller_session.send("caller_on_call_twiml").should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>Another user is logged in as this caller. Only one user may log in as the same caller at the same time.</Say><Hangup/></Response>")
       end
 
     end
@@ -267,15 +267,7 @@ describe CallerSession do
       caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "account_not_activated")
       caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id,  "publish_caller_disconnected"])
       caller_session.end_conf!
-      caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
-    end
-    
-    it "should end session with attempt in progress" do
-      call_attempt = Factory(:call_attempt)
-      caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "account_not_activated", attempt_in_progress: call_attempt)
-      caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id,  "publish_caller_disconnected"])
-      caller_session.end_conf!
-      caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
+      caller_session.send("conference_ended_twiml").should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
     end
     
 

@@ -21,7 +21,7 @@ describe PhonesOnlyCallerSession do
       it "should render correct twiml" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
         caller_session.callin_choice!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather numDigits=\"1\" timeout=\"10\" action=\"https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=read_instruction_options&amp;session_id=#{caller_session.id}\" method=\"POST\" finishOnKey=\"5\"><Say>Press star to begin dialing or pound for instructions.</Say></Gather></Response>")
+        caller_session.send("read_choice_twiml").should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather numDigits=\"1\" timeout=\"10\" action=\"https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=read_instruction_options&amp;session_id=#{caller_session.id}\" method=\"POST\" finishOnKey=\"5\"><Say>Press star to begin dialing or pound for instructions.</Say></Gather></Response>")
       end
     end
 
@@ -46,7 +46,7 @@ describe PhonesOnlyCallerSession do
       it "should render correct twiml" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, digit: "#", state: "read_choice")
         caller_session.read_instruction_options!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>After these instructions, you will be placed on hold. When someone answers the phone, the hold music will stop. You usually won't hear the person say hello, so start talking immediately. At the end of the conversation, do not hang up your phone. Instead, press star to end the call, and you will be given instructions on how to enter your call results.</Say><Redirect>https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=callin_choice&amp;session_id=#{caller_session.id}</Redirect></Response>")
+        caller_session.send("instructions_options_twiml").should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>After these instructions, you will be placed on hold. When someone answers the phone, the hold music will stop. You usually won't hear the person say hello, so start talking immediately. At the end of the conversation, do not hang up your phone. Instead, press star to end the call, and you will be given instructions on how to enter your call results.</Say><Redirect>https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=callin_choice&amp;session_id=#{caller_session.id}</Redirect></Response>")
       end
 
     end
@@ -68,7 +68,7 @@ describe PhonesOnlyCallerSession do
       it "should render twiml if wrong option selected" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, digit: "x", state: "read_choice")
         caller_session.read_instruction_options!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather numDigits=\"1\" timeout=\"10\" action=\"https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=read_instruction_options&amp;session_id=#{caller_session.id}\" method=\"POST\" finishOnKey=\"5\"><Say>Press star to begin dialing or pound for instructions.</Say></Gather></Response>")
+        caller_session.send("read_choice_twiml").should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather numDigits=\"1\" timeout=\"10\" action=\"https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=read_instruction_options&amp;session_id=#{caller_session.id}\" method=\"POST\" finishOnKey=\"5\"><Say>Press star to begin dialing or pound for instructions.</Say></Gather></Response>")
       end
 
       it "should set caller state to read choice" do
@@ -95,7 +95,7 @@ describe PhonesOnlyCallerSession do
       it "should render correct twiml" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "read_choice", digit: "*")
         caller_session.read_instruction_options!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Redirect>https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=start_conf&amp;session_id=#{caller_session.id}</Redirect></Response>")
+        caller_session.send("ready_to_call_twiml").should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Redirect>https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=start_conf&amp;session_id=#{caller_session.id}</Redirect></Response>")
       end
 
     end
@@ -127,7 +127,7 @@ describe PhonesOnlyCallerSession do
         caller_session.should_receive(:funds_not_available?).and_return(false)
         caller_session.should_receive(:time_period_exceeded?).and_return(true)
         caller_session.start_conf!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>You can only call this campaign between 9 AM and 9 PM. Please try back during those hours.</Say><Hangup/></Response>")
+        caller_session.send("time_period_exceeded_twiml").should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>You can only call this campaign between 9 AM and 9 PM. Please try back during those hours.</Say><Hangup/></Response>")
       end
 
     end
@@ -152,7 +152,7 @@ describe PhonesOnlyCallerSession do
         caller_session.should_receive(:funds_not_available?).and_return(false)
         caller_session.should_receive(:caller_reassigned_to_another_campaign?).and_return(true)
         caller_session.start_conf!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>You have been re-assigned to a campaign.</Say><Redirect>https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?Digits=%2A&amp;event=callin_choice&amp;session_id=#{caller_session.id}</Redirect></Response>")
+        caller_session.send("reassigned_campaign_twiml").should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>You have been re-assigned to a campaign.</Say><Redirect>https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?Digits=%2A&amp;event=callin_choice&amp;session_id=#{caller_session.id}</Redirect></Response>")
       end
 
     end
@@ -192,7 +192,7 @@ describe PhonesOnlyCallerSession do
         caller_session.should_receive(:caller_reassigned_to_another_campaign?).and_return(false)
         @campaign.should_receive(:next_voter_in_dial_queue).and_return(voter)
         caller_session.start_conf!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather numDigits=\"1\" timeout=\"10\" action=\"https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=start_conf&amp;session_id=#{caller_session.id}&amp;voter=#{voter.id}\" method=\"POST\" finishOnKey=\"5\"><Say>first  last. Press star to dial or pound to skip.</Say></Gather></Response>")
+        caller_session.send("choosing_voter_to_dial_twiml").should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather numDigits=\"1\" timeout=\"10\" action=\"https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=start_conf&amp;session_id=#{caller_session.id}&amp;voter=#{voter.id}\" method=\"POST\" finishOnKey=\"5\"><Say>first  last. Press star to dial or pound to skip.</Say></Gather></Response>")
       end
 
       it "should render twiml for preview when no voters present" do
@@ -202,7 +202,7 @@ describe PhonesOnlyCallerSession do
         caller_session.should_receive(:caller_reassigned_to_another_campaign?).and_return(false)
         @campaign.should_receive(:next_voter_in_dial_queue).and_return(nil)
         caller_session.start_conf!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>There are no more numbers to call in this campaign.</Say><Hangup/></Response>")
+        caller_session.send("choosing_voter_to_dial_twiml").should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>There are no more numbers to call in this campaign.</Say><Hangup/></Response>")
       end
     end
 
@@ -238,7 +238,7 @@ describe PhonesOnlyCallerSession do
         @campaign.should_receive(:next_voter_in_dial_queue).and_return(voter)
         caller_session.should_receive(:funds_not_available?).and_return(false)
         caller_session.start_conf!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>first  last.</Say><Redirect method=\"POST\">https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=start_conf&amp;session_id=#{caller_session.id}&amp;voter_id=#{voter.id}</Redirect></Response>")
+        caller_session.send("choosing_voter_and_dial_twiml").should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>first  last.</Say><Redirect method=\"POST\">https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=start_conf&amp;session_id=#{caller_session.id}&amp;voter_id=#{voter.id}</Redirect></Response>")
       end
 
       it "should render twiml for power when no voters present" do
@@ -247,7 +247,7 @@ describe PhonesOnlyCallerSession do
         caller_session.should_receive(:funds_not_available?).and_return(false)
         @campaign.should_receive(:next_voter_in_dial_queue).and_return(nil)
         caller_session.start_conf!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>There are no more numbers to call in this campaign.</Say><Hangup/></Response>")
+        caller_session.send("choosing_voter_and_dial_twiml").should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>There are no more numbers to call in this campaign.</Say><Hangup/></Response>")
       end
     end
 
@@ -296,7 +296,7 @@ describe PhonesOnlyCallerSession do
         caller_session.should_receive(:funds_not_available?).and_return(false)
         caller_session.should_receive(:predictive?).and_return(true)
         caller_session.start_conf!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=gather_response&amp;question_number=0&amp;session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"/></Dial></Response>")
+        caller_session.send("conference_started_phones_only_predictive_twiml").should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=gather_response&amp;question_number=0&amp;session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"/></Dial></Response>")
       end
     end
   end
@@ -322,7 +322,7 @@ describe PhonesOnlyCallerSession do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_to_dial", digit: "#", voter_in_progress: voter)
         voter.should_receive(:skip)
         caller_session.start_conf!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Redirect>https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=skipped_voter&amp;session_id=#{caller_session.id}</Redirect></Response>")
+        caller_session.send("skip_voter_twiml").should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Redirect>https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=skipped_voter&amp;session_id=#{caller_session.id}</Redirect></Response>")
       end
 
     end
@@ -356,7 +356,7 @@ describe PhonesOnlyCallerSession do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_and_dial", digit: "*", voter_in_progress: @voter)
         caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, @voter.id])
         caller_session.start_conf!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=gather_response&amp;question_number=0&amp;session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"/></Dial></Response>")
+        caller_session.send("conference_started_phones_only_twiml").should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=gather_response&amp;question_number=0&amp;session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"/></Dial></Response>")
       end
     end
 
@@ -441,7 +441,7 @@ describe PhonesOnlyCallerSession do
         RedisQuestion.should_receive(:get_question_to_read).with(@script.id, caller_session.question_number).and_return({"id"=> @question.id, "question_text"=> "How do you like Impactdialing"})
         RedisPossibleResponse.should_receive(:possible_responses).and_return([{"id"=>@question.id, "keypad"=> 1, "value"=>"Great"}, {"id"=>@question.id, "keypad"=>2, "value"=>"Super"}])
         caller_session.gather_response!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather timeout=\"60\" finishOnKey=\"*\" action=\"https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=submit_response&amp;question_id=#{@question.id}&amp;question_number=0&amp;session_id=#{caller_session.id}\" method=\"POST\"><Say>How do you like Impactdialing</Say><Say>press 1 for Great</Say><Say>press 2 for Super</Say><Say>Then press star to submit your result.</Say></Gather></Response>")
+        caller_session.send("read_next_question_twiml").should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather timeout=\"60\" finishOnKey=\"*\" action=\"https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=submit_response&amp;question_id=#{@question.id}&amp;question_number=0&amp;session_id=#{caller_session.id}\" method=\"POST\"><Say>How do you like Impactdialing</Say><Say>press 1 for Great</Say><Say>press 2 for Super</Say><Say>Then press star to submit your result.</Say></Gather></Response>")
       end
     end
   end
@@ -472,7 +472,7 @@ describe PhonesOnlyCallerSession do
         RedisPossibleResponse.should_receive(:possible_responses).and_return([{"id"=>@question.id, "keypad"=> 1, "value"=>"Great"}, {"id"=>@question.id, "keypad"=>2, "value"=>"Super"}])
         caller_session.should_receive(:call_answered?).and_return(true)
         caller_session.gather_response!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather timeout=\"60\" finishOnKey=\"*\" action=\"https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=submit_response&amp;question_id=#{@question.id}&amp;question_number=0&amp;session_id=#{caller_session.id}\" method=\"POST\"><Say>How do you like Impactdialing</Say><Say>press 1 for Great</Say><Say>press 2 for Super</Say><Say>Then press star to submit your result.</Say></Gather></Response>")
+        caller_session.send("read_next_question_twiml").should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather timeout=\"60\" finishOnKey=\"*\" action=\"https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=submit_response&amp;question_id=#{@question.id}&amp;question_number=0&amp;session_id=#{caller_session.id}\" method=\"POST\"><Say>How do you like Impactdialing</Say><Say>press 1 for Great</Say><Say>press 2 for Super</Say><Say>Then press star to submit your result.</Say></Gather></Response>")
       end
     end
     
@@ -486,7 +486,7 @@ describe PhonesOnlyCallerSession do
       it "should render hangup twiml" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "conference_started_phones_only_predictive", voter_in_progress: nil)
         caller_session.run_ot_of_phone_numbers!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>This campaign has run out of phone numbers.</Say><Hangup/></Response>")
+        caller_session.send("campaign_out_of_phone_numbers_twiml").should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>This campaign has run out of phone numbers.</Say><Hangup/></Response>")
       end
       
       
@@ -519,7 +519,7 @@ describe PhonesOnlyCallerSession do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: false, campaign: @campaign, state: "read_next_question", voter_in_progress: @voter, question_id: @question.id)
         caller_session.should_receive(:disconnected?).and_return(true)
         caller_session.submit_response!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
+        caller_session.send("disconnected_twiml").should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
       end
 
     end
@@ -550,7 +550,7 @@ describe PhonesOnlyCallerSession do
         caller_session.should_receive(:disconnected?).and_return(false)
         caller_session.should_receive(:skip_all_questions?).and_return(true)
         caller_session.submit_response!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Redirect>https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=next_call&amp;session_id=#{caller_session.id}</Redirect></Response>")
+        caller_session.send("wrapup_call_twiml").should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Redirect>https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=next_call&amp;session_id=#{caller_session.id}</Redirect></Response>")
       end
 
       end
@@ -585,7 +585,7 @@ describe PhonesOnlyCallerSession do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: false, campaign: @campaign, state: "read_next_question", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt, question_number: 0)
         caller_session.should_receive(:disconnected?).and_return(false)
         caller_session.submit_response!
-        caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Redirect>https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=next_question&amp;question_number=1&amp;session_id=#{caller_session.id}</Redirect></Response>")
+        caller_session.send("voter_response_twiml").should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Redirect>https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=next_question&amp;question_number=1&amp;session_id=#{caller_session.id}</Redirect></Response>")
       end
 
     end
