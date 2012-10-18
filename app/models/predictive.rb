@@ -89,7 +89,7 @@ class Predictive < Campaign
 
 
   def best_dials_simulated
-    simulated_values.nil? ? 1 : simulated_values.best_dials.nil? ? 1 : simulated_values.best_dials.ceil > 1.5 ? 1.5 : simulated_values.best_dials.ceil
+    simulated_values.nil? ? 1 : simulated_values.best_dials.nil? ? 1 : simulated_values.best_dials.ceil > 1.8 ? 1.8 : simulated_values.best_dials.ceil
   end
 
   def best_conversation_simulated
