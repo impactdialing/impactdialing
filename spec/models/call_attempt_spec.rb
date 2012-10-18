@@ -209,10 +209,12 @@ describe CallAttempt do
         account = Factory(:account, subscription_name: Account::Subscription_Type::PER_MINUTE)
         campaign = Factory(:campaign, account: account)
         payment = Factory(:payment, account: account, amount_remaining: 10.0)
-        call_attempt = Factory(:call_attempt, connecttime: (Time.now - 3.minutes), call_end: (Time.now - 2.minutes), campaign: campaign)
+        call_attempt = Factory(:call_attempt, tStartTime: (Time.now - 3.minutes), tEndTime: (Time.now - 2.minutes), campaign: campaign)
         Payment.should_receive(:where).and_return([payment])
         payment.should_receive(:debit_call_charge)
+        account.should_receive(:check_autorecharge)
         call_attempt.debit
+        call_attempt.save
         call_attempt.payment_id.should_not be_nil
       end
 
@@ -220,7 +222,7 @@ describe CallAttempt do
 
     describe "call_time" do
       it "should give correct call time" do
-        call_attempt = Factory(:call_attempt, connecttime: (Time.now - 3.minutes), call_end: (Time.now - 2.minutes))
+        call_attempt = Factory(:call_attempt, tStartTime: (Time.now - 3.minutes), tEndTime: (Time.now - 2.minutes))
         call_attempt.call_time.should eq(2)
       end
     end
@@ -228,7 +230,7 @@ describe CallAttempt do
     describe "amount_to_debit" do
 
       it "should retrun amount to debit" do
-        call_attempt = Factory(:call_attempt, connecttime: (Time.now - 3.minutes), call_end: (Time.now - 2.minutes))
+        call_attempt = Factory(:call_attempt, tStartTime: (Time.now - 3.minutes), tEndTime: (Time.now - 2.minutes))
         call_attempt.amount_to_debit.should eq(0.18)
       end
 

@@ -15,7 +15,7 @@ class CallerSession < ActiveRecord::Base
   scope :between, lambda { |from_date, to_date| {:conditions => {:created_at => from_date..to_date}} }
   scope :on_campaign, lambda{|campaign| where("campaign_id = #{campaign.id}") unless campaign.nil?}  
   scope :for_caller, lambda{|caller| where("caller_id = #{caller.id}") unless caller.nil?}  
-  scope :debit_not_processed, lambda { where(:debited => "0", :caller_type => CallerType::PHONE).where('endtime is not null') }
+  scope :debit_not_processed, lambda { where(:debited => "0", :caller_type => CallerType::PHONE).where('tEndTime is not null') }
   scope :campaigns_on_call, select("campaign_id").on_call.group("campaign_id")
   scope :first_caller_time, lambda { |caller| {:select => "created_at", :conditions => ["caller_id = ?", caller.id], :order => "created_at ASC", :limit => 1}  unless caller.nil?}
   scope :last_caller_time, lambda { |caller| {:select => "created_at", :conditions => ["caller_id = ?", caller.id], :order => "created_at DESC", :limit => 1}  unless caller.nil?}
@@ -244,11 +244,11 @@ class CallerSession < ActiveRecord::Base
    end   
    
    def call_not_connected?
-     starttime.nil? || endtime.nil? || caller_type == nil || caller_type == CallerType::TWILIO_CLIENT
+     tStartTime.nil? || tEndTime.nil? || caller_type == nil || caller_type == CallerType::TWILIO_CLIENT
    end
 
    def call_time
-   ((endtime - starttime)/60).ceil
+   ((tEndTime - tStartTime)/60).ceil
    end
    
    def start_conference
