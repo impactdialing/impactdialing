@@ -11,8 +11,9 @@ class HerokuQueuingTimeLogger
     limit = @options[:limit] || 1000
     
     if queue_wait(env) > limit
-       Rails.logger.error "HTTP_X_HEROKU_QUEUE_WAIT_TIME #{queue_wait(env)}ms for #{uri(env)}"
+       Rails.logger.error "Long Heroku Request Queuing HTTP_X_HEROKU_QUEUE_WAIT_TIME #{queue_wait(env)}ms for #{uri(env)}"
     end
+    Rails.logger.error "Heroku Request Queuing #{queue_wait(env)}ms for #{uri(env)}"
 
     [status, headers, response]
   end
