@@ -20,11 +20,7 @@ class WebuiCallerSession < CallerSession
         event :stop_calling, :to=> :stopped
       end
       
-      state :disconnected do        
-        response do |xml_builder, the_call|
-          xml_builder.Hangup
-        end
-      end
+      state :disconnected do end
       
       
       state :paused do        
