@@ -219,7 +219,7 @@ end
 
 loop do
   begin
-    Octopus.using(:read_slave1) do
+    Octopus.using(:read_slave2) do
       logged_in_campaigns = CallerSession.campaigns_on_call
       logged_in_campaigns.each do |c|     
         puts "Simulating #{c.campaign_id}"
