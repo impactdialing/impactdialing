@@ -24,7 +24,7 @@ class CallAttempt < ActiveRecord::Base
   scope :without_status, lambda { |statuses| {:conditions => ['status not in (?)', statuses]} }
   scope :with_status, lambda { |statuses| {:conditions => ['status in (?)', statuses]} }
   scope :results_not_processed, lambda { where(:voter_response_processed => "0", :status => Status::SUCCESS).where('wrapup_time is not null') }
-  scope :debit_not_processed, where(debited: "0").where('call_end is not null')
+  scope :debit_not_processed, where(debited: "0").where('tEndTime is not null')
 
 
   def self.report_recording_url(url)
@@ -152,11 +152,11 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def call_not_connected?
-    connecttime.nil? || call_end.nil?
+    tStartTime.nil? || tEndTime.nil?
   end
 
   def call_time
-  ((call_end - connecttime)/60).ceil
+  ((tEndTime - tStartTime)/60).ceil
   end  
   
   
