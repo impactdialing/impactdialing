@@ -1,6 +1,5 @@
 <div role="main">
   <h1><%= @campaign.name %> Usage</h1>
-  <p>The utilization table shows how much time your callers actually spent on the phone. Each call is rounded to the nearest second.</p>
 
   <table>
     <%= render :partial => 'shared/utilization', :locals => {:report => @campaign, :usage=> @campaign_usage} %>
