@@ -11,8 +11,10 @@ class AccountUsage
   end
   
   def billable_usage
-    caller_times = CallerSession.where("campaign_id in (?)",@campaign_ids).between(@from_date, @to_date).where("caller_type = 'Phone' ").group("campaign_id").sum('ceil(TIMESTAMPDIFF(SECOND ,starttime,endtime)/60)')      
-    lead_times =   CallAttempt.where("campaign_id in (?)",@campaign_ids).between(@from_date, @to_date).group("campaign_id").sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)')
+    caller_times = CallerSession.where("campaign_id in (?)",@campaign_ids).between(@from_date, @to_date).where("caller_type = 'Phone' ").group("campaign_id").sum('ceil(TIMESTAMPDIFF(SECOND ,starttime,endtime)/60)')
+    lead_times =  CallAttempt.from('call_attempts use index (index_call_attempts_on_campaign_id_created_at_status)').
+      where("campaign_id in (?)",@campaign_ids).between(@from_date, @to_date).
+      group("campaign_id").sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)')
     transfer_times = TransferAttempt.where("campaign_id in (?)",@campaign_ids).between(@from_date, @to_date).group("campaign_id").sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)')
     calculate_total_billable_times(caller_times, lead_times, transfer_times)
   end
@@ -28,7 +30,10 @@ class AccountUsage
   end
   
   def callers_status_times
-   CallAttempt.where("campaign_id in (?) and caller_id is null",@campaign_ids).between(@from_date, @to_date).group("status").sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)')
+   CallAttempt.from('call_attempts use index (index_call_attempts_on_campaign_id_created_at_status)').
+     where("campaign_id in (?) and caller_id is null",@campaign_ids).
+     between(@from_date, @to_date).group("status").
+     sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,call_end)/60)')
   end
   
   
