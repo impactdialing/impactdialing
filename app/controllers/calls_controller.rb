@@ -1,9 +1,9 @@
 class CallsController < ApplicationController
   skip_before_filter :verify_authenticity_token
   before_filter :parse_params
-  before_filter :find_and_update_call, :only => [:flow, :destroy, :call_ended, :incoming]
+  before_filter :find_and_update_call, :only => [:flow, :destroy, :incoming]
   before_filter :find_and_update_answers_and_notes_and_scheduled_date, :only => [:submit_result, :submit_result_and_stop]
-  before_filter :find_call, :only => [:hangup]
+  before_filter :find_call, :only => [:hangup, :call_ended]
 
   
   def flow    
@@ -24,12 +24,12 @@ class CallsController < ApplicationController
   
   
   def call_ended    
-    if @call.call_did_not_connect?
+    if ["no-answer", "busy", "failed"].include?(@parsed_params['call_status'])
       call_attempt = @call.call_attempt
-      RedisCall.push_to_not_answered_call_list(@call.id, @call.call_status)
+      RedisCall.push_to_not_answered_call_list(@call.id, @parsed_params['call_status'])
     end            
     
-    if @call.answered_by_machine?
+    if @parsed_params['answered_by'] == "machine"
       RedisCall.push_to_end_by_machine_call_list(@call.id)
     end
     
