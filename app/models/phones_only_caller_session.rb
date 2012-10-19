@@ -204,12 +204,12 @@ class PhonesOnlyCallerSession < CallerSession
   
   
   def star_selected?
-    digit == "*"    
+    redis_digit == "*"    
   end
   
   
   def pound_selected?
-    digit == "#"    
+    redis_digit == "#"    
   end
   
   def preview?
