@@ -72,8 +72,8 @@ class Voter < ActiveRecord::Base
     self.Phone = Voter.sanitize_phone(self.Phone) if self.Phone
   end
 
-  def self.phone_correct?(voter)
-    voter.Phone && (voter.Phone.length >= 10 || voter.Phone.start_with?("+"))
+  def self.phone_correct?(phone)
+    phone && (phone.length >= 10 || phone.start_with?("+"))
   end
 
   def selected_fields(selection = nil)
@@ -228,7 +228,7 @@ class Voter < ActiveRecord::Base
   end
 
   def phone_validatation
-    errors.add(:Phone, 'should be at least 10 digits') unless Voter.phone_correct?(self)
+    errors.add(:Phone, 'should be at least 10 digits') unless Voter.phone_correct?(self.Phone)
   end
 
 end
