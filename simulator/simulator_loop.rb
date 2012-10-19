@@ -8,7 +8,6 @@ require 'octopus'
 RAILS_ROOT = File.expand_path('../..', __FILE__)
 require File.join(RAILS_ROOT, 'config/environment')
 SIMULATOR_ROOT = ENV['SIMULATOR_ROOT'] || File.expand_path('..', __FILE__)
-FileUtils.mkdir_p(File.join(SIMULATOR_ROOT, 'log'), :verbose => true)
 ActiveRecord::Base.logger = Logger.new(File.open(File.join(SIMULATOR_ROOT, 'log', "simulator_#{ENV['RAILS_ENV']}.log"), 'a'))
 
 loop do
