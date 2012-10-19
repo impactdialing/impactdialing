@@ -39,12 +39,14 @@ describe PhonesOnlyCallerSession do
 
       it "should set caller state to instructions_options" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, digit: "#", state: "read_choice")
+        RedisCallerSession.set_request_params(caller_session.id, {digit: "#", question_number: 0})
         caller_session.read_instruction_options!
         caller_session.state.should eq('instructions_options')
       end
 
       it "should render correct twiml" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, digit: "#", state: "read_choice")
+        RedisCallerSession.set_request_params(caller_session.id, {digit: "#", question_number: 0})
         caller_session.read_instruction_options!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>After these instructions, you will be placed on hold. When someone answers the phone, the hold music will stop. You usually won't hear the person say hello, so start talking immediately. At the end of the conversation, do not hang up your phone. Instead, press star to end the call, and you will be given instructions on how to enter your call results.</Say><Redirect>https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=callin_choice&amp;session_id=#{caller_session.id}</Redirect></Response>")
       end
@@ -61,12 +63,14 @@ describe PhonesOnlyCallerSession do
 
       it "should go back to read_choice if wrong option selected" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, digit: "x", state: "read_choice")
+        RedisCallerSession.set_request_params(caller_session.id, {digit: "x", question_number: 0})
         caller_session.read_instruction_options!
         caller_session.state.should eq('read_choice')
       end
 
       it "should render twiml if wrong option selected" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, digit: "x", state: "read_choice")
+        RedisCallerSession.set_request_params(caller_session.id, {digit: "x", question_number: 0})
         caller_session.read_instruction_options!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather numDigits=\"1\" timeout=\"10\" action=\"https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=read_instruction_options&amp;session_id=#{caller_session.id}\" method=\"POST\" finishOnKey=\"5\"><Say>Press star to begin dialing or pound for instructions.</Say></Gather></Response>")
       end
@@ -88,12 +92,14 @@ describe PhonesOnlyCallerSession do
 
       it "should set caller state ready to dial" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "read_choice", digit: "*")
+        RedisCallerSession.set_request_params(caller_session.id, {digit: "*", question_number: 0})
         caller_session.read_instruction_options!
         caller_session.state.should eq('ready_to_call')
       end
 
       it "should render correct twiml" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "read_choice", digit: "*")
+        RedisCallerSession.set_request_params(caller_session.id, {digit: "*", question_number: 0})
         caller_session.read_instruction_options!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Redirect>https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=start_conf&amp;session_id=#{caller_session.id}</Redirect></Response>")
       end
@@ -312,6 +318,7 @@ describe PhonesOnlyCallerSession do
       it "should set caller state to skipped voter if pound selected" do
         voter = Factory(:voter, FirstName:"first", LastName:"last")
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_to_dial", digit: "#", voter_in_progress: voter)
+        RedisCallerSession.set_request_params(caller_session.id, {digit: "#", question_number: 0})
         voter.should_receive(:skip)
         caller_session.start_conf!
         caller_session.state.should eq('skip_voter')
@@ -320,6 +327,7 @@ describe PhonesOnlyCallerSession do
       it "should render correct twiml if pound selected" do
         voter = Factory(:voter, FirstName:"first", LastName:"last")
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_to_dial", digit: "#", voter_in_progress: voter)
+        RedisCallerSession.set_request_params(caller_session.id, {digit: "#", question_number: 0})
         voter.should_receive(:skip)
         caller_session.start_conf!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Redirect>https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=skipped_voter&amp;session_id=#{caller_session.id}</Redirect></Response>")
@@ -338,6 +346,7 @@ describe PhonesOnlyCallerSession do
 
       it "should set caller state to conference_started_phones_only" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_to_dial", digit: "*", voter_in_progress: @voter)
+        RedisCallerSession.set_request_params(caller_session.id, {digit: "*", question_number: 0})
         caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, @voter.id])
         caller_session.start_conf!
         caller_session.state.should eq('conference_started_phones_only')
@@ -345,6 +354,7 @@ describe PhonesOnlyCallerSession do
 
       it "should set attempt_in_progress to nil" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_to_dial", digit: "*", voter_in_progress: @voter)
+        RedisCallerSession.set_request_params(caller_session.id, {digit: "*", question_number: 0})
         caller_session.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, @voter.id])
         caller_session.start_conf!
         caller_session.attempt_in_progress.should be_nil
@@ -369,12 +379,14 @@ describe PhonesOnlyCallerSession do
 
       it "should set caller state to ready_to_call" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_to_dial", digit: "+")
+        RedisCallerSession.set_request_params(caller_session.id, {digit: "+", question_number: 0})
         caller_session.start_conf!
         caller_session.state.should eq('ready_to_call')
       end
 
       it "should set caller state to ready_to_call if nothing selected" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_to_dial")
+        RedisCallerSession.set_request_params(caller_session.id, {question_number: 0})
         caller_session.start_conf!
         caller_session.state.should eq('ready_to_call')
       end
