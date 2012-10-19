@@ -22,17 +22,27 @@ class VoterListBatchUpload
       custom_fields = []
       leads = []
       updated_leads = {}
+
+      if csv_custom_id_column_location.present?
+        custom_ids = voter_info_list.map do |voter_info|
+          voter_info[csv_custom_id_column_location]
+        end
+        found_leads = Hash[*Voter.connection.execute(Voter.where(CustomID: custom_ids, campaign_id: @list.campaign_id).select([:CustomID, :id]).to_sql).to_a.flatten]
+      end
       voter_info_list.each do |voter_info|
         phone_number = Voter.sanitize_phone(voter_info[csv_phone_column_location])
         lead = nil
 
         if csv_custom_id_column_location.present?
           custom_id = voter_info[csv_custom_id_column_location]
-          lead = Voter.find_by_CustomID_and_campaign_id(custom_id, @list.campaign_id)
-          if lead.present?
+          lead_id = found_leads[custom_id]
+          if lead_id.present?
+            lead = {
+              id: lead_id,
+              voter_list_id: @list.id,
+              enabled: true
+            }
             updated_leads[custom_id] = lead
-            lead.voter_list = @list
-            lead.enabled = true
           end
         end
 
@@ -49,16 +59,12 @@ class VoterListBatchUpload
           value = voter_info[column_location]
           if !system_column.blank? && system_column != "Phone"
             if Voter.column_names.include? system_column
-              if lead.is_a?(Hash)
-                lead[system_column] = value
-              else
-                lead.send("#{system_column}=", value)
-              end
+              lead[system_column] = value
             end
           end
         end
 
-        if Voter.phone_correct?(lead.is_a?(Hash) ? OpenStruct.new(lead) : lead)
+        if lead[:id] || Voter.phone_correct?(lead[:Phone])
           leads << lead
           result[:successCount] +=1
         else
@@ -66,16 +72,11 @@ class VoterListBatchUpload
         end
       end
 
-      Voter.transaction do
-        leads.reject { |o| o.is_a?(Hash) }.each(&:save)
-      end
-
       last_id = @list.voters.reorder(:id).last.try(:id)
-      new_leads = leads.select { |o| o.is_a?(Hash) }
-      if new_leads.any?
-        column_names = new_leads.first.keys
-        values = new_leads.map(&:values)
-        Voter.import column_names, values
+
+      if leads.any?
+        import_leads_from_hashes(leads.reject { |l| l[:id] })
+        import_leads_from_hashes(leads.select { |l| l[:id] }, true)
       end
 
       if last_id
@@ -85,10 +86,10 @@ class VoterListBatchUpload
       end
 
       custom_voter_values = []
-      custom_field_values = CustomVoterFieldValue.where(voter_id: updated_leads.values.map(&:id), custom_voter_field_id: custom_attributes.values).all
+      custom_field_values = CustomVoterFieldValue.where(voter_id: updated_leads.values.map { |l| l[:id] }, custom_voter_field_id: custom_attributes.values).all
       voter_info_list.each do |voter_info|
         if csv_custom_id_column_location.present? && updated_leads && updated_leads[voter_info[csv_custom_id_column_location]]
-          lead_id = updated_leads[voter_info[csv_custom_id_column_location]].id
+          lead_id = updated_leads[voter_info[csv_custom_id_column_location]][:id]
         else
           lead_id = created_ids.shift
         end
@@ -121,6 +122,17 @@ class VoterListBatchUpload
     end
    result
  end
+
+  def import_leads_from_hashes(leads, update_on_duplicate = false)
+    return if leads.empty?
+    column_names = leads.first.keys
+    values = leads.map(&:values)
+    if update_on_duplicate
+      Voter.import column_names, values, on_duplicate_key_update: column_names, validate: false, timestamps: false
+    else
+      Voter.import column_names, values
+    end
+  end
 
   def create_custom_attributes(csv_headers, csv_to_system_map)
     result = {}
