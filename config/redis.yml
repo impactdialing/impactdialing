@@ -7,6 +7,7 @@ development:
   sidekiq: redis://localhost:6379
   question_pr: redis://localhost:6379
   phones_only_ans: redis://localhost:6379
+  caller_session: redis://localhost:6379
     
 test:
   resque_sidekiq: redis://localhost:6379
@@ -17,7 +18,7 @@ test:
   sidekiq: redis://localhost:6379
   question_pr: redis://localhost:6379
   phones_only_ans: redis://localhost:6379
-  
+  caller_session: redis://localhost:6379  
     
 heroku_staging:
   call_flow: redis://user:Mb3Rediz4C2tCallz@10.254.238.226:6379
@@ -28,6 +29,7 @@ heroku_staging:
   call_end: redis://user:Mb3Rediz4C2tCallz@10.254.238.226:6379
   question_pr: redis://user:Mb3Rediz4C2tCallz@10.254.238.226:6379
   phones_only_ans: redis://user:Mb3Rediz4C2tCallz@10.254.238.226:6379
+  caller_session: redis://user:Mb3Rediz4C2tCallz@10.254.238.226:6379
   
   
 heroku_preproduction:
@@ -39,8 +41,9 @@ heroku_preproduction:
   call_end: redis://10.50.209.9:6379
   question_pr: redis://10.50.209.9:6379
   phones_only_ans: redis://10.50.209.9:6379
-  
-  
+  caller_session: redis://10.50.209.9:6379
+
+
 heroku:
   resque_sidekiq: redis://user:Mb3Rediz4C2tCallz@10.140.76.223:6379
   sidekiq: redis://user:Mb3Rediz4C2tCallz@10.140.13.42:6379    
@@ -50,7 +53,8 @@ heroku:
   call_end: redis://user:Mb3Rediz4C2tCallz@10.4.133.109:6379
   question_pr: redis://user:Mb3Rediz4C2tCallz@10.70.81.254:6379
   phones_only_ans: redis://user:Mb3Rediz4C2tCallz@10.4.77.203:6379
-  
+  caller_session: redis://user:Mb3Rediz4C2tCallz@10.214.39.172:6379
+
 
 heroku_caller:
   resque_sidekiq: redis://user:Mb3Rediz4C2tCallz@10.140.76.223:6379    
@@ -61,7 +65,8 @@ heroku_caller:
   call_end: redis://user:Mb3Rediz4C2tCallz@10.4.133.109:6379
   question_pr: redis://user:Mb3Rediz4C2tCallz@10.70.81.254:6379
   phones_only_ans: redis://user:Mb3Rediz4C2tCallz@10.4.77.203:6379
-  
+  caller_session: redis://user:Mb3Rediz4C2tCallz@10.214.39.172:6379
+
 
 heroku_phonesonly:
   resque_sidekiq: redis://user:Mb3Rediz4C2tCallz@10.140.76.223:6379    
@@ -72,4 +77,4 @@ heroku_phonesonly:
   call_end: redis://user:Mb3Rediz4C2tCallz@10.4.133.109:6379
   question_pr: redis://user:Mb3Rediz4C2tCallz@10.70.81.254:6379
   phones_only_ans: redis://user:Mb3Rediz4C2tCallz@10.4.77.203:6379
-  
+  caller_session: redis://user:Mb3Rediz4C2tCallz@10.214.39.172:6379
