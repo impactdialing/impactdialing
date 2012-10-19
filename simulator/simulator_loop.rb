@@ -9,8 +9,10 @@ loop do
       logged_in_campaigns = CallerSession.campaigns_on_call
       logged_in_campaigns.each do |c|     
         puts "Simulating #{c.campaign_id}"
-        campaign = Campaign.find(c.campaign_id)      
-        Resque.enqueue(SimulatorJob, campaign.id) if campaign.type == Campaign::Type::PREDICTIVE
+        unless c.campaign_id.nil?
+          campaign = Campaign.find(c.campaign_id)      
+          Resque.enqueue(SimulatorJob, campaign.id) if campaign.type == Campaign::Type::PREDICTIVE
+        end
       end
     end
     sleep 30
