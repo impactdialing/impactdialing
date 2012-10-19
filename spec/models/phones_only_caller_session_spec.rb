@@ -437,6 +437,7 @@ describe PhonesOnlyCallerSession do
       it "should render correct twiml" do
         call_attempt = Factory(:call_attempt, voter: @voter)
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "conference_started_phones_only", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt, question_number: 0)
+        RedisCallerSession.set_request_params(caller_session.id, {digit: 1, question_number: 0})
         caller_session.should_receive(:call_answered?).and_return(true)
         RedisQuestion.should_receive(:get_question_to_read).with(@script.id, caller_session.question_number).and_return({"id"=> @question.id, "question_text"=> "How do you like Impactdialing"})
         RedisPossibleResponse.should_receive(:possible_responses).and_return([{"id"=>@question.id, "keypad"=> 1, "value"=>"Great"}, {"id"=>@question.id, "keypad"=>2, "value"=>"Super"}])
@@ -468,6 +469,7 @@ describe PhonesOnlyCallerSession do
       it "should render correct twiml" do
         call_attempt = Factory(:call_attempt, voter: @voter)
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "conference_started_phones_only", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt, question_number: 0)
+        RedisCallerSession.set_request_params(caller_session.id, {digit: 1, question_number: 0})
         RedisQuestion.should_receive(:get_question_to_read).with(@script.id, caller_session.question_number).and_return({"id"=> @question.id, "question_text"=> "How do you like Impactdialing"})
         RedisPossibleResponse.should_receive(:possible_responses).and_return([{"id"=>@question.id, "keypad"=> 1, "value"=>"Great"}, {"id"=>@question.id, "keypad"=>2, "value"=>"Super"}])
         caller_session.should_receive(:call_answered?).and_return(true)
@@ -567,6 +569,7 @@ describe PhonesOnlyCallerSession do
       it "move to voter_response state " do
         call_attempt = Factory(:call_attempt, voter: @voter)
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: false, campaign: @campaign, state: "read_next_question", question_id: @question.id, attempt_in_progress: call_attempt, voter_in_progress: @voter)
+        RedisCallerSession.set_request_params(caller_session.id, {digit: 1, question_number: 0, question_id: 1})
         caller_session.should_receive(:disconnected?).and_return(false)
         caller_session.submit_response!
         caller_session.state.should eq('voter_response')
@@ -575,14 +578,16 @@ describe PhonesOnlyCallerSession do
       it "should persist the answer " do
         call_attempt = Factory(:call_attempt, voter: @voter)
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: false, campaign: @campaign, state: "read_next_question", question_id: @question.id, attempt_in_progress: call_attempt, voter_in_progress: @voter, digit: 1)
+        RedisCallerSession.set_request_params(caller_session.id, {digit: 1, question_number: 0, question_id: 1})
         caller_session.should_receive(:disconnected?).and_return(false)
-        RedisPhonesOnlyAnswer.should_receive(:push_to_list).with(@voter.id, caller_session.id, caller_session.digit, caller_session.question_id)
+        RedisPhonesOnlyAnswer.should_receive(:push_to_list).with(@voter.id, caller_session.id, 1, 1)
         caller_session.submit_response!
       end
 
       it "should render correct twiml " do
         call_attempt = Factory(:call_attempt, voter: @voter)
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: false, campaign: @campaign, state: "read_next_question", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt, question_number: 0)
+        RedisCallerSession.set_request_params(caller_session.id, {digit: 1, question_number: 0, question_id: 1})
         caller_session.should_receive(:disconnected?).and_return(false)
         caller_session.submit_response!
         caller_session.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Redirect>https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/flow?event=next_question&amp;question_number=1&amp;session_id=#{caller_session.id}</Redirect></Response>")
