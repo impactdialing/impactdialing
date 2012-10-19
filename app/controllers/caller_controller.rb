@@ -137,12 +137,7 @@ class CallerController < ApplicationController
     @caller_session = CallerSession.find_by_id(params[:session_id]) || CallerSession.find_by_sid(params[:CallSid])
     optiions = {digit: params[:Digits], question_id: params[:question_id]}
     optiions.merge!(question_number: params[:question_number]) if params[:question_number]
-    begin
-      @caller_session.try(:update_attributes, optiions)
-    rescue ActiveRecord::StaleObjectError
-      @caller_session = CallerSession.find_by_id(params[:session_id]) || CallerSession.find_by_sid(params[:CallSid])
-      @caller_session.try(:update_attributes, optiions)
-    end
+    RedisCallerSession.set_request_params(@caller_session.id, optiions)
     @caller_session
   end
 
