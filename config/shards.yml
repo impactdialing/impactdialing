@@ -32,6 +32,14 @@ octopus:
       database: impactdialing_heroku_staging
       username: root
       password: mypassword912481
+      
+    read_slave2:
+      adapter: mysql2
+      host: herokustaging-read.cjo94dhm4pos.us-east-1.rds.amazonaws.com
+      database: impactdialing_heroku_staging
+      username: root
+      password: mypassword912481
+      
 
   heroku:
     read_slave1:
