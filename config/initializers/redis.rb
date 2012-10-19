@@ -34,6 +34,10 @@ phones_only_uri = URI.parse(redis_config[rails_env]['phones_only_ans'])
 $redis_phones_ans_uri_connection = Redis.new(:host => phones_only_uri.host, :port => phones_only_uri.port, :password => phones_only_uri.password)
 
 
+caller_session_uri = URI.parse(redis_config[rails_env]['caller_session'])
+$redis_caller_session_uri_connection = Redis.new(:host => caller_session_uri.host, :port => caller_session_uri.port)
+
+
 
 
 

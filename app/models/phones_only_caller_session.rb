@@ -132,8 +132,8 @@ class PhonesOnlyCallerSession < CallerSession
         event :submit_response, :to => :voter_response
         
         response do |xml_builder, the_call|
-          question = RedisQuestion.get_question_to_read(campaign.script.id, question_number)
-          xml_builder.Gather(timeout: 60, finishOnKey: "*", action: flow_caller_url(caller, session_id: self.id, question_id: question['id'], question_number: question_number, event: "submit_response", host: Settings.twilio_callback_host, port: Settings.twilio_callback_port), method:  "POST") do
+          question = RedisQuestion.get_question_to_read(campaign.script.id, redis_question_number)
+          xml_builder.Gather(timeout: 60, finishOnKey: "*", action: flow_caller_url(caller, session_id: self.id, question_id: question['id'], question_number: redis_question_number, event: "submit_response", host: Settings.twilio_callback_host, port: Settings.twilio_callback_port), method:  "POST") do
             xml_builder.Say question['question_text']
             RedisPossibleResponse.possible_responses(question['id']).each do |response|
               xml_builder.Say "press #{response['keypad']} for #{response['value']}" unless (response['value'] == "[No response]")
@@ -149,11 +149,11 @@ class PhonesOnlyCallerSession < CallerSession
         event :next_question, :to => :wrapup_call
         
         before(:always) {
-          RedisPhonesOnlyAnswer.push_to_list(voter_in_progress.id, self.id, digit, question_id) if voter_in_progress
+          RedisPhonesOnlyAnswer.push_to_list(voter_in_progress.id, self.id, redis_digit, redis_question_id) if voter_in_progress
           }
                     
         response do |xml_builder, the_call|
-          xml_builder.Redirect(flow_caller_url(self.caller, event: 'next_question', :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :session_id => self.id, question_number: question_number+1))          
+          xml_builder.Redirect(flow_caller_url(self.caller, event: 'next_question', :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :session_id => self.id, question_number: redis_question_number+1))          
         end        
           
       end
@@ -173,7 +173,7 @@ class PhonesOnlyCallerSession < CallerSession
     
   
   def skip_all_questions?
-    digit == "999"
+    redis_digit == "999"
   end
   
   def wrapup_call_attempt
@@ -186,7 +186,7 @@ class PhonesOnlyCallerSession < CallerSession
   
   
   def more_questions_to_be_answered?
-    RedisQuestion.more_questions_to_be_answered?(campaign.script.id, question_number)
+    RedisQuestion.more_questions_to_be_answered?(campaign.script.id, redis_question_number)
   end
   
   def call_answered?
@@ -227,6 +227,18 @@ class PhonesOnlyCallerSession < CallerSession
   
   def preview_campaign?
     campaign.type != Campaign::Type::Preview
+  end
+  
+  def redis_digit
+    RedisCallerSession.digit(self.id)
+  end
+
+  def redis_question_number
+    RedisCallerSession.question_number(self.id)
+  end
+  
+  def redis_question_id
+    RedisCallerSession.question_id(self.id)
   end
   
 end
