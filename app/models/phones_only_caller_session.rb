@@ -234,7 +234,7 @@ class PhonesOnlyCallerSession < CallerSession
   end
 
   def redis_question_number
-    RedisCallerSession.question_number(self.id)
+    RedisCallerSession.question_number(self.id).try(:to_i)
   end
   
   def redis_question_id
