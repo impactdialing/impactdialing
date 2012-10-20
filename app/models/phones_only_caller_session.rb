@@ -132,7 +132,7 @@ class PhonesOnlyCallerSession < CallerSession
         event :submit_response, :to => :voter_response
         
         response do |xml_builder, the_call|
-          question = RedisQuestion.get_question_to_read(campaign.script.id, redis_question_number)
+          question = RedisQuestion.get_question_to_read(script_id, redis_question_number)
           xml_builder.Gather(timeout: 60, finishOnKey: "*", action: flow_caller_url(caller_id, session_id: self.id, question_id: question['id'], question_number: redis_question_number, event: "submit_response", host: Settings.twilio_callback_host, port: Settings.twilio_callback_port), method:  "POST") do
             xml_builder.Say question['question_text']
             RedisPossibleResponse.possible_responses(question['id']).each do |response|
@@ -186,7 +186,7 @@ class PhonesOnlyCallerSession < CallerSession
   
   
   def more_questions_to_be_answered?
-    RedisQuestion.more_questions_to_be_answered?(campaign.script.id, redis_question_number)
+    RedisQuestion.more_questions_to_be_answered?(script_id, redis_question_number)
   end
   
   def call_answered?

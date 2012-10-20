@@ -4,6 +4,11 @@ class RedisCallerSession
     $redis_caller_session_uri_connection.set "caller_session_flow:#{caller_session_id}", options.to_json
   end
   
+  def self.delete(caller_session_id)
+    $redis_caller_session_uri_connection.del "caller_session_flow:#{caller_session_id}"
+  end
+  
+  
   def self.get_request_params(caller_session_id)
     $redis_caller_session_uri_connection.get "caller_session_flow:#{caller_session_id}"
   end
