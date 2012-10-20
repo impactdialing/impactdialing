@@ -1,6 +1,6 @@
 default: &default_settings
   twilio_callback_host: impactcallergiraffeblue.impactdialing.com
-  call_end_callback_host: impactkungfupushupsclient.impactdialing.com
+  call_end_callback_host: impactdialingcallend.herokuapp.com
   incoming_callback_host: impactdialingincomingcalls.herokuapp.com
   twilio_callback_port: 80
   recording_env: heroku
