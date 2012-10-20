@@ -58,8 +58,8 @@ class VoterList < ActiveRecord::Base
   end
 
   def import_leads(csv_to_system_map, csv_filename, separator)
-    batch_upload = VoterListBatchUpload.new(self)
-    batch_upload.import_leads(csv_to_system_map, csv_filename, separator)
+    batch_upload = VoterListBatchUpload.new(self, csv_to_system_map, csv_filename, separator)
+    batch_upload.import_leads
   end
 
   def dial
