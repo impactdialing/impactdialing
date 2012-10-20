@@ -15,7 +15,7 @@ class PhonesOnlyCallerSession < CallerSession
         event :read_instruction_options, :to => :read_choice
         
         response do |xml_builder, the_call|
-          xml_builder.Gather(:numDigits => 1, :timeout => 10, :action => flow_caller_url(caller, session_id:  self.id, event: 'read_instruction_options' ,:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port), :method => "POST", :finishOnKey => "5") do
+          xml_builder.Gather(:numDigits => 1, :timeout => 10, :action => flow_caller_url(caller_id, session_id:  self.id, event: 'read_instruction_options' ,:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port), :method => "POST", :finishOnKey => "5") do
             xml_builder.Say I18n.t(:caller_instruction_choice)
           end              
           
@@ -30,7 +30,7 @@ class PhonesOnlyCallerSession < CallerSession
         event :start_conf, :to => :choosing_voter_and_dial, :if => :power?
         event :start_conf, :to => :conference_started_phones_only_predictive, :if => :predictive?
         response do |xml_builder, the_call|
-          xml_builder.Redirect(flow_caller_url(self.caller, event: 'start_conf', :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :session_id => self.id))          
+          xml_builder.Redirect(flow_caller_url(caller_id, event: 'start_conf', :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :session_id => self.id))          
         end        
         
       end
@@ -41,7 +41,7 @@ class PhonesOnlyCallerSession < CallerSession
         event :callin_choice, :to => :read_choice     
         response do |xml_builder, the_call|
           xml_builder.Say I18n.t(:phones_only_caller_instructions)
-          xml_builder.Redirect(flow_caller_url(self.caller, event: 'callin_choice', :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :session_id => self.id))          
+          xml_builder.Redirect(flow_caller_url(caller_id, event: 'callin_choice', :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :session_id => self.id))          
         end        
       end
       
@@ -49,7 +49,7 @@ class PhonesOnlyCallerSession < CallerSession
         event :callin_choice, :to => :read_choice
         response do |xml_builder, the_call|
           xml_builder.Say I18n.t(:re_assign_caller_to_another_campaign, :campaign_name => caller.campaign.name)
-          xml_builder.Redirect(flow_caller_url(self.caller, event: 'callin_choice', :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :session_id => self.id, :Digits => "*"))
+          xml_builder.Redirect(flow_caller_url(caller_id, event: 'callin_choice', :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :session_id => self.id, :Digits => "*"))
         end
       end
       
@@ -62,7 +62,7 @@ class PhonesOnlyCallerSession < CallerSession
         
         response do |xml_builder, the_call|
           unless the_call.voter_in_progress.nil?
-            xml_builder.Gather(:numDigits => 1, :timeout => 10, :action => flow_caller_url(self.caller, :session_id => self.id, event: "start_conf", :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :voter => the_call.voter_in_progress.id), :method => "POST", :finishOnKey => "5") do
+            xml_builder.Gather(:numDigits => 1, :timeout => 10, :action => flow_caller_url(caller_id, :session_id => self.id, event: "start_conf", :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :voter => the_call.voter_in_progress.id), :method => "POST", :finishOnKey => "5") do
               xml_builder.Say I18n.t(:read_voter_name, :first_name => the_call.voter_in_progress.FirstName, :last_name => the_call.voter_in_progress.LastName) 
             end
           else
@@ -79,7 +79,7 @@ class PhonesOnlyCallerSession < CallerSession
         response do |xml_builder, the_call|
           unless voter_in_progress.nil?
             xml_builder.Say "#{the_call.voter_in_progress.FirstName}  #{the_call.voter_in_progress.LastName}." 
-            xml_builder.Redirect(flow_caller_url(caller, :session_id => self.id, :voter_id => voter_in_progress.id, event: "start_conf", :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port), :method => "POST")
+            xml_builder.Redirect(flow_caller_url(caller_id, :session_id => self.id, :voter_id => voter_in_progress.id, event: "start_conf", :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port), :method => "POST")
           else
             xml_builder.Say I18n.t(:campaign_has_no_more_voters)
             xml_builder.Hangup
@@ -94,7 +94,7 @@ class PhonesOnlyCallerSession < CallerSession
         event :gather_response, :to => :wrapup_call
         
         response do |xml_builder, the_call|
-          xml_builder.Dial(:hangupOnStar => true, :action => flow_caller_url(caller, event: "gather_response", host:  Settings.twilio_callback_host, port: Settings.twilio_callback_port, session_id:  self.id, question_number: 0)) do
+          xml_builder.Dial(:hangupOnStar => true, :action => flow_caller_url(caller_id, event: "gather_response", host:  Settings.twilio_callback_host, port: Settings.twilio_callback_port, session_id:  self.id, question_number: 0)) do
             xml_builder.Conference(session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET')
           end          
         end
@@ -109,7 +109,7 @@ class PhonesOnlyCallerSession < CallerSession
 
 
         response do |xml_builder, the_call|
-          xml_builder.Dial(:hangupOnStar => true, :action => flow_caller_url(caller, event: "gather_response", :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :session_id => self.id, question_number: 0)) do
+          xml_builder.Dial(:hangupOnStar => true, :action => flow_caller_url(caller_id, event: "gather_response", :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :session_id => self.id, question_number: 0)) do
             xml_builder.Conference(session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET')
           end          
         end
@@ -121,7 +121,7 @@ class PhonesOnlyCallerSession < CallerSession
         before(:always) {voter_in_progress.skip}
         event :skipped_voter, :to => :ready_to_call
         response do |xml_builder, the_call|
-          xml_builder.Redirect(flow_caller_url(self.caller, event: 'skipped_voter', :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :session_id => self.id))          
+          xml_builder.Redirect(flow_caller_url(caller_id, event: 'skipped_voter', :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :session_id => self.id))          
         end        
         
       end
@@ -133,7 +133,7 @@ class PhonesOnlyCallerSession < CallerSession
         
         response do |xml_builder, the_call|
           question = RedisQuestion.get_question_to_read(campaign.script.id, redis_question_number)
-          xml_builder.Gather(timeout: 60, finishOnKey: "*", action: flow_caller_url(caller, session_id: self.id, question_id: question['id'], question_number: redis_question_number, event: "submit_response", host: Settings.twilio_callback_host, port: Settings.twilio_callback_port), method:  "POST") do
+          xml_builder.Gather(timeout: 60, finishOnKey: "*", action: flow_caller_url(caller_id, session_id: self.id, question_id: question['id'], question_number: redis_question_number, event: "submit_response", host: Settings.twilio_callback_host, port: Settings.twilio_callback_port), method:  "POST") do
             xml_builder.Say question['question_text']
             RedisPossibleResponse.possible_responses(question['id']).each do |response|
               xml_builder.Say "press #{response['keypad']} for #{response['value']}" unless (response['value'] == "[No response]")
@@ -153,7 +153,7 @@ class PhonesOnlyCallerSession < CallerSession
           }
                     
         response do |xml_builder, the_call|
-          xml_builder.Redirect(flow_caller_url(self.caller, event: 'next_question', :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :session_id => self.id, question_number: redis_question_number+1))          
+          xml_builder.Redirect(flow_caller_url(caller_id, event: 'next_question', :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :session_id => self.id, question_number: redis_question_number+1))          
         end        
           
       end
@@ -163,7 +163,7 @@ class PhonesOnlyCallerSession < CallerSession
         event :run_ot_of_phone_numbers, :to=> :campaign_out_of_phone_numbers        
         event :next_call, :to => :ready_to_call
         response do |xml_builder, the_call|
-          xml_builder.Redirect(flow_caller_url(self.caller, event: 'next_call', :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :session_id => self.id))          
+          xml_builder.Redirect(flow_caller_url(caller_id, event: 'next_call', :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :session_id => self.id))          
         end        
         
       end
