@@ -26,11 +26,11 @@ class CallsController < ApplicationController
   def call_ended    
     if ["no-answer", "busy", "failed"].include?(@parsed_params['call_status'])
       call_attempt = @call.call_attempt
-      RedisCall.push_to_not_answered_call_list(@call.id, @parsed_params['call_status'])
+      RedisCallFlow.push_to_not_answered_call_list(@call.id, @parsed_params['call_status'])
     end            
     
     if @parsed_params['answered_by'] == "machine"
-      RedisCall.push_to_end_by_machine_call_list(@call.id)
+      RedisCallFlow.push_to_end_by_machine_call_list(@call.id)
     end
     
     if Campaign.preview_power_campaign?(params['campaign_type'])  && @parsed_params['call_status'] != 'completed'
@@ -97,7 +97,8 @@ class CallsController < ApplicationController
   def find_and_update_call
     find_call
     unless @call.nil?    
-      @call.update_attributes(@parsed_params)
+      RedisCall.set_request_params(@call.id, @parsed_params)
+      # @call.update_attributes(@parsed_params)
     end
   end
   

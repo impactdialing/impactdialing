@@ -45,7 +45,7 @@ class Call < ActiveRecord::Base
       state :abandoned do
         
         before(:always) { 
-          RedisCall.push_to_abandoned_call_list(self.id); 
+          RedisCallFlow.push_to_abandoned_call_list(self.id); 
           call_attempt.redirect_caller
          }                
           
@@ -58,7 +58,7 @@ class Call < ActiveRecord::Base
       state :call_answered_by_machine do        
         
         before(:always) { 
-          RedisCall.push_to_processing_by_machine_call_hash(self.id);
+          RedisCallFlow.push_to_processing_by_machine_call_hash(self.id);
           call_attempt.redirect_caller }        
                   
         response do |xml_builder, the_call|
@@ -84,7 +84,7 @@ class Call < ActiveRecord::Base
         
         before(:always) { 
           unless caller_session.nil?
-            RedisCall.push_to_disconnected_call_list(self.id, self.recording_duration, self.recording_duration, caller_session.caller.id);
+            RedisCallFlow.push_to_disconnected_call_list(self.id, self.recording_duration, self.recording_duration, caller_session.caller.id);
             
           end
        }       
@@ -103,7 +103,7 @@ class Call < ActiveRecord::Base
       
       state :wrapup_and_continue do 
         before(:always) { 
-        RedisCall.push_to_wrapped_up_call_list(call_attempt.id, CallerSession::CallerType::TWILIO_CLIENT);
+        RedisCallFlow.push_to_wrapped_up_call_list(call_attempt.id, CallerSession::CallerType::TWILIO_CLIENT);
         call_attempt.redirect_caller
         RedisStatus.set_state_changed_time(campaign.id, "On hold", caller_session.id)
          }
@@ -111,7 +111,7 @@ class Call < ActiveRecord::Base
             
       state :wrapup_and_stop do
         before(:always) { 
-        RedisCall.push_to_wrapped_up_call_list(call_attempt.id, CallerSession::CallerType::TWILIO_CLIENT);
+        RedisCallFlow.push_to_wrapped_up_call_list(call_attempt.id, CallerSession::CallerType::TWILIO_CLIENT);
         end_caller_session }        
       end
             
@@ -134,15 +134,15 @@ class Call < ActiveRecord::Base
   end
   
   def answered_by_machine?
-    answered_by == "machine"
+    RedisCall.answered_by(self.id) == "machine"
   end
   
   def answered_by_human?
-    (answered_by.nil? || answered_by == "human")
+    (RedisCall.answered_by(self.id).nil? || RedisCall.answered_by(self.id) == "human")
   end
   
   def answered_by_human_and_caller_available?    
-     answered_by_human?  && call_status == 'in-progress' && !caller_session.nil? && caller_session.assigned_to_lead?
+     answered_by_human?  && RedisCall.call_status(self.id) == 'in-progress' && !caller_session.nil? && caller_session.assigned_to_lead?
   end
 
   
@@ -151,7 +151,7 @@ class Call < ActiveRecord::Base
   end
   
   def call_did_not_connect?
-    ["no-answer", "busy", "failed"].include?(call_status)
+    ["no-answer", "busy", "failed"].include?(RedisCall.call_status(self.id))
   end
   
   def call_connected?
