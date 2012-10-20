@@ -194,8 +194,10 @@ class CallerSession < ActiveRecord::Base
   end
   
   def redirect_caller_out_of_numbers
-    Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    Twilio::Call.redirect(sid, flow_caller_url(caller, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, session_id: id, event: "run_ot_of_phone_numbers"))
+    if self.available_for_call?
+      Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
+      Twilio::Call.redirect(sid, flow_caller_url(caller, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, session_id: id, event: "run_ot_of_phone_numbers"))
+    end
   end
   
 
