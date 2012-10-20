@@ -448,7 +448,7 @@ describe PhonesOnlyCallerSession do
 
       it "should render correct twiml" do
         call_attempt = Factory(:call_attempt, voter: @voter)
-        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "conference_started_phones_only", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt, question_number: 0)
+        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "conference_started_phones_only", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt, question_number: 0, script_id: @script.id)
         RedisCallerSession.set_request_params(caller_session.id, {digit: 1, question_number: 0})
         caller_session.should_receive(:call_answered?).and_return(true)
         RedisQuestion.should_receive(:get_question_to_read).with(@script.id, caller_session.question_number).and_return({"id"=> @question.id, "question_text"=> "How do you like Impactdialing"})
@@ -480,7 +480,7 @@ describe PhonesOnlyCallerSession do
 
       it "should render correct twiml" do
         call_attempt = Factory(:call_attempt, voter: @voter)
-        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "conference_started_phones_only", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt, question_number: 0)
+        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: false, available_for_call: false, campaign: @campaign, state: "conference_started_phones_only", voter_in_progress: @voter, question_id: @question.id, attempt_in_progress: call_attempt, question_number: 0, script_id: @script.id)
         RedisCallerSession.set_request_params(caller_session.id, {digit: 1, question_number: 0})
         RedisQuestion.should_receive(:get_question_to_read).with(@script.id, caller_session.question_number).and_return({"id"=> @question.id, "question_text"=> "How do you like Impactdialing"})
         RedisPossibleResponse.should_receive(:possible_responses).and_return([{"id"=>@question.id, "keypad"=> 1, "value"=>"Great"}, {"id"=>@question.id, "keypad"=>2, "value"=>"Super"}])
