@@ -58,7 +58,7 @@ class PersistCalls
       includes(call_attempt: :voter).order(:id)
     calls.zip(unanswered_calls).each do |call, unanswered_call|
       begin
-        connect_time = RedisCall.processing_by_machine_call_hash[unanswered_call['id']]
+        connect_time = RedisCallFlow.processing_by_machine_call_hash[unanswered_call['id']]
         call_attempt = call.call_attempt
         voter = call_attempt.voter
         call_attempt.end_answered_by_machine(connect_time, unanswered_call['current_time'])

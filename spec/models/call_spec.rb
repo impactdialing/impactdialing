@@ -22,6 +22,7 @@ describe Call do
 
       it "should move to the connected state" do
         call = Factory(:call, call_attempt: @call_attempt, call_status: 'in-progress', state: 'initial')
+        RedisCall.set_request_params(call.id, call.attributes)
         call.incoming_call!
         call.state.should eq('connected')
       end
@@ -29,6 +30,7 @@ describe Call do
 
       it "should start a conference in connected state" do
         call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, call_status: 'in-progress')
+        RedisCall.set_request_params(call.id, call.attributes)
         call.incoming_call!
         call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"false\" action=\"https://#{Settings.twilio_callback_host}/calls/#{call.id}/flow?event=disconnect\" record=\"false\"><Conference waitUrl=\"hold_music\" waitMethod=\"GET\" beep=\"false\" endConferenceOnExit=\"true\" maxParticipants=\"2\"/></Dial></Response>")
       end
@@ -47,7 +49,8 @@ describe Call do
   
         it "should move to the abandoned state" do
           call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, call_status: 'in-progress')
-          RedisCall.should_receive(:push_to_abandoned_call_list).with(call.id); 
+          RedisCall.set_request_params(call.id, call.attributes)
+          RedisCallFlow.should_receive(:push_to_abandoned_call_list).with(call.id); 
           @call_attempt.should_receive(:redirect_caller)
           call.incoming_call!
           call.state.should eq('abandoned')
@@ -55,7 +58,8 @@ describe Call do
       
         it "should return hangup twiml for abandoned users" do
           call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, call_status: 'in-progress')
-          RedisCall.should_receive(:push_to_abandoned_call_list).with(call.id); 
+          RedisCall.set_request_params(call.id, call.attributes)
+          RedisCallFlow.should_receive(:push_to_abandoned_call_list).with(call.id); 
           @call_attempt.should_receive(:redirect_caller)
           call.incoming_call!
           call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
@@ -74,9 +78,10 @@ describe Call do
 
 
         it "should move to state call_answered_by_machine" do
-          call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt)          
+          call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt)  
+          RedisCall.set_request_params(call.id, call.attributes)        
           @campaign.update_attribute(:use_recordings, true)
-          RedisCall.should_receive(:push_to_processing_by_machine_call_hash).with(call.id);
+          RedisCallFlow.should_receive(:push_to_processing_by_machine_call_hash).with(call.id);
           @call_attempt.should_receive(:redirect_caller)      
           call.incoming_call!
           call.state.should eq('call_answered_by_machine')
@@ -86,7 +91,8 @@ describe Call do
           recording = Factory(:recording)
           @campaign.update_attributes(recording_id: recording.id, use_recordings: true)
           call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt)
-          RedisCall.should_receive(:push_to_processing_by_machine_call_hash).with(call.id);
+          RedisCall.set_request_params(call.id, call.attributes)
+          RedisCallFlow.should_receive(:push_to_processing_by_machine_call_hash).with(call.id);
           @call_attempt.should_receive(:redirect_caller)      
           call.incoming_call!
           call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Play>http://s3.amazonaws.com/impactdialing_production/test/uploads/unknown/#{recording.id}.mp3</Play><Hangup/></Response>")
@@ -94,7 +100,8 @@ describe Call do
 
         it "should render  and hangup if user recording is not present" do
           call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt)
-          RedisCall.should_receive(:push_to_processing_by_machine_call_hash).with(call.id);
+          RedisCall.set_request_params(call.id, call.attributes)
+          RedisCallFlow.should_receive(:push_to_processing_by_machine_call_hash).with(call.id);
           @call_attempt.should_receive(:redirect_caller)      
           call.incoming_call!
           call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
@@ -118,6 +125,7 @@ describe Call do
   
        it "should render nothing" do
          call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected')
+         RedisCall.set_request_params(call.id, call.attributes)
          @call_attempt.should_receive(:enqueue_call_flow).with(EndRunningCallJob, [@call_attempt.sid])
          call.hangup!
          call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response></Response>")
@@ -125,6 +133,7 @@ describe Call do
   
        it "should move to hungup state" do
          call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected')
+         RedisCall.set_request_params(call.id, call.attributes)
          @call_attempt.should_receive(:enqueue_call_flow).with(EndRunningCallJob, [@call_attempt.sid])
          call.hangup!
          call.state.should eq('hungup')
@@ -143,7 +152,8 @@ describe Call do
 
        it "should move to disconnected state" do
          call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected')
-         RedisCall.should_receive(:push_to_disconnected_call_list).with(call.id, call.recording_duration, call.recording_url, @caller.id)
+         RedisCall.set_request_params(call.id, call.attributes)
+         RedisCallFlow.should_receive(:push_to_disconnected_call_list).with(call.id, call.recording_duration, call.recording_url, @caller.id)
          @call_attempt.should_receive(:enqueue_call_flow).with(CallerPusherJob, [@caller_session.id, "publish_voter_disconnected"])
          call.disconnect!
          call.state.should eq('disconnected')
@@ -152,7 +162,8 @@ describe Call do
 
        it "should hangup twiml" do
          call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected')
-         RedisCall.should_receive(:push_to_disconnected_call_list).with(call.id, call.recording_duration, call.recording_url, @caller.id)
+         RedisCall.set_request_params(call.id, call.attributes)
+         RedisCallFlow.should_receive(:push_to_disconnected_call_list).with(call.id, call.recording_duration, call.recording_url, @caller.id)
          @call_attempt.should_receive(:enqueue_call_flow).with(CallerPusherJob, [@caller_session.id, "publish_voter_disconnected"])
          call.disconnect!
          call.render.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
@@ -174,7 +185,8 @@ describe Call do
 
       it "should change status to disconnected" do
        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'hungup')
-       RedisCall.should_receive(:push_to_disconnected_call_list).with(call.id, call.recording_duration, call.recording_url, @caller.id)
+       RedisCall.set_request_params(call.id, call.attributes)
+       RedisCallFlow.should_receive(:push_to_disconnected_call_list).with(call.id, call.recording_duration, call.recording_url, @caller.id)
        RedisStatus.should_receive(:set_state_changed_time).with(@campaign.id, "Wrap up", @caller_session.id)
        @call_attempt.should_receive(:enqueue_call_flow).with(CallerPusherJob, [@caller_session.id, "publish_voter_disconnected"])       
        call.disconnect!
@@ -183,7 +195,8 @@ describe Call do
   
       it "should hangup twiml" do
        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'hungup')
-       RedisCall.should_receive(:push_to_disconnected_call_list).with(call.id, call.recording_duration, call.recording_url, @caller.id)
+       RedisCall.set_request_params(call.id, call.attributes)
+       RedisCallFlow.should_receive(:push_to_disconnected_call_list).with(call.id, call.recording_duration, call.recording_url, @caller.id)
        RedisStatus.should_receive(:set_state_changed_time).with(@campaign.id, "Wrap up", @caller_session.id)
        @call_attempt.should_receive(:enqueue_call_flow).with(CallerPusherJob, [@caller_session.id, "publish_voter_disconnected"])       
        call.disconnect!
@@ -206,7 +219,8 @@ describe Call do
       end
       it "should update call state" do
         call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected')
-        RedisCall.should_receive(:push_to_wrapped_up_call_list).with(@call_attempt.id, CallerSession::CallerType::TWILIO_CLIENT);
+        RedisCall.set_request_params(call.id, call.attributes)
+        RedisCallFlow.should_receive(:push_to_wrapped_up_call_list).with(@call_attempt.id, CallerSession::CallerType::TWILIO_CLIENT);
         @call_attempt.should_receive(:redirect_caller)
         RedisStatus.should_receive(:set_state_changed_time).with(@campaign.id, "On hold", @caller_session.id)
         call.submit_result!
@@ -226,7 +240,8 @@ describe Call do
       
       it "should update call state" do
         call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected')
-        RedisCall.should_receive(:push_to_wrapped_up_call_list).with(@call_attempt.id, CallerSession::CallerType::TWILIO_CLIENT);
+        RedisCall.set_request_params(call.id, call.attributes)
+        RedisCallFlow.should_receive(:push_to_wrapped_up_call_list).with(@call_attempt.id, CallerSession::CallerType::TWILIO_CLIENT);
         @call_attempt.should_receive(:end_caller_session)
         call.submit_result_and_stop!
         call.state.should eq('wrapup_and_stop')        
@@ -238,11 +253,13 @@ describe Call do
   describe "state machine methods" do
     it "should return answered by machine" do
       call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'disconnected')
+      RedisCall.set_request_params(call.id, call.attributes)
       call.answered_by_machine?.should be_true
     end
     
     it "should return answered by human" do
       call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected')
+      RedisCall.set_request_params(call.id, call.attributes)
       call.answered_by_human?.should be_true
     end
     
@@ -258,40 +275,47 @@ describe Call do
     
     it "should return answered_by_human_and_caller_available?" do
       call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "in-progress")
+      RedisCall.set_request_params(call.id, call.attributes)
       call.answered_by_human_and_caller_available?.should be_true
     end
     
     it "should return false if not answered by human" do
       call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'initial', call_status: "in-progress")
+      RedisCall.set_request_params(call.id, call.attributes)
       call.answered_by_human_and_caller_available?.should be_false
     end
     
     it "should return false if call status is not in progress" do
       call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "completed")
+      RedisCall.set_request_params(call.id, call.attributes)
       call.answered_by_human_and_caller_available?.should be_false
     end
     
     it "should return false if caller session is nil" do
       @caller_session.update_attributes(attempt_in_progress: nil)
       call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "in-progress")
+      RedisCall.set_request_params(call.id, call.attributes)
       call.answered_by_human_and_caller_available?.should be_false
     end
     
     it "should return false if caller session is not available" do
       @caller_session.update_attributes(on_call: false)
       call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "in-progress")
+      RedisCall.set_request_params(call.id, call.attributes)
       call.answered_by_human_and_caller_available?.should be_false
     end
     
     it "should return true if caller session is nil" do
       @caller_session.update_attributes(attempt_in_progress: nil)
       call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "in-progress")
+      RedisCall.set_request_params(call.id, call.attributes)
       call.answered_by_human_and_caller_not_available?.should be_true
     end
     
     it "should return true if caller session is not available" do
       @caller_session.update_attributes(on_call: true, available_for_call: true)
       call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "in-progress")
+      RedisCall.set_request_params(call.id, call.attributes)
       call.answered_by_human_and_caller_not_available?.should be_true
     end
     
@@ -301,21 +325,25 @@ describe Call do
     
     it "should return true if busy" do
       call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "busy")
+      RedisCall.set_request_params(call.id, call.attributes)
       call.call_did_not_connect?.should be_true
     end
     
     it "should return true if no answer" do
       call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "no-answer")
+      RedisCall.set_request_params(call.id, call.attributes)
       call.call_did_not_connect?.should be_true
     end
     
     it "should return true if failed" do
       call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "failed")
+      RedisCall.set_request_params(call.id, call.attributes)
       call.call_did_not_connect?.should be_true
     end
     
     it "should return false if completed" do
       call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "completed")
+      RedisCall.set_request_params(call.id, call.attributes)
       call.call_did_not_connect?.should be_false
     end
     

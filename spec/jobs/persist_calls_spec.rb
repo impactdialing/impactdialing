@@ -93,7 +93,7 @@ describe PersistCalls do
   context ".endbymachine" do
     before(:each) do
       $redis_call_flow_connection.lpush "end_answered_by_machine_call_list" , {id: call.id, current_time: time}.to_json
-      RedisCall.processing_by_machine_call_hash.store(call.id, time)
+      RedisCallFlow.processing_by_machine_call_hash.store(call.id, time)
       PersistCalls.perform
     end
 
