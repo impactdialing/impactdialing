@@ -133,6 +133,9 @@ class Call < ActiveRecord::Base
     end          
   end
   
+  def incoming_call
+  end
+  
   def answered_by_machine?
     answered_by == "machine"
   end
