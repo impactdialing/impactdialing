@@ -11,6 +11,7 @@ ImpactDialing::Application.routes.draw do
       post :call_ended
       post :incoming
       post :hangup
+      post :disconnected
       post :submit_result
       post :submit_result_and_stop
     end

@@ -1,7 +1,7 @@
 class CallsController < ApplicationController
   skip_before_filter :verify_authenticity_token
   before_filter :parse_params
-  before_filter :find_and_update_call, :only => [:flow, :destroy, :incoming]
+  before_filter :find_and_update_call, :only => [:flow, :destroy, :incoming, :call_ended, :disconnected]
   before_filter :find_and_update_answers_and_notes_and_scheduled_date, :only => [:submit_result, :submit_result_and_stop]
   before_filter :find_call, :only => [:hangup, :call_ended]
 
@@ -19,43 +19,32 @@ class CallsController < ApplicationController
       call_attempt = @call.call_attempt
       call_attempt.connect_caller_to_lead
     end
-    render xml: @call.run(params[:event])
+    render xml: @call.incoming_call
   end
   
   
   def call_ended    
-    if ["no-answer", "busy", "failed"].include?(@parsed_params['call_status'])
-      call_attempt = @call.call_attempt
-      RedisCallFlow.push_to_not_answered_call_list(@call.id, @parsed_params['call_status'])
-    end            
-    
-    if @parsed_params['answered_by'] == "machine"
-      RedisCallFlow.push_to_end_by_machine_call_list(@call.id)
-    end
-    
-    if Campaign.preview_power_campaign?(params['campaign_type'])  && @parsed_params['call_status'] != 'completed'
-      @call.call_attempt.redirect_caller
-    end      
-    
-    render xml:  Twilio::TwiML::Response.new { |r| r.Hangup }.text
+    render xml:  @call.call_ended(params['campaign_type'])
   end
   
   def submit_result
-    @call.process("submit_result")
+    @call.wrapup_and_continue
     render nothing: true
   end
   
   def submit_result_and_stop
-    @call.process("submit_result_and_stop")
+    @call.wrapup_and_stop
     render nothing: true
   end
   
   def hangup
-    @call.process('hangup')
+    @call.hungup
     render nothing: true
   end
   
-  
+  def disconnected
+    render xml: @call.disconnected    
+  end
   
   private
     
