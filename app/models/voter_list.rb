@@ -136,4 +136,12 @@ class VoterList < ActiveRecord::Base
     return csv_to_system_map
   end
 
+  def destroy_with_voters
+    voter_ids.each_slice(1000) do |ids|
+      CustomVoterFieldValue.where(voter_id: ids).delete_all
+      Voter.where(id: ids).delete_all
+    end
+    self.destroy
+  end
+
 end
