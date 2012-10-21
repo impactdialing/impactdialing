@@ -16,5 +16,17 @@ class RedisCall
     hash["call_status"]    
   end
   
+  def self.questions(call_id)
+    data = $redis_call_uri_connection.get "call_flow:#{call_id}"
+    hash = JSON.parse(data)
+    hash["questions"]        
+  end
+
+  def self.notes(call_id)
+    data = $redis_call_uri_connection.get "call_flow:#{call_id}"
+    hash = JSON.parse(data)
+    hash["notes"]        
+  end
+  
   
 end

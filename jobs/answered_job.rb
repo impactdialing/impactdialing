@@ -8,8 +8,10 @@ class AnsweredJob
    def self.perform     
      CallAttempt.results_not_processed.where('call_id IS NOT NULL').includes(:call).limit(1000).each do |call_attempt|
        begin
-         call_attempt.voter.persist_answers(call_attempt.call.questions, call_attempt)
-         call_attempt.voter.persist_notes(call_attempt.call.notes, call_attempt)
+         questions = RedisCall.questions(call_attempt.call.id)
+         notes = RedisCall.notes(call_attempt.call.id)
+         call_attempt.voter.persist_answers(questions, call_attempt)
+         call_attempt.voter.persist_notes(notes, call_attempt)
          call_attempt.update_attributes(voter_response_processed: true)
          call_attempt.voter.update_attribute(:result_date, Time.now)
        rescue Exception => e
