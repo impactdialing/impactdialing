@@ -85,7 +85,7 @@ class CallsController < ApplicationController
     unless @call.nil?      
       @parsed_params["questions"]  = params[:question].try(:to_json) 
       @parsed_params["notes"] = params[:notes].try(:to_json)
-      @call.update_attributes(@parsed_params)
+      RedisCall.set_request_params(@call.id, @parsed_params)
       unless params[:scheduled_date].blank?
         scheduled_date = params[:scheduled_date] + " " + params[:callback_time_hours] +":" + params[:callback_time_minutes]
         @call.call_attempt.schedule_for_later(scheduled_date)
@@ -98,7 +98,6 @@ class CallsController < ApplicationController
     find_call
     unless @call.nil?    
       RedisCall.set_request_params(@call.id, @parsed_params)
-      # @call.update_attributes(@parsed_params)
     end
   end
   
