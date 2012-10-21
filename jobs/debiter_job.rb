@@ -31,7 +31,7 @@ class DebiterJob
      WebuiCallerSession.import webui_session_results, :on_duplicate_key_update=>[:debited, :payment_id]
      
      phones_session_results = []
-     phones_caller_sessions = PhonesOnlyCallerSession.debit_not_processed.limit(100)     
+     phones_caller_sessions = PhonesOnlyCallerSession.debit_not_processed.limit(5000)     
      phones_caller_sessions.each do |caller_session|
        begin
         phones_session_results << caller_session.debit
