@@ -30,7 +30,7 @@ class VoterListJob
                                         @separator)
       response['success'] << "Upload complete. #{result[:successCount]} out of #{result[:successCount]+result[:failedCount]} records imported successfully."
     rescue Exception => err
-      @voter_list.destroy
+      @voter_list.destroy_with_voters
       response['errors'] << "Invalid CSV file. Could not import."
     ensure
       VoterList.delete_from_s3 @csv_filename
