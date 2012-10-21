@@ -58,8 +58,8 @@ class VoterList < ActiveRecord::Base
   end
 
   def import_leads(csv_to_system_map, csv_filename, separator)
-    batch_upload = VoterListBatchUpload.new(self)
-    batch_upload.import_leads(csv_to_system_map, csv_filename, separator)
+    batch_upload = VoterListBatchUpload.new(self, csv_to_system_map, csv_filename, separator)
+    batch_upload.import_leads
   end
 
   def dial
@@ -134,6 +134,14 @@ class VoterList < ActiveRecord::Base
       end
     end
     return csv_to_system_map
+  end
+
+  def destroy_with_voters
+    voter_ids.each_slice(1000) do |ids|
+      CustomVoterFieldValue.where(voter_id: ids).delete_all
+      Voter.where(id: ids).delete_all
+    end
+    self.destroy
   end
 
 end
