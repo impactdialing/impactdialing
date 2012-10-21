@@ -26,11 +26,11 @@ class CallsController < ApplicationController
   def call_ended    
     if ["no-answer", "busy", "failed"].include?(@parsed_params['call_status'])
       call_attempt = @call.call_attempt
-      RedisCall.push_to_not_answered_call_list(@call.id, @parsed_params['call_status'])
+      RedisCallFlow.push_to_not_answered_call_list(@call.id, @parsed_params['call_status'])
     end            
     
     if @parsed_params['answered_by'] == "machine"
-      RedisCall.push_to_end_by_machine_call_list(@call.id)
+      RedisCallFlow.push_to_end_by_machine_call_list(@call.id)
     end
     
     if Campaign.preview_power_campaign?(params['campaign_type'])  && @parsed_params['call_status'] != 'completed'
@@ -85,7 +85,7 @@ class CallsController < ApplicationController
     unless @call.nil?      
       @parsed_params["questions"]  = params[:question].try(:to_json) 
       @parsed_params["notes"] = params[:notes].try(:to_json)
-      @call.update_attributes(@parsed_params)
+      RedisCall.set_request_params(@call.id, @parsed_params)
       unless params[:scheduled_date].blank?
         scheduled_date = params[:scheduled_date] + " " + params[:callback_time_hours] +":" + params[:callback_time_minutes]
         @call.call_attempt.schedule_for_later(scheduled_date)
@@ -97,7 +97,7 @@ class CallsController < ApplicationController
   def find_and_update_call
     find_call
     unless @call.nil?    
-      @call.update_attributes(@parsed_params)
+      RedisCall.set_request_params(@call.id, @parsed_params)
     end
   end
   
