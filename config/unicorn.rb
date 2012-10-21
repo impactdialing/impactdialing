@@ -1,7 +1,7 @@
 rails_env = ENV['RAILS_ENV']
 rack_env = ENV['RACK_ENV']
 worker_processes 3
-timeout 30
+timeout (ENV['UNICORN_TIMEOUT'] || 30)
 preload_app true
 
 before_fork do |server, worker|
