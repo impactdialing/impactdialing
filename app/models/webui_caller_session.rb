@@ -1,43 +1,39 @@
 class WebuiCallerSession < CallerSession  
   include Rails.application.routes.url_helpers
   
-  call_flow :state, :initial => :initial do    
-    
-      state :initial do
-        event :start_conf, :to => :connected
-      end 
-      
-      state all - [:initial] do
-        event :end_conf, :to => :conference_ended
-      end
-            
-      state :connected do                
-        before(:always) { start_conference; publish_start_calling }
-        after(:success) { enqueue_call_flow(CallerPusherJob, [self.id,  "publish_caller_conference_started"]) }
-        event :pause_conf, :to => :paused, :if => :call_not_wrapped_up?
-        event :start_conf, :to => :connected
-        event :run_ot_of_phone_numbers, :to=> :campaign_out_of_phone_numbers        
-        event :stop_calling, :to=> :stopped
-      end
-      
-      state :disconnected do end
-      
-      
-      state :paused do        
-        event :start_conf, :to => :account_has_no_funds, :if => :funds_not_available?
-        event :start_conf, :to => :time_period_exceeded, :if => :time_period_exceeded?   
-        event :start_conf, :to => :connected
-        event :stop_calling, :to=> :stopped
-      end
-      
-      state :stopped do
-        before(:always) { end_running_call }        
-      end
-      
-      
+  def start_conf
+    return account_not_activated_twiml if account_not_activated?
+    return account_has_no_funds_twiml if funds_not_available?
+    return subscription_limit_twiml if subscription_limit_exceeded?
+    return time_period_exceeded_twiml if time_period_exceeded?
+    return caller_on_call_twiml if is_on_call?
+    start_conference
+    publish_start_calling
+    enqueue_call_flow(CallerPusherJob, [self.id,  "publish_caller_conference_started"]) 
+    connected_twiml
+  end
+  
+  def continue_conf
+    return account_has_no_funds_twiml if funds_not_available?
+    return time_period_exceeded_twiml if time_period_exceeded?
+    start_conference
+    publish_start_calling
+    enqueue_call_flow(CallerPusherJob, [self.id,  "publish_caller_conference_started"]) 
+    connected_twiml
   end
   
   
+  def disonnected
+    disonnected_twiml
+  end
+  
+  def pause
+    paused_twiml
+  end
+  
+  def stop_calling
+    end_running_call
+  end
   
   def call_not_wrapped_up?  
     attempt_in_progress.try(:connecttime) != nil &&  attempt_in_progress.try(:not_wrapped_up?)  
