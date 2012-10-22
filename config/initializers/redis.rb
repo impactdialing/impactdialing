@@ -37,6 +37,9 @@ $redis_phones_ans_uri_connection = Redis.new(:host => phones_only_uri.host, :por
 caller_session_uri = URI.parse(redis_config[rails_env]['caller_session'])
 $redis_caller_session_uri_connection = Redis.new(:host => caller_session_uri.host, :port => caller_session_uri.port, :password => caller_session_uri.password)
 
+call_uri = URI.parse(redis_config[rails_env]['call'])
+$redis_call_uri_connection = Redis.new(:host => call_uri.host, :port => call_uri.port, :password => call_uri.password)
+
 
 
 

@@ -4,6 +4,7 @@ class CallerSession < ActiveRecord::Base
   include CallerEvents
   include CallPayment
   include SidekiqEvents
+  include CallerTwiml
   
   belongs_to :caller
   belongs_to :campaign
@@ -43,101 +44,22 @@ class CallerSession < ActiveRecord::Base
     self.tDuration/60.ceil
   end
   
-  def run(event)
-    begin
-      caller_flow = self.method(event.to_s) 
-      caller_flow.call      
-    rescue ActiveRecord::StaleObjectError => exception
-      reloaded_caller_session = CallerSession.find(self.id)
-      reloaded_caller_session.send(event)
-    end
-    render
+  def start_conf
+    return account_not_activated_twiml if account_not_activated?
+    return account_has_no_funds_twiml if funds_not_available?
+    return subscription_limit_twiml if subscription_limit_exceeded?
+    return time_period_exceeded_twiml if time_period_exceeded?
+    return caller_on_call_twiml if is_on_call?    
   end
   
-  def process(event)
-    begin
-      caller_flow = self.method(event.to_s) 
-      caller_flow.call      
-
-    rescue ActiveRecord::StaleObjectError => exception
-      reloaded_caller_session = CallerSession.find(self.id)
-      reloaded_caller_session.send(event)
-    end
+  def campaign_out_of_phone_numbers
+    campaign_out_of_phone_numbers_twiml
   end
   
-  
-  
-  call_flow :state, :initial => :initial do    
-      
-      state :initial do
-        event :start_conf, :to => :account_not_activated, :if => :account_not_activated?
-        event :start_conf, :to => :account_has_no_funds, :if => :funds_not_available?
-        event :start_conf, :to => :subscription_limit, :if => :subscription_limit_exceeded?
-        event :start_conf, :to => :time_period_exceeded, :if => :time_period_exceeded?
-        event :start_conf, :to => :caller_on_call,  :if => :is_on_call?
-      end 
-      
-      
-      state all - [:initial] do
-        event :end_conf, :to => :conference_ended
-      end
-      
-      
-      state :subscription_limit do
-        response do |xml_builder, the_call|
-          xml_builder.Say("The maximum number of callers for this account has been reached. Wait for another caller to finish, or ask your administrator to upgrade your account.")
-          xml_builder.Hangup          
-        end
-        
-      end
-
-      state :account_has_no_funds do
-        response do |xml_builder, the_call|
-          xml_builder.Say("There are no funds available in the account.  Please visit the billing area of the website to add funds to your account.")
-          xml_builder.Hangup          
-        end
-        
-      end
-      
-      state :account_not_activated do
-        response do |xml_builder, the_call|          
-          xml_builder.Say "Your account has insufficent funds"
-          xml_builder.Hangup
-        end        
-      end
-      
-      state :caller_on_call do
-        response do |xml_builder, the_call|
-          xml_builder.Say I18n.t(:identical_caller_on_call)
-          xml_builder.Hangup
-        end
-        
-      end
-      
-      state :time_period_exceeded do                      
-        response do |xml_builder, the_call|          
-          xml_builder.Say I18n.t(:campaign_time_period_exceed, :start_time => campaign.start_time.hour <= 12 ? "#{campaign.start_time.hour} AM" : "#{campaign.start_time.hour-12} PM", :end_time => campaign.end_time.hour <= 12 ? "#{campaign.end_time.hour} AM" : "#{campaign.end_time.hour-12} PM")
-          xml_builder.Hangup
-        end        
-      end
-      
-      state :conference_ended do
-        before(:always) { end_caller_session}
-        after(:always) {  enqueue_call_flow(CallerPusherJob, [self.id, "publish_caller_disconnected"])} 
-        response do |xml_builder, the_call|
-          xml_builder.Hangup
-        end        
-                
-      end
-      
-      state :campaign_out_of_phone_numbers do
-        response do |xml_builder, the_call|          
-          xml_builder.Say I18n.t(:campaign_out_of_phone_numbers)
-          xml_builder.Hangup
-        end                
-      end
-      
-      
+  def conference_ended
+    end_caller_session
+    enqueue_call_flow(CallerPusherJob, [self.id, "publish_caller_disconnected"])
+    conference_ended_twiml
   end
   
   
@@ -191,13 +113,13 @@ class CallerSession < ActiveRecord::Base
   
   def redirect_caller
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    Twilio::Call.redirect(sid, flow_caller_url(caller, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, session_id: id, event: "start_conf"))
+    Twilio::Call.redirect(sid, continue_conf_caller_url(caller, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, session_id: id))
   end
   
   def redirect_caller_out_of_numbers
     if self.available_for_call?
       Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-      Twilio::Call.redirect(sid, flow_caller_url(caller, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, session_id: id, event: "run_ot_of_phone_numbers"))
+      Twilio::Call.redirect(sid, run_out_of_numbers_caller_url(caller, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, session_id: id))
     end
   end
   

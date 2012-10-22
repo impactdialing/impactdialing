@@ -133,7 +133,7 @@ class Caller < ActiveRecord::Base
       caller_session.redirect_caller if caller_session.campaign.type == Campaign::Type::PREDICTIVE
     else
       caller_session.reassign_caller_session_to_campaign
-      caller_session.run(:start_conf)
+      caller_session.start_conf
     end
   end
   
