@@ -69,7 +69,7 @@ class VoterListsController < ClientController
     csv = upload.read
     separator = VoterList.separator_from_file_extension(upload.original_filename)
     csv_file = CSV.new(csv, :col_sep => separator)
-    @csv_column_headers = csv_file.shift.compact
+    @csv_column_headers = csv_file.shift.collect{|h| h.blank? ? VoterList::BLANK_HEADER : h}
     @first_data_row = csv_file.shift
     render layout: false
   end
