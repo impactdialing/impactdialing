@@ -6,6 +6,9 @@ class CallerSession < ActiveRecord::Base
   include SidekiqEvents
   include CallerTwiml
   
+  after_save :expire_find_by_call_sid_cache, :expire_find_by_call_sid_cache
+
+  
   belongs_to :caller
   belongs_to :campaign
 
@@ -191,6 +194,24 @@ class CallerSession < ActiveRecord::Base
   def on_call_states
     ['']
   end
+  
+  def self.find_by_id_cached(id)
+    Rails.cache.fetch("CallerSession.find_by_id(#{id})") { CallerSession.find_by_id(id) }
+  end
+  
+  def self.find_by_sid_cached(sid)
+    Rails.cache.fetch("CallerSession.find_by_sid(#{sid})") { CallerSession.find_by_id(sid) }
+  end
+  
+  def expire_find_by_id_cache
+    Rails.cache.delete('CallerSession.find_by_id(#{id})')
+  end
+
+  def expire_find_by_call_sid_cache
+    Rails.cache.delete('CallerSession.find_by_sid(#{sid})')
+  end
+  
+  
 
   private
     
