@@ -44,65 +44,22 @@ class CallerSession < ActiveRecord::Base
     self.tDuration/60.ceil
   end
   
-  def run(event)
-    begin
-      caller_flow = self.method(event.to_s) 
-      caller_flow.call      
-      twiml = self.method(state.to_s+"_twiml") 
-      twiml.call      
-    rescue ActiveRecord::StaleObjectError => exception
-      reloaded_caller_session = CallerSession.find(self.id)
-      reloaded_caller_session.send(event)
-    end
+  def start_conf
+    return account_not_activated_twiml if account_not_activated?
+    return account_has_no_funds_twiml if funds_not_available?
+    return subscription_limit_twiml if subscription_limit_exceeded?
+    return time_period_exceeded_twiml if time_period_exceeded?
+    return caller_on_call_twiml if is_on_call?    
   end
   
-  def process(event)
-    begin
-      caller_flow = self.method(event.to_s) 
-      caller_flow.call      
-
-    rescue ActiveRecord::StaleObjectError => exception
-      reloaded_caller_session = CallerSession.find(self.id)
-      reloaded_caller_session.send(event)
-    end
+  def campaign_out_of_phone_numbers
+    campaign_out_of_phone_numbers_twiml
   end
   
-  
-  
-  call_flow :state, :initial => :initial do    
-      
-      state :initial do
-        event :start_conf, :to => :account_not_activated, :if => :account_not_activated?
-        event :start_conf, :to => :account_has_no_funds, :if => :funds_not_available?
-        event :start_conf, :to => :subscription_limit, :if => :subscription_limit_exceeded?
-        event :start_conf, :to => :time_period_exceeded, :if => :time_period_exceeded?
-        event :start_conf, :to => :caller_on_call,  :if => :is_on_call?
-      end 
-      
-      
-      state all - [:initial] do
-        event :end_conf, :to => :conference_ended
-      end
-      
-      
-      state :subscription_limit do end
-
-      state :account_has_no_funds do end
-      
-      state :account_not_activated do end
-      
-      state :caller_on_call do end
-      
-      state :time_period_exceeded do end
-      
-      state :conference_ended do
-        before(:always) { end_caller_session}
-        after(:always) {  enqueue_call_flow(CallerPusherJob, [self.id, "publish_caller_disconnected"])} 
-      end
-      
-      state :campaign_out_of_phone_numbers do end
-      
-      
+  def conference_ended
+    end_caller_session
+    enqueue_call_flow(CallerPusherJob, [self.id, "publish_caller_disconnected"])
+    conference_ended_twiml
   end
   
   
@@ -156,13 +113,13 @@ class CallerSession < ActiveRecord::Base
   
   def redirect_caller
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    Twilio::Call.redirect(sid, flow_caller_url(caller, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, session_id: id, event: "start_conf"))
+    Twilio::Call.redirect(sid, continue_conf_caller_url(caller, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, session_id: id))
   end
   
   def redirect_caller_out_of_numbers
     if self.available_for_call?
       Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-      Twilio::Call.redirect(sid, flow_caller_url(caller, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, session_id: id, event: "run_ot_of_phone_numbers"))
+      Twilio::Call.redirect(sid, run_out_of_numbers_caller_url(caller, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, session_id: id))
     end
   end
   

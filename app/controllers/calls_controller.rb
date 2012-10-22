@@ -1,19 +1,11 @@
 class CallsController < ApplicationController
   skip_before_filter :verify_authenticity_token
   before_filter :parse_params
-  before_filter :find_and_update_call, :only => [:flow, :destroy, :incoming, :call_ended, :disconnected]
+  before_filter :find_and_update_call, :only => [:destroy, :incoming, :call_ended, :disconnected]
   before_filter :find_and_update_answers_and_notes_and_scheduled_date, :only => [:submit_result, :submit_result_and_stop]
   before_filter :find_call, :only => [:hangup, :call_ended]
 
-  
-  def flow    
-    unless @call.nil?
-      render xml:  @call.run(params[:event]) 
-    else      
-      render xml: Twilio::Verb.hangup
-    end
-  end
-  
+    
   def incoming
     if Campaign.predictive_campaign?(params['campaign_type']) && @call.answered_by_human? 
       call_attempt = @call.call_attempt

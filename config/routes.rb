@@ -26,7 +26,18 @@ ImpactDialing::Application.routes.draw do
 
     member do
       post :start_calling
-      post :flow
+      post :pause
+      post :ready_to_call
+      post :conference_started_phones_only_preview
+      post :conference_started_phones_only_power
+      post :conference_started_phones_only_predictive
+      post :gather_response
+      post :continue_conf
+      post :callin_choice
+      post :read_instruction_options
+      post :submit_response
+      post :next_question
+      post :next_call
       post :call_voter
       post :stop_calling
       post :skip_voter
