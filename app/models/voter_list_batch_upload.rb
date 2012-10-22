@@ -5,7 +5,7 @@ class VoterListBatchUpload
     @list = list
     @csv_to_system_map = csv_to_system_map
     csv = CSV.new(VoterList.read_from_s3(csv_filename).value, :col_sep => separator)
-    @csv_headers = csv.shift.compact
+    @csv_headers = csv.shift.collect{|h| h.blank? ? VoterList::BLANK_HEADER : h}
     @voters_list = csv.readlines.shuffle
     @result = {:successCount => 0, :failedCount => 0}
     @csv_to_system_map.remap_system_column! "ID", :to => "CustomID"
