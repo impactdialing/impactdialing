@@ -152,7 +152,7 @@ module CallerTwiml
    def read_next_question_twiml
      Twilio::TwiML::Response.new do |r|
        question = RedisQuestion.get_question_to_read(script_id, redis_question_number)
-       r.Gather(timeout: 60, finishOnKey: "*", action: submit_response_caller_url(caller, session_id: self.id, question_id: question['id'], question_number: redis_question_number, host: Settings.twilio_callback_host, port: Settings.twilio_callback_port), method:  "POST") do
+       r.Gather(timeout: 60, finishOnKey: "*", action: submit_response_caller_url(caller_id, session_id: self.id, question_id: question['id'], question_number: redis_question_number, host: Settings.twilio_callback_host, port: Settings.twilio_callback_port), method:  "POST") do
          r.Say question['question_text']
          RedisPossibleResponse.possible_responses(question['id']).each do |response|
            r.Say "press #{response['keypad']} for #{response['value']}" unless (response['value'] == "[No response]")
