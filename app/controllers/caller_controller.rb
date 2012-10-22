@@ -40,7 +40,7 @@ class CallerController < ApplicationController
   end
   
   def read_instruction_options
-    render xml: @caller_session.read_instruction_options
+    render xml: @caller_session.read_choice
   end
   
   def conference_started_phones_only_preview
