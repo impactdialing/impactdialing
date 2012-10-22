@@ -37,6 +37,7 @@ ImpactDialing::Application.routes.draw do
       post :read_instruction_options
       post :submit_response
       post :next_question
+      post :run_out_of_numbers
       post :next_call
       post :call_voter
       post :stop_calling
