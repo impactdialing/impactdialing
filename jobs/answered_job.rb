@@ -15,6 +15,7 @@ class AnsweredJob
          call_attempt.update_attributes(voter_response_processed: true)
          call_attempt.voter.update_attribute(:result_date, Time.now)
        rescue Exception => e
+         call_attempt.update_attributes(voter_response_processed: true)         
          puts e.backtrace
        end      
     end    
