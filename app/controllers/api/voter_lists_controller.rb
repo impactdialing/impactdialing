@@ -24,7 +24,7 @@ module Api
       saved_file_name = VoterList.upload_file_to_s3(csv, csv_filename)
       separator = VoterList.separator_from_file_extension(upload.original_filename)      
       begin
-        csv_column_headers = CSV.new(csv, :col_sep => separator).shift.compact
+        csv_column_headers = CSV.new(csv, :col_sep => separator).shift.collect{|h| h.blank? ? VoterList::BLANK_HEADER : h}
       rescue Exception => err
         render_json_response({status: 'error', code: '400' , message: I18n.t(:invalid_file_uploaded)})
         return
