@@ -1,61 +1,42 @@
 class CallsController < ApplicationController
   skip_before_filter :verify_authenticity_token
   before_filter :parse_params
-  before_filter :find_and_update_call, :only => [:flow, :destroy, :incoming]
+  before_filter :find_and_update_call, :only => [:destroy, :incoming, :call_ended, :disconnected]
   before_filter :find_and_update_answers_and_notes_and_scheduled_date, :only => [:submit_result, :submit_result_and_stop]
   before_filter :find_call, :only => [:hangup, :call_ended]
 
-  
-  def flow    
-    unless @call.nil?
-      render xml:  @call.run(params[:event]) 
-    else      
-      render xml: Twilio::Verb.hangup
-    end
-  end
-  
+    
   def incoming
     if Campaign.predictive_campaign?(params['campaign_type']) && @call.answered_by_human? 
       call_attempt = @call.call_attempt
       call_attempt.connect_caller_to_lead
     end
-    render xml: @call.run(params[:event])
+    render xml: @call.incoming_call
   end
   
   
   def call_ended    
-    if ["no-answer", "busy", "failed"].include?(@parsed_params['call_status'])
-      call_attempt = @call.call_attempt
-      RedisCall.push_to_not_answered_call_list(@call.id, @parsed_params['call_status'])
-    end            
-    
-    if @parsed_params['answered_by'] == "machine"
-      RedisCall.push_to_end_by_machine_call_list(@call.id)
-    end
-    
-    if Campaign.preview_power_campaign?(params['campaign_type'])  && @parsed_params['call_status'] != 'completed'
-      @call.call_attempt.redirect_caller
-    end      
-    
-    render xml:  Twilio::TwiML::Response.new { |r| r.Hangup }.text
+    render xml:  @call.call_ended(params['campaign_type'])
   end
   
   def submit_result
-    @call.process("submit_result")
+    @call.wrapup_and_continue
     render nothing: true
   end
   
   def submit_result_and_stop
-    @call.process("submit_result_and_stop")
+    @call.wrapup_and_stop
     render nothing: true
   end
   
   def hangup
-    @call.process('hangup')
+    @call.hungup
     render nothing: true
   end
   
-  
+  def disconnected
+    render xml: @call.disconnected    
+  end
   
   private
     
@@ -85,7 +66,7 @@ class CallsController < ApplicationController
     unless @call.nil?      
       @parsed_params["questions"]  = params[:question].try(:to_json) 
       @parsed_params["notes"] = params[:notes].try(:to_json)
-      @call.update_attributes(@parsed_params)
+      RedisCall.set_request_params(@call.id, @parsed_params)
       unless params[:scheduled_date].blank?
         scheduled_date = params[:scheduled_date] + " " + params[:callback_time_hours] +":" + params[:callback_time_minutes]
         @call.call_attempt.schedule_for_later(scheduled_date)
@@ -97,7 +78,7 @@ class CallsController < ApplicationController
   def find_and_update_call
     find_call
     unless @call.nil?    
-      @call.update_attributes(@parsed_params)
+      RedisCall.set_request_params(@call.id, @parsed_params)
     end
   end
   

@@ -2,8 +2,11 @@ class CallerController < ApplicationController
   include SidekiqEvents
   layout "caller"
   skip_before_filter :verify_authenticity_token, :only =>[:check_reassign, :call_voter, :flow, :start_calling, :stop_calling, :end_session, :skip_voter]
-  before_filter :check_login, :except=>[:login, :feedback, :end_session, :start_calling, :phones_only, :new_campaign_response_panel, :check_reassign, :call_voter, :flow]
-  before_filter :find_caller_session , :only => [:flow, :stop_calling]
+  before_filter :check_login, :except=>[:login, :feedback, :end_session, :start_calling, :phones_only, :new_campaign_response_panel, :check_reassign, :call_voter, 
+    :ready_to_call, :continue_conf, :pause, :run_out_of_numbers, :callin_choice, :read_instruction_options, :conference_started_phones_only_preview, :conference_started_phones_only_power, :conference_started_phones_only_predictive,
+    :gather_response, :submit_response, :next_question, :next_call]
+  before_filter :find_caller_session , :only => [:pause, :stop_calling, :ready_to_call, :continue_conf, :pause, :run_out_of_numbers, :callin_choice, :read_instruction_options, :conference_started_phones_only_preview, :conference_started_phones_only_power, :conference_started_phones_only_predictive,
+    :gather_response, :submit_response, :next_question, :next_call]
   before_filter :find_session, :only => [:end_session]
   layout 'caller'
 
@@ -13,18 +16,61 @@ class CallerController < ApplicationController
     identity = CallerIdentity.find_by_session_key(params[:session_key])
     session = caller.create_caller_session(identity.session_key, params[:CallSid], CallerSession::CallerType::TWILIO_CLIENT)
     caller.started_calling(session)    
-    render xml: session.run(:start_conf)
+    render xml: session.start_conf
+  end
+  
+  def ready_to_call
+    render xml: @caller_session.ready_to_call
+  end
+  
+  def continue_conf
+    render xml: @caller_session.continue_conf
+  end
+  
+  def pause
+    render xml: @caller_session.pause
+  end
+  
+  def run_out_of_numbers
+    render xml: @caller_session.campaign_out_of_phone_numbers
+  end
+  
+  def callin_choice
+    render xml: @caller_session.callin_choice
+  end
+  
+  def read_instruction_options
+    render xml: @caller_session.read_choice
+  end
+  
+  def conference_started_phones_only_preview
+    render xml: @caller_session.conference_started_phones_only_preview
+  end
+  
+  def conference_started_phones_only_power
+    render xml: @caller_session.conference_started_phones_only_power
+  end
+  
+  def conference_started_phones_only_predictive
+    render xml: @caller_session.conference_started_phones_only_predictive
+  end
+  
+  def gather_response
+    render xml: @caller_session.gather_response
+  end
+  
+  def submit_response
+    render xml: @caller_session.submit_response
+  end
+  
+  def next_question
+    render xml: @caller_session.next_question
+  end
+  
+  def next_call
+    render xml: @caller_session.next_call
   end
 
-  def flow
-    begin
-      response = @caller_session.run(params[:event])
-    rescue ActiveRecord::StaleObjectError
-      @caller_session.reload
-      response = @caller_session.run(params[:event])
-    end
-    render xml:  response
-  end
 
   def call_voter
     caller = Caller.find(params[:id])
@@ -34,13 +80,13 @@ class CallerController < ApplicationController
   end
 
   def stop_calling
-    @caller_session.process('stop_calling') unless @caller_session.nil?
+    @caller_session.stop_calling unless @caller_session.nil?
     render :nothing => true
   end
 
   def end_session
     unless @caller_session.nil?      
-      render xml: @caller_session.run('end_conf') 
+      render xml: @caller_session.conference_ended
     else
       render xml: Twilio::Verb.hangup
     end
@@ -96,7 +142,7 @@ class CallerController < ApplicationController
     conference_sid = caller_session.get_conference_id
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
     Twilio::Conference.kick_participant(conference_sid, caller_session.sid)
-    Twilio::Call.redirect(caller_session.sid, flow_caller_url(caller, session_id:  caller_session.id, event: "pause_conf", host: Settings.twilio_callback_host, port:  Settings.twilio_callback_port))
+    Twilio::Call.redirect(caller_session.sid, pause_caller_url(caller, session_id:  caller_session.id, host: Settings.twilio_callback_host, port:  Settings.twilio_callback_port))
     caller_session.publish('caller_kicked_off', {})
     render nothing: true
   end
