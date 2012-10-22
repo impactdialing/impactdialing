@@ -65,7 +65,7 @@ class PhonesOnlyCallerSession < CallerSession
   end
   
   def submit_response
-    RedisPhonesOnlyAnswer.push_to_list(voter_in_progress.id, self.id, digit, redis_question_id) if voter_in_progress
+    RedisPhonesOnlyAnswer.push_to_list(voter_in_progress.id, self.id, redis_digit, redis_question_id) if voter_in_progress
     return disconnected_twiml if disconnected?
     return wrapup_call if skip_all_questions?
     voter_response_twiml    
