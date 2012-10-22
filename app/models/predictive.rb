@@ -86,10 +86,14 @@ class Predictive < Campaign
   def self.do_not_call_in_production?(campaign_id)
     !Resque.redis.exists("do_not_call:#{campaign_id}")
   end
+  
+  def get_twilio_limit
+    Resque.redis.get("twilio_limit").try(:to_i) || 4   
+  end
 
 
   def best_dials_simulated
-    simulated_values.nil? ? 1 : simulated_values.best_dials.nil? ? 1 : simulated_values.best_dials.ceil > 4 ? 4 : simulated_values.best_dials.ceil
+    simulated_values.nil? ? 1 : simulated_values.best_dials.nil? ? 1 : simulated_values.best_dials.ceil > 4 ? get_twilio_limit : simulated_values.best_dials.ceil
   end
 
   def best_conversation_simulated
