@@ -2,8 +2,11 @@ class CallerController < ApplicationController
   include SidekiqEvents
   layout "caller"
   skip_before_filter :verify_authenticity_token, :only =>[:check_reassign, :call_voter, :flow, :start_calling, :stop_calling, :end_session, :skip_voter]
-  before_filter :check_login, :except=>[:login, :feedback, :end_session, :start_calling, :phones_only, :new_campaign_response_panel, :check_reassign, :call_voter, :flow]
-  before_filter :find_caller_session , :only => [:pause, :stop_calling, :continue_conf]
+  before_filter :check_login, :except=>[:login, :feedback, :end_session, :start_calling, :phones_only, :new_campaign_response_panel, :check_reassign, :call_voter, 
+    :ready_to_call, :continue_conf, :pause, :run_out_of_numbers, :callin_choice, :read_instruction_options, :conference_started_phones_only_preview, :conference_started_phones_only_power, :conference_started_phones_only_predictive,
+    :gather_response, :submit_response, :next_question, :next_call]
+  before_filter :find_caller_session , :only => [:pause, :stop_calling, :ready_to_call, :continue_conf, :pause, :run_out_of_numbers, :callin_choice, :read_instruction_options, :conference_started_phones_only_preview, :conference_started_phones_only_power, :conference_started_phones_only_predictive,
+    :gather_response, :submit_response, :next_question, :next_call]
   before_filter :find_session, :only => [:end_session]
   layout 'caller'
 
