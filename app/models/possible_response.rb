@@ -31,12 +31,13 @@ class PossibleResponse < ActiveRecord::Base
     PossibleResponse.select("question_id, value").where("id in (?)", ids).order('question_id')
   end
 
-  def self.possible_response_text(question_ids, answers)
+  def self.possible_response_text(question_ids, answers, possible_responses)
     answers ||= []
-    answer_ids = answers.collect { |a| a['possible_response_id'] }
-    answer_texts = Hash[*connection.execute(PossibleResponse.select("question_id, value").where(id: answer_ids).order('question_id').to_sql).to_a.flatten]
+    answered_data = answers.each_with_object({}) do |a, memo|
+      memo[a['question_id']] = a['possible_response_id']
+    end
     question_ids.map do |question_id|
-      answer_texts.has_key?(question_id) ? answer_texts[question_id] : ""
+      answered_data.has_key?(question_id) ? (possible_responses[answered_data[question_id]] || "") : ""
     end
   end
 end
