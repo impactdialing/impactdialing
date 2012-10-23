@@ -31,12 +31,12 @@ module TimeZoneHelper
 
   def time_for_date_picker(campaign, date)
     time_zone = campaign.try(:as_time_zone) || pacific_time_zone
-    date.in_time_zone(time_zone)
+    date.in_time_zone(time_zone).strftime("%m/%d/%Y")
   end
 
   def time_for_date_picker_callers(campaign, caller, date)
    time_zone = campaign.try(:as_time_zone) || caller.try(:as_time_zone) || pacific_time_zone
-   date.in_time_zone(time_zone)
+   date.in_time_zone(time_zone).strftime("%m/%d/%Y")
   end
 
   private
