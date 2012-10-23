@@ -28,7 +28,7 @@ class TwilioLib
     params = {'From'=> campaign.caller_id, "To"=> voter.Phone, 'FallbackUrl' => TWILIO_ERROR, "Url"=>incoming_call_url(attempt.call, host: Settings.incoming_callback_host, port: Settings.twilio_callback_port, event: "incoming_call", campaign_type: campaign.type),
       'StatusCallback' => call_ended_call_url(attempt.call, host: Settings.call_end_callback_host, port:  Settings.twilio_callback_port, event: "call_ended", campaign_type: campaign.type),
       'Timeout' => "15"}
-    params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect
+    params.merge!({'IfMachine'=> 'Continue', "Timeout" => "30"}) if campaign.answering_machine_detect
     response = create_http_request("https://#{@server}#{@root}Calls.json", params)
     response.body
   end
@@ -47,7 +47,7 @@ class TwilioLib
     params = {'From'=> campaign.caller_id, "To"=> voter.Phone, 'FallbackUrl' => TWILIO_ERROR, "Url"=>incoming_call_url(attempt.call, host: Settings.incoming_callback_host, port: Settings.twilio_callback_port, event: "incoming_call", campaign_type: campaign.type),
       'StatusCallback' => call_ended_call_url(attempt.call, host: Settings.call_end_callback_host, port:  Settings.twilio_callback_port, event: "call_ended", campaign_type: campaign.type),
       'Timeout' => "15"}
-    params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect
+    params.merge!({'IfMachine'=> 'Continue', "Timeout" => "30"}) if campaign.answering_machine_detect
     EventMachine::HttpRequest.new("https://#{@server}#{@root}Calls.json").apost :head => {'authorization' => [@http_user, @http_password]},:body => params
   end
 
