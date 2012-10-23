@@ -187,7 +187,9 @@ class CallAttempt < ActiveRecord::Base
   end
   
   def end_caller_session
-    caller_session.stop_calling
+    unless caller_session.nil?
+      caller_session.stop_calling
+    end
   end
 
 end
