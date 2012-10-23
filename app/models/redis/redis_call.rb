@@ -28,6 +28,9 @@ class RedisCall
     hash["notes"]        
   end
   
+  def self.delete(call_id)
+    $redis_call_uri_connection.del "call_flow:#{call_id}"
+  end
   
   
 end
