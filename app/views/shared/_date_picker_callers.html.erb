@@ -2,11 +2,11 @@
   <legend>Date range:</legend>
   <p>
     <label>From:</label>
-    <input class="format-m-d-y divider-slash" id="from_date" name="from_date" type="text" value="<%= @from_date.strftime("%m/%d/%Y") %>">
+    <input class="format-m-d-y divider-slash" id="from_date" name="from_date" type="text" value="<%= time_for_date_picker_callers(@campaign, @caller, @from_date)%>">
   </p>
   <p>
     <label>To:</label>
-    <input class="format-m-d-y divider-slash" id="from_date" name="to_date" type="text" value="<%= @to_date.strftime("%m/%d/%Y") %>">
+    <input class="format-m-d-y divider-slash" id="from_date" name="to_date" type="text" value="<%= time_for_date_picker_callers(@campaign, @caller, @to_date) %>">
   </p>
   <div class="buttons"><button type="submit">Update date range</button></div>
 </fieldset>
