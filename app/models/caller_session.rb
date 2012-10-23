@@ -219,7 +219,7 @@ class CallerSession < ActiveRecord::Base
   end
   
   def self.find_by_sid_cached(sid)
-    Rails.cache.fetch("CallerSession.find_by_sid(#{sid})") { CallerSession.find_by_id(sid) }
+    Rails.cache.fetch("CallerSession.find_by_sid(#{sid})") { CallerSession.find_by_sid(sid) }
   end
   
   def expire_find_by_id_cache
