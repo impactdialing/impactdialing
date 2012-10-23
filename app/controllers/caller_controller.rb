@@ -1,12 +1,17 @@
 class CallerController < ApplicationController
   include SidekiqEvents
   layout "caller"
-  skip_before_filter :verify_authenticity_token, :only =>[:check_reassign, :call_voter, :flow, :start_calling, :stop_calling, :end_session, :skip_voter]
+  skip_before_filter :verify_authenticity_token, :only =>[:check_reassign, :call_voter, :start_calling, :stop_calling,
+     :end_session, :skip_voter, :ready_to_call, :continue_conf, :pause, :run_out_of_numbers, :callin_choice, :read_instruction_options, :conference_started_phones_only_preview, :conference_started_phones_only_power, :conference_started_phones_only_predictive,
+     :gather_response, :submit_response, :next_question, :next_call, :time_period_exceeded, :account_out_of_funds]
+  
   before_filter :check_login, :except=>[:login, :feedback, :end_session, :start_calling, :phones_only, :new_campaign_response_panel, :check_reassign, :call_voter, 
     :ready_to_call, :continue_conf, :pause, :run_out_of_numbers, :callin_choice, :read_instruction_options, :conference_started_phones_only_preview, :conference_started_phones_only_power, :conference_started_phones_only_predictive,
-    :gather_response, :submit_response, :next_question, :next_call]
+    :gather_response, :submit_response, :next_question, :next_call, :time_period_exceeded, :account_out_of_funds]
+    
   before_filter :find_caller_session , :only => [:pause, :stop_calling, :ready_to_call, :continue_conf, :pause, :run_out_of_numbers, :callin_choice, :read_instruction_options, :conference_started_phones_only_preview, :conference_started_phones_only_power, :conference_started_phones_only_predictive,
-    :gather_response, :submit_response, :next_question, :next_call]
+    :gather_response, :submit_response, :next_question, :next_call, :time_period_exceeded, :account_out_of_funds]
+    
   before_filter :find_session, :only => [:end_session]
   layout 'caller'
 
@@ -70,6 +75,15 @@ class CallerController < ApplicationController
   def next_call
     render xml: @caller_session.next_call
   end
+  
+  def time_period_exceeded
+    render xml: @caller_session.time_period_exceeded
+  end
+  
+  def account_out_of_funds
+    render xml: @caller_session.account_has_no_funds
+  end
+  
 
 
   def call_voter

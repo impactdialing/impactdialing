@@ -11,11 +11,9 @@ class PhonesOnlyCallerSession < CallerSession
   end
   
   def ready_to_call
-    return account_has_no_funds_twiml if funds_not_available?
-    return time_period_exceeded_twiml if time_period_exceeded?
-    return choosing_voter_to_dial if  preview?
-    return choosing_voter_and_dial if  power?
     return conference_started_phones_only_predictive if  predictive?
+    return choosing_voter_to_dial if  preview?
+    return choosing_voter_and_dial if  power?    
   end
   
   def choosing_voter_to_dial
