@@ -109,7 +109,7 @@ class CallAttempt < ActiveRecord::Base
   def connect_caller_to_lead
     caller_session_id = RedisOnHoldCaller.longest_waiting_caller(campaign.id)
     unless caller_session_id.nil?
-      caller_session = CallerSession.find(caller_session_id)
+      caller_session = CallerSession.find_by_id_cached(caller_session_id)
       begin
         caller_session.update_attributes(attempt_in_progress: self, voter_in_progress: self.voter, available_for_call: false)
       rescue ActiveRecord::StaleObjectError
