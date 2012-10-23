@@ -10,8 +10,15 @@
     });
   });
 <% end -%>
+
+<%= form_tag  '/admin/twilio_limit' do  %>
+  Twilio Limit: <input type="text" class= "field", name="twilio_limit", value="<%= TwilioLimit.get %>">
+  <%=  submit_tag "Change" %>
+<% end -%>
+
 <h1>System Status</h1>
 <table>
+  
   <tr>
     <td>Logged in campaigns:</td>
     <td><%= @logged_in_campaigns.count %></td>

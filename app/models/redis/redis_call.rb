@@ -33,5 +33,4 @@ class RedisCall
   end
   
   
-  
 end
