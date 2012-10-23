@@ -46,6 +46,8 @@ ImpactDialing::Application.routes.draw do
       post :check_reassign
       post :new_campaign_response_panel
       post :transfer_panel
+      post :time_period_exceeded
+      post :account_out_of_funds      
     end
 
   end
