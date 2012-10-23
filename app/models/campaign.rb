@@ -273,6 +273,7 @@ class Campaign < ActiveRecord::Base
     end
     callers    
   end
+  
     
 
 

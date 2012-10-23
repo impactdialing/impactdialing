@@ -236,6 +236,7 @@ ImpactDialing::Application.routes.draw do
   get 'admin/status', :to => 'admin#state'
   get 'admin/abandonment', :to => 'admin#abandonment'
   get 'admin/caller_sessions/:id', :to => 'admin#caller_sessions', :as => :admin_caller_sessions
+  post 'admin/twilio_limit', :to => 'admin#twilio_limit'
 
   resource :call_attempts, :only => :create
 
