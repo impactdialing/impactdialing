@@ -22,7 +22,7 @@ class VoterListUploadJob
 
     def after_enqueue_scale_up(*args)
       workers_to_scale = HerokuResqueAutoScale::Scaler.working_job_count('list_upload') + HerokuResqueAutoScale::Scaler.pending_job_count('list_upload') - HerokuResqueAutoScale::Scaler.worker_count('list_upload')
-      if workers_to_scale > 0 && HerokuResqueAutoScale::Scaler.working_job_count('list_upload') < 2
+      if workers_to_scale > 0 && HerokuResqueAutoScale::Scaler.working_job_count('list_upload') < 11
         HerokuResqueAutoScale::Scaler.workers('list_upload', (HerokuResqueAutoScale::Scaler.working_job_count('list_upload') + HerokuResqueAutoScale::Scaler.pending_job_count('list_upload')))
       end
     end
