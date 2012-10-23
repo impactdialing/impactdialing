@@ -103,42 +103,6 @@ describe Voter do
     Voter.answered_within_timespan(Time.new(2012, 2, 14, 0), Time.new(2012, 2, 14, 9, 59, 59)).should == []
   end
 
-
-  describe "voter fields" do
-    let(:account) { Factory(:account) }
-    let(:voter) { Factory(:voter, :account => account) }
-    let(:field1) { Factory(:custom_voter_field, :name => "field1", :account => account) }
-    let(:field2) { Factory(:custom_voter_field, :name => "field2", :account => account) }
-    let(:field3) { Factory(:custom_voter_field, :name => "field3", :account => account) }
-
-    it "lists voters custom fields with selected field names" do
-      value1 = Factory(:custom_voter_field_value, :voter => voter, :custom_voter_field => field1, :value => "value1")
-      value2 = Factory(:custom_voter_field_value, :voter => voter, :custom_voter_field => field2, :value => "value2")
-      VoterFieldsLogic.selected_custom_fields(voter.attributes, [field1.name, field2.name]).should == [value1.value, value2.value]
-      VoterFieldsLogic.selected_custom_fields(voter.attributes, [field2.name, field1.name]).should == [value2.value, value1.value]
-      VoterFieldsLogic.selected_custom_fields(voter.attributes, nil).should == []
-    end
-
-    it "lists voters custom fields with selected field names" do
-      value2 = Factory(:custom_voter_field_value, :voter => voter, :custom_voter_field => field2, :value => "value2")
-      VoterFieldsLogic.selected_custom_fields(voter.attributes, [field1.name, field2.name, field3.name]).should == [nil, value2.value, nil]
-    end
-
-    it "lists selected voter fields" do
-      phone, custom_id, firstname = "39045098753", "24566", "first"
-      voter.update_attributes(:Phone => phone, :CustomID => custom_id, :FirstName => firstname)
-      VoterFieldsLogic.selected_fields(voter.attributes, ["Phone", "FirstName", "LastName"]).should == [phone, firstname, nil]
-      VoterFieldsLogic.selected_fields(voter.attributes, ["Phone", "LastName", "FirstName"]).should == [phone, nil, firstname]
-    end
-
-    it "selects phone number if there are no selected fields" do
-      phone, custom_id, firstname = "39045098753", "24566", "first"
-      voter.update_attributes(:Phone => phone, :CustomID => custom_id, :FirstName => firstname)
-      VoterFieldsLogic.selected_fields(voter.attributes).should == [phone]
-    end
-
-  end
-
   describe "Dialing" do
     let(:campaign) { Factory(:robo) }
     let(:voter) { Factory(:voter, :campaign => campaign) }

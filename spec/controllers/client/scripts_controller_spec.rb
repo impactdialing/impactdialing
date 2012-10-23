@@ -13,7 +13,7 @@ describe Client::ScriptsController do
     it "lists voter fields to select" do
       post :create, script: {name: "script1"}, voter_field: ["Phone", "CustomID", "LastName", "FirstName", "MiddleName", "Suffix", "Email", "address", "city", "state", "zip_code", "country"]
       response.should redirect_to(client_scripts_url)
-      Script.find_by_name("script1").voter_fields.should eq(VoterFieldsLogic::UPLOAD_FIELDS.to_json)
+      Script.find_by_name("script1").voter_fields.should eq(Voter::UPLOAD_FIELDS.to_json)
     end
 
     it "shows the list of voter fields which were selected" do
