@@ -52,7 +52,7 @@ class Call < ActiveRecord::Base
   
   def call_ended(campaign_type)
     if call_did_not_connect?
-      RedisCallFlow.push_to_not_answered_call_list(self.id, redis_call_status)
+      RedisCallFlow.push_to_not_answered_call_list(self.id, redis_call_status)      
     end            
     
     if answered_by_machine?
@@ -61,6 +61,10 @@ class Call < ActiveRecord::Base
     
     if Campaign.preview_power_campaign?(campaign_type)  && redis_call_status != 'completed'
       call_attempt.redirect_caller
+    end
+    
+    if call_did_not_connect?
+      RedisCall.delete(self.id)
     end      
     call_ended_twiml
   end
