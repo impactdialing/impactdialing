@@ -59,6 +59,14 @@ class CallerSession < ActiveRecord::Base
     campaign_out_of_phone_numbers_twiml
   end
   
+  def time_period_exceeded
+    time_period_exceeded_twiml
+  end
+  
+  def account_has_no_funds
+    account_has_no_funds_twiml
+  end
+  
   def conference_ended
     end_caller_session
     enqueue_call_flow(CallerPusherJob, [self.id, "publish_caller_disconnected"])
@@ -126,6 +134,20 @@ class CallerSession < ActiveRecord::Base
     end
   end
   
+  def redirect_caller_time_period_exceeded
+    if self.available_for_call?
+      Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
+      Twilio::Call.redirect(sid, time_period_exceeded_caller_url(caller, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, session_id: id))
+    end    
+  end
+
+  def redirect_account_has_no_funds
+    if self.available_for_call?
+      Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
+      Twilio::Call.redirect(sid, account_out_of_funds_caller_url(caller, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, session_id: id))
+    end    
+  end
+  
 
   def join_conference(mute_type, call_sid, monitor_session)
     response = Twilio::Verb.new do |v|
@@ -191,9 +213,6 @@ class CallerSession < ActiveRecord::Base
     self.on_call && !self.available_for_call
   end
 
-  def on_call_states
-    ['']
-  end
   
   def self.find_by_id_cached(id)
     Rails.cache.fetch("CallerSession.find_by_id(#{id})") { CallerSession.find_by_id(id) }
@@ -212,7 +231,6 @@ class CallerSession < ActiveRecord::Base
   end
   
   
-
   private
     
   def wrapup

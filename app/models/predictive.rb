@@ -56,7 +56,20 @@ class Predictive < Campaign
       to_be_dialed.without(blocked).limit(limit_voters).pluck(:id)
     set_voter_status_to_read_for_dial!(voters)
     check_campaign_out_of_numbers(voters)
+    check_campaign_fit_to_dial
     voters
+  end
+  
+  def check_campaign_fit_to_dial
+    if !account.funds_available?
+      caller_sessions.available.each {|cs| cs.redirect_account_has_no_funds }      
+      return
+    end  
+      
+    if time_period_exceeded?
+      caller_sessions.available.each {|cs| cs.redirect_caller_time_period_exceeded}
+      return
+    end        
   end
 
   def set_voter_status_to_read_for_dial!(voters)
