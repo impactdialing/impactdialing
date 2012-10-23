@@ -56,7 +56,20 @@ class Predictive < Campaign
       to_be_dialed.without(blocked).limit(limit_voters).pluck(:id)
     set_voter_status_to_read_for_dial!(voters)
     check_campaign_out_of_numbers(voters)
+    check_campaign_fit_to_dial
     voters
+  end
+  
+  def check_campaign_fit_to_dial
+    if !account.funds_available?
+      caller_sessions.available.each {|cs| cs.redirect_account_has_no_funds }      
+      return
+    end  
+      
+    if time_period_exceeded?
+      caller_sessions.available.each {|cs| cs.redirect_caller_time_period_exceeded}
+      return
+    end        
   end
 
   def set_voter_status_to_read_for_dial!(voters)
@@ -87,13 +100,9 @@ class Predictive < Campaign
     !Resque.redis.exists("do_not_call:#{campaign_id}")
   end
   
-  def get_twilio_limit
-    Resque.redis.get("twilio_limit").try(:to_i) || 4   
-  end
-
 
   def best_dials_simulated
-    simulated_values.nil? ? 1 : simulated_values.best_dials.nil? ? 1 : simulated_values.best_dials.ceil > get_twilio_limit ? get_twilio_limit : simulated_values.best_dials.ceil
+    simulated_values.nil? ? 1 : simulated_values.best_dials.nil? ? 1 : simulated_values.best_dials.ceil > TwilioLimit.get ? TwilioLimit.get : simulated_values.best_dials.ceil
   end
 
   def best_conversation_simulated

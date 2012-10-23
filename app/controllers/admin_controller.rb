@@ -9,6 +9,11 @@ class AdminController < ApplicationController
     @logged_in_callers_count = CallerSession.on_call.count
     @errors=""
   end
+  
+  def twilio_limit
+    TwilioLimit.set(params["twilio_limit"])
+    redirect_to :back
+  end
 
   def caller_sessions
     campaign = Campaign.find(params[:id])
