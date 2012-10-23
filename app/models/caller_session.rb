@@ -171,7 +171,7 @@ class CallerSession < ActiveRecord::Base
   
 
   def disconnected?
-    state == "conference_ended"
+    on_call == false
   end
   
   def publish(event, data)
