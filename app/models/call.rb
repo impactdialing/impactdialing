@@ -43,7 +43,7 @@ class Call < ActiveRecord::Base
   
   def disconnected
     unless caller_session.nil?
-      RedisCallFlow.push_to_disconnected_call_list(self.id, self.recording_duration, self.recording_duration, caller_session.caller.id);
+      RedisCallFlow.push_to_disconnected_call_list(self.id, self.recording_duration, self.recording_duration, caller_session.caller_id);
       enqueue_call_flow(CallerPusherJob, [caller_session.id, "publish_voter_disconnected"])
       RedisStatus.set_state_changed_time(campaign.id, "Wrap up", caller_session.id)      
     end
@@ -52,7 +52,7 @@ class Call < ActiveRecord::Base
   
   def call_ended(campaign_type)
     if call_did_not_connect?
-      RedisCallFlow.push_to_not_answered_call_list(self.id, redis_call_status)
+      RedisCallFlow.push_to_not_answered_call_list(self.id, redis_call_status)      
     end            
     
     if answered_by_machine?
@@ -61,6 +61,10 @@ class Call < ActiveRecord::Base
     
     if Campaign.preview_power_campaign?(campaign_type)  && redis_call_status != 'completed'
       call_attempt.redirect_caller
+    end
+    
+    if call_did_not_connect?
+      RedisCall.delete(self.id)
     end      
     call_ended_twiml
   end

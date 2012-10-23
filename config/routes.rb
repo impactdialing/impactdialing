@@ -37,6 +37,7 @@ ImpactDialing::Application.routes.draw do
       post :read_instruction_options
       post :submit_response
       post :next_question
+      post :run_out_of_numbers
       post :next_call
       post :call_voter
       post :stop_calling
@@ -45,6 +46,8 @@ ImpactDialing::Application.routes.draw do
       post :check_reassign
       post :new_campaign_response_panel
       post :transfer_panel
+      post :time_period_exceeded
+      post :account_out_of_funds      
     end
 
   end
@@ -233,6 +236,7 @@ ImpactDialing::Application.routes.draw do
   get 'admin/status', :to => 'admin#state'
   get 'admin/abandonment', :to => 'admin#abandonment'
   get 'admin/caller_sessions/:id', :to => 'admin#caller_sessions', :as => :admin_caller_sessions
+  post 'admin/twilio_limit', :to => 'admin#twilio_limit'
 
   resource :call_attempts, :only => :create
 
