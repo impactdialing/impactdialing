@@ -75,25 +75,6 @@ describe PhonesOnlyCallerSession do
 
   describe "ready_to_call" do
 
-
-    describe "time period exceeded" do
-      before(:each) do
-        @script = Factory(:script)
-        @campaign =  Factory(:preview, script: @script,:start_time => Time.new(2011, 1, 1, 9, 0, 0), :end_time => Time.new(2011, 1, 1, 21, 0, 0), :time_zone =>"Pacific Time (US & Canada)")
-        @callers_campaign =  Factory(:preview, script: @script)
-        @caller = Factory(:caller, campaign: @callers_campaign)
-      end
-
-
-      it "should render correct twiml" do
-        caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call")
-        caller_session.should_receive(:funds_not_available?).and_return(false)
-        caller_session.should_receive(:time_period_exceeded?).and_return(true)
-        caller_session.ready_to_call.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>You can only call this campaign between 9 AM and 9 PM. Please try back during those hours.</Say><Hangup/></Response>")
-      end
-
-    end
-
     describe "caller reassigned to campaign" do
       before(:each) do
         @script = Factory(:script)
@@ -124,7 +105,6 @@ describe PhonesOnlyCallerSession do
       it "should set voter in progress for session" do
         call_attempt = Factory(:call_attempt)
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call", attempt_in_progress: call_attempt)
-        caller_session.should_receive(:funds_not_available?).and_return(false)
         caller_session.ready_to_call
         caller_session.voter_in_progress.id.should eq(@voter.id)
       end
@@ -133,7 +113,6 @@ describe PhonesOnlyCallerSession do
         call_attempt = Factory(:call_attempt)
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call", attempt_in_progress: call_attempt)
         voter = Factory(:voter, FirstName:"first", LastName:"last")
-        caller_session.should_receive(:funds_not_available?).and_return(false)
         @campaign.should_receive(:next_voter_in_dial_queue).and_return(voter)
         caller_session.ready_to_call.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather numDigits=\"1\" timeout=\"10\" action=\"https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/conference_started_phones_only_preview?session_id=#{caller_session.id}&amp;voter=#{voter.id}\" method=\"POST\" finishOnKey=\"5\"><Say>first  last. Press star to dial or pound to skip.</Say></Gather></Response>")
       end
@@ -141,7 +120,6 @@ describe PhonesOnlyCallerSession do
       it "should render twiml for preview when no voters present" do
         call_attempt = Factory(:call_attempt)
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call", attempt_in_progress: call_attempt)
-        caller_session.should_receive(:funds_not_available?).and_return(false)
         @campaign.should_receive(:next_voter_in_dial_queue).and_return(nil)
         caller_session.ready_to_call.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>There are no more numbers to call in this campaign.</Say><Hangup/></Response>")
       end
@@ -159,7 +137,6 @@ describe PhonesOnlyCallerSession do
       it "should set voter in progress" do
         call_attempt = Factory(:call_attempt)
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call", attempt_in_progress: call_attempt)
-        caller_session.should_receive(:funds_not_available?).and_return(false)
         caller_session.ready_to_call
         caller_session.voter_in_progress.id.should eq(@voter.id)
       end
@@ -170,14 +147,12 @@ describe PhonesOnlyCallerSession do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call", attempt_in_progress: call_attempt)
         voter = Factory(:voter, FirstName:"first", LastName:"last")
         @campaign.should_receive(:next_voter_in_dial_queue).and_return(voter)
-        caller_session.should_receive(:funds_not_available?).and_return(false)
         caller_session.ready_to_call.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>first  last.</Say><Redirect method=\"POST\">https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/conference_started_phones_only_power?session_id=#{caller_session.id}&amp;voter_id=#{voter.id}</Redirect></Response>")
       end
 
       it "should render twiml for power when no voters present" do
         call_attempt = Factory(:call_attempt)
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call", attempt_in_progress: call_attempt)
-        caller_session.should_receive(:funds_not_available?).and_return(false)
         @campaign.should_receive(:next_voter_in_dial_queue).and_return(nil)
         caller_session.ready_to_call.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>There are no more numbers to call in this campaign.</Say><Hangup/></Response>")
       end
@@ -193,7 +168,6 @@ describe PhonesOnlyCallerSession do
 
       it "should set on_call to true" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call")
-        caller_session.should_receive(:funds_not_available?).and_return(false)
         caller_session.should_receive(:predictive?).and_return(true)
         caller_session.ready_to_call
         caller_session.on_call.should be_true
@@ -201,7 +175,6 @@ describe PhonesOnlyCallerSession do
 
       it "should set available_for_call to true" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call")
-        caller_session.should_receive(:funds_not_available?).and_return(false)
         caller_session.should_receive(:predictive?).and_return(true)
         caller_session.ready_to_call
         caller_session.available_for_call.should be_true
@@ -209,7 +182,6 @@ describe PhonesOnlyCallerSession do
 
       it "should set attempt_in_progress to nil" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call")
-        caller_session.should_receive(:funds_not_available?).and_return(false)
         caller_session.should_receive(:predictive?).and_return(true)
         caller_session.ready_to_call
         caller_session.attempt_in_progress.should be_nil
@@ -218,7 +190,6 @@ describe PhonesOnlyCallerSession do
 
       it "render correct twiml" do
         caller_session = Factory(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call")
-        caller_session.should_receive(:funds_not_available?).and_return(false)
         caller_session.should_receive(:predictive?).and_return(true)
         caller_session.ready_to_call.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"https://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/gather_response?question_number=0&amp;session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"/></Dial></Response>")
       end

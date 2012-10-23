@@ -14,8 +14,6 @@ class WebuiCallerSession < CallerSession
   end
   
   def continue_conf
-    return account_has_no_funds_twiml if funds_not_available?
-    return time_period_exceeded_twiml if time_period_exceeded?
     start_conference
     publish_start_calling
     enqueue_call_flow(CallerPusherJob, [self.id,  "publish_caller_conference_started"]) 

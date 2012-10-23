@@ -14,6 +14,7 @@ class AnsweredJob
          call_attempt.voter.persist_notes(notes, call_attempt)
          call_attempt.update_attributes(voter_response_processed: true)
          call_attempt.voter.update_attribute(:result_date, Time.now)
+         RedisCall.delete(call_attempt.call.id)
        rescue Exception => e
          call_attempt.update_attributes(voter_response_processed: true)         
          puts e.backtrace
