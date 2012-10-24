@@ -36,7 +36,11 @@ describe PossibleResponse do
     possible_response2 = Factory(:possible_response, question_id: question2.id, value: "Bye")
     answer1 = Factory(:answer, :voter => Factory(:voter, :campaign => campaign), campaign: campaign,:possible_response => possible_response1, :question => question1)
     answer2 = Factory(:answer, :voter => Factory(:voter, :campaign => campaign), campaign: campaign,:possible_response => possible_response2, :question => question2)
-    PossibleResponse.possible_response_text([question1.id, question2.id], [answer1, answer2]).should eq(["Hey", "Bye"])
+    possible_responses_data = {
+      possible_response1.id => "Hey",
+      possible_response2.id => "Bye"
+    }
+    PossibleResponse.possible_response_text([question1.id, question2.id], [answer1, answer2], possible_responses_data).should eq(["Hey", "Bye"])
   end
 
   it "should return possible_response_text for all persisted questions in correct order" do
@@ -47,7 +51,11 @@ describe PossibleResponse do
      possible_response2 = Factory(:possible_response, question_id: question2.id, value: "Bye")
      answer1 = Factory(:answer, :voter => Factory(:voter, :campaign => campaign), campaign: campaign,:possible_response => possible_response1, :question => question1)
      answer2 = Factory(:answer, :voter => Factory(:voter, :campaign => campaign), campaign: campaign,:possible_response => possible_response2, :question => question2)
-     PossibleResponse.possible_response_text([question2.id, question1.id], [answer1, answer2]).should eq(["Bye", "Hey"])
+     possible_responses_data = {
+       possible_response1.id => "Hey",
+       possible_response2.id => "Bye"
+     }
+     PossibleResponse.possible_response_text([question2.id, question1.id], [answer1, answer2], possible_responses_data).should eq(["Bye", "Hey"])
    end
 
    it "should return possible_response_text as blank for deleted responses" do
@@ -58,7 +66,11 @@ describe PossibleResponse do
        possible_response2 = Factory(:possible_response, question_id: question2.id, value: "Bye")
        answer1 = Factory(:answer, :voter => Factory(:voter, :campaign => campaign), campaign: campaign,:possible_response => possible_response1, :question => question1)
        answer2 = Factory(:answer, :voter => Factory(:voter, :campaign => campaign), campaign: campaign,:possible_response => possible_response2, :question => question2)
-       PossibleResponse.possible_response_text([question2.id, 3454 ,question1.id], [answer1, answer2]).should eq(["Bye", "", "Hey"])
+       possible_responses_data = {
+         possible_response1.id => "Hey",
+         possible_response2.id => "Bye"
+       }
+       PossibleResponse.possible_response_text([question2.id, 3454 ,question1.id], [answer1, answer2], possible_responses_data).should eq(["Bye", "", "Hey"])
      end
 
 
