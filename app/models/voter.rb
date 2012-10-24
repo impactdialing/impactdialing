@@ -38,8 +38,8 @@ class Voter < ActiveRecord::Base
   scope :active, where(:active => true)
   scope :yet_to_call, enabled.where(:call_back => false).where('status not in (?) and priority is null', [CallAttempt::Status::INPROGRESS, CallAttempt::Status::RINGING, CallAttempt::Status::READY, CallAttempt::Status::SUCCESS, CallAttempt::Status::FAILED])
   scope :last_call_attempt_before_recycle_rate, lambda { |recycle_rate| where('last_call_attempt_time is null or last_call_attempt_time < ? ', recycle_rate.hours.ago) }
-  scope :avialable_to_be_retried, lambda { |recycle_rate| where('last_call_attempt_time is not null and last_call_attempt_time < ? and status in (?)', recycle_rate.hours.ago,[CallAttempt::Status::BUSY,CallAttempt::Status::NOANSWER,CallAttempt::Status::HANGUP]) }
-  scope :not_avialable_to_be_retried, lambda { |recycle_rate| where('last_call_attempt_time is not null and last_call_attempt_time > ? and status in (?)', recycle_rate.hours.ago,[CallAttempt::Status::BUSY,CallAttempt::Status::NOANSWER,CallAttempt::Status::HANGUP]) }
+  scope :avialable_to_be_retried, lambda { |recycle_rate| where('last_call_attempt_time is not null and last_call_attempt_time < ? and status in (?)', recycle_rate.hours.ago,[CallAttempt::Status::BUSY,CallAttempt::Status::NOANSWER,CallAttempt::Status::HANGUP, Voter::Status::RETRY]) }
+  scope :not_avialable_to_be_retried, lambda { |recycle_rate| where('last_call_attempt_time is not null and last_call_attempt_time >= ? and status in (?)', recycle_rate.hours.ago,[CallAttempt::Status::BUSY,CallAttempt::Status::NOANSWER,CallAttempt::Status::HANGUP, Voter::Status::RETRY]) }
   scope :to_be_dialed, yet_to_call.order(:last_call_attempt_time)
   scope :randomly, order('rand()')
   scope :to_callback, where(:call_back => true)
