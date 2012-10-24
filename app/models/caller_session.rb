@@ -78,7 +78,6 @@ class CallerSession < ActiveRecord::Base
     begin
       end_session     
     rescue ActiveRecord::StaleObjectError => exception
-      Resque.enqueue(PhantomCallerJob, self.id)
     end      
   end
   
@@ -124,20 +123,25 @@ class CallerSession < ActiveRecord::Base
   
   def redirect_caller
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-    Twilio::Call.redirect(sid, continue_conf_caller_url(caller, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, session_id: id))
+    if caller.is_phones_only?
+      Twilio::Call.redirect(sid, ready_to_call_caller_url(caller_id, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, session_id: id))      
+    else
+      Twilio::Call.redirect(sid, continue_conf_caller_url(caller_id, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, session_id: id))      
+    end    
+    
   end
   
   def redirect_caller_out_of_numbers
     if self.available_for_call?
       Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-      Twilio::Call.redirect(sid, run_out_of_numbers_caller_url(caller, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, session_id: id))
+      Twilio::Call.redirect(sid, run_out_of_numbers_caller_url(caller_id, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, session_id: id))
     end
   end
   
   def redirect_caller_time_period_exceeded
     if self.available_for_call?
       Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-      Twilio::Call.redirect(sid, time_period_exceeded_caller_url(caller, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, session_id: id))
+      Twilio::Call.redirect(sid, time_period_exceeded_caller_url(caller_id, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, session_id: id))
     end    
   end
 
@@ -169,7 +173,7 @@ class CallerSession < ActiveRecord::Base
   
 
   def disconnected?
-    state == "conference_ended"
+    on_call == false
   end
   
   def publish(event, data)

@@ -21,12 +21,12 @@ class ReportDownloadJob
       HerokuResqueAutoScale::Scaler.workers('report_download',1) if HerokuResqueAutoScale::Scaler.working_job_count('report_download') == 1
     end
 
-    def self.after_enqueue_scale_up(*args)
+    def after_enqueue_scale_up(*args)
       workers_to_scale = HerokuResqueAutoScale::Scaler.working_job_count('report_download') +
         HerokuResqueAutoScale::Scaler.pending_job_count('report_download') -
         HerokuResqueAutoScale::Scaler.worker_count('report_download')
 
-      if workers_to_scale > 0 && HerokuResqueAutoScale::Scaler.working_job_count('report_download') < 2
+      if workers_to_scale > 0 && HerokuResqueAutoScale::Scaler.working_job_count('report_download') < 11
         HerokuResqueAutoScale::Scaler.workers('report_download', (HerokuResqueAutoScale::Scaler.working_job_count('report_download') +
                                                                   HerokuResqueAutoScale::Scaler.pending_job_count('report_download')))
       end

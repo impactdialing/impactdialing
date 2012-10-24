@@ -21,6 +21,13 @@ alert:
   args: 
   description: "This job alerts all of us if something is fishy"
 
+phantom_callers:
+  cron: "*/5 * * * *"
+  class: PhantomCallerJob 
+  queue: background_worker
+  args: 
+  description: "This job destroys phantom callers. BOOOOOOOM"
+
 
 persist_calls:
   cron: "* * * * *"

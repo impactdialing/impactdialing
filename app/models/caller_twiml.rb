@@ -136,7 +136,7 @@ module CallerTwiml
     
     def conference_started_phones_only_predictive_twiml
       Twilio::TwiML::Response.new do |r|
-        r.Dial(:hangupOnStar => true, :action => gather_response_caller_url(caller, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :session_id => self.id, question_number: 0)) do
+        r.Dial(:hangupOnStar => true, :action => gather_response_caller_url(caller_id, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :session_id => self.id, question_number: 0)) do
           r.Conference(session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET')
         end                  
       end.text
@@ -144,7 +144,7 @@ module CallerTwiml
     
    def skip_voter_twiml
      Twilio::TwiML::Response.new do |r|
-       r.Redirect(ready_to_call_caller_url(self.caller, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :session_id => self.id))          
+       r.Redirect(ready_to_call_caller_url(caller_id, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :session_id => self.id))          
      end.text     
    end
    
