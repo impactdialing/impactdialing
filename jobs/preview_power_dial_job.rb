@@ -3,7 +3,7 @@ class PreviewPowerDialJob
   sidekiq_options :retry => false
   
   def perform(caller_session_id, voter_id)    
-    caller_session = CallerSession.find(caller_session_id)
+    caller_session = CallerSession.find_by_id_cached(caller_session_id)
     if caller_session.funds_not_available?
       caller_session.redirect_account_has_no_funds
       return
