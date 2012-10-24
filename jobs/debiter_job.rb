@@ -8,7 +8,6 @@ class DebiterJob
 
    def self.perform     
      call_results = []
-     CallAttempt.update_all("debited=true", "debited=false and status in ('No answer', 'No answer busy signal', 'Call failed')")
      call_attempts = CallAttempt.debit_not_processed.limit(1000)        
      call_attempts.each do |call_attempt|
        begin
