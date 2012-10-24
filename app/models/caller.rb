@@ -146,6 +146,8 @@ class Caller < ActiveRecord::Base
       caller_session =  WebuiCallerSession.create(on_call: false, available_for_call: false, session_key: session_key, campaign: campaign , sid: sid, starttime: Time.now, caller_type: caller_type, state: 'initial', caller: self, on_call: true, script_id: campaign.script_id)
     end
     caller_sessions << caller_session
+    caller_session.expire_find_by_id_cache
+    caller_session.expire_find_by_call_sid_cache
     caller_session
   end
   
