@@ -12,7 +12,7 @@ heroku:
 aws:
   <<: *default_settings
 
-staging:
+staging: &staging
   <<: *default_settings
   recording_env: heroku_staging
   callin_phone: 6502626881
