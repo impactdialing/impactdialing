@@ -38,6 +38,7 @@ class CampaignReportStrategy
     @note_ids = NoteResponse.note_ids(@campaign.id)           
     @from_date = from_date
     @to_date = to_date
+    @replica_connection = OctopusConnection.connection(:read_slave1)
   end
   
   def construct_csv
@@ -46,26 +47,16 @@ class CampaignReportStrategy
     @csv
   end
   
-  def csv_for(voter)
-    voter_fields = VoterFieldsLogic.selected_fields(voter, @selected_voter_fields.try(:compact))
-    custom_fields = VoterFieldsLogic.selected_custom_fields(voter, @selected_custom_voter_fields)
-    [*voter_fields, *custom_fields, [nil, "Not Dialed","","","","", [], []]]
-  end
-  
-  def call_attempt_info(call_attempt)
+  def call_attempt_info(call_attempt, caller_names, attempt_numbers)
     if @mode == CampaignReportStrategy::Mode::PER_LEAD
-      [caller_name(call_attempt), CampaignReportStrategy.map_status(call_attempt['status']), time_dialed(call_attempt),
-       time_answered(call_attempt), time_ended(call_attempt), number_of_attempts(call_attempt['voter_id']),
+      [caller_names[call_attempt['caller_id']], CampaignReportStrategy.map_status(call_attempt['status']), time_dialed(call_attempt),
+       time_answered(call_attempt), time_ended(call_attempt), attempt_numbers[call_attempt['voter_id']][:cnt],
        CallAttempt.report_recording_url(call_attempt['recording_url'])].flatten
     else
-      [caller_name(call_attempt), CampaignReportStrategy.map_status(call_attempt['status']), time_dialed(call_attempt),
+      [caller_names[call_attempt['caller_id']], CampaignReportStrategy.map_status(call_attempt['status']), time_dialed(call_attempt),
        time_answered(call_attempt), time_ended(call_attempt), CallAttempt.report_recording_url(call_attempt['recording_url'])].flatten
     end
      
-  end
-  
-  def caller_name(call_attempt)
-    Caller.where(id: call_attempt['caller_id']).first.try(:known_as)
   end
   
   def time_dialed(call_attempt)
@@ -79,12 +70,6 @@ class CampaignReportStrategy
   def time_ended(call_attempt)
     call_attempt['call_end'].try(:in_time_zone, @campaign.time_zone)
   end
-  
-  
-  def number_of_attempts(voter)
-    CallAttempt.where(voter_id: voter).count
-  end
-  
   
   def answers(call_attempt)
     call_attempt.answers.for_questions(@question_ids).order('question_id')
