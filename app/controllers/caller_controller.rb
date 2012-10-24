@@ -190,7 +190,7 @@ class CallerController < ApplicationController
   end
   
   def find_session
-    @caller_session = CallerSession.find_by_sid(params[:CallSid])
+    @caller_session = CallerSession.find_by_sid_cached(params[:CallSid])
   end
 
   def find_caller_session
