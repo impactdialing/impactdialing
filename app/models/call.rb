@@ -45,7 +45,7 @@ class Call < ActiveRecord::Base
     unless cached_caller_session.nil?
       RedisCallFlow.push_to_disconnected_call_list(self.id, self.recording_duration, self.recording_duration, cached_caller_session.caller_id);
       enqueue_call_flow(CallerPusherJob, [cached_caller_session.id, "publish_voter_disconnected"])
-      RedisStatus.set_state_changed_time(campaign.id, "Wrap up", cached_caller_session.id)      
+      RedisStatus.set_state_changed_time(call_attempt.campaign_id, "Wrap up", cached_caller_session.id)      
     end
     disconnected_twiml    
   end
@@ -73,7 +73,7 @@ class Call < ActiveRecord::Base
     RedisCallFlow.push_to_wrapped_up_call_list(call_attempt.id, CallerSession::CallerType::TWILIO_CLIENT);
     call_attempt.redirect_caller
     unless cached_caller_session.nil?
-      RedisStatus.set_state_changed_time(campaign.id, "On hold", cached_caller_session.id)    
+      RedisStatus.set_state_changed_time(call_attempt.campaign_id, "On hold", cached_caller_session.id)    
     end
   end
   

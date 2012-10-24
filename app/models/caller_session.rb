@@ -90,8 +90,8 @@ class CallerSession < ActiveRecord::Base
   
   def end_session
     self.update_attributes(endtime: Time.now, on_call: false, available_for_call: false)
-    RedisPredictiveCampaign.remove(campaign.id, campaign.type) if campaign.caller_sessions.on_call.size <= 1
-    RedisStatus.delete_state(campaign.id, self.id)
+    RedisPredictiveCampaign.remove(campaign_id, campaign.type) if campaign.caller_sessions.on_call.size <= 1
+    RedisStatus.delete_state(campaign_id, self.id)
     RedisCallerSession.delete(self.id)
   end
   
@@ -208,8 +208,8 @@ class CallerSession < ActiveRecord::Base
    def start_conference
      if Campaign.predictive_campaign?(campaign.type)
        self.update_attributes(on_call: true, available_for_call: true)
-       RedisOnHoldCaller.remove_caller_session(campaign.id, self.id)
-       RedisOnHoldCaller.add(campaign.id, self.id)
+       RedisOnHoldCaller.remove_caller_session(campaign_id, self.id)
+       RedisOnHoldCaller.add(campaign_id, self.id)
      end     
    end
 
