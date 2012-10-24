@@ -1,1 +1,1 @@
-require 'heroku.rb'
+require "#{Rails.root}/config/environments/heroku.rb"

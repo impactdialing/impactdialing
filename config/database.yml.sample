@@ -44,3 +44,17 @@ staging:
     timeout: 5000
     reconnect: true
     pool: 10
+
+aws:
+   adapter: mysql2
+   host: herokuproduction55.cjo94dhm4pos.us-east-1.rds.amazonaws.com
+   database: heroku_production
+   username: root
+   password: pfsdh37sl203jq
+
+aws_staging:
+   adapter: mysql2
+   host: herokustaging55.cjo94dhm4pos.us-east-1.rds.amazonaws.com
+   database: impactdialing_heroku_staging
+   username: root
+   password: mypassword912481
