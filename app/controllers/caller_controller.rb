@@ -20,7 +20,8 @@ class CallerController < ApplicationController
     caller = Caller.find(params[:caller_id])
     identity = CallerIdentity.find_by_session_key(params[:session_key])
     session = caller.create_caller_session(identity.session_key, params[:CallSid], CallerSession::CallerType::TWILIO_CLIENT)
-    caller.started_calling(session)    
+    
+    caller.started_calling(CallerSession.find_by_id_cached(session.id))    
     render xml: session.start_conf
   end
   
