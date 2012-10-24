@@ -207,9 +207,8 @@ class CallerSession < ActiveRecord::Base
    end
    
    def start_conference
-     if Campaign.predictive_campaign?(campaign.type)
-       cached_caller_session = CallerSession.find_by_id_cached(self.id)
-       cached_caller_session.update_attributes(on_call: true, available_for_call: true)
+     if Campaign.predictive_campaign?(campaign.type)       
+       self.update_attributes(on_call: true, available_for_call: true)
        RedisOnHoldCaller.remove_caller_session(campaign_id, self.id)
        RedisOnHoldCaller.add(campaign_id, self.id)
      end     
