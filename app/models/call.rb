@@ -21,7 +21,7 @@ class Call < ActiveRecord::Base
   
   def connected
     connect_call
-    enqueue_call_flow(VoterConnectedPusherJob, [caller_session.id, self.id])    
+    enqueue_call_flow(VoterConnectedPusherJob, [call_attempt.caller_session_id, self.id])    
     connected_twiml
   end
   
@@ -42,8 +42,8 @@ class Call < ActiveRecord::Base
   end
   
   def disconnected
-    unless caller_session.nil?
-      RedisCallFlow.push_to_disconnected_call_list(self.id, self.recording_duration, self.recording_duration, caller_session.caller_id);
+    unless cached_caller_session.nil?
+      RedisCallFlow.push_to_disconnected_call_list(self.id, self.recording_duration, self.recording_duration, cached_caller_session.caller_id);
       enqueue_call_flow(CallerPusherJob, [caller_session.id, "publish_voter_disconnected"])
       RedisStatus.set_state_changed_time(campaign.id, "Wrap up", caller_session.id)      
     end
@@ -92,12 +92,12 @@ class Call < ActiveRecord::Base
   end
   
   def answered_by_human_and_caller_available?    
-     answered_by_human?  && RedisCall.call_status(self.id) == 'in-progress' && !caller_session.nil? && caller_session.assigned_to_lead?
+     answered_by_human?  && RedisCall.call_status(self.id) == 'in-progress' && !cached_caller_session.nil? && cached_caller_session.assigned_to_lead?
   end
 
   
   def answered_by_human_and_caller_not_available?
-    answered_by_human?  && redis_call_status == 'in-progress' && (caller_session.nil? || !caller_session.assigned_to_lead?)
+    answered_by_human?  && redis_call_status == 'in-progress' && (cached_caller_session.nil? || !cached_caller_session.assigned_to_lead?)
   end
   
   def call_did_not_connect?
@@ -110,6 +110,10 @@ class Call < ActiveRecord::Base
   
   def redis_call_status
     RedisCall.call_status(self.id)
+  end
+  
+  def cached_caller_session
+    CallerSession.find_by_id_cached(call_attempt.caller_session_id)
   end
   
   
