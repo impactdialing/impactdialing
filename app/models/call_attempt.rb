@@ -109,9 +109,9 @@ class CallAttempt < ActiveRecord::Base
   def connect_caller_to_lead
     caller_session_id = RedisOnHoldCaller.longest_waiting_caller(campaign.id)
     unless caller_session_id.nil?
-      caller_session = CallerSession.find_by_id_cached(caller_session_id)
+      loaded_caller_session = CallerSession.find_by_id_cached(caller_session_id)
       begin
-        caller_session.update_attributes(attempt_in_progress: self, voter_in_progress: self.voter, available_for_call: false)
+        loaded_caller_session.update_attributes(attempt_in_progress: self, voter_in_progress: self.voter, available_for_call: false)
       rescue ActiveRecord::StaleObjectError
         RedisOnHoldCaller.remove_caller_session(campaign.id, caller_session_id)
         RedisOnHoldCaller.add_to_bottom(campaign.id, caller_session_id)
@@ -121,7 +121,7 @@ class CallAttempt < ActiveRecord::Base
   
   def connect_call
     self.update_attributes(connecttime: Time.now)
-    RedisStatus.set_state_changed_time(campaign.id, "On call", caller_session.id)
+    RedisStatus.set_state_changed_time(campaign.id, "On call", caller_session_id)
   end
   
   def not_wrapped_up?
@@ -181,13 +181,13 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def redirect_caller
-    unless caller_session.nil?
-      enqueue_call_flow(RedirectCallerJob, [caller_session.id])
+    unless caller_session_id.nil?
+      enqueue_call_flow(RedirectCallerJob, [caller_session_id])
     end    
   end
   
   def end_caller_session
-    unless caller_session.nil?
+    unless caller_session_id.nil?
       caller_session.stop_calling
     end
   end
