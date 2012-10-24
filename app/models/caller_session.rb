@@ -75,7 +75,6 @@ class CallerSession < ActiveRecord::Base
     begin
       end_session     
     rescue ActiveRecord::StaleObjectError => exception
-      Resque.enqueue(PhantomCallerJob, self.id)
     end      
   end
   
