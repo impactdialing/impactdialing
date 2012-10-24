@@ -24,7 +24,7 @@ class CallAttempt < ActiveRecord::Base
   scope :without_status, lambda { |statuses| {:conditions => ['status not in (?)', statuses]} }
   scope :with_status, lambda { |statuses| {:conditions => ['status in (?)', statuses]} }
   scope :results_not_processed, lambda { where(:voter_response_processed => "0", :status => Status::SUCCESS).where('wrapup_time is not null') }
-  scope :debit_not_processed, where(debited: "0").where('tEndTime is not null')
+  scope :debit_not_processed, where(debited: "0").where('tEndTime is not null').where("status NOT IN ('No answer', 'No answer busy signal', 'Call failed')")
 
 
   def self.report_recording_url(url)
