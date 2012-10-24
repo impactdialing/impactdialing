@@ -7,6 +7,7 @@ class CallerSession < ActiveRecord::Base
   include CallerTwiml
   
   after_save :expire_find_by_id_cache, :expire_find_by_call_sid_cache
+  after_create :expire_find_by_id_cache, :expire_find_by_call_sid_cache
 
   
   belongs_to :caller
