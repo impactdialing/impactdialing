@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20121020092341) do
+ActiveRecord::Schema.define(:version => 20121024110416) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -48,8 +48,7 @@ ActiveRecord::Schema.define(:version => 20121020092341) do
 
   add_index "answers", ["campaign_id", "caller_id"], :name => "index_answers_campaign_id_caller_id"
   add_index "answers", ["campaign_id", "created_at", "possible_response_id"], :name => "index_answers_on_campaign_created_at_possible_response"
-  add_index "answers", ["possible_response_id", "caller_id", "created_at"], :name => "index_answers_count_possible_response"
-  add_index "answers", ["possible_response_id", "campaign_id", "caller_id", "created_at"], :name => "index_answers_count_possible_response_campaign"
+  add_index "answers", ["possible_response_id", "campaign_id", "caller_id", "created_at"], :name => "index_answers_count_possible_response"
   add_index "answers", ["question_id", "campaign_id"], :name => "index_answers_distinct_question"
   add_index "answers", ["question_id", "campaign_id"], :name => "index_distinct_question"
   add_index "answers", ["voter_id", "question_id"], :name => "index_answers_on_voter_id_and_question_id"
@@ -84,6 +83,8 @@ ActiveRecord::Schema.define(:version => 20121020092341) do
     t.datetime "updated_at",  :null => false
     t.integer  "campaign_id"
   end
+
+  add_index "blocked_numbers", ["account_id", "campaign_id"], :name => "index_blocked_numbers_account_id_campaign_id"
 
   create_table "call_attempts", :force => true do |t|
     t.integer  "voter_id"
@@ -150,6 +151,8 @@ ActiveRecord::Schema.define(:version => 20121020092341) do
     t.datetime "created_at",        :null => false
     t.datetime "updated_at",        :null => false
   end
+
+  add_index "caller_identities", ["pin"], :name => "index_caller_identities_pin"
 
   create_table "caller_sessions", :force => true do |t|
     t.integer  "caller_id"
@@ -316,6 +319,8 @@ ActiveRecord::Schema.define(:version => 20121020092341) do
     t.integer "possible_response_order"
     t.string  "external_id_field"
   end
+
+  add_index "possible_responses", ["question_id", "keypad", "possible_response_order"], :name => "index_possible_responses_question_keypad_possible_response_order"
 
   create_table "questions", :force => true do |t|
     t.integer "script_id",         :null => false
