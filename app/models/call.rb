@@ -72,8 +72,8 @@ class Call < ActiveRecord::Base
   def wrapup_and_continue
     RedisCallFlow.push_to_wrapped_up_call_list(call_attempt.id, CallerSession::CallerType::TWILIO_CLIENT);
     call_attempt.redirect_caller
-    unless caller_session.nil?
-      RedisStatus.set_state_changed_time(campaign.id, "On hold", caller_session.id)    
+    unless cached_caller_session.nil?
+      RedisStatus.set_state_changed_time(campaign.id, "On hold", cached_caller_session.id)    
     end
   end
   
