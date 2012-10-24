@@ -6,9 +6,7 @@ module CallerEvents
   module InstanceMethods
             
     def publish_start_calling
-      if state == "initial"
         publish_sync('start_calling', {caller_session_id: id})
-      end
     end    
     
     def publish_voter_connected(call_id)            

@@ -15,7 +15,6 @@ class WebuiCallerSession < CallerSession
   
   def continue_conf
     start_conference
-    publish_start_calling
     enqueue_call_flow(CallerPusherJob, [self.id,  "publish_caller_conference_started"]) 
     connected_twiml
   end

@@ -25,5 +25,4 @@ twilio_stats_session: rake environment resque:work QUEUE=twilio_stats_session
 twilio_stats_attempt: rake environment resque:work QUEUE=twilio_stats_attempt
 
 
-
 clock: rake environment resque:scheduler

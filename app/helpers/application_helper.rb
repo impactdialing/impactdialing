@@ -48,6 +48,7 @@ module ApplicationHelper
       0
     end
   end
+    
 
   module TimeUtils
     def round_for_utilization(seconds)
