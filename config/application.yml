@@ -8,16 +8,24 @@ default: &default_settings
 
 heroku:
   <<: *default_settings
-
-heroku_staging:
-  <<: *default_settings
-  twilio_callback_host: impactdialing-staging.herokuapp.com
-  recording_env: heroku_staging
-  call_end_callback_host: impactdialing-staging.herokuapp.com
-  incoming_callback_host: impactdialing-staging.herokuapp.com
-  callin_phone: 6502626881
-
   
+aws:
+  <<: *default_settings
+
+staging:
+  <<: *default_settings
+  recording_env: heroku_staging
+  callin_phone: 6502626881
+  twilio_callback_host: aws-staging.impactdialing.com
+  call_end_callback_host: aws-staging.impactdialing.com
+  incoming_callback_host: aws-staging.impactdialing.com
+  
+heroku_staging:
+  <<: *staging
+
+aws_staging:
+  <<: *staging
+
 heroku_preproduction:
   <<: *default_settings
   twilio_callback_host: beta-twilio.impactdialing.com

@@ -1,6 +1,6 @@
 rails_env = ENV['RAILS_ENV']
 rack_env = ENV['RACK_ENV']
-worker_processes 3
+worker_processes (ENV['UNICORN_WORKERS'] ? ENV['UNICORN_WORKERS'].to_i : 3)
 timeout (ENV['UNICORN_TIMEOUT'] ? ENV['UNICORN_TIMEOUT'].to_i : 30)
 preload_app true
 
