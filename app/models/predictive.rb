@@ -52,7 +52,6 @@ class Predictive < Campaign
     # num_voters_to_call = (num_voters - (priority_voters.size + scheduled_voters.size))
     limit_voters = num_voters <= 0 ? 0 : num_voters
     blocked = account.blocked_numbers.for_campaign(self).pluck(:number)
-    all_voters.enabled.avialable_to_be_retried(@campaign.recycle_rate).count
     voters =  all_voters.last_call_attempt_before_recycle_rate(recycle_rate).
       to_be_dialed.without(blocked).limit(limit_voters).pluck(:id)
     set_voter_status_to_read_for_dial!(voters)
