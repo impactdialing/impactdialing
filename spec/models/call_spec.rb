@@ -18,7 +18,7 @@ describe Call do
       it "should start a conference in connected state" do
         call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, call_status: 'in-progress')
         RedisCall.set_request_params(call.id, call.attributes)
-        call.incoming_call.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"false\" action=\"https://#{Settings.twilio_callback_host}/calls/#{call.id}/disconnected\" record=\"false\"><Conference waitUrl=\"hold_music\" waitMethod=\"GET\" beep=\"false\" endConferenceOnExit=\"true\" maxParticipants=\"2\"/></Dial></Response>")
+        call.incoming_call.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"false\" action=\"http://#{Settings.twilio_callback_host}/calls/#{call.id}/disconnected\" record=\"false\"><Conference waitUrl=\"hold_music\" waitMethod=\"GET\" beep=\"false\" endConferenceOnExit=\"true\" maxParticipants=\"2\"/></Dial></Response>")
       end
       
     end
