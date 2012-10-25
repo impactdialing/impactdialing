@@ -63,7 +63,7 @@ describe Caller do
   it "asks for pin again" do
     Caller.ask_for_pin(1).should == Twilio::Verb.new do |v|
       3.times do
-        v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :attempt => 2), :method => "POST") do
+        v.gather(:numDigits => 7, :timeout => 10, :action => identify_caller_url(:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :attempt => 2), :method => "POST") do
           v.say "Incorrect Pin. Please enter your pin."
         end
       end
