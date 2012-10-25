@@ -33,6 +33,7 @@ class Voter < ActiveRecord::Base
 
   # scope :enabled, {:include => :voter_list, :conditions => {'voter_lists.enabled' => true}}
   scope :enabled, where(:enabled => true)
+  scope :disabled, where(:enabled => false)
 
   scope :by_status, lambda { |status| where(:status => status) }
   scope :active, where(:active => true)

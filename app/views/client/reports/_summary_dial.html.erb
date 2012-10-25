@@ -18,7 +18,7 @@
     <td> <%= ((dials_report.leads_available_for_retry.to_f/dials_report.overview_summary)*100).round %>%</td>
   </tr>
   <tr>
-    <td>Dialed and not yet available for retry</td>
+    <td>Dialed and not available for retry</td>
     <td><%= dials_report.leads_not_available_for_retry %></td>
     <td> <%= ((dials_report.leads_not_available_for_retry.to_f/dials_report.overview_summary)*100).round %>%</td>
   </tr>
