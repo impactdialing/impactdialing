@@ -1,5 +1,8 @@
 class WebuiCallerSession < CallerSession  
   include Rails.application.routes.url_helpers
+  after_save :expire_find_by_id_cache, :expire_find_by_call_sid_cache
+  after_create :expire_find_by_id_cache, :expire_find_by_call_sid_cache
+  
   
   def start_conf
     return account_not_activated_twiml if account_not_activated?

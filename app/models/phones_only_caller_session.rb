@@ -1,4 +1,7 @@
 class PhonesOnlyCallerSession < CallerSession
+  after_save :expire_find_by_id_cache, :expire_find_by_call_sid_cache
+  after_create :expire_find_by_id_cache, :expire_find_by_call_sid_cache
+  
   
   def callin_choice
     read_choice_twiml
