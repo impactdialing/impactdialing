@@ -1,6 +1,6 @@
 rails_env = ENV['RAILS_ENV']
 if ["aws", "aws_staging"].include?(rails_env)
-  pid "/home/impactdialing/Impact-Dialing/tmp/pids/unicorn.pid"
+  pid "/var/www/impactdialing/current/tmp/pids/unicorn.pid"
 end
 rack_env = ENV['RACK_ENV']
 worker_processes (ENV['UNICORN_WORKERS'] ? ENV['UNICORN_WORKERS'].to_i : 3)
