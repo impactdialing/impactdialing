@@ -113,6 +113,7 @@ class CallAttempt < ActiveRecord::Base
       begin
         loaded_caller_session.update_attributes(attempt_in_progress: self, voter_in_progress: self.voter, available_for_call: false)
       rescue ActiveRecord::StaleObjectError
+        puts "could not connect"
         RedisOnHoldCaller.remove_caller_session(campaign_id, caller_session_id)
         RedisOnHoldCaller.add_to_bottom(campaign_id, caller_session_id)
       end 
