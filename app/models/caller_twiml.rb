@@ -17,6 +17,7 @@ module CallerTwiml
     end
 
     def connected_twiml
+      Rails.logger.error "pause_caller_url #{pause_caller_url(caller_id, session_id:  id, host: Settings.twilio_callback_host, port:  Settings.twilio_callback_port)}"
       Twilio::TwiML::Response.new do |r|
         r.Dial(:hangupOnStar => true, :action => pause_caller_url(caller_id, session_id:  id, host: Settings.twilio_callback_host, port:  Settings.twilio_callback_port)) do
           r.Conference(session_key, startConferenceOnEnter: false, endConferenceOnExit:  true, beep: true, waitUrl: HOLD_MUSIC_URL, waitMethod:  'GET')
