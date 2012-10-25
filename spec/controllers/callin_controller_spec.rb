@@ -26,6 +26,7 @@ describe CallinController do
       CallerIdentity.should_receive(:find_by_pin).and_return(caller_identity)
       caller_identity.should_receive(:caller).and_return(caller)
       caller.should_receive(:create_caller_session).and_return(caller_session)
+      CallerSession.should_receive(:find_by_id_cached).with(caller_session.id).and_return(caller_session)
       RedisPredictiveCampaign.should_receive(:add).with(caller.campaign_id, caller.campaign.type)      
       caller_session.should_receive(:start_conf).and_return("")
       post :identify, Digits: pin
