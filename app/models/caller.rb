@@ -68,7 +68,7 @@ class Caller < ActiveRecord::Base
             else
               Twilio::Verb.new do |v|
                 3.times do
-                  v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :attempt => attempt + 1), :method => "POST") do
+                  v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :protocol => "http://", :attempt => attempt + 1), :method => "POST") do
                     v.say attempt == 0 ? "Please enter your pin." : "Incorrect Pin. Please enter your pin."
                   end
                 end
@@ -115,7 +115,7 @@ class Caller < ActiveRecord::Base
   #   if self.is_phones_only?
   #        if (caller_session.campaign.predictive_type != "preview" && caller_session.campaign.predictive_type != "progressive")
   #          Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-  #          Twilio::Call.redirect(caller_session.sid, phones_only_caller_index_url(:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, session_id: caller_session.id, :campaign_reassigned => true))
+  #          Twilio::Call.redirect(caller_session.sid, phones_only_caller_index_url(:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :protocol => "http://", session_id: caller_session.id, :campaign_reassigned => true))
   #        end
   #      else
   #        caller_session.reassign_caller_session_to_campaign
