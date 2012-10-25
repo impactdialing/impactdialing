@@ -6,6 +6,10 @@ class CallerSession < ActiveRecord::Base
   include SidekiqEvents
   include CallerTwiml
   
+  after_save :expire_find_by_id_cache, :expire_find_by_call_sid_cache
+  after_create :expire_find_by_id_cache, :expire_find_by_call_sid_cache
+
+  
   belongs_to :caller
   belongs_to :campaign
 
@@ -87,8 +91,8 @@ class CallerSession < ActiveRecord::Base
   
   def end_session
     self.update_attributes(endtime: Time.now, on_call: false, available_for_call: false)
-    RedisPredictiveCampaign.remove(campaign.id, campaign.type) if campaign.caller_sessions.on_call.size <= 1
-    RedisStatus.delete_state(campaign.id, self.id)
+    RedisPredictiveCampaign.remove(campaign_id, campaign.type) if campaign.caller_sessions.on_call.size <= 1
+    RedisStatus.delete_state(campaign_id, self.id)
     RedisCallerSession.delete(self.id)
   end
   
@@ -204,9 +208,10 @@ class CallerSession < ActiveRecord::Base
    
    def start_conference
      if Campaign.predictive_campaign?(campaign.type)
-       self.update_attributes(on_call: true, available_for_call: true)
-       RedisOnHoldCaller.remove_caller_session(campaign.id, self.id)
-       RedisOnHoldCaller.add(campaign.id, self.id)
+       loaded_caller_session = CallerSession.find(self.id)       
+       loaded_caller_session.update_attributes(on_call: true, available_for_call: true)
+       RedisOnHoldCaller.remove_caller_session(campaign_id, self.id)
+       RedisOnHoldCaller.add(campaign_id, self.id)
      end     
    end
 
@@ -214,7 +219,24 @@ class CallerSession < ActiveRecord::Base
     self.on_call && !self.available_for_call
   end
 
+  
+  def self.find_by_id_cached(id)
+    Rails.cache.fetch("CallerSession.find_by_id(#{id})") { CallerSession.find_by_id(id) }
+  end
+  
+  def self.find_by_sid_cached(sid)
+    Rails.cache.fetch("CallerSession.find_by_sid(#{sid})") { CallerSession.find_by_sid(sid) }
+  end
+  
+  def expire_find_by_id_cache
+    Rails.cache.delete('CallerSession.find_by_id(#{id})')
+  end
 
+  def expire_find_by_call_sid_cache
+    Rails.cache.delete('CallerSession.find_by_sid(#{sid})')
+  end
+  
+  
   private
     
   def wrapup
