@@ -20,8 +20,9 @@ class CallerController < ApplicationController
     caller = Caller.find(params[:caller_id])
     identity = CallerIdentity.find_by_session_key(params[:session_key])
     session = caller.create_caller_session(identity.session_key, params[:CallSid], CallerSession::CallerType::TWILIO_CLIENT)
-    caller.started_calling(session)    
-    render xml: session.start_conf
+    load_caller_session = CallerSession.find_by_id_cached(session.id)
+    caller.started_calling(load_caller_session)    
+    render xml: load_caller_session.start_conf
   end
   
   def ready_to_call
@@ -190,11 +191,11 @@ class CallerController < ApplicationController
   end
   
   def find_session
-    @caller_session = CallerSession.find_by_sid(params[:CallSid])
+    @caller_session = CallerSession.find_by_sid_cached(params[:CallSid])
   end
 
   def find_caller_session
-    @caller_session = CallerSession.find_by_id(params[:session_id]) || CallerSession.find_by_sid(params[:CallSid])
+    @caller_session = CallerSession.find_by_id_cached(params[:session_id]) || CallerSession.find_by_sid_cached(params[:CallSid])
     optiions = {digit: params[:Digits], question_id: params[:question_id]}
     optiions.merge!(question_number: params[:question_number]) if params[:question_number]
     RedisCallerSession.set_request_params(@caller_session.id, optiions)

@@ -46,7 +46,8 @@ gem "newrelic-redis", "~>1.3.2"
 gem "sidekiq", '~>1.2.1'
 gem "slim", "~>1.2.2"
 gem "sprockets", "~>2.1.3"
-gem "sinatra"
+gem "sinatra", "~>1.3.3"
+gem "dalli", "~>2.3.0"
 
 
 group :development, :test do
