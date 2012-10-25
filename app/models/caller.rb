@@ -32,12 +32,8 @@ class Caller < ActiveRecord::Base
   end
   
   def reassign_caller_campaign
-    if campaign_id_changed? && is_on_call?
-      if is_phones_only?
-        caller_sessions.each { |c| c.campaign.redirect_campaign_reassigned(c) }
-      else
-        caller_sessions.each { |c| c.reassign_caller_session_to_campaign }
-      end
+    if campaign_id_changed?
+      caller_sessions.on_call.each { |caller_session| caller_session.update_column(:campaign_id, self.campaign_id) }
     end  
   end
   
