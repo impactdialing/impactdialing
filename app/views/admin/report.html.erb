@@ -12,28 +12,6 @@ Report Date Range:
         To:</td>
       <td><input class="format-m-d-y divider-slash" id="from_date" name="to_date" type="text" value="<%= @to_date.strftime("%m/%d/%Y") %>"></td>
     </tr>
-  </table>  <button type="submit">Show results</button>
+  </table>
+  <button type="submit">Enqueue resque job to calcualte result</button>
 <% end %>
-
-<br/>
-<table width="100%" border="0" cellspacing="0" cellpadding="0">
-  <tr>
-    <th>Account ID</th>
-    <th>Account Email</th>
-    <th>Callers</th>
-    <th>Calls</th>
-    <th>Transfers</th>
-    <th>Total</th>
-  </tr>
-
-  <% @output.each do |r| %>
-    <tr class="<%= cycle("odd","even") %>">
-      <td><%= r[:account_id] %></td>
-      <td><%= r[:user_email] %></td>
-      <td><%= r[:sessions] %></td>
-      <td><%= r[:calls] %></td>
-      <td><%= r[:transfers] %></td>
-      <td><%= r[:sessions] + r[:calls] + r[:transfers] %></td>
-    </tr>
-  <% end %>
-</table>
