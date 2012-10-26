@@ -50,7 +50,7 @@ octopus:
       password: pfsdh37sl203jq
     read_slave2:
       adapter: mysql2
-      host: heroku-production55-read.cjo94dhm4pos.us-east-1.rds.amazonaws.com
+      host: heroku-production55-read2.cjo94dhm4pos.us-east-1.rds.amazonaws.com
       database: heroku_production
       username: root
       password: pfsdh37sl203jq
