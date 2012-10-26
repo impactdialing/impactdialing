@@ -9,7 +9,7 @@ class AdminReportJob
       output = [] 
       Octopus.using(:read_slave2) do
         account_ids = Account.joins(:campaigns).
-          where(["campaigns.created_at > ? AND campaigns.created_at < ?", @from_date, @to_date + 1.day]).pluck("accounts.id")
+          where(["campaigns.created_at > ? AND campaigns.created_at < ?", @from_date, @to_date + 1.day]).pluck("accounts.id").uniq
         account_ids.each do |account_id|
           campaigns = Campaign.where(account_id: account_id).pluck(:id)
           if campaigns.any?
