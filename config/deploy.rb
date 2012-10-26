@@ -43,7 +43,6 @@ namespace :deploy do
       bundle.install
       deploy.symlink_database_config
       deploy.symlink
-      deploy.migrate
     end
     unicorn.reload
     deploy.cleanup
