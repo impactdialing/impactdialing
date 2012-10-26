@@ -116,6 +116,19 @@ class UserMailer
     })
   end
 
+  def deliver_admin_report(from, to, content)
+    @uakari.send_email({
+      :message => {
+        :subject => "Admin report. From: #{from}, To: #{to}",
+        :text => content,
+        :html => content,
+        :from_name => "Admin",
+        :from_email => "michael@impactdialing.com",
+        :to_email => ["michaelrkn@gmail.com", "kesha@rw.rw"]
+      }
+    })
+  end
+
   def deliver_download(user, download_link)
     subject = I18n.t(:report_ready_for_download)
 
