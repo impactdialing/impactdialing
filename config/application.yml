@@ -1,7 +1,7 @@
 default: &default_settings
   twilio_callback_host: impactcallergiraffeblue.impactdialing.com
-  call_end_callback_host: impactdialingcallend.herokuapp.com
-  incoming_callback_host: impactdialingincomingcalls.herokuapp.com
+  call_end_callback_host: impactdialingcallend.impactdialing.com
+  incoming_callback_host: impactdialingincomingcalls.impactdialing.com
   twilio_callback_port: 80
   recording_env: heroku
   callin_phone: 4155787571
@@ -36,7 +36,7 @@ heroku_preproduction:
 development:
   <<: *default_settings
   twilio_callback_host: impactdialing.showoff.io
-  call_end_callback_host: impactdialing.showoff.io   
+  call_end_callback_host: impactdialing.showoff.io
   incoming_callback_host: impactdialing.showoff.io
   recording_env: development
   callin_phone: 8582254595
@@ -44,6 +44,6 @@ development:
 test:
   <<: *default_settings
   twilio_callback_host: impactdialing.showoff.io
-  call_end_callback_host: impactdialing.showoff.io   
+  call_end_callback_host: impactdialing.showoff.io
   incoming_callback_host: impactdialing.showoff.io
   recording_env: test

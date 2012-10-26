@@ -32,24 +32,13 @@ class Caller < ActiveRecord::Base
   end
   
   def reassign_caller_campaign
-    if campaign_id_changed? && is_on_call?
-      if is_phones_only?
-        caller_session.campaign.redirect_campaign_reassigned(caller_session) 
-      else
-        caller_session.reassign_caller_session_to_campaign        
-      end
+    if campaign_id_changed?
+      caller_sessions.on_call.each { |caller_session| caller_session.update_column(:campaign_id, self.campaign_id) }
     end  
   end
   
-  
   def create_uniq_pin
-    uniq_pin=0
-    while uniq_pin==0 do
-      pin = rand.to_s[2..6]
-      check = Caller.find_by_pin(pin) || CallerIdentity.find_by_pin(pin)
-      uniq_pin=pin if check.blank?
-    end
-    self.pin = uniq_pin
+    self.pin = CallerIdentity.create_uniq_pin 
   end
 
   def is_on_call?
@@ -68,8 +57,8 @@ class Caller < ActiveRecord::Base
             else
               Twilio::Verb.new do |v|
                 3.times do
-                  v.gather(:numDigits => 5, :timeout => 10, :action => identify_caller_url(:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :protocol => "http://", :attempt => attempt + 1), :method => "POST") do
-                    v.say attempt == 0 ? "Please enter your pin." : "Incorrect Pin. Please enter your pin."
+                  v.gather(:finishOnKey => '*', :timeout => 10, :action => identify_caller_url(:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :protocol => "http://", :attempt => attempt + 1), :method => "POST") do
+                    v.say attempt == 0 ? "Please enter your pin and then press star." : "Incorrect Pin. Please enter your pin and then press star."
                   end
                 end
               end
