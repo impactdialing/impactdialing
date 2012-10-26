@@ -34,6 +34,8 @@ ImpactDialing::Application.configure do
 
   # Use a different cache store in production
   config.cache_store = :dalli_store
+  config.cache_store = :dalli_store, 'mc5.ec2.northscale.net',
+      { :username => "app2269278%40heroku.com", :password => "fvuV1zolpkAe345T" }
 
   # Enable serving of images, stylesheets, and javascripts from an asset server
   # config.action_controller.asset_host = "http://assets.example.com"
