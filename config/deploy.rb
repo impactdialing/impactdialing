@@ -58,19 +58,19 @@ end
 
 
 namespace :unicorn do  
-  task :reload, roles: :web do
+  task :reload, roles => :web do
     sudo "/etc/init.d/unicorn reload"
   end
 
-  task :start, roles: :web do
+  task :start, roles => :web do
     sudo "/etc/init.d/unicorn start"
   end
 
-  task :stop, roles: :web do
+  task :stop, roles =>  :web do
     sudo "/etc/init.d/unicorn stop"
   end
 
-  task :restart, roles: :web do
+  task :restart, roles => :web do
     sudo "/etc/init.d/unicorn restart"
   end
 end
