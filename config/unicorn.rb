@@ -1,12 +1,12 @@
 rails_env = ENV['RAILS_ENV']
 if ["aws", "aws_staging"].include?(rails_env)
   pid "/var/www/impactdialing/current/tmp/pids/unicorn.pid"
+  stderr_path "log/unicorn.stderr.log"
 end
 rack_env = ENV['RACK_ENV']
 worker_processes (ENV['UNICORN_WORKERS'] ? ENV['UNICORN_WORKERS'].to_i : 3)
 timeout (ENV['UNICORN_TIMEOUT'] ? ENV['UNICORN_TIMEOUT'].to_i : 30)
 preload_app true
-#stderr_path "log/unicorn.stderr.log"
 
 before_fork do |server, worker|
   if defined?(ActiveRecord::Base)
