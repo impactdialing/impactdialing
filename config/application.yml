@@ -1,5 +1,5 @@
 default: &default_settings
-  twilio_callback_host: impactcallergiraffeblue.impactdialing.com
+  twilio_callback_host: impactdialingcallend-aws.impactdialing.com
   call_end_callback_host: impactdialingcallend-aws.impactdialing.com
   incoming_callback_host: impactdialingincomingcalls-aws.impactdialing.com
   twilio_callback_port: 80
