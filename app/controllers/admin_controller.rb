@@ -59,32 +59,8 @@ class AdminController < ApplicationController
 
   def report
     set_report_date_range
-    Octopus.using(:read_slave1) do
-      @account_ids = Account.joins(:campaigns).
-        where(["campaigns.created_at > ? AND campaigns.created_at < ?", @from_date, @to_date + 1.day]).pluck("accounts.id")
-      @output = []
-      @account_ids.each do |account_id|
-        campaigns = Campaign.where(account_id: account_id).pluck(:id)
-        if campaigns.any?
-          sessions = CallerSession.where(campaign_id: campaigns).
-            where(["created_at > ? AND created_at < ?", @from_date, @to_date + 1.day]).
-            where("tCaller IS NOT NULL").sum("ceil(tDuration/60)").to_i
-          calls = CallAttempt.from('call_attempts use index (index_call_attempts_on_campaign_id_created_at_status)').
-            where(campaign_id: campaigns).
-            where(["created_at > ? AND created_at < ?", @from_date, @to_date + 1.day]).
-            sum("ceil(tDuration/60)").to_i
-          transfers = TransferAttempt.where(campaign_id: campaigns).
-            where(["created_at > ? AND created_at < ?", @from_date, @to_date + 1.day]).
-            sum("ceil(tDuration/60)").to_i
-          @output << {
-            account_id: account_id,
-            user_email: User.where(account_id: account_id).select(:email).first.email,
-            calls: calls,
-            sessions: sessions,
-            transfers: transfers
-          }
-        end
-      end
+    if request.post?
+      Resque.enqueue(AdminReportJob, @from_date, @to_date)
     end
   end
 
