@@ -51,8 +51,8 @@ heroku_preproduction:
 
 
 heroku: &heroku
-  resque: redis://user:Mb3Rediz4C2tCallz@10.140.76.223:6379
-  sidekiq: redis://user:Mb3Rediz4C2tCallz@10.140.13.42:6379    
+  resque: redis://user:Mb3Rediz4C2tCallz@54.243.137.99:6379
+  sidekiq: redis://user:Mb3Rediz4C2tCallz@54.243.230.221:6379
   call_flow: redis://user:Mb3Rediz4C2tCallz@10.143.167.52:6379    
   monitor: redis://user:Mb3Rediz4C2tCallz@10.70.11.202:6379
   on_hold_callers: redis://user:Mb3Rediz4C2tCallz@10.4.149.38:6379
@@ -66,8 +66,8 @@ aws:
   <<: *heroku
 
 heroku_caller:
-  resque: redis://user:Mb3Rediz4C2tCallz@10.140.76.223:6379    
-  sidekiq: redis://user:Mb3Rediz4C2tCallz@10.140.13.42:6379
+  resque: redis://user:Mb3Rediz4C2tCallz@54.243.137.99:6379
+  sidekiq: redis://user:Mb3Rediz4C2tCallz@54.243.230.221:6379
   call_flow: redis://user:Mb3Rediz4C2tCallz@10.143.167.52:6379    
   monitor: redis://user:Mb3Rediz4C2tCallz@10.70.11.202:6379
   on_hold_callers: redis://user:Mb3Rediz4C2tCallz@10.4.149.38:6379
@@ -79,8 +79,8 @@ heroku_caller:
 
 
 heroku_phonesonly:
-  resque: redis://user:Mb3Rediz4C2tCallz@10.140.76.223:6379    
-  sidekiq: redis://user:Mb3Rediz4C2tCallz@10.140.13.42:6379
+  resque: redis://user:Mb3Rediz4C2tCallz@54.243.137.99:6379
+  sidekiq: redis://user:Mb3Rediz4C2tCallz@54.243.230.221:6379
   call_flow: redis://user:Mb3Rediz4C2tCallz@10.143.167.52:6379    
   monitor: redis://user:Mb3Rediz4C2tCallz@10.70.11.202:6379
   on_hold_callers: redis://user:Mb3Rediz4C2tCallz@10.4.149.38:6379
