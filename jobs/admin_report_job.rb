@@ -2,26 +2,32 @@ class AdminReportJob
   @queue = :report_download
 
   class << self
+    def prepare_date(date)
+      date.utc.strftime("%Y-%m-%d %H:%M:%S")
+    end
+
     def perform(from, to)
-      @from_date = Time.parse(from).in_time_zone('Pacific Time (US & Canada)')
-      @to_date = Time.parse(to).in_time_zone('Pacific Time (US & Canada)')
+      Time.zone = "Pacific Time (US & Canada)"
+      @from_date = Time.zone.parse(from).utc
+      @to_date = Time.zone.parse(to).utc
       columns = ['account_id', 'email', 'totals']
       output = [] 
       Octopus.using(:read_slave2) do
-        account_ids = Account.joins(:campaigns).
-          where(["campaigns.created_at > ? AND campaigns.created_at < ?", @from_date, @to_date + 1.day]).pluck("accounts.id").uniq
+        account_ids = CallerSession.joins(:campaign).
+          where(["caller_sessions.created_at > ? AND caller_sessions.created_at < ?", prepare_date(@from_date), prepare_date(@to_date + 1.day)]).
+          pluck("campaigns.account_id").uniq
         account_ids.each do |account_id|
           campaigns = Campaign.where(account_id: account_id).pluck(:id)
           if campaigns.any?
             sessions = CallerSession.where(campaign_id: campaigns).
-              where(["created_at > ? AND created_at < ?", @from_date, @to_date + 1.day]).
+              where(["created_at > ? AND created_at < ?", prepare_date(@from_date), prepare_date(@to_date + 1.day)]).
               where("tCaller IS NOT NULL").sum("ceil(tDuration/60)").to_i
             calls = CallAttempt.from('call_attempts use index (index_call_attempts_on_campaign_id_created_at_status)').
               where(campaign_id: campaigns).
-              where(["created_at > ? AND created_at < ?", @from_date, @to_date + 1.day]).
+              where(["created_at > ? AND created_at < ?", prepare_date(@from_date), prepare_date(@to_date + 1.day)]).
               sum("ceil(tDuration/60)").to_i
             transfers = TransferAttempt.where(campaign_id: campaigns).
-              where(["created_at > ? AND created_at < ?", @from_date, @to_date + 1.day]).
+              where(["created_at > ? AND created_at < ?", prepare_date(@from_date), prepare_date(@to_date + 1.day)]).
               sum("ceil(tDuration/60)").to_i
             output << [account_id, User.where(account_id: account_id).select(:email).first.try(:email), calls+sessions+transfers].join(", ")
           end
