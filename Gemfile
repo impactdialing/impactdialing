@@ -65,6 +65,9 @@ group :development do
   gem 'rb-fsevent'
   gem 'showoff-io'
   gem 'foreman'
+  gem "capistrano"
+  gem "capistrano_colors"
+  gem "capistrano-multiconfig"
 end
 
 group :test do

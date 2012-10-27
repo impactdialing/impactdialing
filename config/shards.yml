@@ -4,6 +4,8 @@ octopus:
     - heroku
     - heroku_caller
     - heroku_phonesonly
+    - aws
+    - aws_staging
 
   test:
     read_slave1:
@@ -25,7 +27,7 @@ octopus:
       timeout: 5000
       reconnect: true
      
-  heroku_staging:  
+  heroku_staging: &heroku_staging  
     read_slave1:
       adapter: mysql2
       host: herokustaging55-read.cjo94dhm4pos.us-east-1.rds.amazonaws.com
@@ -39,9 +41,11 @@ octopus:
       database: impactdialing_heroku_staging
       username: root
       password: mypassword912481
-      
+  
+  aws_staging:
+    <<: *heroku_staging    
 
-  heroku:
+  heroku: &heroku
     read_slave1:
       adapter: mysql2
       host: heroku-production55-read.cjo94dhm4pos.us-east-1.rds.amazonaws.com
@@ -50,11 +54,14 @@ octopus:
       password: pfsdh37sl203jq
     read_slave2:
       adapter: mysql2
-      host: heroku-production55-read.cjo94dhm4pos.us-east-1.rds.amazonaws.com
+      host: heroku-production55-read2.cjo94dhm4pos.us-east-1.rds.amazonaws.com
       database: heroku_production
       username: root
       password: pfsdh37sl203jq
 
+  aws:
+    <<: *heroku
+        
   heroku_caller:
     read_slave1:
       adapter: mysql2

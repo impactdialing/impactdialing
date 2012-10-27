@@ -1,5 +1,5 @@
 PROTOCOL = Rails.env == 'development' || Rails.env == 'heroku_staging' ? 'http://' : 'https://'
-
+#PROTOCOL = 'http://'
 ImpactDialing::Application.routes.draw do
   root :to => "caller#index", :constraints => {:subdomain => "caller"}
   root :to => "client#index"
@@ -20,18 +20,18 @@ ImpactDialing::Application.routes.draw do
   resources :caller, :protocol => PROTOCOL, :only => [:index] do
     collection do
       get :login
-      post :end_session
+      post :end_session # twilio
       post :phones_only
     end
 
     member do
-      post :start_calling
+      post :start_calling # twilio
       post :pause
       post :ready_to_call
       post :conference_started_phones_only_preview
       post :conference_started_phones_only_power
       post :conference_started_phones_only_predictive
-      post :gather_response
+      post :gather_response  
       post :continue_conf
       post :callin_choice
       post :read_instruction_options

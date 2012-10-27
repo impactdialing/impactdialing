@@ -4,7 +4,7 @@ require File.expand_path('../application', __FILE__)
 
 # Initialize the rails application
 ImpactDialing::Application.initialize!
-if Rails.env == 'heroku'
+if ["heroku", "aws", "heroku_staging", "aws_staging"].include?(Rails.env)
   DIALER_LOGGER = Rails.logger
 else
   DIALER_LOGGER = Logger.new(STDOUT)
