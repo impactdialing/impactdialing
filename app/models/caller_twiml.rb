@@ -18,7 +18,7 @@ module CallerTwiml
 
     def connected_twiml
       Twilio::TwiML::Response.new do |r|
-        r.Dial(:hangupOnStar => true, :action => pause_caller_url(caller_id, session_id:  id, host: Settings.twilio_callback_host, port:  Settings.twilio_callback_port)) do
+        r.Dial(:hangupOnStar => true, :action => pause_caller_url(caller_id, session_id:  id, host: Settings.twilio_callback_host, port:  Settings.twilio_callback_port, :protocol => "http://", :protocol => "http://")) do
           r.Conference(session_key, startConferenceOnEnter: false, endConferenceOnExit:  true, beep: true, waitUrl: HOLD_MUSIC_URL, waitMethod:  'GET')
         end        
       end.text
@@ -75,7 +75,7 @@ module CallerTwiml
     
     def read_choice_twiml
       Twilio::TwiML::Response.new do |r|
-        r.Gather(:numDigits => 1, :timeout => 10, :action => read_instruction_options_caller_url(caller_id, session_id:  self.id ,:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port), :method => "POST", :finishOnKey => "5") do
+        r.Gather(:numDigits => 1, :timeout => 10, :action => read_instruction_options_caller_url(caller_id, session_id:  self.id ,:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :protocol => "http://"), :method => "POST", :finishOnKey => "5") do
           r.Say I18n.t(:caller_instruction_choice)
         end                      
       end.text      
@@ -83,28 +83,28 @@ module CallerTwiml
     
     def ready_to_call_twiml
       Twilio::TwiML::Response.new do |r|
-        r.Redirect(ready_to_call_caller_url(caller_id, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :session_id => self.id))          
+        r.Redirect(ready_to_call_caller_url(caller_id, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :protocol => "http://", :protocol => "http://", :session_id => self.id))          
       end.text            
     end
     
     def instructions_options_twiml
       Twilio::TwiML::Response.new do |r|
         r.Say I18n.t(:phones_only_caller_instructions)
-        r.Redirect(callin_choice_caller_url(caller_id, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :session_id => self.id))                  
+        r.Redirect(callin_choice_caller_url(caller_id, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :protocol => "http://", :session_id => self.id))                  
       end.text      
     end
     
     def reassigned_campaign_twiml
       Twilio::TwiML::Response.new do |r|
         r.Say I18n.t(:re_assign_caller_to_another_campaign, :campaign_name => caller.campaign.name)
-        r.Redirect(flow_caller_url(caller_id, event: 'callin_choice', :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :session_id => self.id, :Digits => "*"))        
+        r.Redirect(flow_caller_url(caller_id, event: 'callin_choice', :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :protocol => "http://", :session_id => self.id, :Digits => "*"))        
       end.text
     end
     
     def choosing_voter_to_dial_twiml
       Twilio::TwiML::Response.new do |r|
         unless self.voter_in_progress.nil?
-          r.Gather(:numDigits => 1, :timeout => 10, :action => conference_started_phones_only_preview_caller_url(caller_id, :session_id => self.id, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :voter => self.voter_in_progress.id), :method => "POST", :finishOnKey => "5") do
+          r.Gather(:numDigits => 1, :timeout => 10, :action => conference_started_phones_only_preview_caller_url(caller_id, :session_id => self.id, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :protocol => "http://", :voter => self.voter_in_progress.id), :method => "POST", :finishOnKey => "5") do
             r.Say I18n.t(:read_voter_name, :first_name => self.voter_in_progress.FirstName, :last_name => self.voter_in_progress.LastName) 
           end
         else
@@ -118,7 +118,7 @@ module CallerTwiml
       Twilio::TwiML::Response.new do |r|
         unless voter_in_progress.nil?
           r.Say "#{self.voter_in_progress.FirstName}  #{self.voter_in_progress.LastName}." 
-          r.Redirect(conference_started_phones_only_power_caller_url(caller_id, :session_id => self.id, :voter_id => voter_in_progress.id, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port), :method => "POST")
+          r.Redirect(conference_started_phones_only_power_caller_url(caller_id, :session_id => self.id, :voter_id => voter_in_progress.id, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :protocol => "http://"), :method => "POST")
         else
           r.Say I18n.t(:campaign_has_no_more_voters)
           r.Hangup
@@ -128,7 +128,7 @@ module CallerTwiml
     
     def conference_started_phones_only_twiml
       Twilio::TwiML::Response.new do |r|
-        r.Dial(:hangupOnStar => true, :action => gather_response_caller_url(caller_id, host:  Settings.twilio_callback_host, port: Settings.twilio_callback_port, session_id:  self.id, question_number: 0)) do
+        r.Dial(:hangupOnStar => true, :action => gather_response_caller_url(caller_id, host:  Settings.twilio_callback_host, port: Settings.twilio_callback_port, :protocol => "http://", session_id:  self.id, question_number: 0)) do
           r.Conference(session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET')
         end                  
       end.text
@@ -136,7 +136,7 @@ module CallerTwiml
     
     def conference_started_phones_only_predictive_twiml
       Twilio::TwiML::Response.new do |r|
-        r.Dial(:hangupOnStar => true, :action => gather_response_caller_url(caller_id, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :session_id => self.id, question_number: 0)) do
+        r.Dial(:hangupOnStar => true, :action => gather_response_caller_url(caller_id, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :protocol => "http://", :session_id => self.id, question_number: 0)) do
           r.Conference(session_key, :startConferenceOnEnter => false, :endConferenceOnExit => true, :beep => true, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET')
         end                  
       end.text
@@ -144,7 +144,7 @@ module CallerTwiml
     
    def skip_voter_twiml
      Twilio::TwiML::Response.new do |r|
-       r.Redirect(ready_to_call_caller_url(caller_id, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :session_id => self.id))          
+       r.Redirect(ready_to_call_caller_url(caller_id, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :protocol => "http://", :session_id => self.id))          
      end.text     
    end
    
@@ -152,7 +152,7 @@ module CallerTwiml
    def read_next_question_twiml
      Twilio::TwiML::Response.new do |r|
        question = RedisQuestion.get_question_to_read(script_id, redis_question_number)
-       r.Gather(timeout: 60, finishOnKey: "*", action: submit_response_caller_url(caller_id, session_id: self.id, question_id: question['id'], question_number: redis_question_number, host: Settings.twilio_callback_host, port: Settings.twilio_callback_port), method:  "POST") do
+       r.Gather(timeout: 60, finishOnKey: "*", action: submit_response_caller_url(caller_id, session_id: self.id, question_id: question['id'], question_number: redis_question_number, host: Settings.twilio_callback_host, port: Settings.twilio_callback_port, protocol: "http://"), method:  "POST") do
          r.Say question['question_text']
          RedisPossibleResponse.possible_responses(question['id']).each do |response|
            r.Say "press #{response['keypad']} for #{response['value']}" unless (response['value'] == "[No response]")
@@ -164,13 +164,13 @@ module CallerTwiml
   
   def voter_response_twiml
     Twilio::TwiML::Response.new do |r|
-      r.Redirect(next_question_caller_url(caller_id, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :session_id => self.id, question_number: redis_question_number+1))          
+      r.Redirect(next_question_caller_url(caller_id, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :protocol => "http://", :session_id => self.id, question_number: redis_question_number+1))          
     end.text            
   end
   
   def wrapup_call_twiml
     Twilio::TwiML::Response.new do |r|
-      r.Redirect(next_call_caller_url(caller_id, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :session_id => self.id))          
+      r.Redirect(next_call_caller_url(caller_id, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :protocol => "http://", :session_id => self.id))          
     end.text
     
   end

@@ -7,7 +7,9 @@ require 'resque_scheduler/server'
 require 'sidekiq/web'
 require 'heroku_queuing_time_logger'
 
-use HerokuQueuingTimeLogger, :limit => 4000
+if Rails.env == "heroku"
+  use HerokuQueuingTimeLogger, :limit => 4000
+end
 
 Resque::Server.use Rack::Auth::Basic do |username, password|
    username == 'impact' && password == 'Mb<3Ad4F@2tCallz'
