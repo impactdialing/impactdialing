@@ -139,7 +139,7 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
 
   def download_all_voters_lead
     Octopus.using(:read_slave1) do
-      first_voter = Voter.by_campaign(@campaign).order('last_call_attempt_time').first
+      first_voter = Voter.by_campaign(@campaign).order('id').first
       @possible_responses = get_possible_responses
       Voter.by_campaign(@campaign).order('last_call_attempt_time').find_in_hashes(:batch_size => 100, start: start_position(first_voter), shard: :read_slave1) do |voters|
         process_voters(voters)
@@ -149,7 +149,7 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
   
   def download_all_voters_dial
     Octopus.using(:read_slave1) do
-      first_attempt = CallAttempt.for_campaign(@campaign).order('created_at').first
+      first_attempt = CallAttempt.for_campaign(@campaign).order('id').first
       @possible_responses = get_possible_responses
       CallAttempt.from('call_attempts use index (index_call_attempts_on_campaign_id)').for_campaign(@campaign).order('created_at').includes(:answers, :note_responses).find_in_hashes(:batch_size => 100, start: start_position(first_attempt), shard: :read_slave1) do |attempts|
         process_attempts(attempts)
@@ -159,7 +159,7 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
   
   def download_for_date_range_lead
     Octopus.using(:read_slave1) do
-      first_voter = Voter.by_campaign(@campaign).last_call_attempt_within(@from_date, @to_date).order('created_at').first
+      first_voter = Voter.by_campaign(@campaign).last_call_attempt_within(@from_date, @to_date).order('id').first
       @possible_responses = get_possible_responses
       Voter.by_campaign(@campaign).last_call_attempt_within(@from_date, @to_date).order('created_at').find_in_hashes(:batch_size => 100, start: start_position(first_voter), shard: :read_slave1) do |voters|
         process_voters(voters)
@@ -169,7 +169,7 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
   
   def download_for_date_range_dial
     Octopus.using(:read_slave1) do
-      first_attempt = CallAttempt.for_campaign(@campaign).between(@from_date, @to_date).order('created_at').first
+      first_attempt = CallAttempt.for_campaign(@campaign).between(@from_date, @to_date).order('id').first
       @possible_responses = get_possible_responses
       CallAttempt.from('call_attempts use index (index_call_attempts_on_campaign_id)').for_campaign(@campaign).between(@from_date, @to_date).order('created_at').includes(:answers, :note_responses).find_in_batches(:batch_size => 100, start: start_position(first_attempt)) do |attempts|
         process_attempts(attempts)
