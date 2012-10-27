@@ -6,7 +6,7 @@ class AnsweredJob
   @queue = :answered_worker_job
   
    def self.perform     
-     CallAttempt.results_not_processed.where('call_id IS NOT NULL').includes(:call).limit(1000).each do |call_attempt|
+     CallAttempt.results_not_processed.where('call_id IS NOT NULL').reorder('id DESC').includes(:call).limit(1000).each do |call_attempt|
        begin
          call = call_attempt.call
          questions = RedisCall.questions(call.id)
@@ -17,7 +17,6 @@ class AnsweredJob
          call_attempt.voter.update_attribute(:result_date, Time.now)
          RedisCall.delete(call.id)
        rescue Exception => e
-         call_attempt.update_attributes(voter_response_processed: true)         
          puts 'Answered Job Exception: ' + e.to_s
          puts e.backtrace
        end      
