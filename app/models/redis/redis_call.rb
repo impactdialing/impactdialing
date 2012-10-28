@@ -1,7 +1,10 @@
 class RedisCall
   
   def self.set_request_params(call_id, options)
-    $redis_call_uri_connection.set "call_flow:#{call_id}", options.to_json
+    id = "call_flow:#{call_id}"
+    data = $redis_call_uri_connection.get(id) || '{}'
+    hash = JSON.parse(data)
+    $redis_call_uri_connection.set id, hash.merge(options).to_json
   end
   
   def self.answered_by(call_id)
