@@ -1,12 +1,12 @@
 require 'resque/plugins/lock'
 require 'resque-loner'
 
-class AnsweredJob 
+class AnsweredJob
   include Resque::Plugins::UniqueJob
   @queue = :answered_worker_job
-  
-   def self.perform     
-     CallAttempt.results_not_processed.where('call_id IS NOT NULL').reorder('id DESC').includes(:call).limit(1000).each do |call_attempt|
+
+   def self.perform
+     CallAttempt.results_not_processed.where('call_id IS NOT NULL').reorder('call_attempts.id DESC').includes(:call).limit(1000).each do |call_attempt|
        begin
          call = call_attempt.call
          questions = RedisCall.questions(call.id)
@@ -19,7 +19,7 @@ class AnsweredJob
        rescue Exception => e
          puts 'Answered Job Exception: ' + e.to_s
          puts e.backtrace
-       end      
-    end    
+       end
+    end
    end
 end
