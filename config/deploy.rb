@@ -44,7 +44,7 @@ namespace :deploy do
       deploy.symlink_database_config
       deploy.symlink
     end
-    unicorn.start
+    unicorn.reload
     deploy.cleanup
   end
   
