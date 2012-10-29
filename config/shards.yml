@@ -2,8 +2,6 @@ octopus:
   environments:
     - heroku_staging
     - heroku
-    - heroku_caller
-    - heroku_phonesonly
     - aws
     - aws_staging
 
@@ -61,20 +59,3 @@ octopus:
 
   aws:
     <<: *heroku
-        
-  heroku_caller:
-    read_slave1:
-      adapter: mysql2
-      host: herokustaging-read.cjo94dhm4pos.us-east-1.rds.amazonaws.com
-      database: heroku_production
-      username: root
-      password: pfsdh37sl203jq
-
-
-  heroku_phonesonly:
-    read_slave1:
-      adapter: mysql2
-      host: herokustaging-read.cjo94dhm4pos.us-east-1.rds.amazonaws.com
-      database: heroku_production
-      username: root
-      password: pfsdh37sl203jq
