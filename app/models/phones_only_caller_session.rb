@@ -13,8 +13,8 @@ class PhonesOnlyCallerSession < CallerSession
     callin_choice
   end
   
-  def ready_to_call
-    return conference_started_phones_only_predictive if  predictive?
+  def ready_to_call(callerdc="twilio")
+    return conference_started_phones_only_predictive(callerdc) if  predictive?
     return choosing_voter_to_dial if  preview?
     return choosing_voter_and_dial if  power?    
   end
@@ -48,8 +48,8 @@ class PhonesOnlyCallerSession < CallerSession
     choosing_voter_to_dial_twiml
   end
   
-  def conference_started_phones_only_predictive
-    start_conference
+  def conference_started_phones_only_predictive(callerdc)
+    start_conference(callerdc)
     conference_started_phones_only_predictive_twiml
   end
   

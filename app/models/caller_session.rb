@@ -206,12 +206,12 @@ class CallerSession < ActiveRecord::Base
    ((tEndTime - tStartTime)/60).ceil
    end
    
-   def start_conference
+   def start_conference(callerdc=DataCentre::Code::TWILIO)
      if Campaign.predictive_campaign?(campaign.type)
        loaded_caller_session = CallerSession.find(self.id)       
        loaded_caller_session.update_attributes(on_call: true, available_for_call: true)
-       RedisOnHoldCaller.remove_caller_session(campaign_id, self.id)
-       RedisOnHoldCaller.add(campaign_id, self.id)
+       RedisOnHoldCaller.remove_caller_session(campaign_id, self.id, callerdc)
+       RedisOnHoldCaller.add(campaign_id, self.id, callerdc)
      end     
    end
 

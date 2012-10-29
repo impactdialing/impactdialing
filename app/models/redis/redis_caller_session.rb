@@ -32,4 +32,8 @@ class RedisCallerSession
     hash["question_number"]
   end
   
+  def set_datacentre(caller_session_id, caller_dc)
+    $redis_caller_session_uri_connection.set "caller_dc:#{caller_session_id}", caller_dc
+  end
+  
 end

@@ -9,11 +9,10 @@ class CallsController < ApplicationController
   def incoming
     if Campaign.predictive_campaign?(params['campaign_type']) && @call.answered_by_human? 
       call_attempt = @call.call_attempt
-      call_attempt.connect_caller_to_lead
+      call_attempt.connect_caller_to_lead(DataCentre.code(params[:calledc]))
     end
     render xml: @call.incoming_call
-  end
-  
+  end  
   
   def call_ended    
     render xml:  @call.call_ended(params['campaign_type'])
