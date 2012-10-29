@@ -28,7 +28,7 @@ class RedisPredictiveCampaign
   
   def self.data_centres(campaign_id)
     campaign_set = Redis::Set.new("data_centre:#{campaign_id}", $redis_dialer_connection)
-    campaign_set.members
+    campaign_set.members.join(",")
   end
     
 end

@@ -15,10 +15,6 @@ ImpactDialing::Application.routes.draw do
       post :submit_result
       post :submit_result_and_stop
     end
-    collection do
-      get :datacentre
-    end
-    
   end
 
   resources :caller, :protocol => PROTOCOL, :only => [:index] do
