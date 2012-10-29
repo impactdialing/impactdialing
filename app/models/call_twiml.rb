@@ -16,8 +16,16 @@ module CallTwiml
     def connected_twiml
       Twilio::TwiML::Response.new do |r|
         unless caller_session.nil? 
-          r.Dial :hangupOnStar => 'false', :action => disconnected_call_url(self, :host => Settings.twilio_callback_host, :protocol => "http://"), :record=> campaign.account.record_calls do |d|
-            d.Conference caller_session.session_key, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2
+          if RedisCallerSession.datacentre(caller_session.id) == DataCentre::Code::TWILIO || RedisCallerSession.datacentre(caller_session.id).nil?
+            r.Dial :hangupOnStar => 'false', :action => disconnected_call_url(self, :host => Settings.twilio_callback_host, :protocol => "http://"), :record=> campaign.account.record_calls do |d|
+              d.Conference caller_session.session_key, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2            
+            end
+          else
+            r.Dial :hangupOnStar => 'false', :action => disconnected_call_url(self, :host => Settings.twilio_callback_host, :protocol => "http://"), :record=> campaign.account.record_calls do |d|
+              d.Conference caller_session.session_key, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2            
+              d.CallerSid caller_session.sid
+            end
+            
           end
         else
           hangup_twiml
