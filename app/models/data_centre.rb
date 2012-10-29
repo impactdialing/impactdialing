@@ -7,7 +7,7 @@ class DataCentre
   end
   
   def self.code(dc_code)
-    if dc_code.nil? || dc.empty?
+    if dc_code.nil? || dc_code.empty?
       return Code::TWILIO 
     else
       return dc_code
