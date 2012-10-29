@@ -21,7 +21,13 @@ staging: &staging
   incoming_callback_host: impactdialingincomingcalls-aws-staging.impactdialing.com
   
 heroku_staging:
-  <<: *staging
+  <<: *default_settings
+  recording_env: heroku_staging
+  callin_phone: 6502626881
+  twilio_callback_host: voxeostaging.herokuapp.com
+  call_end_callback_host: voxeostaging.herokuapp.com
+  incoming_callback_host: voxeostaging.herokuapp.com
+  
 
 aws_staging:
   <<: *staging
