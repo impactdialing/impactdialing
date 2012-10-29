@@ -26,7 +26,7 @@ class CallerController < ApplicationController
   end
   
   def ready_to_call
-    render xml: @caller_session.ready_to_call(DataCentre.code(params[:callerdc]))
+    render xml: @caller_session.ready_to_call(DataCentre.code(params[:caller_dc]))
   end
   
   def continue_conf
