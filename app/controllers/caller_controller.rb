@@ -3,11 +3,11 @@ class CallerController < ApplicationController
   layout "caller"
   skip_before_filter :verify_authenticity_token, :only =>[:check_reassign, :call_voter, :start_calling, :stop_calling,
      :end_session, :skip_voter, :ready_to_call, :continue_conf, :pause, :run_out_of_numbers, :callin_choice, :read_instruction_options, :conference_started_phones_only_preview, :conference_started_phones_only_power, :conference_started_phones_only_predictive,
-     :gather_response, :submit_response, :next_question, :next_call, :time_period_exceeded, :account_out_of_funds]
+     :gather_response, :submit_response, :next_question, :next_call, :time_period_exceeded, :account_out_of_funds, :datacentre]
   
   before_filter :check_login, :except=>[:login, :feedback, :end_session, :start_calling, :phones_only, :new_campaign_response_panel, :check_reassign, :call_voter, 
     :ready_to_call, :continue_conf, :pause, :run_out_of_numbers, :callin_choice, :read_instruction_options, :conference_started_phones_only_preview, :conference_started_phones_only_power, :conference_started_phones_only_predictive,
-    :gather_response, :submit_response, :next_question, :next_call, :time_period_exceeded, :account_out_of_funds]
+    :gather_response, :submit_response, :next_question, :next_call, :time_period_exceeded, :account_out_of_funds, :datacentre]
     
   before_filter :find_caller_session , :only => [:pause, :stop_calling, :ready_to_call, :continue_conf, :pause, :run_out_of_numbers, :callin_choice, :read_instruction_options, :conference_started_phones_only_preview, :conference_started_phones_only_power, :conference_started_phones_only_predictive,
     :gather_response, :submit_response, :next_question, :next_call, :time_period_exceeded, :account_out_of_funds]
@@ -26,7 +26,7 @@ class CallerController < ApplicationController
   end
   
   def ready_to_call
-    render xml: @caller_session.ready_to_call(params[:callerdc])
+    render xml: @caller_session.ready_to_call(DataCentre.code(params[:callerdc]))
   end
   
   def continue_conf
