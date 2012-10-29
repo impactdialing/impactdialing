@@ -20,19 +20,19 @@ class DialReport
   end
   
   def dialed_and_completed
-    sanitize_dials(@leads_grouped_by_status[CallAttempt::Status::SUCCESS]) + sanitize_dials(@leads_grouped_by_status[CallAttempt::Status::FAILED]) + sanitize_dials(@leads_grouped_by_status[CallAttempt::Status::VOICEMAIL])
+    @dialed_and_completed ||= sanitize_dials(@leads_grouped_by_status[CallAttempt::Status::SUCCESS]) + sanitize_dials(@leads_grouped_by_status[CallAttempt::Status::FAILED]) + sanitize_dials(@leads_grouped_by_status[CallAttempt::Status::VOICEMAIL])
   end
   
   def leads_available_for_retry
-    @leads_available_retry = sanitize_dials(@voters_available_for_retry.enabled.count + @scheduled_for_now.enabled.count + @abandoned_count.enabled.count)
+    @leads_available_retry ||= sanitize_dials(@voters_available_for_retry.enabled.count + @scheduled_for_now.enabled.count + @abandoned_count.enabled.count)
   end
   
   def leads_not_available_for_retry
-    @leads_not_available_for_retry = sanitize_dials((sanitize_dials(@leads_grouped_by_status[CallAttempt::Status::SCHEDULED]) - @scheduled_for_now.count) + @voters_not_available_for_retry) + sanitize_dials(@voters_available_for_retry.disabled.count + @scheduled_for_now.disabled.count + @abandoned_count.disabled.count)
+    @leads_not_available_for_retry ||= sanitize_dials((sanitize_dials(@leads_grouped_by_status[CallAttempt::Status::SCHEDULED]) - @scheduled_for_now.count) + @voters_not_available_for_retry) + sanitize_dials(@voters_available_for_retry.disabled.count + @scheduled_for_now.disabled.count + @abandoned_count.disabled.count)
   end
   
   def leads_not_dialed
-    sanitize_dials(@leads_grouped_by_status['not called']) + sanitize_dials(@leads_grouped_by_status[CallAttempt::Status::RINGING]) + sanitize_dials(@leads_grouped_by_status[CallAttempt::Status::READY])
+    @leads_not_dialed ||= sanitize_dials(@leads_grouped_by_status['not called']) + sanitize_dials(@leads_grouped_by_status[CallAttempt::Status::RINGING]) + sanitize_dials(@leads_grouped_by_status[CallAttempt::Status::READY])
   end
   
   def overview_summary
