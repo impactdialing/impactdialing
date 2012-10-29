@@ -9,5 +9,5 @@ else
 
   Sidekiq.configure_client do |config|
     config.redis = { :url => redis_config[rails_env]['sidekiq'], :namespace => 'resque'}
-  end    
+  end
 end
