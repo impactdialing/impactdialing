@@ -62,30 +62,18 @@ heroku: &heroku
   caller_session: redis://user:Mb3Rediz4C2tCallz@10.214.39.172:6379
   call: redis://user:Mb3Rediz4C2tCallz@10.4.62.106:6379
 
+# USE IN CASE of master REDIS'es outage
+#heroku: &heroku
+#  resque: redis://user:Mb3Rediz4C2tCallz@50.112.25.69:6379
+#  sidekiq: redis://user:Mb3Rediz4C2tCallz@54.245.43.178:6379
+#  call_flow: redis://user:Mb3Rediz4C2tCallz@54.245.57.186:6379
+#  monitor: redis://user:Mb3Rediz4C2tCallz@50.112.236.20:6379
+#  on_hold_callers: redis://user:Mb3Rediz4C2tCallz@54.245.66.122:6379
+#  call_end: redis://user:Mb3Rediz4C2tCallz@54.245.67.34:6379
+#  question_pr: redis://user:Mb3Rediz4C2tCallz@50.112.222.173:6379
+#  phones_only_ans: redis://user:Mb3Rediz4C2tCallz@50.112.215.231:6379
+#  caller_session: redis://user:Mb3Rediz4C2tCallz@50.112.26.63:6379
+#  call: redis://user:Mb3Rediz4C2tCallz@54.245.38.52:6379
+
 aws:
   <<: *heroku
-
-heroku_caller:
-  resque: redis://user:Mb3Rediz4C2tCallz@54.243.137.99:6379
-  sidekiq: redis://user:Mb3Rediz4C2tCallz@54.243.230.221:6379
-  call_flow: redis://user:Mb3Rediz4C2tCallz@10.143.167.52:6379    
-  monitor: redis://user:Mb3Rediz4C2tCallz@10.70.11.202:6379
-  on_hold_callers: redis://user:Mb3Rediz4C2tCallz@10.4.149.38:6379
-  call_end: redis://user:Mb3Rediz4C2tCallz@10.4.133.109:6379
-  question_pr: redis://user:Mb3Rediz4C2tCallz@10.70.81.254:6379
-  phones_only_ans: redis://user:Mb3Rediz4C2tCallz@10.4.77.203:6379
-  caller_session: redis://user:Mb3Rediz4C2tCallz@10.214.39.172:6379
-  call: redis://user:Mb3Rediz4C2tCallz@10.4.62.106:6379
-
-
-heroku_phonesonly:
-  resque: redis://user:Mb3Rediz4C2tCallz@54.243.137.99:6379
-  sidekiq: redis://user:Mb3Rediz4C2tCallz@54.243.230.221:6379
-  call_flow: redis://user:Mb3Rediz4C2tCallz@10.143.167.52:6379    
-  monitor: redis://user:Mb3Rediz4C2tCallz@10.70.11.202:6379
-  on_hold_callers: redis://user:Mb3Rediz4C2tCallz@10.4.149.38:6379
-  call_end: redis://user:Mb3Rediz4C2tCallz@10.4.133.109:6379
-  question_pr: redis://user:Mb3Rediz4C2tCallz@10.70.81.254:6379
-  phones_only_ans: redis://user:Mb3Rediz4C2tCallz@10.4.77.203:6379
-  caller_session: redis://user:Mb3Rediz4C2tCallz@10.214.39.172:6379
-  call: redis://user:Mb3Rediz4C2tCallz@10.4.62.106:6379
