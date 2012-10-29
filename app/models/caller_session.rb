@@ -236,11 +236,4 @@ class CallerSession < ActiveRecord::Base
     Rails.cache.delete('CallerSession.find_by_sid(#{sid})')
   end
   
-  
-  private
-    
-  def wrapup
-    attempt_in_progress.try(:wrapup_now)
-  end
-      
 end
