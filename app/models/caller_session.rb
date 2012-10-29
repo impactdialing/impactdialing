@@ -210,6 +210,7 @@ class CallerSession < ActiveRecord::Base
      if Campaign.predictive_campaign?(campaign.type)
        loaded_caller_session = CallerSession.find(self.id)       
        loaded_caller_session.update_attributes(on_call: true, available_for_call: true)
+       RedisCallerSession.set_datacentre(callerdc)
        RedisOnHoldCaller.remove_caller_session(campaign_id, self.id, callerdc)
        RedisOnHoldCaller.add(campaign_id, self.id, callerdc)
      end     
