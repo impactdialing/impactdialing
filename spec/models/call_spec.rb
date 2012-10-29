@@ -12,7 +12,7 @@ describe Call do
         @campaign =  Factory(:predictive, script: @script)
         @voter  = Factory(:voter, campaign: @campaign, caller_session: @caller_session)
         @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign)        
-        @caller_session = Factory(:webui_caller_session, caller: @caller, campaign: @campaign, voter_in_progress: @voter, attempt_in_progress: @call_attempt, on_call: true, available_for_call: false, state: "connected")
+        @caller_session = Factory(:webui_caller_session, caller: @caller, campaign: @campaign, voter_in_progress: @voter, attempt_in_progress: @call_attempt, on_call: true, available_for_call: false, state: "connected", sid: "123456")
       end
 
       it "should start a conference in connected state" do
@@ -20,6 +20,14 @@ describe Call do
         RedisCall.set_request_params(call.id, call.attributes)
         call.incoming_call.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"false\" action=\"http://#{Settings.twilio_callback_host}/calls/#{call.id}/disconnected\" record=\"false\"><Conference waitUrl=\"hold_music\" waitMethod=\"GET\" beep=\"false\" endConferenceOnExit=\"true\" maxParticipants=\"2\"/></Dial></Response>")
       end
+      
+      it "should start a conference in connected state with callsid if call not from twilio" do
+        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, call_status: 'in-progress')
+        RedisCall.set_request_params(call.id, call.attributes)
+        RedisCallerSession.set_datacentre(@caller_session.id, DataCentre::Code::ORL)
+        call.incoming_call.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"false\" action=\"http://#{Settings.twilio_callback_host}/calls/#{call.id}/disconnected\" record=\"false\"><Conference waitUrl=\"hold_music\" waitMethod=\"GET\" beep=\"false\" endConferenceOnExit=\"true\" maxParticipants=\"2\"/><CallerSid>123456</CallerSid></Dial></Response>")
+      end
+      
       
     end
 
