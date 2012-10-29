@@ -106,16 +106,16 @@ class CallAttempt < ActiveRecord::Base
     end
   end
   
-  def connect_caller_to_lead(calledc)
-    caller_session_id = RedisOnHoldCaller.longest_waiting_caller(campaign_id, calledc)
+  def connect_caller_to_lead(callee_dc)
+    caller_session_id = RedisOnHoldCaller.longest_waiting_caller(campaign_id, callee_dc)
     unless caller_session_id.nil?
       loaded_caller_session = CallerSession.find_by_id_cached(caller_session_id)
       begin
         loaded_caller_session.update_attributes(attempt_in_progress: self, voter_in_progress: self.voter, available_for_call: false)
       rescue ActiveRecord::StaleObjectError
         puts "could not connect call"
-        RedisOnHoldCaller.remove_caller_session(campaign_id, caller_session_id, calledc)
-        RedisOnHoldCaller.add_to_bottom(campaign_id, caller_session_id, calledc)
+        RedisOnHoldCaller.remove_caller_session(campaign_id, caller_session_id, callee_dc)
+        RedisOnHoldCaller.add_to_bottom(campaign_id, caller_session_id, callee_dc)
       end 
     end
   end

@@ -13,7 +13,7 @@ class PhonesOnlyCallerSession < CallerSession
     callin_choice
   end
   
-  def ready_to_call(callerdc="twilio")
+  def ready_to_call(callerdc)
     return conference_started_phones_only_predictive(callerdc) if  predictive?
     return choosing_voter_to_dial if  preview?
     return choosing_voter_and_dial if  power?    

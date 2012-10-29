@@ -1,15 +1,19 @@
 class CallsController < ApplicationController
   skip_before_filter :verify_authenticity_token
-  before_filter :parse_params
+  before_filter :parse_params, :except => [:datacentre]
   before_filter :find_and_update_call, :only => [:destroy, :incoming, :call_ended, :disconnected]
   before_filter :find_and_update_answers_and_notes_and_scheduled_date, :only => [:submit_result, :submit_result_and_stop]
   before_filter :find_call, :only => [:hangup, :call_ended]
 
     
+  def datacentre
+    render :json => {:data_centres => RedisPredictiveCampaign.data_centres(params[:campaign_id])}
+  end
+    
   def incoming
     if Campaign.predictive_campaign?(params['campaign_type']) && @call.answered_by_human? 
       call_attempt = @call.call_attempt
-      call_attempt.connect_caller_to_lead(DataCentre.code(params[:calledc]))
+      call_attempt.connect_caller_to_lead(DataCentre.code(params[:callee_dc]))
     end
     render xml: @call.incoming_call
   end  
