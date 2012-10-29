@@ -22,4 +22,8 @@ module Callers
       render :nothing => true
     end
   end
+  
+  def datacentre
+    render :json => {:data_centres => RedisPredictiveCampaign.data_centres(params[:campaign_id])}
+  end
 end

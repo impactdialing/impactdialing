@@ -20,5 +20,15 @@ class RedisPredictiveCampaign
     campaign_set = Redis::Set.new("running_campaigns", $redis_dialer_connection)
     campaign_set.members
   end  
+  
+  def self.set_datacentres_used(campaign_id, datacentre)
+    campaign_set = Redis::Set.new("data_centre:#{campaign_id}", $redis_dialer_connection)
+    campaign_set << datacentre
+  end
+  
+  def self.data_centres(campaign_id)
+    campaign_set = Redis::Set.new("data_centre:#{campaign_id}", $redis_dialer_connection)
+    campaign_set.members
+  end
     
 end

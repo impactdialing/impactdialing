@@ -54,7 +54,7 @@ describe Caller do
         Twilio::Verb.new do |v|
           3.times do
             v.gather(:numDigits => 7, :timeout => 10, :action => identify_caller_url(:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :protocol => 'http://', :attempt => 1), :method => "POST") do
-              v.say "Please enter your pin."
+              v.say "Please enter your pin and then press star."
             end
           end
         end.response
