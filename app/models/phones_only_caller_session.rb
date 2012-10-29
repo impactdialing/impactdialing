@@ -83,7 +83,7 @@ class PhonesOnlyCallerSession < CallerSession
   end
   
   def next_call
-    ready_to_call
+    ready_to_call(RedisCallerSession.datacentre(self.id))
   end
   
   
