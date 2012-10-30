@@ -22,7 +22,11 @@ class VoterList < ActiveRecord::Base
   BLANK_HEADER = '<Blank header>'
 
   def enable_disable_voters
-    voters.update_all(enabled: enabled)      
+    if voters.size < 1000
+      voters.update_all(enabled: enabled)
+    else
+      Resque.enqueue(VoterListChangeJob, self.id, self.enabled)
+    end
   end
   
   
