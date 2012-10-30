@@ -39,11 +39,3 @@ $redis_caller_session_uri_connection = Redis.new(:host => caller_session_uri.hos
 
 call_uri = URI.parse(redis_config[rails_env]['call'])
 $redis_call_uri_connection = Redis.new(:host => call_uri.host, :port => call_uri.port, :password => call_uri.password)
-
-
-
-
-
-
-
-

@@ -101,7 +101,7 @@ class CallAttempt < ActiveRecord::Base
   
   def wrapup_now(time, caller_type)
     self.wrapup_time = time
-    if caller_type == CallerSession::CallerType::PHONE
+    if caller_type == CallerSession::CallerType::PHONE && caller.is_phones_only
       self.voter_response_processed = true
     end
   end

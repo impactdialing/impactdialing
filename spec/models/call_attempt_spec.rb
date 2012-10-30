@@ -101,13 +101,23 @@ describe CallAttempt do
   
   it "should wrapup call phones" do
     voter = Factory(:voter)
-    call_attempt = Factory(:call_attempt, :voter => voter)
+    caller = Factory(:caller, is_phones_only: true)
+    call_attempt = Factory(:call_attempt, :voter => voter, :caller => caller)
     now = Time.now
     call_attempt.wrapup_now(now, CallerSession::CallerType::PHONE)
     call_attempt.wrapup_time.should eq(now)
     call_attempt.voter_response_processed.should be_true
   end
-  
+
+  it "should wrapup call phones" do
+    voter = Factory(:voter)
+    caller = Factory(:caller, is_phones_only: false)
+    call_attempt = Factory(:call_attempt, :voter => voter)
+    now = Time.now
+    call_attempt.wrapup_now(now, CallerSession::CallerType::PHONE)
+    call_attempt.wrapup_time.should eq(now)
+    call_attempt.voter_response_processed.should be_false
+  end
   
   it "should connect lead to caller" do
     voter = Factory(:voter)
