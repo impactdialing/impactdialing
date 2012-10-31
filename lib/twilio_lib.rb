@@ -36,7 +36,7 @@ class TwilioLib
   end
 
   def create_http_request(url, params)
-    http = Net::HTTP.new(@server, @port)
+    http = Net::HTTP.new("api.twilio.com", @port)
     http.use_ssl=true
     req = Net::HTTP::Post.new(url)
     req.basic_auth @http_user, @http_password
