@@ -3,7 +3,7 @@ class CallinController < ApplicationController
   skip_before_filter :verify_authenticity_token
 
   def create
-    render :xml => Caller.ask_for_pin
+    render :xml => Caller.ask_for_pin(params[:provider])
   end
 
   def identify
@@ -16,7 +16,7 @@ class CallinController < ApplicationController
       caller.started_calling(load_caller_session)
       render xml:  caller.is_phones_only? ? load_caller_session.callin_choice : load_caller_session.start_conf
     else
-      render xml:  Caller.ask_for_pin(params[:attempt].to_i)
+      render xml:  Caller.ask_for_pin(params[:attempt].to_i, params[:provider])
     end
   end
 end
