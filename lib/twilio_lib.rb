@@ -31,12 +31,12 @@ class TwilioLib
       'StatusCallback' => call_ended_call_url(attempt.call, host: DataCentre.call_end_host(dc_codes), port:  Settings.twilio_callback_port, protocol: "https://", event: "call_ended", campaign_type: campaign.type),
       'Timeout' => "15"}
     params.merge!({'IfMachine'=> 'Continue', "Timeout" => "30"}) if campaign.answering_machine_detect
-    response = create_http_request("https://#{DataCentre.voip_api_url(dc_codes)}#{@root}Calls.json", params)
+    response = create_http_request("https://#{DataCentre.voip_api_url(dc_codes)}#{@root}Calls.json", params, DataCentre.voip_api_url(dc_codes))
     response.body
   end
 
-  def create_http_request(url, params)
-    http = Net::HTTP.new("api.twilio.com", @port)
+  def create_http_request(url, params, server)
+    http = Net::HTTP.new(server, @port)
     http.use_ssl=true
     req = Net::HTTP::Post.new(url)
     req.basic_auth @http_user, @http_password
