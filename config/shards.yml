@@ -35,6 +35,12 @@ octopus:
       
     read_slave2:
       adapter: mysql2
+      host: herokustaging55-read2.cjo94dhm4pos.us-east-1.rds.amazonaws.com
+      database: impactdialing_heroku_staging
+      username: root
+      password: mypassword912481
+    read_slave_for_simulator:
+      adapter: mysql2
       host: herokustaging55-read.cjo94dhm4pos.us-east-1.rds.amazonaws.com
       database: impactdialing_heroku_staging
       username: root
@@ -51,6 +57,12 @@ octopus:
       username: root
       password: pfsdh37sl203jq
     read_slave2:
+      adapter: mysql2
+      host: heroku-production55-read2.cjo94dhm4pos.us-east-1.rds.amazonaws.com
+      database: heroku_production
+      username: root
+      password: pfsdh37sl203jq
+    read_slave_for_simulator:
       adapter: mysql2
       host: heroku-production55-read2.cjo94dhm4pos.us-east-1.rds.amazonaws.com
       database: heroku_production
