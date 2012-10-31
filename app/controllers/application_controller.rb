@@ -11,7 +11,7 @@ class ApplicationController < ActionController::Base
   rescue_from InvalidDateException, :with=> :return_invalid_date
   
   def select_shard(&block)
-      Octopus.using(:read_slave1, &block)
+      Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2), &block)
   end
   
   def return_invalid_date

@@ -79,7 +79,7 @@ class VoterListBatchUpload
       voter_info[@csv_custom_id_column_location]
     end
     query = Voter.where(CustomID: custom_ids, campaign_id: @list.campaign_id).select([:CustomID, :id]).to_sql
-    Hash[*OctopusConnection.connection(:read_slave1).execute(query).to_a.flatten]
+    Hash[*OctopusConnection.connection(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)).execute(query).to_a.flatten]
   end
 
   def created_ids(relation)
