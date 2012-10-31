@@ -48,7 +48,7 @@ class MysqlQueryStatistics < Scout::Plugin
       socket   = get_option(:socket)
       database = get_option(:database)
       last_time = memory(:last_time) ? memory(:last_time) : Time.now.strftime("%Y-%m-%d %H:%M") 
-      query    = "select count(id), created_at from calls where created_at > \"#{last_time}\" group by created_at"
+      query    = "select count(id), created_at from call_attempts where created_at > \"#{last_time}\" group by created_at"
 
       cmd = "#{mysql}"
       [:user, :password, :host, :port, :socket, :database].each do |option_name|
