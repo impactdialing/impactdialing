@@ -76,14 +76,15 @@ function kick_caller_off(){
 	$.ajax({
         url : "/caller/" + $("#caller").val() + "/kick_caller_off_conference",
         data : {caller_session: $("#caller_session").val() },
-        type : "POST",
+        type : "POST"
     })
-    
-	
+
+
 }
 
 function validate_schedule_date(){
-  scheduled_date = $.trim($("#scheduled_date").val());
+  var temp_value = $("#scheduled_date").val();
+  var scheduled_date = $.trim(temp_value);
   if (scheduled_date != "") {
 	if (Date.parseExact(scheduled_date, "M/d/yyyy") == null){
 		return false;
