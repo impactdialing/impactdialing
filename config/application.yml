@@ -43,9 +43,9 @@ aws_staging:
 
 heroku_preproduction:
   <<: *default_settings
-  twilio_callback_host: beta-twilio.impactdialing.com
-  call_end_callback_host: beta-twilio.impactdialing.com
-  incoming_callback_host: beta-twilio.impactdialing.com
+  twilio_callback_host: beta.impactdialing.com
+  call_end_callback_host: beta.impactdialing.com
+  incoming_callback_host: beta.impactdialing.com
   callin_phone: 8886215779
 
 development:
