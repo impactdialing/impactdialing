@@ -57,7 +57,7 @@ class Caller < ActiveRecord::Base
             else
               Twilio::Verb.new do |v|
                 3.times do
-                  v.gather(:finishOnKey => '*', :timeout => 10, :action => identify_caller_url(:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :protocol => "http://", :attempt => attempt + 1), :method => "POST") do
+                  v.gather(:finishOnKey => '*', :timeout => 10, :action => identify_caller_url(:host => DataCentre.call_back_host(data_centre), :port => Settings.twilio_callback_port, :protocol => "http://", :attempt => attempt + 1), :method => "POST") do
                     v.say attempt == 0 ? "Please enter your pin and then press star." : "Incorrect Pin. Please enter your pin and then press star."
                   end
                 end
@@ -149,6 +149,10 @@ class Caller < ActiveRecord::Base
 
   def create_caller_identity(session_key)
     caller_identities.create(session_key: session_key, pin: CallerIdentity.create_uniq_pin)
+  end
+  
+  def data_centre
+    RedisDataCentre.
   end
 
   private

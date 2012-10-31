@@ -45,7 +45,7 @@ class TwilioLib
 
 
   def make_call_em(campaign, voter, attempt)
-    dc_codes = RedisPredictiveCampaign.data_centres(campaign.id)
+    dc_codes = RedisDataCentre.data_centres(campaign.id)
     params = {'From'=> campaign.caller_id, "To"=> voter.Phone, 'FallbackUrl' => TWILIO_ERROR, "Url"=>incoming_call_url(attempt.call, host: Settings.incoming_callback_host, port: Settings.twilio_callback_port, protocol: "http://", event: "incoming_call", campaign_type: campaign.type),
       'StatusCallback' => call_ended_call_url(attempt.call, host: Settings.call_end_callback_host, port:  Settings.twilio_callback_port, protocol: "http://", event: "call_ended", campaign_type: campaign.type),
       'Timeout' => "15", "DCCODES" => dc_codes}
