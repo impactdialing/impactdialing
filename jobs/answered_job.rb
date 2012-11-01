@@ -12,7 +12,7 @@ class AnsweredJob
        begin
          call = call_attempt.call
          answers_data = RedisCall.questions_and_notes(call.id)
-         if answers_data
+         if answers_data && (answers_data["questions"] || answers_data["notes"])
            questions = answers_data["questions"]
            notes = answers_data["notes"]
            call_attempt.voter.persist_answers(questions, call_attempt)
