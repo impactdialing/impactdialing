@@ -4,7 +4,7 @@ LIMIT = 1000
 class PersistCalls
     include Resque::Plugins::UniqueJob
     @queue = :persist_jobs
-  
+
   def self.perform
     voters = []
     call_attempts = []
@@ -19,18 +19,18 @@ class PersistCalls
         :scheduled_date, :recording_url, :recording_duration,
         :voter_response_processed, :wrapup_time
     ]
-    clean_list('abandoned_call_list', LIMIT)
-    clean_list('not_answered_call_list', LIMIT*3)
-    clean_list('end_answered_by_machine_call_list', LIMIT)
-    clean_list('disconnected_call_list', LIMIT)
-    call_attempts = []    
+    clean_list($redis_call_flow_connection, 'abandoned_call_list', LIMIT)
+    clean_list($redis_call_end_connection, 'not_answered_call_list', LIMIT*3)
+    clean_list($redis_call_flow_connection, 'end_answered_by_machine_call_list', LIMIT)
+    clean_list($redis_call_flow_connection, 'disconnected_call_list', LIMIT)
+    call_attempts = []
     wrapped_up_calls(call_attempts, voters, LIMIT)
     CallAttempt.import call_attempts, :on_duplicate_key_update=>[:wrapup_time, :voter_response_processed]
-    clean_list('wrapped_up_call_list', LIMIT)
+    clean_list($redis_call_flow_connection, 'wrapped_up_call_list', LIMIT)
   end
-  
+
   def self.abandoned_calls(call_attempts, voters, num)
-    abandoned_calls = multiget("abandoned_call_list", num).sort_by{|a| a['id']}
+    abandoned_calls = multiget($redis_call_flow_connection, "abandoned_call_list", num).sort_by{|a| a['id']}
     calls = Call.where(id: abandoned_calls.map { |c| c['id'] }).
       includes(call_attempt: :voter).order(:id)
     calls.zip(abandoned_calls).each do |call, abandoned_call|
@@ -42,9 +42,9 @@ class PersistCalls
       voters << voter
     end
   end
-  
+
   def self.unanswered_calls(call_attempts, voters, num)
-    unanswered_calls = multiget("not_answered_call_list", num).sort_by { |a| a['id'] }
+    unanswered_calls = multiget($redis_call_end_connection, "not_answered_call_list", num).sort_by { |a| a['id'] }
     calls = Call.where(id: unanswered_calls.map { |c| c['id'] }).
       includes(call_attempt: :voter).order(:id)
     calls.zip(unanswered_calls).each do |call, unanswered_call|
@@ -54,11 +54,11 @@ class PersistCalls
       voter.end_unanswered_call(unanswered_call['call_status'])
       call_attempts << call_attempt
       voters << voter
-    end    
+    end
   end
-  
+
   def self.machine_calls(call_attempts, voters, num)
-    unanswered_calls = multiget("end_answered_by_machine_call_list", num).sort_by { |a| a['id'] }
+    unanswered_calls = multiget($redis_call_flow_connection, "end_answered_by_machine_call_list", num).sort_by { |a| a['id'] }
     calls = Call.where(id: unanswered_calls.map { |c| c['id'] }).
       includes(call_attempt: :voter).order(:id)
     calls.zip(unanswered_calls).each do |call, unanswered_call|
@@ -72,11 +72,11 @@ class PersistCalls
         voters << voter
       rescue Exception
       end
-    end    
+    end
   end
-  
+
   def self.disconnected_calls(call_attempts, voters, num)
-    disconnected_calls = multiget("disconnected_call_list", num).sort_by { |a| a['id'] }
+    disconnected_calls = multiget($redis_call_flow_connection, "disconnected_call_list", num).sort_by { |a| a['id'] }
     calls = Call.where(id: disconnected_calls.map { |c| c['id'] }).
       includes(call_attempt: :voter).order(:id)
     calls.zip(disconnected_calls).each do |call, disconnected_call|
@@ -86,14 +86,14 @@ class PersistCalls
         call_attempt.disconnect_call(disconnected_call['current_time'], disconnected_call['recording_duration'], disconnected_call['recording_url'], disconnected_call['caller_id'] )
         voter.disconnect_call(disconnected_call['caller_id'])
         call_attempts << call_attempt
-        voters << voter        
+        voters << voter
       rescue Exception
       end
-    end    
+    end
   end
-  
+
   def self.wrapped_up_calls(result, voters, num)
-    wrapped_up_calls = multiget("wrapped_up_call_list", num).sort_by { |a| a['id'] }
+    wrapped_up_calls = multiget($redis_call_flow_connection, "wrapped_up_call_list", num).sort_by { |a| a['id'] }
     call_attempts = CallAttempt.where(id: wrapped_up_calls.map  { |c| c['id'] }).order(:id)
     call_attempts.zip(wrapped_up_calls).each do |call_attempt, wrapped_up_call|
       begin
@@ -103,19 +103,15 @@ class PersistCalls
       end
     end
   end
-  
-  def self.multiget(list_name, num)
+
+  def self.multiget(connection, list_name, num)
     num_of_elements = connection.llen list_name
     num_to_pop = num_of_elements < num ? num_of_elements : num
     connection.lrange(list_name, 0, num).compact.map { |x| JSON.parse(x) }
   end
 
-  def self.clean_list(list_name, num)
+  def self.clean_list(connection, list_name, num)
     connection.ltrim(list_name, num, -1)
   end
 
-  def self.connection
-    $redis_call_flow_connection
-  end
-  
 end
