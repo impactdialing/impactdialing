@@ -6,7 +6,7 @@ module Callers
     def check_login
        redirect_to :action =>"index" and return if session[:phones_only_caller].blank?
        begin
-         Octopus.using(:read_slave1) do
+         Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
            @caller = Caller.find(session[:phones_only_caller])
            @account = @caller.account
          end
@@ -47,7 +47,7 @@ module Callers
     end
 
     def usage
-      Octopus.using(:read_slave1) do
+      Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
         campaigns = @account.campaigns.for_caller(@caller)
         @campaigns_data = Campaign.connection.execute(campaigns.select([:name, "campaigns.id"]).uniq.to_sql).to_a
         @campaign = campaigns.find_by_id(params[:campaign_id])
@@ -57,7 +57,7 @@ module Callers
     end
 
     def call_details
-      Octopus.using(:read_slave1) do
+      Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
         campaigns = @account.campaigns.for_caller(@caller)
         @campaigns_data = Campaign.connection.execute(campaigns.select([:name, "campaigns.id"]).uniq.to_sql).to_a
         @campaign = campaigns.find_by_id(params[:campaign_id]) || @caller.caller_sessions.last.try(:campaign) || @caller.campaign
