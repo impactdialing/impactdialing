@@ -26,6 +26,8 @@ class CallersStatistics < Scout::Plugin
             :calls_daily_total => CallAttempt.where("created_at > '#{beginning_of_day.to_s(:db)}'").count )
   rescue => error_message
     error "Couldn't parse output. Make sure you have proper SQL. #{error_message}"
+  ensure 
+    ActiveRecord::Base.connection.close
   end
 
 end
