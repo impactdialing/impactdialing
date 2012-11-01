@@ -150,14 +150,6 @@ class Caller < ActiveRecord::Base
   def create_caller_identity(session_key)
     caller_identities.create(session_key: session_key, pin: CallerIdentity.create_uniq_pin)
   end
-<<<<<<< HEAD
-=======
-  
-  def data_centre
-
-  end
->>>>>>> 34ad0b1... config for balancing between twilio and voxeo
-
   private
 
   def assign_to_caller_group_campaign
