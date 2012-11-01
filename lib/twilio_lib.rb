@@ -4,7 +4,7 @@ class TwilioLib
   include Rails.application.routes.url_helpers
 
 
-  DEFAULT_SERVER = "voxeoproxy.herokuapp.com" unless const_defined?('DEFAULT_SERVER')
+  DEFAULT_SERVER = "api.twilio.com" unless const_defined?('DEFAULT_SERVER')
   DEFAULT_PORT = 443 unless const_defined?('DEFAULT_PORT')
   DEFAULT_ROOT= "/2010-04-01/Accounts/" unless const_defined?('DEFAULT_ROOT')
 

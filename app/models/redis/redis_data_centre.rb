@@ -13,16 +13,5 @@ class RedisDataCentre
     $redis_dialer_connection.lrem "data_centre:#{campaign_id}", 1, data_centre
   end
   
-  def self.add_to_voxeo_dc_campaigns(campaign_id)
-    campaign_set = Redis::Set.new("voxeo", $redis_dialer_connection)
-    campaign_set << campaign_id if Campaign.predictive_campaign?(type)
-  end
-  
-  def self.add_to_twilio_dc_campaigns
-    campaign_set = Redis::Set.new("twilio", $redis_dialer_connection)
-    campaign_set << campaign_id    
-  end
-  
-  
   
 end
