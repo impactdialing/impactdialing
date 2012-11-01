@@ -5,7 +5,7 @@ require File.join(RAILS_ROOT, 'config/environment')
 
 loop do
   begin
-    Octopus.using(:read_slave2) do
+    Octopus.using(:simulator_slave) do
       logged_in_campaigns = CallerSession.campaigns_on_call
       logged_in_campaigns.each do |c|     
         puts "Simulating #{c.campaign_id}"

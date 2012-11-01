@@ -53,7 +53,7 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
       joins(:custom_voter_field_values).
       where(custom_voter_field_values: {voter_id: voter_ids}).
       group(:voter_id, :name).select([:name, :value, :voter_id]).to_sql
-    OctopusConnection.connection(:read_slave1).execute(query).each(as: :hash).each_with_object({}) do |hash, memo|
+    OctopusConnection.connection(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)).execute(query).each(as: :hash).each_with_object({}) do |hash, memo|
       memo[hash['voter_id']] ||= {} 
       memo[hash['voter_id']][hash['name']] = hash['value'] 
     end
@@ -119,7 +119,7 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
       attempt_ids << a['id']
     end
 
-    conn = OctopusConnection.connection(:read_slave1)
+    conn = OctopusConnection.connection(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2))
     voters = conn.execute(Voter.where(id: voter_ids).to_sql).each(as: :hash).each_with_object({}) { |x, memo| memo[x['id']] = x }
     voter_field_values = get_custom_voter_field_values(voter_ids)
 
@@ -138,37 +138,37 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
   end
 
   def download_all_voters_lead
-    Octopus.using(:read_slave1) do
+    Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
       first_voter = Voter.by_campaign(@campaign).order('id').first
       @possible_responses = get_possible_responses
-      Voter.by_campaign(@campaign).order('last_call_attempt_time').find_in_hashes(:batch_size => 100, start: start_position(first_voter), shard: :read_slave1) do |voters|
+      Voter.by_campaign(@campaign).order('last_call_attempt_time').find_in_hashes(:batch_size => 100, start: start_position(first_voter), shard: OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do |voters|
         process_voters(voters)
       end    
     end
   end
   
   def download_all_voters_dial
-    Octopus.using(:read_slave1) do
+    Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
       first_attempt = CallAttempt.for_campaign(@campaign).order('id').first
       @possible_responses = get_possible_responses
-      CallAttempt.from('call_attempts use index (index_call_attempts_on_campaign_id)').for_campaign(@campaign).order('created_at').includes(:answers, :note_responses).find_in_hashes(:batch_size => 100, start: start_position(first_attempt), shard: :read_slave1) do |attempts|
+      CallAttempt.from('call_attempts use index (index_call_attempts_on_campaign_id)').for_campaign(@campaign).order('created_at').includes(:answers, :note_responses).find_in_hashes(:batch_size => 100, start: start_position(first_attempt), shard: OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do |attempts|
         process_attempts(attempts)
       end
     end
   end
   
   def download_for_date_range_lead
-    Octopus.using(:read_slave1) do
+    Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
       first_voter = Voter.by_campaign(@campaign).last_call_attempt_within(@from_date, @to_date).order('id').first
       @possible_responses = get_possible_responses
-      Voter.by_campaign(@campaign).last_call_attempt_within(@from_date, @to_date).order('created_at').find_in_hashes(:batch_size => 100, start: start_position(first_voter), shard: :read_slave1) do |voters|
+      Voter.by_campaign(@campaign).last_call_attempt_within(@from_date, @to_date).order('created_at').find_in_hashes(:batch_size => 100, start: start_position(first_voter), shard: OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do |voters|
         process_voters(voters)
       end
     end
   end
   
   def download_for_date_range_dial
-    Octopus.using(:read_slave1) do
+    Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
       first_attempt = CallAttempt.for_campaign(@campaign).between(@from_date, @to_date).order('id').first
       @possible_responses = get_possible_responses
       CallAttempt.from('call_attempts use index (index_call_attempts_on_campaign_id)').for_campaign(@campaign).between(@from_date, @to_date).order('created_at').includes(:answers, :note_responses).find_in_batches(:batch_size => 100, start: start_position(first_attempt)) do |attempts|
