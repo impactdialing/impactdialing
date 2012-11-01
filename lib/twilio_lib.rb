@@ -27,9 +27,9 @@ class TwilioLib
 
   def make_call(campaign, voter, attempt)
     dc_codes = RedisDataCentre.data_centres(campaign.id)
-    params = {'From'=> campaign.caller_id, "To"=> voter.Phone, 'FallbackUrl' => TWILIO_ERROR, "Url"=>incoming_call_url(attempt.call, host: DataCentre.incoming_call_host(dc_codes), port: Settings.twilio_callback_port, :protocol => "https://", event: "incoming_call", campaign_type: campaign.type),
-      'StatusCallback' => call_ended_call_url(attempt.call, host: DataCentre.call_end_host(dc_codes), port:  Settings.twilio_callback_port, protocol: "https://", event: "call_ended", campaign_type: campaign.type),
-      'Timeout' => "15"}
+    params = {'From'=> campaign.caller_id, "To"=> voter.Phone, 'FallbackUrl' => TWILIO_ERROR, "Url"=>incoming_call_url(attempt.call, host: DataCentre.incoming_call_host(dc_codes), port: Settings.twilio_callback_port, :protocol => "http://", event: "incoming_call", campaign_type: campaign.type),
+      'StatusCallback' => call_ended_call_url(attempt.call, host: DataCentre.call_end_host(dc_codes), port:  Settings.twilio_callback_port, protocol: "http://", event: "call_ended", campaign_type: campaign.type),
+      'Timeout' => "15","DCCODES" => dc_codes}
     params.merge!({'IfMachine'=> 'Continue', "Timeout" => "30"}) if campaign.answering_machine_detect
     response = create_http_request("https://#{DataCentre.voip_api_url(dc_codes)}#{@root}Calls.json", params, DataCentre.voip_api_url(dc_codes))
     response.body
