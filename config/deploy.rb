@@ -44,7 +44,7 @@ namespace :deploy do
       deploy.symlink_database_config
       deploy.symlink
     end
-    unicorn.reload
+    unicorn.upgrade
     deploy.cleanup
   end
   
@@ -57,9 +57,6 @@ end
 
 
 namespace :unicorn do  
-  task :reload, roles => :web do
-    sudo "/etc/init.d/unicorn reload"
-  end
 
   task :start, roles => :web do
     sudo "/etc/init.d/unicorn start"
@@ -69,7 +66,7 @@ namespace :unicorn do
     sudo "/etc/init.d/unicorn stop"
   end
 
-  task :restart, roles => :web do
-    sudo "/etc/init.d/unicorn restart"
+  task :upgrade, roles => :web do
+    sudo "/etc/init.d/unicorn upgrade"
   end
 end
