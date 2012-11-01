@@ -51,11 +51,7 @@ class TwilioLib
       'StatusCallback' => call_ended_call_url(attempt.call, host: DataCentre.call_end_host(dc_codes), port:  Settings.twilio_callback_port, protocol: "http://", event: "call_ended", campaign_type: campaign.type),
       'Timeout' => "15", "DCCODES" => dc_codes}
     params.merge!({'IfMachine'=> 'Continue', "Timeout" => "30"}) if campaign.answering_machine_detect
-<<<<<<< HEAD
-    EventMachine::HttpRequest.new("https://#{voip_api_url(dc_codes)}#{@root}Calls.json").apost :head => {'authorization' => [@http_user, @http_password]},:body => params
-=======
     EventMachine::HttpRequest.new("https://#{DataCentre.voip_api_url(dc_codes)}#{@root}Calls.json").apost :head => {'authorization' => [@http_user, @http_password]},:body => params
->>>>>>> 429df78cae091f241b0bd2c64ab4875eccf02dcf
   end
 
   def redirect_caller(call_sid, caller, session_id)
