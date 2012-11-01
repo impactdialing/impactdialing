@@ -12,15 +12,13 @@ class PersistCalls
     unanswered_calls(call_attempts, voters, LIMIT*3)
     machine_calls(call_attempts, voters, LIMIT)
     disconnected_calls(call_attempts, voters, LIMIT)
-    ActiveRecord::Base.transaction do
-      Voter.import  voters, :on_duplicate_key_update=>[:status, :call_back, :caller_id, :scheduled_date]
-      CallAttempt.import call_attempts,
-        on_duplicate_key_update: [
-          :status, :call_end, :connecttime, :caller_id,
-          :scheduled_date, :recording_url, :recording_duration,
-          :voter_response_processed, :wrapup_time
-      ]
-    end
+    Voter.import  voters, :on_duplicate_key_update=>[:status, :call_back, :caller_id, :scheduled_date]
+    CallAttempt.import call_attempts,
+      on_duplicate_key_update: [
+        :status, :call_end, :connecttime, :caller_id,
+        :scheduled_date, :recording_url, :recording_duration,
+        :voter_response_processed, :wrapup_time
+    ]
     clean_list('abandoned_call_list', LIMIT)
     clean_list('not_answered_call_list', LIMIT*3)
     clean_list('end_answered_by_machine_call_list', LIMIT)
