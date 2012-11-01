@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20121024110416) do
+ActiveRecord::Schema.define(:version => 20121031105129) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -131,6 +131,7 @@ ActiveRecord::Schema.define(:version => 20121024110416) do
   add_index "call_attempts", ["campaign_id", "created_at", "status"], :name => "index_call_attempts_on_campaign_id_created_at_status"
   add_index "call_attempts", ["campaign_id", "wrapup_time"], :name => "index_call_attempts_on_campaign_id_and_wrapup_time"
   add_index "call_attempts", ["campaign_id"], :name => "index_call_attempts_on_campaign_id"
+  add_index "call_attempts", ["created_at"], :name => "index_call_attempts_on_created_at"
   add_index "call_attempts", ["debited", "tEndTime"], :name => "index_call_attempts_debit"
   add_index "call_attempts", ["status", "tPrice", "tStatus", "sid"], :name => "index_sync_calls"
   add_index "call_attempts", ["voter_id"], :name => "index_call_attempts_on_voter_id"
@@ -180,7 +181,6 @@ ActiveRecord::Schema.define(:version => 20121024110416) do
     t.float    "tPrice"
     t.integer  "attempt_in_progress"
     t.string   "session_key"
-    t.integer  "lock_version",         :default => 0
     t.integer  "payment_id"
     t.string   "state"
     t.string   "type"
@@ -226,6 +226,7 @@ ActiveRecord::Schema.define(:version => 20121024110416) do
     t.text     "questions"
     t.text     "notes"
     t.text     "all_states"
+    t.string   "campaign_type"
   end
 
   create_table "campaigns", :force => true do |t|

@@ -94,7 +94,8 @@ class CallerSession < ActiveRecord::Base
     RedisPredictiveCampaign.remove(campaign_id, campaign.type) if campaign.caller_sessions.on_call.size <= 1
     RedisStatus.delete_state(campaign_id, self.id)
     RedisCallerSession.delete(self.id)
-    RedisOnHoldCaller.remove_caller_session(campaign_id, self.id)
+    RedisOnHoldCaller.remove_caller_session(campaign_id, self.id, data_centre)
+    RedisDataCentre.remove_data_centre(campaign_id, data_centre)
   end
   
   
@@ -120,15 +121,15 @@ class CallerSession < ActiveRecord::Base
   end
     
   def hold
-    Twilio::Verb.new { |v| v.play "#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/wav/hold.mp3"; v.redirect(:method => 'GET'); }.response
+    Twilio::Verb.new { |v| v.play "#{DataCentre.call_back_host(data_centre)}:#{Settings.twilio_callback_port}/wav/hold.mp3"; v.redirect(:method => 'GET'); }.response
   end
   
   def redirect_caller
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
     if caller.is_phones_only?
-      Twilio::Call.redirect(sid, ready_to_call_caller_url(caller_id, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :protocol => "http://", session_id: id))      
+      Twilio::Call.redirect(sid, ready_to_call_caller_url(caller_id, :host => DataCentre.call_back_host(data_centre), :port => Settings.twilio_callback_port, :protocol => "http://", session_id: id))      
     else
-      Twilio::Call.redirect(sid, continue_conf_caller_url(caller_id, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :protocol => "http://", session_id: id))      
+      Twilio::Call.redirect(sid, continue_conf_caller_url(caller_id, :host => DataCentre.call_back_host(data_centre), :port => Settings.twilio_callback_port, :protocol => "http://", session_id: id))      
     end    
     
   end
@@ -136,21 +137,21 @@ class CallerSession < ActiveRecord::Base
   def redirect_caller_out_of_numbers
     if self.available_for_call?
       Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-      Twilio::Call.redirect(sid, run_out_of_numbers_caller_url(caller_id, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :protocol => "http://", session_id: id))
+      Twilio::Call.redirect(sid, run_out_of_numbers_caller_url(caller_id, :host => DataCentre.call_back_host(data_centre), :port => Settings.twilio_callback_port, :protocol => "http://", session_id: id))
     end
   end
   
   def redirect_caller_time_period_exceeded
     if self.available_for_call?
       Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-      Twilio::Call.redirect(sid, time_period_exceeded_caller_url(caller_id, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :protocol => "http://", session_id: id))
+      Twilio::Call.redirect(sid, time_period_exceeded_caller_url(caller_id, :host => DataCentre.call_back_host(data_centre), :port => Settings.twilio_callback_port, :protocol => "http://", session_id: id))
     end    
   end
 
   def redirect_account_has_no_funds
     if self.available_for_call?
       Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-      Twilio::Call.redirect(sid, account_out_of_funds_caller_url(caller, :host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :protocol => "http://", session_id: id))
+      Twilio::Call.redirect(sid, account_out_of_funds_caller_url(caller, :host => DataCentre.call_back_host(data_centre), :port => Settings.twilio_callback_port, :protocol => "http://", session_id: id))
     end    
   end
   
@@ -207,12 +208,15 @@ class CallerSession < ActiveRecord::Base
    ((tEndTime - tStartTime)/60).ceil
    end
    
-   def start_conference
+   def start_conference(callerdc=DataCentre::Code::TWILIO)
      if Campaign.predictive_campaign?(campaign.type)
        loaded_caller_session = CallerSession.find(self.id)       
-       loaded_caller_session.update_attributes(on_call: true, available_for_call: true)
-       RedisOnHoldCaller.remove_caller_session(campaign_id, self.id)
-       RedisOnHoldCaller.add(campaign_id, self.id)
+       loaded_caller_session.update_attributes(on_call: true, available_for_call: true)       
+       
+       RedisCallerSession.set_datacentre(self.id, callerdc)
+       RedisDataCentre.set_datacentres_used(campaign_id, callerdc)
+       RedisOnHoldCaller.remove_caller_session(campaign_id, self.id, callerdc)
+       RedisOnHoldCaller.add(campaign_id, self.id, callerdc)
      end     
    end
 
@@ -235,6 +239,10 @@ class CallerSession < ActiveRecord::Base
 
   def expire_find_by_call_sid_cache
     Rails.cache.delete('CallerSession.find_by_sid(#{sid})')
+  end
+  
+  def data_centre
+    RedisCallerSession.datacentre(self.id)
   end
   
 end
