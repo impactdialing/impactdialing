@@ -7,7 +7,7 @@ class SimulatorJob
 
    def self.perform(campaign_id)
     begin 
-     target_abandonment = Campaign.using(:read_slave2).find(campaign_id).acceptable_abandon_rate
+     target_abandonment = Campaign.using(:simulator_slave).find(campaign_id).acceptable_abandon_rate
      start_time = 60 * 10
      simulator_length = 60 * 60
      abandon_count = 0
@@ -134,7 +134,7 @@ class SimulatorJob
    
    
    def self.simulator_campaign_base_values(campaign_id, start_time)
-       Octopus.using(:read_slave2) do
+       Octopus.using(:simulator_slave) do
          caller_statuses = CallerSession.where(:campaign_id => campaign_id,
                    :on_call => true).size.times.map{ CallerStatus.new('available') }            
                

@@ -2,14 +2,14 @@ class MonitorsController < ClientController
   skip_before_filter :check_login, :only => [:start, :stop, :switch_mode, :deactivate_session]
 
   def index
-    Octopus.using(:read_slave1) do
+    Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
       @campaigns = Account.find(account).campaigns.manual.active
       @active_campaigns = account.campaigns.manual.active.with_running_caller_sessions
     end
   end
 
   def show
-    Octopus.using(:read_slave1) do
+    Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
       @campaigns = Account.find(account).campaigns.with_running_caller_sessions
       @all_campaigns = Account.find(account).campaigns.active
       @campaign = Account.find(account).campaigns.find(params[:id])    
@@ -24,14 +24,14 @@ class MonitorsController < ClientController
   
   
   def campaign_info
-    Octopus.using(:read_slave1) do
+    Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
       @campaign = Account.find(account).campaigns.find(params[:id])
     end      
     render json: @campaign.current_status
   end
   
   def callers_info
-    Octopus.using(:read_slave1) do
+    Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
       @campaign = Account.find(account).campaigns.find(params[:id])      
       @callers_result = @campaign.current_callers_status    
     end

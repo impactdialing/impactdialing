@@ -38,7 +38,7 @@ class CampaignReportStrategy
     @note_ids = NoteResponse.note_ids(@campaign.id)           
     @from_date = from_date
     @to_date = to_date
-    @replica_connection = OctopusConnection.connection(:read_slave1)
+    @replica_connection = OctopusConnection.connection(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2))
   end
   
   def construct_csv
