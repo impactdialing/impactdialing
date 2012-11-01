@@ -32,7 +32,7 @@ staging: &staging
 
 heroku_staging:
   twilio_callback_port: 80
-  callin_phone: 6502626881
+  callin_phone: 3475146506
   recording_env: heroku_staging
   twilio_callback_host: voxeoproxy.herokuapp.com
   call_end_callback_host: voxeoproxy.herokuapp.com
