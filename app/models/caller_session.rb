@@ -94,7 +94,7 @@ class CallerSession < ActiveRecord::Base
     RedisPredictiveCampaign.remove(campaign_id, campaign.type) if campaign.caller_sessions.on_call.size <= 1
     RedisStatus.delete_state(campaign_id, self.id)
     RedisCallerSession.delete(self.id)
-    RedisOnHoldCaller.remove_caller_session(campaign_id, self.id)
+    RedisOnHoldCaller.remove_caller_session(campaign_id, self.id, data_centre)
     RedisDataCentre.remove_data_centre(campaign_id, data_centre)
   end
   
