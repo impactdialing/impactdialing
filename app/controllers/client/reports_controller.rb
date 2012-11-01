@@ -82,7 +82,7 @@ module Client
     private
 
     def load_campaign
-      Octopus.using(:read_slave1) do
+      Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
         @campaign = Account.find(account).campaigns.find(params[:campaign_id])
       end
     end

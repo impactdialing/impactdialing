@@ -5,7 +5,7 @@ class AlertJob
   @queue = :alert_worker
 
    def self.perform
-     Octopus.using(:read_slave1) do
+     Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
        campaign_ids = CallerSession.campaigns_on_call.pluck(:id)
        predictive_campaign_ids = Campaign.where("type = 'Predictive' and id in (?)", campaign_ids).pluck(:id)
        alert_on_hold_callers(predictive_campaign_ids)
