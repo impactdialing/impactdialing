@@ -3,6 +3,9 @@ require 'active_record'
 require 'active_support/all'
 require 'mysql2'
 
+class CallAttempt < ActiveRecord::Base
+end
+
 class CallersStatistics < Scout::Plugin
 
   def build_report
@@ -22,10 +25,15 @@ class CallersStatistics < Scout::Plugin
              AND voter_response_processed = 1  
              AND call_attempts.created_at > '#{beginning_of_day.to_s(:db)}'"
     success_calls_without_answers = ActiveRecord::Base.connection.select_value(success_calls_without_answers_sql)
+    calls_daily_total = CallAttempt.where("created_at > '#{beginning_of_day.to_s(:db)}'").count
     
-    report( :success_calls_without_answers =>   success_calls_without_answers)
+    report( :success_calls_without_answers => success_calls_without_answers,
+            :percent_success_calls_without_answers => (success_calls_without_answers.to_f/calls_daily_total*10000).round/100.0)
   rescue => error_message
     error "Couldn't parse output. Make sure you have proper SQL. #{error_message}"
+    
+  ensure 
+    ActiveRecord::Base.connection.close
   end
 
 end
