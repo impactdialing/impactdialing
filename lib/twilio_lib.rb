@@ -22,7 +22,7 @@ class TwilioLib
   end
 
   def end_call_sync(call_id)
-    create_http_request("#{@root}Calls/#{call_id}", {'Status'=>"completed"})
+    create_http_request("#{@root}Calls/#{call_id}", {'Status'=>"completed"}, DataCentre.voip_api_url([]))
   end
 
   def make_call(campaign, voter, attempt)
