@@ -2,6 +2,12 @@ default: &default_settings
   twilio_callback_host: impactcallergiraffeblue-aws.impactdialing.com
   call_end_callback_host: impactdialingcallend-aws.impactdialing.com
   incoming_callback_host: impactdialingincomingcalls-aws.impactdialing.com
+  voxeo_callback_host: voxeoproxy.herokuapp.com
+  voxeo_call_end_callback_host: voxeoproxy.herokuapp.com
+  voxeo_incoming_callback_host: voxeoproxy.herokuapp.com
+  voip_api_url: api.twilio.com
+  voxeo_voip_api_url: voxeoproxy.herokuapp.com
+  
   # USE IN CASE of us-east servers outage
   #twilio_callback_host: impactcallergiraffeblue-aws-west.impactdialing.com
   #call_end_callback_host: impactdialingcallend-aws-west.impactdialing.com
@@ -12,7 +18,7 @@ default: &default_settings
 
 heroku:
   <<: *default_settings
-  
+
 aws:
   <<: *default_settings
 
@@ -23,18 +29,24 @@ staging: &staging
   twilio_callback_host: impactcallergiraffeblue-aws-staging.impactdialing.com
   call_end_callback_host: impactdialingcallend-aws-staging.impactdialing.com
   incoming_callback_host: impactdialingincomingcalls-aws-staging.impactdialing.com
-  
+
 heroku_staging:
-  <<: *staging
+  <<: *default_settings
+  twilio_callback_port: 80
+  callin_phone: 3475146506
+  recording_env: heroku_staging
+  twilio_callback_host: impactcallergiraffeblue-aws-staging.impactdialing.com
+  call_end_callback_host: impactdialingcallend-aws-staging.impactdialing.com
+  incoming_callback_host: impactdialingincomingcalls-aws-staging.impactdialing.com
 
 aws_staging:
   <<: *staging
 
 heroku_preproduction:
   <<: *default_settings
-  twilio_callback_host: beta-twilio.impactdialing.com
-  call_end_callback_host: beta-twilio.impactdialing.com
-  incoming_callback_host: beta-twilio.impactdialing.com
+  twilio_callback_host: impactdialing-beta.herokuapp.com
+  call_end_callback_host: impactdialing-beta.herokuapp.com
+  incoming_callback_host: impactdialing-beta.herokuapp.com
   callin_phone: 8886215779
 
 development:

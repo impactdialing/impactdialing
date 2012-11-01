@@ -116,6 +116,10 @@ class Call < ActiveRecord::Base
     CallerSession.find_by_id_cached(call_attempt.caller_session_id)
   end
   
+  def data_centre
+    RedisCallerSession.datacentre(call_attempt.caller_session_id)
+  end
+  
   
   
 end

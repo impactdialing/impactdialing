@@ -150,6 +150,7 @@ class Caller < ActiveRecord::Base
   def create_caller_identity(session_key)
     caller_identities.create(session_key: session_key, pin: CallerIdentity.create_uniq_pin)
   end
+  
   private
 
   def assign_to_caller_group_campaign
