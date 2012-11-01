@@ -21,12 +21,13 @@ class CallerController < ApplicationController
     identity = CallerIdentity.find_by_session_key(params[:session_key])
     session = caller.create_caller_session(identity.session_key, params[:CallSid], CallerSession::CallerType::TWILIO_CLIENT)
     load_caller_session = CallerSession.find_by_id_cached(session.id)
-    caller.started_calling(load_caller_session)    
+    caller.started_calling(load_caller_session)
+    RedisDataCentre.set_datacentres_used(load_caller_session.campaign_id, DataCentre.code(params[:caller_dc]))    
     render xml: load_caller_session.start_conf
   end
   
   def ready_to_call
-    RedisDataCentre.set_datacentres_used(@caller_session.campaign_id, params[:caller_dc])
+    RedisDataCentre.set_datacentres_used(@caller_session.campaign_id, DataCentre.code(params[:caller_dc]))
     render xml: @caller_session.ready_to_call(DataCentre.code(params[:caller_dc]))
   end
   
