@@ -31,6 +31,7 @@ staging: &staging
   incoming_callback_host: impactdialingincomingcalls-aws-staging.impactdialing.com
 
 heroku_staging:
+  <<: *default_settings
   twilio_callback_port: 80
   callin_phone: 3475146506
   recording_env: heroku_staging
