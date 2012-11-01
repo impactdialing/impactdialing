@@ -38,16 +38,16 @@ aws_staging:
   <<: *heroku_staging
   
 heroku_preproduction:
-  resque: redis://10.50.209.9:6379
-  sidekiq: redis://10.208.71.208:6379    
-  call_flow: redis://10.50.209.9:6379    
-  monitor: redis://10.50.209.9:6379
-  on_hold_callers: redis://10.50.209.9:6379
-  call_end: redis://10.50.209.9:6379
-  question_pr: redis://10.50.209.9:6379
-  phones_only_ans: redis://10.50.209.9:6379
-  caller_session: redis://10.50.209.9:6379
-  call: redis://10.50.209.9:6379
+  resque: redis://10.214.38.211:6379
+  sidekiq: redis://10.214.38.211:6379    
+  call_flow: redis://10.214.38.211:6379    
+  monitor: redis://10.214.38.211:6379
+  on_hold_callers: redis://10.214.38.211:6379
+  call_end: redis://10.214.38.211:6379
+  question_pr: redis://10.214.38.211:6379
+  phones_only_ans: redis://10.214.38.211:6379
+  caller_session: redis://10.214.38.211:6379
+  call: redis://10.214.38.211:6379
 
 
 heroku: &heroku

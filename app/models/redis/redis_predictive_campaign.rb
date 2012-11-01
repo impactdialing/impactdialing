@@ -20,5 +20,6 @@ class RedisPredictiveCampaign
     campaign_set = Redis::Set.new("running_campaigns", $redis_dialer_connection)
     campaign_set.members
   end  
+  
     
 end
