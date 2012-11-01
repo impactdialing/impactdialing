@@ -124,7 +124,7 @@ describe CallAttempt do
     call_attempt = Factory(:call_attempt, :voter => voter)
     caller_session = Factory(:caller_session)
     RedisOnHoldCaller.should_receive(:longest_waiting_caller).and_return(caller_session.id)
-    call_attempt.connect_caller_to_lead
+    call_attempt.connect_caller_to_lead(DataCentre::Code::TWILIO)
     caller_session.attempt_in_progress.should eq(call_attempt)
     caller_session.voter_in_progress.should eq(voter)
   end
