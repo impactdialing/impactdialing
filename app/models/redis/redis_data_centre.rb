@@ -9,6 +9,12 @@ class RedisDataCentre
     dcs.uniq.join(",")
   end
   
+  def self.data_centres_array(campaign_id)
+    dcs = $redis_dialer_connection.lrange "data_centre:#{campaign_id}", 0, -1    
+    dcs.uniq
+  end
+  
+  
   def self.remove_data_centre(campaign_id, data_centre)
     $redis_dialer_connection.lrem "data_centre:#{campaign_id}", 1, data_centre
   end

@@ -8,6 +8,9 @@ class RedisOnHoldCaller
     $redis_on_hold_connection.lpush "campaign_id:#{campaign_id}:#{callerdc}:on_hold_caller", caller_session_id
   end
   
+  def self.length(campaign_id, callerdc)
+    $redis_on_hold_connection.llen "campaign_id:#{campaign_id}:#{callerdc}:on_hold_caller"
+  end  
   
   def self.longest_waiting_caller(campaign_id, callerdc)
     $redis_on_hold_connection.rpop "campaign_id:#{campaign_id}:#{callerdc}:on_hold_caller"
