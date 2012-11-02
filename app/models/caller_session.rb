@@ -209,12 +209,10 @@ class CallerSession < ActiveRecord::Base
    end
    
    def start_conference(callerdc=DataCentre::Code::TWILIO)
+     RedisCallerSession.set_datacentre(self.id, callerdc)
      if Campaign.predictive_campaign?(campaign.type)
        loaded_caller_session = CallerSession.find(self.id)       
-       loaded_caller_session.update_attributes(on_call: true, available_for_call: true)       
-       
-       RedisCallerSession.set_datacentre(self.id, callerdc)
-       RedisDataCentre.set_datacentres_used(campaign_id, callerdc)
+       loaded_caller_session.update_attributes(on_call: true, available_for_call: true)              
        RedisOnHoldCaller.remove_caller_session(campaign_id, self.id, callerdc)
        RedisOnHoldCaller.add(campaign_id, self.id, callerdc)
      end     
