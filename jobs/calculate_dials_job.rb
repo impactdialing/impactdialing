@@ -23,7 +23,7 @@ class CalculateDialsJob
        if voters_to_dial.size <=10
          Dial.perform(campaign_id, voters_to_dial)
        else
-         voters_to_dial.each_slice(10).to_a.each {|voters| Resque.enqueue(DialerJob, campaign.id, voters) }
+         Resque.enqueue(DialerJob, campaign.id, voters_to_dial)
        end
        Resque.redis.del("dial_calculate:#{campaign.id}")
      rescue Exception => e
