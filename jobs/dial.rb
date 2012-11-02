@@ -15,9 +15,11 @@ class Dial
       dcs_hash[dc] = on_hold  
       total = total + on_hold
     end
+    puts "Campaign: #{campaign_id}, Total: #{total}, #{dcs_hash.inspect}"
     start = 0
     dcs_hash.each_pair do |key, value|
       number_to_dial = (voters_to_dial.size / total) * value
+      puts "Campaign: #{campaign_id}, Numbers to Dial: #{number_to_dial}"
       em_dial(voters_to_dial[start, number_to_dial], key)
       start = number_to_dial
     end
