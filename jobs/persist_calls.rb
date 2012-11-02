@@ -35,7 +35,9 @@ class PersistCalls
       includes(call_attempt: :voter).order(:id)
     calls.zip(abandoned_calls).each do |call, abandoned_call|
       call_attempt = call.call_attempt
+      next unless call_attempt
       voter = call_attempt.voter
+      next unless voter
       call_attempt.abandoned(abandoned_call['current_time'])
       voter.abandoned
       call_attempts << call_attempt
@@ -49,7 +51,9 @@ class PersistCalls
       includes(call_attempt: :voter).order(:id)
     calls.zip(unanswered_calls).each do |call, unanswered_call|
       call_attempt = call.call_attempt
+      next unless call_attempt
       voter = call_attempt.voter
+      next unless voter
       call_attempt.end_unanswered_call(unanswered_call['call_status'], unanswered_call['current_time'])
       voter.end_unanswered_call(unanswered_call['call_status'])
       call_attempts << call_attempt
@@ -106,8 +110,8 @@ class PersistCalls
 
   def self.multiget(connection, list_name, num)
     num_of_elements = connection.llen list_name
-    num_to_pop = num_of_elements < num ? num_of_elements : num
-    connection.lrange(list_name, 0, num).compact.map { |x| JSON.parse(x) }
+    num_to_get = num_of_elements < num ? num_of_elements : num
+    connection.lrange(list_name, 0, num_to_get).compact.map { |x| JSON.parse(x) }
   end
 
   def self.clean_list(connection, list_name, num)
