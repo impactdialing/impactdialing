@@ -14,12 +14,12 @@ class Twillio
     end      
   end
   
-  def self.dial_predictive_em(iter, voter)
+  def self.dial_predictive_em(iter, voter, dc)
     campaign = voter.campaign
     call_attempt = setup_call_predictive(voter, campaign)
     twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)  
     Rails.logger.info "#{call_attempt.id} - before call"        
-    http = twilio_lib.make_call_em(campaign, voter, call_attempt)
+    http = twilio_lib.make_call_em(campaign, voter, call_attempt, dc)
     http.callback { 
       Rails.logger.info "#{call_attempt.id} - after call"    
       response = JSON.parse(http.response)  
