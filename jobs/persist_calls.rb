@@ -35,6 +35,7 @@ class PersistCalls
       includes(call_attempt: :voter).order(:id)
     calls.zip(abandoned_calls).each do |call, abandoned_call|
       call_attempt = call.call_attempt
+      next unless call_attempt
       voter = call_attempt.voter
       call_attempt.abandoned(abandoned_call['current_time'])
       voter.abandoned
@@ -49,6 +50,7 @@ class PersistCalls
       includes(call_attempt: :voter).order(:id)
     calls.zip(unanswered_calls).each do |call, unanswered_call|
       call_attempt = call.call_attempt
+      next unless call_attempt
       voter = call_attempt.voter
       call_attempt.end_unanswered_call(unanswered_call['call_status'], unanswered_call['current_time'])
       voter.end_unanswered_call(unanswered_call['call_status'])
