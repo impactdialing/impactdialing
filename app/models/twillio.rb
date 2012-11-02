@@ -35,7 +35,7 @@ class Twillio
   end
   
   def self.setup_call_predictive(voter, campaign, dc)    
-    attempt = voter.call_attempts.create(campaign:  campaign, dialer_mode:  campaign.type, status:  CallAttempt::Status::RINGING, call_start:  Time.now, service_provider: DataCentre.service_provider(dc))
+    attempt = voter.call_attempts.create(campaign:  campaign, dialer_mode:  campaign.type, status:  CallAttempt::Status::RINGING, call_start:  Time.now)
     voter.update_attributes(:last_call_attempt_id => attempt.id, :last_call_attempt_time => Time.now, status: CallAttempt::Status::RINGING)
     Call.create(call_attempt: attempt, state: "initial")
     attempt
