@@ -48,8 +48,7 @@ ActiveRecord::Schema.define(:version => 20121102091037) do
 
   add_index "answers", ["campaign_id", "caller_id"], :name => "index_answers_campaign_id_caller_id"
   add_index "answers", ["campaign_id", "created_at", "possible_response_id"], :name => "index_answers_on_campaign_created_at_possible_response"
-  add_index "answers", ["possible_response_id", "caller_id", "created_at"], :name => "index_answers_count_possible_response"
-  add_index "answers", ["possible_response_id", "campaign_id", "caller_id", "created_at"], :name => "index_answers_count_possible_response_campaign"
+  add_index "answers", ["possible_response_id", "campaign_id", "caller_id", "created_at"], :name => "index_answers_count_possible_response"
   add_index "answers", ["question_id", "campaign_id"], :name => "index_answers_distinct_question"
   add_index "answers", ["question_id", "campaign_id"], :name => "index_distinct_question"
   add_index "answers", ["voter_id", "question_id"], :name => "index_answers_on_voter_id_and_question_id"
@@ -182,6 +181,7 @@ ActiveRecord::Schema.define(:version => 20121102091037) do
     t.float    "tPrice"
     t.integer  "attempt_in_progress"
     t.string   "session_key"
+    t.integer  "lock_version",         :default => 0
     t.integer  "payment_id"
     t.string   "state"
     t.string   "type"
@@ -228,7 +228,6 @@ ActiveRecord::Schema.define(:version => 20121102091037) do
     t.text     "questions"
     t.text     "notes"
     t.text     "all_states"
-    t.string   "campaign_type"
   end
 
   create_table "campaigns", :force => true do |t|
