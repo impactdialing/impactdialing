@@ -40,5 +40,10 @@ class RedisCallerSession
     $redis_caller_session_uri_connection.get "caller_dc:#{caller_session_id}"
   end
   
+  def self.remove_datacentre(caller_session_id)
+    $redis_caller_session_uri_connection.del "caller_dc:#{caller_session_id}"
+  end
+  
+  
   
 end
