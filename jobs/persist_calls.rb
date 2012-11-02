@@ -104,7 +104,7 @@ class PersistCalls
     num_to_pop = num_of_elements < num ? num_of_elements : num
     result = []
     num_to_pop.times do |x|
-      element = connection.rpop list_name
+      element = connection.lpop list_name
       begin
         result << JSON.parse(element) unless element.nil?
       rescue Exception
