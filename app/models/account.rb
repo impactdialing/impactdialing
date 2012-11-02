@@ -214,9 +214,6 @@ class Account < ActiveRecord::Base
     if autorecharge_enabled? && autorecharge_trigger >= amount_remaining
       begin
         new_payment = Payment.charge_recurly_account(self, self.autorecharge_amount, "Auto-recharge")
-        if new_payment.nil?
-          flash_now(:error, "There was a problem charging your credit card.  Please try updating your billing information or contact support for help.")
-        end
         return new_payment
       rescue ActiveRecord::StaleObjectError
         # pretty much do nothing
