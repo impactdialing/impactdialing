@@ -99,7 +99,8 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
       data[voter['id']] = csv_for(voter, voter_field_values[voter['id']])
       call_attempt_ids << attempt_numbers[voter['id']][:last_id] if attempt_numbers[voter['id']]
     end
-    attempts = CallAttempt.connection.execute(CallAttempt.where(id: call_attempt_ids.compact).to_sql).each(as: :hash)
+    conn = OctopusConnection.connection(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2))
+    attempts = conn.execute(CallAttempt.where(id: call_attempt_ids.compact).to_sql).each(as: :hash)
     answers = get_answers(call_attempt_ids)
     note_responses = get_note_responses(call_attempt_ids)
     caller_names = get_callers_names(attempts) 
