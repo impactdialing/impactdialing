@@ -28,6 +28,7 @@ class CallerController < ApplicationController
   
   def ready_to_call
     RedisDataCentre.set_datacentres_used(@caller_session.campaign_id, DataCentre.code(params[:caller_dc]))
+    @caller_session.update_attributes(service_provider: DataCentre.service_provider(DataCentre.code(params[:caller_dc])))
     render xml: @caller_session.ready_to_call(DataCentre.code(params[:caller_dc]))
   end
   

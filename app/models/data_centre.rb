@@ -42,5 +42,9 @@ class DataCentre
     provider == "voxeo" ? Settings.voxeo_callback_host : Settings.twilio_callback_host
   end
   
+  def self.service_provider(code)
+    code == Code::TWILIO ? "twilio" : "voxeo"
+  end
+  
   
 end
