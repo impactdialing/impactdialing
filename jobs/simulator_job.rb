@@ -9,7 +9,7 @@ class SimulatorJob
    def self.perform(campaign_id)
     begin 
      target_abandonment = Campaign.using(:simulator_slave).find(campaign_id).acceptable_abandon_rate
-     start_time = 60 * 10
+     start_time = 60 * 60
      simulator_length = 60 * 60
      abandon_count = 0
      dials_needed = 1
