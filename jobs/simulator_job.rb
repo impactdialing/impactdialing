@@ -2,6 +2,7 @@ require 'octopus'
 require 'resque-loner'
 
 class SimulatorJob 
+  include Resque::Plugins::UniqueJob
   @queue = :simulator_worker
   
 
