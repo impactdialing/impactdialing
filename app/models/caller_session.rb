@@ -79,6 +79,7 @@ class CallerSession < ActiveRecord::Base
     begin
       end_session     
     rescue ActiveRecord::StaleObjectError => exception
+      RedisCallerSession.add_phantom_callers(self.id)
     end      
   end
   
