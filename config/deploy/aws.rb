@@ -17,3 +17,5 @@ server 'ec2-54-242-74-168.compute-1.amazonaws.com',   :app, :web
 server 'ec2-54-242-82-254.compute-1.amazonaws.com',   :app, :web
 server 'ec2-23-20-251-243.compute-1.amazonaws.com',   :app, :web
 server 'ec2-23-22-170-104.compute-1.amazonaws.com',   :app, :web
+server 'ec2-107-20-36-22.compute-1.amazonaws.com',    :app, :web
+server 'ec2-23-20-179-252.compute-1.amazonaws.com',   :app, :web
