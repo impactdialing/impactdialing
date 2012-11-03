@@ -2,6 +2,7 @@ require 'octopus'
 require 'resque-loner'
 
 class SimulatorJob 
+  include Resque::Plugins::UniqueJob
   @queue = :simulator_worker
   
 
@@ -140,7 +141,7 @@ class SimulatorJob
                
          campaign = Campaign.find(campaign_id)
 
-         call_attempts_from_start_time = campaign.call_attempts.between((Time.now - start_time.seconds), Time.now).limit(1000)
+         call_attempts_from_start_time = campaign.call_attempts.between((Time.now - start_time.seconds), Time.now).limit(500)
 
          puts "Simulating #{call_attempts_from_start_time.size} call attempts"
          observed_conversations = call_attempts_from_start_time.select{|ca| ca.status == "Call completed with success."}.map{|attempt| OpenStruct.new(:length => attempt.duration_wrapped_up, time_to_wrapup: attempt.time_to_wrapup, :counter => 0)}
