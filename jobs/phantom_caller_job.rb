@@ -14,5 +14,8 @@ class PhantomCallerJob
           puts cs.id
         end
      end
+     RedisCallerSession.phantom_callers.each do |cs|
+       cs.end_running_call
+     end
    end
 end

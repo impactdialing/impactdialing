@@ -44,6 +44,16 @@ class RedisCallerSession
     $redis_caller_session_uri_connection.del "caller_dc:#{caller_session_id}"
   end
   
+  def self.add_phantom_callers(caller_session_id)
+    $redis_caller_session_uri_connection.lpush "phantom_callers", caller_session_id
+  end
+  
+  def self.phantom_callers
+    $redis_caller_session_uri_connection.lrange "phantom_callers", 0, -1
+  end
+  
+  
+  
   
   
 end
