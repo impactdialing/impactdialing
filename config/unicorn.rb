@@ -8,6 +8,8 @@ worker_processes (ENV['UNICORN_WORKERS'] ? ENV['UNICORN_WORKERS'].to_i : 3)
 timeout (ENV['UNICORN_TIMEOUT'] ? ENV['UNICORN_TIMEOUT'].to_i : 30)
 preload_app true
 
+before_exec { |server| ENV["BUNDLE_GEMFILE"] = File.join(ENV['PWD'], 'Gemfile') }
+
 before_fork do |server, worker|
   if defined?(ActiveRecord::Base)
     ActiveRecord::Base.connection.disconnect!
