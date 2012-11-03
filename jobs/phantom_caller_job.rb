@@ -21,5 +21,6 @@ class PhantomCallerJob
        caller_session.end_running_call
        RedisCallerSession.remove_phantom_caller(cs)
      end
+     CallerSession.on_call.where("updated_at < ? and endtime is not null", 5.minutes.ago).each {|x| x.end_running_call}
    end
 end
