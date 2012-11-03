@@ -17,6 +17,7 @@ class PhantomCallerJob
      RedisCallerSession.phantom_callers.each do |cs|
        caller_session = CallerSession.find(cs)
        caller_session.end_running_call
+       RedisCallerSession.remove_phantom_caller(cs)
      end
    end
 end

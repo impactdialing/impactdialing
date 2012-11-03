@@ -52,6 +52,10 @@ class RedisCallerSession
     $redis_caller_session_uri_connection.lrange "phantom_callers", 0, -1
   end
   
+  def self.remove_phantom_caller(caller_session_id)
+    $redis_caller_session_uri_connection.del "phantom_callers", caller_session_id
+  end
+  
   
   
   
