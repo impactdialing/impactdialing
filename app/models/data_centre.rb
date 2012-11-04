@@ -42,7 +42,7 @@ class DataCentre
     provider == "voxeo" ? Settings.voxeo_callback_host : Settings.twilio_callback_host
   end
   
-  def self.protocol
+  def self.protocol(dc_code)
     dc_code == Code::TWILIO ? "https" : "http"
   end
   
