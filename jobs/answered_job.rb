@@ -22,7 +22,7 @@ class AnsweredJob
            RedisCall.delete(call.id)
            success_count += 1
          else
-           if call_attempt.created_at < 1.day.ago
+           if call_attempt.created_at < 10.minutes.ago
              call_attempt.update_column(:voter_response_processed, true)
            else
              not_found += 1
