@@ -8,13 +8,59 @@ describe PersistCalls do
   let!(:call_attempt) { Factory(:call_attempt, voter: voter, campaign: campaign) }
   let!(:call) { Factory(:call, call_attempt: call_attempt) }
   let!(:time) { Time.now.to_s }
+  let!(:new_call_attempt) { Factory(:call_attempt, voter: voter, campaign: campaign) }
+  let!(:new_call) { Factory(:call, call_attempt: new_call_attempt) }
 
-  context ".abandoned_calls" do
-    before(:each) do
-      $redis_call_flow_connection.lpush "abandoned_call_list", {id: call.id, current_time: time}.to_json
-      $redis_call_flow_connection.lpush "abandoned_call_list", {id: 123, current_time: Time.now - 1.day}.to_json
-      PersistCalls.perform
+  before(:each) do
+    $redis_call_flow_connection.lpush "abandoned_call_list", {id: call.id, current_time: time}.to_json
+    $redis_call_flow_connection.lpush "abandoned_call_list", {id: 123, current_time: Time.now - 1.day}.to_json
+
+    $redis_call_end_connection.lpush "not_answered_call_list" , {id: call.id, call_status: "busy", current_time: time}.to_json
+
+    $redis_call_flow_connection.lpush "disconnected_call_list" , {id: call.id, recording_duration: 15, recording_url: "url", caller_id: 1, current_time: time}.to_json
+    $redis_call_flow_connection.lpush "disconnected_call_list" , {id: call.id, recording_duration: 15, recording_url: "url", caller_id: 1, current_time: time}.to_json
+    $redis_call_flow_connection.lpush "disconnected_call_list" , {id: new_call.id, recording_duration: 15, recording_url: "url", caller_id: 3, current_time: time}.to_json
+
+    $redis_call_flow_connection.lpush "wrapped_up_call_list" , {id: call_attempt.id, caller_type: CallerSession::CallerType::TWILIO_CLIENT, current_time: time}.to_json
+
+    $redis_call_flow_connection.lpush "end_answered_by_machine_call_list" , {id: call.id, current_time: time}.to_json
+  end
+
+  describe ".perform" do
+
+    context "data in redis" do
+
+      context "success" do
+        before(:each) { PersistCalls.perform }
+        it "should remove data from all redis lists" do
+          $redis_call_flow_connection.llen("abandoned_call_list").should == 0
+          $redis_call_end_connection.llen("not_answered_call_list").should == 0
+          $redis_call_flow_connection.llen("disconnected_call_list").should == 0
+          $redis_call_flow_connection.llen("wrapped_up_call_list").should == 0
+          $redis_call_flow_connection.llen("end_answered_by_machine_call_list").should == 0
+        end
+      end
+
+      context "exception" do
+        before(:each) do
+          Call.stub(:where) { raise 'exception' }
+          CallAttempt.stub(:where) { raise 'exception' }
+          PersistCalls.perform
+        end
+
+        it "should remove data from all redis lists" do
+          $redis_call_flow_connection.llen("abandoned_call_list").should == 2
+          $redis_call_end_connection.llen("not_answered_call_list").should == 1
+          $redis_call_flow_connection.llen("disconnected_call_list").should == 3
+          $redis_call_flow_connection.llen("wrapped_up_call_list").should == 1
+          $redis_call_flow_connection.llen("end_answered_by_machine_call_list").should == 1
+        end
+      end
     end
+  end
+
+  describe ".abandoned_calls" do
+    before(:each) { PersistCalls.abandoned_calls(100) }
 
     context "voter" do
       subject { voter.reload }
@@ -32,13 +78,11 @@ describe PersistCalls do
       its(:call_end) { should == time }
       its(:connecttime) { should == time }
     end
+
   end
 
-  context ".unanswered_calls" do
-    before(:each) do
-      $redis_call_end_connection.lpush "not_answered_call_list" , {id: call.id, call_status: "busy", current_time: time}.to_json
-      PersistCalls.perform
-    end
+  describe ".unanswered_calls" do
+    before(:each) { PersistCalls.unanswered_calls(100) } 
 
     context "call_attempt" do
       subject { call_attempt.reload }
@@ -56,15 +100,8 @@ describe PersistCalls do
     end
   end
   
-  context ".disconnected" do
-    let!(:new_call_attempt) { Factory(:call_attempt, voter: voter, campaign: campaign) }
-    let!(:new_call) { Factory(:call, call_attempt: new_call_attempt) }
-    before(:each) do
-      $redis_call_flow_connection.lpush "disconnected_call_list" , {id: call.id, recording_duration: 15, recording_url: "url", caller_id: 1, current_time: time}.to_json
-      $redis_call_flow_connection.lpush "disconnected_call_list" , {id: call.id, recording_duration: 15, recording_url: "url", caller_id: 1, current_time: time}.to_json
-      $redis_call_flow_connection.lpush "disconnected_call_list" , {id: new_call.id, recording_duration: 15, recording_url: "url", caller_id: 3, current_time: time}.to_json
-      PersistCalls.perform
-    end
+  describe ".disconnected" do
+    before(:each) { PersistCalls.disconnected_calls(100) }
 
     context "call_attempt" do
       subject { call_attempt.reload }
@@ -91,10 +128,7 @@ describe PersistCalls do
   end
   
   context ".wrappedup" do
-    before(:each) do
-      $redis_call_flow_connection.lpush "wrapped_up_call_list" , {id: call_attempt.id, caller_type: CallerSession::CallerType::TWILIO_CLIENT, current_time: time}.to_json
-      PersistCalls.perform
-    end
+    before(:each) { PersistCalls.wrapped_up_calls(100) }
 
     context "call_attempt" do
       subject { call_attempt.reload }
@@ -105,9 +139,8 @@ describe PersistCalls do
   
   context ".endbymachine" do
     before(:each) do
-      $redis_call_flow_connection.lpush "end_answered_by_machine_call_list" , {id: call.id, current_time: time}.to_json
       RedisCallFlow.processing_by_machine_call_hash.store(call.id, time)
-      PersistCalls.perform
+      PersistCalls.machine_calls(100)
     end
 
     context "call_attempt" do
@@ -125,6 +158,5 @@ describe PersistCalls do
       its(:call_back) { should == false }
     end
   end
-  
   
 end

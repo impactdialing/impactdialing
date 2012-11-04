@@ -25,7 +25,7 @@ describe Call do
         call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, call_status: 'in-progress')
         RedisCall.set_request_params(call.id, call.attributes)
         RedisCallerSession.set_datacentre(@caller_session.id, DataCentre::Code::ORL)
-        call.incoming_call.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"false\" action=\"http://voxeoproxy.herokuapp.com/calls/#{call.id}/disconnected\" record=\"false\"><Conference waitUrl=\"hold_music\" waitMethod=\"GET\" beep=\"false\" endConferenceOnExit=\"true\" maxParticipants=\"2\"/><CallerSid>123456</CallerSid></Dial></Response>")
+        call.incoming_call.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"false\" action=\"http://voxeo-prodaws.impactdialing.com/calls/#{call.id}/disconnected\" record=\"false\"><Conference waitUrl=\"hold_music\" waitMethod=\"GET\" beep=\"false\" endConferenceOnExit=\"true\" maxParticipants=\"2\"/><CallerSid>123456</CallerSid></Dial></Response>")
       end
       
       
