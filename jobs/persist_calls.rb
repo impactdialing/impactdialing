@@ -1,7 +1,7 @@
 require 'resque-loner'
 
 class PersistCalls
-  LIMIT = 100
+  LIMIT = 1000
   include Resque::Plugins::UniqueJob
   @queue = :persist_jobs
   
