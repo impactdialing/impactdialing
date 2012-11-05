@@ -9,7 +9,7 @@ class ParseVoxeoData
     reader.each do |node|
       if node.attribute("direction") == "inbound"
         start_time = node.attribute("startDate") + " " + node.attribute("startTime")
-        end_time = Time.parse(start_time) + node.attribute("durationMinutes").to_f 
+        end_time = Time.parse(start_time) + (node.attribute("durationMinutes").to_f * 100)
         puts " #{node.attribute("direction")} - #{node.attribute('sessionId')} - #{start_time}  - #{end_time}  - #{node.attribute("durationMinutes")} "         
         begin
           caller_session = CallerSession.find_by_sid(node.attribute('sessionId'))
