@@ -11,8 +11,11 @@ class ParseVoxeoData
         start_time = node.attribute("startDate") + " " + node.attribute("startTime")
         end_time = Time.parse(start_time) + node.attribute("durationMinutes").to_f 
         puts " #{node.attribute("direction")} - #{node.attribute('sessionId')} - #{start_time}  - #{end_time}  - #{node.attribute("durationMinutes")} "         
-        caller_session = CallerSession.find_by_sid(node.attribute('sessionId'))
-        caller_session.update_attributes(starttime: start_time, tStartTime: start_time, endtime: end_time, tEndTime: end_time)        
+        begin
+          caller_session = CallerSession.find_by_sid(node.attribute('sessionId'))
+          caller_session.update_attributes(starttime: start_time, tStartTime: start_time, endtime: end_time, tEndTime: end_time)        
+        rescue
+        end
       end
     end
     # contents = file.read
