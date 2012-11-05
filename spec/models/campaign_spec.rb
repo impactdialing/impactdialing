@@ -151,7 +151,45 @@ describe Campaign do
       Factory(:answer, :voter => Factory(:voter, :campaign => campaign), campaign: campaign,:possible_response => possible_response2, :question => question1, :created_at => now)
       Factory(:answer, :voter => Factory(:voter, :campaign => campaign), campaign: campaign,:possible_response => possible_response3, :question => question1, :created_at => now)
       Factory(:answer, :voter => Factory(:voter, :campaign => campaign), campaign: campaign, :possible_response => possible_response2, :question => question2, :created_at => now)
-      campaign.answers_result(now, now).should == {"hw are u" => [{answer: possible_response1.value, number: 1, percentage: 33}, {answer: possible_response2.value, number: 2, percentage: 66}, {answer: possible_response3.value, number: 1, percentage: 33}], "wr r u" => [{answer: "[No response]", number: 0, percentage: 0}]}
+      campaign.answers_result(now, now).should == {script.id => {script: script.name, questions: {"hw are u" => [{answer: possible_response1.value, number: 1, percentage: 33}, {answer: possible_response2.value, number: 2, percentage: 66}, {answer: possible_response3.value, number: 1, percentage: 33}], "wr r u" => [{answer: "[No response]", number: 0, percentage: 0}]}}}
+    end
+
+    it "should give the final results of a campaign as a Hash" do
+      now = Time.now
+      new_script = Factory(:script, name: 'new script')
+      campaign2 = Factory(:predictive)
+      question1 = Factory(:question, :text => "hw are u", :script => script)
+      question2 = Factory(:question, :text => "whos your daddy", :script => new_script)
+      possible_response1 = Factory(:possible_response, :value => "fine", :question => question1)
+      possible_response2 = Factory(:possible_response, :value => "super", :question => question1)
+      possible_response3 = Factory(:possible_response, :value => "john", :question => question2)
+      possible_response4 = Factory(:possible_response, :value => "dou", :question => question2)
+      Factory(:answer, :voter => Factory(:voter, :campaign => campaign), campaign: campaign, :possible_response => possible_response1, :question => question1, :created_at => now)
+      Factory(:answer, :voter => Factory(:voter, :campaign => campaign), campaign: campaign,:possible_response => possible_response2, :question => question1, :created_at => now)
+      Factory(:answer, :voter => Factory(:voter, :campaign => campaign), campaign: campaign,:possible_response => possible_response3, :question => question2, :created_at => now)
+      Factory(:answer, :voter => Factory(:voter, :campaign => campaign), campaign: campaign, :possible_response => possible_response4, :question => question2, :created_at => now)
+      campaign.answers_result(now, now).should == {
+        script.id => {
+          script: script.name,
+          questions: {
+            "hw are u" => [
+              {answer: possible_response1.value, number: 1, percentage: 50},
+              {answer: possible_response2.value, number: 1, percentage: 50},
+              {:answer=>"[No response]", :number=>0, :percentage=>0}
+            ]
+          }
+        },
+        new_script.id => {
+          script: new_script.name,
+          questions: {
+            "whos your daddy" => [
+              {answer: possible_response3.value, number: 1, percentage: 50},
+              {answer: possible_response4.value, number: 1, percentage: 50},
+              {:answer=>"[No response]", :number=>0, :percentage=>0}
+            ]
+          }
+        }
+      }
     end
 
   end

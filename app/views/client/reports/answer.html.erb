@@ -4,24 +4,27 @@
   <% if @results.empty? %>
     <p>This campaign has not had any calls answered yet.</p>
   <% else %>
-    <% i = 1 %>
-    <% @results.each_pair do |question, stats| %>
-      <h3>Question <%= i %>: <%= question %></h3>
-       <table>
-         <tr>
-           <th>Answer</th>
-           <th>Number</th>
-           <th>Percentage</th>
-         </tr>
-         <% stats.each do |answers| %>
-          <tr>
-            <td><%= answers[:answer]%></td>
-            <td><%= answers[:number]%></td>
-            <td><%= answers[:percentage]%> %</td>
-          </tr>
-          <% end %>
-       </table>
-       <% i = i + 1%>
+    <% @results.each do |script, data| %>
+      <h2><%= "Script: #{data[:script]}" %></h2>
+      <% i = 1 %>
+      <% data[:questions].each do |question, stats| %>
+        <h3>Question <%= i %>: <%= question %></h3>
+         <table>
+           <tr>
+             <th>Answer</th>
+             <th>Number</th>
+             <th>Percentage</th>
+           </tr>
+           <% stats.each do |answers| %>
+            <tr>
+              <td><%= answers[:answer]%></td>
+              <td><%= answers[:number]%></td>
+              <td><%= answers[:percentage]%> %</td>
+            </tr>
+            <% end %>
+         </table>
+        <% i += 1 %>
+      <% end %>
     <% end %>
 
     <% unless @transfers.blank? %>
