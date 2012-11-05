@@ -12,7 +12,7 @@ class ParseVoxeoData
         end_time = Time.parse(start_time) + session['durationMinutes'].to_f
         puts " #{session['direction']} - #{session['sessionId']} - #{start_time}  - #{end_time}  - #{session['durationMinutes']} "         
         caller_session = CallerSession.find_by_sid(session['sessionId'])
-        caller_session.update_attributes(starttime: starttime, tStartTime: starttime, end_time: end_time, tEndTime: end_time)
+        caller_session.update_attributes(starttime: start_time, tStartTime: start_time, end_time: end_time, tEndTime: end_time)
       end
     end
    # 2012-11-02 - 17:58:32 - 32.2 
