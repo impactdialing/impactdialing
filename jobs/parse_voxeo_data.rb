@@ -1,9 +1,9 @@
 JOBS_ROOT = File.expand_path('..', __FILE__)
 class ParseVoxeoData
   
-  def self.perform
+  def self.perform(file_name)
     puts JOBS_ROOT
-    file = File.open(JOBS_ROOT + "/DailyCallListing.xml", "rb")
+    file = File.open(JOBS_ROOT + "/#{file_name}", "rb")
     contents = file.read
     sessions_array =  Hash.from_xml(contents)["sessions"]["session"]
     sessions_array.each do |session|
