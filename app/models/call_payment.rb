@@ -19,8 +19,11 @@ module CallPayment
         payment.debit_call_charge(amount_to_debit, account)
         account.check_autorecharge(account.current_balance)
         self.payment_id = payment.try(:id)
-        puts self.payment_id
         self.debited = true
+      end
+      if payment.nil?
+        self.payment_id = 0
+        self.debited = true        
       end
       return self
     end
