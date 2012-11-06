@@ -6,8 +6,8 @@ describe CleanupInProgressCallAttempts do
   let!(:campaign) { Factory(:campaign) }
   
   def create_pair(status, data ={})
-    ca = Factory(:call_attempt, data.merge({:status => status, :campaign => campaign}))
-    voter = Factory(:voter, :status => status, :last_call_attempt => ca, :campaign => campaign )
+    ca = Factory(:call_attempt, data.merge({:status => status, :campaign => campaign, created_at: 2.days.ago}))
+    voter = Factory(:voter, :status => status, :last_call_attempt => ca, :campaign => campaign, created_at: 2.days.ago)
     ca.voter = voter
     ca.save
   end
@@ -56,13 +56,13 @@ describe CleanupInProgressCallAttempts do
   context "for campaign" do
     before(:each) do
       ca = Factory(:call_attempt, :status => 'not called')
-      voter = Factory(:voter, :status => 'not called', :last_call_attempt => ca)
+      voter = Factory(:voter, :status => 'not called', :last_call_attempt => ca, created_at: 2.days.ago)
       ca.voter = voter
       ca.save
       @statuses = ['not called']
       create_pair('Call completed with success.', {:call_start => Time.now, :call_end => Time.now, :connecttime => Time.now})
       @statuses.each do |status|  
-        ca = Factory(:call_attempt, {:campaign => campaign, :status => status, :call_start => Time.now, :call_end => nil, :connecttime => nil})
+        ca = Factory(:call_attempt, {:campaign => campaign, :status => status, :call_start => Time.now, :call_end => nil, :connecttime => nil, created_at: 2.days.ago})
         create_pair(status, {:call_start => Time.now, :call_end => nil, :connecttime => nil})
         create_pair(status, {:call_start => Time.now, :call_end => nil, :connecttime => Time.now})
         create_pair(status, {:call_start => Time.now, :call_end => Time.now, :connecttime => nil})
