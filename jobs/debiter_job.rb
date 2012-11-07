@@ -8,7 +8,7 @@ class DebiterJob
 
    def self.perform     
      call_results = []
-     call_attempts = CallAttempt.debit_not_processed.limit(1000)        
+     call_attempts = CallAttempt.debit_not_processed.limit(10000)        
      call_attempts.each do |call_attempt|
        begin
          call_results << call_attempt.debit         
