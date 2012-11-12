@@ -2,7 +2,7 @@ require 'resque-loner'
 
 class AlertJob
   include Resque::Plugins::UniqueJob
-  @queue = :alert_worker
+  @queue = :background_worker
 
    def self.perform
      Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
