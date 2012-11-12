@@ -39,24 +39,22 @@ persist_calls:
 persist_phones_only_answers:
   cron: "* * * * *"
   class: PersistPhonesOnlyAnswers
-  queue: persist_jobs_phones_only
+  queue: persist_jobs
   args: 
   description: "This job persists  phones only answers data"
 
 update_twilio_stats_attempt_em:
   cron: "* * * * *"
   class: UpdateStatsAttemptsEm
-  queue: twilio_stats_attempt
+  queue: twilio_stats
   args: 
   description: "This job update twilio stats call attempts"
-  
-
   
 
 update_twilio_stats_session:
   cron: "* * * * *"
   class: UpdateTwilioStatsCallerSession
-  queue: twilio_stats_session
+  queue: twilio_stats
   args: 
   description: "This job update twilio stats caller session"
   
