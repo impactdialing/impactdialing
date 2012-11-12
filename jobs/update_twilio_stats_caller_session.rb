@@ -1,7 +1,7 @@
 require 'resque-loner'
 class UpdateTwilioStatsCallerSession
   include Resque::Plugins::UniqueJob
-  @queue = :twilio_stats_session
+  @queue = :twilio_stats
   
   def self.perform
     caller_sessions = []

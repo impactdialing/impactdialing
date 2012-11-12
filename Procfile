@@ -10,7 +10,6 @@ list_upload: rake environment resque:work TERM_CHILD=1 RESQUE_TERM_TIMEOUT=5 QUE
 report_download: rake environment resque:work TERM_CHILD=1 RESQUE_TERM_TIMEOUT=5 QUEUE=report_download
 
 background_worker: rake environment resque:work QUEUE=background_worker
-background_worker: rake environment resque:work QUEUE=alert_worker
 
 
 answered_worker: rake environment TERM_CHILD=1 RESQUE_TERM_TIMEOUT=10 resque:work QUEUE=answered_worker
@@ -18,11 +17,10 @@ debit_worker: rake environment resque:work QUEUE=debit_worker
 
 call_flow: bundle exec sidekiq -c 8 -q call_flow
 persist_worker: rake environment resque:work QUEUE=persist_jobs
-persist_worker: rake environment resque:work QUEUE=persist_jobs_phones_only
 
 
-twilio_stats: rake environment resque:work QUEUE=twilio_stats_session
-twilio_stats: rake environment resque:work QUEUE=twilio_stats_attempt
+twilio_stats: rake environment resque:work QUEUE=twilio_stats
+
 
 
 clock: rake environment resque:scheduler

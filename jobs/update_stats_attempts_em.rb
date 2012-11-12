@@ -6,7 +6,7 @@ require "em-synchrony/em-http"
 
 class UpdateStatsAttemptsEm
   include Resque::Plugins::UniqueJob
-  @queue = :twilio_stats_attempt
+  @queue = :twilio_stats
   
   def self.perform
     results = []
