@@ -1,5 +1,5 @@
 require Rails.root.join("lib/twilio_lib")
-require Rails.root.join("lib/redis_connection")
+
 
 class CallAttempt < ActiveRecord::Base
   include Rails.application.routes.url_helpers
