@@ -4,10 +4,12 @@ class TransferController < ApplicationController
   def connect
     transfer_attempt = TransferAttempt.find(params[:id])
     transfer_attempt.update_attribute(:connecttime, Time.now)
+    
     if transfer_attempt.call_attempt.status == CallAttempt::Status::SUCCESS
       render xml: transfer_attempt.hangup
       return
     end
+    
     transfer_attempt.redirect_callee
     if transfer_attempt.transfer_type == Transfer::Type::WARM
       transfer_attempt.redirect_caller
@@ -63,12 +65,11 @@ class TransferController < ApplicationController
     render xml: response    
   end
   
-  def caller
-    
+  def caller    
     caller_session = CallerSession.find(params[:caller_session])
     caller = Caller.find(caller_session.caller_id)
     response = Twilio::Verb.new do |v|
-      v.dial(:hangupOnStar => true, action: pause_caller_url(caller, session_id:  caller_session.id, host: DataCentre.call_back_host(data_centre), port:  Settings.twilio_callback_port, protocol: "http://")) do
+      v.dial(:hangupOnStar => true, action: pause_caller_url(caller, session_id:  caller_session.id, host: Settings.twilio_callback_host, port:  Settings.twilio_callback_port, protocol: "http://")) do
         v.conference(params[:session_key], :startConferenceOnEnter => true, :endConferenceOnExit => false, :beep => false, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET')
       end    
     end.response
