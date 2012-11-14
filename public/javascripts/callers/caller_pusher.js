@@ -370,6 +370,7 @@ function subscribe(session_key) {
 	channel.bind('warm_transfer',function(data){
 	 	$('#kick_self_out_of_conference').show();	
 	});
+	
 	channel.bind('caller_kicked_off',function(data){
 		$('#kick_self_out_of_conference').hide();	
 		$("#submit_and_keep_call").show();
