@@ -27,7 +27,7 @@ class CallinController < ApplicationController
   end
   
   def default_message
-    "<Response>
+    render xml: "<Response>
       <Say voice='woman'> Knock Knock </Say>
       <Pause length='1'/>
       <Say> Whos There </Say>
