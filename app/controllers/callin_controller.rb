@@ -25,4 +25,18 @@ class CallinController < ApplicationController
       render xml:  Caller.ask_for_pin(params[:attempt].to_i, params[:provider])
     end
   end
+  
+  def default_message
+    "<Response>
+      <Say voice='woman'> Knock Knock </Say>
+      <Pause length='1'/>
+      <Say> Whos There </Say>
+      <Pause length='1'/>
+      <Say> Ach </Say>
+      <Pause length='1'/>
+      <Say> Ach Who </Say>
+      <Pause length='1'/>
+      <Say> Bless you! </Say>
+    </Response>"
+  end
 end
