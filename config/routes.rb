@@ -57,7 +57,7 @@ ImpactDialing::Application.routes.draw do
     resources :campaigns do
       member do
         post :callin
-        match :caller_ready
+        match :caller_ready        
       end
     end
     resources :phones_only do
@@ -91,6 +91,7 @@ ImpactDialing::Application.routes.draw do
   post :receive_call, :to => 'callin#create', :protocol => PROTOCOL
   post :end_caller_session, :to =>'caller/end_session'
   post :identify_caller, :to => 'callin#identify', :protocol => PROTOCOL
+  get :default_message, :to => 'callin#default_message', :protocol => PROTOCOL
   get :hold_call, :to => 'callin#hold', :protocol => PROTOCOL
 
   namespace 'client' do
