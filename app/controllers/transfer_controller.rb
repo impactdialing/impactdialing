@@ -1,6 +1,7 @@
 require Rails.root.join("lib/twilio_lib")
 class TransferController < ApplicationController
-  
+  skip_before_filter :verify_authenticity_token
+    
   def connect
     transfer_attempt = TransferAttempt.find(params[:id])
     transfer_attempt.update_attribute(:connecttime, Time.now)
