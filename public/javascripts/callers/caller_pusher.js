@@ -59,15 +59,16 @@ function call_voter() {
 
 
 function transfer_call(){
-	$('#transfer_button').html("Transfering...");
+	$('#transfer_button').html("Transferring...");
 	$('#hangup_call').hide();
 	var options = {
 	    data: {voter: $("#current_voter").val(), call: $("#current_call").val(), caller_session:$("#caller_session").val()  }
     };
     $('#transfer_form').attr('action', "/transfer/dial")    
 	$('#transfer_form').submit(function() {
+				$('#transfer_button').html("Transfered");
         $(this).ajaxSubmit(options);
-		$(this).unbind("submit");
+		    $(this).unbind("submit");
         return false;
     });
 }
