@@ -59,7 +59,7 @@ function call_voter() {
 
 
 function transfer_call(){
-	$('#transfer_button').hide();
+	$('#transfer_button').html("Transfering...");
 	$('#hangup_call').hide();
 	var options = {
 	    data: {voter: $("#current_voter").val(), call: $("#current_call").val(), caller_session:$("#caller_session").val()  }
@@ -180,6 +180,7 @@ function show_response_panel() {
 }
 
 function show_transfer_panel(){
+	$('#transfer_button').html("Transfer")
 	$("#transfer_panel").show();
 	$('#transfer_button').show();
 	$('#stop_listening').hide();
@@ -191,10 +192,9 @@ function hide_transfer_panel(){
 
 
 function hide_response_panel() {
-    $("#response_panel").hide();
+	$("#response_panel").hide();
 	hide_transfer_panel();
-    $("#result_instruction").show();
-
+  $("#result_instruction").show();
 }
 
 function set_message(text) {
