@@ -3,8 +3,7 @@
     <%= stylesheet_link_tag 'jquery.ui.datetime' %>
 <% end %>
 <% content_for :javascripts do %>
-    <%= javascript_include_tag("http://js.pusher.com/2.0.0-pre/pusher.min.js") %>
-    <%= javascript_include_tag 'orderable', 'state-machine','callers/caller_pusher', 'ICanHaz.min.js', 'jquery.form.js', 'flash_detect_min.js' , 'browser_detect.js', 'date.js'%>
+    <%= javascript_include_tag 'orderable', 'state-machine','callers/caller_pusher', 'ICanHaz.min.js', 'jquery.form.js', 'flash_detect_min.js' , 'browser_detect.js', 'date.js', 'pusher-2.0.0-pre-min.js'%>
 
     <script type="text/javascript">
         var pusher = new Pusher('<%= Pusher.key %>');
