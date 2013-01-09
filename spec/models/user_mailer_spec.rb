@@ -5,15 +5,14 @@ describe UserMailer do
   let(:white_label){ "stonesphonesdialer" }
 
   before(:each) do
-    @uakari = mock
-    Uakari.stub(:new).and_return(@uakari)
-    @uakari.stub(:list_verified_email_addresses).and_return({"email_addresses"=>["email@impactdialing.com", white_labeled_email]})
+    @mandrill = mock
     @mailer = UserMailer.new
+    @mailer.stub(:email_domain).and_return({"email_addresses"=>["email@impactdialing.com", white_labeled_email]})
   end
 
   it "delivers confirmation for uploaded voter list" do
     domain = "dc-London"
-    @uakari.should_receive(:send_email).with(anything)
+    @mailer.should_receive(:send_email).with(anything)
     @mailer.voter_list_upload({'success' => ['true']}, domain, "test@email.com", 'test')
 
   end
