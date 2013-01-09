@@ -7,6 +7,7 @@ require "rails/all"
 Bundler.require(:default, Rails.env) if defined?(Bundler)
 
 MAILCHIMP_API_KEY="011c309139adae5ea68dac0b8020fcb5-us2"
+MANDRILL_API_KEY="336ba63b-680e-4260-a27b-64afd5d58831"
 
 module ImpactDialing
   class Application < Rails::Application
