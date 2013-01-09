@@ -7,9 +7,8 @@ gem 'unicorn'
 gem 'will_paginate', '~> 3.0'
 gem 'mysql2', '~> 0.3.0'
 gem 'newrelic_rpm'
-gem 'json', '~> 1.6.1'
+gem 'json', '~> 1.7.4'
 gem 'nokogiri', '~> 1.4.4'
-gem 'uakari', '~> 0.2.0'
 gem "pusher", "~> 0.9.2"
 gem "aws-s3", "~> 0.6.2", :require => "aws/s3"
 gem "paperclip", "2.3.16"
@@ -21,9 +20,9 @@ gem 'dynamic_form', '~> 1.1.4'
 gem "nested_form", '~>0.1.1'
 gem 'jquery-rails', '>= 1.0.12'
 gem 'delayed_job'
-gem 'heroku','~>2.17'
 gem "activerecord-import", ">= 0.2.0"
 gem 'recurly', '~> 2.1.3'
+gem "heroku"
 gem "uuid", "~> 2.3.5"
 gem "call_center", "~> 0.0.9"
 gem "eventmachine", "1.0.0.rc.4"
@@ -48,6 +47,7 @@ gem "slim", "~>1.2.2"
 gem "sprockets", "~>2.1.3"
 gem "sinatra", "~>1.3.3"
 gem "dalli", "~>2.3.0"
+gem "mandrill-api", "~>1.0.13"
 
 
 group :development, :test do
