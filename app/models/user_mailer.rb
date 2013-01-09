@@ -4,7 +4,7 @@ class UserMailer
   include WhiteLabeling
 
   def initialize
-    @mandrill = Mandrill::API.new(MAILCHIMP_API_KEY)
+    @mandrill = Mandrill::API.new(MANDRILL_API_KEY)
   end
 
   def white_labeled_email(domain)
