@@ -8,10 +8,6 @@ default: &default_settings
   voip_api_url: api.twilio.com
   voxeo_voip_api_url: voxeo-prodaws.impactdialing.com
   
-  # USE IN CASE of us-east servers outage
-  #twilio_callback_host: impactcallergiraffeblue-aws-west.impactdialing.com
-  #call_end_callback_host: impactdialingcallend-aws-west.impactdialing.com
-  #incoming_callback_host: impactdialingincomingcalls-aws-west.impactdialing.com
   twilio_callback_port: 80
   recording_env: heroku
   callin_phone: 4155787571
