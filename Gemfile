@@ -2,7 +2,7 @@ source :rubygems
 
 ruby '1.9.3'
 
-gem 'rails', '~> 3.2.11'
+gem 'rails', '3.2.11'
 gem 'unicorn'
 gem 'will_paginate', '~> 3.0'
 gem 'mysql2', '~> 0.3.0'
