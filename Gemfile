@@ -2,7 +2,7 @@ source :rubygems
 
 ruby '1.9.3'
 
-gem 'rails', '3.2.11'
+gem 'rails', '3.2.8'
 gem 'unicorn'
 gem 'will_paginate', '~> 3.0'
 gem 'mysql2', '~> 0.3.0'
@@ -20,7 +20,7 @@ gem 'dynamic_form', '~> 1.1.4'
 gem "nested_form", '~>0.1.1'
 gem 'jquery-rails', '>= 1.0.12'
 gem 'delayed_job'
-gem "activerecord-import", ">= 0.2.0"
+gem "activerecord-import", ">= 0.2.10"
 gem 'recurly', '~> 2.1.3'
 gem "heroku"
 gem "uuid", "~> 2.3.5"
@@ -44,7 +44,7 @@ gem 'ar-octopus', :git => "git://github.com/tchandy/octopus.git"
 gem "newrelic-redis", "~>1.3.2"
 gem "sidekiq", '~>1.2.1'
 gem "slim", "~>1.2.2"
-gem "sprockets", "~>2.2.1"
+gem "sprockets", "~>2.1.3"
 gem "sinatra", "~>1.3.3"
 gem "dalli", "~>2.3.0"
 gem "mandrill-api", "~>1.0.13"
