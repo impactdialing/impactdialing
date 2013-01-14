@@ -2,7 +2,6 @@
 *.log
 .idea/*
 ._*
-config/database.yml
 simulator/database.yml
 coverage/
 tmp
