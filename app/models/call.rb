@@ -43,7 +43,7 @@ class Call < ActiveRecord::Base
   
   def disconnected
     unless cached_caller_session.nil?
-      RedisCallFlow.push_to_disconnected_call_list(self.id, self.recording_duration, self.recording_duration, cached_caller_session.caller_id);
+      RedisCallFlow.push_to_disconnected_call_list(self.id, RedisCall.recording_duration(self.id), RedisCall.recording_url(self.id), cached_caller_session.caller_id);
       enqueue_call_flow(CallerPusherJob, [cached_caller_session.id, "publish_voter_disconnected"])
       RedisStatus.set_state_changed_time(call_attempt.campaign_id, "Wrap up", cached_caller_session.id)      
     end

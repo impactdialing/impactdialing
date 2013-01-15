@@ -30,6 +30,18 @@ class RedisCall
     hash = JSON.parse(data)
     hash["notes"]        
   end
+  
+  def self.recording_duration(call_id)
+    data = call_data(call_id)
+    hash = JSON.parse(data)
+    hash["recording_duration"]            
+  end
+  
+  def self.recording_url(call_id)
+    data = call_data(call_id)
+    hash = JSON.parse(data)
+    hash["recording_url"]            
+  end
 
   def self.questions_and_notes(call_id)
     data = call_data(call_id)

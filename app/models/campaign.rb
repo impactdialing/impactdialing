@@ -208,15 +208,15 @@ class Campaign < ActiveRecord::Base
   end
 
   def transfer_time(from_date, to_date)
-    transfer_attempts.between(from_date, to_date).sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,tEndTime)/60)').to_i
+    transfer_attempts.between(from_date, to_date).sum('ceil(TIMESTAMPDIFF(SECOND ,tStartTime,tEndTime)/60)').to_i
   end
 
   def voicemail_time(from_date, to_date)
-    call_attempts.between(from_date, to_date).with_status([CallAttempt::Status::VOICEMAIL]).sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,tEndTime)/60)').to_i
+    call_attempts.between(from_date, to_date).with_status([CallAttempt::Status::VOICEMAIL]).sum('ceil(TIMESTAMPDIFF(SECOND ,tStartTime,tEndTime)/60)').to_i
   end
 
   def abandoned_calls_time(from_date, to_date)
-    call_attempts.between(from_date, to_date).with_status([CallAttempt::Status::ABANDONED]).sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,tEndTime)/60)').to_i
+    call_attempts.between(from_date, to_date).with_status([CallAttempt::Status::ABANDONED]).sum('ceil(TIMESTAMPDIFF(SECOND ,tStartTime,tEndTime)/60)').to_i
   end
   
   def leads_available_now
