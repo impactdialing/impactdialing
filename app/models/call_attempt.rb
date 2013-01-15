@@ -135,7 +135,7 @@ class CallAttempt < ActiveRecord::Base
     result = CallAttempt.for_campaign(campaign).for_caller(caller).between(from, to).
       without_status([CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED])
     result = result.from("call_attempts use index (index_call_attempts_on_campaign_id_created_at_status)") if campaign
-    result.sum('TIMESTAMPDIFF(SECOND ,connecttime,tEndTime)').to_i
+    result.sum('TIMESTAMPDIFF(SECOND ,tStartTime,tEndTime)').to_i
   end
 
   def self.time_in_wrapup(caller, campaign, from, to)
@@ -149,7 +149,7 @@ class CallAttempt < ActiveRecord::Base
     result = CallAttempt.for_campaign(campaign).for_caller(caller).between(from, to).
       without_status([CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED])
     result = result.from("call_attempts use index (index_call_attempts_on_campaign_id_created_at_status)") if campaign
-    result.sum('ceil(TIMESTAMPDIFF(SECOND ,connecttime,tEndTime)/60)').to_i
+    result.sum('ceil(TIMESTAMPDIFF(SECOND ,tStartTime,tEndTime)/60)').to_i
   end
 
   def call_not_connected?
