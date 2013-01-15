@@ -16,6 +16,7 @@ bin/
 spec/fixtures/test_tmp/
 /typescript
 .bundle
+/config/database.yml
 /config/application .yml
 dump.rdb
 *.swp
