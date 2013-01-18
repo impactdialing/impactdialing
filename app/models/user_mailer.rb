@@ -8,13 +8,14 @@ class UserMailer
   end
 
   def white_labeled_email(domain)
-    email = super(domain)
-    email_domain(email)
+    domains = @mandrill.call('senders/domains').collect{|x| x["domain"]}
+    if domains.include?(domain)
+      super(domain)
+    else
+      "email@impactdialing.com"
+    end
   end
   
-  def email_domain(email)
-    @mandrill.call('senders/list').include?(email) ? email : super("non_existant_domain")
-  end
   
   def send_email(message)
     _params = {:message => message, :async => false}
