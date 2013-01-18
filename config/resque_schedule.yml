@@ -5,12 +5,6 @@ process_answered_attempts:
   args: 
   description: "This job processes answers and stores them in a relational schema"
 
-delete_recordings:
-  cron: "*/1 * * * *"
-  class: DeleteRecordingsJob
-  queue: background_worker
-  args: 
-  description: "This job will delete recordings before 31st november"
 
 
 debit_money:

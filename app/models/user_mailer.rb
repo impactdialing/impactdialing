@@ -9,10 +9,10 @@ class UserMailer
 
   def white_labeled_email(domain)
     email = super(domain)
-    email_domain
+    email_domain(email)
   end
   
-  def email_domain
+  def email_domain(email)
     @mandrill.call('senders/list').include?(email) ? email : super("non_existant_domain")
   end
   
