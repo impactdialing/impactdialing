@@ -119,14 +119,12 @@ class UserMailer
 
   def deliver_admin_report(from, to, content)
     send_email({
-      :message => {
         :subject => "Admin report. From: #{from}, To: #{to}",
         :text => content,
         :html => content,
         :from_name => "Admin",
         :from_email => "michael@impactdialing.com",
         :to => [{email: "michaelrkn@gmail.com"}]
-      }
     })
   end
 
@@ -135,14 +133,12 @@ class UserMailer
 
     content = "<br/>The report you requested for is ready for download. Follow this link to retrieve it :: <br/> #{download_link}<br/> Please note that this link expires in 24 hours."
     send_email({
-      :message => {
         :subject => subject,
         :text => content,
         :html => content,
         :from_name => white_labeled_title(user.domain),
         :from_email => white_labeled_email(user.domain),
         :to => [{email: user.email}]
-      }
     })
   end
 
