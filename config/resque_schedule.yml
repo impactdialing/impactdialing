@@ -50,6 +50,15 @@ update_twilio_stats_attempt_em:
   queue: twilio_stats
   args: 
   description: "This job update twilio stats call attempts"
+
+update_twilio_stats_attempt_em:
+  cron: "* * * * *"
+  class: UpdateStatsTransfersEm
+  queue: twilio_stats
+  args: 
+  description: "This job update twilio stats call attempts"
+  
+  
   
 
 update_twilio_stats_session:
