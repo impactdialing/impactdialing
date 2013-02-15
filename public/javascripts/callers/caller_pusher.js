@@ -64,7 +64,7 @@ function transfer_call(){
 	var options = {
 	    data: {voter: $("#current_voter").val(), call: $("#current_call").val(), caller_session:$("#caller_session").val()  }
     };
-    $('#transfer_form').attr('action', "/transfer/dial")    
+    $('#transfer_form').attr('action', "/transfer/dial")
 	$('#transfer_form').submit(function() {
 				$('#transfer_button').html("Transfered");
         $(this).ajaxSubmit(options);
@@ -89,10 +89,10 @@ function validate_schedule_date(){
   if (scheduled_date != "") {
 	if (Date.parseExact(scheduled_date, "M/d/yyyy") == null){
 		return false;
-	}	
+	}
   }
   return true;
-    
+
 }
 
 
@@ -104,7 +104,7 @@ function send_voter_response() {
 	  alert('The Schedule callback date is invalid');
 	  return false;
     }
-    
+
     $('#voter_responses').attr('action', "/calls/" + $("#current_call").val() + "/submit_result");
     $('#voter_responses').submit(function() {
         $(this).ajaxSubmit(options);
@@ -254,11 +254,11 @@ function set_transfer_panel(data) {
 function subscribe(session_key) {
     channel = pusher.subscribe(session_key);
 
-	channel.bind('pusher:subscription_succeeded', function() {     
+	channel.bind('pusher:subscription_succeeded', function() {
 		$("#start_calling").show();
 		$("#callin_data").show();
 		$('#connecting').hide();
-	
+
 	channel.bind('start_calling', function(data) {
 		set_session(data.caller_session_id)
 		$("#callin_data").hide();
@@ -266,12 +266,12 @@ function subscribe(session_key) {
 	    $('#stop_calling').show();
 	    $("#called_in").show();
 	});
-	
+
 	channel.bind('conference_started', function(data) {
 	if ($("#caller_session").val() != "" ){
 		set_message("Status: Ready for calls.");
-        set_voter(data);        
-        ready_for_calls(data)		
+        set_voter(data);
+        ready_for_calls(data)
 	}
     });
 
@@ -341,13 +341,13 @@ function subscribe(session_key) {
     channel.bind('transfer_connected', function(data) {
 		if (data.type == 'warm'){
 			$('#transfer_type').val('warm')
-		}	
+		}
     });
     channel.bind('transfer_conference_ended', function(data) {
 		if (data.type == 'warm'){
 			$("#hangup_call").hide();
 			$('#kick_self_out_of_conference').hide();
-		}	
+		}
     });
 
 
@@ -358,8 +358,8 @@ function subscribe(session_key) {
 			$('#kick_self_out_of_conference').hide();
 			$("#submit_and_keep_call").show();
 	        $("#submit_and_stop_call").show();
-	        
-		}			
+
+		}
     });
 
     channel.bind('predictive_successful_voter_response', function(data) {
@@ -369,18 +369,18 @@ function subscribe(session_key) {
     });
 
 	channel.bind('warm_transfer',function(data){
-	 	$('#kick_self_out_of_conference').show();	
+	 	$('#kick_self_out_of_conference').show();
 	});
-	
+
 	channel.bind('caller_kicked_off',function(data){
-		$('#kick_self_out_of_conference').hide();	
+		$('#kick_self_out_of_conference').hide();
 		$("#submit_and_keep_call").show();
-        $("#submit_and_stop_call").show();        
-		
+        $("#submit_and_stop_call").show();
+
 	});
-	
-	
-	
+
+
+
 
     channel.bind('caller_re_assigned_to_campaign', function(data) {
 
@@ -451,7 +451,7 @@ function subscribe(session_key) {
             });
             $.extend(data, {custom_field_list: customList})
         }
-
+        Pusher.log(data)
         var voter = ich.voter(data); //using ICanHaz a moustache. js like thingamagic
         $('#voter_info').empty();
         $('#voter_info').append(voter);
@@ -461,11 +461,11 @@ function subscribe(session_key) {
 		$(".script_element select").each(function(index) {
 			$(this).children('option:selected').attr('selected',false)
 		});
-		
+
 		$(".script_element select").each(function(index) {
 			$(this).children('option:first').attr('selected', 'selected');
 		});
-				
+
         $('.note_text').val('');
         $('#scheduled_date').val('')
         collapse_scheduler();
@@ -480,7 +480,7 @@ function subscribe(session_key) {
 	    show_response_panel();
 		show_transfer_panel();
 		set_message("Status: Connected.")
-	    $("#hangup_call").show();    
+	    $("#hangup_call").show();
 	}
 
 
