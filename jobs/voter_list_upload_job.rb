@@ -1,6 +1,6 @@
 require 'resque/errors'
 require Rails.root.join("jobs/heroku_resque_auto_scale")
-class VoterListUploadJob 
+class VoterListUploadJob
   extend ::HerokuResqueAutoScale
   @queue = :list_upload
 
@@ -8,6 +8,7 @@ class VoterListUploadJob
 
     def perform(voter_list_id, email, domain, callback_url, strategy="webui")
       begin
+        ActiveRecord::Base.verify_active_connections!
         voter_list = VoterList.find(voter_list_id)
         job = VoterListJob.new( voter_list.id , domain, email, callback_url, strategy="webui")
         job.perform
@@ -28,6 +29,6 @@ class VoterListUploadJob
     end
 
   end
-   
-      
+
+
 end
