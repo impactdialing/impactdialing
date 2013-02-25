@@ -2,7 +2,7 @@ process_answered_attempts:
   cron: "*/3 * * * *"
   class: AnsweredJob
   queue: answered_worker
-  args: 
+  args:
   description: "This job processes answers and stores them in a relational schema"
 
 
@@ -11,7 +11,7 @@ debit_money:
   cron: "* * * * *"
   class: DebiterJob
   queue: debit_worker
-  args: 
+  args:
   description: "This job debits money"
 
 
@@ -19,14 +19,14 @@ alert:
   cron: "*/2 * * * *"
   class: AlertJob
   queue: alert_worker
-  args: 
+  args:
   description: "This job alerts all of us if something is fishy"
 
 phantom_callers:
   cron: "*/5 * * * *"
-  class: PhantomCallerJob 
+  class: PhantomCallerJob
   queue: background_worker
-  args: 
+  args:
   description: "This job destroys phantom callers. BOOOOOOOM"
 
 
@@ -34,37 +34,33 @@ persist_calls:
   cron: "* * * * *"
   class: PersistCalls
   queue: persist_jobs
-  args: 
+  args:
   description: "This job persists  call attempts and voter data"
 
 persist_phones_only_answers:
   cron: "* * * * *"
   class: PersistPhonesOnlyAnswers
   queue: persist_jobs
-  args: 
+  args:
   description: "This job persists  phones only answers data"
 
 update_twilio_stats_attempt_em:
   cron: "* * * * *"
   class: UpdateStatsAttemptsEm
   queue: twilio_stats
-  args: 
+  args:
   description: "This job update twilio stats call attempts"
 
-update_twilio_stats_attempt_em:
+update_twilio_stats_transfer_em:
   cron: "* * * * *"
   class: UpdateStatsTransfersEm
   queue: twilio_stats
-  args: 
+  args:
   description: "This job update twilio stats call attempts"
-  
-  
-  
 
 update_twilio_stats_session:
   cron: "* * * * *"
   class: UpdateTwilioStatsCallerSession
   queue: twilio_stats
-  args: 
+  args:
   description: "This job update twilio stats caller session"
-  
