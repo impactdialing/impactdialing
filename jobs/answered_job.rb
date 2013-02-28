@@ -6,6 +6,7 @@ class AnsweredJob
   @queue = :answered_worker_job
 
    def self.perform
+    ActiveRecord::Base.verify_active_connections!
      success_count = 0
      not_found = 0
      CallAttempt.results_not_processed.where('call_id IS NOT NULL').reorder('call_attempts.id DESC').includes(:call).find_each do |call_attempt|
