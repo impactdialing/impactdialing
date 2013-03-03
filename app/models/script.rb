@@ -35,7 +35,7 @@ class Script < ActiveRecord::Base
     selected_fields.try(:each) do |x|
       result[x+"_flag"] = true
     end
-    result["Phone_flag"] = true if result.empty?
+    result["Phone_flag"] = true
     result
   end
 
