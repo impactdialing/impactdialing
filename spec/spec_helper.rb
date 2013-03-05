@@ -38,11 +38,11 @@ Spork.prefork do
     config.before(:suite) do
        DatabaseCleaner.strategy = :transaction
     end
-    
+
     config.after(:suite) do
       DatabaseCleaner.clean_with(:truncation)
     end
-    
+
     config.before(:each) do
       DatabaseCleaner.start
     end
@@ -61,6 +61,7 @@ Spork.prefork do
     # == Notes
     #
     # For more information take a look at Spec::Runner::Configuration and Spec::Runner
+     config.include Features::DialinHelpers, type: :feature
   end
 
   require "factories"
