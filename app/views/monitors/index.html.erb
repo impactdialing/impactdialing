@@ -16,6 +16,7 @@
   });
   </script>
 <% end %>
+
 <h1>Monitor</h1>
 <h2>Campaigns</h2>
 <table style="margin-bottom:0px">
@@ -62,12 +63,12 @@
       <td>{{status}}</td>
       <td>{{time_in_status}}</td>
       <td>
-        <a class ="action secondary eaves_drop" href="#" action="eavesdrop" session_id="{{id}}">
+        <a class ="action secondary eaves_drop" href="#" data-action="eavesdrop" session_id="{{id}}">
           Eavesdrop
         </a>
       </td>
       <td>
-        <a class ="action secondary break_in" href="#" action="breakin" session_id="{{id}}">
+        <a class ="action secondary break_in" href="#" data-action="breakin" session_id="{{id}}">
           Break in
         </a>
       </td>
@@ -79,6 +80,8 @@
 </script>
 
 <table id="callers-monitor"></table>
+<div id="status" style="float:right"></div>
+<div class="clear"></div>
 
 <p>
   Call recording is currently <%= @account.record_calls? ? "on" : "off" %>. Links to recordings will appear in each campaign's Download report.
