@@ -163,7 +163,11 @@ ImpactDialing::Application.routes.draw do
 
     namespace "monitors" do
       resources :campaigns
-      resources :callers
+      resources :callers do
+        collection do
+          put :kick_off
+        end
+      end
     end
     resources :monitors , :only=>[:index, :show] , :name_prefix => 'client' do
       collection do
