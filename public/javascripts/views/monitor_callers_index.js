@@ -20,6 +20,11 @@ ImpactDialing.Views.MonitorCaller = Backbone.View.extend({
       url : "/client/monitors/callers/kick_off",
       data : {session_id : this.model.get("id")},
       dataType: "json",
+      beforeSend: function (request)
+        {
+          var token = $("meta[name='csrf-token']").attr("content");
+          request.setRequestHeader("X-CSRF-Token", token);
+        },
       success: function(){
         self.collection.remove(self.model);
       },
