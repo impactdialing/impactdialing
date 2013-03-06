@@ -1,6 +1,6 @@
 module Monitors
   class CallersController < ClientController
-    skip_before_filter :check_login, :only => []
+    skip_before_filter :check_login
     respond_to :json
 
     def index
