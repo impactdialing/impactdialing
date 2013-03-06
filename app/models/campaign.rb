@@ -34,13 +34,13 @@ class Campaign < ActiveRecord::Base
       :joins => "inner join caller_sessions on (caller_sessions.campaign_id = campaigns.id)",
       :conditions => {"caller_sessions.on_call" => true}
   }
-  
+
   scope :with_non_running_caller_sessions, {
       :select => "distinct campaigns.*",
       :joins => "inner join caller_sessions on (caller_sessions.campaign_id = campaigns.id)",
       :conditions => {"caller_sessions.on_call" => false}
   }
-  
+
   scope :for_caller, lambda { |caller| joins(:caller_sessions).where(caller_sessions: {caller_id: caller}) }
 
 
@@ -70,15 +70,15 @@ class Campaign < ActiveRecord::Base
     PREDICTIVE = "Predictive"
     PROGRESSIVE = "Progressive"
   end
-  
+
   def self.preview_power_campaign?(campaign_type)
     [Type::PREVIEW, Type::PROGRESSIVE].include?(campaign_type)
   end
-  
+
   def self.predictive_campaign?(campaign_type)
     Type::PREDICTIVE == campaign_type
   end
-  
+
 
   def new_campaign
     new_record?
@@ -133,18 +133,18 @@ class Campaign < ActiveRecord::Base
   def callers_log_in?
     caller_sessions.on_call.size > 0
   end
-  
+
   def as_time_zone
     time_zone.nil? ? nil : ActiveSupport::TimeZone.new(time_zone)
   end
-  
+
   def first_call_attempt_time
-    call_attempts.first.try(:created_at) 
+    call_attempts.first.try(:created_at)
   end
-  
+
   def last_call_attempt_time
     call_attempts.from("call_attempts use index (index_call_attempts_on_campaign_id)").last.try(:created_at)
-  end  
+  end
 
   def voters_called
     Voter.find_all_by_campaign_id(self.id, :select=>"id", :conditions=>"status <> 'not called'")
@@ -218,42 +218,42 @@ class Campaign < ActiveRecord::Base
   def abandoned_calls_time(from_date, to_date)
     call_attempts.between(from_date, to_date).with_status([CallAttempt::Status::ABANDONED]).sum('ceil(TIMESTAMPDIFF(SECOND ,tStartTime,tEndTime)/60)').to_i
   end
-  
+
   def leads_available_now
     sanitize_dials(all_voters.enabled.avialable_to_be_retried(recycle_rate).count  + all_voters.by_status(CallAttempt::Status::ABANDONED).count)
   end
-  
+
   def sanitize_dials(dial_count)
     dial_count.nil? ? 0 : dial_count
   end
-  
+
 
   def cost_per_minute
     0.09
   end
-  
+
   def callers_status
-    campaign_callers = caller_sessions.on_call    
+    campaign_callers = caller_sessions.on_call
     on_hold = campaign_callers.select {|caller| (caller.on_call? && caller.available_for_call? )}
     on_call = campaign_callers.select {|caller| (caller.on_call? && !caller.available_for_call?)}
     [campaign_callers.size, on_hold.size, on_call.size]
   end
-  
+
   def call_status
     wrap_up = call_attempts.between(5.minutes.ago, Time.now).with_status(CallAttempt::Status::SUCCESS).not_wrapped_up.size
     ringing_lines = call_attempts.between(20.seconds.ago, Time.now).with_status(CallAttempt::Status::RINGING).size
     live_lines = call_attempts.between(5.minutes.ago, Time.now).with_status(CallAttempt::Status::INPROGRESS).size
-    [wrap_up, ringing_lines, live_lines]    
+    [wrap_up, ringing_lines, live_lines]
   end
-  
+
   def leads_available_now
     sanitize_dials(all_voters.enabled.avialable_to_be_retried(recycle_rate).count + all_voters.scheduled.count + all_voters.by_status(CallAttempt::Status::ABANDONED).count)
   end
-  
+
   def sanitize_dials(dial_count)
     dial_count.nil? ? 0 : dial_count
   end
-  
+
   def current_status
     current_caller_sessions = caller_sessions.on_call.includes(:attempt_in_progress)
     callers_logged_in = current_caller_sessions.size
@@ -262,22 +262,25 @@ class Campaign < ActiveRecord::Base
     else
       status_count = RedisStatus.count_by_status(self.id, current_caller_sessions.collect{|x| x.id})
     end
-    
+
     ringing_lines = call_attempts.with_status(CallAttempt::Status::RINGING).between(15.seconds.ago, Time.now).size
     num_remaining = all_voters.by_status('not called').count
     num_available = leads_available_now + num_remaining
     {callers_logged_in: callers_logged_in, on_call: status_count[1], wrap_up: status_count[2], on_hold: status_count[0], ringing_lines: ringing_lines, available: num_available  }
   end
-  
+
   def current_callers_status
     callers = []
     current_caller_sessions = caller_sessions.on_call.includes(:caller)
     current_caller_sessions.each do |cs|
       value = RedisStatus.state_time(self.id, cs.id)
-      callers << {id: cs.id, caller_id: cs.caller.id, name: cs.caller.identity_name, status: value[0], time_in_status: value[1]}
+      if value.present?
+        callers << {id: cs.id, caller_id: cs.caller.id, name: cs.caller.identity_name, status: value[0],
+         time_in_status: value[1], campaign_name: self.name, campaign_id: self.id}
+      end
     end
-    callers    
+    callers
   end
-  
+
 
 end
