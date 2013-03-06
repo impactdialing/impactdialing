@@ -1,39 +1,38 @@
 class MonitorsController < ClientController
   skip_before_filter :check_login, :only => [:start, :stop, :switch_mode, :deactivate_session]
+      respond_to :json, :html
 
   def index
-    Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
-      @campaigns = Account.find(account).campaigns.manual.active
-      @active_campaigns = account.campaigns.manual.active.with_running_caller_sessions
-    end
+    twilio_capability = Twilio::Util::Capability.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+    twilio_capability.allow_client_outgoing(MONITOR_TWILIO_APP_SID)
+    @token = twilio_capability.generate
   end
 
   def show
     Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
       @campaigns = Account.find(account).campaigns.with_running_caller_sessions
       @all_campaigns = Account.find(account).campaigns.active
-      @campaign = Account.find(account).campaigns.find(params[:id])    
+      @campaign = Account.find(account).campaigns.find(params[:id])
       @campaign_result = @campaign.current_status
       @callers_result = @campaign.current_callers_status
-      puts @callers_result
       twilio_capability = Twilio::Util::Capability.new(TWILIO_ACCOUNT, TWILIO_AUTH)
       twilio_capability.allow_client_outgoing(MONITOR_TWILIO_APP_SID)
       @token = twilio_capability.generate
-    end            
+    end
   end
-  
-  
+
+
   def campaign_info
     Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
       @campaign = Account.find(account).campaigns.find(params[:id])
-    end      
+    end
     render json: @campaign.current_status
   end
-  
+
   def callers_info
     Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
-      @campaign = Account.find(account).campaigns.find(params[:id])      
-      @callers_result = @campaign.current_callers_status    
+      @campaign = Account.find(account).campaigns.find(params[:id])
+      @callers_result = @campaign.current_callers_status
     end
     render layout: false
   end

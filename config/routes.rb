@@ -31,7 +31,7 @@ ImpactDialing::Application.routes.draw do
       post :conference_started_phones_only_preview
       post :conference_started_phones_only_power
       post :conference_started_phones_only_predictive
-      post :gather_response  
+      post :gather_response
       post :continue_conf
       post :callin_choice
       post :read_instruction_options
@@ -47,7 +47,7 @@ ImpactDialing::Application.routes.draw do
       post :new_campaign_response_panel
       post :transfer_panel
       post :time_period_exceeded
-      post :account_out_of_funds      
+      post :account_out_of_funds
     end
 
   end
@@ -57,7 +57,7 @@ ImpactDialing::Application.routes.draw do
     resources :campaigns do
       member do
         post :callin
-        match :caller_ready        
+        match :caller_ready
       end
     end
     resources :phones_only do
@@ -160,6 +160,11 @@ ImpactDialing::Application.routes.draw do
       member { post :verify_callerid }
     end
     resources :blocked_numbers, :only => [:index, :create, :destroy]
+
+    namespace "monitors" do
+      resources :campaigns
+      resources :callers
+    end
     resources :monitors , :only=>[:index, :show] , :name_prefix => 'client' do
       collection do
         get :start
