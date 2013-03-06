@@ -49,23 +49,6 @@ class MonitorsController < ClientController
     render xml: caller_session.join_conference(params[:type]=="eaves_drop", params[:CallSid], params[:monitor_session])
   end
 
-  def kick_off
-    caller_session = CallerSession.find(params[:session_id])
-    caller_session.end_running_call
-    render nothing: true
-  end
-
-  def switch_mode
-    type = params[:type]
-    caller_session = CallerSession.find(params[:session_id])
-    caller_session.moderator.switch_monitor_mode(caller_session, type)
-    if caller_session.voter_in_progress && (caller_session.voter_in_progress.call_attempts.last.status == "Call in progress")
-      render text: "Status: Monitoring in "+ type + " mode on "+ caller_session.caller.identity_name + "."
-    else
-      render text: "Status: Caller is not connected to a lead."
-    end
-  end
-
   def stop
     caller_session = CallerSession.find(params[:session_id])
     caller_session.moderator.stop_monitoring(caller_session)

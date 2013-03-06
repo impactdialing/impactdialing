@@ -11,13 +11,13 @@ class Moderator < ActiveRecord::Base
       Twilio::Conference.mute_participant(conference_sid, call_sid)
     end
   end
-    
+
   def stop_monitoring(caller_session)
     conference_sid = get_conference_id(caller_session)
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
     Twilio::Conference.kick_participant(conference_sid, call_sid)
   end
-  
+
   def self.active_moderators(campaign)
     campaign.account.moderators.last_hour.active.select('session')
   end
