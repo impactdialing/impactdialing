@@ -22,7 +22,7 @@ ImpactDialing.Views.MonitorCaller = Backbone.View.extend({
       url : "/client/monitors/callers/kick_off",
       data : {session_id : this.model.get("id")},
       dataType: "json",
-      beforeSend: function (request)
+      beforeSend: function(request)
         {
           var token = $("meta[name='csrf-token']").attr("content");
           request.setRequestHeader("X-CSRF-Token", token);
@@ -40,7 +40,7 @@ ImpactDialing.Views.MonitorCaller = Backbone.View.extend({
     $.ajax({
       type: 'PUT',
       url : "/client/monitors/callers/switch_mode",
-      data : {session_id : this.model.get("id"), type=$(e.target).data("action")},
+      data : {session_id : this.model.get("id"), type: $(e.target).data("action")},
       dataType: "json",
       beforeSend: function (request)
         {
