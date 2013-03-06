@@ -17,5 +17,17 @@ module Monitors
       respond_with(caller_session)
     end
 
+    def switch_mode
+      type = params[:type]
+      caller_session = CallerSession.find(params[:session_id])
+      caller_session.moderator.switch_monitor_mode(caller_session, type)
+      if caller_session.voter_in_progress && (caller_session.voter_in_progress.call_attempts.last.status == "Call in progress")
+        respond_with({message: "Status: Monitoring in "+ type + " mode on "+ caller_session.caller.identity_name + "."})
+      else
+        respond_with({message: "Status: Caller is not connected to a lead."})
+      end
+    end
+
+
   end
 end

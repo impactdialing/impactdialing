@@ -166,6 +166,7 @@ ImpactDialing::Application.routes.draw do
       resources :callers do
         collection do
           put :kick_off
+          put :switch_mode
         end
       end
     end

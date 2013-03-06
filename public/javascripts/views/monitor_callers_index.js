@@ -4,6 +4,8 @@ ImpactDialing.Views.MonitorCaller = Backbone.View.extend({
 
   events: {
     "click .kick_off" : "kickCallerOff",
+    "click .break_in" : "switchMode",
+    "click .eaves_drop" : "switchMode",
   },
 
   render: function () {
@@ -30,6 +32,28 @@ ImpactDialing.Views.MonitorCaller = Backbone.View.extend({
       },
     });
   },
+
+  switchMode: function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    var self = this;
+    $.ajax({
+      type: 'PUT',
+      url : "/client/monitors/callers/switch_mode",
+      data : {session_id : this.model.get("id"), type=$(e.target).data("action")},
+      dataType: "json",
+      beforeSend: function (request)
+        {
+          var token = $("meta[name='csrf-token']").attr("content");
+          request.setRequestHeader("X-CSRF-Token", token);
+        },
+      success: function(data){
+        $("#status").html(data["message"])
+      },
+    });
+
+  },
+
 
 });
 
