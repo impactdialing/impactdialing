@@ -14,7 +14,7 @@
 <% end %>
 <h1>Monitor</h1>
 <h2>Campaigns</h2>
-<table>
+<table style="margin-bottom:0px">
     <tr>
       <th>Campaign</th>
       <th>Callers logged in</th>
@@ -53,12 +53,25 @@
 </table>
 
 <script type="javascript/template" id="caller-monitor-template">
-    <tr class="campaign">
       <td>{{campaign_name}}</td>
       <td>{{name}}</td>
       <td>{{status}}</td>
       <td>{{time_in_status}}</td>
-    </tr>
+      <td>
+        <a class ="action secondary eaves_drop" href="#" action="eavesdrop" session_id="{{id}}">
+          Eavesdrop
+        </a>
+      </td>
+      <td>
+        <a class ="action secondary break_in" href="#" action="breakin" session_id="{{id}}">
+          Break in
+        </a>
+      </td>
+      <td>
+        <a class ="action secondary kick_off" href="#"  session_id="{{id}}">
+          Kick off
+        </a>
+      </td>
 </script>
 
 <table id="callers-monitor"></table>

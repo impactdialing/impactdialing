@@ -11,5 +11,11 @@ module Monitors
       respond_with(@callers.flatten)
     end
 
+    def kick_off
+      caller_session = CallerSession.find(params[:session_id])
+      caller_session.end_running_call
+      respond_with(caller_session)
+    end
+
   end
 end
