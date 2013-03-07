@@ -11,6 +11,8 @@ class MonitorsController < ClientController
 
   def start
     caller_session = CallerSession.find(params[:session_id])
+    Moderator.create!(:session => generate_session_key, :account => @user.account, :active => true,
+     call_sid: params[:CallSid], caller_session_id: caller_session.id)
     if caller_session.voter_in_progress && (caller_session.voter_in_progress.call_attempts.last.status == "Call in progress")
       status_msg = "Status: Monitoring in "+ params[:type] + " mode on "+ caller_session.caller.identity_name + "."
     else
