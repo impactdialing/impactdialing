@@ -3,8 +3,10 @@ class Moderator < ActiveRecord::Base
   belongs_to :account
   scope :active, :conditions => {:active => true}
 
-  def switch_monitor_mode(caller_session, type)
+  def switch_monitor_mode(type)
+    caller_session = CallerSession.find(caller_session_id)
     conference_sid = get_conference_id(caller_session)
+    self.update_attributes(caller_session_id: caller_session_id)
     if type == "breakin"
       Twilio::Conference.unmute_participant(conference_sid, call_sid)
     else
