@@ -37,7 +37,6 @@ ImpactDialing.Views.MonitorCaller = Backbone.View.extend({
     e.preventDefault();
     e.stopPropagation();
     var self = this;
-    console.log(this.options.monitoring)
     if(this.options.monitoring){
       this.connectModeratorToConference(e);
     }else{
@@ -50,7 +49,7 @@ ImpactDialing.Views.MonitorCaller = Backbone.View.extend({
 
   startMonitoring: function(e){
     params = {'session_id': this.model.get("id"), 'type': $(e.target).data("action"),
-      'monitor_session' : $("#monitor_session_id").val()};
+      'monitor_session_id' : $("#monitor_session_id").val()};
     $('.stop_monitoring').show();
     Twilio.Device.connect(params);
   },
