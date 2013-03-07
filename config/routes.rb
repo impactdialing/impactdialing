@@ -167,12 +167,13 @@ ImpactDialing::Application.routes.draw do
         collection do
           put :kick_off
           put :switch_mode
+          post :start
         end
       end
     end
     resources :monitors , :only=>[:index, :show] , :name_prefix => 'client' do
       collection do
-        get :start
+
         get :new_index
         get :stop
         get :deactivate_session
