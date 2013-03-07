@@ -1,6 +1,7 @@
 module Monitors
   class CallersController < ClientController
     skip_before_filter :check_login, :only => [:kick_off]
+    skip_before_filter :verify_authenticity_token
     respond_to :json
 
     def index
