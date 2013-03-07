@@ -21,13 +21,26 @@ module Monitors
       caller_session = CallerSession.find(params[:session_id])
       moderator = Moderator.find(params["monitor_session_id"])
       moderator.update_attributes(caller_session_id: caller_session.id)
-      caller_session.moderator.switch_monitor_mode(caller_session.id, params[:type])
+      caller_session.moderator.switch_monitor_mode(params[:type])
       if caller_session.voter_in_progress && (caller_session.voter_in_progress.call_attempts.last.status == "Call in progress")
         render text: "Status: Monitoring in "+ type + " mode on "+ caller_session.caller.identity_name + "."
       else
         render text: "Status: Caller is not connected to a lead."
       end
     end
+
+    def start
+      caller_session = CallerSession.find(params[:session_id])
+      moderator = Moderator.find(params["monitor_session_id"])
+      moderator.update_attributes(caller_session_id: caller_session.id, call_sid: params['CallSid'])
+      if caller_session.voter_in_progress && (caller_session.voter_in_progress.call_attempts.last.status == "Call in progress")
+        status_msg = "Status: Monitoring in "+ params[:type] + " mode on "+ caller_session.caller.identity_name + "."
+      else
+        status_msg = "Status: Caller is not connected to a lead."
+      end
+      render xml: caller_session.join_conference(params[:type]=="eaves_drop")
+  end
+
 
   end
 end
