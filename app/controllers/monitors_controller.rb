@@ -16,8 +16,7 @@ class MonitorsController < ClientController
     else
       status_msg = "Status: Caller is not connected to a lead."
     end
-    Pusher[params[:monitor_session]].trigger('set_status', {:status_msg => status_msg})
-    render xml: caller_session.join_conference(params[:type]=="eaves_drop", params[:CallSid], params[:monitor_session])
+    render xml: caller_session.join_conference(params[:type]=="eaves_drop")
   end
 
   def kick_off
