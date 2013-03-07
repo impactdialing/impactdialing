@@ -37,6 +37,7 @@ ImpactDialing.Views.MonitorCaller = Backbone.View.extend({
     e.preventDefault();
     e.stopPropagation();
     var self = this;
+    console.log(this.options.monitoring)
     if(this.options.monitoring){
       this.connectModeratorToConference(e);
     }else{
