@@ -18,14 +18,14 @@ module Monitors
     end
 
     def switch_mode
-      type = params[:type]
       caller_session = CallerSession.find(params[:session_id])
-      caller_session.moderator.switch_monitor_mode(caller_session, type)
       if caller_session.voter_in_progress && (caller_session.voter_in_progress.call_attempts.last.status == "Call in progress")
-        respond_with({message: "Status: Monitoring in "+ type + " mode on "+ caller_session.caller.identity_name + "."})
+        status_msg = "Status: Monitoring in "+ params[:type] + " mode on "+ caller_session.caller.identity_name + "."
       else
-        respond_with({message: "Status: Caller is not connected to a lead."})
+        status_msg = "Status: Caller is not connected to a lead."
       end
+      Pusher[params[:monitor_session]].trigger('set_status', {:status_msg => status_msg})
+    render xml: caller_session.join_conference(params[:type]=="eaves_drop", params[:CallSid], params[:monitor_session])
     end
 
 

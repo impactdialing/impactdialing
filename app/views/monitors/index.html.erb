@@ -11,6 +11,12 @@
     $(function() {
       new ImpactDialing.Routers.Monitors();
       Backbone.history.start();
+      Twilio.Device.setup("<%= @token %>", {'debug':true});
+      Twilio.Device.connect(function (conn) {});
+      Twilio.Device.ready(function (device) {});
+      Twilio.Device.error(function (error) {
+        alert(error.message);
+      });
   });
   </script>
 <% end %>
@@ -61,17 +67,17 @@
       <td>{{status}}</td>
       <td>{{time_in_status}}</td>
       <td>
-        <a class ="action secondary eaves_drop" href="#" data-action="eavesdrop" session_id="{{id}}">
+        <a class ="action secondary eaves_drop" href="#" data-action="eavesdrop">
           Eavesdrop
         </a>
       </td>
       <td>
-        <a class ="action secondary break_in" href="#" data-action="breakin" session_id="{{id}}">
+        <a class ="action secondary break_in" href="#" data-action="breakin">
           Break in
         </a>
       </td>
       <td>
-        <a class ="action secondary kick_off" href="#"  session_id="{{id}}">
+        <a class ="action secondary kick_off" href="#">
           Kick off
         </a>
       </td>
