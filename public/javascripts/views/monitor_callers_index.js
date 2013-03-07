@@ -58,7 +58,7 @@ ImpactDialing.Views.MonitorCaller = Backbone.View.extend({
     $.ajax({
       type: 'PUT',
       url : "/client/monitors/callers/switch_mode",
-      data : {session_id : this.model.get("id"), type: $(e.target).data("action")},
+      data : {session_id : this.model.get("id"), type: $(e.target).data("action"), monitor_session_id: $("#monitor_session_id").val()},
       dataType: "json",
       beforeSend: function (request)
         {
