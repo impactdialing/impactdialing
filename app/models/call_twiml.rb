@@ -1,10 +1,10 @@
 module CallTwiml
-  
+
   module ClassMethods
   end
-  
+
   module InstanceMethods
-            
+
     def abandoned_twiml
       hangup_twiml
     end
@@ -15,17 +15,17 @@ module CallTwiml
 
     def connected_twiml
       Twilio::TwiML::Response.new do |r|
-        unless caller_session.nil? 
+        unless caller_session.nil?
           if DataCentre.twilio?(data_centre)
             r.Dial :hangupOnStar => 'false', :action => disconnected_call_url(self, :host => DataCentre.call_back_host(data_centre), :protocol => "http://"), :record=> campaign.account.record_calls do |d|
-              d.Conference caller_session.session_key, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2            
+              d.Conference caller_session.session_key, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET', :beep => false, :endConferenceOnExit => false
             end
           else
             r.Dial :hangupOnStar => 'false', :action => disconnected_call_url(self, :host => DataCentre.call_back_host(data_centre), :protocol => "http://"), :record=> campaign.account.record_calls do |d|
-              d.Conference caller_session.session_key, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true, :maxParticipants => 2            
+              d.Conference caller_session.session_key, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET', :beep => false, :endConferenceOnExit => false
               d.CallerSid caller_session.sid
             end
-            
+
           end
         else
           hangup_twiml
@@ -36,23 +36,23 @@ module CallTwiml
     def call_answered_by_machine_twiml
       Twilio::TwiML::Response.new do |r|
         r.Play campaign.recording.file.url if campaign.use_recordings?
-        r.Hangup      
+        r.Hangup
       end.text
-    end  
-    
+    end
+
     def call_ended_twiml
       hangup_twiml
     end
-    
+
     def hangup_twiml
       Twilio::TwiML::Response.new { |r| r.Hangup }.text
-    end  
-    
+    end
+
   end
-  
+
   def self.included(receiver)
     receiver.extend         ClassMethods
     receiver.send :include, InstanceMethods
   end
-  
+
 end
