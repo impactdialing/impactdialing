@@ -17,6 +17,10 @@
       Twilio.Device.error(function (error) {
         alert(error.message);
       });
+      $(".stop_monitoring").click(function(){
+        Twilio.Device.disconnectAll();
+      });
+
   });
   </script>
 <% end %>
