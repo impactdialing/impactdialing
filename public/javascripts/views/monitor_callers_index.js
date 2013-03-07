@@ -37,31 +37,37 @@ ImpactDialing.Views.MonitorCaller = Backbone.View.extend({
     e.preventDefault();
     e.stopPropagation();
     var self = this;
-    if(this.options.monitoring == false){
-      params = {'session_id': session_id, 'type': action, 'monitor_session' : $("#monitor_session_id").val()};
-      $('.stop_monitor').show();
-      Twilio.Device.connect(params)
-      this.options.monitoring = true;
+    if(this.options.monitoring){
+      this.connectModeratorToConference(e);
     }else{
-      $.ajax({
-        type: 'PUT',
-        url : "/client/monitors/callers/switch_mode",
-        data : {session_id : this.model.get("id"), type: $(e.target).data("action")},
-        dataType: "json",
-        beforeSend: function (request)
-          {
-            var token = $("meta[name='csrf-token']").attr("content");
-            request.setRequestHeader("X-CSRF-Token", token);
-          },
-        success: function(data){
-          $("#status").html(data["message"])
-        },
-      });
-
+      this.startMonitoring(e);
+      this.options.monitoring = true;
     }
 
   },
 
+  startMonitoring: function(e){
+    params = {'session_id': session_id, 'type': $(e.target).data("action"), 'monitor_session' : $("#monitor_session_id").val()};
+    $('.stop_monitor').show();
+    Twilio.Device.connect(params)
+  },
+
+  connectModeratorToConference: function(e){
+    $.ajax({
+      type: 'PUT',
+      url : "/client/monitors/callers/switch_mode",
+      data : {session_id : this.model.get("id"), type: $(e.target).data("action")},
+      dataType: "json",
+      beforeSend: function (request)
+        {
+          var token = $("meta[name='csrf-token']").attr("content");
+          request.setRequestHeader("X-CSRF-Token", token);
+        },
+      success: function(data){
+          $("#status").html(data["message"])
+        },
+      });
+  },
 
 });
 

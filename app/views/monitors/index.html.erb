@@ -94,3 +94,6 @@
   <%= link_to "Turn call recording #{@account.record_calls? ? "off" : "on" }", {:action=>"toggle_call_recording"},
   {:class => 'action secondary'} %>
 </p>
+<p class="actions">
+  <a class ="action primary stop_monitoring" href="#" style="display:none">Stop monitoring</a>
+</p>
