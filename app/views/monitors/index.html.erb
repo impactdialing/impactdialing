@@ -19,6 +19,7 @@
       });
       $(".stop_monitoring").click(function(){
         Twilio.Device.disconnectAll();
+        return false;
       });
 
   });
