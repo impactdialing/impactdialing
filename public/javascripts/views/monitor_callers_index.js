@@ -10,7 +10,7 @@ ImpactDialing.Views.MonitorCaller = Backbone.View.extend({
   },
 
   render: function () {
-    $(this.el).html(_.template($(this.template).html(), _.extend(this.model.toJSON(),
+    $(this.el).html(Mustache.to_html($('#caller-monitor-template').html(), _.extend(this.model.toJSON(),
       {reassignable_campaigns: this.options.reassignable_campaigns})));
     return this;
   },
