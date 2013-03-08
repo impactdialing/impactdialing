@@ -11,12 +11,12 @@ ImpactDialing.Routers.Monitors = Backbone.Router.extend({
   },
 
   index: function(){
+    var self = this;
     var monitors_campaign = new ImpactDialing.Views.MonitorCampaignsIndex({collection: this.active_campaigns});
-    var monitors_caller = new ImpactDialing.Views.MonitorCallersIndex({collection: this.active_callers,
-      monitoring: this.monitoring});
     $("#campaigns-monitor").html(monitors_campaign.render().el);
-    $("#callers-monitor").html(monitors_caller.render().el);
     this.active_campaigns.fetch();
+    var monitors_caller = new ImpactDialing.Views.MonitorCallersIndex({collection: self.active_callers});
+    $("#callers-monitor").html(monitors_caller.render().el);
     this.active_callers.fetch();
   },
 

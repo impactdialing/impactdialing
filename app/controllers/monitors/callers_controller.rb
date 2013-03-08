@@ -40,7 +40,12 @@ module Monitors
         status_msg = "Status: Caller is not connected to a lead."
       end
       render xml: caller_session.join_conference(params[:type]=="eaves_drop")
-  end
+    end
+
+    def reassignable_campaigns
+      @campaigns = account.campaigns.manual.active.select {|x| !x.time_period_exceeded?}
+      respond_with(@campaigns.collect{|c| {id: c.id, name: c.name}})
+    end
 
 
   end
