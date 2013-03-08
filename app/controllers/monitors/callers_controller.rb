@@ -47,6 +47,11 @@ module Monitors
       respond_with(@campaigns.collect{|c| {id: c.id, name: c.name}})
     end
 
+    def reassign_campaign
+      caller_session = CallerSession.find(params[:caller_session_id])
+      caller_session.
+    end
+
 
   end
 end

@@ -103,7 +103,7 @@ class Caller < ActiveRecord::Base
   def reassign_to_another_campaign(caller_session)
     return unless caller_session.attempt_in_progress.nil?
     if self.is_phones_only?
-      caller_session.redirect_caller if caller_session.campaign.type == Campaign::Type::PREDICTIVE
+      caller_session.redirect_caller
     else
       caller_session.reassign_caller_session_to_campaign
       caller_session.start_conf
