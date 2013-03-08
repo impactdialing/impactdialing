@@ -168,7 +168,6 @@ class CallerSession < ActiveRecord::Base
   end
 
   def reassign_caller_session_to_campaign
-    old_campaign = self.campaign
     update_attribute(:campaign, caller.campaign)
   end
 
