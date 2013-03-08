@@ -1,16 +1,14 @@
 <div id="transfer_panel" style="display:none" >
   <% if @campaign.script.transfers.present? %>
     <fieldset>
-      <legend>Transfer</legend>            
+      <legend>Transfer</legend>
       <input type="hidden" id="transfer_type" name="transfer_type" >
       <form id="transfer_form" method="post" action="">
-        <%= select( "transfer", "id",@campaign.script.transfers.collect{|transfer| [transfer.label + " - "+ transfer.phone_number  ,transfer.id]}) %>               
+        <%= select( "transfer", "id",@campaign.script.transfers.collect{|transfer| [transfer.label + " - "+ transfer.phone_number  ,transfer.id]}) %>
         <div class= "buttons">
             <button type="submit" id="transfer_button" style="margin-top:10px" onclick="javascript:transfer_call();">Transfer</button>
         </div>
       </form>
     </fieldset>
   <% end %>
-  
-  
 </div>
