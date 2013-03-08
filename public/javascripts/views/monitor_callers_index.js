@@ -97,7 +97,7 @@ ImpactDialing.Views.MonitorCallersIndex = Backbone.View.extend({
     $.getJSON("/client/monitors/callers/reassignable_campaigns", function(data){
       self.$el.empty();
       if (!_.isEmpty(self.collection.models)){
-        this.collection.map(function (m) {
+        self.collection.map(function (m) {
           var monitor = (new ImpactDialing.Views.MonitorCaller({model: m, collection: self.collection, reassignable_campaigns: data})).render().el;
           $(self.el).append(monitor);
         });
