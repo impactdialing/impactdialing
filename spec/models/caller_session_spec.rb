@@ -11,8 +11,8 @@ describe CallerSession do
     caller_session3 = Factory(:webui_caller_session, on_call: true, available_for_call: false)
     caller_session4 = Factory(:phones_only_caller_session, on_call: true, available_for_call: true)
     caller_session5 = Factory(:phones_only_caller_session, on_call: true, available_for_call: true)
-    
-    CallerSession.available.should include(caller_session2, caller_session4, caller_session5) 
+
+    CallerSession.available.should include(caller_session2, caller_session4, caller_session5)
   end
 
   it "has one attempt in progress" do
@@ -66,7 +66,7 @@ describe CallerSession do
     it "should join the moderator into conference and update moderator call_sid" do
       moderator = Factory(:moderator, :session => "monitorsession12")
       session = Factory(:caller_session, :moderator => Factory(:moderator, :call_sid => "123"), :session_key => "gjgdfdkg232hl")
-      session.join_conference(true, "123new", "monitorsession12").should == Twilio::Verb.new do |v|
+      session.join_conference(true).should == Twilio::Verb.new do |v|
         v.dial(:hangupOnStar => true) do
           v.conference("gjgdfdkg232hl", :startConferenceOnEnter => false, :endConferenceOnExit => false, :beep => false, :waitUrl => "hold_music", :waitMethod =>"GET", :muted => true)
         end
@@ -77,7 +77,7 @@ describe CallerSession do
     it "should join the moderator into conference and create a moderator with call_sid" do
       moderator = Factory(:moderator, :session => "monitorsession12")
       session = Factory(:caller_session, :session_key => "gjgdfdkg232hl")
-      session.join_conference(true, "123", "monitorsession12").should == Twilio::Verb.new do |v|
+      session.join_conference(true).should == Twilio::Verb.new do |v|
         v.dial(:hangupOnStar => true) do
           v.conference("gjgdfdkg232hl", :startConferenceOnEnter => false, :endConferenceOnExit => false, :beep => false, :waitUrl => "hold_music", :waitMethod =>"GET", :muted => true)
         end
@@ -152,7 +152,7 @@ describe CallerSession do
         caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
         caller_session.should_receive(:account_not_activated?).and_return(false)
         caller_session.should_receive(:funds_not_available?).and_return(false)
-        caller_session.should_receive(:subscription_limit_exceeded?).and_return(true)        
+        caller_session.should_receive(:subscription_limit_exceeded?).and_return(true)
         caller_session.start_conf.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>The maximum number of callers for this account has been reached. Wait for another caller to finish, or ask your administrator to upgrade your account.</Say><Hangup/></Response>")
       end
 
@@ -175,9 +175,9 @@ describe CallerSession do
         caller_session.should_receive(:time_period_exceeded?).and_return(true)
         caller_session.start_conf.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>You can only call this campaign between 9 AM and 9 PM. Please try back during those hours.</Say><Hangup/></Response>")
       end
-    end  
-      
-   
+    end
+
+
 
     describe "Caller already on call" do
 
@@ -209,33 +209,33 @@ describe CallerSession do
       @call_attempt = Factory(:call_attempt)
     end
 
-   
+
     it "should set caller session endtime" do
       caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "account_not_activated")
       caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id,  "publish_caller_disconnected"])
       caller_session.conference_ended
       caller_session.endtime.should_not be_nil
     end
-    
+
     it "should render hangup twiml" do
       caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "account_not_activated")
       caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id,  "publish_caller_disconnected"])
       caller_session.conference_ended.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
     end
-    
+
 
   end
-  
+
   describe "end_running_call" do
     it "should end call" do
       caller_session = Factory(:caller_session)
       caller_session.should_receive(:enqueue_call_flow).with(EndRunningCallJob, [caller_session.sid])
       caller_session.should_receive(:enqueue_call_flow).with(EndCallerSessionJob, [caller_session.id])
       caller_session.end_running_call
-      caller_session.endtime.should_not be_nil      
+      caller_session.endtime.should_not be_nil
     end
   end
-  
+
   describe "caller time" do
     it "should return the first caller session for that caller" do
       caller = Factory(:caller)
@@ -243,29 +243,29 @@ describe CallerSession do
       caller_session2 = Factory(:caller_session, caller: caller, created_at: 4.hours.ago)
       CallerSession.first_caller_time(caller).first.created_at.to_s.should eq(caller_session2.created_at.to_s)
     end
-    
+
     it "should return the last caller session for that caller" do
       caller = Factory(:caller)
       caller_session1 = Factory(:caller_session, caller: caller, created_at: 2.hours.ago)
       caller_session2 = Factory(:caller_session, caller: caller, created_at: 4.hours.ago)
       CallerSession.last_caller_time(caller).first.created_at.to_s.should eq(caller_session1.created_at.to_s)
     end
-    
+
     it "should return the first caller session for that campaign" do
       campaign = Factory(:campaign)
       caller_session1 = Factory(:caller_session, campaign: campaign, created_at: 2.hours.ago)
       caller_session2 = Factory(:caller_session, campaign: campaign, created_at: 4.hours.ago)
       CallerSession.first_campaign_time(campaign).first.created_at.to_s.should eq(caller_session2.created_at.to_s)
     end
-    
+
     it "should return the last caller session for that campaign" do
       campaign = Factory(:campaign)
       caller_session1 = Factory(:caller_session, campaign: campaign, created_at: 2.hours.ago)
       caller_session2 = Factory(:caller_session, campaign: campaign, created_at: 4.hours.ago)
       CallerSession.last_campaign_time(campaign).first.created_at.to_s.should eq(caller_session1.created_at.to_s)
     end
-    
-    
+
+
   end
 
 

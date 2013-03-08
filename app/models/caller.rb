@@ -30,15 +30,15 @@ class Caller < ActiveRecord::Base
   def identity_name
     is_phones_only?  ? name : email
   end
-  
+
   def reassign_caller_campaign
     if campaign_id_changed?
       caller_sessions.on_call.each { |caller_session| caller_session.update_column(:campaign_id, self.campaign_id) }
-    end  
+    end
   end
-  
+
   def create_uniq_pin
-    self.pin = CallerIdentity.create_uniq_pin 
+    self.pin = CallerIdentity.create_uniq_pin
   end
 
   def is_on_call?
@@ -99,23 +99,7 @@ class Caller < ActiveRecord::Base
     result
   end
 
-  # def reassign_to_another_campaign(caller_session)
-  #   return unless caller_session.attempt_in_progress.nil?
-  #   if self.is_phones_only?
-  #        if (caller_session.campaign.predictive_type != "preview" && caller_session.campaign.predictive_type != "progressive")
-  #          Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
-  #          Twilio::Call.redirect(caller_session.sid, phones_only_caller_index_url(:host => Settings.twilio_callback_host, :port => Settings.twilio_callback_port, :protocol => "http://", session_id: caller_session.id, :campaign_reassigned => true))
-  #        end
-  #      else
-  #        caller_session.reassign_caller_session_to_campaign
-  #        if campaign.predictive_type == Campaign::Type::PREVIEW || campaign.predictive_type == Campaign::Type::PROGRESSIVE
-  #          caller_session.publish('conference_started', {})
-  #        else
-  #          caller_session.publish('caller_connected_dialer', {})
-  #        end
-  #      end
-  # end
-  
+
   def reassign_to_another_campaign(caller_session)
     return unless caller_session.attempt_in_progress.nil?
     if self.is_phones_only?
@@ -125,10 +109,8 @@ class Caller < ActiveRecord::Base
       caller_session.start_conf
     end
   end
-  
-  
-  
-  def create_caller_session(session_key, sid, caller_type)    
+
+  def create_caller_session(session_key, sid, caller_type)
     if is_phones_only?
       caller_session = PhonesOnlyCallerSession.create(session_key: session_key, campaign: campaign , sid: sid, starttime: Time.now, caller_type: caller_type, state: 'initial', caller: self, on_call: true, script_id: campaign.script_id)
     else
@@ -136,12 +118,12 @@ class Caller < ActiveRecord::Base
     end
     caller_session
   end
-  
+
   def started_calling(session)
     RedisPredictiveCampaign.add(campaign.id, campaign.type)
     RedisStatus.set_state_changed_time(campaign.id, "On hold", session.id)
   end
-  
+
   def calling_voter_preview_power(session, voter_id)
     enqueue_call_flow(CallerPusherJob, [session.id, "publish_calling_voter"])
     enqueue_call_flow(PreviewPowerDialJob, [session.id, voter_id])
@@ -150,7 +132,7 @@ class Caller < ActiveRecord::Base
   def create_caller_identity(session_key)
     caller_identities.create(session_key: session_key, pin: CallerIdentity.create_uniq_pin)
   end
-  
+
   private
 
   def assign_to_caller_group_campaign
