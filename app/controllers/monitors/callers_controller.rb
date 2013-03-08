@@ -49,7 +49,6 @@ module Monitors
 
     def reassign_campaign
       caller_session = CallerSession.find(params[:caller_session_id])
-      caller_session.
     end
 
 
