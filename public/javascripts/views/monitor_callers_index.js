@@ -6,10 +6,12 @@ ImpactDialing.Views.MonitorCaller = Backbone.View.extend({
     "click .kick_off" : "kickCallerOff",
     "click .break_in" : "switchMode",
     "click .eaves_drop" : "switchMode",
+    "click .reassign_campaign" : "openReassignDialog"
   },
 
   render: function () {
-    $(this.el).html(_.template($(this.template).html(), this.model.toJSON()));
+    $(this.el).html(_.template($(this.template).html(), _.extend(this.model.toJSON(),
+      {reassignable_campaigns: this.options.reassignable_campaigns})));
     return this;
   },
 
@@ -71,6 +73,12 @@ ImpactDialing.Views.MonitorCaller = Backbone.View.extend({
       });
   },
 
+  openReassignDialog: function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    var self = this;
+  }
+
 });
 
 
@@ -86,13 +94,15 @@ ImpactDialing.Views.MonitorCallersIndex = Backbone.View.extend({
 
   render: function () {
     var self = this;
-    this.$el.empty();
-    if (!_.isEmpty(this.collection.models)){
-      this.collection.map(function (m) {
-      var monitor = (new ImpactDialing.Views.MonitorCaller({model: m, collection: self.collection, monitoring: self.options.monitoring})).render().el;
-      $(self.el).append(monitor);
+    $.getJSON("/client/monitors/callers/reassignable_campaigns", function(data){
+      self.$el.empty();
+      if (!_.isEmpty(self.collection.models)){
+        this.collection.map(function (m) {
+          var monitor = (new ImpactDialing.Views.MonitorCaller({model: m, collection: self.collection, reassignable_campaigns: data})).render().el;
+          $(self.el).append(monitor);
+        });
+      }
     });
-    }
 
     return this;
   },

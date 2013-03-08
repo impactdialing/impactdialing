@@ -168,6 +168,7 @@ ImpactDialing::Application.routes.draw do
           put :kick_off
           put :switch_mode
           post :start
+          get :reassignable_campaigns
         end
       end
     end
