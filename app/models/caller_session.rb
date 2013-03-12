@@ -42,6 +42,12 @@ class CallerSession < ActiveRecord::Base
     PHONE = "Phone"
   end
 
+  module ReassignCampaign
+    NO = "no"
+    YES = "yes"
+    DONE = "done"
+  end
+
 
   def minutes_used
     return 0 if self.tDuration.blank?
@@ -167,12 +173,21 @@ class CallerSession < ActiveRecord::Base
     response
   end
 
-  def reassign_caller_session_to_campaign
-    update_attribute(:campaign, caller.campaign)
+  def reassign_to_another_campaign(new_campaign_id)
+    update_attribute(reassign_campaign: ReassignCampaign::YES)
+    RedisReassignedCallerSession.set_campaign_id(self.id, new_campaign_id)
   end
 
-  def caller_reassigned_to_another_campaign?
-    caller.campaign.id != self.campaign.id
+  def reassigned_to_another_campaign?
+    self.reassign_campaign == ReassignCampaign::YES
+  end
+
+  def handleReassignedCampaign
+    if reassigned_to_another_campaign?
+      new_campaign_id = RedisReassignedCallerSession.campaign_id(self.id)
+      update_attributes(reassign_campaign: ReassignCampaign::DONE, campaign_id: new_campaign_id)
+      RedisReassignedCallerSession.del(self.id)
+    end
   end
 
 
@@ -211,6 +226,7 @@ class CallerSession < ActiveRecord::Base
 
    def start_conference(callerdc=DataCentre::Code::TWILIO)
      RedisCallerSession.set_datacentre(self.id, callerdc)
+     handleReassignedCampaign
      if Campaign.predictive_campaign?(campaign.type)
        loaded_caller_session = CallerSession.find(self.id)
        loaded_caller_session.update_attributes(on_call: true, available_for_call: true)

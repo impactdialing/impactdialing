@@ -44,7 +44,6 @@ ImpactDialing.Views.MonitorCaller = Backbone.View.extend({
     }else{
       this.startMonitoring(e);
       this.options.monitoring = true;
-      console.log(this.options.monitoring)
     }
 
   },

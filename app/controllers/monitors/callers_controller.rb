@@ -49,6 +49,7 @@ module Monitors
 
     def reassign_campaign
       caller_session = CallerSession.find(params[:caller_session_id])
+      caller_sesion.update_attribute(:campaign_id, params[:campaign_id])
     end
 
 
