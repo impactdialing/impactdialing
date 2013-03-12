@@ -52,4 +52,9 @@ class Script < ActiveRecord::Base
     end
   end
 
+  def as_json(options)
+    super((options || { })).merge({questions: questions, notes: notes, transfers: transfers}.as_json)
+  end
+
+
 end

@@ -56,8 +56,7 @@ ImpactDialing::Application.routes.draw do
   namespace "callers" do
     resources :campaigns do
       member do
-        post :callin
-        match :caller_ready
+        post :token
       end
     end
     resources :phones_only do
