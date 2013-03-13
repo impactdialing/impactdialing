@@ -54,7 +54,7 @@ ImpactDialing::Application.routes.draw do
 
 
   namespace "callers" do
-    resources :campaigns do
+    resources :campaign_calls do
       member do
         post :token
       end
