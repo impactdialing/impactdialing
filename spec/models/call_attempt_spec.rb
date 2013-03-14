@@ -34,9 +34,9 @@ describe CallAttempt do
     call_attempt = Factory(:call_attempt, call_start: nil, connecttime:  Time.now, call_end:  nil)
     call_attempt.duration_rounded_up.should == 0
   end
-  
+
   it "should abandon call" do
-    voter = Factory(:voter)  
+    voter = Factory(:voter)
     call_attempt = Factory(:call_attempt, :voter => voter)
     now = Time.now
     call_attempt.abandoned(now)
@@ -44,10 +44,10 @@ describe CallAttempt do
     call_attempt.connecttime.should eq(now)
     call_attempt.call_end.should eq(now)
   end
-  
-  
+
+
   it "should end_answered_by_machine" do
-    voter = Factory(:voter)  
+    voter = Factory(:voter)
     call_attempt = Factory(:call_attempt, :voter => voter)
     now = Time.now
     nowminus2 = now - 2.minutes
@@ -56,17 +56,17 @@ describe CallAttempt do
     call_attempt.call_end.should eq(now)
     call_attempt.wrapup_time.should eq(now)
   end
-  
+
   it "should end_unanswered_call" do
-    voter = Factory(:voter)  
+    voter = Factory(:voter)
     call_attempt = Factory(:call_attempt, :voter => voter)
     now = Time.now
     call_attempt.end_unanswered_call("busy",now)
     call_attempt.status.should eq("No answer busy signal")
     call_attempt.call_end.should eq(now)
   end
-  
-  
+
+
   it "should disconnect call" do
      voter = Factory(:voter)
      call_attempt = Factory(:call_attempt, :voter => voter)
@@ -76,10 +76,10 @@ describe CallAttempt do
      call_attempt.status.should eq(CallAttempt::Status::SUCCESS)
      call_attempt.call_end.should eq(now)
      call_attempt.recording_duration.should eq(12)
-     call_attempt.recording_url.should eq("url")     
+     call_attempt.recording_url.should eq("url")
      call_attempt.caller_id.should eq(caller.id)
    end
-   
+
    it "can be scheduled for later" do
      voter = Factory(:voter)
      call_attempt = Factory(:call_attempt, :voter => voter)
@@ -88,7 +88,7 @@ describe CallAttempt do
      call_attempt.status.should eq(CallAttempt::Status::SCHEDULED)
      call_attempt.scheduled_date.should eq(scheduled_date)
    end
-   
+
 
   it "should wrapup call webui" do
     voter = Factory(:voter)
@@ -98,7 +98,7 @@ describe CallAttempt do
     call_attempt.wrapup_time.should eq(now)
     call_attempt.voter_response_processed.should be_false
   end
-  
+
   it "should wrapup call phones" do
     voter = Factory(:voter)
     caller = Factory(:caller, is_phones_only: true)
@@ -118,7 +118,7 @@ describe CallAttempt do
     call_attempt.wrapup_time.should eq(now)
     call_attempt.voter_response_processed.should be_false
   end
-  
+
   it "should connect lead to caller" do
     voter = Factory(:voter)
     call_attempt = Factory(:call_attempt, :voter => voter)
@@ -128,9 +128,9 @@ describe CallAttempt do
     caller_session.attempt_in_progress.should eq(call_attempt)
     caller_session.voter_in_progress.should eq(voter)
   end
-      
-  
-  
+
+
+
   it "lists attempts between two dates" do
     too_old = Factory(:call_attempt).tap { |ca| ca.update_attribute(:created_at, 10.minutes.ago) }
     too_new = Factory(:call_attempt).tap { |ca| ca.update_attribute(:created_at, 10.minutes.from_now) }
@@ -219,7 +219,7 @@ describe CallAttempt do
         account = Factory(:account, subscription_name: Account::Subscription_Type::PER_MINUTE)
         campaign = Factory(:campaign, account: account)
         payment = Factory(:payment, account: account, amount_remaining: 10.0)
-        call_attempt = Factory(:call_attempt, tStartTime: (Time.now - 3.minutes), tEndTime: (Time.now - 2.minutes), campaign: campaign)
+        call_attempt = Factory(:call_attempt, tStartTime: (Time.now - 3.minutes), tEndTime: (Time.now - 2.minutes), campaign: campaign, tDuration: 60)
         Payment.should_receive(:where).and_return([payment])
         payment.should_receive(:debit_call_charge)
         account.should_receive(:check_autorecharge)
@@ -232,7 +232,7 @@ describe CallAttempt do
 
     describe "call_time" do
       it "should give correct call time" do
-        call_attempt = Factory(:call_attempt, tStartTime: (Time.now - 3.minutes), tEndTime: (Time.now - 2.minutes))
+        call_attempt = Factory(:call_attempt, tStartTime: (Time.now - 3.minutes), tEndTime: (Time.now - 2.minutes),  tDuration: 62)
         call_attempt.call_time.should eq(2)
       end
     end
@@ -240,7 +240,7 @@ describe CallAttempt do
     describe "amount_to_debit" do
 
       it "should retrun amount to debit" do
-        call_attempt = Factory(:call_attempt, tStartTime: (Time.now - 3.minutes), tEndTime: (Time.now - 2.minutes))
+        call_attempt = Factory(:call_attempt, tStartTime: (Time.now - 3.minutes), tEndTime: (Time.now - 2.minutes), tDuration: 62)
         call_attempt.amount_to_debit.should eq(0.18)
       end
 
