@@ -39,15 +39,16 @@ gem "formtastic", "~>2.2.1"
 gem "cocoon", "~>1.0.22"
 gem 'deep_cloneable', '~> 1.4.0'
 gem "redis-objects", "~>0.5.3",:require => 'redis/objects'
-gem "redis", "~>2.2.2"
+gem "redis", "~> 3.0.0"
 gem 'ar-octopus', :git => "git://github.com/tchandy/octopus.git"
 gem "newrelic-redis", "~>1.3.2"
-gem "sidekiq", '~>1.2.1'
+gem "sidekiq", "~> 2.2.1"
 gem "slim", "~>1.2.2"
 gem "sprockets", "~>2.2.1"
 gem "sinatra", "~>1.3.3"
 gem "dalli", "~>2.3.0"
 gem "mandrill-api", "~>1.0.13"
+gem "sidekiq-failures", "~> 0.1.0"
 
 
 group :development, :test do

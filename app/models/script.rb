@@ -23,11 +23,15 @@ class Script < ActiveRecord::Base
 
 
   def selected_fields
-    JSON.parse(voter_fields).select{ |field| VoterList::VOTER_DATA_COLUMNS.values.include?(field) } if voter_fields
+    unless voter_fields.nil?
+      JSON.parse(voter_fields).select{ |field| VoterList::VOTER_DATA_COLUMNS.values.include?(field) }
+    end
   end
 
   def selected_custom_fields
-    JSON.parse(voter_fields).select{ |field| !VoterList::VOTER_DATA_COLUMNS.values.include?(field) } if voter_fields
+    unless voter_fields.nil?
+      JSON.parse(voter_fields).select{ |field| !VoterList::VOTER_DATA_COLUMNS.values.include?(field) }
+    end
   end
 
   def selected_fields_json

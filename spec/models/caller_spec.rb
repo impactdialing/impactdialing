@@ -93,9 +93,9 @@ describe Caller do
     let!(:time_now) { Time.now }
 
     before(:each) do
-      Factory(:caller_session, caller_type: "Phone", tStartTime: Time.now, tEndTime: Time.now + (30.minutes + 2.seconds), :tDuration => 10.minutes + 2.seconds, :caller => caller).tap { |ca| ca.update_attribute(:created_at, from_time) }
+      Factory(:caller_session, caller_type: "Phone", tStartTime: Time.now, tEndTime: Time.now + (30.minutes + 2.seconds), :tDuration => 30.minutes + 2.seconds, :caller => caller).tap { |ca| ca.update_attribute(:created_at, from_time) }
       Factory(:caller_session, tStartTime: Time.now, tEndTime: Time.now + (101.minutes + 57.seconds), :tDuration => 101.minutes + 57.seconds, :caller => caller).tap { |ca| ca.update_attribute(:created_at, from_time) }
-      Factory(:call_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (10.minutes + 10.seconds), wrapup_time: Time.now + (10.minutes + 40.seconds), :tDuration => 10.minutes + 2.seconds, :status => CallAttempt::Status::SUCCESS, :caller => caller).tap { |ca| ca.update_attribute(:created_at, from_time) }
+      Factory(:call_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (10.minutes + 10.seconds), wrapup_time: Time.now + (10.minutes + 40.seconds), :tDuration => 10.minutes + 10.seconds, :status => CallAttempt::Status::SUCCESS, :caller => caller).tap { |ca| ca.update_attribute(:created_at, from_time) }
       Factory(:call_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (1.minutes), :tDuration => 1.minutes, :status => CallAttempt::Status::VOICEMAIL, :caller => caller).tap { |ca| ca.update_attribute(:created_at, from_time) }
       Factory(:call_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (101.minutes + 57.seconds), wrapup_time: Time.now + (102.minutes + 57.seconds), :tDuration => 101.minutes + 57.seconds, :status => CallAttempt::Status::SUCCESS, :caller => caller).tap { |ca| ca.update_attribute(:created_at, from_time) }
       Factory(:call_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (1.minutes), :tDuration => 1.minutes, :status => CallAttempt::Status::ABANDONED, :caller => caller).tap { |ca| ca.update_attribute(:created_at, from_time) }
@@ -145,7 +145,7 @@ describe Caller do
       end
     end
   end
-  
+
   describe "reassign caller campaign" do
     it "should do nothing if campaign not changed" do
       campaign = Factory(:campaign)
@@ -153,41 +153,41 @@ describe Caller do
       caller.should_not_receive(:is_phones_only?)
       caller.save
     end
-    
+
     it "should do nothing if campaign changed but caller not logged in" do
       campaign = Factory(:campaign)
       caller_session = Factory(:caller_session, on_call: false)
       caller = Factory(:caller, campaign: campaign)
-      caller.should_not_receive(:is_phones_only?)      
+      caller.should_not_receive(:is_phones_only?)
       caller.save
     end
-    
+
     xit "should redirect if live phones only caller" do
       campaign = Factory(:campaign)
       other_campaign = Factory(:campaign)
       caller = Factory(:caller, campaign: campaign, is_phones_only: true)
       caller_session = Factory(:caller_session, on_call: true, campaign: other_campaign, caller_id: caller.id)
-      caller.caller_sessions << caller_session      
+      caller.caller_sessions << caller_session
       other_campaign.should_receive(:redirect_campaign_reassigned)
       caller.update_attributes(campaign_id: other_campaign.id)
     end
-    
-    
+
+
   end
-  
+
   describe "started calling" do
-    
+
     it "should  push campaign and caller to redis " do
       campaign = Factory(:predictive)
       caller  = Factory(:caller, campaign: campaign)
       caller_session = Factory(:caller_session, caller: caller)
       RedisPredictiveCampaign.should_receive(:add).with(campaign.id, campaign.type)
       RedisStatus.should_receive(:set_state_changed_time).with(campaign.id, "On hold", caller_session.id)
-      caller.started_calling(caller_session)      
+      caller.started_calling(caller_session)
     end
-        
+
   end
-  
+
   describe "calling_voter_preview_power" do
     it "should call pusher and enqueue dial " do
       campaign = Factory(:predictive)
@@ -196,8 +196,8 @@ describe Caller do
       voter = Factory(:voter)
       caller.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id, "publish_calling_voter"])
       caller.should_receive(:enqueue_call_flow).with(PreviewPowerDialJob, [caller_session.id, voter.id])
-      caller.calling_voter_preview_power(caller_session, voter.id)      
+      caller.calling_voter_preview_power(caller_session, voter.id)
     end
-    
+
   end
 end
