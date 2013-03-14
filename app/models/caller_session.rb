@@ -162,6 +162,10 @@ class CallerSession < ActiveRecord::Base
       Twilio::Call.redirect(sid, account_out_of_funds_caller_url(caller, :host => DataCentre.call_back_host(data_centre), :port => Settings.twilio_callback_port, :protocol => "http://", session_id: id))
     end
   end
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 
 
   def join_conference(mute_type)
@@ -173,6 +177,7 @@ class CallerSession < ActiveRecord::Base
     response
   end
 
+<<<<<<< HEAD
   def reassign_to_another_campaign(new_campaign_id)
     update_attribute(reassign_campaign: ReassignCampaign::YES)
     RedisReassignedCallerSession.set_campaign_id(self.id, new_campaign_id)
@@ -188,6 +193,15 @@ class CallerSession < ActiveRecord::Base
       update_attributes(reassign_campaign: ReassignCampaign::DONE, campaign_id: new_campaign_id)
       RedisReassignedCallerSession.del(self.id)
     end
+=======
+  def reassign_caller_session_to_campaign
+    old_campaign = self.campaign
+    update_attribute(:campaign, caller.campaign)
+  end
+
+  def caller_reassigned_to_another_campaign?
+    caller.campaign.id != self.campaign.id
+>>>>>>> master
   end
 
 
@@ -209,11 +223,11 @@ class CallerSession < ActiveRecord::Base
 
 
    def self.time_logged_in(caller, campaign, from, to)
-     CallerSession.for_caller(caller).on_campaign(campaign).between(from, to).sum('TIMESTAMPDIFF(SECOND ,tStartTime,tEndTime)').to_i
+     CallerSession.for_caller(caller).on_campaign(campaign).between(from, to).sum('tDuration').to_i
    end
 
    def self.caller_time(caller, campaign, from, to)
-     CallerSession.for_caller(caller).on_campaign(campaign).between(from, to).where("caller_type = 'Phone' ").sum('ceil(TIMESTAMPDIFF(SECOND ,tStartTime,tEndTime)/60)').to_i
+     CallerSession.for_caller(caller).on_campaign(campaign).between(from, to).where("caller_type = 'Phone' ").sum('ceil(tDuration/60)').to_i
    end
 
    def call_not_connected?
@@ -221,7 +235,7 @@ class CallerSession < ActiveRecord::Base
    end
 
    def call_time
-   ((tEndTime - tStartTime)/60).ceil
+   ((tDuration.to_f)/60).ceil
    end
 
    def start_conference(callerdc=DataCentre::Code::TWILIO)
