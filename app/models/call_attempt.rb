@@ -65,47 +65,47 @@ class CallAttempt < ActiveRecord::Base
   def self.wrapup_calls(caller_id)
     CallAttempt.not_wrapped_up.where(caller_id: caller_id).update_all(wrapup_time: Time.now)
   end
-  
+
   def abandoned(time)
     self.status = CallAttempt::Status::ABANDONED
     self.connecttime = time
     self.call_end = time
   end
-    
+
   def end_answered_by_machine(connect_time, end_time)
     self.connecttime = connect_time
     self.wrapup_time = end_time
     self.call_end = end_time
     self.status = campaign.use_recordings? ? CallAttempt::Status::VOICEMAIL : CallAttempt::Status::HANGUP
   end
-  
+
   def end_unanswered_call(call_status, time)
     self.status = CallAttempt::Status::MAP[call_status]
     self.wrapup_time = time
     self.call_end = time
   end
-  
+
   def disconnect_call(time, duration, url, caller_id)
     self.status = CallAttempt::Status::SUCCESS
     self.call_end =  time
     self.recording_duration = duration
     self.recording_url = url
     self.caller_id = caller_id
-  end    
-  
+  end
+
   def schedule_for_later(date)
     scheduled_date = DateTime.strptime(date, "%m/%d/%Y %H:%M").to_time
     self.status = Status::SCHEDULED
     self.scheduled_date = scheduled_date
   end
-  
+
   def wrapup_now(time, caller_type)
     self.wrapup_time = time
     if caller_type == CallerSession::CallerType::PHONE && caller.is_phones_only
       self.voter_response_processed = true
     end
   end
-  
+
   def connect_caller_to_lead(callee_dc)
     caller_session_id = RedisOnHoldCaller.longest_waiting_caller(campaign_id, callee_dc)
     unless caller_session_id.nil?
@@ -116,15 +116,15 @@ class CallAttempt < ActiveRecord::Base
         puts "could not connect call"
         RedisOnHoldCaller.remove_caller_session(campaign_id, caller_session_id, callee_dc)
         RedisOnHoldCaller.add_to_bottom(campaign_id, caller_session_id, callee_dc)
-      end 
+      end
     end
   end
-  
+
   def connect_call
     self.update_attributes(connecttime: Time.now)
     RedisStatus.set_state_changed_time(campaign.id, "On call", caller_session_id)
   end
-  
+
   def not_wrapped_up?
     wrapup_time.nil?
   end
@@ -135,7 +135,7 @@ class CallAttempt < ActiveRecord::Base
     result = CallAttempt.for_campaign(campaign).for_caller(caller).between(from, to).
       without_status([CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED])
     result = result.from("call_attempts use index (index_call_attempts_on_campaign_id_created_at_status)") if campaign
-    result.sum('TIMESTAMPDIFF(SECOND ,tStartTime,tEndTime)').to_i
+    result.sum('tDuration').to_i
   end
 
   def self.time_in_wrapup(caller, campaign, from, to)
@@ -149,7 +149,7 @@ class CallAttempt < ActiveRecord::Base
     result = CallAttempt.for_campaign(campaign).for_caller(caller).between(from, to).
       without_status([CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED])
     result = result.from("call_attempts use index (index_call_attempts_on_campaign_id_created_at_status)") if campaign
-    result.sum('ceil(TIMESTAMPDIFF(SECOND ,tStartTime,tEndTime)/60)').to_i
+    result.sum('ceil(tDuration/60)').to_i
   end
 
   def call_not_connected?
@@ -157,10 +157,10 @@ class CallAttempt < ActiveRecord::Base
   end
 
   def call_time
-  ((tEndTime - tStartTime)/60).ceil
-  end  
-  
-  
+  (tDuration.to_f/60).ceil
+  end
+
+
   module Status
     VOICEMAIL = 'Message delivered'
     SUCCESS = 'Call completed with success.'
@@ -184,9 +184,9 @@ class CallAttempt < ActiveRecord::Base
   def redirect_caller
     unless caller_session_id.nil?
       enqueue_call_flow(RedirectCallerJob, [caller_session_id])
-    end    
+    end
   end
-  
+
   def end_caller_session
     unless caller_session_id.nil?
       caller_session.stop_calling
