@@ -21,7 +21,7 @@ class AccountUsage
 
   def callers_billable_usage
     caller_times = CallerSession.where("caller_id in (?)",@caller_ids).between(@from_date, @to_date).where("caller_type = 'Phone'").group("caller_id").sum('ceil(tDuration/60)')
-    lead_times = CallAttempt.where("caller_id in (?)",@caller_ids).between(@from_date, @to_date).group("caller_id").sum('ceil(tDuration)/60)')
+    lead_times = CallAttempt.where("caller_id in (?)",@caller_ids).between(@from_date, @to_date).group("caller_id").sum('ceil(tDuration/60)')
     total_times = {}
     @caller_ids.each do |caller_id|
       total_times[caller_id] = sanitize(caller_times[caller_id]).to_i + sanitize(lead_times[caller_id]).to_i
