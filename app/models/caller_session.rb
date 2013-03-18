@@ -162,10 +162,6 @@ class CallerSession < ActiveRecord::Base
       Twilio::Call.redirect(sid, account_out_of_funds_caller_url(caller, :host => DataCentre.call_back_host(data_centre), :port => Settings.twilio_callback_port, :protocol => "http://", session_id: id))
     end
   end
-<<<<<<< HEAD
-=======
-
->>>>>>> master
 
 
   def join_conference(mute_type)
@@ -177,7 +173,6 @@ class CallerSession < ActiveRecord::Base
     response
   end
 
-<<<<<<< HEAD
   def reassign_to_another_campaign(new_campaign_id)
     update_attribute(reassign_campaign: ReassignCampaign::YES)
     RedisReassignedCallerSession.set_campaign_id(self.id, new_campaign_id)
@@ -193,15 +188,6 @@ class CallerSession < ActiveRecord::Base
       update_attributes(reassign_campaign: ReassignCampaign::DONE, campaign_id: new_campaign_id)
       RedisReassignedCallerSession.del(self.id)
     end
-=======
-  def reassign_caller_session_to_campaign
-    old_campaign = self.campaign
-    update_attribute(:campaign, caller.campaign)
-  end
-
-  def caller_reassigned_to_another_campaign?
-    caller.campaign.id != self.campaign.id
->>>>>>> master
   end
 
 
@@ -220,7 +206,6 @@ class CallerSession < ActiveRecord::Base
      conference_sid = ""
      conference_sid = confs.class == Array ? confs.last['Sid'] : confs['Sid']
    end
-
 
    def self.time_logged_in(caller, campaign, from, to)
      CallerSession.for_caller(caller).on_campaign(campaign).between(from, to).sum('tDuration').to_i
