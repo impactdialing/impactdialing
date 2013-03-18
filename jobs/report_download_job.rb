@@ -3,7 +3,7 @@ require 'resque/errors'
 require Rails.root.join("jobs/heroku_resque_auto_scale")
 class ReportDownloadJob
   extend ::HerokuResqueAutoScale
-  @queue = :report_download
+  @queue = :upload_download
 
   class << self
 
@@ -18,17 +18,17 @@ class ReportDownloadJob
     end
 
     def after_perform_scale_down(*args)
-      HerokuResqueAutoScale::Scaler.workers('report_download',1) if HerokuResqueAutoScale::Scaler.working_job_count('report_download') == 1
+      HerokuResqueAutoScale::Scaler.workers('upload_download',1) if HerokuResqueAutoScale::Scaler.working_job_count('upload_download') == 1
     end
 
     def after_enqueue_scale_up(*args)
-      workers_to_scale = HerokuResqueAutoScale::Scaler.working_job_count('report_download') +
-        HerokuResqueAutoScale::Scaler.pending_job_count('report_download') -
-        HerokuResqueAutoScale::Scaler.worker_count('report_download')
+      workers_to_scale = HerokuResqueAutoScale::Scaler.working_job_count('upload_download') +
+        HerokuResqueAutoScale::Scaler.pending_job_count('upload_download') -
+        HerokuResqueAutoScale::Scaler.worker_count('upload_download')
 
-      if workers_to_scale > 0 && HerokuResqueAutoScale::Scaler.working_job_count('report_download') < 11
-        HerokuResqueAutoScale::Scaler.workers('report_download', (HerokuResqueAutoScale::Scaler.working_job_count('report_download') +
-                                                                  HerokuResqueAutoScale::Scaler.pending_job_count('report_download')))
+      if workers_to_scale > 0 && HerokuResqueAutoScale::Scaler.working_job_count('upload_download') < 11
+        HerokuResqueAutoScale::Scaler.workers('upload_download', (HerokuResqueAutoScale::Scaler.working_job_count('upload_download') +
+                                                                  HerokuResqueAutoScale::Scaler.pending_job_count('upload_download')))
       end
     end
 
