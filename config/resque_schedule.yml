@@ -1,11 +1,3 @@
-process_answered_attempts:
-  cron: "*/3 * * * *"
-  class: AnsweredJob
-  queue: answered_worker
-  args:
-  description: "This job processes answers and stores them in a relational schema"
-
-
 
 debit_money:
   cron: "* * * * *"
@@ -29,6 +21,12 @@ phantom_callers:
   args:
   description: "This job destroys phantom callers. BOOOOOOOM"
 
+process_answered_attempts:
+  cron: "*/3 * * * *"
+  class: AnsweredJob
+  queue: persist_jobs
+  args:
+  description: "This job processes answers and stores them in a relational schema"
 
 persist_calls:
   cron: "* * * * *"
