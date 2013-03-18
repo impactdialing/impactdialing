@@ -10,7 +10,7 @@ process_answered_attempts:
 debit_money:
   cron: "* * * * *"
   class: DebiterJob
-  queue: debit_worker
+  queue: background_worker
   args:
   description: "This job debits money"
 
