@@ -3,4 +3,9 @@ ImpactDialing.Routers.CampaignCaller = Backbone.Router.extend({
       "": "index"
   },
 
+initialize: function(){
+  this.campaign_call = new ImpactDialing.Models.CampaignCaller();
+
+  },
+
 });

@@ -56,8 +56,14 @@ class Script < ActiveRecord::Base
     end
   end
 
+  def questions_possible_responses
+    questions.as_json({})
+  end
+
+
   def as_json(options)
-    super((options || { })).merge({questions: questions, notes: notes, transfers: transfers}.as_json)
+    json = super options.merge(:include => [:notes, :transfers, :script_texts])
+    json.merge({questions: questions_possible_responses})
   end
 
 

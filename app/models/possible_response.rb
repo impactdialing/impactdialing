@@ -40,4 +40,8 @@ class PossibleResponse < ActiveRecord::Base
       answered_data.has_key?(question_id) ? (possible_responses[answered_data[question_id]] || "") : ""
     end
   end
+
+  def as_json
+    {id: id, question_id: question_id, value: value,  possible_response_order: possible_response_order}
+  end
 end

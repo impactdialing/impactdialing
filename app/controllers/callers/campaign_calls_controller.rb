@@ -1,8 +1,12 @@
 module Callers
   class CampaignCallsController < ::CallerController
-    respond_to :json
+    respond_to :json, :html
 
     def show
+
+    end
+
+    def script
       @campaign = @caller.campaign
       respond_with(@campaign.script)
     end
