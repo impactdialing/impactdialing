@@ -51,4 +51,9 @@ class Question < ActiveRecord::Base
     end
     texts
   end
+
+  def as_json(options)
+    {id: id, text: text, script_order: script_order, possible_responses: possible_responses}
+
+  end
 end
