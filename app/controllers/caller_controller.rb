@@ -93,7 +93,7 @@ class CallerController < ApplicationController
     caller = Caller.find(params[:id])
     caller_session = caller.caller_sessions.find(params[:session_id])
     if params[:voter_id].nil? || params[:voter_id].empty?
-      enqueue_call_flow(CallerPusherJob, [caller_session,  "publish_caller_conference_started"])
+      enqueue_call_flow(CallerPusherJob, [caller_session.id,  "publish_caller_conference_started"])
     else
       caller.calling_voter_preview_power(caller_session, params[:voter_id])
     end
