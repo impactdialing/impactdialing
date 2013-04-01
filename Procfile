@@ -9,6 +9,7 @@ simulator_worker: rake environment TERM_CHILD=1 RESQUE_TERM_TIMEOUT=10 resque:wo
 upload_download: rake environment resque:work TERM_CHILD=1 RESQUE_TERM_TIMEOUT=5 QUEUE=upload_download
 
 background_worker: rake environment resque:work QUEUE=background_worker
+debit_worker: rake environment resque:work QUEUE=debit_worker
 
 call_flow: bundle exec sidekiq -c 8 -q call_flow
 persist_worker: rake environment resque:work QUEUE=persist_jobs
