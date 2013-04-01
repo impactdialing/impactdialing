@@ -4,14 +4,14 @@ class CallerController < ApplicationController
   skip_before_filter :verify_authenticity_token, :only =>[:check_reassign, :call_voter, :start_calling, :stop_calling,
      :end_session, :skip_voter, :ready_to_call, :continue_conf, :pause, :run_out_of_numbers, :callin_choice, :read_instruction_options, :conference_started_phones_only_preview, :conference_started_phones_only_power, :conference_started_phones_only_predictive,
      :gather_response, :submit_response, :next_question, :next_call, :time_period_exceeded, :account_out_of_funds, :datacentre, :kick_caller_off_conference]
-  
-  before_filter :check_login, :except=>[:login, :feedback, :end_session, :start_calling, :phones_only, :new_campaign_response_panel, :check_reassign, :call_voter, 
+
+  before_filter :check_login, :except=>[:login, :feedback, :end_session, :start_calling, :phones_only, :new_campaign_response_panel, :check_reassign, :call_voter,
     :ready_to_call, :continue_conf, :pause, :run_out_of_numbers, :callin_choice, :read_instruction_options, :conference_started_phones_only_preview, :conference_started_phones_only_power, :conference_started_phones_only_predictive,
     :gather_response, :submit_response, :next_question, :next_call, :time_period_exceeded, :account_out_of_funds, :datacentre, :kick_caller_off_conference]
-    
+
   before_filter :find_caller_session , :only => [:pause, :stop_calling, :ready_to_call, :continue_conf, :pause, :run_out_of_numbers, :callin_choice, :read_instruction_options, :conference_started_phones_only_preview, :conference_started_phones_only_power, :conference_started_phones_only_predictive,
     :gather_response, :submit_response, :next_question, :next_call, :time_period_exceeded, :account_out_of_funds]
-    
+
   before_filter :find_session, :only => [:end_session]
   layout 'caller'
 
@@ -22,76 +22,74 @@ class CallerController < ApplicationController
     session = caller.create_caller_session(identity.session_key, params[:CallSid], CallerSession::CallerType::TWILIO_CLIENT)
     load_caller_session = CallerSession.find_by_id_cached(session.id)
     caller.started_calling(load_caller_session)
-    RedisDataCentre.set_datacentres_used(load_caller_session.campaign_id, DataCentre.code(params[:caller_dc]))    
+    RedisDataCentre.set_datacentres_used(load_caller_session.campaign_id, DataCentre.code(params[:caller_dc]))
     render xml: load_caller_session.start_conf
   end
-  
+
   def ready_to_call
     RedisDataCentre.set_datacentres_used(@caller_session.campaign_id, DataCentre.code(params[:caller_dc]))
     render xml: @caller_session.ready_to_call(DataCentre.code(params[:caller_dc]))
   end
-  
+
   def continue_conf
     render xml: @caller_session.continue_conf
   end
-  
+
   def pause
     render xml: @caller_session.pause
   end
-  
+
   def run_out_of_numbers
     render xml: @caller_session.campaign_out_of_phone_numbers
   end
-  
+
   def callin_choice
     render xml: @caller_session.callin_choice
   end
-  
+
   def read_instruction_options
     render xml: @caller_session.read_choice
   end
-  
+
   def conference_started_phones_only_preview
     render xml: @caller_session.conference_started_phones_only_preview
   end
-  
+
   def conference_started_phones_only_power
     render xml: @caller_session.conference_started_phones_only_power
   end
-  
+
   def conference_started_phones_only_predictive
     render xml: @caller_session.conference_started_phones_only_predictive
   end
-  
+
   def gather_response
     render xml: @caller_session.gather_response
   end
-  
+
   def submit_response
     render xml: @caller_session.submit_response
   end
-  
+
   def next_question
     render xml: @caller_session.next_question
   end
-  
+
   def next_call
     render xml: @caller_session.next_call
   end
-  
+
   def time_period_exceeded
     render xml: @caller_session.time_period_exceeded
   end
-  
+
   def account_out_of_funds
     render xml: @caller_session.account_has_no_funds
   end
-  
-
 
   def call_voter
     caller = Caller.find(params[:id])
-    caller_session = caller.caller_sessions.find(params[:session_id]) 
+    caller_session = caller.caller_sessions.find(params[:session_id])
     caller.calling_voter_preview_power(caller_session, params[:voter_id])
     render :nothing => true
   end
@@ -102,7 +100,7 @@ class CallerController < ApplicationController
   end
 
   def end_session
-    unless @caller_session.nil?      
+    unless @caller_session.nil?
       render xml: @caller_session.conference_ended
     else
       render xml: Twilio::Verb.hangup
@@ -191,7 +189,7 @@ class CallerController < ApplicationController
     Postoffice.feedback(params[:issue]).deliver
     render :text=> "var x='ok';"
   end
-  
+
   def find_session
     @caller_session = CallerSession.find_by_sid_cached(params[:CallSid])
   end
