@@ -1,8 +1,6 @@
-require 'resque/plugins/lock'
 require 'resque-loner'
 
 class DebiterJob
-  extend Resque::Plugins::Lock
   include Resque::Plugins::UniqueJob
   @queue = :background_worker
 
