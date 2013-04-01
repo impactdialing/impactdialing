@@ -1,11 +1,9 @@
-
 debit_money:
   cron: "* * * * *"
   class: DebiterJob
-  queue: background_worker
+  queue: debit_worker
   args:
   description: "This job debits money"
-
 
 alert:
   cron: "*/2 * * * *"
