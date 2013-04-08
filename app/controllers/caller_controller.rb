@@ -1,7 +1,7 @@
 class CallerController < ApplicationController
   include SidekiqEvents
   layout "caller"
-  skip_before_filter :verify_authenticity_token, :only =>[:check_reassign, :call_voter, :start_calling, :stop_calling,
+  skip_before_filter :verify_authenticity_token, :only =>[:check_reassign, :call_voter, :start_calling, :stop_calling, :token,
      :end_session, :skip_voter, :ready_to_call, :continue_conf, :pause, :run_out_of_numbers, :callin_choice, :read_instruction_options, :conference_started_phones_only_preview, :conference_started_phones_only_power, :conference_started_phones_only_predictive,
      :gather_response, :submit_response, :next_question, :next_call, :time_period_exceeded, :account_out_of_funds, :datacentre, :kick_caller_off_conference]
 

@@ -5,12 +5,44 @@
 
 <% content_for :javascripts do %>
     <%= javascript_include_tag("https://d3dy5gmtp8yhk7.cloudfront.net/1.12/pusher.min.js") %>
+    <%= javascript_include_tag "https://static.twilio.com/libs/twiliojs/1.1/twilio.min.js" %>
     <%= javascript_include_tag 'orderable', 'ICanHaz.min.js', 'jquery.form.js', 'flash_detect_min.js' , 'browser_detect.js','date.js',"underscore-min", "mustache", 'backbone', 'impactdialing',"models/caller_script.js", "views/caller_script.js" %>
 <% end %>
 
 <% content_for :javascripts do %>
   <script type="text/javascript">
     $(function() {
+      $.ajax({
+        type: 'POST',
+        url: "/callers/campaign_calls/token",
+        dataType: "json",
+        beforeSend: function(request)
+        {
+          var token = $("meta[name='csrf-token']").attr("content");
+          request.setRequestHeader("X-CSRF-Token", token);
+        },
+        success: function(data){
+          $("#callin").show();
+          $("#callin-number").html(data.phone_number);
+          $("#callin-pin").html(data.caller_identity.pin);
+          if (!FlashDetect.installed || !flash_supported())
+            $("#start_calling").hide();
+            Twilio.Device.setup(data.twilio_token, {'debug':true});
+            Twilio.Device.connect(function (conn) {});
+            Twilio.Device.ready(function (device) {
+              client_ready=true;
+            });
+            Twilio.Device.error(function (error) {
+              alert(error.message);
+            });
+          console.log(data)
+        },
+        error: function(jqXHR, textStatus, errorThrown){
+          $("#caller-alert p strong").html(jqXHR["responseText"]);
+          $("#caller-alert").addClass("callout alert clearfix")
+        },
+      });
+
         var caller_script = new ImpactDialing.Models.CallerScript();
         var script_view  = new ImpactDialing.Views.CallerScript({model: caller_script});
         caller_script.fetch({success: function(){
@@ -20,6 +52,20 @@
       });
   </script>
 <% end %>
+<%= render 'shared/browser_test' %>
+<div id="caller-alert">
+  <p><strong></strong></p>
+</div>
+<form>
+  <fieldset>
+      <legend>Lead information</legend>
+      <div id="voter_info_message" class="rt">
+        <em>When connected, lead information will appear here.</em>
+      </div>
+      <ul id="voter_info" class="clearfix"></ul>
+  </fieldset>
+</form>
+
 <form id="voter_responses" method="post">
 
 </form>
@@ -50,4 +96,21 @@
     </p>
   </fieldset>
 </script>
-</form>
+
+ <div id="callin" style="display:none">
+    <div id="start_calling" >
+      <p><b>If your computer has a mic, click here:</b></p>
+        <a class="action primary" href="#" onclick="javascript:goclient();">Start calling</a>
+      </div>
+    <br>
+
+    <div id="callin_data">
+      <p>
+        <b>If you don't have a mic, use a phone:</b><br>
+        Dial-in number: <span id="callin-number"></span><br>
+        PIN: <span id="callin-pin"></span>
+      </p>
+    </div>
+
+ </div>
+
