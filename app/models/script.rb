@@ -57,7 +57,7 @@ class Script < ActiveRecord::Base
   end
 
   def questions_possible_responses
-    questions.as_json({})
+    questions.as_json({root: false})
   end
 
 

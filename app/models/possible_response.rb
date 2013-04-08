@@ -41,7 +41,4 @@ class PossibleResponse < ActiveRecord::Base
     end
   end
 
-  def as_json
-    {id: id, question_id: question_id, value: value,  possible_response_order: possible_response_order}
-  end
 end

@@ -53,7 +53,7 @@ class Question < ActiveRecord::Base
   end
 
   def as_json(options)
-    {id: id, text: text, script_order: script_order, possible_responses: possible_responses}
-
+    {id: id, text: text, script_order: script_order, external_id_field: external_id_field, script_id: script_id,
+      possible_responses: possible_responses.as_json({root: false})}
   end
 end
