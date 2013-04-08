@@ -58,7 +58,6 @@ describe Client::QuestionsController do
       active_script = Factory(:script, :account => account, :active => true)
       post :create, script_id: active_script.id, question: {text: "Hi", script_order: 1},  :api_key=> 'abc123', :format => "json"
       response.body.should eq "{\"id\":#{active_script.questions.first.id},\"text\":\"Hi\",\"script_order\":1,\"external_id_field\":null,\"script_id\":#{active_script.id},\"possible_responses\":[]}"
-      # response.body.should match(/{\"question\":{\"external_id_field\":null,\"id\":(.*),\"script_id\":#{active_script.id},\"script_order\":1,\"text\":\"Hi\"}}/)
     end
 
     it "should throw validation error" do

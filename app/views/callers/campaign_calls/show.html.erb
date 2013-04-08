@@ -14,7 +14,7 @@
         var caller_script = new ImpactDialing.Models.CallerScript();
         var script_view  = new ImpactDialing.Views.CallerScript({model: caller_script});
         caller_script.fetch({success: function(){
-          $("#voter_responses").html(script_view.render());
+          $("#voter_responses").html(script_view.render().el);
         }});
 
       });
@@ -23,23 +23,29 @@
 <form id="voter_responses" method="post">
 
 </form>
-<script type="javascript/template" id="caller-campaign-script-text-template">
+<script type="javascript/html" id="caller-campaign-script-text-template">
   <fieldset class="script_element">
     {{content}}
   </fieldset>
 </script>
 
-<script type="javascript/template" id="caller-campaign-script-question-template">
+<script type="javascript/hrml" id="caller-campaign-script-question-template">
   <fieldset class="script_element">
     <p>
       <label>{{text}}</label><br/>
+      <select id="question_{{id}}" name="question[{{id}}]">
+        {{#possible_responses}}
+          <option value="{{id}}">{{value}}</option>
+        {{/possible_responses}}
+      </select>
+
     </p>
   </fieldset>
 </script>
 
-<script type="javascript/template" id="caller-campaign-script-notes-template">
+<script type="javascript/html" id="caller-campaign-script-notes-template">
   <fieldset class="script_element">
-    <p><label>{{text}}</label><br/>
+    <p><label>{{note}}</label><br/>
       <input type="text" id="note_response_{{id}}" name="notes[{{id}}]" class="note_text"/>
     </p>
   </fieldset>
