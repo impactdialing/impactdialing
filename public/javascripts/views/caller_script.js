@@ -26,6 +26,7 @@ ImpactDialing.Views.CallerScript = Backbone.View.extend({
 
   initialize: function(){
     this.model.on('reset', this.render);
+
   },
 
   parseScriptElements: function(){
