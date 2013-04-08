@@ -1,5 +1,6 @@
 module Callers
   class CampaignCallsController < ::CallerController
+    include ActionView::Helpers::NumberHelper
     respond_to :json, :html
 
     def show
@@ -12,8 +13,9 @@ module Callers
     end
 
     def token
+      @campaign = @caller.campaign
       unless @caller.account.activated?
-        render json: "Your account is not funded. Please contact your account administrator."
+        render :json => "Your account is not funded. Please contact your account administrator.", :status => 422
         return
       end
       if @campaign.time_period_exceeded?
@@ -25,7 +27,7 @@ module Callers
       twilio_capability = Twilio::Util::Capability.new(TWILIO_ACCOUNT, TWILIO_AUTH)
       twilio_capability.allow_client_outgoing(TWILIO_APP_SID)
       render json: @caller_identity.as_json.merge({twilio_token: twilio_capability.generate,
-       phone_number: Settings.callin_phone})
+       phone_number: number_to_phone(Settings.callin_phone, :area_code => true)})
     end
 
   end
