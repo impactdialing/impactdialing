@@ -3,7 +3,7 @@ require 'resque-loner'
 
 class AnsweredJob
   include Resque::Plugins::UniqueJob
-  @queue = :answered_worker_job
+  @queue = :persist_jobs
 
    def self.perform
     ActiveRecord::Base.verify_active_connections!

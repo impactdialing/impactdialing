@@ -1,5 +1,5 @@
 class AdminReportJob
-  @queue = :report_download
+  @queue = :upload_download
 
   class << self
     def prepare_date(date)
@@ -11,7 +11,7 @@ class AdminReportJob
       @from_date = Time.zone.parse(from).utc
       @to_date = Time.zone.parse(to).utc
       columns = ['account_id', 'email', 'totals']
-      output = [] 
+      output = []
       Octopus.using(:simulator_slave) do
         account_ids = CallerSession.joins(:campaign).
           where(["caller_sessions.created_at > ? AND caller_sessions.created_at < ?", prepare_date(@from_date), prepare_date(@to_date + 1.day)]).

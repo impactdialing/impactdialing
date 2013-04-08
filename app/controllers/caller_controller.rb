@@ -90,7 +90,11 @@ class CallerController < ApplicationController
   def call_voter
     caller = Caller.find(params[:id])
     caller_session = caller.caller_sessions.find(params[:session_id])
-    caller.calling_voter_preview_power(caller_session, params[:voter_id])
+    if params[:voter_id].nil? || params[:voter_id].empty?
+      enqueue_call_flow(CallerPusherJob, [caller_session.id,  "publish_caller_conference_started"])
+    else
+      caller.calling_voter_preview_power(caller_session, params[:voter_id])
+    end
     render :nothing => true
   end
 
@@ -146,7 +150,7 @@ class CallerController < ApplicationController
         flash_now(:error, "Your account has been deleted.")
       else
         session[:caller]= @caller.id
-        redirect_to callers_campaign_path(@caller.campaign)
+        redirect_to callers_campaign_call_path(@caller.campaign)
       end
     end
   end
