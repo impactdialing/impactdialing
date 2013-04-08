@@ -6,43 +6,15 @@
 <% content_for :javascripts do %>
     <%= javascript_include_tag("https://d3dy5gmtp8yhk7.cloudfront.net/1.12/pusher.min.js") %>
     <%= javascript_include_tag "https://static.twilio.com/libs/twiliojs/1.1/twilio.min.js" %>
-    <%= javascript_include_tag 'orderable', 'ICanHaz.min.js', 'jquery.form.js', 'flash_detect_min.js' , 'browser_detect.js','date.js',"underscore-min", "mustache", 'backbone', 'impactdialing',"models/caller_script.js", "views/caller_script.js" %>
+    <%= javascript_include_tag 'orderable', 'ICanHaz.min.js', 'jquery.form.js', 'flash_detect_min.js' , 'browser_detect.js','date.js',"underscore-min", "mustache", 'backbone', 'impactdialing',"models/caller_script.js",
+      "views/caller_script.js", "callers/campaign_call.js" %>
 <% end %>
 
 <% content_for :javascripts do %>
   <script type="text/javascript">
     $(function() {
-      $.ajax({
-        type: 'POST',
-        url: "/callers/campaign_calls/token",
-        dataType: "json",
-        beforeSend: function(request)
-        {
-          var token = $("meta[name='csrf-token']").attr("content");
-          request.setRequestHeader("X-CSRF-Token", token);
-        },
-        success: function(data){
-          $("#callin").show();
-          $("#callin-number").html(data.phone_number);
-          $("#callin-pin").html(data.caller_identity.pin);
-          if (!FlashDetect.installed || !flash_supported())
-            $("#start_calling").hide();
-            Twilio.Device.setup(data.twilio_token, {'debug':true});
-            Twilio.Device.connect(function (conn) {});
-            Twilio.Device.ready(function (device) {
-              client_ready=true;
-            });
-            Twilio.Device.error(function (error) {
-              alert(error.message);
-            });
-          console.log(data)
-        },
-        error: function(jqXHR, textStatus, errorThrown){
-          $("#caller-alert p strong").html(jqXHR["responseText"]);
-          $("#caller-alert").addClass("callout alert clearfix")
-        },
-      });
-
+        var campaign_call = new CampaignCall();
+        campaign_call.token();
         var caller_script = new ImpactDialing.Models.CallerScript();
         var script_view  = new ImpactDialing.Views.CallerScript({model: caller_script});
         caller_script.fetch({success: function(){
