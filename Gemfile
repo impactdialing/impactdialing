@@ -49,6 +49,7 @@ gem "sinatra", "~>1.3.3"
 gem "dalli", "~>2.3.0"
 gem "mandrill-api", "~>1.0.13"
 gem "sidekiq-failures", "~> 0.1.0"
+gem "lograge", "~>0.2.0"
 
 
 group :development, :test do
