@@ -69,6 +69,25 @@
   </fieldset>
 </script>
 
+<script type="javascript/html" id="caller-campaign-script-transfer-template">
+  <fieldset>
+      <legend>Transfer</legend>
+      <input type="hidden" id="transfer_type" name="transfer_type" >
+      <form id="transfer_form" method="post" action="">
+        <select id="transfer_id" name="transfer[id]">
+
+        </select>
+        <%= select( "transfer", "id",@campaign.script.transfers.collect{|transfer| [transfer.label + " - "+ transfer.phone_number  ,transfer.id]}) %>
+        <div class= "buttons">
+            <button type="submit" id="transfer_button" style="margin-top:10px" onclick="javascript:transfer_call();">Transfer</button>
+        </div>
+      </form>
+    </fieldset>
+</script>
+
+
+
+
  <div id="callin" style="display:none">
     <div id="start_calling" >
       <p><b>If your computer has a mic, click here:</b></p>
