@@ -75,9 +75,10 @@
       <input type="hidden" id="transfer_type" name="transfer_type" >
       <form id="transfer_form" method="post" action="">
         <select id="transfer_id" name="transfer[id]">
-
+          {{#transfers}}
+          <option value="{{id}}">{{label}}-{{phone_number}}</option>
+          {{/transfers}}
         </select>
-        <%= select( "transfer", "id",@campaign.script.transfers.collect{|transfer| [transfer.label + " - "+ transfer.phone_number  ,transfer.id]}) %>
         <div class= "buttons">
             <button type="submit" id="transfer_button" style="margin-top:10px" onclick="javascript:transfer_call();">Transfer</button>
         </div>
