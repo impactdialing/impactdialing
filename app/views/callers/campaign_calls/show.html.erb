@@ -7,14 +7,14 @@
     <%= javascript_include_tag("https://d3dy5gmtp8yhk7.cloudfront.net/1.12/pusher.min.js") %>
     <%= javascript_include_tag "https://static.twilio.com/libs/twiliojs/1.1/twilio.min.js" %>
     <%= javascript_include_tag 'orderable', 'ICanHaz.min.js', 'jquery.form.js', 'flash_detect_min.js' , 'browser_detect.js','date.js',"underscore-min", "mustache", 'backbone', 'impactdialing',"models/caller_script.js",
-      "views/caller_script.js", "callers/campaign_call.js" %>
+      "views/caller_script.js", "views/caller_actions.js" %>
 <% end %>
 
 <% content_for :javascripts do %>
   <script type="text/javascript">
     $(function() {
-        var campaign_call = new CampaignCall();
-        campaign_call.token();
+        var caller_actions = new ImpactDialing.Views.CallerActions();
+        $("#caller-actions").html(caller_actions.render().el);
         var caller_script = new ImpactDialing.Models.CallerScript();
         var script_view  = new ImpactDialing.Views.CallerScript({model: caller_script});
         caller_script.fetch({success: function(){
@@ -34,7 +34,51 @@
       <div id="voter_info_message" class="rt">
         <em>When connected, lead information will appear here.</em>
       </div>
-      <ul id="voter_info" class="clearfix"></ul>
+      <ul id="voter_info" class="clearfix">
+       <script type="javascript/html" id="caller-campaign-script-voter-info-template">
+          {{#fields}}
+            {{#ID_flag}}
+              <li>ID: <b>{{CustomID}}</b></li>
+            {{/ID_flag}}
+            {{#FirstName_flag}}
+              <li>First name: <b>{{FirstName}}</b></li>
+            {{/FirstName_flag}}
+            {{#MiddleName_flag}}
+              <li>Middle name: <b>{{MiddleName}}</b></li>
+            {{/MiddleName_flag}}
+            {{#LastName_flag}}
+              <li>Last name: <b>{{LastName}}</b></li>
+            {{/LastName_flag}}
+            {{#Suffix_flag}}
+              <li>Suffix: <b>{{Suffix}}</b></li>
+            {{/Suffix_flag}}
+            {{#Address_flag}}
+              <li>Address: <b>{{address}}</b></li>
+            {{/Address_flag}}
+            {{#City_flag}}
+              <li>City: <b>{{city}}</b></li>
+            {{/City_flag}}
+            {{#State/Province_flag}}
+              <li>State/Province: <b>{{state}}</b></li>
+            {{/State/Province_flag}}
+            {{#Zip/Postal Code_flag}}
+              <li>Zip/Postal Code: <b>{{zip_code}}</b></li>
+            {{/Zip/Postal Code_flag}}
+            {{#Country_flag}}
+              <li>Country: <b>{{country}}</b></li>
+            {{/Country_flag}}
+            {{#Phone_flag}}
+              <li>Phone: <b>{{Phone}}</b></li>
+            {{/Phone_flag}}
+            {{#Email_flag}}
+              <li>Email: <b>{{Email}}</b></li>
+            {{/Email_flag}}
+        {{/fields}}
+        {{#custom_field_list}}
+          <li>{{name}}: <b>{{value}}</b></li>
+        {{/custom_field_list}}
+    </script>
+      </ul>
   </fieldset>
 </form>
 
@@ -86,13 +130,14 @@
     </fieldset>
 </script>
 
+<div id="caller-actions">
+</div>
 
-
-
- <div id="callin" style="display:none">
+<script type="javascript/html" id="caller-campaign-action-template">
+  <div id="callin" style="display:none">
     <div id="start_calling" >
       <p><b>If your computer has a mic, click here:</b></p>
-        <a class="action primary" href="#" onclick="javascript:goclient();">Start calling</a>
+        <a class="action primary" href="#" id="start-calling">Start calling</a>
       </div>
     <br>
 
@@ -103,6 +148,11 @@
         PIN: <span id="callin-pin"></span>
       </p>
     </div>
-
  </div>
+
+</script>
+
+
+
+
 
