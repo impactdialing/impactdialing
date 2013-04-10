@@ -30,6 +30,14 @@ ImpactDialing.Views.CallerTransfer = Backbone.View.extend({
 
 });
 
+ImpactDialing.Views.VoterInfo = Backbone.View.extend({
+  render: function (ele) {
+    $(this.el).html(Mustache.to_html($('#caller-campaign-script-transfer-template').html(), ele));
+    return this;
+  },
+
+});
+
 
 ImpactDialing.Views.CallerScript = Backbone.View.extend({
 
@@ -68,16 +76,10 @@ ImpactDialing.Views.CallerScript = Backbone.View.extend({
       }else{
         $(self.el).append(new ImpactDialing.Views.CallerNotes().render(ele).el);
       }
-
-
-
     });
     if(this.model){
-      console.log(this.model.toJSON())
       $(self.el).append(new ImpactDialing.Views.CallerTransfer().render(this.model.toJSON()).el);
-
-      }
-
+    }
     return this;
   },
 
