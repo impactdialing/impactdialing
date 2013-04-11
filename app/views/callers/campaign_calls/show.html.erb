@@ -6,15 +6,16 @@
 <% content_for :javascripts do %>
     <%= javascript_include_tag("https://d3dy5gmtp8yhk7.cloudfront.net/1.12/pusher.min.js") %>
     <%= javascript_include_tag "https://static.twilio.com/libs/twiliojs/1.1/twilio.min.js" %>
-    <%= javascript_include_tag 'orderable', 'ICanHaz.min.js', 'jquery.form.js', 'flash_detect_min.js' , 'browser_detect.js','date.js',"underscore-min", "mustache", 'backbone', 'impactdialing',"models/caller_script.js",
-      "views/caller_script.js", "views/caller_actions.js" %>
+    <%= javascript_include_tag  'jquery.form.js', 'flash_detect_min.js' , 'browser_detect.js','date.js',"underscore-min",
+      "mustache", 'backbone', 'impactdialing',"models/caller_script.js",
+      "models/caller_session.js", "views/caller_script.js", "views/start_calling.js", "views/caller_actions.js" %>
 <% end %>
 
 <% content_for :javascripts do %>
   <script type="text/javascript">
     $(function() {
-        var caller_actions = new ImpactDialing.Views.CallerActions();
-        $("#caller-actions").html(caller_actions.render().el);
+        var start_calling = new ImpactDialing.Views.StartCalling();
+        $("#caller-actions").html(start_calling.render().el);
         var caller_script = new ImpactDialing.Models.CallerScript();
         var script_view  = new ImpactDialing.Views.CallerScript({model: caller_script});
         caller_script.fetch({success: function(){
@@ -129,11 +130,24 @@
       </form>
     </fieldset>
 </script>
-
 <div id="caller-actions">
 </div>
 
 <script type="javascript/html" id="caller-campaign-action-template">
+  <div id="statusdiv" style="float:right">Status: Not connected.</div>
+  <div id="actions" class="actions">
+    <a id= "call_voter" href="javascript:call_voter();" class="action secondary hide" onclick="javascript:ie8();">Dial</a>
+    <a id= "skip_voter" href="javascript:next_voter();" class="action secondary hide" onclick="javascript:ie8();">Skip</a>
+    <a id= "stop_calling" href="javascript:disconnect_caller();" class="action secondary hide" onclick="javascript:ie8();">Stop calling</a>
+    <a id= "hangup_call" href="javascript:disconnect_voter();" class="action secondary hide" onclick="javascript:ie8();">Hang up</a>
+    <a id= "kick_self_out_of_conference" href="javascript:kick_caller_off();" class="action secondary hide" onclick="javascript:ie8();">Hang up</a>
+    <a id= "submit_and_keep_call" href="javascript:send_voter_response();" class="action secondary hide" onclick="javascript:ie8();">Submit and keep calling</a>
+    <a id= "submit_and_stop_call" href="javascript:send_voter_response_and_disconnect();" class="action secondary hide" onclick="javascript:ie8();">Submit and stop calling</a>
+  </div>
+</script>
+
+
+<script type="javascript/html" id="caller-campaign-start-calling-template">
   <div id="callin" style="display:none">
     <div id="start_calling" >
       <p><b>If your computer has a mic, click here:</b></p>
