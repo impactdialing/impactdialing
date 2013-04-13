@@ -6,6 +6,7 @@ module CallerEvents
   module InstanceMethods
 
     def publish_start_calling
+        puts session_key
         publish_sync('start_calling', {caller_session_id: id})
     end
 
@@ -35,10 +36,10 @@ module CallerEvents
     end
 
     def publish_caller_disconnected
-      Pusher[session_key].trigger!("caller_disconnected", {}) unless caller.is_phones_only?
+      Pusher[session_key].trigger!("caller_disconnected", {pusher_key: Pusher.key}) unless caller.is_phones_only?
     end
 
-    def publish_caller_disconnected
+    def publish_caller_reassigned
       Pusher[session_key].trigger!("caller_reassigned", {}) unless caller.is_phones_only?
     end
 

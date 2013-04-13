@@ -7,21 +7,18 @@
     <%= javascript_include_tag("https://d3dy5gmtp8yhk7.cloudfront.net/1.12/pusher.min.js") %>
     <%= javascript_include_tag "https://static.twilio.com/libs/twiliojs/1.1/twilio.min.js" %>
     <%= javascript_include_tag  'jquery.form.js', 'flash_detect_min.js' , 'browser_detect.js','date.js',"underscore-min",
-      "mustache", 'backbone', 'impactdialing',"models/caller_script.js",
+      "mustache", 'backbone', 'impactdialing', "models/campaign_call.js", "views/campaign_call.js",
+      "models/caller_script.js", "models/voter.js",
       "models/caller_session.js", "views/caller_script.js", "views/start_calling.js", "views/caller_actions.js" %>
 <% end %>
 
 <% content_for :javascripts do %>
   <script type="text/javascript">
     $(function() {
-        var start_calling = new ImpactDialing.Views.StartCalling();
-        $("#caller-actions").html(start_calling.render().el);
-        var caller_script = new ImpactDialing.Models.CallerScript();
-        var script_view  = new ImpactDialing.Views.CallerScript({model: caller_script});
-        caller_script.fetch({success: function(){
-          $("#voter_responses").html(script_view.render().el);
-        }});
-
+        var campaign_call = new ImpactDialing.Models.CampaignCall();
+        campaign_call.set({pusher_key: '<%= Pusher.key %>'});
+        var campaign_call_view = new ImpactDialing.Views.CampaignCall({model: campaign_call});
+        campaign_call_view.render();
       });
   </script>
 <% end %>
@@ -138,7 +135,7 @@
   <div id="actions" class="actions">
     <a id= "call_voter" href="javascript:call_voter();" class="action secondary hide" onclick="javascript:ie8();">Dial</a>
     <a id= "skip_voter" href="javascript:next_voter();" class="action secondary hide" onclick="javascript:ie8();">Skip</a>
-    <a id= "stop_calling" href="javascript:disconnect_caller();" class="action secondary hide" onclick="javascript:ie8();">Stop calling</a>
+    <a id= "stop_calling" class="action secondary hide">Stop calling</a>
     <a id= "hangup_call" href="javascript:disconnect_voter();" class="action secondary hide" onclick="javascript:ie8();">Hang up</a>
     <a id= "kick_self_out_of_conference" href="javascript:kick_caller_off();" class="action secondary hide" onclick="javascript:ie8();">Hang up</a>
     <a id= "submit_and_keep_call" href="javascript:send_voter_response();" class="action secondary hide" onclick="javascript:ie8();">Submit and keep calling</a>

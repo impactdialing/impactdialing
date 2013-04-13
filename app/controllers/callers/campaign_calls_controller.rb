@@ -26,7 +26,7 @@ module Callers
       @caller_identity = @caller.create_caller_identity(generate_session_key)
       twilio_capability = Twilio::Util::Capability.new(TWILIO_ACCOUNT, TWILIO_AUTH)
       twilio_capability.allow_client_outgoing(TWILIO_APP_SID)
-      render json: @caller_identity.as_json.merge({twilio_token: twilio_capability.generate,
+      render json: @caller_identity.as_json({root: false}).merge({twilio_token: twilio_capability.generate,
        phone_number: number_to_phone(Settings.callin_phone, :area_code => true), campaign_id: @campaign.id})
     end
 
