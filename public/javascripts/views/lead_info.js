@@ -1,12 +1,7 @@
 ImpactDialing.Views.LeadInfo = Backbone.View.extend({
-  template: '#lead-info-template'
-
   render: function () {
-    $(this.el).html(Mustache.to_html($('#lead-info-template').html(), _.extend(this.model.toJSON(),
-      {reassignable_campaigns: this.options.reassignable_campaigns})));
+    $(this.el).html(Mustache.to_html($('#caller-campaign-script-lead-info-template').html(), this.model.toJSON()));
     return this;
   },
-
-
 
 });
