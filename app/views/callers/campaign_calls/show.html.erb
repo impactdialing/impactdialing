@@ -33,7 +33,11 @@
         <em>When connected, lead information will appear here.</em>
       </div>
       <ul id="voter_info" class="clearfix">
-       <script type="javascript/html" id="caller-campaign-script-lead-info-template">
+      </ul>
+
+  </fieldset>
+</form>
+ <script type="javascript/html" id="caller-campaign-script-lead-info-template">
           {{#fields}}
             {{#ID_flag}}
               <li>ID: <b>{{CustomID}}</b></li>
@@ -76,9 +80,6 @@
           <li>{{name}}: <b>{{value}}</b></li>
         {{/custom_field_list}}
     </script>
-      </ul>
-  </fieldset>
-</form>
 
 <form id="voter_responses" method="post">
 
@@ -112,7 +113,7 @@
 </script>
 
 <script type="javascript/html" id="caller-campaign-script-transfer-template">
-  <fieldset>
+  <fieldset id="transfer-calls">
       <legend>Transfer</legend>
       <input type="hidden" id="transfer_type" name="transfer_type" >
       <form id="transfer_form" method="post" action="">
@@ -133,13 +134,13 @@
 <script type="javascript/html" id="caller-campaign-action-template">
   <div id="statusdiv" style="float:right">Status: Not connected.</div>
   <div id="actions" class="actions">
-    <a id= "call_voter" href="javascript:call_voter();" class="action secondary hide" onclick="javascript:ie8();">Dial</a>
+    <a id= "call_voter" href="#" class="action secondary hide">Dial</a>
     <a id= "skip_voter" href="javascript:next_voter();" class="action secondary hide" onclick="javascript:ie8();">Skip</a>
-    <a id= "stop_calling" class="action secondary hide">Stop calling</a>
-    <a id= "hangup_call" href="javascript:disconnect_voter();" class="action secondary hide" onclick="javascript:ie8();">Hang up</a>
+    <a id= "stop_calling" href="#" class="action secondary hide">Stop calling</a>
+    <a id= "hangup_call" href="#" class="action secondary hide">Hang up</a>
     <a id= "kick_self_out_of_conference" href="javascript:kick_caller_off();" class="action secondary hide" onclick="javascript:ie8();">Hang up</a>
-    <a id= "submit_and_keep_call" href="javascript:send_voter_response();" class="action secondary hide" onclick="javascript:ie8();">Submit and keep calling</a>
-    <a id= "submit_and_stop_call" href="javascript:send_voter_response_and_disconnect();" class="action secondary hide" onclick="javascript:ie8();">Submit and stop calling</a>
+    <a id= "submit_and_keep_call" href="#" class="action secondary hide">Submit and keep calling</a>
+    <a id= "submit_and_stop_call" href="#" class="action secondary hide" >Submit and stop calling</a>
   </div>
 </script>
 
