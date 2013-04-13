@@ -79,17 +79,19 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
 
     this.channel.bind('conference_started', function(data) {
       self.lead_info.set(data)
-
       var lead_info_view = new ImpactDialing.Views.LeadInfo({model: self.lead_info})
       $("#voter_info_message").empty();
       $("#voter_info").html(lead_info_view.render().el);
-      // self.caller_actions.conference_started();
+      self.caller_actions.conferenceStarted(self.lead_info);
     });
 
     this.channel.bind('calling_voter', function(data) {
+      self.caller_actions.callingVoter();
     });
 
     this.channel.bind('voter_connected', function(data) {
+      self.model.set("call_id", data.call_id);
+
     });
 
     this.channel.bind('voter_connected_dialer', function(data) {
