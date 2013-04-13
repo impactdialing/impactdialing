@@ -10,7 +10,8 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     "click #hangup_call": "disconnectVoter",
     "click #call_voter": "callVoter",
     "click #submit_and_keep_call": "sendVoterResponse",
-    "click #submit_and_stop_call": "sendVoterResponseAndDisconnect"
+    "click #submit_and_stop_call": "sendVoterResponseAndDisconnect",
+    "click #skip_voter" : "nextVoter"
 
   },
 
@@ -139,6 +140,16 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
         url : "/calls/" + self.model.get("call_id") + "/hangup",
         type : "POST"
     });
+  },
+
+  nextVoter: function() {
+    var self = this;
+    $.ajax({
+        url : "/caller/" + self.model.get("caller_id") + "/skip_voter",
+        data : {id : self.model.get("caller_id"), voter_id : self.options.lead_info.get("fields").id,
+        session_id : self.model.get("session_id") },
+        type : "POST",
+    })
   },
 
 
