@@ -29,10 +29,6 @@ function set_session(session_id) {
     $("#caller_session").val(session_id);
 }
 
-
-
-
-
 function next_voter() {
     $.ajax({
         url : "/caller/" + $("#caller").val() + "/skip_voter",
@@ -222,7 +218,6 @@ function ready_for_calls(data) {
         $("#skip_voter").show();
         $("#call_voter").show();
     }
-
 }
 
 function set_new_campaign_script(data) {
@@ -268,11 +263,11 @@ function subscribe(session_key) {
 	});
 
 	channel.bind('conference_started', function(data) {
-	if ($("#caller_session").val() != "" ){
-		set_message("Status: Ready for calls.");
-        set_voter(data);
-        ready_for_calls(data)
-	}
+    	if ($("#caller_session").val() != "" ){
+    		set_message("Status: Ready for calls.");
+            set_voter(data);
+            ready_for_calls(data);
+    	}
     });
 
     channel.bind('voter_connected', function(data) {
@@ -307,7 +302,6 @@ function subscribe(session_key) {
 	        $("#submit_and_keep_call").hide();
 	        $("#submit_and_stop_call").hide();
 		}
-
     });
 
     channel.bind('calling_voter', function(data) {
@@ -338,11 +332,13 @@ function subscribe(session_key) {
     channel.bind('transfer_busy', function(data) {
         $("#hangup_call").show();
     });
+
     channel.bind('transfer_connected', function(data) {
 		if (data.type == 'warm'){
 			$('#transfer_type').val('warm')
 		}
     });
+
     channel.bind('transfer_conference_ended', function(data) {
 		if (data.type == 'warm'){
 			$("#hangup_call").hide();

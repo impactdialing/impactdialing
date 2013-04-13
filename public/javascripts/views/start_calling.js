@@ -1,30 +1,6 @@
 ImpactDialing.Views.StartCalling = Backbone.View.extend({
 
   initialize: function(){
-    var self = this;
-    _.bindAll(this, 'render');
-    $.ajax({
-        type: 'POST',
-        url: "/callers/campaign_calls/token",
-        dataType: "json",
-        beforeSend: function(request)
-        {
-          var token = $("meta[name='csrf-token']").attr("content");
-          request.setRequestHeader("X-CSRF-Token", token);
-        },
-        success: function(data){
-          self.caller_data = data;
-          $("#callin").show();
-          $("#callin-number").html(data.phone_number);
-          $("#callin-pin").html(data.caller_identity.pin);
-          if (!FlashDetect.installed || !flash_supported())
-            $("#start_calling").hide();
-            self.setupTwilio(data.twilio_token);
-        },
-        error: function(jqXHR, textStatus, errorThrown){
-          self.callerShouldNotDial(jqXHR["responseText"]);
-        },
-      });
   },
 
   events: {
@@ -32,39 +8,21 @@ ImpactDialing.Views.StartCalling = Backbone.View.extend({
   },
 
   render: function() {
-    $(this.el).html(Mustache.to_html($('#caller-campaign-start-calling-template').html()));
+    if (!FlashDetect.installed || !flash_supported()){
+    }else{
+      $(this.el).html(Mustache.to_html($('#caller-campaign-start-calling-template').html()));
+    }
     return this;
   },
 
   startCalling: function(e){
     $("#callin_data").hide();
-    params = {"PhoneNumber": this.caller_data.phone_number, 'campaign_id': this.caller_data.campaign_id, 'caller_id': this.caller_data.caller_identity.caller_id
-    ,'session_key': this.caller_data.caller_identity.session_key};
+    params = {"PhoneNumber": this.model.get("phone_number"), 'campaign_id': this.model.get("campaign_id"),
+    'caller_id': this.model.get("caller_id"),'session_key': this.model.get("session_key")};
     Twilio.Device.connect(params)
   },
 
-  callerShouldNotDial:  function(error){
-    $("#caller-alert p strong").html(error);
-    $("#caller-alert").addClass("callout alert clearfix")
-  },
 
-  setupTwilio:  function(token){
-    var self = this;
-    Twilio.Device.setup(token, {'debug':true});
-    Twilio.Device.connect(function (conn) {
-        $("#start_calling").hide();
-        var caller_session = new ImpactDialing.Models.CallerSession()
-        caller_session.set({session_key: self.caller_data.caller_identity.session_key});
-        var caller_actions = new ImpactDialing.Views.CallerActions({model: caller_session});
-        $("#caller-actions").html(caller_actions.render().el);
-        $("#caller-actions a").hide();
-    });
-    Twilio.Device.ready(function (device) {
-      client_ready=true;
-    });
-    Twilio.Device.error(function (error) {
-      alert(error.message);
-    });
-  }
+
 
 });
