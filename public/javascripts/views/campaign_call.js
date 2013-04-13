@@ -6,7 +6,7 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
     this.start_calling_view = new ImpactDialing.Views.StartCalling({model: this.model});
     this.caller_actions = new ImpactDialing.Views.CallerActions({model: this.model});
     this.caller_session = new ImpactDialing.Models.CallerSession();
-    this.voter = new ImpactDialing.Models.Voter();
+    this.lead_info = new ImpactDialing.Models.LeadInfo();
     this.fetchCallerInfo();
   },
 
@@ -78,7 +78,11 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
     });
 
     this.channel.bind('conference_started', function(data) {
-      console.log(data)
+      self.lead_info.set(data)
+
+      var lead_info_view = new ImpactDialing.Views.LeadInfo({model: self.lead_info})
+      $("#voter_info_message").empty();
+      $("#voter_info").html(lead_info_view.render().el);
       // self.caller_actions.conference_started();
     });
 

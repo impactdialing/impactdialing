@@ -8,7 +8,7 @@
     <%= javascript_include_tag "https://static.twilio.com/libs/twiliojs/1.1/twilio.min.js" %>
     <%= javascript_include_tag  'jquery.form.js', 'flash_detect_min.js' , 'browser_detect.js','date.js',"underscore-min",
       "mustache", 'backbone', 'impactdialing', "models/campaign_call.js", "views/campaign_call.js",
-      "models/caller_script.js", "models/voter.js",
+      "models/caller_script.js", "models/lead_info.js", "views/lead_info.js",
       "models/caller_session.js", "views/caller_script.js", "views/start_calling.js", "views/caller_actions.js" %>
 <% end %>
 
@@ -33,7 +33,7 @@
         <em>When connected, lead information will appear here.</em>
       </div>
       <ul id="voter_info" class="clearfix">
-       <script type="javascript/html" id="caller-campaign-script-voter-info-template">
+       <script type="javascript/html" id="caller-campaign-script-lead-info-template">
           {{#fields}}
             {{#ID_flag}}
               <li>ID: <b>{{CustomID}}</b></li>
