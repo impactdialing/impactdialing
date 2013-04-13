@@ -67,6 +67,7 @@ ImpactDialing.Views.CallerScript = Backbone.View.extend({
   },
 
   render: function () {
+    $(this.el).empty();
     var self = this;
     _.each(this.parseScriptElements(), function(ele){
       if(ele["type"] == "text") {

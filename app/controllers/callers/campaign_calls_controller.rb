@@ -4,7 +4,6 @@ module Callers
     respond_to :json, :html
 
     def show
-
     end
 
     def script
