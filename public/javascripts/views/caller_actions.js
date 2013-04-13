@@ -35,6 +35,12 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     }
   },
 
+  callerConnectedDialer: function(){
+    this.hideAllActions();
+    $("#stop_calling").show();
+    this.setMessage("Status: Dialing.");
+  },
+
   callingVoter: function(){
     this.setMessage('Status: Call in progress.');
     $("#skip_voter").hide();
@@ -44,6 +50,13 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
   voterConnected: function(){
     this.setMessage("Status: Connected.");
     this.hideAllActions();
+    this.showTransferCall();
+    $("#hangup_call").show();
+  },
+
+  voterConnectedDialer: function(){
+    this.hideAllActions();
+    this.setMessage("Status: Connected.")
     this.showTransferCall();
     $("#hangup_call").show();
   },
