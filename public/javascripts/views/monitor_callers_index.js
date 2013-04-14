@@ -6,7 +6,7 @@ ImpactDialing.Views.MonitorCaller = Backbone.View.extend({
     "click .kick_off" : "kickCallerOff",
     "click .break_in" : "switchMode",
     "click .eaves_drop" : "switchMode",
-    "click .reassign_campaign" : "openReassignDialog"
+    "change .reassign-campaign" : "reassignCampaign"
   },
 
   render: function () {
@@ -73,11 +73,17 @@ ImpactDialing.Views.MonitorCaller = Backbone.View.extend({
       });
   },
 
-  openReassignDialog: function(e){
+  reassignCampaign: function(e){
+    var self = this;
     e.preventDefault();
     e.stopPropagation();
-    var self = this;
-  }
+    $.ajax({
+      type: 'PUT',
+      url : "/client/callers/"+self.model.get("caller_id")+"/reassign_to_campaign",
+      data : {campaign_id :$(e.target).val() },
+      dataType: "json"
+    });
+  },
 
 });
 
