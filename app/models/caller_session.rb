@@ -174,7 +174,7 @@ class CallerSession < ActiveRecord::Base
   end
 
   def reassign_to_another_campaign(new_campaign_id)
-    update_attribute(reassign_campaign: ReassignCampaign::YES)
+    update_attributes(reassign_campaign: ReassignCampaign::YES)
     RedisReassignedCallerSession.set_campaign_id(self.id, new_campaign_id)
   end
 
@@ -182,11 +182,13 @@ class CallerSession < ActiveRecord::Base
     self.reassign_campaign == ReassignCampaign::YES
   end
 
-  def handleReassignedCampaign
+
+  def handle_reassign_campaign
     if reassigned_to_another_campaign?
       new_campaign_id = RedisReassignedCallerSession.campaign_id(self.id)
-      update_attributes(reassign_campaign: ReassignCampaign::DONE, campaign_id: new_campaign_id)
-      RedisReassignedCallerSession.del(self.id)
+      new_campaign =  Campaign.find(new_campaign_id)
+      self.update_attributes(reassign_campaign: ReassignCampaign::DONE, campaign: new_campaign)
+      RedisReassignedCallerSession.delete(self.id)
     end
   end
 
@@ -225,7 +227,7 @@ class CallerSession < ActiveRecord::Base
 
    def start_conference(callerdc=DataCentre::Code::TWILIO)
      RedisCallerSession.set_datacentre(self.id, callerdc)
-     # handleReassignedCampaign
+     handle_reassign_campaign
      if Campaign.predictive_campaign?(campaign.type)
        loaded_caller_session = CallerSession.find(self.id)
        loaded_caller_session.update_attributes(on_call: true, available_for_call: true)

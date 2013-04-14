@@ -46,19 +46,46 @@ describe CallerSession do
 
     it "should be true" do
       caller = Factory(:caller, :campaign => Factory(:campaign))
-      caller_session = Factory(:caller_session, :campaign => Factory(:campaign), :caller => caller)
-      caller_session.caller_reassigned_to_another_campaign?.should be_true
+      caller_session = Factory(:caller_session, campaign: Factory(:campaign), caller: caller, reassign_campaign: CallerSession::ReassignCampaign::YES)
+      caller_session.reassigned_to_another_campaign?.should be_true
     end
 
 
-    it "reassign the caller_session to campaign" do
+    it "handle reassign the caller_session to campaign should set reassign campaign to DONE" do
+      # new_campaign_id = RedisReassignedCallerSession.campaign_id(self.id)
+      # update_attributes(reassign_campaign: ReassignCampaign::DONE, campaign_id: new_campaign_id)
       campaign1 = Factory(:preview)
       campaign2 = Factory(:preview)
       caller = Factory(:caller, :campaign => campaign2)
-      caller_session = Factory(:caller_session, :caller => caller, :campaign => campaign1, :session_key => "sample", :on_call=> true, :available_for_call => true)
-      caller_session.reassign_caller_session_to_campaign
-      caller_session.reload.campaign.should == caller.campaign
+      caller_session = Factory(:caller_session, :caller => caller, :campaign => campaign1, :session_key => "sample",
+        :on_call=> true, :available_for_call => true, reassign_campaign: CallerSession::ReassignCampaign::YES)
+      RedisReassignedCallerSession.set_campaign_id(caller_session.id, campaign2.id)
+      caller_session.handle_reassign_campaign
+      caller_session.reload.reassign_campaign.should == CallerSession::ReassignCampaign::DONE
     end
+
+    it "handle reassign the caller_session to campaign should set new campaign id" do
+      campaign1 = Factory(:preview)
+      campaign2 = Factory(:preview)
+      caller = Factory(:caller, :campaign => campaign1)
+      caller_session = Factory(:caller_session, :caller => caller, :campaign => campaign1, :session_key => "sample",
+        :on_call=> true, :available_for_call => true, reassign_campaign: CallerSession::ReassignCampaign::YES)
+      RedisReassignedCallerSession.set_campaign_id(caller_session.id, campaign2.id)
+      caller_session.handle_reassign_campaign
+      caller_session.reload.campaign_id.should eq(campaign2.id)
+    end
+
+    it "handle reassign the caller_session to campaign should delete new campaign id from redis" do
+      campaign1 = Factory(:preview)
+      campaign2 = Factory(:preview)
+      caller = Factory(:caller, :campaign => campaign2)
+      caller_session = Factory(:caller_session, :caller => caller, :campaign => campaign1, :session_key => "sample",
+        :on_call=> true, :available_for_call => true, reassign_campaign: CallerSession::ReassignCampaign::YES)
+      RedisReassignedCallerSession.set_campaign_id(caller_session.id, campaign2.id)
+      RedisReassignedCallerSession.should_receive(:delete).with(caller_session.id)
+      caller_session.handle_reassign_campaign
+    end
+
 
   end
 
