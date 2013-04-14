@@ -14,7 +14,7 @@
   }
 
 
-  $('.add_fields').live('click', function(e) {
+  $(".add_fields").on("click", function(e){
     e.preventDefault();
     var $this                 = $(this),
         assoc                 = $this.data('association'),
@@ -37,15 +37,15 @@
     }
 
     new_content = new_content.replace(regexp_underscord, newcontent_underscord);
-    if (insertionNode){	  
+    if (insertionNode){
 	   if (insertionNode == "this"){
-	      insertionNode = $this	
+	      insertionNode = $this
 	   }
 	   else if (insertionNode == "sibling") {
 		 insertionNode = $($(this).parent().siblings("."+siblingClass)[0])
 	    }
 	   else {
-	     insertionNode = $(insertionNode)	
+	     insertionNode = $(insertionNode)
 	   }
      }else {
       insertionNode = $this.parent();
@@ -57,29 +57,29 @@
     // code and doesn't force it to be a sibling like after/before does. default: 'before'
     insertionNode[insertionMethod](contentNode);
     $this.parent().trigger('insertion-callback');
-    
+
 
   });
 
-  $('.remove_fields.dynamic').live('click', function(e) {
+  $('.remove_fields.dynamic').on('click', function(e) {
     var $this = $(this);
 	var removalValidation = $this.data('removal-validation');
     var trigger_node = $this.closest(".nested-fields").parent();
-    if (!removalValidation || window[removalValidation](this)){	   
+    if (!removalValidation || window[removalValidation](this)){
 	    trigger_removal_callback(trigger_node);
 	    e.preventDefault();
 	    $this.closest(".nested-fields").remove();
-	    trigger_after_removal_callback(trigger_node);	
+	    trigger_after_removal_callback(trigger_node);
     } else {
-	
+
     }
   });
 
-  $('.remove_fields.existing').live('click', function(e) {
+  $('.remove_fields.existing').on('click', function(e) {
     var $this = $(this);
 	var removalValidation = $this.data('removal-validation');
     var trigger_node = $this.closest(".nested-fields").parent();
- if (!removalValidation || window[removalValidation](this)){	  
+ if (!removalValidation || window[removalValidation](this)){
     trigger_removal_callback(trigger_node);
     e.preventDefault();
     $this.prev("input[type=hidden]").val("1");
@@ -87,7 +87,7 @@
 	$this.closest(".nested-fields").attr('deleted', true);
     trigger_after_removal_callback(trigger_node);
 	} else {
-	
+
 	}
   });
 
