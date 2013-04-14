@@ -15,7 +15,8 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     "click #call_voter": "callVoter",
     "click #submit_and_keep_call": "sendVoterResponse",
     "click #submit_and_stop_call": "sendVoterResponseAndDisconnect",
-    "click #skip_voter" : "nextVoter"
+    "click #skip_voter" : "nextVoter",
+    "click #kick_self_out_of_conference" : "kickCallerOff"
 
   },
 
@@ -56,14 +57,15 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     this.hideAllActions();
     this.showTransferCall();
     this.showScheduler();
-    $("#hangup_call").show();
+    this.showHangupButton();
   },
 
   voterConnectedDialer: function(){
     this.hideAllActions();
     this.setMessage("Status: Connected.")
     this.showTransferCall();
-    $("#hangup_call").show();
+    this.showHangupButton();
+
   },
 
   voterDisconected: function(){
@@ -121,7 +123,14 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     });
     $("#voter_responses").trigger("submit");
     $("#voter_responses").unbind("submit");
-},
+  },
+
+  transferConferenceEnded: function(){
+    this.hideHangupButton();
+    $('#kick_self_out_of_conference').hide();
+    $("#submit_and_keep_call").show();
+    $("#submit_and_stop_call").show();
+  },
 
 
   setMessage: function(text) {
@@ -142,6 +151,14 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
 
   hideScheduler: function(){
     $("#schedule_callback").hide();
+  },
+
+  showHangupButton: function(){
+    $("#hangup_call").show();
+  },
+
+  hideHangupButton: function(){
+    $("#hangup_call").hide();
   },
 
   callVoter: function() {
@@ -188,7 +205,12 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     $("#caller-actions a").hide();
   },
 
-
-
+  kickCallerOff: function(){
+    $.ajax({
+        url : "/caller/" + self.model.get("caller_id") + "/kick_caller_off_conference",
+        data : {caller_session: self.model.get("session_id") },
+        type : "POST"
+    });
+  },
 
 })

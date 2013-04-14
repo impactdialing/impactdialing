@@ -133,6 +133,22 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
         $("#voter_info_message").show();
     });
 
+    this.channel.bind('transfer_busy', function(data) {
+        self.caller_actions.showHangupButton();
+    });
+
+    this.channel.bind('transfer_connected', function(data) {
+      self.model.set("transfer_type", data.type);
+    });
+
+    this.channel.bind('transfer_conference_ended', function(data) {
+      var transfer_type = self.model.get("transfer_type");
+      if(transfer_type == "warm"){
+        self.caller_actions.transferConferenceEnded();
+      }
+
+    });
+
   },
 
 
