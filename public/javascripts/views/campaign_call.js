@@ -103,6 +103,7 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
     });
 
     this.channel.bind('caller_reassigned', function(data) {
+      console.log("caller_reassignes")
       self.caller_script.fetch({success: function(){
         self.renderScript();
         self.lead_info.clear();
