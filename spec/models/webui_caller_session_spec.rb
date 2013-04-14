@@ -38,7 +38,7 @@ describe WebuiCallerSession do
         @caller = Factory(:caller, campaign: @callers_campaign, account: @account)
       end
 
-      xit "set state to connected when campaign changes" do
+      xit "set publish correct event" do
         caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
         caller_session.should_receive(:funds_not_available?).and_return(false)
         caller_session.should_receive(:account_not_activated?).and_return(false)
