@@ -52,8 +52,6 @@ describe CallerSession do
 
 
     it "handle reassign the caller_session to campaign should set reassign campaign to DONE" do
-      # new_campaign_id = RedisReassignedCallerSession.campaign_id(self.id)
-      # update_attributes(reassign_campaign: ReassignCampaign::DONE, campaign_id: new_campaign_id)
       campaign1 = Factory(:preview)
       campaign2 = Factory(:preview)
       caller = Factory(:caller, :campaign => campaign2)
