@@ -5,10 +5,14 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
     this.script_view  = new ImpactDialing.Views.CallerScript({model: this.caller_script});
     this.start_calling_view = new ImpactDialing.Views.StartCalling({model: this.model});
     this.lead_info = new ImpactDialing.Models.LeadInfo();
-    this.caller_actions = new ImpactDialing.Views.CallerActions({model: this.model, lead_info: this.lead_info});
+    this.schedule_callback_view = new ImpactDialing.Views.ScheduleCallback();
+    this.caller_actions = new ImpactDialing.Views.CallerActions({model: this.model, lead_info: this.lead_info,
+      schedule_callback: this.schedule_callback_view});
     this.caller_session = new ImpactDialing.Models.CallerSession();
     this.lead_info_view = new ImpactDialing.Views.LeadInfo({model: this.lead_info})
+
     this.fetchCallerInfo();
+    $("#schedule_callback").html(this.schedule_callback_view.render().el);
   },
 
 
@@ -23,7 +27,9 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
   renderScript: function(){
     $("#voter_responses").empty();
     $("#voter_responses").html(this.script_view.render().el);
+    this.schedule_callback_view.render();
     $("#transfer-calls").hide();
+    $("#schedule_callback").hide();
   },
 
   fetchCallerInfo: function(){

@@ -51,6 +51,7 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     this.setMessage("Status: Connected.");
     this.hideAllActions();
     this.showTransferCall();
+    this.showScheduler();
     $("#hangup_call").show();
   },
 
@@ -70,15 +71,17 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
   },
 
   sendVoterResponse: function() {
+    if(this.options.schedule_callback.validateScheduleDate() == false){
+      alert('The Schedule callback date is invalid');
+      return false;
+    }
     this.hideAllActions();
+    this.hideScheduler();
+    this.setMessage("Status: Submitting call results.");
     var self = this;
     var options = {
       data: {caller_session: self.model.get("session_id") },
     };
-    // if (validate_schedule_date() == false){
-    // alert('The Schedule callback date is invalid');
-    // return false;
-    // }
 
     $('#voter_responses').attr('action', "/calls/" + self.model.get("call_id") + "/submit_result");
     $('#voter_responses').submit(function() {
@@ -90,7 +93,14 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
   },
 
    sendVoterResponseAndDisconnect: function() {
+    if(this.options.schedule_callback.validateScheduleDate() == false){
+      alert('The Schedule callback date is invalid');
+      return false;
+    }
+
     this.hideAllActions();
+    this.hideScheduler();
+    this.setMessage("Status: Submitting call results.");
     var self = this;
     var options = {
       data: {stop_calling: true, caller_session: self.model.get("session_id") },
@@ -98,10 +108,6 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
             window.location.reload();
         }
     };
-    // if (validate_schedule_date() == false){
-    // alert('The Schedule callback date is invalid');
-    // return false;
-    // }
 
     $('#voter_responses').attr('action', "/calls/" + self.model.get("call_id") + "/submit_result_and_stop");
     $('#voter_id').val(this.options.lead_info.get("fields").id);
@@ -124,6 +130,14 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
 
   hideTransferCall: function(){
     $("#transfer-calls").hide();
+  },
+
+  showScheduler: function(){
+    $("#schedule_callback").show();
+  },
+
+  hideScheduler: function(){
+    $("#schedule_callback").hide();
   },
 
   callVoter: function() {
