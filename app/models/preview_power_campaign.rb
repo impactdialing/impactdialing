@@ -27,8 +27,6 @@ module PreviewPowerCampaign
 
   def caller_conference_started_event(current_voter_id)
     next_voter = next_voter_in_dial_queue(current_voter_id)
-    puts "dfdfdfd"
-    puts next_voter.nil?
     {event: 'conference_started', data: next_voter.nil? ? {campaign_out_of_leads: true} : next_voter.info}
   end
 
