@@ -1,4 +1,6 @@
-<p id="schedule_callback"><%= link_to_function 'Schedule callback', 'expand_scheduler()', :class=> "action secondary" %></p>
+<p>
+  <a id="schedule_callback_button" class="action secondary" href="#" >Schedule callback</a>
+</p>
 <div id="callback_info" style="display: none;">
 <fieldset >
   <legend>Schedule callback</legend>
@@ -9,39 +11,41 @@
         <select id= "callback_time_hours" name="callback_time_hours">
           <option value="00" selected="selected">12am</option>
           <option value="01">1am</option>
-          <option value="02">2am</option>              
+          <option value="02">2am</option>
           <option value="03">3am</option>
           <option value="04">4am</option>
           <option value="05">5am</option>
           <option value="06">6am</option>
-          <option value="07">7am</option>              
+          <option value="07">7am</option>
           <option value="08">8am</option>
           <option value="09">9am</option>
           <option value="10">10am</option>
           <option value="11">11am</option>
-          <option value="12">12pm</option>              
+          <option value="12">12pm</option>
           <option value="13">1pm</option>
           <option value="14">2pm</option>
           <option value="15">3pm</option>
           <option value="16">4pm</option>
-          <option value="17">5pm</option>              
+          <option value="17">5pm</option>
           <option value="18">6pm</option>
           <option value="19">7pm</option>
           <option value="20">8pm</option>
           <option value="21">9pm</option>
-          <option value="22">10pm</option>              
-          <option value="23">11pm</option>                            
+          <option value="22">10pm</option>
+          <option value="23">11pm</option>
         </select>
         :
         <select id= "callback_time_minutes" name="callback_time_minutes">
           <option value="00" selected="selected">00</option>
           <option value="15">15</option>
-          <option value="30">30</option>              
-          <option value="45">45</option>                            
+          <option value="30">30</option>
+          <option value="45">45</option>
         </select></p>
     </div>
     <div style="clear: both;">
-      <p class="actions"><%= link_to_function 'Hide', 'collapse_scheduler()', :class=> "action secondary" %></p>
+      <p class="actions">
+        <a class="action secondary" id="hide_scheduler" href="#">Hide</a>
+      </p>
     </div>
 </fieldset>
 </div>
