@@ -88,7 +88,6 @@ function validate_schedule_date(){
 	}
   }
   return true;
-
 }
 
 

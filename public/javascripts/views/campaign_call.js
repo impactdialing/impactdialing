@@ -149,6 +149,15 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
 
     });
 
+    this.channel.bind('warm_transfer',function(data){
+      self.caller_actions.kickSelfOutOfConferenceShow();
+    });
+
+    this.channel.bind('caller_kicked_off',function(data){
+      self.caller_actions.kickSelfOutOfConferenceHide();
+      self.caller_actions.submitResponseButtonsShow();
+    });
+
   },
 
 
