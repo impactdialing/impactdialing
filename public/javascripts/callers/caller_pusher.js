@@ -218,6 +218,7 @@ function ready_for_calls(data) {
         $("#skip_voter").show();
         $("#call_voter").show();
     }
+
 }
 
 function set_new_campaign_script(data) {
@@ -263,11 +264,11 @@ function subscribe(session_key) {
 	});
 
 	channel.bind('conference_started', function(data) {
-    	if ($("#caller_session").val() != "" ){
-    		set_message("Status: Ready for calls.");
-            set_voter(data);
-            ready_for_calls(data);
-    	}
+	if ($("#caller_session").val() != "" ){
+		set_message("Status: Ready for calls.");
+        set_voter(data);
+        ready_for_calls(data)
+	}
     });
 
     channel.bind('voter_connected', function(data) {
@@ -302,7 +303,7 @@ function subscribe(session_key) {
 	        $("#submit_and_keep_call").hide();
 	        $("#submit_and_stop_call").hide();
 		}
-    });
+        });
 
     channel.bind('calling_voter', function(data) {
         set_message('Status: Call in progress.');
