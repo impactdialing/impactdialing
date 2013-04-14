@@ -1,11 +1,11 @@
 class CallerController < ApplicationController
   include SidekiqEvents
   layout "caller"
-  skip_before_filter :verify_authenticity_token, :only =>[:check_reassign, :call_voter, :start_calling, :stop_calling, :token,
+  skip_before_filter :verify_authenticity_token, :only =>[:call_voter, :start_calling, :stop_calling, :token,
      :end_session, :skip_voter, :ready_to_call, :continue_conf, :pause, :run_out_of_numbers, :callin_choice, :read_instruction_options, :conference_started_phones_only_preview, :conference_started_phones_only_power, :conference_started_phones_only_predictive,
      :gather_response, :submit_response, :next_question, :next_call, :time_period_exceeded, :account_out_of_funds, :datacentre, :kick_caller_off_conference]
 
-  before_filter :check_login, :except=>[:login, :feedback, :end_session, :start_calling, :phones_only, :new_campaign_response_panel, :check_reassign, :call_voter,
+  before_filter :check_login, :except=>[:login, :feedback, :end_session, :start_calling, :phones_only, :call_voter,
     :ready_to_call, :continue_conf, :pause, :run_out_of_numbers, :callin_choice, :read_instruction_options, :conference_started_phones_only_preview, :conference_started_phones_only_power, :conference_started_phones_only_predictive,
     :gather_response, :submit_response, :next_question, :next_call, :time_period_exceeded, :account_out_of_funds, :datacentre, :kick_caller_off_conference]
 
@@ -165,29 +165,6 @@ class CallerController < ApplicationController
     caller_session.publish('caller_kicked_off', {})
     render nothing: true
   end
-
-
-  def check_reassign
-    caller = Caller.find(params[:id])
-    if caller.campaign.id == params[:campaign_id].to_i
-      render :json => {:reassign => "false"}
-    else
-      render :json => {:reassign => "true", :campaign_id => caller.campaign.id, :script => caller.campaign.try(:script)}
-    end
-  end
-
-  def new_campaign_response_panel
-    caller = Caller.find(params[:id])
-    @campaign = caller.campaign
-    render :layout => false
-  end
-
-  def transfer_panel
-    caller = Caller.find(params[:id])
-    @campaign = caller.campaign
-    render :layout => false
-  end
-
 
   def feedback
     Postoffice.feedback(params[:issue]).deliver

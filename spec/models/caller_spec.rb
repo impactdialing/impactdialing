@@ -156,20 +156,29 @@ describe Caller do
 
     it "should do nothing if campaign changed but caller not logged in" do
       campaign = Factory(:campaign)
+      other_campaign = Factory(:campaign)
       caller_session = Factory(:caller_session, on_call: false)
       caller = Factory(:caller, campaign: campaign)
-      caller.should_not_receive(:is_phones_only?)
-      caller.save
+      caller.update_attributes(campaign_id: other_campaign.id)
+      caller_session.reassign_campaign.should be_nil
     end
 
-    xit "should redirect if live phones only caller" do
+    it "should set on call caller session to reassigned yes" do
       campaign = Factory(:campaign)
       other_campaign = Factory(:campaign)
       caller = Factory(:caller, campaign: campaign, is_phones_only: true)
-      caller_session = Factory(:caller_session, on_call: true, campaign: other_campaign, caller_id: caller.id)
-      caller.caller_sessions << caller_session
-      other_campaign.should_receive(:redirect_campaign_reassigned)
-      caller.update_attributes(campaign_id: other_campaign.id)
+      caller_session = Factory(:caller_session, on_call: true, campaign: campaign, caller_id: caller.id)
+      caller.update_attributes!(campaign: other_campaign)
+      caller_session.reload.reassign_campaign.should eq(CallerSession::ReassignCampaign::YES)
+    end
+
+    it "should set on ReassignedCallerSession campaign id" do
+      campaign = Factory(:campaign)
+      other_campaign = Factory(:campaign)
+      caller = Factory(:caller, campaign: campaign, is_phones_only: true)
+      caller_session = Factory(:caller_session, on_call: true, campaign: campaign, caller_id: caller.id)
+      caller.update_attributes!(campaign: other_campaign)
+      RedisReassignedCallerSession.campaign_id(caller_session.id).should eq(other_campaign.id.to_s)
     end
 
 
