@@ -1,5 +1,9 @@
 ImpactDialing.Views.CallerActions = Backbone.View.extend({
 
+  initialize: function(){
+    this.setMessage("Status: Not Connected.");
+  },
+
   render: function() {
     $(this.el).html(Mustache.to_html($('#caller-campaign-action-template').html()));
     return this;
