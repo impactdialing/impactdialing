@@ -225,7 +225,7 @@ class CallerSession < ActiveRecord::Base
 
    def start_conference(callerdc=DataCentre::Code::TWILIO)
      RedisCallerSession.set_datacentre(self.id, callerdc)
-     handleReassignedCampaign
+     # handleReassignedCampaign
      if Campaign.predictive_campaign?(campaign.type)
        loaded_caller_session = CallerSession.find(self.id)
        loaded_caller_session.update_attributes(on_call: true, available_for_call: true)
