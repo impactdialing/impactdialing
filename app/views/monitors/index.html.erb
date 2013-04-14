@@ -88,8 +88,8 @@
       </td>
       <td>
         <select class="reassign-campaign">
-         {{^reassignable_campaigns}}
-           <option val="{{id}}">{{name}}</option>
+         {{#reassignable_campaigns}}
+           <option value="{{id}}">{{name}}</option>
          {{/reassignable_campaigns}}
         </select
         </a>
