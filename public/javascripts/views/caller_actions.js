@@ -72,8 +72,7 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     this.hideAllActions();
     this.hideTransferCall();
     this.setMessage("Status: Waiting for call results.");
-    $("#submit_and_keep_call").show();
-    $("#submit_and_stop_call").show();
+    this.submitResponseButtonsShow();
   },
 
   sendVoterResponse: function() {
@@ -127,9 +126,13 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
 
   transferConferenceEnded: function(){
     this.hideHangupButton();
-    $('#kick_self_out_of_conference').hide();
-    $("#submit_and_keep_call").show();
-    $("#submit_and_stop_call").show();
+    this.kickSelfOutOfConferenceHide();
+    this.submitResponseButtonsShow();
+  },
+
+  callerKickedOff: function(){
+    this.kickSelfOutOfConferenceHide();
+    this.submitResponseButtonsShow();
   },
 
 
@@ -159,6 +162,19 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
 
   hideHangupButton: function(){
     $("#hangup_call").hide();
+  },
+
+  kickSelfOutOfConferenceHide: function(){
+    $('#kick_self_out_of_conference').hide();
+  },
+
+  kickSelfOutOfConferenceShow: function(){
+    $('#kick_self_out_of_conference').show();
+  },
+
+  submitResponseButtonsShow: function(){
+    $("#submit_and_keep_call").show();
+    $("#submit_and_stop_call").show();
   },
 
   callVoter: function() {
