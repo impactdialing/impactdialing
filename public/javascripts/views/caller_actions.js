@@ -70,7 +70,7 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     this.setMessage("Status: Connected.")
     this.showTransferCall();
     this.showHangupButton();
-
+    this.showScheduler();
   },
 
   voterDisconected: function(){
