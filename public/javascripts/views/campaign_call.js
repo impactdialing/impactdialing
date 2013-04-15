@@ -130,6 +130,8 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
       self.model.set("call_id", data.call_id);
       self.lead_info.clear();
       self.lead_info.set(data.voter)
+      console.log(self.model.toJSON())
+      console.log(self.lead_info.toJSON())
       self.caller_actions.voterConnectedDialer();
     });
 
