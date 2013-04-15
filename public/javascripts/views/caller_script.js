@@ -1,6 +1,7 @@
 ImpactDialing.Views.CallerScriptText = Backbone.View.extend({
   render: function (ele) {
     $(this.el).html(Mustache.to_html($('#caller-campaign-script-text-template').html(), ele));
+    $(this.el).html($(this.el).html().replace(/\r\n|\n/g, "<p/>"));
     return this;
   },
 
