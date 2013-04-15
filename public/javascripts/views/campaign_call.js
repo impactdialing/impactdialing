@@ -103,7 +103,6 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
     });
 
     this.channel.bind('caller_reassigned', function(data) {
-      console.log("caller_reassignes")
       self.caller_script.fetch({success: function(){
         self.renderScript();
         self.lead_info.clear();
@@ -111,6 +110,7 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
         $("#voter_info_message").hide();
         $("#voter_info").html(self.lead_info_view.render().el);
         self.caller_actions.conferenceStarted();
+        alert("You have been re-assigned to " + data.campaign_name + ".");
       }});
     });
 
