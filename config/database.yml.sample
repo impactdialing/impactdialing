@@ -54,7 +54,7 @@ aws:
 
 aws_staging:
    adapter: mysql2
-   host: impactdialing-production.cjo94dhm4pos.us-east-1.rds.amazonaws.com
+   host: herokustaging55.cjo94dhm4pos.us-east-1.rds.amazonaws.com
    database: impactdialing_heroku_staging
    username: root
    password: mypassword912481
