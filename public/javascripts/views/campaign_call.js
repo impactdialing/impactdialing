@@ -97,6 +97,13 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
       self.lead_info.clear();
       self.lead_info.set(data);
       self.renderScript();
+      if(data.dialer == "Predictive"){
+        $("#voter_info_message").show();
+        $("#voter_info").hide();
+      }else{
+        $("#voter_info_message").hide();
+        $("#voter_info").html(self.lead_info_view.render().el);
+      }
       $("#voter_info_message").hide();
       $("#voter_info").html(self.lead_info_view.render().el);
       self.caller_actions.conferenceStarted();
@@ -107,13 +114,8 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
         self.renderScript();
         self.lead_info.clear();
         self.lead_info.set(data);
-        if(data.dialer == "Predictive"){
-        $("#voter_info_message").show();
-        $("#voter_info").hide();
-        }else{
         $("#voter_info_message").hide();
         $("#voter_info").html(self.lead_info_view.render().el);
-        }
         self.caller_actions.conferenceStarted();
         alert("You have been re-assigned to " + data.campaign_name + ".");
       }});
