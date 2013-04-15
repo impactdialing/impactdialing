@@ -79,7 +79,7 @@ ImpactDialing.Views.CallerScript = Backbone.View.extend({
         $(self.el).append(new ImpactDialing.Views.CallerNotes().render(ele).el);
       }
     });
-    if(this.model){
+    if(this.model && !_.isEmpty(this.model.get("transfers"))){
       $(self.el).append(new ImpactDialing.Views.CallerTransfer().render(this.model.toJSON()).el);
     }
     return this;
