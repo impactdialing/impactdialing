@@ -69,10 +69,9 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
    setupTwilio:  function(){
     var self = this;
     Twilio.Device.setup(this.model.get("twilio_token"), {'debug':true});
+
     Twilio.Device.connect(function (conn) {
         $("#start_calling").hide();
-        $("#caller-actions").html(self.caller_actions.render().el);
-        $("#caller-actions a").hide();
     });
     Twilio.Device.ready(function (device) {
       client_ready=true;
@@ -85,7 +84,10 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
   bindPusherEvents: function(){
     var self = this;
     this.channel.bind('start_calling', function(data) {
-      self.model.set("session_id", data.caller_session_id)
+      self.model.set("session_id", data.caller_session_id);
+      $("#caller-actions").html(self.caller_actions.render().el);
+      $("#caller-actions a").hide();
+      $("#callin_data").hide();
       self.caller_actions.startCalling();
     });
 
@@ -94,8 +96,6 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
     });
 
     this.channel.bind('conference_started', function(data) {
-      self.caller_actions.startCalling();
-      $("#callin_data").hide();
       self.lead_info.clear();
       self.lead_info.set(data);
       self.renderScript();
