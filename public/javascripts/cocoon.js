@@ -14,7 +14,8 @@
   }
 
 
-  $(".add_fields").on("click", function(e){
+
+  $(document).on("click", ".add_fields", function(e){
     e.preventDefault();
     var $this                 = $(this),
         assoc                 = $this.data('association'),
@@ -60,8 +61,7 @@
 
 
   });
-
-  $('.remove_fields.dynamic').on('click', function(e) {
+  $(document).on("click", ".remove_fields.dynamic", function(e){
     var $this = $(this);
 	var removalValidation = $this.data('removal-validation');
     var trigger_node = $this.closest(".nested-fields").parent();
@@ -74,8 +74,7 @@
 
     }
   });
-
-  $('.remove_fields.existing').on('click', function(e) {
+  $(document).on("click", ".remove_fields.existing", function(e){
     var $this = $(this);
 	var removalValidation = $this.data('removal-validation');
     var trigger_node = $this.closest(".nested-fields").parent();
