@@ -94,7 +94,7 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
     });
 
     this.channel.bind('conference_started', function(data) {
-      self.startCalling();
+      self.caller_actions.startCalling();
       $("#callin_data").hide();
       self.lead_info.clear();
       self.lead_info.set(data);
