@@ -33,13 +33,14 @@
 <%= javascript_include_tag :jdefaults %>
 <%= javascript_include_tag :defaults %>
 <%= javascript_include_tag 'application' %>
-<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
-<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js"></script>
 
 <%= yield :stylesheets %>
 <%= stylesheet_link_tag "application", "caller", "jquery-ui-1.8.14.custom" %>
 <%= yield :jquery_extension_javascripts %>
 <%= yield :javascripts %>
+<%= yield :meta %>
 
 <!-- JavaScript at bottom except for Modernizr -->
 <script src="/js/libs/modernizr-custom.js"></script>

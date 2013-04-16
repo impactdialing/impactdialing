@@ -29,10 +29,6 @@ function set_session(session_id) {
     $("#caller_session").val(session_id);
 }
 
-
-
-
-
 function next_voter() {
     $.ajax({
         url : "/caller/" + $("#caller").val() + "/skip_voter",
@@ -92,7 +88,6 @@ function validate_schedule_date(){
 	}
   }
   return true;
-
 }
 
 
@@ -307,8 +302,7 @@ function subscribe(session_key) {
 	        $("#submit_and_keep_call").hide();
 	        $("#submit_and_stop_call").hide();
 		}
-
-    });
+        });
 
     channel.bind('calling_voter', function(data) {
         set_message('Status: Call in progress.');
@@ -338,11 +332,13 @@ function subscribe(session_key) {
     channel.bind('transfer_busy', function(data) {
         $("#hangup_call").show();
     });
+
     channel.bind('transfer_connected', function(data) {
 		if (data.type == 'warm'){
 			$('#transfer_type').val('warm')
 		}
     });
+
     channel.bind('transfer_conference_ended', function(data) {
 		if (data.type == 'warm'){
 			$("#hangup_call").hide();

@@ -42,6 +42,12 @@ class CallerSession < ActiveRecord::Base
     PHONE = "Phone"
   end
 
+  module ReassignCampaign
+    NO = "no"
+    YES = "yes"
+    DONE = "done"
+  end
+
 
   def minutes_used
     return 0 if self.tDuration.blank?
@@ -158,7 +164,7 @@ class CallerSession < ActiveRecord::Base
   end
 
 
-  def join_conference(mute_type, call_sid, monitor_session)
+  def join_conference(mute_type)
     response = Twilio::Verb.new do |v|
       v.dial(:hangupOnStar => true) do
         v.conference(self.session_key, :startConferenceOnEnter => false, :endConferenceOnExit => false, :beep => false, :waitUrl => HOLD_MUSIC_URL, :waitMethod =>"GET", :muted => mute_type)
@@ -167,13 +173,23 @@ class CallerSession < ActiveRecord::Base
     response
   end
 
-  def reassign_caller_session_to_campaign
-    old_campaign = self.campaign
-    update_attribute(:campaign, caller.campaign)
+  def reassign_to_another_campaign(new_campaign_id)
+    update_attributes(reassign_campaign: ReassignCampaign::YES)
+    RedisReassignedCallerSession.set_campaign_id(self.id, new_campaign_id)
   end
 
-  def caller_reassigned_to_another_campaign?
-    caller.campaign.id != self.campaign.id
+  def reassigned_to_another_campaign?
+    self.reassign_campaign == ReassignCampaign::YES
+  end
+
+
+  def handle_reassign_campaign
+    if reassigned_to_another_campaign?
+      new_campaign_id = RedisReassignedCallerSession.campaign_id(self.id)
+      new_campaign =  Campaign.find(new_campaign_id)
+      self.update_attributes(reassign_campaign: ReassignCampaign::DONE, campaign: new_campaign)
+      RedisReassignedCallerSession.delete(self.id)
+    end
   end
 
 
@@ -193,7 +209,6 @@ class CallerSession < ActiveRecord::Base
      conference_sid = confs.class == Array ? confs.last['Sid'] : confs['Sid']
    end
 
-
    def self.time_logged_in(caller, campaign, from, to)
      CallerSession.for_caller(caller).on_campaign(campaign).between(from, to).sum('tDuration').to_i
    end
@@ -212,6 +227,7 @@ class CallerSession < ActiveRecord::Base
 
    def start_conference(callerdc=DataCentre::Code::TWILIO)
      RedisCallerSession.set_datacentre(self.id, callerdc)
+     handle_reassign_campaign
      if Campaign.predictive_campaign?(campaign.type)
        loaded_caller_session = CallerSession.find(self.id)
        loaded_caller_session.update_attributes(on_call: true, available_for_call: true)

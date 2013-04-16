@@ -54,8 +54,6 @@ module Client
     def reassign_to_campaign
       caller = Caller.find_by_id(params[:id])
       caller.update_attributes(:campaign_id => params[:campaign_id])
-      caller_session = caller.caller_sessions.find_by_id(params[:session_id])
-      caller.reassign_to_another_campaign(caller_session)
       render :nothing => true
     end
 

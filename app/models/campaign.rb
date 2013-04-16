@@ -274,7 +274,10 @@ class Campaign < ActiveRecord::Base
     current_caller_sessions = caller_sessions.on_call.includes(:caller)
     current_caller_sessions.each do |cs|
       value = RedisStatus.state_time(self.id, cs.id)
-      callers << {id: cs.id, caller_id: cs.caller.id, name: cs.caller.identity_name, status: value[0], time_in_status: value[1]}
+      if value.present?
+        callers << {id: cs.id, caller_id: cs.caller.id, name: cs.caller.identity_name, status: value[0],
+         time_in_status: value[1], campaign_name: self.name, campaign_id: self.id}
+      end
     end
     callers
   end
