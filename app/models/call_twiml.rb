@@ -18,11 +18,11 @@ module CallTwiml
         unless caller_session.nil?
           if DataCentre.twilio?(data_centre)
             r.Dial :hangupOnStar => 'false', :action => disconnected_call_url(self, :host => DataCentre.call_back_host(data_centre), :protocol => "http://"), :record=> campaign.account.record_calls do |d|
-              d.Conference caller_session.session_key, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET', :beep => false, :endConferenceOnExit => false
+              d.Conference caller_session.session_key, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true
             end
           else
             r.Dial :hangupOnStar => 'false', :action => disconnected_call_url(self, :host => DataCentre.call_back_host(data_centre), :protocol => "http://"), :record=> campaign.account.record_calls do |d|
-              d.Conference caller_session.session_key, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET', :beep => false, :endConferenceOnExit => false
+              d.Conference caller_session.session_key, :waitUrl => HOLD_MUSIC_URL, :waitMethod => 'GET', :beep => false, :endConferenceOnExit => true
               d.CallerSid caller_session.sid
             end
 
