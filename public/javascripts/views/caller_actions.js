@@ -31,7 +31,6 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     $('#stop_calling').show();
     this.setMessage("Status: Ready for calls.");
     var lead_info = this.options.lead_info;
-    console.log(lead_info)
     if(lead_info.get("campaign_out_of_leads") == true){
       this.setMessage("Status: The campaign has run out of numbers.");
       return
