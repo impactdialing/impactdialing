@@ -94,6 +94,8 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
     });
 
     this.channel.bind('conference_started', function(data) {
+      self.startCalling();
+      $("#callin_data").hide();
       self.lead_info.clear();
       self.lead_info.set(data);
       self.renderScript();
@@ -104,8 +106,6 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
         $("#voter_info_message").hide();
         $("#voter_info").html(self.lead_info_view.render().el);
       }
-      $("#voter_info_message").hide();
-      $("#voter_info").html(self.lead_info_view.render().el);
       self.caller_actions.conferenceStarted();
     });
 
