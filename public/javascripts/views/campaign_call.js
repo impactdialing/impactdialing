@@ -97,7 +97,7 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
       self.lead_info.clear();
       self.lead_info.set(data);
       self.renderScript();
-      if(lead_info.get("dialer") && lead_info.get("dialer").toLowerCase() == "predictive"){
+      if(self.lead_info.get("dialer") && self.lead_info.get("dialer").toLowerCase() == "predictive"){
         $("#voter_info_message").show();
         $("#voter_info").hide();
       }else{
