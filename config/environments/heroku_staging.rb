@@ -4,7 +4,7 @@ ImpactDialing::Application.configure do
   TWILIO_AUTH="897298ab9f34357f651895a7011e1631"
   TWILIO_APP_SID="AP9a7f90ed206c430587a5c534c02a558f"
   APP_NUMBER="6502626881"
-  
+
   # TWILIO_ACCOUNT="AC8214b5932e8b89f2c8c630d582f1f42c"
   # TWILIO_AUTH="638089b9f24ef21eb1710e12bc508fa9"
   # TWILIO_APP_SID="AP70733f2b5c43898e634abe07e4d69f6b"
@@ -23,6 +23,7 @@ ImpactDialing::Application.configure do
   # The production environment is meant for finished, "live" apps.
   # Code is not reloaded between requests
   config.cache_classes = true
+  config.lograge.enabled = true
 
   # Full error reports are disabled and caching is turned on
   config.consider_all_requests_local = false

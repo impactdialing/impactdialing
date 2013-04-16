@@ -1,0 +1,180 @@
+<% content_for :stylesheets do %>
+    <link rel="stylesheet" type="text/css" media="screen" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.14/themes/smoothness/jquery-ui.css"/>
+    <%= stylesheet_link_tag 'jquery.ui.datetime' %>
+<% end %>
+
+<% content_for :javascripts do %>
+    <%= javascript_include_tag("https://d3dy5gmtp8yhk7.cloudfront.net/1.12/pusher.min.js") %>
+    <%= javascript_include_tag "https://static.twilio.com/libs/twiliojs/1.1/twilio.min.js" %>
+    <%= javascript_include_tag  'jquery.form.js', 'flash_detect_min.js' , 'browser_detect.js','date.js',"underscore-min",
+      "mustache", 'backbone', 'impactdialing', "models/campaign_call.js", "views/campaign_call.js",
+      "models/caller_script.js", "models/lead_info.js", "views/lead_info.js", "views/schedule_callback.js",
+      "models/caller_session.js", "views/caller_script.js", "views/start_calling.js", "views/caller_actions.js" %>
+<% end %>
+
+<% content_for :javascripts do %>
+  <script type="text/javascript">
+    $(function() {
+        var campaign_call = new ImpactDialing.Models.CampaignCall();
+        campaign_call.set({pusher_key: '<%= Pusher.key %>'});
+        var campaign_call_view = new ImpactDialing.Views.CampaignCall({model: campaign_call});
+        campaign_call_view.render();
+      });
+  </script>
+<% end %>
+<%= render 'shared/browser_test' %>
+<div id="caller-alert">
+  <p><strong></strong></p>
+</div>
+<form>
+  <fieldset>
+      <legend>Lead information</legend>
+      <div id="voter_info_message" class="rt">
+        <em>When connected, lead information will appear here.</em>
+      </div>
+      <ul id="voter_info" class="clearfix">
+      </ul>
+
+  </fieldset>
+</form>
+ <script type="javascript/html" id="caller-campaign-script-lead-info-template">
+          {{#fields}}
+            {{#ID_flag}}
+              <li>ID: <b>{{CustomID}}</b></li>
+            {{/ID_flag}}
+            {{#FirstName_flag}}
+              <li>First name: <b>{{FirstName}}</b></li>
+            {{/FirstName_flag}}
+            {{#MiddleName_flag}}
+              <li>Middle name: <b>{{MiddleName}}</b></li>
+            {{/MiddleName_flag}}
+            {{#LastName_flag}}
+              <li>Last name: <b>{{LastName}}</b></li>
+            {{/LastName_flag}}
+            {{#Suffix_flag}}
+              <li>Suffix: <b>{{Suffix}}</b></li>
+            {{/Suffix_flag}}
+            {{#Address_flag}}
+              <li>Address: <b>{{address}}</b></li>
+            {{/Address_flag}}
+            {{#City_flag}}
+              <li>City: <b>{{city}}</b></li>
+            {{/City_flag}}
+            {{#State/Province_flag}}
+              <li>State/Province: <b>{{state}}</b></li>
+            {{/State/Province_flag}}
+            {{#Zip/Postal Code_flag}}
+              <li>Zip/Postal Code: <b>{{zip_code}}</b></li>
+            {{/Zip/Postal Code_flag}}
+            {{#Country_flag}}
+              <li>Country: <b>{{country}}</b></li>
+            {{/Country_flag}}
+            {{#Phone_flag}}
+              <li>Phone: <b>{{Phone}}</b></li>
+            {{/Phone_flag}}
+            {{#Email_flag}}
+              <li>Email: <b>{{Email}}</b></li>
+            {{/Email_flag}}
+        {{/fields}}
+        {{#custom_field_list}}
+          <li>{{name}}: <b>{{value}}</b></li>
+        {{/custom_field_list}}
+    </script>
+
+<form id="voter_responses" method="post">
+
+</form>
+<script type="javascript/text" id="caller-campaign-script-text-template">
+  <fieldset class="script_element">
+    {{{ content }}}
+  </fieldset>
+</script>
+
+<script type="javascript/html" id="caller-campaign-script-question-template">
+  <fieldset class="script_element">
+    <p>
+      <label>{{text}}</label><br/>
+      <select id="question_{{id}}" name="question[{{id}}]">
+        {{#possible_responses}}
+          <option value="{{id}}">{{value}}</option>
+        {{/possible_responses}}
+      </select>
+
+    </p>
+  </fieldset>
+</script>
+
+<script type="javascript/html" id="caller-campaign-script-notes-template">
+  <fieldset class="script_element">
+    <p><label>{{note}}</label><br/>
+      <input type="text" id="note_response_{{id}}" name="notes[{{id}}]" class="note_text"/>
+    </p>
+  </fieldset>
+</script>
+
+<script type="javascript/html" id="caller-campaign-script-transfer-template">
+  <fieldset id="transfer-calls">
+      <legend>Transfer</legend>
+      <input type="hidden" id="transfer_type" name="transfer_type" >
+      <form id="transfer_form" method="post" action="">
+        <select id="transfer_id" name="transfer[id]">
+          {{#transfers}}
+          <option value="{{id}}">{{label}}-{{phone_number}}</option>
+          {{/transfers}}
+        </select>
+        <div class= "buttons">
+            <button type="submit" id="transfer_button" style="margin-top:10px" onclick="javascript:transfer_call();">Transfer</button>
+        </div>
+      </form>
+    </fieldset>
+</script>
+
+<div id="schedule_callback" class="rt" style="font-size : 1em; display:none">
+</div>
+<script type="javascript/html" id="caller-campaign-schedule-callback-template">
+  <%= render :partial => "callers/campaigns/schedule_callback" %>
+</script>
+
+
+
+
+<div id="caller-actions">
+</div>
+
+<script type="javascript/html" id="caller-campaign-action-template">
+  <div id="statusdiv" style="float:right">Status: Not connected.</div>
+  <div id="actions" class="actions">
+    <a id= "call_voter" href="#" class="action secondary hide">Dial</a>
+    <a id= "skip_voter" href="#" class="action secondary hide">Skip</a>
+    <a id= "stop_calling" href="#" class="action secondary hide">Stop calling</a>
+    <a id= "hangup_call" href="#" class="action secondary hide">Hang up</a>
+    <a id= "kick_self_out_of_conference" href="#"  class="action secondary hide">Hang up</a>
+    <a id= "submit_and_keep_call" href="#" class="action secondary hide">Submit and keep calling</a>
+    <a id= "submit_and_stop_call" href="#" class="action secondary hide" >Submit and stop calling</a>
+  </div>
+</script>
+
+
+<script type="javascript/html" id="caller-campaign-start-calling-template">
+  <div id="callin" style="display:none">
+    <div id="start_calling" >
+      <p><b>If your computer has a mic, click here:</b></p>
+        <a class="action primary" href="#" id="start-calling">Start calling</a>
+      </div>
+    <br>
+
+    <div id="callin_data">
+      <p>
+        <b>If you don't have a mic, use a phone:</b><br>
+        Dial-in number: <span id="callin-number"></span><br>
+        PIN: <span id="callin-pin"></span>
+      </p>
+    </div>
+ </div>
+
+</script>
+
+
+
+
+

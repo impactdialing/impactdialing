@@ -78,6 +78,16 @@ describe Client::CallersController do
     end
   end
 
+  describe "reassign caller campaign" do
+    it "should change caller campaign" do
+      campaign = Factory(:progressive, :account => @user.account)
+      other_campaign = Factory(:progressive, :account => @user.account)
+      caller = Factory(:caller, campaign_id: campaign.id)
+      post :reassign_to_campaign, id: caller.id, campaign_id: other_campaign.id
+      caller.reload.campaign_id.should eq(other_campaign.id)
+    end
+  end
+
   context 'api' do
     describe 'index' do
       it 'returns all of the callers for that account' do

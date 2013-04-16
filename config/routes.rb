@@ -31,7 +31,7 @@ ImpactDialing::Application.routes.draw do
       post :conference_started_phones_only_preview
       post :conference_started_phones_only_power
       post :conference_started_phones_only_predictive
-      post :gather_response  
+      post :gather_response
       post :continue_conf
       post :callin_choice
       post :read_instruction_options
@@ -43,21 +43,18 @@ ImpactDialing::Application.routes.draw do
       post :stop_calling
       post :skip_voter
       post :kick_caller_off_conference
-      post :check_reassign
-      post :new_campaign_response_panel
-      post :transfer_panel
       post :time_period_exceeded
-      post :account_out_of_funds      
+      post :account_out_of_funds
     end
 
   end
 
 
   namespace "callers" do
-    resources :campaigns do
-      member do
-        post :callin
-        match :caller_ready        
+    resources :campaign_calls do
+      collection do
+        post :token
+        get :script
       end
     end
     resources :phones_only do
@@ -121,7 +118,7 @@ ImpactDialing::Application.routes.draw do
         get :usage
         get :call_details
       end
-      member { get :reassign_to_campaign }
+      member { put :reassign_to_campaign }
     end
 
 
@@ -160,17 +157,25 @@ ImpactDialing::Application.routes.draw do
       member { post :verify_callerid }
     end
     resources :blocked_numbers, :only => [:index, :create, :destroy]
+
+    namespace "monitors" do
+      resources :campaigns
+      resources :callers do
+        collection do
+          put :kick_off
+          put :switch_mode
+          post :start
+          get :reassignable_campaigns
+        end
+      end
+    end
     resources :monitors , :only=>[:index, :show] , :name_prefix => 'client' do
       collection do
-        get :start
+
         get :new_index
         get :stop
         get :deactivate_session
-        get :switch_mode
-        get :monitor_session
-        get :kick_off
-        get :campaign_info
-        get :callers_info
+        post :monitor_session
       end
       match "toggle_call_recording" => "monitors#toggle_call_recording"
     end

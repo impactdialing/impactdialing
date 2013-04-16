@@ -1,28 +1,113 @@
+<% content_for :meta do %>
+  <%= csrf_meta_tag %>
+<% end %>
+
 <% content_for :javascripts do %>
-<script type="text/javascript" src="https://static.twilio.com/libs/twiliojs/1.1/twilio.min.js"></script>
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js"></script>
-<% end %>
+  <script type="text/javascript" src="https://static.twilio.com/libs/twiliojs/1.1/twilio.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.js"></script>
+  <%= javascript_include_tag 'flash_detect_min.js' , 'browser_detect.js', "underscore-min", "mustache", 'backbone', 'impactdialing', "models/monitor_campaign.js", "models/monitor_caller.js", "collections/monitor_callers.js", "views/monitor_callers_index.js", "collections/monitor_campaigns.js","routers/monitors.js", "views/monitor_campaigns_index.js" %>
 
+  <script type="text/javascript">
+    $(function() {
+      new ImpactDialing.Routers.Monitors();
+      Backbone.history.start();
+      Twilio.Device.setup("<%= @token %>", {'debug':true});
+      Twilio.Device.connect(function (conn) {});
+      Twilio.Device.ready(function (device) {});
+      Twilio.Device.error(function (error) {
+        alert(error.message);
+      });
+      $(".stop_monitoring").click(function(){
+        Twilio.Device.disconnectAll();
+        $(this).hide();
+        return false;
+      });
+
+  });
+  </script>
+<% end %>
+<input id= "monitor_session_id" type="hidden" value="">
 <h1>Monitor</h1>
+<h2>Campaigns</h2>
+<table style="margin-bottom:0px">
+    <tr>
+      <th style="width:150px">Campaign</th>
+      <th>Callers logged in</th>
+      <th>On Call</th>
+      <th>Wrap up</th>
+      <th>On hold</th>
+      <th>Ringing lines</th>
+      <th>Numbers Available</th>
+    </tr>
+</table>
 
-<% if @campaigns.empty? %>
-    <p>You haven't created any campaigns yet.</p>
-<% else %>
-    <table>
-      <tr>
-        <th>Logged in campaigns</th>
-      </tr>
-      <% @active_campaigns.each do |c| %>
-          <tr>
-            <td><%= link_to c.name, monitor_path(c) %></td>
-          </tr>
-      <% end %>
-    </table>
-<% end %>
-<br>
+<script type="javascript/template" id="campaign-monitor-template">
+      <td style="width:150px">{{name}}</td>
+      <td>{{callers_logged_in}}</td>
+      <td>{{on_call}}</td>
+      <td>{{wrap_up}}</td>
+      <td>{{on_hold}}</td>
+      <td>{{ringing_lines}}</td>
+      <td>{{available}}</td>
+</script>
+<table id="campaigns-monitor"></table>
 
-<br>
+<h2>Callers</h2>
+<table id="caller_table">
+  <tr class="table_header">
+    <th>Campaign</th>
+    <th>Caller</th>
+    <th>Status</th>
+    <th>Time in Status</th>
+    <th></th>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
+</table>
 
-<p>Call recording is currently <%= @account.record_calls? ? "on" : "off" %>. Links to recordings will appear in each campaign's Download report.</p>
-<p class="actions"><%= link_to "Turn call recording #{@account.record_calls? ? "off" : "on" }", {:action=>"toggle_call_recording"}, {:class => 'action secondary'} %></p>
+<script type="javascript/template" id="caller-monitor-template">
+      <td>{{campaign_name}}</td>
+      <td>{{name}}</td>
+      <td>{{status}}</td>
+      <td>{{time_in_status}}</td>
+      <td>
+        <a class ="action secondary eaves_drop" href="#" data-action="eavesdrop">
+          Eavesdrop
+        </a>
+      </td>
+      <td>
+        <a class ="action secondary break_in" href="#" data-action="breakin">
+          Break in
+        </a>
+      </td>
+      <td>
+        <a class ="action secondary kick_off" href="#">
+          Kick off
+        </a>
+      </td>
+      <td>
+        <select class="reassign-campaign">
+         {{#reassignable_campaigns}}
+           <option value="{{id}}">{{name}}</option>
+         {{/reassignable_campaigns}}
+        </select
+        </a>
+      </td>
 
+</script>
+
+<table id="callers-monitor"></table>
+<div id="status" style="float:right"></div>
+<div class="clear"></div>
+
+<p>
+  Call recording is currently <%= @account.record_calls? ? "on" : "off" %>. Links to recordings will appear in each campaign's Download report.
+</p>
+<p class="actions">
+  <%= link_to "Turn call recording #{@account.record_calls? ? "off" : "on" }", {:action=>"toggle_call_recording"},
+  {:class => 'action secondary'} %>
+</p>
+<p class="actions">
+  <a class ="action primary stop_monitoring" href="#" style="display:none">Stop monitoring</a>
+</p>

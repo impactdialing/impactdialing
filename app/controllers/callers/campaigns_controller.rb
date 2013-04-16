@@ -16,11 +16,6 @@ module Callers
       @phone_number = Settings.callin_phone
     end
 
-    def caller_ready
-      caller_session = CallerSession.find_by_sid(params[:caller_sid])
-      caller_session.update_attributes(:available_for_call => true, :on_call => true)
-      render :nothing => true
-    end
   end
-  
+
 end
