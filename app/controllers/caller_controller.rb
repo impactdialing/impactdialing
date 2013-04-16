@@ -121,7 +121,7 @@ class CallerController < ApplicationController
 
 
   def index
-    redirect_to callers_campaign_calls_path
+    redirect_to callers_campaign_calls_path(@caller.campaign)
   end
 
   def check_login
