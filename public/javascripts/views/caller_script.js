@@ -24,9 +24,31 @@ ImpactDialing.Views.CallerNotes = Backbone.View.extend({
 });
 
 ImpactDialing.Views.CallerTransfer = Backbone.View.extend({
+
+  events: {
+    "click #transfer_button" : "transferCall"
+  },
+
   render: function (ele) {
     $(this.el).html(Mustache.to_html($('#caller-campaign-script-transfer-template').html(), ele));
     return this;
+  },
+
+  transferCall: function(){
+    console.log("transfer")
+    $('#transfer_button').html("Transferring...");
+    this.hideHangupButton();
+    var options = {
+      data: {voter: self.options.lead_info.get("fields").id, call: self.options.campaign_call.get("call_id"),
+       caller_session: self.options.campaign_call.get("session_id")  }
+    };
+    $('#transfer_form').attr('action', "/transfer/dial")
+    $('#transfer_form').submit(function() {
+        $('#transfer_button').html("Transfered");
+        $(this).ajaxSubmit(options);
+        $(this).unbind("submit");
+        return false;
+    });
   },
 
 });
@@ -80,7 +102,8 @@ ImpactDialing.Views.CallerScript = Backbone.View.extend({
       }
     });
     if(this.model && !_.isEmpty(this.model.get("transfers"))){
-      $(self.el).append(new ImpactDialing.Views.CallerTransfer().render(this.model.toJSON()).el);
+      $(self.el).append(new ImpactDialing.Views.CallerTransfer({lead_info: this.options.lead_info,
+        campaign_call: this.options.campaign_call}).render(this.model.toJSON()).el);
     }
     return this;
   },

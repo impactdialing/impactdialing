@@ -1,10 +1,12 @@
 ImpactDialing.Views.CampaignCall = Backbone.View.extend({
 
   initialize: function(){
-    this.caller_script = new ImpactDialing.Models.CallerScript();
-    this.script_view  = new ImpactDialing.Views.CallerScript({model: this.caller_script});
-    this.start_calling_view = new ImpactDialing.Views.StartCalling({model: this.model});
     this.lead_info = new ImpactDialing.Models.LeadInfo();
+    this.caller_script = new ImpactDialing.Models.CallerScript();
+    this.script_view  = new ImpactDialing.Views.CallerScript({model: this.caller_script,
+      lead_info: this.lead_info, campaign_call: this.model});
+    this.start_calling_view = new ImpactDialing.Views.StartCalling({model: this.model});
+
     this.schedule_callback_view = new ImpactDialing.Views.ScheduleCallback();
     this.caller_actions = new ImpactDialing.Views.CallerActions({model: this.model, lead_info: this.lead_info,
       schedule_callback: this.schedule_callback_view});
