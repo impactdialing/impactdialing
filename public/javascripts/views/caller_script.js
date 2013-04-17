@@ -34,7 +34,7 @@ ImpactDialing.Views.CallerTransfer = Backbone.View.extend({
     return this;
   },
 
-  transferCall: function(){
+  transferCall: function(e){
     e.preventDefault();
     console.log("transfer")
     $('#transfer_button').html("Transferring...");
