@@ -35,11 +35,12 @@ ImpactDialing.Views.CallerTransfer = Backbone.View.extend({
   },
 
   transferCall: function(){
+    e.preventDefault();
     console.log("transfer")
     $('#transfer_button').html("Transferring...");
     var options = {
-      data: {voter: self.options.lead_info.get("fields").id, call: self.options.campaign_call.get("call_id"),
-       caller_session: self.options.campaign_call.get("session_id")  }
+      data: {voter: this.options.lead_info.get("fields").id, call: this.options.campaign_call.get("call_id"),
+       caller_session: this.options.campaign_call.get("session_id")  }
     };
     $('#transfer_form').attr('action', "/transfer/dial")
     $('#transfer_form').submit(function() {
