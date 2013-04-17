@@ -163,10 +163,12 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
     });
 
     this.channel.bind('transfer_connected', function(data) {
+      console.log("transfer connected")
       self.model.set("transfer_type", data.type);
     });
 
     this.channel.bind('transfer_conference_ended', function(data) {
+      console.log("transfer conference ended")
       var transfer_type = self.model.get("transfer_type");
       if(transfer_type == "warm"){
         self.caller_actions.transferConferenceEnded();
@@ -175,10 +177,12 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
     });
 
     this.channel.bind('warm_transfer',function(data){
+      console.log("warm transfer")
       self.caller_actions.kickSelfOutOfConferenceShow();
     });
 
     this.channel.bind('caller_kicked_off',function(data){
+      console.log("caller kicked off")
       self.caller_actions.kickSelfOutOfConferenceHide();
       self.caller_actions.submitResponseButtonsShow();
     });
