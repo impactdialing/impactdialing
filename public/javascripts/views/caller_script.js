@@ -37,7 +37,6 @@ ImpactDialing.Views.CallerTransfer = Backbone.View.extend({
   transferCall: function(){
     console.log("transfer")
     $('#transfer_button').html("Transferring...");
-    this.hideHangupButton();
     var options = {
       data: {voter: self.options.lead_info.get("fields").id, call: self.options.campaign_call.get("call_id"),
        caller_session: self.options.campaign_call.get("session_id")  }
