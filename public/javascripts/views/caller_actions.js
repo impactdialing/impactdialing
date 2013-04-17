@@ -17,7 +17,6 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     "click #submit_and_stop_call": "sendVoterResponseAndDisconnect",
     "click #skip_voter" : "nextVoter",
     "click #kick_self_out_of_conference" : "kickCallerOff",
-    "click #transfer_button" : "transferCall"
   },
 
 
@@ -218,22 +217,6 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
         session_id : self.model.get("session_id") },
         type : "POST",
     })
-  },
-
-  transferCall: function(){
-    console.log("transfer")
-    $('#transfer_button').html("Transferring...");
-    this.hideHangupButton();
-    var options = {
-      data: {voter: self.options.lead_info.get("fields").id, call: self.model.get("call_id"), caller_session:self.model.get("session_id")  }
-    };
-    $('#transfer_form').attr('action', "/transfer/dial")
-    $('#transfer_form').submit(function() {
-        $('#transfer_button').html("Transfered");
-        $(this).ajaxSubmit(options);
-        $(this).unbind("submit");
-        return false;
-    });
   },
 
 
