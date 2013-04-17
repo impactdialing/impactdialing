@@ -36,7 +36,7 @@ ImpactDialing.Views.CallerTransfer = Backbone.View.extend({
 
   transferCall: function(e){
     e.preventDefault();
-    console.log("transfer")
+    $("#hangup_call").hide();
     $('#transfer_button').html("Transferring...");
     var options = {
       data: {voter: this.options.lead_info.get("fields").id, call: this.options.campaign_call.get("call_id"),
@@ -44,11 +44,14 @@ ImpactDialing.Views.CallerTransfer = Backbone.View.extend({
     };
     $('#transfer_form').attr('action', "/transfer/dial")
     $('#transfer_form').submit(function() {
+        console.log("transfered")
         $('#transfer_button').html("Transfered");
         $(this).ajaxSubmit(options);
         $(this).unbind("submit");
         return false;
     });
+    $("#transfer_form").trigger("submit");
+    $("#transfer_form").unbind("submit");
   },
 
 });
