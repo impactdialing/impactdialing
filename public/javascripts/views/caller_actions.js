@@ -221,6 +221,7 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
   },
 
   transferCall: function(){
+    console.log("transfer")
     $('#transfer_button').html("Transferring...");
     this.hideHangupButton();
     var options = {
