@@ -100,6 +100,7 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
     this.channel.bind('conference_started', function(data) {
       self.lead_info.clear();
       self.lead_info.set(data);
+      console.log(self.lead_info.toJSON())
       self.renderScript();
       if(self.lead_info.get("dialer") && self.lead_info.get("dialer").toLowerCase() == "predictive"){
         $("#voter_info_message").show();
