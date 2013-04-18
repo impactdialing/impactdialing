@@ -157,7 +157,7 @@ class CallerSession < ActiveRecord::Base
   end
 
   def redirect_account_has_no_funds
-    if self.available_for_call?
+    if self.available_for_call? || campaign.type != Campaign::TYPE::PREDICTIVE
       Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
       Twilio::Call.redirect(sid, account_out_of_funds_caller_url(caller, :host => DataCentre.call_back_host(data_centre), :port => Settings.twilio_callback_port, :protocol => "http://", session_id: id))
     end
