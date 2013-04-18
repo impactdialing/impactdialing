@@ -4,6 +4,7 @@ class PhonesOnlyCallerSession < CallerSession
 
 
   def callin_choice
+    start_conf
     read_choice_twiml
   end
 
