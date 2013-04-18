@@ -143,14 +143,14 @@ class CallerSession < ActiveRecord::Base
   end
 
   def redirect_caller_out_of_numbers
-    if self.available_for_call?
+    if self.available_for_call? || campaign.type != Campaign::Type::PREDICTIVE
       Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
       Twilio::Call.redirect(sid, run_out_of_numbers_caller_url(caller_id, :host => DataCentre.call_back_host(data_centre), :port => Settings.twilio_callback_port, :protocol => "http://", session_id: id))
     end
   end
 
   def redirect_caller_time_period_exceeded
-    if self.available_for_call?
+    if self.available_for_call? || campaign.type != Campaign::Type::PREDICTIVE
       Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
       Twilio::Call.redirect(sid, time_period_exceeded_caller_url(caller_id, :host => DataCentre.call_back_host(data_centre), :port => Settings.twilio_callback_port, :protocol => "http://", session_id: id))
     end
