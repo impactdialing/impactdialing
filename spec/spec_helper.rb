@@ -3,12 +3,17 @@ require 'spork'
 require 'spork/ext/ruby-debug'
 require 'simplecov'
 require 'capybara/rspec'
+require 'capybara/poltergeist'
+
+
 
 
 
 SimpleCov.start 'rails' do
   add_filter 'environment.rb'
 end
+
+
 
 Spork.prefork do
   # This file is copied to spec/ when you run 'rails generate rspec:install'
@@ -17,6 +22,7 @@ Spork.prefork do
   require File.expand_path("../../config/environment", __FILE__)
   require 'rspec/rails'
   require 'spork/ext/ruby-debug'
+
 
   # Requires supporting ruby files with custom matchers and macros, etc,
   # in spec/support/ and its subdirectories.
@@ -89,6 +95,12 @@ Spork.prefork do
   end
 
 end
+
+Capybara.register_driver :poltergeist do |app|
+  Capybara::Poltergeist::Driver.new(app, {  })
+end
+Capybara.default_driver = :rack_test
+Capybara.javascript_driver = :poltergeist
 
 Spork.each_run do
 
