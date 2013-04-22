@@ -164,6 +164,7 @@ class CallerSession < ActiveRecord::Base
   end
 
 
+
   def join_conference(mute_type)
     response = Twilio::Verb.new do |v|
       v.dial(:hangupOnStar => true) do
@@ -172,6 +173,7 @@ class CallerSession < ActiveRecord::Base
     end.response
     response
   end
+
 
   def reassign_to_another_campaign(new_campaign_id)
     update_attributes(reassign_campaign: ReassignCampaign::YES)
@@ -193,6 +195,7 @@ class CallerSession < ActiveRecord::Base
   end
 
 
+
   def disconnected?
     on_call == false
   end
@@ -208,6 +211,7 @@ class CallerSession < ActiveRecord::Base
      conference_sid = ""
      conference_sid = confs.class == Array ? confs.last['Sid'] : confs['Sid']
    end
+
 
    def self.time_logged_in(caller, campaign, from, to)
      CallerSession.for_caller(caller).on_campaign(campaign).between(from, to).sum('tDuration').to_i

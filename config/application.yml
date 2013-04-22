@@ -47,6 +47,7 @@ heroku_preproduction:
 
 development:
   <<: *default_settings
+  voip_api_url: localhost:3010
   twilio_callback_host: impact.localtunnel.net
   call_end_callback_host: impact.localtunnel.net
   incoming_callback_host: impact.localtunnel.net

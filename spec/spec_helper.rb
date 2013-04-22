@@ -2,6 +2,8 @@ require 'rubygems'
 require 'spork'
 require 'spork/ext/ruby-debug'
 require 'simplecov'
+require 'capybara/rspec'
+
 
 
 SimpleCov.start 'rails' do
@@ -38,11 +40,11 @@ Spork.prefork do
     config.before(:suite) do
        DatabaseCleaner.strategy = :transaction
     end
-    
+
     config.after(:suite) do
       DatabaseCleaner.clean_with(:truncation)
     end
-    
+
     config.before(:each) do
       DatabaseCleaner.start
     end
@@ -61,10 +63,16 @@ Spork.prefork do
     # == Notes
     #
     # For more information take a look at Spec::Runner::Configuration and Spec::Runner
+     config.include Features::DialinHelpers, type: :feature
   end
 
   require "factories"
   include ActionDispatch::TestProcess
+
+
+  class ActionDispatch::IntegrationTest
+    include Capybara::DSL
+  end
 
   def login_as(user)
     @controller.stub(:current_user).and_return(user)

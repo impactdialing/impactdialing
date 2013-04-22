@@ -20,6 +20,7 @@ class CallinController < ApplicationController
         RedisDataCentre.set_datacentres_used(load_caller_session.campaign_id, DataCentre.code(params[:caller_dc]))
         xml = load_caller_session.start_conf
       end
+      puts xml
       render xml:  xml
     else
       render xml:  Caller.ask_for_pin(params[:attempt].to_i, params[:provider])
