@@ -42,6 +42,11 @@ Spork.prefork do
     # config.mock_with :flexmock
     # config.mock_with :rr
     config.mock_with :rspec
+    ActiveRecord::ConnectionAdapters::ConnectionPool.class_eval do
+      def current_connection_id
+        Thread.main.object_id
+      end
+    end
 
     config.before(:suite) do
        DatabaseCleaner.strategy = :transaction
@@ -96,11 +101,11 @@ Spork.prefork do
 
 end
 
-Capybara.register_driver :poltergeist do |app|
-  Capybara::Poltergeist::Driver.new(app, {  })
-end
-Capybara.default_driver = :rack_test
-Capybara.javascript_driver = :poltergeist
+# Capybara.register_driver :poltergeist do |app|
+#   Capybara::Poltergeist::Driver.new(app, { js_errors: true })
+# end
+Capybara.javascript_driver = :selenium
+Capybara.current_driver = :selenium
 
 Spork.each_run do
 

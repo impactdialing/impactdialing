@@ -118,7 +118,7 @@ GEM
       multipart-post (~> 1.1)
     faye-websocket (0.4.7)
       eventmachine (>= 0.12.0)
-    ffi (1.4.0)
+    ffi (1.7.0)
     foreman (0.62.0)
     formtastic (2.2.1)
       actionpack (>= 3.0)
@@ -184,7 +184,7 @@ GEM
     mime-types (1.21)
     mocha (0.10.5)
       metaclass (~> 0.0.1)
-    multi_json (1.6.1)
+    multi_json (1.7.2)
     multi_xml (0.5.2)
     multipart-post (1.2.0)
     mysql2 (0.3.11)
@@ -286,7 +286,7 @@ GEM
     rubyzip (0.9.9)
     rufus-scheduler (2.0.18)
       tzinfo (>= 0.3.23)
-    selenium-webdriver (2.29.0)
+    selenium-webdriver (2.32.1)
       childprocess (>= 0.2.5)
       multi_json (~> 1.0)
       rubyzip
@@ -425,6 +425,7 @@ DEPENDENCIES
   rspec-instafail
   rspec-rails (~> 2.6.1)
   ruby-graphviz (= 0.9.0)
+  selenium-webdriver (~> 2.32.1)
   settingslogic (~> 2.0.6)
   shoulda
   showoff-io
