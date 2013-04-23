@@ -7,6 +7,10 @@ describe "CampaignCall" do
       @account = Factory(:account, subscription_name: "Manual", activated: true, card_verified: true)
       @script = Factory(:script)
       @script_text = Factory(:script_text, script_id: @script.id, content: "This is a script text", script_order: 1)
+      @question = Factory(:question, script_id: @script.id, text: "Whats the question?", script_order: 2)
+      @possible_response = Factory(:possible_response, question_id: @question.id, keypad: 1, value: "Test", retry:false,
+        possible_response_order: 1)
+      @note = Factory(:note, script_id: @script.id, note: "Whats your note?", script_order: 3)
 
       @campaign = Factory(:preview, account: @account, script: @script)
 
@@ -22,6 +26,19 @@ describe "CampaignCall" do
 
     it "should display the script text" ,js: true do
       page.should have_content('This is a script text')
+    end
+
+    it "should display the question" ,js: true do
+      page.should have_content('Whats the question?')
+    end
+
+    it "should display the possible response" ,js: true do
+      page.should have_content("Test")
+    end
+
+
+    it "should display the note" ,js: true do
+      page.should have_content('Whats your note?')
     end
 
     it "should display the start calling button" ,js: true do
