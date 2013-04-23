@@ -79,8 +79,6 @@ group :test do
   gem 'spork-rails'
   gem "database_cleaner"
   gem "json_spec"
-  gem "capybara", "~>2.0.2"
-  gem "capybara-webkit", "~>0.14.2"
   gem "poltergeist"
   gem 'selenium-webdriver', "~>2.32.1"
   gem "faraday"

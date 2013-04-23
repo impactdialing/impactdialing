@@ -11,28 +11,15 @@ describe "CallinPreview" do
     email: "test4@impactdialing.com", password: "demo123")
   end
 
-  describe "Callin Preview Campaign"  do
-
-
-
-    it "should see the start calling button" ,js: true do
+  describe "Callin Preview Campaign" do
+    it "should see the start calling button", js: true do
       visit "/caller/login"
       page.should have_content('Log in')
       fill_in "email", with: @caller.email
       fill_in "password", with: @caller.password
       click_link_or_button 'Log in'
-      print page.html
+      page.save_screenshot('tmp/poltergeist_screenshots/caller.png')
       page.should have_content('Start calling')
     end
-
-    it "should start calling and s", js: true do
-      visit "/caller/login"
-      page.should have_content('Log in')
-      fill_in "email", with: caller.email
-      fill_in "password", with: caller.password
-      click_link_or_button 'Log in'
-      page.should have_content('Start calling')
-    end
-
   end
 end

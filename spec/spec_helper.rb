@@ -69,6 +69,15 @@ Spork.prefork do
     # examples within a transaction, remove the following line or assign false
     # instead of true.
     config.use_transactional_fixtures = true
+
+    # Make it so poltergeist (out of thread) tests can work with transactional fixtures
+    # REF http://opinionated-programmer.com/2011/02/capybara-and-selenium-with-rspec-and-rails-3/#comment-220
+    ActiveRecord::ConnectionAdapters::ConnectionPool.class_eval do
+      def current_connection_id
+        Thread.main.object_id
+      end
+    end
+
     config.fixture_path = Rails.root.join('spec/fixtures')
     #
     # == Notes
@@ -101,11 +110,13 @@ Spork.prefork do
 
 end
 
+
 # Capybara.register_driver :poltergeist do |app|
 #   Capybara::Poltergeist::Driver.new(app, { js_errors: true })
 # end
 Capybara.javascript_driver = :selenium
 Capybara.current_driver = :selenium
+
 
 Spork.each_run do
 
