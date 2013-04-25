@@ -3,8 +3,6 @@ require 'spork'
 require 'spork/ext/ruby-debug'
 require 'simplecov'
 require 'capybara/rspec'
-require 'capybara/poltergeist'
-
 
 
 
@@ -12,8 +10,6 @@ require 'capybara/poltergeist'
 SimpleCov.start 'rails' do
   add_filter 'environment.rb'
 end
-
-
 
 Spork.prefork do
   # This file is copied to spec/ when you run 'rails generate rspec:install'
@@ -42,11 +38,18 @@ Spork.prefork do
     # config.mock_with :flexmock
     # config.mock_with :rr
     config.mock_with :rspec
-    ActiveRecord::ConnectionAdapters::ConnectionPool.class_eval do
-      def current_connection_id
-        Thread.main.object_id
-      end
+
+    class ActiveRecord::Base
+      mattr_accessor :shared_connection
+      @@shared_connection = nil
+
+      def self.connection
+        @@shared_connection || ConnectionPool::Wrapper.new(:size => 1) { retrieve_connection }
     end
+  end
+  ActiveRecord::Base.shared_connection = ActiveRecord::Base.connection
+
+
 
     config.before(:suite) do
        DatabaseCleaner.strategy = :transaction
@@ -72,11 +75,7 @@ Spork.prefork do
 
     # Make it so poltergeist (out of thread) tests can work with transactional fixtures
     # REF http://opinionated-programmer.com/2011/02/capybara-and-selenium-with-rspec-and-rails-3/#comment-220
-    ActiveRecord::ConnectionAdapters::ConnectionPool.class_eval do
-      def current_connection_id
-        Thread.main.object_id
-      end
-    end
+
 
     config.fixture_path = Rails.root.join('spec/fixtures')
     #
@@ -114,8 +113,11 @@ end
 # Capybara.register_driver :poltergeist do |app|
 #   Capybara::Poltergeist::Driver.new(app, { js_errors: true })
 # end
+
 Capybara.javascript_driver = :selenium
 Capybara.current_driver = :selenium
+# Capybara.app_host = 'http://impact.localtunnel.net'
+# Capybara.server_port = '8989'
 
 
 Spork.each_run do

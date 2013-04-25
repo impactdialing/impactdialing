@@ -3,7 +3,11 @@ require "spec_helper"
 
 describe "CampaignCall" do
   include Capybara::DSL
+  Capybara.app_host = 'http://impact.localtunnel.net'
+  Capybara.server_port = '8989'
+
   before(:each) do
+      puts ENV["RAILS_ENV"]
       @account = Factory(:account, subscription_name: "Manual", activated: true, card_verified: true)
       @script = Factory(:script)
       @script_text = Factory(:script_text, script_id: @script.id, content: "This is a script text", script_order: 1)
@@ -14,9 +18,11 @@ describe "CampaignCall" do
 
       @campaign = Factory(:preview, account: @account, script: @script)
 
-      @caller = Caller.create(campaign: @campaign, account: @account, email: "nikhil@impact.com", password: "password")
+      @caller = Factory(:caller, account: @account, campaign: @campaign, email: "nikhil@impact.com", password: "password")
+      puts ActiveRecord::Base.connection.current_database
       visit "/caller/login"
       page.should have_content('Log in')
+      puts Caller.count
       fill_in "email", with: @caller.email
       fill_in "password", with: @caller.password
       click_link_or_button 'Log in'
