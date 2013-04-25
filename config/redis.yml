@@ -38,16 +38,16 @@ aws_staging:
   <<: *heroku_staging
 
 heroku_preproduction:
-  resque: redis://user:Mb3Rediz4C2tCallz@10.140.13.42:6379
-  sidekiq: redis://user:Mb3Rediz4C2tCallz@10.140.13.42:6379
-  call_flow: redis://user:Mb3Rediz4C2tCallz@10.140.13.42:6379
-  monitor: redis://user:Mb3Rediz4C2tCallz@10.140.13.42:6379
-  on_hold_callers: redis://user:Mb3Rediz4C2tCallz@10.140.13.42:6379
-  call_end: redis://user:Mb3Rediz4C2tCallz@10.140.13.42:6379
-  question_pr: redis://user:Mb3Rediz4C2tCallz@10.140.13.42:6379
-  phones_only_ans: redis://user:Mb3Rediz4C2tCallz@10.140.13.42:6379
-  caller_session: redis://user:Mb3Rediz4C2tCallz@10.140.13.42:6379
-  call: redis://user:Mb3Rediz4C2tCallz@10.140.13.42:6379
+  resque: redis://redistogo:91cfb03d8edb21dee40d0d8722d9cb26@squawfish.redistogo.com:9652
+  sidekiq: redis://redistogo:91cfb03d8edb21dee40d0d8722d9cb26@squawfish.redistogo.com:9652
+  call_flow: redis://redistogo:91cfb03d8edb21dee40d0d8722d9cb26@squawfish.redistogo.com:9652
+  monitor: redis://redistogo:91cfb03d8edb21dee40d0d8722d9cb26@squawfish.redistogo.com:9652
+  on_hold_callers: redis://redistogo:91cfb03d8edb21dee40d0d8722d9cb26@squawfish.redistogo.com:9652
+  call_end: redis://redistogo:91cfb03d8edb21dee40d0d8722d9cb26@squawfish.redistogo.com:9652
+  question_pr: redis://redistogo:91cfb03d8edb21dee40d0d8722d9cb26@squawfish.redistogo.com:9652
+  phones_only_ans: redis://redistogo:91cfb03d8edb21dee40d0d8722d9cb26@squawfish.redistogo.com:9652
+  caller_session: redis://redistogo:91cfb03d8edb21dee40d0d8722d9cb26@squawfish.redistogo.com:9652
+  call: redis://redistogo:91cfb03d8edb21dee40d0d8722d9cb26@squawfish.redistogo.com:9652
 
 
 heroku: &heroku
