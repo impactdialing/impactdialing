@@ -3,8 +3,8 @@ require "spec_helper"
 
 describe "CampaignCall" do
   include Capybara::DSL
-  Capybara.app_host = 'http://impact.localtunnel.net'
-  Capybara.server_port = '8989'
+  # Capybara.app_host = 'http://impact.localtunnel.net'
+  # Capybara.server_port = '8989'
 
   before(:each) do
       puts ENV["RAILS_ENV"]
