@@ -4,6 +4,7 @@ octopus:
     - heroku
     - aws
     - aws_staging
+    - heroku_preproduction
 
   test:
     read_slave1:
