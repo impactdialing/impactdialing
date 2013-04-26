@@ -52,7 +52,7 @@ Spork.prefork do
 
 
     config.before(:suite) do
-       DatabaseCleaner.strategy = :transaction
+       DatabaseCleaner.strategy = :truncation
     end
 
     config.after(:suite) do
@@ -63,8 +63,16 @@ Spork.prefork do
       DatabaseCleaner.start
     end
 
+    config.before(:all) do
+      DatabaseCleaner.start
+    end
+
 
     config.after(:each) do
+        DatabaseCleaner.clean
+    end
+
+    config.after(:all) do
         DatabaseCleaner.clean
     end
 
@@ -72,6 +80,12 @@ Spork.prefork do
     # examples within a transaction, remove the following line or assign false
     # instead of true.
     config.use_transactional_fixtures = false
+    # ActiveRecord::ConnectionAdapters::ConnectionPool.class_eval do
+    #   def current_connection_id
+    #     Thread.main.object_id
+    #   end
+    # end
+
 
     # Make it so poltergeist (out of thread) tests can work with transactional fixtures
     # REF http://opinionated-programmer.com/2011/02/capybara-and-selenium-with-rspec-and-rails-3/#comment-220
