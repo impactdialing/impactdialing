@@ -146,7 +146,7 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
       Voter.by_campaign(@campaign).order('last_call_attempt_time').find_in_hashes(:batch_size => 5000, start: start_position(first_voter), shard: OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do |voters|
         process_voters(voters)
         puts " Increment: #{i.to_s} "
-        i++
+        i = i+ 1
       end
     end
   end
@@ -159,7 +159,7 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
       CallAttempt.from('call_attempts use index (index_call_attempts_on_campaign_created_id)').for_campaign(@campaign).order('created_at').includes(:answers, :note_responses).find_in_hashes(:batch_size => 5000, start: start_position(first_attempt), shard: OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do |attempts|
         process_attempts(attempts)
         puts " Increment: #{i.to_s} "
-        i++
+        i = i+ 1
       end
     end
   end
@@ -172,7 +172,7 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
       Voter.by_campaign(@campaign).last_call_attempt_within(@from_date, @to_date).order('created_at').find_in_hashes(:batch_size => 5000, start: start_position(first_voter), shard: OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do |voters|
         process_voters(voters)
         puts " Increment: #{i.to_s} "
-        i++
+        i = i+ 1
       end
     end
   end
@@ -185,7 +185,7 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
       CallAttempt.from('call_attempts use index (index_call_attempts_on_campaign_created_id)').for_campaign(@campaign).between(@from_date, @to_date).order('created_at').includes(:answers, :note_responses).find_in_batches(:batch_size => 5000, start: start_position(first_attempt)) do |attempts|
         process_attempts(attempts)
         puts " Increment: #{i.to_s} "
-        i++
+        i = i+ 1
       end
     end
   end
