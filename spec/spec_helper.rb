@@ -39,15 +39,15 @@ Spork.prefork do
     # config.mock_with :rr
     config.mock_with :rspec
 
-  #   class ActiveRecord::Base
-  #     mattr_accessor :shared_connection
-  #     @@shared_connection = nil
+    class ActiveRecord::Base
+      mattr_accessor :shared_connection
+      @@shared_connection = nil
 
-  #     def self.connection
-  #       @@shared_connection || ConnectionPool::Wrapper.new(:size => 1) { retrieve_connection }
-  #   end
-  # end
-  # ActiveRecord::Base.shared_connection = ActiveRecord::Base.connection
+      def self.connection
+        @@shared_connection || ConnectionPool::Wrapper.new(:size => 1) { retrieve_connection }
+    end
+  end
+  ActiveRecord::Base.shared_connection = ActiveRecord::Base.connection
 
 
 
@@ -79,7 +79,7 @@ Spork.prefork do
     # If you're not using ActiveRecord, or you'd prefer not to run each of your
     # examples within a transaction, remove the following line or assign false
     # instead of true.
-    config.use_transactional_fixtures = false
+    config.use_transactional_fixtures = true
     # ActiveRecord::ConnectionAdapters::ConnectionPool.class_eval do
     #   def current_connection_id
     #     Thread.main.object_id
