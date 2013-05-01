@@ -8,10 +8,7 @@ ImpactDialing.Views.StartCalling = Backbone.View.extend({
   },
 
   render: function() {
-    if (!FlashDetect.installed || !flash_supported()){
-    }else{
-      $(this.el).html(Mustache.to_html($('#caller-campaign-start-calling-template').html()));
-    }
+    $(this.el).html(Mustache.to_html($('#caller-campaign-start-calling-template').html()));
     return this;
   },
 
