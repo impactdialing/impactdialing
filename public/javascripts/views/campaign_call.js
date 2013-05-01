@@ -53,6 +53,9 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
 
         $("#caller-actions").html(self.start_calling_view.render().el);
         $("#callin").show();
+        if (!FlashDetect.installed || !flash_supported()){
+          $("#start_calling").hide();
+        }
         $("#callin-number").html(self.model.get("phone_number"));
         $("#callin-pin").html(self.model.get("pin"));
         self.setupTwilio();
