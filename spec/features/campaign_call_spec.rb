@@ -1,10 +1,13 @@
-require "spec_helper"
+require "integration_spec_helper"
 
 
 describe "CampaignCall" do
   include Capybara::DSL
+  Capybara.app_host = 'http://127.0.0.1'
+  Capybara.server_port = '8989'
 
-  before(:all) do
+
+  before(:each) do
       @account = Factory(:account, subscription_name: "Manual", activated: true, card_verified: true)
       @script = Factory(:script)
       @script_text = Factory(:script_text, script_id: @script.id, content: "This is a script text", script_order: 1)

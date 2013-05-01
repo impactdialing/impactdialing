@@ -21,6 +21,16 @@ test:
   timeout: 5000
   reconnect: true
 
+integration_test:
+  adapter: mysql2
+  host: localhost
+  database: impactdialing_integration_test
+  username: root
+  password:
+  timeout: 5000
+  reconnect: true
+
+
 production2:
     adapter: sqlite3
     database: production2.db

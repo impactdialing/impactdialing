@@ -17,6 +17,7 @@ class PreviewPowerDialJob
 
     voter = Voter.find(voter_id)
     begin
+      puts "dial"
       Twillio.dial(voter, caller_session)
     rescue ActiveRecord::StaleObjectError
       caller_session.redirect_caller

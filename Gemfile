@@ -52,7 +52,7 @@ gem "sidekiq-failures", "~> 0.1.0"
 gem "lograge", "~>0.2.0"
 
 
-group :development, :test do
+group :development, :test, :integration_test do
   gem 'rspec'
   gem 'rspec-rails', '~> 2.6.1'
   gem 'debugger'
@@ -72,7 +72,7 @@ group :development do
   gem "capistrano-multiconfig"
 end
 
-group :test do
+group :test, :integration_test do
   gem 'factory_girl', '~> 1.3.3'
   gem 'shoulda'
   gem 'simplecov'

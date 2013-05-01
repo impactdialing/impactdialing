@@ -5,7 +5,7 @@ class TwilioLib
 
 
   DEFAULT_SERVER = "api.twilio.com" unless const_defined?('DEFAULT_SERVER')
-  DEFAULT_PORT = 443 unless const_defined?('DEFAULT_PORT')
+  DEFAULT_PORT = 80 unless const_defined?('DEFAULT_PORT')
   DEFAULT_ROOT= "/2010-04-01/Accounts/" unless const_defined?('DEFAULT_ROOT')
 
   def initialize(accountguid=TWILIO_ACCOUNT, authtoken=TWILIO_AUTH, options = {})
@@ -31,15 +31,16 @@ class TwilioLib
       'StatusCallback' => call_ended_call_url(attempt.call, host: Settings.call_end_callback_host, port:  Settings.twilio_callback_port, protocol: "http://", event: "call_ended", campaign_type: campaign.type),
       'Timeout' => "15","DCCODES" => dc_codes}
     params.merge!({'IfMachine'=> 'Continue', "Timeout" => "30"}) if campaign.answering_machine_detect
-    response = create_http_request("https://#{Settings.voip_api_url}#{@root}Calls.json", params, Settings.voip_api_url)
+    response = create_http_request("http://#{Settings.voip_api_url}#{@root}Calls.json", params, Settings.voip_api_url)
     response.body
   end
 
   def create_http_request(url, params, server)
+
     http = Net::HTTP.new(server, @port)
     http.use_ssl=true
     req = Net::HTTP::Post.new(url)
-    req.basic_auth @http_user, @http_password
+    # req.basic_auth @http_user, @http_password
     req.set_form_data(params)
     http.start{http.request(req)}
   end
@@ -111,13 +112,13 @@ class TwilioLib
     Rails.logger.info response.body
     response.body
   end
-  
+
   def update_twilio_stats_by_model_em model_instance
     return if model_instance.sid.blank?
     t = TwilioLib.new(TWILIO_ACCOUNT,TWILIO_AUTH)
     EventMachine::HttpRequest.new("https://#{@server}#{@root}Calls/#{model_instance.sid}").aget :head => {'authorization' => [@http_user, @http_password]}
   end
-  
+
 
   def update_twilio_stats_by_model model_instance
     return if model_instance.sid.blank?
@@ -126,7 +127,7 @@ class TwilioLib
     twilio_xml_parse(response, model_instance)
   end
 
-  def twilio_xml_parse(response, model_instance)        
+  def twilio_xml_parse(response, model_instance)
     begin
       call_response = Hash.from_xml(response)['TwilioResponse']['Call']
       model_instance.tCallSegmentSid = call_response['Sid']
