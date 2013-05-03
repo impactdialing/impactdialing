@@ -167,6 +167,7 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
 
     this.channel.bind('transfer_connected', function(data) {
       self.model.set("transfer_type", data.type);
+      self.model.set("transfer_call_id", self.model.get("call_id"));
     });
 
     this.channel.bind('transfer_conference_ended', function(data) {
