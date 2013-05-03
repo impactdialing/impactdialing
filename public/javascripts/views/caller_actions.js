@@ -139,7 +139,6 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     if (this.model.get("call_id") == this.model.get("transfer_call_id")){
       this.kickSelfOutOfConferenceShow();
     }
-    this.model.unset("caller_disconnected_transfer");
   },
 
   callerKickedOff: function(){
