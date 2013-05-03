@@ -225,6 +225,7 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
   },
 
   kickCallerOff: function(){
+    var self = this;
     $.ajax({
         url : "/caller/" + self.model.get("caller_id") + "/kick_caller_off_conference",
         data : {caller_session: self.model.get("session_id") },
