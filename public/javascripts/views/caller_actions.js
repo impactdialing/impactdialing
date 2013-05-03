@@ -136,7 +136,7 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
   transferConferenceEnded: function(){
     this.hideHangupButton();
     this.kickSelfOutOfConferenceHide();
-    if (this.model.get("caller_disconnected_transfer") != true){
+    if (this.model.get("call_id") == this.model.get("transfer_call_id")){
       this.kickSelfOutOfConferenceShow();
     }
     this.model.unset("caller_disconnected_transfer");
@@ -145,7 +145,6 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
   callerKickedOff: function(){
     this.kickSelfOutOfConferenceHide();
     this.submitResponseButtonsShow();
-    this.model.set("caller_disconnected_transfer", true);
     this.setMessage("Status: Waiting for call results.");
   },
 
