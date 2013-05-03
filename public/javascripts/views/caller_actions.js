@@ -146,6 +146,7 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     this.kickSelfOutOfConferenceHide();
     this.submitResponseButtonsShow();
     this.model.set("caller_disconnected_transfer", true);
+    this.setMessage("Status: Waiting for call results.");
   },
 
 
