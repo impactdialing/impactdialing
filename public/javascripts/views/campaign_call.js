@@ -182,8 +182,7 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
     });
 
     this.channel.bind('caller_kicked_off',function(data){
-      self.caller_actions.kickSelfOutOfConferenceHide();
-      self.caller_actions.submitResponseButtonsShow();
+      self.caller_actions.callerKickedOff()
     });
 
   },
