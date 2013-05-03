@@ -31,6 +31,7 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
     $("#voter_responses").html(this.script_view.render().el);
     this.schedule_callback_view.render();
     $("#transfer-calls").hide();
+    $('#transfer_button').html("Transfer");
     $("#schedule_callback").hide();
   },
 

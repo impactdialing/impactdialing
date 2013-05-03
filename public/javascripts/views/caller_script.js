@@ -107,7 +107,6 @@ ImpactDialing.Views.CallerScript = Backbone.View.extend({
     if(this.model && !_.isEmpty(this.model.get("transfers"))){
       $(self.el).append(new ImpactDialing.Views.CallerTransfer({lead_info: this.options.lead_info,
         campaign_call: this.options.campaign_call}).render(this.model.toJSON()).el);
-      $('#transfer_button').html("Transfer");
     }
     return this;
   },
