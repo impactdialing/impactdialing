@@ -136,9 +136,8 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
   transferConferenceEnded: function(){
     this.hideHangupButton();
     this.kickSelfOutOfConferenceHide();
-    console.log(this.model.toJSON())
     if (this.model.get("caller_disconnected_transfer") != true){
-      this.submitResponseButtonsShow();
+      this.kickSelfOutOfConferenceShow();
     }
     this.model.unset("caller_disconnected_transfer");
   },
