@@ -74,8 +74,14 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
   voterDisconected: function(){
     this.hideAllActions();
     this.hideTransferCall();
-    this.setMessage("Status: Waiting for call results.");
-    this.submitResponseButtonsShow();
+    if (this.model.get("transfer_type") == 'warm'){
+      this.kickSelfOutOfConferenceShow();
+      this.submitResponseButtonsHide();
+      this.setMessage("Status: Call Transfered.");
+    }else{
+      this.setMessage("Status: Waiting for call results.");
+      this.submitResponseButtonsShow();
+    }
   },
 
   sendVoterResponse: function() {
@@ -177,6 +183,11 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
   submitResponseButtonsShow: function(){
     $("#submit_and_keep_call").show();
     $("#submit_and_stop_call").show();
+  },
+
+  submitResponseButtonsHide: function(){
+    $("#submit_and_keep_call").hide();
+    $("#submit_and_stop_call").hide();
   },
 
   callVoter: function() {
