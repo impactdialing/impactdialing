@@ -101,6 +101,7 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
     });
 
     this.channel.bind('conference_started', function(data) {
+      self.model.unset("call_id")
       self.lead_info.clear();
       self.lead_info.set(data);
       self.renderScript();
