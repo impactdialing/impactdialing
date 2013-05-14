@@ -97,7 +97,13 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
     });
 
     this.channel.bind('caller_connected_dialer', function(data) {
-      self.caller_actions.callerConnectedDialer();
+        self.model.unset("call_id")
+        self.lead_info.clear();
+        self.lead_info.set(data);
+        self.renderScript();
+        $("#voter_info_message").show();
+        $("#voter_info").hide();
+        self.caller_actions.callerConnectedDialer();
     });
 
     this.channel.bind('conference_started', function(data) {
@@ -105,13 +111,8 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
       self.lead_info.clear();
       self.lead_info.set(data);
       self.renderScript();
-      if(self.lead_info.get("dialer") && self.lead_info.get("dialer").toLowerCase() == "predictive"){
-        $("#voter_info_message").show();
-        $("#voter_info").hide();
-      }else{
-        $("#voter_info_message").hide();
-        $("#voter_info").html(self.lead_info_view.render().el);
-      }
+      $("#voter_info_message").hide();
+      $("#voter_info").html(self.lead_info_view.render().el);
       self.caller_actions.conferenceStarted();
     });
 
