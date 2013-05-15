@@ -2,7 +2,7 @@ require 'resque-loner'
 
 class DebiterJob
   include Resque::Plugins::UniqueJob
-  @queue = :debit_worker
+  @queue = :background_worker
 
    def self.perform
     ActiveRecord::Base.verify_active_connections!
