@@ -51,7 +51,7 @@ class Script < ActiveRecord::Base
   end
 
   def no_campaign_using_on_deletion
-    if active_change == [true, false] && !campaigns.empty?
+    if active_change == [true, false] && !campaigns.active.empty?
       errors.add(:base, I18n.t(:script_cannot_be_deleted))
     end
   end
