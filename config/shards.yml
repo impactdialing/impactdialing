@@ -66,13 +66,10 @@ octopus:
       password: pfsdh37sl203jq
     simulator_slave:
       adapter: mysql2
-      host:
-
-
+      host: impactdialing-production.cjo94dhm4pos.us-east-1.rds.amazonaws.com
       database: heroku_production
       username: root
       password: pfsdh37sl203jq
-
 
   aws:
     <<: *heroku
