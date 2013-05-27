@@ -15,12 +15,14 @@ class ClientController < ApplicationController
     end
   end
 
-
   def check_login
     if session[:user].blank?
       respond_to do |format|
         format.json { render :json => {status: 'error', code: '401' , message: 'Unauthorized'}, :status => :unauthorized }
-        format.html { redirect_to login_path }
+        format.html do
+          flash_message(:error, "Please sign in.")
+          redirect_to login_path
+        end
       end
       return
     end
@@ -38,10 +40,6 @@ class ClientController < ApplicationController
 
   def account
     current_user.try(:account)
-  end
-
-  def redirect_to_login
-    redirect_to login_path
   end
 
   def forgot
@@ -89,33 +87,10 @@ class ClientController < ApplicationController
 
   def login
     if session[:user]
-      redirect_to :action => "user_add"
-      return
+      redirect_to client_root_path
+    else
+      @user = User.new
     end
-
-    @user = User.new {params[:user]}
-    if !params[:user].blank?
-      user_add
-    end
-
-    if !params[:email].blank?
-      @user = User.authenticate(params[:email], params[:password])
-      if @user.blank?
-        flash_now(:error, "The email or password you entered was incorrect. Please try again.")
-        @user = User.new {params[:user]}
-      else
-        session[:user]=@user.id
-        flash_message(:kissmetrics, "Signed In")
-        redirect_to :action=>"index"
-        return
-      end
-    end
-
-  end
-
-  def logout
-    session[:user]=nil
-    redirect_to_login
   end
 
   def recording_add

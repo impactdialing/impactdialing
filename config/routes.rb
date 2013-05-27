@@ -92,6 +92,7 @@ ImpactDialing::Application.routes.draw do
   get :hold_call, :to => 'callin#hold', :protocol => PROTOCOL
 
   namespace 'client' do
+    resource :session, :only => [:create, :destroy]
     resources :scripts do
       collection do
         get :questions_answered
