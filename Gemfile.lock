@@ -44,6 +44,11 @@ GEM
       builder
       mime-types
       xml-simple
+    better_errors (0.7.2)
+      coderay (>= 1.0.0)
+      erubis (>= 2.6.6)
+    binding_of_caller (0.7.1)
+      debug_inspector (>= 0.0.1)
     bourne (1.1.2)
       mocha (= 0.10.5)
     builder (3.0.4)
@@ -81,6 +86,7 @@ GEM
     daemons (1.0.10)
     dalli (2.3.0)
     database_cleaner (0.9.1)
+    debug_inspector (0.0.2)
     debugger (1.4.0)
       columnize (>= 0.3.1)
       debugger-linecache (~> 1.1.1)
@@ -352,6 +358,8 @@ DEPENDENCIES
   activerecord-import (>= 0.2.0)
   ar-octopus!
   aws-s3 (~> 0.6.2)
+  better_errors
+  binding_of_caller
   call_center (~> 0.0.9)
   capistrano
   capistrano-multiconfig

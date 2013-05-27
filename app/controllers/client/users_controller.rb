@@ -12,9 +12,9 @@ module Client
         session[:user] = @user.id
         flash_message(:notice, "Your account has been created.")
         flash_message(:kissmetrics, "Signed Up")
-        redirect_to '/client/index'
+        redirect_to '/client/welcome'
       else
-        render 'client/login'
+        render '/client/login'
       end
     end
 
