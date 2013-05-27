@@ -1,0 +1,29 @@
+<h1>Update my info</h1>
+<%= render "shared/error_messages", :target => @user %>
+<%= form_for [:client, @user] do |f| %>
+  <fieldset>
+    <p>
+      <%= f.label :fname, 'First name' %>
+      <%= f.text_field :fname %>
+    </p>
+
+    <p>
+      <%= f.label :lname, 'Last name' %>
+      <%= f.text_field :lname %>
+    </p>
+
+    <p>
+      <%= f.label :phone, 'Phone number' %>
+      <%= f.text_field :phone %>
+    </p>
+
+    <p>
+      <%= f.label :email, 'Email address' %>
+      <%= f.text_field :email %>
+    </p>
+
+    <div class="buttons">
+      <button type="submit">Update info</button>
+    </div>
+  </fieldset>
+<% end %>

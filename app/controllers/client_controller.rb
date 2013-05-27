@@ -78,50 +78,6 @@ class ClientController < ApplicationController
     self.current_user = Account.find_by_api_key(params[:api_key]) unless params[:api_key].empty?
   end
 
-
-  def user_add
-    if session[:user].blank?
-      @user = User.new(:account => Account.new(:domain_name => request.domain), role: User::Role::ADMINISTRATOR)
-    else
-      @user = User.find(session[:user])
-      @account = @user.account
-    end
-
-    if request.post?
-      @user.attributes =  params[:user]
-      if params[:fullname]!=nil
-        name_arr=params[:fullname].split(" ")
-        fname=name_arr.shift
-        @user.fname=fname.strip if fname!=nil
-        @user.lname=name_arr.join(" ").strip
-      end
-
-      if !@user.new_record? and (not @user.authenticate_with?(params[:exist_pw]))
-        flash_now(:error, "Current password incorrect")
-        return
-      else
-        @user.save
-      end
-
-      if @user.valid?
-        @user.create_recurly_account_code
-        if session[:user].blank?
-          message = "Your account has been created."
-          session[:user]=@user.id
-          flash_message(:notice, message)
-          flash_message(:kissmetrics, "Signed Up")
-          redirect_to :action=>"welcome"
-          return
-        else
-          message="Your account has been updated."
-        end
-        session[:user]=@user.id
-        redirect_to :action=>"index"
-        flash_message(:notice, message)
-      end
-    end
-  end
-
   def check_paid
     if current_user && !current_user.account.card_verified?
       flash_now(:warning, I18n.t(:unpaid_text, :billing_link => '<a href="' + white_labeled_billing_link(request.domain) + '">Click here to verify a credit card.</a>').html_safe)

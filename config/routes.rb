@@ -77,7 +77,7 @@ ImpactDialing::Application.routes.draw do
     resources :callers
     resources :voter_lists
     resources :reports
-    resources 'account' do
+    resource 'account' do
       collection do
         get :id
       end
@@ -143,7 +143,7 @@ ImpactDialing::Application.routes.draw do
       end
     end
     get :update_report_real
-    resources :users, :only => [:create, :destroy]
+    resources :users, :only => [:create, :update, :destroy]
     post 'user_invite', :to => 'users#invite', :as => 'user_invite'
     post 'caller_password', :to => 'users#caller_password', :as => 'caller_password'
     post 'generate_api_key', :to => 'users#generate_api_key', :as => 'generate_api_key'

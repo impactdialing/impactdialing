@@ -1,0 +1,41 @@
+require 'spec_helper'
+
+feature 'when a user creates a new account' do
+  scenario 'with a valid email and password' do
+    user = Factory.build :user
+    visit '/client/login'
+    fill_in 'Email address', :with => user.email
+    fill_in 'Pick a password', :with => user.new_password
+    click_button 'Sign up'
+    page.should have_content 'Your account has been created.'
+  end
+end
+
+feature 'when a user edits their information' do
+  scenario 'with valid information' do
+    create_user_and_login
+    click_link 'Account'
+    fill_in 'Email address', :with => 'new@email.com'
+    click_button 'Update info'
+    page.should have_content 'Your information has been updated.'
+  end
+
+  scenario 'and changes their password' do
+    create_user_and_login
+    user = Factory.build :user
+    click_link 'Account'
+    fill_in 'Current password', :with => user.new_password
+    fill_in 'New password', :with => '1newpassword!'
+    click_button 'Update password'
+    page.should have_content 'Your password has been changed.'
+  end
+
+  scenario 'and tries to change their password with an invalid password' do
+    create_user_and_login
+    click_link 'Account'
+    fill_in 'Current password', :with => 'wrong'
+    fill_in 'New password', :with => '1newpassword!'
+    click_button 'Update password'
+    page.should have_content 'Your current password was not correct.'
+  end
+end
