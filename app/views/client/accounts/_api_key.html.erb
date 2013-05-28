@@ -1,6 +1,6 @@
 <div id='api_key'>
 <fieldset>
-   <legend>Api Key</legend>
+   <legend>API Key</legend>
    <%= form_tag client_generate_api_key_path do %>
 
    <% if @account.api_is_enabled? %>
@@ -15,7 +15,7 @@
 
    <% else %>
      <p>
-       You'll need a unique key to make calls to the API.  Remember to keep this key a secret as it can be used to access your account.
+       You'll need a unique key to make calls to the API. Keep this key a secret as it can be used to access your account.
      </p>
 
      <p>

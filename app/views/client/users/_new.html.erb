@@ -1,0 +1,46 @@
+<h1>Sign up</h1>
+<%= render "shared/error_messages", :target => @user %>
+<%= form_for [:client, @user] do |f| %>
+  <fieldset>
+    <p>By signing up, you agree to our <a href="<%= policies_path %>#terms" target="_blank">Terms of Service</a>.</p>
+    
+    <p style="display:none">
+      <%= f.label :captcha %>
+      <%= f.hidden_field :captcha %>
+    </p>
+
+    <p>
+      <%= f.label :fname, 'First name' %>
+      <%= f.text_field :fname %>
+    </p>
+
+    <p>
+      <%= f.label :lname, 'Last name' %>
+      <%= f.text_field :lname %>
+    </p>
+
+    <p>
+      <%= f.label :phone, 'Phone number' %>
+      <%= f.text_field :phone %>
+    </p>
+
+    <p>
+      <%= f.label :email, 'Email address' %>
+      <%= f.text_field :email %>
+    </p>
+
+    <p>
+      <%= f.label :new_password, 'Pick a password' %>
+      <%= f.password_field :new_password %>
+    </p>
+
+    <div class="buttons">
+      <button type="submit">Sign up</button>
+    </div>
+  </fieldset>
+<% end %>
+
+
+<% content_for :kissmetrics do %>
+  _kmq.push(['record', 'viewed signup form']);
+<% end %>
