@@ -1,0 +1,24 @@
+<h1>Log in</h1>
+
+<%= form_tag client_session_path do %>
+  <fieldset>
+    <p>
+      <%= label_tag :email %>
+      <%= text_field_tag :email %>
+    </p>
+
+    <p>
+      <%= label_tag :password %>
+      <%= password_field_tag :password %>
+    </p>
+
+    <p><a href="/client/forgot">Forgot password?</a></p>
+
+    <div class="buttons">
+      <button type="submit">Log in</button>
+    </div>
+
+  </fieldset>
+<% end %>
+
+<p>If you are caller, <a href="/caller">log in here</a>.</p>

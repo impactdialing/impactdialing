@@ -38,6 +38,7 @@
 
 <%= yield :stylesheets %>
 <%= stylesheet_link_tag "application", "caller", "jquery-ui-1.8.14.custom" %>
+<%= csrf_meta_tag %>
 <%= yield :jquery_extension_javascripts %>
 <%= yield :javascripts %>
 <%= yield :meta %>
