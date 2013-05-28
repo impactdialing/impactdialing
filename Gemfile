@@ -70,6 +70,8 @@ group :development do
   gem "capistrano"
   gem "capistrano_colors"
   gem "capistrano-multiconfig"
+  gem "better_errors"
+  gem "binding_of_caller"
 end
 
 group :test do
@@ -79,4 +81,6 @@ group :test do
   gem 'spork-rails'
   gem "database_cleaner"
   gem "json_spec"
+  gem "capybara"
+  gem 'launchy'
 end

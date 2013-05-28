@@ -72,6 +72,14 @@ Spork.prefork do
     session[:caller] = user.id
   end
 
+  def create_user_and_login
+    user = Factory.build :user
+    visit '/client/login'
+    fill_in 'Email address', :with => user.email
+    fill_in 'Pick a password', :with => user.new_password
+    click_button 'Sign up'
+  end
+
   def fixture_path
     Rails.root.join('spec/fixtures/').to_s
   end
