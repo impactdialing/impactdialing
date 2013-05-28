@@ -74,8 +74,14 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
   voterDisconected: function(){
     this.hideAllActions();
     this.hideTransferCall();
-    this.setMessage("Status: Waiting for call results.");
-    this.submitResponseButtonsShow();
+    if (this.model.get("transfer_type") == 'warm'){
+      this.kickSelfOutOfConferenceShow();
+      this.submitResponseButtonsHide();
+      this.setMessage("Status: Call Transfered.");
+    }else{
+      this.setMessage("Status: Waiting for call results.");
+      this.submitResponseButtonsShow();
+    }
   },
 
   sendVoterResponse: function() {
@@ -130,12 +136,15 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
   transferConferenceEnded: function(){
     this.hideHangupButton();
     this.kickSelfOutOfConferenceHide();
-    this.submitResponseButtonsShow();
+    if (this.model.get("call_id") == this.model.get("transfer_call_id")){
+      this.kickSelfOutOfConferenceShow();
+    }
   },
 
   callerKickedOff: function(){
     this.kickSelfOutOfConferenceHide();
     this.submitResponseButtonsShow();
+    this.setMessage("Status: Waiting for call results.");
   },
 
 
@@ -178,6 +187,11 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
   submitResponseButtonsShow: function(){
     $("#submit_and_keep_call").show();
     $("#submit_and_stop_call").show();
+  },
+
+  submitResponseButtonsHide: function(){
+    $("#submit_and_keep_call").hide();
+    $("#submit_and_stop_call").hide();
   },
 
   callVoter: function() {
@@ -225,6 +239,7 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
   },
 
   kickCallerOff: function(){
+    var self = this;
     $.ajax({
         url : "/caller/" + self.model.get("caller_id") + "/kick_caller_off_conference",
         data : {caller_session: self.model.get("session_id") },

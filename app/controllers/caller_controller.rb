@@ -5,7 +5,7 @@ class CallerController < ApplicationController
      :end_session, :skip_voter, :ready_to_call, :continue_conf, :pause, :run_out_of_numbers, :callin_choice, :read_instruction_options, :conference_started_phones_only_preview, :conference_started_phones_only_power, :conference_started_phones_only_predictive,
      :gather_response, :submit_response, :next_question, :next_call, :time_period_exceeded, :account_out_of_funds, :datacentre, :kick_caller_off_conference]
 
-  before_filter :check_login, :except=>[:login, :feedback, :end_session, :start_calling, :phones_only, :call_voter,
+  before_filter :check_login, :except=>[:login, :feedback, :end_session, :start_calling, :phones_only, :call_voter, :skip_voter, :stop_calling,
     :ready_to_call, :continue_conf, :pause, :run_out_of_numbers, :callin_choice, :read_instruction_options, :conference_started_phones_only_preview, :conference_started_phones_only_power, :conference_started_phones_only_predictive,
     :gather_response, :submit_response, :next_question, :next_call, :time_period_exceeded, :account_out_of_funds, :datacentre, :kick_caller_off_conference]
 

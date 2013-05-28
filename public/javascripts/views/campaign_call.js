@@ -31,6 +31,7 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
     $("#voter_responses").html(this.script_view.render().el);
     this.schedule_callback_view.render();
     $("#transfer-calls").hide();
+    $('#transfer_button').html("Transfer");
     $("#schedule_callback").hide();
   },
 
@@ -50,9 +51,11 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
         self.pusher = new Pusher(self.model.get("pusher_key"))
         self.channel = self.pusher.subscribe(self.model.get("session_key"));
         self.bindPusherEvents();
-
         $("#caller-actions").html(self.start_calling_view.render().el);
         $("#callin").show();
+        if (!FlashDetect.installed || !flash_supported() || !browser_supported()){
+          $("#start_calling").hide();
+        }
         $("#callin-number").html(self.model.get("phone_number"));
         $("#callin-pin").html(self.model.get("pin"));
         self.setupTwilio();
@@ -96,20 +99,22 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
     });
 
     this.channel.bind('caller_connected_dialer', function(data) {
-      self.caller_actions.callerConnectedDialer();
+        self.model.unset("call_id")
+        self.lead_info.clear();
+        self.lead_info.set(data);
+        self.renderScript();
+        $("#voter_info_message").show();
+        $("#voter_info").hide();
+        self.caller_actions.callerConnectedDialer();
     });
 
     this.channel.bind('conference_started', function(data) {
+      self.model.unset("call_id")
       self.lead_info.clear();
       self.lead_info.set(data);
       self.renderScript();
-      if(self.lead_info.get("dialer") && self.lead_info.get("dialer").toLowerCase() == "predictive"){
-        $("#voter_info_message").show();
-        $("#voter_info").hide();
-      }else{
-        $("#voter_info_message").hide();
-        $("#voter_info").html(self.lead_info_view.render().el);
-      }
+      $("#voter_info_message").hide();
+      $("#voter_info").html(self.lead_info_view.render().el);
       self.caller_actions.conferenceStarted();
     });
 
@@ -166,6 +171,7 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
 
     this.channel.bind('transfer_connected', function(data) {
       self.model.set("transfer_type", data.type);
+      self.model.set("transfer_call_id", self.model.get("call_id"));
     });
 
     this.channel.bind('transfer_conference_ended', function(data) {
@@ -173,7 +179,7 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
       if(transfer_type == "warm"){
         self.caller_actions.transferConferenceEnded();
       }
-
+      self.model.unset("transfer_type");
     });
 
     this.channel.bind('warm_transfer',function(data){
@@ -181,8 +187,7 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
     });
 
     this.channel.bind('caller_kicked_off',function(data){
-      self.caller_actions.kickSelfOutOfConferenceHide();
-      self.caller_actions.submitResponseButtonsShow();
+      self.caller_actions.callerKickedOff()
     });
 
   },

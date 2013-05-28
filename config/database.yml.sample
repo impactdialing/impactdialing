@@ -47,7 +47,7 @@ staging:
 
 aws:
    adapter: mysql2
-   host: impactdialing-production.cjo94dhm4pos.us-east-1.rds.amazonaws.com
+   host: impact-prod-db.cjo94dhm4pos.us-east-1.rds.amazonaws.com
    database: heroku_production
    username: root
    password: pfsdh37sl203jq
