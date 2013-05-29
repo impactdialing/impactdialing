@@ -36,7 +36,7 @@ Spork.prefork do
     config.mock_with :rspec
 
     config.before(:suite) do
-       DatabaseCleaner.strategy = :transaction
+       DatabaseCleaner.strategy = :truncation
     end
 
     config.after(:suite) do
@@ -63,7 +63,7 @@ Spork.prefork do
     # If you're not using ActiveRecord, or you'd prefer not to run each of your
     # examples within a transaction, remove the following line or assign false
     # instead of true.
-    config.use_transactional_fixtures = true
+    config.use_transactional_fixtures = false
     config.fixture_path = Rails.root.join('spec/fixtures')
     #
     # == Notes
@@ -80,6 +80,14 @@ Spork.prefork do
     session[:caller] = user.id
   end
 
+
+  def create_user_and_login
+    user = Factory.build :user
+    visit '/client/login'
+    fill_in 'Email address', :with => user.email
+    fill_in 'Pick a password', :with => user.new_password
+    click_button 'Sign up'
+  end
 
   def fixture_path
     Rails.root.join('spec/fixtures/').to_s

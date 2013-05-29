@@ -45,6 +45,11 @@ GEM
       builder
       mime-types
       xml-simple
+    better_errors (0.9.0)
+      coderay (>= 1.0.0)
+      erubis (>= 2.6.6)
+    binding_of_caller (0.7.1)
+      debug_inspector (>= 0.0.1)
     builder (3.0.4)
     call_center (0.0.9)
       builder
@@ -80,6 +85,7 @@ GEM
     daemons (1.0.10)
     dalli (2.3.0)
     database_cleaner (1.0.1)
+    debug_inspector (0.0.2)
     debugger (1.6.0)
       columnize (>= 0.3.1)
       debugger-linecache (~> 1.2.0)
@@ -372,10 +378,13 @@ DEPENDENCIES
   activerecord-import (>= 0.2.0)
   ar-octopus!
   aws-s3 (~> 0.6.2)
+  better_errors
+  binding_of_caller
   call_center (~> 0.0.9)
   capistrano
   capistrano-multiconfig
   capistrano_colors
+  capybara
   cocoon (~> 1.0.22)
   daemons (~> 1.0.10)
   dalli (~> 2.3.0)
@@ -401,6 +410,7 @@ DEPENDENCIES
   jquery-rails (>= 1.0.12)
   json (~> 1.7.7)
   json_spec
+  launchy
   lograge (~> 0.2.0)
   mandrill-api (~> 1.0.13)
   mysql2 (~> 0.3.0)

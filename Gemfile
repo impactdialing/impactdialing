@@ -70,6 +70,8 @@ group :development do
   gem "capistrano"
   gem "capistrano_colors"
   gem "capistrano-multiconfig"
+  gem "better_errors"
+  gem "binding_of_caller"
 end
 
 group :test, :integration_test do
@@ -82,4 +84,6 @@ group :test, :integration_test do
   gem "poltergeist"
   gem 'selenium-webdriver', "~>2.32.1"
   gem "faraday"
+  gem "capybara"
+  gem 'launchy'
 end
