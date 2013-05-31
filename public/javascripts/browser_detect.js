@@ -1,4 +1,3 @@
-//-- Start of Browser, Version and OS
 var BrowserDetect = {
     init: function () {
         this.browser = this.searchString(this.dataBrowser) || "An unknown browser";
@@ -6,9 +5,10 @@ var BrowserDetect = {
             || this.searchVersion(navigator.appVersion)
             || "an unknown version";
         this.OS = this.searchString(this.dataOS) || "an unknown OS";
+        this.device = this.searchString(this.dataDevice) || "an unknown Device";
     },
     searchString: function (data) {
-        for (var i=0;i<data.length;i++)  {
+        for (var i=0;i<data.length;i++) {
             var dataString = data[i].string;
             var dataProp = data[i].prop;
             this.versionSearchString = data[i].versionSearch || data[i].identity;
@@ -26,6 +26,11 @@ var BrowserDetect = {
         return parseFloat(dataString.substring(index+this.versionSearchString.length+1));
     },
     dataBrowser: [
+        {
+            string: navigator.userAgent,
+            subString: "RockMelt",
+            identity: "RockMelt"
+        },
         {
             string: navigator.userAgent,
             subString: "Chrome",
@@ -74,7 +79,7 @@ var BrowserDetect = {
         {
             string: navigator.userAgent,
             subString: "MSIE",
-            identity: "Explorer",
+            identity: "IE",
             versionSearch: "MSIE"
         },
         {
@@ -83,7 +88,8 @@ var BrowserDetect = {
             identity: "Mozilla",
             versionSearch: "rv"
         },
-        {       // for older Netscapes (4-)
+        {
+            // for older Netscapes (4-)
             string: navigator.userAgent,
             subString: "Mozilla",
             identity: "Netscape",
@@ -102,20 +108,32 @@ var BrowserDetect = {
             identity: "Mac"
         },
         {
-               string: navigator.userAgent,
-               subString: "iPhone",
-               identity: "iPhone/iPod"
-        },
-        {
             string: navigator.platform,
             subString: "Linux",
             identity: "Linux"
+        },
+        {
+            string: navigator.userAgent,
+            subString: "iOS",
+            identity: "iOS"
+        }
+    ],
+    dataDevice : [
+        {
+            string: navigator.platform,
+            subString: "iPad",
+            identity: "iPad"
+        },
+        {
+            string: navigator.platform,
+            subString: "iPhone",
+            identity: "iPhone"
         }
     ]
- 
+
 };
 BrowserDetect.init();
- 
+
 //-- Start of Window Dimensions
 var winW = 0, winH = 0;
   if( typeof( window.innerWidth ) == 'number' ) {
@@ -131,7 +149,7 @@ var winW = 0, winH = 0;
     winW = document.body.clientWidth;
     winH = document.body.clientHeight;
   }
- 
+
 //-- Start of Screen Resolution
 var vertical=screen.height
 var horizontal=screen.width

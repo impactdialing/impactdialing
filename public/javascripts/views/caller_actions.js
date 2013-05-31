@@ -200,7 +200,12 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     $.ajax({
         url : "/caller/" + self.model.get("caller_id") + "/call_voter",
         data : {id : self.model.get("caller_id"), voter_id : voter_id, session_id : self.model.get("session_id") },
-        type : "POST"
+        type : "POST",
+        beforeSend: function(request)
+          {
+            var token = $("meta[name='csrf-token']").attr("content");
+            request.setRequestHeader("X-CSRF-Token", token);
+          },
     });
   },
 
@@ -211,6 +216,11 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
       url : "/caller/" + self.model.get("caller_id") + "/stop_calling",
       data : {session_id : self.model.get("session_id") },
       type : "POST",
+      beforeSend: function(request)
+        {
+            var token = $("meta[name='csrf-token']").attr("content");
+            request.setRequestHeader("X-CSRF-Token", token);
+        },
     });
   },
 
@@ -219,7 +229,12 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     $("#hangup_call").hide();
     $.ajax({
         url : "/calls/" + self.model.get("call_id") + "/hangup",
-        type : "POST"
+        type : "POST",
+        beforeSend: function(request)
+          {
+            var token = $("meta[name='csrf-token']").attr("content");
+            request.setRequestHeader("X-CSRF-Token", token);
+          },
     });
   },
 
@@ -230,6 +245,11 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
         data : {id : self.model.get("caller_id"), voter_id : self.options.lead_info.get("fields").id,
         session_id : self.model.get("session_id") },
         type : "POST",
+        beforeSend: function(request)
+          {
+            var token = $("meta[name='csrf-token']").attr("content");
+            request.setRequestHeader("X-CSRF-Token", token);
+          },
     })
   },
 
@@ -243,7 +263,12 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     $.ajax({
         url : "/caller/" + self.model.get("caller_id") + "/kick_caller_off_conference",
         data : {caller_session: self.model.get("session_id") },
-        type : "POST"
+        type : "POST",
+        beforeSend: function(request)
+          {
+            var token = $("meta[name='csrf-token']").attr("content");
+            request.setRequestHeader("X-CSRF-Token", token);
+          },
     });
   },
 
