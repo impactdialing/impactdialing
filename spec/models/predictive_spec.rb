@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe Predictive do
-  
+
   describe "choose voter" do
 
     it "should properly choose the next voters to dial" do
@@ -11,7 +11,7 @@ describe Predictive do
       voter = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list, :account => account)
       campaign.choose_voters_to_dial(1).should == [voter.id]
     end
-  
+
     xit "should properly choose limit of voters to dial" do
       account = Factory(:account, :activated => true)
       campaign = Factory(:predictive, :account => account, :caller_id => "0123456789")
@@ -21,7 +21,7 @@ describe Predictive do
       voter = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list, :account => account)
       campaign.choose_voters_to_dial(1).should == [priority_voter.id]
     end
-  
+
     xit "should properly choose limit of voters to dial for scheduled and priority" do
       account = Factory(:account, :activated => true)
       campaign = Factory(:predictive, :account => account, :caller_id => "0123456789")
@@ -31,7 +31,7 @@ describe Predictive do
       voter = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list, :account => account)
       campaign.choose_voters_to_dial(2).should == [priority_voter.id,scheduled_voter.id]
     end
-  
+
     xit "should properly choose limit of voters to dial for scheduled and priority and voters to dial" do
       account = Factory(:account, :activated => true)
       campaign = Factory(:predictive, :account => account, :caller_id => "0123456789")
@@ -42,7 +42,7 @@ describe Predictive do
       voter1 = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list, :account => account)
       campaign.choose_voters_to_dial(3).should == [priority_voter.id,scheduled_voter.id,voter.id]
     end
-  
+
     it "dials voters off enabled lists only" do
        campaign = Factory(:predictive)
        enabled_list = Factory(:voter_list, :campaign => campaign, :active => true, :enabled => true)
@@ -60,7 +60,7 @@ describe Predictive do
        priority_voter = Factory(:voter, :campaign => campaign, :status=>"not called", :voter_list => voter_list, :account => account, priority: "1")
        campaign.choose_voters_to_dial(1).should == [priority_voter.id]
      end
-     
+
      it "excludes system blocked numbers" do
        account = Factory(:account, :activated => true)
        campaign = Factory(:predictive, :account => account)
@@ -81,15 +81,15 @@ describe Predictive do
        Factory(:blocked_number, :number => unblocked_voter.Phone, :account => account, :campaign=>Factory(:campaign))
        campaign.choose_voters_to_dial(10).should == [unblocked_voter.id]
      end
-     
+
      it "does not redial a voter that is in progress" do
        account = Factory(:account, :activated => true)
        campaign = Factory(:predictive, :account => account)
        voter = Factory(:voter, :campaign => campaign, :status => CallAttempt::Status::SUCCESS)
        Factory(:call_attempt, :voter => voter, :status => CallAttempt::Status::SUCCESS)
        campaign.choose_voters_to_dial(20).should_not include(voter.id)
-     end     
-     
+     end
+
      it "does not dial voter who has been just dialed recycle rate" do
       account = Factory(:account, :activated => true)
       campaign = Factory(:predictive, :account => account, recycle_rate: 3)
@@ -97,7 +97,7 @@ describe Predictive do
       Factory(:call_attempt, :voter => voter, :status => CallAttempt::Status::BUSY)
       campaign.choose_voters_to_dial(20).should_not include(voter.id)
      end
-     
+
      it "dials voter who has been dialed passed recycle rate" do
       account = Factory(:account, :activated => true)
       campaign = Factory(:predictive, :account => account, recycle_rate: 3)
@@ -105,19 +105,20 @@ describe Predictive do
       Factory(:call_attempt, :voter => voter, :status => CallAttempt::Status::BUSY)
       campaign.choose_voters_to_dial(20).should include(voter.id)
      end
-     
+
      it "should redirect caller to campaign has no voters if numbers run out" do
        account = Factory(:account, :activated => true)
        campaign = Factory(:predictive, :account => account, recycle_rate: 3)
        caller_session = Factory(:webui_caller_session, caller: Factory(:caller), on_call: true, available_for_call: true, campaign: campaign, state: "connected", voter_in_progress: nil)
        voter = Factory(:voter, :campaign => campaign, :status => CallAttempt::Status::BUSY, last_call_attempt_time: Time.now - 2.hours)
        Factory(:call_attempt, :voter => voter, :status => CallAttempt::Status::BUSY)
+       campaign.stub(:check_campaign_fit_to_dial)
        campaign.should_receive(:enqueue_call_flow).with(CampaignOutOfNumbersJob, [caller_session.id])
-       campaign.choose_voters_to_dial(20).should eq([])       
+       campaign.choose_voters_to_dial(20).should eq([])
      end
-     
+
   end
-  
+
   describe "best dials simulated" do
 
     it "should return 1 as best dials if simulated_values is nil" do
@@ -135,7 +136,7 @@ describe Predictive do
       campaign = Factory(:predictive, :simulated_values => simulated_values)
       campaign.best_dials_simulated.should eq(2)
     end
-    
+
    it "should return best dials  as 5 if  best_dials simulated_values is greater than 3" do
       simulated_values = SimulatedValues.create(best_dials: 10.0, best_conversation: 0, longest_conversation: 0)
       campaign = Factory(:predictive, :simulated_values => simulated_values)
@@ -144,7 +145,7 @@ describe Predictive do
 
 
   end
-  
+
   describe "best conversations simulated" do
 
     it "should return 0 as best conversation if simulated_values is nil" do
@@ -165,7 +166,7 @@ describe Predictive do
 
 
   end
-  
+
   describe "longest conversations simulated" do
 
     it "should return 0 as longest conversation if simulated_values is nil" do
@@ -185,21 +186,21 @@ describe Predictive do
     end
 
   end
-  
+
   describe "number of voters to dial" do
-    
+
     it "should dial one line per caller  if no calls have been made in the last ten minutes" do
       simulated_values = SimulatedValues.create(best_dials: 2.33345, best_conversation: 34.0076, longest_conversation: 42.0876, best_wrapup_time: 10.076)
       campaign = Factory(:predictive, simulated_values: simulated_values)
       2.times do |index|
-        caller_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true) 
+        caller_session = Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true)
       end
       num_to_call = campaign.number_of_voters_to_dial
       campaign.should_not_receive(:num_to_call_predictive_simulate)
       caller_sessions = CallerSession.find_all_by_campaign_id(campaign.id)
       num_to_call.should eq(caller_sessions.size)
     end
-    
+
     xit "should dial one line per caller if abandonment rate exceeds acceptable rate" do
       simulated_values = SimulatedValues.create(best_dials: 2.33345, best_conversation: 34.0076, longest_conversation: 42.0876, best_wrapup_time: 10.076)
       campaign = Factory(:predictive, simulated_values: simulated_values, :acceptable_abandon_rate => 0.02)
@@ -211,7 +212,7 @@ describe Predictive do
       caller_sessions = CallerSession.find_all_by_campaign_id(campaign.id)
       num_to_call.should eq(caller_sessions.size)
     end
-    
+
     xit "should dial one line per caller minus Ringin lines if abandonment rate exceeds acceptable rate" do
       simulated_values = SimulatedValues.create(best_dials: 2.33345, best_conversation: 34.0076, longest_conversation: 42.0876, best_wrapup_time: 10.076)
       campaign = Factory(:predictive, simulated_values: simulated_values, :acceptable_abandon_rate => 0.02)
@@ -224,10 +225,10 @@ describe Predictive do
       caller_sessions = CallerSession.find_all_by_campaign_id(campaign.id)
       num_to_call.should eq(1)
     end
-    
-    
+
+
   end
-  
+
   describe "abandon rate acceptable" do
     it "should return false if  not acceptable" do
       campaign = Factory(:predictive, acceptable_abandon_rate: 0.03)
@@ -239,18 +240,18 @@ describe Predictive do
       campaign = Factory(:predictive, acceptable_abandon_rate: 0.03)
       40.times { Factory(:call_attempt, :campaign => campaign, :call_start => 40.seconds.ago, call_end: 10.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::SUCCESS) }
       1.times { Factory(:call_attempt, :campaign => campaign, :call_start => 40.seconds.ago, call_end: 10.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::ABANDONED) }
-      campaign.abandon_rate_acceptable?.should be_true  
+      campaign.abandon_rate_acceptable?.should be_true
     end
-    
+
     it "should only consider answered calls for abandonment rate" do
       campaign = Factory(:predictive, acceptable_abandon_rate: 0.01)
       9.times { Factory(:call_attempt, :campaign => campaign, :call_start => 40.seconds.ago, call_end: 10.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::SUCCESS) }
       2.times { Factory(:call_attempt, :campaign => campaign, :call_start => 40.seconds.ago, call_end: 10.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::BUSY) }
       1.times { Factory(:call_attempt, :campaign => campaign, :call_start => 40.seconds.ago, call_end: 10.seconds.ago, :wrapup_time => 5.seconds.ago, :status => CallAttempt::Status::ABANDONED) }
-      campaign.abandon_rate_acceptable?.should be_false  
-    end    
+      campaign.abandon_rate_acceptable?.should be_false
+    end
   end
-  
+
   describe "number_of_simulated_voters_to_dial" do
 
 
@@ -276,16 +277,16 @@ describe Predictive do
        simulated_values = SimulatedValues.create(best_dials: 1, best_conversation: 0, longest_conversation: 0)
        campaign = Factory(:predictive, :simulated_values => simulated_values)
        3.times do |index|
-         caller_session = Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true) 
+         caller_session = Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true)
        end
-       
+
        campaign.number_of_simulated_voters_to_dial.should eq(3)
    end
 
    it "should determine calls to make when no simulated values" do
      campaign = Factory(:predictive)
      3.times do |index|
-       caller_session = Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true) 
+       caller_session = Factory(:caller_session, :campaign => campaign, :on_call => true, :available_for_call => true)
      end
      campaign.number_of_simulated_voters_to_dial.should eq(3)
    end
