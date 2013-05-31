@@ -96,7 +96,7 @@ describe Client::ScriptsController do
         lambda {
           post :create , :script => {name: "abc"}, :api_key=> "abc123", :format => "json"
         }.should change {account.reload.scripts.size} .by(1)
-        JSON.parse(response.body)['script']['name'].should  eq('abc')
+        JSON.parse(response.body)['name'].should  eq('abc')
       end
 
       it "should throw validation error" do
