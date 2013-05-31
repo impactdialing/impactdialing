@@ -6,7 +6,6 @@ module CallerEvents
   module InstanceMethods
 
     def publish_start_calling
-        puts session_key
         publish_sync('start_calling', {caller_session_id: id})
     end
 

@@ -4,7 +4,7 @@ class PersistCalls
   LIMIT = 1000
   include Resque::Plugins::UniqueJob
   @queue = :persist_jobs
-  
+
   class << self
 
     def perform
@@ -40,7 +40,6 @@ class PersistCalls
       begin
         yield data
       rescue Exception => e
-        puts "PersistCalls: #{e.inspect}"
         multipush(connection, list_name, data)
       end
     end
