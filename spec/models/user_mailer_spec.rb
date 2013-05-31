@@ -23,7 +23,10 @@ describe UserMailer do
 
   it "uses white labeled email when verified" do
     #WhiteLabeling.stub(:white_labeled_email).and_return(white_labeled_email)
-    @mailer.white_labeled_email(white_label).should == white_labeled_email
+    mandrill = mock
+    Mandrill::API.should_receive(:new).and_return(mandrill)
+    mandrill.should_receive(:call).with('senders/domains').and_return([{"domain"=> "stonesphonesdialer"}])
+    UserMailer.new.white_labeled_email(white_label).should == white_labeled_email
   end
 
 end
