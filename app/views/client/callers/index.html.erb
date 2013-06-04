@@ -27,7 +27,7 @@
   <p><%= page_entries_info @callers %> <%= will_paginate @callers %></p>
 <% end %>
 
-<p><strong><a href=<%="#{request.protocol}caller.#{request.domain}"%>>Your callers can log in here.</a></strong> If you are using phones-only mode or need a local area phone number to call into, contact support.</p>
+<p><strong><a href=<%="#{request.protocol}caller.#{request.domain}" %> target="_blank" >Your callers can log in here.</a></strong> If you are using phones-only mode or need a local area phone number to call into, contact support.</p>
 <p>Phones-only callers in Preview and Power mode campaigns will be read the lead&#39s name before dialing; in Predictive mode, they won&#39t know the lead&#39s name.</p>
 
 <p class="actions"><%= link_to 'Add new caller', new_client_caller_path, :class => 'action primary' %></p>
