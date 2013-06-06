@@ -218,14 +218,13 @@ describe Predictive do
       campaign = Factory(:predictive, simulated_values: simulated_values, :acceptable_abandon_rate => 0.02)
       Factory(:call_attempt, :campaign => campaign, :call_start => 20.seconds.ago)
       Factory(:call_attempt, :campaign => campaign, :call_start => 20.seconds.ago, :status => CallAttempt::Status::ABANDONED)
-      2.times { Factory(:call_attempt, :campaign => campaign, :call_start => 50.seconds.ago, status: CallAttempt::Status::RINGING ) }
+      2.times { Factory(:call_attempt, :campaign => campaign, :created_at => 10.seconds.ago, status: CallAttempt::Status::RINGING ) }
       3.times { Factory(:caller_session, :campaign => campaign, :available_for_call => true, :on_call => true) }
       num_to_call = campaign.number_of_voters_to_dial
       campaign.should_not_receive(:num_to_call_predictive_simulate)
       caller_sessions = CallerSession.find_all_by_campaign_id(campaign.id)
       num_to_call.should eq(1)
     end
-
 
   end
 

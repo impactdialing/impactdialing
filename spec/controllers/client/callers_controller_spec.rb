@@ -108,7 +108,7 @@ describe Client::CallersController do
 
       it 'return validation errors' do
         post :create, api_key: account.api_key, format: 'json'
-        JSON.parse(response.body).should eq({"errors"=>{"campaign_id"=>["can't be blank"]}})
+        JSON.parse(response.body).should eq({"errors"=>{"email"=>["Invalid", "can't be blank"], "campaign_id"=>["can't be blank"]}})
       end
     end
 

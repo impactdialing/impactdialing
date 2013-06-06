@@ -20,6 +20,21 @@ describe Caller do
     caller.save.should be_true
   end
 
+  it "should validate name for phones only callers" do
+    caller_group = Factory(:caller_group)
+    caller = Factory.build(:caller, caller_group_id: caller_group.id, is_phones_only: true, name: "")
+    caller.save.should be_false
+    caller.errors.messages.should eq({:name=>["can't be blank"]})
+  end
+
+  it "should validate email for web callers" do
+    caller_group = Factory(:caller_group)
+    caller = Factory.build(:caller, caller_group_id: caller_group.id, is_phones_only: false, name: "", email: "")
+    caller.save.should be_false
+    caller.errors.messages.should eq({:email=>["Invalid", "can't be blank"]})
+  end
+
+
   let(:user) { Factory(:user) }
   it "restoring makes it active" do
     caller_object = Factory(:caller, :active => false)
@@ -69,15 +84,6 @@ describe Caller do
       end
     end.response
   end
-
-  it "is known as the name unless blank" do
-    name, mail = 'name', "mail@mail.com"
-    web_ui_caller = Factory(:caller, :name => '', :email => mail)
-    phones_only_caller = Factory(:caller, :name => name, :email => '')
-    web_ui_caller.known_as.should == mail
-    phones_only_caller.known_as.should == name
-  end
-
 
   it "returns name for phone-only-caller, email for web-caller " do
     phones_only_caller = Factory(:caller, :is_phones_only => true, :name => "name", :email => "email1@gmail.com")

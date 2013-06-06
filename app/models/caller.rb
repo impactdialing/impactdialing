@@ -2,7 +2,10 @@ class Caller < ActiveRecord::Base
   include Rails.application.routes.url_helpers
   include Deletable
   include SidekiqEvents
-  validates_format_of :email, :allow_blank => true, :with => /^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i, :message => "Invalid email"
+  validates_format_of :email, :with => /^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i, :message => "Invalid",  :if => lambda {|s| !s.is_phones_only  }
+  validates_presence_of :email,  :if => lambda {|s| !s.is_phones_only  }
+  validates_presence_of :name,  :if => lambda {|s| s.is_phones_only }
+  validates_uniqueness_of :email
   belongs_to :campaign
   belongs_to :account
   belongs_to :caller_group
@@ -13,7 +16,6 @@ class Caller < ActiveRecord::Base
   before_create :create_uniq_pin
   before_validation :assign_to_caller_group_campaign
   before_save :reassign_caller_campaign
-  validates_uniqueness_of :email, :allow_nil => true
   validates :campaign_id, presence: true
   validate :restored_caller_has_campaign
 
