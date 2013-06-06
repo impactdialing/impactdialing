@@ -85,8 +85,10 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
   },
 
   sendVoterResponse: function(e) {
-    e.stopPropagation();
-    e.preventDefault();
+    if (typeof(e) != "undefined"){
+      e.stopPropagation();
+      e.preventDefault();
+    }
     if(this.options.schedule_callback.validateScheduleDate() == false){
       alert('The Schedule callback date is invalid');
       return false;
