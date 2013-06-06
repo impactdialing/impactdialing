@@ -267,7 +267,7 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
 
 
   hideAllActions: function(){
-    $("#caller-actions button").hide();
+    $("#caller-actions a").hide();
   },
 
   kickCallerOff: function(e){
