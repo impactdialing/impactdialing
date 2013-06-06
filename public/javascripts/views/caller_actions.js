@@ -84,7 +84,9 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     }
   },
 
-  sendVoterResponse: function() {
+  sendVoterResponse: function(e) {
+    e.stopPropagation();
+    e.preventDefault();
     if(this.options.schedule_callback.validateScheduleDate() == false){
       alert('The Schedule callback date is invalid');
       return false;
@@ -106,7 +108,9 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     $("#voter_responses").unbind("submit");
   },
 
-   sendVoterResponseAndDisconnect: function() {
+   sendVoterResponseAndDisconnect: function(e) {
+    e.stopPropagation();
+    e.preventDefault();
     if(this.options.schedule_callback.validateScheduleDate() == false){
       alert('The Schedule callback date is invalid');
       return false;
@@ -194,7 +198,9 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     $("#submit_and_stop_call").hide();
   },
 
-  callVoter: function() {
+  callVoter: function(e) {
+    e.stopPropagation();
+    e.preventDefault();
     var voter_id = this.options.lead_info.get("fields").id;
     var self = this;
     $.ajax({
@@ -209,7 +215,9 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     });
   },
 
-  disconnectCaller: function(){
+  disconnectCaller: function(e){
+    e.stopPropagation();
+    e.preventDefault();
     var self = this;
     window.onbeforeunload = null;
     $.ajax({
@@ -224,7 +232,9 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     });
   },
 
-  disconnectVoter: function() {
+  disconnectVoter: function(e) {
+    e.stopPropagation();
+    e.preventDefault();
     var self = this;
     $("#hangup_call").hide();
     $.ajax({
@@ -238,7 +248,9 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     });
   },
 
-  nextVoter: function() {
+  nextVoter: function(e) {
+    e.stopPropagation();
+    e.preventDefault();
     var self = this;
     $.ajax({
         url : "/caller/" + self.model.get("caller_id") + "/skip_voter",
@@ -258,7 +270,9 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     $("#caller-actions button").hide();
   },
 
-  kickCallerOff: function(){
+  kickCallerOff: function(e){
+    e.stopPropagation();
+    e.preventDefault();
     var self = this;
     $.ajax({
         url : "/caller/" + self.model.get("caller_id") + "/kick_caller_off_conference",
