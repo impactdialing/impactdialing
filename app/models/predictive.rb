@@ -37,8 +37,7 @@ class Predictive < Campaign
   def number_of_voters_to_dial
     num_to_call = 0
     dials_made = call_attempts.between(10.minutes.ago, Time.now).size
-    # if dials_made == 0 || !abandon_rate_acceptable?
-    if dials_made == 0
+    if dials_made == 0 || !abandon_rate_acceptable?
       num_to_call = caller_sessions.available.size - call_attempts.with_status(CallAttempt::Status::RINGING).between(15.seconds.ago, Time.now).size
     else
       num_to_call = number_of_simulated_voters_to_dial
@@ -59,17 +58,17 @@ class Predictive < Campaign
     check_campaign_fit_to_dial
     voters
   end
-  
+
   def check_campaign_fit_to_dial
     if !account.funds_available?
-      caller_sessions.available.each {|cs| cs.redirect_account_has_no_funds }      
+      caller_sessions.available.each {|cs| cs.redirect_account_has_no_funds }
       return
-    end  
-      
+    end
+
     if time_period_exceeded?
       caller_sessions.available.each {|cs| cs.redirect_caller_time_period_exceeded}
       return
-    end        
+    end
   end
 
   def set_voter_status_to_read_for_dial!(voters)
@@ -99,7 +98,7 @@ class Predictive < Campaign
   def self.do_not_call_in_production?(campaign_id)
     !Resque.redis.exists("do_not_call:#{campaign_id}")
   end
-  
+
 
   def best_dials_simulated
     simulated_values.nil? ? 1 : simulated_values.best_dials.nil? ? 1 : simulated_values.best_dials.ceil > TwilioLimit.get ? TwilioLimit.get : simulated_values.best_dials.ceil
