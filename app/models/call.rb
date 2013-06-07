@@ -63,7 +63,7 @@ class Call < ActiveRecord::Base
     end
 
     if Campaign.preview_power_campaign?(campaign_type)  && redis_call_status != 'completed'
-
+      call_attempt.redirect_caller
     end
 
     if call_did_not_connect?
