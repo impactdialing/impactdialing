@@ -194,6 +194,39 @@ describe Campaign do
 
   end
 
+  describe "amd" do
+    describe "contine on amd" do
+      it "should return true if answering machine detect and recording present" do
+        campaign = Factory(:preview, answering_machine_detect: true, use_recordings: true)
+        campaign.continue_on_amd.should be_true
+      end
+
+      it "should return false if answering machine detect and recording not present" do
+        campaign = Factory(:preview, answering_machine_detect: true, use_recordings: false)
+        campaign.continue_on_amd.should be_false
+      end
+
+      it "should return false if answering machine detect false and recording  present" do
+        campaign = Factory(:preview, answering_machine_detect: false, use_recordings: true)
+        campaign.continue_on_amd.should be_false
+      end
+    end
+
+    describe "hangup on amd" do
+      it "should return true if answering machine detect and recording not present" do
+        campaign = Factory(:preview, answering_machine_detect: true, use_recordings: false)
+        campaign.hangup_on_amd.should be_true
+      end
+
+      it "should return false if answering machine detect and recording  present" do
+        campaign = Factory(:preview, answering_machine_detect: true, use_recordings: true)
+        campaign.hangup_on_amd.should be_false
+      end
+
+    end
+
+  end
+
   describe "time period" do
     before(:each) do
       @campaign = Factory(:preview, :start_time => Time.new(2011, 1, 1, 9, 0, 0), :end_time => Time.new(2011, 1, 1, 21, 0, 0), :time_zone =>"Pacific Time (US & Canada)")
@@ -244,7 +277,7 @@ describe Campaign do
        Campaign.record_timestamps = true
        Campaign.by_updated.all.should include (newer_campaign)
        Campaign.by_updated.all.should include (older_campaign)
-       
+
      end
 
      it "lists deleted campaigns" do
@@ -258,7 +291,7 @@ describe Campaign do
        campaign2 = Factory(:preview)
        campaign3 = Factory(:predictive, :active => false)
        Campaign.active.should include(campaign1)
-       Campaign.active.should include(campaign2) 
+       Campaign.active.should include(campaign2)
      end
   end
 
@@ -270,91 +303,91 @@ describe Campaign do
     end
 
   end
-  
+
   describe "callers_status" do
-    
+
     before (:each) do
       @campaign = Factory(:preview)
       @caller_session1 = Factory(:webui_caller_session, campaign_id: @campaign.id, on_call:true, available_for_call: true)
-      @caller_session2 = Factory(:webui_caller_session, on_call:true, available_for_call: false, campaign_id: @campaign.id)            
+      @caller_session2 = Factory(:webui_caller_session, on_call:true, available_for_call: false, campaign_id: @campaign.id)
     end
-    
+
     it "should return callers logged in" do
       puts @campaign.callers_status
       @campaign.callers_status[0].should eq(2)
     end
-    
+
     it "should return callers on hold" do
       @campaign.callers_status[1].should eq(1)
     end
-    
+
     it "should return callers on call" do
       @campaign.callers_status[2].should eq(1)
     end
-    
-    
+
+
   end
-  
+
   describe "call_status" do
-    
+
     it "should return attempts in wrapup" do
       campaign = Factory(:preview)
       caller_attempt1 = Factory(:call_attempt, wrapup_time: nil, created_at: 3.minutes.ago, status:  CallAttempt::Status::SUCCESS, campaign_id: campaign.id)
-      caller_attempt2 = Factory(:call_attempt, wrapup_time: nil, created_at: 7.minutes.ago, status:  CallAttempt::Status::SUCCESS, campaign_id: campaign.id)      
+      caller_attempt2 = Factory(:call_attempt, wrapup_time: nil, created_at: 7.minutes.ago, status:  CallAttempt::Status::SUCCESS, campaign_id: campaign.id)
       campaign.call_status[0].should eq(1)
     end
-    
+
     it "should return live calls" do
       campaign = Factory(:preview)
       caller_attempt1 = Factory(:call_attempt, wrapup_time: nil, created_at: 3.minutes.ago, status:  CallAttempt::Status::INPROGRESS, campaign_id: campaign.id)
-      caller_attempt2 = Factory(:call_attempt, wrapup_time: nil, created_at: 7.minutes.ago, status:  CallAttempt::Status::INPROGRESS, campaign_id: campaign.id)      
+      caller_attempt2 = Factory(:call_attempt, wrapup_time: nil, created_at: 7.minutes.ago, status:  CallAttempt::Status::INPROGRESS, campaign_id: campaign.id)
       campaign.call_status[2].should eq(1)
     end
-    
+
     it "should return ringing_lines" do
       campaign = Factory(:preview)
       caller_attempt1 = Factory(:call_attempt, wrapup_time: nil, created_at: 12.seconds.ago, status:  CallAttempt::Status::RINGING, campaign_id: campaign.id)
-      caller_attempt2 = Factory(:call_attempt, wrapup_time: nil, created_at: 7.minutes.ago, status:  CallAttempt::Status::RINGING, campaign_id: campaign.id)      
+      caller_attempt2 = Factory(:call_attempt, wrapup_time: nil, created_at: 7.minutes.ago, status:  CallAttempt::Status::RINGING, campaign_id: campaign.id)
       campaign.call_status[1].should eq(1)
     end
-    
-    
-    
+
+
+
   end
-  
+
   describe "current status" do
     it "should return campaign details" do
       campaign = Factory(:predictive)
       c1= Factory(:phones_only_caller_session, on_call: false, available_for_call: false, campaign: campaign)
-      
+
       c2= Factory(:webui_caller_session, on_call: true, available_for_call: false, attempt_in_progress: Factory(:call_attempt, connecttime: Time.now), campaign: campaign, state: "paused")
       c3= Factory(:phones_only_caller_session, on_call: true, available_for_call: false, attempt_in_progress: Factory(:call_attempt, connecttime: Time.now), campaign: campaign, state: "voter_response")
       c4= Factory(:phones_only_caller_session, on_call: true, available_for_call: false, attempt_in_progress: Factory(:call_attempt, connecttime: Time.now), campaign: campaign, state: "wrapup_call")
-      
-      c5= Factory(:webui_caller_session, on_call: true, available_for_call: true, attempt_in_progress: Factory(:call_attempt, campaign: campaign, status: CallAttempt::Status::RINGING, created_at: Time.now), campaign: campaign)      
+
+      c5= Factory(:webui_caller_session, on_call: true, available_for_call: true, attempt_in_progress: Factory(:call_attempt, campaign: campaign, status: CallAttempt::Status::RINGING, created_at: Time.now), campaign: campaign)
       c6= Factory(:phones_only_caller_session, on_call: true, available_for_call: true, campaign: campaign)
       c7= Factory(:webui_caller_session, on_call: true, available_for_call: true, attempt_in_progress: Factory(:call_attempt, campaign: campaign, status: CallAttempt::Status::RINGING, created_at: Time.now), campaign: campaign)
       c8= Factory(:webui_caller_session, on_call: true, available_for_call: false, attempt_in_progress: Factory(:call_attempt), campaign: campaign, attempt_in_progress: Factory(:call_attempt, connecttime: Time.now), state: "connected")
       c9= Factory(:phones_only_caller_session, on_call: true, available_for_call: false, campaign: campaign, attempt_in_progress: Factory(:call_attempt, connecttime: Time.now), state: "conference_started_phones_only_predictive")
-      
+
       c10= Factory(:webui_caller_session, on_call: true, available_for_call: true, attempt_in_progress: Factory(:call_attempt, connecttime: Time.now), campaign: campaign)
       RedisStatus.set_state_changed_time(campaign.id, "On hold", c2.id)
       RedisStatus.set_state_changed_time(campaign.id, "On hold", c5.id)
       RedisStatus.set_state_changed_time(campaign.id, "On hold", c6.id)
       RedisStatus.set_state_changed_time(campaign.id, "On hold", c7.id)
-      
+
       RedisStatus.set_state_changed_time(campaign.id, "On call", c8.id)
       RedisStatus.set_state_changed_time(campaign.id, "On call", c9.id)
-      
+
       RedisStatus.set_state_changed_time(campaign.id, "Wrap up", c3.id)
       RedisStatus.set_state_changed_time(campaign.id, "Wrap up", c4.id)
       RedisStatus.set_state_changed_time(campaign.id, "Wrap up", c10.id)
-      
+
       campaign.current_status.should eq ({callers_logged_in: 9, on_call: 2, wrap_up: 3, on_hold: 4, ringing_lines: 2, available: 0})
-      
+
     end
   end
-     
+
 end
 
 
