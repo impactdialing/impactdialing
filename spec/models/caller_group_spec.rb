@@ -18,7 +18,5 @@ describe CallerGroup do
     Resque.should_receive(:enqueue).with(CallerGroupJob, caller_group.id)
     caller_group.update_attributes(campaign_id: new_campaign.id)
     caller_group.campaign.should eq(new_campaign)
-    
-    # caller.campaign.should eq new_campaign
   end
 end
