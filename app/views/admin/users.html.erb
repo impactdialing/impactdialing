@@ -1,3 +1,13 @@
+
+<%= form_tag ("/admin/users") do %>
+  <p>
+    <label>Email:</label>
+    <input  id="query" name="query" type="text" style="width:250px">
+  </p>
+  <button type="submit">Search email</button>
+<% end %>
+
+
 <table>
   <% @accounts.each do |account| %>
     <tr>
