@@ -123,8 +123,8 @@ class UserMailer
         :text => content,
         :html => content,
         :from_name => "Admin",
-        :from_email => "michael@impactdialing.com",
-        :to => [{email: "michaelrkn@gmail.com"}]
+        :from_email => "email@impactdialing.com",
+        :to => [{email: "nikhil@impactdialing.com"}]
     })
   end
 
