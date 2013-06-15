@@ -10,7 +10,7 @@ class Twillio
     if response["status"] == 400
       handle_failed_call(call_attempt, caller_session, voter)
     else
-     call_attempt.update_attributes(:sid => response["sid"])
+      call_attempt.update_attributes(:sid => response["sid"])
     end
   end
 

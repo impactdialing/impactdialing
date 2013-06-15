@@ -9,7 +9,7 @@ class PreviewPowerDialJob
       caller_session.redirect_account_has_no_funds
       return
     end
-
+    puts caller_session.time_period_exceeded?
     if caller_session.time_period_exceeded?
       caller_session.redirect_caller_time_period_exceeded
       return

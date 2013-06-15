@@ -6,6 +6,10 @@ describe "PhonesOnlyPreview" do
   include TwilioHelper
 
   describe "ask for pin" do
+
+    before(:each) do
+      @caller = Factory.create(:caller, is_phones_only: true)
+    end
     it "should ask for caller pin when caller dials in" do
       conn = Faraday.new(:url => 'http://localhost:3000')
       response = conn.post '/callin/create'
@@ -14,7 +18,6 @@ describe "PhonesOnlyPreview" do
 
     it "should ask for caller pin again if pin not correct" do
       conn = Faraday.new(:url => 'http://localhost:3000')
-      caller = Factory.create(:caller, is_phones_only: true)
       response = conn.post '/callin/identify?attempt=1', { Digits: "12345" }
       response.body.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather finishOnKey=\"*\" timeout=\"10\" action=\"http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/identify_caller?attempt=2\" method=\"POST\"><Say voice=\"man\" language=\"en\" loop=\"1\">Incorrect Pin. Please enter your pin and then press star.</Say></Gather><Gather finishOnKey=\"*\" timeout=\"10\" action=\"http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/identify_caller?attempt=2\" method=\"POST\"><Say voice=\"man\" language=\"en\" loop=\"1\">Incorrect Pin. Please enter your pin and then press star.</Say></Gather><Gather finishOnKey=\"*\" timeout=\"10\" action=\"http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/identify_caller?attempt=2\" method=\"POST\"><Say voice=\"man\" language=\"en\" loop=\"1\">Incorrect Pin. Please enter your pin and then press star.</Say></Gather></Response>")
     end
@@ -53,14 +56,6 @@ describe "PhonesOnlyPreview" do
       response.body.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Redirect>http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{caller.id}/ready_to_call?session_id=#{caller.caller_sessions.first.id}</Redirect></Response>")
     end
 
-    it "should redirect to ready to call " do
-      conn = Faraday.new(:url => 'http://localhost:3000')
-      preview_campaign = Factory(:preview)
-      caller = Factory.create(:caller, is_phones_only: true)
-      conn.post '/callin/identify?attempt=1', { Digits:  caller.pin}
-      response = conn.post "caller/#{caller.id}/read_instruction_options?session_id=#{caller.caller_sessions.first.id}", { Digits:  "*"}
-      response.body.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Redirect>http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{caller.id}/ready_to_call?session_id=#{caller.caller_sessions.first.id}</Redirect></Response>")
-    end
 
     it "should read no more voters to dial if campaign out of voters " do
       conn = Faraday.new(:url => 'http://localhost:3000')
@@ -120,6 +115,9 @@ describe "PhonesOnlyPreview" do
       response = conn.post "caller/#{caller.id}/conference_started_phones_only_preview?session_id=#{caller.caller_sessions.first.id}&amp;voter=#{voter.id}", {Digits: "*"}
       response.body.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{caller.id}/gather_response?question_number=0&amp;session_id=#{caller.caller_sessions.first.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\">#{caller.caller_sessions.first.session_key}</Conference></Dial></Response>")
     end
+  end
+
+  describe "preview calling job" do
 
     it "should start preview call job and redirect caller as account not funded " do
       account = Factory.create(:account, subscription_name: Account::Subscription_Type::PER_MINUTE)
@@ -140,7 +138,7 @@ describe "PhonesOnlyPreview" do
     it "should start preview call job and redirect caller as time period exceeded " do
       account = Factory.create(:account, subscription_name: Account::Subscription_Type::MANUAL)
       conn = Faraday.new(:url => 'http://localhost:3000')
-      preview_campaign = Factory(:preview, account: account, start_time: (Time.now- 2.hours), end_time: (Time.now -1.hours))
+      preview_campaign = Factory(:preview, account: account, start_time: (Time.now - 2.hours), end_time: (Time.now - 1.hours))
       voter = Factory(:voter, campaign: preview_campaign, FirstName: "John", LastName: "Doe", Phone: "1234567890", account: account)
       caller = Factory.create(:caller, is_phones_only: true, campaign: preview_campaign, account: account)
       conn.post '/callin/identify?attempt=1', { Digits:  caller.pin}
@@ -150,10 +148,44 @@ describe "PhonesOnlyPreview" do
       mock_redirect_campaign_time_period_exceeded(caller, caller.caller_sessions.first)
       PreviewPowerDialJob.new.perform(caller.caller_sessions.first.id, voter.id)
       response = conn.post "/caller/#{caller.id}/time_period_exceeded"
-      response.body.should eq("")
+      response.body.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>You can only call this campaign between 12 AM and 1 PM. Please try back during those hours.</Say><Hangup/></Response>")
     end
 
+    it "should start preview call job and handle failed call " do
+      account = Factory.create(:account, subscription_name: Account::Subscription_Type::MANUAL)
+      conn = Faraday.new(:url => 'http://localhost:3000')
+      preview_campaign = Factory(:preview, account: account, start_time: (Time.now - 2.hours), end_time: (Time.now + 10.hours))
+      voter = Factory(:voter, campaign: preview_campaign, FirstName: "John", LastName: "Doe", Phone: "1234567890", account: account)
+      caller = Factory.create(:caller, is_phones_only: true, campaign: preview_campaign, account: account)
+      conn.post '/callin/identify?attempt=1', { Digits:  caller.pin}
+      conn.post "caller/#{caller.id}/read_instruction_options?session_id=#{caller.caller_sessions.first.id}", { Digits:  "*"}
+      conn.post "caller/#{caller.id}/ready_to_call?session_id=#{caller.caller_sessions.first.id}"
+      conn.post "caller/#{caller.id}/conference_started_phones_only_preview?session_id=#{caller.caller_sessions.first.id}&amp;voter=#{voter.id}", {Digits: "*"}
+      mock_make_call_as_failed
+      mock_redirect_caller_phones_only(caller, caller.caller_sessions.first)
+      PreviewPowerDialJob.new.perform(caller.caller_sessions.first.id, voter.id)
+      CallAttempt.first.status.should eq("Call failed")
+    end
 
+    it "should start preview call job and handle successful call" do
+      account = Factory.create(:account, subscription_name: Account::Subscription_Type::MANUAL)
+      conn = Faraday.new(:url => 'http://localhost:3000')
+      preview_campaign = Factory(:preview, account: account, start_time: (Time.now - 2.hours), end_time: (Time.now + 10.hours))
+      voter = Factory(:voter, campaign: preview_campaign, FirstName: "John", LastName: "Doe", Phone: "1234567890", account: account)
+      caller = Factory.create(:caller, is_phones_only: true, campaign: preview_campaign, account: account)
+      conn.post '/callin/identify?attempt=1', { Digits:  caller.pin}
+      conn.post "caller/#{caller.id}/read_instruction_options?session_id=#{caller.caller_sessions.first.id}", { Digits:  "*"}
+      conn.post "caller/#{caller.id}/ready_to_call?session_id=#{caller.caller_sessions.first.id}"
+      conn.post "caller/#{caller.id}/conference_started_phones_only_preview?session_id=#{caller.caller_sessions.first.id}&amp;voter=#{voter.id}", {Digits: "*"}
+      mock_make_call_as_success
+      PreviewPowerDialJob.new.perform(caller.caller_sessions.first.id, voter.id)
+      CallAttempt.first.sid.should eq("12345")
+    end
+  end
+
+  describe "incoming call" do
+
+    it "should "
 
 
 
