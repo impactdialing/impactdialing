@@ -85,11 +85,11 @@ class AdminController < ApplicationController
   def users
     if params[:query]
       users=User.arel_table
-      @accounts = Account.includes(:users).where(users[:email].matches("%#{params[:query]}%")).paginate :page => params[:page]
+      account = Account.arel_table
+      @accounts = Account.includes(:users).where(users[:email].matches("%#{params[:query]}%").or(account[:id].eq(params[:query]))).paginate :page => params[:page]
     else
       @accounts = Account.includes(:users).paginate :page => params[:page]
     end
-
   end
 
   def
