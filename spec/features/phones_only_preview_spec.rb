@@ -154,7 +154,7 @@ describe "PhonesOnlyPreview" do
     it "should start preview call job and handle failed call " do
       account = Factory.create(:account, subscription_name: Account::Subscription_Type::MANUAL)
       conn = Faraday.new(:url => 'http://localhost:3000')
-      preview_campaign = Factory(:preview, account: account, start_time: (Time.now - 2.hours), end_time: (Time.now + 10.hours))
+      preview_campaign = Factory(:preview, account: account, start_time: (Time.now - 10.hours), end_time: (Time.now + 8.hours), time_zone: "Mumbai")
       voter = Factory(:voter, campaign: preview_campaign, FirstName: "John", LastName: "Doe", Phone: "1234567890", account: account)
       caller = Factory.create(:caller, is_phones_only: true, campaign: preview_campaign, account: account)
       conn.post '/callin/identify?attempt=1', { Digits:  caller.pin}
@@ -170,7 +170,7 @@ describe "PhonesOnlyPreview" do
     it "should start preview call job and handle successful call" do
       account = Factory.create(:account, subscription_name: Account::Subscription_Type::MANUAL)
       conn = Faraday.new(:url => 'http://localhost:3000')
-      preview_campaign = Factory(:preview, account: account, start_time: (Time.now - 2.hours), end_time: (Time.now + 10.hours))
+      preview_campaign = Factory(:preview, account: account, start_time: (Time.now - 2.hours), end_time: (Time.now + 8.hours), time_zone: "Mumbai")
       voter = Factory(:voter, campaign: preview_campaign, FirstName: "John", LastName: "Doe", Phone: "1234567890", account: account)
       caller = Factory.create(:caller, is_phones_only: true, campaign: preview_campaign, account: account)
       conn.post '/callin/identify?attempt=1', { Digits:  caller.pin}
@@ -185,7 +185,57 @@ describe "PhonesOnlyPreview" do
 
   describe "incoming call" do
 
-    it "should "
+    it "should abandon call if caller disconnects before call connecting" do
+      account = Factory.create(:account, subscription_name: Account::Subscription_Type::MANUAL)
+      conn = Faraday.new(:url => 'http://localhost:3000')
+      preview_campaign = Factory(:preview, account: account, start_time: (Time.now - 2.hours), end_time: (Time.now + 6.hours), time_zone: "Mumbai")
+      voter = Factory(:voter, campaign: preview_campaign, FirstName: "John", LastName: "Doe", Phone: "1234567890", account: account)
+      caller = Factory.create(:caller, is_phones_only: true, campaign: preview_campaign, account: account)
+      conn.post '/callin/identify?attempt=1', { Digits:  caller.pin}
+      conn.post "caller/#{caller.id}/read_instruction_options?session_id=#{caller.caller_sessions.first.id}", { Digits:  "*"}
+      conn.post "caller/#{caller.id}/ready_to_call?session_id=#{caller.caller_sessions.first.id}"
+      conn.post "caller/#{caller.id}/conference_started_phones_only_preview?session_id=#{caller.caller_sessions.first.id}&amp;voter=#{voter.id}", {Digits: "*"}
+      mock_make_call_as_success
+      PreviewPowerDialJob.new.perform(caller.caller_sessions.first.id, voter.id)
+      caller.caller_sessions.first.update_attributes(on_call: false, available_for_call: false)
+      call = Call.first
+      response = conn.post "/calls/#{call.id}/incoming?campaign_type=preview", { answered_by:  "human", call_status: "in-progress"}
+      response.body.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
+    end
+
+    it "should redirect caller if call answered by machine" do
+      account = Factory.create(:account, subscription_name: Account::Subscription_Type::MANUAL)
+      conn = Faraday.new(:url => 'http://localhost:3000')
+      preview_campaign = Factory(:preview, account: account, start_time: (Time.now - 2.hours), end_time: (Time.now + 6.hours), time_zone: "Mumbai")
+      voter = Factory.create(:voter, campaign: preview_campaign, FirstName: "John", LastName: "Doe", Phone: "1234567890", account: account)
+      caller = Factory.create(:caller, is_phones_only: true, campaign: preview_campaign, account: account)
+      conn.post '/callin/identify?attempt=1', { Digits:  caller.pin}
+      conn.post "caller/#{caller.id}/read_instruction_options?session_id=#{caller.caller_sessions.first.id}", { Digits:  "*"}
+      conn.post "caller/#{caller.id}/ready_to_call?session_id=#{caller.caller_sessions.first.id}"
+      conn.post "caller/#{caller.id}/conference_started_phones_only_preview?session_id=#{caller.caller_sessions.first.id}&amp;voter=#{voter.id}", {Digits: "*"}
+      mock_make_call_as_success
+      PreviewPowerDialJob.new.perform(caller.caller_sessions.first.id, voter.id)
+      call = Call.first
+      response = conn.post "/calls/#{call.id}/incoming?campaign_type=preview", { answered_by:  "machine", call_status: "in-progress"}
+      response.body.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")
+    end
+
+    it "should connect call if answered by human and caller available" do
+      account = Factory.create(:account, subscription_name: Account::Subscription_Type::MANUAL)
+      conn = Faraday.new(:url => 'http://localhost:3000')
+      preview_campaign = Factory(:preview, account: account, start_time: (Time.now - 2.hours), end_time: (Time.now + 6.hours), time_zone: "Mumbai")
+      voter = Factory.create(:voter, campaign: preview_campaign, FirstName: "John", LastName: "Doe", Phone: "1234567890", account: account)
+      caller = Factory.create(:caller, is_phones_only: true, campaign: preview_campaign, account: account)
+      conn.post '/callin/identify?attempt=1', { Digits:  caller.pin}
+      conn.post "caller/#{caller.id}/read_instruction_options?session_id=#{caller.caller_sessions.first.id}", { Digits:  "*"}
+      conn.post "caller/#{caller.id}/ready_to_call?session_id=#{caller.caller_sessions.first.id}"
+      conn.post "caller/#{caller.id}/conference_started_phones_only_preview?session_id=#{caller.caller_sessions.first.id}&amp;voter=#{voter.id}", {Digits: "*"}
+      mock_make_call_as_success
+      PreviewPowerDialJob.new.perform(caller.caller_sessions.first.id, voter.id)
+      call = Call.first
+      response = conn.post "/calls/#{call.id}/incoming?campaign_type=preview", { answered_by:  "human", call_status: "in-progress"}
+      response.body.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"false\" action=\"http://#{Settings.twilio_callback_host}/calls/#{call.id}/disconnected\" record=\"false\"><Conference waitUrl=\"hold_music\" waitMethod=\"GET\" beep=\"false\" endConferenceOnExit=\"true\">#{caller.caller_sessions.first.session_key}</Conference></Dial></Response>")
+    end
 
 
 
