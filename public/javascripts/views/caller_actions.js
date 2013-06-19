@@ -84,7 +84,9 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     }
   },
 
-  sendVoterResponse: function() {
+  sendVoterResponse: function(e) {
+      e.stopPropagation();
+      e.preventDefault();
     if(this.options.schedule_callback.validateScheduleDate() == false){
       alert('The Schedule callback date is invalid');
       return false;
@@ -106,7 +108,9 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     $("#voter_responses").unbind("submit");
   },
 
-   sendVoterResponseAndDisconnect: function() {
+   sendVoterResponseAndDisconnect: function(e) {
+    e.stopPropagation();
+    e.preventDefault();
     if(this.options.schedule_callback.validateScheduleDate() == false){
       alert('The Schedule callback date is invalid');
       return false;
@@ -194,42 +198,72 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     $("#submit_and_stop_call").hide();
   },
 
-  callVoter: function() {
+  callVoter: function(e) {
+    if (typeof(e) != "undefined"){
+      e.stopPropagation();
+      e.preventDefault();
+    }
     var voter_id = this.options.lead_info.get("fields").id;
     var self = this;
     $.ajax({
         url : "/caller/" + self.model.get("caller_id") + "/call_voter",
         data : {id : self.model.get("caller_id"), voter_id : voter_id, session_id : self.model.get("session_id") },
-        type : "POST"
+        type : "POST",
+        beforeSend: function(request)
+          {
+            var token = $("meta[name='csrf-token']").attr("content");
+            request.setRequestHeader("X-CSRF-Token", token);
+          },
     });
   },
 
-  disconnectCaller: function(){
+  disconnectCaller: function(e){
+    e.stopPropagation();
+    e.preventDefault();
     var self = this;
     window.onbeforeunload = null;
     $.ajax({
       url : "/caller/" + self.model.get("caller_id") + "/stop_calling",
       data : {session_id : self.model.get("session_id") },
       type : "POST",
+      beforeSend: function(request)
+        {
+            var token = $("meta[name='csrf-token']").attr("content");
+            request.setRequestHeader("X-CSRF-Token", token);
+        },
     });
   },
 
-  disconnectVoter: function() {
+  disconnectVoter: function(e) {
+    e.stopPropagation();
+    e.preventDefault();
     var self = this;
     $("#hangup_call").hide();
     $.ajax({
         url : "/calls/" + self.model.get("call_id") + "/hangup",
-        type : "POST"
+        type : "POST",
+        beforeSend: function(request)
+          {
+            var token = $("meta[name='csrf-token']").attr("content");
+            request.setRequestHeader("X-CSRF-Token", token);
+          },
     });
   },
 
-  nextVoter: function() {
+  nextVoter: function(e) {
+    e.stopPropagation();
+    e.preventDefault();
     var self = this;
     $.ajax({
         url : "/caller/" + self.model.get("caller_id") + "/skip_voter",
         data : {id : self.model.get("caller_id"), voter_id : self.options.lead_info.get("fields").id,
         session_id : self.model.get("session_id") },
         type : "POST",
+        beforeSend: function(request)
+          {
+            var token = $("meta[name='csrf-token']").attr("content");
+            request.setRequestHeader("X-CSRF-Token", token);
+          },
     })
   },
 
@@ -238,12 +272,19 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     $("#caller-actions a").hide();
   },
 
-  kickCallerOff: function(){
+  kickCallerOff: function(e){
+    e.stopPropagation();
+    e.preventDefault();
     var self = this;
     $.ajax({
         url : "/caller/" + self.model.get("caller_id") + "/kick_caller_off_conference",
         data : {caller_session: self.model.get("session_id") },
-        type : "POST"
+        type : "POST",
+        beforeSend: function(request)
+          {
+            var token = $("meta[name='csrf-token']").attr("content");
+            request.setRequestHeader("X-CSRF-Token", token);
+          },
     });
   },
 

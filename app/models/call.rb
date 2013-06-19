@@ -57,6 +57,9 @@ class Call < ActiveRecord::Base
 
     if answered_by_machine?
       RedisCallFlow.push_to_end_by_machine_call_list(self.id)
+      if Campaign.preview_power_campaign?(campaign_type)  && redis_call_status == 'completed'
+        call_attempt.redirect_caller
+      end
     end
 
     if Campaign.preview_power_campaign?(campaign_type)  && redis_call_status != 'completed'

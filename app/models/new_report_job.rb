@@ -70,8 +70,6 @@ class NewReportJob
          file.write(r)
          file.write("\n")
        rescue Exception => e
-         puts r
-         puts e
          next
        end
      end

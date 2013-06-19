@@ -15,14 +15,14 @@ class UserMailer
       "email@impactdialing.com"
     end
   end
-  
-  
+
+
   def send_email(message)
     _params = {:message => message, :async => false}
     return @mandrill.call 'messages/send', _params
   end
 
-  def send_michael_welcome_email(user)
+  def notify_new_signup(user)
     begin
       emailText="<pre>#{user.attributes.to_yaml}</pre>"
       subject="New user signup!"
@@ -32,7 +32,7 @@ class UserMailer
               :text => emailText,
               :from_name => 'Impact Dialing',
               :from_email => 'email@impactdialing.com',
-              :to=>[{email: 'michael@impactdialing.com'},{email: 'nikhil@impactdialing.com'}],
+              :to=>[{email: 'joseph@impactdialing.com'},{email: 'nikhil@impactdialing.com'}],
               :track_opens => true,
               :track_clicks => true
               })
@@ -96,7 +96,7 @@ class UserMailer
             :from_email => white_labeled_email(user.domain),
             :to => [{email: user.email}],
             :track_opens => true,
-            :track_clicks => true              
+            :track_clicks => true
       })
   end
 
@@ -123,8 +123,8 @@ class UserMailer
         :text => content,
         :html => content,
         :from_name => "Admin",
-        :from_email => "michael@impactdialing.com",
-        :to => [{email: "michaelrkn@gmail.com"}]
+        :from_email => "email@impactdialing.com",
+        :to => [{email: "joseph@impactdialing.com"}]
     })
   end
 
@@ -147,13 +147,13 @@ class UserMailer
     content = "<br/>#{I18n.t(:report_error_occured)}"
     exception_content = "Campaign: #{campaign.name}  Account Id: #{account_id}. Error details : <br/><br/> #{exception.backtrace.each{|line| "<br/>#{line}"}}"
     send_email({ :subject => subject, :text => content, :html => content, :from_name => white_labeled_title(user.domain), :from_email => white_labeled_email(user.domain), :to => [{email: user.email}]})
-    send_email({ :subject => subject, :text => exception_content, :html => exception_content, :from_name => white_labeled_title(user.domain), :from_email => 'email@impactdialing.com', 
+    send_email({ :subject => subject, :text => exception_content, :html => exception_content, :from_name => white_labeled_title(user.domain), :from_email => 'email@impactdialing.com',
       :to => [{email: 'nikhil@activesphere.com'},{email: 'michael@impactdialing.com'}]})
   end
-  
+
   def alert_email(subject, content)
-    send_email({ :subject => subject, :text => content, :from_name => 'impactdialing.com', :from_email => 'email@impactdialing.com', 
+    send_email({ :subject => subject, :text => content, :from_name => 'impactdialing.com', :from_email => 'email@impactdialing.com',
       :to => [{email: 'nikhil@activesphere.com'},{email: 'michael@impactdialing.com'}]})
   end
-  
+
 end

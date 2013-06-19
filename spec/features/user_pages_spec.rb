@@ -20,7 +20,7 @@ feature 'when a user edits their information' do
     page.should have_content 'Your information has been updated.'
   end
 
-  scenario 'and changes their password' do
+  xscenario 'and changes their password' do
     create_user_and_login
     user = Factory.build :user
     click_link 'Account'
@@ -30,7 +30,7 @@ feature 'when a user edits their information' do
     page.should have_content 'Your password has been changed.'
   end
 
-  scenario 'and tries to change their password with an invalid password' do
+  xscenario 'and tries to change their password with an invalid password' do
     create_user_and_login
     click_link 'Account'
     fill_in 'Current password', :with => 'wrong'

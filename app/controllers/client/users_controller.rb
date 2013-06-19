@@ -9,6 +9,10 @@ module Client
       @user.attributes = params[:user]
       if @user.save
         @user.create_recurly_account_code
+        if ["aws", "heroku"].include?(ENV['RAILS_ENV'])
+          user_mailer = UserMailer.new
+          user_mailer.notify_new_signup(@user)
+        end
         session[:user] = @user.id
         flash_message(:notice, "Your account has been created.")
         flash_message(:kissmetrics, "Signed Up")

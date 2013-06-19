@@ -9,7 +9,7 @@ class AdminController < ApplicationController
     @logged_in_callers_count = CallerSession.on_call.count
     @errors=""
   end
-  
+
   def twilio_limit
     TwilioLimit.set(params["twilio_limit"])
     redirect_to :back
@@ -27,8 +27,8 @@ class AdminController < ApplicationController
         )
     }
   end
-  
-  
+
+
   def campaign_stats
     Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
       campaign = Campaign.find(params[:id])
@@ -83,8 +83,16 @@ class AdminController < ApplicationController
   end
 
   def users
-    @accounts = Account.includes(:users).all
+    if params[:query]
+      users=User.arel_table
+      account = Account.arel_table
+      @accounts = Account.includes(:users).where(users[:email].matches("%#{params[:query]}%").or(account[:id].eq(params[:query]))).paginate :page => params[:page]
+    else
+      @accounts = Account.includes(:users).paginate :page => params[:page]
+    end
   end
+
+  def
 
   def set_account_to_manual
     account = Account.find(params[:id])
