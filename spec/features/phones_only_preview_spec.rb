@@ -277,4 +277,94 @@ describe "PhonesOnlyPreview" do
     end
   end
 
+  describe "caller gather response flow" do
+    it "should present first question" do
+      account = Factory.create(:account, subscription_name: Account::Subscription_Type::MANUAL)
+      script = Factory.create(:script)
+      question = Factory.create(:question)
+      script.questions << question
+      preview_campaign = Factory(:preview, account: account, start_time: (Time.now - 2.hours), end_time: (Time.now + 6.hours),
+       time_zone: "Mumbai", script: script)
+      voter = Factory.create(:voter, campaign: preview_campaign, FirstName: "John", LastName: "Doe", Phone: "1234567890", account: account)
+      caller = Factory.create(:caller, is_phones_only: true, campaign: preview_campaign, account: account)
+      @conn.post '/callin/identify?attempt=1', { Digits:  caller.pin}
+      @conn.post "caller/#{caller.id}/read_instruction_options?session_id=#{caller.caller_sessions.first.id}", { Digits:  "*"}
+      @conn.post "caller/#{caller.id}/ready_to_call?session_id=#{caller.caller_sessions.first.id}"
+      @conn.post "caller/#{caller.id}/conference_started_phones_only_preview?session_id=#{caller.caller_sessions.first.id}&amp;voter=#{voter.id}", {Digits: "*"}
+      mock_make_call_as_success
+      PreviewPowerDialJob.new.perform(caller.caller_sessions.first.id, voter.id)
+      call = Call.first
+      @conn.post "/calls/#{call.id}/incoming?campaign_type=preview", { answered_by:  "human", call_status: "in-progress"}
+      @conn.post "/calls/#{call.id}/disconnected"
+      @conn.post "/calls/#{call.id}/call_ended"
+      RedisQuestion.persist_questions(script.id, question.id, "Whats your name???")
+      RedisPossibleResponse.persist_possible_response(question.id, "1", "John Doe")
+      response = @conn.post "/caller/#{caller.id}/gather_response", {session_id: caller.caller_sessions.first.id,
+        question_number: 0}
+      response.body.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather timeout=\"60\" finishOnKey=\"*\" action=\"http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{caller.id}/submit_response?question_id=#{question.id}&amp;question_number=0&amp;session_id=#{caller.caller_sessions.first.id}\" method=\"POST\"><Say>Whats your name???</Say><Say>press 1 for John Doe</Say><Say>Then press star to submit your result.</Say></Gather></Response>")
+    end
+
+     it "should submit response" do
+      account = Factory.create(:account, subscription_name: Account::Subscription_Type::MANUAL)
+      script = Factory.create(:script)
+      question = Factory.create(:question)
+      script.questions << question
+      preview_campaign = Factory(:preview, account: account, start_time: (Time.now - 2.hours), end_time: (Time.now + 6.hours),
+       time_zone: "Mumbai", script: script)
+      voter = Factory.create(:voter, campaign: preview_campaign, FirstName: "John", LastName: "Doe", Phone: "1234567890", account: account)
+      caller = Factory.create(:caller, is_phones_only: true, campaign: preview_campaign, account: account)
+      @conn.post '/callin/identify?attempt=1', { Digits:  caller.pin}
+      @conn.post "caller/#{caller.id}/read_instruction_options?session_id=#{caller.caller_sessions.first.id}", { Digits:  "*"}
+      @conn.post "caller/#{caller.id}/ready_to_call?session_id=#{caller.caller_sessions.first.id}"
+      @conn.post "caller/#{caller.id}/conference_started_phones_only_preview?session_id=#{caller.caller_sessions.first.id}&amp;voter=#{voter.id}", {Digits: "*"}
+      mock_make_call_as_success
+      PreviewPowerDialJob.new.perform(caller.caller_sessions.first.id, voter.id)
+      call = Call.first
+      @conn.post "/calls/#{call.id}/incoming?campaign_type=preview", { answered_by:  "human", call_status: "in-progress"}
+      @conn.post "/calls/#{call.id}/disconnected"
+      @conn.post "/calls/#{call.id}/call_ended"
+      RedisQuestion.persist_questions(script.id, question.id, "Whats your name???")
+      RedisPossibleResponse.persist_possible_response(question.id, "1", "John Doe")
+      @conn.post "/caller/#{caller.id}/gather_response", {session_id: caller.caller_sessions.first.id,
+        question_number: 0}
+      response = @conn.post "/caller/#{caller.id}/submit_response?question_id=#{question.id}&question_number=0&session_id=#{caller.caller_sessions.first.id}", {Digits: 1}
+      response.body.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Redirect>http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{caller.id}/next_question?question_number=1&amp;session_id=#{caller.caller_sessions.first.id}</Redirect></Response>")
+    end
+
+     it "should submit response" do
+      account = Factory.create(:account, subscription_name: Account::Subscription_Type::MANUAL)
+      script = Factory.create(:script)
+      question1 = Factory.create(:question)
+      question2 = Factory.create(:question)
+      script.questions << question1
+      script.questions << question2
+      preview_campaign = Factory(:preview, account: account, start_time: (Time.now - 2.hours), end_time: (Time.now + 6.hours),
+       time_zone: "Mumbai", script: script)
+      voter = Factory.create(:voter, campaign: preview_campaign, FirstName: "John", LastName: "Doe", Phone: "1234567890", account: account)
+      caller = Factory.create(:caller, is_phones_only: true, campaign: preview_campaign, account: account)
+      @conn.post '/callin/identify?attempt=1', { Digits:  caller.pin}
+      @conn.post "caller/#{caller.id}/read_instruction_options?session_id=#{caller.caller_sessions.first.id}", { Digits:  "*"}
+      @conn.post "caller/#{caller.id}/ready_to_call?session_id=#{caller.caller_sessions.first.id}"
+      @conn.post "caller/#{caller.id}/conference_started_phones_only_preview?session_id=#{caller.caller_sessions.first.id}&amp;voter=#{voter.id}", {Digits: "*"}
+      mock_make_call_as_success
+      PreviewPowerDialJob.new.perform(caller.caller_sessions.first.id, voter.id)
+      call = Call.first
+      @conn.post "/calls/#{call.id}/incoming?campaign_type=preview", { answered_by:  "human", call_status: "in-progress"}
+      @conn.post "/calls/#{call.id}/disconnected"
+      @conn.post "/calls/#{call.id}/call_ended"
+      RedisQuestion.persist_questions(script.id, question1.id, "Whats your name???")
+      RedisQuestion.persist_questions(script.id, question2.id, "Whats your age???")
+      RedisPossibleResponse.persist_possible_response(question1.id, "1", "John Doe")
+      RedisPossibleResponse.persist_possible_response(question2.id, "1", "99")
+      @conn.post "/caller/#{caller.id}/gather_response", {session_id: caller.caller_sessions.first.id,
+        question_number: 0}
+      @conn.post "/caller/#{caller.id}/submit_response?question_id=#{question1.id}&question_number=0&session_id=#{caller.caller_sessions.first.id}", {Digits: 1}
+      response = @conn.post "/caller/#{caller.id}/next_question?question_number=1&session_id=#{caller.caller_sessions.first.id}"
+      response.body.should eq("")
+
+    end
+
+
+  end
+
 end
