@@ -11,7 +11,7 @@
     Leave messages
   </p>
 
-  <div id="recordingsdiv">
+  <div id="recordingsdiv"
     <% if !@campaign.use_recordings? %>
       style="display:none;"
     <% end %>>
@@ -19,8 +19,7 @@
     <%= form.collection_select(:recording_id, @account.recordings.active, :id, :name, {:prompt => false}, {:class=>"field", :onchange=>"updatePreview();",name: 'campaign[recording_id]', id: "campaign_recording_id"}) %></p>
     <div id="sndPreview"></div>
   </div>
-
-  <p class="actions">
-    <a href='/client/recording_add?campaign_id=<%= @campaign.id %>' class="action secondary">Add message</a>
-  </p>
 <% end %>
+<p class="actions">
+    <a href='/client/recording_add?campaign_id=<%= @campaign.id %>' class="action secondary">Add message</a>
+</p>
