@@ -1,7 +1,0 @@
-<p><label for="">Recycle rate</label><br>
-  <select id="campaign[recycle_rate]" name="campaign[recycle_rate]">
-    	<% [1,2,3,4,6,10,12,16,24,48,72].each  do |index| %>
-    	<option name="rate_hours" value=<%=index%> <% if recycle_hour== index%>selected<% end %> ><%=index%> hour(s)</option>
-    	<%end%>
-  </select>
-</p>

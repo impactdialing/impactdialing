@@ -1,10 +1,12 @@
-<%= csrf_meta_tag %>
+<% content_for :campaigns_data do %>
+  data-intro="After you create a script, set up a campaign." data-step="4"
+<% end %>
 
 <h1>Scripts</h1>
 <% if @scripts.empty? %>
   <p>No scripts entered.</p>
 <% else %>
-  <table>
+  <table data-intro="This is a list of all the scripts you have created." data-step="2">
     <tr>
       <th>Name</th>
       <th>Date added</th>
@@ -27,5 +29,13 @@
 
 <p><strong>Phones-only users: </strong>The "Phones-only keypad" values refer to the buttons that your callers press on their phones to enter results after each call. Callers can press * to hang up the current call, then enter their results on their keypad and press * again to submit each result.</p>
 
-<p class="actions"><%= link_to 'Add new script', new_client_script_path, :class => 'action primary' %></p>
-<p class="actions"><%= link_to 'View deleted scripts', client_deleted_scripts_path, :class => 'action secondary' %></p>
+<p class="actions"><%= link_to 'Add new script',
+                               new_client_script_path,
+                               :class => 'action primary',
+                               :data => {"intro" => "Click here to create a new script.",
+                                         "step" => "1"} %></p>
+<p class="actions"><%= link_to 'View deleted scripts',
+                               client_deleted_scripts_path,
+                               :class => 'action secondary',
+                               :data => {"intro" => "Click here to view and restore your deleted scripts.",
+                                         "step" => "3"} %></p>

@@ -2,15 +2,19 @@
 
 <fieldset>
   <legend>Add number</legend>
-<%= form_for BlockedNumber.new do |f| %>
-  <p><%= f.label :number %><br>
-  <%= f.text_field :number %></p>
-  <p><%= f.label :level %><br>
-  <%= f.select :campaign_id, [["System", nil]] + @campaigns.map{|c| [c.name, c.id]} %></p>
-  <div class="buttons">
-    <button type="submit">Add</button>
-  </div>
-<% end %>
+  <%= form_for BlockedNumber.new do |f| %>
+    <p data-intro="Add a phone number here." data-step="1">
+      <%= f.label :number %>
+      <%= f.text_field :number %>
+    </p>
+    <p data-intro="Choose whether the number should be blocked for the entire system, or just one campaign." data-step="2">
+      <%= f.label :level %>
+      <%= f.select :campaign_id, [["System", nil]] + @campaigns.map{|c| [c.name, c.id]} %>
+    </p>
+    <div class="buttons">
+      <button type="submit">Add</button>
+    </div>
+  <% end %>
 </fieldset>
 
 <% if @blocked_numbers.any? %>

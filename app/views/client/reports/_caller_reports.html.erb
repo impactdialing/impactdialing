@@ -4,11 +4,17 @@
     <th></th>
     <th></th>
   </tr>
-  <% @callers.each do |caller| %>
+  <% @callers.each_with_index do |caller, index| %>
       <tr>
         <td><%= caller.identity_name %></td>
-        <td><%= link_to("Answered", call_details_client_caller_path(caller)) %></td>
-        <td><%= link_to("Usage", usage_client_caller_path(caller)) %></td>
+        <td <% if index == 0 %>
+              data-intro="The Answered report for callers shows the breakdown of the answered calls fielded by each caller." data-step="6"
+            <% end %>
+            ><%= link_to("Answered", call_details_client_caller_path(caller)) %></td>
+        <td <% if index == 0 %>
+              data-intro="The Usage report for callers tells you how much time each caller spent logged in, and how they spent that time." data-step="7"
+            <% end %>
+            ><%= link_to("Usage", usage_client_caller_path(caller)) %></td>
       </tr>
   <% end %>
 </table>
