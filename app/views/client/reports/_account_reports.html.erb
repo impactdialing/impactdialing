@@ -3,9 +3,19 @@
     <th>Account-wide reports</th>
   </tr>
   <tr>
-    <td><a href="<%= account_campaigns_usage_client_reports_path(:id => @account.id) %>">Usage by campaign</a></td>
+    <td>
+      <a href="<%= account_campaigns_usage_client_reports_path(:id => @account.id) %>"
+         data-intro="Here, you can view the total usage for each campaign." data-step="8">
+        Usage by campaign
+      </a>
+    </td>
   </tr>
   <tr>
-    <td><a href="<%= account_callers_usage_client_reports_path(:id => @account.id) %>">Usage by caller</a></td>
+    <td>
+      <a href="<%= account_callers_usage_client_reports_path(:id => @account.id) %>"
+         data-intro="And finally, you can view the total usage for each caller." data-step="9">
+        Usage by caller
+      </a>
+    </td>
   </tr>
 </table>

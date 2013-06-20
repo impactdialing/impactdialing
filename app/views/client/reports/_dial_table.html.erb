@@ -6,7 +6,7 @@
   
   <%= render partial: 'dial_row', locals: {row_title:"Answering machine", dial_count: dials[CallAttempt::Status::HANGUP], total_dials: total_dials }%>  		      
   
-  <%= render partial: 'dial_row', locals: {row_title:"Voicemail left", dial_count: dials[CallAttempt::Status::VOICEMAIL], total_dials: total_dials }%>  		      
+  <%= render partial: 'dial_row', locals: {row_title:"Message left", dial_count: dials[CallAttempt::Status::VOICEMAIL], total_dials: total_dials }%>  		      
   
   <%= render partial: 'dial_row', locals: {row_title:"Failed", dial_count: dials[CallAttempt::Status::FAILED], total_dials: total_dials }%>  		      
   

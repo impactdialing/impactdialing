@@ -1,10 +1,16 @@
-<%= csrf_meta_tag %>
+<% content_for :monitor_data do %>
+  data-intro="While your callers are on the phone, monitor their calls on the dashboard." data-step="8"
+<% end %>
+
+<% content_for :reports_data do %>
+  data-intro="After your callers finish with their calls, view reports and download the results." data-step="9"
+<% end %>
 
 <h1>Callers</h1>
 <% if @callers.empty? %>
   <p>No callers entered.</p>
 <% else %>
-  <table>
+  <table data-intro="This is a list of all the caller logins you have created." data-step="3">
     <tr>
       <th>Name</th>
       <th>Date added</th>
@@ -27,10 +33,31 @@
   <p><%= page_entries_info @callers %> <%= will_paginate @callers %></p>
 <% end %>
 
-<p><strong><a href=<%="#{request.protocol}caller.#{request.domain}"%>>Your callers can log in here.</a></strong> If you are using phones-only mode or need a local area phone number to call into, contact support.</p>
+<p><strong><a href=<%="#{request.protocol}caller.#{request.domain}" %>
+              target="_blank"
+              data-intro="Click this link to go the page where your callers can log in."
+              data-step="6">Your callers can log in here.</a></strong>
+    <span data-intro="If your callers cannot use a headset (or are using the phones-only system), we provide a (415) area code call-in number. If you need a number in a different area code, contact support."
+          data-step="7">If you are using phones-only mode or need a local area phone number to call into, contact support.</span></p>
 <p>Phones-only callers in Preview and Power mode campaigns will be read the lead&#39s name before dialing; in Predictive mode, they won&#39t know the lead&#39s name.</p>
 
-<p class="actions"><%= link_to 'Add new caller', new_client_caller_path, :class => 'action primary' %></p>
-<p class="actions"><%= link_to 'Add phones-only caller', new_client_caller_path(:is_phones_only => true), :class => 'action primary'  %></p>
-<p class="actions"><%= link_to 'View deleted callers', client_deleted_callers_path, :class => 'action secondary' %></p>
-<p class="actions"><%= link_to 'Manage caller groups', client_caller_groups_path, :class => 'action secondary' %></p>
+<p class="actions"><%= link_to 'Add new caller',
+                               new_client_caller_path,
+                               :class => 'action primary',
+                               :data => {"intro" => "Click here to create a new caller.",
+                                         "step" => "1"} %></p>
+<p class="actions"><%= link_to 'Add phones-only caller',
+                               new_client_caller_path(:is_phones_only => true),
+                               :class => 'action primary',
+                               :data => {"intro" => "If you're a political campaign using the phones-only system without the web interface, click here to create a new phones-only caller.",
+                                         "step" => "2"} %></p>
+<p class="actions"><%= link_to 'View deleted callers',
+                               client_deleted_callers_path,
+                               :class => 'action secondary',
+                               :data => {"intro" => "Click here to view and restore your deleted callers.",
+                                         "step" => "5"} %></p>
+<p class="actions"><%= link_to 'Manage caller groups',
+                               client_caller_groups_path,
+                               :class => 'action secondary',
+                               :data => {"intro" => "If you have a large number of callers that call the same campaigns, you can group them together so that they can all be re-assigned to a new campaign at once.",
+                                         "step" => "4"} %></p>

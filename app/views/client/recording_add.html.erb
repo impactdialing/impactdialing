@@ -1,9 +1,10 @@
-<h1>Add voicemail message</h1>
+<h1>Add message</h1>
 
 <%= form_for @recording, :url => '/client/recording_add', :html => {:multipart => true} do |f| %>
 <fieldset>
   <legend>Upload</legend>
     <%= hidden_field_tag :campaign_id, params[:campaign_id] %>
+    <p><a href="http://www.recordmp3.org/" target="_blank">Click here</a> to record a message.</p>
     <p><label for="upload_file">Name</label>
     <%= f.text_field :name %></p>
     <p>You can upload an MP3, WAV, or AIFF file.</p>
