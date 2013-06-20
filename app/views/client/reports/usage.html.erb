@@ -1,9 +1,7 @@
 <div role="main">
   <h1><%= @campaign.name %> Usage</h1>
 
-  <table>
-    <%= render :partial => 'shared/utilization', :locals => {:report => @campaign, :usage=> @campaign_usage} %>
-  </table>
+  <%= render :partial => 'shared/utilization', :locals => {:report => @campaign, :usage=> @campaign_usage} %>
 
   <%= render :partial => 'billable', :locals => {:usage=> @campaign_usage} %>
 

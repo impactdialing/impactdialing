@@ -10,9 +10,9 @@ module Client
       if @user.save
         @user.create_recurly_account_code
         session[:user] = @user.id
-        flash_message(:notice, "Your account has been created.")
+        flash_message(:notice, "Welcome! To get help for any page, click the Help button in the upper right corner.")
         flash_message(:kissmetrics, "Signed Up")
-        redirect_to '/client/welcome'
+        redirect_to '/client/monitors'
       else
         render '/client/login'
       end

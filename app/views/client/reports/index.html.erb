@@ -11,4 +11,6 @@
   <%= render 'caller_reports' %>
 <% end %>
 
-<%= render 'account_reports' %>
+<% if @account.callers.any? && @account.campaigns.any? %>
+  <%= render 'account_reports' %>
+<% end %>
