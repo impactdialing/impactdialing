@@ -7,6 +7,7 @@
 
       <% if logged_in_as_client? %>
         <ul class="clearfix">
+          <li><button onclick="javascript:introJs().start();" class="action secondary">Help</button></li>
           <li><%= link_to 'Log out', client_session_path, :method => :delete %></li>
         </ul>
       <% end %>
@@ -15,14 +16,14 @@
     <% if logged_in_as_client? %>
       <nav role="navigation" class="clearfix">
       <ul class="clearfix">
+        <li><a href="/client/monitors" <%= content_for :monitor_data %>>Dashboard</a></li>
         <% if @user.administrator? %>
-          <li><a href="/client/scripts">Scripts</a></li>
-          <li><a href="/client/campaigns">Campaigns</a></li>
-          <li><a href="/client/callers">Callers</a></li>
+          <li><a href="/client/scripts" <%= content_for :scripts_data %>>Scripts</a></li>
+          <li><a href="/client/campaigns" <%= content_for :campaigns_data %>>Campaigns</a></li>
+          <li><a href="/client/callers" <%= content_for :callers_data %>>Callers</a></li>
         <% end %>
-        <li><a href="/client/monitors"><span>Monitor</a></li>
-        <li><a href="/client/reports"><span>Reports</a></li>
-        <li><a href="/client/account">Account</a></li>
+        <li><a href="/client/reports" <%= content_for :reports_data %>>Reports</a></li>
+        <li><a href="/client/account" <%= content_for :account_data %>>Account</a></li>
       </ul>
       </nav>
     <% end %>
@@ -37,12 +38,12 @@
 
     <% if logged_in_as_client? %>
       <ul>
+        <li><a href="/client/monitors">Dashboard</a></li>
         <% if @user.administrator? %>
           <li><a href="/client/scripts">Scripts</a></li>
           <li><a href="/client/campaigns">Campaigns</a></li>
           <li><a href="/client/callers">Callers</a></li>
         <% end %>
-        <li><a href="/client/monitors">Monitor</a></li>
         <li><a href="/client/reports">Reports</a></li>
       </ul>
 
