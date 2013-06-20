@@ -1,9 +1,9 @@
 <%= f.hidden_field :is_phones_only, :value => true %>
-<p>
+<p data-intro="Choose a name for callers using this login. This is only used for reporting." data-step="1">
   <label>Name</label>
   <%= f.text_field :name, {:class=>"field"} %>
 </p>
-<p>
+<p data-intro="When a caller dials in, they'll enter this PIN." data-step="2">
   <label>PIN</label>
   <%= @caller.pin || "to be generated" %>
 </p>

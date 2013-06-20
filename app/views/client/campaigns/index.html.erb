@@ -1,10 +1,12 @@
-<%= csrf_meta_tag %>
+<% content_for :callers_data do %>
+  data-intro="After you create a campaign, set up your callers." data-step="5"
+<% end %>
 
 <h1>Campaigns</h1>
 <% if @campaigns.empty? %>
   <p>No campaigns entered.</p>
 <% else %>
-  <table>
+  <table data-intro="This is a list of all the campaigns you have created." data-step="2">
     <tr>
       <th>Name</th>
       <th>Date added</th>
@@ -25,6 +27,18 @@
   <p><%= page_entries_info @campaigns %> <%= will_paginate @campaigns %></p>
 <% end %>
 
-<p class="actions"><%= link_to 'Add new campaign', new_client_campaign_path, :class => 'action primary' %></p>
-<p class="actions"><%= link_to 'View deleted campaigns', client_deleted_campaigns_path, :class => 'action secondary' %></p>
-<p class="actions"><%= link_to 'Manage Do Not Call list', blocked_numbers_path, :class => 'action secondary' %></p>
+<p class="actions"><%= link_to 'Add new campaign',
+                               new_client_campaign_path,
+                               :class => 'action primary',
+                               :data => {"intro" => "Click here to create a new campaign.",
+                                         "step" => "1"} %></p>
+<p class="actions"><%= link_to 'View deleted campaigns',
+                               client_deleted_campaigns_path,
+                               :class => 'action secondary',
+                               :data => {"intro" => "Click here to view and restore your deleted scripts.",
+                                         "step" => "3"} %></p>
+<p class="actions"><%= link_to 'Manage Do Not Call list',
+                               blocked_numbers_path,
+                               :class => 'action secondary',
+                               :data => {"intro" => "Click here to manage your Do Not Call list.",
+                                         "step" => "4"} %></p>
