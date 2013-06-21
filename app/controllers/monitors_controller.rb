@@ -1,6 +1,6 @@
 class MonitorsController < ClientController
   skip_before_filter :check_login, :only => [:start, :stop, :switch_mode, :deactivate_session]
-      respond_to :json, :html
+  respond_to :json, :html
 
   def index
     twilio_capability = Twilio::Util::Capability.new(TWILIO_ACCOUNT, TWILIO_AUTH)

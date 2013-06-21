@@ -5,10 +5,12 @@ require "twilio_helper"
 describe "PhonesOnlyPreview" do
   include TwilioHelper
   before(:each) do
+    twilio_proxy = TwilioProxy.new
     @conn = Faraday.new(:url => 'http://localhost:3000')
   end
 
   describe "ask for pin" do
+
     before(:each) do
       @caller = Factory.create(:caller, is_phones_only: true)
     end
