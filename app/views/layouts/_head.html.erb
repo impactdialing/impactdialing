@@ -30,7 +30,9 @@
 
 <%= render :partial => "layouts/errorception" %>
 <%= render :partial => "layouts/kissmetrics" %>
-<%= render :partial => "layouts/olark" %>
+<% if logged_in_as_client? %>
+  <%= render :partial => "layouts/olark" %>
+<% end %>
 <%= javascript_include_tag :jdefaults %>
 <%= javascript_include_tag :defaults %>
 <%= javascript_include_tag 'application' %>
