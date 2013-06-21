@@ -145,6 +145,7 @@ ImpactDialing::Application.routes.draw do
     end
     get :update_report_real
     resources :users, :only => [:create, :update, :destroy]
+    resources :tos, :only => [:index, :create]
     post 'user_invite', :to => 'users#invite', :as => 'user_invite'
     post 'caller_password', :to => 'users#caller_password', :as => 'caller_password'
     post 'generate_api_key', :to => 'users#generate_api_key', :as => 'generate_api_key'

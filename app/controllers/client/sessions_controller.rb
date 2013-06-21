@@ -1,6 +1,7 @@
 module Client
   class SessionsController < ClientController
     skip_before_filter :check_login, :only => :create
+    skip_before_filter :check_tos_accepted, :only => [:create, :destroy]
 
     def create
       user = User.authenticate(params[:email], params[:password])

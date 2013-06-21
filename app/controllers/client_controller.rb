@@ -4,6 +4,7 @@ class ClientController < ApplicationController
   protect_from_forgery :except => [:billing_updated, :billing_success]
   before_filter :authenticate_api
   before_filter :check_login, :except => [:login, :user_add, :forgot]
+  before_filter :check_tos_accepted, :except => [:login, :forgot]
   before_filter :check_paid
 
   def authenticate_api
@@ -12,6 +13,14 @@ class ClientController < ApplicationController
       return if @account.nil?
       @user = @account.users.first
       session[:user] = @user.id
+    end
+  end
+
+  def check_tos_accepted
+    if @account.tos_accepted_date.nil?
+      redirect_to client_tos_path
+    else
+      return
     end
   end
 
@@ -24,7 +33,6 @@ class ClientController < ApplicationController
           redirect_to login_path
         end
       end
-      return
     end
     begin
       @user = User.find(session[:user])
