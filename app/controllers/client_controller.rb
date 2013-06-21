@@ -38,7 +38,6 @@ class ClientController < ApplicationController
       @user = User.find(session[:user])
       @account = @user.account
     rescue
-      logout
     end
   end
 

@@ -3,7 +3,7 @@ module Client
     INVALID_RESET_TOKEN = 'Your link has expired or is invalid'
     skip_before_filter :check_login, :only => [:create, :reset_password, :update_password]
     skip_before_filter :check_paid, :only => [:reset_password, :update_password]
-    before_filter :check_tos_accepted, :except => [:create]
+    before_filter :check_tos_accepted, :except => [:create, :reset_password, :update_password]
 
     def create
       @user = User.new(:account => Account.new(:domain_name => request.domain), role: User::Role::ADMINISTRATOR)

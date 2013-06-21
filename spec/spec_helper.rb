@@ -38,11 +38,11 @@ Spork.prefork do
     config.before(:suite) do
        DatabaseCleaner.strategy = :transaction
     end
-    
+
     config.after(:suite) do
       DatabaseCleaner.clean_with(:truncation)
     end
-    
+
     config.before(:each) do
       DatabaseCleaner.start
     end
@@ -78,6 +78,7 @@ Spork.prefork do
     fill_in 'Email address', :with => user.email
     fill_in 'Pick a password', :with => user.new_password
     click_button 'Sign up'
+    click_button 'I and the company or organization I represent accept these terms.'
   end
 
   def fixture_path

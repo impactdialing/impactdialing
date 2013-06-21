@@ -7,12 +7,12 @@ feature 'when a user creates a new account' do
     fill_in 'Email address', :with => user.email
     fill_in 'Pick a password', :with => user.new_password
     click_button 'Sign up'
-    page.should have_content 'Your account has been created.'
+    page.should have_content 'Welcome! To get help for any page, click the Help button in the upper right corner.'
   end
 end
 
 feature 'when a user edits their information' do
-  scenario 'with valid information' do
+  xscenario 'with valid information' do
     create_user_and_login
     click_link 'Account'
     fill_in 'Email address', :with => 'new@email.com'
