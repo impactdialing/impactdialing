@@ -3,6 +3,7 @@ module Client
     INVALID_RESET_TOKEN = 'Your link has expired or is invalid'
     skip_before_filter :check_login, :only => [:create, :reset_password, :update_password]
     skip_before_filter :check_paid, :only => [:reset_password, :update_password]
+    before_filter :check_tos_accepted, :except => [:create, :reset_password, :update_password]
 
     def create
       @user = User.new(:account => Account.new(:domain_name => request.domain), role: User::Role::ADMINISTRATOR)
@@ -14,9 +15,8 @@ module Client
           user_mailer.notify_new_signup(@user)
         end
         session[:user] = @user.id
-        flash_message(:notice, "Welcome! To get help for any page, click the Help button in the upper right corner.")
         flash_message(:kissmetrics, "Signed Up")
-        redirect_to '/client/monitors'
+        redirect_to '/client/tos'
       else
         render '/client/login'
       end

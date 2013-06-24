@@ -2,6 +2,7 @@ module Client
   class CallersController < ClientController
     include TimeZoneHelper
     skip_before_filter :check_login, :only => [:reassign_to_campaign]
+    skip_before_filter :check_tos_accepted, :only => [:reassign_to_campaign]
     before_filter :full_access, :except => [:reassign_to_campaign, :usage, :call_details]
     before_filter :load_and_verify_caller, :except => [:index, :new, :create, :reassign_to_campaign, :usage, :call_details, :type_name, :deleted]
     before_filter :load_campaigns, :except => [:index, :destroy, :reassign_to_campaign, :usage, :call_details, :type_name, :deleted]
