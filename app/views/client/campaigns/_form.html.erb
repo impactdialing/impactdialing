@@ -4,19 +4,19 @@
     <fieldset>
       <legend>Settings</legend>
       <%= f.hidden_field :id, {name: "campaign[id]", id: "campaign_id"} %>
-      <p>
+      <p data-intro="Give your campaign a name." data-step="1">
         <%= f.label :name %>
         <%= f.text_field :name, name: "campaign[name]" %>
       </p>
-      <p>
+      <p data-intro="Choose the Caller ID to be displayed on outgoing calls. The law requires that this be a real number associated with your business or organization." data-step="2">
         <label>Caller ID</label>
         <%= f.text_field :caller_id, name: "campaign[caller_id]" %>
       </p>
-      <p>
+      <p data-intro="Choose which script your callers should use." data-step="3">
         <%= f.label :script %>
         <%= f.collection_select(:script_id, @scripts, :id, :name, {}, name: "campaign[script_id]") %>
       </p>
-      <p>
+      <p data-intro="There are three dialing modes. Preview mode shows the name of the lead and lets your caller choose to dial or skip it. Power mode dials a new lead immediately after the previous one is finished. Predictive mode will dial more lines than you have callers, intelligently adapting to the answer rate and conversation length; occasionally, however, a call will be answered when no caller is available. Predictive should generally only be used when several callers are calling at the same time." data-step="4">
         <%= f.label :dialing_mode %>
         <select class="field" id="campaign_type" name="campaign[type]">
           <%= options_for_select [["Predictive", "Predictive"],
@@ -40,12 +40,12 @@
         </p>
       </div>
 
-      <p>
+      <p data-intro="Choose what time zone you're calling so that the correct time is used for the dialing hours and reports." data-step="5">
         <label>Time zone</label>
         <%= time_zone_select("campaign", 'time_zone', ActiveSupport::TimeZone.us_zones, :default => @campaign.time_zone) %>
       </p>
 
-      <p>
+      <p data-intro="Outside of the dialing hours, the dialer won't make calls." data-step="6">
         <label for="">Dialing hours</label>
         <select class="field" id="campaign_start_time" name="campaign[start_time]">
           <%= options_for_select hours, @campaign.start_time.try(:hour) %>
@@ -55,8 +55,13 @@
           <%= options_for_select hours, @campaign.end_time.try(:hour) %>
         </select>
       </p>
+      <p data-intro="The recycle rate sets the minimum amount of time before calling somebody back." data-step="7">
+        <label for="">Recycle rate</label>
+        <select id="campaign[recycle_rate]" name="campaign[recycle_rate]">
+          <%= options_for_select [1,2,3,4,6,10,12,16,24,48,72], @campaign.recycle_rate %>
+        </select>
+      </p>
 
-      <%= render :partial => 'shared/recycle_rate', :locals => {:recycle_hour => @campaign.recycle_rate} %>
       <%= render :partial => 'voicemail', :locals => {:form => f} %>
     </fieldset>
 

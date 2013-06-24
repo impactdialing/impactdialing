@@ -1,5 +1,4 @@
 module SidekiqEvents
-
   module ClassMethods
 
   end

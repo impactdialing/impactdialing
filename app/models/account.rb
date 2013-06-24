@@ -20,7 +20,7 @@ class Account < ActiveRecord::Base
   has_many :possible_responses, :through => :scripts, :source => :questions
   has_many :caller_groups
 
-  attr_accessible :api_key, :domain_name, :abandonment, :card_verified, :activated, :record_calls, :recurly_account_code, :subscription_name, :subscription_count, :subscription_active, :recurly_subscription_uuid, :autorecharge_enabled, :autorecharge_amount, :autorecharge_trigger, :status
+  attr_accessible :api_key, :domain_name, :abandonment, :card_verified, :activated, :record_calls, :recurly_account_code, :subscription_name, :subscription_count, :subscription_active, :recurly_subscription_uuid, :autorecharge_enabled, :autorecharge_amount, :autorecharge_trigger, :status, :tos_accepted_date
 
   module Subscription_Type
     MANUAL = "Manual"
@@ -189,6 +189,14 @@ class Account < ActiveRecord::Base
   def toggle_call_recording!
     self.record_calls = !self.record_calls
     self.save
+  end
+
+  def terms_and_services_accepted?
+    !self.tos_accepted_date.nil?
+  end
+
+  def account_after_change_in_tos?
+    self.created_at >= Date.parse('24th June 2013')
   end
 
   def custom_fields

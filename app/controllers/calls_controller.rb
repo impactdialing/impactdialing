@@ -5,8 +5,6 @@ class CallsController < ApplicationController
   before_filter :find_and_update_answers_and_notes_and_scheduled_date, :only => [:submit_result, :submit_result_and_stop]
   before_filter :find_call, :only => [:hangup, :call_ended]
 
-
-
   def incoming
     if Campaign.predictive_campaign?(params['campaign_type']) && @call.answered_by_human?
       call_attempt = @call.call_attempt
@@ -61,6 +59,7 @@ class CallsController < ApplicationController
     @call = (Call.find_by_id(params["id"]) || Call.find_by_call_sid(params['CallSid']))
   end
 
+
   def find_and_update_answers_and_notes_and_scheduled_date
     find_call
     unless @call.nil?
@@ -81,6 +80,5 @@ class CallsController < ApplicationController
       RedisCall.set_request_params(@call.id, @parsed_params)
     end
   end
-
 
 end

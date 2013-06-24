@@ -40,15 +40,48 @@
    </fieldset>
   </div>
 
-  <p class='actions'>
-    <%= link_to_add_association 'Add a script text', f, :script_texts, {:class => "action secondary add_script_text", "data-association-insertion-node"=> "#script_elements", "data-association-insertion-method"=>"append",  partial: 'script_section' }%>
+
+  <p class='actions' data-intro="Here, you can add different elements to your script." data-step="3">
+    <%= link_to_add_association 'Add a script text',
+                                f,
+                                :script_texts,
+                                {:class => "action secondary add_script_text",
+                                           "data-association-insertion-node" => "#script_elements",
+                                           "data-association-insertion-method" => "append",
+                                           "data-intro" => "Create sections of text for your callers to read.",
+                                           "data-step" => "4",
+                                           partial: 'script_section'} %>
 
 
-    <%= link_to_add_association 'Add a question', f, :questions, {:class => "action secondary add_question", "data-association-insertion-node"=> "#script_elements", "data-association-insertion-method"=>"append",  partial: 'question_fields' }%>
+    <%= link_to_add_association 'Add a question',
+                                f,
+                                :questions,
+                                {:class => "action secondary add_question",
+                                           "data-association-insertion-node"=> "#script_elements",
+                                           "data-association-insertion-method"=>"append",
+                                           "data-intro" => "Write closed-ended multiple-choice questions for your callers to ask.",
+                                           "data-step" => "5",
+                                           partial: 'question_fields'} %>
 
-    <%= link_to_add_association 'Add a note', f, :notes , {:class => "action secondary", "data-association-insertion-node"=> "#script_elements", "data-association-insertion-method"=>"append", partial: 'note_fields' }%>
+    <%= link_to_add_association 'Add a note',
+                                f,
+                                :notes,
+                                {:class => "action secondary",
+                                           "data-association-insertion-node"=> "#script_elements",
+                                           "data-association-insertion-method"=>"append",
+                                           "data-intro" => "Let your callers type text notes, such as recording your leads' email address.",
+                                           "data-step" => "6",
+                                           partial: 'note_fields'} %>
 
-    <%= link_to_add_association 'Add a transfer', f, :transfers , {:class => "action secondary", "data-association-insertion-node"=> ".transfers_fields", "data-association-insertion-method"=>"append", partial: 'transfer_fields' }%>
+    <%= link_to_add_association 'Add a transfer',
+                                f,
+                                :transfers,
+                                {:class => "action secondary",
+                                           "data-association-insertion-node"=> ".transfers_fields",
+                                           "data-association-insertion-method"=>"append",
+                                           "data-intro" => "You can give your callers the option to transfer leads to another phone number. A cold transfer will move your callers to the next call after transfering; a warm transfer will keep your callers on the line until they choose to disconnect from the call.",
+                                           "data-step" => "7",
+                                           partial: 'transfer_fields'} %>
   </p>
 
 </fieldset>

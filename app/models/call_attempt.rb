@@ -182,7 +182,6 @@ class CallAttempt < ActiveRecord::Base
 
   def redirect_caller
     unless caller_session_id.nil?
-      puts "redirect_caller"
       enqueue_call_flow(RedirectCallerJob, [caller_session_id])
     end
   end

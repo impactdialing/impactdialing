@@ -1,11 +1,11 @@
 <h2>Per lead</h2>
 <p>The data in the per lead table includes only the most recent status for each lead.</p>
 
-<table>
+<table data-intro="This table reports on the most recent dial for each lead. So if a lead didn't answer on the first dial, and did on the second, this table will report that lead as Answered." data-step="6">
   <tr>
     <th>Status</th>
     <th>Dials</th>
     <th>Percentage</th>
-  </tr>			
-  <%= render partial: 'dial_table', locals: {dials: dials_report.leads_grouped_by_status_filtered, total_dials: dials_report.total_dials_made_leads }%>		      
+  </tr>
+  <%= render partial: 'dial_table', locals: {dials: dials_report.leads_grouped_by_status_filtered, total_dials: dials_report.total_dials_made_leads }%>
 </table>

@@ -10,7 +10,9 @@ Factory.sequence :phonenumber do |n|
   "#{(10**10)+n}"
 end
 
-Factory.define :account do end
+Factory.define :account do |a|
+  a.tos_accepted_date Time.now
+end
 
 Factory.define :user do |u|
   u.account { Factory(:account) }
@@ -102,7 +104,7 @@ Factory.define :voter_list do |v|
   v.separator ","
   v.s3path "abc"
   v.uploaded_file_name "abc.csv"
-  v.csv_to_system_map Hash["Phone" => "Phone"] 
+  v.csv_to_system_map Hash["Phone" => "Phone"]
   v.created_at Time.now
   v.updated_at Time.now
 end
@@ -134,7 +136,7 @@ end
 
 Factory.define :phones_only_caller_session do |wcs|
   wcs.state 'initial'
-  wcs.created_at Time.now  
+  wcs.created_at Time.now
   wcs.updated_at Time.now
 end
 
@@ -178,7 +180,6 @@ Factory.define :question do |q|
   q.text "question text"
   q.script_order '1'
   q.script {Factory(:script)}
-  
 end
 
 Factory.define :possible_response do |pr|

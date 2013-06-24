@@ -1,0 +1,16 @@
+<%= render 'terms' %>
+
+<p>
+  Thanks for taking the time to read these Terms. If you agree with
+  them, please click the button below. Otherwise, you may not use the
+  Dialer and you must go to another site or close this browser
+  window.
+</p>
+
+<% if !@account.terms_and_services_accepted? %>
+  <%= form_tag('/client/tos') do %>
+    <button>
+      I and the company or organization I represent accept these terms.
+    </button>
+  <% end %>
+<%end%>

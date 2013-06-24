@@ -1,17 +1,8 @@
+HOST = 'localhost'
+PORT = 3000
 
 ImpactDialing::Application.configure do
   # Settings specified here will take precedence over those in config/environment.rb
-  TWILIO_APP_SID="AP5f525b112e1f07d06355acde5470dd1d"
-  TWILIO_ACCOUNT="AC422d17e57a30598f8120ee67feae29cd"
-  TWILIO_AUTH="897298ab9f34357f651895a7011e1631"
-  APP_NUMBER="7029797309"
-  HOLD_MUSIC_URL = "hold_music"
-
-
-  PUSHER_APP_ID="6868"
-  PUSHER_KEY="1e93714ff1e5907aa618"
-  PUSHER_SECRET="26b438b5e27a3e84d59c"
-  TWILIO_ERROR = "http://status-impactdialing.heroku.com/twilio/error_development"
 
   # The test environment is used exclusively to run your application's
   # test suite.  You never need to work with it otherwise.  Remember that
@@ -45,5 +36,13 @@ ImpactDialing::Application.configure do
   require 'shoulda'
   require 'factory_girl'
 
-
+  APP_NUMBER="SomeNumber"
+  PUSHER_APP_ID="blah"
+  PUSHER_KEY="blahblah"
+  PUSHER_SECRET="blahblahblah"
+  TWILIO_ACCOUNT="blahblahblah"
+  TWILIO_AUTH="blahblahblah"
+  TWILIO_APP_SID="blahdahhahah"
+  TWILIO_ERROR = "blah"
+  HOLD_MUSIC_URL = "hold_music"
 end

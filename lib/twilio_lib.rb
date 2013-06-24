@@ -5,7 +5,7 @@ class TwilioLib
 
 
   DEFAULT_SERVER = "api.twilio.com" unless const_defined?('DEFAULT_SERVER')
-  DEFAULT_PORT = 80 unless const_defined?('DEFAULT_PORT')
+  DEFAULT_PORT = 443 unless const_defined?('DEFAULT_PORT')
   DEFAULT_ROOT= "/2010-04-01/Accounts/" unless const_defined?('DEFAULT_ROOT')
 
   def initialize(accountguid=TWILIO_ACCOUNT, authtoken=TWILIO_AUTH, options = {})
@@ -44,11 +44,10 @@ class TwilioLib
   end
 
   def create_http_request(url, params, server)
-
     http = Net::HTTP.new(server, @port)
     http.use_ssl=true
     req = Net::HTTP::Post.new(url)
-    # req.basic_auth @http_user, @http_password
+    req.basic_auth @http_user, @http_password
     req.set_form_data(params)
     http.start{http.request(req)}
   end

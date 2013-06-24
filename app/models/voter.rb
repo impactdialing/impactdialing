@@ -28,9 +28,7 @@ class Voter < ActiveRecord::Base
 
   scope :by_campaign, ->(campaign) { where(campaign_id: campaign) }
   scope :existing_phone_in_campaign, lambda { |phone_number, campaign_id| where(:Phone => phone_number).where(:campaign_id => campaign_id) }
-
   scope :default_order, :order => 'LastName, FirstName, Phone'
-
   # scope :enabled, {:include => :voter_list, :conditions => {'voter_lists.enabled' => true}}
   scope :enabled, where(:enabled => true)
   scope :disabled, where(:enabled => false)
@@ -165,7 +163,6 @@ class Voter < ActiveRecord::Base
   def skip
     update_attributes(skipped_time: Time.now, status: 'not called')
   end
-
 
   def answer(question, response, recorded_by_caller = nil)
     possible_response = question.possible_responses.where(:keypad => response).first

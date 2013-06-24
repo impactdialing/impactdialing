@@ -67,4 +67,7 @@ integration_test:
   twilio_callback_host: impact.localtunnel.net
   call_end_callback_host: impact.localtunnel.net
   incoming_callback_host: impact.localtunnel.net
+  twilio_callback_host: id.localtunnel.net
+  call_end_callback_host: id.localtunnel.net
+  incoming_callback_host: id.localtunnel.net
   recording_env: test

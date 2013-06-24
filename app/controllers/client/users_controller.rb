@@ -3,6 +3,34 @@ module Client
     INVALID_RESET_TOKEN = 'Your link has expired or is invalid'
     skip_before_filter :check_login, :only => [:create, :reset_password, :update_password]
     skip_before_filter :check_paid, :only => [:reset_password, :update_password]
+    before_filter :check_tos_accepted, :except => [:create, :reset_password, :update_password]
+
+    def create
+      @user = User.new(:account => Account.new(:domain_name => request.domain), role: User::Role::ADMINISTRATOR)
+      @user.attributes = params[:user]
+      if @user.save
+        @user.create_recurly_account_code
+        if ["aws", "heroku"].include?(ENV['RAILS_ENV'])
+          user_mailer = UserMailer.new
+          user_mailer.notify_new_signup(@user)
+        end
+        session[:user] = @user.id
+        flash_message(:kissmetrics, "Signed Up")
+        redirect_to '/client/tos'
+      else
+        render '/client/login'
+      end
+    end
+
+    def update
+      @user = current_user
+      if @user.update_attributes(params[:user])
+        flash_message(:notice, "Your information has been updated.")
+        redirect_to '/client/account'
+      else
+        render '/client/users/edit'
+      end
+    end
 
     def create
       @user = User.new(:account => Account.new(:domain_name => request.domain), role: User::Role::ADMINISTRATOR)
