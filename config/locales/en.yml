@@ -8,6 +8,7 @@ en:
   admin_invite_body_html: "Click here to set your password: %{link}. This link expires 24 hours after it was sent."
   admin_invite_body_text: "Click here to set your password: %{link}. This link expires 24 hours after it was sent."
   unpaid_text: "Before you can make calls, you need to verify a credit card number that we can bill. Until then, you can try out as much as you like, except for actually calling. %{billing_link}"
+  updated_tos: "We've updated our Terms of Service. You need to agree to the new terms before continuing."
   unactivated_text: "To prevent abuse, new users must call the support phone number at the bottom of your screen to activate your account."
   voter_list_upload_succeded_subject: "Your list %{list_name} upload succeeded."
   voter_list_upload_failed_subject: "Your list %{list_name} upload failed."

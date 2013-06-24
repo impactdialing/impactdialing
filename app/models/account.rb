@@ -191,6 +191,14 @@ class Account < ActiveRecord::Base
     self.save
   end
 
+  def terms_and_services_accepted?
+    !self.tos_accepted_date.nil?
+  end
+
+  def account_after_change_in_tos?
+    self.created_at >= Date.parse('24th June 2013')
+  end
+
   def custom_fields
     custom_voter_fields
   end

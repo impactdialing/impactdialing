@@ -7,9 +7,10 @@
   window.
 </p>
 
-<%= form_tag('/client/tos') do %>
-
-  <button>
-    I and the company or organization I represent accept these terms.
-  </button>
-<% end %>
+<% if !@account.terms_and_services_accepted? %>
+  <%= form_tag('/client/tos') do %>
+    <button>
+      I and the company or organization I represent accept these terms.
+    </button>
+  <% end %>
+<%end%>

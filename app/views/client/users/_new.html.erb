@@ -2,8 +2,6 @@
 <%= render "shared/error_messages", :target => @user %>
 <%= form_for [:client, @user] do |f| %>
   <fieldset>
-    <p>By signing up, you agree to our <a href="<%= policies_path %>#terms" target="_blank">Terms of Service</a>.</p>
-    
     <p style="display:none">
       <%= f.label :captcha %>
       <%= f.hidden_field :captcha %>

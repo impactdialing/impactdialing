@@ -17,7 +17,7 @@ class ClientController < ApplicationController
   end
 
   def check_tos_accepted
-    if @account.tos_accepted_date.nil?
+    if !@account.terms_and_services_accepted?
       redirect_to client_tos_path
     else
       return
