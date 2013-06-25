@@ -20,7 +20,7 @@ class Account < ActiveRecord::Base
   has_many :possible_responses, :through => :scripts, :source => :questions
   has_many :caller_groups
 
-  attr_accessible :api_key, :domain_name, :abandonment, :card_verified, :activated, :record_calls, :recurly_account_code, :subscription_name, :subscription_count, :subscription_active, :recurly_subscription_uuid, :autorecharge_enabled, :autorecharge_amount, :autorecharge_trigger, :status, :tos_accepted_date
+  attr_accessible :api_key, :domain_name, :abandonment, :card_verified, :activated, :record_calls, :recurly_account_code, :subscription_name, :subscription_count, :subscription_active, :recurly_subscription_uuid, :autorecharge_enabled, :autorecharge_amount, :autorecharge_trigger, :status, :tos_accepted_date, :credit_card_declined
 
   module Subscription_Type
     MANUAL = "Manual"
@@ -32,6 +32,10 @@ class Account < ActiveRecord::Base
     self.payments.where("amount_remaining>0").inject(0) do |sum, payment|
       sum + payment.amount_remaining
     end
+  end
+
+  def administrators
+    users.select{|x| x.administrator? }
   end
 
   def update_caller_password(password)
