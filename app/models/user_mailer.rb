@@ -151,6 +151,14 @@ class UserMailer
       :to => [{email: 'nikhil@activesphere.com'},{email: 'michael@impactdialing.com'}]})
   end
 
+  def deliver_update_billing_info(account)
+    to_list = account.administrators.map {|admin| {email: admin.email}}
+    subject = I18n.t(:update_billing_info)
+    content = "Your credit card was declined. Please update your <a href='https://admin.impactdialing.com/client/billing'>Billing Information</a>. If your balance fall below $0, you won't be able to make more phone calls. Reply to this message or call #{white_labeled_phone(account.domain_name)} for support."
+    send_email({ :subject => subject, :text => content, :html => content, :from_name => white_labeled_title(account.domain_name), :from_email => white_labeled_email(account.domain_name),
+      :to => to_list })
+  end
+
   def alert_email(subject, content)
     send_email({ :subject => subject, :text => content, :from_name => 'impactdialing.com', :from_email => 'email@impactdialing.com',
       :to => [{email: 'nikhil@activesphere.com'},{email: 'michael@impactdialing.com'}]})

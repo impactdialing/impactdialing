@@ -87,6 +87,9 @@ class ClientController < ApplicationController
     if current_user && !current_user.account.card_verified?
       flash_now(:warning, I18n.t(:unpaid_text, :billing_link => '<a href="' + white_labeled_billing_link(request.domain) + '">Click here to verify a credit card.</a>').html_safe)
     end
+    if current_user && current_user.account.credit_card_declined?
+      flash_now(:warning, I18n.t(:credit_card_declined, :billing_link => '<a href="' + white_labeled_billing_link(request.domain) + '">Billing information</a>').html_safe)
+    end
   end
 
   def index
