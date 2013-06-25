@@ -1,30 +1,25 @@
 <div id='api_key'>
 <fieldset>
-   <legend>API Key</legend>
-   <%= form_tag client_generate_api_key_path do %>
+  <legend>API key (beta)</legend>
+  <%= form_tag client_generate_api_key_path do %>
 
-   <% if @account.api_is_enabled? %>
-     <p>
-       Your API Key:
-       <strong><%= @account.api_key %></strong>
-     </p>
+  <% if @account.api_is_enabled? %>
+    <p>Your API key: <strong><%= @account.api_key %></strong></p>
 
-      <div class="buttons">
-        <button type="submit">Regenerate key</button>
-     </div>
+     <div class="buttons">
+       <button type="submit">Regenerate key</button>
+    </div>
 
-   <% else %>
-     <p>
-       You'll need a unique key to make calls to the API. Keep this key a secret as it can be used to access your account.
-     </p>
+  <% else %>
+    <p>You'll need a unique key to make calls to the API. Keep this key a secret as it can be used to access your account.</p>
 
-     <p>
-       <div class="buttons">
-         <button type="submit">Generate key</button>
-      </div>
-     </p>
+    <p>The API is in beta. Contact support for more information.</p>
 
-   <% end %>
+    <div class="buttons">
+      <button type="submit">Generate key</button>
+   </div>
+
+    <% end %>
   <%end%>
  </fieldset>
 </div>
