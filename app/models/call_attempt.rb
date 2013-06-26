@@ -108,6 +108,7 @@ class CallAttempt < ActiveRecord::Base
 
   def connect_caller_to_lead(callee_dc)
     caller_session_id = RedisOnHoldCaller.longest_waiting_caller(campaign_id, callee_dc)
+    puts "Longest Waiting Caller: #{caller_session_id}"
     unless caller_session_id.nil?
       loaded_caller_session = CallerSession.find_by_id_cached(caller_session_id)
       begin
