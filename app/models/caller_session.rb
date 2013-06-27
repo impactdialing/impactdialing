@@ -183,15 +183,17 @@ class CallerSession < ActiveRecord::Base
   end
 
 
-  def handle_reassign_campaign
+  def handle_reassign_campaign(callerdc=DataCentre::Code::TWILIO)
     if reassigned_to_another_campaign?
       new_campaign_id = RedisReassignedCallerSession.campaign_id(self.id)
       new_campaign =  Campaign.find(new_campaign_id)
       RedisPredictiveCampaign.remove(campaign.id, campaign.type) if campaign.caller_sessions.on_call.size <= 1
+      RedisDataCentre.remove_data_centre(campaign.id, callerdc)
       self.update_attributes(reassign_campaign: ReassignCampaign::DONE, campaign: new_campaign)
       RedisPredictiveCampaign.add(new_campaign.id, new_campaign.type)
       RedisReassignedCallerSession.delete(self.id)
       RedisStatus.set_state_changed_time(new_campaign.id, "On hold", self.id)
+      RedisDataCentre.set_datacentres_used(new_campaign.id, callerdc)
     end
   end
 
@@ -230,7 +232,7 @@ class CallerSession < ActiveRecord::Base
 
    def start_conference(callerdc=DataCentre::Code::TWILIO)
      RedisCallerSession.set_datacentre(self.id, callerdc)
-     handle_reassign_campaign
+     handle_reassign_campaign(callerdc)
      if Campaign.predictive_campaign?(campaign.type)
        loaded_caller_session = CallerSession.find(self.id)
        loaded_caller_session.update_attributes(on_call: true, available_for_call: true)
