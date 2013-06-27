@@ -187,8 +187,11 @@ class CallerSession < ActiveRecord::Base
     if reassigned_to_another_campaign?
       new_campaign_id = RedisReassignedCallerSession.campaign_id(self.id)
       new_campaign =  Campaign.find(new_campaign_id)
+      RedisPredictiveCampaign.remove(campaign.id, campaign.type) if campaign.caller_sessions.on_call.size <= 1
       self.update_attributes(reassign_campaign: ReassignCampaign::DONE, campaign: new_campaign)
+      RedisPredictiveCampaign.add(new_campaign.id, new_campaign.type)
       RedisReassignedCallerSession.delete(self.id)
+      RedisStatus.set_state_changed_time(new_campaign.id, "On hold", self.id)
     end
   end
 
