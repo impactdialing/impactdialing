@@ -62,17 +62,26 @@
   <table>
     <tr class="table_header">
       <th>Caller</th>
+      <th>Campaign</th>
       <th>Status</th>
       <th>Time in status</th>
       <th></th>
       <th></th>
       <th></th>
-      <th>Campaign</th>
+
     </tr>
   </table>
 
   <script type="javascript/template" id="caller-monitor-template">
         <td>{{name}}</td>
+        <td>
+          <select class="reassign-campaign">
+           {{#reassignable_campaigns}}
+             <option value="{{id}}">{{name}}</option>
+           {{/reassignable_campaigns}}
+          </select
+          </a>
+        </td>
         <td>{{status}}</td>
         <td>{{time_in_status}}</td>
         <td>
@@ -88,14 +97,6 @@
         <td>
           <a class ="action secondary kick_off" href="#">
             Kick off
-          </a>
-        </td>
-        <td>
-          <select class="reassign-campaign">
-           {{#reassignable_campaigns}}
-             <option value="{{id}}">{{name}}</option>
-           {{/reassignable_campaigns}}
-          </select
           </a>
         </td>
 
