@@ -31,9 +31,10 @@
 <div data-intro="If any callers are making calls, the active campaigns will be listed here."
      data-step="1">
   <h2>Active campaigns</h2>
-  <table style="margin-bottom:0px">
+  <table id="campaigns-monitor">
+    <thead>
       <tr>
-        <th style="width:150px">Campaign</th>
+        <th>Campaign</th>
         <th>Callers logged in</th>
         <th>On call</th>
         <th>Wrap up</th>
@@ -41,6 +42,7 @@
         <th>Ringing lines</th>
         <th>Numbers remaining</th>
       </tr>
+    </thead>
   </table>
 
   <script type="javascript/template" id="campaign-monitor-template">
@@ -52,7 +54,7 @@
         <td>{{ringing_lines}}</td>
         <td>{{available}}</td>
   </script>
-  <table id="campaigns-monitor"></table>
+
 </div>
 
 <div id="caller_table"

@@ -22,6 +22,7 @@ ImpactDialing.Views.MonitorCampaignsIndex = Backbone.View.extend({
   render: function () {
     var self = this;
     this.$el.empty();
+    $(self.el).append("<tr></tr>")
     this.collection.map(function (m) {
       var monitor = (new ImpactDialing.Views.MonitorCampaign({model: m})).render().el;
       $(self.el).append(monitor);
