@@ -16,7 +16,7 @@ ImpactDialing.Routers.Monitors = Backbone.Router.extend({
     $("#campaigns-monitor").html(monitors_campaign.render().el);
     this.active_campaigns.fetch();
     var monitors_caller = new ImpactDialing.Views.MonitorCallersIndex({collection: self.active_callers});
-    $("#callers-monitor").html(monitors_caller.render().el);
+    $("#callers-monitor").append(monitors_caller.render().el);
     this.active_callers.fetch();
   },
 

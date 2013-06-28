@@ -59,7 +59,7 @@
      data-intro="If any callers are making calls, they will be listed here."
      data-step="2">
   <h2>Active callers</h2>
-  <table style="margin-bottom:0">
+  <table id="callers-monitor">
     <tr class="table_header">
       <th>Caller</th>
       <th>Campaign</th>
@@ -71,6 +71,7 @@
 
     </tr>
   </table>
+
 
   <script type="javascript/template" id="caller-monitor-template">
         <td>{{name}}</td>
@@ -102,7 +103,8 @@
 
   </script>
 
-  <table id="callers-monitor"></table>
+
+
 </div>
 
 <div id="status" style="float:right"></div>
