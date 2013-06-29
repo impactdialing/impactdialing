@@ -247,7 +247,7 @@ ImpactDialing::Application.routes.draw do
   get 'admin/abandonment', :to => 'admin#abandonment'
   get 'admin/caller_sessions/:id', :to => 'admin#caller_sessions', :as => :admin_caller_sessions
   post 'admin/twilio_limit', :to => 'admin#twilio_limit'
-  post 'admin/set_account_to_manual', :to => 'admin#set_account_to_manual'
+  get 'admin/set_account_to_manual', :to => 'admin#set_account_to_manual'
 
 
   resource :call_attempts, :only => :create
