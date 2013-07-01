@@ -92,13 +92,9 @@ class AdminController < ApplicationController
     end
   end
 
-  def
-
   def set_account_to_manual
     account = Account.find(params[:id])
-    account.update_attribute(:activated, true)
-    account.update_attribute(:card_verified, true)
-    account.update_attribute(:subscription_name, "Manual")
+    account.update_attributes(activated: true, card_verified: true, subscription_name: "Manual")
     redirect_to :back
   end
 

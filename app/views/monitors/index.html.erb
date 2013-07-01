@@ -33,9 +33,10 @@
 <div data-intro="If any callers are making calls, the active campaigns will be listed here."
      data-step="1">
   <h2>Active campaigns</h2>
-  <table style="margin-bottom:0px">
+  <table id="campaigns-monitor">
+    <thead>
       <tr>
-        <th style="width:150px">Campaign</th>
+        <th>Campaign</th>
         <th>Callers logged in</th>
         <th>On call</th>
         <th>Wrap up</th>
@@ -43,6 +44,7 @@
         <th>Ringing lines</th>
         <th>Numbers remaining</th>
       </tr>
+    </thead>
   </table>
 
   <script type="javascript/template" id="campaign-monitor-template">
@@ -54,27 +56,38 @@
         <td>{{ringing_lines}}</td>
         <td>{{available}}</td>
   </script>
-  <table id="campaigns-monitor"></table>
+
 </div>
 
 <div id="caller_table"
      data-intro="If any callers are making calls, they will be listed here."
      data-step="2">
   <h2>Active callers</h2>
-  <table>
-    <tr class="table_header">
-      <th>Caller</th>
-      <th>Status</th>
-      <th>Time in status</th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th>Campaign</th>
-    </tr>
+  <table id="callers-monitor">
+    <thead>
+      <tr class="table_header">
+        <th>Caller</th>
+        <th>Campaign</th>
+        <th>Status</th>
+        <th>Time in status</th>
+        <th></th>
+        <th></th>
+        <th></th>
+      </tr>
+    </thead>
   </table>
+
 
   <script type="javascript/template" id="caller-monitor-template">
         <td>{{name}}</td>
+        <td>
+          <select class="reassign-campaign">
+           {{#reassignable_campaigns}}
+             <option value="{{id}}">{{name}}</option>
+           {{/reassignable_campaigns}}
+          </select
+          </a>
+        </td>
         <td>{{status}}</td>
         <td>{{time_in_status}}</td>
         <td>
@@ -92,18 +105,11 @@
             Kick off
           </a>
         </td>
-        <td>
-          <select class="reassign-campaign">
-           {{#reassignable_campaigns}}
-             <option value="{{id}}">{{name}}</option>
-           {{/reassignable_campaigns}}
-          </select
-          </a>
-        </td>
 
   </script>
 
-  <table id="callers-monitor"></table>
+
+
 </div>
 
 <div id="status" style="float:right"></div>
