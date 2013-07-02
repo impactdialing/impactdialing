@@ -24,13 +24,16 @@ class AdminReportJob
               sessions = CallerSession.where(campaign_id: campaigns).
                 where(["created_at > ? AND created_at < ?", prepare_date(@from_date), prepare_date(@to_date + 1.day)]).
                 where("tCaller IS NOT NULL").sum("ceil(tDuration/60)").to_i
+                puts "Session: #{sessions}"
               calls = CallAttempt.from('call_attempts use index (index_call_attempts_on_campaign_id_created_at_status)').
                 where(campaign_id: campaigns).
                 where(["created_at > ? AND created_at < ?", prepare_date(@from_date), prepare_date(@to_date + 1.day)]).
                 sum("ceil(tDuration/60)").to_i
+                puts "Calls: #{calls}"
               transfers = TransferAttempt.where(campaign_id: campaigns).
                 where(["created_at > ? AND created_at < ?", prepare_date(@from_date), prepare_date(@to_date + 1.day)]).
                 sum("ceil(tDuration/60)").to_i
+              puts "Transfers: #{transfers}"
               output << [account_id, User.where(account_id: account_id).select(:email).first.try(:email), calls+sessions+transfers].join("  ")
             end
           end
