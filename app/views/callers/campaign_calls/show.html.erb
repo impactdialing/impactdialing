@@ -12,6 +12,8 @@
       "models/caller_session.js", "views/caller_script.js", "views/start_calling.js", "views/caller_actions.js" %>
 <% end %>
 
+<%== PusherFake.javascript if defined?(PusherFake) %>
+
 <% content_for :javascripts do %>
   <script type="text/javascript">
     $(function() {

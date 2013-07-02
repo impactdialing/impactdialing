@@ -124,7 +124,7 @@ class UserMailer
         :html => content,
         :from_name => "Admin",
         :from_email => "email@impactdialing.com",
-        :to => [{email: "joseph@impactdialing.com"}]
+        :to => [{email: "nikhil@impactdialing.com"}]
     })
   end
 

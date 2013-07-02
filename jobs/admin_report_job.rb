@@ -31,6 +31,7 @@ class AdminReportJob
               transfers = TransferAttempt.where(campaign_id: campaigns).
                 where(["created_at > ? AND created_at < ?", prepare_date(@from_date), prepare_date(@to_date + 1.day)]).
                 sum("ceil(tDuration/60)").to_i
+
               output << [account_id, User.where(account_id: account_id).select(:email).first.try(:email), calls+sessions+transfers].join("  ")
             end
           end

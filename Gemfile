@@ -85,4 +85,5 @@ group :test, :integration_test do
   gem "faraday"
   gem "capybara"
   gem 'launchy'
+  gem "pusher-fake"
 end
