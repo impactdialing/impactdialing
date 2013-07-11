@@ -52,7 +52,6 @@ module Client
         @from_date, @to_date, params[:callback_url], params[:strategy]
       )
       respond_with(@campaign, location:  client_reports_url) do |format|
-        puts format
         format.html {
             puts "html format"
             flash_message(:notice, I18n.t(:client_report_processing))
