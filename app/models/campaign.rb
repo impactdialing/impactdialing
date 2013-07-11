@@ -59,7 +59,6 @@ class Campaign < ActiveRecord::Base
   validates :end_time, :presence => true
   validate :set_caller_id_error_msg
   validate :campaign_type_changed, on: :update
-  # validate :script_changed_called
   validate :no_caller_assigned_on_deletion
   cattr_reader :per_page
   @@per_page = 25
@@ -105,17 +104,6 @@ class Campaign < ActiveRecord::Base
       errors.add(:base, 'You cannot change dialing modes while callers are logged in.')
     end
   end
-
-  def script_changed_called
-    if !new_record? && script_id_changed? && call_attempts.count > 0
-      errors.add(:base, I18n.t(:script_cannot_be_modified))
-    end
-  end
-
-  def campaign_dialed?
-    call_attempts.count > 0
-  end
-
 
   def is_preview_or_progressive
     type == Type::PREVIEW || type == Type::PROGRESSIVE

@@ -60,6 +60,11 @@ class Script < ActiveRecord::Base
     questions.as_json({root: false})
   end
 
+  def answers_recorded?
+    answer_count = Question.question_count_script(self.id).values.inject { |a, b| a + b } || 0
+    answer_count == 0
+  end
+
 
   def as_json(options)
     json = super options.merge(:include => [:notes, :transfers, :script_texts])

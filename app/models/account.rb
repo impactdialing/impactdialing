@@ -22,6 +22,7 @@ class Account < ActiveRecord::Base
 
   attr_accessible :api_key, :domain_name, :abandonment, :card_verified, :activated, :record_calls, :recurly_account_code, :subscription_name, :subscription_count, :subscription_active, :recurly_subscription_uuid, :autorecharge_enabled, :autorecharge_amount, :autorecharge_trigger, :status, :tos_accepted_date, :credit_card_declined
 
+
   module Subscription_Type
     MANUAL = "Manual"
     PER_MINUTE = "Per Minute"
