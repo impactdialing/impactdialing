@@ -93,7 +93,7 @@ describe Client::ReportsController do
     it "pulls up report downloads page" do
       campaign = Factory(:preview, script: Factory(:script), account: account)
       Resque.should_receive(:enqueue)
-      get :download, :campaign_id => campaign.id, format: 'csv'
+      get :download, :campaign_id => campaign.id, format: 'html'
       response.should redirect_to 'http://test.host/client/reports'
     end
 

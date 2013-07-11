@@ -49,12 +49,12 @@ module Client
         params[:custom_voter_fields],
         params[:download_all_voters],
         params[:lead_dial],
-        @from_date, @to_date, "", "webui"
+        @from_date, @to_date, params[:callback_url], params[:strategy]
       )
-      respond_with @script,  location: client_scripts_path do |format|
+      respond_to do |format|
           format.html {
             flash_message(:notice, I18n.t(:client_report_processing))
-            redirect_to(client_reports_url)
+            redirect_to client_reports_url
           }
           format.json { render json: {message: "Response will be sent to the callback url once the report is ready for download." }, status: "ok", code: "200" }
       end
