@@ -51,8 +51,8 @@ module Client
         params[:lead_dial],
         @from_date, @to_date, params[:callback_url], params[:strategy]
       )
-      respond_to do |format|
-          format.html {
+      respond_with(@campaign, location:  client_reports_url) do |format|
+        format.html {
             flash_message(:notice, I18n.t(:client_report_processing))
             redirect_to client_reports_url
           }
