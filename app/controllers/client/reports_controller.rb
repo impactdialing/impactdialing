@@ -60,7 +60,7 @@ module Client
         format.json {
           puts "json format"
           render :json => {message: "Response will be sent to the callback url once the report is ready for download." },
-          status: "ok", code: "200" }
+          status: "ok"}
       end
     end
 
