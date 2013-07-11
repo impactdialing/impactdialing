@@ -61,7 +61,8 @@ class Script < ActiveRecord::Base
   end
 
   def answers_recorded?
-    Question.question_count_script(self.id) > 0
+    answer_count = Question.question_count_script(self.id).values.inject { |a, b| a + b }
+    answer_count > 0
   end
 
 
