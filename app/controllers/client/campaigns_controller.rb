@@ -73,7 +73,7 @@ module Client
     end
 
     def can_change_script
-      if (@campaign.script_id == params[:script_id] || params[:script_id].nil?)
+      if (@campaign.script_id.to_s == params[:script_id] || params[:script_id].nil?)
           render :json => {message: true, script_id: @campaign.script_id}
       else
           render :json => {message: @campaign.script.answers_recorded?, script_id: @campaign.script_id}
