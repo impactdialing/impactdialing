@@ -56,7 +56,7 @@ module Client
             flash_message(:notice, I18n.t(:client_report_processing))
             redirect_to client_reports_url
           }
-          format.json { render json: {message: "Response will be sent to the callback url once the report is ready for download." }, status: "ok", code: "200" }
+        format.json { render json: {message: "Response will be sent to the callback url once the report is ready for download." }, status: "ok", code: "200" }
       end
     end
 
