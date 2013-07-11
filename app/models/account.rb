@@ -22,7 +22,7 @@ class Account < ActiveRecord::Base
 
   attr_accessible :api_key, :domain_name, :abandonment, :card_verified, :activated, :record_calls, :recurly_account_code, :subscription_name, :subscription_count, :subscription_active, :recurly_subscription_uuid, :autorecharge_enabled, :autorecharge_amount, :autorecharge_trigger, :status, :tos_accepted_date, :credit_card_declined
 
-  after_create :enable_api!
+  before_create :assign_api_key
 
 
   module Subscription_Type
@@ -168,7 +168,7 @@ class Account < ActiveRecord::Base
 
 
   def enable_api!
-    self.generate_api_key!
+    self.update_attribute(:api_key, generate_api_key)
   end
 
   def disable_api!
@@ -252,8 +252,13 @@ class Account < ActiveRecord::Base
     Digest::SHA1.hexdigest(args.flatten.join('--'))
   end
 
-  def generate_api_key!
-    self.update_attribute(:api_key, secure_digest(Time.now, (1..10).map{ rand.to_s }))
+  def assign_api_key
+    self.api_key = generate_api_key
   end
+
+  def generate_api_key
+    secure_digest(Time.now, (1..10).map{ rand.to_s })
+  end
+
 
 end
