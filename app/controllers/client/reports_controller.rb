@@ -5,6 +5,7 @@ module Client
     include TimeZoneHelper
     before_filter :load_campaign, :except => [:index, :usage, :account_campaigns_usage, :account_callers_usage]
     around_filter :select_shard
+    respond_to :html, :json
 
     def index
       @campaigns = params[:id].blank? ? account.campaigns : Campaign.find(params[:id])
@@ -50,8 +51,13 @@ module Client
         params[:lead_dial],
         @from_date, @to_date, "", "webui"
       )
-      flash_message(:notice, I18n.t(:client_report_processing))
-      redirect_to client_reports_url
+      respond_with @script,  location: client_scripts_path do |format|
+          format.html {
+            flash_message(:notice, I18n.t(:client_report_processing))
+            redirect_to(client_reports_url)
+          }
+          format.json { render json: {message: "Response will be sent to the callback url once the report is ready for download." }, status: "ok", code: "200" }
+      end
     end
 
     def downloaded_reports
