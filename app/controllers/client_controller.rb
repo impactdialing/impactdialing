@@ -18,7 +18,11 @@ class ClientController < ApplicationController
 
   def check_tos_accepted
     if !@account.terms_and_services_accepted?
-      redirect_to client_tos_path
+      respond_to do |format|
+          format.html { redirect_to client_tos_path    }
+          format.json { render json: {message: "Please accept the Terms of services before making any request" }, code: "403" }
+      end
+
     else
       return
     end
