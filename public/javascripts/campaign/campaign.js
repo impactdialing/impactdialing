@@ -27,20 +27,21 @@ var Campaign = function(){
   });
 
   $(document).on("change", "#campaign_script", function(){
-  //   var self = this;
-  //    $.ajax({
-  //           url : "/client/campaigns" + $("#campaign_id").val() + "/can_change_script",
-  //           data : {script_id : $(self).val()},
-  //           type : "GET",
-  //           success : function(response) {
-  //             if(response.message){
-  //               set_new_campaign_script(response);
-  //               set_response_panel(response);
-  //               set_transfer_panel(response);
-  //             }
-  //           }
-  //       });
-  // });
+    var self = this;
+     $.ajax({
+            url : "/client/campaigns/" + $("#campaign_id").val() + "/can_change_script",
+            data : {script_id : $(self).val()},
+            type : "GET",
+            success : function(response) {
+              console.log(response)
+              if(!response.message){
+                if (!confirm("You have already made calls on this campaign with the existing script. If you change scripts now, your Answered calls report and Download report will include results in both the old and the new scripts. Are you sure you want to change the script?")){
+                  $("#campaign_script").val(response.script_id)
+                }
+              }
+            }
+        });
+  });
 }
 
 Campaign.prototype.checkCampaignDialed = function(){
