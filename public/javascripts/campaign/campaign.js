@@ -27,6 +27,9 @@ var Campaign = function(){
   });
 
   $(document).on("change", "#campaign_script", function(){
+    if ($("#campaign_id").val() == ""){
+      return
+    }
     var self = this;
      $.ajax({
             url : "/client/campaigns/" + $("#campaign_id").val() + "/can_change_script",
