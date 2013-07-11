@@ -48,7 +48,7 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
         },
       success: function(data){
         self.model.set(data);
-        self.pusher = new Pusher(self.model.get("pusher_key"))
+        self.pusher = self.model.get("pusher");
         self.channel = self.pusher.subscribe(self.model.get("session_key"));
         self.bindPusherEvents();
         $("#caller-actions").html(self.start_calling_view.render().el);

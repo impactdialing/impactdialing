@@ -1,8 +1,12 @@
 require 'rspec/rails'
 class TwilioProxy
 
-  def initialize
-    @conn = Faraday.new(:url => 'http://localhost:3000')
+  def initialize(url="http://localhost:3000")
+    @conn = Faraday.new(:url => url)
+  end
+
+  def start_calling
+    @conn.post '/callin/create'
   end
 
   def callin(resp=false)

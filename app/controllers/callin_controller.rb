@@ -7,6 +7,7 @@ class CallinController < ApplicationController
   end
 
   def identify
+    puts "identify"
     identity = CallerIdentity.find_by_pin(params[:Digits])
     caller = identity.nil? ?  Caller.find_by_pin(params[:Digits]) : identity.caller
     session_key = identity.nil? ? generate_session_key : identity.session_key

@@ -12,7 +12,9 @@ class CallsController < ApplicationController
       call_attempt = @call.call_attempt
       call_attempt.connect_caller_to_lead(DataCentre.code(params[:callee_dc]))
     end
-    render xml: @call.incoming_call
+    xml = @call.incoming_call
+    puts xml
+    render xml: xml
   end
 
   def call_ended

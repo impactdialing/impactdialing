@@ -7,49 +7,29 @@ require 'capybara/rspec'
 
 
 
+
 SimpleCov.start 'rails' do
   add_filter 'environment.rb'
 end
 
 Spork.prefork do
-  # This file is copied to spec/ when you run 'rails generate rspec:install'
   ENV["RAILS_ENV"] = 'integration_test'
+  require "pusher-fake"
 
   require File.expand_path("../../config/environment", __FILE__)
   require 'rspec/rails'
   require 'spork/ext/ruby-debug'
 
-
-  # Requires supporting ruby files with custom matchers and macros, etc,
-  # in spec/support/ and its subdirectories.
   Dir[Rails.root.join("spec/support/**/*.rb")].each {|f| require f}
   Dir[Rails.root.join("spec/shared/**/*.rb")].each {|f| require f}
-  #Dir[Rails.root.join("simulator/new_simulator.rb")].each {|f| require f}
 
   RSpec.configure do |config|
+
     config.before(:each) do
       $redis_call_flow_connection.flushALL
     end
-    # == Mock Framework
-    #
-    # If you prefer to use mocha, flexmock or RR, uncomment the appropriate line:
-    #
-    # config.mock_with :mocha
-    # config.mock_with :flexmock
-    # config.mock_with :rr
+
     config.mock_with :rspec
-
-  #   class ActiveRecord::Base
-  #     mattr_accessor :shared_connection
-  #     @@shared_connection = nil
-
-  #     def self.connection
-  #       @@shared_connection || ConnectionPool::Wrapper.new(:size => 1) { retrieve_connection }
-  #   end
-  # end
-  # ActiveRecord::Base.shared_connection = ActiveRecord::Base.connection
-
-
 
     config.before(:suite) do
        DatabaseCleaner.strategy = :truncation
@@ -70,6 +50,7 @@ Spork.prefork do
 
     config.after(:each) do
         DatabaseCleaner.clean
+        PusherFake::Channel.reset
     end
 
     config.after(:all) do
@@ -123,15 +104,8 @@ Spork.prefork do
 
 end
 
-
-# Capybara.register_driver :poltergeist do |app|
-#   Capybara::Poltergeist::Driver.new(app, { js_errors: true })
-# end
-
 Capybara.javascript_driver = :selenium
 Capybara.current_driver = :selenium
-# Capybara.app_host = 'http://impact.localtunnel.net'
-# Capybara.server_port = '8989'
 
 
 Spork.each_run do

@@ -49,6 +49,7 @@ class TwilioLib
     req = Net::HTTP::Post.new(url)
     req.basic_auth @http_user, @http_password
     req.set_form_data(params)
+    puts http.inspect
     http.start{http.request(req)}
   end
 

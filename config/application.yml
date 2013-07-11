@@ -59,15 +59,13 @@ test:
   twilio_callback_host: impact.localtunnel.net
   call_end_callback_host: impact.localtunnel.net
   incoming_callback_host: impact.localtunnel.net
+  twilio_callback_port: 80
   recording_env: test
 
 integration_test:
   <<: *default_settings
-  voip_api_url: twilio.localtunnel.net
   twilio_callback_host: impact.localtunnel.net
   call_end_callback_host: impact.localtunnel.net
   incoming_callback_host: impact.localtunnel.net
-  twilio_callback_host: id.localtunnel.net
-  call_end_callback_host: id.localtunnel.net
-  incoming_callback_host: id.localtunnel.net
+  twilio_callback_port: 3000
   recording_env: test

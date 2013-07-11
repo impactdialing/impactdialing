@@ -4,12 +4,13 @@ ruby '1.9.3'
 
 gem 'rails', '~> 3.2.13'
 gem 'unicorn'
+gem 'thin'
 gem 'will_paginate', '~> 3.0'
 gem 'mysql2', '~> 0.3.0'
 gem 'newrelic_rpm'
 gem 'json', '~> 1.7.7'
 gem 'nokogiri', '~> 1.4.4'
-gem "pusher", "~> 0.9.2"
+gem "pusher", "~> 0.11.3"
 gem "aws-s3", "~> 0.6.2", :require => "aws/s3"
 gem "paperclip", "2.3.16"
 gem 'daemons', '~> 1.0.10'
@@ -25,7 +26,7 @@ gem 'recurly', '~> 2.1.3'
 gem "heroku"
 gem "uuid", "~> 2.3.5"
 gem "call_center", "~> 0.0.9"
-gem "eventmachine", "1.0.0.rc.4"
+gem "eventmachine", "~> 1.0.3"
 gem "em-http-request", "~> 1.0.1"
 gem "ruby-graphviz", "0.9.0"
 gem "em-synchrony", "~> 1.0.1"
@@ -50,6 +51,7 @@ gem "dalli", "~>2.3.0"
 gem "mandrill-api", "~>1.0.13"
 gem "sidekiq-failures", "~> 0.1.0"
 gem "lograge", "~>0.2.0"
+gem "pry"
 
 group :development, :test, :integration_test do
   gem 'rspec'
@@ -70,6 +72,7 @@ group :development do
   gem "capistrano_colors"
   gem "capistrano-multiconfig"
   gem "better_errors"
+  gem "pusher-fake", "0.9.0"
   gem "binding_of_caller"
 end
 
@@ -85,5 +88,6 @@ group :test, :integration_test do
   gem "faraday"
   gem "capybara"
   gem 'launchy'
-  gem "pusher-fake"
+  gem "pusher-fake", "0.9.0"
+  gem "forward"
 end

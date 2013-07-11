@@ -3,10 +3,13 @@ class Twillio
 
   def self.dial(voter, caller_session)
     campaign = caller_session.campaign
+    puts voter.inspect
     call_attempt = setup_call(voter, caller_session, campaign)
     twilio_lib = TwilioLib.new(TWILIO_ACCOUNT, TWILIO_AUTH)
+    puts twilio_lib.inspect
     http_response = twilio_lib.make_call(campaign, voter, call_attempt)
     response = JSON.parse(http_response)
+    puts response
     if response["status"] == 400
       handle_failed_call(call_attempt, caller_session, voter)
     else

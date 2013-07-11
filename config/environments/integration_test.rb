@@ -5,7 +5,7 @@ ImpactDialing::Application.configure do
   TWILIO_ACCOUNT="AC422d17e57a30598f8120ee67feae29cd"
   TWILIO_AUTH="897298ab9f34357f651895a7011e1631"
   APP_NUMBER="7029797309"
-  HOLD_MUSIC_URL = "hold_music"
+  HOLD_MUSIC_URL = "https://s3.amazonaws.com/hold_music/impactdialing_holdmusic_v1.mp3"
 
 
   PUSHER_APP_ID="6868"

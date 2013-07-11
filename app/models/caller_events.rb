@@ -26,7 +26,7 @@ module CallerEvents
     def publish_caller_conference_started
       unless caller.is_phones_only?
         event_hash = campaign.caller_conference_started_event(voter_in_progress.try(:id))
-        Pusher[session_key].trigger!(event_hash[:event], event_hash[:data].merge!(:dialer => campaign.type))
+        Pusher.trigger([session_key], event_hash[:event], event_hash[:data].merge!(:dialer => campaign.type))
      end
     end
 
@@ -35,7 +35,7 @@ module CallerEvents
     end
 
     def publish_caller_disconnected
-      Pusher[session_key].trigger!("caller_disconnected", {pusher_key: Pusher.key}) unless caller.is_phones_only?
+      Pusher.trigger([session_key], "caller_disconnected", {pusher_key: Pusher.key}) unless caller.is_phones_only?
     end
 
     def publish_caller_reassigned

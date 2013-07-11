@@ -4,11 +4,15 @@ class PreviewPowerDialJob
   sidekiq_options :failures => true
 
   def perform(caller_session_id, voter_id)
+    puts "PreviewPowerDialJob"
     caller_session = CallerSession.find_by_id_cached(caller_session_id)
+
     if caller_session.funds_not_available?
+      puts "funds not avialble"
       caller_session.redirect_account_has_no_funds
       return
     end
+
     if caller_session.time_period_exceeded?
       caller_session.redirect_caller_time_period_exceeded
       return

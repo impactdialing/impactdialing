@@ -135,9 +135,13 @@ class CallerSession < ActiveRecord::Base
   def redirect_caller
     Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
     if caller.is_phones_only?
-      Twilio::Call.redirect(session_key, ready_to_call_caller_url(caller_id, :host => DataCentre.call_back_host(data_centre), :port => Settings.twilio_callback_port, :protocol => "http://", session_id: id))
+      Twilio::Call.redirect(sid, ready_to_call_caller_url(caller_id, :host => DataCentre.call_back_host(data_centre), :port => Settings.twilio_callback_port, :protocol => "http://", session_id: id))
     else
-      Twilio::Call.redirect(session_key, continue_conf_caller_url(caller_id, :host => DataCentre.call_back_host(data_centre), :port => Settings.twilio_callback_port, :protocol => "http://", session_id: id))
+      puts DataCentre.call_back_host(data_centre)
+      puts Settings.twilio_callback_port
+      response  = Twilio::Call.redirect(sid, continue_conf_caller_url(caller_id, :host => DataCentre.call_back_host(data_centre), :port => Settings.twilio_callback_port, :protocol => "http://", session_id: id))
+      puts response
+      response
     end
 
   end
