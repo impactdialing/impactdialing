@@ -13,8 +13,6 @@
         <%= f.text_field :caller_id, name: "campaign[caller_id]" %>
       </p>
       <p data-intro="Choose which script your callers should use." data-step="3">
-        <%= f.hidden_field :campaign_dialed?, {name: "campaign_dialed", id: "campaign_dialed"} %>
-        <%= f.hidden_field :script_id, {name: "current_script", id: "current_script"} %>
         <%= f.label :script %>
         <%= f.collection_select(:script_id, @scripts, :id, :name, {}, name: "campaign[script_id]",
         id: "campaign_script") %>
