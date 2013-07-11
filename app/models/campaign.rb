@@ -59,7 +59,7 @@ class Campaign < ActiveRecord::Base
   validates :end_time, :presence => true
   validate :set_caller_id_error_msg
   validate :campaign_type_changed, on: :update
-  validate :script_changed_called
+  # validate :script_changed_called
   validate :no_caller_assigned_on_deletion
   cattr_reader :per_page
   @@per_page = 25
@@ -110,6 +110,10 @@ class Campaign < ActiveRecord::Base
     if !new_record? && script_id_changed? && call_attempts.count > 0
       errors.add(:base, I18n.t(:script_cannot_be_modified))
     end
+  end
+
+  def campaign_dialed?
+    call_attempts.count > 0
   end
 
 
@@ -180,7 +184,6 @@ class Campaign < ActiveRecord::Base
 
   def callers_available_for_call
     RedisAvailableCaller.count(self.id)
-    # CallerSession.find_all_by_campaign_id_and_on_call_and_available_for_call(self.id, 1, 1)
   end
 
 

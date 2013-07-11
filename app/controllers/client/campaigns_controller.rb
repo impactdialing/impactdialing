@@ -73,6 +73,7 @@ module Client
     end
 
 
+
     private
 
     def load_and_verify_campaign
