@@ -59,6 +59,7 @@ class VoterListsController < ClientController
       else
         flash_message(:error, voter_list.errors.full_messages.join)
         format.html { redirect_to edit_client_campaign_path(@campaign.id)}
+        format.json { render :json => voter_list.errors.full_messages.to_json }
       end
     end
 
