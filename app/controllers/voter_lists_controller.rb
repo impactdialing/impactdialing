@@ -55,14 +55,12 @@ class VoterListsController < ClientController
       if voter_list.save
         Resque.enqueue(VoterListUploadJob, voter_list.id, current_user.email, current_user.domain ,"")
         flash_message(:notice, I18n.t(:voter_list_upload_scheduled))
-
         format.json { render :json => voter_list.to_json(:only => ["id", "name", "enabled"])}
       else
         format.html {
           flash_message(:error, voter_list.errors.full_messages.join)
           redirect_to edit_client_campaign_path(@campaign.id)
         }
-        format.json { render :json => voter_list.errors.full_messages.to_json }
       end
     end
 
