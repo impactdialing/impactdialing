@@ -53,34 +53,34 @@ gem "lograge", "~>0.2.0"
 
 
 group :development, :test do
-  gem 'rspec'
+  gem 'rspec', "~>2.6.0"
   gem 'rspec-rails', '~> 2.6.1'
-  gem 'debugger'
-  gem 'hirb'
-  gem 'rspec-instafail'
+  gem 'debugger', "~>1.6.0"
+  gem 'hirb', "~>0.7.1"
+  gem 'rspec-instafail', "~>0.2.4"
 end
 
 group :development do
-  gem 'guard'
-  gem 'guard-rspec'
-  gem 'guard-spork'
-  gem 'rb-fsevent'
-  gem 'showoff-io'
-  gem 'foreman'
+  gem 'guard', "~>1.6.2"
+  gem 'guard-rspec', "~>1.2.1"
+  gem 'guard-spork', "~>1.5.0"
+  gem 'rb-fsevent', "~>0.9.3"
+  gem 'showoff-io', "~>0.4.0"
+  gem 'foreman', "~>0.62.0"
   gem "capistrano"
   gem "capistrano_colors"
   gem "capistrano-multiconfig"
-  gem "better_errors"
-  gem "binding_of_caller"
+  gem "better_errors", "~>0.7.2"
+  gem "binding_of_caller", "~>0.7.1"
 end
 
 group :test do
   gem 'factory_girl', '~> 1.3.3'
-  gem 'shoulda'
-  gem 'simplecov'
-  gem 'spork-rails'
-  gem "database_cleaner"
-  gem "json_spec"
-  gem "capybara"
-  gem 'launchy'
+  gem 'shoulda', "~>3.3.2"
+  gem 'simplecov', "~>0.7.1"
+  gem 'spork-rails', "~>3.2.1"
+  gem "database_cleaner", "~>0.9.1"
+  gem "json_spec", "~>1.1.0"
+  gem "capybara", "~>2.1.0"
+  gem 'launchy', "~>2.2.0"
 end
