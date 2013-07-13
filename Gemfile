@@ -54,7 +54,7 @@ gem "lograge", "~>0.2.0"
 
 group :development, :test do
   gem 'rspec'
-  gem 'rspec-rails', '~> 2.6.1'
+  gem 'rspec-rails'
   gem 'debugger'
   gem 'hirb'
   gem 'rspec-instafail'
