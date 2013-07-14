@@ -1,8 +1,8 @@
 require "spec_helper"
 
 describe VoterListJob do
-  let(:s3){ mock }
-  let(:mailer){ mock }
+  let(:s3){ double }
+  let(:mailer){ double }
 
   describe "import" do
     before :each do

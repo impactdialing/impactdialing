@@ -45,4 +45,5 @@ ImpactDialing::Application.configure do
   TWILIO_APP_SID="blahdahhahah"
   TWILIO_ERROR = "blah"
   HOLD_MUSIC_URL = "hold_music"
+  MONITOR_TWILIO_APP_SID="blah"
 end
