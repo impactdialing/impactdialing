@@ -7,7 +7,7 @@ var VoterLists = function(){
     return false;
   }
   if ($("#voter_list_name").val().trim().length <= 3){
-    alert("Voter List name is too short. Please enter more than 3 characters");
+    alert("Voter List name is too short. Please enter more than 3 characters.");
     return false;
   }
   return true
@@ -36,6 +36,16 @@ VoterLists.prototype.validate_csv_file = function(evt){
     $("#voter_list_separator").val(separator)
     $("#voter_upload").show();
     $('#voter_list_upload').attr('action', "/client/campaigns/"+$('#campaign_id').val()+"/voter_lists");
+
+    $("#column_headers select").change(function() {
+      if ($(this).val() == 'custom') {
+        var newField = prompt('Enter the name of field to create:');
+        if (newField) {
+          $(this).children("option[value='custom']").before("<option value='" + newField + "'>" + newField + "</option>");
+          $(this).val(newField);
+        }
+      }
+    });
   }
   };
     $('#voter_list_upload').attr('action', "/client/campaigns/"+$('#campaign_id').val()+"/voter_lists/column_mapping");
@@ -46,9 +56,4 @@ VoterLists.prototype.validate_csv_file = function(evt){
     });
     $("#voter_list_upload").trigger("submit");
     $("#voter_list_upload").unbind("submit");
-
-
 }
-
-
-
