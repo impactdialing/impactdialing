@@ -10,16 +10,14 @@ gem 'newrelic_rpm'
 gem 'json', '~> 1.7.7'
 gem 'nokogiri', '~> 1.6.0'
 gem "pusher", "~> 0.11.3"
-gem "aws-s3", "~> 0.6.3", :require => "aws/s3"
-gem "paperclip", "2.3.16"
-gem 'daemons', '~> 1.0.10'
-gem 'twilio', '~> 3.1.0'
-gem 'settingslogic', '~> 2.0.6'
-gem "twilio-ruby", '~> 3.5.1'
+gem "aws-sdk"
+gem "paperclip", "~> 3.4.2"
+gem 'twilio', '~> 3.1.1'
+gem 'settingslogic', '~> 2.0.9'
+gem "twilio-ruby", '~> 3.10.0'
 gem 'dynamic_form', '~> 1.1.4'
 gem "nested_form", '~>0.1.1'
 gem 'jquery-rails', '>= 1.0.12'
-gem 'delayed_job'
 gem "activerecord-import", ">= 0.2.0"
 gem 'recurly', '~> 2.1.3'
 gem "heroku"
