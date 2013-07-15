@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-ruby '1.9.3'
+ruby '2.0.0'
 
 gem 'rails', '~> 3.2.13'
 gem 'unicorn'
@@ -37,7 +37,7 @@ gem "hiredis", "~>0.4.5"
 gem "em-hiredis", "~>0.1.1"
 gem "formtastic", "~>2.2.1"
 gem "cocoon", "~>1.0.22"
-gem 'deep_cloneable', '~> 1.4.0'
+gem 'deep_cloneable', '~> 1.5.2'
 gem "redis-objects", "~>0.5.3",:require => 'redis/objects'
 gem "redis", "~> 3.0.0"
 gem 'ar-octopus', :git => "git://github.com/tchandy/octopus.git"
