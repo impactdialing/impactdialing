@@ -9,8 +9,8 @@ gem 'mysql2', '~> 0.3.11'
 gem 'newrelic_rpm'
 gem 'json', '~> 1.7.7'
 gem 'nokogiri', '~> 1.6.0'
-gem "pusher", "~> 0.9.2"
-gem "aws-s3", "~> 0.6.2", :require => "aws/s3"
+gem "pusher", "~> 0.11.3"
+gem "aws-s3", "~> 0.6.3", :require => "aws/s3"
 gem "paperclip", "2.3.16"
 gem 'daemons', '~> 1.0.10'
 gem 'twilio', '~> 3.1.0'

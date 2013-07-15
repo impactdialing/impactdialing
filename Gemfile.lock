@@ -215,9 +215,9 @@ GEM
       coderay (~> 1.0.5)
       method_source (~> 0.8)
       slop (~> 3.4)
-    pusher (0.9.4)
+    pusher (0.11.3)
       multi_json (~> 1.0)
-      signature (~> 0.1.2)
+      signature (~> 0.1.6)
     rack (1.4.5)
     rack-cache (1.2)
       rack (>= 0.4)
@@ -368,7 +368,7 @@ PLATFORMS
 DEPENDENCIES
   activerecord-import (>= 0.2.0)
   ar-octopus!
-  aws-s3 (~> 0.6.2)
+  aws-s3 (~> 0.6.3)
   better_errors (~> 0.7.2)
   binding_of_caller (~> 0.7.1)
   call_center (~> 0.0.9)
@@ -409,7 +409,7 @@ DEPENDENCIES
   newrelic_rpm
   nokogiri (~> 1.6.0)
   paperclip (= 2.3.16)
-  pusher (~> 0.9.2)
+  pusher (~> 0.11.3)
   rails (~> 3.2.13)
   rb-fsevent (~> 0.9.3)
   recurly (~> 2.1.3)
