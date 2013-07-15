@@ -67,9 +67,7 @@ describe VoterList do
       end
 
       it "should be successful" do
-        s3 = mock
-        VoterList.should_receive(:read_from_s3).and_return(s3)
-        s3.should_receive(:value).and_return(File.open("#{csv_file_upload}").read)
+        VoterList.should_receive(:read_from_s3).and_return(File.open("#{csv_file_upload}").read)
         @result = voter_list.import_leads(
             USER_MAPPINGS,
             csv_file_upload,
@@ -82,9 +80,7 @@ describe VoterList do
 
       it "should upload all columns expect the Not Available one" do
         MAPPINGS = CsvMapping.new({"Phone"=>"Phone", "Name"=>"", "Email"=>"Email"})
-        s3 = mock
-        VoterList.should_receive(:read_from_s3).and_return(s3)
-        s3.should_receive(:value).and_return(File.open("#{fixture_path}/files/missing_field_list.csv").read)
+        VoterList.should_receive(:read_from_s3).and_return(File.open("#{fixture_path}/files/missing_field_list.csv").read)
         @result = voter_list.import_leads(MAPPINGS,"#{fixture_path}/files/missing_field_list.csv",",")
         @result.should == {
             :successCount => 2,
@@ -94,9 +90,7 @@ describe VoterList do
       end
 
       it "should treat a duplicate phone number as a new voter" do
-        s3 = mock
-        VoterList.should_receive(:read_from_s3).and_return(s3)
-        s3.should_receive(:value).and_return(File.open("#{csv_file_upload}").read)
+        VoterList.should_receive(:read_from_s3).and_return(File.open("#{csv_file_upload}").read)
         @result = voter_list.import_leads(
             USER_MAPPINGS,
             csv_file_upload,
@@ -106,9 +100,7 @@ describe VoterList do
       end
 
       it "should parse it and save to the voters list table" do
-        s3 = mock
-        VoterList.should_receive(:read_from_s3).and_return(s3)
-        s3.should_receive(:value).and_return(File.open("#{csv_file_upload}").read)
+        VoterList.should_receive(:read_from_s3).and_return(File.open("#{csv_file_upload}").read)
         @result = voter_list.import_leads(
             USER_MAPPINGS,
             csv_file_upload,
@@ -131,9 +123,7 @@ describe VoterList do
       end
 
       it "should ignore the same phone is repeated in another voters list for the same campaign" do
-        s3 = mock
-        VoterList.should_receive(:read_from_s3).twice.and_return(s3)
-        s3.should_receive(:value).twice.and_return(File.open("#{csv_file_upload}").read)
+        VoterList.should_receive(:read_from_s3).twice.and_return(File.open("#{csv_file_upload}").read)
         @result = voter_list.import_leads(
             USER_MAPPINGS,
             csv_file_upload,
@@ -151,9 +141,7 @@ describe VoterList do
       end
 
       it "should add even if the same phone is repeated in a different campaign" do
-        s3 = mock
-        VoterList.should_receive(:read_from_s3).and_return(s3)
-        s3.should_receive(:value).and_return(File.open("#{csv_file_upload}").read)
+        VoterList.should_receive(:read_from_s3).and_return(File.open("#{csv_file_upload}").read)
 
         another_voter_list = Factory(:voter_list,
                                      :campaign => Factory(:progressive, :account => user.account),
@@ -179,10 +167,8 @@ describe VoterList do
 
         before(:each) do
           @another_voter_list = Factory(:voter_list, :campaign => campaign, :account => user.account)
-          s3 = mock
-          VoterList.should_receive(:read_from_s3).twice.and_return(s3)
-          s3.should_receive(:value).and_return(File.open("#{csv_file_upload}").read)
-          s3.should_receive(:value).and_return(File.open("#{csv_file_upload_with_duplicate_custom_id}").read)
+          VoterList.should_receive(:read_from_s3).and_return(File.open("#{csv_file_upload}").read)
+          VoterList.should_receive(:read_from_s3).and_return(File.open("#{csv_file_upload_with_duplicate_custom_id}").read)
 
           @result = voter_list.import_leads(
               USER_MAPPINGS,
@@ -239,9 +225,8 @@ describe VoterList do
       let(:mappings) { CsvMapping.new({ "Phone" => "Phone", "Custom" =>"Custom"}) }
 
       it "creates custom fields when they do not exist" do
-        s3 = mock
-        VoterList.should_receive(:read_from_s3).and_return(s3)
-        s3.should_receive(:value).and_return(File.open("#{csv_file}").read)
+
+        VoterList.should_receive(:read_from_s3).and_return(File.open("#{csv_file}").read)
 
         custom_field = "Custom"
         voter_list = Factory(:voter_list, :campaign => Factory(:predictive, :account => user.account), :account => user.account)
@@ -259,8 +244,7 @@ describe VoterList do
 
       it "should not process custom fields for a voters with an invalid phone" do
         s3 = mock
-        VoterList.should_receive(:read_from_s3).and_return(s3)
-        s3.should_receive(:value).and_return(File.open("#{fixture_path}/files/missing_phone_with_custom_fields_list.csv").read)
+        VoterList.should_receive(:read_from_s3).and_return(File.open("#{fixture_path}/files/missing_phone_with_custom_fields_list.csv").read)
 
         mappings = CsvMapping.new({"Phone"=>"Phone", "Name"=>"", "Custom"=>"Custom"})
         @result = voter_list.import_leads(mappings,"#{fixture_path}/files/missing_phone_with_custom_fields_list.csv",",")

@@ -1,7 +1,6 @@
 require "spec_helper"
 
 describe VoterListJob do
-  let(:s3){ mock }
   let(:mailer){ mock }
 
   describe "import" do
@@ -14,7 +13,6 @@ describe VoterListJob do
       @campaign_id = @campaign.id
       @csv_to_system_map = {"Phone" => "Phone", "LAST" =>"LastName"}
       VoterList.stub(:delete_from_s3)
-      VoterList.stub(:read_from_s3).and_return(s3)
       UserMailer.stub(:new).and_return(mailer)
     end
 
@@ -29,7 +27,7 @@ describe VoterListJob do
         voter_list = Factory(:voter_list, separator: ",", headers: "[]", csv_to_system_map: {"Phone" => "Phone", "LAST" =>"LastName"}.to_json, s3path: @csv_filename, campaign_id: @campaign.id, account_id: @account.id)
         job = VoterListJob.new(voter_list.id, nil, nil,"")
         mailer.should_receive(:voter_list_upload)
-        s3.should_receive(:value).and_return(File.open("#{fixture_path}/files/valid_voters_list.csv").read)
+        VoterList.should_receive(:read_from_s3).and_return(File.open("#{fixture_path}/files/valid_voters_list.csv").read)
 
         job.perform
         Voter.count.should == 2
@@ -47,7 +45,7 @@ describe VoterListJob do
         voter_list = Factory(:voter_list, separator: ",", headers: "[]", csv_to_system_map: {"Phone" => "Phone", custom_field=>custom_field}.to_json, s3path: @csv_filename, campaign_id: @campaign.id, account_id: @account.id)
         job = VoterListJob.new(voter_list.id, nil, nil,"")
         mailer.should_receive(:voter_list_upload)
-        s3.should_receive(:value).and_return(File.open("#{fixture_path}/files/voters_custom_fields_list.csv").read)
+        VoterList.should_receive(:read_from_s3).and_return(File.open("#{fixture_path}/files/voters_custom_fields_list.csv").read)
 
         job.perform
         CustomVoterField.all.size.should == 1
@@ -75,7 +73,7 @@ describe VoterListJob do
         job = VoterListJob.new(voter_list.id, nil, nil,"")
 
         mailer.should_receive(:voter_list_upload)
-        s3.should_receive(:value).and_return(File.open("#{fixture_path}/files/invalid_voters_list.csv").read)
+        VoterList.should_receive(:read_from_s3).and_return(File.open("#{fixture_path}/files/invalid_voters_list.csv").read)
 
         job.perform['errors'].should include "Invalid CSV file. Could not import."
       end
@@ -83,9 +81,9 @@ describe VoterListJob do
       it "should not save the voters list entry" do
         voter_list = Factory(:voter_list, separator: ",", headers: "[]", csv_to_system_map: {"Phone" => "Phone"}.to_json, s3path: @csv_filename, campaign_id: @campaign.id, account_id: @account.id)
         job = VoterListJob.new(voter_list.id, nil, nil,"")
-        
+
         mailer.should_receive(:voter_list_upload)
-        s3.should_receive(:value).and_return(File.open("#{fixture_path}/files/invalid_voters_list.csv").read)
+        VoterList.should_receive(:read_from_s3).and_return(File.open("#{fixture_path}/files/invalid_voters_list.csv").read)
         job.perform
         VoterList.all.should_not include(voter_list)
       end
