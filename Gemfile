@@ -21,8 +21,8 @@ gem "activerecord-import", ">= 0.3.1"
 gem 'recurly', '~> 2.1.3'
 gem "heroku"
 gem "uuid", "~> 2.3.5"
-gem "eventmachine", "1.0.0.rc.4"
-gem "em-http-request", "~> 1.0.1"
+gem "eventmachine", "1.0.3"
+gem "em-http-request", "~> 1.1.0"
 gem "em-synchrony", "~> 1.0.1"
 gem "resque", "~> 1.19"
 gem "resque-scheduler", "~> 1.9.9", :require => 'resque_scheduler'
