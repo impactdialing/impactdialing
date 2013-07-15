@@ -5,12 +5,12 @@ class VoterListBatchUpload
   def initialize(list, csv_to_system_map, csv_filename, separator)
     @list = list
     @csv_to_system_map = csv_to_system_map
-    csv = CSV.new(VoterList.read_from_s3(csv_filename).value, :col_sep => separator)
+    csv = CSV.new(VoterList.read_from_s3(csv_filename), :col_sep => separator)
     @csv_headers = csv.shift.collect{|h| h.blank? ? VoterList::BLANK_HEADER : h}
     @voters_list = csv.readlines.shuffle
     @result = {:successCount => 0, :failedCount => 0}
     @csv_to_system_map.remap_system_column! "ID", :to => "CustomID"
-    @csv_phone_column_location = @csv_headers.index(@csv_to_system_map.csv_index_for "Phone")    
+    @csv_phone_column_location = @csv_headers.index(@csv_to_system_map.csv_index_for "Phone")
     @csv_custom_id_column_location = @csv_headers.index(@csv_to_system_map.csv_index_for "CustomID")
     @custom_attributes = create_custom_attributes
   end
@@ -29,7 +29,7 @@ class VoterListBatchUpload
         phone_number = Voter.sanitize_phone(voter_info[@csv_phone_column_location])
         lead = nil
 
-        if custom_id_present? 
+        if custom_id_present?
           custom_id = voter_info[@csv_custom_id_column_location]
           lead_id = found_leads[custom_id]
           if lead_id.present?
@@ -97,7 +97,7 @@ class VoterListBatchUpload
       select([:id, :voter_id, :custom_voter_field_id]).to_sql
 
     custom_field_values = CustomVoterFieldValue.connection.execute(query).each(as: :hash).each_with_object({}) do |data, memo|
-      memo[data['voter_id']] ||= {} 
+      memo[data['voter_id']] ||= {}
       memo[data['voter_id']][data['custom_voter_field_id']] = {id: data['id'], value: data['value']}
     end
 
@@ -128,8 +128,8 @@ class VoterListBatchUpload
 
   def import_from_hashes(klass, hashes)
     return if hashes.empty?
-    new_records = {values: []} 
-    existing_records = {values: []} 
+    new_records = {values: []}
+    existing_records = {values: []}
     hashes.each do |hash|
       if hash[:id]
         existing_records[:columns] ||= hash.keys

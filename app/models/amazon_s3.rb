@@ -15,7 +15,7 @@ class AmazonS3
     @s3.buckets[@config['bucket']].objects[file_name].read
   end
 
-  def delete
+  def delete(file_name)
     @s3.buckets[@config['bucket']].objects[file_name].delete
   end
 
