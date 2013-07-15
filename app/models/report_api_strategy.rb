@@ -10,7 +10,7 @@ class ReportApiStrategy
 
   def response(params)
     if @result == "success"
-      link = AmazonS3.new.object("download_reports", "#{params[:campaign_name]}.csv").url_for(:read, :expires => (Time.now + 24.hours).to_i).to_s
+      link = AmazonS3.new.object("download_reports", "#{params[:campaign_name]}.csv").url_for(:read, :expires => 24.hours.to_i).to_s
     else
       link = ""
     end
