@@ -94,6 +94,7 @@ class VoterList < ActiveRecord::Base
     s3path="#{Rails.env}/uploads/voter_list/#{file_name}"
     return s3path if file.nil?
     AmazonS3.new.write(s3path, file)
+    s3path
   end
 
   def self.csv_file_name(list_name)
