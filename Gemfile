@@ -29,11 +29,11 @@ gem "resque-scheduler", "~> 2.0.1", :require => 'resque_scheduler'
 gem 'resque-lock', "~> 1.1.0"
 gem "resque-loner", "~>1.2.1"
 gem "hiredis", "~>0.4.5"
-gem "em-hiredis", "~>0.1.1"
+gem "em-hiredis", "~>0.2.1"
 gem "formtastic", "~>2.2.1"
 gem "cocoon", "~>1.0.22"
 gem 'deep_cloneable', '~> 1.5.2'
-gem "redis-objects", "~>0.5.3",:require => 'redis/objects'
+gem "redis-objects", "~>0.7.0",:require => 'redis/objects'
 gem "redis", "~> 3.0.0"
 gem 'ar-octopus', :git => "git://github.com/tchandy/octopus.git"
 gem "newrelic-redis", "~>1.3.2"
