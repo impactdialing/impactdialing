@@ -5,7 +5,7 @@ ruby '2.0.0'
 gem 'rails', '~> 3.2.13'
 gem 'unicorn'
 gem 'will_paginate', '~> 3.0'
-gem 'mysql2', '~> 0.3.0'
+gem 'mysql2', '~> 0.3.11'
 gem 'newrelic_rpm'
 gem 'json', '~> 1.7.7'
 gem 'nokogiri', '~> 1.4.4'
@@ -47,7 +47,7 @@ gem "slim", "~>1.2.2"
 gem "sprockets", "~>2.2.1"
 gem "sinatra", "~>1.3.3"
 gem "dalli", "~>2.3.0"
-gem "mandrill-api", "~>1.0.13"
+gem "mandrill-api", "~>1.0.37"
 gem "sidekiq-failures", "~> 0.1.0"
 gem "lograge", "~>0.2.0"
 
