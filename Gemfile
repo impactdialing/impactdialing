@@ -8,7 +8,7 @@ gem 'will_paginate', '~> 3.0'
 gem 'mysql2', '~> 0.3.11'
 gem 'newrelic_rpm'
 gem 'json', '~> 1.7.7'
-gem 'nokogiri', '~> 1.4.4'
+gem 'nokogiri', '~> 1.6.0'
 gem "pusher", "~> 0.9.2"
 gem "aws-s3", "~> 0.6.2", :require => "aws/s3"
 gem "paperclip", "2.3.16"
