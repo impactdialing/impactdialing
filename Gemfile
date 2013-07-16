@@ -16,32 +16,29 @@ gem 'twilio', '~> 3.1.1'
 gem 'settingslogic', '~> 2.0.9'
 gem "twilio-ruby", '~> 3.10.0'
 gem 'dynamic_form', '~> 1.1.4'
-gem "nested_form", '~>0.1.1'
 gem 'jquery-rails', '>= 1.0.12'
-gem "activerecord-import", ">= 0.2.0"
+gem "activerecord-import", ">= 0.3.1"
 gem 'recurly', '~> 2.1.3'
 gem "heroku"
 gem "uuid", "~> 2.3.5"
-gem "call_center", "~> 0.0.9"
-gem "eventmachine", "1.0.0.rc.4"
-gem "em-http-request", "~> 1.0.1"
-gem "ruby-graphviz", "0.9.0"
-gem "em-synchrony", "~> 1.0.1"
-gem "resque", "~> 1.19"
-gem "resque-scheduler", "~> 1.9.9", :require => 'resque_scheduler'
-gem 'resque-lock', "~> 1.0.0"
+gem "eventmachine", "1.0.3"
+gem "em-http-request", "~> 1.1.0"
+gem "em-synchrony", "~> 1.0.3"
+gem "resque", "~> 1.24.1"
+gem "resque-scheduler", "~> 2.0.1", :require => 'resque_scheduler'
+gem 'resque-lock', "~> 1.1.0"
 gem "resque-loner", "~>1.2.1"
 gem "hiredis", "~>0.4.5"
-gem "em-hiredis", "~>0.1.1"
+gem "em-hiredis", "~>0.2.1"
 gem "formtastic", "~>2.2.1"
 gem "cocoon", "~>1.0.22"
 gem 'deep_cloneable', '~> 1.5.2'
-gem "redis-objects", "~>0.5.3",:require => 'redis/objects'
-gem "redis", "~> 3.0.0"
+gem "redis-objects", "~>0.7.0",:require => 'redis/objects'
+gem "redis", "~> 3.0.4"
 gem 'ar-octopus', :git => "git://github.com/tchandy/octopus.git"
 gem "newrelic-redis", "~>1.3.2"
-gem "sidekiq", "~> 2.2.1"
-gem "slim", "~>1.2.2"
+gem "sidekiq", "~> 2.13.0"
+gem "slim", "~>2.0.0"
 gem "sprockets", "~>2.2.1"
 gem "sinatra", "~>1.3.3"
 gem "dalli", "~>2.3.0"
