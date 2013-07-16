@@ -1,17 +1,16 @@
 class ReportApiStrategy
   require 'net/http'
-  
+
   def initialize(result, account_id, campaign_id, callback_url)
     @result = result
     @account_id = account_id
     @campaign_id = campaign_id
     @callback_url = callback_url
   end
-  
+
   def response(params)
     if @result == "success"
-      expires_in_24_hours = (Time.now + 24.hours).to_i
-      link = AWS::S3::S3Object.url_for("#{params[:campaign_name]}.csv", "download_reports", :expires => expires_in_24_hours)
+      link = AmazonS3.new.object("download_reports", "#{params[:campaign_name]}.csv").url_for(:read, :expires => 24.hours.to_i).to_s
     else
       link = ""
     end
@@ -22,5 +21,5 @@ class ReportApiStrategy
     request.set_form_data({message: @result, download_link: link, account_id: @account_id, campaign_id: @campaign_id})
     http.start{http.request(request)}
   end
-  
+
 end

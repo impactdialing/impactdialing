@@ -1,6 +1,5 @@
 class CallerSession < ActiveRecord::Base
   include Rails.application.routes.url_helpers
-  include CallCenter
   include CallerEvents
   include CallPayment
   include SidekiqEvents

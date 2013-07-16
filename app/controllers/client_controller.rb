@@ -18,7 +18,11 @@ class ClientController < ApplicationController
 
   def check_tos_accepted
     if !@account.terms_and_services_accepted?
-      redirect_to client_tos_path
+      respond_to do |format|
+          format.html { redirect_to client_tos_path    }
+          format.json { render json: {message: "Please accept the Terms of services before making any request" }, code: "403" }
+      end
+
     else
       return
     end
@@ -88,7 +92,10 @@ class ClientController < ApplicationController
       flash_now(:warning, I18n.t(:unpaid_text, :billing_link => '<a href="' + white_labeled_billing_link(request.domain) + '">Click here to verify a credit card.</a>').html_safe)
     end
     if current_user && current_user.account.credit_card_declined?
-      flash_now(:warning, I18n.t(:credit_card_declined, :billing_link => '<a href="' + white_labeled_billing_link(request.domain) + '">Billing information</a>').html_safe)
+      billing_link = '<a href="' + white_labeled_billing_link(request.domain) + '">Billing information</a>'
+      add_to_balance_link = '<a href="' + white_labeled_add_to_balance_link(request.domain) + '">add to your balance</a>'
+      configure_auto_recharge_link = '<a href="' + white_labeled_configure_auto_recharge_link(request.domain) + '">re-enable auto-recharge</a>'
+      flash_now(:warning, I18n.t(:credit_card_declined, billing_link: billing_link , add_to_balance_link: add_to_balance_link, configure_auto_recharge_link: configure_auto_recharge_link).html_safe)
     end
   end
 

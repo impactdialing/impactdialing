@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe Client::ScriptsController do
-  let(:account) { Factory(:account, api_key: "abc123") }
+  let(:account) { Factory(:account) }
   let(:user) { Factory(:user, :account => account) }
 
   describe "html" do
@@ -36,7 +36,7 @@ describe Client::ScriptsController do
       it "should list active scripts for an account" do
         active_script = Factory(:script, :account => account, :active => true)
         inactive_script = Factory(:script, :account => account, :active => false)
-        get :index, :api_key=> 'abc123', :format => "json"
+        get :index, :api_key=> account.api_key, :format => "json"
         JSON.parse(response.body).length.should eq(1)
       end
 
@@ -52,7 +52,7 @@ describe Client::ScriptsController do
       it "should show script" do
         active_script = Factory(:script, :account => account, :active => true)
         script_text = Factory(:script_text, script_order: 1, script: active_script)
-        get :show, id: active_script.id, :api_key=> 'abc123', :format => "json"
+        get :show, id: active_script.id, :api_key=> account.api_key, :format => "json"
         response.body.should eq(active_script.to_json)
       end
     end
@@ -61,7 +61,7 @@ describe Client::ScriptsController do
       it "should show script" do
         active_script = Factory(:script, :account => account, :active => true)
         script_text = Factory(:script_text, script_order: 1, script: active_script)
-        get :edit, id: active_script.id, :api_key=> 'abc123', :format => "json"
+        get :edit, id: active_script.id, :api_key=> account.api_key, :format => "json"
         response.body.should eq(active_script.to_json)
       end
     end
@@ -69,7 +69,7 @@ describe Client::ScriptsController do
     describe "destroy" do
       it "should delete script" do
         active_script = Factory(:script, :account => account, :active => true)
-        delete :destroy, :id=> active_script.id, :api_key=> 'abc123', :format => "json"
+        delete :destroy, :id=> active_script.id, :api_key=> account.api_key, :format => "json"
         response.body.should == "{\"message\":\"Script deleted\"}"
       end
 
@@ -78,14 +78,14 @@ describe Client::ScriptsController do
         another_user = Factory(:user, account_id: another_account.id)
 
         active_script = Factory(:script, :account => account, :active => true)
-        delete :destroy, :id=> active_script.id, :api_key=> '123abc', :format => "json"
+        delete :destroy, :id=> active_script.id, :api_key=> another_account.api_key, :format => "json"
         response.body.should == "{\"message\":\"Cannot access script.\"}"
       end
 
       it "should not delete and return validation error" do
         active_script = Factory(:script, :account => account, :active => true)
         predictive_campaign = Factory(:predictive, :account => account, :active => true, start_time: Time.now, end_time: Time.now, script: active_script)
-        delete :destroy, :id=> active_script.id, :api_key=> 'abc123', :format => "json"
+        delete :destroy, :id=> active_script.id, :api_key=> account.api_key, :format => "json"
         response.body.should == "{\"errors\":{\"base\":[\"This script cannot be deleted, as it is currently assigned to an active campaign.\"]}}"
       end
 
@@ -94,14 +94,14 @@ describe Client::ScriptsController do
     describe "create" do
       it "should create a new script" do
         lambda {
-          post :create , :script => {name: "abc"}, :api_key=> "abc123", :format => "json"
+          post :create , :script => {name: "abc"}, :api_key=> account.api_key, :format => "json"
         }.should change {account.reload.scripts.size} .by(1)
         JSON.parse(response.body)['name'].should  eq('abc')
       end
 
       it "should throw validation error" do
          lambda {
-            post :create , :script => {}, :api_key=> "abc123", :format => "json"
+            post :create , :script => {}, :api_key=> account.api_key, :format => "json"
           }.should change {account.reload.scripts.size} .by(0)
           response.body.should eq("{\"errors\":{\"name\":[\"can't be blank\"]}}")
       end
@@ -112,7 +112,7 @@ describe Client::ScriptsController do
       it "should update an existing script" do
         active_script = Factory(:script, :account => account, :active => true)
         lambda {
-          put :update , id: active_script.id, :script => {name: "def"}, :api_key=> "abc123", :format => "json"
+          put :update , id: active_script.id, :script => {name: "def"}, :api_key=> account.api_key, :format => "json"
         }.should change {account.reload.scripts.size} .by(0)
         response.body.should  eq("{\"message\":\"Script updated\"}")
       end
@@ -120,7 +120,7 @@ describe Client::ScriptsController do
       it "should throw validation error" do
         active_script = Factory(:script, :account => account, :active => true)
         lambda {
-          put :update , id: active_script.id, :script => {name: nil}, :api_key=> "abc123", :format => "json"
+          put :update , id: active_script.id, :script => {name: nil}, :api_key=> account.api_key, :format => "json"
         }.should change {account.reload.scripts.size} .by(0)
         response.body.should  eq("{\"errors\":{\"name\":[\"can't be blank\"]}}")
       end
@@ -141,7 +141,7 @@ describe Client::ScriptsController do
 
       it "should restore inactive campaign" do
         in_active_active_script = Factory(:script, :account => account, :active => false)
-        put :restore, script_id: in_active_active_script.id, :api_key=> 'abc123', :format => "json"
+        put :restore, script_id: in_active_active_script.id, :api_key=> account.api_key, :format => "json"
         response.body.should eq("{\"message\":\"Script restored\"}")
       end
     end
@@ -151,7 +151,7 @@ describe Client::ScriptsController do
         active_script = Factory(:script, :account => account, :active => true)
         question = Factory(:question, :script => active_script)
         answer1 = Factory(:answer, :voter => Factory(:voter), campaign: Factory(:campaign), :possible_response => Factory(:possible_response), :question => question)
-        get :questions_answered, id: active_script.id, :api_key=> 'abc123', :format => "json"
+        get :questions_answered, id: active_script.id, :api_key=> account.api_key, :format => "json"
         response.body.should eq("{\"data\":{\"#{question.id}\":#{1}}}")
       end
     end
@@ -162,7 +162,7 @@ describe Client::ScriptsController do
         active_script1 = Factory(:script, :account => Factory(:account), :active => true)
         question = Factory(:question, :script => active_script)
         answer1 = Factory(:answer, :voter => Factory(:voter), campaign: Factory(:campaign), :possible_response => Factory(:possible_response), :question => question)
-        get :possible_responses_answered, id: active_script.id, :api_key=> 'abc123', :format => "json"
+        get :possible_responses_answered, id: active_script.id, :api_key=> account.api_key, :format => "json"
         response.body.should eq("{\"data\":{}}")
       end
     end

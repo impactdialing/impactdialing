@@ -6,7 +6,6 @@ var Campaign = function(){
   });
    this.dialing_mode_changed();
    this.detect_answering_machine();
-   // this.detect_leave_voice_mail();
    this.dialing_mode_changed();
 
   $('#campaign_answering_machine_detect').click(function () {
@@ -26,6 +25,29 @@ var Campaign = function(){
   $(document).on("click", "#campaign_user_recordings", function(){
      self.doRecord();
   });
+
+  $(document).on("change", "#campaign_script", function(){
+    if ($("#campaign_id").val() == ""){
+      return
+    }
+    var self = this;
+     $.ajax({
+            url : "/client/campaigns/" + $("#campaign_id").val() + "/can_change_script",
+            data : {script_id : $(self).val()},
+            type : "GET",
+            success : function(response) {
+              console.log(response)
+              if(!response.message){
+                if (!confirm("You have already made calls on this campaign with the existing script. If you change scripts now, your Answered calls report and Download report will include results in both the old and the new scripts. Are you sure you want to change the script?")){
+                  $("#campaign_script").val(response.script_id)
+                }
+              }
+            }
+        });
+  });
+}
+
+Campaign.prototype.checkCampaignDialed = function(){
 
 }
 

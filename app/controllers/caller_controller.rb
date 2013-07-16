@@ -112,7 +112,8 @@ class CallerController < ApplicationController
   end
 
   def skip_voter
-    caller_session = @caller.caller_sessions.find(params[:session_id])
+    caller = Caller.find(params[:id])
+    caller_session = caller.caller_sessions.find(params[:session_id])
     voter = Voter.find(params[:voter_id])
     voter.skip
     enqueue_call_flow(RedirectCallerJob, [caller_session.id])

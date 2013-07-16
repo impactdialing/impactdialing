@@ -20,7 +20,9 @@
     <div id="sndPreview"></div>
   </div>
 <% end %>
-<p class="actions">
-    <a href='/client/recording_add?campaign_id=<%= @campaign.id %>' class="action secondary">Add message</a>
-</p>
-
+  <% if !@campaign.new_record? %>
+    <p class="actions">
+      <a href='/client/recording_add?campaign_id=<%= @campaign.id %>' class="action secondary">Add message</a>
+    </p>
+  <% end %>
+</fieldset>

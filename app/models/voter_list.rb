@@ -1,5 +1,5 @@
 require 'ostruct'
-require 'aws/s3'
+
 
 
 class VoterList < ActiveRecord::Base
@@ -28,21 +28,21 @@ class VoterList < ActiveRecord::Base
       Resque.enqueue(VoterListChangeJob, self.id, self.enabled)
     end
   end
-  
-  
+
+
   def validates_file_type
     if uploaded_file_name.nil?
       errors.add(:base, "Please upload a file.")
       return
     end
-    
+
     if ['.csv','.txt'].include? File.extname(uploaded_file_name).downcase
     else
       errors.add(:base, "Wrong file format. Please upload a comma-separated value (CSV) or tab-delimited text (TXT) file. If your list is in Excel format (XLS or XLSX), use \"Save As\" to change it to one of these formats.")
-    end    
+    end
   end
-  
-  
+
+
   def self.disable_all
     self.all.each do |voter_list|
       voter_list.update_attribute(:enabled, false)
@@ -83,38 +83,24 @@ class VoterList < ActiveRecord::Base
 
 
   def self.read_from_s3(file_name)
-    @config = YAML::load(File.open("#{Rails.root}/config/amazon_s3.yml"))
-    AWS::S3::Base.establish_connection!(
-        :access_key_id     => @config["access_key_id"],
-        :secret_access_key => @config["secret_access_key"]
-      )
-      AWS::S3::S3Object.find file_name, @config['bucket']
+    AmazonS3.new.read(file_name)
   end
 
   def self.delete_from_s3(file_name)
-    @config = YAML::load(File.open("#{Rails.root}/config/amazon_s3.yml"))
-    AWS::S3::Base.establish_connection!(
-        :access_key_id     => @config["access_key_id"],
-        :secret_access_key => @config["secret_access_key"]
-      )
-      AWS::S3::S3Object.delete file_name, @config['bucket']
+    AmazonS3.new.delete(file_name)
   end
 
   def self.upload_file_to_s3(file, file_name)
-    @config = YAML::load(File.open("#{Rails.root}/config/amazon_s3.yml"))
-    AWS::S3::Base.establish_connection!(
-        :access_key_id     => @config["access_key_id"],
-        :secret_access_key => @config["secret_access_key"]
-      )
     s3path="#{Rails.env}/uploads/voter_list/#{file_name}"
-    AWS::S3::S3Object.store(s3path, file, @config['bucket'],:content_type =>"application/text", :access => :private)
+    return s3path if file.nil?
+    AmazonS3.new.write(s3path, file)
     s3path
   end
-  
+
   def self.csv_file_name(list_name)
     "#{list_name}_#{Time.now.to_i}_#{rand(999)}"
   end
-  
+
 
   def self.valid_file?(filename)
     return false if filename.nil?

@@ -54,12 +54,7 @@ class NewReportJob
    def save_report
      csv_file_name = file_name
      write_csv_to_file(csv_file_name)
-     expires_in_24_hours = (Time.now + 24.hours).to_i
-      AWS::S3::Base.establish_connection!(
-         :access_key_id => 'AKIAINGDKRFQU6S63LUQ',
-         :secret_access_key => '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'
-     )
-     AWS::S3::S3Object.store("#{@campaign_name}.csv", File.open(csv_file_name), "download_reports", :content_type => "application/binary", :access=>:private, :expires => expires_in_24_hours)
+     AmazonS3.new.write_report("#{@campaign_name}.csv", csv_file_name)
    end
 
    def write_csv_to_file(csv_file_name)
