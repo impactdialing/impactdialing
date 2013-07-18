@@ -76,7 +76,7 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
     Twilio.Device.setup(this.model.get("twilio_token"), {'debug':true});
 
     Twilio.Device.connect(function (conn) {
-        $("#start_calling").hide();
+        // $("#start_calling").hide();
     });
     Twilio.Device.ready(function (device) {
       client_ready=true;
