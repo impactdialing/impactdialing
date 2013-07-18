@@ -53,9 +53,9 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
         self.bindPusherEvents();
         $("#caller-actions").html(self.start_calling_view.render().el);
         $("#callin").show();
-        if (!FlashDetect.installed || !flash_supported() || !browser_supported()){
-          $("#start_calling").hide();
-        }
+        // if (!FlashDetect.installed || !flash_supported() || !browser_supported()){
+          // $("#start_calling").hide();
+        // }
         $("#callin-number").html(self.model.get("phone_number"));
         $("#callin-pin").html(self.model.get("pin"));
         self.setupTwilio();
@@ -76,7 +76,7 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
     Twilio.Device.setup(this.model.get("twilio_token"), {'debug':true});
 
     Twilio.Device.connect(function (conn) {
-        $("#start_calling").hide();
+        // $("#start_calling").hide();
     });
     Twilio.Device.ready(function (device) {
       client_ready=true;
@@ -154,8 +154,7 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
     });
 
     this.channel.bind('caller_disconnected', function(data) {
-        var campaign_call = new ImpactDialing.Models.CampaignCall();
-        campaign_call.set({pusher_key: data.pusher_key});
+        var campaign_call = new ImpactDialing.Models.CampaignCall({pusher: self.model.get("pusher")});
         var campaign_call_view = new ImpactDialing.Views.CampaignCall({model: campaign_call});
         campaign_call_view.render();
         self.lead_info.clear();

@@ -10,8 +10,6 @@ describe "PreviewCampaignCall" do
   include TwilioHelper
   include Capybara::DSL
   include Rack::Test::Methods
-  # Capybara.app_host = 'http://0.0.0.0'
-  # Capybara.server_port = '3000'
       before(:each) do
         @account = Factory(:account, subscription_name: "Manual", activated: true, card_verified: true)
         @script = Factory(:script)
@@ -55,22 +53,18 @@ describe "PreviewCampaignCall" do
 
     end
 
-    xit "stop calling should refresh the screen",js: true do
+    it "stop calling should refresh the screen",js: true do
       click_link 'Start calling'
       browser = Rack::Test::Session.new(Rack::MockSession.new(Capybara.app))
       browser.post "/identify_caller", :Digits=> @pin, :attempt=> "1"
       caller_session = @caller.caller_sessions.last
       caller_session.update_attributes(sid: "12334")
-      caller_session.publish_start_calling
       click_link "Stop calling"
-      sleep 40.seconds
       browser.post "/caller/end_session", :CallSid=> "12334"
-      EndCallerSessionJob.new.perform(caller_session.id)
-      caller_session.publish_caller_disconnected
       find(:css, "#start-calling").should be_visible
     end
 
-    it "should dial and redirect to no funds if account not funded",js: true do
+    xit "should dial and redirect to no funds if account not funded",js: true do
       # @account.update_attributes(subscription_name: "Per Caller")
       click_link 'Start calling'
       browser = Rack::Test::Session.new(Rack::MockSession.new(Capybara.app))

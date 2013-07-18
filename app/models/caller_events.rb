@@ -35,6 +35,7 @@ module CallerEvents
     end
 
     def publish_caller_disconnected
+      puts "caller_disconnected"
       Pusher.trigger([session_key], "caller_disconnected", {pusher_key: Pusher.key}) unless caller.is_phones_only?
     end
 

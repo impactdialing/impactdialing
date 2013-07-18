@@ -4,7 +4,7 @@ ruby '2.0.0'
 
 gem 'rails', '~> 3.2.13'
 gem 'unicorn'
-gem 'thin'
+gem 'thin', "~> 1.5.1"
 gem 'will_paginate', '~> 3.0'
 gem 'mysql2', '~> 0.3.11'
 gem 'newrelic_rpm'
@@ -16,7 +16,6 @@ gem "paperclip", "~> 3.4.2"
 gem 'twilio', '~> 3.1.1'
 gem 'settingslogic', '~> 2.0.9'
 gem "twilio-ruby", '~> 3.10.0'
->>>>>>> master
 gem 'dynamic_form', '~> 1.1.4'
 gem 'jquery-rails', '>= 1.0.12'
 gem "activerecord-import", ">= 0.3.1"
@@ -24,7 +23,7 @@ gem 'recurly', '~> 2.1.3'
 gem "heroku"
 gem "uuid", "~> 2.3.5"
 gem "eventmachine", "1.0.3"
-gem "em-http-request", "~> 1.1.0"
+gem "em-http-request", "1.0.3"
 gem "em-synchrony", "~> 1.0.3"
 gem "resque", "~> 1.24.1"
 gem "resque-scheduler", "~> 2.0.1", :require => 'resque_scheduler'
@@ -68,7 +67,7 @@ group :development do
   gem "capistrano"
   gem "capistrano_colors"
   gem "capistrano-multiconfig"
-  gem "pusher-fake", "0.9.0"
+  gem "pusher-fake", "~>0.9.0"
   gem "better_errors", "~>0.7.2"
   gem "binding_of_caller", "~>0.7.1"
 end
@@ -81,8 +80,9 @@ group :test, :integration_test do
   gem "database_cleaner", "~>0.9.1"
   gem "json_spec", "~>1.1.0"
   gem 'selenium-webdriver', "~>2.32.1"
-  gem "faraday"
   gem "capybara", "~>2.1.0"
-  gem 'launchy', "~>2.2.0"  gem "pusher-fake", "0.9.0"
+  gem 'launchy', "~>2.2.0"
+  gem "pusher-fake", "~>0.9.0"
+  gem "faraday"
   gem "forward"
 end

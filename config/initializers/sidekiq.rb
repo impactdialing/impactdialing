@@ -1,6 +1,7 @@
 rails_root = ENV['RAILS_ROOT'] || File.dirname(__FILE__) + '/../..'
 rails_env = ENV['RAILS_ENV'] || 'development'
 redis_config = YAML.load_file(Rails.root.to_s + "/config/redis.yml")
+
 if rails_env == 'integration_test'
   PusherFake.configure do |configuration|
   configuration.app_id = Pusher.app_id
