@@ -17,12 +17,11 @@
   <script type="text/javascript">
     $(function() {
       <%== PusherFake.javascript if defined?(PusherFake) %>
-
       var pusher = new Pusher(<%== Pusher.key.to_json %>);
-
-        var campaign_call = new ImpactDialing.Models.CampaignCall({pusher: pusher});
-        var campaign_call_view = new ImpactDialing.Views.CampaignCall({model: campaign_call});
-        campaign_call_view.render();
+      var env = <%== ENV['RAILS_ENV'].to_json %>;
+      var campaign_call = new ImpactDialing.Models.CampaignCall({pusher: pusher, env: env });
+      var campaign_call_view = new ImpactDialing.Views.CampaignCall({model: campaign_call});
+      campaign_call_view.render();
       });
   </script>
 <% end %>

@@ -6,7 +6,7 @@ require 'rack/test'
 
 
 
-describe "WebuiPreview" do
+describe "WebuiPower" do
   include TwilioHelper
   include Capybara::DSL
   include Rack::Test::Methods
@@ -18,7 +18,7 @@ describe "WebuiPreview" do
         @possible_response = Factory(:possible_response, question_id: @question.id, keypad: 1, value: "Test", retry:false,
           possible_response_order: 1)
         @note = Factory(:note, script_id: @script.id, note: "Whats your note?", script_order: 3)
-        @campaign = Factory(:preview, account: @account, script: @script, caller_id: "2525732146")
+        @campaign = Factory(:progressive, account: @account, script: @script, caller_id: "2525732146")
         @trasnfer = Factory(:transfer, label: "Nikhil Warm", phone_number: "1234567890", transfer_type: "warm",
           script_id: @script.id)
         @caller = Factory(:caller, account_id: @account.id, campaign: @campaign, email: "nikhil1@impact.com", password: "password")
@@ -38,17 +38,13 @@ describe "WebuiPreview" do
 
   describe "on start calling" , type: "feature" do
 
-    it "dial skip and stop calling button should be visible", js: true do
+    it "stop calling button should be visible", js: true do
       click_link 'Start calling'
       browser = Rack::Test::Session.new(Rack::MockSession.new(Capybara.app))
       browser.post "/identify_caller", :Digits=> @pin, :attempt=> "1"
       caller_session = @caller.caller_sessions.last
-      find('#call_voter').should have_content('Dial')
-      find('#skip_voter').should have_content('Skip')
       find('#stop_calling').should have_content('Stop calling')
-      find('#statusdiv').should have_content('Ready for calls')
-      find(:css, "#call_voter").should be_visible
-      find(:css, "#skip_voter").should be_visible
+      find('#statusdiv').should have_content('Status: Call in progress.')
       find(:css, "#stop_calling").should be_visible
 
     end
@@ -124,7 +120,6 @@ describe "WebuiPreview" do
       browser = Rack::Test::Session.new(Rack::MockSession.new(Capybara.app))
       browser.post "/identify_caller", :Digits=> @pin, :attempt=> "1"
       caller_session = @caller.caller_sessions.last
-      click_link 'Dial'
       sleep 5.seconds
       call = Call.first
       browser.post "/calls/#{call.id}/incoming?campaign_type=#{@campaign.type}", { answered_by:  "human", call_status: "in-progress"}
@@ -141,14 +136,11 @@ describe "WebuiPreview" do
       browser = Rack::Test::Session.new(Rack::MockSession.new(Capybara.app))
       browser.post "/identify_caller", :Digits=> @pin, :attempt=> "1"
       caller_session = @caller.caller_sessions.last
-      click_link 'Dial'
       sleep 5.seconds
       call = Call.first
       browser.post "/calls/#{call.id}/incoming?campaign_type=#{@campaign.type}", { answered_by:  "machine", call_status: "in-progress"}
       sleep 2.seconds
       browser.post "/caller/#{@caller.id}/continue_conf"
-      find(:css, "#call_voter").should be_visible
-      find(:css, "#skip_voter").should be_visible
       find(:css, "#stop_calling").should be_visible
     end
 
@@ -159,14 +151,11 @@ describe "WebuiPreview" do
       browser = Rack::Test::Session.new(Rack::MockSession.new(Capybara.app))
       browser.post "/identify_caller", :Digits=> @pin, :attempt=> "1"
       caller_session = @caller.caller_sessions.last
-      click_link 'Dial'
       sleep 5.seconds
       call = Call.first
       browser.post "/calls/#{call.id}/call_ended?campaign_type=#{@campaign.type}", {call_status: "no-answer", campaign_type: "Preview"}
       sleep 2.seconds
       browser.post "/caller/#{@caller.id}/continue_conf"
-      find(:css, "#call_voter").should be_visible
-      find(:css, "#skip_voter").should be_visible
       find(:css, "#stop_calling").should be_visible
     end
 
@@ -177,7 +166,6 @@ describe "WebuiPreview" do
       browser = Rack::Test::Session.new(Rack::MockSession.new(Capybara.app))
       browser.post "/identify_caller", :Digits=> @pin, :attempt=> "1"
       caller_session = @caller.caller_sessions.last
-      click_link 'Dial'
       sleep 5.seconds
       call = Call.first
       browser.post "/calls/#{call.id}/incoming?campaign_type=#{@campaign.type}", { answered_by:  "human", call_status: "in-progress"}
@@ -186,8 +174,6 @@ describe "WebuiPreview" do
       browser.post "/calls/#{call.id}/call_ended?campaign_type=#{@campaign.type}", {call_status: "completed", campaign_type: "Preview"}
       click_link 'Submit and keep calling'
       browser.post "/caller/#{@caller.id}/continue_conf"
-      find(:css, "#call_voter").should be_visible
-      find(:css, "#skip_voter").should be_visible
       find(:css, "#stop_calling").should be_visible
     end
 
@@ -199,7 +185,6 @@ describe "WebuiPreview" do
       browser.post "/identify_caller", :Digits=> @pin, :attempt=> "1"
       caller_session = @caller.caller_sessions.last
       caller_session.update_attributes(sid: "12334")
-      click_link 'Dial'
       sleep 5.seconds
       call = Call.first
       browser.post "/calls/#{call.id}/incoming?campaign_type=#{@campaign.type}", { answered_by:  "human", call_status: "in-progress"}

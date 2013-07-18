@@ -6,9 +6,7 @@ class CallsController < ApplicationController
   before_filter :find_call, :only => [:hangup, :call_ended]
 
   def incoming
-    puts "Incoming call"
     if Campaign.predictive_campaign?(params['campaign_type']) && @call.answered_by_human?
-      puts "Predictive Campaign"
       call_attempt = @call.call_attempt
       call_attempt.connect_caller_to_lead(DataCentre.code(params[:callee_dc]))
     end

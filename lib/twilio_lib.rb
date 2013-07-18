@@ -44,6 +44,7 @@ class TwilioLib
   end
 
   def create_http_request(url, params, server)
+    return if ENV['RAILS_ENV'] == "integration_test"
     http = Net::HTTP.new(server, @port)
     http.use_ssl=true
     req = Net::HTTP::Post.new(url)
