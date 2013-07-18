@@ -169,7 +169,6 @@ describe VoterList do
           @another_voter_list = Factory(:voter_list, :campaign => campaign, :account => user.account)
           VoterList.should_receive(:read_from_s3).and_return(File.open("#{csv_file_upload}").read)
           VoterList.should_receive(:read_from_s3).and_return(File.open("#{csv_file_upload_with_duplicate_custom_id}").read)
-
           @result = voter_list.import_leads(
               USER_MAPPINGS,
               csv_file_upload,
@@ -227,7 +226,6 @@ describe VoterList do
       it "creates custom fields when they do not exist" do
 
         VoterList.should_receive(:read_from_s3).and_return(File.open("#{csv_file}").read)
-
         custom_field = "Custom"
         voter_list = Factory(:voter_list, :campaign => Factory(:predictive, :account => user.account), :account => user.account)
         voter_list.import_leads(mappings, csv_file, ",").should == {:successCount => 2, :failedCount => 0}
@@ -243,9 +241,7 @@ describe VoterList do
       end
 
       it "should not process custom fields for a voters with an invalid phone" do
-        s3 = mock
         VoterList.should_receive(:read_from_s3).and_return(File.open("#{fixture_path}/files/missing_phone_with_custom_fields_list.csv").read)
-
         mappings = CsvMapping.new({"Phone"=>"Phone", "Name"=>"", "Custom"=>"Custom"})
         @result = voter_list.import_leads(mappings,"#{fixture_path}/files/missing_phone_with_custom_fields_list.csv",",")
         @result.should == { :successCount => 2,  :failedCount => 1 }

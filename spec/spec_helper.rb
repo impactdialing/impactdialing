@@ -63,7 +63,6 @@ Spork.prefork do
     # For more information take a look at Spec::Runner::Configuration and Spec::Runner
   end
 
-  require "factories"
   include ActionDispatch::TestProcess
 
   def login_as(user)

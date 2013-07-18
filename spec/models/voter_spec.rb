@@ -119,7 +119,7 @@ describe Voter do
   describe "predictive dialing" do
     let(:campaign) { Factory(:predictive, answering_machine_detect: true) }
     let(:voter) { Factory(:voter, :campaign => campaign) }
-    let(:client) { mock(:client).tap { |client| Twilio::REST::Client.stub(:new).and_return(client) } }
+    let(:client) { double(:client).tap { |client| Twilio::REST::Client.stub(:new).and_return(client) } }
 
     it "checks, whether voter is called or not" do
       voter1 = Factory(:voter, :status => "not called")

@@ -13,7 +13,7 @@ describe User do
   end
 
   it "creates a reset code" do
-    Digest::SHA2.stub!(:hexdigest).and_return('reset code')
+    Digest::SHA2.stub(:hexdigest).and_return('reset code')
     user.create_reset_code!
     user.password_reset_code.should == 'reset code'
   end
