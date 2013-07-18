@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/tchandy/octopus.git
-  revision: ea3edbf4ec6e02b46cf668f9215f495fd6665d62
+  revision: 7e8be0288338434131c9e439a7ff6efd3553c949
   specs:
     ar-octopus (0.6.0)
       activerecord (>= 3.0.0, < 4.0)
@@ -30,9 +30,8 @@ GEM
       activesupport (= 3.2.13)
       arel (~> 3.0.2)
       tzinfo (~> 0.3.29)
-    activerecord-import (0.3.1)
-      activerecord (~> 3.0)
-      activerecord (~> 3.0)
+    activerecord-import (0.4.0)
+      activerecord (>= 3.0)
     activeresource (3.2.13)
       activemodel (= 3.2.13)
       activesupport (= 3.2.13)
@@ -182,7 +181,7 @@ GEM
     mono_logger (1.1.0)
     multi_json (1.7.7)
     multi_xml (0.5.4)
-    mysql2 (0.3.12)
+    mysql2 (0.3.13)
     net-scp (1.1.2)
       net-ssh (>= 2.6.5)
     net-sftp (2.1.2)

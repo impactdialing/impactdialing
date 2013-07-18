@@ -1,16 +1,16 @@
 require 'spec_helper'
 
 feature 'a user signs in' do
-  xscenario 'with valid credentials' do
+  scenario 'with valid credentials' do
     user = Factory.create :user
     visit '/client/login'
     fill_in 'Email', :with => user.email
     fill_in 'Password', :with => user.new_password
     click_button 'Log in'
-    page.should have_content 'Welcome'
+    page.should have_content 'Log out'
   end
 
-  xscenario 'with invalid credentials' do
+  scenario 'with invalid credentials' do
     user = Factory.create :user
     visit '/client/login'
     fill_in 'Email', :with => 'wrong'
@@ -19,7 +19,7 @@ feature 'a user signs in' do
     page.should have_content 'incorrect'
   end
 
-  xscenario 'logging out' do
+  scenario 'logging out' do
     create_user_and_login
     click_link 'Log out'
     page.should have_content 'Log in'
