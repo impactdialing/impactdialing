@@ -4,7 +4,7 @@ class AccountUsage
     @account = account
     @from_date = from_date
     @to_date = to_date
-    @campaigns = @account.campaigns
+    @campaigns = @account.all_campaigns
     @callers = @account.callers
     @campaign_ids = @campaigns.collect{|x| x.id}
     @caller_ids = @callers.collect{|x| x.id}

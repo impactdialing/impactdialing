@@ -29,6 +29,10 @@ class Account < ActiveRecord::Base
     MANUAL = "Manual"
     PER_MINUTE = "Per Minute"
     PER_CALLER = "Per Caller"
+    BASIC = "BasicSubscription"
+    PRO = "Pro"
+    BUSINESS = "Business"
+    ENTERPRISE = "Enterprise"
   end
 
   def current_balance

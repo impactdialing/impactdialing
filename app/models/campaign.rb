@@ -60,6 +60,7 @@ class Campaign < ActiveRecord::Base
   validate :set_caller_id_error_msg
   validate :campaign_type_changed, on: :update
   validate :no_caller_assigned_on_deletion
+  validate :campaign_type_based_on_subscription
   cattr_reader :per_page
   @@per_page = 25
 
@@ -82,6 +83,10 @@ class Campaign < ActiveRecord::Base
 
   def new_campaign
     new_record?
+  end
+
+  def campaign_type_based_on_subscription
+
   end
 
   def no_caller_assigned_on_deletion
