@@ -3,7 +3,6 @@ require "spec_helper"
 describe VoterListJob do
   let(:mailer){ double }
 
-
   describe "import" do
     before :each do
       @account = Factory(:account)

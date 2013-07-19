@@ -56,26 +56,26 @@ group :development, :test do
 end
 
 group :development do
-  gem 'guard', "~>1.6.2"
-  gem 'guard-rspec', "~>1.2.1"
-  gem 'guard-spork', "~>1.5.0"
-  gem 'rb-fsevent', "~>0.9.3"
-  gem 'showoff-io', "~>0.4.0"
-  gem 'foreman', "~>0.62.0"
+  gem 'guard'
+  gem 'guard-rspec'
+  gem 'guard-spork'
+  gem 'rb-fsevent'
+  gem 'showoff-io'
+  gem 'foreman'
   gem "capistrano"
   gem "capistrano_colors"
   gem "capistrano-multiconfig"
-  gem "better_errors", "~>0.7.2"
-  gem "binding_of_caller", "~>0.7.1"
+  gem "better_errors"
+  gem "binding_of_caller"
 end
 
 group :test do
-  gem 'factory_girl', '~> 1.3.3'
-  gem 'shoulda', "~>3.3.2"
-  gem 'simplecov', "~>0.7.1"
-  gem 'spork-rails', "~>3.2.1"
-  gem "database_cleaner", "~>0.9.1"
-  gem "json_spec", "~>1.1.0"
-  gem "capybara", "~>2.1.0"
-  gem 'launchy', "~>2.2.0"
+  gem 'factory_girl_rails', '~> 1.3'
+  gem 'shoulda'
+  gem 'simplecov'
+  gem 'spork-rails'
+  gem "database_cleaner"
+  gem "json_spec"
+  gem "capybara"
+  gem 'launchy'
 end

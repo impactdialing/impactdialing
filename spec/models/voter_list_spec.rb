@@ -240,7 +240,6 @@ describe VoterList do
       end
 
       it "should not process custom fields for a voters with an invalid phone" do
-        s3 = mock
         VoterList.should_receive(:read_from_s3).and_return(File.open("#{fixture_path}/files/missing_phone_with_custom_fields_list.csv").read)
         mappings = CsvMapping.new({"Phone"=>"Phone", "Name"=>"", "Custom"=>"Custom"})
         @result = voter_list.import_leads(mappings,"#{fixture_path}/files/missing_phone_with_custom_fields_list.csv",",")

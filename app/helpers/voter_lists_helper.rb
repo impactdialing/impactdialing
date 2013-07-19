@@ -9,9 +9,9 @@ module VoterListsHelper
   end
 
   def system_column_headers(csv_header, account)
-    basic_header = [["Not available", nil]]
-    basic_header << ["#{csv_header} (Custom)", csv_header] unless VoterList::VOTER_DATA_COLUMNS.values.include?(csv_header)
+    basic_header = [["(Discard this column)", nil]]
     basic_header.concat(VoterList::VOTER_DATA_COLUMNS.values.zip(VoterList::VOTER_DATA_COLUMNS.keys))
-    basic_header.concat(account.custom_voter_fields.map(&:name).map{|field| ["#{field} (Custom)", field]})
+    basic_header.concat(account.custom_voter_fields.map(&:name).map{|field| [field, field]})
+    basic_header << ["Add custom field...", "custom"]
   end
 end
