@@ -53,7 +53,7 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
         self.bindPusherEvents();
         $("#caller-actions").html(self.start_calling_view.render().el);
         var ios_url = "inapp://capture?campaign_id=" + self.model.get("campaign_id") +"&phone_number="+ self.model.get("phone_number") +
-         "&caller_id=" + self.model.get("caller_id") + "&session_key=" + self.model.get("session_key");
+         "&caller_id=" + self.model.get("caller_id") + "&session_key=" + self.model.get("session_key") + "&token=" + self.model.get("twilio_token");
         $("#start-calling-ios").attr("href", ios_url);
         // $("#start-calling-ios").attr("data-phone_number", self.model.get("phone_number"));
         // $("#start-calling-ios").attr("data-caller_id", self.model.get("caller_id"));
