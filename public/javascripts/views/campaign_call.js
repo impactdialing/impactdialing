@@ -52,6 +52,10 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
         self.channel = self.pusher.subscribe(self.model.get("session_key"));
         self.bindPusherEvents();
         $("#caller-actions").html(self.start_calling_view.render().el);
+        $("#start-calling-ios").attr("data-campaign_id", self.model.get("campaign_id"));
+        $("#start-calling-ios").attr("data-phone_number", self.model.get("phone_number"));
+        $("#start-calling-ios").attr("data-caller_id", self.model.get("caller_id"));
+        $("#start-calling-ios").attr("data-session_key", self.model.get("session_key"));
         $("#callin").show();
         if (!FlashDetect.installed || !flash_supported() || !browser_supported()){
           $("#start_calling").hide();
