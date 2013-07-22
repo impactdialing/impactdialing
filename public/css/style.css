@@ -1033,6 +1033,10 @@ a.secondary {
 -moz-border-radius : 24px;
 border-radius : 24px; }
 
+a.caller-action-buttons{
+  margin-bottom: 0.875em
+}
+
 /* box-shadow */
 
 .action {
