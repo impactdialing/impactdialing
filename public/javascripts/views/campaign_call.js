@@ -75,11 +75,7 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
 
   isNativeApp: function(){
     navigator.userAgent == "ImpactDialing-Android"
-  }
-
-  function() isNativeApp {
-
-}
+  },
 
   stopCallingOnPageReload: function(){
     var self = this;
