@@ -58,12 +58,30 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
         }
         $("#callin-number").html(self.model.get("phone_number"));
         $("#callin-pin").html(self.model.get("pin"));
+        self.stopCallingOnPageReload()
         self.setupTwilio();
         },
       error: function(jqXHR, textStatus, errorThrown){
         self.callerShouldNotDial(jqXHR["responseText"]);
       },
       });
+  },
+
+  stopCallingOnPageReload: function(){
+    var self = this;
+    if(this.model.has("session_id")){
+      $(window).bind("beforeunload", function() {
+        $.ajax({
+          url : "/caller/" + self.model.get("caller_id") + "/stop_calling",
+          data : {session_id : self.model.get("session_id") },
+          type : "POST",
+          async : false,
+          success : function(response) {
+            $("#start_calling").show();
+          }
+        });
+    });
+    }
   },
 
   callerShouldNotDial:  function(error){
