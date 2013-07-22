@@ -143,10 +143,10 @@ class CallerController < ApplicationController
   end
 
   def login
-    if !params[:email].blank?
-      @caller = Caller.find_by_email_and_password(params[:email], params[:password])
+    if !params[:username].blank?
+      @caller = Caller.find_by_username_and_password(params[:username], params[:password])
       if @caller.blank?
-        flash_now(:error, "Wrong email or password.")
+        flash_now(:error, "Wrong username or password.")
       elsif !@caller.active?
         flash_now(:error, "Your account has been deleted.")
       else

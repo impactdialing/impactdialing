@@ -2,10 +2,10 @@ class Caller < ActiveRecord::Base
   include Rails.application.routes.url_helpers
   include Deletable
   include SidekiqEvents
-  validates_format_of :email, :with => /^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i, :message => "Invalid",  :if => lambda {|s| !s.is_phones_only  }
-  validates_presence_of :email,  :if => lambda {|s| !s.is_phones_only  }
+  validates_format_of :username, :with => /^[^ ]*$/, :message => "cannot contain blank space.",  :if => lambda {|s| !s.is_phones_only  }
+  validates_presence_of :username,  :if => lambda {|s| !s.is_phones_only  }
   validates_presence_of :name,  :if => lambda {|s| s.is_phones_only }
-  validates_uniqueness_of :email, :if => lambda {|s| !s.is_phones_only  }
+  validates_uniqueness_of :username, :if => lambda {|s| !s.is_phones_only  }
   belongs_to :campaign
   belongs_to :account
   belongs_to :caller_group
@@ -25,12 +25,13 @@ class Caller < ActiveRecord::Base
   delegate :activated?, :to => :account
   delegate :funds_available?, :to => :account
   delegate :as_time_zone, :to=> :campaign
+  before_save { |caller| caller.username = username.downcase  unless username.nil?}
 
   cattr_reader :per_page
   @@per_page = 25
 
   def identity_name
-    is_phones_only?  ? name : email
+    is_phones_only?  ? name : username
   end
 
   def reassign_caller_campaign
@@ -75,7 +76,7 @@ class Caller < ActiveRecord::Base
 
   def known_as
     return name unless name.blank?
-    return email unless email.blank?
+    return username unless username.blank?
     ''
   end
 

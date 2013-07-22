@@ -37,9 +37,9 @@ describe Client::CallersController do
     end
 
     it "should create a phones only caller" do
-      email = "preethi@evil.com"
-      post :create, :caller => {:email => email, :is_phones_only => false, :campaign_id => "1234"}
-      caller = Caller.find_by_email(email)
+      username = "preethi@evil.com"
+      post :create, :caller => {:username => username, :is_phones_only => false, :campaign_id => "1234"}
+      caller = Caller.find_by_username(username)
       caller.should_not be_nil
       caller.is_phones_only.should be_false
     end
@@ -108,7 +108,7 @@ describe Client::CallersController do
 
       it 'return validation errors' do
         post :create, api_key: account.api_key, format: 'json'
-        JSON.parse(response.body).should eq({"errors"=>{"email"=>["Invalid", "can't be blank"], "campaign_id"=>["can't be blank"]}})
+        JSON.parse(response.body).should eq({"errors"=>{"username"=>["can't be blank"], "campaign_id"=>["can't be blank"]}})
       end
     end
 
