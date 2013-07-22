@@ -70,7 +70,7 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
   stopCallingOnPageReload: function(){
     var self = this;
       $(window).bind("beforeunload", function() {
-        if(this.model.has("session_id")){
+        if(self.model.has("session_id")){
           $.ajax({
             url : "/caller/" + self.model.get("caller_id") + "/stop_calling",
             data : {session_id : self.model.get("session_id") },
