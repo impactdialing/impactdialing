@@ -202,28 +202,6 @@ describe CallerSession do
       end
     end
 
-
-
-    describe "Caller already on call" do
-
-      before(:each) do
-        @account = Factory(:account)
-        @caller = Factory(:caller, account: @account)
-        @script = Factory(:script)
-        @campaign =  Factory(:campaign, script: @script)
-      end
-
-      it "should render correct twiml" do
-        caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
-        caller_session.should_receive(:funds_not_available?).and_return(false)
-        caller_session.should_receive(:account_not_activated?).and_return(false)
-        caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
-        caller_session.should_receive(:time_period_exceeded?).and_return(false)
-        caller_session.should_receive(:is_on_call?).and_return(true)
-        caller_session.start_conf.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>Another user is logged in as this caller. Only one user may log in as the same caller at the same time.</Say><Hangup/></Response>")
-      end
-
-    end
  end
 
   describe "conference_ended" do
