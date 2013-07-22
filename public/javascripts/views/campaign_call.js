@@ -74,7 +74,7 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
   },
 
   isNativeApp: function(){
-    return navigator.userAgent == "ImpactDialing-Android" || navigator.userAgent == "ImpactDialing-Apple";
+    return (navigator.userAgent == "ImpactDialing-Android" || navigator.userAgent == "ImpactDialing-Apple");
   },
 
   stopCallingOnPageReload: function(){
