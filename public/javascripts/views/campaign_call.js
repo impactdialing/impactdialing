@@ -69,19 +69,20 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
 
   stopCallingOnPageReload: function(){
     var self = this;
-    if(this.model.has("session_id")){
       $(window).bind("beforeunload", function() {
-        $.ajax({
-          url : "/caller/" + self.model.get("caller_id") + "/stop_calling",
-          data : {session_id : self.model.get("session_id") },
-          type : "POST",
-          async : false,
-          success : function(response) {
-            $("#start_calling").show();
-          }
-        });
+        if(this.model.has("session_id")){
+          $.ajax({
+            url : "/caller/" + self.model.get("caller_id") + "/stop_calling",
+            data : {session_id : self.model.get("session_id") },
+            type : "POST",
+            async : false,
+            success : function(response) {
+              $("#start_calling").show();
+            }
+          });
+        }
     });
-    }
+
   },
 
   callerShouldNotDial:  function(error){
