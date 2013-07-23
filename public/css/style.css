@@ -1152,3 +1152,9 @@ color : rgba(255,255,255,.9); }
   top: 0;
   opacity:1.0;
 }
+
+.fixed-form-butons{
+  width: 90%;
+  background: white;
+  opacity:1.0;
+}
