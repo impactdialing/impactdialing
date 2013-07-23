@@ -173,7 +173,7 @@ describe Caller do
       caller_session = Factory(:caller_session, on_call: false)
       caller = Factory(:caller, campaign: campaign)
       caller.update_attributes(campaign_id: other_campaign.id)
-      caller_session.reassign_campaign.should be_nil
+      caller_session.reassign_campaign.should eq(CallerSession::ReassignCampaign::NO)
     end
 
     it "should set on call caller session to reassigned yes" do
