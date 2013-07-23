@@ -1152,3 +1152,10 @@ color : rgba(255,255,255,.9); }
   padding-bottom: .01em;
 }
 
+#caller-actions {
+   position:fixed;
+   bottom:0px;
+   height:170px;
+   width:100%;
+   background:white;
+}
