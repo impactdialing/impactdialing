@@ -54,13 +54,14 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
         $("#caller-actions").html(self.start_calling_view.render().el);
         var ios_url = "inapp://capture?campaign_id=" + self.model.get("campaign_id") +"&phone_number="+ self.model.get("phone_number") +
          "&caller_id=" + self.model.get("caller_id") + "&session_key=" + self.model.get("session_key") + "&token=" + self.model.get("twilio_token");
-        $("#start-calling-ios").attr("href", ios_url);
+        $("#start-calling-mobile").attr("href", ios_url);
         $("#callin").show();
         if (!FlashDetect.installed || !flash_supported() || !browser_supported()){
           $("#start-calling").hide();
         }
         if(self.isNativeApp()){
-         $("#start-calling-ios").show();
+         $("#start-calling-mobile").show();
+         $(".webapp-callin-info").hide();
         }
         $("#callin-number").html(self.model.get("phone_number"));
         $("#callin-pin").html(self.model.get("pin"));
