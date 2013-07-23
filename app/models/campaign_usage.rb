@@ -4,8 +4,6 @@ class CampaignUsage
     @campaign = campaign
     @from_date = from_date
     @to_date = to_date
-    puts @from_date
-    puts @to_date
   end
 
   def time_logged_in
