@@ -1144,3 +1144,11 @@ color : rgba(255,255,255,.9); }
 #ui-datepicker-div{
   font-size: 12px;
 }
+
+.fixed-form-voter-info{
+  width: 90%;
+  background: white;
+  position: fixed;
+  top: 0;
+  opacity:1.0;
+}
