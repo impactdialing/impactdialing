@@ -14,6 +14,27 @@
 
 <% content_for :javascripts do %>
   <script type="text/javascript">
+    $(window).bind("beforeunload", function() {
+          if ($("#caller_session").val()) {
+              $.ajax({
+                  url : "/caller/" + $("#caller").val() + "/stop_calling",
+                  data : {session_id : $("#caller_session").val() },
+                  type : "POST",
+                  async : false,
+                  success : function(response) {
+                      $("#start_calling").show();
+                  }
+              });
+          }
+
+      });
+  </script>
+<% end %>
+
+
+
+<% content_for :javascripts do %>
+  <script type="text/javascript">
     $(function() {
         var campaign_call = new ImpactDialing.Models.CampaignCall();
         campaign_call.set({pusher_key: '<%= Pusher.key %>'});
