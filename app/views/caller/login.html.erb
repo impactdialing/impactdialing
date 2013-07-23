@@ -14,8 +14,21 @@
   </div>
 </fieldset>
       <% end %>
-<p>
+<p class="webapp-login-links">
   If you are an administrator, <a href=<%="#{request.protocol}admin.#{request.domain}/"%>>log in here</a>.
   <br>
   To view phones-only reports, <a href=<%="#{request.protocol}admin.#{request.domain}/callers/phones_only"%>>log in here</a>.
 </p>
+
+<% content_for :javascripts do %>
+  <script type="text/javascript">
+    $(function() {
+      function isNativeApp(){
+        return (navigator.userAgent == "ImpactDialing-Android" || navigator.userAgent == "ImpactDialing-Apple");
+      }
+      if(isNativeApp()){
+        $(".webapp-login-links").hide();
+      }
+    });
+  </script>
+<% end %>
