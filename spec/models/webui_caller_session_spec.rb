@@ -20,7 +20,6 @@ describe WebuiCallerSession do
         caller_session.should_receive(:account_not_activated?).and_return(false)
         caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
         caller_session.should_receive(:time_period_exceeded?).and_return(false)
-        caller_session.should_receive(:is_on_call?).and_return(false)
         RedisOnHoldCaller.should_receive(:add).with(@campaign.id, caller_session.id, DataCentre::Code::TWILIO)
         caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id, "publish_caller_conference_started"])
         caller_session.start_conf.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/pause?session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"/></Dial></Response>")
@@ -107,7 +106,6 @@ describe WebuiCallerSession do
         caller_session.should_receive(:account_not_activated?).and_return(false)
         caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
         caller_session.should_receive(:time_period_exceeded?).and_return(false)
-        caller_session.should_receive(:is_on_call?).and_return(false)
 
         RedisOnHoldCaller.should_receive(:add).with(@campaign.id,caller_session.id, DataCentre::Code::TWILIO)
         caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id, "publish_caller_conference_started"])
@@ -179,7 +177,6 @@ describe WebuiCallerSession do
         caller_session.should_receive(:account_not_activated?).and_return(false)
         caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
         caller_session.should_receive(:time_period_exceeded?).and_return(false)
-        caller_session.should_receive(:is_on_call?).and_return(false)
         caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id, "publish_caller_conference_started"])
         caller_session.start_conf.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/pause?session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"/></Dial></Response>")
       end
