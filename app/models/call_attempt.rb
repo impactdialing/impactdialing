@@ -139,7 +139,7 @@ class CallAttempt < ActiveRecord::Base
 
   def self.time_in_wrapup(caller, campaign, from, to)
     result = CallAttempt.for_campaign(campaign).for_caller(caller).between(from, to).
-      without_status([CallAttempt::Status::VOICEMAIL, CallAttempt::Status::ABANDONED])
+      with_status([CallAttempt::Status::SUCCESS])
     result = result.from("call_attempts use index (index_call_attempts_on_campaign_id_created_at_status)") if campaign
     result.sum('TIMESTAMPDIFF(SECOND ,tEndTime,wrapup_time)').to_i
   end

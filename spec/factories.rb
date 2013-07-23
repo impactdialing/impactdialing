@@ -2,6 +2,10 @@ Factory.sequence :email do |n|
   "user#{n}@example.com"
 end
 
+Factory.sequence :username do |n|
+  "user#{n}@example.com"
+end
+
 Factory.sequence :name do |n|
   "user#{n}"
 end
@@ -88,7 +92,7 @@ Factory.define :progressive do |c|
 end
 
 Factory.define :caller do |s|
-  s.email { Factory.next(:email) }
+  s.username { Factory.next(:username) }
   s.name 'a caller'
   s.campaign_id { Factory(:campaign).id }
   s.created_at Time.now

@@ -58,7 +58,6 @@ class CallerSession < ActiveRecord::Base
     return account_has_no_funds_twiml if funds_not_available?
     return subscription_limit_twiml if subscription_limit_exceeded?
     return time_period_exceeded_twiml if time_period_exceeded?
-    return caller_on_call_twiml if is_on_call?
   end
 
   def campaign_out_of_phone_numbers

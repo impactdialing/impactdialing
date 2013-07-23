@@ -27,11 +27,18 @@ describe Caller do
     caller.errors.messages.should eq({:name=>["can't be blank"]})
   end
 
-  it "should validate email for web callers" do
+  it "should validate username for web callers" do
     caller_group = Factory(:caller_group)
-    caller = Factory.build(:caller, caller_group_id: caller_group.id, is_phones_only: false, name: "", email: "")
+    caller = Factory.build(:caller, caller_group_id: caller_group.id, is_phones_only: false, name: "", username: "")
     caller.save.should be_false
-    caller.errors.messages.should eq({:email=>["Invalid", "can't be blank"]})
+    caller.errors.messages.should eq({:username=>["can't be blank"]})
+  end
+
+  it "should validate username cant contain spces for web callers" do
+    caller_group = Factory(:caller_group)
+    caller = Factory.build(:caller, caller_group_id: caller_group.id, is_phones_only: false, name: "", username: "john doe")
+    caller.save.should be_false
+    caller.errors.messages.should eq({:username=>["cannot contain blank space."]})
   end
 
 
@@ -86,8 +93,8 @@ describe Caller do
   end
 
   it "returns name for phone-only-caller, email for web-caller " do
-    phones_only_caller = Factory(:caller, :is_phones_only => true, :name => "name", :email => "email1@gmail.com")
-    web_caller = Factory(:caller, :is_phones_only => false, :name => "name", :email => "email2@gmail.com")
+    phones_only_caller = Factory(:caller, :is_phones_only => true, :name => "name", :username => "email1@gmail.com")
+    web_caller = Factory(:caller, :is_phones_only => false, :name => "name", :username => "email2@gmail.com")
     phones_only_caller.identity_name.should == "name"
     web_caller.identity_name.should == "email2@gmail.com"
   end
@@ -166,7 +173,7 @@ describe Caller do
       caller_session = Factory(:caller_session, on_call: false)
       caller = Factory(:caller, campaign: campaign)
       caller.update_attributes(campaign_id: other_campaign.id)
-      caller_session.reassign_campaign.should be_nil
+      caller_session.reassign_campaign.should eq(CallerSession::ReassignCampaign::NO)
     end
 
     it "should set on call caller session to reassigned yes" do
