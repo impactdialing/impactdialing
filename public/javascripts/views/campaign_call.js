@@ -59,7 +59,7 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
         if (!FlashDetect.installed || !flash_supported() || !browser_supported()){
           $("#start-calling").hide();
         }
-        if(self.isNativeApp()){
+        if(isNativeApp()){
          $("#start-calling-mobile").show();
          $(".webapp-callin-info").hide();
         }
@@ -72,10 +72,6 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
         self.callerShouldNotDial(jqXHR["responseText"]);
       },
       });
-  },
-
-  isNativeApp: function(){
-    return (navigator.userAgent == "ImpactDialing-Android" || navigator.userAgent == "ImpactDialing-Apple");
   },
 
   stopCallingOnPageReload: function(){

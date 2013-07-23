@@ -23,9 +23,6 @@
 <% content_for :javascripts do %>
   <script type="text/javascript">
     $(function() {
-      function isNativeApp(){
-        return (navigator.userAgent == "ImpactDialing-Android" || navigator.userAgent == "ImpactDialing-Apple");
-      }
       if(isNativeApp()){
         $(".webapp-login-links").hide();
       }
