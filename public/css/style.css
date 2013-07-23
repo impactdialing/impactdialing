@@ -1145,16 +1145,10 @@ color : rgba(255,255,255,.9); }
   font-size: 12px;
 }
 
-.fixed-form-voter-info{
-  width: 90%;
-  background: white;
-  position: fixed;
-  top: 0;
+.sticky-voter-info{
+  background:white;
   opacity:1.0;
+  padding-top:1em;
+  padding-bottom: .01em;
 }
 
-.fixed-form-butons{
-  width: 90%;
-  background: white;
-  opacity:1.0;
-}
