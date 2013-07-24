@@ -22,6 +22,7 @@ class VoterListBatchUpload
       custom_fields = []
       leads = []
       updated_leads = {}
+      successful_voters = []
 
       found_leads = found_voters(voter_info_list) if custom_id_present?
 
@@ -58,6 +59,7 @@ class VoterListBatchUpload
 
         if lead[:id] || Voter.phone_correct?(lead[:Phone])
           leads << lead
+          successful_voters << voter_info
           @result[:successCount] +=1
         else
           @result[:failedCount] +=1
@@ -68,7 +70,7 @@ class VoterListBatchUpload
         import_from_hashes(Voter, leads)
       end
 
-      save_field_values(voter_info_list, created_ids, updated_leads)
+      save_field_values(successful_voters, created_ids, updated_leads)
     end
     @result
   end
@@ -100,7 +102,6 @@ class VoterListBatchUpload
       memo[data['voter_id']] ||= {}
       memo[data['voter_id']][data['custom_voter_field_id']] = {id: data['id'], value: data['value']}
     end
-
     custom_voter_values = []
 
     voter_info_list.each do |voter_info|
@@ -109,7 +110,6 @@ class VoterListBatchUpload
       else
         lead_id = created_ids.shift
       end
-
       @csv_headers.each_with_index do |csv_column_title, column_location|
         system_column = @csv_to_system_map.system_column_for csv_column_title
         value = voter_info[column_location]
