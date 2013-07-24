@@ -5,7 +5,7 @@ describe VoterListsHelper do
     before(:each) do
       @original_columns = VoterList::VOTER_DATA_COLUMNS
       silence_warnings { VoterList::VOTER_DATA_COLUMNS = {"foo"=>"foo", "barbaz"=>"Barbaz"} }
-      @account = Factory(:account)
+      @account = create(:account)
     end
 
     after(:each) do
@@ -18,7 +18,7 @@ describe VoterListsHelper do
 
     it "returns a list of all custom fields along with the others" do
       custom_field = "baz"
-      Factory(:custom_voter_field, :name => "baz", :account => @account)
+      create(:custom_voter_field, :name => "baz", :account => @account)
       helper.system_column_headers("foo",@account).should == [["(Discard this column)", nil], ["foo", "foo"],["Barbaz", "barbaz"], ["#{custom_field}", custom_field], ["Add custom field...", "custom"]]
     end
   end

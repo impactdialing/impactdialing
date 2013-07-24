@@ -1,8 +1,8 @@
 require "spec_helper"
 
 describe Client::ReportsController do
-  let(:account) { Factory(:account)}
-  let(:user) { Factory(:user, :account => account) }
+  let(:account) { create(:account)}
+  let(:user) { create(:user, :account => account) }
 
   before(:each) do
     login_as user
@@ -11,7 +11,7 @@ describe Client::ReportsController do
   describe "caller reports" do
 
     it "lists all callers" do
-      3.times{Factory(:caller, :account => account, active: true)}
+      3.times{create(:caller, :account => account, active: true)}
       get :index
       assigns(:callers).should == account.callers.active
     end
@@ -24,16 +24,16 @@ describe Client::ReportsController do
 
     describe 'call attempts' do
       before(:each) do
-        campaign = Factory(:predictive, :account => user.account)
-        Factory(:caller_session, campaign: campaign)
-        Factory(:call_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (10.minutes + 2.seconds), :tDuration => 10.minutes + 2.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
-        Factory(:call_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (1.minutes), :tDuration => 1.minutes, :status => CallAttempt::Status::VOICEMAIL, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
-        Factory(:call_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (1.minutes + 3.seconds), :tDuration => 1.minutes + 3.seconds, :status => CallAttempt::Status::VOICEMAIL, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
-        Factory(:call_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (101.minutes + 57.seconds), :tDuration => 101.minutes + 57.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
-        Factory(:call_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (1.minutes), :tDuration => 1.minutes, :status => CallAttempt::Status::ABANDONED, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
-        Factory(:call_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (10.seconds), :tDuration => 10.seconds, :status => CallAttempt::Status::ABANDONED, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
-        Factory(:transfer_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (10.minutes + 2.seconds), tDuration: 10.minutes + 2.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
-        Factory(:transfer_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (1.minutes + 20.seconds), tDuration: 1.minutes+ 20.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
+        campaign = create(:predictive, :account => user.account)
+        create(:caller_session, campaign: campaign)
+        create(:call_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (10.minutes + 2.seconds), :tDuration => 10.minutes + 2.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
+        create(:call_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (1.minutes), :tDuration => 1.minutes, :status => CallAttempt::Status::VOICEMAIL, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
+        create(:call_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (1.minutes + 3.seconds), :tDuration => 1.minutes + 3.seconds, :status => CallAttempt::Status::VOICEMAIL, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
+        create(:call_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (101.minutes + 57.seconds), :tDuration => 101.minutes + 57.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
+        create(:call_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (1.minutes), :tDuration => 1.minutes, :status => CallAttempt::Status::ABANDONED, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
+        create(:call_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (10.seconds), :tDuration => 10.seconds, :status => CallAttempt::Status::ABANDONED, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
+        create(:transfer_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (10.minutes + 2.seconds), tDuration: 10.minutes + 2.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
+        create(:transfer_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (1.minutes + 20.seconds), tDuration: 1.minutes+ 20.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
         get :usage, :campaign_id => campaign.id
       end
 
@@ -58,13 +58,13 @@ describe Client::ReportsController do
     describe 'utilization' do
 
       before(:each) do
-        @campaign = Factory(:preview, :account => user.account)
-        Factory(:caller_session, caller_type: "Phone", tStartTime: Time.now, tEndTime: Time.now + (30.minutes + 2.seconds), :tDuration => 30.minutes + 2.seconds, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
-        Factory(:caller_session, tStartTime: Time.now, tEndTime: Time.now + (101.minutes + 57.seconds), :tDuration => 101.minutes + 57.seconds, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
-        Factory(:call_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (10.minutes + 10.seconds), wrapup_time: Time.now + (10.minutes + 40.seconds), :tDuration => 10.minutes + 10.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
-        Factory(:call_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (1.minutes), :tDuration => 1.minutes, :status => CallAttempt::Status::VOICEMAIL, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
-        Factory(:call_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (101.minutes + 57.seconds), wrapup_time: Time.now + (102.minutes + 57.seconds), :tDuration => 101.minutes + 57.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
-        Factory(:call_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (1.minutes), :tDuration => 1.minutes, :status => CallAttempt::Status::ABANDONED, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
+        @campaign = create(:preview, :account => user.account)
+        create(:caller_session, caller_type: "Phone", tStartTime: Time.now, tEndTime: Time.now + (30.minutes + 2.seconds), :tDuration => 30.minutes + 2.seconds, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
+        create(:caller_session, tStartTime: Time.now, tEndTime: Time.now + (101.minutes + 57.seconds), :tDuration => 101.minutes + 57.seconds, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
+        create(:call_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (10.minutes + 10.seconds), wrapup_time: Time.now + (10.minutes + 40.seconds), :tDuration => 10.minutes + 10.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
+        create(:call_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (1.minutes), :tDuration => 1.minutes, :status => CallAttempt::Status::VOICEMAIL, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
+        create(:call_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (101.minutes + 57.seconds), wrapup_time: Time.now + (102.minutes + 57.seconds), :tDuration => 101.minutes + 57.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
+        create(:call_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (1.minutes), :tDuration => 1.minutes, :status => CallAttempt::Status::ABANDONED, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
         get :usage, :campaign_id => @campaign.id
       end
 
@@ -91,7 +91,7 @@ describe Client::ReportsController do
   describe "download report" do
 
     it "pulls up report downloads page" do
-      campaign = Factory(:preview, script: Factory(:script), account: account)
+      campaign = create(:preview, script: create(:script), account: account)
       Resque.should_receive(:enqueue)
       get :download, :campaign_id => campaign.id, format: 'html'
       response.should redirect_to 'http://test.host/client/reports'
@@ -99,7 +99,7 @@ describe Client::ReportsController do
 
     it "sets the default date range according to the campaign's time zone" do
       time_zone = ActiveSupport::TimeZone.new("Pacific Time (US & Canada)")
-      campaign = Factory(:preview, script: Factory(:script), :time_zone => time_zone.name, account: account)
+      campaign = create(:preview, script: create(:script), :time_zone => time_zone.name, account: account)
       Time.stub(:now => Time.utc(2012, 2, 13, 0, 0, 0))
       get :download_report, :campaign_id => campaign.id
       response.should be_ok

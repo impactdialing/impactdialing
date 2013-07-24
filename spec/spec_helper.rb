@@ -1,12 +1,9 @@
 require 'rubygems'
 require 'spork'
 require 'spork/ext/ruby-debug'
-require 'simplecov'
 
 
-SimpleCov.start 'rails' do
-  add_filter 'environment.rb'
-end
+
 
 Spork.prefork do
   # This file is copied to spec/ when you run 'rails generate rspec:install'
@@ -23,6 +20,8 @@ Spork.prefork do
   #Dir[Rails.root.join("simulator/new_simulator.rb")].each {|f| require f}
 
   RSpec.configure do |config|
+    config.include FactoryGirl::Syntax::Methods
+
     config.before(:each) do
       $redis_call_flow_connection.flushALL
     end
@@ -72,7 +71,7 @@ Spork.prefork do
   end
 
   def create_user_and_login
-    user = Factory.build :user
+    user = build :user
     visit '/client/login'
     fill_in 'Email address', :with => user.email
     fill_in 'Pick a password', :with => user.new_password
