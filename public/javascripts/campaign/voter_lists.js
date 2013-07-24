@@ -55,7 +55,7 @@ VoterLists.prototype.validate_csv_file = function(evt){
 
     $("#column_headers select").change(function() {
       if($(this).val() == "CustomID"){
-        var id_mapped = confirm("The ID field must be unique for every lead in your campaign. If two leads have the same IDs, the newer one will overwrite the older one. Are you sure you want to map this header the ID field?");
+        var id_mapped = confirm("The ID field must be unique for every lead in your campaign. If two leads have the same IDs, the newer one will overwrite the older one. Are you sure you want to map this header to the ID field?");
         if(!id_mapped){$(this).val("");}
       }
       if ($(this).val() == 'custom') {
