@@ -21,6 +21,8 @@ function browser_supported(){
 		supported=true;
 	if (BrowserDetect.browser=="Firefox" && BrowserDetect.version>=3.6)
 		supported=true;
+	if (isNativeApp())
+		supported=true;
 
 	return supported;
 }
