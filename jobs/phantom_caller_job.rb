@@ -13,7 +13,6 @@ class PhantomCallerJob
            cs.end_running_call if call_response.try(:[],"Status") == 'completed'
          end
         rescue
-          puts cs.id
         end
      end
      RedisCallerSession.phantom_callers.each do |cs|
