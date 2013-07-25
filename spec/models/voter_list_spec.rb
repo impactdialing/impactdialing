@@ -3,38 +3,38 @@ require "spec_helper"
 describe VoterList do
 
   it "can return all voter lists of the given ids" do
-    v = 3.times.map { Factory(:voter_list) }
+    v = 3.times.map { create(:voter_list) }
     VoterList.by_ids([v.first.id, v.last.id]).should == [v.first, v.last]
   end
 
   it "validates the uniqueness of name in a case insensitive manner" do
-    user = Factory(:user)
-    Factory(:voter_list, :name => 'same', :account => user.account)
-    Factory.build(:voter_list, :name => 'Same', :account => user.account).should have(1).error_on(:name)
+    user = create(:user)
+    create(:voter_list, :name => 'same', :account => user.account)
+    build(:voter_list, :name => 'Same', :account => user.account).should have(1).error_on(:name)
   end
 
   it "returns all the active voter list ids of a campaign" do
-    campaign = Factory(:campaign)
-    v1 = Factory(:voter_list, :id => 123, :campaign => campaign, :active => true, :enabled => true)
-    v2 = Factory(:voter_list, :id => 1234, :campaign => campaign, :active => true, :enabled => true)
-    v4 = Factory(:voter_list, :id => 123456, :campaign => campaign, :active => false, :enabled => true)
-    v5 = Factory(:voter_list, :id => 1234567, :active => true, :enabled => true)
+    campaign = create(:campaign)
+    v1 = create(:voter_list, :id => 123, :campaign => campaign, :active => true, :enabled => true)
+    v2 = create(:voter_list, :id => 1234, :campaign => campaign, :active => true, :enabled => true)
+    v4 = create(:voter_list, :id => 123456, :campaign => campaign, :active => false, :enabled => true)
+    v5 = create(:voter_list, :id => 1234567, :active => true, :enabled => true)
     VoterList.active_voter_list_ids(campaign.id).should == [123,1234]
   end
 
   describe "enable and disable voter lists" do
-    let(:campaign) { Factory(:campaign) }
+    let(:campaign) { create(:campaign) }
     it "can disable all voter lists in the given scope" do
-      Factory(:voter_list, :campaign => campaign, :enabled => true)
-      Factory(:voter_list, :campaign => campaign, :enabled => true)
-      Factory(:voter_list, :campaign => Factory(:campaign), :enabled => true)
+      create(:voter_list, :campaign => campaign, :enabled => true)
+      create(:voter_list, :campaign => campaign, :enabled => true)
+      create(:voter_list, :campaign => create(:campaign), :enabled => true)
       campaign.voter_lists.disable_all
       campaign.voter_lists.all.map(&:enabled).should_not include(true)
     end
     it "can enable all voter lists in the given scope" do
-      Factory(:voter_list, :campaign => campaign, :enabled => false)
-      Factory(:voter_list, :campaign => campaign, :enabled => false)
-      Factory(:voter_list, :campaign => Factory(:campaign), :enabled => false)
+      create(:voter_list, :campaign => campaign, :enabled => false)
+      create(:voter_list, :campaign => campaign, :enabled => false)
+      create(:voter_list, :campaign => create(:campaign), :enabled => false)
       campaign.voter_lists.enable_all
       campaign.voter_lists.all.map(&:enabled).should_not include(false)
     end
@@ -48,9 +48,9 @@ describe VoterList do
       FileUtils.cp source_file, temp_filename
       temp_filename
     }
-    let(:user) { Factory(:user) }
-    let(:campaign) { Factory(:preview, :account => user.account) }
-    let(:voter_list) { Factory(:voter_list, :campaign => campaign, :account => user.account) }
+    let(:user) { create(:user) }
+    let(:campaign) { create(:preview, :account => user.account) }
+    let(:voter_list) { create(:voter_list, :campaign => campaign, :account => user.account) }
 
     describe "import from csv" do
       USER_MAPPINGS = CsvMapping.new({
@@ -129,7 +129,7 @@ describe VoterList do
             csv_file_upload,
             ",")
 
-        another_voter_list = Factory(:voter_list, :campaign => campaign, :account => user.account)
+        another_voter_list = create(:voter_list, :campaign => campaign, :account => user.account)
         another_voter_list.import_leads(
             USER_MAPPINGS,
             csv_file_upload,
@@ -143,8 +143,8 @@ describe VoterList do
       it "should add even if the same phone is repeated in a different campaign" do
         VoterList.should_receive(:read_from_s3).and_return(File.open("#{csv_file_upload}").read)
 
-        another_voter_list = Factory(:voter_list,
-                                     :campaign => Factory(:progressive, :account => user.account),
+        another_voter_list = create(:voter_list,
+                                     :campaign => create(:progressive, :account => user.account),
                                      :account => user.account)
         another_voter_list.import_leads(
             USER_MAPPINGS,
@@ -166,7 +166,7 @@ describe VoterList do
         }
 
         before(:each) do
-          @another_voter_list = Factory(:voter_list, :campaign => campaign, :account => user.account)
+          @another_voter_list = create(:voter_list, :campaign => campaign, :account => user.account)
           VoterList.should_receive(:read_from_s3).and_return(File.open("#{csv_file_upload}").read)
           VoterList.should_receive(:read_from_s3).and_return(File.open("#{csv_file_upload_with_duplicate_custom_id}").read)
           @result = voter_list.import_leads(
@@ -227,7 +227,7 @@ describe VoterList do
 
         VoterList.should_receive(:read_from_s3).and_return(File.open("#{csv_file}").read)
         custom_field = "Custom"
-        voter_list = Factory(:voter_list, :campaign => Factory(:predictive, :account => user.account), :account => user.account)
+        voter_list = create(:voter_list, :campaign => create(:predictive, :account => user.account), :account => user.account)
         voter_list.import_leads(mappings, csv_file, ",").should == {:successCount => 2, :failedCount => 0}
         CustomVoterField.find_by_name(custom_field).should_not be_nil
         CustomVoterField.all.size.should == 1
@@ -252,11 +252,11 @@ describe VoterList do
 
 
   describe "dial" do
-    let(:voter_list) { Factory(:voter_list, :campaign => Factory(:campaign, :calls_in_progress => true)) }
+    let(:voter_list) { create(:voter_list, :campaign => create(:campaign, :calls_in_progress => true)) }
 
     it "dials all the voters who have not been dialed yet" do
-      voter1 = Factory(:voter, :voter_list => voter_list, :campaign => voter_list.campaign)
-      voter2 = Factory(:voter, :voter_list => voter_list, :campaign => voter_list.campaign)
+      voter1 = create(:voter, :voter_list => voter_list, :campaign => voter_list.campaign)
+      voter2 = create(:voter, :voter_list => voter_list, :campaign => voter_list.campaign)
       voter1.should_receive(:dial)
       voter2.should_receive(:dial)
       Voter.stub_chain(:to_be_dialed, :find_in_batches).and_yield [ voter1, voter2 ]
@@ -264,9 +264,9 @@ describe VoterList do
     end
 
     it "gives the count of remaining voters" do
-      voter_list = Factory(:voter_list)
-      Factory(:voter, :voter_list => voter_list, :status => CallAttempt::Status::SUCCESS)
-      Factory(:voter, :voter_list => voter_list)
+      voter_list = create(:voter_list)
+      create(:voter, :voter_list => voter_list, :status => CallAttempt::Status::SUCCESS)
+      create(:voter, :voter_list => voter_list)
       voter_list.voters_remaining.should == 1
     end
   end
@@ -310,25 +310,25 @@ describe VoterList do
 
   describe "create csv to system map" do
      it "should use voter primary attribute for mapping" do
-       account = Factory(:account)
+       account = create(:account)
        VoterList.create_csv_to_system_map(['Phone'], account).should eq ({"Phone"=>"Phone"})
      end
 
      it "should use account custom attribute for mapping" do
-       account = Factory(:account)
-       Factory(:custom_voter_field, name: "test", account_id: account.id)
+       account = create(:account)
+       create(:custom_voter_field, name: "test", account_id: account.id)
        VoterList.create_csv_to_system_map(['test'], account).should eq ({"test"=>"test"})
      end
 
      it "should use assign  new custom attribute for mapping" do
-       account = Factory(:account)
+       account = create(:account)
        VoterList.create_csv_to_system_map(['new test'], account).should eq ({"new test"=>"new test"})
      end
 
      it "should use use primary attribute and custom field and assign new attribute" do
-       account = Factory(:account)
-       Factory(:custom_voter_field, name: "Region", account_id: account.id)
-       Factory(:custom_voter_field, name: "Club", account_id: account.id)
+       account = create(:account)
+       create(:custom_voter_field, name: "Region", account_id: account.id)
+       create(:custom_voter_field, name: "Club", account_id: account.id)
        VoterList.create_csv_to_system_map(['Phone','FirstName','Region','Club','Mobile'], account).should eq ({"Phone"=>"Phone", "FirstName"=>"FirstName", "Region"=>"Region", "Club"=>"Club", "Mobile"=>"Mobile"})
      end
   end
@@ -336,16 +336,16 @@ describe VoterList do
   describe "voter enable callback after save" do
 
     it "should enable all voters when list enabled" do
-      voter_list = Factory(:voter_list, enabled: false)
-      voter = Factory(:voter, voter_list: voter_list, enabled: false)
+      voter_list = create(:voter_list, enabled: false)
+      voter = create(:voter, voter_list: voter_list, enabled: false)
       voter_list.enabled = true
       voter_list.save
       voter.reload.enabled.should be_true
     end
 
     it "should disable all voters when list disabled" do
-      voter_list = Factory(:voter_list, enabled: true)
-      voter = Factory(:voter, voter_list: voter_list, enabled: true)
+      voter_list = create(:voter_list, enabled: true)
+      voter = create(:voter, voter_list: voter_list, enabled: true)
       voter_list.enabled = false
       voter_list.save
       voter.reload.enabled.should be_false

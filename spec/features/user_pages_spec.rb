@@ -2,7 +2,7 @@ require 'spec_helper'
 
 feature 'when a user creates a new account' do
   scenario 'with a valid email and password' do
-    user = Factory.build :user
+    user = build :user
     visit '/client/login'
     fill_in 'Email address', :with => user.email
     fill_in 'Pick a password', :with => user.new_password
@@ -22,7 +22,7 @@ feature 'when a user edits their information' do
 
   xscenario 'and changes their password' do
     create_user_and_login
-    user = Factory.build :user
+    user = build :user
     click_link 'Account'
     fill_in 'Current password', :with => user.new_password
     fill_in 'New password', :with => '1newpassword!'

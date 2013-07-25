@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe User do
-  let(:user) { Factory(:user) }
+  let(:user) { create(:user) }
   before(:each) do
     user
   end
@@ -19,13 +19,13 @@ describe User do
   end
 
   it "clears the reset code" do
-    user = Factory(:user, :password_reset_code => 'reset code')
+    user = create(:user, :password_reset_code => 'reset code')
     user.clear_reset_code
     user.password_reset_code.should be_nil
   end
 
   it "authenticates an email id with password" do
-    user = Factory(:user, :email => "user@user.com")
+    user = create(:user, :email => "user@user.com")
     user.new_password = "abracadabra"
     user.save
 
@@ -43,13 +43,13 @@ describe User do
   end
 
   it "finds the billing_account through account" do
-    billing_account = Factory(:billing_account)
+    billing_account = create(:billing_account)
     user.account.update_attribute(:billing_account, billing_account)
     user.billing_account.should == billing_account
   end
 
   it "delegates the domain to the account" do
-    account = Factory(:account, :domain_name => 'foo.com')
+    account = create(:account, :domain_name => 'foo.com')
     user.update_attribute(:account, account)
     user.domain.should == 'foo.com'
   end

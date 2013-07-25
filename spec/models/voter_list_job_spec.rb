@@ -5,8 +5,8 @@ describe VoterListJob do
 
   describe "import" do
     before :each do
-      @account = Factory(:account)
-      @campaign = Factory(:preview, :account => @account)
+      @account = create(:account)
+      @campaign = create(:preview, :account => @account)
       @separator = ","
       @voter_list_name = "voter list name"
       @json_csv_column_headers = ["Phone", "LAST"].to_json
@@ -24,7 +24,7 @@ describe VoterListJob do
 
       it "saves all the voters in the csv according to the mappings" do
         Voter.delete_all
-        voter_list = Factory(:voter_list, separator: ",", headers: "[]", csv_to_system_map: {"Phone" => "Phone", "LAST" =>"LastName"}.to_json, s3path: @csv_filename, campaign_id: @campaign.id, account_id: @account.id)
+        voter_list = create(:voter_list, separator: ",", headers: "[]", csv_to_system_map: {"Phone" => "Phone", "LAST" =>"LastName"}.to_json, s3path: @csv_filename, campaign_id: @campaign.id, account_id: @account.id)
         job = VoterListJob.new(voter_list.id, nil, nil,"")
         mailer.should_receive(:voter_list_upload)
         VoterList.should_receive(:read_from_s3).and_return(File.open("#{fixture_path}/files/valid_voters_list.csv").read)
@@ -42,7 +42,7 @@ describe VoterListJob do
         @csv_filename = "valid_voters_list_#{Time.now.to_i}_#{rand(999)}"
         custom_field = "Custom"
         Voter.delete_all
-        voter_list = Factory(:voter_list, separator: ",", headers: "[]", csv_to_system_map: {"Phone" => "Phone", custom_field=>custom_field}.to_json, s3path: @csv_filename, campaign_id: @campaign.id, account_id: @account.id)
+        voter_list = create(:voter_list, separator: ",", headers: "[]", csv_to_system_map: {"Phone" => "Phone", custom_field=>custom_field}.to_json, s3path: @csv_filename, campaign_id: @campaign.id, account_id: @account.id)
         job = VoterListJob.new(voter_list.id, nil, nil,"")
         mailer.should_receive(:voter_list_upload)
         VoterList.should_receive(:read_from_s3).and_return(File.open("#{fixture_path}/files/voters_custom_fields_list.csv").read)
@@ -69,7 +69,7 @@ describe VoterListJob do
       end
 
       it "should flash an error" do
-        voter_list = Factory(:voter_list, separator: ",", headers: "[]", csv_to_system_map: {"Phone" => "Phone"}.to_json, s3path: @csv_filename, campaign_id: @campaign.id, account_id: @account.id)
+        voter_list = create(:voter_list, separator: ",", headers: "[]", csv_to_system_map: {"Phone" => "Phone"}.to_json, s3path: @csv_filename, campaign_id: @campaign.id, account_id: @account.id)
         job = VoterListJob.new(voter_list.id, nil, nil,"")
 
         mailer.should_receive(:voter_list_upload)
@@ -79,7 +79,7 @@ describe VoterListJob do
       end
 
       it "should not save the voters list entry" do
-        voter_list = Factory(:voter_list, separator: ",", headers: "[]", csv_to_system_map: {"Phone" => "Phone"}.to_json, s3path: @csv_filename, campaign_id: @campaign.id, account_id: @account.id)
+        voter_list = create(:voter_list, separator: ",", headers: "[]", csv_to_system_map: {"Phone" => "Phone"}.to_json, s3path: @csv_filename, campaign_id: @campaign.id, account_id: @account.id)
         job = VoterListJob.new(voter_list.id, nil, nil,"")
 
         mailer.should_receive(:voter_list_upload)

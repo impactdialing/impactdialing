@@ -2,8 +2,8 @@ require "spec_helper"
 
 describe CallinController do
   describe 'Caller Calling In' do
-    let(:account) { Factory(:account, :activated => true, :subscription_name => "Manual") }
-    let(:campaign) { Factory(:predictive, :account => account, :start_time => Time.new("2000-01-01 01:00:00"), :end_time => Time.new("2000-01-01 23:00:00"))}
+    let(:account) { create(:account, :activated => true, :subscription_name => "Manual") }
+    let(:campaign) { create(:predictive, :account => account, :start_time => Time.new("2000-01-01 01:00:00"), :end_time => Time.new("2000-01-01 23:00:00"))}
     
     it "prompts for PIN for a caller " do
       post :create
@@ -19,10 +19,10 @@ describe CallinController do
 
     it "verifies the logged in caller by session pin" do
       pin = rand.to_s[2..6]
-      campaign = Factory(:campaign)
-      caller = Factory(:caller, :account => account, :campaign => campaign)
-      caller_identity = Factory(:caller_identity, :caller => caller, :session_key => 'key' , pin: pin)
-      caller_session = Factory(:webui_caller_session, caller: caller, campaign: campaign)      
+      campaign = create(:campaign)
+      caller = create(:caller, :account => account, :campaign => campaign)
+      caller_identity = create(:caller_identity, :caller => caller, :session_key => 'key' , pin: pin)
+      caller_session = create(:webui_caller_session, caller: caller, campaign: campaign)      
       CallerIdentity.should_receive(:find_by_pin).and_return(caller_identity)
       caller_identity.should_receive(:caller).and_return(caller)
       caller.should_receive(:create_caller_session).and_return(caller_session)

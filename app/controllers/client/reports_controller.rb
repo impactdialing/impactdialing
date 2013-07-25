@@ -53,12 +53,10 @@ module Client
       )
       respond_with(@campaign, location:  client_reports_url) do |format|
         format.html {
-            puts "html format"
             flash_message(:notice, I18n.t(:client_report_processing))
             redirect_to client_reports_url
           }
         format.json {
-          puts "json format"
           render :json => {message: "Response will be sent to the callback url once the report is ready for download." }}
       end
     end

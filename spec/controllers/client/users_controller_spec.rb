@@ -6,7 +6,7 @@ describe Client::UsersController do
   end
 
   it "resets a user's password" do
-    user = Factory(:user)
+    user = create(:user)
     user.create_reset_code!
     get :reset_password, :reset_code => user.password_reset_code
     flash[:error].should be_blank
@@ -14,7 +14,7 @@ describe Client::UsersController do
   end
 
   it "updates the password" do
-    user = Factory(:user)
+    user = create(:user)
     user.create_reset_code!
     put :update_password, :user_id => user.id, :reset_code => user.password_reset_code, :password => 'new_password'
     flash[:error].should be_blank
@@ -24,7 +24,7 @@ describe Client::UsersController do
 
 
   it "logins the user" do
-    user = Factory(:user)
+    user = create(:user)
     user.create_reset_code!
     put :update_password, :user_id => user.id, :reset_code => user.password_reset_code, :password => 'new_password'
     flash[:error].should be_blank
@@ -33,7 +33,7 @@ describe Client::UsersController do
   end
 
   it "does not change the password if the reset code is invalid" do
-    user = Factory(:user, :new_password => 'xyzzy')
+    user = create(:user, :new_password => 'xyzzy')
     user.create_reset_code!
     put :update_password, :user_id => user.id, :reset_code => 'xyz', :password => 'new_password'
     User.authenticate(user.email, 'new_password').should_not == user
@@ -43,7 +43,7 @@ describe Client::UsersController do
   end
 
   it "invites a new user to the current user's account" do
-    user = Factory(:user).tap{|u| login_as u}
+    user = create(:user).tap{|u| login_as u}
     Resque.should_receive(:enqueue)
     lambda {
       post :invite, :email => 'foo@bar.com', user: {role: "admin"}
@@ -54,9 +54,9 @@ describe Client::UsersController do
 
   describe 'destroy' do
     it "deletes a  user" do
-      account = Factory(:account)
-      user = Factory(:user, :email => 'foo@bar.com', :account => account)
-      current_user = Factory(:user, :account => account).tap{|u| login_as u}
+      account = create(:account)
+      user = create(:user, :email => 'foo@bar.com', :account => account)
+      current_user = create(:user, :account => account).tap{|u| login_as u}
       post :destroy, :id => user.id
       User.find_by_id(user.id).should_not be
     end
