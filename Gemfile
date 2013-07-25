@@ -31,7 +31,7 @@ gem "resque-loner", "~>1.2.1"
 gem "hiredis", "~>0.4.5"
 gem "em-hiredis", "~>0.2.1"
 gem "formtastic", "~>2.2.1"
-gem "cocoon", "~>1.2.0"
+gem "cocoon", "~>1.0.22"
 gem 'deep_cloneable', '~> 1.5.3'
 gem "redis-objects", "~>0.7.0",:require => 'redis/objects'
 gem "redis", "~> 3.0.4"
