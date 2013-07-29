@@ -9,11 +9,15 @@ class ApplicationController < ActionController::Base
   protect_from_forgery # See ActionController::RequestForgeryProtection for details
   # Scrub sensitive parameters from your log
   rescue_from InvalidDateException, :with=> :return_invalid_date
-  
+
+  def current_ability
+  @current_ability ||= Ability.new(account)
+end
+
   def select_shard(&block)
       Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2), &block)
   end
-  
+
   def return_invalid_date
     flash_message(:error, I18n.t(:invalid_date_format))
     redirect_to :back

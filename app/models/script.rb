@@ -28,6 +28,12 @@ class Script < ActiveRecord::Base
     end
   end
 
+  def transfer_types
+    account.subscription.transfers
+  end
+
+
+
   def selected_custom_fields
     unless voter_fields.nil?
       JSON.parse(voter_fields).select{ |field| !VoterList::VOTER_DATA_COLUMNS.values.include?(field) }

@@ -8,7 +8,7 @@ class ProSubscription
   end
 
   def transfers
-    []
+    [Transfer::Type::WARM, Transfer::Type::COLD]
   end
 
   def minutes_per_caller
