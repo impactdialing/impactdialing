@@ -5,7 +5,7 @@ class Transfer < ActiveRecord::Base
   validates_presence_of :phone_number
   validates_length_of :phone_number, :minimum => 10, :unless => Proc.new{|transfer| transfer.phone_number && transfer.phone_number.start_with?("+")}
   before_validation :sanitize_phone
-  before_validation :check_subscription_type
+  validates :check_subscription_type
 
   def self.sanitize_phone(phonenumber)
     return phonenumber if phonenumber.blank?

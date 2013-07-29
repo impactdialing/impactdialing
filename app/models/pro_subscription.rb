@@ -23,4 +23,13 @@ class ProSubscription
     true
   end
 
+  def campaign_reports
+    true
+  end
+
+  def caller_reports
+    true
+  end
+
+
 end

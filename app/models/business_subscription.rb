@@ -23,4 +23,13 @@ class BusinessSubscription
     99.00
   end
 
+  def campaign_reports
+    true
+  end
+
+  def caller_reports
+    true
+  end
+
+
 end

@@ -24,5 +24,13 @@ class BasicSubscription
     49.00
   end
 
+  def campaign_reports
+    false
+  end
+
+  def caller_reports
+    false
+  end
+
 
 end
