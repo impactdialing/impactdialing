@@ -7,6 +7,7 @@ class Ability
     can :view_campaign_reports, Account if account.subscription.campaign_reports_enabled?
     can :view_caller_reports, Account if account.subscription.caller_reports_enabled?
     can :view_dashboard, Account if account.subscription.dashboard_enabled?
+    can :record_calls, Account if account.subscription.call_recording_enabled?
 
     # Define abilities for the passed in user here. For example:
     #
