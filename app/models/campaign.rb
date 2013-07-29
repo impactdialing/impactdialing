@@ -94,7 +94,10 @@ class Campaign < ActiveRecord::Base
   end
 
   def campaign_type_based_on_subscription
-    campaign_types.include?(type)
+    if !campaign_types.include?(type)
+      errors.add(:base, 'Your subscription does not allow this mode of Dialing.')
+    end
+
   end
 
   def no_caller_assigned_on_deletion
