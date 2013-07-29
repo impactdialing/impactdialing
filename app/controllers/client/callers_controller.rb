@@ -59,6 +59,7 @@ module Client
     end
 
     def usage
+      authorize! :view_caller_reports, @account
       Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
         @caller = Caller.find(params[:id])
         campaigns = account.campaigns.for_caller(@caller)
@@ -70,6 +71,7 @@ module Client
     end
 
     def call_details
+      authorize! :view_caller_reports, @account
       @caller = Caller.find(params[:id])
       campaigns = account.campaigns.for_caller(@caller)
       @campaigns_data = Account.connection.execute(campaigns.select([:name, 'campaigns.id']).uniq.to_sql).to_a

@@ -18,7 +18,7 @@ class Caller < ActiveRecord::Base
   before_save :reassign_caller_campaign
   validates :campaign_id, presence: true
   validate :restored_caller_has_campaign
-  validates :check_subscription_for_caller_groups
+  validate :check_subscription_for_caller_groups
 
   scope :active, where(:active => true)
 
@@ -36,7 +36,7 @@ class Caller < ActiveRecord::Base
   end
 
   def check_subscription_for_caller_groups
-    if !account.subscription.caller_groups
+    if !account.subscription.caller_groups_enabled?
       errors.add(:base, 'Your subscription does not allow managing caller groups.')
     end
   end

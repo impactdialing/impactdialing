@@ -5,7 +5,7 @@ class Transfer < ActiveRecord::Base
   validates_presence_of :phone_number
   validates_length_of :phone_number, :minimum => 10, :unless => Proc.new{|transfer| transfer.phone_number && transfer.phone_number.start_with?("+")}
   before_validation :sanitize_phone
-  validates :check_subscription_type
+
 
   def self.sanitize_phone(phonenumber)
     return phonenumber if phonenumber.blank?
@@ -25,11 +25,7 @@ class Transfer < ActiveRecord::Base
     COLD = "cold"
   end
 
-  def check_subscription_type
-    if !script.transfer_types.include?(transfer_type)
-      errors.add(:base, 'Your subscription does not allow transfering calls in this mode.')
-    end
-  end
+
 
 
   def dial(caller_session, call_attempt, voter, type)

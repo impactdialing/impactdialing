@@ -8,11 +8,11 @@ class BasicSubscription
     [[Campaign::Type::PREVIEW, Campaign::Type::PREVIEW], [Campaign::Type::POWER, Campaign::Type::POWER]]
   end
 
-  def transfers
+  def transfer_types
     []
   end
 
-  def caller_groups
+  def caller_groups_enabled?
     false
   end
 
@@ -24,11 +24,19 @@ class BasicSubscription
     49.00
   end
 
-  def campaign_reports
+  def campaign_reports_enabled?
     false
   end
 
-  def caller_reports
+  def caller_reports_enabled?
+    false
+  end
+
+  def call_recording_enabled?
+    false
+  end
+
+  def dashboard_enabled?
     false
   end
 

@@ -23,6 +23,7 @@ class Account < ActiveRecord::Base
   attr_accessible :api_key, :domain_name, :abandonment, :card_verified, :activated, :record_calls, :recurly_account_code, :subscription_name, :subscription_count, :subscription_active, :recurly_subscription_uuid, :autorecharge_enabled, :autorecharge_amount, :autorecharge_trigger, :status, :tos_accepted_date, :credit_card_declined
 
   before_create :assign_api_key
+  validate :check_subscription_type_for_call_recording
 
 
   module Subscription_Type
@@ -30,6 +31,12 @@ class Account < ActiveRecord::Base
     PRO = "Pro"
     BUSINESS = "Business"
     ENTERPRISE = "Enterprise"
+  end
+
+  def check_subscription_type_for_call_recording
+    if record_calls && !subscription.call_recording_enabled?
+      errors.add(:base, 'Your subscription does not allow call recordings.')
+    end
   end
 
   def subscription

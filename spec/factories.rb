@@ -18,7 +18,8 @@ FactoryGirl.define do
 
   factory :account do
     tos_accepted_date Time.now
-    subscription_name Account::Subscription_Type::BASIC
+    subscription_name Account::Subscription_Type::ENTERPRISE
+    record_calls false
   end
 
   factory :user do
@@ -39,6 +40,7 @@ FactoryGirl.define do
     name 'a script'
     created_at Time.now
     updated_at Time.now
+    account
   end
 
   factory :campaign do
@@ -98,6 +100,7 @@ FactoryGirl.define do
     username { generate(:username) }
     name 'a caller'
     campaign
+    account
     created_at Time.now
     updated_at Time.now
   end

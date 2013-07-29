@@ -7,13 +7,10 @@ class BusinessSubscription
     [[Campaign::Type::PREVIEW, Campaign::Type::PREVIEW], [Campaign::Type::POWER, Campaign::Type::POWER], [Campaign::Type::PREDICTIVE, Campaign::Type::PREDICTIVE]]
   end
 
-  def transfers
+  def transfer_types
     [Transfer::Type::WARM, Transfer::Type::COLD]
   end
 
-  def caller_groups
-    true
-  end
 
   def minutes_per_caller
     2500.00
@@ -23,13 +20,26 @@ class BusinessSubscription
     99.00
   end
 
-  def campaign_reports
+  def caller_groups_enabled?
     true
   end
 
-  def caller_reports
+  def campaign_reports_enabled?
     true
   end
+
+  def caller_reports_enabled?
+    true
+  end
+
+  def call_recording_enabled?
+    true
+  end
+
+  def dashboard_enabled?
+    true
+  end
+
 
 
 end
