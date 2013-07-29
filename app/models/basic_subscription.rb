@@ -1,7 +1,11 @@
 class BasicSubscription
 
   def campaign_types
-    [Campaign::Type::Preview, Campaign::Type::Power]
+    [Campaign::Type::PREVIEW, Campaign::Type::POWER]
+  end
+
+  def campaign_type_options
+    [[Campaign::Type::PREVIEW, Campaign::Type::PREVIEW], [Campaign::Type::POWER, Campaign::Type::POWER]]
   end
 
   def transfers

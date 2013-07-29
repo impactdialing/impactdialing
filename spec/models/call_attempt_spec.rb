@@ -207,8 +207,8 @@ describe CallAttempt do
         call_attempt.debit
       end
 
-      it "should not debit if manual subscription type" do
-        account = create(:account, subscription_name: Account::Subscription_Type::MANUAL)
+      it "should not debit if enterprise subscription type" do
+        account = create(:account, subscription_name: Account::Subscription_Type::ENTERPRISE)
         campaign = create(:campaign, account: account)
         call_attempt = create(:call_attempt, connecttime: (Time.now - 3.minutes), call_end: (Time.now - 2.minutes), campaign: campaign)
         Payment.should_not_receive(:debit_call_charge)

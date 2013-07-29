@@ -26,13 +26,15 @@ class Account < ActiveRecord::Base
 
 
   module Subscription_Type
-    MANUAL = "Manual"
-    PER_MINUTE = "Per Minute"
-    PER_CALLER = "Per Caller"
-    BASIC = "BasicSubscription"
+    BASIC = "Basic"
     PRO = "Pro"
     BUSINESS = "Business"
     ENTERPRISE = "Enterprise"
+  end
+
+  def subscription
+    subscription_type = subscription_name + "Subscription"
+    subscription_type.constantize.new
   end
 
   def current_balance
@@ -121,7 +123,7 @@ class Account < ActiveRecord::Base
   end
 
   def manual_subscription?
-    subscription_name == Subscription_Type::MANUAL
+    subscription_name == Subscription_Type::ENTERPRISE
   end
 
   def per_caller_subscription?
@@ -183,9 +185,6 @@ class Account < ActiveRecord::Base
     !api_key.empty?
   end
 
-  def is_manual?
-    subscription_name=="Manual"
-  end
 
   def new_billing_account
     BillingAccount.create(:account => self)

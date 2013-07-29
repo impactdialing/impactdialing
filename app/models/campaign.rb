@@ -85,8 +85,16 @@ class Campaign < ActiveRecord::Base
     new_record?
   end
 
-  def campaign_type_based_on_subscription
+  def campaign_types
+    account.subscription.campaign_types
+  end
 
+  def campaign_type_options
+    account.subscription.campaign_type_options
+  end
+
+  def campaign_type_based_on_subscription
+    campaign_types.include?(type)
   end
 
   def no_caller_assigned_on_deletion

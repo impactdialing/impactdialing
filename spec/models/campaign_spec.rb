@@ -22,21 +22,22 @@ describe Campaign do
   end
 
   describe "validations" do
-    it {should validate_presence_of :name}
-    it {should validate_presence_of :script}
-    it {should validate_presence_of :type}
-    it {should ensure_inclusion_of(:type).in_array(['Preview', 'Power', 'Predictive'])}
-    it {should validate_presence_of :recycle_rate}
-    it {should validate_numericality_of :recycle_rate}
-    it {should validate_presence_of :time_zone}
-    it {should ensure_inclusion_of(:time_zone).in_array(ActiveSupport::TimeZone.zones_map.map {|z| z.first})}
-    it {should validate_presence_of :start_time}
-    it {should validate_presence_of :end_time}
-    it {should validate_numericality_of :acceptable_abandon_rate}
-    it {should have_many :caller_groups}
+    let(:campaign) { create(:campaign, :account => create(:account)) }
+    it {campaign.should validate_presence_of :name}
+    it {campaign.should validate_presence_of :script}
+    it {campaign.should validate_presence_of :type}
+    it {campaign.should ensure_inclusion_of(:type).in_array(['Preview', 'Power', 'Predictive'])}
+    it {campaign.should validate_presence_of :recycle_rate}
+    it {campaign.should validate_numericality_of :recycle_rate}
+    it {campaign.should validate_presence_of :time_zone}
+    it {campaign.should ensure_inclusion_of(:time_zone).in_array(ActiveSupport::TimeZone.zones_map.map {|z| z.first})}
+    it {campaign.should validate_presence_of :start_time}
+    it {campaign.should validate_presence_of :end_time}
+    it {campaign.should validate_numericality_of :acceptable_abandon_rate}
+    it {campaign.should have_many :caller_groups}
 
     it 'return validation error, if caller id is either blank, not a number or not a valid length' do
-      campaign = Campaign.new(:account => create(:account))
+      campaign = build(:campaign, account: create(:account))
       campaign.save(:validate => false)
       campaign.update_attributes(:caller_id => '23456yuiid').should be_false
       campaign.errors[:base].should == ['Caller ID must be a 10-digit North American phone number or begin with "+" and the country code']
