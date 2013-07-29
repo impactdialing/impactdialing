@@ -7,22 +7,22 @@ describe Call do
     describe "incoming call answered by human" do
 
       before(:each) do
-        @caller = Factory(:caller)
-        @script = Factory(:script)
-        @campaign =  Factory(:predictive, script: @script)
-        @voter  = Factory(:voter, campaign: @campaign, caller_session: @caller_session)
-        @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign)
-        @caller_session = Factory(:webui_caller_session, caller: @caller, campaign: @campaign, voter_in_progress: @voter, attempt_in_progress: @call_attempt, on_call: true, available_for_call: false, state: "connected", sid: "123456")
+        @caller = create(:caller)
+        @script = create(:script)
+        @campaign =  create(:predictive, script: @script)
+        @voter  = create(:voter, campaign: @campaign, caller_session: @caller_session)
+        @call_attempt = create(:call_attempt, voter: @voter, campaign: @campaign)
+        @caller_session = create(:webui_caller_session, caller: @caller, campaign: @campaign, voter_in_progress: @voter, attempt_in_progress: @call_attempt, on_call: true, available_for_call: false, state: "connected", sid: "123456")
       end
 
       it "should start a conference in connected state" do
-        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, call_status: 'in-progress')
+        call = create(:call, answered_by: "human", call_attempt: @call_attempt, call_status: 'in-progress')
         RedisCall.set_request_params(call.id, call.attributes)
         call.incoming_call.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"false\" action=\"http://#{Settings.twilio_callback_host}/calls/#{call.id}/disconnected\" record=\"false\"><Conference waitUrl=\"hold_music\" waitMethod=\"GET\" beep=\"false\" endConferenceOnExit=\"true\"/></Dial></Response>")
       end
 
       it "should start a conference in connected state with callsid if call not from twilio" do
-        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, call_status: 'in-progress')
+        call = create(:call, answered_by: "human", call_attempt: @call_attempt, call_status: 'in-progress')
         RedisCall.set_request_params(call.id, call.attributes)
         RedisCallerSession.set_datacentre(@caller_session.id, DataCentre::Code::ORL)
         call.incoming_call.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"false\" action=\"http://voxeo-prodaws.impactdialing.com/calls/#{call.id}/disconnected\" record=\"false\"><Conference waitUrl=\"hold_music\" waitMethod=\"GET\" beep=\"false\" endConferenceOnExit=\"true\"/><CallerSid>123456</CallerSid></Dial></Response>")
@@ -34,16 +34,16 @@ describe Call do
 
     describe "incoming call answered by human that need to be abandoned" do
         before(:each) do
-          @caller = Factory(:caller)
-          @script = Factory(:script)
-          @campaign =  Factory(:predictive, script: @script)
-          @voter  = Factory(:voter, campaign: @campaign, caller_session: @caller_session)
-          @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign)
-          @caller_session = Factory(:webui_caller_session, caller: @caller, campaign: @campaign, voter_in_progress: @voter, attempt_in_progress: @call_attempt, state: "conference_ended")
+          @caller = create(:caller)
+          @script = create(:script)
+          @campaign =  create(:predictive, script: @script)
+          @voter  = create(:voter, campaign: @campaign, caller_session: @caller_session)
+          @caller_session = create(:webui_caller_session, caller: @caller, campaign: @campaign, voter_in_progress: @voter, attempt_in_progress: @call_attempt)
+          @call_attempt = create(:call_attempt, voter: @voter, campaign: @campaign, caller: @caller)
         end
 
         it "should return hangup twiml for abandoned users" do
-          call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, call_status: 'in-progress')
+          call = create(:call, answered_by: "human", call_attempt: @call_attempt, call_status: 'in-progress')
           RedisCall.set_request_params(call.id, call.attributes)
           RedisCallFlow.should_receive(:push_to_abandoned_call_list).with(call.id);
           @call_attempt.should_receive(:redirect_caller)
@@ -55,16 +55,17 @@ describe Call do
     describe "incoming call answered by machine" do
 
         before(:each) do
-          @script = Factory(:script)
-          @campaign =  Factory(:preview, script: @script, use_recordings: false)
-          @voter = Factory(:voter, campaign: @campaign)
-          @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign)
+          @caller = create(:caller)
+          @script = create(:script)
+          @campaign =  create(:preview, script: @script, use_recordings: false)
+          @voter = create(:voter, campaign: @campaign)
+          @call_attempt = create(:call_attempt, voter: @voter, campaign: @campaign, caller: @caller)
         end
 
         it "should render the user recording and hangup if user recording present" do
-          recording = Factory(:recording)
+          recording = create(:recording)
           @campaign.update_attributes(recording_id: recording.id, use_recordings: true)
-          call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt)
+          call = create(:call, answered_by: "machine", call_attempt: @call_attempt)
           RedisCall.set_request_params(call.id, call.attributes)
           RedisCallFlow.should_receive(:push_to_processing_by_machine_call_hash).with(call.id);
           @call_attempt.should_receive(:redirect_caller)
@@ -72,7 +73,7 @@ describe Call do
         end
 
         it "should render  and hangup if user recording is not present" do
-          call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt)
+          call = create(:call, answered_by: "machine", call_attempt: @call_attempt)
           RedisCall.set_request_params(call.id, call.attributes)
           RedisCallFlow.should_receive(:push_to_processing_by_machine_call_hash).with(call.id);
           @call_attempt.should_receive(:redirect_caller)
@@ -87,14 +88,15 @@ describe Call do
 
    describe "hangup "  do
      before(:each) do
-       @script = Factory(:script)
-       @campaign =  Factory(:campaign, script: @script)
-       @voter = Factory(:voter, campaign: @campaign)
-       @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign, sid: "abc")
+      @caller = create(:caller)
+       @script = create(:script)
+       @campaign =  create(:campaign, script: @script)
+       @voter = create(:voter, campaign: @campaign)
+       @call_attempt = create(:call_attempt, voter: @voter, campaign: @campaign, sid: "abc", caller: @caller)
      end
 
      it "should render nothing" do
-       call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected')
+       call = create(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected')
        RedisCall.set_request_params(call.id, call.attributes)
        @call_attempt.should_receive(:enqueue_call_flow).with(EndRunningCallJob, [@call_attempt.sid])
        call.hungup
@@ -103,16 +105,16 @@ describe Call do
 
   describe "disconnect"  do
     before(:each) do
-      @script = Factory(:script)
-      @campaign =  Factory(:campaign, script: @script)
-      @caller = Factory(:caller)
-      @caller_session = Factory(:caller_session, caller: @caller)
-      @voter = Factory(:voter, campaign: @campaign, caller_session: @caller_session)
-      @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session)
+      @script = create(:script)
+      @campaign =  create(:campaign, script: @script)
+      @caller = create(:caller)
+      @caller_session = create(:caller_session, caller: @caller)
+      @voter = create(:voter, campaign: @campaign, caller_session: @caller_session)
+      @call_attempt = create(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session, caller: @caller)
     end
 
     it "should hangup twiml" do
-      call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected')
+      call = create(:call, answered_by: "human", call_attempt: @call_attempt, state: 'connected')
       RedisCall.set_request_params(call.id, call.attributes)
       RedisCallFlow.should_receive(:push_to_disconnected_call_list).with(call.id, call.recording_duration, call.recording_url, @caller.id)
       @call_attempt.should_receive(:enqueue_call_flow).with(CallerPusherJob, [@caller_session.id, "publish_voter_disconnected"])
@@ -125,17 +127,17 @@ end
 
     describe "disconnect call" do
       before(:each) do
-       @script = Factory(:script)
-       @campaign =  Factory(:campaign, script: @script)
-       @caller = Factory(:caller)
-       @caller_session = Factory(:caller_session, caller: @caller)
-       @voter = Factory(:voter, campaign: @campaign, caller_session: @caller_session)
-       @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session)
+       @script = create(:script)
+       @campaign =  create(:campaign, script: @script)
+       @caller = create(:caller)
+       @caller_session = create(:caller_session, caller: @caller)
+       @voter = create(:voter, campaign: @campaign, caller_session: @caller_session)
+       @call_attempt = create(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session, caller: @caller)
       end
 
 
       it "should hangup twiml" do
-       call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'hungup')
+       call = create(:call, answered_by: "human", call_attempt: @call_attempt, state: 'hungup')
        RedisCall.set_request_params(call.id, call.attributes)
        RedisCallFlow.should_receive(:push_to_disconnected_call_list).with(call.id, call.recording_duration, call.recording_url, @caller.id)
        RedisStatus.should_receive(:set_state_changed_time).with(@campaign.id, "Wrap up", @caller_session.id)
@@ -151,14 +153,15 @@ end
     describe "submit_result" do
 
       before(:each) do
-        @script = Factory(:script)
-        @campaign =  Factory(:campaign, script: @script)
-        @voter = Factory(:voter, campaign: @campaign)
-        @caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
-        @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session)
+        @caller = create(:caller)
+        @script = create(:script)
+        @campaign =  create(:campaign, script: @script)
+        @voter = create(:voter, campaign: @campaign)
+        @caller_session = create(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
+        @call_attempt = create(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session, caller: @caller)
       end
       it "should warp up and continue" do
-        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected')
+        call = create(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected')
         RedisCall.set_request_params(call.id, call.attributes)
         RedisCallFlow.should_receive(:push_to_wrapped_up_call_list).with(@call_attempt.id, CallerSession::CallerType::TWILIO_CLIENT);
         @call_attempt.should_receive(:redirect_caller)
@@ -170,15 +173,16 @@ end
 
     describe "submit_result_and_stop" do
       before(:each) do
-        @script = Factory(:script)
-        @campaign =  Factory(:campaign, script: @script)
-        @voter = Factory(:voter, campaign: @campaign)
-        @caller_session = Factory(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
-        @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session)
+        @caller = create(:caller)
+        @script = create(:script)
+        @campaign =  create(:campaign, script: @script)
+        @voter = create(:voter, campaign: @campaign)
+        @caller_session = create(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
+        @call_attempt = create(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session, caller: @caller)
       end
 
       it "should wrapup and stop" do
-        call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected')
+        call = create(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected')
         RedisCall.set_request_params(call.id, call.attributes)
         RedisCallFlow.should_receive(:push_to_wrapped_up_call_list).with(@call_attempt.id, CallerSession::CallerType::TWILIO_CLIENT);
         @call_attempt.should_receive(:end_caller_session)
@@ -190,13 +194,13 @@ end
 
   describe "state machine methods" do
     it "should return answered by machine" do
-      call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'disconnected')
+      call = create(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'disconnected')
       RedisCall.set_request_params(call.id, call.attributes)
       call.answered_by_machine?.should be_true
     end
 
     it "should return answered by human" do
-      call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected')
+      call = create(:call, answered_by: "human", call_attempt: @call_attempt, state: 'disconnected')
       RedisCall.set_request_params(call.id, call.attributes)
       call.answered_by_human?.should be_true
     end
@@ -204,55 +208,55 @@ end
     describe "answered_by_human_and_caller_available?"
 
     before(:each) do
-      @script = Factory(:script)
-      @campaign =  Factory(:campaign, script: @script)
-      @voter = Factory(:voter, campaign: @campaign)
-      @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session)
-      @caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: false, campaign: @campaign, attempt_in_progress: @call_attempt, state: "connected")
+      @script = create(:script)
+      @campaign =  create(:campaign, script: @script)
+      @voter = create(:voter, campaign: @campaign)
+      @call_attempt = create(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session)
+      @caller_session = create(:webui_caller_session, caller: @caller, on_call: true, available_for_call: false, campaign: @campaign, attempt_in_progress: @call_attempt, state: "connected")
     end
 
     it "should return answered_by_human_and_caller_available?" do
-      call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "in-progress")
+      call = create(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "in-progress")
       RedisCall.set_request_params(call.id, call.attributes)
       call.answered_by_human_and_caller_available?.should be_true
     end
 
     it "should return false if not answered by human" do
-      call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'initial', call_status: "in-progress")
+      call = create(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'initial', call_status: "in-progress")
       RedisCall.set_request_params(call.id, call.attributes)
       call.answered_by_human_and_caller_available?.should be_false
     end
 
     it "should return false if call status is not in progress" do
-      call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "completed")
+      call = create(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "completed")
       RedisCall.set_request_params(call.id, call.attributes)
       call.answered_by_human_and_caller_available?.should be_false
     end
 
     it "should return false if caller session is nil" do
       @caller_session.update_attributes(attempt_in_progress: nil)
-      call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "in-progress")
+      call = create(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "in-progress")
       RedisCall.set_request_params(call.id, call.attributes)
       call.answered_by_human_and_caller_available?.should be_false
     end
 
     it "should return false if caller session is not available" do
       @caller_session.update_attributes(on_call: false)
-      call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "in-progress")
+      call = create(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "in-progress")
       RedisCall.set_request_params(call.id, call.attributes)
       call.answered_by_human_and_caller_available?.should be_false
     end
 
     it "should return true if caller session is nil" do
       @caller_session.update_attributes(attempt_in_progress: nil)
-      call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "in-progress")
+      call = create(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "in-progress")
       RedisCall.set_request_params(call.id, call.attributes)
       call.answered_by_human_and_caller_not_available?.should be_true
     end
 
     it "should return true if caller session is not available" do
       @caller_session.update_attributes(on_call: true, available_for_call: true)
-      call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "in-progress")
+      call = create(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "in-progress")
       RedisCall.set_request_params(call.id, call.attributes)
       call.answered_by_human_and_caller_not_available?.should be_true
     end
@@ -262,25 +266,25 @@ end
   describe "call did not connect" do
 
     it "should return true if busy" do
-      call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "busy")
+      call = create(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "busy")
       RedisCall.set_request_params(call.id, call.attributes)
       call.call_did_not_connect?.should be_true
     end
 
     it "should return true if no answer" do
-      call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "no-answer")
+      call = create(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "no-answer")
       RedisCall.set_request_params(call.id, call.attributes)
       call.call_did_not_connect?.should be_true
     end
 
     it "should return true if failed" do
-      call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "failed")
+      call = create(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "failed")
       RedisCall.set_request_params(call.id, call.attributes)
       call.call_did_not_connect?.should be_true
     end
 
     it "should return false if completed" do
-      call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "completed")
+      call = create(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "completed")
       RedisCall.set_request_params(call.id, call.attributes)
       call.call_did_not_connect?.should be_false
     end
@@ -292,22 +296,22 @@ end
   describe "call_ended" do
 
     before(:each) do
-      @script = Factory(:script)
-      @campaign =  Factory(:campaign, script: @script)
-      @voter = Factory(:voter, campaign: @campaign)
-      @call_attempt = Factory(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session)
-      @caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: false, campaign: @campaign, attempt_in_progress: @call_attempt, state: "connected")
+      @script = create(:script)
+      @campaign =  create(:campaign, script: @script)
+      @voter = create(:voter, campaign: @campaign)
+      @call_attempt = create(:call_attempt, voter: @voter, campaign: @campaign, caller_session: @caller_session)
+      @caller_session = create(:webui_caller_session, caller: @caller, on_call: true, available_for_call: false, campaign: @campaign, attempt_in_progress: @call_attempt, state: "connected")
     end
 
     it "should push to not connected call list if call did not connect" do
-      call = Factory(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "busy")
+      call = create(:call, answered_by: "human", call_attempt: @call_attempt, state: 'initial', call_status: "busy")
       RedisCall.set_request_params(call.id, call.attributes)
       RedisCallFlow.should_receive(:push_to_not_answered_call_list).with(call.id, "busy")
       call.call_ended("Preview")
     end
 
     it "should push to end by machine call list if answered by machine" do
-      call = Factory(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'initial', call_status: "busy")
+      call = create(:call, answered_by: "machine", call_attempt: @call_attempt, state: 'initial', call_status: "busy")
       RedisCall.set_request_params(call.id, call.attributes)
       RedisCallFlow.should_receive(:push_to_end_by_machine_call_list).with(call.id)
       call.call_ended("Preview").should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>")

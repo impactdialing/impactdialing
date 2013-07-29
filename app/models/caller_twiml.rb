@@ -66,13 +66,6 @@ module CallerTwiml
       end.text
     end
 
-    def caller_on_call_twiml
-      Twilio::TwiML::Response.new do |r|
-        r.Say I18n.t(:identical_caller_on_call)
-        r.Hangup
-      end.text
-    end
-
     def read_choice_twiml
       Twilio::TwiML::Response.new do |r|
         r.Gather(:numDigits => 1, :timeout => 10, :action => read_instruction_options_caller_url(caller_id, session_id:  self.id ,:host => DataCentre.call_back_host(data_centre), :port => Settings.twilio_callback_port, :protocol => "http://"), :method => "POST", :finishOnKey => "5") do

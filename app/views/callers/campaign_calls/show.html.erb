@@ -14,6 +14,27 @@
 
 <% content_for :javascripts do %>
   <script type="text/javascript">
+    $(window).bind("beforeunload", function() {
+          if ($("#caller_session").val()) {
+              $.ajax({
+                  url : "/caller/" + $("#caller").val() + "/stop_calling",
+                  data : {session_id : $("#caller_session").val() },
+                  type : "POST",
+                  async : false,
+                  success : function(response) {
+                      $("#start_calling").show();
+                  }
+              });
+          }
+
+      });
+  </script>
+<% end %>
+
+
+
+<% content_for :javascripts do %>
+  <script type="text/javascript">
     $(function() {
         var campaign_call = new ImpactDialing.Models.CampaignCall();
         campaign_call.set({pusher_key: '<%= Pusher.key %>'});
@@ -142,28 +163,29 @@
 </div>
 
 <script type="javascript/html" id="caller-campaign-action-template">
-  <div id="statusdiv" style="float:right">Status: Not connected.</div>
   <div id="actions" class="actions">
-    <a id= "call_voter" href="#caller-campaign-action-template" class="action secondary hide">Dial</a>
-    <a id= "skip_voter" href="#caller-campaign-action-template" class="action secondary hide">Skip</a>
-    <a id= "stop_calling" href="#caller-campaign-action-template" class="action secondary hide">Stop calling</a>
-    <a id= "hangup_call" href="#caller-campaign-action-template" class="action secondary hide">Hang up</a>
-    <a id= "kick_self_out_of_conference" href="#caller-campaign-action-template"  class="action secondary hide">Hang up</a>
-    <a id= "submit_and_keep_call" href="#caller-campaign-action-template" class="action secondary hide">Submit and keep calling</a>
-    <a id= "submit_and_stop_call" href="#caller-campaign-action-template" class="action secondary hide" >Submit and stop calling</a>
+    <a id= "call_voter" href="#caller-campaign-action-template" class="action secondary caller-action-buttons hide">Dial</a>
+    <a id= "skip_voter" href="#caller-campaign-action-template" class="action secondary caller-action-buttons hide">Skip</a>
+    <a id= "stop_calling" href="#caller-campaign-action-template" class="action secondary caller-action-buttons hide">Stop calling</a>
+    <a id= "hangup_call" href="#caller-campaign-action-template" class="action secondary caller-action-buttons hide">Hang up</a>
+    <a id= "kick_self_out_of_conference" href="#caller-campaign-action-template"  class="action secondary caller-action-buttons hide">Hang up</a>
+    <a id= "submit_and_keep_call" href="#caller-campaign-action-template" class="action secondary caller-action-buttons hide">Submit and keep calling</a>
+    <a id= "submit_and_stop_call" href="#caller-campaign-action-template" class="action secondary caller-action-buttons hide" >Submit and stop calling</a>
   </div>
+  <div id="statusdiv" style="float:right">Status: Not connected.</div>
 </script>
 
 
 <script type="javascript/html" id="caller-campaign-start-calling-template">
   <div id="callin" style="display:none">
     <div id="start_calling" >
-      <p><b>If your computer has a mic, click here:</b></p>
+      <p class="webapp-callin-info"><b>If your computer has a mic, click here:</b></p>
         <a class="action primary" href="#" id="start-calling">Start calling</a>
+        <a class="action primary" href="#" id="start-calling-mobile" class="hide" style="display:none">Start calling</a>
       </div>
     <br>
 
-    <div id="callin_data">
+    <div id="callin_data" class="webapp-callin-info">
       <p>
         <b>If you don't have a mic, use a phone:</b><br>
         Dial-in number: <span id="callin-number"></span><br>

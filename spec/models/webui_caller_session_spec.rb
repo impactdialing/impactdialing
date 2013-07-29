@@ -6,21 +6,20 @@ describe WebuiCallerSession do
 
     describe "caller moves to connected" do
       before(:each) do
-        @account = Factory(:account)
-        @script = Factory(:script)
-        @campaign =  Factory(:predictive, script: @script)
-        @callers_campaign =  Factory(:predictive, script: @script)
-        @caller = Factory(:caller, campaign: @callers_campaign, account: @account)
+        @account = create(:account)
+        @script = create(:script)
+        @campaign =  create(:predictive, script: @script)
+        @callers_campaign =  create(:predictive, script: @script)
+        @caller = create(:caller, campaign: @callers_campaign, account: @account)
       end
 
 
       it "shouild render correct twiml" do
-        caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
+        caller_session = create(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
         caller_session.should_receive(:funds_not_available?).and_return(false)
         caller_session.should_receive(:account_not_activated?).and_return(false)
         caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
         caller_session.should_receive(:time_period_exceeded?).and_return(false)
-        caller_session.should_receive(:is_on_call?).and_return(false)
         RedisOnHoldCaller.should_receive(:add).with(@campaign.id, caller_session.id, DataCentre::Code::TWILIO)
         caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id, "publish_caller_conference_started"])
         caller_session.start_conf.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/pause?session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"/></Dial></Response>")
@@ -31,15 +30,15 @@ describe WebuiCallerSession do
     describe "caller reassigned " do
 
       before(:each) do
-        @account = Factory(:account)
-        @script = Factory(:script)
-        @campaign =  Factory(:preview, script: @script)
-        @callers_campaign =  Factory(:preview, script: @script)
-        @caller = Factory(:caller, campaign: @callers_campaign, account: @account)
+        @account = create(:account)
+        @script = create(:script)
+        @campaign =  create(:preview, script: @script)
+        @callers_campaign =  create(:preview, script: @script)
+        @caller = create(:caller, campaign: @callers_campaign, account: @account)
       end
 
       xit "set publish correct event" do
-        caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
+        caller_session = create(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
         caller_session.should_receive(:funds_not_available?).and_return(false)
         caller_session.should_receive(:account_not_activated?).and_return(false)
         caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
@@ -53,7 +52,7 @@ describe WebuiCallerSession do
       end
 
       xit "shouild render correct twiml" do
-        caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
+        caller_session = create(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
         caller_session.should_receive(:funds_not_available?).and_return(false)
         caller_session.should_receive(:account_not_activated?).and_return(false)
         caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
@@ -77,16 +76,16 @@ describe WebuiCallerSession do
     describe "paused" do
 
       before(:each) do
-        @script = Factory(:script)
-        @campaign =  Factory(:preview, script: @script)
-        @caller = Factory(:caller, campaign: @campaign)
-        @call_attempt = Factory(:call_attempt, connecttime: Time.now)
+        @script = create(:script)
+        @campaign =  create(:preview, script: @script)
+        @caller = create(:caller, campaign: @campaign)
+        @call_attempt = create(:call_attempt, connecttime: Time.now)
       end
 
 
       it "when paused should render right twiml" do
-        caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "connected",  attempt_in_progress: @call_attempt)
-        call_attempt = Factory(:call_attempt, connecttime: Time.now)
+        caller_session = create(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "connected",  attempt_in_progress: @call_attempt)
+        call_attempt = create(:call_attempt, connecttime: Time.now)
         caller_session.pause.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>Please enter your call results</Say><Pause length=\"600\"/></Response>")
       end
 
@@ -95,19 +94,18 @@ describe WebuiCallerSession do
     describe "connected" do
 
       before(:each) do
-        @script = Factory(:script)
-        @campaign =  Factory(:predictive, script: @script)
-        @caller = Factory(:caller, campaign: @campaign, account: Factory(:account))
-        @call_attempt = Factory(:call_attempt)
+        @script = create(:script)
+        @campaign =  create(:predictive, script: @script)
+        @caller = create(:caller, campaign: @campaign, account: create(:account))
+        @call_attempt = create(:call_attempt)
       end
 
       it "should render correct twiml if caller is ready" do
-        caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "connected", attempt_in_progress: @call_attempt)
+        caller_session = create(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "connected", attempt_in_progress: @call_attempt)
         caller_session.should_receive(:funds_not_available?).and_return(false)
         caller_session.should_receive(:account_not_activated?).and_return(false)
         caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
         caller_session.should_receive(:time_period_exceeded?).and_return(false)
-        caller_session.should_receive(:is_on_call?).and_return(false)
 
         RedisOnHoldCaller.should_receive(:add).with(@campaign.id,caller_session.id, DataCentre::Code::TWILIO)
         caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id, "publish_caller_conference_started"])
@@ -117,14 +115,14 @@ describe WebuiCallerSession do
 
     describe "stop calling" do
       before(:each) do
-        @script = Factory(:script)
-        @campaign =  Factory(:preview, script: @script)
-        @caller = Factory(:caller, campaign: @campaign, account: Factory(:account))
-        @call_attempt = Factory(:call_attempt)
+        @script = create(:script)
+        @campaign =  create(:preview, script: @script)
+        @caller = create(:caller, campaign: @campaign, account: create(:account))
+        @call_attempt = create(:call_attempt)
       end
 
       it "should end caller session if stop calling" do
-        caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "connected", voter_in_progress: nil)
+        caller_session = create(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "connected", voter_in_progress: nil)
         caller_session.should_receive(:end_running_call)
         caller_session.stop_calling
       end
@@ -133,7 +131,7 @@ describe WebuiCallerSession do
     describe "run out of phone numbers" do
 
       it "should render hangup twiml" do
-        caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "connected", voter_in_progress: nil)
+        caller_session = create(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "connected", voter_in_progress: nil)
         caller_session.campaign_out_of_phone_numbers.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>This campaign has run out of phone numbers.</Say><Hangup/></Response>")
       end
 
@@ -147,15 +145,15 @@ describe WebuiCallerSession do
     describe "time_period_exceeded" do
 
       before(:each) do
-        @account = Factory(:account)
-        @script = Factory(:script)
-        @campaign =  Factory(:preview, script: @script,:start_time => Time.new(2011, 1, 1, 9, 0, 0), :end_time => Time.new(2011, 1, 1, 21, 0, 0), :time_zone =>"Pacific Time (US & Canada)")
-        @caller = Factory(:caller, campaign: @campaign, account: @account)
+        @account = create(:account)
+        @script = create(:script)
+        @campaign =  create(:preview, script: @script,:start_time => Time.new(2011, 1, 1, 9, 0, 0), :end_time => Time.new(2011, 1, 1, 21, 0, 0), :time_zone =>"Pacific Time (US & Canada)")
+        @caller = create(:caller, campaign: @campaign, account: @account)
       end
 
 
       it "shouild render correct twiml" do
-        caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "paused")
+        caller_session = create(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "paused")
         caller_session.should_receive(:funds_not_available?).and_return(false)
         caller_session.should_receive(:account_not_activated?).and_return(false)
         caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
@@ -167,19 +165,18 @@ describe WebuiCallerSession do
     describe "connected" do
 
       before(:each) do
-        @script = Factory(:script)
-        @campaign =  Factory(:preview, script: @script)
-        @caller = Factory(:caller, campaign: @campaign)
+        @script = create(:script)
+        @campaign =  create(:preview, script: @script)
+        @caller = create(:caller, campaign: @campaign)
       end
 
 
       it "shouild render correct twiml" do
-        caller_session = Factory(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "paused")
+        caller_session = create(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "paused")
         caller_session.should_receive(:funds_not_available?).and_return(false)
         caller_session.should_receive(:account_not_activated?).and_return(false)
         caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
         caller_session.should_receive(:time_period_exceeded?).and_return(false)
-        caller_session.should_receive(:is_on_call?).and_return(false)
         caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id, "publish_caller_conference_started"])
         caller_session.start_conf.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/pause?session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"/></Dial></Response>")
       end

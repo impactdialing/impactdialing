@@ -49,7 +49,7 @@ class Campaign < ActiveRecord::Base
   validates :caller_id, :presence => true
   validates :caller_id, :numericality => {}, :length => {:minimum => 10, :maximum => 10}, :unless => Proc.new{|campaign| campaign.caller_id && campaign.caller_id.start_with?('+')}
   validates :script, :presence => true
-  validates :type, :presence => true, :inclusion => {:in => ['Preview', 'Progressive', 'Predictive']}
+  validates :type, :presence => true, :inclusion => {:in => ['Preview', 'Power', 'Predictive']}
   validates :acceptable_abandon_rate,
             :numericality => {:greater_than_or_equal_to => 0.01, :less_than_or_equal_to => 0.10},
             :allow_blank => true
@@ -69,11 +69,11 @@ class Campaign < ActiveRecord::Base
   module Type
     PREVIEW = "Preview"
     PREDICTIVE = "Predictive"
-    PROGRESSIVE = "Progressive"
+    POWER = "Power"
   end
 
   def self.preview_power_campaign?(campaign_type)
-    [Type::PREVIEW, Type::PROGRESSIVE].include?(campaign_type)
+    [Type::PREVIEW, Type::POWER].include?(campaign_type)
   end
 
   def self.predictive_campaign?(campaign_type)
@@ -110,7 +110,7 @@ class Campaign < ActiveRecord::Base
     end
   end
 
-  def is_preview_or_progressive
+  def is_preview_or_power
     type == Type::PREVIEW || type == Type::PROGRESSIVE
   end
 

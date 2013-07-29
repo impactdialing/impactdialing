@@ -3,15 +3,15 @@ require "spec_helper"
 describe VoterListsController do
 
   describe "api" do
-    let(:account) { Factory(:account) }
+    let(:account) { create(:account) }
     before(:each) do
-      @user = Factory(:user, account_id: account.id)
+      @user = create(:user, account_id: account.id)
     end
 
     describe "index" do
       it "should list voter lists for a campaign" do
-        voter_list = Factory(:voter_list)
-        campaign = Factory(:campaign, :account => account, :active => true, voter_lists: [voter_list])
+        voter_list = create(:voter_list)
+        campaign = create(:campaign, :account => account, :active => true, voter_lists: [voter_list])
         get :index, campaign_id: campaign.id, :api_key=> account.api_key, :format => "json"
         response.body.should eq( "[{\"voter_list\":{\"enabled\":true,\"id\":#{voter_list.id},\"name\":\"#{voter_list.name}\"}}]")
       end
@@ -19,22 +19,22 @@ describe VoterListsController do
 
     describe "show" do
       it "should shows voter list " do
-        voter_list = Factory(:voter_list)
-        campaign = Factory(:campaign, :account => account, :active => true, voter_lists: [voter_list, Factory(:voter_list)])
+        voter_list = create(:voter_list)
+        campaign = create(:campaign, :account => account, :active => true, voter_lists: [voter_list, create(:voter_list)])
         get :show, campaign_id: campaign.id, id: voter_list.id, :api_key=> account.api_key, :format => "json"
         response.body.should eq( "{\"voter_list\":{\"enabled\":true,\"id\":#{voter_list.id},\"name\":\"#{voter_list.name}\"}}")
       end
 
       it "should throws 404 if campaign not found " do
-        voter_list = Factory(:voter_list)
-        campaign = Factory(:campaign, :account => account, :active => true, voter_lists: [voter_list, Factory(:voter_list)])
+        voter_list = create(:voter_list)
+        campaign = create(:campaign, :account => account, :active => true, voter_lists: [voter_list, create(:voter_list)])
         get :show, campaign_id: 100, id: voter_list.id, :api_key=> account.api_key, :format => "json"
         response.body.should eq( "{\"message\":\"Resource not found\"}" )
       end
 
       it "should throws 404 if voter list not found " do
-        voter_list = Factory(:voter_list)
-        campaign = Factory(:campaign, :account => account, :active => true, voter_lists: [voter_list, Factory(:voter_list)])
+        voter_list = create(:voter_list)
+        campaign = create(:campaign, :account => account, :active => true, voter_lists: [voter_list, create(:voter_list)])
         get :show, campaign_id: campaign.id, id: 100, :api_key=> account.api_key, :format => "json"
         response.body.should eq( "{\"message\":\"Resource not found\"}" )
       end
@@ -43,8 +43,8 @@ describe VoterListsController do
 
     describe "enable" do
       it "should enable voter list " do
-        voter_list = Factory(:voter_list, enabled: false)
-        campaign = Factory(:campaign, :account => account, :active => true, voter_lists: [voter_list, Factory(:voter_list)])
+        voter_list = create(:voter_list, enabled: false)
+        campaign = create(:campaign, :account => account, :active => true, voter_lists: [voter_list, create(:voter_list)])
         put :enable, campaign_id: campaign.id, id: voter_list.id, :api_key=> account.api_key, :format => "json"
         response.body.should eq( "{\"message\":\"Voter List enabled\"}")
       end
@@ -53,8 +53,8 @@ describe VoterListsController do
 
     describe "disable" do
       it "should disable voter list " do
-        voter_list = Factory(:voter_list, enabled: true)
-        campaign = Factory(:campaign, :account => account, :active => true, voter_lists: [voter_list, Factory(:voter_list)])
+        voter_list = create(:voter_list, enabled: true)
+        campaign = create(:campaign, :account => account, :active => true, voter_lists: [voter_list, create(:voter_list)])
         put :disable, campaign_id: campaign.id, id: voter_list.id, :api_key=> account.api_key, :format => "json"
         response.body.should eq( "{\"message\":\"Voter List disabled\"}")
       end
@@ -63,8 +63,8 @@ describe VoterListsController do
 
     describe "update" do
       it "should update voter list " do
-        voter_list = Factory(:voter_list, enabled: true, name: "abc")
-        campaign = Factory(:campaign, :account => account, :active => true, voter_lists: [voter_list, Factory(:voter_list)])
+        voter_list = create(:voter_list, enabled: true, name: "abc")
+        campaign = create(:campaign, :account => account, :active => true, voter_lists: [voter_list, create(:voter_list)])
         put :update, campaign_id: campaign.id, id: voter_list.id, voter_list: {name: "xyz"}, :api_key=> account.api_key, :format => "json"
         response.body.should eq( "{\"message\":\"Voter List updated\"}" )
         voter_list.reload.name.should  eq('xyz')
@@ -73,8 +73,8 @@ describe VoterListsController do
 
     describe "destroy" do
       it "should update voter list " do
-        voter_list = Factory(:voter_list, enabled: true, name: "abc")
-        campaign = Factory(:campaign, :account => account, :active => true, voter_lists: [voter_list, Factory(:voter_list)])
+        voter_list = create(:voter_list, enabled: true, name: "abc")
+        campaign = create(:campaign, :account => account, :active => true, voter_lists: [voter_list, create(:voter_list)])
         delete :destroy, campaign_id: campaign.id, id: voter_list.id, :api_key=> account.api_key, :format => "json"
         response.body.should eq( "{\"message\":\"This opeartion is not permitted\"}")
       end
@@ -84,7 +84,7 @@ describe VoterListsController do
 
       it "should create new voter list" do
         csv_file_upload =  {"datafile" => fixture_file_upload("/files/valid_voters_list.csv")}
-        campaign = Factory(:campaign, :account => account, :active => true)
+        campaign = create(:campaign, :account => account, :active => true)
         Resque.should_receive(:enqueue)
         post :create, campaign_id: campaign.id, voter_list: {name: "abc.csv", separator: ",", headers: "[]", csv_to_system_map: "{\"Phone\": \"Phone\"}",
         s3path: "abc"}, upload: csv_file_upload, :api_key=> account.api_key, :format => "json"
@@ -93,14 +93,14 @@ describe VoterListsController do
 
       it "should throw validation error" do
         csv_file_upload =  {"datafile" => fixture_file_upload("/files/voter_list.xsl")}
-        campaign = Factory(:campaign, :account => account, :active => true)
+        campaign = create(:campaign, :account => account, :active => true)
         post :create, campaign_id: campaign.id, voter_list: {name: "abc", separator: ",", headers: "[]", csv_to_system_map: "{\"Phone\": \"Phone\"}",
         s3path: "abc"}, upload: csv_file_upload, :api_key=> account.api_key, :format => "json"
         response.body.should eq("{\"errors\":{\"base\":[\"Wrong file format. Please upload a comma-separated value (CSV) or tab-delimited text (TXT) file. If your list is in Excel format (XLS or XLSX), use \\\"Save As\\\" to change it to one of these formats.\"]}}")
       end
 
       it "should throw validation error if file not uploaded" do
-        campaign = Factory(:campaign, :account => account, :active => true)
+        campaign = create(:campaign, :account => account, :active => true)
         post :create, campaign_id: campaign.id, voter_list: {name: "abc", separator: ",", headers: "[]", csv_to_system_map: "{\"Phone\": \"Phone\"}",
         s3path: "abc"}, upload: nil, :api_key=> account.api_key, :format => "json"
         response.body.should eq("{\"errors\":{\"uploaded_file_name\":[\"can't be blank\"],\"base\":[\"Please upload a file.\"]}}")
@@ -113,7 +113,7 @@ describe VoterListsController do
   # render_views
   #
   # before :each do
-  #   @current_user = Factory(:user)
+  #   @current_user = create(:user)
   #   login_as @current_user
   # end
   #
@@ -122,7 +122,7 @@ describe VoterListsController do
   #   let(:csv_file_upload) { {"datafile" => fixture_file_upload("/files/valid_voters_list.csv")} }
   #
   #   before :each do
-  #     @campaign = Factory(:predictive, :account => @current_user.account)
+  #     @campaign = create(:predictive, :account => @current_user.account)
   #   end
   #
   #

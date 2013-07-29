@@ -39,9 +39,9 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
 
   def get_callers_names(attempts)
     ids = attempts.map { |a| a['caller_id'] }.uniq
-    @replica_connection.execute(Caller.where(id: ids).select([:id, :name, :email]).to_sql).each(as: :hash).each_with_object({}) do |hash, memo|
+    @replica_connection.execute(Caller.where(id: ids).select([:id, :name, :username]).to_sql).each(as: :hash).each_with_object({}) do |hash, memo|
       memo[hash['id']] = if hash['name'].blank?
-                           hash['email'].blank? ? "" : hash['email']
+                           hash['username'].blank? ? "" : hash['username']
                          else
                            hash['name']
                          end

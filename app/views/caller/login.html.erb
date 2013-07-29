@@ -1,8 +1,8 @@
 <h1>Log in</h1>
         <%= form_tag("/caller/login", :id=>"loginForm") do |f| %>
 <fieldset>
-    <p><label for="">Email</label><br>
-  <input type="text" name="email" class="field" value="<%= params[:email] %>" />
+    <p><label for="">Username</label><br>
+  <input type="text" name="username" class="field" value="<%= params[:username] %>" />
 
 
     <p><label for="">Password</label><br>
@@ -14,8 +14,18 @@
   </div>
 </fieldset>
       <% end %>
-<p>
+<p class="webapp-login-links">
   If you are an administrator, <a href=<%="#{request.protocol}admin.#{request.domain}/"%>>log in here</a>.
   <br>
   To view phones-only reports, <a href=<%="#{request.protocol}admin.#{request.domain}/callers/phones_only"%>>log in here</a>.
 </p>
+
+<% content_for :javascripts do %>
+  <script type="text/javascript">
+    $(function() {
+      if(isNativeApp()){
+        $(".webapp-login-links").hide();
+      }
+    });
+  </script>
+<% end %>

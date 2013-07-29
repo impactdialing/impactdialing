@@ -208,7 +208,7 @@ function expand_scheduler() {
 }
 
 function ready_for_calls(data) {
-    if (data.dialer && data.dialer.toLowerCase() == "progressive") {
+    if (data.dialer && data.dialer.toLowerCase() == "power") {
         $("#stop_calling").show();
         call_voter();
     }
@@ -384,7 +384,7 @@ function subscribe(session_key) {
         set_response_panel(data);
 		set_transfer_panel(data)
         clear_voter();
-        if (data.dialer && (data.dialer.toLowerCase() == "preview" || data.dialer.toLowerCase() == "progressive")) {
+        if (data.dialer && (data.dialer.toLowerCase() == "preview" || data.dialer.toLowerCase() == "power")) {
             if (!$.isEmptyObject(data.fields)) {
                 set_message("Status: Ready for calls.");
                 set_voter(data);

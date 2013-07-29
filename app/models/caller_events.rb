@@ -19,7 +19,7 @@ module CallerEvents
 
     def publish_voter_disconnected
       unless caller.is_phones_only?
-        Pusher[session_key].trigger!("voter_disconnected", {})
+        Pusher.trigger(session_key, "voter_disconnected", {})
       end
     end
 

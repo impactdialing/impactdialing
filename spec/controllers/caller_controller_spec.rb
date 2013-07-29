@@ -1,19 +1,19 @@
 require "spec_helper"
 
 describe CallerController do
-  let(:account) { Factory(:account) }
-  let(:user) { Factory(:user, :account => account) }
+  let(:account) { create(:account) }
+  let(:user) { create(:user, :account => account) }
 
   describe "preview dial" do
-    let(:campaign) { Factory(:campaign, start_time: Time.now - 6.hours, end_time: Time.now + 6.hours) }
+    let(:campaign) { create(:campaign, start_time: Time.now - 6.hours, end_time: Time.now + 6.hours) }
 
     before(:each) do
-      @caller = Factory(:caller, :account => account)
+      @caller = create(:caller, :account => account)
       login_as(@caller)
     end
 
     it "logs out" do
-      @caller = Factory(:caller, :account => account)
+      @caller = create(:caller, :account => account)
       login_as(@caller)
       post :logout
       session[:caller].should_not be
@@ -24,9 +24,9 @@ describe CallerController do
   
   describe "start calling" do
     it "should start a new caller conference" do
-      caller = Factory(:caller, campaign: Factory(:predictive), account: Factory(:account))
-      caller_identity = Factory(:caller_identity)
-      caller_session = Factory(:webui_caller_session, session_key: caller_identity.session_key, caller_type: CallerSession::CallerType::TWILIO_CLIENT, caller: caller)
+      caller = create(:caller, campaign: create(:predictive), account: create(:account))
+      caller_identity = create(:caller_identity)
+      caller_session = create(:webui_caller_session, session_key: caller_identity.session_key, caller_type: CallerSession::CallerType::TWILIO_CLIENT, caller: caller)
       Caller.should_receive(:find).and_return(caller)
       caller.should_receive(:create_caller_session).and_return(caller_session)
       RedisPredictiveCampaign.should_receive(:add).with(caller.campaign_id, caller.campaign.type)
@@ -37,11 +37,11 @@ describe CallerController do
   
   describe "call voter" do
     it "should call voter" do
-      campaign =  Factory(:predictive)
-      caller = Factory(:caller, campaign: campaign, account: Factory(:account))
-      caller_identity = Factory(:caller_identity)
-      voter = Factory(:voter, campaign: campaign)
-      caller_session = Factory(:webui_caller_session, session_key: caller_identity.session_key, caller_type: CallerSession::CallerType::TWILIO_CLIENT, caller: caller)
+      campaign =  create(:predictive)
+      caller = create(:caller, campaign: campaign, account: create(:account))
+      caller_identity = create(:caller_identity)
+      voter = create(:voter, campaign: campaign)
+      caller_session = create(:webui_caller_session, session_key: caller_identity.session_key, caller_type: CallerSession::CallerType::TWILIO_CLIENT, caller: caller)
       Caller.should_receive(:find).and_return(caller)
       caller.should_receive(:calling_voter_preview_power)
       post :call_voter, id: caller.id, voter_id: voter.id, session_id: caller_session.id

@@ -2,20 +2,20 @@ require 'spec_helper'
 
 describe EndCallerSessionJob do
 
-  let!(:campaign) { Factory(:campaign) }
-  let!(:caller) { Factory(:caller, campaign_id: campaign.id) }
-  let!(:caller_session) { Factory(:caller_session, caller_id: caller.id, campaign_id: campaign.id) }
+  let!(:campaign) { create(:campaign) }
+  let!(:caller) { create(:caller, campaign_id: campaign.id) }
+  let!(:caller_session) { create(:caller_session, caller_id: caller.id, campaign_id: campaign.id) }
   let!(:voters) do
     voters = []
     voters += (1..50).map do
-     Factory(:voter,
+     create(:voter,
        campaign_id: campaign.id,
        status: CallAttempt::Status::SUCCESS,
        caller_id: caller.id
      )
     end
     voters += (1..110).map do
-     Factory(:voter,
+     create(:voter,
        campaign_id: campaign.id,
        status: CallAttempt::Status::READY,
        caller_id: caller.id

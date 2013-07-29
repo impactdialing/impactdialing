@@ -2,7 +2,7 @@ require 'spec_helper'
 
 feature 'a user signs in' do
   scenario 'with valid credentials' do
-    user = Factory.create :user
+    user = create :user
     visit '/client/login'
     fill_in 'Email', :with => user.email
     fill_in 'Password', :with => user.new_password
@@ -11,7 +11,7 @@ feature 'a user signs in' do
   end
 
   scenario 'with invalid credentials' do
-    user = Factory.create :user
+    user = create :user
     visit '/client/login'
     fill_in 'Email', :with => 'wrong'
     fill_in 'Password', :with => 'wrong'

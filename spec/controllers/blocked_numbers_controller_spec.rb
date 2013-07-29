@@ -1,8 +1,8 @@
 require "spec_helper"
 
 describe BlockedNumbersController do
-  let(:account) { Factory(:account) }
-  let(:user) { Factory(:user, :account => account) }
+  let(:account) { create(:account) }
+  let(:user) { create(:user, :account => account) }
   before(:each) do
     login_as(user)
     request.env['HTTP_REFERER'] = 'http://referer'
@@ -10,16 +10,16 @@ describe BlockedNumbersController do
 
   describe 'index' do
     it "loads all blocked numbers" do
-      blocked_numbers = 3.times.map{ Factory(:blocked_number, :account => account) }
-      another_users_blocked_number = Factory(:blocked_number, :account => Factory(:account))
+      blocked_numbers = 3.times.map{ create(:blocked_number, :account => account) }
+      another_users_blocked_number = create(:blocked_number, :account => create(:account))
       get :index
       assigns(:blocked_numbers).should == blocked_numbers
     end
 
     it "loads all active campaigns" do
-      active_user_campaigns = 3.times.map{ Factory(:preview, :account => account, :active => true) }
-      another_users_active_campaign = Factory(:preview, :account => Factory(:account), :active => true)
-      inactive_user_campaign = Factory(:preview, :account => account, :active => false)
+      active_user_campaigns = 3.times.map{ create(:preview, :account => account, :active => true) }
+      another_users_active_campaign = create(:preview, :account => create(:account), :active => true)
+      inactive_user_campaign = create(:preview, :account => account, :active => false)
       get :index
       assigns(:campaigns).should == active_user_campaigns
     end
@@ -57,7 +57,7 @@ describe BlockedNumbersController do
 
   describe 'destroy' do
     it "destroys an existing blocked number" do
-      blocked_number = Factory(:blocked_number, :account => account)
+      blocked_number = create(:blocked_number, :account => account)
       delete :destroy, :id => blocked_number.id
       BlockedNumber.find_by_id(blocked_number.id).should_not be
       response.should redirect_to(:back)

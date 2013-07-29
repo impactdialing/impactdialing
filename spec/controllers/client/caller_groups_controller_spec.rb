@@ -1,14 +1,14 @@
 require 'spec_helper'
 
 describe Client::CallerGroupsController do
-  let(:account) {Factory(:account, api_key: 'abc123')}
+  let(:account) {create(:account, api_key: 'abc123')}
   before(:each) do
-    @user = Factory(:user, account_id: account.id)
+    @user = create(:user, account_id: account.id)
   end
 
   describe 'index' do
     it 'returns all of the caller groups' do
-      2.times {Factory(:caller_group, account: account)}
+      2.times {create(:caller_group, account: account)}
       get :index, api_key: account.api_key, format: 'json'
       JSON.parse(response.body).length.should eq(2)
     end
@@ -48,13 +48,13 @@ describe Client::CallerGroupsController do
 
   describe 'show' do
     it 'should return the caller group as json' do
-      caller_group = Factory(:caller_group, account: account)
+      caller_group = create(:caller_group, account: account)
       get :show, id: caller_group.id, api_key: account.api_key, format: 'json'
       response.body.should eq caller_group.to_json
     end
 
     it 'does not show a campaign from another account' do
-      caller_group = Factory(:caller_group)
+      caller_group = create(:caller_group)
       get :show, id: caller_group.id, api_key: account.api_key, format: 'json'
       JSON.parse(response.body).should eq({"message" => "Cannot access caller group"})
     end
@@ -62,13 +62,13 @@ describe Client::CallerGroupsController do
 
   describe 'update' do
     it 'gives a successful response if validations are met' do
-      caller_group = Factory(:caller_group, account: account)
+      caller_group = create(:caller_group, account: account)
       put :update, id: caller_group.id, api_key: account.api_key, format: 'json', caller_group: {name: 'new name'}
       JSON.parse(response.body).should eq({'message' => 'Caller Group updated'})
     end
 
     it 'throws a validation error if a required attribute is invalid' do
-      caller_group = Factory(:caller_group, account: account)
+      caller_group = create(:caller_group, account: account)
       put :update, id: caller_group.id, api_key: account.api_key, format: 'json', caller_group: {name: ''}
       JSON.parse(response.body).should eq({"errors"=>{"name"=>["can't be blank"]}})
     end
@@ -76,20 +76,20 @@ describe Client::CallerGroupsController do
 
   describe 'destroy' do
     it 'returns JSON saying the caller group was deleted' do
-      caller_group = Factory(:caller_group, account: account)
+      caller_group = create(:caller_group, account: account)
       delete :destroy, id: caller_group.id, api_key: account.api_key, format: 'json'
       JSON.parse(response.body).should eq({'message' => 'Caller Group deleted'})
     end
 
     it 'deletes the caller group' do
-      caller_group = Factory(:caller_group, account: account)
+      caller_group = create(:caller_group, account: account)
       lambda {
         delete :destroy, id: caller_group.id, api_key: account.api_key, format: 'json'
       }.should change {account.reload.caller_groups.size}.by -1
     end
 
     it 'will not delete a caller group from another account' do
-      caller_group = Factory(:caller_group)
+      caller_group = create(:caller_group)
       delete :destroy, id: caller_group.id, api_key: account.api_key, format: 'json'
       JSON.parse(response.body).should eq({'message' => 'Cannot access caller group'})
     end

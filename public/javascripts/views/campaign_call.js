@@ -52,18 +52,44 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
         self.channel = self.pusher.subscribe(self.model.get("session_key"));
         self.bindPusherEvents();
         $("#caller-actions").html(self.start_calling_view.render().el);
+        var ios_url = "inapp://capture?campaign_id=" + self.model.get("campaign_id") +"&phone_number="+ self.model.get("phone_number") +
+         "&caller_id=" + self.model.get("caller_id") + "&session_key=" + self.model.get("session_key") + "&token=" + self.model.get("twilio_token");
+        $("#start-calling-mobile").attr("href", ios_url);
         $("#callin").show();
         if (!FlashDetect.installed || !flash_supported() || !browser_supported()){
-          $("#start_calling").hide();
+          $("#start-calling").hide();
+        }
+        if(isNativeApp()){
+         $("#start-calling-mobile").show();
+         $(".webapp-callin-info").hide();
         }
         $("#callin-number").html(self.model.get("phone_number"));
         $("#callin-pin").html(self.model.get("pin"));
+        self.stopCallingOnPageReload()
         self.setupTwilio();
         },
       error: function(jqXHR, textStatus, errorThrown){
         self.callerShouldNotDial(jqXHR["responseText"]);
       },
       });
+  },
+
+  stopCallingOnPageReload: function(){
+    var self = this;
+      $(window).bind("beforeunload", function() {
+        if(self.model.has("session_id")){
+          $.ajax({
+            url : "/caller/" + self.model.get("caller_id") + "/stop_calling",
+            data : {session_id : self.model.get("session_id") },
+            type : "POST",
+            async : false,
+            success : function(response) {
+              $("#start_calling").show();
+            }
+          });
+        }
+    });
+
   },
 
   callerShouldNotDial:  function(error){

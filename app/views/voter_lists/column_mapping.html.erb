@@ -9,7 +9,7 @@
     <% selected = matching_system_header_for(csv_header) %>
     <tr>
       <td><%= csv_header %></td>
-      <td><%= select_tag "voter_list[csv_to_system_map[#{csv_header}]]", options_for_select(system_column_headers(csv_header, @campaign.account), selected) %></td>
+      <td><%= select_tag "voter_list[csv_to_system_map[#{csv_header}]]", options_for_select(system_column_headers(csv_header, @campaign.account)), class: "select-column-mapping" %></td>
       <td><%= @first_data_row[index] %></td>
     </tr>
   <% end %>

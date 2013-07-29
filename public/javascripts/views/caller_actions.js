@@ -34,7 +34,7 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
       this.setMessage("Status: The campaign has run out of numbers.");
       return
     }
-    if (lead_info.get("dialer") && lead_info.get("dialer").toLowerCase() == "progressive") {
+    if (lead_info.get("dialer") && lead_info.get("dialer").toLowerCase() == "power") {
       this.callVoter();
     }
     if (lead_info.get("dialer") && lead_info.get("dialer").toLowerCase() == "preview") {
