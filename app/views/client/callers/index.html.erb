@@ -56,8 +56,10 @@
                                :class => 'action secondary',
                                :data => {"intro" => "Click here to view and restore your deleted callers.",
                                          "step" => "5"} %></p>
-<p class="actions"><%= link_to 'Manage caller groups',
-                               client_caller_groups_path,
-                               :class => 'action secondary',
-                               :data => {"intro" => "If you have a large number of callers that call the same campaigns, you can group them together so that they can all be re-assigned to a new campaign at once.",
-                                         "step" => "4"} %></p>
+<% if can? :manage_caller_groups, @account %>
+  <p class="actions"><%= link_to 'Manage caller groups',
+                                 client_caller_groups_path,
+                                 :class => 'action secondary',
+                                 :data => {"intro" => "If you have a large number of callers that call the same campaigns, you can group them together so that they can all be re-assigned to a new campaign at once.",
+                                           "step" => "4"} %></p>
+<% end %>

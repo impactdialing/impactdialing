@@ -11,6 +11,10 @@ class BusinessSubscription
     [Transfer::Type::WARM, Transfer::Type::COLD]
   end
 
+  def caller_groups
+    true
+  end
+
   def minutes_per_caller
     2500.00
   end

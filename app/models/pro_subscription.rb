@@ -19,4 +19,8 @@ class ProSubscription
     99.00
   end
 
+  def caller_groups
+    true
+  end
+
 end

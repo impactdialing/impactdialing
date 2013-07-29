@@ -3,6 +3,8 @@ class Ability
 
   def initialize(account)
     can :add_transfer, Script if !account.subscription.transfers.empty?
+    can :manage_caller_groups, Account if account.subscription.caller_groups
+
     # Define abilities for the passed in user here. For example:
     #
     #   user ||= User.new # guest user (not logged in)

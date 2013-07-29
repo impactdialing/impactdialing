@@ -12,6 +12,10 @@ class BasicSubscription
     []
   end
 
+  def caller_groups
+    false
+  end
+
   def minutes_per_caller
     1000.00
   end
