@@ -31,6 +31,7 @@ class Account < ActiveRecord::Base
     PRO = "Pro"
     BUSINESS = "Business"
     ENTERPRISE = "Enterprise"
+    PER_MINUTE = "PerMinute"
   end
 
   def check_subscription_type_for_call_recording
