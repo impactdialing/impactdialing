@@ -27,11 +27,11 @@ function browser_supported(){
 	return supported;
 }
 
-if (!FlashDetect.installed &&  !isNativeApp()){
+if (!FlashDetect.installed){
 	warning='<%=  t('flash_missing_html') %>';
 }
 
-if (!flash_supported() || !isNativeApp())
+if (!flash_supported())
 	warning='<%=  t('flash_old_html') %>';
 
 if (!browser_supported())
