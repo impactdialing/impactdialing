@@ -27,7 +27,7 @@ function browser_supported(){
 	return supported;
 }
 
-if (!FlashDetect.installed || !isNativeApp()){
+if (!FlashDetect.installed &&  !isNativeApp()){
 	warning='<%=  t('flash_missing_html') %>';
 }
 
