@@ -420,7 +420,7 @@ DEPENDENCIES
   slim (~> 2.0.0)
   spork-rails
   sprockets (~> 2.2.1)
-  stripe
+  stripe (~> 1.8.4)
   twilio (~> 3.1.1)
   twilio-ruby (~> 3.10.0)
   unicorn
