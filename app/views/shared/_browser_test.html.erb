@@ -27,12 +27,18 @@ function browser_supported(){
 	return supported;
 }
 
-if (!FlashDetect.installed || !isNativeApp()){
-	warning='<%=  t('flash_missing_html') %>';
+if (!FlashDetect.installed){
+	if(!isNativeApp()){
+		warning='<%=  t('flash_missing_html') %>';
+	}
 }
 
-if (!flash_supported() || !isNativeApp())
-	warning='<%=  t('flash_old_html') %>';
+if (!flash_supported()){
+	if(!isNativeApp()){
+		warning='<%=  t('flash_old_html') %>';
+	}
+}
+
 
 if (!browser_supported())
 	warning="<%=  t('browser_unsupported').html_safe %>";

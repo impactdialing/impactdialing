@@ -79,7 +79,6 @@ GEM
     columnize (0.3.6)
     connection_pool (1.1.0)
     cookiejar (0.3.0)
-    dalli (2.6.4)
     database_cleaner (1.0.1)
     debug_inspector (0.0.2)
     debugger (1.6.1)
@@ -368,7 +367,6 @@ DEPENDENCIES
   capistrano_colors
   capybara
   cocoon (~> 1.0.22)
-  dalli (~> 2.6.4)
   database_cleaner
   debugger (~> 1.6.0)
   deep_cloneable (~> 1.5.3)
