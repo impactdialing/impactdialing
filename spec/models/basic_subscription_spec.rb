@@ -14,7 +14,10 @@ describe BasicSubscription do
   end
 
   describe "campaign" do
-    let(:account) { create(:account, subscription_name: Account::Subscription_Type::BASIC) }
+    let(:account) { create(:account) }
+    before(:each) do
+      account.subscription.upgrade(1,"Basic")
+    end
     it "should not allow predictive dialing mode for basic subscription" do
       campaign = build(:predictive, account: account)
       campaign.save

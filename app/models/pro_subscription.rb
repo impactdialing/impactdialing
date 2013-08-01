@@ -1,4 +1,4 @@
-class ProSubscription
+class ProSubscription < Subscription
   def campaign_types
     [Campaign::Type::PREVIEW, Campaign::Type::POWER, Campaign::Type::PREDICTIVE]
   end
@@ -37,6 +37,11 @@ class ProSubscription
 
   def dashboard_enabled?
     true
+  end
+
+  def debit(call_time)
+    updated_minutes = minutes_utlized + call_time
+    self.update_attributes(minutes_utlized: updated_minutes)
   end
 
 

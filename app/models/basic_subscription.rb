@@ -1,4 +1,4 @@
-class BasicSubscription
+class BasicSubscription < Subscription
 
   def campaign_types
     [Campaign::Type::PREVIEW, Campaign::Type::POWER]
@@ -38,6 +38,15 @@ class BasicSubscription
 
   def dashboard_enabled?
     false
+  end
+
+  def debit(call_time)
+    updated_minutes = minutes_utlized + call_time
+    self.update_attributes(minutes_utlized: updated_minutes)
+  end
+
+  def can_dial?
+    available_minutes > 0
   end
 
 

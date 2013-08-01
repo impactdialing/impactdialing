@@ -6,6 +6,7 @@ class Account < ActiveRecord::Base
   has_many :recordings
   has_many :custom_voter_fields
   has_one :billing_account
+  has_one :subscription
   has_many :scripts
   has_many :callers
   has_many :voter_lists
@@ -23,16 +24,10 @@ class Account < ActiveRecord::Base
   attr_accessible :api_key, :domain_name, :abandonment, :card_verified, :activated, :record_calls, :recurly_account_code, :subscription_name, :subscription_count, :subscription_active, :recurly_subscription_uuid, :autorecharge_enabled, :autorecharge_amount, :autorecharge_trigger, :status, :tos_accepted_date, :credit_card_declined
 
   before_create :assign_api_key
+  after_create :create_trial_subscription
   validate :check_subscription_type_for_call_recording
 
 
-  module Subscription_Type
-    BASIC = "Basic"
-    PRO = "Pro"
-    BUSINESS = "Business"
-    ENTERPRISE = "Enterprise"
-    PER_MINUTE = "PerMinute"
-  end
 
   def check_subscription_type_for_call_recording
     if record_calls && !subscription.call_recording_enabled?
@@ -40,10 +35,6 @@ class Account < ActiveRecord::Base
     end
   end
 
-  def subscription
-    subscription_type = subscription_name + "Subscription"
-    subscription_type.constantize.new
-  end
 
   def current_balance
     self.payments.where("amount_remaining>0").inject(0) do |sum, payment|
@@ -139,7 +130,7 @@ class Account < ActiveRecord::Base
   end
 
   def funds_available?
-    manual_subscription? ? true : current_balance>0
+    subscription.can_dial?
   end
 
   def create_recurly_account_code
@@ -269,6 +260,10 @@ class Account < ActiveRecord::Base
 
   def generate_api_key
     secure_digest(Time.now, (1..10).map{ rand.to_s })
+  end
+
+  def create_trial_subscription
+    TrialSubscription.build(self.id)
   end
 
 

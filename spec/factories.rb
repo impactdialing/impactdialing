@@ -18,7 +18,6 @@ FactoryGirl.define do
 
   factory :account do
     tos_accepted_date Time.now
-    subscription_name Account::Subscription_Type::ENTERPRISE
     record_calls false
   end
 

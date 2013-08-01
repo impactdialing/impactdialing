@@ -17,6 +17,8 @@ ImpactDialing::Application.configure do
   MONITOR_TWILIO_APP_SID="AP06c5b96cedaf433b9fe0e6d865aab104"
   TWILIO_ERROR = "http://status-impactdialing.heroku.com/twilio/error_staging"
   HOLD_MUSIC_URL = "https://s3.amazonaws.com/hold_music/impactdialing_holdmusic_v1.mp3"
+  STRIPE_PUBLISHABLE_KEY = "sk_test_eBD6QzdzN5XMrhblpVSMDDYN"
+  STRIPE_SECRET_KEY = "pk_test_OGBGxKyv3UcfukHlpo8jZtr7"
 
   # Settings specified here will take precedence over those in config/environment.rb
 

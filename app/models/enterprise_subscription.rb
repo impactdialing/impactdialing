@@ -40,4 +40,7 @@ class EnterpriseSubscription
     true
   end
 
+  def debit(call_time)
+  end
+
 end

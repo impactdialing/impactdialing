@@ -10,7 +10,8 @@ ImpactDialing::Application.configure do
   MONITOR_TWILIO_APP_SID="APe95d3960a26f46e69697b6840149655b"
   TWILIO_ERROR = "http://status-impactdialing.heroku.com/twilio/error_production"
   HOLD_MUSIC_URL = "https://s3.amazonaws.com/hold_music/impactdialing_holdmusic_v1.mp3"
-
+  STRIPE_PUBLISHABLE_KEY = "sk_test_eBD6QzdzN5XMrhblpVSMDDYN"
+  STRIPE_SECRET_KEY = "pk_test_OGBGxKyv3UcfukHlpo8jZtr7"
   # Settings specified here will take precedence over those in config/environment.rb
 
   # The production environment is meant for finished, "live" apps.

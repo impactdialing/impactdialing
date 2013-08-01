@@ -1,4 +1,4 @@
-class PerMinuteSubscription
+class PerMinuteSubscription < Subscription
 
   def campaign_types
     [Campaign::Type::PREVIEW, Campaign::Type::POWER, Campaign::Type::PREDICTIVE]
@@ -30,6 +30,10 @@ class PerMinuteSubscription
 
   def dashboard_enabled?
     true
+  end
+
+  def debit(call_time)
+    payment = Payment.where("amount_remaining > 0 and account_id = ?", account).last
   end
 
 
