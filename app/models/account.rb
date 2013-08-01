@@ -263,7 +263,7 @@ class Account < ActiveRecord::Base
   end
 
   def create_trial_subscription
-    TrialSubscription.build(self.id)
+    Trial.build(self.id)
   end
 
 

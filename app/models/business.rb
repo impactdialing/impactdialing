@@ -1,5 +1,4 @@
-class PerMinuteSubscription < Subscription
-
+class Business < Subscription
   def campaign_types
     [Campaign::Type::PREVIEW, Campaign::Type::POWER, Campaign::Type::PREDICTIVE]
   end
@@ -10,6 +9,15 @@ class PerMinuteSubscription < Subscription
 
   def transfer_types
     [Transfer::Type::WARM, Transfer::Type::COLD]
+  end
+
+
+  def minutes_per_caller
+    2500.00
+  end
+
+  def price_per_caller
+    99.00
   end
 
   def caller_groups_enabled?
@@ -33,8 +41,10 @@ class PerMinuteSubscription < Subscription
   end
 
   def debit(call_time)
-    payment = Payment.where("amount_remaining > 0 and account_id = ?", account).last
+    updated_minutes = minutes_utlized + call_time
+    self.update_attributes(minutes_utlized: updated_minutes)
   end
+
 
 
 end

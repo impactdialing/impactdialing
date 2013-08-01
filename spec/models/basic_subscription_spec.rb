@@ -14,23 +14,25 @@ describe BasicSubscription do
   end
 
   describe "campaign" do
-    let(:account) { create(:account) }
+
     before(:each) do
-      account.subscription.upgrade(1,"Basic")
+      @account =  create(:account)
+      @account.subscription.upgrade("Basic")
+      @account.reload
     end
     it "should not allow predictive dialing mode for basic subscription" do
-      campaign = build(:predictive, account: account)
+      campaign = build(:predictive, account: @account)
       campaign.save
       campaign.errors[:base].should == ['Your subscription does not allow this mode of Dialing.']
     end
 
-    it "should not allow preview dialing mode for basic subscription" do
-      campaign = build(:preview, account: account)
+    it "should  allow preview dialing mode for basic subscription" do
+      campaign = build(:preview, account: @account)
       campaign.save.should be_true
     end
 
-    it "should not allow power dialing mode for basic subscription" do
-      campaign = build(:power, account: account)
+    it "should  allow power dialing mode for basic subscription" do
+      campaign = build(:power, account: @account)
       campaign.save.should be_true
     end
   end
@@ -42,9 +44,13 @@ describe BasicSubscription do
   end
 
   describe "transfers" do
-    let(:account) { create(:account, subscription_name: Account::Subscription_Type::BASIC, record_calls: false) }
+    before(:each) do
+      @account =  create(:account)
+      @account.subscription.upgrade("Basic")
+      @account.reload
+    end
     it "should not all saving transfers" do
-      script = build(:script, account: account)
+      script = build(:script, account: @account)
       script.transfers << build(:transfer)
       script.save
       script.errors[:base].should == ["Your subscription does not allow transfering calls in this mode."]
@@ -59,9 +65,13 @@ describe BasicSubscription do
     end
 
     describe "it should not allow caller groups for callers" do
-      let(:account) { create(:account, subscription_name: Account::Subscription_Type::BASIC, record_calls: false) }
+      before(:each) do
+      @account =  create(:account, record_calls: false)
+      @account.subscription.upgrade("Basic")
+      @account.reload
+    end
       it "should throw validation error" do
-        caller = build(:caller, account: account)
+        caller = build(:caller, account: @account)
         caller.caller_group = build(:caller_group)
         caller.save
         caller.errors[:base].should == ["Your subscription does not allow managing caller groups."]
@@ -77,12 +87,45 @@ describe BasicSubscription do
     end
 
     describe "it should not allow call recordings to be enabled" do
-      let(:account) { create(:account, subscription_name: Account::Subscription_Type::BASIC, record_calls: false) }
+      before(:each) do
+        @account =  create(:account, record_calls: false)
+        @account.subscription.upgrade("Basic")
+        @account.reload
+      end
       it "should throw validation error" do
-        account.update_attributes(record_calls: true)
-        account.errors[:base].should == ["Your subscription does not allow call recordings."]
+        @account.update_attributes(record_calls: true)
+        @account.errors[:base].should == ["Your subscription does not allow call recordings."]
       end
     end
+  end
+
+  describe "should debit call time" do
+    before(:each) do
+      @account =  create(:account, record_calls: false)
+      @account.subscription.upgrade("Basic")
+      @account.reload
+    end
+
+    it "should deduct from minutes used if minutes used greater than 0" do
+      @account.subscription.debit(2.00).should be_true
+      @account.subscription.minutes_utlized.should eq(2)
+    end
+
+    it "should not deduct from minutes used if minutes used greater than eq total minutes" do
+      @account.subscription.update_attributes(minutes_utlized: 1000)
+      @account.subscription.debit(2.00).should be_false
+      @account.subscription.reload
+      @account.subscription.minutes_utlized.should eq(1000)
+    end
+
+    it "should not deduct from minutes used if alloted minutes does not fall in subscription time range" do
+      @account.subscription.update_attributes(minutes_utlized: 10)
+      @account.subscription.update_attributes(subscription_start_date: (DateTime.now-40.days))
+      @account.subscription.debit(2.00).should be_false
+      @account.subscription.reload
+      @account.subscription.minutes_utlized.should eq(10)
+    end
+
   end
 
 end

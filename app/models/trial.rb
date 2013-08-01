@@ -1,5 +1,5 @@
-class ProSubscription < Subscription
-  def campaign_types
+class Trial < Subscription
+    def campaign_types
     [Campaign::Type::PREVIEW, Campaign::Type::POWER, Campaign::Type::PREDICTIVE]
   end
 
@@ -9,14 +9,6 @@ class ProSubscription < Subscription
 
   def transfer_types
     [Transfer::Type::WARM, Transfer::Type::COLD]
-  end
-
-  def minutes_per_caller
-    2500.00
-  end
-
-  def price_per_caller
-    99.00
   end
 
   def caller_groups_enabled?
@@ -32,11 +24,16 @@ class ProSubscription < Subscription
   end
 
   def call_recording_enabled?
-    false
+    true
   end
 
   def dashboard_enabled?
     true
+  end
+
+  def self.build(account_id)
+    Trial.create(minutes_utlized: 0, total_allowed_minutes: 50.00, subscription_start_date: DateTime.now,
+      account_id: account_id, number_of_callers: 1)
   end
 
   def debit(call_time)
@@ -44,6 +41,9 @@ class ProSubscription < Subscription
     self.update_attributes(minutes_utlized: updated_minutes)
   end
 
+  def can_dial?
+    available_minutes > 0
+  end
 
 
 end
