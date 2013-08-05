@@ -2,7 +2,8 @@ class CreateAccounts < ActiveRecord::Migration
   def self.up
     create_table :accounts do |t|
       t.boolean :paid
-      t.timestamps
+      t.column  :created_at , :timestamp, :null => true
+      t.column  :updated_at , :timestamp, :null => true
     end
     add_column :users, :account_id, :integer
     execute 'insert into accounts (id, paid) select id, paid from users'
