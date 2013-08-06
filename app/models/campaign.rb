@@ -43,6 +43,7 @@ class Campaign < ActiveRecord::Base
   }
 
   scope :for_caller, lambda { |caller| joins(:caller_sessions).where(caller_sessions: {caller_id: caller}) }
+  scope :by_type, lambda { |type| where(type:  type) }
 
 
   validates :name, :presence => true
@@ -94,7 +95,7 @@ class Campaign < ActiveRecord::Base
   end
 
   def campaign_type_based_on_subscription
-    if !campaign_types.include?(type)
+    if !account.subscription.nil? && !campaign_types.include?(type)
       errors.add(:base, 'Your subscription does not allow this mode of Dialing.')
     end
 

@@ -24,13 +24,13 @@ class Account < ActiveRecord::Base
   attr_accessible :api_key, :domain_name, :abandonment, :card_verified, :activated, :record_calls, :recurly_account_code, :subscription_name, :subscription_count, :subscription_active, :recurly_subscription_uuid, :autorecharge_enabled, :autorecharge_amount, :autorecharge_trigger, :status, :tos_accepted_date, :credit_card_declined
 
   before_create :assign_api_key
-  after_create :create_trial_subscription
+  before_create :create_trial_subscription
   validate :check_subscription_type_for_call_recording
 
 
 
   def check_subscription_type_for_call_recording
-    if record_calls && !subscription.call_recording_enabled?
+    if !subscription.nil? && record_calls && !subscription.call_recording_enabled?
       errors.add(:base, 'Your subscription does not allow call recordings.')
     end
   end
@@ -263,7 +263,8 @@ class Account < ActiveRecord::Base
   end
 
   def create_trial_subscription
-    Trial.build(self.id)
+    self.subscription = Trial.new(minutes_utlized: 0, total_allowed_minutes: 50.00, subscription_start_date: DateTime.now,
+      number_of_callers: 1)
   end
 
 

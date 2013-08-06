@@ -1,12 +1,5 @@
-class Trial < Subscription
+class Enterprise
 
-  validate :has_only_one_caller
-
-  def has_only_one_caller
-    if type == Type::TRIAL && number_of_callers > 1
-      errors.add(:base, 'Trial account can have only 1 caller')
-    end
-  end
   def campaign_types
     [Campaign::Type::PREVIEW, Campaign::Type::POWER, Campaign::Type::PREDICTIVE]
   end
@@ -17,6 +10,14 @@ class Trial < Subscription
 
   def transfer_types
     [Transfer::Type::WARM, Transfer::Type::COLD]
+  end
+
+  def minutes_per_caller
+    2500.00
+  end
+
+  def price_per_caller
+    99.00
   end
 
   def caller_groups_enabled?
@@ -39,15 +40,7 @@ class Trial < Subscription
     true
   end
 
-
   def debit(call_time)
-    updated_minutes = minutes_utlized + call_time
-    self.update_attributes(minutes_utlized: updated_minutes)
   end
-
-  def can_dial?
-    available_minutes > 0
-  end
-
 
 end

@@ -221,6 +221,7 @@ FactoryGirl.define do
   end
 
   factory :transfer do
+
   end
   factory :transfer_attempt do
   end
