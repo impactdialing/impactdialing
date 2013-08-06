@@ -15,8 +15,8 @@ ActiveRecord::Schema.define(:version => 20130731082948) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
-    t.datetime "created_at",                                     :null => false
-    t.datetime "updated_at",                                     :null => false
+    t.datetime "created_at"
+    t.datetime "updated_at"
     t.string   "domain_name"
     t.boolean  "activated",                   :default => false
     t.boolean  "record_calls",                :default => false
