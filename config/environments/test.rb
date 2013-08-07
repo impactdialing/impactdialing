@@ -46,6 +46,5 @@ ImpactDialing::Application.configure do
   TWILIO_ERROR = "blah"
   HOLD_MUSIC_URL = "hold_music"
   MONITOR_TWILIO_APP_SID="blah"
-  STRIPE_PUBLISHABLE_KEY = "sk_test_eBD6QzdzN5XMrhblpVSMDDYN"
-  STRIPE_SECRET_KEY = "pk_test_OGBGxKyv3UcfukHlpo8jZtr7"
-end
+  STRIPE_PUBLISHABLE_KEY = "pk_test_OGBGxKyv3UcfukHlpo8jZtr7"
+  STRIPE_SECRET_KEY = "sk_test_eBD6QzdzN5XMrhblpVSMDDYN"end

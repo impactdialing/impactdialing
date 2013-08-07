@@ -18,8 +18,8 @@ ImpactDialing::Application.configure do
   PUSHER_KEY="1e93714ff1e5907aa618"
   PUSHER_SECRET="26b438b5e27a3e84d59c"
   TWILIO_ERROR = "http://status-impactdialing.heroku.com/twilio/error_development"
-  STRIPE_PUBLISHABLE_KEY = "sk_test_eBD6QzdzN5XMrhblpVSMDDYN"
-  STRIPE_SECRET_KEY = "pk_test_OGBGxKyv3UcfukHlpo8jZtr7"
+  STRIPE_PUBLISHABLE_KEY = "pk_test_OGBGxKyv3UcfukHlpo8jZtr7"
+  STRIPE_SECRET_KEY = "sk_test_eBD6QzdzN5XMrhblpVSMDDYN"
 
   # Settings specified here will take precedence over those in config/environment.rb
 
