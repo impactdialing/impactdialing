@@ -3,43 +3,55 @@ require "spec_helper"
 describe Business do
     describe "campaign_types" do
     it "should return preview and power modes" do
-     BusinessSubscription.new.campaign_types.should eq([Campaign::Type::PREVIEW, Campaign::Type::POWER, Campaign::Type::PREDICTIVE])
+     Business.new.campaign_types.should eq([Campaign::Type::PREVIEW, Campaign::Type::POWER, Campaign::Type::PREDICTIVE])
     end
   end
 
   describe "campaign_type_options" do
     it "should return preview and power modes" do
-     BusinessSubscription.new.campaign_type_options.should eq([[Campaign::Type::PREVIEW, Campaign::Type::PREVIEW], [Campaign::Type::POWER, Campaign::Type::POWER],[Campaign::Type::PREDICTIVE, Campaign::Type::PREDICTIVE]])
+     Business.new.campaign_type_options.should eq([[Campaign::Type::PREVIEW, Campaign::Type::PREVIEW], [Campaign::Type::POWER, Campaign::Type::POWER],[Campaign::Type::PREDICTIVE, Campaign::Type::PREDICTIVE]])
     end
   end
+
   describe "campaign" do
-    let(:account) { create(:account, subscription_name: Account::Subscription_Type::BUSINESS) }
-    it "should  allow predictive dialing mode for pro subscription" do
-      campaign = build(:predictive, account: account)
+    before(:each) do
+        @account =  create(:account, record_calls: false)
+        @account.reload
+        @account.subscription.upgrade("Business")
+        @account.reload
+    end
+
+    it "should  allow predictive dialing mode for business subscription" do
+      campaign = build(:predictive, account: @account)
       campaign.save.should be_true
     end
 
-    it "should not allow preview dialing mode for pro subscription" do
-      campaign = build(:preview, account: account)
+    it "should not allow preview dialing mode for business subscription" do
+      campaign = build(:preview, account: @account)
       campaign.save.should be_true
     end
 
-    it "should not allow power dialing mode for pro subscription" do
-      campaign = build(:power, account: account)
+    it "should not allow power dialing mode for business subscription" do
+      campaign = build(:power, account: @account)
       campaign.save.should be_true
     end
   end
 
   describe "transfer_types" do
     it "should return warm and cold transfers" do
-      BusinessSubscription.new.transfer_types.should eq([Transfer::Type::WARM, Transfer::Type::COLD])
+      Business.new.transfer_types.should eq([Transfer::Type::WARM, Transfer::Type::COLD])
     end
   end
 
   describe "transfers" do
-    let(:account) { create(:account, subscription_name: Account::Subscription_Type::BUSINESS, record_calls: false) }
+    before(:each) do
+        @account =  create(:account, record_calls: false)
+        @account.reload
+        @account.subscription.upgrade("Business")
+        @account.reload
+    end
     it "should not all saving transfers" do
-      script = build(:script, account: account)
+      script = build(:script, account: @account)
       script.transfers << build(:transfer)
       script.save
       script.errors[:base].should == ["Your subscription does not allow transfering calls in this mode."]
@@ -49,14 +61,19 @@ describe Business do
   describe "caller groups" do
     describe "caller_groups_enabled?" do
       it "should say enabled" do
-        BusinessSubscription.new.caller_groups_enabled?.should be_true
+        Business.new.caller_groups_enabled?.should be_true
       end
     end
 
     describe "it should  allow caller groups for callers" do
-      let(:account) { create(:account, subscription_name: Account::Subscription_Type::BUSINESS, record_calls: false) }
+      before(:each) do
+        @account =  create(:account, record_calls: false)
+        @account.reload
+        @account.subscription.upgrade("Business")
+        @account.reload
+    end
       it "should save caller with caller groups" do
-        caller = build(:caller, account: account)
+        caller = build(:caller, account: @account)
         caller.caller_group = build(:caller_group)
         caller.save.should be_true
       end
@@ -66,16 +83,118 @@ describe Business do
   describe "call recordings" do
     describe "call_recording_enabled?" do
       it "should say  enabled" do
-        BusinessSubscription.new.call_recording_enabled?.should be_true
+        Business.new.call_recording_enabled?.should be_true
       end
     end
 
     describe "it should allow call recordings to be enabled" do
-      let(:account) { create(:account, subscription_name: Account::Subscription_Type::BUSINESS, record_calls: false) }
+      before(:each) do
+        @account =  create(:account, record_calls: false)
+        @account.reload
+        @account.subscription.upgrade("Business")
+        @account.reload
+      end
       it "should all record calls" do
-        account.update_attributes(record_calls: true).should be_true
+        @account.update_attributes(record_calls: true).should be_true
       end
     end
+  end
+
+   describe "should debit call time" do
+    before(:each) do
+      @account =  create(:account, record_calls: false)
+      @account.reload
+      @account.subscription.upgrade("Business")
+      @account.reload
+    end
+
+    it "should deduct from minutes used if minutes used greater than 0" do
+      @account.subscription.debit(2.00).should be_true
+      @account.subscription.minutes_utlized.should eq(2)
+    end
+
+    it "should not deduct from minutes used if minutes used greater than eq total minutes" do
+      @account.subscription.reload      
+      @account.subscription.update_attributes(minutes_utlized: 2550)
+      @account.subscription.debit(2.00).should be_false
+      @account.subscription.reload      
+      @account.subscription.minutes_utlized.should eq(2550)
+    end
+
+    it "should not deduct from minutes used if alloted minutes does not fall in subscription time range" do
+      @account.subscription.update_attributes(minutes_utlized: 10)
+      @account.subscription.update_attributes(subscription_start_date: (DateTime.now-40.days))
+      @account.subscription.debit(2.00).should be_false
+      @account.subscription.reload
+      @account.subscription.minutes_utlized.should eq(10)
+    end
+
+  end
+
+  describe "add caller" do
+    before(:each) do
+      @account =  create(:account, record_calls: false)
+      @account.reload      
+      @account.subscription.upgrade("Business")
+      @account.reload
+    end
+
+    it "should add caller to subscription" do
+      @account.subscription.reload
+      @account.subscription.number_of_callers.should eq(1)
+      @account.subscription.add_callers(1)
+      @account.subscription.number_of_callers.should eq(2)
+    end
+
+    it "should add caller and delta minutes to subscription" do  
+      @account.subscription.update_attributes(subscription_start_date: (DateTime.now-10.days), minutes_utlized: 1000)    
+      @account.subscription.add_callers(1)
+      @account.subscription.total_allowed_minutes.should eq(4243)
+    end
+  end
+
+  describe "remove caller" do
+    before(:each) do
+      @account =  create(:account, record_calls: false)
+      @account.reload      
+      @account.subscription.upgrade("Business")
+      @account.reload
+    end
+
+    it "should decrement number of callers" do
+      @account.subscription.reload      
+      @account.subscription.add_callers(1)
+      @account.subscription.number_of_callers.should eq(2)
+      @account.subscription.remove_callers(1)
+      @account.subscription.number_of_callers.should eq(1)
+    end
+  end
+
+  describe "renew" do
+    before(:each) do
+      @account =  create(:account, record_calls: false)
+      @account.reload      
+      @account.subscription.upgrade("Business")
+      @account.reload
+    end
+
+    it "should change subscription date" do
+      @account.subscription.renew
+      @account.subscription.subscription_start_date.utc.to_s.should eq(DateTime.now.utc.to_s)
+    end
+
+    it "should set minutes utlized to 0" do
+      @account.subscription.renew
+      @account.subscription.minutes_utlized.should eq(0)
+    end
+
+    it "should calculate total minutes alloted" do
+      @account.subscription.update_attributes(number_of_callers: 2)
+      @account.subscription.renew
+      @account.subscription.total_allowed_minutes.should eq(5000)
+    end
+
+
   end
 
 end

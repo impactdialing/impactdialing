@@ -52,7 +52,7 @@ class Basic < Subscription
   end
 
   def subscribe(old_available_minutes)
-    account.update_attributes(record_calls: false)
+    disable_call_recording
     account.campaigns.by_type(Campaign::Type::PREDICTIVE).each do |campaign|
       campaign.update_attributes(type: Campaign::Type::PREVIEW)
     end

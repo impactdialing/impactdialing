@@ -83,4 +83,8 @@ class Subscription < ActiveRecord::Base
     type == Type::PER_MINUTE
   end
 
+  def disable_call_recording
+    account.update_attributes(record_calls: false)
+  end
+
 end

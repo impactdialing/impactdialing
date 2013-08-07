@@ -37,4 +37,8 @@ class PerMinute < Subscription
   end
 
 
+  def subscribe(old_available_minutes)        
+  end
+
+
 end
