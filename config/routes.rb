@@ -93,6 +93,11 @@ ImpactDialing::Application.routes.draw do
 
   namespace 'client' do
     resource :session, :only => [:create, :destroy]
+    resources :subscriptions do
+      member do
+        put :update_callers
+      end
+    end
     resources :scripts do
       collection do
         get :questions_answered
@@ -167,6 +172,7 @@ ImpactDialing::Application.routes.draw do
       member { post :verify_callerid }
     end
     resources :blocked_numbers, :only => [:index, :create, :destroy]
+
 
     namespace "monitors" do
       resources :campaigns

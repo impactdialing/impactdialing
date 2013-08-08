@@ -1,6 +1,6 @@
 class Trial < Subscription
 
-  validate :has_only_one_caller
+  validate :has_only_one_caller  
 
   def has_only_one_caller
     if type == Type::TRIAL && number_of_callers > 1
