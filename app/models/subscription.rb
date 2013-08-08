@@ -1,4 +1,5 @@
 class Subscription < ActiveRecord::Base
+  include SubscriptionProvider
   belongs_to :account
   validate :minutes_utlized_less_than_total_allowed_minutes
   
@@ -57,37 +58,32 @@ class Subscription < ActiveRecord::Base
     "ImpactDialing-" + type
   end
 
-  def update_callers(new_num_callers)
-    stripe_customer = Stripe::Customer.retrieve(stripe_customer_id)
+  def update_callers(new_num_callers)    
     if (new_number_of_callers < subscription.number_of_callers)
-      stripe_customer.update_subscription(quantity: new_num_callers, plan: stripe_plan_id)
+      update_subscription({quantity: new_num_callers, plan: stripe_plan_id})
       remove_callers(subscription.number_of_callers - new_num_callers)
     else
-      stripe_customer.update_subscription(quantity: new_number_of_callers, prorate: true, plan: stripe_plan_id)
+      update_subscription({quantity: new_number_of_callers, prorate: true, plan: stripe_plan_id})
       invoice_customer      
       add_callers(new_num_callers - subscription.number_of_callers)
     end
   end
 
-  def invoice_customer
-    invoice = Stripe::Invoice.create(customer: stripe_customer_id)
-    invoice.pay
-  end
-
   def upgrade_subscription(token, email, plan_type, number_of_callers)
     begin
       if stripe_customer_id.nil?
-        customer = Stripe::Customer.create(card: token, description: email, plan: Subscription.stripe_plan_id(plan_type), quantity: number_of_callers)
+        customer = create_customer(card: token, description: email, plan: Subscription.stripe_plan_id(plan_type), quantity: number_of_callers)        
       else
-        customer = Stripe::Customer.retrieve(stripe_customer_id)
-        customer.
+        customer = retrieve_customer
       end
     rescue Exception => e
     end
     unless customer.nil?
       upgrade(plan_type, number_of_callers)    
-      update_attributes(stripe_customer_id: customer.id)
-    else      
+      card_info = customer.cards.data.first
+      update_attributes(stripe_customer_id: customer.id, cc_last4: card_info.last4, exp_month: card_info.exp_month, 
+        exp_year: card_info.exp_year)      
+    end      
   end
 
   def add_callers(number_of_callers_to_add)
@@ -127,10 +123,6 @@ class Subscription < ActiveRecord::Base
   def disable_call_recording
     account.update_attributes(record_calls: false)
   end
-
-  def cancel
-    stripe_customer = Stripe::Customer.retrieve(stripe_customer_id)
-    cu.cancel_subscription
-  end
+  
 
 end
