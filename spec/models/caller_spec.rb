@@ -154,7 +154,7 @@ describe Caller do
         2.times { create(:answer, :caller => caller, :voter => @voter, :question_id => @question.id, :possible_response => response_2, :campaign => campaign) }
         create(:answer, :caller => caller, :voter => @voter, :question => @question, :possible_response => response_1, :campaign => create(:campaign))
         stats = caller.answered_call_stats(from_time, time_now+1.day, campaign)
-        stats.should == {"what?"=>[{:answer=>"foo", :number=>3, :percentage=>60}, {:answer=>"bar", :number=>2, :percentage=>40}, {:answer=>"[No response]", :number=>0, :percentage=>0}]}
+        stats.should == {"what?"=>[{:answer=>"[No response]", :number=>0, :percentage=>0},{:answer=>"foo", :number=>3, :percentage=>60}, {:answer=>"bar", :number=>2, :percentage=>40}]}
       end
     end
   end
