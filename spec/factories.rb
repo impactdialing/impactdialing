@@ -116,8 +116,8 @@ FactoryGirl.define do
   end
 
   factory :voter do
-    FirstName { generate(:name) }
-    Phone { generate(:phonenumber) }
+    first_name { generate(:name) }
+    phone { generate(:phonenumber) }
     voter_list
     updated_at Time.now
   end

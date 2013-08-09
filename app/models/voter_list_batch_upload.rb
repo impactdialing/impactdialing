@@ -9,9 +9,9 @@ class VoterListBatchUpload
     @csv_headers = csv.shift.collect{|h| h.blank? ? VoterList::BLANK_HEADER : h}
     @voters_list = csv.readlines.shuffle
     @result = {:successCount => 0, :failedCount => 0}
-    @csv_to_system_map.remap_system_column! "ID", :to => "CustomID"
-    @csv_phone_column_location = @csv_headers.index(@csv_to_system_map.csv_index_for "Phone")
-    @csv_custom_id_column_location = @csv_headers.index(@csv_to_system_map.csv_index_for "CustomID")
+    @csv_to_system_map.remap_system_column! "ID", :to => "custom_id"
+    @csv_phone_column_location = @csv_headers.index(@csv_to_system_map.csv_index_for "phone")
+    @csv_custom_id_column_location = @csv_headers.index(@csv_to_system_map.csv_index_for "custom_id")
     @custom_attributes = create_custom_attributes
   end
 
@@ -40,7 +40,7 @@ class VoterListBatchUpload
         end
 
         lead ||= {
-          :Phone         => phone_number,
+          :phone         => phone_number,
           :voter_list_id => @list.id,
           :account_id    => @list.account_id,
           :campaign_id   => @list.campaign_id,
@@ -50,14 +50,14 @@ class VoterListBatchUpload
         @csv_headers.each_with_index do |csv_column_title, column_location|
           system_column = @csv_to_system_map.system_column_for csv_column_title
           value = voter_info[column_location]
-          if !system_column.blank? && system_column != "Phone"
+          if !system_column.blank? && system_column != "phone"
             if Voter.column_names.include? system_column
               lead[system_column] = value
             end
           end
         end
 
-        if lead[:id] || Voter.phone_correct?(lead[:Phone])
+        if lead[:id] || Voter.phone_correct?(lead[:phone])
           leads << lead
           successful_voters << voter_info
           @result[:successCount] +=1
@@ -81,7 +81,7 @@ class VoterListBatchUpload
     custom_ids = voter_info_list.map do |voter_info|
       voter_info[@csv_custom_id_column_location]
     end
-    query = Voter.where(CustomID: custom_ids, campaign_id: @list.campaign_id).select([:CustomID, :id]).to_sql
+    query = Voter.where(custom_id: custom_ids, campaign_id: @list.campaign_id).select([:custom_id, :id]).to_sql
     Hash[*OctopusConnection.connection(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)).execute(query).to_a.flatten]
   end
 

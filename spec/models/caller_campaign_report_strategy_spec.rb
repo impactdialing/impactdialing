@@ -8,7 +8,7 @@ describe CallerCampaignReportStrategy do
       @script = create(:script)
       @campaign = create(:campaign, script: @script)
       @csv = CSV.generate {}
-      @selected_voter_fields = ["CustomID", "FirstName", "MiddleName"]
+      @selected_voter_fields = ["custom_id", "first_name", "middle_name"]
       @selected_custom_voter_fields = ["VAN", "Designation"]
     end
 
@@ -23,7 +23,7 @@ describe CallerCampaignReportStrategy do
      end
 
      it "should manipulate headers" do
-       selected_voter_fields = ["CustomID", "LastName", "FirstName", "MiddleName", "address", "city", "state", "zip_code", "country"]
+       selected_voter_fields = ["custom_id", "last_name", "first_name", "middle_name", "address", "city", "state", "zip_code", "country"]
        strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_LEAD, selected_voter_fields, @selected_custom_voter_fields, nil, nil)
        strategy.csv_header.should eq(["ID", "Last name", "First name", "Middle name", "Address", "City", "State", "Zip code", "Country", "VAN", "Designation", "Caller", "Status", "Time Dialed", "Time Answered", "Time Ended", "Attempts", "Recording"])
      end
@@ -161,7 +161,7 @@ describe CallerCampaignReportStrategy do
        caller = create(:caller, username: "abc@hui.com")
        voter = create(:voter, account: @account)
        phone, custom_id, firstname = "39045098753", "24566", "first"
-       voter.update_attributes(:Phone => phone, :CustomID => custom_id, :FirstName => firstname)
+       voter.update_attributes(:phone => phone, :custom_id => custom_id, :first_name => firstname)
        field1  = create(:custom_voter_field, :name => "field1", :account => @account)
        field2 = create(:custom_voter_field, :name => "field2", :account => @account)
 
@@ -206,7 +206,7 @@ describe CallerCampaignReportStrategy do
       @script = create(:script)
       @campaign = create(:campaign, script: @script)
       @csv = CSV.generate {}
-      @selected_voter_fields = ["CustomID", "FirstName", "MiddleName"]
+      @selected_voter_fields = ["custom_id", "first_name", "middle_name"]
       @selected_custom_voter_fields = ["field1", "field2", "field3"]
       @strategy = CallerCampaignReportStrategy.new(@campaign, @csv, true, CampaignReportStrategy::Mode::PER_LEAD, @selected_voter_fields, @selected_custom_voter_fields, nil, nil)
     end
@@ -228,14 +228,14 @@ describe CallerCampaignReportStrategy do
 
     it "lists selected voter fields" do
       phone, custom_id, firstname = "39045098753", "24566", "first"
-      voter.update_attributes(:Phone => phone, :CustomID => custom_id, :FirstName => firstname)
-      @strategy.selected_fields(voter.attributes, ["Phone", "FirstName", "LastName"]).should == [phone, firstname, nil]
-      @strategy.selected_fields(voter.attributes, ["Phone", "LastName", "FirstName"]).should == [phone, nil, firstname]
+      voter.update_attributes(:phone => phone, :custom_id => custom_id, :first_name => firstname)
+      @strategy.selected_fields(voter.attributes, ["phone", "first_name", "last_name"]).should == [phone, firstname, nil]
+      @strategy.selected_fields(voter.attributes, ["phone", "last_name", "first_name"]).should == [phone, nil, firstname]
     end
 
     it "selects phone number if there are no selected fields" do
       phone, custom_id, firstname = "39045098753", "24566", "first"
-      voter.update_attributes(:Phone => phone, :CustomID => custom_id, :FirstName => firstname)
+      voter.update_attributes(:phone => phone, :custom_id => custom_id, :first_name => firstname)
       @strategy.selected_fields(voter.attributes).should == [phone]
     end
 
@@ -247,7 +247,7 @@ describe CallerCampaignReportStrategy do
       @script = create(:script, account: @account)
       @campaign = create(:campaign, script: @script, account: @account)
       @csv = CSV.generate {}
-      @selected_voter_fields = ["CustomID", "FirstName", "Phone"]
+      @selected_voter_fields = ["custom_id", "first_name", "phone"]
       @selected_custom_voter_fields = ["field1", "field2"]
     end
 
@@ -255,7 +255,7 @@ describe CallerCampaignReportStrategy do
        caller = create(:caller, username: "abc@hui.com")
        voter = create(:voter, account: @account)
        phone, custom_id, firstname = "39045098753", "24566", "first"
-       voter.update_attributes(:Phone => phone, :CustomID => custom_id, :FirstName => firstname)
+       voter.update_attributes(:phone => phone, :custom_id => custom_id, :first_name => firstname)
        field1  = create(:custom_voter_field, :name => "field1", :account => @account)
        field2 = create(:custom_voter_field, :name => "field2", :account => @account)
 
@@ -285,7 +285,7 @@ describe CallerCampaignReportStrategy do
        @script = create(:script, account: @account)
        @campaign = create(:campaign, script: @script, account: @account)
        @csv = []
-       @selected_voter_fields = ["CustomID", "FirstName", "Phone"]
+       @selected_voter_fields = ["custom_id", "first_name", "phone"]
        @selected_custom_voter_fields = ["field1", "field2"]
      end
 
@@ -293,7 +293,7 @@ describe CallerCampaignReportStrategy do
         caller = create(:caller, username: "abc@hui.com")
         voter = create(:voter, account: @account, campaign: @campaign)
         phone, custom_id, firstname = "39045098753", "24566", "first"
-        voter.update_attributes(:Phone => phone, :CustomID => custom_id, :FirstName => firstname)
+        voter.update_attributes(:phone => phone, :custom_id => custom_id, :first_name => firstname)
         field1  = create(:custom_voter_field, :name => "field1", :account => @account)
         field2 = create(:custom_voter_field, :name => "field2", :account => @account)
 
@@ -319,7 +319,7 @@ describe CallerCampaignReportStrategy do
         caller = create(:caller, username: "abc@hui.com")
         voter = create(:voter, account: @account, campaign: @campaign)
         phone, custom_id, firstname = "39045098753", "24566", "first"
-        voter.update_attributes(:Phone => phone, :CustomID => custom_id, :FirstName => firstname)
+        voter.update_attributes(:phone => phone, :custom_id => custom_id, :first_name => firstname)
         field1  = create(:custom_voter_field, :name => "field1", :account => @account)
         field2 = create(:custom_voter_field, :name => "field2", :account => @account)
 
