@@ -27,7 +27,7 @@ class TwilioLib
 
   def make_call(campaign, voter, attempt)
     dc_codes = RedisDataCentre.data_centres(campaign.id)
-    params = {'From'=> campaign.caller_id, "To"=> voter.Phone, 'FallbackUrl' => TWILIO_ERROR, "Url"=>incoming_call_url(attempt.call, host: Settings.incoming_callback_host, port: Settings.twilio_callback_port, :protocol => "http://", event: "incoming_call", campaign_type: campaign.type),
+    params = {'From'=> campaign.caller_id, "To"=> voter.phone, 'FallbackUrl' => TWILIO_ERROR, "Url"=>incoming_call_url(attempt.call, host: Settings.incoming_callback_host, port: Settings.twilio_callback_port, :protocol => "http://", event: "incoming_call", campaign_type: campaign.type),
       'StatusCallback' => call_ended_call_url(attempt.call, host: Settings.call_end_callback_host, port:  Settings.twilio_callback_port, protocol: "http://", event: "call_ended", campaign_type: campaign.type),
       'Timeout' => "15","DCCODES" => dc_codes}
     params.merge!(amd_params(campaign))
@@ -36,7 +36,7 @@ class TwilioLib
   end
 
   def make_call_em(campaign, voter, attempt, dc)
-    params = {'From'=> campaign.caller_id, "To"=> voter.Phone, 'FallbackUrl' => TWILIO_ERROR, "Url"=>incoming_call_url(attempt.call, host: DataCentre.incoming_call_host(dc), port: Settings.twilio_callback_port, protocol: "http://", event: "incoming_call", campaign_type: campaign.type),
+    params = {'From'=> campaign.caller_id, "To"=> voter.phone, 'FallbackUrl' => TWILIO_ERROR, "Url"=>incoming_call_url(attempt.call, host: DataCentre.incoming_call_host(dc), port: Settings.twilio_callback_port, protocol: "http://", event: "incoming_call", campaign_type: campaign.type),
       'StatusCallback' => call_ended_call_url(attempt.call, host: DataCentre.call_end_host(dc), port:  Settings.twilio_callback_port, protocol: "http://", event: "call_ended", campaign_type: campaign.type),
       'Timeout' => "15", "DCCODES" => dc}
     params.merge!(amd_params(campaign))
