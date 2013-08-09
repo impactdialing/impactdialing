@@ -9,7 +9,7 @@ describe TransferController do
     caller_session = create(:caller_session)
     call_attempt = create(:call_attempt)
     call = create(:call, call_attempt: call_attempt)
-    voter = create(:voter, Phone: "1234567890")
+    voter = create(:voter, phone: "1234567890")
     Transfer.should_receive(:find).and_return(transfer)
     transfer.should_receive(:dial).with(caller_session, call_attempt, voter, Transfer::Type::WARM)
     post :dial, transfer: {id: transfer.id} , caller_session:  caller_session.id, call: call.id, voter: voter.id

@@ -11,14 +11,14 @@ describe Client::ScriptsController do
     end
 
     it "lists voter fields to select" do
-      post :create, script: {name: "script1"}, voter_field: ["Phone", "CustomID", "LastName", "FirstName", "MiddleName", "Suffix", "Email", "address", "city", "state", "zip_code", "country"]
+      post :create, script: {name: "script1"}, voter_field: ["phone", "custom_id", "last_name", "first_name", "middle_name", "suffix", "email", "address", "city", "state", "zip_code", "country"]
       response.should redirect_to(client_scripts_url)
       Script.find_by_name("script1").voter_fields.should eq(Voter::UPLOAD_FIELDS.to_json)
     end
 
     it "shows the list of voter fields which were selected" do
       script = create(:script, :account => account, :active => true)
-      selected_voter_fields = ["Phone", "CustomID", "LastName", "FirstName"]
+      selected_voter_fields = ["phone", "custom_id", "last_name", "first_name"]
       post :create, script: {name: "script1"}, voter_field: selected_voter_fields
       response.should redirect_to(client_scripts_url)
       Script.find_by_name("script1").voter_fields.should eq(selected_voter_fields.to_json)

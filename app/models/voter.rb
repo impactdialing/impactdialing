@@ -1,7 +1,7 @@
 require 'fiber'
 class Voter < ActiveRecord::Base
 
-  UPLOAD_FIELDS = ["Phone", "CustomID", "LastName", "FirstName", "MiddleName", "Suffix", "Email", "address", "city", "state","zip_code", "country"]
+  UPLOAD_FIELDS = ["phone", "custom_id", "last_name", "first_name", "middle_name", "suffix", "email", "address", "city", "state","zip_code", "country"]
 
   module Status
     NOTCALLED = "not called"
@@ -22,14 +22,14 @@ class Voter < ActiveRecord::Base
   has_many :answers
   has_many :note_responses
 
-  validates_presence_of :Phone
+  validates_presence_of :phone
 
   validate :phone_validatation
 
   scope :by_campaign, ->(campaign) { where(campaign_id: campaign) }
-  scope :existing_phone_in_campaign, lambda { |phone_number, campaign_id| where(:Phone => phone_number).where(:campaign_id => campaign_id) }
+  scope :existing_phone_in_campaign, lambda { |phone_number, campaign_id| where(:phone => phone_number).where(:campaign_id => campaign_id) }
 
-  scope :default_order, :order => 'LastName, FirstName, Phone'
+  scope :default_order, :order => 'last_name, first_name, phone'
 
   # scope :enabled, {:include => :voter_list, :conditions => {'voter_lists.enabled' => true}}
   scope :enabled, where(:enabled => true)
@@ -46,7 +46,7 @@ class Voter < ActiveRecord::Base
   scope :to_callback, where(:call_back => true)
   scope :scheduled, enabled.where(:scheduled_date => (10.minutes.ago..10.minutes.from_now)).where(:status => CallAttempt::Status::SCHEDULED)
   scope :limit, lambda { |n| {:limit => n} }
-  scope :without, lambda { |numbers| where('Phone not in (?)', numbers << -1) }
+  scope :without, lambda { |numbers| where('phone not in (?)', numbers << -1) }
   scope :not_skipped, where('skipped_time is null')
   scope :answered, where('result_date is not null')
   scope :answered_within, lambda { |from, to| where(:result_date => from.beginning_of_day..(to.end_of_day)) }
@@ -72,7 +72,7 @@ class Voter < ActiveRecord::Base
   end
 
   def sanitize_phone
-    self.Phone = Voter.sanitize_phone(self.Phone) if self.Phone
+    self.phone = Voter.sanitize_phone(self.phone) if self.phone
   end
 
   def self.phone_correct?(phone)
@@ -112,7 +112,7 @@ class Voter < ActiveRecord::Base
   end
   
   def self.upload_fields
-    ["Phone", "CustomID", "LastName", "FirstName", "MiddleName", "Suffix", "Email", "address", "city", "state","zip_code", "country"]
+    ["phone", "custom_id", "last_name", "first_name", "middle_name", "suffix", "email", "address", "city", "state","zip_code", "country"]
   end
 
   def get_attribute(attribute)
@@ -124,7 +124,7 @@ class Voter < ActiveRecord::Base
   end
   
   def blocked?
-    account.blocked_numbers.for_campaign(campaign).map(&:number).include?(self.Phone)
+    account.blocked_numbers.for_campaign(campaign).map(&:number).include?(self.phone)
   end
 
   def selected_custom_voter_field_values
@@ -214,7 +214,7 @@ class Voter < ActiveRecord::Base
   end
 
   def phone_validatation
-    errors.add(:Phone, 'should be at least 10 digits') unless Voter.phone_correct?(self.Phone)
+    errors.add(:phone, 'should be at least 10 digits') unless Voter.phone_correct?(self.phone)
   end
 
 end

@@ -98,7 +98,7 @@ module CallerTwiml
       Twilio::TwiML::Response.new do |r|
         unless self.voter_in_progress.nil?
           r.Gather(:numDigits => 1, :timeout => 10, :action => conference_started_phones_only_preview_caller_url(caller_id, :session_id => self.id, :host => DataCentre.call_back_host(data_centre), :port => Settings.twilio_callback_port, :protocol => "http://", :voter => self.voter_in_progress.id), :method => "POST", :finishOnKey => "5") do
-            r.Say I18n.t(:read_voter_name, :first_name => self.voter_in_progress.FirstName, :last_name => self.voter_in_progress.LastName)
+            r.Say I18n.t(:read_voter_name, :first_name => self.voter_in_progress.first_name, :last_name => self.voter_in_progress.last_name)
           end
         else
           r.Say I18n.t(:campaign_has_no_more_voters)
@@ -110,7 +110,7 @@ module CallerTwiml
     def choosing_voter_and_dial_twiml
       Twilio::TwiML::Response.new do |r|
         unless voter_in_progress.nil?
-          r.Say "#{self.voter_in_progress.FirstName}  #{self.voter_in_progress.LastName}."
+          r.Say "#{self.voter_in_progress.first_name}  #{self.voter_in_progress.last_name}."
           r.Redirect(conference_started_phones_only_power_caller_url(caller_id, :session_id => self.id, :voter_id => voter_in_progress.id, :host => DataCentre.call_back_host(data_centre), :port => Settings.twilio_callback_port, :protocol => "http://"), :method => "POST")
         else
           r.Say I18n.t(:campaign_has_no_more_voters)

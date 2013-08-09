@@ -7,11 +7,11 @@ describe Voter do
       Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
       params = {'FallbackUrl' => TWILIO_ERROR, 'StatusCallback' => flow_call_url(call_attempt.call, host:  Settings.twilio_callback_host, port:  Settings.twilio_callback_port, event: 'call_ended'), 'Timeout' => campaign.use_recordings ? "20" : "15"}
       params.merge!({'IfMachine'=> 'Continue'}) if campaign.answering_machine_detect
-      response = Twilio::Call.make(campaign.caller_id, self.Phone, flow_call_url(call_attempt.call, host:  Settings.twilio_callback_host, port:  Settings.twilio_callback_port, event:  'incoming_call'), params)
+      response = Twilio::Call.make(campaign.caller_id, self.phone, flow_call_url(call_attempt.call, host:  Settings.twilio_callback_host, port:  Settings.twilio_callback_port, event:  'incoming_call'), params)
       if response["TwilioResponse"]["RestException"]
         call_attempt.update_attributes(status: CallAttempt::Status::FAILED, wrapup_time: Time.now)
         update_attributes(status: CallAttempt::Status::FAILED)
-        Rails.logger.info "[dialer] Exception when attempted to call #{self.Phone} for campaign id:#{self.campaign_id}  Response: #{response["TwilioResponse"]["RestException"].inspect}"
+        Rails.logger.info "[dialer] Exception when attempted to call #{self.phone} for campaign id:#{self.campaign_id}  Response: #{response["TwilioResponse"]["RestException"].inspect}"
         return
       end
       call_attempt.update_attributes(:sid => response["TwilioResponse"]["Call"]["Sid"])
@@ -21,15 +21,15 @@ describe Voter do
   include Rails.application.routes.url_helpers
 
   it "can share the same number" do
-    voter1 = create(:voter, :Phone => '92345623434')
-    voter2 = create(:voter, :Phone => '92345623434')
+    voter1 = create(:voter, :phone => '92345623434')
+    voter2 = create(:voter, :phone => '92345623434')
     Voter.all.should include(voter1)
     Voter.all.should include(voter2)
   end
 
   it "should list existing entries in a campaign having the given phone number" do
     lambda {
-      create(:voter, :Phone => '0123456789', :campaign_id => 99)
+      create(:voter, :phone => '0123456789', :campaign_id => 99)
     }.should change {
       Voter.existing_phone_in_campaign('0123456789', 99).count
     }.by(1)
@@ -49,12 +49,12 @@ describe Voter do
   end
 
   it "allows international phone numbers beginning with +" do
-    voter = create(:voter, :Phone => "+2353546")
+    voter = create(:voter, :phone => "+2353546")
     voter.should be_valid
   end
 
   it "validation fails when phone number not given" do
-    voter = build(:voter, :Phone => nil)
+    voter = build(:voter, :phone => nil)
     voter.should_not be_valid
   end
 
@@ -224,30 +224,30 @@ describe Voter do
 
 
   it "excludes specific numbers" do
-    unblocked_voter = create(:voter, :Phone => "1234567890")
-    blocked_voter = create(:voter, :Phone => "0123456789")
+    unblocked_voter = create(:voter, :phone => "1234567890")
+    blocked_voter = create(:voter, :phone => "0123456789")
     Voter.without(['0123456789']).should include(unblocked_voter)
   end
 
   describe 'blocked?' do
-    let(:voter) { create(:voter, :account => create(:account), :Phone => '1234567890', :campaign => create(:campaign)) }
+    let(:voter) { create(:voter, :account => create(:account), :phone => '1234567890', :campaign => create(:campaign)) }
 
     it "knows when it isn't blocked" do
       voter.should_not be_blocked
     end
 
     it "knows when it is blocked system-wide" do
-      voter.account.blocked_numbers.create(:number => voter.Phone)
+      voter.account.blocked_numbers.create(:number => voter.phone)
       voter.should be_blocked
     end
 
     it "doesn't care if it blocked for a different campaign" do
-      voter.account.blocked_numbers.create(:number => voter.Phone, :campaign => create(:campaign))
+      voter.account.blocked_numbers.create(:number => voter.phone, :campaign => create(:campaign))
       voter.should_not be_blocked
     end
 
     it "knows when it is blocked for its campaign" do
-      voter.account.blocked_numbers.create(:number => voter.Phone, :campaign => voter.campaign)
+      voter.account.blocked_numbers.create(:number => voter.phone, :campaign => voter.campaign)
       voter.should be_blocked
     end
   end

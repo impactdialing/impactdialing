@@ -31,7 +31,7 @@ class CsvMapping
 
   def validate
     @errors = []
-    @errors << ErrorMessages::NO_PHONE unless csv_index_for("Phone")
+    @errors << ErrorMessages::NO_PHONE unless csv_index_for("phone")
     @errors << ErrorMessages::MULTIPLE_MAPPING if invalid_repetition_of_system_column?
   end
 
