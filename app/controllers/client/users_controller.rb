@@ -2,7 +2,7 @@ module Client
   class UsersController < ClientController
     INVALID_RESET_TOKEN = 'Your link has expired or is invalid'
     skip_before_filter :check_login, :only => [:create, :reset_password, :update_password]
-    skip_before_filter :check_paid, :only => [:reset_password, :update_password]
+    skip_before_filter :check_credit_card_declined, :only => [:reset_password, :update_password]
     before_filter :check_tos_accepted, :except => [:create, :reset_password, :update_password]
 
     def create

@@ -77,6 +77,7 @@ class Subscription < ActiveRecord::Base
         customer = retrieve_customer
       end
     rescue Exception => e
+      
     end
     unless customer.nil?
       upgrade(plan_type, number_of_callers)    

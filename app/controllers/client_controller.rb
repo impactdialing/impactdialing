@@ -5,7 +5,7 @@ class ClientController < ApplicationController
   before_filter :authenticate_api
   before_filter :check_login, :except => [:login, :user_add, :forgot]
   before_filter :check_tos_accepted, :except => [:login, :forgot]
-  before_filter :check_paid
+  before_filter :check_credit_card_declined
 
   def authenticate_api
     unless params[:api_key].blank?
@@ -87,11 +87,8 @@ class ClientController < ApplicationController
     self.current_user = Account.find_by_api_key(params[:api_key]) unless params[:api_key].empty?
   end
 
-  def check_paid
-    if current_user && !current_user.account.card_verified?
-      flash_now(:warning, I18n.t(:unpaid_text, :billing_link => '<a href="' + white_labeled_billing_link(request.domain) + '">Click here to verify a credit card.</a>').html_safe)
-    end
-    if current_user && current_user.account.credit_card_declined?
+  def check_credit_card_declined    
+    if current_user && !current_user.account.subscription.trial? && current_user.account.credit_card_declined?
       billing_link = '<a href="' + white_labeled_billing_link(request.domain) + '">Billing information</a>'
       add_to_balance_link = '<a href="' + white_labeled_add_to_balance_link(request.domain) + '">add to your balance</a>'
       configure_auto_recharge_link = '<a href="' + white_labeled_configure_auto_recharge_link(request.domain) + '">re-enable auto-recharge</a>'
