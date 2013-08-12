@@ -2,6 +2,7 @@ class Subscription < ActiveRecord::Base
   include SubscriptionProvider
   belongs_to :account
   validate :minutes_utlized_less_than_total_allowed_minutes
+  validates :number_of_callers, numericality: { greater_than:  0}
   
 
   module Type
@@ -11,7 +12,10 @@ class Subscription < ActiveRecord::Base
     BUSINESS = "Business"
     PER_MINUTE = "PerMinute"
     ENTERPRISE = "Enterprise"
+    PAID_SUBSCRIPTIONS = [BASIC,PRO,BUSINESS, PER_MINUTE]
   end
+
+
 
   def minutes_utlized_less_than_total_allowed_minutes    
     if minutes_utlized_changed? && available_minutes < 0
@@ -77,14 +81,14 @@ class Subscription < ActiveRecord::Base
         customer = retrieve_customer
       end
     rescue Exception => e
-      
+      errors.add(:base, 'Something went wrong in upgrading your subscription. Kindly contact support.')
     end
     unless customer.nil?
       upgrade(plan_type, number_of_callers)    
       card_info = customer.cards.data.first
       update_attributes(stripe_customer_id: customer.id, cc_last4: card_info.last4, exp_month: card_info.exp_month, 
         exp_year: card_info.exp_year)      
-    end      
+    end          
   end
 
   def add_callers(number_of_callers_to_add)
@@ -123,6 +127,12 @@ class Subscription < ActiveRecord::Base
 
   def disable_call_recording
     account.update_attributes(record_calls: false)
+  end
+
+  def card_info
+    unless cc_last4.nil?
+      "xxxx xxxx xxxx " + cc_last4
+    end
   end
   
 

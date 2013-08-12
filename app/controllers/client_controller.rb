@@ -200,10 +200,6 @@ class ClientController < ApplicationController
      @billing_info = recurly_account.billing_info
    end
 
-   def billing
-     @balance=@user.account.current_balance
-     @has_billing_info = !Recurly::Account.find(@user.account.recurly_account_code).billing_info.nil?
-   end
 
    def update_billing_quantity
      if request.post?
