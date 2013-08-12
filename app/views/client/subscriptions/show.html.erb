@@ -10,16 +10,16 @@
   </div>
  <%= form_for @subscription, url: "/client/subscriptions/#{@subscription.id}", method: "PUT", html: {id: "payment-form"} do |f| %> 
   <fieldset>    
-    
+
     <legend>Plan</legend>
       <p>
         <label>Select Plan:</label>
-        <select name="subscription[type]">
+        <select name="subscription[type]" id="subscription_type">
           <%= options_for_select Subscription::Type::PAID_SUBSCRIPTIONS,
                                  @subscription.type %>          
         </select>
       </p>
-      <p>
+      <p id="num_of_callers_section">
         <label>Number of Callers:</label>
         <input type="text"  class="field" style="width:50px" name="subscription[number_of_callers]" value="<%= @subscription.number_of_callers %>"/>
       </p>
@@ -103,6 +103,13 @@
         $form.find('button').prop('disabled', true);        
         Stripe.createToken($form, stripeResponseHandler);       
         return false;
+      });
+      $("#subscription_type").change(function() {
+        if($(this).val() == "PerMinute"){
+          $("#num_of_callers_section").hide();
+        }else{
+         $("#num_of_callers_section").show(); 
+        }
       });
   });
  </script>

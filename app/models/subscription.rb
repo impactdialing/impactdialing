@@ -70,7 +70,7 @@ class Subscription < ActiveRecord::Base
 
   def update_callers(new_num_callers)    
     if (new_num_callers < number_of_callers)
-      update_subscription({quantity: new_num_callers, plan: stripe_plan_id})
+      update_subscription({quantity: new_num_callers, plan: stripe_plan_id, prorate: true})
       remove_callers(number_of_callers - new_num_callers)
     else
       update_subscription({quantity: new_num_callers, prorate: true, plan: stripe_plan_id})
