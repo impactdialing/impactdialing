@@ -15,6 +15,12 @@ class Subscription < ActiveRecord::Base
     PAID_SUBSCRIPTIONS = [BASIC,PRO,BUSINESS, PER_MINUTE]
   end
 
+  module Status
+    ACTIVE = "Active"
+    SUSPENDED = "Suspended"
+    CANCELED = "Canceled"
+  end
+
 
 
   def minutes_utlized_less_than_total_allowed_minutes    
@@ -46,12 +52,12 @@ class Subscription < ActiveRecord::Base
   end
 
   def upgrade(new_plan, num_of_callers=1)
-    new_subscription = Subscription.subscription_type(new_plan)
-    account.subscription = new_subscription    
-    new_subscription.subscription_start_date = self.subscription_start_date
-    new_subscription.number_of_callers = num_of_callers
-    new_subscription.subscribe(available_minutes)
-    new_subscription.save    
+    minutes = available_minutes
+    self.type = new_plan
+    self.number_of_callers = num_of_callers
+    self.save
+    account.subscription.subscribe(minutes)        
+    account.subscription.save    
   end
 
   def stripe_plan_id
@@ -63,30 +69,33 @@ class Subscription < ActiveRecord::Base
   end
 
   def update_callers(new_num_callers)    
-    if (new_number_of_callers < subscription.number_of_callers)
+    if (new_num_callers < number_of_callers)
       update_subscription({quantity: new_num_callers, plan: stripe_plan_id})
-      remove_callers(subscription.number_of_callers - new_num_callers)
+      remove_callers(number_of_callers - new_num_callers)
     else
-      update_subscription({quantity: new_number_of_callers, prorate: true, plan: stripe_plan_id})
+      update_subscription({quantity: new_num_callers, prorate: true, plan: stripe_plan_id})
       invoice_customer      
-      add_callers(new_num_callers - subscription.number_of_callers)
+      add_callers(new_num_callers - number_of_callers)
     end
   end
 
   def upgrade_subscription(token, email, plan_type, number_of_callers)
     begin
       if stripe_customer_id.nil?
-        customer = create_customer(card: token, description: email, plan: Subscription.stripe_plan_id(plan_type), quantity: number_of_callers)                
+        customer = create_customer(token, email, Subscription.stripe_plan_id(plan_type), number_of_callers)                
       else
         customer = retrieve_customer
+        update_subscription({card: token, email: email, plan: Subscription.stripe_plan_id(plan_type), quantity: number_of_callers})
+        invoice_customer
       end
     rescue Exception => e
+      puts e
       errors.add(:base, 'Something went wrong in upgrading your subscription. Kindly contact support.')
     end
-    unless customer.nil?
+    unless customer.nil?      
       upgrade(plan_type, number_of_callers)    
       card_info = customer.cards.data.first
-      update_attributes(stripe_customer_id: customer.id, cc_last4: card_info.last4, exp_month: card_info.exp_month, 
+      account.subscription.update_attributes(stripe_customer_id: customer.id, cc_last4: card_info.last4, exp_month: card_info.exp_month, 
         exp_year: card_info.exp_year)      
     end          
   end
@@ -133,6 +142,15 @@ class Subscription < ActiveRecord::Base
     unless cc_last4.nil?
       "xxxx xxxx xxxx " + cc_last4
     end
+  end
+
+  def cancelled?
+    status == Status::CANCELED
+  end
+
+  def cancel
+    cancel_subscription
+    self.update_attributes(status: Status::CANCELED, stripe_customer_id: nil, cc_last4: nil, exp_year: nil, exp_month: nil)
   end
   
 

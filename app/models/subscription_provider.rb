@@ -6,7 +6,7 @@ module SubscriptionProvider
   module InstanceMethods
 
 		def create_customer(token, email, plan_type, number_of_callers)
-			Stripe::Customer.create(card: token, email: email, plan: Subscription.stripe_plan_id(plan_type), quantity: number_of_callers)
+			Stripe::Customer.create(card: token, email: email, plan: plan_type, quantity: number_of_callers)
 		end
 
 		def retrieve_customer
@@ -23,9 +23,9 @@ module SubscriptionProvider
 			invoice.pay
 		end
 
-		def cancel
+		def cancel_subscription
 			stripe_customer = Stripe::Customer.retrieve(stripe_customer_id)
-	    cu.cancel_subscription
+		  stripe_customer.cancel_subscription
 		end
 	end
 

@@ -10,6 +10,7 @@
   </div>
  <%= form_for @subscription, url: "/client/subscriptions/#{@subscription.id}", method: "PUT", html: {id: "payment-form"} do |f| %> 
   <fieldset>    
+    
     <legend>Plan</legend>
       <p>
         <label>Select Plan:</label>
@@ -20,14 +21,14 @@
       </p>
       <p>
         <label>Number of Callers:</label>
-        <input type="text"  class="field" style="width:50px" name="subscription[number_of_callers]" value="<%= @subscription.number_of_callers %>">
+        <input type="text"  class="field" style="width:50px" name="subscription[number_of_callers]" value="<%= @subscription.number_of_callers %>"/>
       </p>
    </fieldset>  
     <fieldset>    
       <legend>Card Information</legend>
       <p>
         <label>Card Number</label>
-        <input type="text" data-stripe="number"  class="field" style="width:220px;" value="<%= @subscription.card_info%>"></input>
+        <input type="text" data-stripe="number" class="field" style="width:220px;" value="<%= @subscription.card_info %>"/>
       </p>
       <p>
         <label>CVC</label>
