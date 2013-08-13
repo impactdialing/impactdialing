@@ -240,6 +240,7 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     e.preventDefault();
     var self = this;
     $("#hangup_call").hide();
+    $("#transfer-calls").hide();
     $.ajax({
         url : "/calls/" + self.model.get("call_id") + "/hangup",
         type : "POST",
