@@ -242,7 +242,9 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     var self = this;
     $("#hangup_call").hide();
     $("#transfer-calls").hide();
-    this.submitResponseButtonsShow();
+    if (this.model.get("call_id") == this.model.get("transfer_call_id")){
+      this.submitResponseButtonsShow();
+    }
     $.ajax({
         url : "/calls/" + self.model.get("call_id") + "/hangup",
         type : "POST",
