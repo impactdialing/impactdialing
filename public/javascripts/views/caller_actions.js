@@ -143,6 +143,10 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     if (this.model.get("call_id") == this.model.get("transfer_call_id")){
       this.showHangupButton();
     }
+    if (this.model.get("transfer_type") == 'warm'){     
+      this.submitResponseButtonsShow();
+      this.setMessage("Status: Submitting call results.");
+    }
   },
 
   callerKickedOff: function(){

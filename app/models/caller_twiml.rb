@@ -19,7 +19,7 @@ module CallerTwiml
     def connected_twiml
       Twilio::TwiML::Response.new do |r|
         r.Dial(:hangupOnStar => true, :action => pause_caller_url(caller_id, session_id:  id, host: DataCentre.call_back_host(data_centre), port:  Settings.twilio_callback_port, :protocol => "http://")) do
-          r.Conference(session_key, startConferenceOnEnter: false, endConferenceOnExit:  true, beep: true, waitUrl: HOLD_MUSIC_URL, waitMethod:  'GET')
+          r.Conference(session_key, startConferenceOnEnter: false, endConferenceOnExit:  false, beep: true, waitUrl: HOLD_MUSIC_URL, waitMethod:  'GET')
         end
       end.text
     end
