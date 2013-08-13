@@ -13,8 +13,8 @@ class VoterList < ActiveRecord::Base
   scope :by_ids, lambda { |ids| {:conditions => {:id => ids}} }
   after_save :enable_disable_voters
 
-  VOTER_DATA_COLUMNS = {"Phone"=> "Phone", "CustomID" => "ID", "LastName"=>"LastName", "FirstName"=>"FirstName",
-                        "MiddleName"=>"MiddleName", "Suffix"=>"Suffix", "Email"=>"Email", "address"=>"Address", "city"=>"City",
+  VOTER_DATA_COLUMNS = {"phone"=> "Phone", "custom_id" => "ID", "last_name"=>"LastName", "first_name"=>"FirstName",
+                        "middle_name"=>"MiddleName", "suffix"=>"Suffix", "email"=>"Email", "address"=>"Address", "city"=>"City",
                         "state"=>"State/Province", "zip_code"=>"Zip/Postal Code", "country"=>"Country"}
   BLANK_HEADER = '<Blank header>'
 

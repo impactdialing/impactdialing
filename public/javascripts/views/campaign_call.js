@@ -203,12 +203,19 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
       if(transfer_type == "warm"){
         self.caller_actions.transferConferenceEnded();
       }
-      self.model.unset("transfer_type");
+      self.model.unset("transfer_type");      
     });
 
     this.channel.bind('warm_transfer',function(data){
       self.caller_actions.kickSelfOutOfConferenceShow();
     });
+
+    this.channel.bind('cold_transfer',function(data){
+      self.caller_actions.submitResponseButtonsShow();
+      self.caller_actions.hideHangupButton();
+    });
+
+    
 
     this.channel.bind('caller_kicked_off',function(data){
       self.caller_actions.callerKickedOff()

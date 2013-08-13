@@ -53,7 +53,7 @@ describe Power do
       Time.stub(:now).and_return(time_now)
       campaign = create(:power, recycle_rate: 2)
       caller_session = create(:caller_session)      
-      scheduled_voter = create(:voter, :FirstName => 'scheduled voter', :status => CallAttempt::Status::SCHEDULED, :last_call_attempt_time => 2.hours.ago, :scheduled_date => 20.minutes.from_now, :campaign => campaign)
+      scheduled_voter = create(:voter, :first_name => 'scheduled voter', :status => CallAttempt::Status::SCHEDULED, :last_call_attempt_time => 2.hours.ago, :scheduled_date => 20.minutes.from_now, :campaign => campaign)
       retry_voter = create(:voter, :status => CallAttempt::Status::VOICEMAIL, last_call_attempt_time: 1.hours.ago, :campaign => campaign)
       current_voter = create(:voter, :status => CallAttempt::Status::SUCCESS, :campaign => campaign)
       campaign.next_voter_in_dial_queue(current_voter.id).should be_nil

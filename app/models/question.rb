@@ -15,6 +15,14 @@ class Question < ActiveRecord::Base
   scope :not_answered_by, lambda { |voter| order("id ASC").where("questions.id not in (?)", Question.answered_by(voter).collect(&:id) + [-1]) }
   default_scope :order => "script_order"
 
+  after_initialize :build_default_possible_response
+
+  def build_default_possible_response
+
+    if new_record? && possible_responses.empty?
+      self.possible_responses << PossibleResponse.new(value: "[No response]", possible_response_order: 1, keypad: 0)
+    end
+  end
   def stats(from_date, to_date)
     question.possible_responses.collect { |possible_response| possible_response.stats(from_date, to_date) }
   end

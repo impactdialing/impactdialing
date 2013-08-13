@@ -23,7 +23,7 @@ describe Client::QuestionsController do
       active_script = create(:script, :account => account, :active => true)
       question = create(:question, text: "abc", script_order: 1, script: active_script)
       get :show, script_id: active_script.id, id: question.id,  :api_key=> account.api_key, :format => "json"
-      response.body.should eq "{\"id\":#{question.id},\"text\":\"abc\",\"script_order\":1,\"external_id_field\":null,\"script_id\":#{active_script.id},\"possible_responses\":[]}"
+      response.body.should eq "{\"id\":#{question.id},\"text\":\"abc\",\"script_order\":1,\"external_id_field\":null,\"script_id\":#{active_script.id},\"possible_responses\":[{\"external_id_field\":null,\"id\":#{question.possible_responses.first.id},\"keypad\":0,\"possible_response_order\":1,\"question_id\":#{question.id},\"retry\":false,\"value\":\"[No response]\"}]}"
 
     end
 
@@ -57,7 +57,8 @@ describe Client::QuestionsController do
     it "should create question" do
       active_script = create(:script, :account => account, :active => true)
       post :create, script_id: active_script.id, question: {text: "Hi", script_order: 1},  :api_key=> account.api_key, :format => "json"
-      response.body.should eq "{\"id\":#{active_script.questions.first.id},\"text\":\"Hi\",\"script_order\":1,\"external_id_field\":null,\"script_id\":#{active_script.id},\"possible_responses\":[]}"
+      question = active_script.questions.first
+      response.body.should eq "{\"id\":#{question.id},\"text\":\"Hi\",\"script_order\":1,\"external_id_field\":null,\"script_id\":#{active_script.id},\"possible_responses\":[{\"external_id_field\":null,\"id\":#{question.possible_responses.first.id},\"keypad\":0,\"possible_response_order\":1,\"question_id\":#{question.id},\"retry\":false,\"value\":\"[No response]\"}]}"
     end
 
     it "should throw validation error" do

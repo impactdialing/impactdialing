@@ -3,7 +3,7 @@ require "spec_helper"
 describe CustomVoterFieldValue do
 
   let(:custom_field) {create(:custom_voter_field)}
-  let(:voter) { create(:voter, :Phone => "34953904782") }
+  let(:voter) { create(:voter, :phone => "34953904782") }
 
   it "stores a voter custom attribute value" do
     value = 'foo'

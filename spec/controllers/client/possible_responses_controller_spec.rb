@@ -12,10 +12,9 @@ describe Client::PossibleResponsesController do
     it "should return possible responses for a question" do
       active_script = create(:script, :account => account, :active => true)
       question = create(:question, :script => active_script)
-      possible_response1 = create(:possible_response, question_id: question.id)
-      possible_response2 = create(:possible_response, question_id: question.id)
+      possible_response1 = create(:possible_response, question_id: question.id)      
       get :index, script_id: active_script.id, question_id: question.id, :api_key=> account.api_key, :format => "json"
-      response.body.should eq("[#{possible_response1.to_json},#{possible_response2.to_json}]")
+      response.body.should eq("[{\"possible_response\":{\"external_id_field\":null,\"id\":#{question.possible_responses.first.id},\"keypad\":0,\"possible_response_order\":1,\"question_id\":#{question.id},\"retry\":false,\"value\":\"[No response]\"}},#{possible_response1.to_json}]")
     end
   end
 

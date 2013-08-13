@@ -60,7 +60,7 @@ describe Client::CallersController do
         get :call_details, :id => caller.id, :campaign_id => campaign.id
         response.should be_ok
         assigns(:questions_and_responses).should have(1).item
-        assigns(:questions_and_responses)[question.text].should have(2).items
+        assigns(:questions_and_responses)[question.text].should have(3).items
       end
 
       it "shows only the campaigns in which the caller was involved" do

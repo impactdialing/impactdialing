@@ -67,7 +67,7 @@ describe Predictive do
        voter_list = create(:voter_list, :campaign => campaign, :active => true)
        unblocked_voter = create(:voter, :campaign => campaign, :status => 'not called', :voter_list => voter_list, :account => account)
        blocked_voter = create(:voter, :campaign => campaign, :status => 'not called', :voter_list => voter_list, :account => account)
-       create(:blocked_number, :number => blocked_voter.Phone, :account => account, :campaign=>nil)
+       create(:blocked_number, :number => blocked_voter.phone, :account => account, :campaign=>nil)
        campaign.choose_voters_to_dial(10).should == [unblocked_voter.id]
      end
 
@@ -77,8 +77,8 @@ describe Predictive do
        voter_list = create(:voter_list, :campaign => campaign, :active => true)
        unblocked_voter = create(:voter, :campaign => campaign, :status => 'not called', :voter_list => voter_list, :account => account)
        blocked_voter = create(:voter, :campaign => campaign, :status => 'not called', :voter_list => voter_list, :account => account)
-       create(:blocked_number, :number => blocked_voter.Phone, :account => account, :campaign=>campaign)
-       create(:blocked_number, :number => unblocked_voter.Phone, :account => account, :campaign=>create(:campaign))
+       create(:blocked_number, :number => blocked_voter.phone, :account => account, :campaign=>campaign)
+       create(:blocked_number, :number => unblocked_voter.phone, :account => account, :campaign=>create(:campaign))
        campaign.choose_voters_to_dial(10).should == [unblocked_voter.id]
      end
 

@@ -19,6 +19,7 @@ class TransferController < ApplicationController
       conference_sid = transfer_attempt.caller_session.get_conference_id
       Twilio.connect(TWILIO_ACCOUNT, TWILIO_AUTH)
       Twilio::Conference.kick_participant(conference_sid, transfer_attempt.caller_session.sid)
+      transfer_attempt.caller_session.publish("cold_transfer",{})
     end
     render xml: transfer_attempt.conference
   end

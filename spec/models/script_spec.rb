@@ -26,10 +26,9 @@ describe Script do
     it "gets all questions and responses" do
       script = create(:script)
       question = create(:question, :script => script)
-      response_1 = create(:possible_response, :question => question)
-      response_2 = create(:possible_response, :question => question)
+      response_1 = create(:possible_response, :question => question)      
       another_response = create(:possible_response)
-      script.questions_and_responses.should == {question.text => [response_1.value, response_2.value]}
+      script.questions_and_responses.should == {question.text => [question.possible_responses.first.value, response_1.value]}
     end
   end
 

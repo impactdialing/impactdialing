@@ -465,13 +465,13 @@ ActiveRecord::Schema.define(:version => 20130812120511) do
   add_index "voter_lists", ["account_id", "name"], :name => "index_voter_lists_on_user_id_and_name", :unique => true
 
   create_table "voters", :force => true do |t|
-    t.string   "Phone"
-    t.string   "CustomID"
-    t.string   "LastName"
-    t.string   "FirstName"
-    t.string   "MiddleName"
-    t.string   "Suffix"
-    t.string   "Email"
+    t.string   "phone"
+    t.string   "custom_id"
+    t.string   "last_name"
+    t.string   "first_name"
+    t.string   "middle_name"
+    t.string   "suffix"
+    t.string   "email"
     t.string   "result"
     t.integer  "caller_session_id"
     t.integer  "campaign_id"
@@ -503,13 +503,13 @@ ActiveRecord::Schema.define(:version => 20130812120511) do
     t.boolean  "enabled",                :default => true
   end
 
-  add_index "voters", ["Phone", "voter_list_id"], :name => "index_voters_on_Phone_and_voter_list_id"
   add_index "voters", ["attempt_id"], :name => "index_voters_on_attempt_id"
   add_index "voters", ["caller_session_id"], :name => "index_voters_on_caller_session_id"
   add_index "voters", ["campaign_id", "active", "status", "call_back"], :name => "index_voters_on_campaign_id_and_active_and_status_and_call_back"
   add_index "voters", ["campaign_id", "enabled", "priority", "status"], :name => "index_priority_voters"
   add_index "voters", ["campaign_id", "status", "id"], :name => "index_voters_on_campaign_id_and_status_and_id"
   add_index "voters", ["campaign_id", "status", "last_call_attempt_time"], :name => "voters_campaign_status_time"
+  add_index "voters", ["phone", "voter_list_id"], :name => "index_voters_on_Phone_and_voter_list_id"
   add_index "voters", ["status"], :name => "index_voters_on_status"
   add_index "voters", ["voter_list_id"], :name => "index_voters_on_voter_list_id"
 

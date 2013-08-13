@@ -54,11 +54,11 @@ describe VoterList do
 
     describe "import from csv" do
       USER_MAPPINGS = CsvMapping.new({
-                                         "LAST" => "LastName",
-                                         "FIRSTName" => "FirstName",
-                                         "Phone" => "Phone",
-                                         "Email" => "Email",
-                                         "ID" => "ID",
+                                         "LAST" => "last_name",
+                                         "FIRSTName" => "first_name",
+                                         "Phone" => "phone",
+                                         "Email" => "email",
+                                         "ID" => "custom_id",
                                          "Age" => "Age",
                                          "Gender" => "Gender",
                                      })
@@ -79,7 +79,7 @@ describe VoterList do
       end
 
       it "should upload all columns expect the Not Available one" do
-        MAPPINGS = CsvMapping.new({"Phone"=>"Phone", "Name"=>"", "Email"=>"Email"})
+        MAPPINGS = CsvMapping.new({"Phone"=>"phone", "Name"=>"", "Email"=>"email"})
         VoterList.should_receive(:read_from_s3).and_return(File.open("#{fixture_path}/files/missing_field_list.csv").read)
         @result = voter_list.import_leads(MAPPINGS,"#{fixture_path}/files/missing_field_list.csv",",")
         @result.should == {
@@ -107,19 +107,19 @@ describe VoterList do
             ",")
 
         Voter.count.should == 2
-        voter = Voter.find_by_Email("foo@bar.com")
+        voter = Voter.find_by_email("foo@bar.com")
         voter.campaign_id.should == campaign.id
         voter.account_id.should == user.account.id
         voter.voter_list_id.should == voter_list.id
 
           # check some values from the csv fixture
-        voter.Phone.should == "1234567895"
-        voter.FirstName.should == "Foo"
-        voter.CustomID.should == "987"
-        voter.LastName.should == "Bar"
-        voter.Email.should == "foo@bar.com"
-        voter.MiddleName.should be_blank
-        voter.Suffix.should be_blank
+        voter.phone.should == "1234567895"
+        voter.first_name.should == "Foo"
+        voter.custom_id.should == "987"
+        voter.last_name.should == "Bar"
+        voter.email.should == "foo@bar.com"
+        voter.middle_name.should be_blank
+        voter.suffix.should be_blank
       end
 
       it "should ignore the same phone is repeated in another voters list for the same campaign" do
@@ -185,13 +185,13 @@ describe VoterList do
         end
 
         it "update the new voter fields, if there any" do
-          voter = Voter.find_by_CustomID("123")
-          voter.FirstName.should == "Foo_updated"
-          voter.Email.should == "foo2@bar.com"
+          voter = Voter.find_by_custom_id("123")
+          voter.first_name.should == "Foo_updated"
+          voter.email.should == "foo2@bar.com"
         end
 
         it "also upadate the custom voter fields" do
-          voter = Voter.find_by_CustomID("123")
+          voter = Voter.find_by_custom_id("123")
           custom_voter_field_value = CustomVoterFieldValue.find_by_voter_id_and_custom_voter_field_id(voter.id, CustomVoterField.find_by_name("Gender").id)
           voter.reload
           custom_voter_field_value.value.should == "Male_updated"
@@ -212,7 +212,7 @@ describe VoterList do
         temp_filename
       }
 
-      let(:mappings) { CsvMapping.new({ "Phone" => "Phone", "Custom" =>"Custom"}) }
+      let(:mappings) { CsvMapping.new({ "Phone" => "phone", "Custom" =>"Custom"}) }
 
       it "creates custom fields when they do not exist" do
 
@@ -233,7 +233,7 @@ describe VoterList do
 
       it "should not process custom fields for a voters with an invalid phone" do
         VoterList.should_receive(:read_from_s3).and_return(File.open("#{fixture_path}/files/missing_phone_with_custom_fields_list.csv").read)
-        mappings = CsvMapping.new({"Phone"=>"Phone", "Name"=>"", "Custom"=>"Custom"})
+        mappings = CsvMapping.new({"Phone"=>"phone", "Name"=>"", "Custom"=>"Custom"})
         @result = voter_list.import_leads(mappings,"#{fixture_path}/files/missing_phone_with_custom_fields_list.csv",",")
         @result.should == { :successCount => 2,  :failedCount => 1 }
       end

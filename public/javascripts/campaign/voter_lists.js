@@ -16,12 +16,12 @@ var VoterLists = function(){
     selected_mapping.push($(this).val());
   });
 
-  if($.inArray("Phone", selected_mapping) == -1){
+  if($.inArray("phone", selected_mapping) == -1){
     alert("Please choose map a column to the Phone field before uploading.");
     return false;
   }
 
-  if($.inArray("CustomID", selected_mapping) == -1){
+  if($.inArray("custom_id", selected_mapping) == -1){
     return confirm("Are you sure you want to upload this list without an ID field? You will not be able to update these leads in the future.");
   }
 
@@ -54,7 +54,7 @@ VoterLists.prototype.validate_csv_file = function(evt){
     $('#voter_list_upload').attr('action', "/client/campaigns/"+$('#campaign_id').val()+"/voter_lists");
 
     $("#column_headers select").change(function() {
-      if($(this).val() == "CustomID"){
+      if($(this).val() == "custom_id"){
         var id_mapped = confirm("The ID field must be unique for every lead in your campaign. If two leads have the same IDs, the newer one will overwrite the older one. Are you sure you want to map this header to the ID field?");
         if(!id_mapped){$(this).val("");}
       }

@@ -146,13 +146,12 @@ describe Campaign do
       question1 = create(:question, :text => "hw are u", :script => script)
       question2 = create(:question, :text => "wr r u", :script => script)
       possible_response1 = create(:possible_response, :value => "fine", :question => question1)
-      possible_response2 = create(:possible_response, :value => "super", :question => question1)
-      possible_response3 = create(:possible_response, :value => "[No response]", :question => question1)
+      possible_response2 = create(:possible_response, :value => "super", :question => question1)      
       create(:answer, :voter => create(:voter, :campaign => campaign), campaign: campaign, :possible_response => possible_response1, :question => question1, :created_at => now)
       create(:answer, :voter => create(:voter, :campaign => campaign), campaign: campaign,:possible_response => possible_response2, :question => question1, :created_at => now)
-      create(:answer, :voter => create(:voter, :campaign => campaign), campaign: campaign,:possible_response => possible_response3, :question => question1, :created_at => now)
+      create(:answer, :voter => create(:voter, :campaign => campaign), campaign: campaign,:possible_response => question1.possible_responses.first, :question => question1, :created_at => now)
       create(:answer, :voter => create(:voter, :campaign => campaign), campaign: campaign, :possible_response => possible_response2, :question => question2, :created_at => now)
-      campaign.answers_result(now, now).should == {script.id => {script: script.name, questions: {"hw are u" => [{answer: possible_response1.value, number: 1, percentage: 33}, {answer: possible_response2.value, number: 2, percentage: 66}, {answer: possible_response3.value, number: 1, percentage: 33}], "wr r u" => [{answer: "[No response]", number: 0, percentage: 0}]}}}
+      campaign.answers_result(now, now).should == {script.id => {script: script.name, questions: {"hw are u" => [{:answer=>"[No response]", :number=>1, :percentage=>33}, {answer: possible_response1.value, number: 1, percentage: 33}, {answer: possible_response2.value, number: 2, percentage: 66}], "wr r u" => [{answer: "[No response]", number: 0, percentage: 0}]}}}
     end
 
     it "should give the final results of a campaign as a Hash" do
@@ -174,9 +173,10 @@ describe Campaign do
           script: script.name,
           questions: {
             "hw are u" => [
+              {:answer=>"[No response]", :number=>0, :percentage=>0},
               {answer: possible_response1.value, number: 1, percentage: 50},
-              {answer: possible_response2.value, number: 1, percentage: 50},
-              {:answer=>"[No response]", :number=>0, :percentage=>0}
+              {answer: possible_response2.value, number: 1, percentage: 50}
+              
             ]
           }
         },
@@ -184,9 +184,10 @@ describe Campaign do
           script: new_script.name,
           questions: {
             "whos your daddy" => [
+              {:answer=>"[No response]", :number=>0, :percentage=>0},
               {answer: possible_response3.value, number: 1, percentage: 50},
-              {answer: possible_response4.value, number: 1, percentage: 50},
-              {:answer=>"[No response]", :number=>0, :percentage=>0}
+              {answer: possible_response4.value, number: 1, percentage: 50}
+              
             ]
           }
         }

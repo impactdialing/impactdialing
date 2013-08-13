@@ -112,7 +112,7 @@ describe PhonesOnlyCallerSession do
       it "should render twiml for preview when voters present" do
         call_attempt = create(:call_attempt)
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call", attempt_in_progress: call_attempt)
-        voter = create(:voter, FirstName:"first", LastName:"last")
+        voter = create(:voter, first_name:"first", last_name:"last")
         @campaign.should_receive(:next_voter_in_dial_queue).and_return(voter)
         caller_session.ready_to_call(DataCentre::Code::TWILIO).should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather numDigits=\"1\" timeout=\"10\" action=\"http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/conference_started_phones_only_preview?session_id=#{caller_session.id}&amp;voter=#{voter.id}\" method=\"POST\" finishOnKey=\"5\"><Say>first  last. Press star to dial or pound to skip.</Say></Gather></Response>")
       end
@@ -145,7 +145,7 @@ describe PhonesOnlyCallerSession do
       it "should render twiml for power when voters present" do
         call_attempt = create(:call_attempt)
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "ready_to_call", attempt_in_progress: call_attempt)
-        voter = create(:voter, FirstName:"first", LastName:"last")
+        voter = create(:voter, first_name:"first", last_name:"last")
         @campaign.should_receive(:next_voter_in_dial_queue).and_return(voter)
         caller_session.ready_to_call(DataCentre::Code::TWILIO).should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>first  last.</Say><Redirect method=\"POST\">http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/conference_started_phones_only_power?session_id=#{caller_session.id}&amp;voter_id=#{voter.id}</Redirect></Response>")
       end
@@ -206,7 +206,7 @@ describe PhonesOnlyCallerSession do
     describe "skip voter if # selected" do
 
       it "should render correct twiml if pound selected" do
-        voter = create(:voter, FirstName:"first", LastName:"last")
+        voter = create(:voter, first_name:"first", last_name:"last")
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_to_dial", digit: "#", voter_in_progress: voter)
         RedisCallerSession.set_request_params(caller_session.id, {digit: "#", question_number: 0})
         voter.should_receive(:skip)
@@ -250,7 +250,7 @@ describe PhonesOnlyCallerSession do
       end
 
       it "should set caller state to ready_to_call if nothing selected" do
-        voter = create(:voter, FirstName:"first", LastName:"last")
+        voter = create(:voter, first_name:"first", last_name:"last")
         caller_session = create(:phones_only_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "choosing_voter_to_dial", voter_in_progress: voter)
         RedisCallerSession.set_request_params(caller_session.id, {question_number: 0})
         caller_session.conference_started_phones_only_preview.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather numDigits=\"1\" timeout=\"10\" action=\"http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{@caller.id}/conference_started_phones_only_preview?session_id=#{caller_session.id}&amp;voter=#{voter.id}\" method=\"POST\" finishOnKey=\"5\"><Say>first  last. Press star to dial or pound to skip.</Say></Gather></Response>")
