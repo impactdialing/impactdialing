@@ -210,6 +210,13 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
       self.caller_actions.kickSelfOutOfConferenceShow();
     });
 
+    this.channel.bind('cold_transfer',function(data){
+      self.caller_actions.submitResponseButtonsShow();
+      self.caller_actions.hideHangupButton();
+    });
+
+    
+
     this.channel.bind('caller_kicked_off',function(data){
       self.caller_actions.callerKickedOff()
     });
