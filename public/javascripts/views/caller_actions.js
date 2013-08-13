@@ -141,7 +141,7 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     this.hideHangupButton();
     this.kickSelfOutOfConferenceHide();
     if (this.model.get("call_id") == this.model.get("transfer_call_id")){
-      this.kickSelfOutOfConferenceShow();
+      this.showHangupButton();
     }
   },
 
