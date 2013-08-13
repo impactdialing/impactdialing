@@ -204,6 +204,8 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
         self.caller_actions.transferConferenceEnded();
       }
       self.model.unset("transfer_type");
+      var transfer_section = self.script_view.transfer_section;
+      transfer_section.render();
     });
 
     this.channel.bind('warm_transfer',function(data){

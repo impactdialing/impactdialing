@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130809070647) do
+ActiveRecord::Schema.define(:version => 20130812120511) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -373,18 +373,19 @@ ActiveRecord::Schema.define(:version => 20130809070647) do
   end
 
   create_table "subscriptions", :force => true do |t|
-    t.string   "type",                    :default => "Trial", :null => false
+    t.string   "type",                    :default => "Trial",  :null => false
     t.integer  "number_of_callers",       :default => 0
     t.integer  "minutes_utlized",         :default => 0
     t.integer  "total_allowed_minutes",   :default => 0
     t.integer  "account_id"
     t.datetime "subscription_start_date"
-    t.datetime "created_at",                                   :null => false
-    t.datetime "updated_at",                                   :null => false
+    t.datetime "created_at",                                    :null => false
+    t.datetime "updated_at",                                    :null => false
     t.string   "stripe_customer_id"
     t.string   "cc_last4"
     t.string   "exp_month"
     t.string   "exp_year"
+    t.string   "status",                  :default => "Active"
   end
 
   create_table "temp_voter_lists", :force => true do |t|
