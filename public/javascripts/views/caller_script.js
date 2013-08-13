@@ -46,12 +46,10 @@ ImpactDialing.Views.CallerTransfer = Backbone.View.extend({
     $('#transfer_form').submit(function() {
 
         $('#transfer_button').html("Transfered");
-        $(this).ajaxSubmit(options);
-        $(this).unbind("submit");
+        $(this).ajaxSubmit(options);        
         return false;
     });
-    $("#transfer_form").trigger("submit");
-    // $("#transfer_form").unbind("submit");
+    $("#transfer_form").trigger("submit");    
   },
 
 });
