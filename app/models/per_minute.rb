@@ -38,6 +38,7 @@ class PerMinute < Subscription
 
 
   def subscribe(old_available_minutes)        
+    self.total_allowed_minutes = old_available_minutes + calculate_minutes_on_upgrade
   end
 
 

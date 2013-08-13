@@ -14,7 +14,9 @@ module Client
 			subscription = account.subscription
 			plan_type = params[:subscription][:type]
 			number_of_callers = params[:subscription][:number_of_callers]
-			subscription.upgrade_subscription(params[:subscription][:stripeToken], account.users.first.email, plan_type, number_of_callers)
+			amount_to_add = params[:subscription][:amount]
+			subscription.upgrade_subscription(params[:subscription][:stripeToken], account.users.first.email, plan_type,
+			 number_of_callers, amount_to_add)
 			if subscription.errors.empty?
 				flash_message(:notice, "Subscription Upgraded successfully")
 				redirect_to client_subscriptions_path

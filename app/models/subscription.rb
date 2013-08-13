@@ -82,10 +82,11 @@ class Subscription < ActiveRecord::Base
   def upgrade_subscription(token, email, plan_type, number_of_callers)
     begin
       if stripe_customer_id.nil?
-        customer = create_customer(token, email, Subscription.stripe_plan_id(plan_type), number_of_callers)                
+        customer = create_customer(token, email, plan_type, number_of_callers)                
       else
         customer = retrieve_customer
-        update_subscription({card: token, email: email, plan: Subscription.stripe_plan_id(plan_type), quantity: number_of_callers})
+        update_subscription({card: token, email: email, plan: plan_type, quantity: number_of_callers, 
+          prorate: true})
         invoice_customer
       end
     rescue Exception => e
