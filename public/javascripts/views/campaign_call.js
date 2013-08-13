@@ -204,6 +204,7 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
         self.caller_actions.transferConferenceEnded();
       }
       self.model.unset("transfer_type");
+      $('#transfer_button').html("Transfer");
       $("#transfer-calls").show();      
     });
 
