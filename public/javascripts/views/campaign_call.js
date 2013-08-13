@@ -203,9 +203,7 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
       if(transfer_type == "warm"){
         self.caller_actions.transferConferenceEnded();
       }
-      self.model.unset("transfer_type");
-      $('#transfer_button').html("Transfer");
-      $("#transfer-calls").show();      
+      self.model.unset("transfer_type");      
     });
 
     this.channel.bind('warm_transfer',function(data){
