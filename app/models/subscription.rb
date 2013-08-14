@@ -2,7 +2,7 @@ class Subscription < ActiveRecord::Base
   include SubscriptionProvider
   belongs_to :account
   validate :minutes_utlized_less_than_total_allowed_minutes
-  validates :number_of_callers, numericality: { greater_than:  0}
+  validates :number_of_callers, numericality: { greater_than:  0}, :if => Proc.new{|subscription| subscription.per_agent? }
   
 
   module Type
@@ -51,12 +51,16 @@ class Subscription < ActiveRecord::Base
     self.save
   end
 
-  def upgrade(new_plan, num_of_callers=1)
+  def upgrade(new_plan, num_of_callers=1, amount=0)
     minutes = available_minutes
     self.type = new_plan
     self.number_of_callers = num_of_callers
     self.save
-    account.subscription.subscribe(minutes)        
+    if new_plan == Type::PER_MINUTE
+      account.subscription.subscribe(minutes, amount)
+    else
+      account.subscription.subscribe(minutes)
+    end
     account.subscription.save    
   end
 
@@ -73,33 +77,43 @@ class Subscription < ActiveRecord::Base
       update_subscription({quantity: new_num_callers, plan: stripe_plan_id, prorate: true})
       remove_callers(number_of_callers - new_num_callers)
     else
-      update_subscription({quantity: new_num_callers, prorate: true, plan: stripe_plan_id})
-      invoice_customer      
+      update_subscription({quantity: new_num_callers, prorate: true, plan: stripe_plan_id})         
       add_callers(new_num_callers - number_of_callers)
     end
   end
 
-  def upgrade_subscription(token, email, plan_type, number_of_callers)
+  def upgrade_subscription(token, email, plan_type, number_of_callers, amount)
     begin
       if stripe_customer_id.nil?
-        customer = create_customer(token, email, plan_type, number_of_callers)                
+        customer = create_customer(token, email, plan_type, number_of_callers, amount)
       else
         customer = retrieve_customer
-        update_subscription({card: token, email: email, plan: plan_type, quantity: number_of_callers, 
-          prorate: true})
-        invoice_customer
+        if plan_type == Type::PER_MINUTE
+          recharge(amount)
+        else
+          update_subscription({card: token, email: email, plan: plan_type, quantity: number_of_callers, 
+            prorate: true})        
+        end
       end
     rescue Exception => e
       puts e
       errors.add(:base, 'Something went wrong in upgrading your subscription. Kindly contact support.')
     end
     unless customer.nil?      
-      upgrade(plan_type, number_of_callers)    
+      upgrade(plan_type, number_of_callers, amount)    
       card_info = customer.cards.data.first
       account.subscription.update_attributes(stripe_customer_id: customer.id, cc_last4: card_info.last4, exp_month: card_info.exp_month, 
         exp_year: card_info.exp_year)      
     end          
   end
+
+  def recharge_subscription(amount)
+    recharge(amount)
+    subscribe(available_minutes, amount)
+    self.save
+  end
+
+
 
   def add_callers(number_of_callers_to_add)
     self.number_of_callers = number_of_callers + number_of_callers_to_add    

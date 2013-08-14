@@ -14,8 +14,9 @@
     <% end %>
 
     <% if @subscription.per_minute? %>
-      <p>Your current balance is <%= number_to_currency  %>.</p>
-      <p class="actions"><a href="/client/add_to_balance" class="action secondary">Add to your balance</a></p>
+      <p>Minutes Left:  <%= @subscription.available_minutes %></p>
+      <p class="actions"><a href="/client/subscriptions/<%= @subscription.id%>/add_funds" class="action secondary">Add to your balance</a>
+      </p>
       <p class="actions"><a href="/client/recharge" class="action secondary">Configure auto-recharge</a></p>
       <p class="actions"><a href="/client/update_billing" class="action secondary">Update billing information</a></p>
     <% end %>

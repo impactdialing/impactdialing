@@ -5,13 +5,14 @@ module SubscriptionProvider
 
   module InstanceMethods
 
-		def create_customer(token, email, plan_type, number_of_callers)
-			if [Type::TRIAL, Type::BASIC, Type::PRO, Type::BUSINESS].include?(plan_type)
+		def create_customer(token, email, plan_type, number_of_callers, amount)
+			if [Subscription::Type::TRIAL, Subscription::Type::BASIC, Subscription::Type::PRO, Subscription::Type::BUSINESS].include?(plan_type)
 				Stripe::Customer.create(card: token, email: email, plan: Subscription.stripe_plan_id(plan_type), quantity: number_of_callers)
 			else
-
-			end	
-			
+				customer = Stripe::Customer.create(card: token, email: email)
+				Stripe::Charge.create(amount: amount, currency: "usd", customer: customer.id)
+				customer
+			end
 		end
 
 		def retrieve_customer
@@ -24,14 +25,21 @@ module SubscriptionProvider
 			invoice_customer
 		end
 
+		def recharge(amount)
+			customer = retrieve_customer
+			Stripe::Charge.create(amount: amount, currency: "usd", customer: customer.id)
+		end
+
 		def invoice_customer
 			invoice = Stripe::Invoice.create(customer: stripe_customer_id)
 			invoice.pay
 		end
 
 		def cancel_subscription
-			stripe_customer = Stripe::Customer.retrieve(stripe_customer_id)
-		  stripe_customer.cancel_subscription
+			if per_agent?
+				stripe_customer = Stripe::Customer.retrieve(stripe_customer_id)
+		  	stripe_customer.cancel_subscription
+		  end
 		end
 	end
 

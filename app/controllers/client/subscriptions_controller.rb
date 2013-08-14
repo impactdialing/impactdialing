@@ -38,5 +38,16 @@ module Client
 			redirect_to client_subscriptions_path
 		end
 
+		def add_funds
+			@subscription = account.subscription
+		end
+
+		def add_to_balance
+			@subscription = account.subscription
+			@subscription.recharge_subscription(params[:amount])
+			flash_message(:notice, "The amount has been added to your balance.")
+			redirect_to client_subscriptions_path
+		end
+
 	end
 end	

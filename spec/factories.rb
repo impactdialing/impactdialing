@@ -238,4 +238,17 @@ FactoryGirl.define do
     campaign
     account
   end
+
+  factory :basic do
+    type "Basic"
+    number_of_callers 1
+  end
+
+  factory :per_minute do
+    type "PerMinute"    
+  end
+
+  factory :trial do
+    type "Trial"
+  end
 end

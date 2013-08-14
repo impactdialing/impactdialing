@@ -97,6 +97,8 @@ ImpactDialing::Application.routes.draw do
       member do
         put :update_callers
         put :cancel
+        get :add_funds
+        put :add_to_balance
       end
     end
     resources :scripts do

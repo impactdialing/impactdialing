@@ -48,6 +48,7 @@ gem "cancan", "~>1.6.10"
 gem 'stripe', "~>1.8.4"
 
 
+
 group :development, :test do
   gem 'rspec', "~>2.6.0"
   gem 'rspec-rails', '~> 2.6.1'

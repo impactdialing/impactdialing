@@ -36,9 +36,13 @@ class PerMinute < Subscription
     payment = Payment.where("amount_remaining > 0 and account_id = ?", account).last
   end
 
+  def calculate_minutes_on_upgrade(amount)
+    amount.to_f/0.09
+  end
 
-  def subscribe(old_available_minutes)        
-    self.total_allowed_minutes = old_available_minutes + calculate_minutes_on_upgrade
+
+  def subscribe(old_available_minutes, amount)        
+    self.total_allowed_minutes = old_available_minutes + calculate_minutes_on_upgrade(amount)
   end
 
 
