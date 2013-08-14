@@ -99,6 +99,8 @@ ImpactDialing::Application.routes.draw do
         put :cancel
         get :add_funds
         put :add_to_balance
+        get :configure_auto_recharge
+        put :auto_recharge
       end
     end
     resources :scripts do

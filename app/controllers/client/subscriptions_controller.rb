@@ -49,5 +49,19 @@ module Client
 			redirect_to client_subscriptions_path
 		end
 
+		def configure_auto_recharge
+			@subscription = account.subscription
+		end
+
+		def auto_recharge
+			@subscription = account.subscription
+			subscription = params[:subscription]
+			@subscription.update_attributes(autorecharge_enabled: subscription[:autorecharge_enabled], 
+				autorecharge_amount: subscription[:autorecharge_amount], autorecharge_trigger: subscription[:autorecharge_trigger])
+			flash_message(:notice, "AutoRecharge options have been updated.")
+			redirect_to client_subscriptions_path
+
+		end
+
 	end
 end	

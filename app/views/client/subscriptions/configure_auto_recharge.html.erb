@@ -1,0 +1,24 @@
+<h1>Auto-recharge</h1>
+<%= form_for @subscription, url: "/client/subscriptions/#{@subscription.id}/auto_recharge" do |f| %>
+<fieldset>
+  <p>
+    <label>Auto-recharge enabled?</label>
+<%= f.radio_button :autorecharge_enabled, true , {name: "subscription[autorecharge_enabled]"} %> 
+<%= f.label :autorecharge_enabled, "Yes", {:style=>"display:inline;"} %>	
+<%= f.radio_button :autorecharge_enabled, false, {name: "subscription[autorecharge_enabled]"} %> 
+<%= f.label :autorecharge_enabled, "No", {:style=>"display:inline;"} %>
+  </p>
+
+	  <p>
+	    <label>If the balance falls below</label>
+  	  <%= f.text_field :autorecharge_trigger, name: "subscription[autorecharge_trigger]" %>  
+	  </p>
+	  <p>
+	    <label>Add this amount to the balance</label>
+      <%= f.text_field :autorecharge_amount, name: "subscription[autorecharge_amount]" %> 
+	  </p>
+</fieldset>
+<div class="buttons">
+  <button type="submit">Save</button>
+</div>
+<% end -%>

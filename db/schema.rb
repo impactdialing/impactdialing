@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130812120511) do
+ActiveRecord::Schema.define(:version => 20130814151430) do
 
   create_table "accounts", :force => true do |t|
     t.boolean  "card_verified"
@@ -386,6 +386,9 @@ ActiveRecord::Schema.define(:version => 20130812120511) do
     t.string   "exp_month"
     t.string   "exp_year"
     t.string   "status",                  :default => "Active"
+    t.boolean  "autorecharge_enabled",    :default => false
+    t.float    "autorecharge_amount"
+    t.float    "autorecharge_trigger"
   end
 
   create_table "temp_voter_lists", :force => true do |t|
