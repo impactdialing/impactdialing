@@ -18,7 +18,7 @@
       <p class="actions"><a href="/client/subscriptions/<%= @subscription.id%>/add_funds" class="action secondary">Add to your balance</a>
       </p>
       <p class="actions"><a href="/client/subscriptions/<%= @subscription.id%>/configure_auto_recharge" class="action secondary">Configure auto-recharge</a></p>
-      <p class="actions"><a href="/client/update_billing" class="action secondary">Update billing information</a></p>
+      <p class="actions"><a href="/client/subscriptions/<%= @subscription.id%>" class="action secondary">Update billing information</a></p>
     <% end %>
   <% end %>
   
