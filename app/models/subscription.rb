@@ -102,7 +102,7 @@ class Subscription < ActiveRecord::Base
       end
     rescue Exception => e
       puts e
-      errors.add(:base, 'Something went wrong in upgrading your subscription. Kindly contact support.')
+      errors.add(:base, e.message)
     end
     unless customer.nil?      
       upgrade(plan_type, number_of_callers, amount)    
