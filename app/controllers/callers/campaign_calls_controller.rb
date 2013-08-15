@@ -4,7 +4,6 @@ module Callers
     respond_to :json, :html
 
     def show
-      puts "User-agen: ******** - "+ request.user_agent
     end
 
     def script
@@ -15,7 +14,7 @@ module Callers
     def token
 
       @campaign = @caller.campaign
-      unless @caller.account.activated?
+      unless @caller.account.activated? || @caller.account.subscription.trial?
         render :json => "Your account is not funded. Please contact your account administrator.", :status => 422
         return
       end

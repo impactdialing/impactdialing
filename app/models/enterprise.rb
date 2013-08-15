@@ -1,4 +1,4 @@
-class Enterprise
+class Enterprise < Subscription
 
   def campaign_types
     [Campaign::Type::PREVIEW, Campaign::Type::POWER, Campaign::Type::PREDICTIVE]
@@ -41,6 +41,9 @@ class Enterprise
   end
 
   def debit(call_time)
+  end
+
+  def subscribe(minutes)
   end
 
 end

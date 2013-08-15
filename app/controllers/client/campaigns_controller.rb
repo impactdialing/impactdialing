@@ -10,7 +10,7 @@ module Client
     end
 
     def new
-      @campaign = account.campaigns.new(type: Campaign::Type::PROGRESSIVE,
+      @campaign = account.campaigns.new(type: Campaign::Type::POWER,
                                         time_zone: "Pacific Time (US & Canada)",
                                         start_time: Time.parse("9am"),
                                         end_time: Time.parse("9pm"),
