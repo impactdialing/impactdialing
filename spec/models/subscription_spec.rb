@@ -130,6 +130,20 @@ describe Subscription do
 			account.subscription.exp_month.should eq("12")
 			account.subscription.exp_year.should eq("2016")			
 		end
+	end
 
+	describe "cancel" do
+		it "should cancel it" do
+			account = create(:account)
+			account.subscription.should_receive(:cancel_subscription)
+			account.subscription.cancel
+			account.reload			
+			account.subscription.status.should eq(Subscription::Status::CANCELED)
+			account.subscription.stripe_customer_id.should eq(nil)
+			account.subscription.cc_last4.should eq(nil)
+			account.subscription.exp_month.should eq(nil)
+			account.subscription.exp_year.should eq(nil)
+
+		end
 	end
 end  
