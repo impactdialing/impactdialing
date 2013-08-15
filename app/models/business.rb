@@ -13,11 +13,11 @@ class Business < Subscription
 
 
   def minutes_per_caller
-    2500.00
+    6000.00
   end
 
   def price_per_caller
-    99.00
+    199.00
   end
 
   def caller_groups_enabled?
@@ -45,8 +45,8 @@ class Business < Subscription
     self.update_attributes(minutes_utlized: updated_minutes)
   end
 
-  def subscribe(old_available_minutes)    
-    self.total_allowed_minutes = old_available_minutes + calculate_minutes_on_upgrade
+  def subscribe()    
+    self.total_allowed_minutes = calculate_minutes_on_upgrade
   end
 
 

@@ -395,6 +395,7 @@ DEPENDENCIES
   newrelic_rpm (~> 3.6.5.130)
   nokogiri (~> 1.6.0)
   paperclip (~> 3.5.0)
+  pry
   pusher (~> 0.11.3)
   rails (~> 3.2.13)
   rb-fsevent

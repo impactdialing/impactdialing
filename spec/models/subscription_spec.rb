@@ -97,7 +97,7 @@ describe Subscription do
 			account.reload
 			account.subscription.type.should eq("Basic")
 			account.subscription.number_of_callers.should eq(2)
-			account.subscription.total_allowed_minutes.should eq(2050)
+			account.subscription.total_allowed_minutes.should eq(2000)
 			account.subscription.stripe_customer_id.should eq("123")
 			account.subscription.cc_last4.should eq("9090")
 			account.subscription.exp_month.should eq("12")
@@ -124,7 +124,7 @@ describe Subscription do
 			account.reload
 			account.subscription.type.should eq("Basic")
 			account.subscription.number_of_callers.should eq(2)
-			account.subscription.total_allowed_minutes.should eq(2050)
+			account.subscription.total_allowed_minutes.should eq(2000)
 			account.subscription.stripe_customer_id.should eq("123")
 			account.subscription.cc_last4.should eq("9090")
 			account.subscription.exp_month.should eq("12")

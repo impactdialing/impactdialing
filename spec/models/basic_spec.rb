@@ -119,10 +119,10 @@ describe Basic do
 
     it "should not deduct from minutes used if minutes used greater than eq total minutes" do
       @account.subscription.reload      
-      @account.subscription.update_attributes(minutes_utlized: 1050)
+      @account.subscription.update_attributes(minutes_utlized: 1000)
       @account.subscription.debit(2.00).should be_false
       @account.subscription.reload      
-      @account.subscription.minutes_utlized.should eq(1050)
+      @account.subscription.minutes_utlized.should eq(1000)
     end
 
     it "should not deduct from minutes used if alloted minutes does not fall in subscription time range" do
@@ -153,7 +153,7 @@ describe Basic do
     it "should add caller and delta minutes to subscription" do  
       @account.subscription.update_attributes(subscription_start_date: (DateTime.now-10.days), minutes_utlized: 1000)    
       @account.subscription.add_callers(1)
-      @account.subscription.total_allowed_minutes.should eq(1727)
+      @account.subscription.total_allowed_minutes.should eq(1677)
     end
   end
 

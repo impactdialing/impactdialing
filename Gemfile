@@ -55,6 +55,7 @@ group :development, :test do
   gem 'debugger', "~>1.6.0"
   gem 'hirb', "~>0.7.1"
   gem 'rspec-instafail', "~>0.2.4"
+  gem "pry"
 end
 
 group :development do

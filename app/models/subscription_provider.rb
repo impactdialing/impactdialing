@@ -19,7 +19,7 @@ module SubscriptionProvider
 			Stripe::Customer.retrieve(stripe_customer_id)
 		end
 
-		def update_subscription(params)
+		def update_subscription(params)			
 			stripe_customer = retrieve_customer
 			stripe_customer.update_subscription(params)
 			invoice_customer

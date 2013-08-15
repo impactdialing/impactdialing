@@ -173,7 +173,7 @@ describe Trial do
       @account.subscription.update_attributes(minutes_utlized: 10, subscription_start_date: subscription_start_date)
       @account.subscription.upgrade(Subscription::Type::BASIC,1,0)
       @account.reload
-      @account.subscription.total_allowed_minutes.should eq(652)
+      @account.subscription.total_allowed_minutes.should eq(612)
     end
 
     it "should add delta of minutes on upgrade" do
@@ -183,7 +183,7 @@ describe Trial do
       @account.subscription.update_attributes(minutes_utlized: 10, subscription_start_date: subscription_start_date)
       @account.subscription.upgrade(Subscription::Type::BASIC)
       @account.reload
-      @account.subscription.total_allowed_minutes.should eq(652)
+      @account.subscription.total_allowed_minutes.should eq(612)
     end
   end
 
