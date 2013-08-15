@@ -103,7 +103,7 @@ class CallerSession < ActiveRecord::Base
 
 
   def account_not_activated?
-    !activated?
+    account.is_activated?
   end
 
   def subscription_limit_exceeded?

@@ -195,6 +195,10 @@ class Account < ActiveRecord::Base
     activated?
   end
 
+  def is_activated?
+    subscription.activated?
+  end
+
   def toggle_call_recording!
     self.record_calls = !self.record_calls
     self.save

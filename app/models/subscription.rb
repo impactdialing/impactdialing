@@ -16,9 +16,14 @@ class Subscription < ActiveRecord::Base
   end
 
   module Status
+    TRIAL = "Trial"
     ACTIVE = "Active"
     SUSPENDED = "Suspended"
     CANCELED = "Canceled"
+  end
+
+  def activated?
+    type == Type::TRIAL || status == Status::ACTIVE
   end
 
 
