@@ -56,18 +56,7 @@ class Subscription < ActiveRecord::Base
     self.save
   end
 
-  def upgrade(new_plan, num_of_callers=1, amount=0)
-    minutes = available_minutes
-    self.type = new_plan
-    self.number_of_callers = num_of_callers
-    self.save
-    if new_plan == Type::PER_MINUTE
-      account.subscription.subscribe(minutes, amount)
-    else
-      account.subscription.subscribe(minutes)
-    end
-    account.subscription.save    
-  end
+  
 
   def stripe_plan_id
     "ImpactDialing-" + type
@@ -85,6 +74,19 @@ class Subscription < ActiveRecord::Base
       update_subscription({quantity: new_num_callers, prorate: true, plan: stripe_plan_id})         
       add_callers(new_num_callers - number_of_callers)
     end
+  end
+
+  def upgrade(new_plan, num_of_callers=1, amount=0)
+    minutes = available_minutes
+    self.type = new_plan
+    self.number_of_callers = num_of_callers
+    self.save
+    if new_plan == Type::PER_MINUTE
+      account.subscription.subscribe(minutes, amount)
+    else
+      account.subscription.subscribe(minutes)
+    end
+    account.subscription.save    
   end
 
   def upgrade_subscription(token, email, plan_type, number_of_callers, amount)
