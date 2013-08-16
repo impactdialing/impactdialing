@@ -4,23 +4,23 @@ ruby '2.0.0'
 
 gem 'rails', '~> 3.2.13'
 gem 'unicorn'
-gem 'will_paginate', '~> 3.0'
-gem 'mysql2', '~> 0.3.11'
-gem 'newrelic_rpm'
+gem 'will_paginate', '~> 3.0.4'
+gem 'mysql2', '~> 0.3.13'
+gem 'newrelic_rpm', "~>3.6.5.130"
 gem 'json', '~> 1.7.7'
 gem 'nokogiri', '~> 1.6.0'
 gem "pusher", "~> 0.11.3"
 gem "aws-sdk"
-gem "paperclip", "~> 3.4.2"
+gem "paperclip", "~> 3.5.0"
 gem 'twilio', '~> 3.1.1'
 gem 'settingslogic', '~> 2.0.9'
 gem "twilio-ruby", '~> 3.10.0'
 gem 'dynamic_form', '~> 1.1.4'
-gem 'jquery-rails', '>= 1.0.12'
-gem "activerecord-import", ">= 0.3.1"
-gem 'recurly', '~> 2.1.3'
+gem 'jquery-rails', '~> 3.0.4'
+gem "activerecord-import", "~> 0.4.1"
+gem 'recurly', '~> 2.1.9'
 gem "heroku"
-gem "uuid", "~> 2.3.5"
+gem "uuid", "~> 2.3.7"
 gem "eventmachine", "1.0.3"
 gem "em-http-request", "~> 1.1.0"
 gem "em-synchrony", "~> 1.0.3"
@@ -32,18 +32,17 @@ gem "hiredis", "~>0.4.5"
 gem "em-hiredis", "~>0.2.1"
 gem "formtastic", "~>2.2.1"
 gem "cocoon", "~>1.0.22"
-gem 'deep_cloneable', '~> 1.5.2'
+gem 'deep_cloneable', '~> 1.5.3'
 gem "redis-objects", "~>0.7.0",:require => 'redis/objects'
 gem "redis", "~> 3.0.4"
 gem 'ar-octopus', :git => "git://github.com/tchandy/octopus.git"
-gem "newrelic-redis", "~>1.3.2"
+gem "newrelic-redis", "~>1.4.0"
 gem "sidekiq", "~> 2.13.0"
 gem "slim", "~>2.0.0"
 gem "sprockets", "~>2.2.1"
-gem "sinatra", "~>1.3.3"
-gem "dalli", "~>2.3.0"
+gem "sinatra", "~>1.4.3"
 gem "mandrill-api", "~>1.0.37"
-gem "sidekiq-failures", "~> 0.1.0"
+gem "sidekiq-failures", "~> 0.2.1"
 gem "lograge", "~>0.2.0"
 
 
@@ -70,7 +69,7 @@ group :development do
 end
 
 group :test do
-  gem 'factory_girl_rails', '~> 1.3'
+  gem 'factory_girl_rails'
   gem 'shoulda'
   gem 'simplecov'
   gem 'spork-rails'

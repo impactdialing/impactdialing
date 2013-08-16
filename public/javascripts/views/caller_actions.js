@@ -139,10 +139,12 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
 
   transferConferenceEnded: function(){
     this.hideHangupButton();
-    this.kickSelfOutOfConferenceHide();
+    this.kickSelfOutOfConferenceHide();    
     if (this.model.get("call_id") == this.model.get("transfer_call_id")){
-      this.kickSelfOutOfConferenceShow();
-    }
+      $('#transfer_button').html("Transfer");
+      $("#transfer-calls").show();      
+      this.showHangupButton();
+    }    
   },
 
   callerKickedOff: function(){
@@ -239,6 +241,10 @@ ImpactDialing.Views.CallerActions = Backbone.View.extend({
     e.preventDefault();
     var self = this;
     $("#hangup_call").hide();
+    $("#transfer-calls").hide();
+    if (this.model.get("call_id") == this.model.get("transfer_call_id")){
+      this.submitResponseButtonsShow();
+    }
     $.ajax({
         url : "/calls/" + self.model.get("call_id") + "/hangup",
         type : "POST",

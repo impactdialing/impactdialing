@@ -11,8 +11,8 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
 
   def manipulate_header_fields
     manipulated_fields = []
-    headers = {"CustomID" => "ID", "LastName"=> "Last name", "FirstName"=>  "First name", "MiddleName"=> "Middle name",
-    "address"=> "Address", "city"=>  "City", "state"=> "State", "zip_code"=>  "Zip code", "country"=> "Country"}
+    headers = {"custom_id" => "ID", "last_name"=> "Last name", "first_name"=>  "First name", "middle_name"=> "Middle name",
+    "address"=> "Address", "city"=>  "City", "state"=> "State", "zip_code"=>  "Zip code", "country"=> "Country", "phone"=>"Phone"}
     @selected_voter_fields.each do |voter_field|
       if headers.has_key?(voter_field)
         manipulated_fields << headers[voter_field]
@@ -73,7 +73,7 @@ class CallerCampaignReportStrategy < CampaignReportStrategy
 
 
   def selected_fields(voter, selection = nil)
-    return [voter['Phone']] unless selection
+    return [voter['phone']] unless selection
     selection.select { |field| Voter::UPLOAD_FIELDS.include?(field) }.map { |field| voter[field] }
   end
 

@@ -1,6 +1,7 @@
 var VoterLists = function(){
   document.getElementById('upload_datafile').addEventListener('change', this.validate_csv_file, false);
 
+
   $("#file_upload_submit").click(function(){
   if ($("#voter_list_name").val().trim() == ""){
     alert("Please enter a name for the list to be uploaded.");
@@ -10,6 +11,21 @@ var VoterLists = function(){
     alert("Voter List name is too short. Please enter more than 3 characters.");
     return false;
   }
+  var selected_mapping = []
+  $(".select-column-mapping").each(function( index ) {
+    selected_mapping.push($(this).val());
+  });
+
+  if($.inArray("phone", selected_mapping) == -1){
+    alert("Please choose map a column to the Phone field before uploading.");
+    return false;
+  }
+
+  if($.inArray("custom_id", selected_mapping) == -1){
+    return confirm("Are you sure you want to upload this list without an ID field? You will not be able to update these leads in the future.");
+  }
+
+
   return true
 
   });
@@ -38,6 +54,10 @@ VoterLists.prototype.validate_csv_file = function(evt){
     $('#voter_list_upload').attr('action', "/client/campaigns/"+$('#campaign_id').val()+"/voter_lists");
 
     $("#column_headers select").change(function() {
+      if($(this).val() == "custom_id"){
+        var id_mapped = confirm("The ID field must be unique for every lead in your campaign. If two leads have the same IDs, the newer one will overwrite the older one. Are you sure you want to map this header to the ID field?");
+        if(!id_mapped){$(this).val("");}
+      }
       if ($(this).val() == 'custom') {
         var newField = prompt('Enter the name of field to create:');
         if (newField) {
@@ -50,6 +70,7 @@ VoterLists.prototype.validate_csv_file = function(evt){
   };
     $('#voter_list_upload').attr('action', "/client/campaigns/"+$('#campaign_id').val()+"/voter_lists/column_mapping");
     $('#voter_list_upload').submit(function() {
+
       $('#column_headers').html("<p>Please wait while your file is being uploaded...</p>");
         $(this).ajaxSubmit(options);
         return false;

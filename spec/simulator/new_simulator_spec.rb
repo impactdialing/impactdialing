@@ -3,9 +3,9 @@ require "spec_helper"
 describe 'new simulator' do
   
   # it "should give default values" do
-  #   campaign = Factory(:campaign)
+  #   campaign = create(:campaign)
   #   start_time = 60 * 10
-  #   25.times{Factory(:caller_session, available_for_call: true, on_call: true, campaign_id: campaign.id)}
+  #   25.times{create(:caller_session, available_for_call: true, on_call: true, campaign_id: campaign.id)}
   #   call_status = [CallAttempt::Status::SUCCESS,CallAttempt::Status::INPROGRESS,CallAttempt::Status::NOANSWER,
   #     CallAttempt::Status::ABANDONED,CallAttempt::Status::SUCCESS,CallAttempt::Status::BUSY,CallAttempt::Status::FAILED]
   #   
@@ -19,7 +19,7 @@ describe 'new simulator' do
   #     end
   #     
   #     connect_duration = [1,2,3,4,5].sample
-  #     Factory(:call_attempt, created_at: created_at, campaign_id: campaign.id, status: call_status.sample, connecttime: created_at + connect_duration,
+  #     create(:call_attempt, created_at: created_at, campaign_id: campaign.id, status: call_status.sample, connecttime: created_at + connect_duration,
   #     call_start: created_at + 2.seconds, wrapup_time: created_at + duration )      
   #   end
   #   
@@ -32,9 +32,9 @@ describe 'new simulator' do
   # end
   # 
   # it "should simulate with 10 minutes prior data " do
-  #       campaign = Factory(:campaign, acceptable_abandon_rate: 0.3 )
+  #       campaign = create(:campaign, acceptable_abandon_rate: 0.3 )
   #       start_time = 60 * 10
-  #       25.times{Factory(:caller_session, available_for_call: true, on_call: true, campaign_id: campaign.id)}
+  #       25.times{create(:caller_session, available_for_call: true, on_call: true, campaign_id: campaign.id)}
   #       call_status = [CallAttempt::Status::SUCCESS,CallAttempt::Status::INPROGRESS,CallAttempt::Status::NOANSWER,
   #         CallAttempt::Status::ABANDONED,CallAttempt::Status::SUCCESS,CallAttempt::Status::BUSY,CallAttempt::Status::FAILED]
   #       
@@ -48,7 +48,7 @@ describe 'new simulator' do
   #         end
   #         
   #         connect_duration = [1,2,3,4,5].sample
-  #         Factory(:call_attempt, created_at: created_at, campaign_id: campaign.id, status: call_status.sample, connecttime: created_at + connect_duration,
+  #         create(:call_attempt, created_at: created_at, campaign_id: campaign.id, status: call_status.sample, connecttime: created_at + connect_duration,
   #         call_start: created_at + 2.seconds, wrapup_time: created_at + duration )      
   #       end
   #       
@@ -56,7 +56,7 @@ describe 'new simulator' do
   #     end
   # 
   # it "should simulate without 10 minutes prior data " do
-  #   campaign = Factory(:campaign, acceptable_abandon_rate: 0.3 )
+  #   campaign = create(:campaign, acceptable_abandon_rate: 0.3 )
   #   actual = simulate(campaign.id)
   # end
   # 

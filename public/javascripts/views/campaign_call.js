@@ -54,9 +54,16 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
         self.channel = self.pusher.subscribe(self.model.get("session_key"));
         self.bindPusherEvents();
         $("#caller-actions").html(self.start_calling_view.render().el);
+        var ios_url = "inapp://capture?campaign_id=" + self.model.get("campaign_id") +"&phone_number="+ self.model.get("phone_number") +
+         "&caller_id=" + self.model.get("caller_id") + "&session_key=" + self.model.get("session_key") + "&token=" + self.model.get("twilio_token");
+        $("#start-calling-mobile").attr("href", ios_url);
         $("#callin").show();
         if (!FlashDetect.installed || !flash_supported() || !browser_supported()){
-          $("#start_calling").hide();
+          $("#start-calling").hide();
+        }
+        if(isNativeApp()){
+         $("#start-calling-mobile").show();
+         $(".webapp-callin-info").hide();
         }
         $("#callin-number").html(self.model.get("phone_number"));
         $("#callin-pin").html(self.model.get("pin"));
@@ -198,12 +205,19 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
       if(transfer_type == "warm"){
         self.caller_actions.transferConferenceEnded();
       }
-      self.model.unset("transfer_type");
+      self.model.unset("transfer_type");      
     });
 
     this.channel.bind('warm_transfer',function(data){
       self.caller_actions.kickSelfOutOfConferenceShow();
     });
+
+    this.channel.bind('cold_transfer',function(data){
+      self.caller_actions.submitResponseButtonsShow();
+      self.caller_actions.hideHangupButton();
+    });
+
+    
 
     this.channel.bind('caller_kicked_off',function(data){
       self.caller_actions.callerKickedOff()

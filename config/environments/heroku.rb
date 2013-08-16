@@ -16,7 +16,7 @@ ImpactDialing::Application.configure do
   # The production environment is meant for finished, "live" apps.
   # Code is not reloaded between requests
   config.cache_classes = true
-  config.lograge.enabled = false
+  config.lograge.enabled = true
 
   # Full error reports are disabled and caching is turned on
   config.consider_all_requests_local = false
@@ -31,7 +31,7 @@ ImpactDialing::Application.configure do
   # config.logger = SyslogLogger.new
 
   # Use a different cache store in production
-  config.cache_store = :dalli_store, 'mc5.ec2.northscale.net', { :username => "app7546131%40heroku.com", :password => "Ex6pFPsk9LcR/Viq" }
+  # config.cache_store = :dalli_store, 'mc5.ec2.northscale.net', { :username => "app7546131%40heroku.com", :password => "Ex6pFPsk9LcR/Viq" }
 
   # Enable serving of images, stylesheets, and javascripts from an asset server
   # config.action_controller.asset_host = "http://assets.example.com"

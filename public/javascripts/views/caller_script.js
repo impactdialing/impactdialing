@@ -46,12 +46,10 @@ ImpactDialing.Views.CallerTransfer = Backbone.View.extend({
     $('#transfer_form').submit(function() {
 
         $('#transfer_button').html("Transfered");
-        $(this).ajaxSubmit(options);
-        $(this).unbind("submit");
+        $(this).ajaxSubmit(options);        
         return false;
     });
-    $("#transfer_form").trigger("submit");
-    $("#transfer_form").unbind("submit");
+    $("#transfer_form").trigger("submit");    
   },
 
 });
@@ -105,8 +103,9 @@ ImpactDialing.Views.CallerScript = Backbone.View.extend({
       }
     });
     if(this.model && !_.isEmpty(this.model.get("transfers"))){
-      $(self.el).append(new ImpactDialing.Views.CallerTransfer({lead_info: this.options.lead_info,
-        campaign_call: this.options.campaign_call}).render(this.model.toJSON()).el);
+      this.transfer_section = new ImpactDialing.Views.CallerTransfer({lead_info: this.options.lead_info,
+        campaign_call: this.options.campaign_call});
+      $(self.el).append(this.transfer_section.render(this.model.toJSON()).el);
     }
     return this;
   },

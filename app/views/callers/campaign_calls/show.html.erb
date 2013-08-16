@@ -63,19 +63,19 @@
  <script type="javascript/html" id="caller-campaign-script-lead-info-template">
           {{#fields}}
             {{#ID_flag}}
-              <li>ID: <b>{{CustomID}}</b></li>
+              <li>ID: <b>{{custom_id}}</b></li>
             {{/ID_flag}}
             {{#FirstName_flag}}
-              <li>First name: <b>{{FirstName}}</b></li>
+              <li>First name: <b>{{first_name}}</b></li>
             {{/FirstName_flag}}
             {{#MiddleName_flag}}
-              <li>Middle name: <b>{{MiddleName}}</b></li>
+              <li>Middle name: <b>{{middle_name}}</b></li>
             {{/MiddleName_flag}}
             {{#LastName_flag}}
-              <li>Last name: <b>{{LastName}}</b></li>
+              <li>Last name: <b>{{last_name}}</b></li>
             {{/LastName_flag}}
             {{#Suffix_flag}}
-              <li>Suffix: <b>{{Suffix}}</b></li>
+              <li>Suffix: <b>{{suffix}}</b></li>
             {{/Suffix_flag}}
             {{#Address_flag}}
               <li>Address: <b>{{address}}</b></li>
@@ -93,10 +93,10 @@
               <li>Country: <b>{{country}}</b></li>
             {{/Country_flag}}
             {{#Phone_flag}}
-              <li>Phone: <b>{{Phone}}</b></li>
+              <li>Phone: <b>{{phone}}</b></li>
             {{/Phone_flag}}
             {{#Email_flag}}
-              <li>Email: <b>{{Email}}</b></li>
+              <li>Email: <b>{{email}}</b></li>
             {{/Email_flag}}
         {{/fields}}
         {{#custom_lead_info}}
@@ -165,28 +165,29 @@
 </div>
 
 <script type="javascript/html" id="caller-campaign-action-template">
-  <div id="statusdiv" style="float:right">Status: Not connected.</div>
   <div id="actions" class="actions">
-    <a id= "call_voter" href="#caller-campaign-action-template" class="action secondary hide">Dial</a>
-    <a id= "skip_voter" href="#caller-campaign-action-template" class="action secondary hide">Skip</a>
-    <a id= "stop_calling" href="#caller-campaign-action-template" class="action secondary hide">Stop calling</a>
-    <a id= "hangup_call" href="#caller-campaign-action-template" class="action secondary hide">Hang up</a>
-    <a id= "kick_self_out_of_conference" href="#caller-campaign-action-template"  class="action secondary hide">Hang up</a>
-    <a id= "submit_and_keep_call" href="#caller-campaign-action-template" class="action secondary hide">Submit and keep calling</a>
-    <a id= "submit_and_stop_call" href="#caller-campaign-action-template" class="action secondary hide" >Submit and stop calling</a>
+    <a id= "call_voter" href="#caller-campaign-action-template" class="action secondary caller-action-buttons hide">Dial</a>
+    <a id= "skip_voter" href="#caller-campaign-action-template" class="action secondary caller-action-buttons hide">Skip</a>
+    <a id= "stop_calling" href="#caller-campaign-action-template" class="action secondary caller-action-buttons hide">Stop calling</a>
+    <a id= "hangup_call" href="#caller-campaign-action-template" class="action secondary caller-action-buttons hide">Hang up</a>
+    <a id= "kick_self_out_of_conference" href="#caller-campaign-action-template"  class="action secondary caller-action-buttons hide">Hang up</a>
+    <a id= "submit_and_keep_call" href="#caller-campaign-action-template" class="action secondary caller-action-buttons hide">Submit and keep calling</a>
+    <a id= "submit_and_stop_call" href="#caller-campaign-action-template" class="action secondary caller-action-buttons hide" >Submit and stop calling</a>
   </div>
+  <div id="statusdiv" style="float:right">Status: Not connected.</div>
 </script>
 
 
 <script type="javascript/html" id="caller-campaign-start-calling-template">
   <div id="callin" style="display:none">
-    <div id="start_calling">
-      <p><b>If your computer has a mic, click here:</b></p>
+    <div id="start_calling" >
+      <p class="webapp-callin-info"><b>If your computer has a mic, click here:</b></p>
         <a class="action primary" href="#" id="start-calling">Start calling</a>
+        <a class="action primary" href="#" id="start-calling-mobile" class="hide" style="display:none">Start calling</a>
       </div>
     <br>
 
-    <div id="callin_data">
+    <div id="callin_data" class="webapp-callin-info">
       <p>
         <b>If you don't have a mic, use a phone:</b><br>
         Dial-in number: <span id="callin-number"></span><br>

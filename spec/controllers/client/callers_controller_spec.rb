@@ -1,8 +1,8 @@
 require "spec_helper"
 
 describe Client::CallersController do
-  let(:account) {Factory(:account, api_key: 'abc123')}
-  before(:each) { @user = Factory(:user, account: account) }
+  let(:account) {create(:account, api_key: 'abc123')}
+  before(:each) { @user = create(:user, account: account) }
 
   context 'users' do
     before(:each) do
@@ -21,8 +21,8 @@ describe Client::CallersController do
 
 
     it "doesn't list deleted campaigns, in the dropdown list" do
-      c1 = Factory(:preview, :active => false, :account => @user.account)
-      c2 = Factory(:predictive, :active => true, :account => @user.account)
+      c1 = create(:preview, :active => false, :account => @user.account)
+      c2 = create(:predictive, :active => true, :account => @user.account)
       get :new
       assigns(:campaigns).should have(1).thing
       assigns(:campaigns)[0].should be_active
@@ -47,24 +47,24 @@ describe Client::CallersController do
 
     describe "call details report" do
 
-      let(:script) { Factory(:script) }
-      let(:campaign) { Factory(:progressive, :script => script, :account => @user.account) }
-      let(:caller) { Factory(:caller, campaign_id: campaign.id) }
+      let(:script) { create(:script) }
+      let(:campaign) { create(:progressive, :script => script, :account => @user.account) }
+      let(:caller) { create(:caller, campaign_id: campaign.id) }
 
-      before(:each) { Factory(:caller_session, :campaign => campaign, :caller => caller) }
+      before(:each) { create(:caller_session, :campaign => campaign, :caller => caller) }
 
       it "gets the entire list of questions and responses" do
-        question = Factory(:question, :script => script)
-        another_question = Factory(:question, :script => Factory(:script))
-        2.times { Factory(:possible_response, :question => question) }
+        question = create(:question, :script => script)
+        another_question = create(:question, :script => create(:script))
+        2.times { create(:possible_response, :question => question) }
         get :call_details, :id => caller.id, :campaign_id => campaign.id
         response.should be_ok
         assigns(:questions_and_responses).should have(1).item
-        assigns(:questions_and_responses)[question.text].should have(2).items
+        assigns(:questions_and_responses)[question.text].should have(3).items
       end
 
       it "shows only the campaigns in which the caller was involved" do
-        another_campaign = Factory(:campaign, :script => script, :active => true, :account => @user.account)
+        another_campaign = create(:campaign, :script => script, :active => true, :account => @user.account)
         get :call_details, :id => caller.id, :campaign_id => campaign.id
         response.should be_ok
         assigns(:campaigns_data).should == [[campaign.name, campaign.id]]
@@ -80,9 +80,9 @@ describe Client::CallersController do
 
   describe "reassign caller campaign" do
     it "should change caller campaign" do
-      campaign = Factory(:progressive, :account => @user.account)
-      other_campaign = Factory(:progressive, :account => @user.account)
-      caller = Factory(:caller, campaign_id: campaign.id)
+      campaign = create(:progressive, :account => @user.account)
+      other_campaign = create(:progressive, :account => @user.account)
+      caller = create(:caller, campaign_id: campaign.id)
       post :reassign_to_campaign, id: caller.id, campaign_id: other_campaign.id
       caller.reload.campaign_id.should eq(other_campaign.id)
     end
@@ -91,7 +91,7 @@ describe Client::CallersController do
   context 'api' do
     describe 'index' do
       it 'returns all of the callers for that account' do
-        3.times {Factory(:caller, account: account)}
+        3.times {create(:caller, account: account)}
         get :index, api_key: account.api_key, format: 'json'
         JSON.parse(response.body).length.should eq(3)
       end
@@ -114,13 +114,13 @@ describe Client::CallersController do
 
     describe 'show' do
       it 'returns the caller as json' do
-        caller = Factory(:caller, account: account)
+        caller = create(:caller, account: account)
         get :show, id: caller.id, api_key: account.api_key, format: 'json'
         response.body.should eq(caller.to_json)
       end
 
       it 'gives an error if you try to access a caller from another account' do
-        caller = Factory(:caller)
+        caller = create(:caller)
         get :show, id: caller.id, api_key: account.api_key, format: 'json'
         JSON.parse(response.body).should eq({"message" => "Cannot access caller"})
       end
@@ -128,13 +128,13 @@ describe Client::CallersController do
 
     describe 'update' do
       it 'gives a successful response if validations are met' do
-        caller = Factory(:caller, account: account)
+        caller = create(:caller, account: account)
         put :update, id: caller.id, api_key: account.api_key, format: 'json', caller: {name: 'whatever'}
         JSON.parse(response.body).should eq({'message' => 'Caller updated'})
       end
 
       it 'returns validation errors for invalid requests' do
-        caller = Factory(:caller, account: account)
+        caller = create(:caller, account: account)
         put :update, id: caller.id, api_key: account.api_key, format: 'json', caller: {campaign_id: ''}
         JSON.parse(response.body).should eq({"errors"=>{"campaign_id"=>["can't be blank"]}})
       end
@@ -142,19 +142,19 @@ describe Client::CallersController do
 
     describe 'destroy' do
       it 'returns JSON saying the caller was deleted' do
-        caller = Factory(:caller, account: account)
+        caller = create(:caller, account: account)
         delete :destroy, id: caller.id, api_key: account.api_key, format: 'json'
         JSON.parse(response.body).should eq({'message' => 'Caller deleted'})
       end
 
       it 'marks the caller as inactive' do
-        caller = Factory(:caller, account: account)
+        caller = create(:caller, account: account)
         delete :destroy, id: caller.id, api_key: account.api_key, format: 'json'
         caller.reload.active.should be_false
       end
 
       it 'will not delete a caller from another account' do
-        caller = Factory(:caller)
+        caller = create(:caller)
         delete :destroy, id: caller.id, api_key: account.api_key, format: 'json'
         JSON.parse(response.body).should eq({'message' => 'Cannot access caller'})
       end
@@ -162,7 +162,7 @@ describe Client::CallersController do
 
     describe 'deleted' do
       it 'should show deleted callers' do
-        caller = Factory(:caller, account: account, active: false)
+        caller = create(:caller, account: account, active: false)
         get :deleted, api_key: account.api_key, format: 'json'
         JSON.parse(response.body).length.should eq 1
       end
@@ -170,7 +170,7 @@ describe Client::CallersController do
 
     describe 'restore' do
       it 'should change a caller from inactive to active' do
-        caller = Factory(:caller, account: account, active: false)
+        caller = create(:caller, account: account, active: false)
         put :restore, id: caller.id, api_key: account.api_key, format: 'json'
         response.body.should eq("{\"message\":\"Caller restored\"}")
       end

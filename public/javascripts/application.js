@@ -14,3 +14,7 @@ function delete_entity(form_id){
 		$(form_id).submit();
 }
 
+
+function isNativeApp(){
+  return (navigator.userAgent == "ImpactDialing-Android" || navigator.userAgent == "ImpactDialing-Apple");
+}

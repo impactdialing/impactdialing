@@ -3,13 +3,13 @@ require Rails.root.join('app/models/redis/redis_call.rb')
 
 describe PersistCalls do
 
-  let!(:campaign) { Factory(:campaign) }
-  let!(:voter) { Factory(:voter, campaign: campaign) }
-  let!(:call_attempt) { Factory(:call_attempt, voter: voter, campaign: campaign) }
-  let!(:call) { Factory(:call, call_attempt: call_attempt) }
+  let!(:campaign) { create(:campaign) }
+  let!(:voter) { create(:voter, campaign: campaign) }
+  let!(:call_attempt) { create(:call_attempt, voter: voter, campaign: campaign) }
+  let!(:call) { create(:call, call_attempt: call_attempt) }
   let!(:time) { Time.now.to_s }
-  let!(:new_call_attempt) { Factory(:call_attempt, voter: voter, campaign: campaign) }
-  let!(:new_call) { Factory(:call, call_attempt: new_call_attempt) }
+  let!(:new_call_attempt) { create(:call_attempt, voter: voter, campaign: campaign) }
+  let!(:new_call) { create(:call, call_attempt: new_call_attempt) }
 
   before(:each) do
     $redis_call_flow_connection.lpush "abandoned_call_list", {id: call.id, current_time: time}.to_json
