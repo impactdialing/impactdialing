@@ -7,7 +7,6 @@
       <p>Minutes Left:  <%= @subscription.available_minutes %></p>
         <p class="actions"><a href="/client/subscriptions/<%= @subscription.id%>" class="action primary confirm">Upgrade</a>
       <% if !@subscription.trial? %>
-        <a href="/client/update_billing_quantity" class="action secondary">Change # of callers</a>
         <%= link_to 'Cancel subscription', {action: "cancel", id: @subscription.id}, method: "put",class: "action secondary", confirm: 'Are you sure you want to cancel your subscription?' %>      
         </p>
       <% end %>

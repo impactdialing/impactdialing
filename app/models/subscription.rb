@@ -3,6 +3,7 @@ class Subscription < ActiveRecord::Base
   belongs_to :account
   validate :minutes_utlized_less_than_total_allowed_minutes
   validates :number_of_callers, numericality: { greater_than:  0}, :if => Proc.new{|subscription| subscription.per_agent? }
+  validate :number_of_callers_cant_be_reduced_before_subscription_renewal
   
 
   module Type
@@ -31,6 +32,12 @@ class Subscription < ActiveRecord::Base
   def minutes_utlized_less_than_total_allowed_minutes    
     if minutes_utlized_changed? && available_minutes < 0
       errors.add(:base, 'You have consumed all your minutes for your subscription')
+    end
+  end
+
+  def number_of_callers_cant_be_reduced_before_subscription_renewal
+    if number_of_callers_changed? && number_of_callers_was > number_of_callers
+      errors.add(:base, 'You cant decrease the number of callers in the middle of a subscription cycle.')
     end
   end
 
@@ -67,12 +74,14 @@ class Subscription < ActiveRecord::Base
   end
 
   def update_callers(new_num_callers)    
-    if (new_num_callers < number_of_callers)
-      update_subscription({quantity: new_num_callers, plan: stripe_plan_id, prorate: true})
-      remove_callers(number_of_callers - new_num_callers)
+    begin
+      subscription = update_subscription({quantity: new_num_callers, plan: stripe_plan_id, prorate: true})
+    rescue
+    end
+    if (new_num_callers < number_of_callers)      
+      remove_callers(subscription.quantity)                  
     else
-      update_subscription({quantity: new_num_callers, prorate: true, plan: stripe_plan_id})         
-      add_callers(new_num_callers - number_of_callers)
+      add_callers(subscription.quantity)      
     end
   end
 
@@ -97,8 +106,7 @@ class Subscription < ActiveRecord::Base
         if(plan_type == Type::PER_MINUTE)
           recharge(amount)
         else                    
-          update_subscription({card: token, plan: Subscription.stripe_plan_id(plan_type), quantity: number_of_callers, 
-            prorate: true})        
+          update_subscription({plan: Subscription.stripe_plan_id(plan_type), quantity: number_of_callers, prorate: true})        
         end
       end
     rescue Exception => e
@@ -123,13 +131,11 @@ class Subscription < ActiveRecord::Base
 
   def add_callers(number_of_callers_to_add)
     self.number_of_callers = number_of_callers + number_of_callers_to_add    
-    self.total_allowed_minutes +=  calculate_minute_on_add_callers(number_of_callers_to_add)
-    self.save
+    self.total_allowed_minutes +=  calculate_minute_on_add_callers(number_of_callers_to_add)    
   end
 
   def remove_callers(number_of_callers_to_remove)    
-    self.number_of_callers = number_of_callers - number_of_callers_to_remove
-    self.save
+    self.number_of_callers = number_of_callers - number_of_callers_to_remove    
   end
 
   def calculate_minutes_on_upgrade        

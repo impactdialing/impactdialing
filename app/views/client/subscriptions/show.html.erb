@@ -27,9 +27,15 @@
       <p id="add_to_balance" style="display:none">
         <label>Add to Balance:</label>
         <input type="text"  class="field" style="width:50px" name="subscription[amount]"/> $
-      </p>
-
+      </p>      
    </fieldset>  
+   <% unless @subscription.trial?%>
+        <p>
+          <div class="buttons">
+            <button type="submit">Upgrade</button>
+          </div>
+        </p>
+      <% end %>
     <fieldset>    
       <legend>Card Information</legend>
       <p>
@@ -79,7 +85,7 @@
       </p>
       </fieldset>
  <div class="buttons">
-  <button type="submit">Submit Payment</button>
+  <button type="submit" id="submit-payment">Submit Payment</button>
 </div>
  
 <% end %>
@@ -114,8 +120,8 @@
 
       $("#expiry-month").val("<%= @subscription.exp_month%>");
       $("#expiry-year").val("<%= @subscription.exp_year %>");
-      $('#payment-form').submit(function(event) {
-        var $form = $(this);
+      $('#submit-payment').click(function(event) {
+        var $form = $("#payment-form");
         $form.find('button').prop('disabled', true);        
         Stripe.createToken($form, stripeResponseHandler);       
         return false;
