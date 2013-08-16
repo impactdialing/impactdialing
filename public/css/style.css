@@ -1157,9 +1157,9 @@ color : rgba(255,255,255,.9); }
 }
 
 #caller-actions {
-   /*position:fixed;
+   position:fixed;
    bottom:0px;
    height:170px;
    width:100%;
-   background:white;*/
+   background:white;
 }
