@@ -1148,3 +1148,18 @@ color : rgba(255,255,255,.9); }
 #ui-datepicker-div{
   font-size: 12px;
 }
+
+.sticky-voter-info{
+  background:white;
+  opacity:1.0;
+  padding-top:1em;
+  padding-bottom: .01em;
+}
+
+#caller-actions {
+   /*position:fixed;
+   bottom:0px;
+   height:170px;
+   width:100%;
+   background:white;*/
+}
