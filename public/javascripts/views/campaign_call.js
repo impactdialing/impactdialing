@@ -15,6 +15,8 @@ ImpactDialing.Views.CampaignCall = Backbone.View.extend({
 
     this.fetchCallerInfo();
     $("#schedule_callback").html(this.schedule_callback_view.render().el);
+    $('.sticky').stickyScroll({ container: '#container' });
+    $('.sticky-actions').stickyScroll({ mode: "manual", bottomBoundary: 150 });
   },
 
 
