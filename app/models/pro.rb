@@ -1,4 +1,5 @@
 class Pro < Subscription
+  include PerAgent
   def campaign_types
     [Campaign::Type::PREVIEW, Campaign::Type::POWER, Campaign::Type::PREDICTIVE]
   end

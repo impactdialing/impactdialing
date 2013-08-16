@@ -45,5 +45,28 @@ class PerMinute < Subscription
     self.total_allowed_minutes = old_available_minutes + calculate_minutes_on_upgrade(amount)
   end
 
+  def create_customer(token, email, plan_type, number_of_callers, amount)
+    create_customer_charge(token, email, amount)
+  end
+
+  def create_subscription(token, email, plan_type, number_of_callers, amount)
+    upgrade(plan_type, number_of_callers, amount)
+    begin
+      customer = create_customer(token, email, plan_type, number_of_callers, amount)
+      update_info(plan_type, number_of_callers, amount)
+    rescue
+      errors.add(:base, e.message)
+    end
+    
+  end
+
+  def upgrade_subscription(token, email, plan_type, number_of_callers, amount)
+    upgrade(plan_type, number_of_callers, amount)
+    begin
+      recharge(amount)    
+    rescue
+      errors.add(:base, e.message)
+    end
+  end
 
 end

@@ -5,14 +5,14 @@ module SubscriptionProvider
 
   module InstanceMethods
 
-		def create_customer(token, email, plan_type, number_of_callers, amount)
-			if [Subscription::Type::TRIAL, Subscription::Type::BASIC, Subscription::Type::PRO, Subscription::Type::BUSINESS].include?(plan_type)
-				Stripe::Customer.create(card: token, email: email, plan: Subscription.stripe_plan_id(plan_type), quantity: number_of_callers)
-			else
-				customer = Stripe::Customer.create(card: token, email: email)
-				Stripe::Charge.create(amount: amount, currency: "usd", customer: customer.id)
-				customer
-			end
+		def create_customer_plan(token, email, plan_type, number_of_callers)
+			Stripe::Customer.create(card: token, email: email, plan: Subscription.stripe_plan_id(plan_type), quantity: number_of_callers)
+		end
+
+		def create_customer_charge(token, email, amount)
+			customer = Stripe::Customer.create(card: token, email: email)
+			Stripe::Charge.create(amount: amount, currency: "usd", customer: customer.id)
+			customer
 		end
 
 		def retrieve_customer
@@ -21,8 +21,7 @@ module SubscriptionProvider
 
 		def update_subscription(params)			
 			stripe_customer = retrieve_customer
-			subscription = stripe_customer.update_subscription(params)
-			invoice_customer
+			subscription = stripe_customer.update_subscription(params)			
 			subscription
 		end
 

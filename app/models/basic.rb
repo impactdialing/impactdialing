@@ -1,4 +1,5 @@
 class Basic < Subscription
+  include PerAgent
 
   def campaign_types
     [Campaign::Type::PREVIEW, Campaign::Type::POWER]

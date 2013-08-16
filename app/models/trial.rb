@@ -1,4 +1,5 @@
 class Trial < Subscription
+  include PerAgent
 
   validate :has_only_one_caller  
 
