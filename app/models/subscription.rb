@@ -3,6 +3,7 @@ class Subscription < ActiveRecord::Base
   belongs_to :account
   validate :minutes_utlized_less_than_total_allowed_minutes
   validates :number_of_callers, numericality: { greater_than:  0}, :if => Proc.new{|subscription| subscription.per_agent? }
+  validate :downgrading_subscription
   
   
 
@@ -14,6 +15,7 @@ class Subscription < ActiveRecord::Base
     PER_MINUTE = "PerMinute"
     ENTERPRISE = "Enterprise"
     PAID_SUBSCRIPTIONS = [BASIC,PRO,BUSINESS, PER_MINUTE]
+    PAID_SUBSCRIPTIONS_ORDER = {"Trial"=> 0, "Basic"=> 1, "Pro"=> 2, "Business"=> 3, "PerMinute"=> 4}
   end
 
   module Status
@@ -27,11 +29,17 @@ class Subscription < ActiveRecord::Base
     type == Type::TRIAL || status == Status::ACTIVE
   end
 
-
-
   def minutes_utlized_less_than_total_allowed_minutes    
     if minutes_utlized_changed? && available_minutes < 0
       errors.add(:base, 'You have consumed all your minutes for your subscription')
+    end
+  end
+
+  def downgrading_subscription
+    if type_changed?             
+      if Type::PAID_SUBSCRIPTIONS_ORDER[self.changes["type"].last] < Type::PAID_SUBSCRIPTIONS_ORDER[self.changes["type"].first] && minutes_utlized < total_allowed_minutes
+      errors.add(:base, 'You cant downgrade your subscription till you utlize all your current minutes')
+      end
     end
   end
 
@@ -42,7 +50,6 @@ class Subscription < ActiveRecord::Base
   def number_of_days_in_current_month
     Time.days_in_month(DateTime.now.month, DateTime.now.year)
   end
-
   
   def available_minutes
     days_of_subscription = (DateTime.now.to_date - subscription_start_date.to_date).to_i

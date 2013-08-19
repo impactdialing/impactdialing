@@ -15,7 +15,7 @@
     <legend>Plan</legend>
       <p>
         <label>Select Plan:</label>
-        <select name="subscription[type]" id="subscription_type">
+        <select name="subscription[type]" id="subscription_type" data-value="<%= @subscription.type%>">
           <%= options_for_select Subscription::Type::PAID_SUBSCRIPTIONS,
                                  @subscription.type %>          
         </select>

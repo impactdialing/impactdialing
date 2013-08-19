@@ -250,5 +250,11 @@ describe Basic do
     end
   end
 
+  describe "upgrade to per minute" do
+    it "should upgrade to per minute" do
+      
+    end
+  end
+
 
 end

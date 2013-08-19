@@ -206,6 +206,23 @@ describe Pro do
 
   end
 
+   describe "update subscription" do
+    before(:each) do
+      @account =  create(:account, record_calls: false)
+      @account.reload   
+      @account.subscription.change_subscription_type(Subscription::Type::PRO)         
+      @account.subscription.upgrade("Pro")
+      @account.reload
+    end
+
+    it "should not prorate when downgrading" do      
+      @account.subscription.update_attributes(minutes_utlized: @account.subscription.total_allowed_minutes)
+      @account.subscription.should_receive(:update_subscription_plan).with({quantity: 1, plan: "ImpactDialing-Basic", prorate: false})      
+      @account.subscription.upgrade_subscription("token", "email", Subscription::Type::BASIC, 1, nil)
+    end
+
+   end
+
 
 
 

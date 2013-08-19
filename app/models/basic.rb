@@ -61,5 +61,6 @@ class Basic < Subscription
       script.transfers.each { |transfer| transfer.delete }
     end        
     self.total_allowed_minutes = calculate_minutes_on_upgrade
+    self.minutes_utlized = 0
   end
 end

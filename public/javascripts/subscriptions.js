@@ -7,6 +7,7 @@ var Subscriptions = function(){
    this.submitPaymentEvent();
    this.subscriptionTypeChangeEvent();
    this.number_of_callers_reduced();
+   this.is_subscription_downgraded();
 
 }
 
@@ -66,6 +67,16 @@ Subscriptions.prototype.number_of_callers_reduced = function(){
 			alert("On reducing the number of callers your minutes you paid for will still be retained, however you wont be refunded for the payment already made for the caller.")
 		}
 		
-	})
+	});
+Subscriptions.prototype.is_subscription_downgraded = function(){
+	var subscription_type = {"Basic": 1, "Pro": 2, "Business": 3}
+	$("#subscription_type").change(function() {
+		if(subscription_type[$(this).val()] < subscription_type[$(this).data("value")]){
+			alert("holla")
+		}
+
+	});
+}
+
 }
 
