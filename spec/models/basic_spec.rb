@@ -207,4 +207,48 @@ describe Basic do
     end
   end
 
+  describe "update callers" do
+    before(:each) do
+      @account =  create(:account, record_calls: false)
+      @account.reload      
+      @account.subscription.change_subscription_type(Subscription::Type::BASIC)      
+      @account.subscription.upgrade(Subscription::Type::BASIC)      
+      @account.reload      
+    end
+
+    it "should remove callers if new number of caller less than existing" do      
+      @account.subscription.number_of_callers = 2
+      @account.subscription.save            
+      @account.subscription.should_receive(:update_subscription_plan).with({quantity: 1, plan: @account.subscription.stripe_plan_id, prorate: false})
+      @account.subscription.upgrade_subscription("token", "email", Subscription::Type::BASIC, 1, nil)
+      @account.subscription.number_of_callers.should eq(1)
+    end
+
+    it "should raise exception if new number of caller less than 1" do      
+      @account.subscription.number_of_callers = 2
+      @account.subscription.save           
+      expect { @account.subscription.update_subscription_plan({quantity: 0, plan: @account.subscription.stripe_plan_id, prorate: false})}.to raise_error(Stripe::InvalidRequestError)            
+      @account.subscription.upgrade_subscription("token", "email", Subscription::Type::BASIC, 0, nil)
+      @account.subscription.number_of_callers.should eq(2)
+      @account.subscription.errors.messages.should eq({:base=>["Please submit a valid number of callers"]})
+    end
+
+    it "should add callers" do      
+      @account.subscription.number_of_callers = 2
+      @account.subscription.save           
+      @account.subscription.should_receive(:update_subscription_plan).with({quantity: 3, plan: @account.subscription.stripe_plan_id, prorate: true})
+      @account.subscription.should_receive(:invoice_customer)
+      @account.subscription.upgrade_subscription("token", "email", Subscription::Type::BASIC, 3, nil)
+      @account.subscription.number_of_callers.should eq(3)      
+    end
+
+    it "should provide warning of upgrade is similar to what exist" do
+      @account.subscription.number_of_callers = 2
+      @account.subscription.save           
+      @account.subscription.upgrade_subscription("token", "email", Subscription::Type::BASIC, 2, nil)
+      @account.subscription.errors.messages.should eq({:base=>["The subscription details submitted are identical to what already exists"]})            
+    end
+  end
+
+
 end

@@ -20,6 +20,8 @@ module PerAgent
   	def upgrade_subscription(token, email, plan_type, num_of_callers, amount)
   		if((plan_type == type) && (num_of_callers != number_of_callers))
   			update_callers(num_of_callers)
+      elsif((plan_type == type) && (num_of_callers == number_of_callers))
+        errors.add(:base, 'The subscription details submitted are identical to what already exists')
   		else
         change_subscription_type(plan_type)      
   			account.subscription.upgrade(plan_type, num_of_callers, amount)        
@@ -35,9 +37,9 @@ module PerAgent
       end
   	end
 
-  	def update_callers(new_num_callers)    
+  	def update_callers(new_num_callers)          
     	if(new_num_callers < number_of_callers)
-        begin
+        begin          
       	 modified_subscription = update_subscription_plan({quantity: new_num_callers, plan: stripe_plan_id, prorate: false})
         rescue Stripe::InvalidRequestError => e
           errors.add(:base, 'Please submit a valid number of callers')

@@ -130,6 +130,7 @@ describe Subscription do
 		end
 	end
 
+	
 	describe "cancel" do
 		it "should cancel it" do
 			account = create(:account)
