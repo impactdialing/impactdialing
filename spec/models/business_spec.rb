@@ -17,6 +17,7 @@ describe Business do
     before(:each) do
         @account =  create(:account, record_calls: false)
         @account.reload
+        @account.subscription.change_subscription_type(Subscription::Type::BUSINESS)         
         @account.subscription.upgrade("Business")
         @account.reload
     end
@@ -47,6 +48,7 @@ describe Business do
     before(:each) do
         @account =  create(:account, record_calls: false)
         @account.reload
+        @account.subscription.change_subscription_type(Subscription::Type::BUSINESS)         
         @account.subscription.upgrade("Business")
         @account.reload
     end
@@ -69,6 +71,7 @@ describe Business do
       before(:each) do
         @account =  create(:account, record_calls: false)
         @account.reload
+        @account.subscription.change_subscription_type(Subscription::Type::BUSINESS)         
         @account.subscription.upgrade("Business")
         @account.reload
     end
@@ -91,6 +94,7 @@ describe Business do
       before(:each) do
         @account =  create(:account, record_calls: false)
         @account.reload
+        @account.subscription.change_subscription_type(Subscription::Type::BUSINESS)         
         @account.subscription.upgrade("Business")
         @account.reload
       end
@@ -104,6 +108,7 @@ describe Business do
     before(:each) do
       @account =  create(:account, record_calls: false)
       @account.reload
+      @account.subscription.change_subscription_type(Subscription::Type::BUSINESS)         
       @account.subscription.upgrade("Business")
       @account.reload
     end
@@ -135,6 +140,7 @@ describe Business do
     before(:each) do
       @account =  create(:account, record_calls: false)
       @account.reload      
+      @account.subscription.change_subscription_type(Subscription::Type::BUSINESS)         
       @account.subscription.upgrade("Business")
       @account.reload
     end
@@ -157,6 +163,7 @@ describe Business do
     before(:each) do
       @account =  create(:account, record_calls: false)
       @account.reload      
+      @account.subscription.change_subscription_type(Subscription::Type::BUSINESS)         
       @account.subscription.upgrade("Business")
       @account.reload
     end
@@ -174,6 +181,7 @@ describe Business do
     before(:each) do
       @account =  create(:account, record_calls: false)
       @account.reload      
+      @account.subscription.change_subscription_type(Subscription::Type::BUSINESS)         
       @account.subscription.upgrade("Business")
       @account.reload
     end

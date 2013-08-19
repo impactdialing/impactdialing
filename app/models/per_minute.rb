@@ -40,9 +40,20 @@ class PerMinute < Subscription
     amount.to_f/0.09
   end
 
+  def upgrade(new_plan, num_of_callers=1, amount=0)                
+    account.subscription.subscribe(amount)
+    account.subscription.save    
+  end
 
-  def subscribe(old_available_minutes, amount)        
-    self.total_allowed_minutes = old_available_minutes + calculate_minutes_on_upgrade(amount)
+
+  def subscribe(amount, old_available_minutes=0)        
+    self.total_allowed_minutes = calculate_minutes_on_upgrade(amount) + old_available_minutes
+  end
+
+  def recharge_subscription(amount)
+    recharge(amount)
+    subscribe(amount, total_allowed_minutes)
+    self.save
   end
 
   def create_customer(token, email, plan_type, number_of_callers, amount)
@@ -61,7 +72,8 @@ class PerMinute < Subscription
   end
 
   def upgrade_subscription(token, email, plan_type, number_of_callers, amount)
-    upgrade(plan_type, number_of_callers, amount)
+    change_subscription_type(plan_type)
+    account.subscription.upgrade(plan_type, number_of_callers, amount)
     begin
       recharge(amount)    
     rescue

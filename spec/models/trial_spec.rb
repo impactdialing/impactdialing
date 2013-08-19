@@ -143,6 +143,7 @@ describe Trial do
     end
 
     it "should change record calls to false" do
+      @account.subscription.change_subscription_type(Subscription::Type::BASIC)      
       @account.subscription.upgrade(Subscription::Type::BASIC)
       @account.reload
       @account.record_calls.should be_false
@@ -150,6 +151,7 @@ describe Trial do
 
     it "should convert any predictive campaigns to preview" do
       create(:predictive, account: @account)
+      @account.subscription.change_subscription_type(Subscription::Type::BASIC)      
       @account.subscription.upgrade(Subscription::Type::BASIC)
       @account.reload
       @account.campaigns.first.type.should eq(Campaign::Type::PREVIEW)
@@ -160,30 +162,33 @@ describe Trial do
       create(:transfer, phone_number: "(203) 643-0521", transfer_type: "warm", script: script)
       script.reload
       script.transfers.size.should eq(1)
-      @account.subscription.upgrade(Subscription::Type::BASIC)
+      @account.subscription.change_subscription_type(Subscription::Type::BASIC)      
+      @account.subscription.upgrade(Subscription::Type::BASIC)      
       @account.reload
       script.reload
       script.transfers.should eq([])
     end
 
     it "should add delta of minutes on upgrade" do
-      date = DateTime.new(DateTime.now.year,DateTime.now.month,13)
-      subscription_start_date  = date-10.days
-      puts subscription_start_date
-      @account.subscription.update_attributes(minutes_utlized: 10, subscription_start_date: subscription_start_date)
+      date = DateTime.new(DateTime.now.year,DateTime.now.month,13).utc
+      subscription_start_date  = date-10.days      
+      @account.subscription.update_attributes(minutes_utlized: 10, subscription_start_date: subscription_start_date)      
+      Subscription.should_receive(:todays_date).and_return(date.to_date)
+      @account.subscription.change_subscription_type(Subscription::Type::BASIC)      
       @account.subscription.upgrade(Subscription::Type::BASIC,1,0)
       @account.reload
-      @account.subscription.total_allowed_minutes.should eq(612)
+      @account.subscription.total_allowed_minutes.should eq(677)
     end
 
     it "should add delta of minutes on upgrade" do
       date = DateTime.new(DateTime.now.year,DateTime.now.month,13)
-      subscription_start_date  = date-10.days
-      puts subscription_start_date
-      @account.subscription.update_attributes(minutes_utlized: 10, subscription_start_date: subscription_start_date)
+      subscription_start_date  = date-10.days      
+      @account.subscription.update_attributes(minutes_utlized: 10, subscription_start_date: subscription_start_date)      
+      Subscription.should_receive(:todays_date).and_return(date.to_date)
+      @account.subscription.change_subscription_type(Subscription::Type::BASIC)      
       @account.subscription.upgrade(Subscription::Type::BASIC)
       @account.reload
-      @account.subscription.total_allowed_minutes.should eq(612)
+      @account.subscription.total_allowed_minutes.should eq(677)
     end
   end
 

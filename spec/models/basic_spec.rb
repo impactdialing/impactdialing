@@ -18,6 +18,7 @@ describe Basic do
     before(:each) do
       @account =  create(:account)
       @account.reload
+      @account.subscription.change_subscription_type(Subscription::Type::BASIC)      
       @account.subscription.upgrade("Basic")
       @account.reload
     end
@@ -48,6 +49,7 @@ describe Basic do
     before(:each) do
       @account =  create(:account)
       @account.reload
+      @account.subscription.change_subscription_type(Subscription::Type::BASIC)      
       @account.subscription.upgrade("Basic")
       @account.reload
     end
@@ -70,6 +72,7 @@ describe Basic do
       before(:each) do
       @account =  create(:account, record_calls: false)
       @account.reload
+      @account.subscription.change_subscription_type(Subscription::Type::BASIC)      
       @account.subscription.upgrade("Basic")
       @account.reload
     end
@@ -94,6 +97,7 @@ describe Basic do
       before(:each) do
         @account =  create(:account, record_calls: false)
         @account.reload
+        @account.subscription.change_subscription_type(Subscription::Type::BASIC)      
         @account.subscription.upgrade("Basic")
         @account.reload
       end
@@ -108,6 +112,7 @@ describe Basic do
     before(:each) do
       @account =  create(:account, record_calls: false)
       @account.reload
+      @account.subscription.change_subscription_type(Subscription::Type::BASIC)      
       @account.subscription.upgrade("Basic")
       @account.reload
     end
@@ -139,6 +144,7 @@ describe Basic do
     before(:each) do
       @account =  create(:account, record_calls: false)
       @account.reload      
+      @account.subscription.change_subscription_type(Subscription::Type::BASIC)      
       @account.subscription.upgrade("Basic")
       @account.reload
     end
@@ -161,6 +167,7 @@ describe Basic do
     before(:each) do
       @account =  create(:account, record_calls: false)
       @account.reload      
+      @account.subscription.change_subscription_type(Subscription::Type::BASIC)      
       @account.subscription.upgrade("Basic")
       @account.reload
     end
@@ -178,6 +185,7 @@ describe Basic do
     before(:each) do
       @account =  create(:account, record_calls: false)
       @account.reload      
+      @account.subscription.change_subscription_type(Subscription::Type::BASIC)      
       @account.subscription.upgrade("Basic")
       @account.reload
     end
@@ -197,8 +205,6 @@ describe Basic do
       @account.subscription.renew
       @account.subscription.total_allowed_minutes.should eq(2000)
     end
-
-
   end
 
 end

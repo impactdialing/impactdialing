@@ -19,10 +19,8 @@ module SubscriptionProvider
 			Stripe::Customer.retrieve(stripe_customer_id)
 		end
 
-		def update_subscription(params)			
-			stripe_customer = retrieve_customer
-			subscription = stripe_customer.update_subscription(params)			
-			subscription
+		def update_subscription_plan(params)						
+			retrieve_customer.update_subscription(params)						
 		end
 
 		def recharge(amount)

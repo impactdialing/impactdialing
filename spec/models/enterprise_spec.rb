@@ -16,7 +16,8 @@ describe Enterprise do
     before(:each) do
         @account =  create(:account, record_calls: false)
         @account.reload
-        @account.subscription.upgrade("Enterprise")
+        @account.subscription.change_subscription_type(Subscription::Type::ENTERPRISE)      
+        @account.subscription.upgrade(Subscription::Type::ENTERPRISE)
         @account.reload
     end
 
@@ -46,7 +47,8 @@ describe Enterprise do
     before(:each) do
       @account =  create(:account, record_calls: false)
       @account.reload
-      @account.subscription.upgrade("Enterprise")
+      @account.subscription.change_subscription_type(Subscription::Type::ENTERPRISE)
+      @account.subscription.upgrade(Subscription::Type::ENTERPRISE)
       @account.reload
     end
 
@@ -69,6 +71,7 @@ describe Enterprise do
       before(:each) do
         @account =  create(:account, record_calls: false)
         @account.reload
+        @account.subscription.change_subscription_type(Subscription::Type::ENTERPRISE)      
         @account.subscription.upgrade("Enterprise")
         @account.reload
       end
@@ -92,7 +95,8 @@ describe Enterprise do
       before(:each) do
         @account =  create(:account, record_calls: false)
         @account.reload
-        @account.subscription.upgrade("Enterprise")
+        @account.subscription.change_subscription_type(Subscription::Type::ENTERPRISE)      
+        @account.subscription.upgrade(Subscription::Type::ENTERPRISE)
         @account.reload
       end
 

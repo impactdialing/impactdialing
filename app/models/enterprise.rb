@@ -1,4 +1,5 @@
 class Enterprise < Subscription
+  include PerAgent
 
   def campaign_types
     [Campaign::Type::PREVIEW, Campaign::Type::POWER, Campaign::Type::PREDICTIVE]
@@ -43,7 +44,9 @@ class Enterprise < Subscription
   def debit(call_time)
   end
 
-  def subscribe(minutes)
+  def subscribe
+    
   end
 
+  
 end

@@ -7,9 +7,10 @@ module Client
 
 		def show			
 		end
+
 		def update			
-			subscription = params[:subscription]
-			if @subscription.stripe_customer_id.nil?
+			subscription = params[:subscription]			
+			if @subscription.stripe_customer_id.nil?				
 				@subscription.create_subscription(subscription[:stripeToken], account.users.first.email, subscription[:type], subscription[:number_of_callers], subscription[:amount])
 			else
 				@subscription.upgrade_subscription(subscription[:stripeToken], account.users.first.email, subscription[:type], subscription[:number_of_callers].to_i, subscription[:amount])

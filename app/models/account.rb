@@ -266,7 +266,7 @@ class Account < ActiveRecord::Base
     secure_digest(Time.now, (1..10).map{ rand.to_s })
   end
 
-  def create_trial_subscription
+  def create_trial_subscription    
     self.subscription = Trial.new(minutes_utlized: 0, total_allowed_minutes: 50.00, subscription_start_date: DateTime.now,
       number_of_callers: 1)
   end

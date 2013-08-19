@@ -16,6 +16,7 @@ describe Pro do
     before(:each) do
         @account =  create(:account, record_calls: false)
         @account.reload
+        @account.subscription.change_subscription_type(Subscription::Type::PRO)      
         @account.subscription.upgrade("Pro")
         @account.reload
     end
@@ -46,6 +47,7 @@ describe Pro do
     before(:each) do
         @account =  create(:account, record_calls: false)
         @account.reload
+        @account.subscription.change_subscription_type(Subscription::Type::PRO)      
         @account.subscription.upgrade("Pro")
         @account.reload
     end
@@ -68,6 +70,7 @@ describe Pro do
       before(:each) do
         @account =  create(:account, record_calls: false)
         @account.reload
+        @account.subscription.change_subscription_type(Subscription::Type::PRO)      
         @account.subscription.upgrade("Pro")
         @account.reload
       end      
@@ -90,6 +93,7 @@ describe Pro do
       before(:each) do
         @account =  create(:account, record_calls: false)
         @account.reload
+        @account.subscription.change_subscription_type(Subscription::Type::PRO)      
         @account.subscription.upgrade("Pro")
         @account.reload
       end     
@@ -105,6 +109,7 @@ describe Pro do
     before(:each) do
       @account =  create(:account, record_calls: false)
       @account.reload
+      @account.subscription.change_subscription_type(Subscription::Type::PRO)      
       @account.subscription.upgrade("Pro")
       @account.reload
     end
@@ -136,6 +141,7 @@ describe Pro do
     before(:each) do
       @account =  create(:account, record_calls: false)
       @account.reload      
+      @account.subscription.change_subscription_type(Subscription::Type::PRO)      
       @account.subscription.upgrade("Pro")
       @account.reload
     end
@@ -157,7 +163,8 @@ describe Pro do
   describe "remove caller" do
     before(:each) do
       @account =  create(:account, record_calls: false)
-      @account.reload      
+      @account.reload    
+      @account.subscription.change_subscription_type(Subscription::Type::PRO)        
       @account.subscription.upgrade("Pro")
       @account.reload
     end
@@ -174,7 +181,8 @@ describe Pro do
   describe "renew" do
     before(:each) do
       @account =  create(:account, record_calls: false)
-      @account.reload      
+      @account.reload   
+      @account.subscription.change_subscription_type(Subscription::Type::PRO)         
       @account.subscription.upgrade("Pro")
       @account.reload
     end

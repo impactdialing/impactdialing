@@ -10,41 +10,48 @@ module PerAgent
   		create_customer_plan(token, email, plan_type, number_of_callers)
   	end
 
-  	def create_subscription(token, email, plan_type, number_of_callers, amount)
-  		begin
-  			upgrade(plan_type, number_of_callers, amount)
-      	customer = create_customer(token, email, plan_type, number_of_callers, amount)
-      	update_info(customer)
-      rescue Exception => e
-      	puts e
-      	errors.add(:base, e.message)
-      end
+
+  	def upgrade(new_plan, num_of_callers=1, amount=0)        		
+    	account.subscription.number_of_callers = num_of_callers      
+      account.subscription.subscribe
+    	account.subscription.save          
   	end
 
   	def upgrade_subscription(token, email, plan_type, num_of_callers, amount)
   		if((plan_type == type) && (num_of_callers != number_of_callers))
   			update_callers(num_of_callers)
   		else
-  			upgrade(plan_type, number_of_callers, amount)
-  		end  		
-  		begin
-  			customer = retrieve_customer
-  			update_subscription({plan: Subscription.stripe_plan_id(plan_type), quantity: number_of_callers, prorate: true})
-  			invoice_customer
-  			update_info(customer)
-  		rescue Exception => e
-  			puts e
-  			errors.add(:base, e.message)
-  		end  		
+        change_subscription_type(plan_type)      
+  			account.subscription.upgrade(plan_type, num_of_callers, amount)        
+  		  begin                   
+  			 customer = retrieve_customer         
+  			 update_subscription_plan({plan: Subscription.stripe_plan_id(plan_type), quantity: num_of_callers, prorate: true})         
+  			 invoice_customer         
+  			 update_info(customer)
+  		  rescue Exception => e
+  			 puts e
+  			 errors.add(:base, e.message)
+  		  end  		
+      end
   	end
 
   	def update_callers(new_num_callers)    
     	if(new_num_callers < number_of_callers)
-      	modified_subscription = update_subscription({quantity: new_num_callers, plan: stripe_plan_id, prorate: false})
+        begin
+      	 modified_subscription = update_subscription_plan({quantity: new_num_callers, plan: stripe_plan_id, prorate: false})
+        rescue Stripe::InvalidRequestError => e
+          errors.add(:base, 'Please submit a valid number of callers')
+          return
+        end
       	remove_callers((number_of_callers-new_num_callers))
     	else
-      	modified_subscription = update_subscription({quantity: new_num_callers, plan: stripe_plan_id, prorate: true})
-      	invoice_customer
+        begin
+      	 modified_subscription = update_subscription_plan({quantity: new_num_callers, plan: stripe_plan_id, prorate: true})
+      	 invoice_customer
+        rescue Stripe::InvalidRequestError => e
+          errors.add(:base, 'Please submit a valid number of callers')
+          return
+        end
       	add_callers((new_num_callers-number_of_callers))
     	end
   	end

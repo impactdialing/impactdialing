@@ -57,13 +57,10 @@ describe Subscription do
 		it "should update subscription" do
 			params = {}
 			subscription = create(:basic, stripe_customer_id: "123")
-			stripe_customer = mock
-			invoice = mock
+			stripe_customer = mock			
 			Stripe::Customer.should_receive(:retrieve).and_return(stripe_customer)
-			stripe_customer.should_receive(:update_subscription).with(params)
-			Stripe::Invoice.should_receive(:create).with(customer: "123").and_return(invoice)
-			invoice.should_receive(:pay)
-			subscription.update_subscription(params)
+			stripe_customer.should_receive(:update_subscription).with(params)			
+			subscription.update_subscription_plan(params)
 		end		
 	end
 
@@ -113,6 +110,7 @@ describe Subscription do
 			card_info = mock
 			account.subscription.should_receive(:retrieve_customer).and_return(customer)
 			account.subscription.should_receive(:update_subscription).with({plan: "ImpactDialing-Basic", quantity: 2, prorate: true})
+			account.subscription.should_receive(:invoice_customer)			
 			customer.should_receive(:cards).and_return(cards)
 			cards.should_receive(:data).and_return(datas)
 			datas.should_receive(:first).and_return(card_info)

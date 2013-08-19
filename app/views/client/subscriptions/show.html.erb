@@ -1,6 +1,7 @@
 
 <% content_for :javascripts do %>
   <%= javascript_include_tag "https://js.stripe.com/v1/"%>
+  <%= javascript_include_tag  'subscriptions.js' %>
   <script type="text/javascript">       
     Stripe.setPublishableKey("<%= STRIPE_PUBLISHABLE_KEY  %>");  
   </script>
@@ -21,7 +22,7 @@
       </p>
       <p id="num_of_callers_section">
         <label>Number of Callers:</label>
-        <input type="text"  class="field" style="width:50px" name="subscription[number_of_callers]" value="<%= @subscription.number_of_callers %>"/>
+        <input type="text"  class="field" style="width:50px" name="subscription[number_of_callers]" id="number_of_callers" value="<%= @subscription.number_of_callers %>" data-value="<%= @subscription.number_of_callers %>"/>
       </p>
 
       <p id="add_to_balance" style="display:none">
@@ -91,55 +92,11 @@
 <% end %>
 
 <% content_for :javascripts do %>
-  <script type="text/javascript">
-    var stripeResponseHandler = function(status, response) {      
-      var $form = $('#payment-form');
- 
-      if (response.error) {
-        $('#payment-flash').show();
-        $('.payment-errors').text(response.error.message);
-        $form.find('button').prop('disabled', false);
-      } else {
-        $('#payment-flash').hide();
-        $('.payment-errors').text("");
-        var token = response.id;        
-        $form.append($('<input type="hidden" name="subscription[stripeToken]" />').val(token));        
-        $form.get(0).submit();
-      }
-    };
-    $(function($) {
-      var showPerMinuteOptions = function(){
-          $("#add_to_balance").show();
-          $("#num_of_callers_section").hide();
-      }
-
-      var showPerAgentOptions = function(){
-         $("#add_to_balance").hide();
-         $("#num_of_callers_section").show(); 
-      }
-
+  <script type="text/javascript">    
+    $(function($) {      
       $("#expiry-month").val("<%= @subscription.exp_month%>");
-      $("#expiry-year").val("<%= @subscription.exp_year %>");
-      $('#submit-payment').click(function(event) {
-        var $form = $("#payment-form");
-        $form.find('button').prop('disabled', true);        
-        Stripe.createToken($form, stripeResponseHandler);       
-        return false;
-      });
-      $("#subscription_type").change(function() {
-        if($(this).val() == "PerMinute"){
-          showPerMinuteOptions();
-        
-        }else{
-          showPerAgentOptions();
-        }
-      });
-      if($("#subscription_type").val() == "PerMinute"){
-        showPerMinuteOptions();
-      }else{
-        showPerAgentOptions();
-      }
-
+      $("#expiry-year").val("<%= @subscription.exp_year %>");      
+      var subscriptions = new Subscriptions();      
   });
  </script>
 <% end %>

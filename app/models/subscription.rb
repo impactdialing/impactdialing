@@ -45,7 +45,7 @@ class Subscription < ActiveRecord::Base
 
   
   def available_minutes
-    days_of_subscription = DateTime.now.mjd - subscription_start_date.to_date.mjd      
+    days_of_subscription = (DateTime.now.to_date - subscription_start_date.to_date).to_i
     (days_of_subscription <= number_of_days_in_current_month) ? (total_allowed_minutes - minutes_utlized) : -1
   end
 
@@ -56,8 +56,6 @@ class Subscription < ActiveRecord::Base
     self.save
   end
 
-  
-
   def stripe_plan_id
     "ImpactDialing-" + type
   end
@@ -66,40 +64,38 @@ class Subscription < ActiveRecord::Base
     "ImpactDialing-" + type
   end
 
-  
-
-  def upgrade(new_plan, num_of_callers=1, amount=0)    
+  def change_subscription_type(new_plan)
     self.type = new_plan
-    self.number_of_callers = num_of_callers
     self.save
-    if new_plan == Type::PER_MINUTE
-      account.subscription.subscribe(minutes, amount)
-    else
-      account.subscription.subscribe
-    end
-    account.subscription.save    
   end
-  
+
+  def create_subscription(token, email, plan_type, num_of_callers, amount)    
+    change_subscription_type(plan_type)
+    upgrade(plan_type, num_of_callers, amount)
+    customer = create_customer(token, email, plan_type, num_of_callers, amount)
+    update_info(customer)        
+  end
+
+
   def update_info(customer)    
     card_info = customer.cards.data.first
     account.subscription.update_attributes(stripe_customer_id: customer.id, cc_last4: card_info.last4, exp_month: card_info.exp_month, 
     exp_year: card_info.exp_year)      
   end
 
-  def recharge_subscription(amount)
-    recharge(amount)
-    subscribe(available_minutes, amount)
-    self.save
-  end
 
-  def calculate_minutes_on_upgrade        
-    days_remaining = number_of_days_in_current_month - (DateTime.now.mjd - subscription_start_date.to_date.mjd)
+  def calculate_minutes_on_upgrade            
+    days_remaining = number_of_days_in_current_month - (Subscription.todays_date - subscription_start_date.to_date).to_i            
     (minutes_per_caller/number_of_days_in_current_month) * days_remaining * number_of_callers
   end
 
   def calculate_minute_on_add_callers(number_of_callers_to_add)
-    days_remaining = number_of_days_in_current_month - (DateTime.now.mjd - subscription_start_date.to_date.mjd)
+    days_remaining = number_of_days_in_current_month - (Subscription.todays_date - subscription_start_date.to_date).to_i
     (minutes_per_caller/number_of_days_in_current_month) * days_remaining * number_of_callers_to_add
+  end
+
+  def self.todays_date    
+    DateTime.now.utc.to_date
   end
 
 

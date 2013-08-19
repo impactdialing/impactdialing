@@ -16,6 +16,8 @@ describe PerMinute do
     before(:each) do
       @account =  create(:account, record_calls: false)
       @account.reload      
+      @account.subscription.change_subscription_type(Subscription::Type::PER_MINUTE)  
+      @account.reload       
       @account.subscription.upgrade("PerMinute")
       @account.reload
     end
@@ -45,6 +47,8 @@ describe PerMinute do
     before(:each) do
       @account =  create(:account, record_calls: false)
       @account.reload      
+      @account.subscription.change_subscription_type(Subscription::Type::PER_MINUTE)     
+      @account.reload    
       @account.subscription.upgrade("PerMinute")
       @account.reload
     end
@@ -67,6 +71,8 @@ describe PerMinute do
       before(:each) do
         @account =  create(:account, record_calls: false)
         @account.reload      
+        @account.subscription.change_subscription_type(Subscription::Type::PER_MINUTE)         
+        @account.reload
         @account.subscription.upgrade("PerMinute")
         @account.reload
       end
@@ -89,6 +95,8 @@ describe PerMinute do
       before(:each) do
         @account =  create(:account, record_calls: false)
         @account.reload      
+        @account.subscription.change_subscription_type(Subscription::Type::PER_MINUTE)         
+        @account.reload
         @account.subscription.upgrade("PerMinute")
         @account.reload
       end
