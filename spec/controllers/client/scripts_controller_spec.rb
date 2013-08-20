@@ -132,7 +132,7 @@ describe Client::ScriptsController do
 
       it "should show deleted scripts" do
         active_script = create(:script, :account => account, :active => false)
-        get :deleted, :api_key=> 'abc123', :format => "json"
+        get :deleted, :api_key=> account.api_key, :format => "json"        
         JSON.parse(response.body).length.should eq(1)
       end
     end

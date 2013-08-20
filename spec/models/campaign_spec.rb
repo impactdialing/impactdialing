@@ -314,7 +314,7 @@ describe Campaign do
       @caller_session2 = create(:webui_caller_session, on_call:true, available_for_call: false, campaign_id: @campaign.id)
     end
 
-    it "should return callers logged in" do
+    it "should return callers logged in" do      
       @campaign.callers_status[0].should eq(2)
     end
 
