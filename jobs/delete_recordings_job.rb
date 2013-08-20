@@ -19,7 +19,6 @@ class DeleteRecordingsJob
     1.times do |x|
       @account.recordings.list({"DateCreated<" =>"2012-06-31",  "DateCreated>" => "2012-06-01",:page => x, :page_size => 1}).each do |r|
         rec = r
-        puts Time.now
       end
     end
     

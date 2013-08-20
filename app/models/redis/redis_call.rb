@@ -4,7 +4,8 @@ class RedisCall
     id = "call_flow:#{call_id}"
     data = call_data(call_id) || '{}'
     hash = JSON.parse(data)
-    $redis_call_uri_connection.set id, hash.merge(options).to_json
+    params = hash.merge(options).to_json
+    $redis_call_uri_connection.set id, params    
   end
   
   def self.answered_by(call_id)

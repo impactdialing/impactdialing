@@ -18,6 +18,7 @@ describe Call do
       it "should start a conference in connected state" do
         call = create(:call, answered_by: "human", call_attempt: @call_attempt, call_status: 'in-progress')
         RedisCall.set_request_params(call.id, call.attributes)
+        call.should_receive(:enqueue_call_flow)
         call.incoming_call.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"false\" action=\"http://#{Settings.twilio_callback_host}/calls/#{call.id}/disconnected\" record=\"false\"><Conference waitUrl=\"hold_music\" waitMethod=\"GET\" beep=\"false\" endConferenceOnExit=\"true\"/></Dial></Response>")
       end
 
@@ -25,6 +26,7 @@ describe Call do
         call = create(:call, answered_by: "human", call_attempt: @call_attempt, call_status: 'in-progress')
         RedisCall.set_request_params(call.id, call.attributes)
         RedisCallerSession.set_datacentre(@caller_session.id, DataCentre::Code::ORL)
+        call.should_receive(:enqueue_call_flow)
         call.incoming_call.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"false\" action=\"http://voxeo-prodaws.impactdialing.com/calls/#{call.id}/disconnected\" record=\"false\"><Conference waitUrl=\"hold_music\" waitMethod=\"GET\" beep=\"false\" endConferenceOnExit=\"true\"/><CallerSid>123456</CallerSid></Dial></Response>")
       end
 

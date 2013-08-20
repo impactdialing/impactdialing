@@ -202,7 +202,7 @@ describe VoterList do
         it "also upadate the custom voter fields" do
           voter = Voter.find_by_custom_id("123")
           custom_voter_field_value = CustomVoterFieldValue.find_by_voter_id_and_custom_voter_field_id(voter.id, CustomVoterField.find_by_name("Gender").id)
-          voter.reload
+          custom_voter_field_value.reload
           custom_voter_field_value.value.should == "Male_updated"
         end
       end
