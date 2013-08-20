@@ -109,7 +109,7 @@ describe Subscription do
 			datas = mock			
 			card_info = mock
 			account.subscription.should_receive(:retrieve_customer).and_return(customer)
-			account.subscription.should_receive(:update_subscription).with({plan: "ImpactDialing-Basic", quantity: 2, prorate: true})
+			account.subscription.should_receive(:update_subscription_plan).with({plan: "ImpactDialing-Basic", quantity: 2, prorate: true})
 			account.subscription.should_receive(:invoice_customer)			
 			customer.should_receive(:cards).and_return(cards)
 			cards.should_receive(:data).and_return(datas)

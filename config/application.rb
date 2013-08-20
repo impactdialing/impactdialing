@@ -12,14 +12,14 @@ MANDRILL_API_KEY="336ba63b-680e-4260-a27b-64afd5d58831"
 module ImpactDialing
   class Application < Rails::Application
   #  config.time_zone = "Pacific Time (US & Canada)"
-    config.active_record.default_timezone = :local
+    config.active_record.default_timezone = :utc
 
     if ["heroku", "heroku_staging"].include?(Rails.env)
       config.logger = Logger.new(STDOUT)
       config.logger.level = Logger.const_get(ENV['LOG_LEVEL'] ?  ENV['LOG_LEVEL'].upcase : 'INFO')
     end
     config.filter_parameters << :password << :card_number << :card_verification << :cc << :code
-    #config.time_zone = 'UTC'
+    # config.time_zone = 'UTC'
 
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers

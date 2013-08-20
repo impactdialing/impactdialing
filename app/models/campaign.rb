@@ -87,15 +87,15 @@ class Campaign < ActiveRecord::Base
   end
 
   def campaign_types
-    account.subscription.campaign_types
+    account.active_subscription.campaign_types
   end
 
   def campaign_type_options
-    account.subscription.campaign_type_options
+    account.active_subscription.campaign_type_options
   end
 
   def campaign_type_based_on_subscription
-    if !account.subscription.nil? && !campaign_types.include?(type)
+    if !account.subscriptions.nil? && !campaign_types.include?(type)
       errors.add(:base, 'Your subscription does not allow this mode of Dialing.')
     end
 

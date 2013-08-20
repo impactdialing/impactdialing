@@ -10,12 +10,7 @@ module PerAgent
   		create_customer_plan(token, email, plan_type, number_of_callers)
   	end
 
-
-  	def upgrade(new_plan, num_of_callers=1, amount=0)        		
-    	account.subscription.number_of_callers = num_of_callers      
-      account.subscription.subscribe
-    	account.subscription.save          
-  	end
+  	
 
     def same_plan_upgrade(new_plan)
       type == new_plan
@@ -33,13 +28,16 @@ module PerAgent
         errors.add(:base, 'The subscription details submitted are identical to what already exists')        
   		else
         upgrading = upgrading?(plan_type)        
-        change_subscription_type(plan_type)      
+        change_subscription_type(plan_type)           
         return if self.errors.size > 0
   			account.subscription.upgrade(plan_type, num_of_callers, amount)        
-  		  begin         
+  		  begin            
   			  update_subscription_plan({plan: Subscription.stripe_plan_id(plan_type), quantity: num_of_callers, prorate: upgrading})
-          invoice_customer if upgrading                                      
-          recharge((account.subscription.number_of_callers*account.subscription.price_per_caller*100).to_i)         
+          if upgrading
+            invoice_customer
+          else             
+            recharge((account.subscription.number_of_callers*account.subscription.price_per_caller*100).to_i)         
+          end                                                      
   			  update_info(retrieve_customer)
   		  rescue Exception => e  			 
   			 errors.add(:base, e.message)

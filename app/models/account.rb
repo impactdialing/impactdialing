@@ -6,7 +6,7 @@ class Account < ActiveRecord::Base
   has_many :recordings
   has_many :custom_voter_fields
   has_one :billing_account
-  has_one :subscription
+  has_many :subscriptions
   has_many :scripts
   has_many :callers
   has_many :voter_lists
@@ -24,15 +24,27 @@ class Account < ActiveRecord::Base
   attr_accessible :api_key, :domain_name, :abandonment, :card_verified, :activated, :record_calls, :recurly_account_code, :subscription_name, :subscription_count, :subscription_active, :recurly_subscription_uuid, :autorecharge_enabled, :autorecharge_amount, :autorecharge_trigger, :status, :tos_accepted_date, :credit_card_declined
 
   before_create :assign_api_key
-  before_create :create_trial_subscription
-  validate :check_subscription_type_for_call_recording
+  after_create :create_trial_subscription
+  validate :check_subscription_type_for_call_recording, on: :update
 
 
 
   def check_subscription_type_for_call_recording
-    if !subscription.nil? && record_calls && !subscription.call_recording_enabled?
+    if !subscriptions.nil? && record_calls && !active_subscription.call_recording_enabled?
       errors.add(:base, 'Your subscription does not allow call recordings.')
     end
+  end
+
+  def active_subscription    
+    subscriptions.detect{|x| x.status == Subscription::Status::ACTIVE}
+  end
+
+  def active_subscriptions    
+    subscriptions.select{|x| x.status == Subscription::Status::ACTIVE}
+  end
+
+  def debitable_subscription
+    subscriptions.detect{|x| x.subscription_start_date > DateTime.now.utc - 30.days}
   end
 
 
@@ -267,8 +279,8 @@ class Account < ActiveRecord::Base
   end
 
   def create_trial_subscription    
-    self.subscription = Trial.new(minutes_utlized: 0, total_allowed_minutes: 50.00, subscription_start_date: DateTime.now,
-      number_of_callers: 1)
+    Trial.create(minutes_utlized: 0, total_allowed_minutes: 50.00, subscription_start_date: DateTime.now,
+      number_of_callers: 1, status: Subscription::Status::ACTIVE, account_id: self.id)
   end
 
 

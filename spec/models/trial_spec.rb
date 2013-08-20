@@ -103,13 +103,13 @@ describe Trial do
     end
 
     it "should deduct from minutes used if minutes used greater than 0" do
-      @account.subscription.debit(2.00).should be_true
+      @account.debitable_subscription.debit(2.00).should be_true
       @account.subscription.minutes_utlized.should eq(2)
     end
 
     it "should not deduct from minutes used if minutes used greater than eq total minutes" do
-      @account.subscription.update_attributes(minutes_utlized: 50)
-      @account.subscription.debit(2.00).should be_false
+      @account.debitable_subscription.update_attributes(minutes_utlized: 50)
+      @account.debitable_subscription.debit(2.00).should be_false
       @account.subscription.reload
       @account.subscription.minutes_utlized.should eq(50)
     end
@@ -170,25 +170,43 @@ describe Trial do
     end
 
     it "should add delta of minutes on upgrade" do
-      date = DateTime.new(DateTime.now.year,DateTime.now.month,13).utc
-      subscription_start_date  = date-10.days      
-      @account.subscription.update_attributes(minutes_utlized: 10, subscription_start_date: subscription_start_date)      
-      Subscription.should_receive(:todays_date).and_return(date.to_date)
-      @account.subscription.change_subscription_type(Subscription::Type::BASIC)      
-      @account.subscription.upgrade(Subscription::Type::BASIC,1,0)
-      @account.reload
-      @account.subscription.total_allowed_minutes.should eq(677)
-    end
+      customer = mock
+      cards = mock
+      datas = mock      
+      card_info = mock
+      plan = mock
+      Stripe::Customer.should_receive(:create).and_return(customer)
+      customer.should_receive(:cards).and_return(cards)
+      customer.should_receive(:plan).and_return(plan)
+      cards.should_receive(:data).and_return(datas)
+      datas.should_receive(:first).and_return(card_info)
+      customer.should_receive(:id).and_return("123")
+      card_info.should_receive(:last4).and_return("9090")
+      card_info.should_receive(:exp_month).and_return("12")
+      card_info.should_receive(:exp_year).and_return("2016")      
+      plan.should_receive(:amount).and_return(9900)
 
-    it "should add delta of minutes on upgrade" do
-      date = DateTime.new(DateTime.now.year,DateTime.now.month,13)
-      subscription_start_date  = date-10.days      
-      @account.subscription.update_attributes(minutes_utlized: 10, subscription_start_date: subscription_start_date)      
-      Subscription.should_receive(:todays_date).and_return(date.to_date)
-      @account.subscription.change_subscription_type(Subscription::Type::BASIC)      
-      @account.subscription.upgrade(Subscription::Type::BASIC)
-      @account.reload
-      @account.subscription.total_allowed_minutes.should eq(677)
+      Subscription.upgrade_subscription(@account.id, "token", "email", Subscription::Type::BASIC, 1, 0)            
+      @account.subscriptions.count.should eq(2)
+      @account.subscriptions.first.status.should eq(Subscription::Status::SUSPENDED)
+      active_subscription = @account.active_subscription
+      active_subscription.type.should eq(Subscription::Type::BASIC)
+      active_subscription.number_of_callers.should eq(1)
+      active_subscription.minutes_utlized.should eq(0)
+      active_subscription.total_allowed_minutes.should eq(1000)
+      active_subscription.stripe_customer_id.should eq("123")
+      active_subscription.cc_last4.should eq("9090")
+      active_subscription.exp_month.should eq("12")
+      active_subscription.exp_year.should eq("2016")
+      active_subscription.amount_paid.should eq(99.0)      
+    end
+  end
+
+  describe "current_period_start" do
+    it "should return current date time" do
+      @account =  create(:account, record_calls: false)      
+      puts Subscription.first.current_period_start
+      Subscription.first.current_period_start.to_i.should eq(DateTime.now.to_i)   
     end
   end
 

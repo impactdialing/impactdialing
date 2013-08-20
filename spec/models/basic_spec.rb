@@ -16,11 +16,9 @@ describe Basic do
   describe "campaign" do
 
     before(:each) do
-      @account =  create(:account)
-      @account.reload
-      @account.subscription.change_subscription_type(Subscription::Type::BASIC)      
-      @account.subscription.upgrade("Basic")
-      @account.reload
+      @account =  create(:account)      
+      @account.subscriptions.update_all(status: Subscription::Status::UPGRADED)
+      Basic.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::ACTIVE)      
     end
     it "should not allow predictive dialing mode for basic subscription" do
       campaign = build(:predictive, account: @account)
@@ -48,11 +46,10 @@ describe Basic do
   describe "transfers" do
     before(:each) do
       @account =  create(:account)
-      @account.reload
-      @account.subscription.change_subscription_type(Subscription::Type::BASIC)      
-      @account.subscription.upgrade("Basic")
-      @account.reload
+      @account.subscriptions.update_all(status: Subscription::Status::UPGRADED)
+      Basic.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::ACTIVE)      
     end
+
     it "should not all saving transfers" do
       script = build(:script, account: @account)
       script.transfers << build(:transfer)
@@ -71,10 +68,8 @@ describe Basic do
     describe "it should not allow caller groups for callers" do
       before(:each) do
       @account =  create(:account, record_calls: false)
-      @account.reload
-      @account.subscription.change_subscription_type(Subscription::Type::BASIC)      
-      @account.subscription.upgrade("Basic")
-      @account.reload
+      @account.subscriptions.update_all(status: Subscription::Status::UPGRADED)
+      Basic.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::ACTIVE)      
     end
       it "should throw validation error" do
         campaign =   create(:preview, account: @account)
@@ -96,10 +91,8 @@ describe Basic do
     describe "it should not allow call recordings to be enabled" do
       before(:each) do
         @account =  create(:account, record_calls: false)
-        @account.reload
-        @account.subscription.change_subscription_type(Subscription::Type::BASIC)      
-        @account.subscription.upgrade("Basic")
-        @account.reload
+        @account.subscriptions.update_all(status: Subscription::Status::UPGRADED)
+        Basic.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::ACTIVE)      
       end
       it "should throw validation error" do
         @account.update_attributes(record_calls: true)
@@ -111,10 +104,8 @@ describe Basic do
   describe "should debit call time" do
     before(:each) do
       @account =  create(:account, record_calls: false)
-      @account.reload
-      @account.subscription.change_subscription_type(Subscription::Type::BASIC)      
-      @account.subscription.upgrade("Basic")
-      @account.reload
+      @account.subscriptions.update_all(status: Subscription::Status::UPGRADED)
+      Basic.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::ACTIVE)      
     end
 
     it "should deduct from minutes used if minutes used greater than 0" do
@@ -142,18 +133,26 @@ describe Basic do
 
   describe "add caller" do
     before(:each) do
-      @account =  create(:account, record_calls: false)
-      @account.reload      
-      @account.subscription.change_subscription_type(Subscription::Type::BASIC)      
-      @account.subscription.upgrade("Basic")
-      @account.reload
+      @account =  create(:account)
+      @account.subscriptions.update_all(status: Subscription::Status::UPGRADED)
+      Basic.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::ACTIVE, stripe_customer_id: "123")      
     end
 
-    it "should add caller to subscription" do
-      @account.subscription.reload
-      @account.subscription.number_of_callers.should eq(1)
-      @account.subscription.add_callers(1)
-      @account.subscription.number_of_callers.should eq(2)
+    it "should give active number of callers" do
+      Subscription.active_number_of_callers(@account.id).should eq(1)
+      Basic.create!(account_id: @account.id, number_of_callers: 2, status: Subscription::Status::ACTIVE)      
+      Subscription.active_number_of_callers(@account.id).should eq(3)
+    end
+
+    it "should add caller to subscription" do                  
+      customer = mock
+      invoice = mock
+      Stripe::Customer.should_receive(:retrieve).with(@account.active_subscription.stripe_customer_id).and_return(customer)
+      customer.should_receive(:update_subscription).with({quantity: 1, plan: @account.active_subscription.stripe_plan_id, prorate: true})
+      invoice = Stripe::Invoice.should_receive(:create).with(customer: @account.active_subscription.stripe_customer_id)
+      invoice.should_receive(:pay)      
+      Subscription.modify_callers_to_existing_subscription(@account.id, 2)
+      Subscription.active_number_of_callers(@account.id).should eq(2)      
     end
 
     it "should add caller and delta minutes to subscription" do  
@@ -251,7 +250,16 @@ describe Basic do
   end
 
   describe "upgrade to per minute" do
+    before(:each) do
+      @account =  create(:account, record_calls: false)
+      @account.reload      
+      @account.subscription.change_subscription_type(Subscription::Type::BASIC)      
+      @account.subscription.upgrade(Subscription::Type::BASIC)      
+      @account.reload      
+    end
+
     it "should upgrade to per minute" do
+      @account.subscription.upgrade_subscription("token", "email", Subscription::Type::PER_MINUTE, nil, 100)
       
     end
   end

@@ -6,8 +6,8 @@ var Subscriptions = function(){
    }
    this.submitPaymentEvent();
    this.subscriptionTypeChangeEvent();
-   this.number_of_callers_reduced();
-   this.is_subscription_downgraded();
+   this.number_of_callers_reduced();   
+   this.upgrade_to_per_minute();
 
 }
 
@@ -68,15 +68,15 @@ Subscriptions.prototype.number_of_callers_reduced = function(){
 		}
 		
 	});
-Subscriptions.prototype.is_subscription_downgraded = function(){
-	var subscription_type = {"Basic": 1, "Pro": 2, "Business": 3}
-	$("#subscription_type").change(function() {
-		if(subscription_type[$(this).val()] < subscription_type[$(this).data("value")]){
-			alert("holla")
-		}
-
-	});
 }
 
+Subscriptions.prototype.upgrade_to_per_minute = function(){
+  $("#subscription_type").change(function() {        
+    if($(this).val() == "PerMinute" && $(this).data("value") != "Trial"){
+      alert("You can upgrade to Per Minute once you consume all your current subscription Minutes.")
+    }
+  });
 }
+
+
 

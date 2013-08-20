@@ -1,6 +1,6 @@
 module Client
 	class SubscriptionsController < ClientController
-		before_filter :load_subscription
+		before_filter :load_subscriptions
 
 		def index			
 		end
@@ -56,8 +56,8 @@ module Client
 			redirect_to client_subscriptions_path
 		end
 
-		def load_subscription
-			@subscription = account.subscription
+		def load_subscriptions
+			@subscription = account.subscriptions
 		end
 
 	end

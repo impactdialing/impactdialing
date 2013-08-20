@@ -386,6 +386,8 @@ ActiveRecord::Schema.define(:version => 20130814151430) do
     t.string   "exp_month"
     t.string   "exp_year"
     t.string   "status",                  :default => "Trial"
+    t.float    "amount_paid"
+    t.datetime "subscription_end_date"
     t.boolean  "autorecharge_enabled",    :default => false
     t.float    "autorecharge_amount"
     t.float    "autorecharge_trigger"
