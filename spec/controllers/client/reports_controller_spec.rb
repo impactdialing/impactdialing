@@ -20,20 +20,20 @@ describe Client::ReportsController do
 
   describe 'usage report' do
     let!(:from_time) { 5.minutes.ago.to_s }
-    let!(:time_now) { Time.now.to_s }
+    let!(:time_now) { Time.zone.now.to_s }
 
     describe 'call attempts' do
       before(:each) do
         campaign = create(:predictive, :account => user.account)
         create(:caller_session, campaign: campaign)
-        create(:call_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (10.minutes + 2.seconds), :tDuration => 10.minutes + 2.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
-        create(:call_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (1.minutes), :tDuration => 1.minutes, :status => CallAttempt::Status::VOICEMAIL, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
-        create(:call_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (1.minutes + 3.seconds), :tDuration => 1.minutes + 3.seconds, :status => CallAttempt::Status::VOICEMAIL, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
-        create(:call_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (101.minutes + 57.seconds), :tDuration => 101.minutes + 57.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
-        create(:call_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (1.minutes), :tDuration => 1.minutes, :status => CallAttempt::Status::ABANDONED, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
-        create(:call_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (10.seconds), :tDuration => 10.seconds, :status => CallAttempt::Status::ABANDONED, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
-        create(:transfer_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (10.minutes + 2.seconds), tDuration: 10.minutes + 2.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
-        create(:transfer_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (1.minutes + 20.seconds), tDuration: 1.minutes+ 20.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
+        create(:call_attempt, connecttime: Time.zone.now, tStartTime: Time.zone.now, tEndTime: Time.zone.now + (10.minutes + 2.seconds), :tDuration => 10.minutes + 2.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
+        create(:call_attempt, connecttime: Time.zone.now, tStartTime: Time.zone.now, tEndTime: Time.zone.now + (1.minutes), :tDuration => 1.minutes, :status => CallAttempt::Status::VOICEMAIL, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
+        create(:call_attempt, connecttime: Time.zone.now, tStartTime: Time.zone.now, tEndTime: Time.zone.now + (1.minutes + 3.seconds), :tDuration => 1.minutes + 3.seconds, :status => CallAttempt::Status::VOICEMAIL, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
+        create(:call_attempt, connecttime: Time.zone.now, tStartTime: Time.zone.now, tEndTime: Time.zone.now + (101.minutes + 57.seconds), :tDuration => 101.minutes + 57.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
+        create(:call_attempt, connecttime: Time.zone.now, tStartTime: Time.zone.now, tEndTime: Time.zone.now + (1.minutes), :tDuration => 1.minutes, :status => CallAttempt::Status::ABANDONED, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
+        create(:call_attempt, connecttime: Time.zone.now, tStartTime: Time.zone.now, tEndTime: Time.zone.now + (10.seconds), :tDuration => 10.seconds, :status => CallAttempt::Status::ABANDONED, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
+        create(:transfer_attempt, connecttime: Time.zone.now, tStartTime: Time.zone.now, tEndTime: Time.zone.now + (10.minutes + 2.seconds), tDuration: 10.minutes + 2.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
+        create(:transfer_attempt, connecttime: Time.zone.now, tStartTime: Time.zone.now, tEndTime: Time.zone.now + (1.minutes + 20.seconds), tDuration: 1.minutes+ 20.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => campaign).tap { |ca| ca.update_attribute(:created_at, 5.minutes.ago) }
         get :usage, :campaign_id => campaign.id
       end
 
@@ -59,12 +59,12 @@ describe Client::ReportsController do
 
       before(:each) do
         @campaign = create(:preview, :account => user.account)
-        create(:caller_session, caller_type: "Phone", tStartTime: Time.now, tEndTime: Time.now + (30.minutes + 2.seconds), :tDuration => 30.minutes + 2.seconds, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
-        create(:caller_session, tStartTime: Time.now, tEndTime: Time.now + (101.minutes + 57.seconds), :tDuration => 101.minutes + 57.seconds, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
-        create(:call_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (10.minutes + 10.seconds), wrapup_time: Time.now + (10.minutes + 40.seconds), :tDuration => 10.minutes + 10.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
-        create(:call_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (1.minutes), :tDuration => 1.minutes, :status => CallAttempt::Status::VOICEMAIL, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
-        create(:call_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (101.minutes + 57.seconds), wrapup_time: Time.now + (102.minutes + 57.seconds), :tDuration => 101.minutes + 57.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
-        create(:call_attempt, connecttime: Time.now, tStartTime: Time.now, tEndTime: Time.now + (1.minutes), :tDuration => 1.minutes, :status => CallAttempt::Status::ABANDONED, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
+        create(:caller_session, caller_type: "Phone", tStartTime: Time.zone.now, tEndTime: Time.zone.now + (30.minutes + 2.seconds), :tDuration => 30.minutes + 2.seconds, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
+        create(:caller_session, tStartTime: Time.zone.now, tEndTime: Time.zone.now + (101.minutes + 57.seconds), :tDuration => 101.minutes + 57.seconds, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
+        create(:call_attempt, connecttime: Time.zone.now, tStartTime: Time.zone.now, tEndTime: Time.zone.now + (10.minutes + 10.seconds), wrapup_time: Time.zone.now + (10.minutes + 40.seconds), :tDuration => 10.minutes + 10.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
+        create(:call_attempt, connecttime: Time.zone.now, tStartTime: Time.zone.now, tEndTime: Time.zone.now + (1.minutes), :tDuration => 1.minutes, :status => CallAttempt::Status::VOICEMAIL, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
+        create(:call_attempt, connecttime: Time.zone.now, tStartTime: Time.zone.now, tEndTime: Time.zone.now + (101.minutes + 57.seconds), wrapup_time: Time.zone.now + (102.minutes + 57.seconds), :tDuration => 101.minutes + 57.seconds, :status => CallAttempt::Status::SUCCESS, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
+        create(:call_attempt, connecttime: Time.zone.now, tStartTime: Time.zone.now, tEndTime: Time.zone.now + (1.minutes), :tDuration => 1.minutes, :status => CallAttempt::Status::ABANDONED, :campaign => @campaign).tap { |ca| ca.update_attribute(:created_at, from_time) }
         get :usage, :campaign_id => @campaign.id
       end
 
@@ -105,6 +105,8 @@ describe Client::ReportsController do
       response.should be_ok
       assigns(:from_date).to_s.should == "2012-02-12 08:00:00 UTC"
       assigns(:to_date).to_s.should == "2012-02-13 07:59:59 UTC"
+
+      Time.unstub :now
     end
 
   end
