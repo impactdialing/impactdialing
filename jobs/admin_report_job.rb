@@ -7,7 +7,7 @@ class AdminReportJob
     end
 
     def perform(from, to)
-      Time.zone = "Pacific Time (US & Canada)"
+      #Time.zone = "Pacific Time (US & Canada)"
       @from_date = Time.zone.parse(from).utc
       @to_date = Time.zone.parse(to).utc
       columns = ['account_id', 'email', 'totals']
