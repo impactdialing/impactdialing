@@ -36,7 +36,7 @@ class Caller < ActiveRecord::Base
   end
 
   def check_subscription_for_caller_groups
-    if !account.active_subscription.caller_groups_enabled?
+    if !account.current_subscription.caller_groups_enabled?
       errors.add(:base, 'Your subscription does not allow managing caller groups.')
     end
   end

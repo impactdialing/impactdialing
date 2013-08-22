@@ -30,7 +30,7 @@ class Script < ActiveRecord::Base
   end
 
   def transfer_types
-    account.active_subscription.transfer_types
+    account.current_subscription.transfer_types
   end
 
   def check_subscription_type_for_transfers

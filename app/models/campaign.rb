@@ -87,11 +87,11 @@ class Campaign < ActiveRecord::Base
   end
 
   def campaign_types
-    account.active_subscription.campaign_types
+    account.current_subscription.campaign_types
   end
 
   def campaign_type_options
-    account.active_subscription.campaign_type_options
+    account.current_subscription.campaign_type_options
   end
 
   def campaign_type_based_on_subscription

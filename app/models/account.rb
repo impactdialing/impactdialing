@@ -1,4 +1,5 @@
 class Account < ActiveRecord::Base
+  include SubscriptionInfo
 
   has_many :users
   has_many :campaigns, :conditions => {:active => true}
@@ -30,22 +31,12 @@ class Account < ActiveRecord::Base
 
 
   def check_subscription_type_for_call_recording
-    if !subscriptions.nil? && record_calls && !active_subscription.call_recording_enabled?
+    if !subscriptions.nil? && record_calls && !current_subscription.call_recording_enabled?
       errors.add(:base, 'Your subscription does not allow call recordings.')
     end
   end
 
-  def active_subscription    
-    subscriptions.detect{|x| x.status == Subscription::Status::ACTIVE}
-  end
-
-  def active_subscriptions    
-    subscriptions.select{|x| x.status == Subscription::Status::ACTIVE}
-  end
-
-  def debitable_subscription
-    subscriptions.detect{|x| x.subscription_start_date > DateTime.now.utc - 30.days}
-  end
+  
 
 
   def current_balance
@@ -280,7 +271,8 @@ class Account < ActiveRecord::Base
 
   def create_trial_subscription    
     Trial.create(minutes_utlized: 0, total_allowed_minutes: 50.00, subscription_start_date: DateTime.now,
-      number_of_callers: 1, status: Subscription::Status::ACTIVE, account_id: self.id)
+      number_of_callers: 1, status: Subscription::Status::TRIAL, account_id: self.id, created_at: DateTime.now-1.minute, 
+      subscription_end_date: DateTime.now+30.days)
   end
 
 
