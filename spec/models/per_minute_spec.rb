@@ -15,11 +15,7 @@ describe PerMinute do
   describe "campaign" do
     before(:each) do
       @account =  create(:account, record_calls: false)
-      @account.reload      
-      @account.subscription.change_subscription_type(Subscription::Type::PER_MINUTE)  
-      @account.reload       
-      @account.subscription.upgrade("PerMinute")
-      @account.reload
+      PerMinute.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED)                      
     end
     it "should  allow predictive dialing mode for per minute subscription" do
       campaign = build(:predictive, account: @account)
@@ -46,11 +42,7 @@ describe PerMinute do
   describe "transfers" do
     before(:each) do
       @account =  create(:account, record_calls: false)
-      @account.reload      
-      @account.subscription.change_subscription_type(Subscription::Type::PER_MINUTE)     
-      @account.reload    
-      @account.subscription.upgrade("PerMinute")
-      @account.reload
+      PerMinute.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED)                      
     end
     it "should  allow saving transfers" do
       script = build(:script, account: @account)
@@ -70,11 +62,7 @@ describe PerMinute do
     describe "it should  allow caller groups for callers" do
       before(:each) do
         @account =  create(:account, record_calls: false)
-        @account.reload      
-        @account.subscription.change_subscription_type(Subscription::Type::PER_MINUTE)         
-        @account.reload
-        @account.subscription.upgrade("PerMinute")
-        @account.reload
+        PerMinute.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED)                      
       end
       it "should save caller with caller groups" do
         caller = build(:caller, account: @account)
@@ -94,17 +82,46 @@ describe PerMinute do
     describe "it should allow call recordings to be enabled" do
       before(:each) do
         @account =  create(:account, record_calls: false)
-        @account.reload      
-        @account.subscription.change_subscription_type(Subscription::Type::PER_MINUTE)         
-        @account.reload
-        @account.subscription.upgrade("PerMinute")
-        @account.reload
+        PerMinute.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED)                      
       end
       it "should all record calls" do
         @account.update_attributes(record_calls: true).should be_true
       end
     end
     
+  end
+
+  describe "downgrade from per minute" do
+    before(:each) do
+      @account =  create(:account)      
+      @account.current_subscriptions.each{|x| x.update_attributes(status: Subscription::Status::SUSPENDED)}
+      PerMinute.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED, stripe_customer_id: "123", subscription_start_date: DateTime.now-10.days, created_at: DateTime.now-5.minutes)      
+      @account.reload
+    end     
+
+    it "should downgrade to basic" do
+      customer = mock
+      plan = mock
+      subscription = mock
+      Stripe::Customer.should_receive(:retrieve).with("123").and_return(customer)
+      customer.should_receive(:update_subscription).and_return(subscription)            
+      subscription.should_receive(:plan).and_return(plan)            
+      plan.should_receive(:amount).and_return(0000)
+      subscription.should_receive(:customer).and_return("123")
+      subscription.should_receive(:current_period_start).and_return(DateTime.now.to_i)
+      subscription.should_receive(:current_period_end).and_return((DateTime.now+30.days).to_i)
+      Subscription.downgrade_subscription(@account.id, "token", "email", "Basic", 1, nil)
+      Subscription.count.should eq(3)      
+      @account.current_subscription.type.should eq("Basic")
+      @account.current_subscription.number_of_callers.should eq(1)
+      @account.current_subscription.status.should eq(Subscription::Status::DOWNGRADED)
+      @account.current_subscription.minutes_utlized.should eq(0)
+      @account.current_subscription.total_allowed_minutes.should eq(0)      
+      @account.current_subscription.stripe_customer_id.should eq("123") 
+      @account.current_subscription.amount_paid.should eq(0.0)
+      @account.current_subscription.subscription_start_date.to_i.should eq(DateTime.now.utc.to_i)
+      @account.current_subscription.subscription_end_date.to_i.should eq((DateTime.now+30.days).utc.to_i)
+    end
   end
 
 end
