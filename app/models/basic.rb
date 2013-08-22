@@ -52,7 +52,7 @@ class Basic < Subscription
     available_minutes > 0
   end
 
-  def subscribe
+  def subscribe(upgrade=true)
     disable_call_recording
     account.campaigns.by_type(Campaign::Type::PREDICTIVE).each do |campaign|
       campaign.update_attributes(type: Campaign::Type::PREVIEW)
@@ -60,7 +60,7 @@ class Basic < Subscription
     account.scripts.each do |script|
       script.transfers.each { |transfer| transfer.delete }
     end        
-    self.total_allowed_minutes = calculate_minutes_on_upgrade
+    self.total_allowed_minutes = upgrade ? calculate_minutes_on_upgrade : 0
     self.minutes_utlized = 0
   end
 end

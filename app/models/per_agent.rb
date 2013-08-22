@@ -45,37 +45,7 @@ module PerAgent
       end
   	end
 
-  	def update_callers(new_num_callers)          
-    	if(new_num_callers < number_of_callers)
-        begin          
-      	 modified_subscription = update_subscription_plan({quantity: new_num_callers, plan: stripe_plan_id, prorate: false})
-        rescue Stripe::InvalidRequestError => e
-          errors.add(:base, 'Please submit a valid number of callers')
-          return
-        end
-      	remove_callers((number_of_callers-new_num_callers))
-    	else
-        begin
-      	 modified_subscription = update_subscription_plan({quantity: new_num_callers, plan: stripe_plan_id, prorate: true})
-      	 invoice_customer
-        rescue Stripe::InvalidRequestError => e
-          errors.add(:base, 'Please submit a valid number of callers')
-          return
-        end
-      	add_callers((new_num_callers-number_of_callers))
-    	end
-  	end
-
-  	def add_callers(number_of_callers_to_add)
-    	self.number_of_callers = number_of_callers + number_of_callers_to_add    
-    	self.total_allowed_minutes +=  calculate_minute_on_add_callers(number_of_callers_to_add)    
-    	self.save
-  	end
-
-  	def remove_callers(number_of_callers_to_remove)    
-    	self.number_of_callers = number_of_callers - number_of_callers_to_remove    
-    	self.save
-  	end
+  	
 	end
 
 	def self.included(receiver)

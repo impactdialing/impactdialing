@@ -214,7 +214,7 @@ describe Basic do
   end
 
   
-  describe "upgrade from basic to pro" do
+  describe "upgrade from basic" do
     before(:each) do
       @account =  create(:account)      
       @account.current_subscriptions.each{|x| x.update_attributes(status: Subscription::Status::SUSPENDED)}
@@ -222,7 +222,7 @@ describe Basic do
       @account.reload
     end
 
-     it "should upgrade from basic to pro" do
+     it "should upgrade  to pro" do
       customer = mock
       plan = mock
       subscription = mock
@@ -246,7 +246,7 @@ describe Basic do
       @account.current_subscription.subscription_end_date.to_i.should_not be_nil
     end
 
-    it "should upgrade from basic to business" do
+    it "should upgrade  to business" do
       customer = mock
       plan = mock
       subscription = mock
@@ -270,7 +270,7 @@ describe Basic do
       @account.current_subscription.subscription_end_date.to_i.should eq((DateTime.now+30.days).utc.to_i)
     end
 
-    it "should upgrade from basic to per minute" do
+    it "should upgrade  to per minute" do
       customer = mock
       plan = mock
       subscription = mock

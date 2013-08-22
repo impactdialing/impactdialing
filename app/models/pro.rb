@@ -45,7 +45,7 @@ class Pro < Subscription
     self.update_attributes(minutes_utlized: updated_minutes)
   end
 
-  def subscribe
+  def subscribe(upgrade=true)
     disable_call_recording    
     self.total_allowed_minutes = calculate_minutes_on_upgrade
     self.minutes_utlized = 0

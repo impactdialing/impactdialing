@@ -3,7 +3,6 @@ class Subscription < ActiveRecord::Base
   belongs_to :account
   validate :minutes_utlized_less_than_total_allowed_minutes
   validates :number_of_callers, numericality: { greater_than:  0}, :if => Proc.new{|subscription| subscription.per_agent? && subscription.status !=  Status::CALLERS_REMOVED}
-  validate :downgrading_subscription
   validate :upgrading_to_per_minute
   default_scope order('created_at DESC')
   
@@ -23,11 +22,12 @@ class Subscription < ActiveRecord::Base
   module Status
     TRIAL = "Trial"
     UPGRADED = "Upgraded"
+    DOWNGRADED = "Downgraded"
     CALLERS_ADDED = "Callers Added"
     CALLERS_REMOVED = "Callers Removed"
     SUSPENDED = "Suspended"
     CANCELED = "Canceled"    
-    CURRENT = [TRIAL,UPGRADED,CALLERS_ADDED,CALLERS_REMOVED]
+    CURRENT = [TRIAL,UPGRADED,DOWNGRADED,CALLERS_ADDED,CALLERS_REMOVED]
   end
 
   def activated?
@@ -46,15 +46,7 @@ class Subscription < ActiveRecord::Base
       errors.add(:base, 'Please finish up your minutes before upgrading to per minute subscription.')
       end
     end
-  end
-
-  def downgrading_subscription
-    if type_changed?             
-      if Type::PAID_SUBSCRIPTIONS_ORDER[self.changes["type"].last] < Type::PAID_SUBSCRIPTIONS_ORDER[self.changes["type"].first]
-      errors.add(:base, 'You cant downgrade your subscription till you utlize all your current minutes')
-      end
-    end
-  end
+  end  
 
   def self.subscription_type(type)
     type.constantize.new
@@ -142,6 +134,17 @@ class Subscription < ActiveRecord::Base
     self.update_attributes(status: Status::CANCELED, stripe_customer_id: nil, cc_last4: nil, exp_year: nil, exp_month: nil)
   end
 
+  def self.downgrade_subscription(account_id, token, email, plan_type, num_of_callers, amount)
+    account = Account.find(account_id)    
+    new_subscription = plan_type.constantize.new(type: plan_type, number_of_callers: num_of_callers, 
+      status: Status::DOWNGRADED, account_id: account_id, amount_paid: amount)   
+    new_subscription.subscribe(false)    
+    modified_subscription = account.current_subscription.update_subscription_plan({quantity: num_of_callers, plan: plan_type, prorate: false})
+    account.subscriptions.update_all(status: Status::SUSPENDED)
+    new_subscription.save
+    new_subscription.update_subscription_info(modified_subscription)
+  end
+
 
   def self.upgrade_subscription(account_id, token, email, plan_type, num_of_callers, amount)
     account = Account.find(account_id)    
@@ -156,6 +159,7 @@ class Subscription < ActiveRecord::Base
         new_subscription.update_customer_info(customer)        
       else
         modified_subscription = account.current_subscription.update_subscription_plan({quantity: num_of_callers, plan: plan_type, prorate: true})
+        account.current_subscription.invoice_customer
         account.subscriptions.update_all(status: Status::SUSPENDED)
         new_subscription.save
         new_subscription.update_subscription_info(modified_subscription)
