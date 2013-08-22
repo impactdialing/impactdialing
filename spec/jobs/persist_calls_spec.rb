@@ -7,13 +7,13 @@ describe PersistCalls do
   let!(:voter) { create(:voter, campaign: campaign) }
   let!(:call_attempt) { create(:call_attempt, voter: voter, campaign: campaign) }
   let!(:call) { create(:call, call_attempt: call_attempt) }
-  let!(:time) { Time.now.to_s }
+  let!(:time) { Time.zone.now.to_s }
   let!(:new_call_attempt) { create(:call_attempt, voter: voter, campaign: campaign) }
   let!(:new_call) { create(:call, call_attempt: new_call_attempt) }
 
   before(:each) do
     $redis_call_flow_connection.lpush "abandoned_call_list", {id: call.id, current_time: time}.to_json
-    $redis_call_flow_connection.lpush "abandoned_call_list", {id: 123, current_time: Time.now - 1.day}.to_json
+    $redis_call_flow_connection.lpush "abandoned_call_list", {id: 123, current_time: Time.zone.now - 1.day}.to_json
 
     $redis_call_end_connection.lpush "not_answered_call_list" , {id: call.id, call_status: "busy", current_time: time}.to_json
 
@@ -82,7 +82,7 @@ describe PersistCalls do
   end
 
   describe ".unanswered_calls" do
-    before(:each) { PersistCalls.unanswered_calls(100) } 
+    before(:each) { PersistCalls.unanswered_calls(100) }
 
     context "call_attempt" do
       subject { call_attempt.reload }
@@ -96,10 +96,10 @@ describe PersistCalls do
       subject { voter.reload }
 
       its(:status) { should == CallAttempt::Status::BUSY }
-      its(:call_back) { should be_false } 
+      its(:call_back) { should be_false }
     end
   end
-  
+
   describe ".disconnected" do
     before(:each) { PersistCalls.disconnected_calls(100) }
 
@@ -126,7 +126,7 @@ describe PersistCalls do
       its(:caller_id) { should == 1 }
     end
   end
-  
+
   context ".wrappedup" do
     before(:each) { PersistCalls.wrapped_up_calls(100) }
 
@@ -136,7 +136,7 @@ describe PersistCalls do
     end
 
   end
-  
+
   context ".endbymachine" do
     before(:each) do
       RedisCallFlow.processing_by_machine_call_hash.store(call.id, time)
@@ -158,5 +158,5 @@ describe PersistCalls do
       its(:call_back) { should == false }
     end
   end
-  
+
 end

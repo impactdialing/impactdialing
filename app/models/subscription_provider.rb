@@ -5,8 +5,8 @@ module SubscriptionProvider
 
   module InstanceMethods
 
-		def create_customer_plan(token, email, plan_type, number_of_callers)
-			Stripe::Customer.create(card: token, email: email, plan: Subscription.stripe_plan_id(plan_type), quantity: number_of_callers)
+		def create_customer_plan(token, email, plan_type, num_of_callers)						
+			Stripe::Customer.create(card: token, email: email, plan: Subscription.stripe_plan_id(plan_type), quantity: num_of_callers)
 		end
 
 		def create_customer_charge(token, email, amount)

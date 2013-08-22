@@ -17,7 +17,7 @@ class Subscription < ActiveRecord::Base
     PER_MINUTE = "PerMinute"
     ENTERPRISE = "Enterprise"
     PAID_SUBSCRIPTIONS = [BASIC,PRO,BUSINESS, PER_MINUTE]
-    PAID_SUBSCRIPTIONS_ORDER = {"Trial"=> 0, "Basic"=> 1, "Pro"=> 2, "Business"=> 3}
+    PAID_SUBSCRIPTIONS_ORDER = {"Trial"=> 0, "Basic"=> 1, "Pro"=> 2, "Business"=> 3, "PerMinute"=>4}
   end
 
   module Status
@@ -77,11 +77,12 @@ class Subscription < ActiveRecord::Base
     "ImpactDialing-" + type
   end
 
-  def update_customer_info(customer)    
+  def update_customer_info(customer)            
     card_info = customer.cards.data.first
-    update_attributes(stripe_customer_id: customer.id, cc_last4: card_info.last4, exp_month: card_info.exp_month, 
-    exp_year: card_info.exp_year, amount_paid: customer.subscription.plan.amount/100, subscription_start_date: customer.subscription.current_period_start,
-    subscription_end_date: customer.subscription.current_period_end)      
+    subscription = customer.subscription
+    self.update_attributes!(stripe_customer_id: customer.id, cc_last4: card_info.last4, exp_month: card_info.exp_month, 
+    exp_year: card_info.exp_year, amount_paid: subscription.plan.amount/100, subscription_start_date: DateTime.strptime(subscription.current_period_start.to_s,'%s'),
+    subscription_end_date: DateTime.strptime(subscription.current_period_end.to_s,'%s'))          
   end
 
   def update_subscription_info(subscription)        
@@ -144,38 +145,44 @@ class Subscription < ActiveRecord::Base
 
   def self.upgrade_subscription(account_id, token, email, plan_type, num_of_callers, amount)
     account = Account.find(account_id)    
-    new_subscription = plan_type.capitalize.constantize.new(type: plan_type, number_of_callers: num_of_callers, 
-      status: Status::UPGRADED, account_id: account_id)   
-    new_subscription.subscribe
+    new_subscription = plan_type.constantize.new(type: plan_type, number_of_callers: num_of_callers, 
+      status: Status::UPGRADED, account_id: account_id, amount_paid: amount)   
+    new_subscription.subscribe    
     begin
-      if trial_subscription?(account_id)
-        customer = new_subscription.create_customer(token, email, plan_type, num_of_callers, amount)        
-        account.current_subscriptions.update_all(status: Status::SUSPENDED)
-        new_subscription.save
-        new_subscription.update_customer_info(customer)
+      if trial_subscription?(account_id)                        
+        customer = new_subscription.create_customer(token, email, plan_type, num_of_callers, amount)                        
+        account.subscriptions.update_all(status: Status::SUSPENDED)        
+        new_subscription.save        
+        new_subscription.update_customer_info(customer)        
       else
         modified_subscription = new_subscription.update_subscription_plan({quantity: num_of_callers, plan: plan_type, prorate: true})
         account.current_subscriptions.update_all(status: Status::SUSPENDED)
         new_subscription.save
         new_subscription.update_subscription_info(modified_subscription)
       end
-      rescue
-        return
-      end    
-  end
+    rescue Stripe::InvalidRequestError => e     
+        puts "in exception" 
+        new_subscription.errors.add(:base, 'Please submit a valid number of callers')    
+        return new_subscription
+    rescue Stripe::APIError => e        
+        new_subscription.errors.add(:base, 'Something went wrong with your upgrade. Kindly contact support')
+        return new_subscription
+    end 
+      return new_subscription
+     end
 
   def self.active_number_of_callers(account_id)
     account = Account.find(account_id)    
     account.current_subscriptions.map(&:number_of_callers).inject(0, &:+)
   end
 
-  def self.modify_callers_to_existing_subscription(account_id, num_of_callers)    
+  def self.modify_callers_to_existing_subscription(account_id, num_of_callers)        
     number_of_callers_to_add = num_of_callers - active_number_of_callers(account_id)    
-    if number_of_callers_to_add > 0
+    if number_of_callers_to_add > 0      
       add_callers(num_of_callers, account_id)
-    elsif(number_of_callers_to_add == 0)
+    elsif(number_of_callers_to_add == 0)      
       return identical_callers(account_id)
-    else
+    else      
       remove_callers(num_of_callers, account_id)
     end  
   end

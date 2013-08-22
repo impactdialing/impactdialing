@@ -12,7 +12,8 @@ MANDRILL_API_KEY="336ba63b-680e-4260-a27b-64afd5d58831"
 module ImpactDialing
   class Application < Rails::Application
   #  config.time_zone = "Pacific Time (US & Canada)"
-    config.active_record.default_timezone = :utc
+    #config.active_record.default_timezone = :local
+
 
     if ["heroku", "heroku_staging"].include?(Rails.env)
       config.logger = Logger.new(STDOUT)
