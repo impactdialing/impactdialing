@@ -143,7 +143,7 @@ describe Trial do
       @account.reload
     end
 
-    it "should upgrade to basic" do
+    it "should upgrade to basic" do      
       customer = mock
       cards = mock
       datas = mock      
@@ -176,7 +176,7 @@ describe Trial do
       @account.current_subscription.exp_year.should eq("2016")
       @account.current_subscription.amount_paid.should eq(49.0)
       @account.current_subscription.subscription_start_date.to_i.should eq(DateTime.now.utc.to_i)
-      @account.current_subscription.subscription_end_date.to_i.should eq((DateTime.now+30.days).utc.to_i)
+      @account.current_subscription.subscription_end_date.to_i.should eq((DateTime.now+30.days).utc.to_i)            
     end
 
     it "should throw support error is stripe is down" do
@@ -231,6 +231,78 @@ describe Trial do
       @account.current_subscription.subscription_end_date.to_i.should eq((DateTime.now+30.days).utc.to_i)
     end
 
+    it "should upgrade from trial to pro" do
+      customer = mock
+      cards = mock
+      datas = mock      
+      card_info = mock
+      plan = mock
+      subscription = mock
+      Stripe::Customer.should_receive(:create).with(card: "token", email: "email", plan: Subscription.stripe_plan_id("Pro"), quantity: 1).and_return(customer)
+      customer.should_receive(:cards).and_return(cards)
+      cards.should_receive(:data).and_return(datas)
+      datas.should_receive(:first).and_return(card_info)
+      customer.should_receive(:id).and_return("123")
+      customer.should_receive(:subscription).and_return(subscription)
+      subscription.should_receive(:plan).and_return(plan)      
+      card_info.should_receive(:last4).and_return("9090")
+      card_info.should_receive(:exp_month).and_return("12")
+      card_info.should_receive(:exp_year).and_return("2016")            
+      plan.should_receive(:amount).and_return(4900)
+      subscription.should_receive(:current_period_start).and_return(DateTime.now.to_i)
+      subscription.should_receive(:current_period_end).and_return((DateTime.now+30.days).to_i)
+      Subscription.upgrade_subscription(@account.id, "token", "email", "Pro", 1, nil)
+      Subscription.count.should eq(2)      
+      @account.current_subscription.type.should eq("Pro")
+      @account.current_subscription.number_of_callers.should eq(1)
+      @account.current_subscription.status.should eq(Subscription::Status::UPGRADED)
+      @account.current_subscription.minutes_utlized.should eq(0)
+      @account.current_subscription.total_allowed_minutes.should eq(2500)      
+      @account.current_subscription.stripe_customer_id.should eq("123") 
+      @account.current_subscription.cc_last4.should eq("9090") 
+      @account.current_subscription.exp_month.should eq("12") 
+      @account.current_subscription.exp_year.should eq("2016")
+      @account.current_subscription.amount_paid.should eq(49.0)
+      @account.current_subscription.subscription_start_date.to_i.should eq(DateTime.now.utc.to_i)
+      @account.current_subscription.subscription_end_date.to_i.should eq((DateTime.now+30.days).utc.to_i)
+    end
+
+    it "should upgrade from trial to business" do
+      customer = mock
+      cards = mock
+      datas = mock      
+      card_info = mock
+      plan = mock
+      subscription = mock
+      Stripe::Customer.should_receive(:create).with(card: "token", email: "email", plan: Subscription.stripe_plan_id("Business"), quantity: 1).and_return(customer)
+      customer.should_receive(:cards).and_return(cards)
+      cards.should_receive(:data).and_return(datas)
+      datas.should_receive(:first).and_return(card_info)
+      customer.should_receive(:id).and_return("123")
+      customer.should_receive(:subscription).and_return(subscription)
+      subscription.should_receive(:plan).and_return(plan)      
+      card_info.should_receive(:last4).and_return("9090")
+      card_info.should_receive(:exp_month).and_return("12")
+      card_info.should_receive(:exp_year).and_return("2016")            
+      plan.should_receive(:amount).and_return(4900)
+      subscription.should_receive(:current_period_start).and_return(DateTime.now.to_i)
+      subscription.should_receive(:current_period_end).and_return((DateTime.now+30.days).to_i)
+      Subscription.upgrade_subscription(@account.id, "token", "email", "Business", 1, nil)
+      Subscription.count.should eq(2)      
+      @account.current_subscription.type.should eq("Business")
+      @account.current_subscription.number_of_callers.should eq(1)
+      @account.current_subscription.status.should eq(Subscription::Status::UPGRADED)
+      @account.current_subscription.minutes_utlized.should eq(0)
+      @account.current_subscription.total_allowed_minutes.should eq(6000)      
+      @account.current_subscription.stripe_customer_id.should eq("123") 
+      @account.current_subscription.cc_last4.should eq("9090") 
+      @account.current_subscription.exp_month.should eq("12") 
+      @account.current_subscription.exp_year.should eq("2016")
+      @account.current_subscription.amount_paid.should eq(49.0)
+      @account.current_subscription.subscription_start_date.to_i.should eq(DateTime.now.utc.to_i)
+      @account.current_subscription.subscription_end_date.to_i.should eq((DateTime.now+30.days).utc.to_i)
+    end
+   
   end
 
 end

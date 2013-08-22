@@ -13,7 +13,7 @@ module SubscriptionInfo
   end
 
   def debitable_subscription
-    subscriptions.detect{|x| x.subscription_end_date > DateTime.now.utc}
+    current_subscriptions.detect{|x| x.subscription_end_date > DateTime.now.utc}
   end
 
   def minutes_utlized

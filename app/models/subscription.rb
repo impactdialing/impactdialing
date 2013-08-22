@@ -17,7 +17,7 @@ class Subscription < ActiveRecord::Base
     PER_MINUTE = "PerMinute"
     ENTERPRISE = "Enterprise"
     PAID_SUBSCRIPTIONS = [BASIC,PRO,BUSINESS, PER_MINUTE]
-    PAID_SUBSCRIPTIONS_ORDER = {"Trial"=> 0, "Basic"=> 1, "Pro"=> 2, "Business"=> 3, "PerMinute"=>4}
+    PAID_SUBSCRIPTIONS_ORDER = {"Trial"=> 0, "Basic"=> 1, "Pro"=> 2, "Business"=> 3, "PerMinute"=>4, "Enterprise"=>5}
   end
 
   module Status
@@ -80,14 +80,14 @@ class Subscription < ActiveRecord::Base
   def update_customer_info(customer)            
     card_info = customer.cards.data.first
     subscription = customer.subscription
-    self.update_attributes!(stripe_customer_id: customer.id, cc_last4: card_info.last4, exp_month: card_info.exp_month, 
+    self.update_attributes(stripe_customer_id: customer.id, cc_last4: card_info.last4, exp_month: card_info.exp_month, 
     exp_year: card_info.exp_year, amount_paid: subscription.plan.amount/100, subscription_start_date: DateTime.strptime(subscription.current_period_start.to_s,'%s'),
     subscription_end_date: DateTime.strptime(subscription.current_period_end.to_s,'%s'))          
   end
 
   def update_subscription_info(subscription)        
-    update_attributes(amount_paid: subscription.plan.amount/100, subscription_start_date: subscription.current_period_start,
-    subscription_end_date: customer.subscription.current_period_end)      
+    update_attributes(stripe_customer_id: subscription.customer, amount_paid: subscription.plan.amount/100, subscription_start_date: DateTime.strptime(subscription.current_period_start.to_s,'%s'),
+    subscription_end_date: DateTime.strptime(subscription.current_period_end.to_s,'%s'))      
   end
 
   def current_period_start
@@ -155,13 +155,12 @@ class Subscription < ActiveRecord::Base
         new_subscription.save        
         new_subscription.update_customer_info(customer)        
       else
-        modified_subscription = new_subscription.update_subscription_plan({quantity: num_of_callers, plan: plan_type, prorate: true})
-        account.current_subscriptions.update_all(status: Status::SUSPENDED)
+        modified_subscription = account.current_subscription.update_subscription_plan({quantity: num_of_callers, plan: plan_type, prorate: true})
+        account.subscriptions.update_all(status: Status::SUSPENDED)
         new_subscription.save
         new_subscription.update_subscription_info(modified_subscription)
       end
-    rescue Stripe::InvalidRequestError => e     
-        puts "in exception" 
+    rescue Stripe::InvalidRequestError => e             
         new_subscription.errors.add(:base, 'Please submit a valid number of callers')    
         return new_subscription
     rescue Stripe::APIError => e        
