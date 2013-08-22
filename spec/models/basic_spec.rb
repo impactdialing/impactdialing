@@ -226,7 +226,10 @@ describe Basic do
       customer = mock
       plan = mock
       subscription = mock
+      invoice = mock
       Stripe::Customer.should_receive(:retrieve).with("123").and_return(customer)
+      Stripe::Invoice.should_receive(:create).and_return(invoice)
+      invoice.should_receive(:pay) 
       customer.should_receive(:update_subscription).and_return(subscription)            
       subscription.should_receive(:plan).and_return(plan)            
       plan.should_receive(:amount).and_return(4900)
@@ -250,7 +253,10 @@ describe Basic do
       customer = mock
       plan = mock
       subscription = mock
+      invoice = mock
       Stripe::Customer.should_receive(:retrieve).with("123").and_return(customer)
+      Stripe::Invoice.should_receive(:create).and_return(invoice)
+      invoice.should_receive(:pay) 
       customer.should_receive(:update_subscription).and_return(subscription)            
       subscription.should_receive(:plan).and_return(plan)            
       plan.should_receive(:amount).and_return(4900)
@@ -274,7 +280,10 @@ describe Basic do
       customer = mock
       plan = mock
       subscription = mock
+      invoice = mock
       Stripe::Customer.should_receive(:retrieve).with("123").and_return(customer)
+      Stripe::Invoice.should_receive(:create).and_return(invoice)
+      invoice.should_receive(:pay) 
       customer.should_receive(:update_subscription).and_return(subscription)            
       subscription.should_receive(:plan).and_return(plan)            
       plan.should_receive(:amount).and_return(4900)

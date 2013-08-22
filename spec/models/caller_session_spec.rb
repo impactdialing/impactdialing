@@ -145,24 +145,7 @@ describe CallerSession do
   end
 
   describe "initial state" do
-
-    describe "account not activated" do
-
-      before(:each) do
-        @caller = create(:caller)
-        @script = create(:script)
-        @campaign =  create(:campaign, script: @script)
-      end
-
-
-      it "should render correct twiml" do
-        caller_session = create(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
-        caller_session.should_receive(:account_not_activated?).and_return(true)
-        caller_session.start_conf.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>Your account has insufficent funds</Say><Hangup/></Response>")
-      end
-
-    end
-
+    
     describe "subscription limit exceeded" do
 
       before(:each) do
@@ -174,8 +157,7 @@ describe CallerSession do
 
 
       it "should render correct twiml" do
-        caller_session = create(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
-        caller_session.should_receive(:account_not_activated?).and_return(false)
+        caller_session = create(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)        
         caller_session.should_receive(:funds_not_available?).and_return(false)
         caller_session.should_receive(:subscription_limit_exceeded?).and_return(true)
         caller_session.start_conf.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>The maximum number of callers for this account has been reached. Wait for another caller to finish, or ask your administrator to upgrade your account.</Say><Hangup/></Response>")
@@ -194,8 +176,7 @@ describe CallerSession do
 
       it "should render correct twiml" do
         caller_session = create(:caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
-        caller_session.should_receive(:funds_not_available?).and_return(false)
-        caller_session.should_receive(:account_not_activated?).and_return(false)
+        caller_session.should_receive(:funds_not_available?).and_return(false)        
         caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
         caller_session.should_receive(:time_period_exceeded?).and_return(true)
         caller_session.start_conf.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>You can only call this campaign between 9 AM and 9 PM. Please try back during those hours.</Say><Hangup/></Response>")

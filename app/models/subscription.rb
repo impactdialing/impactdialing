@@ -129,9 +129,14 @@ class Subscription < ActiveRecord::Base
     status == Status::CANCELED
   end
 
-  def cancel
-    cancel_subscription
-    self.update_attributes(status: Status::CANCELED, stripe_customer_id: nil, cc_last4: nil, exp_year: nil, exp_month: nil)
+  def self.cancel(account_id)
+    account = Account.find(account_id)
+    begin
+      account.current_subscription.cancel_subscription
+      account.subscriptions.update_all(status: Status::CANCELED, stripe_customer_id: nil, cc_last4: nil, exp_year: nil, exp_month: nil)
+    rescue
+    end
+    
   end
 
   def self.downgrade_subscription(account_id, token, email, plan_type, num_of_callers, amount)

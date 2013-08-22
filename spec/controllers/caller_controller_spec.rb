@@ -24,21 +24,24 @@ describe CallerController do
   
   describe "start calling" do
     it "should start a new caller conference" do
-      caller = create(:caller, campaign: create(:predictive), account: create(:account))
+      account = create(:account)
+      campaign = create(:predictive, account: account)      
+      caller = create(:caller, campaign: campaign, account: account)
       caller_identity = create(:caller_identity)
-      caller_session = create(:webui_caller_session, session_key: caller_identity.session_key, caller_type: CallerSession::CallerType::TWILIO_CLIENT, caller: caller)
+      caller_session = create(:webui_caller_session, session_key: caller_identity.session_key, caller_type: CallerSession::CallerType::TWILIO_CLIENT, caller: caller, campaign: campaign)
       Caller.should_receive(:find).and_return(caller)
       caller.should_receive(:create_caller_session).and_return(caller_session)
       RedisPredictiveCampaign.should_receive(:add).with(caller.campaign_id, caller.campaign.type)
       post :start_calling, caller_id: caller.id, session_key: caller_identity.session_key, CallSid: "abc"      
-      response.body.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>Your account has insufficent funds</Say><Hangup/></Response>")
+      response.body.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Dial hangupOnStar=\"true\" action=\"http://#{Settings.twilio_callback_host}:#{Settings.twilio_callback_port}/caller/#{caller.id}/pause?session_id=#{caller_session.id}\"><Conference startConferenceOnEnter=\"false\" endConferenceOnExit=\"true\" beep=\"true\" waitUrl=\"hold_music\" waitMethod=\"GET\"/></Dial></Response>")
     end
   end
   
   describe "call voter" do
     it "should call voter" do
-      campaign =  create(:predictive)
-      caller = create(:caller, campaign: campaign, account: create(:account))
+      account = create(:account)
+      campaign =  create(:predictive, account: account)
+      caller = create(:caller, campaign: campaign, account: account)
       caller_identity = create(:caller_identity)
       voter = create(:voter, campaign: campaign)
       caller_session = create(:webui_caller_session, session_key: caller_identity.session_key, caller_type: CallerSession::CallerType::TWILIO_CLIENT, caller: caller)

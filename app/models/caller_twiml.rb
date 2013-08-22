@@ -39,13 +39,6 @@ module CallerTwiml
     end
 
 
-    def account_not_activated_twiml
-      Twilio::TwiML::Response.new do |r|
-        r.Say "Your account has insufficent funds"
-        r.Hangup
-      end.text
-    end
-
     def time_period_exceeded_twiml
       Twilio::TwiML::Response.new do |r|
         r.Say I18n.t(:campaign_time_period_exceed, :start_time => campaign.start_time.hour <= 12 ? "#{campaign.start_time.hour} AM" : "#{campaign.start_time.hour-12} PM", :end_time => campaign.end_time.hour <= 12 ? "#{campaign.end_time.hour} AM" : "#{campaign.end_time.hour-12} PM")

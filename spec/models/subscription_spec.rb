@@ -52,17 +52,7 @@ describe Subscription do
 		end
 	end
 
-	describe "update_subscription" do
-
-		it "should update subscription" do
-			params = {}
-			subscription = create(:basic, stripe_customer_id: "123")
-			stripe_customer = mock			
-			Stripe::Customer.should_receive(:retrieve).and_return(stripe_customer)
-			stripe_customer.should_receive(:update_subscription).with(params)			
-			subscription.update_subscription_plan(params)
-		end		
-	end
+	
 
 	describe "recharge" do
 		it "should charge customer" do
@@ -76,72 +66,22 @@ describe Subscription do
 	end
 
 	describe "update subscription" do
-		it "should create new customer for per agent plan" do
-			account = create(:account)			
-			customer = mock
-			cards = mock
-			datas = mock			
-			card_info = mock
-			account.subscription.should_receive(:create_customer_plan).and_return(customer)
-			customer.should_receive(:cards).and_return(cards)
-			cards.should_receive(:data).and_return(datas)
-			datas.should_receive(:first).and_return(card_info)
-			customer.should_receive(:id).and_return("123")
-			card_info.should_receive(:last4).and_return("9090")
-			card_info.should_receive(:exp_month).and_return("12")
-			card_info.should_receive(:exp_year).and_return("2016")			
-			account.subscription.create_subscription("token", "email", "Basic", 2, nil)
-			account.reload
-			account.subscription.type.should eq("Basic")
-			account.subscription.number_of_callers.should eq(2)
-			account.subscription.total_allowed_minutes.should eq(2000)
-			account.subscription.stripe_customer_id.should eq("123")
-			account.subscription.cc_last4.should eq("9090")
-			account.subscription.exp_month.should eq("12")
-			account.subscription.exp_year.should eq("2016")			
-		end
-
-		it "should upgrade plan for existing customer" do
-			account = create(:account)			
-			account.subscription.update_attributes(stripe_customer_id: "123")
-			customer = mock
-			cards = mock
-			datas = mock			
-			card_info = mock
-			account.subscription.should_receive(:retrieve_customer).and_return(customer)
-			account.subscription.should_receive(:update_subscription_plan).with({plan: "ImpactDialing-Basic", quantity: 2, prorate: true})
-			account.subscription.should_receive(:invoice_customer)			
-			customer.should_receive(:cards).and_return(cards)
-			cards.should_receive(:data).and_return(datas)
-			datas.should_receive(:first).and_return(card_info)
-			customer.should_receive(:id).and_return("123")
-			card_info.should_receive(:last4).and_return("9090")
-			card_info.should_receive(:exp_month).and_return("12")
-			card_info.should_receive(:exp_year).and_return("2016")			
-			account.subscription.upgrade_subscription("token", "email", "Basic", 2, nil)
-			account.reload
-			account.subscription.type.should eq("Basic")
-			account.subscription.number_of_callers.should eq(2)
-			account.subscription.total_allowed_minutes.should eq(2000)
-			account.subscription.stripe_customer_id.should eq("123")
-			account.subscription.cc_last4.should eq("9090")
-			account.subscription.exp_month.should eq("12")
-			account.subscription.exp_year.should eq("2016")			
-		end
+		
+		
 	end
 
 	
 	describe "cancel" do
 		it "should cancel it" do
 			account = create(:account)
-			account.subscription.should_receive(:cancel_subscription)
-			account.subscription.cancel
-			account.reload			
-			account.subscription.status.should eq(Subscription::Status::CANCELED)
-			account.subscription.stripe_customer_id.should eq(nil)
-			account.subscription.cc_last4.should eq(nil)
-			account.subscription.exp_month.should eq(nil)
-			account.subscription.exp_year.should eq(nil)
+			Account.should_receive(:find).and_return(account)
+			account.current_subscription.should_receive(:cancel_subscription)
+			Subscription.cancel(account.id)				
+			Subscription.first.status.should eq(Subscription::Status::CANCELED)
+			Subscription.first.stripe_customer_id.should eq(nil)
+			Subscription.first.cc_last4.should eq(nil)
+			Subscription.first.exp_month.should eq(nil)
+			Subscription.first.exp_year.should eq(nil)
 
 		end
 	end

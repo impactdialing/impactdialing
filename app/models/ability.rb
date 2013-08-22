@@ -2,12 +2,12 @@ class Ability
   include CanCan::Ability
 
   def initialize(account)
-    can :add_transfer, Script if !account.subscription.transfer_types.empty?
-    can :manage_caller_groups, Account if account.subscription.caller_groups_enabled?
-    can :view_campaign_reports, Account if account.subscription.campaign_reports_enabled?
-    can :view_caller_reports, Account if account.subscription.caller_reports_enabled?
-    can :view_dashboard, Account if account.subscription.dashboard_enabled?
-    can :record_calls, Account if account.subscription.call_recording_enabled?
+    can :add_transfer, Script if !account.current_subscription.transfer_types.empty?
+    can :manage_caller_groups, Account if account.current_subscription.caller_groups_enabled?
+    can :view_campaign_reports, Account if account.current_subscription.campaign_reports_enabled?
+    can :view_caller_reports, Account if account.current_subscription.caller_reports_enabled?
+    can :view_dashboard, Account if account.current_subscription.dashboard_enabled?
+    can :record_calls, Account if account.current_subscription.call_recording_enabled?
 
     # Define abilities for the passed in user here. For example:
     #

@@ -30,7 +30,6 @@ class CallerSession < ActiveRecord::Base
   has_many :transfer_attempts
 
   delegate :subscription_allows_caller?, :to => :caller
-  delegate :activated?, :to => :caller
   delegate :funds_available?, :to => :caller
 
   module CallerType
@@ -51,7 +50,6 @@ class CallerSession < ActiveRecord::Base
   end
 
   def start_conf
-    return account_not_activated_twiml if account_not_activated?
     return account_has_no_funds_twiml if funds_not_available?
     return subscription_limit_twiml if subscription_limit_exceeded?
     return time_period_exceeded_twiml if time_period_exceeded?

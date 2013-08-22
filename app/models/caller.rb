@@ -23,7 +23,6 @@ class Caller < ActiveRecord::Base
   scope :active, where(:active => true)
 
   delegate :subscription_allows_caller?, :to => :account
-  delegate :activated?, :to => :account
   delegate :funds_available?, :to => :account
   delegate :as_time_zone, :to=> :campaign
   before_save { |caller| caller.username = username.downcase  unless username.nil?}

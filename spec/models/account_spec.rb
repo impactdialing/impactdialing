@@ -25,25 +25,6 @@ describe Account do
     account.custom_fields.should == [field1, field2, field3]
   end
 
-  describe "account not activated" do
-    it "should be true if account is trial" do
-      account = create(:account)
-      account.is_activated?.should be_true
-    end
-
-    it "should be false if account is not trial and not activated" do
-      account = create(:account, activated: false)
-      account.subscription.upgrade("Basic")
-      account.reload      
-      account.is_activated?.should be_false
-    end
-
-    it "should be true if account is not on trial and is activated" do
-      account = create(:account, activated: true)
-      account.subscription.upgrade("Basic")
-      account.reload      
-      account.is_activated?.should be_false
-    end
-  end
+  
 
 end

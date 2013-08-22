@@ -21,6 +21,29 @@ module SubscriptionInfo
     active_subscriptions.map(&:minutes_utlized).inject(0, &:+)
   end
 
+  def per_minute_subscription?
+    current_subscription.type == Subscription::Type::PER_MINUTE
+  end
+
+  def manual_subscription?
+    current_subscription.type == Subscription::Type::ENTERPRISE
+  end
+
+  def per_caller_subscription?
+    current_subscription.per_agent?
+  end
+
+  def subscription_allows_caller?
+    if per_minute_subscription? || manual_subscription?
+      return true
+    elsif per_caller_subscription? && self.callers_in_progress.length <= Subscription.active_number_of_callers(self.id)
+      return true
+    else
+      return false
+    end
+  end
+
+
 
  end
   def self.included(receiver)

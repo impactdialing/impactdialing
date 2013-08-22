@@ -3,7 +3,6 @@ class WebuiCallerSession < CallerSession
 
 
   def start_conf
-    return account_not_activated_twiml if account_not_activated?
     return account_has_no_funds_twiml if funds_not_available?
     return subscription_limit_twiml if subscription_limit_exceeded?
     return time_period_exceeded_twiml if time_period_exceeded?

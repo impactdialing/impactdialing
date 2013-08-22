@@ -77,103 +77,13 @@ class Account < ActiveRecord::Base
     CallerSession.where("campaign_id in (?) and on_call=1", self.campaigns.map {|c| c.id})
   end
 
-  def cancel_subscription
-    return if self.recurly_subscription_uuid.blank?
-    subscription = Recurly::Subscription.find(self.recurly_subscription_uuid)
-    subscription.cancel
-    sync_subscription
-  end
 
-  def sync_subscription
-    #pull latest subscription data from recurly
+  
 
-    recurly_account = Recurly::Account.find(self.recurly_account_code)
-    has_active_subscriptions=false
-    recurly_account.subscriptions.find_each do |subscription|
-      if subscription.state=="active"
-        has_active_subscriptions=true
-        self.subscription_count=subscription.quantity
-        self.recurly_subscription_uuid=subscription.uuid
-        self.subscription_active=subscription.state=="active" ? true : false
-        self.subscription_name=subscription.plan.name
-        self.activated=true
-        self.card_verified=true
-        self.save
-      end
-    end
-    if !has_active_subscriptions
-      self.recurly_subscription_uuid=nil
-      self.subscription_count=0
-      self.subscription_active=false
-      self.subscription_name=nil
-      self.save
-    end
-  end
-
-  def subscription_allows_caller?
-    if per_minute_subscription? || manual_subscription?
-      return true
-    elsif per_caller_subscription? && self.callers_in_progress.length <= self.subscription_count
-      return true
-    else
-      return false
-    end
-  end
-
-  def per_minute_subscription?
-    subscription_name == Subscription_Type::PER_MINUTE
-  end
-
-  def manual_subscription?
-    subscription_name == Subscription_Type::ENTERPRISE
-  end
-
-  def per_caller_subscription?
-    subscription_name == Subscription_Type::PER_CALLER
-  end
-
+  
   def funds_available?
-    subscription.can_dial?
+    current_subscription.can_dial?
   end
-
-  def create_recurly_account_code
-    return self.recurly_account_code if !self.recurly_account_code.nil?
-    begin
-      user = User.where("account_id=?",self.id).order("id asc").first
-      account = Recurly::Account.create(
-        :account_code => self.id,
-        :email        => user.email,
-        :first_name   => user.fname,
-        :last_name    => user.lname,
-        :company_name => user.orgname
-      )
-      self.recurly_account_code=account.account_code
-      self.save
-      self.recurly_account_code
-    rescue
-      nil
-    end
-  end
-
-  def set_recurly_subscription(new_subscription_name)
-    self.create_recurly_account_code
-    self.sync_subscription
-    self.cancel_subscription if self.subscription_name!=new_subscription_name
-    self.create_recurly_subscription(new_subscription_name)
-  end
-
-  def create_recurly_subscription(plan_code)
-
-     subscription = Recurly::Subscription.create(
-      :plan_code => plan_code,
-      :account   => {
-         :account_code => self.recurly_account_code
-        }
-    )
-
-    self.sync_subscription
-  end
-
 
   def enable_api!
     self.update_attribute(:api_key, generate_api_key)
@@ -198,9 +108,6 @@ class Account < ActiveRecord::Base
     activated?
   end
 
-  def is_activated?
-    subscription.activated?
-  end
 
   def toggle_call_recording!
     self.record_calls = !self.record_calls
