@@ -33,42 +33,38 @@ class PerMinute < Subscription
   end
 
   def debit(call_time)
-    payment = Payment.where("amount_remaining > 0 and account_id = ?", account).last
+    updated_minutes = minutes_utlized + call_time    
+    self.update_attributes(minutes_utlized: updated_minutes)
   end
 
-  def calculate_minutes_on_upgrade(amount)
-    amount.to_f/0.09
+  def calculate_minutes_on_upgrade()
+    amount_paid.to_f/0.09
   end
-
-  def upgrade(new_plan, num_of_callers=1, amount=0)                
-    account.subscription.subscribe(amount)
-    account.subscription.save    
-  end
-
 
   def subscribe(upgrade=true)        
-    self.total_allowed_minutes = calculate_minutes_on_upgrade(amount_paid)
+    self.total_allowed_minutes = calculate_minutes_on_upgrade()
   end
 
-  def recharge_subscription(amount)
-    recharge(amount)
-    subscribe(amount, total_allowed_minutes)
-    self.save
+  def self.recharge_subscription(account_id, amount)
+    account = Account.find(account_id)
+    subscription = account.current_subscription
+    new_subscription = PerMinute.new(status: Subscription::Status::UPGRADED, account_id: account.id, amount_paid: amount.to_i, 
+      stripe_customer_id: subscription.stripe_customer_id, subscription_start_date: DateTime.now, 
+      subscription_end_date: DateTime.now+1.year)     
+    new_subscription.recharge
+    new_subscription.subscribe
+    new_subscription.save
+    new_subscription
+  end
+
+  def self.configure_autorecharge(account_id, autorecharge_enabled, autorecharge_amount, autorecharge_trigger)
+    account = Account.find(account_id)
+    account.subscriptions.update_all(autorecharge_enabled: autorecharge_enabled, autorecharge_amount: autorecharge_amount,
+      autorecharge_trigger: autorecharge_trigger)
   end
 
   def create_customer(token, email, plan_type, number_of_callers, amount)
-    create_customer_charge(token, email, amount)
-  end
-
-  def create_subscription(token, email, plan_type, number_of_callers, amount)
-    upgrade(plan_type, number_of_callers, amount)
-    begin
-      customer = create_customer(token, email, plan_type, number_of_callers, amount)
-      update_info(plan_type, number_of_callers, amount)
-    rescue
-      errors.add(:base, e.message)
-    end
-    
+    create_customer_charge(token, email, amount.to_i*100)
   end
 
   def upgrade_subscription(token, email, plan_type, number_of_callers, amount)

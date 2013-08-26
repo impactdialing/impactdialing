@@ -40,6 +40,14 @@ class Subscription < ActiveRecord::Base
     end
   end
 
+  def downgrading_subscription
+    if type_changed?             
+      if self.changes["type"].last == Type::PER_MINUTE && self.changes["type"].first != Type::TRIAL  && available_minutes > 0 
+      errors.add(:base, 'Please finish up your minutes before upgrading to per minute subscription.')
+      end
+    end
+  end
+
   def upgrading_to_per_minute
     if type_changed?             
       if self.changes["type"].last == Type::PER_MINUTE && self.changes["type"].first != Type::TRIAL  && available_minutes > 0 
@@ -77,6 +85,13 @@ class Subscription < ActiveRecord::Base
     subscription_end_date: DateTime.strptime(subscription.current_period_end.to_s,'%s'))          
   end
 
+  def update_charge_info(charge)
+    card_info = charge.card
+    self.update_attributes(stripe_customer_id: charge.customer, cc_last4: card_info.last4, exp_month: card_info.exp_month, 
+    exp_year: card_info.exp_year, amount_paid: charge.amount/100, subscription_start_date: DateTime.now,
+    subscription_end_date: DateTime.now+1.year)          
+  end
+
   def update_subscription_info(subscription)        
     update_attributes(stripe_customer_id: subscription.customer, amount_paid: subscription.plan.amount/100, subscription_start_date: DateTime.strptime(subscription.current_period_start.to_s,'%s'),
     subscription_end_date: DateTime.strptime(subscription.current_period_end.to_s,'%s'))      
@@ -90,7 +105,7 @@ class Subscription < ActiveRecord::Base
 
   def calculate_minutes_on_upgrade    
     days_remaining = number_of_days_in_current_month - (Subscription.todays_date - current_period_start.to_date).to_i            
-    (minutes_per_caller/number_of_days_in_current_month) * days_remaining * number_of_callers
+    (minutes_per_caller/number_of_days_in_current_month) * days_remaining * number_of_callers - account.minutes_utlized
   end
 
   def calculate_minute_on_add_callers(number_of_callers_to_add)    
@@ -129,6 +144,21 @@ class Subscription < ActiveRecord::Base
     status == Status::CANCELED
   end
 
+  def self.upgrade?(account_id, new_subscription_type)
+    current_subscription = Account.find(account_id).current_subscription
+    return Type::PAID_SUBSCRIPTIONS_ORDER[new_subscription_type] > Type::PAID_SUBSCRIPTIONS_ORDER[current_subscription.type]
+  end
+
+  def self.downgrade?(account_id, new_subscription_type)
+    current_subscription = Account.find(account_id).current_subscription
+    return Type::PAID_SUBSCRIPTIONS_ORDER[new_subscription_type] < Type::PAID_SUBSCRIPTIONS_ORDER[current_subscription.type]
+  end
+
+  def self.modify_callers?(account_id, new_subscription_type, number_of_callers)
+    current_subscription = Account.find(account_id).current_subscription
+    Type::PAID_SUBSCRIPTIONS_ORDER[new_subscription_type] == Type::PAID_SUBSCRIPTIONS_ORDER[current_subscription.type]
+  end
+
   def self.cancel(account_id)
     account = Account.find(account_id)
     begin
@@ -144,32 +174,38 @@ class Subscription < ActiveRecord::Base
     new_subscription = plan_type.constantize.new(type: plan_type, number_of_callers: num_of_callers, 
       status: Status::DOWNGRADED, account_id: account_id, amount_paid: amount)   
     new_subscription.subscribe(false)    
-    modified_subscription = account.current_subscription.update_subscription_plan({quantity: num_of_callers, plan: plan_type, prorate: false})
+    modified_subscription = account.current_subscription.update_subscription_plan({quantity: num_of_callers, plan: stripe_plan_id(plan_type), prorate: false})
     account.subscriptions.update_all(status: Status::SUSPENDED)
     new_subscription.save
     new_subscription.update_subscription_info(modified_subscription)
+    new_subscription
   end
 
 
-  def self.upgrade_subscription(account_id, token, email, plan_type, num_of_callers, amount)
+  def self.upgrade_subscription(account_id, token, email, plan_type, num_of_callers, amount=0)
     account = Account.find(account_id)    
     new_subscription = plan_type.constantize.new(type: plan_type, number_of_callers: num_of_callers, 
-      status: Status::UPGRADED, account_id: account_id, amount_paid: amount)   
+      status: Status::UPGRADED, account_id: account_id, amount_paid: amount.to_i)   
     new_subscription.subscribe    
     begin
       if trial_subscription?(account_id)                        
         customer = new_subscription.create_customer(token, email, plan_type, num_of_callers, amount)                        
         account.subscriptions.update_all(status: Status::SUSPENDED)        
-        new_subscription.save        
-        new_subscription.update_customer_info(customer)        
+        new_subscription.save
+        if new_subscription.per_agent?        
+          new_subscription.update_customer_info(customer)      
+        else
+          new_subscription.update_charge_info(customer)      
+        end
       else
-        modified_subscription = account.current_subscription.update_subscription_plan({quantity: num_of_callers, plan: plan_type, prorate: true})
+        modified_subscription = account.current_subscription.update_subscription_plan({quantity: num_of_callers, plan: stripe_plan_id(plan_type), prorate: true})
         account.current_subscription.invoice_customer
         account.subscriptions.update_all(status: Status::SUSPENDED)
         new_subscription.save
         new_subscription.update_subscription_info(modified_subscription)
       end
-    rescue Stripe::InvalidRequestError => e             
+    rescue Stripe::InvalidRequestError => e  
+        puts e           
         new_subscription.errors.add(:base, 'Please submit a valid number of callers')    
         return new_subscription
     rescue Stripe::APIError => e        
@@ -228,7 +264,8 @@ class Subscription < ActiveRecord::Base
         current_subscription = account.current_subscription
         modified_subscription = current_subscription.update_subscription_plan({quantity: num_of_callers, plan: current_subscription.stripe_plan_id, prorate: false})        
         new_subscription = current_subscription.type.capitalize.constantize.create(type: current_subscription.type, number_of_callers: number_of_callers_to_remove, 
-        status: Status::CALLERS_REMOVED, account_id: account.id, minutes_utlized: 0,stripe_customer_id: current_subscription.stripe_customer_id)   
+        status: Status::CALLERS_REMOVED, account_id: account.id, minutes_utlized: 0,stripe_customer_id: current_subscription.stripe_customer_id, 
+        subscription_start_date: current_subscription.subscription_start_date, subscription_end_date: current_subscription.subscription_end_date)   
     rescue Stripe::InvalidRequestError => e
        current_subscription.errors.add(:base, 'Please submit a valid number of callers')    
        return current_subscription

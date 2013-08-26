@@ -91,6 +91,36 @@ describe PerMinute do
     
   end
 
+  describe "should debit call time" do
+    before(:each) do
+      @account =  create(:account, record_calls: false)
+      PerMinute.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED, 
+        subscription_start_date: DateTime.now, subscription_end_date: DateTime.now+30.days, total_allowed_minutes:6000)      
+    end
+
+    it "should deduct from minutes used if minutes used greater than 0" do
+      @account.debitable_subscription.debit(2.00).should be_true
+      @account.debitable_subscription.minutes_utlized.should eq(2)
+    end
+
+    it "should not deduct from minutes used if minutes used greater than eq total minutes" do
+      @account.debitable_subscription.reload      
+      @account.debitable_subscription.update_attributes(minutes_utlized: 6000)
+      @account.debitable_subscription.debit(2.00).should be_false
+      @account.debitable_subscription.reload      
+      @account.debitable_subscription.minutes_utlized.should eq(6000)
+    end
+
+    it "should not deduct from minutes used if alloted minutes does not fall in subscription time range" do
+      @account.debitable_subscription.update_attributes(minutes_utlized: 10)
+      @account.debitable_subscription.update_attributes(subscription_start_date: (DateTime.now-40.days))
+      @account.debitable_subscription.debit(2.00).should be_false
+      @account.debitable_subscription.reload
+      @account.debitable_subscription.minutes_utlized.should eq(10)
+    end
+
+  end
+
   describe "downgrade from per minute" do
     before(:each) do
       @account =  create(:account)      
@@ -119,8 +149,8 @@ describe PerMinute do
       @account.current_subscription.total_allowed_minutes.should eq(0)      
       @account.current_subscription.stripe_customer_id.should eq("123") 
       @account.current_subscription.amount_paid.should eq(0.0)
-      @account.current_subscription.subscription_start_date.to_i.should eq(DateTime.now.utc.to_i)
-      @account.current_subscription.subscription_end_date.to_i.should eq((DateTime.now+30.days).utc.to_i)
+      @account.current_subscription.subscription_start_date.should_not be_nil
+      @account.current_subscription.subscription_end_date.should_not be_nil
     end
   end
 

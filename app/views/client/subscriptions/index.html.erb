@@ -4,7 +4,7 @@
   <% else %>
     <p>Your current plan is <%= @subscription.type %>.</p>
     <% if @subscription.per_agent? %>
-      <p>Minutes Left:  <%= @subscription.available_minutes %></p>
+      <p>Minutes Left:  <%= @account.available_minutes %></p>
         <p class="actions"><a href="/client/subscriptions/<%= @subscription.id%>" class="action primary confirm">Upgrade</a>
       <% if !@subscription.trial? %>
         <%= link_to 'Cancel subscription', {action: "cancel", id: @subscription.id}, method: "put",class: "action secondary", confirm: 'Are you sure you want to cancel your subscription?' %>      
@@ -13,7 +13,7 @@
     <% end %>
 
     <% if @subscription.per_minute? %>
-      <p>Minutes Left:  <%= @subscription.available_minutes %></p>
+      <p>Minutes Left:  <%= @account.available_minutes %></p>
       <p class="actions"><a href="/client/subscriptions/<%= @subscription.id%>/add_funds" class="action secondary">Add to your balance</a>
       </p>
       <p class="actions"><a href="/client/subscriptions/<%= @subscription.id%>/configure_auto_recharge" class="action secondary">Configure auto-recharge</a></p>

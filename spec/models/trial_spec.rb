@@ -175,8 +175,8 @@ describe Trial do
       @account.current_subscription.exp_month.should eq("12") 
       @account.current_subscription.exp_year.should eq("2016")
       @account.current_subscription.amount_paid.should eq(49.0)
-      @account.current_subscription.subscription_start_date.to_i.should eq(DateTime.now.utc.to_i)
-      @account.current_subscription.subscription_end_date.to_i.should eq((DateTime.now+30.days).utc.to_i)            
+      @account.current_subscription.subscription_start_date.should_not be_nil
+      @account.current_subscription.subscription_end_date.should_not be_nil
     end
 
     it "should throw support error is stripe is down" do
@@ -193,28 +193,23 @@ describe Trial do
       subscription.errors.messages.should eq({:base=>["Something went wrong with your upgrade. Kindly contact support"]})            
     end
 
-    it "should upgrade from trial to per minute" do
+    it "should upgrade from trial to per minute" do      
       customer = mock      
       cards = mock
       datas = mock      
       card_info = mock
       plan = mock
       subscription = mock
+      charge = mock
       Stripe::Customer.should_receive(:create).and_return(customer)
       customer.should_receive(:id).and_return("123")
-      Stripe::Charge.should_receive(:create)
-      customer.should_receive(:cards).and_return(cards)
-      cards.should_receive(:data).and_return(datas)
-      datas.should_receive(:first).and_return(card_info)
-      customer.should_receive(:id).and_return("123")
-      customer.should_receive(:subscription).and_return(subscription)
-      subscription.should_receive(:plan).and_return(plan)      
+      Stripe::Charge.should_receive(:create).and_return(charge)
+      charge.should_receive(:card).and_return(card_info)      
+      charge.should_receive(:customer).and_return("123")      
       card_info.should_receive(:last4).and_return("9090")
       card_info.should_receive(:exp_month).and_return("12")
       card_info.should_receive(:exp_year).and_return("2016")            
-      plan.should_receive(:amount).and_return(4900)
-      subscription.should_receive(:current_period_start).and_return(DateTime.now.to_i)
-      subscription.should_receive(:current_period_end).and_return((DateTime.now+30.days).to_i)
+      charge.should_receive(:amount).and_return(4900)      
       subscription = Subscription.upgrade_subscription(@account.id, "token", "email", "PerMinute", nil, 100) 
       Subscription.count.should eq(2)      
       @account.current_subscription.type.should eq("PerMinute")
@@ -227,8 +222,8 @@ describe Trial do
       @account.current_subscription.exp_month.should eq("12") 
       @account.current_subscription.exp_year.should eq("2016")
       @account.current_subscription.amount_paid.should eq(49.0)
-      @account.current_subscription.subscription_start_date.to_i.should eq(DateTime.now.utc.to_i)
-      @account.current_subscription.subscription_end_date.to_i.should eq((DateTime.now+30.days).utc.to_i)
+      @account.current_subscription.subscription_start_date.should_not be_nil
+      @account.current_subscription.subscription_end_date.should_not be_nil
     end
 
     it "should upgrade from trial to pro" do

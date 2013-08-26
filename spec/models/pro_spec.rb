@@ -95,32 +95,30 @@ describe Pro do
 
   describe "should debit call time" do
     before(:each) do
-      @account =  create(:account, record_calls: false)
-      @account.reload
-      @account.subscription.change_subscription_type(Subscription::Type::PRO)      
-      @account.subscription.upgrade("Pro")
-      @account.reload
+      @account =  create(:account, record_calls: false)      
+      Pro.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED, 
+        subscription_start_date: DateTime.now, subscription_end_date: DateTime.now+30.days, total_allowed_minutes:2500)
     end
 
-    xit "should deduct from minutes used if minutes used greater than 0" do
-      @account.subscription.debit(2.00).should be_true
-      @account.subscription.minutes_utlized.should eq(2)
+    it "should deduct from minutes used if minutes used greater than 0" do
+      @account.debitable_subscription.debit(2.00).should be_true
+      @account.debitable_subscription.minutes_utlized.should eq(2)
     end
 
-    xit "should not deduct from minutes used if minutes used greater than eq total minutes" do
-      @account.subscription.reload            
-      @account.subscription.update_attributes!(minutes_utlized: 2500)
-      @account.subscription.debit(2.00).should be_false
-      @account.subscription.reload      
-      @account.subscription.minutes_utlized.should eq(2500)
+    it "should not deduct from minutes used if minutes used greater than eq total minutes" do
+      @account.debitable_subscription.reload            
+      @account.debitable_subscription.update_attributes!(minutes_utlized: 2500)
+      @account.debitable_subscription.debit(2.00).should be_false
+      @account.debitable_subscription.reload      
+      @account.debitable_subscription.minutes_utlized.should eq(2500)
     end
 
-    xit "should not deduct from minutes used if alloted minutes does not fall in subscription time range" do
-      @account.subscription.update_attributes(minutes_utlized: 10)
-      @account.subscription.update_attributes(subscription_start_date: (DateTime.now-40.days))
-      @account.subscription.debit(2.00).should be_false
-      @account.subscription.reload
-      @account.subscription.minutes_utlized.should eq(10)
+    it "should not deduct from minutes used if alloted minutes does not fall in subscription time range" do
+      @account.debitable_subscription.update_attributes(minutes_utlized: 10)
+      @account.debitable_subscription.update_attributes(subscription_start_date: (DateTime.now-40.days))
+      @account.debitable_subscription.debit(2.00).should be_false
+      @account.debitable_subscription.reload
+      @account.debitable_subscription.minutes_utlized.should eq(10)
     end
 
   end
@@ -206,7 +204,8 @@ describe Pro do
     before(:each) do
       @account =  create(:account)      
       @account.current_subscriptions.each{|x| x.update_attributes(status: Subscription::Status::SUSPENDED)}
-      Pro.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED, stripe_customer_id: "123", subscription_start_date: DateTime.now-10.days, created_at: DateTime.now-5.minutes)      
+      Pro.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED, stripe_customer_id: "123", 
+        subscription_start_date: DateTime.now-10.days, created_at: DateTime.now-5.minutes, subscription_end_date: DateTime.now+10.days)      
       @account.reload
     end     
 
@@ -260,8 +259,8 @@ describe Pro do
       @account.current_subscription.total_allowed_minutes.should eq(2222)      
       @account.current_subscription.stripe_customer_id.should eq("123") 
       @account.current_subscription.amount_paid.should eq(49.0)
-      @account.current_subscription.subscription_start_date.to_i.should eq(DateTime.now.utc.to_i)
-      @account.current_subscription.subscription_end_date.to_i.should eq((DateTime.now+30.days).utc.to_i)
+      @account.current_subscription.subscription_start_date.should_not be_nil
+      @account.current_subscription.subscription_end_date.should_not be_nil
     end
    
   end
@@ -270,7 +269,9 @@ describe Pro do
     before(:each) do
       @account =  create(:account)      
       @account.current_subscriptions.each{|x| x.update_attributes(status: Subscription::Status::SUSPENDED)}
-      Pro.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED, stripe_customer_id: "123", subscription_start_date: DateTime.now-10.days, created_at: DateTime.now-5.minutes)      
+      Pro.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED, 
+        stripe_customer_id: "123", subscription_start_date: DateTime.now-10.days, 
+        created_at: DateTime.now-5.minutes, subscription_end_date: DateTime.now+10.days)      
       @account.reload
     end     
 

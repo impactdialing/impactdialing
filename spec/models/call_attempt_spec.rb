@@ -208,7 +208,7 @@ describe CallAttempt do
       end
 
       it "should not debit if enterprise subscription type" do
-        account = create(:account, subscription_name: Account::Subscription_Type::ENTERPRISE)
+        account = create(:account)
         campaign = create(:campaign, account: account)
         call_attempt = create(:call_attempt, connecttime: (Time.now - 3.minutes), call_end: (Time.now - 2.minutes), campaign: campaign)
         Payment.should_not_receive(:debit_call_charge)
@@ -216,7 +216,7 @@ describe CallAttempt do
       end
 
       it "should  debit if call connected " do
-        account = create(:account, subscription_name: Account::Subscription_Type::PER_MINUTE)
+        account = create(:account)
         campaign = create(:campaign, account: account)
         payment = create(:payment, account: account, amount_remaining: 10.0)
         call_attempt = create(:call_attempt, tStartTime: (Time.now - 3.minutes), tEndTime: (Time.now - 2.minutes), campaign: campaign, tDuration: 60)

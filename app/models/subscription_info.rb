@@ -4,8 +4,9 @@ module SubscriptionInfo
   end
 
   module InstanceMethods
+
   def current_subscription        
-    subscriptions.detect{|x|  Subscription::Status::CURRENT.include?(x.status)}
+    subscriptions.detect{|x|  Subscription::Status::CURRENT.include?(x.status)} || subscriptions.detect{|x|  x.type == Subscription::Type::TRIAL}
   end
 
   def current_subscriptions    
@@ -17,8 +18,18 @@ module SubscriptionInfo
   end
 
   def minutes_utlized
-    active_subscriptions = subscriptions.select{|x| x.subscription_end_date > DateTime.now.utc}
+    active_subscriptions = current_subscriptions.select{|x| x.subscription_end_date > DateTime.now.utc}
     active_subscriptions.map(&:minutes_utlized).inject(0, &:+)
+  end
+
+  def available_minutes
+    active_subscriptions = current_subscriptions.select{|x| x.subscription_end_date > DateTime.now.utc}
+    active_subscriptions.map(&:total_allowed_minutes).inject(0, &:+) - minutes_utlized
+  end
+
+  def number_of_callers
+    active_subscriptions = current_subscriptions.select{|x| x.subscription_end_date > DateTime.now.utc}
+    active_subscriptions.map(&:number_of_callers).inject(0, &:+)
   end
 
   def per_minute_subscription?

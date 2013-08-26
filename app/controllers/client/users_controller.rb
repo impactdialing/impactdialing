@@ -9,7 +9,6 @@ module Client
       @user = User.new(:account => Account.new(:domain_name => request.domain), role: User::Role::ADMINISTRATOR)
       @user.attributes = params[:user]
       if @user.save
-        @user.create_recurly_account_code
         if ["aws", "heroku"].include?(ENV['RAILS_ENV'])
           user_mailer = UserMailer.new
           user_mailer.notify_new_signup(@user)

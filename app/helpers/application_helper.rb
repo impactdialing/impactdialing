@@ -48,6 +48,12 @@ module ApplicationHelper
       0
     end
   end
+
+  def to_bool(value)
+    return true if value == true || value =~ (/(true|t|yes|y|1)$/i)
+    return false if value == false || value.blank? || value =~ (/(false|f|no|n|0)$/i)
+    raise ArgumentError.new("invalid value for Boolean: \"#{value}\"")
+  end
     
 
   module TimeUtils

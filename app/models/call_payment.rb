@@ -11,7 +11,7 @@ module CallPayment
         self.debited = true
         return self
       end
-      self.debited = account.subscription.debit(call_time)
+      self.debited = account.debitable_subscription.debit(call_time)
       return self
     end
 

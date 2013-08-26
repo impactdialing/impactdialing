@@ -11,8 +11,7 @@ module SubscriptionProvider
 
 		def create_customer_charge(token, email, amount)
 			customer = Stripe::Customer.create(card: token, email: email)
-			Stripe::Charge.create(amount: amount, currency: "usd", customer: customer.id)
-			customer
+			Stripe::Charge.create(amount: amount, currency: "usd", customer: customer.id)			
 		end
 
 		def retrieve_customer
@@ -23,9 +22,9 @@ module SubscriptionProvider
 			retrieve_customer.update_subscription(params)						
 		end
 
-		def recharge(amount)
+		def recharge()
 			customer = retrieve_customer
-			Stripe::Charge.create(amount: amount, currency: "usd", customer: customer.id)
+			Stripe::Charge.create(amount: amount_paid.to_i*100, currency: "usd", customer: customer.id)
 		end
 
 		def invoice_customer
