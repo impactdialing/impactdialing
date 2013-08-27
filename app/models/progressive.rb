@@ -1,0 +1,2 @@
+class Progressive < Campaign
+end
