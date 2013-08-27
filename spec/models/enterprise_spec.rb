@@ -14,11 +14,8 @@ describe Enterprise do
   end
   describe "campaign" do
     before(:each) do
-        @account =  create(:account, record_calls: false)
-        @account.reload
-        @account.subscription.change_subscription_type(Subscription::Type::ENTERPRISE)      
-        @account.subscription.upgrade(Subscription::Type::ENTERPRISE)
-        @account.reload
+      @account =  create(:account, record_calls: false)
+      Enterprise.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED)              
     end
 
     it "should  allow predictive dialing mode for enterprise subscription" do
@@ -46,10 +43,7 @@ describe Enterprise do
   describe "transfers" do
     before(:each) do
       @account =  create(:account, record_calls: false)
-      @account.reload
-      @account.subscription.change_subscription_type(Subscription::Type::ENTERPRISE)
-      @account.subscription.upgrade(Subscription::Type::ENTERPRISE)
-      @account.reload
+      Enterprise.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED)                    
     end
 
     it "should not all saving transfers" do
@@ -70,10 +64,7 @@ describe Enterprise do
     describe "it should  allow caller groups for callers" do
       before(:each) do
         @account =  create(:account, record_calls: false)
-        @account.reload
-        @account.subscription.change_subscription_type(Subscription::Type::ENTERPRISE)      
-        @account.subscription.upgrade("Enterprise")
-        @account.reload
+        Enterprise.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED)                      
       end
 
       it "should save caller with caller groups" do
@@ -94,10 +85,7 @@ describe Enterprise do
     describe "it should allow call recordings to be enabled" do
       before(:each) do
         @account =  create(:account, record_calls: false)
-        @account.reload
-        @account.subscription.change_subscription_type(Subscription::Type::ENTERPRISE)      
-        @account.subscription.upgrade(Subscription::Type::ENTERPRISE)
-        @account.reload
+        Enterprise.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED)                      
       end
 
       it "should all record calls" do

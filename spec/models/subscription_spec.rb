@@ -13,7 +13,7 @@ describe Subscription do
 			customer = mock
 			Stripe::Customer.should_receive(:create).with(card: "token", email: "email").and_return(customer)
 			customer.should_receive(:id).and_return("123")
-			Stripe::Charge.should_receive(:create).with(amount: 400, currency: "usd", customer: "123")
+			Stripe::Charge.should_receive(:create).with(amount: 40000, currency: "usd", customer: "123")
 			subscription.create_customer("token", "email", nil, nil, 400)
 		end
 	end
@@ -56,12 +56,12 @@ describe Subscription do
 
 	describe "recharge" do
 		it "should charge customer" do
-			subscription = create(:per_minute, stripe_customer_id: "123")
+			subscription = build(:per_minute, stripe_customer_id: "123", amount_paid: 100)
 			stripe_customer = mock
 			Stripe::Customer.should_receive(:retrieve).and_return(stripe_customer)
 			stripe_customer.should_receive(:id).and_return("12")
-			Stripe::Charge.should_receive(:create).with(amount: "100", currency: "usd", customer: "12")
-			subscription.recharge("100")
+			Stripe::Charge.should_receive(:create).with(amount: 10000, currency: "usd", customer: "12")
+			subscription.recharge()
 		end
 	end
 

@@ -22,7 +22,7 @@ module SubscriptionProvider
 			retrieve_customer.update_subscription(params)						
 		end
 
-		def recharge()
+		def recharge
 			customer = retrieve_customer
 			Stripe::Charge.create(amount: amount_paid.to_i*100, currency: "usd", customer: customer.id)
 		end

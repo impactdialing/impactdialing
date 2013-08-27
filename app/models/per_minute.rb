@@ -33,8 +33,15 @@ class PerMinute < Subscription
   end
 
   def debit(call_time)
+    if autorecharge_enabled && ((account.available_minutes * 0.09) < autorecharge_trigger) 
+      begin
+        PerMinute.recharge_subscription(account.id, autorecharge_amount)
+      rescue
+        account.subscriptions.update_all(autorecharge_enabled: false)
+      end
+    end    
     updated_minutes = minutes_utlized + call_time    
-    self.update_attributes(minutes_utlized: updated_minutes)
+    self.update_attributes(minutes_utlized: updated_minutes)        
   end
 
   def calculate_minutes_on_upgrade()

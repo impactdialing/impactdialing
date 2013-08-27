@@ -125,7 +125,8 @@ describe PerMinute do
     before(:each) do
       @account =  create(:account)      
       @account.current_subscriptions.each{|x| x.update_attributes(status: Subscription::Status::SUSPENDED)}
-      PerMinute.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED, stripe_customer_id: "123", subscription_start_date: DateTime.now-10.days, created_at: DateTime.now-5.minutes)      
+      PerMinute.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED, stripe_customer_id: "123", 
+        subscription_start_date: DateTime.now-10.days, created_at: DateTime.now-5.minutes, subscription_end_date: DateTime.now+10.days)      
       @account.reload
     end     
 

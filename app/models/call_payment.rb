@@ -7,7 +7,7 @@ module CallPayment
 
     def debit
       account = campaign.account
-      if call_not_connected? || !payment_id.nil?
+      if call_not_connected?
         self.debited = true
         return self
       end
