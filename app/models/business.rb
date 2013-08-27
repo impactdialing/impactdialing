@@ -41,6 +41,11 @@ class Business < Subscription
     true
   end
 
+  def can_dial?
+    available_minutes > 0
+  end
+
+
   def debit(call_time)
     updated_minutes = minutes_utlized + call_time
     self.update_attributes(minutes_utlized: updated_minutes)

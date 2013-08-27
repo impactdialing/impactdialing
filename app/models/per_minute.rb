@@ -32,6 +32,11 @@ class PerMinute < Subscription
     true
   end
 
+  def can_dial?
+    available_minutes > 0
+  end
+
+
   def debit(call_time)
     if autorecharge_enabled && ((account.available_minutes * 0.09) < autorecharge_trigger) 
       begin

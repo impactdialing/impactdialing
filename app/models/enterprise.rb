@@ -40,6 +40,11 @@ class Enterprise < Subscription
     true
   end
 
+  def can_dial?
+    true
+  end
+
+
   def debit(call_time)
     true
   end

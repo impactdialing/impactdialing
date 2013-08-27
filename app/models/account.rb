@@ -76,10 +76,6 @@ class Account < ActiveRecord::Base
   def callers_in_progress
     CallerSession.where("campaign_id in (?) and on_call=1", self.campaigns.map {|c| c.id})
   end
-
-
-  
-
   
   def funds_available?
     current_subscription.can_dial?
