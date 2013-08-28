@@ -1,0 +1,103 @@
+
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "https://js.stripe.com/v1/"%>
+  <%= javascript_include_tag  'subscriptions.js' %>
+  <script type="text/javascript">       
+    Stripe.setPublishableKey("<%= STRIPE_PUBLISHABLE_KEY  %>");  
+  </script>
+ <% end %>
+  <div class="callout alert clearfix" style="display:none" id="payment-flash">
+    <p><strong class="payment-errors"></strong></p>
+  </div>
+ <%= form_for @subscription, url: "/client/subscriptions/#{@subscription.id}", method: "PUT", html: {id: "payment-form"} do |f| %> 
+  <fieldset>    
+
+    <legend>Plan</legend>
+      <p>
+        <label>Select plan:</label>
+        <select name="subscription[type]" id="subscription_type" data-value="<%= @subscription.type%>">
+          <%= options_for_select Subscription::Type::PAID_SUBSCRIPTIONS,
+                                 @subscription.type %>          
+        </select>
+      </p>
+      <p id="num_of_callers_section">
+        <label>Number of callers:</label>
+        <input type="text"  class="field" style="width:50px" name="subscription[number_of_callers]" id="number_of_callers" value="<%= @account.number_of_callers %>" data-value="<%= @account.number_of_callers %>"/>
+        <p id="cost-subscription" style="display:none">$ <span id="monthly-cost"></span> per month</p>
+      </p>
+
+      <p id="add_to_balance" style="display:none">
+        <label>Add to balance:</label>
+        <input type="text"  class="field" style="width:50px" name="subscription[amount]"/> $
+      </p>      
+   </fieldset>  
+   <% unless @subscription.trial?%>
+        <p>
+          <div class="buttons">
+            <button type="submit">Upgrade</button>
+          </div>
+        </p>
+      <% end %>
+    <fieldset>    
+      <legend>Card information</legend>
+      <p>
+        <label>Card number</label>
+        <input type="text" data-stripe="number" class="field" style="width:220px;" value="<%= @subscription.card_info %>"/>
+      </p>
+      <p>
+        <label>CVC</label>
+        <input type="text" data-stripe="cvc"  class="field" style="width:40px;"></input>
+      </p>
+      <p>
+        <label>Expiration</label>        
+        <select data-stripe="exp_month" id="expiry-month">
+          <option value="01">01 - January</option>
+          <option value="02">02 - February</option>
+          <option value="03">03 - March</option>
+          <option value="04">04 - April</option>
+          <option value="05">05 - May</option>
+          <option value="06">06 - June</option>
+          <option value="07">07 - July</option>
+          <option value="08">08 - August</option>
+          <option value="09">09 - September</option>
+          <option value="10">10 - October</option>
+          <option value="11">11 - November</option>
+          <option value="12">12 - December</option>
+        </select>            
+        <select data-stripe="exp_year" id="expiry-year">
+          <option value="2013">2013</option>
+          <option value="2014">2014</option>
+          <option value="2015">2015</option>
+          <option value="2016">2016</option>
+          <option value="2017">2017</option>
+          <option value="2018">2018</option>
+          <option value="2019">2019</option>
+          <option value="2020">2020</option>
+          <option value="2021">2021</option>
+          <option value="2022">2022</option>
+          <option value="2023">2023</option>
+          <option value="2024">2024</option>
+          <option value="2025">2025</option>
+          <option value="2026">2026</option>
+          <option value="2027">2027</option>
+          <option value="2028">2028</option>
+          <option value="2029">2029</option>
+          <option value="2030">2030</option>    
+        </select> 
+      </p>
+      </fieldset>
+ <div class="buttons">
+  <button type="submit" id="submit-payment">Update plan</button>
+</div>
+ 
+<% end %>
+
+<% content_for :javascripts do %>
+  <script type="text/javascript">    
+    $(function($) {      
+      $("#expiry-month").val("<%= @subscription.exp_month%>");
+      $("#expiry-year").val("<%= @subscription.exp_year %>");      
+      var subscriptions = new Subscriptions();      
+  });
+ </script>
+<% end %>

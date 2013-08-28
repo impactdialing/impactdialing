@@ -48,7 +48,7 @@ describe Client::CallersController do
     describe "call details report" do
 
       let(:script) { create(:script) }
-      let(:campaign) { create(:progressive, :script => script, :account => @user.account) }
+      let(:campaign) { create(:power, :script => script, :account => @user.account) }
       let(:caller) { create(:caller, campaign_id: campaign.id) }
 
       before(:each) { create(:caller_session, :campaign => campaign, :caller => caller) }
@@ -80,8 +80,8 @@ describe Client::CallersController do
 
   describe "reassign caller campaign" do
     it "should change caller campaign" do
-      campaign = create(:progressive, :account => @user.account)
-      other_campaign = create(:progressive, :account => @user.account)
+      campaign = create(:power, :account => @user.account)
+      other_campaign = create(:power, :account => @user.account)
       caller = create(:caller, campaign_id: campaign.id)
       post :reassign_to_campaign, id: caller.id, campaign_id: other_campaign.id
       caller.reload.campaign_id.should eq(other_campaign.id)

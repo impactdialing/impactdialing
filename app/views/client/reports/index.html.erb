@@ -1,14 +1,18 @@
 <h1>Reports</h1>
-<% if @account.campaigns.empty? %>
-   <p>You haven't created any campaigns yet.</p>
-<% else %>
-  <%= render 'campaign_reports' %>
+<% if can? :view_campaign_reports, @account %>
+  <% if @account.campaigns.empty? %>
+     <p>You haven't created any campaigns yet.</p>
+  <% else %>
+    <%= render 'campaign_reports' %>
+  <% end %>
 <% end %>
 
-<% if @account.callers.empty? %>
-  <p>You haven't created any callers yet.</p>
-<% else %>
-  <%= render 'caller_reports' %>
+<% if can? :view_caller_reports, @account %>
+  <% if @account.callers.empty? %>
+    <p>You haven't created any callers yet.</p>
+  <% else %>
+    <%= render 'caller_reports' %>
+  <% end %>
 <% end %>
 
 <% if @account.callers.any? && @account.campaigns.any? %>

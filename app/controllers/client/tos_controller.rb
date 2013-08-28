@@ -12,6 +12,8 @@ module Client
       @account.update_attributes(tos_accepted_date: Time.now)
       if @account.account_after_change_in_tos?
         flash_message(:notice, "Welcome! To get help for any page, click the Help button in the upper right corner.")
+        billing_link = '<a href="' + white_labeled_billing_link(request.domain) + '">upgrade your account</a>'
+        flash_message(:notice, I18n.t(:enjoy_the_trial, billing_link: billing_link).html_safe)
       end
       redirect_to client_root_path
     end

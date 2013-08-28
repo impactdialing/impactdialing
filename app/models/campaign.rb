@@ -43,13 +43,14 @@ class Campaign < ActiveRecord::Base
   }
 
   scope :for_caller, lambda { |caller| joins(:caller_sessions).where(caller_sessions: {caller_id: caller}) }
+  scope :by_type, lambda { |type| where(type:  type) }
 
 
   validates :name, :presence => true
   validates :caller_id, :presence => true
   validates :caller_id, :numericality => {}, :length => {:minimum => 10, :maximum => 10}, :unless => Proc.new{|campaign| campaign.caller_id && campaign.caller_id.start_with?('+')}
   validates :script, :presence => true
-  validates :type, :presence => true, :inclusion => {:in => ['Preview', 'Progressive', 'Predictive']}
+  validates :type, :presence => true, :inclusion => {:in => ['Preview', 'Power', 'Predictive']}
   validates :acceptable_abandon_rate,
             :numericality => {:greater_than_or_equal_to => 0.01, :less_than_or_equal_to => 0.10},
             :allow_blank => true
@@ -60,6 +61,7 @@ class Campaign < ActiveRecord::Base
   validate :set_caller_id_error_msg
   validate :campaign_type_changed, on: :update
   validate :no_caller_assigned_on_deletion
+  validate :campaign_type_based_on_subscription
   cattr_reader :per_page
   @@per_page = 25
 
@@ -68,11 +70,11 @@ class Campaign < ActiveRecord::Base
   module Type
     PREVIEW = "Preview"
     PREDICTIVE = "Predictive"
-    PROGRESSIVE = "Progressive"
+    POWER = "Power"
   end
 
   def self.preview_power_campaign?(campaign_type)
-    [Type::PREVIEW, Type::PROGRESSIVE].include?(campaign_type)
+    [Type::PREVIEW, Type::POWER].include?(campaign_type)
   end
 
   def self.predictive_campaign?(campaign_type)
@@ -82,6 +84,21 @@ class Campaign < ActiveRecord::Base
 
   def new_campaign
     new_record?
+  end
+
+  def campaign_types
+    account.current_subscription.campaign_types
+  end
+
+  def campaign_type_options
+    account.current_subscription.campaign_type_options
+  end
+
+  def campaign_type_based_on_subscription
+    if !account.subscriptions.nil? && !campaign_types.include?(type)
+      errors.add(:base, 'Your subscription does not allow this mode of Dialing.')
+    end
+
   end
 
   def no_caller_assigned_on_deletion
@@ -105,7 +122,7 @@ class Campaign < ActiveRecord::Base
     end
   end
 
-  def is_preview_or_progressive
+  def is_preview_or_power
     type == Type::PREVIEW || type == Type::PROGRESSIVE
   end
 

@@ -196,36 +196,32 @@ describe CallAttempt do
 
     describe "debit for calls" do
       it "should not debit if call not ended" do
-        call_attempt = create(:call_attempt, call_end: (Time.now - 3.minutes))
-        Payment.should_not_receive(:debit_call_charge)
+        account = create(:account)
+        campaign = create(:preview, account: account)
+        call_attempt = create(:call_attempt, call_end: (Time.now - 3.minutes), campaign: campaign)
+        account.should_not_receive(:debitable_subscription)        
         call_attempt.debit
       end
 
       it "should not debit if call not connected" do
-        call_attempt = create(:call_attempt, connecttime: (Time.now - 3.minutes))
-        Payment.should_not_receive(:debit_call_charge)
+        account = create(:account)
+        campaign = create(:preview, account: account)
+        call_attempt = create(:call_attempt, connecttime: (Time.now - 3.minutes), campaign: campaign)
+        account.should_not_receive(:debitable_subscription)                
         call_attempt.debit
       end
 
-      it "should not debit if manual subscription type" do
-        account = create(:account, subscription_name: Account::Subscription_Type::MANUAL)
-        campaign = create(:campaign, account: account)
-        call_attempt = create(:call_attempt, connecttime: (Time.now - 3.minutes), call_end: (Time.now - 2.minutes), campaign: campaign)
-        Payment.should_not_receive(:debit_call_charge)
-        call_attempt.debit
-      end
 
       it "should  debit if call connected " do
-        account = create(:account, subscription_name: Account::Subscription_Type::PER_MINUTE)
+        account = create(:account)
+        subscription = account.current_subscription
         campaign = create(:campaign, account: account)
         payment = create(:payment, account: account, amount_remaining: 10.0)
         call_attempt = create(:call_attempt, tStartTime: (Time.now - 3.minutes), tEndTime: (Time.now - 2.minutes), campaign: campaign, tDuration: 60)
-        Payment.should_receive(:where).and_return([payment])
-        payment.should_receive(:debit_call_charge)
-        account.should_receive(:check_autorecharge)
+        account.should_receive(:debitable_subscription).and_return(subscription)
+        subscription.should_receive(:debit)        
         call_attempt.debit
-        call_attempt.save
-        call_attempt.payment_id.should_not be_nil
+        call_attempt.save        
       end
 
     end
@@ -235,34 +231,7 @@ describe CallAttempt do
         call_attempt = create(:call_attempt, tStartTime: (Time.now - 3.minutes), tEndTime: (Time.now - 2.minutes),  tDuration: 62)
         call_attempt.call_time.should eq(2)
       end
-    end
-
-    describe "amount_to_debit" do
-
-      it "should retrun amount to debit" do
-        call_attempt = create(:call_attempt, tStartTime: (Time.now - 3.minutes), tEndTime: (Time.now - 2.minutes), tDuration: 62)
-        call_attempt.amount_to_debit.should eq(0.18)
-      end
-
-    end
-
-    describe "determine_call_cost" do
-
-      it "should return .02 for per caller" do
-        account = create(:account, subscription_name: Account::Subscription_Type::PER_CALLER)
-        campaign = create(:campaign, account: account)
-        call_attempt = create(:call_attempt, connecttime: (Time.now - 3.minutes), call_end: (Time.now - 2.minutes), campaign: campaign)
-        call_attempt.determine_call_cost.should eq(0.02)
-      end
-
-      it "should return .09 for per minute" do
-        account = create(:account, subscription_name: Account::Subscription_Type::PER_MINUTE)
-        campaign = create(:campaign, account: account)
-        call_attempt = create(:call_attempt, connecttime: (Time.now - 3.minutes), call_end: (Time.now - 2.minutes), campaign: campaign)
-        call_attempt.determine_call_cost.should eq(0.09)
-      end
-
-    end
+    end        
 
   end
 end

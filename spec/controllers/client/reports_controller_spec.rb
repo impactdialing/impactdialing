@@ -38,6 +38,7 @@ describe Client::ReportsController do
       end
 
       it "billable minutes" do
+        puts CallAttempt.first.inspect
         CallAttempt.lead_time(nil, @campaign, from_time, time_now).should == 113
       end
 

@@ -78,7 +78,7 @@ describe PhonesOnlyCallerSession do
     describe "caller reassigned to campaign" do
       before(:each) do
         @script = create(:script)
-        @campaign =  create(:progressive, script: @script)
+        @campaign =  create(:power, script: @script)
         @caller = create(:caller, campaign: @campaign)
       end
 
@@ -128,7 +128,7 @@ describe PhonesOnlyCallerSession do
     describe "choose voter for power" do
       before(:each) do
         @script = create(:script)
-        @campaign =  create(:progressive, script: @script)
+        @campaign =  create(:power, script: @script)
         @caller = create(:caller, campaign: @campaign)
         @voter = create(:voter, campaign: @campaign)
       end
@@ -263,7 +263,7 @@ describe PhonesOnlyCallerSession do
     describe "start conference for power" do
       before(:each) do
         @script = create(:script)
-        @campaign =  create(:progressive, script: @script)
+        @campaign =  create(:power, script: @script)
         @caller = create(:caller, campaign: @campaign)
         @voter = create(:voter, campaign: @campaign)
       end
@@ -290,7 +290,7 @@ describe PhonesOnlyCallerSession do
     describe "gather_response to read_next_question" do
       before(:each) do
         @script = create(:script)
-        @campaign =  create(:progressive, script: @script)
+        @campaign =  create(:power, script: @script)
         @caller = create(:caller, campaign: @campaign)
         @voter = create(:voter)
         @question = create(:question, script: @script, text: "How do you like Impactdialing")
@@ -349,7 +349,7 @@ describe PhonesOnlyCallerSession do
 
       before(:each) do
         @script = create(:script)
-        @campaign =  create(:progressive, script: @script)
+        @campaign =  create(:power, script: @script)
         @caller = create(:caller, campaign: @campaign)
         @voter = create(:voter)
         @question = create(:question, script: @script)
@@ -369,7 +369,7 @@ describe PhonesOnlyCallerSession do
 
       before(:each) do
         @script = create(:script)
-        @campaign =  create(:progressive, script: @script)
+        @campaign =  create(:power, script: @script)
         @caller = create(:caller, campaign: @campaign)
         @voter = create(:voter)
         @question = create(:question, script: @script)
@@ -389,7 +389,7 @@ describe PhonesOnlyCallerSession do
     describe "voter response" do
       before(:each) do
         @script = create(:script)
-        @campaign =  create(:progressive, script: @script)
+        @campaign =  create(:power, script: @script)
         @caller = create(:caller, campaign: @campaign)
         @voter = create(:voter)
         @question = create(:question, script: @script)
@@ -419,7 +419,7 @@ describe PhonesOnlyCallerSession do
   describe "voter_response" do
     before(:each) do
       @script = create(:script)
-      @campaign =  create(:progressive, script: @script)
+      @campaign =  create(:power, script: @script)
       @caller = create(:caller, campaign: @campaign)
       @voter = create(:voter)
        @question = create(:question, script: @script, text: "How do you like Impactdialing")

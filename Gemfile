@@ -44,14 +44,18 @@ gem "sinatra", "~>1.4.3"
 gem "mandrill-api", "~>1.0.37"
 gem "sidekiq-failures", "~> 0.2.1"
 gem "lograge", "~>0.2.0"
+gem "cancan", "~>1.6.10"
+gem 'stripe', "~>1.8.4"
+
 
 
 group :development, :test do
-  gem 'rspec'
-  gem 'rspec-rails'
-  gem 'debugger'
-  gem 'hirb'
-  gem 'rspec-instafail'
+  gem 'rspec', "~>2.6.0"
+  gem 'rspec-rails', '~> 2.6.1'
+  gem 'debugger', "~>1.6.0"
+  gem 'hirb', "~>0.7.1"
+  gem 'rspec-instafail', "~>0.2.4"
+  gem "pry"
 end
 
 group :development do

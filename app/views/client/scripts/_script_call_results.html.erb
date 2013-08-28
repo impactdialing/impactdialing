@@ -71,16 +71,17 @@
                                            "data-intro" => "Let your callers type text notes, such as recording your leads' email address.",
                                            "data-step" => "6",
                                            partial: 'note_fields'} %>
-
-    <%= link_to_add_association 'Add a transfer',
-                                f,
-                                :transfers,
-                                {:class => "action secondary",
-                                           "data-association-insertion-node"=> ".transfers_fields",
-                                           "data-association-insertion-method"=>"append",
-                                           "data-intro" => "You can give your callers the option to transfer leads to another phone number. A cold transfer will move your callers to the next call after transfering; a warm transfer will keep your callers on the line until they choose to disconnect from the call.",
-                                           "data-step" => "7",
-                                           partial: 'transfer_fields'} %>
+    <% if can? :add_transfer, @script %>
+      <%= link_to_add_association 'Add a transfer',
+                                  f,
+                                  :transfers,
+                                  {:class => "action secondary",
+                                             "data-association-insertion-node"=> ".transfers_fields",
+                                             "data-association-insertion-method"=>"append",
+                                             "data-intro" => "You can give your callers the option to transfer leads to another phone number. A cold transfer will move your callers to the next call after transfering; a warm transfer will keep your callers on the line until they choose to disconnect from the call.",
+                                             "data-step" => "7",
+                                             partial: 'transfer_fields'} %>
+    <% end %>
   </p>
 
 </fieldset>

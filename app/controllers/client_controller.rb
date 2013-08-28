@@ -5,7 +5,7 @@ class ClientController < ApplicationController
   before_filter :authenticate_api
   before_filter :check_login, :except => [:login, :user_add, :forgot]
   before_filter :check_tos_accepted, :except => [:login, :forgot]
-  before_filter :check_paid
+  before_filter :check_credit_card_declined
 
   def authenticate_api
     unless params[:api_key].blank?
@@ -87,11 +87,8 @@ class ClientController < ApplicationController
     self.current_user = Account.find_by_api_key(params[:api_key]) unless params[:api_key].empty?
   end
 
-  def check_paid
-    if current_user && !current_user.account.card_verified?
-      flash_now(:warning, I18n.t(:unpaid_text, :billing_link => '<a href="' + white_labeled_billing_link(request.domain) + '">Click here to verify a credit card.</a>').html_safe)
-    end
-    if current_user && current_user.account.credit_card_declined?
+  def check_credit_card_declined    
+    if current_user && !current_user.account.current_subscription.trial? && current_user.account.credit_card_declined?
       billing_link = '<a href="' + white_labeled_billing_link(request.domain) + '">Billing information</a>'
       add_to_balance_link = '<a href="' + white_labeled_add_to_balance_link(request.domain) + '">add to your balance</a>'
       configure_auto_recharge_link = '<a href="' + white_labeled_configure_auto_recharge_link(request.domain) + '">re-enable auto-recharge</a>'
@@ -135,96 +132,6 @@ class ClientController < ApplicationController
       @recording = @account.recordings.new
     end
   end
-
-  def recharge
-     @account=@user.account
-
-     if request.put?
-       @account.update_attributes(params[:account])
-       flash_message(:notice, "Autorecharge settings saved")
-       redirect_to :action=>"billing"
-       return
-     end
-
-     @account.autorecharge_trigger=20.to_f if @account.autorecharge_trigger.nil?
-     @account.autorecharge_amount=40.to_f if @account.autorecharge_amount.nil?
-     @recharge_options=[]
-     @recharge_options.tap{
-      10.step(500,10).each do |n|
-        @recharge_options << ["$#{n}",n.to_f]
-       end
-     }
-   end
-
-   def billing_updated
-     # return url from recurly.js account update
-     flash_message(:notice, "Billing information updated")
-     redirect_to :action=>"billing"
-   end
-
-   def cancel_subscription
-     if request.post?
-       @user.account.cancel_subscription
-       flash_message(:notice, "Subscription cancelled")
-       redirect_to :action=>"billing"
-     end
-   end
-
-   def billing_success
-     # return url from recurly hosted subscription form
-     @user.account.sync_subscription
-     redirect_to :action=>"billing"
-   end
-
-   def billing_form
-     @account_code=@user.account.recurly_account_code
-     @billing_info = Recurly::Account.find(@account_code).billing_info
-   end
-
-   def update_billing
-     @account_code=@user.account.recurly_account_code
-     @billing_info = Recurly::Account.find(@account_code).billing_info
-   end
-
-   def add_to_balance
-     if request.post?
-       new_payment=Payment.charge_recurly_account(@user.account, params[:amount], "Add to account balance")
-       if new_payment.nil?
-         #charge failed
-          flash_now(:error, "There was a problem charging your credit card.  Please try updating your billing information or contact support for help.")
-       else
-         #charge succeeded
-         flash_message(:notice, "Payment successful.")
-         redirect_to :action=>"billing"
-         return
-       end
-     end
-     recurly_account = Recurly::Account.find(@user.account.recurly_account_code)
-     @billing_info = recurly_account.billing_info
-   end
-
-   def billing
-     @balance=@user.account.current_balance
-     @has_billing_info = !Recurly::Account.find(@user.account.recurly_account_code).billing_info.nil?
-   end
-
-   def update_billing_quantity
-     if request.post?
-       subscription = Recurly::Subscription.find(@user.account.recurly_subscription_uuid)
-       subscription.update_attributes(
-         :quantity  => params[:num_callers],
-         :timeframe => 'now'       # Update immediately.
-       )
-       @user.account.update_attribute(:subscription_count, params[:num_callers])
-       flash_message(:notice, "Number of callers updated.")
-       redirect_to :action=>"billing"
-     end
-   end
-
-   def new_subscription
-     render :layout=>"recurly"
-   end
-
   def policies
     render 'home/policies'
   end

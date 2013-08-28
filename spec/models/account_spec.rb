@@ -25,4 +25,6 @@ describe Account do
     account.custom_fields.should == [field1, field2, field3]
   end
 
+  
+
 end

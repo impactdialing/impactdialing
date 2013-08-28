@@ -16,8 +16,7 @@ describe WebuiCallerSession do
 
       it "shouild render correct twiml" do
         caller_session = create(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
-        caller_session.should_receive(:funds_not_available?).and_return(false)
-        caller_session.should_receive(:account_not_activated?).and_return(false)
+        caller_session.should_receive(:funds_not_available?).and_return(false)        
         caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
         caller_session.should_receive(:time_period_exceeded?).and_return(false)
         RedisOnHoldCaller.should_receive(:add).with(@campaign.id, caller_session.id, DataCentre::Code::TWILIO)
@@ -39,8 +38,7 @@ describe WebuiCallerSession do
 
       xit "set publish correct event" do
         caller_session = create(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
-        caller_session.should_receive(:funds_not_available?).and_return(false)
-        caller_session.should_receive(:account_not_activated?).and_return(false)
+        caller_session.should_receive(:funds_not_available?).and_return(false)        
         caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
         caller_session.should_receive(:time_period_exceeded?).and_return(false)
         caller_session.should_receive(:is_on_call?).and_return(false)
@@ -53,8 +51,7 @@ describe WebuiCallerSession do
 
       xit "shouild render correct twiml" do
         caller_session = create(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign)
-        caller_session.should_receive(:funds_not_available?).and_return(false)
-        caller_session.should_receive(:account_not_activated?).and_return(false)
+        caller_session.should_receive(:funds_not_available?).and_return(false)        
         caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
         caller_session.should_receive(:time_period_exceeded?).and_return(false)
         caller_session.should_receive(:is_on_call?).and_return(false)
@@ -102,8 +99,7 @@ describe WebuiCallerSession do
 
       it "should render correct twiml if caller is ready" do
         caller_session = create(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "connected", attempt_in_progress: @call_attempt)
-        caller_session.should_receive(:funds_not_available?).and_return(false)
-        caller_session.should_receive(:account_not_activated?).and_return(false)
+        caller_session.should_receive(:funds_not_available?).and_return(false)        
         caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
         caller_session.should_receive(:time_period_exceeded?).and_return(false)
 
@@ -154,8 +150,7 @@ describe WebuiCallerSession do
 
       it "shouild render correct twiml" do
         caller_session = create(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "paused")
-        caller_session.should_receive(:funds_not_available?).and_return(false)
-        caller_session.should_receive(:account_not_activated?).and_return(false)
+        caller_session.should_receive(:funds_not_available?).and_return(false)        
         caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
         caller_session.should_receive(:time_period_exceeded?).and_return(true)
         caller_session.start_conf.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>You can only call this campaign between 9 AM and 9 PM. Please try back during those hours.</Say><Hangup/></Response>")
@@ -173,8 +168,7 @@ describe WebuiCallerSession do
 
       it "shouild render correct twiml" do
         caller_session = create(:webui_caller_session, caller: @caller, on_call: true, available_for_call: true, campaign: @campaign, state: "paused")
-        caller_session.should_receive(:funds_not_available?).and_return(false)
-        caller_session.should_receive(:account_not_activated?).and_return(false)
+        caller_session.should_receive(:funds_not_available?).and_return(false)        
         caller_session.should_receive(:subscription_limit_exceeded?).and_return(false)
         caller_session.should_receive(:time_period_exceeded?).and_return(false)
         caller_session.should_receive(:enqueue_call_flow).with(CallerPusherJob, [caller_session.id, "publish_caller_conference_started"])

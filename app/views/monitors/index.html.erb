@@ -112,16 +112,17 @@
 
 <div id="status" style="float:right"></div>
 <div class="clear"></div>
-
-<p>
-  Call recording is currently <%= @account.record_calls? ? "on" : "off" %>. Links to recordings will appear in each campaign's Download report.
-</p>
-<p class="actions"
-   data-intro="You can choose whether to record calls here."
-   data-step="3">
-  <%= link_to "Turn call recording #{@account.record_calls? ? "off" : "on" }", {:action=>"toggle_call_recording"},
-  {:class => 'action secondary'} %>
-</p>
+<% if can? :record_calls, @account %>
+  <p>
+    Call recording is currently <%= @account.record_calls? ? "on" : "off" %>. Links to recordings will appear in each campaign's Download report.
+  </p>
+  <p class="actions"
+     data-intro="You can choose whether to record calls here."
+     data-step="3">
+    <%= link_to "Turn call recording #{@account.record_calls? ? "off" : "on" }", {:action=>"toggle_call_recording"},
+    {:class => 'action secondary'} %>
+  </p>
+<% end %>
 <p class="actions">
   <a class ="action primary stop_monitoring" href="#" style="display:none">Stop monitoring</a>
 </p>

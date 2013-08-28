@@ -12,7 +12,7 @@ describe Client::CampaignsController do
 
     it "lists active campaigns" do
       active_campaign = create(:preview, :account => account, :active => true)
-      inactive_campaign = create(:progressive, :account => account, :active => false)
+      inactive_campaign = create(:power, :account => account, :active => false)
       get :index
       assigns(:campaigns).should == [active_campaign]
     end
@@ -70,7 +70,7 @@ describe Client::CampaignsController do
       it "should list active campaigns for an account" do
         preview_campaign = create(:preview, :account => account, :active => true)
         predictive_campaign = create(:predictive, :account => account, :active => true)
-        inactive_campaign = create(:progressive, :account => account, :active => false)
+        inactive_campaign = create(:power, :account => account, :active => false)
         get :index, :api_key=> account.api_key, :format => "json"
         JSON.parse(response.body).length.should eq(2)
       end
@@ -78,7 +78,7 @@ describe Client::CampaignsController do
       it "should not list active campaigns for an account with wrong api key" do
         preview_campaign = create(:preview, :account => account, :active => true)
         predictive_campaign = create(:predictive, :account => account, :active => true)
-        inactive_campaign = create(:progressive, :account => account, :active => false)
+        inactive_campaign = create(:power, :account => account, :active => false)
         get :index, :api_key=> 'abc12', :format => "json"
         JSON.parse(response.body).should eq({"status"=>"error", "code"=>"401", "message"=>"Unauthorized"})
       end
@@ -184,7 +184,7 @@ describe Client::CampaignsController do
 
       it "should show deleted campaigns" do
         manual_campaign = create(:preview, :account => account, :active => true)
-        inactive_campaign = create(:progressive, :account => account, :active => false)
+        inactive_campaign = create(:power, :account => account, :active => false)
         get :deleted, :api_key=> account.api_key, :format => "json"
         JSON.parse(response.body).length.should eq(1)
       end
@@ -193,7 +193,7 @@ describe Client::CampaignsController do
     describe "restore" do
 
       it "should restore inactive campaign" do
-        inactive_campaign = create(:progressive, :account => account, :active => false)
+        inactive_campaign = create(:power, :account => account, :active => false)
         put :restore, campaign_id: inactive_campaign.id, :api_key=> account.api_key, :format => "json"
         response.body.should eq("{\"message\":\"Campaign restored\"}")
       end

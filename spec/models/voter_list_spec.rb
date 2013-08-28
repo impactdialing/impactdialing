@@ -130,22 +130,13 @@ describe VoterList do
             ",")
 
         another_voter_list = create(:voter_list, :campaign => campaign, :account => user.account)
-        another_voter_list.import_leads(
-            USER_MAPPINGS,
-            csv_file_upload,
-            ",").should ==
-            {
-                :successCount => 2,
-                :failedCount => 0
-            }
+        another_voter_list.import_leads(USER_MAPPINGS, csv_file_upload,",").should =={:successCount => 2,:failedCount => 0}
       end
 
       it "should add even if the same phone is repeated in a different campaign" do
         VoterList.should_receive(:read_from_s3).and_return(File.open("#{csv_file_upload}").read)
 
-        another_voter_list = create(:voter_list,
-                                     :campaign => create(:progressive, :account => user.account),
-                                     :account => user.account)
+        another_voter_list = create(:voter_list, :campaign => create(:power, :account => user.account))
         another_voter_list.import_leads(
             USER_MAPPINGS,
             csv_file_upload,

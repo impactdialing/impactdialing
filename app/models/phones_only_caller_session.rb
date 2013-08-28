@@ -131,7 +131,7 @@ class PhonesOnlyCallerSession < CallerSession
 
 
   def power?
-    campaign.type == Campaign::Type::PROGRESSIVE
+    campaign.type == Campaign::Type::POWER
   end
 
   def predictive?

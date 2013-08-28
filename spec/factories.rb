@@ -18,6 +18,7 @@ FactoryGirl.define do
 
   factory :account do
     tos_accepted_date Time.now
+    record_calls false
   end
 
   factory :user do
@@ -38,6 +39,7 @@ FactoryGirl.define do
     name 'a script'
     created_at Time.now
     updated_at Time.now
+    account
   end
 
   factory :campaign do
@@ -80,7 +82,7 @@ FactoryGirl.define do
     updated_at Time.now
   end
 
-  factory :progressive do
+  factory :power do
     name 'a campaign'
     caller_id '1234567890'
     account
@@ -97,6 +99,7 @@ FactoryGirl.define do
     username { generate(:username) }
     name 'a caller'
     campaign
+    account
     created_at Time.now
     updated_at Time.now
   end
@@ -218,6 +221,7 @@ FactoryGirl.define do
   end
 
   factory :transfer do
+
   end
   factory :transfer_attempt do
   end
@@ -233,5 +237,18 @@ FactoryGirl.define do
     name 'Caller group'
     campaign
     account
+  end
+
+  factory :basic do
+    type "Basic"
+    number_of_callers 1
+  end
+
+  factory :per_minute do
+    type "PerMinute"    
+  end
+
+  factory :trial do
+    type "Trial"
   end
 end

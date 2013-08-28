@@ -3,6 +3,7 @@ class Script < ActiveRecord::Base
   include Deletable
   validates_presence_of :name
   validate :no_campaign_using_on_deletion
+  validate :check_subscription_type_for_transfers
   belongs_to :account
   has_many :script_texts, :inverse_of => :script
   has_many :questions, :inverse_of => :script
@@ -27,6 +28,21 @@ class Script < ActiveRecord::Base
       JSON.parse(voter_fields).select{ |field| VoterList::VOTER_DATA_COLUMNS.values.include?(field) }
     end
   end
+
+  def transfer_types
+    account.current_subscription.transfer_types
+  end
+
+  def check_subscription_type_for_transfers
+    transfers.each do |transfer|
+      if !transfer_types.include?(transfer.transfer_type)
+        errors.add(:base, 'Your subscription does not allow transfering calls in this mode.')
+        return
+      end
+    end
+  end
+
+
 
   def selected_custom_fields
     unless voter_fields.nil?

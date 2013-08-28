@@ -1,9 +1,6 @@
 require 'ostruct'
-
-
-
 class VoterList < ActiveRecord::Base
-  belongs_to :campaign
+  belongs_to :campaign  
   belongs_to :account
   has_many :voters, :conditions => {:active => true}
   attr_accessible :name, :separator, :headers, :s3path, :csv_to_system_map, :campaign_id, :account_id, :uploaded_file_name, :enabled

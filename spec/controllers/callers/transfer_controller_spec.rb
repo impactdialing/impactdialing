@@ -48,7 +48,7 @@ describe TransferController do
   end
 
   it "should hangup if callee is disconnected" do
-    campaign =  create(:progressive)
+    campaign =  create(:power)
     caller_session = create(:caller_session, campaign: campaign, session_key: "12345")
     call_attempt = create(:call_attempt, status: CallAttempt::Status::SUCCESS)
     transfer_attempt = create(:transfer_attempt, caller_session: caller_session, call_attempt: call_attempt)
@@ -95,7 +95,7 @@ describe TransferController do
   end
 
   it "should end a failed call" do
-    campaign =  create(:progressive)
+    campaign =  create(:power)
     caller_session = create(:caller_session, campaign: campaign)
     transfer_attempt = create(:transfer_attempt, caller_session: caller_session)
     post :end, id: transfer_attempt.id, :CallStatus => 'failed'

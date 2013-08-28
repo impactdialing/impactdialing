@@ -18,11 +18,11 @@ class Caller < ActiveRecord::Base
   before_save :reassign_caller_campaign
   validates :campaign_id, presence: true
   validate :restored_caller_has_campaign
+  validate :check_subscription_for_caller_groups
 
   scope :active, where(:active => true)
 
   delegate :subscription_allows_caller?, :to => :account
-  delegate :activated?, :to => :account
   delegate :funds_available?, :to => :account
   delegate :as_time_zone, :to=> :campaign
   before_save { |caller| caller.username = username.downcase  unless username.nil?}
@@ -32,6 +32,12 @@ class Caller < ActiveRecord::Base
 
   def identity_name
     is_phones_only?  ? name : username
+  end
+
+  def check_subscription_for_caller_groups
+    if !account.current_subscription.caller_groups_enabled?
+      errors.add(:base, 'Your subscription does not allow managing caller groups.')
+    end
   end
 
   def reassign_caller_campaign

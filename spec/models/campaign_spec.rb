@@ -22,21 +22,22 @@ describe Campaign do
   end
 
   describe "validations" do
-    it {should validate_presence_of :name}
-    it {should validate_presence_of :script}
-    it {should validate_presence_of :type}
-    it {should ensure_inclusion_of(:type).in_array(['Preview', 'Progressive', 'Predictive'])}
-    it {should validate_presence_of :recycle_rate}
-    it {should validate_numericality_of :recycle_rate}
-    it {should validate_presence_of :time_zone}
-    it {should ensure_inclusion_of(:time_zone).in_array(ActiveSupport::TimeZone.zones_map.map {|z| z.first})}
-    it {should validate_presence_of :start_time}
-    it {should validate_presence_of :end_time}
-    it {should validate_numericality_of :acceptable_abandon_rate}
-    it {should have_many :caller_groups}
+    let(:campaign) { create(:campaign, :account => create(:account)) }
+    it {campaign.should validate_presence_of :name}
+    it {campaign.should validate_presence_of :script}
+    it {campaign.should validate_presence_of :type}
+    it {campaign.should ensure_inclusion_of(:type).in_array(['Preview', 'Power', 'Predictive'])}
+    it {campaign.should validate_presence_of :recycle_rate}
+    it {campaign.should validate_numericality_of :recycle_rate}
+    it {campaign.should validate_presence_of :time_zone}
+    it {campaign.should ensure_inclusion_of(:time_zone).in_array(ActiveSupport::TimeZone.zones_map.map {|z| z.first})}
+    it {campaign.should validate_presence_of :start_time}
+    it {campaign.should validate_presence_of :end_time}
+    it {campaign.should validate_numericality_of :acceptable_abandon_rate}
+    it {campaign.should have_many :caller_groups}
 
     it 'return validation error, if caller id is either blank, not a number or not a valid length' do
-      campaign = Campaign.new(:account => create(:account))
+      campaign = build(:campaign, account: create(:account))
       campaign.save(:validate => false)
       campaign.update_attributes(:caller_id => '23456yuiid').should be_false
       campaign.errors[:base].should == ['Caller ID must be a 10-digit North American phone number or begin with "+" and the country code']
@@ -54,7 +55,7 @@ describe Campaign do
     it 'return validation error, when callers are login and try to change dialing mode' do
       campaign = create(:preview)
       campaign.caller_sessions.create!(on_call: true, state: "initial")
-      campaign.type = Campaign::Type::PROGRESSIVE
+      campaign.type = Campaign::Type::POWER
       campaign.save.should be_false
       campaign.errors[:base].should == ['You cannot change dialing modes while callers are logged in.']
       campaign.reload
@@ -63,9 +64,9 @@ describe Campaign do
 
     it 'can change dialing mode when not on call' do
       campaign = create(:preview)
-      campaign.type = Campaign::Type::PROGRESSIVE
+      campaign.type = Campaign::Type::POWER
       campaign.save.should be_true
-      campaign.type.should eq(Campaign::Type::PROGRESSIVE)
+      campaign.type.should eq(Campaign::Type::POWER)
     end
 
 
@@ -273,8 +274,8 @@ describe Campaign do
 
      it "sorts by the updated date" do
        Campaign.record_timestamps = false
-       older_campaign = create(:progressive).tap { |c| c.update_attribute(:updated_at, 2.days.ago) }
-       newer_campaign = create(:progressive).tap { |c| c.update_attribute(:updated_at, 1.day.ago) }
+       older_campaign = create(:power).tap { |c| c.update_attribute(:updated_at, 2.days.ago) }
+       newer_campaign = create(:power).tap { |c| c.update_attribute(:updated_at, 1.day.ago) }
        Campaign.record_timestamps = true
        Campaign.by_updated.all.should include (newer_campaign)
        Campaign.by_updated.all.should include (older_campaign)
@@ -282,13 +283,13 @@ describe Campaign do
      end
 
      it "lists deleted campaigns" do
-       deleted_campaign = create(:progressive, :active => false)
-       other_campaign = create(:progressive, :active => true)
+       deleted_campaign = create(:power, :active => false)
+       other_campaign = create(:power, :active => true)
        Campaign.deleted.should == [deleted_campaign]
      end
 
      it "should return active campaigns" do
-       campaign1 = create(:progressive)
+       campaign1 = create(:power)
        campaign2 = create(:preview)
        campaign3 = create(:predictive, :active => false)
        Campaign.active.should include(campaign1)
@@ -387,6 +388,7 @@ describe Campaign do
 
     end
   end
+
 
 end
 

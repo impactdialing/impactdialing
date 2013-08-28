@@ -6,6 +6,7 @@ module Monitors
     respond_to :json
 
     def index
+      authorize! :view_dashboard, @account
       Octopus.using(OctopusConnection.dynamic_shard(:read_slave1, :read_slave2)) do
         @campaigns = Account.find(account).campaigns.with_running_caller_sessions
         @callers = @campaigns.collect{|c| c.current_callers_status}
