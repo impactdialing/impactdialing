@@ -295,8 +295,8 @@ describe Pro do
       @account.current_subscription.total_allowed_minutes.should eq(0)      
       @account.current_subscription.stripe_customer_id.should eq("123") 
       @account.current_subscription.amount_paid.should eq(0.0)
-      @account.current_subscription.subscription_start_date.to_i.should eq(DateTime.now.utc.to_i)
-      @account.current_subscription.subscription_end_date.to_i.should eq((DateTime.now+30.days).utc.to_i)
+      @account.current_subscription.subscription_start_date.should_not be_nil
+      @account.current_subscription.subscription_end_date.should_not be_nil
     end
   end
 end
