@@ -278,7 +278,7 @@ class Subscription < ActiveRecord::Base
 
   def self.trial_subscription?(account_id)
     account = Account.find(account_id)
-    subscription = account.subscriptions.detect{|subscription| subscription.type == Type::TRIAL}
+    subscription = account.subscriptions.detect{|subscription| subscription.status == Status::TRIAL}
     subscription != nil && account.subscriptions.count == 1
   end
   
