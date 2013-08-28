@@ -61,7 +61,9 @@ Subscriptions.prototype.subscriptionTypeChangeEvent = function(){
 
 Subscriptions.prototype.calculatedTotalMonthlyCost = function(){
   $("#monthly-cost").hide();
-  return if $("#subscription_type").val() == "PerMinute"
+  if ($("#subscription_type").val() == "PerMinute"){
+    return;
+  }
   var subscriptions = {"Basic": 49.00, "Pro": 99.00, "Business": 199.00}  
   var value = (subscriptions[$("#subscription_type").val()] * $("#number_of_callers").val())
   $("#monthly-cost").html(value);
