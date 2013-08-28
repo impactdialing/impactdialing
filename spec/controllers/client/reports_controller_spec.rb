@@ -37,8 +37,7 @@ describe Client::ReportsController do
         get :usage, :campaign_id => campaign.id
       end
 
-      it "billable minutes" do
-        puts CallAttempt.first.inspect
+      it "billable minutes" do        
         CallAttempt.lead_time(nil, @campaign, from_time, time_now).should == 113
       end
 
