@@ -23,7 +23,7 @@
       <p id="num_of_callers_section">
         <label>Number of callers:</label>
         <input type="text"  class="field" style="width:50px" name="subscription[number_of_callers]" id="number_of_callers" value="<%= @account.number_of_callers %>" data-value="<%= @account.number_of_callers %>"/>
-        <p>$ <span id="monthly-cost" style="display:none"></span> per month</p>
+        <p id="cost-subscription" style="display:none">$ <span id="monthly-cost"></span> per month</p>
       </p>
 
       <p id="add_to_balance" style="display:none">
