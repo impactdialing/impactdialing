@@ -41,6 +41,7 @@ en:
   success_change_role: "Updated user role successfully."
   campaign_out_of_phone_numbers: "This campaign has run out of phone numbers."
   update_billing_info: "Urgent: Update your billing information"
+  enjoy_the_trial: "Enjoy your trial of Impact Dialing! You have 50 minutes of calling for free. Make sure to %{billing_link} before your minutes run out."
   white_labeling:
 
     impactdialing:
