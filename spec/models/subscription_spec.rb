@@ -2,13 +2,13 @@ require "spec_helper"
 
 describe Subscription do
 	describe "create customer" do
-		it "should create a customer for per agent type with plan" do
+		xit "should create a customer for per agent type with plan" do
 			subscription = create(:basic)
 			Stripe::Customer.should_receive(:create).with(card: "token", email: "email", plan: Subscription.stripe_plan_id("Basic"), quantity: 1) 
 			subscription.create_customer("token", "email", "Basic", 1, nil)
 		end
 
-		it "should create a customer for per minute with amount" do
+		xit "should create a customer for per minute with amount" do
 			subscription = create(:per_minute)
 			customer = mock
 			Stripe::Customer.should_receive(:create).with(card: "token", email: "email").and_return(customer)

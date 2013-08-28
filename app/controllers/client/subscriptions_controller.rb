@@ -9,7 +9,7 @@ module Client
 		end
 
 		def update			
-			subscription = params[:subscription]						
+			subscription = params[:subscription]									
 			if Subscription.upgrade?(account.id, subscription[:type])
 				new_subscription = upgrade_subscription(subscription) 
 			elsif(Subscription.modify_callers?(account.id, subscription[:type], subscription[:number_of_callers]))
@@ -24,6 +24,16 @@ module Client
 				flash_message(:error, new_subscription.errors.full_messages.join)
 				redirect_to client_subscription_path(subscription)
 			end						
+		end
+
+		def update_billing_info
+			subscription = params[:subscription]									
+			Subscription.create_customer(account.id, subscription[:stripeToken])
+			flash_message(:notice, "Billing info has been updated successfully")
+			redirect_to client_subscriptions_path
+		end
+
+		def update_billing
 		end
 		
 
@@ -60,7 +70,7 @@ module Client
 			end
 
 			def upgrade_subscription(subscription)
-				Subscription.upgrade_subscription(account.id, subscription[:stripeToken], account.users.first.email, subscription[:type], subscription[:number_of_callers], subscription[:amount])			
+				Subscription.upgrade_subscription(account.id, account.users.first.email, subscription[:type], subscription[:number_of_callers], subscription[:amount])			
 			end
 
 

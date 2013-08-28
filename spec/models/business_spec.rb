@@ -207,7 +207,7 @@ describe Business do
     end     
 
     
-    it "should upgrade  to per minute" do
+    xit "should upgrade  to per minute" do
       customer = mock
       plan = mock
       subscription = mock

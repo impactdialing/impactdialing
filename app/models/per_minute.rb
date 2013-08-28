@@ -63,9 +63,10 @@ class PerMinute < Subscription
     new_subscription = PerMinute.new(status: Subscription::Status::UPGRADED, account_id: account.id, amount_paid: amount.to_i, 
       stripe_customer_id: subscription.stripe_customer_id, subscription_start_date: DateTime.now, 
       subscription_end_date: DateTime.now+1.year)     
-    new_subscription.recharge
+    charge = new_subscription.recharge
     new_subscription.subscribe
     new_subscription.save
+    new_subscription.update_charge_info(charge)      
     new_subscription
   end
 
@@ -78,15 +79,6 @@ class PerMinute < Subscription
   def create_customer(token, email, plan_type, number_of_callers, amount)
     create_customer_charge(token, email, amount.to_i*100)
   end
-
-  def upgrade_subscription(token, email, plan_type, number_of_callers, amount)
-    change_subscription_type(plan_type)
-    account.subscription.upgrade(plan_type, number_of_callers, amount)
-    begin
-      recharge(amount)    
-    rescue
-      errors.add(:base, e.message)
-    end
-  end
+  
 
 end

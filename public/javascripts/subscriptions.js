@@ -61,13 +61,13 @@ Subscriptions.prototype.subscriptionTypeChangeEvent = function(){
 
 Subscriptions.prototype.calculatedTotalMonthlyCost = function(){
   $("#cost-subscription").hide();
-  if ($("#subscription_type").val() == "PerMinute"){
-    return;
-  }
+  console.log($("#subscription_type").val())
+  if ($("#subscription_type").val() != "PerMinute"){      
   var subscriptions = {"Basic": 49.00, "Pro": 99.00, "Business": 199.00}  
   var value = (subscriptions[$("#subscription_type").val()] * $("#number_of_callers").val())
   $("#monthly-cost").html(value);
   $("#cost-subscription").show();
+  }
 }
 
 Subscriptions.prototype.number_of_callers_reduced = function(){
@@ -86,7 +86,8 @@ Subscriptions.prototype.number_of_callers_reduced = function(){
 }
 
 Subscriptions.prototype.upgrade_to_per_minute = function(){
-  $("#subscription_type").change(function() {        
+  $("#subscription_type").change(function() {       
+    $("#cost-subscription").hide(); 
     if($(this).val() == "PerMinute" && $(this).data("value") != "Trial"){
       alert("You can upgrade to Per Minute once you consume all your current subscription Minutes.")
     }

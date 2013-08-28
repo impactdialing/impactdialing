@@ -5,13 +5,21 @@ module SubscriptionProvider
 
   module InstanceMethods
 
-		def create_customer_plan(token, email, plan_type, num_of_callers)						
-			Stripe::Customer.create(card: token, email: email, plan: Subscription.stripe_plan_id(plan_type), quantity: num_of_callers)
+		
+
+		def create_customer_card(token, email)
+			customer = Stripe::Customer.create(card: token, email: email)
 		end
 
-		def create_customer_charge(token, email, amount)
-			customer = Stripe::Customer.create(card: token, email: email)
-			Stripe::Charge.create(amount: amount, currency: "usd", customer: customer.id)			
+		def modify_customer_card(token)
+			cu = Stripe::Customer.retrieve(stripe_customer_id)			
+			cu.card = token
+			cu.save			
+			cu
+		end
+
+		def create_customer_charge(token, email, amount)		
+			Stripe::Charge.create(amount: amount, currency: "usd", customer: stripe_customer_id)			
 		end
 
 		def retrieve_customer
@@ -28,8 +36,11 @@ module SubscriptionProvider
 		end
 
 		def invoice_customer
-			invoice = Stripe::Invoice.create(customer: stripe_customer_id)
-			invoice.pay
+			begin
+				invoice = Stripe::Invoice.create(customer: stripe_customer_id)			
+				invoice.pay
+			rescue
+			end
 		end
 
 		def cancel_subscription

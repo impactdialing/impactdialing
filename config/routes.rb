@@ -101,6 +101,8 @@ ImpactDialing::Application.routes.draw do
         put :add_to_balance
         get :configure_auto_recharge
         put :auto_recharge
+        get :update_billing
+        put :update_billing_info
       end
     end
     resources :scripts do
