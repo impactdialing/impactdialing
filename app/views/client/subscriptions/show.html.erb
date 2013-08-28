@@ -14,19 +14,19 @@
 
     <legend>Plan</legend>
       <p>
-        <label>Select Plan:</label>
+        <label>Select plan:</label>
         <select name="subscription[type]" id="subscription_type" data-value="<%= @subscription.type%>">
           <%= options_for_select Subscription::Type::PAID_SUBSCRIPTIONS,
                                  @subscription.type %>          
         </select>
       </p>
       <p id="num_of_callers_section">
-        <label>Number of Callers:</label>
+        <label>Number of callers:</label>
         <input type="text"  class="field" style="width:50px" name="subscription[number_of_callers]" id="number_of_callers" value="<%= @account.number_of_callers %>" data-value="<%= @account.number_of_callers %>"/>
       </p>
 
       <p id="add_to_balance" style="display:none">
-        <label>Add to Balance:</label>
+        <label>Add to balance:</label>
         <input type="text"  class="field" style="width:50px" name="subscription[amount]"/> $
       </p>      
    </fieldset>  
@@ -38,9 +38,9 @@
         </p>
       <% end %>
     <fieldset>    
-      <legend>Card Information</legend>
+      <legend>Card information</legend>
       <p>
-        <label>Card Number</label>
+        <label>Card number</label>
         <input type="text" data-stripe="number" class="field" style="width:220px;" value="<%= @subscription.card_info %>"/>
       </p>
       <p>
@@ -48,7 +48,7 @@
         <input type="text" data-stripe="cvc"  class="field" style="width:40px;"></input>
       </p>
       <p>
-        <label>Expiration (MM/YYYY)</label>        
+        <label>Expiration</label>        
         <select data-stripe="exp_month" id="expiry-month">
           <option value="01">01 - January</option>
           <option value="02">02 - February</option>
@@ -86,7 +86,7 @@
       </p>
       </fieldset>
  <div class="buttons">
-  <button type="submit" id="submit-payment">Submit Payment</button>
+  <button type="submit" id="submit-payment">Update plan</button>
 </div>
  
 <% end %>
