@@ -61,11 +61,17 @@ describe VoterListJob do
     describe "malformed csv file" do
       before :each do
         @csv_filename = "invalid_voters_list_#{Time.now.to_i}_#{rand(999)}"
-        File.open(Rails.root.join('tmp', @csv_filename).to_s, "w") do |f|
+        tmp_dir = Rails.root.join 'tmp'
+        @csv_filepath = File.join(tmp_dir, @csv_filename).to_s
+        Dir.mkdir tmp_dir unless Dir.exists? tmp_dir
+        File.open(@csv_filepath, "w") do |f|
           f.write(File.open("#{fixture_path}/files/invalid_voters_list.csv").read)
           f.flush
         end
+      end
 
+      after(:each) do
+        File.unlink @csv_filepath
       end
 
       it "should flash an error" do
