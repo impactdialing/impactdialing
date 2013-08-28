@@ -143,7 +143,7 @@ describe Trial do
       @account.reload
     end
 
-    xit "should upgrade to basic" do      
+    it "should upgrade to basic" do      
       customer = mock
       cards = mock
       datas = mock      
@@ -155,53 +155,43 @@ describe Trial do
       @account.current_subscription.save
 
       Stripe::Customer.should_receive(:retrieve).with("123").and_return(customer)
-      customer.should_receive(:update_subscription).with({:quantity=>1, :plan=>"ImpactDialing-Basic", :prorate=>true}).and_return(customer)
-      invoice = Stripe::Invoice.should_receive(:create)
+      customer.should_receive(:update_subscription).with({:quantity=>1, :plan=>"ImpactDialing-Basic", :prorate=>true}).and_return(subscription)
+      Stripe::Invoice.should_receive(:create).and_return(invoice)
       invoice.should_receive(:pay)
-
-      customer.should_receive(:cards).and_return(cards)
-      cards.should_receive(:data).and_return(datas)
-      datas.should_receive(:first).and_return(card_info)
-      customer.should_receive(:id).and_return("123")
-      customer.should_receive(:subscription).and_return(subscription)
-      subscription.should_receive(:plan).and_return(plan)      
-      card_info.should_receive(:last4).and_return("9090")
-      card_info.should_receive(:exp_month).and_return("12")
-      card_info.should_receive(:exp_year).and_return("2016")            
+      subscription.should_receive(:customer).and_return("123")
+      subscription.should_receive(:plan).and_return(plan)            
       plan.should_receive(:amount).and_return(4900)
       subscription.should_receive(:current_period_start).and_return(DateTime.now.to_i)
       subscription.should_receive(:current_period_end).and_return((DateTime.now+30.days).to_i)
       Subscription.upgrade_subscription(@account.id, "email", "Basic", 1, nil)
-      Subscription.count.should eq(2)      
+      Subscription.count.should eq(2)            
+      @account.reload
       @account.current_subscription.type.should eq("Basic")
       @account.current_subscription.number_of_callers.should eq(1)
       @account.current_subscription.status.should eq(Subscription::Status::UPGRADED)
       @account.current_subscription.minutes_utlized.should eq(0)
       @account.current_subscription.total_allowed_minutes.should eq(1000)      
       @account.current_subscription.stripe_customer_id.should eq("123") 
-      @account.current_subscription.cc_last4.should eq("9090") 
-      @account.current_subscription.exp_month.should eq("12") 
-      @account.current_subscription.exp_year.should eq("2016")
       @account.current_subscription.amount_paid.should eq(49.0)
       @account.current_subscription.subscription_start_date.should_not be_nil
       @account.current_subscription.subscription_end_date.should_not be_nil
     end
 
-    xit "should throw support error is stripe is down" do
+    it "should throw support error is stripe is down" do
       Stripe::Customer.stub(:create).and_raise(Stripe::APIError)   
-      subscription = Subscription.upgrade_subscription(@account.id, "token", "email", "Basic", 1, nil) 
+      subscription = Subscription.upgrade_subscription(@account.id, "email", "Basic", 1, nil) 
       Subscription.count.should eq(1)                                         
       subscription.errors.messages.should eq({:base=>["Something went wrong with your upgrade. Kindly contact support"]})            
     end
 
-    xit "should throw error is invalid number of callers" do      
+    it "should throw error is invalid number of callers" do      
       Stripe::Customer.stub(:create).and_raise(Stripe::InvalidRequestError)   
-      subscription = Subscription.upgrade_subscription(@account.id, "token", "email", "Basic", 1, nil) 
+      subscription = Subscription.upgrade_subscription(@account.id, "email", "Basic", 1, nil) 
       Subscription.count.should eq(1)                                         
       subscription.errors.messages.should eq({:base=>["Something went wrong with your upgrade. Kindly contact support"]})            
     end
 
-    xit "should upgrade from trial to per minute" do      
+    it "should upgrade from trial to per minute" do      
       customer = mock      
       cards = mock
       datas = mock      
@@ -234,7 +224,7 @@ describe Trial do
       @account.current_subscription.subscription_end_date.should_not be_nil
     end
 
-    xit "should upgrade from trial to pro" do
+    it "should upgrade from trial to pro" do
       customer = mock
       cards = mock
       datas = mock      
@@ -270,7 +260,7 @@ describe Trial do
       @account.current_subscription.subscription_end_date.to_i.should eq((DateTime.now+30.days).utc.to_i)
     end
 
-    xit "should upgrade from trial to business" do
+    it "should upgrade from trial to business" do
       customer = mock
       cards = mock
       datas = mock      

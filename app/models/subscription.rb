@@ -94,7 +94,7 @@ class Subscription < ActiveRecord::Base
 
   def update_subscription_info(subscription)        
     update_attributes(stripe_customer_id: subscription.customer, amount_paid: subscription.plan.amount/100, subscription_start_date: DateTime.strptime(subscription.current_period_start.to_s,'%s'),
-    subscription_end_date: DateTime.strptime(subscription.current_period_end.to_s,'%s'))      
+      subscription_end_date: DateTime.strptime(subscription.current_period_end.to_s,'%s'))      
   end
 
   def current_period_start
@@ -185,8 +185,11 @@ class Subscription < ActiveRecord::Base
 
   def self.downgrade_subscription(account_id, token, email, plan_type, num_of_callers, amount)
     account = Account.find(account_id)    
+    current_subscription = account.current_subscription
     new_subscription = plan_type.constantize.new(type: plan_type, number_of_callers: num_of_callers, 
-      status: Status::DOWNGRADED, account_id: account_id, amount_paid: amount)   
+      status: Status::DOWNGRADED, account_id: account_id, amount_paid: amount, cc_last4: current_subscription.cc_last4, 
+      exp_month: current_subscription.exp_month, exp_year: current_subscription.exp_year)   
+
     new_subscription.subscribe(false)    
     modified_subscription = account.current_subscription.update_subscription_plan({quantity: num_of_callers, plan: stripe_plan_id(plan_type), prorate: false})
     account.subscriptions.update_all(status: Status::SUSPENDED)
@@ -198,8 +201,10 @@ class Subscription < ActiveRecord::Base
 
   def self.upgrade_subscription(account_id, email, plan_type, num_of_callers, amount=0)    
     account = Account.find(account_id)    
+    current_subscription = account.current_subscription
     new_subscription = plan_type.constantize.new(type: plan_type, number_of_callers: num_of_callers, 
-      status: Status::UPGRADED, account_id: account_id, amount_paid: amount.to_i)   
+      status: Status::UPGRADED, account_id: account_id, amount_paid: amount.to_i, cc_last4: current_subscription.cc_last4, 
+      exp_month: current_subscription.exp_month, exp_year: current_subscription.exp_year)   
     new_subscription.subscribe    
     begin
       if new_subscription.per_agent?        
@@ -210,7 +215,7 @@ class Subscription < ActiveRecord::Base
         charge = new_subscription.recharge
       end
       account.subscriptions.update_all(status: Status::SUSPENDED)
-      new_subscription.save
+      new_subscription.save!      
       if new_subscription.per_agent?        
         new_subscription.update_subscription_info(modified_subscription)      
       else        
@@ -221,6 +226,7 @@ class Subscription < ActiveRecord::Base
         new_subscription.errors.add(:base, 'Please submit a valid number of callers')    
         return new_subscription
     rescue Stripe::APIError => e        
+        puts e           
         new_subscription.errors.add(:base, 'Something went wrong with your upgrade. Kindly contact support')
         return new_subscription
     end 
@@ -256,7 +262,9 @@ class Subscription < ActiveRecord::Base
     current_subscription = account.current_subscription
 
     new_subscription = current_subscription.type.capitalize.constantize.new(type: current_subscription.type, number_of_callers: number_of_callers_to_add, 
-        status: Status::CALLERS_ADDED, account_id: account.id, minutes_utlized: 0,stripe_customer_id: current_subscription.stripe_customer_id)   
+        status: Status::CALLERS_ADDED, account_id: account.id, minutes_utlized: 0, stripe_customer_id: current_subscription.stripe_customer_id, cc_last4: current_subscription.cc_last4, 
+        exp_month: current_subscription.exp_month, exp_year: current_subscription.exp_year)   
+
     new_subscription.total_allowed_minutes = new_subscription.calculate_minute_on_add_callers(number_of_callers_to_add)
     begin 
       modified_subscription = new_subscription.update_subscription_plan({quantity: num_of_callers, plan: current_subscription.stripe_plan_id, prorate: true})                  
@@ -277,7 +285,8 @@ class Subscription < ActiveRecord::Base
         modified_subscription = current_subscription.update_subscription_plan({quantity: num_of_callers, plan: current_subscription.stripe_plan_id, prorate: false})        
         new_subscription = current_subscription.type.capitalize.constantize.create(type: current_subscription.type, number_of_callers: number_of_callers_to_remove, 
         status: Status::CALLERS_REMOVED, account_id: account.id, minutes_utlized: 0,stripe_customer_id: current_subscription.stripe_customer_id, 
-        subscription_start_date: current_subscription.subscription_start_date, subscription_end_date: current_subscription.subscription_end_date)   
+        subscription_start_date: current_subscription.subscription_start_date, subscription_end_date: current_subscription.subscription_end_date, cc_last4: current_subscription.cc_last4, 
+      exp_month: current_subscription.exp_month, exp_year: current_subscription.exp_year)   
     rescue Stripe::InvalidRequestError => e
        current_subscription.errors.add(:base, 'Please submit a valid number of callers')    
        return current_subscription
@@ -287,12 +296,5 @@ class Subscription < ActiveRecord::Base
     end
     return new_subscription
   end
-
-  def self.trial_subscription?(account_id)
-    account = Account.find(account_id)
-    subscription = account.subscriptions.detect{|subscription| subscription.status == Status::TRIAL}
-    subscription != nil && account.subscriptions.count == 1
-  end
-  
 
 end
