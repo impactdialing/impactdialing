@@ -8,6 +8,7 @@ var Subscriptions = function(){
    this.subscriptionTypeChangeEvent();
    this.number_of_callers_reduced();   
    this.upgrade_to_per_minute();
+   this.calculatedTotalMonthlyCost();
 
 }
 
@@ -53,12 +54,21 @@ Subscriptions.prototype.subscriptionTypeChangeEvent = function(){
     	self.showPerMinuteOptions();        
     }else{
     	self.showPerAgentOptions();
+      self.calculatedTotalMonthlyCost();
     }
 	});
 }
 
+Subscriptions.prototype.calculatedTotalMonthlyCost = function(){
+  var subscriptions = {"Basic": 49.00, "Pro": 99.00, "Business": 199.00}  
+  var value = (subscriptions[$("#subscription_type").val()] * $("#number_of_callers").val())
+  $("#monthly-cost").html(value)
+}
+
 Subscriptions.prototype.number_of_callers_reduced = function(){
+  var self = this;
 	$("#number_of_callers").on("change", function(){
+    self.calculatedTotalMonthlyCost();
 		if($(this).val()< 1){
 			alert("You need to have atleast 1 caller.")			
 			return;
