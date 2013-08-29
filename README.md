@@ -114,7 +114,14 @@ deploy user: `impactdialing`
   1. Verify High Security Profile is used
   1. Verify CDN + High Performance is used
   1. Update DNS w/ Badger
-1. Add domain to heroku
+1. Add domain to heroku production app
+
+#### Test in staging
+
+1. Add domain to heroku staging app
+1. Add the following to `/etc/hosts`
+  1. `impactdialing-staging.herokuapp.com whitelabel-domain.com`
+1. Visit `whitelabel-domain.com`
 
 ### Contributing
 
