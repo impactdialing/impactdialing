@@ -161,3 +161,9 @@ en:
       phone: "(636) 778-1155"
       email: "shelley@windingcreekgroup.com"
       billing_link:
+    strategygroupdialer:
+      title: "Strategy Group"
+      full_title: "The Strategy Group for Phones"
+      phone: "(636) 778-1155"
+      email: "operations@sgforphones.com"
+      billing_link: ""
