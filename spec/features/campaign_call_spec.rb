@@ -3,8 +3,6 @@ require "integration_spec_helper"
 
 describe "CampaignCall" do
   include Capybara::DSL
-  Capybara.app_host = 'http://127.0.0.1'
-  Capybara.server_port = '8989'
 
 
   before(:each) do
@@ -17,6 +15,7 @@ describe "CampaignCall" do
       @note = Factory(:note, script_id: @script.id, note: "Whats your note?", script_order: 3)
       @campaign = Factory(:preview, account: @account, script: @script)
       @caller = Factory(:caller, account: @account, campaign: @campaign, email: "nikhil@impact.com", password: "password")
+
       visit "/caller/login"
       page.should have_content('Log in')
       puts Caller.count

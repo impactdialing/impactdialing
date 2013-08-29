@@ -105,8 +105,8 @@ Spork.prefork do
 end
 
 Capybara.javascript_driver = :selenium
-Capybara.current_driver = :selenium
-
+Capybara.app_host = 'http://127.0.0.1:8989'
+Capybara.server_port = '8989'
 
 Spork.each_run do
 
