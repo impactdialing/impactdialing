@@ -79,7 +79,7 @@ group :test, :integration_test do
   gem 'spork-rails', "~>3.2.1"
   gem "database_cleaner", "~>0.9.1"
   gem "json_spec", "~>1.1.0"
-  gem 'selenium-webdriver', "~>2.32.1"
+  gem 'selenium-webdriver', "~>2.34"
   gem "capybara", "~>2.1.0"
   gem 'launchy', "~>2.2.0"
   gem "pusher-fake", "~>0.9.0"
