@@ -53,7 +53,7 @@ describe "PreviewCampaignCall" do
 
     end
 
-    it "stop calling should refresh the screen",js: true do
+    xit "stop calling should refresh the screen",js: true do
       click_link 'Start calling'
       browser = Rack::Test::Session.new(Rack::MockSession.new(Capybara.app))
       browser.post "/identify_caller", :Digits=> @pin, :attempt=> "1"

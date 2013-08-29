@@ -38,7 +38,7 @@ describe "WebuiPower" do
 
   describe "on start calling" , type: "feature" do
 
-    it "stop calling button should be visible", js: true do
+    xit "stop calling button should be visible", js: true do
       click_link 'Start calling'
       browser = Rack::Test::Session.new(Rack::MockSession.new(Capybara.app))
       browser.post "/identify_caller", :Digits=> @pin, :attempt=> "1"
@@ -49,7 +49,7 @@ describe "WebuiPower" do
 
     end
 
-    it "stop calling should refresh the screen",js: true do
+    xit "stop calling should refresh the screen",js: true do
       click_link 'Start calling'
       browser = Rack::Test::Session.new(Rack::MockSession.new(Capybara.app))
       browser.post "/identify_caller", :Digits=> @pin, :attempt=> "1"
@@ -60,7 +60,7 @@ describe "WebuiPower" do
       find(:css, "#start-calling").should be_visible
     end
 
-    it "should  read  no funds if account not funded",js: true do
+    xit "should  read  no funds if account not funded",js: true do
       click_link 'Start calling'
       @account.update_attributes(subscription_name: "Per Caller", subscription_count: 1)
       @caller.update_attributes(account: @account)
@@ -70,7 +70,7 @@ describe "WebuiPower" do
       response.body.should eq('<?xml version="1.0" encoding="UTF-8"?><Response><Say>There are no funds available in the account.  Please visit the billing area of the website to add funds to your account.</Say><Hangup/></Response>')
     end
 
-    it "should  read not activated if account not activated",js: true do
+    xit "should  read not activated if account not activated",js: true do
       click_link 'Start calling'
       @account.update_attributes(subscription_name: "Per Caller", activated: false )
       @caller.update_attributes(account: @account)
@@ -80,7 +80,7 @@ describe "WebuiPower" do
       response.body.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>Your account has insufficent funds</Say><Hangup/></Response>")
     end
 
-    it "should  read not subscription level reached if subscription limit reached",js: true do
+    xit "should  read not subscription level reached if subscription limit reached",js: true do
       click_link 'Start calling'
       @account.update_attributes(subscription_name: "Per Caller", subscription_count: 0, activated: true)
       @caller.update_attributes(account: @account)
@@ -90,7 +90,7 @@ describe "WebuiPower" do
       response.body.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>The maximum number of callers for this account has been reached. Wait for another caller to finish, or ask your administrator to upgrade your account.</Say><Hangup/></Response>")
     end
 
-    it "should  say time period exceeded if calling out of assigned hours",js: true do
+    xit "should  say time period exceeded if calling out of assigned hours",js: true do
       click_link 'Start calling'
       @account.update_attributes(subscription_name: "Per Caller", subscription_count: 1, activated: true)
       @caller.update_attributes(account: @account)
@@ -101,7 +101,7 @@ describe "WebuiPower" do
       response.body.should eq("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Say>You can only call this campaign between 1 PM and 2 PM. Please try back during those hours.</Say><Hangup/></Response>")
     end
 
-    it "should  say caller already on call if another caller is dialing with same creds",js: true do
+    xit "should  say caller already on call if another caller is dialing with same creds",js: true do
       another_caller_session = Factory(:webui_caller_session, caller: @caller, campaign: @campaign, on_call: true)
       click_link 'Start calling'
       @account.update_attributes(subscription_name: "Per Caller", subscription_count: 2, activated: true)
@@ -115,7 +115,7 @@ describe "WebuiPower" do
 
   describe "on dial" , type: "feature" do
 
-    it "hangup and show submit response buttons for call answered by human",js: true do
+    xit "hangup and show submit response buttons for call answered by human",js: true do
       click_link 'Start calling'
       browser = Rack::Test::Session.new(Rack::MockSession.new(Capybara.app))
       browser.post "/identify_caller", :Digits=> @pin, :attempt=> "1"
@@ -129,7 +129,7 @@ describe "WebuiPower" do
       find(:css, "#submit_and_stop_call").should be_visible
     end
 
-    it "redirect caller to next voter if call answered by machine",js: true do
+    xit "redirect caller to next voter if call answered by machine",js: true do
       another_voter = Factory(:voter, Phone: "6578889655", campaign: @campaign, account: @account, active: true,
         status: "Not called", voter_list: @voter_list)
       click_link 'Start calling'
@@ -144,7 +144,7 @@ describe "WebuiPower" do
       find(:css, "#stop_calling").should be_visible
     end
 
-    it "redirect caller to next voter if call not answered",js: true do
+    xit "redirect caller to next voter if call not answered",js: true do
       another_voter = Factory(:voter, Phone: "6578889655", campaign: @campaign, account: @account, active: true,
         status: "Not called", voter_list: @voter_list)
       click_link 'Start calling'
@@ -159,7 +159,7 @@ describe "WebuiPower" do
       find(:css, "#stop_calling").should be_visible
     end
 
-    it "should move to next voter when answer submitted and keep calling",js: true do
+    xit "should move to next voter when answer submitted and keep calling",js: true do
       another_voter = Factory(:voter, Phone: "6578889655", campaign: @campaign, account: @account, active: true,
         status: "Not called", voter_list: @voter_list)
       click_link 'Start calling'
@@ -177,7 +177,7 @@ describe "WebuiPower" do
       find(:css, "#stop_calling").should be_visible
     end
 
-    it "should show start calling when answer submitted and stop calling",js: true do
+    xit "should show start calling when answer submitted and stop calling",js: true do
       another_voter = Factory(:voter, Phone: "6578889655", campaign: @campaign, account: @account, active: true,
         status: "Not called", voter_list: @voter_list)
       click_link 'Start calling'

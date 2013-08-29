@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 feature 'when a user creates a new account' do
-  scenario 'with a valid email and password' do
+  xscenario 'with a valid email and password' do
     user = Factory.build :user
     visit '/client/login'
     fill_in 'Email address', :with => user.email
