@@ -236,15 +236,12 @@ describe Pro do
       @account.current_subscription.subscription_end_date.should_not be_nil
     end
 
-    xit "should upgrade  to per minute" do
-      customer = mock      
-      cards = mock
-      datas = mock      
-      card_info = mock
-      plan = mock
+    it "should upgrade  to per minute" do
+      customer = mock            
+      card_info = mock      
       subscription = mock
       charge = mock
-      Stripe::Customer.should_receive(:create).and_return(customer)
+      Stripe::Customer.should_receive(:retrieve).and_return(customer)
       customer.should_receive(:id).and_return("123")
       Stripe::Charge.should_receive(:create).and_return(charge)
       charge.should_receive(:card).and_return(card_info)      
@@ -254,7 +251,7 @@ describe Pro do
       card_info.should_receive(:exp_year).and_return("2016")            
       charge.should_receive(:amount).and_return(4900)      
       subscription = Subscription.upgrade_subscription(@account.id, "email", "PerMinute", nil, 100) 
-      Subscription.count.should eq(2)
+      Subscription.count.should eq(3)      
       @account.current_subscription.type.should eq("PerMinute")
       @account.current_subscription.number_of_callers.should eq(nil)
       @account.current_subscription.status.should eq(Subscription::Status::UPGRADED)
@@ -267,7 +264,6 @@ describe Pro do
       @account.current_subscription.amount_paid.should eq(49.0)
       @account.current_subscription.subscription_start_date.should_not be_nil
       @account.current_subscription.subscription_end_date.should_not be_nil
-
     end
    
   end

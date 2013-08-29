@@ -215,23 +215,21 @@ class Subscription < ActiveRecord::Base
         charge = new_subscription.recharge
       end
       account.subscriptions.update_all(status: Status::SUSPENDED)
-      new_subscription.save!      
+      new_subscription.save      
       if new_subscription.per_agent?        
         new_subscription.update_subscription_info(modified_subscription)      
-      else        
+      else                
         new_subscription.update_charge_info(charge)      
       end            
-    rescue Stripe::InvalidRequestError => e  
-        puts e           
+    rescue Stripe::InvalidRequestError => e          
         new_subscription.errors.add(:base, 'Please submit a valid number of callers')    
         return new_subscription
-    rescue Stripe::APIError => e        
-        puts e           
+    rescue Stripe::APIError => e                
         new_subscription.errors.add(:base, 'Something went wrong with your upgrade. Kindly contact support')
         return new_subscription
     end 
       return new_subscription
-     end
+  end
 
   def self.active_number_of_callers(account_id)
     account = Account.find(account_id)    

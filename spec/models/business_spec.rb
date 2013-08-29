@@ -207,21 +207,21 @@ describe Business do
     end     
 
     
-    xit "should upgrade  to per minute" do
-      customer = mock
-      plan = mock
+    it "should upgrade  to per minute" do
+      customer = mock            
+      card_info = mock      
       subscription = mock
-      invoice = mock
-      Stripe::Customer.should_receive(:retrieve).with("123").and_return(customer)
-      Stripe::Invoice.should_receive(:create).and_return(invoice)
-      invoice.should_receive(:pay) 
-      customer.should_receive(:update_subscription).and_return(subscription)            
-      subscription.should_receive(:plan).and_return(plan)            
-      plan.should_receive(:amount).and_return(4900)
-      subscription.should_receive(:customer).and_return("123")
-      subscription.should_receive(:current_period_start).and_return(DateTime.now.to_i)
-      subscription.should_receive(:current_period_end).and_return((DateTime.now+30.days).to_i)
-      Subscription.upgrade_subscription(@account.id, "token", "email", "PerMinute", nil, 200)
+      charge = mock
+      Stripe::Customer.should_receive(:retrieve).and_return(customer)
+      customer.should_receive(:id).and_return("123")
+      Stripe::Charge.should_receive(:create).and_return(charge)
+      charge.should_receive(:card).and_return(card_info)      
+      charge.should_receive(:customer).and_return("123")      
+      card_info.should_receive(:last4).and_return("9090")
+      card_info.should_receive(:exp_month).and_return("12")
+      card_info.should_receive(:exp_year).and_return("2016")            
+      charge.should_receive(:amount).and_return(4900)      
+      Subscription.upgrade_subscription(@account.id, "email", "PerMinute", nil, 200)
       Subscription.count.should eq(3)      
       @account.current_subscription.type.should eq("PerMinute")
       @account.current_subscription.number_of_callers.should eq(nil)
