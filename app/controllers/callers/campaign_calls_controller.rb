@@ -14,7 +14,7 @@ module Callers
     def token
 
       @campaign = @caller.campaign
-      unless @caller.account.activated? || @caller.account.subscription.trial?
+      unless @caller.account.current_subscription.can_dial?
         render :json => "Your account is not funded. Please contact your account administrator.", :status => 422
         return
       end
