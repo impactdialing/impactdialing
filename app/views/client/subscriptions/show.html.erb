@@ -1,43 +1,43 @@
-
 <% content_for :javascripts do %>
   <%= javascript_include_tag "https://js.stripe.com/v1/"%>
-  <%= javascript_include_tag  'subscriptions.js' %>  
- <% end %>
-  <div class="callout alert clearfix" style="display:none" id="payment-flash">    
-  </div>
- <%= form_for @subscription, url: "/client/subscriptions/#{@subscription.id}", method: "PUT", html: {id: "plan-form"} do |f| %> 
-  <fieldset>    
+  <%= javascript_include_tag  'subscriptions.js' %>
+<% end %>
 
+<div class="callout alert clearfix" style="display:none" id="payment-flash">
+</div>
+
+<%= form_for @subscription, url: "/client/subscriptions/#{@subscription.id}", method: "PUT", html: {id: "plan-form"} do |f| %>
+  <fieldset>
     <legend>Plan</legend>
-      <p>
-        <label>Select plan:</label>
-        <select name="subscription[type]" id="subscription_type" data-value="<%= @subscription.type%>">
-          <%= options_for_select Subscription::Type::PAID_SUBSCRIPTIONS,
-                                 @subscription.type %>          
-        </select>
-      </p>
-      <p id="num_of_callers_section">
-        <label>Number of callers:</label>
-        <input type="text"  class="field" style="width:50px" name="subscription[number_of_callers]" id="number_of_callers" value="<%= @account.number_of_callers %>" data-value="<%= @account.number_of_callers %>"/>
-        <p id="cost-subscription" style="display:none">$ <span id="monthly-cost"></span> per month</p>
-      </p>
+    <p>
+      <label for="subscription_type">Select plan:</label>
+      <select name="subscription[type]" id="subscription_type" data-value="<%= @subscription.type%>">
+        <%= options_for_select subscription_type_options_for_select,
+                               @subscription.type %>
+      </select>
+    </p>
+    <p id="num_of_callers_section">
+      <label for="number_of_callers">Number of callers:</label>
+      <input type="text"  class="field" style="width:50px" name="subscription[number_of_callers]" id="number_of_callers" value="<%= @account.number_of_callers %>" data-value="<%= @account.number_of_callers %>"/>
+      <p id="cost-subscription" style="display:none">$ <span id="monthly-cost"></span> per month</p>
+    </p>
 
-      <p id="add_to_balance" style="display:none">
-        <label>Add to balance:</label>
-        <input type="text"  class="field" style="width:50px" name="subscription[amount]"/> $
-      </p>      
-   </fieldset>     
-        <p>
-          <div class="buttons">
-            <button type="submit">Upgrade</button>
-          </div>
-        </p>      
+    <p id="add_to_balance" style="display:none">
+      <label for="subscription_amount">Add to balance:</label>
+      $ <input type="text" id="subscription_amount" class="field" style="width:50px" name="subscription[amount]"/>
+    </p>
+  </fieldset>
+  <p>
+    <div class="buttons">
+      <button type="submit">Upgrade</button>
+    </div>
+  </p>
 <% end %>
 
 <% content_for :javascripts do %>
-  <script type="text/javascript">    
-    $(function($) {            
-      var subscriptions = new Subscriptions();      
-  });
- </script>
+  <script type="text/javascript">
+    $(function($) {
+      var subscriptions = new Subscriptions();
+    });
+  </script>
 <% end %>
