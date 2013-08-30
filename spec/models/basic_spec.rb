@@ -16,8 +16,8 @@ describe Basic do
   describe "campaign" do
 
     before(:each) do
-      @account =  create(:account)            
-      Basic.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED)      
+      @account =  create(:account)
+      Basic.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED)
     end
     it "should not allow predictive dialing mode for basic subscription" do
       campaign = build(:predictive, account: @account)
@@ -44,8 +44,8 @@ describe Basic do
 
   describe "transfers" do
     before(:each) do
-      @account =  create(:account)      
-      Basic.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED)      
+      @account =  create(:account)
+      Basic.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED)
     end
 
     it "should not all saving transfers" do
@@ -65,8 +65,8 @@ describe Basic do
 
     describe "it should not allow caller groups for callers" do
       before(:each) do
-      @account =  create(:account, record_calls: false)      
-      Basic.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED)      
+      @account =  create(:account, record_calls: false)
+      Basic.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED)
     end
       it "should throw validation error" do
         campaign =   create(:preview, account: @account)
@@ -87,8 +87,8 @@ describe Basic do
 
     describe "it should not allow call recordings to be enabled" do
       before(:each) do
-        @account =  create(:account, record_calls: false)        
-        Basic.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED)      
+        @account =  create(:account, record_calls: false)
+        Basic.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED)
       end
       it "should throw validation error" do
         @account.update_attributes(record_calls: true)
@@ -99,9 +99,9 @@ describe Basic do
 
   describe "should debit call time" do
     before(:each) do
-      @account =  create(:account, record_calls: false)      
-      Basic.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED, 
-        subscription_start_date: DateTime.now, subscription_end_date: DateTime.now+30.days, total_allowed_minutes:1000)      
+      @account =  create(:account, record_calls: false)
+      Basic.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED,
+        subscription_start_date: DateTime.now, subscription_end_date: DateTime.now+30.days, total_allowed_minutes:1000)
     end
 
     it "should deduct from minutes used if minutes used greater than 0" do
@@ -110,10 +110,10 @@ describe Basic do
     end
 
     it "should not deduct from minutes used if minutes used greater than eq total minutes" do
-      @account.debitable_subscription.reload      
+      @account.debitable_subscription.reload
       @account.debitable_subscription.update_attributes(minutes_utlized: 1000)
       @account.debitable_subscription.debit(2.00).should be_false
-      @account.debitable_subscription.reload      
+      @account.debitable_subscription.reload
       @account.debitable_subscription.minutes_utlized.should eq(1000)
     end
 
@@ -129,63 +129,63 @@ describe Basic do
 
   describe "current_period_start" do
     it "should return current date time" do
-      @account =  create(:account, record_calls: false)                  
+      @account =  create(:account, record_calls: false)
       date = 5.days.ago
-      Basic.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED, stripe_customer_id: "123", 
-        subscription_start_date: date)      
-      Subscription.first.current_period_start.to_i.should eq(date.to_i)   
+      Basic.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED, stripe_customer_id: "123",
+        subscription_start_date: date)
+      Subscription.first.current_period_start.to_i.should eq(date.to_i)
     end
   end
 
   describe "add caller" do
     before(:each) do
-      @account =  create(:account)      
+      @account =  create(:account)
       @account.current_subscriptions.each{|x| x.update_attributes(status: Subscription::Status::SUSPENDED)}
-      Basic.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED, stripe_customer_id: "123", subscription_start_date: DateTime.now-10.days, created_at: DateTime.now-5.minutes)      
+      Basic.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED, stripe_customer_id: "123", subscription_start_date: DateTime.now-10.days, created_at: DateTime.now-5.minutes)
       @account.reload
     end
 
     it "should give active number of callers" do
       Subscription.active_number_of_callers(@account.id).should eq(1)
-      Basic.create!(account_id: @account.id, number_of_callers: 2, status: Subscription::Status::UPGRADED)      
+      Basic.create!(account_id: @account.id, number_of_callers: 2, status: Subscription::Status::UPGRADED)
       Subscription.active_number_of_callers(@account.id).should eq(3)
     end
 
-    it "should add caller to subscription" do                  
+    it "should add caller to subscription" do
       customer = mock
-      invoice = mock      
+      invoice = mock
       Stripe::Customer.should_receive(:retrieve).with(@account.current_subscription.stripe_customer_id).and_return(customer)
       customer.should_receive(:update_subscription).with({quantity: 2, plan: @account.current_subscription.stripe_plan_id, prorate: true})
       Stripe::Invoice.should_receive(:create).with(customer: @account.current_subscription.stripe_customer_id).and_return(invoice)
-      invoice.should_receive(:pay)      
-      Subscription.modify_callers_to_existing_subscription(@account.id, 2)      
+      invoice.should_receive(:pay)
+      Subscription.modify_callers_to_existing_subscription(@account.id, 2)
       Subscription.count.should eq(3)
-      Subscription.active_number_of_callers(@account.id).should eq(2)      
+      Subscription.active_number_of_callers(@account.id).should eq(2)
       Subscription.first.type.should eq(Subscription::Type::BASIC)
       Subscription.first.status.should eq(Subscription::Status::CALLERS_ADDED)
-      Subscription.first.number_of_callers.should eq(1)            
+      Subscription.first.number_of_callers.should eq(1)
       Subscription.first.total_allowed_minutes.should eq(677)
     end
 
      it "should provide warning of upgrade is similar to what exist" do
-      subscription = Subscription.modify_callers_to_existing_subscription(@account.id, 1)            
-      subscription.errors.messages.should eq({:base=>["The subscription details submitted are identical to what already exists"]})            
+      subscription = Subscription.modify_callers_to_existing_subscription(@account.id, 1)
+      subscription.errors.messages.should eq({:base=>["The subscription details submitted are identical to what already exists"]})
     end
 
-    it "should say contact supprt if something goes wrong" do      
-      Stripe::Customer.stub(:retrieve).and_raise(Stripe::APIError)                              
-      subscription = Subscription.modify_callers_to_existing_subscription(@account.id, 3)      
-      subscription.errors.messages.should eq({:base=>["Something went wrong with your upgrade. Kindly contact support"]})            
+    it "should say contact supprt if something goes wrong" do
+      Stripe::Customer.stub(:retrieve).and_raise(Stripe::APIError)
+      subscription = Subscription.modify_callers_to_existing_subscription(@account.id, 3)
+      subscription.errors.messages.should eq({:base=>["Something went wrong with your upgrade. Kindly contact support"]})
     end
 
   end
 
   describe "remove caller" do
      before(:each) do
-      @account =  create(:account)      
+      @account =  create(:account)
       @account.current_subscriptions.each{|x| x.update_attributes(status: Subscription::Status::SUSPENDED)}
-      Basic.create!(account_id: @account.id, number_of_callers: 2, status: Subscription::Status::UPGRADED, stripe_customer_id: "123", subscription_start_date: DateTime.now-10.days, 
-        created_at: DateTime.now-5.minutes, subscription_end_date: DateTime.now+30.days)      
+      Basic.create!(account_id: @account.id, number_of_callers: 2, status: Subscription::Status::UPGRADED, stripe_customer_id: "123", subscription_start_date: DateTime.now-10.days,
+        created_at: DateTime.now-5.minutes, subscription_end_date: DateTime.now+30.days)
       @account.reload
     end
 
@@ -193,37 +193,37 @@ describe Basic do
       customer = mock
       Stripe::Customer.should_receive(:retrieve).with(@account.current_subscription.stripe_customer_id).and_return(customer)
       customer.should_receive(:update_subscription).with({quantity: 1, plan: @account.current_subscription.stripe_plan_id, prorate: false})
-      Subscription.modify_callers_to_existing_subscription(@account.id, 1)      
+      Subscription.modify_callers_to_existing_subscription(@account.id, 1)
       Subscription.count.should eq(3)
-      Subscription.active_number_of_callers(@account.id).should eq(1)      
+      Subscription.active_number_of_callers(@account.id).should eq(1)
       Subscription.first.type.should eq(Subscription::Type::BASIC)
-      Subscription.first.number_of_callers.should eq(-1)            
+      Subscription.first.number_of_callers.should eq(-1)
       Subscription.first.total_allowed_minutes.should eq(0)
       Subscription.first.subscription_start_date.should_not be_nil
       Subscription.first.subscription_end_date.should_not be_nil
     end
 
-    it "should say contact support if something goes wrong" do   
-      Stripe::Customer.stub(:retrieve).and_raise(Stripe::APIError)                                       
-      subscription = Subscription.modify_callers_to_existing_subscription(@account.id, 1)      
-      subscription.errors.messages.should eq({:base=>["Something went wrong with your upgrade. Kindly contact support"]})            
+    it "should say contact support if something goes wrong" do
+      Stripe::Customer.stub(:retrieve)
+      subscription = Subscription.modify_callers_to_existing_subscription(@account.id, 1)
+      subscription.errors.messages.should eq({:base=>["Something went wrong with your upgrade. Kindly contact support"]})
     end
 
     it "should raise invalid request if number of caller to decrement leaves no callers in the subscription" do
-      Stripe::Customer.stub(:retrieve).and_raise(Stripe::InvalidRequestError)                                       
-      subscription = Subscription.modify_callers_to_existing_subscription(@account.id, 0)      
-      subscription.errors.messages.should eq({:base=>["Something went wrong with your upgrade. Kindly contact support"]})            
+      Stripe::Customer.stub(:retrieve)
+      subscription = Subscription.modify_callers_to_existing_subscription(@account.id, 0)
+      subscription.errors.messages.should eq({:base=>["Something went wrong with your upgrade. Kindly contact support"]})
     end
 
   end
 
-  
+
   describe "upgrade from basic" do
     before(:each) do
-      @account =  create(:account)      
+      @account =  create(:account)
       @account.current_subscriptions.each{|x| x.update_attributes(status: Subscription::Status::SUSPENDED)}
-      Basic.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED, stripe_customer_id: "123", subscription_start_date: DateTime.now-10.days, 
-        created_at: DateTime.now-5.minutes, subscription_end_date: DateTime.now+10.days)      
+      Basic.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED, stripe_customer_id: "123", subscription_start_date: DateTime.now-10.days,
+        created_at: DateTime.now-5.minutes, subscription_end_date: DateTime.now+10.days)
       @account.reload
     end
 
@@ -234,21 +234,21 @@ describe Basic do
       invoice = mock
       Stripe::Customer.should_receive(:retrieve).with("123").and_return(customer)
       Stripe::Invoice.should_receive(:create).and_return(invoice)
-      invoice.should_receive(:pay) 
-      customer.should_receive(:update_subscription).and_return(subscription)            
-      subscription.should_receive(:plan).and_return(plan)            
+      invoice.should_receive(:pay)
+      customer.should_receive(:update_subscription).and_return(subscription)
+      subscription.should_receive(:plan).and_return(plan)
       plan.should_receive(:amount).and_return(4900)
       subscription.should_receive(:customer).and_return("123")
       subscription.should_receive(:current_period_start).and_return(DateTime.now.to_i)
       subscription.should_receive(:current_period_end).and_return((DateTime.now+30.days).to_i)
       Subscription.upgrade_subscription(@account.id,  "email", "Pro", 1, nil)
-      Subscription.count.should eq(3)      
+      Subscription.count.should eq(3)
       @account.current_subscription.type.should eq("Pro")
       @account.current_subscription.number_of_callers.should eq(1)
       @account.current_subscription.status.should eq(Subscription::Status::UPGRADED)
       @account.current_subscription.minutes_utlized.should eq(0)
-      @account.current_subscription.total_allowed_minutes.should eq(1693)      
-      @account.current_subscription.stripe_customer_id.should eq("123") 
+      @account.current_subscription.total_allowed_minutes.should eq(1693)
+      @account.current_subscription.stripe_customer_id.should eq("123")
       @account.current_subscription.amount_paid.should eq(49.0)
       @account.current_subscription.subscription_start_date.to_i.should_not be_nil
       @account.current_subscription.subscription_end_date.to_i.should_not be_nil
@@ -261,21 +261,21 @@ describe Basic do
       invoice = mock
       Stripe::Customer.should_receive(:retrieve).with("123").and_return(customer)
       Stripe::Invoice.should_receive(:create).and_return(invoice)
-      invoice.should_receive(:pay) 
-      customer.should_receive(:update_subscription).and_return(subscription)            
-      subscription.should_receive(:plan).and_return(plan)            
+      invoice.should_receive(:pay)
+      customer.should_receive(:update_subscription).and_return(subscription)
+      subscription.should_receive(:plan).and_return(plan)
       plan.should_receive(:amount).and_return(4900)
       subscription.should_receive(:customer).and_return("123")
       subscription.should_receive(:current_period_start).and_return(DateTime.now.to_i)
       subscription.should_receive(:current_period_end).and_return((DateTime.now+30.days).to_i)
       Subscription.upgrade_subscription(@account.id,  "email", "Business", 1, nil)
-      Subscription.count.should eq(3)      
+      Subscription.count.should eq(3)
       @account.current_subscription.type.should eq("Business")
       @account.current_subscription.number_of_callers.should eq(1)
       @account.current_subscription.status.should eq(Subscription::Status::UPGRADED)
       @account.current_subscription.minutes_utlized.should eq(0)
-      @account.current_subscription.total_allowed_minutes.should eq(4064)      
-      @account.current_subscription.stripe_customer_id.should eq("123") 
+      @account.current_subscription.total_allowed_minutes.should eq(4064)
+      @account.current_subscription.stripe_customer_id.should eq("123")
       @account.current_subscription.amount_paid.should eq(49.0)
       @account.current_subscription.subscription_start_date.should_not be_nil
       @account.current_subscription.subscription_end_date.should_not be_nil
@@ -283,54 +283,54 @@ describe Basic do
 
     it "should upgrade  to per minute" do
       customer = mock
-      charge = mock     
-      card_info = mock 
+      charge = mock
+      card_info = mock
       Stripe::Customer.should_receive(:retrieve).with("123").and_return(customer)
       customer.should_receive(:id).twice.and_return("123")
-      Stripe::Charge.should_receive(:create).with(amount: 20000, currency: "usd", customer: customer.id).and_return(charge)      
+      Stripe::Charge.should_receive(:create).with(amount: 20000, currency: "usd", customer: customer.id).and_return(charge)
       charge.should_receive(:card).and_return(card_info)
       charge.should_receive(:customer).and_return("123")
       card_info.should_receive(:last4).and_return("4242")
       card_info.should_receive(:exp_month).and_return("12")
       card_info.should_receive(:exp_year).and_return("2016")
       charge.should_receive(:amount).and_return(4900)
-          
+
       Subscription.upgrade_subscription(@account.id,  "email", "PerMinute", nil, 200)
-      Subscription.count.should eq(3)      
+      Subscription.count.should eq(3)
       @account.current_subscription.type.should eq("PerMinute")
       @account.current_subscription.number_of_callers.should eq(nil)
       @account.current_subscription.status.should eq(Subscription::Status::UPGRADED)
       @account.current_subscription.minutes_utlized.should eq(0)
-      @account.current_subscription.total_allowed_minutes.should eq(2222)      
-      @account.current_subscription.stripe_customer_id.should eq("123") 
+      @account.current_subscription.total_allowed_minutes.should eq(2222)
+      @account.current_subscription.stripe_customer_id.should eq("123")
       @account.current_subscription.amount_paid.should eq(49.0)
       @account.current_subscription.subscription_start_date.should_not be_nil
       @account.current_subscription.subscription_end_date.should_not be_nil
     end
-   
+
   end
 
-  
+
   describe "upgrade from trial to basic" do
     before(:each) do
-      @account =  create(:account, record_calls: true)      
-      create(:predictive, account: @account)      
-      @account.subscriptions.update_all(status: Subscription::Status::SUSPENDED)       
-      @account.reload      
-      
+      @account =  create(:account, record_calls: true)
+      create(:predictive, account: @account)
+      @account.subscriptions.update_all(status: Subscription::Status::SUSPENDED)
+      @account.reload
+
     end
 
-    it "should change record calls to false" do      
-      @subscription = Basic.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED, stripe_customer_id: "123", 
-        subscription_start_date: DateTime.now, subscription_end_date: DateTime.now+30.days)      
+    it "should change record calls to false" do
+      @subscription = Basic.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED, stripe_customer_id: "123",
+        subscription_start_date: DateTime.now, subscription_end_date: DateTime.now+30.days)
       @subscription.subscribe
       @account.reload
       @account.record_calls.should be_false
     end
 
-    it "should convert any predictive campaigns to preview" do      
-      @subscription = Basic.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED, stripe_customer_id: "123", 
-        subscription_start_date: DateTime.now, subscription_end_date: DateTime.now+30.days)      
+    it "should convert any predictive campaigns to preview" do
+      @subscription = Basic.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED, stripe_customer_id: "123",
+        subscription_start_date: DateTime.now, subscription_end_date: DateTime.now+30.days)
       @subscription.subscribe
       @account.reload
       @account.campaigns.first.type.should eq(Campaign::Type::PREVIEW)
@@ -341,19 +341,19 @@ describe Basic do
       create(:transfer, phone_number: "(203) 643-0521", transfer_type: "warm", script: script)
       script.reload
       script.transfers.size.should eq(1)
-      @subscription = Basic.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED, stripe_customer_id: "123", 
-        subscription_start_date: DateTime.now, subscription_end_date: DateTime.now+30.days)      
-      @subscription.subscribe      
+      @subscription = Basic.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED, stripe_customer_id: "123",
+        subscription_start_date: DateTime.now, subscription_end_date: DateTime.now+30.days)
+      @subscription.subscribe
       @account.reload
       script.reload
       script.transfers.should eq([])
-    end    
+    end
   end
 
   describe "current_period_start" do
     it "should return current date time" do
-      @account =  create(:account, record_calls: false)            
-      Subscription.first.current_period_start.to_i.should eq(DateTime.now.to_i)   
+      @account =  create(:account, record_calls: false)
+      Subscription.first.current_period_start.to_i.should eq(DateTime.now.to_i)
     end
   end
 

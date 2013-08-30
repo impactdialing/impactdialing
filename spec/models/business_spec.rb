@@ -16,7 +16,7 @@ describe Business do
   describe "campaign" do
     before(:each) do
         @account =  create(:account, record_calls: false)
-        Business.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED)              
+        Business.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED)
     end
 
     it "should  allow predictive dialing mode for business subscription" do
@@ -44,7 +44,7 @@ describe Business do
   describe "transfers" do
     before(:each) do
         @account =  create(:account, record_calls: false)
-        Business.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED)                      
+        Business.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED)
     end
     it "should not all saving transfers" do
       script = build(:script, account: @account)
@@ -64,7 +64,7 @@ describe Business do
     describe "it should  allow caller groups for callers" do
       before(:each) do
         @account =  create(:account, record_calls: false)
-        Business.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED)                      
+        Business.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED)
     end
       it "should save caller with caller groups" do
         caller = build(:caller, account: @account)
@@ -84,7 +84,7 @@ describe Business do
     describe "it should allow call recordings to be enabled" do
       before(:each) do
         @account =  create(:account, record_calls: false)
-        Business.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED)                      
+        Business.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED)
       end
       it "should all record calls" do
         @account.update_attributes(record_calls: true).should be_true
@@ -95,8 +95,8 @@ describe Business do
    describe "should debit call time" do
     before(:each) do
       @account =  create(:account, record_calls: false)
-      Business.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED, 
-        subscription_start_date: DateTime.now, subscription_end_date: DateTime.now+30.days, total_allowed_minutes:6000)      
+      Business.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED,
+        subscription_start_date: DateTime.now, subscription_end_date: DateTime.now+30.days, total_allowed_minutes:6000)
     end
 
     it "should deduct from minutes used if minutes used greater than 0" do
@@ -105,10 +105,10 @@ describe Business do
     end
 
     it "should not deduct from minutes used if minutes used greater than eq total minutes" do
-      @account.debitable_subscription.reload      
+      @account.debitable_subscription.reload
       @account.debitable_subscription.update_attributes(minutes_utlized: 6000)
       @account.debitable_subscription.debit(2.00).should be_false
-      @account.debitable_subscription.reload      
+      @account.debitable_subscription.reload
       @account.debitable_subscription.minutes_utlized.should eq(6000)
     end
 
@@ -123,52 +123,52 @@ describe Business do
 
   describe "add caller" do
     before(:each) do
-      @account =  create(:account)      
+      @account =  create(:account)
       @account.current_subscriptions.each{|x| x.update_attributes(status: Subscription::Status::SUSPENDED)}
-      Business.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED, stripe_customer_id: "123", subscription_start_date: DateTime.now-10.days, created_at: DateTime.now-5.minutes)      
+      Business.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED, stripe_customer_id: "123", subscription_start_date: DateTime.now-10.days, created_at: DateTime.now-5.minutes)
       @account.reload
     end
 
     it "should give active number of callers" do
       Subscription.active_number_of_callers(@account.id).should eq(1)
-      Business.create!(account_id: @account.id, number_of_callers: 2, status: Subscription::Status::UPGRADED)      
+      Business.create!(account_id: @account.id, number_of_callers: 2, status: Subscription::Status::UPGRADED)
       Subscription.active_number_of_callers(@account.id).should eq(3)
     end
 
-    it "should add caller to subscription" do                  
+    it "should add caller to subscription" do
       customer = mock
-      invoice = mock      
+      invoice = mock
       Stripe::Customer.should_receive(:retrieve).with(@account.current_subscription.stripe_customer_id).and_return(customer)
       customer.should_receive(:update_subscription).with({quantity: 2, plan: @account.current_subscription.stripe_plan_id, prorate: true})
       Stripe::Invoice.should_receive(:create).with(customer: @account.current_subscription.stripe_customer_id).and_return(invoice)
-      invoice.should_receive(:pay)      
-      Subscription.modify_callers_to_existing_subscription(@account.id, 2)      
+      invoice.should_receive(:pay)
+      Subscription.modify_callers_to_existing_subscription(@account.id, 2)
       Subscription.count.should eq(3)
-      Subscription.active_number_of_callers(@account.id).should eq(2)      
+      Subscription.active_number_of_callers(@account.id).should eq(2)
       Subscription.first.type.should eq(Subscription::Type::BUSINESS)
       Subscription.first.status.should eq(Subscription::Status::CALLERS_ADDED)
-      Subscription.first.number_of_callers.should eq(1)            
+      Subscription.first.number_of_callers.should eq(1)
       Subscription.first.total_allowed_minutes.should eq(4064)
     end
 
      it "should provide warning of upgrade is similar to what exist" do
-      subscription = Subscription.modify_callers_to_existing_subscription(@account.id, 1)            
-      subscription.errors.messages.should eq({:base=>["The subscription details submitted are identical to what already exists"]})            
+      subscription = Subscription.modify_callers_to_existing_subscription(@account.id, 1)
+      subscription.errors.messages.should eq({:base=>["The subscription details submitted are identical to what already exists"]})
     end
 
-    it "should say contact supprt if something goes wrong" do      
-      Stripe::Customer.stub(:retrieve).and_raise(Stripe::APIError)                              
-      subscription = Subscription.modify_callers_to_existing_subscription(@account.id, 3)      
-      subscription.errors.messages.should eq({:base=>["Something went wrong with your upgrade. Kindly contact support"]})            
+    it "should say contact supprt if something goes wrong" do
+      Stripe::Customer.stub(:retrieve).and_raise(Stripe::APIError)
+      subscription = Subscription.modify_callers_to_existing_subscription(@account.id, 3)
+      subscription.errors.messages.should eq({:base=>["Something went wrong with your upgrade. Kindly contact support"]})
     end
 
   end
 
   describe "remove caller" do
      before(:each) do
-      @account =  create(:account)      
+      @account =  create(:account)
       @account.current_subscriptions.each{|x| x.update_attributes(status: Subscription::Status::SUSPENDED)}
-      Business.create!(account_id: @account.id, number_of_callers: 2, status: Subscription::Status::UPGRADED, stripe_customer_id: "123", subscription_start_date: DateTime.now-10.days, created_at: DateTime.now-5.minutes)      
+      Business.create!(account_id: @account.id, number_of_callers: 2, status: Subscription::Status::UPGRADED, stripe_customer_id: "123", subscription_start_date: DateTime.now-10.days, created_at: DateTime.now-5.minutes)
       @account.reload
     end
 
@@ -176,101 +176,101 @@ describe Business do
       customer = mock
       Stripe::Customer.should_receive(:retrieve).with(@account.current_subscription.stripe_customer_id).and_return(customer)
       customer.should_receive(:update_subscription).with({quantity: 1, plan: @account.current_subscription.stripe_plan_id, prorate: false})
-      Subscription.modify_callers_to_existing_subscription(@account.id, 1)      
+      Subscription.modify_callers_to_existing_subscription(@account.id, 1)
       Subscription.count.should eq(3)
-      Subscription.active_number_of_callers(@account.id).should eq(1)      
+      Subscription.active_number_of_callers(@account.id).should eq(1)
       Subscription.first.type.should eq(Subscription::Type::BUSINESS)
-      Subscription.first.number_of_callers.should eq(-1)            
+      Subscription.first.number_of_callers.should eq(-1)
       Subscription.first.total_allowed_minutes.should eq(0)
     end
 
-    it "should say contact support if something goes wrong" do   
-      Stripe::Customer.stub(:retrieve).and_raise(Stripe::APIError)                                       
-      subscription = Subscription.modify_callers_to_existing_subscription(@account.id, 1)      
-      subscription.errors.messages.should eq({:base=>["Something went wrong with your upgrade. Kindly contact support"]})            
+    it "should say contact support if something goes wrong" do
+      Stripe::Customer.stub(:retrieve).and_raise(Stripe::APIError)
+      subscription = Subscription.modify_callers_to_existing_subscription(@account.id, 1)
+      subscription.errors.messages.should eq({:base=>["Something went wrong with your upgrade. Kindly contact support"]})
     end
 
     it "should raise invalid request if number of caller to decrement leaves no callers in the subscription" do
-      Stripe::Customer.stub(:retrieve).and_raise(Stripe::InvalidRequestError)                                       
-      subscription = Subscription.modify_callers_to_existing_subscription(@account.id, 0)      
-      subscription.errors.messages.should eq({:base=>["Something went wrong with your upgrade. Kindly contact support"]})            
+      Stripe::Customer.stub(:retrieve)
+      subscription = Subscription.modify_callers_to_existing_subscription(@account.id, 0)
+      subscription.errors.messages.should eq({:base=>["Something went wrong with your upgrade. Kindly contact support"]})
     end
 
   end
 
   describe "upgrade from business" do
     before(:each) do
-      @account =  create(:account)      
+      @account =  create(:account)
       @account.current_subscriptions.each{|x| x.update_attributes(status: Subscription::Status::SUSPENDED)}
-      Business.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED, stripe_customer_id: "123", subscription_start_date: DateTime.now-10.days, created_at: DateTime.now-5.minutes)      
+      Business.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED, stripe_customer_id: "123", subscription_start_date: DateTime.now-10.days, created_at: DateTime.now-5.minutes)
       @account.reload
-    end     
+    end
 
-    
+
     it "should upgrade  to per minute" do
-      customer = mock            
-      card_info = mock      
+      customer = mock
+      card_info = mock
       subscription = mock
       charge = mock
       Stripe::Customer.should_receive(:retrieve).and_return(customer)
       customer.should_receive(:id).and_return("123")
       Stripe::Charge.should_receive(:create).and_return(charge)
-      charge.should_receive(:card).and_return(card_info)      
-      charge.should_receive(:customer).and_return("123")      
+      charge.should_receive(:card).and_return(card_info)
+      charge.should_receive(:customer).and_return("123")
       card_info.should_receive(:last4).and_return("9090")
       card_info.should_receive(:exp_month).and_return("12")
-      card_info.should_receive(:exp_year).and_return("2016")            
-      charge.should_receive(:amount).and_return(4900)      
+      card_info.should_receive(:exp_year).and_return("2016")
+      charge.should_receive(:amount).and_return(4900)
       Subscription.upgrade_subscription(@account.id, "email", "PerMinute", nil, 200)
-      Subscription.count.should eq(3)      
+      Subscription.count.should eq(3)
       @account.current_subscription.type.should eq("PerMinute")
       @account.current_subscription.number_of_callers.should eq(nil)
       @account.current_subscription.status.should eq(Subscription::Status::UPGRADED)
       @account.current_subscription.minutes_utlized.should eq(0)
-      @account.current_subscription.total_allowed_minutes.should eq(2222)      
-      @account.current_subscription.stripe_customer_id.should eq("123") 
+      @account.current_subscription.total_allowed_minutes.should eq(2222)
+      @account.current_subscription.stripe_customer_id.should eq("123")
       @account.current_subscription.amount_paid.should eq(49.0)
       @account.current_subscription.subscription_start_date.should_not be_nil
       @account.current_subscription.subscription_end_date.should_not be_nil
     end
-   
+
   end
 
   describe "downgrade from business" do
     before(:each) do
-      @account =  create(:account)      
+      @account =  create(:account)
       @account.current_subscriptions.each{|x| x.update_attributes(status: Subscription::Status::SUSPENDED)}
-      Business.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED, 
-        stripe_customer_id: "123", subscription_start_date: DateTime.now-10.days, 
-        created_at: DateTime.now-5.minutes, subscription_end_date: DateTime.now+10.days)      
+      Business.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED,
+        stripe_customer_id: "123", subscription_start_date: DateTime.now-10.days,
+        created_at: DateTime.now-5.minutes, subscription_end_date: DateTime.now+10.days)
       @account.reload
-    end     
+    end
 
     it "should downgrade to basic" do
       customer = mock
       plan = mock
       subscription = mock
       Stripe::Customer.should_receive(:retrieve).with("123").and_return(customer)
-      customer.should_receive(:update_subscription).and_return(subscription)            
-      subscription.should_receive(:plan).and_return(plan)            
+      customer.should_receive(:update_subscription).and_return(subscription)
+      subscription.should_receive(:plan).and_return(plan)
       plan.should_receive(:amount).and_return(0000)
       subscription.should_receive(:customer).and_return("123")
       subscription.should_receive(:current_period_start).and_return(DateTime.now.to_i)
       subscription.should_receive(:current_period_end).and_return((DateTime.now+30.days).to_i)
       Subscription.downgrade_subscription(@account.id, "token", "email", "Basic", 1, nil)
-      Subscription.count.should eq(3)      
+      Subscription.count.should eq(3)
       @account.current_subscription.type.should eq("Basic")
       @account.current_subscription.number_of_callers.should eq(1)
       @account.current_subscription.status.should eq(Subscription::Status::DOWNGRADED)
       @account.current_subscription.minutes_utlized.should eq(0)
-      @account.current_subscription.total_allowed_minutes.should eq(0)      
-      @account.current_subscription.stripe_customer_id.should eq("123") 
+      @account.current_subscription.total_allowed_minutes.should eq(0)
+      @account.current_subscription.stripe_customer_id.should eq("123")
       @account.current_subscription.amount_paid.should eq(0.0)
       @account.current_subscription.subscription_start_date.to_i.should eq(DateTime.now.utc.to_i)
       @account.current_subscription.subscription_end_date.to_i.should eq((DateTime.now+30.days).utc.to_i)
     end
   end
 
-  
+
 
 end
