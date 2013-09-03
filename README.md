@@ -1,5 +1,7 @@
 ## Impact Dialing
 
+[![Code Climate](https://codeclimate.com/repos/521ce4f7c7f3a323041654cc/badges/94d7e824870b5f23e781/gpa.png)](https://codeclimate.com/repos/521ce4f7c7f3a323041654cc/feed)
+
 ### Installing
 
 Install MySQL.
