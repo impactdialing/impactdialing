@@ -41,37 +41,6 @@ class UserMailer
     end
   end
 
-
-  def welcome_email(user)
-    begin
-      emailText="<p>Hi #{user.fname}! I think you're going love Impact Dialing, so I want to make you an offer: for the next two weeks, you can make up to 100 minutes of phone calls on us.</p>
-      <p>I could write pages about how we're different - incredible ease-of-use,  fanatical service, unmatched scalability - but I think you'll enjoy using Impact Dialing more than reading about it. So head to <a href=""https://admin.impactdialing.com/"">admin.impactdialing.com</a> and get calling before your 2 weeks are up!</p>
-
-      <p>Also, I love hearing from our current and prospective clients. Whether it's a question, feature request, or just a note about how you're using Impact Dialing, reply to this email to let me know.</p>
-      --<br/>
-      Michael Kaiser-Nyman<br/>
-      Founder & CEO, Impact Dialing<br/>
-      (415) 347-5723      <br/>
-      <p>P.S. Don't wait until it's too late - start your 2-week free trial now at <a href=""https://admin.impactdialing.com/"">admin.impactdialing.com</a>.</p>"
-      subject="Test drive Impact Dialing until " + (Date.today + 14).strftime("%B %e")
-
-      response = send_email({
-              :subject => subject,
-              :html => emailText,
-              :text => emailText,
-              :from_name => 'Michael Kaiser-Nyman, Impact Dialing',
-              :from_email => 'email@impactdialing.com',
-              :to => [{email: user.email}],
-              :bcc_address=>'michael@impactdialing.com',
-              :track_opens => true,
-              :track_clicks => true
-      })
-      rescue Exception => e
-        logger.error(e.inspect)
-    end
-
-  end
-
   def deliver_invitation(new_user, current_user)
     link = reset_password_url(protocol: PROTOCOL, :host => "admin.#{current_user.domain}", :reset_code => new_user.password_reset_code)
     send_email({
