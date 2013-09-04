@@ -329,6 +329,7 @@ GEM
     temple (0.6.5)
     thor (0.18.1)
     tilt (1.4.1)
+    timecop (0.6.3)
     timers (1.1.0)
     treetop (1.4.14)
       polyglot
@@ -422,6 +423,7 @@ DEPENDENCIES
   spork-rails
   sprockets (~> 2.2.1)
   stripe (~> 1.8.4)
+  timecop
   twilio (~> 3.1.1)
   twilio-ruby (~> 3.10.0)
   unicorn

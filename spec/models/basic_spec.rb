@@ -1,6 +1,14 @@
 require "spec_helper"
 
 describe Basic do
+
+  before do
+    Timecop.freeze(Time.local(2013, 8, 10, 12))
+  end
+  after do
+    Timecop.return
+  end
+
   describe "campaign_types" do
     it "should return preview and power modes" do
      Basic.new.campaign_types.should eq([Campaign::Type::PREVIEW, Campaign::Type::POWER])
@@ -152,11 +160,20 @@ describe Basic do
     end
 
     it "should add caller to subscription" do
-      customer = mock
-      invoice = mock
-      Stripe::Customer.should_receive(:retrieve).with(@account.current_subscription.stripe_customer_id).and_return(customer)
-      customer.should_receive(:update_subscription).with({quantity: 2, plan: @account.current_subscription.stripe_plan_id, prorate: true})
-      Stripe::Invoice.should_receive(:create).with(customer: @account.current_subscription.stripe_customer_id).and_return(invoice)
+      customer = double
+      invoice = double
+      Stripe::Customer.should_receive(:retrieve)
+        .with(@account.current_subscription.stripe_customer_id)
+        .and_return(customer)
+      customer.should_receive(:update_subscription)
+        .with({
+          quantity: 2,
+          plan: @account.current_subscription.stripe_plan_id,
+          prorate: true
+        })
+      Stripe::Invoice.should_receive(:create)
+        .with(customer: @account.current_subscription.stripe_customer_id)
+        .and_return(invoice)
       invoice.should_receive(:pay)
       Subscription.modify_callers_to_existing_subscription(@account.id, 2)
       Subscription.count.should eq(3)
@@ -190,7 +207,7 @@ describe Basic do
     end
 
     it "should decrement number of callers" do
-      customer = mock
+      customer = double
       Stripe::Customer.should_receive(:retrieve).with(@account.current_subscription.stripe_customer_id).and_return(customer)
       customer.should_receive(:update_subscription).with({quantity: 1, plan: @account.current_subscription.stripe_plan_id, prorate: false})
       Subscription.modify_callers_to_existing_subscription(@account.id, 1)
@@ -228,10 +245,10 @@ describe Basic do
     end
 
      it "should upgrade  to pro" do
-      customer = mock
-      plan = mock
-      subscription = mock
-      invoice = mock
+      customer = double
+      plan = double
+      subscription = double
+      invoice = double
       Stripe::Customer.should_receive(:retrieve).with("123").and_return(customer)
       Stripe::Invoice.should_receive(:create).and_return(invoice)
       invoice.should_receive(:pay)
@@ -255,10 +272,10 @@ describe Basic do
     end
 
     it "should upgrade  to business" do
-      customer = mock
-      plan = mock
-      subscription = mock
-      invoice = mock
+      customer = double
+      plan = double
+      subscription = double
+      invoice = double
       Stripe::Customer.should_receive(:retrieve).with("123").and_return(customer)
       Stripe::Invoice.should_receive(:create).and_return(invoice)
       invoice.should_receive(:pay)
@@ -282,9 +299,9 @@ describe Basic do
     end
 
     it "should upgrade  to per minute" do
-      customer = mock
-      charge = mock
-      card_info = mock
+      customer = double
+      charge = double
+      card_info = double
       Stripe::Customer.should_receive(:retrieve).with("123").and_return(customer)
       customer.should_receive(:id).twice.and_return("123")
       Stripe::Charge.should_receive(:create).with(amount: 20000, currency: "usd", customer: customer.id).and_return(charge)

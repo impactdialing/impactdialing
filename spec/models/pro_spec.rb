@@ -1,6 +1,14 @@
 require "spec_helper"
 
 describe Pro do
+
+  before do
+    Timecop.freeze(Time.local(2013, 8, 10, 12))
+  end
+  after do
+    Timecop.return
+  end
+
     describe "campaign_types" do
     it "should return preview and power modes" do
      Pro.new.campaign_types.should eq([Campaign::Type::PREVIEW, Campaign::Type::POWER, Campaign::Type::PREDICTIVE])
@@ -138,8 +146,8 @@ describe Pro do
     end
 
     it "should add caller to subscription" do
-      customer = mock
-      invoice = mock
+      customer = double
+      invoice = double
       Stripe::Customer.should_receive(:retrieve).with(@account.current_subscription.stripe_customer_id).and_return(customer)
       customer.should_receive(:update_subscription).with({quantity: 2, plan: @account.current_subscription.stripe_plan_id, prorate: true})
       Stripe::Invoice.should_receive(:create).with(customer: @account.current_subscription.stripe_customer_id).and_return(invoice)
@@ -175,7 +183,7 @@ describe Pro do
     end
 
     it "should decrement number of callers" do
-      customer = mock
+      customer = double
       Stripe::Customer.should_receive(:retrieve).with(@account.current_subscription.stripe_customer_id).and_return(customer)
       customer.should_receive(:update_subscription).with({quantity: 1, plan: @account.current_subscription.stripe_plan_id, prorate: false})
       Subscription.modify_callers_to_existing_subscription(@account.id, 1)
@@ -210,10 +218,10 @@ describe Pro do
     end
 
     it "should upgrade  to business" do
-      customer = mock
-      plan = mock
-      subscription = mock
-      invoice = mock
+      customer = double
+      plan = double
+      subscription = double
+      invoice = double
       Stripe::Customer.should_receive(:retrieve).with("123").and_return(customer)
       Stripe::Invoice.should_receive(:create).and_return(invoice)
       invoice.should_receive(:pay)
@@ -237,10 +245,10 @@ describe Pro do
     end
 
     it "should upgrade  to per minute" do
-      customer = mock
-      card_info = mock
-      subscription = mock
-      charge = mock
+      customer = double
+      card_info = double
+      subscription = double
+      charge = double
       Stripe::Customer.should_receive(:retrieve).and_return(customer)
       customer.should_receive(:id).and_return("123")
       Stripe::Charge.should_receive(:create).and_return(charge)
@@ -279,9 +287,9 @@ describe Pro do
     end
 
     it "should downgrade to basic" do
-      customer = mock
-      plan = mock
-      subscription = mock
+      customer = double
+      plan = double
+      subscription = double
       Stripe::Customer.should_receive(:retrieve).with("123").and_return(customer)
       customer.should_receive(:update_subscription).and_return(subscription)
       subscription.should_receive(:plan).and_return(plan)
