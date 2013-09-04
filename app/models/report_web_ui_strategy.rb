@@ -1,3 +1,9 @@
+##
+# +result+:: String(success|failure)
+# +user+:: User instance
+# +campaign+:: Campaign instance
+# +exception+:: Exception instance or nil
+#
 class ReportWebUIStrategy
 
   def initialize(result, user, campaign, exception)
@@ -16,7 +22,13 @@ class ReportWebUIStrategy
       DownloadedReport.using(:master).create(link: link, user: @user, campaign_id: @campaign.id)
       @mailer.deliver_download(@user, link)
     else
-      @mailer.deliver_download_failure(@user, @campaign, @campaign.account_id, @exception) unless Rails.env.development?
+      unless Rails.env.development?
+        # notify the end-user
+        @mailer.deliver_download_failure(@user, @campaign)
+        # notify us
+        notes = "Campaign: #{@campaign.name}; Account ID: #{@campaign.account_id}"
+        @mailer.deliver_exception_notification(notes, @exception)
+      end
     end
   end
 

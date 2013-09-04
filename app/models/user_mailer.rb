@@ -12,7 +12,7 @@ class UserMailer
     if domains.include?(domain)
       super(domain)
     else
-      "email@impactdialing.com"
+      FROM_EMAIL
     end
   end
 
@@ -31,8 +31,8 @@ class UserMailer
               :html => emailText,
               :text => emailText,
               :from_name => 'Impact Dialing',
-              :from_email => 'email@impactdialing.com',
-              :to=>[{email: 'joseph@impactdialing.com'},{email: 'nikhil@impactdialing.com'}],
+              :from_email => FROM_EMAIL,
+              :to=>[{email: SALES_EMAIL},{email: TECH_EMAIL}],
               :track_opens => true,
               :track_clicks => true
               })
@@ -92,8 +92,8 @@ class UserMailer
         :text => content,
         :html => content,
         :from_name => "Admin",
-        :from_email => "email@impactdialing.com",
-        :to => [{email: "joseph@impactdialing.com"}]
+        :from_email => FROM_EMAIL,
+        :to => [{email: SALES_EMAIL}, {email: TECH_EMAIL}]
     })
   end
 
@@ -111,26 +111,55 @@ class UserMailer
     })
   end
 
-  def deliver_download_failure(user, campaign, account_id, exception)
+  def deliver_download_failure(user, campaign)
     subject = I18n.t(:report_error_occured_subject)
     content = "<br/>#{I18n.t(:report_error_occured)}"
-    exception_content = "Campaign: #{campaign.name}  Account Id: #{account_id}. Error details : <br/><br/> #{exception.backtrace.each{|line| "<br/>#{line}"}}"
-    send_email({ :subject => subject, :text => content, :html => content, :from_name => white_labeled_title(user.domain), :from_email => white_labeled_email(user.domain), :to => [{email: user.email}]})
-    send_email({ :subject => subject, :text => exception_content, :html => exception_content, :from_name => white_labeled_title(user.domain), :from_email => 'email@impactdialing.com',
-      :to => [{email: 'nikhil@activesphere.com'},{email: 'michael@impactdialing.com'}]})
+    send_email({
+      to: [{ email: user.email }],
+      subject: subject,
+      text: content,
+      html: content,
+      from_name: white_labeled_title(user.domain),
+      from_email: white_labeled_email(user.domain)
+    })
+  end
+
+  def deliver_exception_notification(msg, exception)
+    content = msg
+    content << "<br/><br/>Backtrace:<br/><br/>"+
+               "#{exception.backtrace.each{|line| "<br/>#{line}"}}"
+    send_email({
+      to: [{email: EXCEPTIONS_EMAIL}],
+      subject: exception.message,
+      text: content,
+      html: content,
+      from_name: "Download Failure",
+      from_email: FROM_EMAIL
+    })
   end
 
   def deliver_update_billing_info(account)
     to_list = account.administrators.map {|admin| {email: admin.email}}
     subject = I18n.t(:update_billing_info)
     content = "Your credit card was declined. Please update your <a href='https://admin.impactdialing.com/client/billing'>Billing Information</a>. If your balance fall below $0, you won't be able to make more phone calls. Reply to this message or call #{white_labeled_phone(account.domain_name)} for support."
-    send_email({ :subject => subject, :text => content, :html => content, :from_name => white_labeled_title(account.domain_name), :from_email => white_labeled_email(account.domain_name),
-      :to => to_list })
+    send_email({
+      :subject => subject,
+      :text => content,
+      :html => content,
+      :from_name => white_labeled_title(account.domain_name),
+      :from_email => white_labeled_email(account.domain_name),
+      :to => to_list
+    })
   end
 
   def alert_email(subject, content)
-    send_email({ :subject => subject, :text => content, :from_name => 'impactdialing.com', :from_email => 'email@impactdialing.com',
-      :to => [{email: 'nikhil@activesphere.com'},{email: 'michael@impactdialing.com'}]})
+    send_email({
+      :subject => subject,
+      :text => content,
+      :from_name => 'impactdialing.com',
+      :from_email => FROM_EMAIL,
+      :to => [{email: TECH_EMAIL},{email: MICHAEL_EMAIL}]
+    })
   end
 
 end

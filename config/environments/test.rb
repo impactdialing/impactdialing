@@ -1,6 +1,8 @@
 HOST = 'localhost'
 PORT = 3000
 
+MANDRILL_API_KEY='qlYdRXlyROwaN9Tqk1QrhA'
+
 ImpactDialing::Application.configure do
   # Settings specified here will take precedence over those in config/environment.rb
 
