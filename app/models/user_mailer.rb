@@ -133,7 +133,7 @@ class UserMailer
       subject: exception.message,
       text: content,
       html: content,
-      from_name: "Download Failure",
+      from_name: "Exception Notifier",
       from_email: FROM_EMAIL
     })
   end
