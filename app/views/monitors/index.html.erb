@@ -119,7 +119,10 @@
   <p class="actions"
      data-intro="You can choose whether to record calls here."
      data-step="3">
-    <%= link_to "Turn call recording #{@account.record_calls? ? "off" : "on" }", {:action=>"toggle_call_recording"},
+    <%= link_to "Turn call recording #{@account.record_calls? ? "off" : "on" }", {
+      :action => "toggle_call_recording",
+      :controller => "monitors"
+      },
     {:class => 'action secondary'} %>
   </p>
 <% end %>
