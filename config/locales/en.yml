@@ -42,6 +42,8 @@ en:
   campaign_out_of_phone_numbers: "This campaign has run out of phone numbers."
   update_billing_info: "Urgent: Update your billing information"
   enjoy_the_trial: "Enjoy your trial of Impact Dialing! You have 50 minutes of calling for free. Make sure to %{billing_link} before your minutes run out."
+  csv_has_no_row_data: "The uploaded file contained headers but no row data. Please verify the file contains at least 1 row of data and try again."
+  csv_has_no_header_data: "The uploaded file contained no headers. Please verify the file contains a header and at least 1 row of data and try again."
   white_labeling:
 
     impactdialing:

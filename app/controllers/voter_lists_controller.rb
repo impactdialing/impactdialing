@@ -39,7 +39,7 @@ class VoterListsController < ClientController
   end
 
   def destroy
-    render :json=> {"message"=>"This opeartion is not permitted"}, :status => :method_not_allowed
+    render :json=> {"message"=>"This operation is not permitted"}, :status => :method_not_allowed
   end
 
 
@@ -71,8 +71,18 @@ class VoterListsController < ClientController
     csv = upload.read
     separator = VoterList.separator_from_file_extension(upload.original_filename)
     csv_file = CSV.new(csv, :col_sep => separator)
-    @csv_column_headers = csv_file.shift.collect{|h| h.blank? ? VoterList::BLANK_HEADER : h}
-    @first_data_row = csv_file.shift
+
+    headers = csv_file.shift
+    unless headers.present?
+      @csv_error = I18n.t(:csv_has_no_header_data)
+    else
+      @csv_column_headers = headers.collect{|h| h.blank? ? VoterList::BLANK_HEADER : h}
+      @first_data_row = csv_file.shift
+      unless @first_data_row.present?
+        @csv_error = I18n.t(:csv_has_no_row_data)
+      end
+    end
+
     render layout: false
   end
 

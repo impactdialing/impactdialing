@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe VoterListsController do
 
-  describe "api" do
+  describe "API Usage (JSON)" do
     let(:account) { create(:account) }
     before(:each) do
       @user = create(:user, account_id: account.id)
@@ -76,38 +76,121 @@ describe VoterListsController do
         voter_list = create(:voter_list, enabled: true, name: "abc")
         campaign = create(:campaign, :account => account, :active => true, voter_lists: [voter_list, create(:voter_list)])
         delete :destroy, campaign_id: campaign.id, id: voter_list.id, :api_key=> account.api_key, :format => "json"
-        response.body.should eq( "{\"message\":\"This opeartion is not permitted\"}")
+        response.body.should eq( "{\"message\":\"This operation is not permitted\"}")
       end
     end
 
     describe "create" do
-
-      it "should create new voter list" do
-        csv_file_upload =  {"datafile" => fixture_file_upload("/files/valid_voters_list.csv")}
-        campaign = create(:campaign, :account => account, :active => true)
-        Resque.should_receive(:enqueue)
-        post :create, campaign_id: campaign.id, voter_list: {name: "abc.csv", separator: ",", headers: "[]", csv_to_system_map: "{\"Phone\": \"Phone\"}",
-        s3path: "abc"}, upload: csv_file_upload, :api_key=> account.api_key, :format => "json"
-        response.body.should match(/{\"voter_list\":{\"enabled\":true,\"id\":(.*),\"name\":\"abc.csv\"}}/)
+      let(:campaign) do
+        create(:campaign, {
+          :account => account,
+          :active => true
+        })
       end
 
-      it "should throw validation error" do
-        csv_file_upload =  {"datafile" => fixture_file_upload("/files/voter_list.xsl")}
-        campaign = create(:campaign, :account => account, :active => true)
-        post :create, campaign_id: campaign.id, voter_list: {name: "abc", separator: ",", headers: "[]", csv_to_system_map: "{\"Phone\": \"Phone\"}",
-        s3path: "abc"}, upload: csv_file_upload, :api_key=> account.api_key, :format => "json"
-        response.body.should eq("{\"errors\":{\"base\":[\"Wrong file format. Please upload a comma-separated value (CSV) or tab-delimited text (TXT) file. If your list is in Excel format (XLS or XLSX), use \\\"Save As\\\" to change it to one of these formats.\"]}}")
+      let(:params) do
+        {
+          campaign_id: campaign.id,
+          voter_list: {
+            name: "abc.csv",
+            separator: ",",
+            headers: "[]",
+            csv_to_system_map: "{\"Phone\": \"Phone\"}",
+            s3path: "abc"
+          },
+          api_key: account.api_key,
+          format: "json"
+        }
       end
 
-      it "should throw validation error if file not uploaded" do
-        campaign = create(:campaign, :account => account, :active => true)
-        post :create, campaign_id: campaign.id, voter_list: {name: "abc", separator: ",", headers: "[]", csv_to_system_map: "{\"Phone\": \"Phone\"}",
-        s3path: "abc"}, upload: nil, :api_key=> account.api_key, :format => "json"
-        response.body.should eq("{\"errors\":{\"uploaded_file_name\":[\"can't be blank\"],\"base\":[\"Please upload a file.\"]}}")
+      context 'uploading a valid voter list' do
+        let(:file_upload){ '/files/valid_voters_list.csv' }
+        let(:csv_upload) do
+          {
+            'datafile' => fixture_file_upload(file_upload)
+          }
+        end
+
+        it "renders voter_list attributes as json" do
+          Resque.should_receive(:enqueue)
+          post :create, params.merge(upload: csv_upload)
+          response.body.should match(/\{\"voter_list\":\{\"enabled\":true,\"id\":(.*),\"name\":\"abc.csv\"\}\}/)
+        end
+      end
+
+      context 'uploading voter lists that are not CSV or TSV format' do
+        let(:file_upload){ '/files/voter_list.xsl' }
+        let(:csv_upload) do
+          {
+            'datafile' => fixture_file_upload(file_upload)
+          }
+        end
+        it 'renders a json error message telling the consumer of the incorrect file format' do
+          post :create, params.merge(upload: csv_upload)
+          response.body.should eq("{\"errors\":{\"base\":[\"Wrong file format. Please upload a comma-separated value (CSV) or tab-delimited text (TXT) file. If your list is in Excel format (XLS or XLSX), use \\\"Save As\\\" to change it to one of these formats.\"]}}")
+        end
+      end
+
+      context 'upload requested when no file is submitted' do
+        it 'renders a json error message telling the consumer to upload a file' do
+          post :create, params.merge(upload: nil)
+          response.body.should eq("{\"errors\":{\"uploaded_file_name\":[\"can't be blank\"],\"base\":[\"Please upload a file.\"]}}")
+        end
       end
 
     end
 
+    describe 'column_mapping' do
+      let(:campaign) do
+        create(:campaign, {
+          :account => account,
+          :active => true
+        })
+      end
+
+      let(:params) do
+        {
+          campaign_id: campaign.id,
+          voter_list: {
+            name: "abc.csv",
+            separator: ",",
+            headers: "[]",
+            csv_to_system_map: "{\"Phone\": \"Phone\"}",
+            s3path: "abc"
+          },
+          api_key: account.api_key,
+          format: "html"
+        }
+      end
+
+      context 'an empty file is uploaded' do
+        let(:file_upload){ '/files/voter_list_empty.csv' }
+        let(:csv_upload) do
+          {
+            'datafile' => fixture_file_upload(file_upload)
+          }
+        end
+
+        it 'renders an error message telling the consumer that no headers were found in the file' do
+          post :column_mapping, params.merge(upload: csv_upload)
+          response.should be_success
+        end
+      end
+
+      context 'a file with only headers is uploaded' do
+        let(:file_upload){ '/files/voter_list_only_headers.csv' }
+        let(:csv_upload) do
+          {
+            'datafile' => fixture_file_upload(file_upload)
+          }
+        end
+
+        it 'renders an error message telling the user that headers were found but no data rows' do
+          post :column_mapping, params.merge(upload: csv_upload)
+          response.should be_success
+        end
+      end
+    end
 
   end
   # render_views
