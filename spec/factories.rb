@@ -245,7 +245,7 @@ FactoryGirl.define do
   end
 
   factory :per_minute do
-    type "PerMinute"    
+    type "PerMinute"
   end
 
   factory :trial do

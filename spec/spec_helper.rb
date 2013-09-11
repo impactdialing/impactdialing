@@ -2,9 +2,6 @@ require 'rubygems'
 require 'spork'
 require 'spork/ext/ruby-debug'
 
-
-
-
 Spork.prefork do
   # This file is copied to spec/ when you run 'rails generate rspec:install'
   ENV["RAILS_ENV"] ||= 'test'
@@ -25,21 +22,20 @@ Spork.prefork do
     config.before(:each) do
       $redis_call_flow_connection.flushALL
     end
-    # == Mock Framework
-    #
-    # If you prefer to use mocha, flexmock or RR, uncomment the appropriate line:
-    #
-    # config.mock_with :mocha
-    # config.mock_with :flexmock
-    # config.mock_with :rr
+
     config.mock_with :rspec
 
     config.before(:suite) do
-       DatabaseCleaner.strategy = :transaction
+      if ENV["STRATEGY"] == 'web'
+        DatabaseCleaner.strategy = :truncation
+      else
+        DatabaseCleaner.strategy = :transaction
+      end
+      DatabaseCleaner.clean_with :truncation
     end
 
     config.after(:suite) do
-      DatabaseCleaner.clean_with(:truncation)
+      DatabaseCleaner.clean
     end
 
     config.before(:each) do
@@ -48,18 +44,19 @@ Spork.prefork do
 
 
     config.after(:each) do
-        DatabaseCleaner.clean
+      DatabaseCleaner.clean
     end
 
     # If you're not using ActiveRecord, or you'd prefer not to run each of your
     # examples within a transaction, remove the following line or assign false
     # instead of true.
-    config.use_transactional_fixtures = true
+    if ENV["STRATEGY"] == 'web'
+      config.use_transactional_fixtures = false
+    else
+      config.use_transactional_fixtures = true
+    end
+
     config.fixture_path = Rails.root.join('spec/fixtures')
-    #
-    # == Notes
-    #
-    # For more information take a look at Spec::Runner::Configuration and Spec::Runner
   end
 
   include ActionDispatch::TestProcess
@@ -91,6 +88,13 @@ Spork.prefork do
     fill_in 'Pick a password', :with => user.new_password
     click_button 'Sign up'
     click_button 'I and the company or organization I represent accept these terms.'
+  end
+
+  def web_login_as(user)
+    visit '/client/login'
+    fill_in 'Email', with: user.email
+    fill_in 'Password', with: 'password'
+    click_on 'Log in'
   end
 
   def fixture_path

@@ -49,4 +49,5 @@ ImpactDialing::Application.configure do
   HOLD_MUSIC_URL = "hold_music"
   MONITOR_TWILIO_APP_SID="blah"
   STRIPE_PUBLISHABLE_KEY = "pk_test_OGBGxKyv3UcfukHlpo8jZtr7"
-  STRIPE_SECRET_KEY = "sk_test_eBD6QzdzN5XMrhblpVSMDDYN"end
+  STRIPE_SECRET_KEY = "sk_test_eBD6QzdzN5XMrhblpVSMDDYN"
+end

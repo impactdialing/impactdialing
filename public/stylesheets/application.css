@@ -1,0 +1,12 @@
+.inline {
+  vertical-align: top;
+  display: inline-block;
+}
+
+span.disabled {
+  display : inline-block;
+  padding : 6px 24px 7px;
+  background-color : rgb(207,207,213);
+  color : rgb(194,54,52);
+  text-shadow : 0 -1px 1px rgb(0,0,0);
+}

@@ -188,7 +188,7 @@ describe Trial do
       Stripe::Customer.should_receive(:retrieve).and_raise(Stripe::APIError)
       subscription = Subscription.upgrade_subscription(@account.id, "email", "Basic", 1, nil)
       Subscription.count.should eq(1)
-      subscription.errors.messages.should eq({:base=>["Something went wrong with your upgrade. Kindly contact support"]})
+      subscription.errors.messages.should eq({:base=>[I18n.t('stripe.api_error')]})
     end
 
 

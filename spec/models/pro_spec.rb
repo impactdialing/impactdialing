@@ -297,7 +297,7 @@ describe Pro do
       subscription.should_receive(:customer).and_return("123")
       subscription.should_receive(:current_period_start).and_return(DateTime.now.to_i)
       subscription.should_receive(:current_period_end).and_return((DateTime.now+30.days).to_i)
-      Subscription.downgrade_subscription(@account.id, "token", "email", "Basic", 1, nil)
+      Subscription.downgrade_subscription(@account.id, "email", "Basic", 1, nil)
       Subscription.count.should eq(3)
       @account.current_subscription.type.should eq("Basic")
       @account.current_subscription.number_of_callers.should eq(1)

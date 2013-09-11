@@ -6,7 +6,13 @@
 <div class="callout alert clearfix" style="display:none" id="payment-flash">
 </div>
 
-<%= form_for @subscription, url: "/client/subscriptions/#{@subscription.id}", method: "PUT", html: {id: "plan-form"} do |f| %>
+<%= form_for @subscription, {
+      url: "/client/subscriptions/#{@subscription.id}",
+      method: "PUT",
+      html: {
+        id: "plan-form"
+      }
+    } do |f| %>
   <fieldset>
     <legend>Plan</legend>
     <p>
@@ -19,7 +25,9 @@
     <p id="num_of_callers_section">
       <label for="number_of_callers">Number of callers:</label>
       <input type="text"  class="field" style="width:50px" name="subscription[number_of_callers]" id="number_of_callers" value="<%= @account.number_of_callers %>" data-value="<%= @account.number_of_callers %>"/>
-      <p id="cost-subscription" style="display:none">$ <span id="monthly-cost"></span> per month</p>
+      <p id="cost-subscription" style="display:none;">
+        $<span id="monthly-cost"></span> per month
+      </p>
     </p>
 
     <p id="add_to_balance" style="display:none">
