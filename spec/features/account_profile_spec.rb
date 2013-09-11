@@ -41,10 +41,10 @@ def go_to_update_billing
 end
 
 def expect_monthly_cost_eq(expected_cost)
-  sleep(0.1)
-  blur('#subscription_type')
-  blur('#number_of_callers')
-  sleep(0.3)
+  # sleep(0.1)
+  # blur('#subscription_type')
+  # blur('#number_of_callers')
+  # sleep(0.3)
 
   within('#cost-subscription') do
     page.should have_content "$#{expected_cost} per month"

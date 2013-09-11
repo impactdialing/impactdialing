@@ -1,4 +1,6 @@
 var Subscriptions = function(){
+  var self;
+
   if($("#subscription_type").val() == "PerMinute"){
     this.showPerMinuteOptions();
   } else {
@@ -9,12 +11,7 @@ var Subscriptions = function(){
   this.number_of_callers_reduced();
   this.upgrade_to_per_minute();
   this.calculatedTotalMonthlyCost();
-};
-
-Subscriptions.prototype.plans = {
-  "Basic": 49.00,
-  "Pro": 99.00,
-  "Business": 199.00
+  window.setInterval(this.calculatedTotalMonthlyCost, 500);
 };
 
 Subscriptions.prototype.showPerMinuteOptions = function(){
@@ -67,10 +64,15 @@ Subscriptions.prototype.subscriptionTypeChangeEvent = function(){
 };
 
 Subscriptions.prototype.calculatedTotalMonthlyCost = function(){
-  var value;
-  // $("#cost-subscription").hide();
+  var value, plans;
+  plans = {
+    "Basic": 49.00,
+    "Pro": 99.00,
+    "Business": 199.00
+  }
+
   if( $("#subscription_type").val() != "PerMinute" ){
-    value = (this.plans[$("#subscription_type").val()] * $("#number_of_callers").val());
+    value = (plans[$("#subscription_type").val()] * $("#number_of_callers").val());
     $("#monthly-cost").text(value);
     $("#cost-subscription").show();
   }
