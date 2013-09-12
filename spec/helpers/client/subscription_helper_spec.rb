@@ -118,12 +118,12 @@ describe Client::SubscriptionHelper do
             @actual.size.should eq 2
           end
 
-          it 'returns args to update billing info' do
-            @actual[0].should eq helper.subscription_update_billing_button(subscription)
+          it 'returns args to upgrade plan' do
+            @actual[0].should eq helper.subscription_upgrade_button(subscription)
           end
 
-          it 'returns args to upgrade plan' do
-            @actual[1].should eq helper.subscription_upgrade_button(subscription)
+          it 'returns args to update billing info' do
+            @actual[1].should eq helper.subscription_update_billing_button(subscription)
           end
         end
       end
@@ -144,12 +144,12 @@ describe Client::SubscriptionHelper do
           @actual.size.should eq 3
         end
 
-        it 'returns args to update billing info' do
-          @actual[0].should eq helper.subscription_update_billing_button(subscription)
+        it 'returns args to upgrade plan' do
+          @actual[0].should eq helper.subscription_upgrade_button(subscription)
         end
 
-        it 'returns args to upgrade plan' do
-          @actual[1].should eq helper.subscription_upgrade_button(subscription)
+        it 'returns args to update billing info' do
+          @actual[1].should eq helper.subscription_update_billing_button(subscription)
         end
 
         it 'returns args to cancel subscription' do

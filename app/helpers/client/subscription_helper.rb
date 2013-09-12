@@ -68,9 +68,9 @@ module Client::SubscriptionHelper
   def subscription_buttons(subscription)
     buttons = []
     if subscription.per_agent?
-      buttons << subscription_update_billing_button(subscription)
       upgrade_button = subscription_upgrade_button(subscription)
       buttons << upgrade_button if not upgrade_button.empty?
+      buttons << subscription_update_billing_button(subscription)
       cancel_button = subscription_cancel_button(subscription)
       buttons << cancel_button if not cancel_button.empty?
     elsif subscription.per_minute?
