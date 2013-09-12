@@ -1,36 +1,21 @@
 <h1>Billing</h1>
 <% if @subscription.cancelled? %>
-  <p>You have cancelled your Subscription.</p>
+  <p>
+    You have cancelled your Subscription.
+  </p>
 <% else %>
-  <p>Your current plan is <%= @subscription.type %>.</p>
+  <p>
+    Your current plan is
+    <b><%= subscription_human_type(@subscription) %></b>.
+  </p>
 
-  <% if @subscription.per_agent? %>
-    <p>Minutes Left:  <%= @account.available_minutes %></p>
-    <p class="actions">
-      <a href="/client/subscriptions/<%= @subscription.id%>/update_billing"
-         class="action primary confirm">Update billing info</a>
-      <%= subscription_upgrade_button(@subscription) %>
-      <% if !@subscription.trial? %>
-        <%= link_to 'Cancel subscription', {
-              action: "cancel",
-              id: @subscription.id
-            }, {
-              method: "put",
-              class: "action secondary",
-              confirm: 'Are you sure you want to cancel your subscription?'
-            } %>
-      <% end %>
-    </p>
-  <% end %>
+  <p>
+    Minutes left:  <%= @account.available_minutes %>
+  </p>
 
-  <% if @subscription.per_minute? %>
-    <p>Minutes Left:  <%= @account.available_minutes %></p>
-    <p class="actions">
-      <a href="/client/subscriptions/<%= @subscription.id%>/add_funds"
-         class="action primary">Add to your balance</a>
-
-      <a href="/client/subscriptions/<%= @subscription.id%>/configure_auto_recharge" class="action primary">Configure auto-recharge</a>
-      <a href="/client/subscriptions/<%= @subscription.id%>/update_billing" class="action secondary confirm">Update billing info</a>
-    </p>
-  <% end %>
+  <ul class="actions">
+    <% subscription_buttons(@subscription).each do |button| %>
+    <li><%= link_to(*button) %></li>
+    <% end %>
+  </ul>
 <% end %>

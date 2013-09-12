@@ -1170,3 +1170,11 @@ color : rgba(255,255,255,.9); }
    width:100%;
    background:white;*/
 }
+
+ul.actions {
+  list-style: none;
+}
+
+ul.actions li {
+  margin: 5px;
+}
