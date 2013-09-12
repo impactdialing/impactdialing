@@ -62,6 +62,7 @@ Subscriptions.prototype.stripeResponseHandler = function(status, response){
     $('#payment-flash').show();
     $('.payment-errors').text(response.error.message);
     $form.find('button').prop('disabled', false);
+    $('#submitting-gif').remove();
   } else {
     token = response.id;
     $('#payment-flash').hide();
@@ -72,11 +73,19 @@ Subscriptions.prototype.stripeResponseHandler = function(status, response){
 };
 
 Subscriptions.prototype.submitPaymentEvent = function(){
-  var self, $form;
+  var self, $form, submitting_gif;
   self = this;
 	$('#submit-payment').click(function(event) {
     $form = $("#payment-form");
     $form.find('button').prop('disabled', true);
+    submitting_gif = $('<img>')
+                      .attr('src', '/stylesheets/images/submitting.gif')
+                      .attr('id', 'submitting-gif')
+                      .css({
+                        verticalAlign: 'middle',
+                        marginLeft: '2px'
+                      });
+    $(this).after(submitting_gif);
     Stripe.createToken($form, self.stripeResponseHandler);
     return false;
   });
