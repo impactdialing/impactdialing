@@ -15,12 +15,19 @@ def submit_valid_upgrade
   click_on 'Upgrade'
 end
 
+def fill_in_expiration
+  fill_in 'Expiration date', with: "" # focus the form element
+  # verify jquery datepicker is working
+  page.execute_script('$("select[data-handler=\"selectMonth\"]").val("0")')
+  page.execute_script('$("select[data-handler=\"selectYear\"]").val("2020")')
+  page.execute_script('$("#subscription_expiration_date").val("01/2020")')
+end
+
 def add_valid_payment_info
   go_to_update_billing
   fill_in 'Card number', with: StripeFakes.valid_cards[:visa].first
   fill_in 'CVC', with: 123
-  select '1 - January', from: 'Month'
-  select '2018', from: 'Year'
+  fill_in_expiration
   click_on 'Update payment information'
   page.should have_content I18n.t('subscriptions.update_billing.success')
 end
@@ -41,11 +48,6 @@ def go_to_update_billing
 end
 
 def expect_monthly_cost_eq(expected_cost)
-  # sleep(0.1)
-  # blur('#subscription_type')
-  # blur('#number_of_callers')
-  # sleep(0.3)
-
   within('#cost-subscription') do
     page.should have_content "$#{expected_cost} per month"
   end
@@ -72,8 +74,7 @@ describe 'Account profile' do
       it 'displays subscriptions.update_billing.success after form submission' do
         fill_in 'Card number', with: StripeFakes.valid_cards[:visa].first
         fill_in 'CVC', with: 123
-        select '1 - January', from: 'Month'
-        select '2018', from: 'Year'
+        fill_in_expiration
         click_on 'Update payment information'
         page.should have_content I18n.t('subscriptions.update_billing.success')
       end

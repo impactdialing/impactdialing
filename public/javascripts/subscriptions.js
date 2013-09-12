@@ -11,7 +11,38 @@ var Subscriptions = function(){
   this.number_of_callers_reduced();
   this.upgrade_to_per_minute();
   this.calculatedTotalMonthlyCost();
+  this.newDatePicker('#subscription_expiration_date');
+
+  //window.setInterval(this.updateStripeExpirationFields, 500);
   window.setInterval(this.calculatedTotalMonthlyCost, 500);
+};
+
+Subscriptions.prototype.newDatePicker = function(selector) {
+  if( $(selector).length < 1 ) { return; }
+
+  var self = this;
+  $(selector).datepicker({
+    changeMonth: true,
+    changeYear: true,
+    showButtonPanel: false,
+    dateFormat: 'mm/yy',
+    onClose: function(dateText, inst) {
+        var month = $("#ui-datepicker-div .ui-datepicker-month :selected").val();
+        var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
+        $(this).datepicker('setDate', new Date(year, month, 1));
+        self.updateStripeExpirationFields();
+    }
+  });
+};
+
+Subscriptions.prototype.updateStripeExpirationFields = function() {
+  var parts, date;
+
+  date = $('#subscription_expiration_date').val();
+  parts = date.split('/');
+
+  $('input[data-stripe="exp_month"]').val(parts[0]);
+  $('input[data-stripe="exp_year"]').val(parts[1]);
 };
 
 Subscriptions.prototype.showPerMinuteOptions = function(){

@@ -6,6 +6,14 @@
   </script>
 <% end %>
 
+<%= content_for :stylesheets do %>
+  <style type="text/css">
+    .ui-datepicker-calendar {
+      display: none;
+    }
+  </style>
+<% end %>
+
 <div class="callout alert clearfix" style="display:none;" id="payment-flash">
   <p><strong class="payment-errors"></strong></p>
 </div>
@@ -23,27 +31,14 @@
       <label for="subscription_cvc">CVC</label>
       <input type="text" data-stripe="cvc"  class="field" style="width:40px;" id="subscription_cvc"/>
     </p>
-    <%= field_set_tag 'Expiration' do %>
-      <p class="inline">
-        <label for="expiry-month">Month</label>
-        <%= select_month(Date.today, {
-              add_month_numbers: true
-            }, {
-              id: 'expiry-month',
-              'data-stripe' => 'exp_month'
-            }) %>
-      </p>
-      <p class="inline">
-        <label for="expiry-year">Year</label>
-        <%= select_year(Date.today, {
-              start_year: Date.today.year,
-              end_year: (Date.today + 20.years).year
-            }, {
-              id: 'expiry-year',
-              'data-stripe' => 'exp_year'
-            }) %>
-      </p>
-    <% end %>
+    <p>
+      <label for="subscription_expiration_date">
+        Expiration date
+      </label>
+      <input type="text" class="field" style="width: 60px;" id="subscription_expiration_date">
+      <input type="hidden" data-stripe="exp_month">
+      <input type="hidden" data-stripe="exp_year">
+    </p>
   <% end %>
   <div class="buttons">
     <button type="submit" id="submit-payment">
@@ -55,8 +50,8 @@
 <% content_for :javascripts do %>
   <script type="text/javascript">
     $(function($) {
-      $("#expiry-month").val("<%= @subscription.exp_month%>");
-      $("#expiry-year").val("<%= @subscription.exp_year %>");
+      $("input[data-stripe='exp_month']").val("<%= @subscription.exp_month%>");
+      $("input[data-stripe='exp_year']").val("<%= @subscription.exp_year %>");
       var subscriptions = new Subscriptions();
   });
  </script>
