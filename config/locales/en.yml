@@ -46,10 +46,10 @@ en:
   csv_has_no_header_data: "The uploaded file contained no headers. Please verify the file contains a header and at least 1 row of data and try again."
   subscriptions:
     upgrade:
-      success: 'Subscription plan updated successfully!'
+      success: 'Subscription plan updated successfully.'
       payment_info_required: 'Please fill out your payment information before upgrading.'
     update_billing:
-      success: 'Billing info updated successfully!'
+      success: 'Billing info updated successfully.'
   stripe:
     invalid_request_error: "There was an error processing your payment. Verify your payment info is up to date and try again. Please contact support if this problem continues."
     api_error: "We hit a temporary glitch processing your payment. Try again. Please contact support if this problem continues."

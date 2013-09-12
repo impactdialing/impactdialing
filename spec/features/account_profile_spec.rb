@@ -22,7 +22,7 @@ def add_valid_payment_info
   select '1 - January', from: 'Month'
   select '2018', from: 'Year'
   click_on 'Update payment information'
-  page.should have_content 'Billing info updated successfully!'
+  page.should have_content I18n.t('subscriptions.update_billing.success')
 end
 
 def go_to_billing
@@ -61,9 +61,7 @@ describe 'Account profile' do
     it 'Upgrade button is disabled until payment info exists' do
       go_to_billing
 
-      within('span.disabled') do
-        page.should have_text 'Upgrade'
-      end
+      page.should_not have_text 'Upgrade'
     end
 
     context 'Adding valid payment info' do
@@ -77,7 +75,7 @@ describe 'Account profile' do
         select '1 - January', from: 'Month'
         select '2018', from: 'Year'
         click_on 'Update payment information'
-        page.should have_content 'Billing info updated successfully!'
+        page.should have_content I18n.t('subscriptions.update_billing.success')
       end
     end
 
