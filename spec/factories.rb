@@ -246,6 +246,7 @@ FactoryGirl.define do
 
   factory :per_minute do
     type "PerMinute"
+    amount_paid 25
   end
 
   factory :trial do

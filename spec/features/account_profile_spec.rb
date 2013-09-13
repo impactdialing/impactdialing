@@ -127,6 +127,40 @@ describe 'Account profile' do
       end
     end
 
+    describe 'Upgrade from Trial to Per minute' do
+      let(:cost){ 0.09 }
+      let(:minutes){ 500 }
+
+      before do
+        add_valid_payment_info
+        go_to_upgrade
+        select_plan 'Per minute'
+      end
+
+      it 'adds user designated amount of funds to the account' do
+        fill_in 'Add to balance:', with: 500
+        click_on 'Upgrade'
+        page.should have_content I18n.t('subscriptions.upgrade.success')
+      end
+
+      describe 'with blank Add to balance field' do
+        let(:cost){ 0.09 }
+        let(:minutes){ 500 }
+
+        before do
+          add_valid_payment_info
+          go_to_upgrade
+          select_plan 'Per minute'
+          click_on 'Upgrade'
+        end
+
+        it 'displays activerecord.errors.models.subscription.attributes.amount_paid.not_a_number' do
+          error = I18n.t('activerecord.errors.models.subscription.attributes.amount_paid.not_a_number')
+          page.should have_content "Add to balance #{error}"
+        end
+      end
+    end
+
     describe 'Downgrading from Pro to Basic' do
       before do
         add_valid_payment_info

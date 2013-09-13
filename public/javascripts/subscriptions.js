@@ -133,12 +133,17 @@ Subscriptions.prototype.number_of_callers_reduced = function(){
 };
 
 Subscriptions.prototype.upgrade_to_per_minute = function(){
+  var self = this;
   $("#subscription_type").change(function() {
     if( $(this).val() == "PerMinute" ){
       $("#cost-subscription").hide();
     }
     if( $(this).val() == "PerMinute" && $(this).data("value") != "Trial" ){
-      alert("You can upgrade to Per Minute once you consume all your current subscription Minutes.");
+      answer = confirm("Warning! You will lose current available minutes when upgrading to a Per minute plan from Basic, Pro or Business. We recommend using all available minutes before switching to Per minute.");
+      if( !answer ) {
+        $(this).val($(this).data("value"));
+        self.showPerAgentOptions();
+      }
     }
   });
 };

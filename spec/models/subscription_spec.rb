@@ -66,17 +66,17 @@ describe Subscription do
 	end
 
 	describe "update subscription" do
-		
-		
+
+
 	end
 
-	
+
 	describe "cancel" do
 		it "should cancel it" do
 			account = create(:account)
 			Account.should_receive(:find).and_return(account)
 			account.current_subscription.should_receive(:cancel_subscription)
-			Subscription.cancel(account.id)				
+			Subscription.cancel(account.id)
 			Subscription.first.status.should eq(Subscription::Status::CANCELED)
 			Subscription.first.stripe_customer_id.should eq(nil)
 			Subscription.first.cc_last4.should eq(nil)

@@ -40,6 +40,7 @@ class Subscription < ActiveRecord::Base
     end
   end
 
+  # not called anywhere
   def downgrading_subscription
     if type_changed?
       if self.changes["type"].last == Type::PER_MINUTE && self.changes["type"].first != Type::TRIAL  && available_minutes > 0
@@ -48,6 +49,7 @@ class Subscription < ActiveRecord::Base
     end
   end
 
+  # never fails because a new subscription is created on each upgrade
   def upgrading_to_per_minute
     if type_changed?
       if self.changes["type"].last == Type::PER_MINUTE && self.changes["type"].first != Type::TRIAL  && available_minutes > 0
@@ -225,6 +227,8 @@ class Subscription < ActiveRecord::Base
     })
     new_subscription.subscribe
     begin
+      # Subscription should handle this conditional
+      #
       if new_subscription.per_agent?
         modified_subscription = account.current_subscription.update_subscription_plan({
           quantity: num_of_callers,
@@ -233,11 +237,16 @@ class Subscription < ActiveRecord::Base
         })
         account.current_subscription.invoice_customer
       else
+        # check if new subscription is valid and return if so
+        return new_subscription unless new_subscription.valid?
+
         new_subscription.stripe_customer_id = account.current_subscription.stripe_customer_id
         charge = new_subscription.recharge
       end
       account.subscriptions.update_all(status: Status::SUSPENDED)
       new_subscription.save
+      # Subscription should handle this conditional
+      #
       if new_subscription.per_agent?
         new_subscription.update_subscription_info(modified_subscription)
       else
