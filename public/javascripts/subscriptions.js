@@ -123,11 +123,11 @@ Subscriptions.prototype.number_of_callers_reduced = function(){
 	$("#number_of_callers").on("change", function(){
     self.calculatedTotalMonthlyCost();
 		if( $(this).val()< 1 ){
-			alert("You need to have atleast 1 caller.");
+			alert("You need to have at least 1 caller.");
 			return;
 		}
 		if( $(this).val() < $(this).data("value") ){
-			alert("On reducing the number of callers your minutes you paid for will still be retained, however you wont be refunded for the payment already made for the caller.");
+			alert("On reducing the number of callers your minutes you paid for will still be retained, however you won't be refunded for the payment already made for the caller.");
 		}
 	});
 };
