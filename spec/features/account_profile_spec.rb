@@ -16,11 +16,12 @@ def submit_valid_upgrade
 end
 
 def fill_in_expiration
-  fill_in 'Expiration date', with: "" # focus the form element
   # verify jquery datepicker is working
+  page.execute_script('$("#subscription_expiration_date").datepicker("show")')
   page.execute_script('$("select[data-handler=\"selectMonth\"]").val("0")')
   page.execute_script('$("select[data-handler=\"selectYear\"]").val("2020")')
-  page.execute_script('$("#subscription_expiration_date").val("01/2020")')
+  page.execute_script('$("#subscription_expiration_date").datepicker("hide")')
+  page.find_field('Expiration date').value.should eq "01/2020"
 end
 
 def add_valid_payment_info

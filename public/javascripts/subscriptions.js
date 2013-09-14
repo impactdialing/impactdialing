@@ -27,22 +27,21 @@ Subscriptions.prototype.newDatePicker = function(selector) {
     showButtonPanel: false,
     dateFormat: 'mm/yy',
     onClose: function(dateText, inst) {
-        var month = $("#ui-datepicker-div .ui-datepicker-month :selected").val();
-        var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
-        $(this).datepicker('setDate', new Date(year, month, 1));
-        self.updateStripeExpirationFields();
+      var month = $("#ui-datepicker-div .ui-datepicker-month :selected").val();
+      var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
+      $(this).datepicker('setDate', new Date(year, month, 1));
+      self.updateStripeExpirationFields(year, month);
     }
   });
 };
 
-Subscriptions.prototype.updateStripeExpirationFields = function() {
-  var parts, date;
-
-  date = $('#subscription_expiration_date').val();
-  parts = date.split('/');
-
-  $('input[data-stripe="exp_month"]').val(parts[0]);
-  $('input[data-stripe="exp_year"]').val(parts[1]);
+Subscriptions.prototype.updateStripeExpirationFields = function(year, month) {
+  month = parseInt(month) + 1;
+  if( month < 10 ) {
+    month = "0" + month.toString();
+  }
+  $('input[data-stripe="exp_month"]').val(month);
+  $('input[data-stripe="exp_year"]').val(year);
 };
 
 Subscriptions.prototype.showPerMinuteOptions = function(){
