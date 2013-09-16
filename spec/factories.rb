@@ -16,6 +16,10 @@ FactoryGirl.define do
     "#{(10**10)+n}"
   end
 
+  sequence :campaign_name do |n|
+    "campaign #{n}"
+  end
+
   factory :account do
     tos_accepted_date Time.now
     record_calls false
@@ -43,7 +47,7 @@ FactoryGirl.define do
   end
 
   factory :campaign do
-    name 'a campaign'
+    name { "a #{generate(:campaign_name)}" }
     caller_id '1234567890'
     account
     recycle_rate 1
@@ -57,7 +61,7 @@ FactoryGirl.define do
   end
 
   factory :predictive do
-    name 'a campaign'
+    name { "predictive #{generate(:campaign_name)}" }
     caller_id '1234567890'
     account
     recycle_rate 1
@@ -70,7 +74,7 @@ FactoryGirl.define do
   end
 
   factory :preview do
-    name 'a campaign'
+    name { "preview #{generate(:campaign_name)}" }
     caller_id '1234567890'
     account
     recycle_rate 1
@@ -83,7 +87,7 @@ FactoryGirl.define do
   end
 
   factory :power do
-    name 'a campaign'
+    name { "power #{generate(:campaign_name)}" }
     caller_id '1234567890'
     account
     recycle_rate 1
