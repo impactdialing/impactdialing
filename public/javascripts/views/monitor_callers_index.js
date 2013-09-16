@@ -108,15 +108,19 @@ ImpactDialing.Views.MonitorCallersIndex = Backbone.View.extend({
       if (!_.isEmpty(self.collection.models)){
         $(self.el).append("<tr></tr>")
         self.collection.map(function (m) {
-          var monitor = (new ImpactDialing.Views.MonitorCaller({model: m, collection: self.collection, reassignable_campaigns: data})).render().el;
+          var monitor = (
+                         new ImpactDialing.Views.MonitorCaller({
+                          model: m,
+                          collection: self.collection,
+                          reassignable_campaigns: data
+                         })
+                        ).render().el;
           $(self.el).append(monitor);
-          self.$(".reassign-campaign").val(m.get("campaign_id"));
+          self.$('#reassign_caller_' + m.get('id')).val(m.get('campaign_id'));
         });
       }
     });
 
     return this;
-  },
-
-
+  }
 });

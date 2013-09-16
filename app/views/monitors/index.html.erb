@@ -79,7 +79,7 @@
   <script type="javascript/template" id="caller-monitor-template">
         <td>{{name}}</td>
         <td>
-          <select class="reassign-campaign">
+          <select class="reassign-campaign" id="reassign_caller_{{id}}">
            {{#reassignable_campaigns}}
              <option value="{{id}}">{{name}}</option>
            {{/reassignable_campaigns}}
