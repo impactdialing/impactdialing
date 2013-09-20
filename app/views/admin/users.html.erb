@@ -24,7 +24,13 @@
                     :confirm => 'Are you sure you want to delete this user?' %>,
           <% end %></td>
       <td><%= account.domain_name %> </td>
-      <td><%= link_to("set account to manual", "/admin/set_account_to_manual/#{account.id}", method: :put) %></td>
+      <td>
+        <% if account.manual_subscription? %>
+          Enterprise (manual)
+        <% else %>
+          <%= link_to("set account to manual", "/admin/set_account_to_manual/#{account.id}", method: :put) %>
+        <% end %>
+      </td>
       <td><a href="/admin/abandonment/<%= account.id %>">Toggle Abandonment(<%= account.abandonment_value%>)</a></td>
       <td>
     </tr>

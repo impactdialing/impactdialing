@@ -62,6 +62,11 @@ describe 'Internal Admin pages' do
       end
 
       page.should have_content "Account##{account.id} successfully upgraded to Enterprise."
+      within(main_table_css) do
+        within(last_row) do
+          page.should have_content 'Enterprise (manual)'
+        end
+      end
     end
 
     def expect_current_subscription_to_eq type, minutes
