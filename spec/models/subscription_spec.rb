@@ -18,6 +18,22 @@ describe Subscription do
 		end
 	end
 
+	describe '#zero_minutes!' do
+		let(:subscription) do
+			Subscription.new({
+				subscription_start_date: Date.today.beginning_of_day
+			})
+		end
+		before do
+			subscription.total_allowed_minutes = 500
+			subscription.minutes_utlized = 5
+		end
+		it 'zeros available minutes' do
+			subscription.zero_minutes!
+			subscription.minutes_utlized.should eq subscription.total_allowed_minutes
+		end
+	end
+
 	describe "retrieve_customer" do
 		it "should fetch customer from stripe" do
 			subscription = create(:per_minute, stripe_customer_id: "123")

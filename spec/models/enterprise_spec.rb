@@ -15,7 +15,7 @@ describe Enterprise do
   describe "campaign" do
     before(:each) do
       @account =  create(:account, record_calls: false)
-      Enterprise.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED)              
+      Enterprise.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED)
     end
 
     it "should  allow predictive dialing mode for enterprise subscription" do
@@ -43,7 +43,7 @@ describe Enterprise do
   describe "transfers" do
     before(:each) do
       @account =  create(:account, record_calls: false)
-      Enterprise.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED)                    
+      Enterprise.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED)
     end
 
     it "should not all saving transfers" do
@@ -64,7 +64,7 @@ describe Enterprise do
     describe "it should  allow caller groups for callers" do
       before(:each) do
         @account =  create(:account, record_calls: false)
-        Enterprise.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED)                      
+        Enterprise.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED)
       end
 
       it "should save caller with caller groups" do
@@ -85,13 +85,65 @@ describe Enterprise do
     describe "it should allow call recordings to be enabled" do
       before(:each) do
         @account =  create(:account, record_calls: false)
-        Enterprise.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED)                      
+        Enterprise.create!(account_id: @account.id, number_of_callers: 1, status: Subscription::Status::UPGRADED)
       end
 
       it "should all record calls" do
         @account.update_attributes(record_calls: true).should be_true
       end
     end
+  end
+
+  describe ".upgrade(account)" do
+    let(:account){ create(:account) }
+    let(:trial) do
+      create(:trial, {
+        account: account,
+        number_of_callers: 1
+      })
+    end
+
+    describe 'update last subscription' do
+      it 'zeros minutes on all subscriptions' do
+        account.should_receive(:zero_all_subscription_minutes!){ true }
+        Enterprise.upgrade(account)
+      end
+
+      it 'raises Enterprise::UpgradeError exception when it fails to zero minutes' do
+        account.stub(:zero_all_subscription_minutes!){ trial }
+        lambda{ Enterprise.upgrade(account) }.should raise_error(Enterprise::UpgradeError)
+      end
+    end
+
+    describe 'create a new Enterprise subscription obj' do
+      let(:enterprise) do
+        double(:enterprise, {
+          save: true,
+          errors: double(:errors, {
+            full_messages: []
+          })
+        })
+      end
+      it 'instantiates the obj passing the account' do
+        Enterprise.should_receive(:new).with({
+          account_id: account.id,
+          subscription_start_date: anything,
+          subscription_end_date: anything
+        }){ enterprise }
+        Enterprise.upgrade(account)
+      end
+      it 'raises Enterprise::UpgradeError when obj save fails' do
+        enterprise.stub(:save){ false }
+        Enterprise.stub(:new){ enterprise }
+        lambda{ Enterprise.upgrade(account) }.should raise_error(Enterprise::UpgradeError)
+      end
+      it 'sends account a msg: :upgraded_to_enterprise' do
+        Enterprise.stub(:new){ enterprise }
+        account.should_receive(:upgraded_to_enterprise)
+        Enterprise.upgrade(account)
+      end
+    end
+
   end
 
 end

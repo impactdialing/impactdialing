@@ -30,6 +30,11 @@ class Subscription < ActiveRecord::Base
     CURRENT = [TRIAL,UPGRADED,DOWNGRADED,CALLERS_ADDED,CALLERS_REMOVED]
   end
 
+  def zero_minutes!
+    self.minutes_utlized = self.total_allowed_minutes
+    save
+  end
+
   def activated?
     type == Type::TRIAL || status == Status::ACTIVE
   end

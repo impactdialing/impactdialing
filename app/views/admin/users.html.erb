@@ -1,3 +1,8 @@
+<% if flash[:admin_error].present? %>
+  <div class="callout alert clearfix">
+    <p><strong><%= flash[:admin_error] %></strong></p>
+  </div>
+<% end %>
 
 <%= form_tag ("/admin/users") do %>
   <p>

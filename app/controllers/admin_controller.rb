@@ -4,6 +4,11 @@ class AdminController < ApplicationController
   USER_NAME, PASSWORD = "impact", "Mb<3Ad4F@2tCallz"
   before_filter :authenticate
 
+  rescue_from 'Enterprise::UpgradeError' do |exception|
+    flash[:error] = [exception.message]
+    redirect_to :back
+  end
+
   def state
     @logged_in_campaigns = Campaign.where("id in (select distinct campaign_id from caller_sessions where on_call = 1 )")
     @logged_in_callers_count = CallerSession.on_call.count
@@ -94,8 +99,8 @@ class AdminController < ApplicationController
 
   def set_account_to_manual
     account = Account.find(params[:id])
-    account.update_attributes(activated: true, card_verified: true, subscription_name: "Manual")
-    redirect_to :back
+    Enterprise.upgrade(account)
+    redirect_to :back, notice: ["Account##{account.id} successfully upgraded to Enterprise."]
   end
 
   def login

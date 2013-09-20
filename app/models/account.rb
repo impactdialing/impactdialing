@@ -36,8 +36,22 @@ class Account < ActiveRecord::Base
     end
   end
 
-  
+  def upgraded_to_enterprise
+    update_attributes({
+      activated: true,
+      card_verified: true,
+      subscription_name: "Manual"
+    })
+  end
 
+  def zero_all_subscription_minutes!
+    if available_minutes > 0
+      current_subscriptions.each do |s|
+        return s unless s.zero_minutes!
+      end
+    end
+    return true
+  end
 
   def current_balance
     self.payments.where("amount_remaining>0").inject(0) do |sum, payment|
@@ -76,7 +90,7 @@ class Account < ActiveRecord::Base
   def callers_in_progress
     CallerSession.where("campaign_id in (?) and on_call=1", self.campaigns.map {|c| c.id})
   end
-  
+
   def funds_available?
     current_subscription.can_dial?
   end
@@ -172,9 +186,9 @@ class Account < ActiveRecord::Base
     secure_digest(Time.now, (1..10).map{ rand.to_s })
   end
 
-  def create_trial_subscription    
+  def create_trial_subscription
     Trial.create(minutes_utlized: 0, total_allowed_minutes: 50.00, subscription_start_date: DateTime.now,
-      number_of_callers: 1, status: Subscription::Status::TRIAL, account_id: self.id, created_at: DateTime.now-1.minute, 
+      number_of_callers: 1, status: Subscription::Status::TRIAL, account_id: self.id, created_at: DateTime.now-1.minute,
       subscription_end_date: DateTime.now+30.days)
   end
 

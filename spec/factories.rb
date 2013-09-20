@@ -246,6 +246,8 @@ FactoryGirl.define do
   factory :basic do
     type "Basic"
     number_of_callers 1
+    subscription_start_date 5.days.ago
+    subscription_end_date 10.days.from_now
   end
 
   factory :per_minute do
@@ -255,5 +257,13 @@ FactoryGirl.define do
 
   factory :trial do
     type "Trial"
+    subscription_start_date 5.days.ago
+    subscription_end_date 10.days.from_now
+  end
+
+  factory :enterprise do
+    type "Enterprise"
+    subscription_start_date 5.days.ago
+    subscription_end_date 10.days.from_now
   end
 end

@@ -44,13 +44,80 @@ describe 'Internal Admin pages' do
   end
   let(:callers){ [caller1a, caller1b, caller2a, caller2b] }
 
-  let(:main_table_css){ 'table tr td:first-of-type table' }
   let(:first_row){ 'tr:first-of-type' }
   let(:first_cell){ 'td:first-of-type' }
   let(:last_row){ 'tr:last-of-type' }
   let(:last_cell){ 'td:last-of-type' }
 
+  describe 'Upgrade a user to Enterprise (Manual)' do
+    let(:main_table_css){ 'table' }
+
+    def set_account_to_manual
+      visit '/admin/users'
+      account = User.last.account
+      within(main_table_css) do
+        within(last_row) do
+          click_on 'set account to manual'
+        end
+      end
+
+      page.should have_content "Account##{account.id} successfully upgraded to Enterprise."
+    end
+
+    def expect_current_subscription_to_eq type, minutes
+      within(main_table_css) do
+        within(last_row) do
+          click_on User.last.email
+        end
+      end
+      click_on 'Account'
+      click_on 'Billing'
+
+      page.should have_content "Your current plan is #{type}."
+      page.should have_content "Minutes left: #{minutes}"
+    end
+
+    before do
+      create_list(:user, 3)
+      http_login
+      visit '/admin/users'
+    end
+
+    it 'click "set account to manual" for the desired user row' do
+      set_account_to_manual
+    end
+
+    it 'subscriptions/index displays Enterprise and 0 minutes available' do
+      expect_current_subscription_to_eq 'Trial', 50
+
+      set_account_to_manual
+
+      expect_current_subscription_to_eq 'Enterprise', 0
+    end
+
+    describe 'when disaster strikes' do
+      let(:account){ User.last.account }
+      let(:subscription){ account.current_subscription }
+
+      describe 'old or new subscription fails to save' do
+        it 'display msg that upgrade failed' do
+          User.connection.execute("UPDATE subscriptions set number_of_callers=0 where id='#{subscription.id}';")
+          within(main_table_css) do
+            within(last_row) do
+              click_on 'set account to manual'
+            end
+          end
+
+          msg = "Upgrade to Enterprise failed "
+          page.should have_content msg
+          page.should have_content User.last.email
+        end
+      end
+    end
+  end
+
   describe 'admin/state' do
+    let(:main_table_css){ 'table tr td:first-of-type table' }
     before do
       callers[0..2].each do |caller|
         create(:caller_session, {
