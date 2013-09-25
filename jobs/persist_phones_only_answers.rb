@@ -1,10 +1,17 @@
 require 'resque-loner'
 
+##
+# Background job that persists answers for phones only calls
+# from Redis to MySQL.
+#
+# See config/resque_schedule.yml for queueing schedule.
+#
 class PersistPhonesOnlyAnswers
     include Resque::Plugins::UniqueJob
     @queue = :persist_jobs
 
     def self.perform
+      puts 'PersistPhonesOnlyAnswers Started...'
       success_count = 0
       failed_count = 0
       lists = []
@@ -24,6 +31,7 @@ class PersistPhonesOnlyAnswers
       end
       puts "PersistPhonesOnlyAnswers Results: Success[#{success_count}] Failed[#{failed_count}]"
       Answer.import lists.compact
+      puts 'PersistPhonesOnlyAnswers Done.'
     end
 
     def self.multipop(connection, list_name, num)

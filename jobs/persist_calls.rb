@@ -8,11 +8,13 @@ class PersistCalls
   class << self
 
     def perform
+      puts 'PersistCalls Started...'
       abandoned_calls(LIMIT)
       unanswered_calls(LIMIT*3)
       machine_calls(LIMIT)
       disconnected_calls(LIMIT)
       wrapped_up_calls(LIMIT)
+      puts 'PersistCalls Done.'
     end
 
     def multipop(connection, list_name, num)
