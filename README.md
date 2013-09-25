@@ -125,6 +125,18 @@ deploy user: `impactdialing`
   1. `impactdialing-staging.herokuapp.com whitelabel-domain.com`
 1. Visit `whitelabel-domain.com`
 
+### Trouble
+
+#### Background Jobs
+
+##### Unique jobs fail to run (resque-loner)
+
+There may be a stale redis key still in memory. Try removing it with:
+
+```
+Resque::Plugins::Loner::Helpers.mark_loner_as_unqueued(:queue_name, {class: 'ClassOfPertinentJob', args: []})
+```
+
 ### Contributing
 
 Master is mainline development and should always be ready to deploy.
