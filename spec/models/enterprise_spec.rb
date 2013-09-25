@@ -124,9 +124,10 @@ describe Enterprise do
           })
         })
       end
-      it 'instantiates the obj passing the account' do
+      it 'instantiates the obj passing the account and status: Upgraded' do
         Enterprise.should_receive(:new).with({
           account_id: account.id,
+          status: Subscription::Status::UPGRADED,
           subscription_start_date: anything,
           subscription_end_date: anything
         }){ enterprise }
@@ -143,7 +144,31 @@ describe Enterprise do
         Enterprise.upgrade(account)
       end
     end
-
   end
 
+  describe '#debit(call_time)' do
+    context 'for pre-pay plans' do
+      let(:enterprise) do
+        create(:enterprise, {
+          total_allowed_minutes: 5000,
+          minutes_utlized: 0
+        })
+      end
+
+      it 'increments :minutes_utlized by call_time' do
+        enterprise.debit(582)
+        enterprise.reload
+        enterprise.minutes_utlized.should eq 582
+      end
+    end
+
+    context 'for manually invoiced plans' do
+      let(:enterprise){ create(:enterprise) }
+
+      it 'returns true' do
+        enterprise.debit(234).should be_true
+        enterprise.minutes_utlized.should eq 0
+      end
+    end
+  end
 end

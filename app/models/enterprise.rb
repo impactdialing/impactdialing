@@ -11,7 +11,8 @@ class Enterprise < Subscription
     new_subscription = Enterprise.new({
       account_id: account.id,
       subscription_start_date: DateTime.now,
-      subscription_end_date: DateTime.now+10.years
+      subscription_end_date: DateTime.now+10.years,
+      status: Subscription::Status::UPGRADED
     })
 
     unless new_subscription.save
@@ -70,9 +71,12 @@ class Enterprise < Subscription
     true
   end
 
-
   def debit(call_time)
-    true
+    if total_allowed_minutes > 0
+      updated_minutes = minutes_utlized + call_time
+      return self.update_attributes(minutes_utlized: updated_minutes)
+    end
+    return true
   end
 
   def subscribe
