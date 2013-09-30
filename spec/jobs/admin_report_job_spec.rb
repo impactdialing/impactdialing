@@ -1,9 +1,31 @@
 require "spec_helper"
 
 describe AdminReportJob do
-  it "should create report based on string dates" do
-    from = (Time.now - 1.week).to_date.to_s
-    to = (Time.now).to_date.to_s
-    expect { AdminReportJob.perform(from, to) }.to_not raise_error
+  let(:billable_minutes){ double }
+  let(:report){ double({build: true}) }
+  let(:from){ (Time.now - 1.week).to_date.to_s }
+  let(:to){ (Time.now).to_date.to_s }
+
+  before do
+    Reports::BillableMinutes.stub(:new){ billable_minutes }
+    Reports::Admin::EnterpriseByAccount.stub(:new){ report }
+  end
+
+  after do
+    AdminReportJob.perform(from, to)
+  end
+
+  it 'instantiates a Reports::BillableMinutes obj with start & end dates' do
+    Reports::BillableMinutes.should_receive(:new).
+      with(Time.zone.parse(from).utc, Time.zone.parse(to).utc).
+      and_return(billable_minutes)
+  end
+
+  it 'instantiates a Reports::Admin::EnterpriseByAccount obj' do
+    report.should_receive(:build)
+
+    Reports::Admin::EnterpriseByAccount.should_receive(:new).
+      with(billable_minutes).
+      and_return(report)
   end
 end
