@@ -60,6 +60,46 @@ describe 'Account profile' do
     web_login_as(user)
   end
 
+  describe 'when a user creates a new account' do
+    before do
+      click_on 'Log out'
+    end
+    it 'with a valid email and password' do
+      user = build :user
+      visit '/client/login'
+      fill_in 'Email address', :with => user.email
+      fill_in 'Pick a password', :with => user.new_password
+      click_button 'Sign up'
+      page.should have_content 'Log out'
+    end
+  end
+
+  describe 'when a user edits their information' do
+    it 'with valid information' do
+      click_link 'Account'
+      fill_in 'Email address', :with => 'new@email.com'
+      click_button 'Update info'
+      page.should have_content 'Your information has been updated.'
+    end
+
+    xit 'and changes their password' do
+      user = build :user
+      click_link 'Account'
+      fill_in 'Current password', :with => user.new_password
+      fill_in 'New password', :with => '1newpassword!'
+      click_button 'Update password'
+      page.should have_content 'Your password has been changed.'
+    end
+
+    xit 'and tries to change their password with an invalid password' do
+      click_link 'Account'
+      fill_in 'Current password', :with => 'wrong'
+      fill_in 'New password', :with => '1newpassword!'
+      click_button 'Update password'
+      page.should have_content 'Your current password was not correct.'
+    end
+  end
+
   describe 'Billing', js: true do
     it 'Upgrade button is disabled until payment info exists' do
       go_to_billing
