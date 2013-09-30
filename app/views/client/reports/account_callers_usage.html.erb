@@ -9,7 +9,7 @@
       <% @callers.each do |caller| %>
         <tr>
           <td><%= caller.identity_name %></td>
-          <td><%= @billiable_total[caller.id] %></td>
+          <td><%= @billable_totals[caller.id] || 0 %></td>
         </tr>
       <%end%>
 
@@ -19,7 +19,7 @@
       </tr>
 
       <tr>
-        <td>Voicemails</td>
+        <td>Voicemails / Hangups</td>
         <td><%= sanitize_dials(@status_usage[CallAttempt::Status::VOICEMAIL]).to_i + sanitize_dials(@status_usage[CallAttempt::Status::HANGUP]).to_i %></td>
       </tr>
 

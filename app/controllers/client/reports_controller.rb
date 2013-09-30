@@ -74,22 +74,26 @@ module Client
 
 
     def account_campaigns_usage
+      require 'reports'
       @account = Account.find(params[:id])
       @campaigns = @account.all_campaigns
       @from_date, @to_date = set_date_range_account(@account, params[:from_date], params[:to_date])
-      account_usage = AccountUsage.new(@account, @from_date, @to_date)
-      @billiable_total = account_usage.billable_usage
+      billable_minutes = Reports::BillableMinutes.new(@from_date, @to_date)
+      @billable_totals = Reports::Customer::ByCampaign.new(billable_minutes, @account).build
+      @grand_total = billable_minutes.calculate_total(@billable_totals.values)
     end
 
     def account_callers_usage
+      require 'reports'
       @account = Account.find(params[:id])
       @callers = @account.callers
       @from_date, @to_date = set_date_range_account(@account, params[:from_date], params[:to_date])
-      account_usage = AccountUsage.new(@account, @from_date, @to_date)
-      @billiable_total = account_usage.callers_billable_usage
-      @status_usage = account_usage.callers_status_times
-      @final_total = @billiable_total.values.inject(0){|sum,x| sum+x} + sanitize_dials(@status_usage[CallAttempt::Status::ABANDONED]).to_i +
-      sanitize_dials(@status_usage[CallAttempt::Status::VOICEMAIL]).to_i + sanitize_dials(@status_usage[CallAttempt::Status::HANGUP]).to_i
+      @billable_minutes = Reports::BillableMinutes.new(@from_date, @to_date)
+
+      @billable_totals = Reports::Customer::ByCaller.new(@billable_minutes, @account).build
+      @status_usage = Reports::Customer::ByStatus.new(@billable_minutes, @account).build
+
+      @final_total = @billable_minutes.calculate_total(@billable_totals.values)
     end
 
     private

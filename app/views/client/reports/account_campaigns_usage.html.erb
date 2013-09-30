@@ -9,12 +9,12 @@
       <% @campaigns.each do |campaign| %>
         <tr>
           <td><%= campaign.name %></td>
-          <td><%= @billiable_total[campaign.id] %></td>
+          <td><%= @billable_totals[campaign.id] || 0 %></td>
         </tr>
       <%end%>
       <tr>
         <td>Total</td>
-        <td><%= @billiable_total.values.inject(0){|sum,x| sum+x} %></td>
+        <td><%= @grand_total %></td>
       </tr>
     </table>
   </div>
