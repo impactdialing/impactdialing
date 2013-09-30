@@ -1,10 +1,34 @@
+##
+# Provides methods for building queries and aggregating
+# billable minutes usage.
+#
+# This class should not be used to build reports directly.
+# Instead an instance of the class should be passed to
+# a builder object that generates the needed report.
+#
+# Usage:
+#     class MyReport
+#       attr_reader :billable_minutes
+#       def initialize(billable_minutes)
+#         @billable_minutes = billable_minutes
+#       end
+#
+#       def build
+#         ...generate report...
+#       end
+#     end
+#
+#     billable_minutes = Reports::BillableMinutes.new(from_date_obj, to_date_obj)
+#     report = MyReport.new(billable_minutes)
+#     print report.build
+#
 class Reports::BillableMinutes
   attr_reader :from_date, :to_date
 
 public
   def initialize(from, to)
-    @from_date = from #Time.zone.parse(from).utc
-    @to_date = to #Time.zone.parse(to).utc
+    @from_date = from
+    @to_date = to
   end
 
   def total_for(ids, with='campaigns')
@@ -95,22 +119,24 @@ public
     # we do not charge them for minutes they are simply connected to the system.
     # If they call in via a phone then we do charge them for minutes they are
     # simply connected to the system.
-    CallerSession.where(caller_type: CallerSession::CallerType::PHONE)
+    CallerSession.using(:simulator_slave).
+      where(caller_type: CallerSession::CallerType::PHONE)
   end
 
   def call_attempts
     # We charge for all outgoing calls (all call attempts).
-    CallAttempt.from('call_attempts use index (index_call_attempts_on_campaign_id_created_at_status)')
+    CallAttempt.using(:simulator_slave).
+      from('call_attempts use index (index_call_attempts_on_campaign_id_created_at_status)')
   end
 
   def transfer_attempts(with='campaigns')
     # We charge for all outgoing calls (all transfer attempts).
+    ta = TransferAttempt.using(:simulator_slave)
     if with == 'callers'
-      return TransferAttempt.
-             joins(:caller_session).
-             select('transfer_attempts.*, caller_sessions.caller_id as caller_id')
-    else
-      return TransferAttempt
+      ta = TransferAttempt.
+            joins(:caller_session).
+            select('transfer_attempts.*, caller_sessions.caller_id as caller_id')
     end
+    return ta
   end
 end

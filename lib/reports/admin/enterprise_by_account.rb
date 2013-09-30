@@ -11,7 +11,7 @@ module Reports::Admin
     def build
       output = []
       account_ids.each do |account_id|
-        account = Account.find(account_id)
+        account = Account.using(:simulator_slave).find(account_id)
 
         if account.manual_subscription?
           account_campaign_ids = campaign_ids(account_id)
@@ -28,7 +28,7 @@ module Reports::Admin
 
   private
     def account_ids
-      @account_ids ||= CallerSession.joins(:campaign).
+      @account_ids ||= CallerSession.using(:simulator_slave).joins(:campaign).
         where([
           "caller_sessions.created_at > ? AND caller_sessions.created_at < ?",
           billable_minutes.from_date,
@@ -39,11 +39,11 @@ module Reports::Admin
     end
 
     def campaign_ids(account_id)
-      Campaign.where(account_id: account_id).pluck(:id)
+      Campaign.using(:simulator_slave).where(account_id: account_id).pluck(:id)
     end
 
     def account_email(account_id)
-      User.where(account_id: account_id).select(:email).first.try(:email)
+      User.using(:simulator_slave).where(account_id: account_id).select(:email).first.try(:email)
     end
   end
 end
