@@ -2,8 +2,8 @@ desc "Run Admin Report"
 task :admin_report, [:start_date, :end_date] => [:environment] do |t, args|
   require 'reports'
 
-  start_date = Time.zone.parse(args[:start_date]).utc
-  end_date = Time.zone.parse(args[:end_date]).utc
+  start_date = Time.zone.parse(args[:start_date]).utc.beginning_of_day
+  end_date = Time.zone.parse(args[:end_date]).utc.end_of_day
 
   billable_minutes = Reports::BillableMinutes.new(start_date, end_date)
   report = Reports::Admin::EnterpriseByAccount.new(billable_minutes)
@@ -25,8 +25,8 @@ desc "Run ClientByCaller Report"
 task :client_by_caller_report, [:start_date, :end_date, :account_id] => [:environment] do |t, args|
   require 'reports'
 
-  start_date = Date.parse(args[:start_date]).beginning_of_day
-  end_date = Date.parse(args[:end_date]).end_of_day
+  start_date = Time.zone.parse(args[:start_date]).utc.beginning_of_day
+  end_date = Time.zone.parse(args[:end_date]).utc.end_of_day
   account_id = args[:account_id]
 
   if account_id.to_i > 0
@@ -52,8 +52,8 @@ desc "Run ClientByCampaign Report"
 task :client_by_campaign_report, [:start_date, :end_date, :account_id] => [:environment] do |t, args|
   require 'reports'
 
-  start_date = Date.parse(args[:start_date]).beginning_of_day
-  end_date = Date.parse(args[:end_date]).end_of_day
+  start_date = Time.zone.parse(args[:start_date]).utc.beginning_of_day
+  end_date = Time.zone.parse(args[:end_date]).utc.end_of_day
   account_id = args[:account_id]
 
   if account_id.to_i > 0
