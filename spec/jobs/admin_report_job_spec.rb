@@ -17,7 +17,7 @@ describe AdminReportJob do
 
   it 'instantiates a Reports::BillableMinutes obj with start & end dates' do
     Reports::BillableMinutes.should_receive(:new).
-      with(Time.zone.parse(from).utc, Time.zone.parse(to).utc).
+      with(Time.zone.parse(from).utc.beginning_of_day, Time.zone.parse(to).utc.end_of_day).
       and_return(billable_minutes)
   end
 

@@ -23,7 +23,7 @@ module TimeZoneHelper
   end
 
   def set_date_range_account(account, from_date, to_date)
-    time_zone = pacific_time_zone
+    time_zone = ActiveSupport::TimeZone.new("UTC")
     converted_from_date = (format_time(from_date, time_zone) || account.try(:created_at) || Time.now).in_time_zone(time_zone).beginning_of_day.utc
     converted_to_date = (format_time(to_date, time_zone) || Time.now).in_time_zone(time_zone).end_of_day.utc
     [converted_from_date, converted_to_date]
