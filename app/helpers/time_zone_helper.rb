@@ -23,14 +23,25 @@ module TimeZoneHelper
   end
 
   def set_date_range_account(account, from_date, to_date)
-    time_zone = ActiveSupport::TimeZone.new("UTC")
-    converted_from_date = (format_time(from_date, time_zone) || account.try(:created_at) || Time.now).in_time_zone(time_zone).beginning_of_day.utc
-    converted_to_date = (format_time(to_date, time_zone) || Time.now).in_time_zone(time_zone).end_of_day.utc
+    time_zone = pacific_time_zone # ActiveSupport::TimeZone.new("UTC")
+    utc = ActiveSupport::TimeZone.new("UTC")
+    if from_date.blank?
+      from_date = account.try(:created_at) || Time.now
+    else
+      from_date = format_time(from_date, time_zone)
+    end
+    if to_date.blank?
+      to_date = Time.now
+    else
+      to_date = format_time(to_date, time_zone)
+    end
+    converted_from_date = from_date.in_time_zone(utc).beginning_of_day.utc
+    converted_to_date = to_date.in_time_zone(utc).end_of_day.utc
     [converted_from_date, converted_to_date]
   end
 
   def time_for_date_picker(campaign, date)
-    time_zone = campaign.try(:as_time_zone) || pacific_time_zone
+    time_zone = campaign.try(:as_time_zone) || ActiveSupport::TimeZone.new("UTC")
     date.in_time_zone(time_zone).strftime("%m/%d/%Y")
   end
 
