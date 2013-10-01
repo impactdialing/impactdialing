@@ -1,3 +1,7 @@
+##
+# @on_call:: boolean field; returns true when caller is dialed in
+# @available_for_call:: boolean field; returns true when caller can take another call
+#
 class Caller < ActiveRecord::Base
   include Rails.application.routes.url_helpers
   include Deletable
