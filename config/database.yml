@@ -3,9 +3,9 @@
 development:
     adapter: mysql2
     host: localhost
-    database: impactdialing_dev
+    database: impactdialing_prod_dev
     username: root
-    password: 
+    password:
     timeout: 5000
     reconnect: true
 
@@ -17,14 +17,14 @@ test:
   host: localhost
   database: impactdialing_test
   username: root
-  password: 
+  password:
 
 production2:
     adapter: sqlite3
     database: production2.db
     pool: 5
     timeout: 5000
-    
+
 production:
     adapter: mysql2
     host: domU-12-31-39-09-65-F3.compute-1.internal
@@ -40,7 +40,7 @@ heroku_staging:
     host: ec2-174-129-172-31.compute-1.amazonaws.com
     database: impactdialing_staging
     username: root
-    password: 
+    password:
     timeout: 5000
     reconnect: true
     pool: 10
