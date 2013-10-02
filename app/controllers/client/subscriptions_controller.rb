@@ -47,7 +47,7 @@ module Client
 
 		def add_to_balance
 			PerMinute.recharge_subscription(account.id, params[:amount])
-			flash_message(:notice, "The amount has been added to your balance.")
+			flash_message(:notice, I18n.t('subscriptions.add_funds.success'))
 			redirect_to client_subscriptions_path
 		end
 
