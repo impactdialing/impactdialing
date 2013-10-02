@@ -218,5 +218,28 @@ describe 'Account profile' do
         page.should have_content I18n.t('subscriptions.upgrade.success')
       end
     end
+
+    describe 'Adding time to PerMinute' do
+      before do
+        add_valid_payment_info
+        go_to_upgrade
+        select_plan 'Per minute'
+        fill_in 'Add to balance:', with: 500
+        click_on 'Upgrade'
+        page.should have_content I18n.t('subscriptions.upgrade.success')
+      end
+
+      it 'moves available minutes to newest subscription' do
+        go_to_billing
+        click_on 'Add to your balance'
+        fill_in 'Amount to add', with: 500
+        click_on 'Add funds'
+
+        page.should have_content I18n.t('subscriptions.add_funds.success')
+        # ugh, db assertions...
+        user.account.current_subscriptions.second.available_minutes.should eq 0
+        user.account.available_minutes.should eq user.account.current_subscription.available_minutes
+      end
+    end
   end
 end

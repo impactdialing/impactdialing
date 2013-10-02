@@ -208,4 +208,37 @@ describe PerMinute do
     end
   end
 
+  describe '#import_available_minutes' do
+    let(:first_per_minute) do
+      PerMinute.create!(valid_attrs.merge({
+        stripe_customer_id: "123",
+        subscription_start_date: DateTime.now-10.days,
+        created_at: DateTime.now-5.minutes,
+        subscription_end_date: DateTime.now+10.days,
+        total_allowed_minutes: (25 / 0.09)
+      }))
+    end
+    let(:second_per_minute) do
+      PerMinute.create!(valid_attrs.merge({
+        stripe_customer_id: "123",
+        subscription_start_date: DateTime.now-10.days,
+        created_at: DateTime.now-5.minutes,
+        subscription_end_date: DateTime.now+10.days,
+        total_allowed_minutes: (25 / 0.09)
+      }))
+    end
+
+    before do
+      second_per_minute.import_available_minutes(first_per_minute)
+    end
+
+    it 'moves available minutes from old_subscription to self' do
+      second_per_minute.available_minutes.should eq (25 / 0.09).floor + (25 / 0.09).floor
+    end
+
+    it 'zeros available minutes of old_subscription' do
+      first_per_minute.available_minutes.should eq 0
+    end
+  end
+
 end
