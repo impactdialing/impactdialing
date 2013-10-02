@@ -55,8 +55,8 @@
         </select>
       </p>
 
-      <p data-intro="The recycle rate sets the minimum amount of time before calling somebody back." data-step="7">
-        <label for="">Recycle rate</label>
+      <p data-intro="The time between call attempts sets the minimum amount of time before calling somebody back." data-step="7">
+        <label for="">Time (in hours) between call attempts</label>
         <select id="campaign[recycle_rate]" name="campaign[recycle_rate]">
           <%= options_for_select [1,2,3,4,6,10,12,16,24,48,72], @campaign.recycle_rate %>
         </select>
