@@ -5,6 +5,7 @@ ImpactDialing::Application.configure do
   TWILIO_AUTH="897298ab9f34357f651895a7011e1631"
   APP_NUMBER="7029797309"
   HOLD_MUSIC_URL = "https://s3.amazonaws.com/hold_music/impactdialing_holdmusic_v1.mp3"
+  MANDRILL_API_KEY='qlYdRXlyROwaN9Tqk1QrhA'
 
   #monitor
    MONITOR_TWILIO_APP_SID="APa5ea5d37745f53d3289b4326051743b0"
