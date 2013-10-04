@@ -47,12 +47,16 @@
           <li><input type="checkbox" value="0" id="selectAll">&nbsp;Select all</li>
         <% @voter_fields.try(:each_pair) do |key, value| %>
           <li>
-            <input  type="checkbox" name="voter_fields[]" value="<%= key %>">&nbsp;<%= value %>
+            <label for="voter_fields_<%= key.underscore.downcase %>">
+              <input  type="checkbox" name="voter_fields[]" value="<%= key %>" id="voter_fields_<%= key.underscore.downcase %>">&nbsp;<%= value %>
+            </label>
           </li>
         <% end %>
         <% @custom_voter_fields.try(:each) do |field| %>
           <li>
-            <input  type="checkbox" name="custom_voter_fields[]" value="<%= field %>">&nbsp;<%= field %>
+            <label for="custom_voter_fields_<%= field.underscore.downcase %>">
+              <input  type="checkbox" name="custom_voter_fields[]" value="<%= field %>" id="custom_voter_fields_<%= field.underscore.downcase %>">&nbsp;<%= field %>
+            </label>
           </li>
         <% end %>
         </ul>
