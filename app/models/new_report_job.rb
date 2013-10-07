@@ -11,7 +11,7 @@ class NewReportJob
      @to_date = to
      @callback_url = callback_url
      @strategy = strategy
-     @selected_voter_fields = ["Phone"] if @selected_voter_fields.blank?
+     @selected_voter_fields = ["phone"] if @selected_voter_fields.blank?
    end
 
    def report_strategy(csv)
