@@ -1,13 +1,6 @@
 class Trial < Subscription
   include PerAgent
 
-  validate :has_only_one_caller  
-
-  def has_only_one_caller
-    if type == Type::TRIAL && number_of_callers > 1
-      errors.add(:base, 'Trial account can have only 1 caller')
-    end
-  end
   def campaign_types
     [Campaign::Type::PREVIEW, Campaign::Type::POWER, Campaign::Type::PREDICTIVE]
   end

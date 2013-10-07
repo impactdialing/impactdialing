@@ -131,19 +131,6 @@ describe Trial do
 
   end
 
-  describe "add more than 1 caller" do
-    before(:each) do
-      @account =  create(:account)
-      @account.reload
-    end
-
-    it "should not allow to add more than 1 caller " do
-      trial = @account.subscriptions.first
-      trial.update_attributes(number_of_callers: 2).should be_false
-      trial.errors[:base].should == ["Trial account can have only 1 caller"]
-    end
-  end
-
   describe "should upgrade from trial" do
     before(:each) do
       @account =  create(:account)
