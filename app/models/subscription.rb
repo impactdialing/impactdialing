@@ -112,7 +112,7 @@ class Subscription < ActiveRecord::Base
 
   def calculate_minutes_on_upgrade
     days_remaining = number_of_days_in_current_month - (Subscription.todays_date - current_period_start.to_date).to_i
-    (minutes_per_caller/number_of_days_in_current_month) * days_remaining * number_of_callers - account.minutes_utlized
+    (minutes_per_caller/number_of_days_in_current_month) * days_remaining * number_of_callers
   end
 
   def calculate_minute_on_add_callers(number_of_callers_to_add)
