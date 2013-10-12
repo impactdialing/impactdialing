@@ -1,7 +1,7 @@
 require Rails.root.join("lib/twilio_lib")
 
 class AdminController < ApplicationController
-  USER_NAME, PASSWORD = "impact", "Mb<3Ad4F@2tCallz"
+  USER_NAME, PASSWORD = "impact", "%76BZs2TPvWe=nqz"
   before_filter :authenticate
 
   rescue_from 'Enterprise::UpgradeError' do |exception|

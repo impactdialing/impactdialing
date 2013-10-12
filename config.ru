@@ -12,11 +12,11 @@ if Rails.env == "heroku"
 end
 
 Resque::Server.use Rack::Auth::Basic do |username, password|
-   username == 'impact' && password == 'Mb<3Ad4F@2tCallz'
+   username == 'impact' && password == '%76BZs2TPvWe=nqz'
 end
 
 Sidekiq::Web.use Rack::Auth::Basic do |username, password|
-  username == 'impact' && password == 'Mb<3Ad4F@2tCallz' 
+  username == 'impact' && password == '%76BZs2TPvWe=nqz'
 end
 
 run Rack::URLMap.new \
@@ -24,6 +24,6 @@ run Rack::URLMap.new \
   "/resque" => Resque::Server.new,
   "/sidekiq" => Sidekiq::Web
 
-  
-  
+
+
 
