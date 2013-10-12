@@ -30,6 +30,7 @@ class VoterListJob
                                         @separator)
       response['success'] << "Upload complete. #{result[:successCount]} out of #{result[:successCount]+result[:failedCount]} records imported successfully."
     rescue Exception => err
+      Rails.logger.error "VoterListJob: #{err.message}"
       @voter_list.destroy_with_voters
       response['errors'] << "Invalid CSV file. Could not import."
     ensure
