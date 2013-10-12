@@ -12,7 +12,7 @@ module Windozer
     end
 
     def clean_encoding!
-      encode!('UTF-16', invalid: :replace, replace: '')
+      force_encoding('UTF-8').encode!('UTF-16', invalid: :replace, replace: '')
       encode!('UTF-8')
     end
   end
