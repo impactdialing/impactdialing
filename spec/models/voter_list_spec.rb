@@ -48,6 +48,13 @@ describe VoterList do
       FileUtils.cp source_file, temp_filename
       temp_filename
     }
+    let(:windoze_csv_file_upload) do
+      source_file = "#{fixture_path}/files/windoze_voters_list.csv"
+      temp_dir = "#{fixture_path}/test_tmp"
+      temp_filename = "#{temp_dir}/windoze_voters_list.csv"
+      FileUtils.cp source_file, temp_filename
+      temp_filename
+    end
     let(:user) { create(:user) }
     let(:campaign) { create(:preview, :account => user.account) }
     let(:voter_list) { create(:voter_list, :campaign => campaign, :account => user.account) }
@@ -62,12 +69,20 @@ describe VoterList do
                                          "Age" => "Age",
                                          "Gender" => "Gender",
                                      })
+      let(:windoze_mappings) do
+        CsvMapping.new({
+          "FIRST" => "first_name",
+          "Phone" => "phone",
+          "Email" => "email"
+        })
+      end
+
       before :each do
         Voter.destroy_all
       end
 
       it "should be successful" do
-        VoterList.should_receive(:read_from_s3).and_return(File.open("#{csv_file_upload}").read)
+        VoterList.should_receive(:read_from_s3).and_return(File.open(csv_file_upload).read)
         @result = voter_list.import_leads(
             USER_MAPPINGS,
             csv_file_upload,
@@ -78,7 +93,16 @@ describe VoterList do
         }
       end
 
-      it "should upload all columns expect the Not Available one" do
+      it 'should handle windoze files' do
+        AmazonS3.stub_chain(:new, :read){ File.open(windoze_csv_file_upload).read }
+        actual = voter_list.import_leads(windoze_mappings, windoze_csv_file_upload, ",")
+        actual.should eq({
+          successCount: 29,
+          failedCount: 0
+        })
+      end
+
+      it "should upload all columns except the Not Available one" do
         MAPPINGS = CsvMapping.new({"Phone"=>"phone", "Name"=>"", "Email"=>"email"})
         VoterList.should_receive(:read_from_s3).and_return(File.open("#{fixture_path}/files/missing_field_list.csv").read)
         @result = voter_list.import_leads(MAPPINGS,"#{fixture_path}/files/missing_field_list.csv",",")

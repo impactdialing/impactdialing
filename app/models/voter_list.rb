@@ -1,6 +1,6 @@
 require 'ostruct'
 class VoterList < ActiveRecord::Base
-  belongs_to :campaign  
+  belongs_to :campaign
   belongs_to :account
   has_many :voters, :conditions => {:active => true}
   attr_accessible :name, :separator, :headers, :s3path, :csv_to_system_map, :campaign_id, :account_id, :uploaded_file_name, :enabled
@@ -80,7 +80,8 @@ class VoterList < ActiveRecord::Base
 
 
   def self.read_from_s3(file_name)
-    AmazonS3.new.read(file_name)
+    require 'windozer'
+    Windozer.to_unix( AmazonS3.new.read(file_name) )
   end
 
   def self.delete_from_s3(file_name)
