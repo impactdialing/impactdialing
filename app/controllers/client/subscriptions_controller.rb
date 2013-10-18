@@ -6,6 +6,11 @@ module Client
 		end
 
 		def show
+			if @account.current_subscription.trial?
+				@number_of_callers = 1
+			else
+				@number_of_callers = @account.number_of_callers
+			end
 		end
 
 		def update

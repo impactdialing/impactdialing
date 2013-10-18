@@ -188,7 +188,7 @@ class Account < ActiveRecord::Base
 
   def create_trial_subscription
     Trial.create(minutes_utlized: 0, total_allowed_minutes: 50.00, subscription_start_date: DateTime.now,
-      number_of_callers: 1, status: Subscription::Status::TRIAL, account_id: self.id, created_at: DateTime.now-1.minute,
+      number_of_callers: 5, status: Subscription::Status::TRIAL, account_id: self.id, created_at: DateTime.now-1.minute,
       subscription_end_date: DateTime.now+30.days)
   end
 
