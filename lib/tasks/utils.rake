@@ -27,3 +27,54 @@ task :extract_numbers, [:filepath, :account_id, :campaign_id, :target_column_ind
   print "BlockedNumber.import columns, values\n"
   print "\n"
 end
+
+desc 'Long running task to test DNS resolution to 3rd party APIs success over time'
+task :dns do
+  require 'resolv'
+  require 'benchmark'
+
+  names = {
+    'api.twilio.com' => 'Twilio',
+    'api.pusherapp.com' => 'Pusher',
+    'impact-prod-db.cjo94dhm4pos.us-east-1.rds.amazonaws.com' => 'RDS'
+  }
+
+  domains = {
+    'api.twilio.com' => 330,
+    'api.pusherapp.com' => 90,
+    'impact-prod-db.cjo94dhm4pos.us-east-1.rds.amazonaws.com' => 30
+  }
+
+  results = {}
+  domains.each do |domain, delay|
+    results[domain] = {
+      answer: '',
+      time: ''
+    }
+  end
+
+  time_asleep = 0
+  960.times do |n|
+    domains.each do |domain, delay|
+      unless time_asleep % delay == 0
+        next
+      end
+      print "Resolving #{names[domain]}: "
+      resolvr = Resolv::DNS.new
+      begin
+        results[domain][:time] = Benchmark.measure do
+          results[domain][:answer] = resolvr.getaddress(domain).to_s
+        end
+      rescue Resolv::ResolvError => e
+        results[domain][:answer] = "#{e.class}: #{e.message}"
+      ensure
+        # log results
+        print "#{results[domain][:answer]}\t"
+        print "#{results[domain][:time]}\n"
+      end
+    end
+    resolvr = nil
+    sleep(30)
+    time_asleep += 30
+  end
+end
