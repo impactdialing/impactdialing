@@ -1,3 +1,18 @@
+## Example script to pull recordings for given list of phone numbers
+#
+# account = Account.find xxx
+# phone_numbers = ['xxx','yyy']
+# voters = account.voters.where(phone: phone_numbers)
+# out = ''
+# voters.each do |v|
+#   out << "#{v.phone}\n"
+#   call_attempts = v.call_attempts.where('recording_url is not null').order('voter_id DESC')
+#   call_attempts.each do |ca|
+#     out << "- #{ca.tStartTime.strftime('%m/%d/%Y at %I:%M%P')} #{ca.recording_url}\n"
+#   end
+# end
+# print out
+
 desc "Read phone numbers from csv file and output as array."
 task :extract_numbers, [:filepath, :account_id, :campaign_id, :target_column_index] => :environment do |t, args|
   require 'csv'

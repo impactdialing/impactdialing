@@ -30,10 +30,6 @@ Start web & worker processes: `foreman start`.
 
 ### Deployment
 
-Jeremiah: `do you keep parity between aws and heroku at all times?`
-
-Nikhil: `i generally do 3 deploys to prod. 2 heroku and 1 aws`
-
 Deploy to EC2: `bundle exec cap (aws|aws_staging) deploy`
 
 Deploy to Heroku: `heroku push remote-repo branch`
