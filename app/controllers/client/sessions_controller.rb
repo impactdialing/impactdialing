@@ -7,7 +7,6 @@ module Client
       user = User.authenticate(params[:email], params[:password])
       if user
         session[:user] = user.id
-        flash_message(:kissmetrics, "Signed In")
         redirect_to '/client/index'
       else
         flash_now(:error, "The email or password you entered was incorrect. Please try again.")

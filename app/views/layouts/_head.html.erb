@@ -29,7 +29,6 @@
 
 
 <%= render :partial => "layouts/errorception" %>
-<%= render :partial => "layouts/kissmetrics" %>
 <% if logged_in_as_client? and not Rails.env.test? and not Rails.env.development? %>
   <%= render :partial => "layouts/olark" %>
 <% end %>

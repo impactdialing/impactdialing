@@ -14,7 +14,6 @@ module Client
           user_mailer.notify_new_signup(@user)
         end
         session[:user] = @user.id
-        flash_message(:kissmetrics, "Signed Up")
         redirect_to '/client/tos'
       else
         render '/client/login'
