@@ -56,6 +56,7 @@ group :development, :test do
   gem 'hirb', '~>0.7.1'
   gem 'rspec-instafail', '~>0.2.4'
   gem 'pry'
+  gem 'jasmine'
 end
 
 group :development do
