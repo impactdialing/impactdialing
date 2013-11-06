@@ -47,34 +47,41 @@ VoterLists.prototype.validate_csv_file = function(evt){
   var options = {
     data: {},
     success:  function(data) {
-    $('#column_headers').html(data);
-    $("#list_name").show();
-    $("#voter_list_separator").val(separator)
-    $("#voter_upload").show();
-    $('#voter_list_upload').attr('action', "/client/campaigns/"+$('#campaign_id').val()+"/voter_lists");
+      $('#column_headers').html(data);
+      $("#list_name").show();
+      $("#voter_list_separator").val(separator)
+      $("#voter_upload").show();
+      $('#voter_list_upload').attr('action', "/client/campaigns/"+$('#campaign_id').val()+"/voter_lists");
 
-    $("#column_headers select").change(function() {
-      if($(this).val() == "custom_id"){
-        var id_mapped = confirm("The ID field must be unique for every lead in your campaign. If two leads have the same IDs, the newer one will overwrite the older one. Are you sure you want to map this header to the ID field?");
-        if(!id_mapped){$(this).val("");}
-      }
-      if ($(this).val() == 'custom') {
-        var newField = prompt('Enter the name of field to create:');
-        if (newField) {
-          $(this).children("option[value='custom']").before("<option value='" + newField + "'>" + newField + "</option>");
-          $(this).val(newField);
+      $("#column_headers select").change(function(eventObj) {
+        var selectedValue = $(this).val();
+        /**
+          Ask user to confirm ID selection.
+        */
+        if( selectedValue == "custom_id" ) {
+          var id_mapped = confirm("The ID field must be unique for every lead in your campaign. If two leads have the same IDs, the newer one will overwrite the older one. Are you sure you want to map this header to the ID field?");
+          if(!id_mapped){$(this).val("");}
         }
-      }
-    });
-  }
+        /**
+          Create a new custom field.
+        */
+        if( selectedValue == 'custom') {
+          var newField = prompt('Enter the name of field to create:');
+          if (newField) {
+            $(this).children("option[value='custom']").before("<option value='" + newField + "'>" + newField + "</option>");
+            $(this).val(newField);
+          }
+        }
+        GroupedSelects.toggleOptions('#column_headers select', this);
+      });
+    }
   };
-    $('#voter_list_upload').attr('action', "/client/campaigns/"+$('#campaign_id').val()+"/voter_lists/column_mapping");
-    $('#voter_list_upload').submit(function() {
-
-      $('#column_headers').html("<p>Please wait while your file is being uploaded...</p>");
-        $(this).ajaxSubmit(options);
-        return false;
-    });
-    $("#voter_list_upload").trigger("submit");
-    $("#voter_list_upload").unbind("submit");
+  $('#voter_list_upload').attr('action', "/client/campaigns/"+$('#campaign_id').val()+"/voter_lists/column_mapping");
+  $('#voter_list_upload').submit(function() {
+    $('#column_headers').html("<p>Please wait while your file is being uploaded...</p>");
+    $(this).ajaxSubmit(options);
+    return false;
+  });
+  $("#voter_list_upload").trigger("submit");
+  $("#voter_list_upload").unbind("submit");
 }

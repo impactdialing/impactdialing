@@ -11,10 +11,12 @@
 #   - dist/**/*.js
 #
 src_files:
+  - spec/javascripts/helpers/external_libs.js # load remote deps (jquery & jquery-ui)
   - public/javascripts/application.js
   - public/javascripts/underscore-min.js
   - public/javascripts/backbone.js
   - public/javascripts/impactdialing.js
+  - public/javascripts/form_helpers/grouped_selects.js
 
 # stylesheets
 #
