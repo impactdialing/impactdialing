@@ -159,7 +159,16 @@ class CallAttempt < ActiveRecord::Base
   (tDuration.to_f/60).ceil
   end
 
-
+  ##
+  # Statuses that get called back:
+  # - VOICEMAIL
+  # - NOANSWER
+  # - ABANDONED
+  # - BUSY
+  # - HANGUP
+  # - CANCELLED
+  # - SCHEDULED
+  #
   module Status
     VOICEMAIL = 'Message delivered'
     SUCCESS = 'Call completed with success.'
